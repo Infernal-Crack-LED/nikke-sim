@@ -45,6 +45,15 @@ if (!slug)
   fail(
     'usage: prepare-cross-family-packet.ts <slug> --tokens "t1,t2,..." [--roles s2b,s5,s6]',
   );
+// SHORT-SLUG FIX (2026-07-25): match the slug on a WORD BOUNDARY, not a raw substring. A 3-letter
+// slug like `eve` is a substring of `event`/`level`/`never`/`every`, which a substring match treats
+// as a leak — false-positiving the template/schema redaction on generic infrastructure vocabulary
+// and (worse) gutting the redacted schema of every `level`/`event` line the blind role needs.
+// Word-boundary matching still catches the unit NAME standing alone; tokens stay substring-matched
+// (they are distinctive magnitudes/mechanic names, not common substrings).
+const slugRe = new RegExp(
+  '\\b' + slug.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b',
+);
 const tokens = (getOpt('tokens') ?? '')
   .split(',')
   .map((t) => t.trim())
@@ -102,16 +111,29 @@ const safeNicknames = ((u.nicknames as string[] | undefined) ?? []).filter(
 const tokLower = tokens.map((t) => t.toLowerCase());
 const displayNameLower = (u.name as string).toLowerCase();
 const nickLower = safeNicknames.map((n) => n.toLowerCase());
-// Component parts (schema/methodology/template) must not name the target AT ALL — slug + display name + safe
-// nicknames + answer tokens. (The assembled-packet check below is tokens-only: the assembled packet includes the
-// generic harnessNote, whose infrastructure terms collide with short nicknames — "removeOnReload" contains
-// "veon" — and the packet header names the unit by slug, which collides with the display name for base units.)
-const componentNeedles = [
-  slug!.toLowerCase(),
-  displayNameLower,
-  ...nickLower,
-  ...tokLower,
-];
+// Component parts (schema/methodology/template) must not name the target AT ALL — display name + safe nicknames
+// + answer tokens (substring), plus the slug matched separately on a WORD BOUNDARY (slugRe — a short slug like
+// `eve` is a substring of `event`/`level`/`never`, so it must not be a substring needle here). (The assembled-
+// packet check below is tokens-only: the assembled packet includes the generic harnessNote, whose infrastructure
+// terms collide with short nicknames — "removeOnReload" contains "veon" — and the packet header names the unit
+// by slug, which collides with the display name for base units.)
+const componentNeedles = [displayNameLower, ...nickLower, ...tokLower];
+
+// Component redaction predicate: the slug on a word boundary, OR any substring needle (display name / nickname /
+// answer token). Used to strip target-naming lines from the schema + methodology.
+const namesTarget = (lower: string): boolean =>
+  slugRe.test(lower) || componentNeedles.some((n) => lower.includes(n));
+
+// Component leak assertion: the slug (word-boundary) plus the substring needles. The assembled-packet check uses
+// leakCheck directly with tokLower (tokens-only).
+function componentLeakCheck(label: string, text: string) {
+  const lower = text.toLowerCase();
+  if (slugRe.test(lower))
+    fail(
+      `${label} still names the target slug "${slug}" — redaction incomplete`,
+    );
+  leakCheck(label, text, componentNeedles);
+}
 
 const prose = `=== KIT PROSE (legitimate input — ground truth; the answer tokens appear HERE by design) ===
 Unit: ${u.name} (${u.slug})
@@ -135,10 +157,10 @@ const schemaLines = readFileSync(
 const redactedSchema = schemaLines
   .filter((l) => {
     const low = l.toLowerCase();
-    return !componentNeedles.some((n) => low.includes(n));
+    return !namesTarget(low);
   })
   .join('\n');
-leakCheck('redacted schema (types.ts)', redactedSchema, componentNeedles);
+componentLeakCheck('redacted schema (types.ts)', redactedSchema);
 
 // ---- 2b. TOKEN HINT (advisory — catches under-supplied --tokens) ------------------------------
 // The leak assertion only catches tokens the driver supplied. If a types.ts comment states one of the unit's
@@ -182,12 +204,9 @@ const methLines = readFileSync(
   'utf8',
 ).split('\n');
 const redactedMeth = methLines
-  .filter((l) => {
-    const low = l.toLowerCase();
-    return !componentNeedles.some((n) => low.includes(n));
-  })
+  .filter((l) => !namesTarget(l.toLowerCase()))
   .join('\n');
-leakCheck('redacted methodology', redactedMeth, componentNeedles);
+componentLeakCheck('redacted methodology', redactedMeth);
 
 // ---- 4. assemble + leak-assert each role packet -----------------------------------------------
 const outDir = join(HERE, 'cross-family', slug);
@@ -247,7 +266,7 @@ for (const role of roles) {
       `unknown role '${role}' (expected s2b/s5/s6; s7 uses the judge-packet pattern)`,
     );
   const template = readFileSync(join(HERE, tmplFile), 'utf8');
-  leakCheck(`template ${tmplFile}`, template, componentNeedles);
+  componentLeakCheck(`template ${tmplFile}`, template);
 
   const packet = `# CROSS-FAMILY BLIND PACKET — role ${role} — unit ${slug}
 # Built by prepare-cross-family-packet.ts. De-contaminated + leak-asserted at build time.

@@ -1,0 +1,332 @@
+{
+  "slug": "diesel-winter-sweets",
+  "leakDetected": null,
+  "override": {
+    "slug": "diesel-winter-sweets",
+    "modes": [
+      "Intro",
+      "Highlight"
+    ],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "mode": "Intro",
+        "ownBurstGate": "cast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 20.28
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "mode": "Highlight",
+        "ownBurstGate": "notCast",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 20.28
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "mode": "Intro",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 60.19,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "mode": "Highlight",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 235.03,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 318.14,
+            "durationSec": 3,
+            "maxStacks": 2
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 63.33,
+            "durationSec": 9,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 25.09,
+            "durationSec": 10
+          },
+          {
+            "kind": "dot",
+            "atkPct": 18.43,
+            "durationSec": 9,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 181.2,
+            "durationSec": 9,
+            "intervalSec": 1,
+            "flavor": "sustained"
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies",
+          "excludeSelf": true
+        },
+        "mode": "Highlight",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": -100,
+            "durationSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates when an ally or self destroys an enemy's part. Affects all allies (except self). Mute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.",
+        "■ Activates when an ally or self destroys an enemy's part. Affects self. Sustained Damage ▲ 68.04% for 15 sec."
+      ],
+      "burst": [
+        "■ Affects all allies if the skill user is in Highlight status. Mute stacks ▼ 1."
+      ]
+    },
+    "caveats": [
+      "⚑ Intro/Highlight is a once-per-battle LATCH set at the first Full Burst entry; the schema has no once-only primitive, so it is declared as a user-selectable `mode` (default Intro) with `ownBurstGate` retained on the two crit-damage grants for trigger fidelity. Highlight is only physically reachable with a SECOND Burst III ally taking rotation 1; in a solo-B3 comp she always casts → always Intro.",
+      "⚑ The two 20.28% Critical Damage grants are 'continuously' (no durationSec) and identical in both branches, so re-application on later Full Bursts is idempotent — the 'for the first time' wording costs no damage fidelity.",
+      "⚑ skill2 Full-Charge stack: encoded as `chargeCounter` count:1 (fires once per full charge). If the engine does not raise chargeCounter for RL base-weapon full charges, `shotFired` is the fallback encoder — every RL trigger pull is a charge shot at chargeFrames 60.",
+      "⚑ Value is authored PER STACK (318.14, maxStacks 2) so the engine accrues the ramp naturally; no rampSec is set. Derived steady state = 2 stacks held ~continuously (charge ≈1.0s < 3s window, and the 141f/2.35s reload is also < 3s, so stacks survive the reload).",
+      "⚑ Both part-destruction blocks are unreachable on the v1 partless scope-lock boss, so the skipped 68.04% Sustained Damage costs ZERO on graded comps. They become live the moment destructible parts are modeled and must be re-authored then.",
+      "⚑ The Mute/Noise-Pollution immunity channel is unmodeled; consequently the Highlight-mode Hit Rate ▼100% ally debuff can never be cancelled in-sim. On a partless boss that is also the true in-game state (Mute cannot be built).",
+      "noFb is deliberately NOT set on any DoT or rider — Full Burst applies by landing timing (default ON), per the modeling priors. noRange is engine-automatic and not set."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Diesel: Winter Sweets is an RL/Fire Burst III sustained-DoT attacker: every damage line she owns is `sustained`-flavored, and her entire kit is a sustainedDamagePct amplifier feeding three DoT channels (skill2 63.33%/s FB-enter, burst 18.43%/s all-enemies, burst 181.2%/s stage-target — all 9s @ 1s intervals). The load-bearing multiplier is skill2's Full-Charge 318.14% ×2 stacks (≈636% at steady state), which lands entirely on those DoTs and on nothing else — her RL normal attacks are NOT sustained-flavored and receive none of it. Intro/Highlight is a first-Full-Burst latch modeled as a `mode`; both branches grant the same permanent 20.28% Critical Damage, and they diverge only on the 10s FB-enter sustained buff (Intro 60.19% vs Highlight 235.03%) and on Highlight's ally-wide Noise Pollution (Hit Rate ▼100%, 1s) — a genuine team cost that Mute would normally cancel but cannot here. Default mode is Intro because a solo-Burst-III carry always casts her own burst on rotation 1. Burst also carries a team-wide 25.09% Damage Taken boss debuff for 10s. Two part-destruction blocks are unmodeled and provably inert on the partless v1 boss."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Intro: Critical damage ▲ 20.28% contin",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter + ownBurstGate 'cast' + mode Intro → self buff critDamagePct 20.28, no durationSec (permanent/'continuously'). 'cannot be removed' + 'persists after revival' are inherently satisfied (no removal or death modeled)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Highlight: Critical damage ▲ 20.28%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter + ownBurstGate 'notCast' + mode Highlight → self buff critDamagePct 20.28, permanent. Same magnitude as the Intro branch."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sustained damage ▲ 60.19% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter + mode Intro → self buff sustainedDamagePct 60.19, durationSec 10 (covers the whole FB window)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Sustained damage ▲ 235.03% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter + mode Highlight → self buff sustainedDamagePct 235.03, durationSec 10."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Mute: immunity to Noise Pollution x3",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger is enemy-part destruction — unreachable on the v1 partless scope-lock boss. Payload is a status-immunity counter with no damage channel and no schema primitive (no 'partDestroyed' TriggerDef, no status-immunity effect). Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sustained Damage ▲ 68.04% for 15 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Real damage buff, but the part-destruction trigger has no TriggerDef representation AND cannot fire on a partless boss — zero graded-comp impact. NOT a discretionary skip: verbatim in unmodeled.skill2 + flagged for re-authoring when parts are modeled."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Sustained Damage ▲ 318.14%, 3s, x2",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "chargeCounter count:1 (every full charge) → self buff sustainedDamagePct 318.14, durationSec 3, maxStacks 2. Per-stack authoring lets the engine accrue the ramp."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "63.33% ATK sustained /1s for 9s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fullBurstEnter → target enemy → dot atkPct 63.33, durationSec 9, intervalSec 1, flavor 'sustained'. One instance appended per FB entry (append-not-refresh); 9s < 10s FB so no overlap."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 25.09% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → enemy → buff damageTakenPct 25.09, durationSec 10. Boss debuff benefiting the WHOLE team, not a self buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "18.43% ATK sustained /1s for 9s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → enemy → dot atkPct 18.43, durationSec 9, intervalSec 1, flavor 'sustained'. Co-located with the Damage Taken debuff (same '■ Affects all enemies' block)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "181.2% ATK sustained, stage target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → enemy → dot atkPct 181.2, durationSec 9, intervalSec 1, flavor 'sustained'. 'stage target' == the single v1 boss, so the gate is unconditional; kept as its own block for 1:1 audit."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Noise Pollution: Hit Rate ▼ 100% 1s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast + mode Highlight → allies excludeSelf → buff hitRatePct -100, durationSec 1. NOT skipped: hitRatePct drives the core-hit lift, so this is a real team DAMAGE cost of the Highlight branch."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mute stacks ▼ 1.",
+      "status": "SKIPPED",
+      "effectOrReason": "Consumes the Mute counter, which is itself unmodeled (part-destruction-gated, unreachable on a partless boss). No stack pool exists to decrement. Verbatim in unmodeled.burst."
+    }
+  ],
+  "flags": [
+    {
+      "field": "modes / skill1[*].mode + skill1[0..1].ownBurstGate",
+      "estimate": "modes ['Intro','Highlight'], default 'Intro'",
+      "reasoning": "The status is a once-per-battle LATCH decided at the FIRST Full Burst entry (own-burst → Intro, no own-burst → Highlight), and it governs 3 downstream lines across two slots. The schema has no once-only trigger, so the latch is expressed as a user-selectable `mode`. Default Intro because a Burst III carry in the graded control comp casts on rotation 1. Highlight is only reachable with a second B3; if a user selects Highlight in a solo-B3 comp, skill1[1]'s ownBurstGate 'notCast' correctly suppresses the crit-damage grant while skill1[3]'s 235.03% still fires — a known mode/gate asymmetry, deliberately left honest rather than papered over.",
+      "recipe": "Record one fight with a second Burst III taking rotation 1 and diesel-winter-sweets bursting on rotation 2; confirm from popup magnitudes which sustained tier (60.19 vs 235.03) is live and whether the ally Hit-Rate debuff appears. If the latch proves re-evaluable per rotation rather than once-per-battle, drop the mode and gate purely on ownBurstGate."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "{ kind: 'chargeCounter', count: 1 }",
+      "reasoning": "'when performing a Full Charge attack' is an explicit kit trigger, but which schema primitive raises it for an RL BASE weapon is not stated. chargeCounter is the only full-charge-semantic trigger; count:1 makes phase 0 fire on every charge. If the engine only raises chargeCounter for weaponSwap charge shots, this block would be silently dead — a total loss of the kit's largest multiplier (≈636% sustained at 2 stacks).",
+      "recipe": "Run controlComp(diesel-winter-sweets) with cfg.onEvent and count buffApply events for stat 'sustainedDamagePct' value 318.14. Expect roughly one per shot (≈6 per magazine). Zero events ⇒ swap the trigger to { kind: 'shotFired' }, which is equivalent for an RL where every trigger pull is a charge shot."
+    },
+    {
+      "field": "skill2[0] stack steady-state",
+      "estimate": "≈2.0 of 2 stacks held continuously after ~2s ramp; no rampSec set",
+      "reasoning": "Derived, not guessed: chargeFrames 60 = 1.0s per charge, so consecutive charges are ≈1.0–1.5s apart — well inside the 3s window, and the 141f (2.35s) reload is ALSO inside it, so stacks survive reloads rather than sawtoothing. Authoring per-stack at 318.14 with maxStacks 2 lets the engine accrue the real ramp, so no rampSec haircut is warranted. This derivation rests on the datamined chargeFrames/reloadFrames, which are known-unreliable fields.",
+      "recipe": "Assert on buffApply stacks for stat 'sustainedDamagePct' key from skill2[0]: confirm stacks reaches 2 within ~2s and never drops to 0 across a reload boundary. If the real charge cadence exceeds 3.0s/shot, stacks cap at 1 and every DoT number in this override halves."
+    },
+    {
+      "field": "burst[2].effects[0].value (hitRatePct -100)",
+      "estimate": "-100 (literal), core-lift magnitude UNKNOWN",
+      "reasoning": "ALWAYS-⚑ per the taxonomy: the -100 is literal kit text, but the Hit-Rate→core-rate mapping (sim.ts hrCoreMult) is a measured-only conversion. A full -100 Hit Rate for 1s on every ally except self is a genuine team DPS cost that only materialises in Highlight mode, and its size is entirely set by that unmeasured slope. Mute would cancel it in-game, but Mute is unreachable on a partless boss, so the sim's uncancelled debuff is the true state here.",
+      "recipe": "Toggle HRCORE=0 vs default across two processes (module-const env flag — never in-process) with mode 'Highlight' selected, and diff team totals. Then measure the real ally core rate during the 1s window from footage popups (red 'CORE HIT' counts) to pin the slope."
+    },
+    {
+      "field": "skill2 part-destruction blocks (both SKIPPED)",
+      "estimate": "0 damage lost on v1 graded comps; 68.04% sustained for 15s lost once parts exist",
+      "reasoning": "Not a judgement call — the scope-lock boss is partless, so 'destroys an enemy's part' can never fire; the skip is provably zero-impact today rather than an assumed-small approximation. The schema also has no partDestroyed TriggerDef, so these are unrepresentable, not merely unimplemented. Both are recorded verbatim in unmodeled.skill2.",
+      "recipe": "No measurement needed for v1. When destructible parts are modeled, add a partDestroyed trigger and re-author both blocks; on a parts boss the 68.04% self buff stacks additively with the 318.14%×2 Full-Charge buff in the same sustainedDamagePct bucket."
+    },
+    {
+      "field": "all dot effects — noFb",
+      "estimate": "unset (Full Burst applies by landing timing, default ON)",
+      "reasoning": "Per the priors, function-damage riders take the +50% FB major by TIMING and noFb is measured-only. The skill2 DoT starts at FB entry with 9s duration inside a 10s window, so nearly every tick lands in Full Burst; the two burst DoTs start at burstCast (pre-FB) and their first tick or two land before the window opens. Setting noFb unmeasured would be a fudge in either direction.",
+      "recipe": "Filter damage events by bucket/flavor 'sustained' and read inFullBurst + fbMajorApplied per tick against footage popup magnitudes; a uniform tick value across the FB boundary would indicate the DoT is FB-exempt and justify noFb:true."
+    },
+    {
+      "field": "skill1[0..1] permanence of the 20.28% grants",
+      "estimate": "no durationSec (permanent), idempotent on re-fire",
+      "reasoning": "'continuously' + 'cannot be removed' + 'persists after revival' all indicate a permanent buff. Because both branches carry the SAME value and no maxStacks, re-application on later Full Bursts is a no-op, so encoding 'for the first time' as an unbounded repeating trigger is damage-equivalent to a true one-shot latch. Flagged only because the equivalence would break if the engine ever stacked same-key buffs.",
+      "recipe": "Count buffApply events for stat 'critDamagePct' value 20.28 across a full fight and assert the unit's effective crit damage rises by exactly 20.28 once, not once per Full Burst."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,62 @@
+{
+  "slug": "helm-aquamarine",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 30 normal attacks",
+      "disposition": "FAITHFUL",
+      "assertion": "totals drop when the 131.34% flatDamage is zeroed (proves it fires); and BASE is bracketed strictly between a lastBullet variant (1 proc/60-round magazine) and a shotFired variant (60 procs/magazine), which REDs the two nearest-wrong cadences — per-magazine and per-pull. Target set proven by teammate byte-identity."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "131.34% of final ATK additional",
+      "disposition": "FAITHFUL",
+      "assertion": "structural: flatDamage atkPct 131.34 on trigger hitCount{count:30}, target enemy, slot skill1. Fails if the magnitude, the count, or the enemy target set was mis-transcribed. noFb/noRange deliberately unasserted (engine defaults / measurement-gated)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "entering Full Burst, all allies",
+      "disposition": "FAITHFUL",
+      "assertion": "fullBurstStart count is strictly higher than a zero-CDR variant (proves the CDR is live), strictly higher than a self-targeted variant (proves ally scope — nearest-wrong target:self), and teammate totals strictly rise vs zero-CDR (proves a team effect). Structural: trigger fullBurstEnter, target allies without excludeSelf."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once 1.82 / Twice 2.2 / Thrice 2.6",
+      "disposition": "FAITHFUL",
+      "assertion": "fullBurstStart count is strictly higher than a non-escalating flat-1.82s-per-entry variant, REDing the nearest-wrong 'Once tier only' reading of 'each subsequent effect triggers all effects before it' (faithful cumulative = 1.82 / 4.02 / 6.62). Structural: an escalating effect wrapping burstCdr seconds exactly [1.82, 2.2, 2.6], with oncePerBattle absent (it re-fires every Full Burst)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "105.58% ATK, 1 random enemy",
+      "disposition": "MEASUREMENT-GATED",
+      "assertion": "totals drop when the 105.58% flatDamage is zeroed (proves the hit exists and is enemy-facing; teammates byte-identical). The CADENCE is NOT asserted: the prose supplies no activation clause, so the trigger + period are an invented value (ALWAYS-flag #2) and any period assertion would be testing the author's guess, not the kit."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Electric target: Dmg Taken +5.64%",
+      "disposition": "FAITHFUL",
+      "assertion": "on the Fire control boss: ZERO buffApply with stat damageTakenPct value 5.64 (inertness — REDs an ungated model). Strip ONLY the bossElementGate: >30 such applications appear (REDs a fullBurstEnter mis-key, which would yield ~8), all with targetIdx null (boss-held, REDs an ally/self-buff mis-encoding), maxStacks 5, and EVERY teammate's total strictly rises (REDs a self-ATK reading of 'Damage Taken'). Structural: value 5.64 / maxStacks 5 / durationSec 5, bossElementGate 'Electric'."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "164.83% Burst Skill dmg, all enemies",
+      "disposition": "FAITHFUL",
+      "assertion": "totals drop when the burst 164.83% hits are zeroed, and a burstCast event exists — doubles as the burst non-vacuity gate (helm-aquamarine is Burst II and the control comp carries another Burst II, so a crowded-out cast fails loudly instead of silently passing). Teammates byte-identical. Structural: trigger burstCast, target enemy."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Electric target: +164.83% additional",
+      "disposition": "FAITHFUL",
+      "assertion": "stripping ONLY the burst bossElementGate strictly RAISES helm-aquamarine's total — proves a SECOND 164.83% hit exists and that the gate (not a missing block) silences it on the Fire boss. REDs both nearest-wrongs: a single merged 164.83% hit (delta would be zero) and an ungated rider (already firing in BASE, delta zero). Structural: exactly two 164.83% flatDamage effects in the burst slot, exactly one on an Electric-gated block."
+    }
+  ],
+  "fixtures": "controlComp('helm-aquamarine', true) for all 11 hoisted runs — the fixed Burst III slot is mandatory because helm-aquamarine is Burst II and a chain-incomplete comp makes ZERO Full Bursts, which would silently void every FB-keyed assertion (S1b, and the burst cast itself). One fixture only; all discrimination comes from withPatchedOverride counterfactuals rather than alternate comps, because the control boss is Fire and the harness API exposed to me offers no boss-element switch — the Electric-gated S2b and burst-rider active cases are therefore reached by stripping only the bossElementGate, which tests presence + wiring + gate-attribution but NOT the engine's element matching itself. Two caveats for the orchestrator: (1) I have no tools in this run, so I could not write scripts/kit-autonomy/blind/helm-aquamarine.test.ts or .test-spec.json myself — the source is returned inline for the orchestrator to save; (2) NOT A LEAK, but worth noting: the redacted schema/taxonomy text names the DIFFERENT unit `helm` (base Helm — critRateNormalPct carrier, and a burst Charge Damage Multiplier line). Per the exact-slug rule I treated `helm` as an unrelated unit and used none of it; nothing in the packet named helm-aquamarine's own answers.",
+  "gaps": [
+    "S2a cadence (it.skip): the kit prose gives the 105.58% line NO activation clause, so its trigger kind and interval period are outside the input domain — an ALWAYS-flag. Recipe: read popup spacing for the 105.58%-magnitude hit off a solo recording and pin the period.",
+    "S1a noFb (it.skip): per-kit full-burst exemption on a rider is measured-only, default OFF — not derivable from prose, so no assertion was written either way.",
+    "Electric-Code element matching: not exercised end-to-end. The control boss is Fire and the harness API given exposes no boss-element control, so the gate's ACTIVE branch is proven only by removing the gate. If a real Electric-boss fixture exists, re-run the S2b and burst-rider groups against it to confirm the engine's bossElementGate matcher (string 'Electric') actually fires.",
+    "Live stack count of the Damage Taken debuff: only the declared maxStacks (5) is asserted. Whether the debuff actually reaches 5 concurrent stacks depends on the buffApply `stacks` field's emission semantics, which the packet does not pin, so no live-stack assertion was written."
+  ],
+  "model": "claude-opus-5"
+}

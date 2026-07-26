@@ -1,0 +1,172 @@
+{
+  "slug": "delta-ninja-thief",
+  "kitDescription": "Delta: Ninja Thief is a Water-element MG Defender on Burst II whose offense is almost entirely support-shaped. Every time the team enters Full Burst she poisons the boss with Ninjutsu Acid Bomb, making it take 12% more damage from everyone for 15 seconds; when she personally fires her burst she adds a second, separate 8% damage-taken debuff for 10 seconds and pumps her own ATK by 15.04%. Her burst also hands the whole squad +20% Distributed Damage and a flat ATK grant worth 15% of her own ATK for 10 seconds, then hits the boss for 170% of her final ATK as distributed damage. Her second skill is a defensive fork decided by squad composition: alone among Defenders she taunts and shields herself (at battle start and again every 200 rounds fired); alongside another Defender she instead goes untargetable, drains HP from her own damage, and pulses a stored team heal every 4 seconds. None of the shielding, taunting, camouflage or healing changes damage on the partless scope-lock boss.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "entering Full Burst: DT ▲ 12% / 15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter -> target enemy -> damageTakenPct 12, durationSec 15",
+        "blindSaid": "S6 byte-identical; S5 asserts count === fullBurstStart count, boss-held (casterIdx/targetIdx null), lands on FB-start frames",
+        "formulaCheck": "Damage Taken sits in the boss-side Taken bucket (damage-calculation.md 1g) and benefits every ally's instances; 'entering Full Burst' is a team-state trigger, not a caster trigger",
+        "fireRateOk": true,
+        "explanation": "Fires 5x over 180s (once per FB window), 15s window verified as exactly 900 frames; removing it lowers liter, helm AND dnt totals, so the team-wide routing is proven, not asserted."
+      },
+      {
+        "kitLine": "using Burst Skill: self ATK ▲ 15.04% / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> target self -> atkPct 15.04, durationSec 10",
+        "blindSaid": "S6 identical; S5 asserts count === her own burstCast count and targetSlug === slug",
+        "formulaCheck": "plain ATK ▲% dilutes into effectiveAtk's (1 + ΣATK%) sum (1a) — correct for a kit line with no 'of caster's ATK' qualifier",
+        "fireRateOk": true,
+        "explanation": "Applied once per her own cast; teammate totals are byte-identical when it is stripped, proving self-scope rather than a leaked team buff."
+      },
+      {
+        "kitLine": "using Burst Skill: DT ▲ 8% / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> target enemy -> damageTakenPct 8, durationSec 10 (kept as a DISTINCT block from the 12%)",
+        "blindSaid": "S6 identical; S5 asserts an 8 and a 12 both exist and no merged 20 is ever emitted",
+        "formulaCheck": "distinct named effects (Ninjutsu Acid Bomb vs Ninjutsu Hyper Acid Bomb) = different scopes, so they stack additively inside Taken rather than refreshing each other (game-mechanics.md 11)",
+        "fireRateOk": true,
+        "explanation": "'Enemies within attack range nearest to the crosshair' collapses to the single partless boss. Discriminated by frame: the 8% lands on her cast frame while the 12% lands ~52f later on the FB-start frame, and stripping it collapses the nuke's taken multiplier 1.0800 -> 1.0000 — which independently confirms the burst-cast boundary rule (the nuke sees the 8% but not the 12%)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "no-other-Defender: Shield 12.25% MaxHP 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> self -> shield maxHpPct 12.25, durationSec 10, mode 'solo defender'",
+        "blindSaid": "S6 identical modulo mode naming (soloDefender)",
+        "formulaCheck": "no shield HP pool in v1; the shield exists as an event channel for a teammate's 'shielded' trigger. Magnitude is unrepresentable, not mis-encoded",
+        "fireRateOk": true,
+        "explanation": "The negative formation gate ('no OTHER Defender ally') is not expressible — the schema has teamHas but no teamLacks — so both branches are user-selectable modes with the solo branch as default. That default is WRONG in any comp containing a second Defender (crown, the stock control-comp B2, is one), but skill2 is damage-inert either way and the driver records this as ☑3."
+      },
+      {
+        "kitLine": "Attract: Taunt all enemies continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "carried verbatim in unmodeled.skill2; the Attract STATUS is represented by the 'solo defender' mode gate",
+        "blindSaid": "S2b + S6 both unmodeled, both flag that the status must still gate the 200-attack shield and the burst next-shield rider",
+        "formulaCheck": "aggro/targeting has no model; the partless scope-lock boss deals no tracked damage",
+        "fireRateOk": true,
+        "explanation": "Correctly handled: the taunt itself is dropped but the branch status it confers still gates the two Attract-scoped blocks, which is the only observable part of the line."
+      },
+      {
+        "kitLine": "other-Defender: Camouflage untargetable 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2",
+        "blindSaid": "S2b UNMODELED / fully inert; S6 unmodeled",
+        "formulaCheck": "purely defensive; no damage-side term",
+        "fireRateOk": true,
+        "explanation": "Adding or removing it moves nothing in v1. Recorded, not silently dropped."
+      },
+      {
+        "kitLine": "Injection: recovers 11.22% dmg as HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "modeled as an event-only self heal on shotFired, mode 'with defender ally'; the 11.22% magnitude gap is stated in the note (☑4) but NOT listed in unmodeled.skill2",
+        "blindSaid": "S6 dropped the self-heal event and listed the whole line in unmodeled; S2b called it load-bearing as the status that gates IFAK",
+        "formulaCheck": "heal effects carry no HP quantity in v1, so only the recovery EVENT channel is representable",
+        "fireRateOk": true,
+        "explanation": "The driver models MORE than the blind here (keeping the self-recovery channel for a future on-recovery consumer), which is the safer direction under the tandem rule. Bookkeeping nit only: the magnitude gap lives in the note's ☑ list rather than in unmodeled.skill2 — recorded, so not a gotcha."
+      },
+      {
+        "kitLine": "200 normal attacks: Shield (Attract only)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 200 -> self shield maxHpPct 12.25 / 10s, mode 'solo defender'",
+        "blindSaid": "S6 identical; S5 asserts the fixture actually exceeds 200 rounds (non-vacuity)",
+        "formulaCheck": "hitCount counts rounds; MG hitsPerShot 1, ammo 300, so the trigger recurs within and across magazine cycles",
+        "fireRateOk": true,
+        "explanation": "Correctly gated to the Attract (solo-Defender) branch, so it cannot fire spuriously in the with-Defender branch. Damage-inert, but the gate and cadence are right."
+      },
+      {
+        "kitLine": "every 4 sec in Injection: IFAK team heal",
+        "category": "REAL-GOTCHA",
+        "subkind": "ENCODING",
+        "driverSaid": "hitCount 200 -> allies heal, mode 'with defender ally', justified in the note as '☑2 proxy for the 4s timer — no timed-interval trigger exists'",
+        "blindSaid": "S6 used {kind:'interval', sec:4} -> allies heal; S2b specified interval sec:4 and told the judge to assert steady 4s periodicity",
+        "formulaCheck": "game-mechanics.md §9 and damage-calculation.md §2b both document a live `interval` trigger ('fires every N sec, first at t=N'; snow-white S2a is the shipped carrier), so the stated reason for the proxy is false",
+        "fireRateOk": true,
+        "explanation": "The cadence is encoded as a round-count proxy where a time-based primitive exists. It is currently zero-impact (heals carry no magnitude, the block is in the non-default mode, and no on-recovery consumer is in any graded comp), and the substitution IS flagged ☑2 — but the flag's justification is wrong, which would mislead the next author. Ranked lowest of the findings; does not gate GO."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "allies: Distributed Damage ▲ 20% / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> distributedDamagePct 20, durationSec 10",
+        "blindSaid": "S6 identical; S5 asserts it lands on every ally incl. self",
+        "formulaCheck": "Distributed is its own bucket (1g), gated to distributed-flavored instances only — in practice her own 170% nuke",
+        "fireRateOk": true,
+        "explanation": "5 applications x 3 allies, 600-frame windows. Effect ordering pinned: the buff covers her SAME-cast nuke (mult.distributed reads exactly 1.2000, collapsing to 1.0000 when the buff is removed) — the open ordering question S2b raised is answered by assertion, not assumption."
+      },
+      {
+        "kitLine": "allies: ATK ▲ 15% of user's ATK / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 15, durationSec 10, all allies",
+        "blindSaid": "S6 identical; S5 asserts stat casterAtkPct with a flat value != 15 and no atkPct-15 event anywhere",
+        "formulaCheck": "'X% of caster's ATK' resolves to a FLAT add of the caster's base ATK outside the recipient's (1+ATK%) sum (1a) — it does not dilute",
+        "fireRateOk": true,
+        "explanation": "The nearest-wrong model (atkPct 15, self-scaling per target) is excluded two ways: the emitted value is a single flat magnitude >1000 identical across all three allies, and the S5 counterfactual that rewrites the stat to atkPct measurably moves liter's total."
+      },
+      {
+        "kitLine": "enemies: 170% final ATK distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy -> flatDamage atkPct 170, flavor 'distributed'; noFb/crit omitted, relying on the engine's burst-cast auto-exemption and default rider-crit",
+        "blindSaid": "S6 authored the same hit with explicit noFb:true, crit:true",
+        "formulaCheck": "burst-cast instant damage lands before the FB window opens — no +0.5, no core, no range (damage-calculation.md 1b Full Burst timing rule); distributed takes its own bucket and never splits",
+        "fireRateOk": true,
+        "explanation": "Once per cast, bucket 'burst', fbMajorApplied never true — measured on the shipped file, so the omitted noFb is confirmed redundant rather than assumed. Explicit-vs-implicit encoding is the only S6 delta and the numbers are identical."
+      },
+      {
+        "kitLine": "Attract: Next shield's HP ▲ 20.13%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst",
+        "blindSaid": "S6 unmodeled; S2b warns against encoding it as a maxHpFlat/maxHpPct stat",
+        "formulaCheck": "scales a shield HP pool that does not exist in v1; must NOT touch maxHpFlat / atkOfMaxHpPct paths",
+        "fireRateOk": true,
+        "explanation": "Correctly left out rather than mis-routed into an HP-scaling stat that would feed HP->ATK consumers."
+      },
+      {
+        "kitLine": "Injection: IFAK max accumulation ▲ 20.13%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.burst",
+        "blindSaid": "S6 unmodeled; S2b fully inert",
+        "formulaCheck": "raises a heal cap; heal amounts are unmodeled so the cap has no observable",
+        "fireRateOk": true,
+        "explanation": "No event-log footprint either way; the IFAK cadence is unchanged by her burst, as expected."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "The Ninjutsu IFAK all-ally heal is triggered on hitCount 200 as a proxy for the kit's explicit 'every 4 sec', and the override note justifies this by claiming no timed-interval trigger exists — but the engine has one.",
+      "evidence": "Kit: '■ Affects self every 4 sec while in Ninjutsu Injection status.' Driver override skill2 block 4: {trigger:{kind:'hitCount',count:200}, target:'allies', effects:[{kind:'heal'}]}; driver note ☑2: 'no timed-interval trigger exists'. game-mechanics.md §9: 'Engine: the `interval` trigger fires every N sec, first at t=N' (carrier: snow-white S2a, 15s); damage-calculation.md §2b repeats it. S6 blind independently authored {trigger:{kind:'interval',sec:4}}, and S2b specified interval sec:4 with an assertion on steady 4s periodicity.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Replace the trigger with {kind:'interval', sec:4} (first fire t=4 per the ☑ phase convention) and rewrite ☑2 to flag only what is genuinely unmeasured — whether the stored heal releases on the 4s boundary or re-arms after a gap. Do NOT keep the round-count proxy: it drifts with MG wind-up, reloads and any attack-speed support, which a real 4s timer does not."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "0.93",
+  "verdict": "GO",
+  "verdictRationale": "The S5 blind test file runs GREEN against the driver's shipped override (22 passed / 5 documented-inert skips / 0 failed) after fixture-plumbing repairs that left every independent assertion untouched, and the S6 blind override is byte-identical on all of skill1 and behaviorally identical on the entire burst slot — so all nine load-bearing lines from the S2b spec converge across two model families. Discrimination holds: each damage-relevant line has a counterfactual that actually moves the log (12% re-keyed to burstCast jumps off the FB-start frames; stripping the 8% collapses the nuke's taken 1.0800->1.0000; stripping the +20% collapses distributed 1.2000->1.0000; the casterAtkPct->atkPct rewrite moves liter's total), and the burst-cast boundary rule is verified by measurement (fbMajorApplied never true, taken 1.08 not 1.20) rather than by the omitted noFb flag. One real gotcha survives, ranked lowest severity: the IFAK team heal uses a hitCount-200 proxy for the kit's explicit 'every 4 sec' and defends it with a false claim that no interval trigger exists — the primitive is documented in both mechanics SSOTs and used by snow-white, and the blind override reached for it unprompted. It is currently zero-impact (heals carry no magnitude, the block sits in the non-default mode, no on-recovery consumer is in any graded comp), so it does not gate GO, but it should be swapped to {interval, sec:4} before any heal-consumer comp is graded. Same-model residual for the owner to spot-check: the driver's fixture makes dnt the SOLE Burst II unit, so she casts in every Full Burst — which means the 12%-vs-8% trigger split is discriminated by FRAME (cast 292 vs FB-start 344) but never by COUNT. S2b's sharper test — her 40s burst cooldown producing FB rotations she does not cast, where only the 12% should appear — is not exercised anywhere in the suite; a two-B2 fixture would close that gap. Second residual: the shipped default mode is 'solo defender', which is the wrong formation branch in the stock control comp (crown is a Defender); it is damage-inert today and flagged ☑3, but it will need per-comp selection the moment shields or heals gain a pool.",
+  "model": "claude-opus-5"
+}

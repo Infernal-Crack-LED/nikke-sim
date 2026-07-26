@@ -1,0 +1,31 @@
+S5 blind test (claude-opus-5) run vs DRIVER override (adapted: onEvent moved into cfg; srcSlug->slug;
+true-flavor predicate -> bucket!=='normal' && atkPct>0, since the SimEvent damage record exposes no
+'true' bucket / flavor field). Adaptation fixes mechanical field-name guesses ONLY; blind assertion
+substance preserved verbatim.
+
+Result: 18 passed | 6 failed | 4 skipped (28 total).
+
+GREEN (converged on every kit-derivable line):
+  - fixture non-vacuity (ein bursts, deals damage, FB reached)
+  - battle-start feathers present + true-flavored at t=0
+  - feathers do not move teammates (enemy-targeted)
+  - S1 ATK 70.12 self 10s (magnitude + scope + 10s-not-permanent)
+  - burst True Damage 55.3 self 10s + feeds the true hits (non-vacuity)
+  - burst Charge Damage 140.68 self 10s
+  - both burst buffs self-scoped (teammates byte-identical)
+  - nuke 300.02 true, exactly one per cast (not x10), pre-FB (FB-exempt), no range bonus, enemy-targeted
+
+RED — 6 failures, ALL documented divergences (no REAL-GOTCHA):
+  1. battle-start count===4 : blind expects 4 SEPARATE events; driver folds the 4 feathers into ONE
+     lumped flatDamage 363.24 (=4x90.81) — engine has no summon event (blind writer's OWN gap note
+     acknowledges this folding). Substance (4 feathers' worth at t=0) preserved by the lump magnitude.
+  2. feather 90.81-halving counterfactual : blind patches a per-feather 90.81 atkPct; driver's lump is
+     363.24, so the 90.81-match patch is a no-op. Same lumping root cause as (1).
+  3-5. S2 chargeDamagePct 80 durationShots===1 (3 asserts) : blind reads "for 1 shot" as round-count;
+     driver uses a permanent passive — verified durationShots:1 on a per-shot trigger is MECHANICALLY
+     INFEASIBLE (shotFired applies the buff AFTER the shot's damage => zero benefit). Permanent passive
+     is the faithful steady-state for an SR that always full-charges.
+  6. 6 feather hits per burst : blind expects kit-literal 6 separate hits; driver lumps 34x90.81 per
+     burstCast (Prydwen cadence, MEASUREMENT-GATED ⚑2) — count divergence (6 vs 34) + lumping.
+
+4 skipped: blind .skip for the unobservable summon-indirection (feather persistence / 3rd summon source).

@@ -1,0 +1,130 @@
+{
+  "slug": "blanc",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 11.8,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 5,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "teamHas": {
+        "slugs": [
+          "noir"
+        ]
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 40.76
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 8,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesLowestHp",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxHpPct",
+          "value": 31.68,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 39.26,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Gain Indomitability for 10 sec."
+    ]
+  },
+  "caveats": [
+    "\u2691 CADENCE: skill1's 120-normal-attack threshold is kit-stated, but the wall-clock cadence it produces depends on the datamine-unreliable AR pull rate + reloadFrames 81 / ammo 60. With hitsPerShot 1 a 120-round cycle \u2248 two full magazines incl. one reload; if the sim's AR cadence is wrong the shield (and any teammate's `shielded` consumer) fires at the wrong rate. UNMEASURED.",
+    "\u2691 BURST-CDR SEMANTICS: skill2's 40.76 s cooldown reduction against a 60 s burst CD is a ROTATION-shaping effect (effective ~19 s), the single largest lever in this kit. Modeled as a per-FB-end burstCdr on self, gated on a same-squad ally (Blanc/Noir) via teamHas.slugs. Both the gate resolution (is 'same squad' exactly Noir in this data model?) and the engine's cdr-vs-remaining-cooldown arithmetic are UNVERIFIED here.",
+    "\u2691 HEAL MAGNITUDES ARE NOT REPRESENTABLE: the 3.68%/1 s\u00d75 and 3.84%/1 s\u00d78 Max-HP recoveries carry no HP amount in the schema \u2014 only the recovery EVENT count matters (tandem consumers such as on-recovery damage buffs). Tick counts 5 and 8 are read straight off the kit text; no HP pool exists in v1.",
+    "\u2691 ALLY MAX-HP GRANT IS OFFENSIVELY INERT: burst's Max HP \u25b231.68% is authored as maxHpPct on an ally target and (per the e3 rule) does not feed a teammate's atkOfMaxHpPct conversion. Kept for completeness / future consumers; it moves no damage today.",
+    "\u2691 LOWEST-REMAINING-HP TARGETING: v1 has no HP pool, so alliesLowestHp resolves deterministically to a leftmost stand-in. Since the only payload is the inert Max-HP grant (Indomitability is unmodeled), the stand-in choice is damage-neutral.",
+    "NO DAMAGE LINES: Blanc's kit contains zero damage-dealing effects, so per-kit noFb / range / core / Hit-Rate questions do not arise. Her entire offensive contribution is the enemy Damage Taken \u25b239.26% debuff plus the rotation acceleration from the burst-CDR line."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind prose\u2192JSON read of the raw kit only. skill1 = shared team shield (11.8% of caster final Max HP, 5 s) on a 120-normal-attack counter \u2014 modeled as a hitCount:120 trigger targeting all allies so shield-synergy consumers (`shielded` triggers / requiresShielded gates) fire. skill2a = a 5-tick team heal-over-time on Full Burst END (fullBurstEnd, not fullBurstEnter \u2014 read literally), emitting 5 recovery events for on-recovery consumers. skill2b = self burst-cooldown reduction 40.76 s at FB end, gated on a same-squad ally being present (teamHas.slugs ['noir']); this is the kit's real engine lever and should be the first thing verified against a rotation log. burst = an 8-tick team heal-over-time, a lowest-HP ally Max HP \u25b231.68%/10 s (Indomitability unmodeled \u2014 pure survivability, no damage channel), and the load-bearing all-enemy Damage Taken \u25b239.26% for 10 s (a boss debuff benefiting the WHOLE team, never a self buff). All burst blocks keyed to burstCast: they are in Blanc's own burst block with no activation clause, so they fire only on rotations she actually casts, and the enemy debuff lands pre-FB by design. No `ignored` blocks; every skipped line is recorded verbatim in `unmodeled`."
+}

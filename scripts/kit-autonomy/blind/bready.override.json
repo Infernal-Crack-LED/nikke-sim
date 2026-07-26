@@ -1,0 +1,207 @@
+{
+  "slug": "bready",
+  "modes": [
+    "lingeringTaste",
+    "recommendedTaste"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 70.01,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "mode": "lingeringTaste",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": -20
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "mode": "recommendedTaste",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": -20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "mode": "lingeringTaste",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.2,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "lingeringTaste",
+      "trigger": {
+        "kind": "chargeCounter",
+        "count": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 150.04,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "recommendedTaste",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.01,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "mode": "recommendedTaste",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 265.07,
+          "flavor": "distributed",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.19,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "mode": "lingeringTaste",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 349.8,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "mode": "recommendedTaste",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 70.09,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "This effect cannot be removed."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 TASTE STATE IS A MODE, NOT A TRIGGER. The engine has no 'gained a buff of flavor X' trigger, so Lingering Taste / Recommended Taste are modeled as selectable modes (default lingeringTaste). Real gating is team-dependent: an ally sustained-damage buff -> Lingering (priority), an ally distributed-damage buff with no sustained -> Recommended. A THIRD real state exists that this model cannot express: a team giving NEITHER flavor leaves her with NO taste, which makes all of skill2 and burst blocks 2-3 inert and removes the charge-speed penalty. On a generic ATK/Attack-Damage support comp that no-taste state is the likely truth.",
+    "\u2691 Damage-bearing effects (dot, flatDamage) are authored with target self because resolveTargets({kind:'enemy'}) returns [] in this engine; only the damageTakenPct boss debuff uses target enemy. If the engine instead routes damage effects through an enemy-targeted block, move them.",
+    "\u2691 'Aftertaste Effect \u25b2 349.8%' is mapped to sustainedDamagePct (Damage Up bucket, additive). This WIDENS scope from 'the Aftertaste DoT' to 'all sustained damage'; damage-equivalent here only because the skill2 Aftertaste DoT is her sole sustained-damage source and the buff is self-scoped. If she ever co-exists with another self sustained source, this over-credits.",
+    "\u2691 DoT append-not-refresh: each 3-full-charge proc appends an independent 5s / 1s-tick instance. With the -20% charge-speed penalty plus reloads the proc interval is likely >= 5s, so overlap should be small \u2014 but the proc rate rides entirely on the unverified cadence tuple.",
+    "Mutual exclusion ('Cancels Recommended/Lingering Taste') is implemented structurally by the mode gate (exactly one mode active), not by a cancel effect."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no override/test/board access). Structure: skill1 = a team-FB ATK buff + the Taste status toggle (charge-speed self-debuff, identical -20% in either taste, modeled as a mode-gated passive); skill2 splits by taste \u2014 Lingering = every-3-full-charges boss Damage Taken debuff + a 150.04%/s sustained Aftertaste DoT; Recommended = per-full-charge self Attack Damage buff + a 265.07% distributed rider; burst = an unconditional Attack Damage buff plus one taste-gated branch each (Aftertaste amplification vs ATK). Charge Speed \u25bc20% is modeled as a real weapon-state (shot-count) modifier per the kit-parse hard rule, not skipped as defensive. FB-by-timing left ON everywhere (no noFb set); no core on the distributed rider (kit says nothing about core strikes); crit ON for the rider per the flat-damage-rider crit rule. Cadence (ammo 6 / chargeFrames 60 / reloadFrames 141) is datamined and drives the every-3-charge proc rate \u2014 it is the single largest source of error in this baseline."
+}

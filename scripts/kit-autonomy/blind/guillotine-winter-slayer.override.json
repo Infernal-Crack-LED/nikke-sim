@@ -1,0 +1,175 @@
+{
+  "slug": "guillotine-winter-slayer",
+  "resources": [
+    {
+      "name": "heroLevel",
+      "initial": 1,
+      "min": 1,
+      "max": 11
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "heroLevel",
+        "max": 10
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "heroLevel",
+          "delta": 1
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.1026
+        },
+        {
+          "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 1.16,
+          "perResource": {
+            "name": "heroLevel",
+            "mult": 1.16
+          }
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 0.91,
+          "perResource": {
+            "name": "heroLevel",
+            "mult": 0.91
+          }
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 1.81,
+          "maxStacks": 100
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 50
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "heroLevel",
+        "min": 2
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 7.46
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.14,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 18.75,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 20.87,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "perResource": {
+            "name": "heroLevel",
+            "mult": 20.87
+          }
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ EXP CADENCE MERGE: the kit runs TWO independent EXP counters (6 non-core landed normals; 3 core hits). The engine's hitCount trigger cannot distinguish core from non-core per hit, and authoring both blocks would let every hit feed BOTH counters (0.5 EXP/hit vs a true (1+coreRate)/6). Merged into ONE hitCount:5 block whose effective rate assumes coreRate≈0.30 → (1+0.30)/6 = 0.217 EXP/hit ≈ 1 per 4.6 hits. count is UNMEASURED.",
+    "⚑ heroLevel is modeled as a resource pool (initial 1, max 11) incremented every 50 landed hits = 10× the EXP cadence, matching the kit's 10-EXP-per-level rule. Internally consistent with the 100-stack EXP cap (100 EXP = 10 level-ups = Level 11), but the 50 inherits the ⚑ on the EXP cadence.",
+    "⚑ The level-up REWARD riders (10.26% reload, 2.44% Max-HP recovery) are bounded by resourceGate {heroLevel max 10} so exactly 10 level-ups fire; without that gate the hitCount trigger would keep paying rewards forever past Level 11.",
+    "⚑ perResource on ALLY-targeted buffs: the schema documents perResource as re-reading caster.resources each frame and recommends applying it as a passive SELF buff. Here it is applied to alliesOfElement Water (which includes the Water caster). If the engine only resolves perResource for self-targets, the ally half of the Level aura goes inert — verify with a buffApply probe on a second Water ally.",
+    "⚑ 'Hero Level 2 or above' elemental-advantage buff is keyed to hitCount:50 + resourceGate min 2 rather than a passive, because a passive trigger fires once at setup when heroLevel is still 1. It therefore lands on the same hit as the first level-up only if skill1 blocks dispatch before skill2 in-frame; worst case it lands one level-up late (~50 extra hits, ≈5 s).",
+    "The burst DoT is left crit-OFF (global DOT_CRIT default) and FB-eligible by timing (no noFb) per the rider prior — both are measurement-gated, not asserted.",
+    "The 2.44% Max-HP recovery is modeled as a heal EVENT only (no HP pool in v1); its value drives teammates' on-recovery triggers, not any HP number."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model: EXP is a self ATK stack (1.81%/stack, cap 100) fed by a MERGED hit counter standing in for the kit's two branches (6 non-core landed normals / 3 core hits) — merged because the engine cannot route a single hit to exactly one of two hitCount blocks, and authoring both would roughly double the true EXP rate. Hero Level is a declared resource pool (initial 1, cap 11) bumped once per 10 EXP (every 50 hits), gated to exactly 10 level-ups; the level-up rewards (partial reload — a shots-fired/weapon-state effect, therefore damage-relevant, not skippable — and the self heal, kept for tandem on-recovery consumers) ride that block. The two 'continuously * Hero Level' Water-ally auras and the burst DoT are perResource-scaled off that same pool so they track the live level instead of being frozen at a guessed average. Burst team buffs use burstCast (this unit's own burst block) so they only fire on rotations she actually casts; the 10 s DoT keeps default FB-by-timing. Nothing in this file is calibrated to any board or probe total.",
+  "hasPierce": false
+}

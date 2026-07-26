@@ -1,0 +1,293 @@
+{
+  "slug": "elegg-boom-and-shock",
+  "resources": [
+    {
+      "name": "ghost",
+      "initial": 0,
+      "min": 0,
+      "max": 13
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 100
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "ghost",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 1
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "resourceGate": {
+        "name": "ghost",
+        "min": 1
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 16.2,
+          "durationSec": 2,
+          "maxStacks": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 1
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Water"
+      },
+      "resourceGate": {
+        "name": "ghost",
+        "min": 4
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 35,
+          "durationSec": 2,
+          "maxStacks": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 40,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "teamAmmo",
+        "count": 100
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "ghost",
+        "min": 13
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1100,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "ghost",
+        "max": 12
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "resource",
+          "name": "ghost",
+          "delta": -6
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "resourceGate": {
+        "name": "ghost",
+        "min": 13
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 800,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "resource",
+          "name": "ghost",
+          "delta": -9
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Ability: Find and capture ghosts possessing the enemy."
+    ],
+    "skill2": [],
+    "burst": [
+      "Maintains at least 1 ghost."
+    ]
+  },
+  "caveats": [
+    "⚑ BLOCK ORDER IS LOAD-BEARING in `burst`: the ghosts≤12 branch MUST precede the ghosts=13 branch. resourceGate reads the live pool, so if the 13-branch ran first it would spend 9 (13→4) and the ≤12 branch would then ALSO fire — double burst. Do not reorder.",
+    "⚑ The ghost counter is mapped to the `teamAmmo` trigger (total ally AMMO CONSUMED crossing 100), not literal landed hits. Shots ≠ hits for SG pellets / misses, so ghost accrual is an upper bound on teams with shotguns or low hit rate.",
+    "⚑ The 1+ / 4+ threshold buffs are re-applied on a 1s interval with a 2s duration + maxStacks 1 (never a gap, never stacks) because a `passive` trigger evaluates its resourceGate once and could never turn ON as ghosts accrue, nor OFF when the burst spends them. This is an engine-idiom encoding of \"continuously\", not a kit-stated cadence.",
+    "⚑ \"Maintains at least 1 ghost\" is NOT expressible: the resource clamps at min 0, so a burst cast with 1–6 ghosts leaves 0 instead of 1. Only matters for the 1+ ATK threshold in the window right after an early burst.",
+    "⚑ The skill2 max-capacity nuke gate (min:13) reads the POST-add pool, because the skill1 +1 block dispatches first. The capture that takes 12→13 will therefore fire one 1100% proc that the kit text (\"captured WHILE AT maximum capacity\") does not grant — a one-per-battle over-credit.",
+    "⚑ Both the burst hits and the 1100% AoE are authored crit:true (RIDERCRIT: riders crit at the caster's sheet rate) and core-less (no \"core strike\" wording). Neither is measured.",
+    "⚑ `noFb` is deliberately unset everywhere (default OFF, measured-only). Burst-cast damage is FB-exempt by TIMING, not by flag."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Elegg: Boom and Shock is a team-hit-count currency unit: 100 cumulative ally hits = 1 ghost (cap 13), modeled as a `ghost` resource driven by the `teamAmmo` trigger. Ghosts gate two continuous Water-ally auras (≥1: casterAtkPct 16.2; ≥4: elemAdvantageDamagePct 35) and switch the burst between a 6×800% branch (spend 6) and a 13×800% branch (spend 9). At cap, every further capture fires a 1100% AoE (skill2). The whole damage profile is therefore a function of TEAM fire rate, not Elegg's own — validate the ghost trajectory (time to 4, time to 13, nuke count per fight) before touching any magnitude."
+}

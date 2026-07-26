@@ -1,0 +1,81 @@
+{
+  "slug": "bready",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Entering Full Burst: ATK +70.01% 10s self",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: one atkPct 70.01 effect, durationSec 10, target self, trigger fullBurstEnter. Behavioural: apply count == fullBurstStart count. Fails under the nearest-wrong burstCast keying (counterfactual re-trigger yields strictly fewer applies, because helm is a second B3 and her 40s CD blocks a cast every rotation). Inertness: dropping it leaves all three teammates byte-identical."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Lingering/Recommended: Charge Speed -20% 50s",
+      "disposition": "FIX (mode-encoded; entry trigger is a GAP)",
+      "assertion": "Structural: every chargeSpeedPct effect has |value| 20, durationSec 50, target self. Behavioural direction triple: total(base) < total(no charge-speed effect) < total(charge speed forced to +20). Fails under a sign-flipped model (encoded as a speed buff) and under a model that treats charge speed as defensive/inert (all three totals equal)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "3 Full Charges: Damage Taken +10.2% 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: single damageTakenPct 10.2 / 5s effect on an enemy-targeted block. Behavioural: buffApply events carry casterIdx===null AND targetIdx===null (boss-held). Discriminates against the self-buff mis-encoding: removing it must LOWER the teammates' summed damage, which a self buff would not touch."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Aftertaste 150.04%/1s sustained for 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: exactly ONE dot effect, atkPct 150.04, durationSec 5, intervalSec 1, flavor sustained. Pins the repeating-trigger DoT trap - any duration > 5s multiplies instances (the engine never dedups). Behavioural: removing it lowers her total."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "3-Full-Charge trigger cadence",
+      "disposition": "FIX (trigger identity)",
+      "assertion": "Cross-branch ratio: applies of the per-charge Recommended buff / applies of the per-3-charge Lingering debuff must sit in (2x, 4.5x). Both runs carry the identical -20% charge speed so charge counts match. Fails at ~1x under a per-charge model of S2a and far above 4.5x under a per-Full-Burst model. Also pins the block trigger out of the passive/interval/burst/FB set."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge hit: Attack Damage +60.01% 5s",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: attackDamagePct 60.01, durationSec 5, target self, non-per-FB trigger. Behavioural: apply count > 3x the Full-Burst count, which fails under a per-FB or burst-cast keying. Inertness: teammates byte-identical when dropped (self-scoped)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge hit: 265.07% distributed",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: single flatDamage atkPct 265.07 with flavor 'distributed' on a per-charge trigger. Behavioural: removing it lowers her total while teammates stay byte-identical - fails if the rider were flavored sustained/true (wrong bucket) or keyed to a burst/FB trigger."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage +60.19% 10s self",
+      "disposition": "FAITHFUL",
+      "assertion": "No activation clause in her own burst slot \u21d2 burst-CAST. Structural: trigger.kind burstCast, durationSec 10, target self. Behavioural: apply count > 0 but strictly < fullBurstStart count; the fullBurstEnter counterfactual raises the count to the FB count and raises her total, demonstrating the over-credit that the nearest-wrong model produces."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Lingering: Aftertaste Effect +349.8% 10s",
+      "disposition": "FIX (scoped-stat approximation)",
+      "assertion": "Structural: a 10s self buff valued 349.8 whose stat is NOT a generic atkPct/attackDamagePct/critDamagePct/elementDamagePct bucket (a generic bucket would inflate her normal attacks and the 265.07% rider too). Behavioural inertness: with the Aftertaste DoT deleted, deleting the boost as well must change her total by nothing - proving the boost is scoped to the DoT. Also fails if the multiplier were folded into the DoT atkPct, which would make the 10s window permanent."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recommended: ATK +70.09% 10s self",
+      "disposition": "FAITHFUL",
+      "assertion": "Structural: atkPct 70.09, durationSec 10, target self, trigger burstCast. Behavioural exclusivity: present in the Recommended run, exactly zero applies in the Lingering run - fails under an ungated (always-on) model."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Taste mutual exclusivity",
+      "disposition": "FIX (mode pair)",
+      "assertion": "modes array has exactly 2 entries; the Lingering run shows the 10.2% boss debuff and zero 60.01% applies while the Recommended run shows the mirror, and the two runs differ in total. Fails if both branches are simultaneously live (double-dipping) or if only one Taste is modeled at all."
+    }
+  ],
+  "fixtures": "controlComp('bready', true) for every run - liter B1 / crown B2 / bready B3 / helm B3, Fire boss, focus bready. B1+B2 are mandatory (a lone B3 makes ZERO Full Bursts, so every FB-keyed and burst-keyed line would read zero). helm is deliberately KEPT (helm=true) because the second B3 is what makes burstCast and fullBurstEnter diverge: with a 40s burst CD over a ~20-25s rotation bready cannot cast every rotation, so her cast count is strictly below the Full-Burst count - that gap is the discriminator for S1a vs the burst slot. Taste branches are reached by reversing the override's modes array (first = default), and which reversal is 'Lingering' is detected empirically from the 10.2% boss-debuff signature rather than from mode NAMES, so the pins are name-independent. 13 hoisted runs total.",
+  "gaps": [
+    "'This effect cannot be removed' - it.skip: the engine emits buffRemove only for removeOnReload buffs and has no ally-side buff-strip channel, so removal immunity is unobservable and behaviourally inert.",
+    "Taste ENTRY trigger ('gaining a buff that increases sustained / distributed damage') - it.skip: no trigger primitive inspects an incoming buff by the damage class it boosts. Encodable only as a mode pair. \u2691 WHICH Taste is the default is a modeling choice, NOT derivable from the prose - flagged, not asserted.",
+    "'Cancels Recommended / Lingering Taste' - it.skip: the cancellation is a state machine over the (untriggerable) entry conditions; a mode pair encodes the exclusivity but not the in-fight switch.",
+    "noFb / noRange / crit disposition of the Aftertaste DoT and of the 265.07% distributed rider - it.skip: measurement-gated (popup reads), per the ALWAYS-flag list; asserting a value here would be a guess.",
+    "Bucket-level routing of the sustained and distributed flavors is pinned only at the override effect-field level (flavor: 'sustained' / 'distributed'); the damage-event bucket vocabulary was not in the blind API packet, so no event-side bucket assertion was written."
+  ],
+  "notes": "Tool access was disabled for this run, so the two artifacts could not be written to disk - scripts/kit-autonomy/blind/bready.test.ts (testSource above) and scripts/kit-autonomy/blind/bready.test-spec.json (this object) still need to be saved by the orchestrator.",
+  "model": "claude-opus-5"
+}

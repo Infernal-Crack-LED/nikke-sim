@@ -1,0 +1,175 @@
+{
+  "slug": "chisato",
+  "resources": [
+    {
+      "name": "extrasensory",
+      "initial": 100,
+      "min": 0,
+      "max": 100
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "extrasensory",
+        "min": 71
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 53.69,
+          "durationSec": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "extrasensory",
+        "min": 56
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 48.62,
+          "durationSec": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "extrasensory",
+        "min": 26
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 22.37,
+          "durationSec": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 2
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "extrasensory",
+          "delta": -1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 10.12,
+          "weapon": "SMG",
+          "maxAmmo": 120,
+          "durationSec": 10,
+          "trueNormals": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 48
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 472.18,
+          "flavor": "true",
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "extrasensory",
+          "delta": 100
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 73.16,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Only when at 100%: Dodging Bullets: Invulnerable for 2 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Extrasensory is modeled as a resource pool (initial 100, max 100) decaying 1 point per 2 sec (= 0.5%/s) and re-filled to 100 by her own burst. The three continuous tier buffs are re-evaluated on a 2-sec interval with durationSec 2 (self-refreshing) instead of as true always-on passives, because a `passive` trigger's resourceGate would be evaluated ONCE at frame 0 and could never lapse. Consequences: (a) the tiers are COLD for the first 2 sec of the fight (interval first-fires at t=sec, not t=0) — ~1.1% of a 180 s fight; (b) a threshold crossing is honored with up to 2 sec of latency.",
+    "⚑ Threshold arithmetic: kit says 'above 70/55/25%' (strict). Decay is integer points, so strict-above == resourceGate min 71/56/26. Blocks are ordered gates-then-decay so each tick reads the PRE-decay pool, matching kit reading order.",
+    "⚑ 'Normal attacks deal true damage for 10 sec' has NO non-weaponSwap channel in the schema — `trueNormals` exists only on weaponSwap. It is modeled as a mirror-swap (same class SMG, same ammo 120, damagePct = her datamined normalAttackMultiplier 10.12, base cadence inherited) whose ONLY intended effect is the true flavor. If the engine grants a fresh magazine or alters cadence on swap entry, this block adds damage the kit does not — verify shot-count parity before trusting it (recipe in flags).",
+    "⚑ The 48-hit 472.18% rider is true-flavored, so it is amplified by her own True Damage ▲ 48.62% (S1) — the two lines interact; a mis-scoped trueDamagePct would double-count into this rider.",
+    "Hit Rate ▲ 22.37% is carried as hitRatePct (the ⚑ HR→core lift path, sim.ts hrCoreMult). The kit percentage is literal; the core-rate CONVERSION is unmeasured for this unit.",
+    "Invulnerability (100% tier) is unmodeled: the v1 boss deals no damage and no roster consumer reads a 'Dodging Bullets' status. It costs zero damage but IS a real kit line — re-check if a defensive/HP model or a status consumer ever lands."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Chisato (SMG/Iron/Attacker/B3) is a self-contained self-buff attacker built on the Extrasensory gauge: S1 fills it to 100% at battle start, it decays 1 point per 2 sec (0.5%/s), and her burst re-fills it to 100%. Three nested charge tiers (>70% ATK ▲53.69%, >55% True Damage ▲48.62%, >25% Hit Rate ▲22.37%) are modeled as interval-2s resourceGated self-buffs (durationSec 2, self-refreshing) so they can genuinely LAPSE as the gauge drains — a passive would latch at frame 0 forever. Derived trajectory from a refill: >70 tier drops at t≈60 s, >55 at t≈90 s, >25 at t≈150 s; in a comp where she bursts every rotation (~20 s) the pool stays in [80,100] and all three tiers hold all fight. S2 gives a 10 s true-damage window on her own burst cast (modeled via a mirror weaponSwap with trueNormals — the only schema channel; ⚑ ammo/cadence parity unverified) plus a per-48-normal-hit 472.18% true-damage rider (crit-eligible per RIDERCRIT, no core — the text does not say core strike, FB by timing left ON). Burst re-fills Extrasensory and grants ATK ▲73.16% for 10 s. Only the 100%-tier invulnerability is unmodeled."
+}

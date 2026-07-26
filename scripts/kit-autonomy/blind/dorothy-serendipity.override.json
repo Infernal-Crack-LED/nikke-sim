@@ -1,0 +1,121 @@
+{
+  "slug": "dorothy-serendipity",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 80
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 2.2
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 98.18,
+          "durationShots": 3
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 72,
+          "durationShots": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 55.08
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 75.24,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 40.68,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 65,
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 88.12,
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "pelletCountFlat",
+          "value": 5,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Pellet count is fixed at 1 for 3 round(s).",
+      "Expands Pierce range by 200% for 3 round(s)."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ hitCount:80 — kit counts landed PELLETS, not trigger pulls. Whether the engine's hitCount accumulator counts pellets/hits or rounds is UNVERIFIED from the schema alone; if it counts rounds, this block fires ~10x too often and must become count:8-ish (SG hitsPerShot=10, ammo=9).",
+    "⚑ 'Pellet count is fixed at 1' is a stat CLAMP with damage consolidation (1 pellet carrying the whole shot's damage), which the EffectDef schema cannot express — pelletCountFlat is an ADDITIVE pellet count whose per-pellet share stays 1/base, so pelletCountFlat:-9 would DIVIDE the shot by 10, the opposite of the real mechanic. Left unmodeled rather than encoded wrong. Net damage effect of the real mechanic ≈ forcing landing fraction to 1 for 3 rounds; the co-active Hit Rate ▲98.18% covers only the CORE lift (sim.ts hrCoreMult), NOT the landing fraction, so this override UNDER-credits the 3-round window by the (1 - landedFraction) share.",
+    "⚑ gainPierce has no durationShots field, so the '3 round(s)' pierce window is approximated as durationSec 2.2 (≈3 SG rounds at an assumed base cadence). Every other line of the same block uses durationShots:3 and is faithful.",
+    "noFb NOT set anywhere (default OFF / FB-by-timing) — per methodology, per-kit noFb is measured-only and there are no function-damage riders in this kit regardless.",
+    "hasPierce top-level flag deliberately NOT set: this kit's Pierce is STEP-GATED behind the 80-pellet threshold, which a whole-fight boolean cannot express (schema's stated gainPierce use case)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6 cross-family). Structure: S1 is a single 80-landed-pellet threshold block granting pierce + Hit Rate + Attack Damage for 3 ROUNDS (durationShots, not seconds — the window spans reloads); its 4th line (pellet count fixed at 1) and the 160-pellet pierce-range expansion are unmodeled (see caveats: no clamp primitive; pierce range is inert vs a single-target boss). S2 is a battle-start Pierce Damage passive (inert in v1 unless the S1 gainPierce is live) plus an FB-scoped ATK/Hit Rate pair keyed to fullBurstEnter with durationSec 10 (assumed FB length). Burst is a self-only 15s attack-speed / ATK / +5-pellet package on burstCast. Interaction worth measuring FIRST: the burst's pelletCountFlat +5 and S1's fix-at-1 clamp are directly contradictory during overlap, and the clamp also lengthens re-accumulation of the next 80 pellets (1 pellet/round instead of 10), so S1 uptime is self-limiting in a way this baseline does not reproduce."
+}

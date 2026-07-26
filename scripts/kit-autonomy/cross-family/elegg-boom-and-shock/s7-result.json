@@ -1,0 +1,200 @@
+{
+  "slug": "elegg-boom-and-shock",
+  "kitDescription": "Elegg: Boom and Shock is a Water machine-gun Attacker (Burst III) who banks a counter of captured ghosts over the fight — the team's cumulative hits feed captures on a 6-second recurring cycle, up to a maximum of 13 ghosts. The ghost count is a dial on her team buff for Water allies: at one or more ghosts every Water ally gains flat ATK worth 16.2% of Elegg's own ATK, and at four or more they additionally gain 35% Elemental Advantage Attack Damage, both held for as long as the count stays there. Her burst spends ghosts as ammunition: below 13 she fires six sequential 800% hits and spends 6 (never dropping below one ghost), and at a full 13 she instead fires thirteen 800% hits and spends 9. Casting burst also gives her +40% ATK for 10 seconds. If a ghost is captured while she is already at the 13 cap, that overflow detonates for 1100% of her final ATK on all enemies. In practice she is a slow-ramping Water-team amplifier whose whole damage profile depends on how fast the entire team's fire accrues ghosts versus how often she spends them.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2b describe → it('actually fires in a 180s fight (the at-cap condition is reachable) and is elegg-only') — asserts NO_NUKE[SLUG] < BASE_T[SLUG]; under the driver's interval:6 accrual the pool peaks ~7 while bursting on cooldown, so the 1100% block fires 0× in the standard control comp and zeroing it moves nothing. Classified RECON_ERROR: the assertion encodes the S5 author's own ⚑-flagged, unverified premise that accrual outruns the burst spend, and it contradicts the S2b spec, which explicitly demanded the TWO-SIDED treatment (zero events in the standard rotation + an engineered pool==13 / suppressed-burst scenario proving reachability) that the driver's H3 and H5 implement. All other 22 S5 assertions are GREEN against the shipped override; the 3 skips are the S5 author's own ⚑ GAPs (accrual cadence, min-1 floor, possession target)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Recurring interval: 6 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "interval:6 → resource ghost +1, read as a capture CAP (≤1 ghost/6s). Pool is emergent: peaks ~7 while bursting on cooldown, ramps 0→13 by t≈78 never-burst. Flagged ⚑1 as the TOP residual with the rejected alternative named and a measurement recipe.",
+        "blindSaid": "S6 encoded accrual as teamAmmo:100 with no 6s cap; S2b flagged the same fork ⚑ and called it 'the biggest magnitude lever'; S5 filed it as a skipped GAP (no team-landed-hit primitive).",
+        "formulaCheck": "No SSOT rule fixes the cadence — this is a kit-reading question, not a formula one. The resource-counter primitive is the correct family (soda-twinkling-bunny Golden Chip / marciana Whistle) and the pool bounds {0,0..13} match the prose cap exactly.",
+        "fireRateOk": true,
+        "explanation": "30 accrual fires per 180s, observable through the two gated tiers first applying at t≈6 and t≈24 (both asserted in the driver test) — modeled AND working. The residual is which reading is real: the 6s cap gives pool≈7 / 6-hit burst / nuke never; the teamAmmo reading pins the pool near 13 / 13-hit burst / frequent nuke (~1.7× board). Documented with tier + recipe (ghost-counter UI, time-to-13 never-burst ≈78s ⇒ the cap binds), so DOCUMENTED_GAP, not a gotcha. NB the driver's supporting argument that the alternative is '1.7× HOT' is board-fit reasoning and is NOT evidence for the mechanic — the textual argument ('Recurring interval: 6 sec' printed as part of the capture ability) is the only faithful ground, and it is genuinely ambiguous."
+      },
+      {
+        "kitLine": "Required hit count: 100 across allies",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Listed verbatim in `unmodeled.skill1`; folded into the 6s cap on the assumption a full team clears 100 hits inside every 6s cycle (⚑1).",
+        "blindSaid": "S6 mapped it directly to a teamAmmo:100 trigger; both blinds noted teamAmmo counts ROUNDS CONSUMED, not landed hits (SG pellets, misses, and unlimited-ammo windows all diverge).",
+        "formulaCheck": "Genuine missing primitive: `hitCount` is owner-only and `teamAmmo` counts consumption, so no engine trigger expresses '100 hits cumulative across all allies'. Flagging is the correct treatment per MEASURED>FUDGE.",
+        "fireRateOk": true,
+        "explanation": "Honest declared gap. Under the driver's model the 100-hit gate is inert (the 6s cap binds first); under the alternative reading it is the accrual clock. Either way the rounds-vs-hits caveat is recorded in the note."
+      },
+      {
+        "kitLine": "A maximum of 13 ghost(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resources[0] = {name:'ghost', initial:0, min:0, max:13}.",
+        "blindSaid": "S6 identical ({0,0..13}); S5 asserts a pool with max===13 exists.",
+        "formulaCheck": "Resource clamp is the engine's own cap semantic; initial 0 matches 'Activates at the start of battle' with nothing yet captured.",
+        "fireRateOk": true,
+        "explanation": "Cap is load-bearing for both the burst branch split and the nuke gate; the engineered-13 test proves the cap value is the branch discriminator."
+      },
+      {
+        "kitLine": "1 or more ghosts: ATK ▲ 16.2%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 16.2 to {kind:'alliesOfElement', element:'Water'}, resourceGate ghost min:1, durationSec 6 / maxStacks 1, re-applied on a teamAmmo:100 pool-CHECK.",
+        "blindSaid": "S6 identical stat/value/scope/gate, differing only in the poll shape (interval:1 / dur:2). S5 asserts casterAtkPct (not atkPct, not highestAllyAtkPct), a proper subset of the comp including self, and liveness.",
+        "formulaCheck": "SSOT §1a/§11: 'ATK ▲ X% of caster's ATK' (no 'final' keyword ⇒ base) resolves to caster.staticAtk × 0.162 added FLAT outside the recipient's (1+ΣATK%) — exactly what casterAtkPct does, and why the nearest-wrong atkPct 16.2 is a different magnitude on every teammate.",
+        "fireRateOk": true,
+        "explanation": "Live and correctly scoped: driver test pins targets to exactly {ebs, helm} (the two Water allies), the disk value to 16.2, a flat resolved value >0, liveness on BOTH Water units, and the unscoped-allies counterfactual reaching more targets. Fidelity caveat (see gotcha #1): 'continuously' is a polled 6s buff, so the aura lags on and lingers off the gate. Discrimination note: the H1 'first apply ≥1s' assertion does NOT by itself discriminate the resourceGate (an ungated teamAmmo block would also first apply at ≈t1); the gate is discriminated by H4's ≥20s assertion instead."
+      },
+      {
+        "kitLine": "4 or more: Elem Adv Atk Dmg ▲ 35%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "elemAdvantageDamagePct 35 to Water allies, resourceGate ghost min:4, same poll shape; cumulative with the ≥1 tier (two independently gated blocks).",
+        "blindSaid": "S6 identical. S5 asserts the advantage-gated stat and explicitly excludes elementDamagePct / attackDamagePct 35.",
+        "formulaCheck": "SSOT §1c/§10: 'Elemental Advantage Attack Damage' (word_group 10009) is the elemAdvantageDamagePct term that credits ONLY under elemental advantage — the driver's Iron-boss run proves byte-identical totals with and without the block, which a generic attackDamagePct 35 could never do.",
+        "fireRateOk": true,
+        "explanation": "Strongest discrimination in the set: value 35, Water-only target set, first apply at t≈24 (a frame-0 passive or an ungated poll fails this), live vs the Fire boss, byte-inert vs Iron. 'Each subsequent effect triggers all effects before it' is correctly modeled as cumulative (at pool ≥4 both gates hold, so both tiers apply)."
+      },
+      {
+        "kitLine": "Activates at start of battle / 1 enemy",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "'Activates at the start of battle. Affects 1 random enemy.', 'Possession lasts for 6 sec.', 'Ability: Find and capture ghosts…' all listed verbatim in `unmodeled.skill1`.",
+        "blindSaid": "S6 unmodeled the flavor line; S5 skipped the possession-target GAP on the same reasoning (single boss, no observable payload).",
+        "formulaCheck": "resolveTargets({kind:'enemy'}) is the single partless boss at scope lock — enemy selection and the possession window carry no damage payload the sim can observe.",
+        "fireRateOk": true,
+        "explanation": "Correctly declared rather than silently dropped. The only sub-line with any potential payload is the 6s possession window, which the driver instead uses as the accrual cadence — a consistent (if ⚑) reading."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Using Burst Skill: ATK ▲ 40% 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger burstCast, target self, buff atkPct 40, durationSec 10.",
+        "blindSaid": "S6 byte-identical. S5 asserts applies == Elegg's own burstCasts AND strictly < fullBurstStart count, self-targeted, seconds not rounds — all GREEN against the shipped override.",
+        "formulaCheck": "SSOT §1a: a plain ATK ▲ % sums into (1+ΣATK%) on staticAtk. 'Activates when using Burst Skill' is the literal burst-cast form; keying to fullBurstEnter would over-apply on helm's rotations (the fixture's co-B3).",
+        "fireRateOk": true,
+        "explanation": "Fires exactly once per Elegg burst cast (driver: applied.length === bursts.length; blind: additionally < fullBurstStarts, which establishes the fixture is non-vacuous for this discrimination), self-scoped, expiresFrame − frame === 600."
+      },
+      {
+        "kitLine": "Captured at max capacity: 1100% dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "flatDamage atkPct 1100 to {kind:'enemy'}, resourceGate ghost min:13, fired on the teamAmmo:100 pool-CHECK. 0× while bursting (pool peaks ~7); fires from t≈78 in the disableBursts run. Cadence over-fire and the post-add off-by-one both flagged in the note + caveats.",
+        "blindSaid": "S6 same payload/gate on a teamAmmo:100 trigger and flagged the SAME post-add off-by-one independently. S5 asserted the block exists, is at-cap gated (GREEN), and additionally that it fires in the standard fight (RED — RECON_ERROR, see convergence).",
+        "formulaCheck": "SSOT §2b: a 'deals X% of final ATK' rider uses the caster's LIVE buffed ATK, never cores, never takes range, and takes FB by landing time — the driver sets no core and no noFb, which matches. The payload, target and at-cap gate are all faithful; only the FIRING CADENCE diverges.",
+        "fireRateOk": false,
+        "explanation": "Two documented divergences, neither silent. (1) CADENCE: the kit fires this once per CAPTURE at cap (≤1 per 6s under the driver's own accrual model), but the block fires on every teamAmmo:100 pool-check (~1/s at the fixture's team fire rate) — roughly a 6× over-fire wherever the pool holds 13. Board impact in the shipped control comp is exactly ZERO (the pool never reaches 13), and the never-burst test's FIRST-fire frame (t≈78) is correct; only the never-burst COUNT is inflated. (2) OFF-BY-ONE: the min:13 gate can fire on the capture that takes the pool 12→13, which the wording ('captured WHILE AT maximum capacity') does not grant. Reachability is proven two-sidedly (zero while bursting; the disableBursts run) exactly as the S2b spec demanded, and the ungated-nuke counterfactual discriminates the gate."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ghosts not 13: 800% dmg, x6 seq",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate ghost max:12 → SIX discrete flatDamage 800 effects, flavor 'sequential'; block ordered FIRST.",
+        "blindSaid": "S6 identical (discrete 800s, flavor sequential, gate max 12, ordered first — and independently flagged the ordering as load-bearing). S5 asserts ≥6 discrete 800s, sequential flavor, no 4800/10400 lump, gate max ≤12 — all GREEN.",
+        "formulaCheck": "SSOT §8: burst-cast direct damage lands before the FB countdown and takes no +50% — the driver test asserts fbMajorApplied is false on every burst hit, empirically confirming the engine's forced noFb rather than assuming it. Discrete hits preserve per-hit crit rolls; 'sequential' flavor is cross-unit load-bearing for any teammate's Sequential Damage ▲ (SSOT §1e).",
+        "fireRateOk": true,
+        "explanation": "Fires on every Elegg burst cast in the shipped context (perCast.length === bursts.length, every count === 6), i.e. modeled AND working at the prose cadence. The −6 spend is ordered AFTER the damage effects, so the gate reads the pre-spend pool; the ≠13 block preceding the =13 block prevents the double-pay the S6 blind warned about, and the engineered-13 run confirms 13 hits (not 19) on the first cast."
+      },
+      {
+        "kitLine": "Number of ghosts ▼ 6",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource ghost delta −6 as the last effect of the ≠13 block.",
+        "blindSaid": "S6 identical; S5 asserts −6 and −9 spends both present.",
+        "formulaCheck": "Spend-after-gate ordering is the schema-warned bug class; the driver avoids it and the branch-flip is observable across casts in the engineered run (13 → then 6s).",
+        "fireRateOk": true,
+        "explanation": "The spend is what makes the pool emergent rather than monotonic; it is also what keeps the pool below 13 in the shipped rotation, so it is directly load-bearing on H3/H5."
+      },
+      {
+        "kitLine": "Maintains at least 1 ghost.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Listed verbatim in `unmodeled.burst`; note explains min:1 on the resource is not equivalent (it would clamp `initial` to 1 and wrongly light the ≥1 tier at frame 0).",
+        "blindSaid": "S6 reached the identical conclusion and unmodeled the same line with the same reasoning — independent convergence on the inexpressibility, not just on the encoding.",
+        "formulaCheck": "The engine's resource `min` is a pool-wide clamp, not a per-spend floor; there is no primitive for 'this delta may not take the pool below N'. Correctly flagged rather than faked.",
+        "fireRateOk": true,
+        "explanation": "Real but small under-credit: a cast at pool exactly 6 leaves 0 instead of 1, dropping the ≥1 casterAtkPct aura for ~6s+ (poll lag) where the kit would hold it. Reachable in the shipped rotation (pool at cast runs ~6–7), so it is not purely theoretical — but it is a missing primitive, not a modeling choice."
+      },
+      {
+        "kitLine": "ghosts is 13: 800% x13, ghosts ▼ 9",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + resourceGate ghost min:13 → THIRTEEN discrete 800 sequential hits + resource −9; ordered second. Reachability proven by an engineered initial:13 run (first cast 13 hits, then −9 → pool 4 → every later cast 6 hits).",
+        "blindSaid": "S6 identical shape and gate. S5 asserts both branch blocks exist, are mutually exclusive on the pool (max ≤12 / min ≥13), and that both spends exist — all GREEN.",
+        "formulaCheck": "13−9 = 4 lands the pool exactly on the tier-2 threshold, so the 35% Elemental Advantage aura survives a max-pool burst — the arithmetic the S2b spec called out is preserved by the shipped deltas.",
+        "fireRateOk": true,
+        "explanation": "This branch fires ZERO times in the shipped context, which is CORRECT-conditional (the kit gates it on ghosts == 13, which the driver's accrual model never reaches while she bursts on cooldown) — not a modeled-but-inert gotcha, because reachability is proven by an engineered state rather than asserted. Note the dependency: under the rejected teamAmmo accrual this branch would be the COMMON case, so which branch is 'normal' rides entirely on ⚑1."
+      },
+      {
+        "kitLine": "Affects random enemy units",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Listed verbatim in `unmodeled.burst`; hits target {kind:'enemy'}.",
+        "blindSaid": "S2b and S5 both treat random-target selection as moot against the single partless boss.",
+        "formulaCheck": "One enemy at scope lock ⇒ all hits land on it regardless of selection; no payload lost.",
+        "fireRateOk": true,
+        "explanation": "Correctly declared. Would need revisiting only for a multi-target fight, which is outside the scope-lock validation basis."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "'Continuously' is encoded as a POLLED 6-second buff, so the ≥4 Elemental-Advantage aura lingers up to ~6s after a burst spend drops the pool below 4 — and that stale window lands inside Full Burst, the highest-multiplier part of the fight.",
+      "evidence": "Kit: both S1 tiers say 'continuously' (live exactly while the ghost gate holds). Driver: teamAmmo:100 trigger + resourceGate + durationSec:6 + maxStacks:1, because a `passive` block evaluates its resourceGate once at frame 0 (driver cites sim.ts:2169) and never re-reads it. The ≠13 burst spends −6 from a pool of ~7 → 1, so the ≥4 gate closes AT THE CAST — but the already-applied 35% runs out its remaining duration, and per SSOT §7 the B3 cast is only 22f before the FB countdown, so the leftover sits inside the 10s Full Burst window (Major +0.5). Blind S6 hit the identical engine wall and chose interval:1 / durationSec:2 — a ≤2s stale window vs the driver's ≤6s — so the blind independently corroborates both the problem and a tighter fix.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "No magnitude change. Either (a) shorten durationSec on the two teamAmmo pool-check blocks to the smallest value that still bridges consecutive checks — measure the worst-case inter-check gap in the fixture (team ammo consumption stalls during Elegg's 171f reload and helm's charge, so it is NOT uniformly ~1s) and set the duration just above it; the generator beam-search argument does not apply here because these blocks are teamAmmo-triggered, not `interval`; or (b) the faithful representation — add the engine primitive: re-evaluate a passive block's resourceGate per frame (a resource-gated aura), which makes 'continuously' mean exactly while-gated with no lead or lag."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2",
+      "summary": "The 1100% at-cap nuke fires on every teamAmmo:100 pool-check while the pool holds 13, not once per capture — roughly a 6× over-fire wherever the block is reachable at all.",
+      "evidence": "Kit: 'Activates when a ghost is captured while at maximum ghost capacity' — one event per capture, which under the driver's own accrual model is ≤1 per 6s. Driver: trigger {teamAmmo, count:100} + resourceGate min:13, i.e. ~1 check/s at the fixture's team fire rate. Driver documents it ('a ⚑ over-fire vs strict per-capture; the FIRST nuke at t~78 is correct, the count is cadence-dependent'). Board impact in the shipped control comp is exactly zero (the pool peaks ~7, so the block fires 0×), and the driver's H5 asserts that zero explicitly; the inflation shows up only in the disableBursts reachability run and would surface in any comp where accrual outruns the spend.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Faithful representation: attach the nuke to the CAPTURE event itself — a second interval:6 block, resourceGate ghost min:13, target enemy, ordered after the accrual block — so exactly one nuke fires per capture at cap. The driver's stated blocker is that a second `interval` block perturbs the team-generator beam-search invariant (scripts/tests/generators/burst-cooldown-coverage.ts topTeams(5)) at byte-identical damage; that is a HARNESS artifact, not a kit fact, so the correct resolution is to fix the generator's sensitivity to block structure and then re-cadence this block — not to leave the kit mis-cadenced. Until then the current form is acceptable only because it is provably board-inert in the shipped context."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "The nuke's min:13 gate reads the pool AFTER the capture that reaches the cap, so the 12→13 capture can itself fire a proc the wording ('captured WHILE AT maximum capacity') does not grant.",
+      "evidence": "Kit S2 line 2 vs driver resourceGate {name:'ghost', min:13} on a pool-check that runs after the interval:6 accrual has already incremented. Independently flagged by the S6 blind in its own caveats ('the capture that takes 12→13 will therefore fire one 1100% proc… a one-per-battle over-credit') — a genuine cross-family convergence on the same off-by-one. Zero board impact in the shipped context (the pool never reaches 13 while bursting) and subsumed by the cadence issue above wherever it is reachable.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Fire the nuke on the capture-absorbed-by-the-cap signal — i.e. evaluate the gate on the PRE-add pool (min:13 read before the +1), so only a capture attempted while already at 13 procs it. Needs either a pre-add gate read or an explicit 'capture overflowed' event in the resource primitive; not fixable by changing the value."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "'Maintains at least 1 ghost' is dropped: a −6 spend from a pool of exactly 6 leaves 0, so the ≥1 caster-ATK aura lapses where the kit would keep it alive.",
+      "evidence": "Kit: 'Number of ghosts ▼ 6. Maintains at least 1 ghost.' Driver: resource {min:0} + delta −6, with the line declared verbatim in `unmodeled.burst` and the reason given (min:1 would clamp `initial` to 1 and wrongly light the ≥1 tier at frame 0). The S6 blind independently unmodeled the same line for the same reason. Reachable in the shipped rotation — the pool sits ~6–7 at cast — so a cast at exactly 6 costs the whole Water team the 16.2% caster-ATK aura for ~6s plus the pool-check lag.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Add a per-effect spend floor to the resource primitive (e.g. `resource {delta:-6, floor:1}`) so the spend clamps without moving the pool's initial value. Do NOT emulate it by raising the resource `min` — that breaks the frame-0 inertness the ≥1 tier depends on."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "Rider crit is left unset on the burst hits and the nuke while the S6 blind authored crit:true — an unresolved divergence on ~4800% per cast plus the 1100% nuke.",
+      "evidence": "Driver ships flatDamage with no `crit` field and records the doubt in its own caveats ('SSOT says function-type damage crits at the caster's rate by default — verify/align repo-wide before changing'). S6 set crit:true on all 20 riders. SSOT damage-calculation.md §2b: function-type skill damage 'CRIT at the caster's rate (default on)', and §2d/§1b describe the stored-hit path as carrying the documented crit-OFF EXEMPTION that `storedHit.crit` removes — which reads as evidence that the ordinary flatDamage path already defaults crit-ON, in which case unset ≡ the blind's crit:true and the divergence is cosmetic.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Verify the flatDamage default in dealDamage directly (one grep, not a measurement). If it is crit-ON, nothing changes and the caveat should be closed with the citation; if it is crit-OFF, that is a repo-wide SSOT violation on every function-type rider and must be fixed at the engine default, NOT by adding crit:true to this one unit."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO — 13/13 kit lines land FAITHFUL or DOCUMENTED_GAP, with no SILENT_DROP anywhere (every unmodeled sub-line, including 'Maintains at least 1 ghost' and the possession flavor, is declared verbatim) and no undocumented divergence, so there are no blocking gotchas. Ranked real findings, all documented and none GO-blocking: (1) the ≥4 Elemental-Advantage aura's polled 6s duration lets it linger up to ~6s past the burst spend that should close its gate, and that stale window sits inside Full Burst — the S6 blind hit the same engine wall and chose a ≤2s window, so a shorter duration on the teamAmmo blocks is available today without touching the generator issue; (2) the at-cap nuke fires per pool-check rather than per capture (~6× over-fire wherever reachable, provably zero board impact in the shipped comp); (3) the 12→13 post-add off-by-one, which the S6 blind found independently; (4) the inexpressible min-1 ghost floor; (5) the unresolved rider-crit default. Blind convergence is strong and mechanical: 22 of 23 executed S5 assertions are GREEN against the shipped override, and S6 independently reproduced the pool bounds, both threshold gates and their stats, the burstCast 40%, the discrete-800 sequential branches with the max-12/min-13 gates and the −6/−9 spends, and the block-ordering requirement — the sole RED is the S5 nuke-reachability assertion, which is a RECON_ERROR (it encodes the S5 author's own ⚑ premise that accrual outruns the spend and contradicts the S2b spec's explicit demand for the two-sided treatment the driver implemented via the engineered pool=13 and never-burst runs). Discrimination holds on every load-bearing claim — the unscoped-allies, ungated-nuke, engineered-13, disableBursts and Iron-boss counterfactuals each fail under their named nearest-wrong model — with one weakness to record: H1's 'first apply ≥1s' assertion does not by itself discriminate the ≥1 resourceGate (an ungated teamAmmo block would also first apply at ≈t1); the gate is caught only by H4's ≥20s assertion, so H4 must not be weakened. THE SAME-MODEL RESIDUAL THE OWNER MUST SPOT-CHECK IS ⚑1, THE ACCRUAL CADENCE: every agent here is one model, so the fact that S2b, S5 and S6 all independently leaned toward the 100-team-hit (teamAmmo) reading while the driver shipped the 6s cap is the single most informative disagreement in the packet — it decides whether the burst is normally 6 hits or 13, whether the 1100% nuke ever fires at all, and roughly a 1.7× swing in her board damage. The driver's textual argument ('Recurring interval: 6 sec' printed as part of the capture ability) is legitimate but genuinely ambiguous, and its supporting appeal to 'realistic board damage ~209M' is board-fit reasoning that carries no evidential weight — resolve it from footage by reading the ghost-counter UI delta (time-to-4 and time-to-13 in a never-burst context; ≈24s / ≈78s confirms the cap binds, near-immediate refutes it), and treat every magnitude downstream of this unit as provisional until that read lands.",
+  "model": "claude-opus-5"
+}

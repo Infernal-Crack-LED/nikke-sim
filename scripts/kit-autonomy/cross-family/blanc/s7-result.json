@@ -1,0 +1,118 @@
+{
+  "slug": "blanc",
+  "kitDescription": "Blanc is a Wind AR Defender on Burst II whose kit is entirely defensive and enabling — she has no damage line of her own. Every 120 normal attacks she throws up a shared shield for the whole team worth 11.8% of her own final Max HP, lasting 5 seconds. After each Full Burst ends she heals the whole team for 3.68% of her Max HP every second for 5 seconds, and — the important part — knocks 40.76 seconds off her own 60-second burst cooldown, which lets her burst on nearly every rotation instead of every other one. Her burst heals the team again (3.84% per second for 8 seconds), hands the lowest-HP ally other than herself Indomitability and a 31.68% Max HP boost for 10 seconds, and debuffs all enemies with Damage Taken ▲39.26% for 10 seconds. That enemy debuff is her entire offensive contribution, and the burst-cooldown reduction is what makes it close to permanent uptime.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2b gate: expect(b.teamHas.slugs).toContain('noir') — driver ships the burstCdr block ungated (RECON_ERROR: 'still on the battlefield' is an anti-death clause, vacuously true in v1; no squad axis exists in the data model)",
+      "S2b inertness: expect(NO_CDR.t).toEqual(BASE.t) — fails because the driver's CDR is live (correctly); the blind expected it gated-off and therefore inert",
+      "S2b non-vacuity: expect(blancBursts(NO_GATE)).toBeGreaterThan(blancBursts(BASE)) — no gate exists to remove, so the patch is a no-op",
+      "B5 stat identity: expect(e.stat).toBe('maxHpPct') — driver ships 'targetMaxHpPct' (RECON_ERROR: blind guessed the StatKey from prose with no engine sight; targetMaxHpPct is the correct own-% basis)",
+      "B5 live read: rows filtered on stat==='maxHpPct' returns zero — engine emits the resolved 'maxHpFlat' buffApply",
+      "B5 no-flat pin: expect(BASE.buffs.some(b => b.stat === 'maxHpFlat')).toBe(false) — inverted; maxHpFlat IS the engine's emission shape for targetMaxHpPct"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates after 120 normal attack(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:120 → allies → shield{maxHpPct:11.8, durationSec:5}",
+        "blindSaid": "identical (hitCount:120, allies, shield 11.8/5s) — full convergence",
+        "formulaCheck": "Shield is event-only in v1 (no HP pool); its formula role is to emit 'shielded' triggers for naga-type consumers, not to absorb. hitsPerShot 1 → rounds ≡ pulls, so 120 = exactly 2 magazines (ammo 60). lastBullet would proc 2× too often; correctly avoided.",
+        "fireRateOk": true,
+        "explanation": "Upgraded from the baseline's `ignored` gap to a real block now that the engine has the shield effect. Magnitude, duration, threshold and target set all verbatim from prose. Driver's test only proves ≥120 shots occur, not the proc cadence — see the coverage gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Activates after Full Burst ends (heal)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd → allies → heal{ticks:5, intervalSec:1}",
+        "blindSaid": "identical — full convergence on trigger, target and tick count",
+        "formulaCheck": "'every 1 sec for 5 sec' = 5 recovery emissions, not one instant heal. ticks:5 is the correct duration semantics; the back-compatible ticks:1 default would underfeed Crown-type on-recovery consumers 5×. fullBurstEnd (not fullBurstEnter) is the literal reading.",
+        "fireRateOk": true,
+        "explanation": "Driver's recoveryComp fixture (liter/blanc/crown/ada) makes the heal observable through crown's recovery trigger, which is the only damage-visible channel a v1 heal has."
+      },
+      {
+        "kitLine": "FB ends w/ squad ally: Burst CD ▼ 40.76",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnd → self → burstCdr{seconds:40.76}, unconditional; clause recorded in the note",
+        "blindSaid": "same trigger/target/magnitude but gated on teamHas.slugs ['noir'] as a 'same squad' proxy",
+        "formulaCheck": "60s CD − 40.76 = ~19.24s residual → blanc bursts roughly every rotation. The clause's operative half is 'still on the battlefield' (an anti-death condition); v1 models no deaths, so it is always satisfied. There is no squad axis in data/characters.json, so the blind's noir gate is an invented restriction that would zero the kit's largest lever in every comp without noir.",
+        "fireRateOk": true,
+        "explanation": "Driver is correct and the blind is wrong here. Encoding unconditionally with the condition documented is the faithful choice; gating on a slug the data model cannot justify is fudge in the restrictive direction. Driver's test discriminates properly (≥5 casts with CDR vs ≤4 without)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "All allies: recovers 3.84% every 1s, 8s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal{ticks:8, intervalSec:1}",
+        "blindSaid": "identical — full convergence",
+        "formulaCheck": "8 ticks × 1s matches the prose exactly. burstCast keying (not fullBurstEnter) is correct: this is her own burst block, so it must fire only on rotations she actually casts — material because crown is a competing Burst II.",
+        "fireRateOk": true,
+        "explanation": "Observed live via crown's recovery trigger in the driver's recovery fixture."
+      },
+      {
+        "kitLine": "Lowest-HP ally (not self): Indomitability",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst: 'Gain Indomitability for 10 sec.' (verbatim)",
+        "blindSaid": "identical — same verbatim string in unmodeled.burst",
+        "formulaCheck": "No engine primitive for death-immunity; boss lethality is unmodeled in v1. Recording verbatim rather than inventing a proxy is the sanctioned handling.",
+        "fireRateOk": true,
+        "explanation": "Correct disposition, and both blinds agree. No silent drop — the line exists verbatim in unmodeled."
+      },
+      {
+        "kitLine": "Lowest-HP ally: Max HP ▲ 31.68%, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → alliesLowestHp{count:1, excludeSelf:true} → buff{stat:'targetMaxHpPct', value:31.68, durationSec:10}",
+        "blindSaid": "same block shape but stat 'maxHpPct'; blind additionally pinned that no 'maxHpFlat' event may exist",
+        "formulaCheck": "Prose reads 'Max HP ▲ 31.68%' on the TARGET → own-% basis. targetMaxHpPct is the correct StatKey; casterMaxHpPct would be the wrong basis (% of caster Max HP). The engine resolves targetMaxHpPct to a maxHpFlat buffApply, which is precisely what the blind's no-flat pin forbids — the blind guessed the key from prose with no engine sight. Offensively inert per the e3 rule (ally-granted Max HP does not feed a recipient's atkOfMaxHpPct), and the driver asserts that inertness directly.",
+        "fireRateOk": true,
+        "explanation": "excludeSelf:true honours '(except the skill user)'. count:1 honours 'Affects 1 ally unit(s)'. Driver's test proves one grant per cast, never on blanc, 600-frame duration, and byte-identical totals when removed."
+      },
+      {
+        "kitLine": "All enemies: Damage Taken ▲ 39.26%, 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → buff{stat:'damageTakenPct', value:39.26, durationSec:10}",
+        "blindSaid": "identical block; blind's live read failed only because its dtRows filter mismatched the enemy-debuff event shape",
+        "formulaCheck": "damageTakenPct is a boss-side amplifier applying to the WHOLE team's output — the single most load-bearing line in this kit and the classic taxonomy-#4 skip trap ('Damage Taken ▲' misread as a self-defensive line). Driver did not fall into it. Value 39.26 and duration 10s are level-10 kit text verbatim; enemy debuffs emit with casterIdx null and targetIdx null.",
+        "fireRateOk": true,
+        "explanation": "Composes correctly with the S2 CDR: ~19.2s effective burst CD against a 10s window gives high but not saturated uptime. Driver's 20.08 (level-1) counterfactual proves the value is live and load-bearing."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "The override's `note` contradicts its own shipped JSON: it lists Max HP ▲31.68% under SKIPS as 'UNREPRESENTABLE ... encoding it wrong-basis on a nondeterministic target would be fudge>measured', while the burst array actually encodes it faithfully as targetMaxHpPct on alliesLowestHp. Stale text carried through the baseline merge.",
+      "evidence": "Kit line: 'Max HP ▲ 31.68% for 10 sec.' Shipped block: {stat:'targetMaxHpPct', value:31.68, durationSec:10} on target {kind:'alliesLowestHp', count:1, excludeSelf:true}. The `caveats` array states the CORRECT current story ('is now modeled (theme-13, 2026-07-17) via the new targetMaxHpPct stat'), so the file self-contradicts. Both blinds encode the line, confirming it is representable.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Delete the 'Max HP ▲31.68% — UNREPRESENTABLE' clause from the note's SKIPS sentence, leaving only Indomitability there (which matches unmodeled.burst). No JSON behavior change — the shipped encoding is already the faithful one."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The driver's B1 test asserts only that blanc fires ≥120 shots — it never proves the hitCount:120 trigger actually PROCS, nor at the right cadence. A silently mis-wired or non-firing shield block would still pass.",
+      "evidence": "Driver test B1: expect(shots).toBeGreaterThanOrEqual(120) — an assertion about the WEAPON, not the trigger. The S5 blind's marker technique (append an engine-inert partsDamagePct buff to the committed shield block, then halve trigger.count and assert fires roughly double) reads the committed trigger's real cadence and target set, and would go RED under a lastBullet or interval encoding where the driver's test stays green.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Adopt the S5 blind's inert-marker instrumentation for B1: append {kind:'buff', stat:'partsDamagePct', value:101.5, durationSec:1} to the shield block via withPatchedOverride, assert marker fires ≥3 across 180s, assert the target set covers every roster slug, and assert the halved-threshold run yields a 1.7–2.3× fire ratio. Pair with a totals-identity check so the marker is provably damage-neutral."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 7 kit lines are FAITHFUL or DOCUMENTED_GAP (6 faithful, 1 recorded verbatim in unmodeled), and every magnitude shipped is level-10 kit text — 39.26 / 31.68 / 11.8 / 3.68 / 3.84 / 40.76 / 120 — with zero invented or calibrated values, which is the correct outcome for a fully-datamined unit. The driver did not fall into the two traps this kit sets: it modeled the 'Damage Taken ▲' line as a boss debuff amplifying the whole team rather than skipping it as defensive, and it shipped heal ticks:5 / ticks:8 rather than the ticks:1 default that would starve Crown-type on-recovery consumers. The S5 blind went RED on 6 assertions, but all 6 are RECON_ERRORs, not divergences: three stem from the blind gating the burst-CDR on teamHas.slugs ['noir'] as a 'same squad' proxy — an invented restriction, since the data model has no squad axis and the clause's operative half ('still on the battlefield') is vacuously true in a scope with no deaths, so the blind's encoding would silently zero this kit's largest rotation lever in every comp lacking noir; the other three stem from the blind guessing StatKey 'maxHpPct' and the enemy-debuff event shape from prose alone with no engine sight, where the driver's targetMaxHpPct (own-% basis, engine-resolved to a maxHpFlat emission) is the correct encoding and casterMaxHpPct would have been the wrong basis. The S6 blind override converged block-for-block with the driver on all seven lines apart from that same noir gate and StatKey. Two gotchas are real but neither blocks: a stale note sentence that calls the Max HP grant 'UNREPRESENTABLE' while the JSON representably encodes it (documentation drift from the baseline merge, contradicted by the file's own caveats array), and a weak B1 test that asserts blanc fires ≥120 shots rather than proving the hitCount:120 trigger procs — fix by adopting the S5 blind's inert-marker cadence instrumentation, which is the better instrument and the most valuable thing the blind pass produced. Same-model residual for the owner to spot-check: every agent here is the same model, so the shared reading that 'still on the battlefield' is a pure anti-death clause — rather than a squad-membership requirement that would matter in a real roster — is stability, not proof; if blanc is ever graded in a comp where that distinction bites, verify the CDR's real trigger condition against a rotation log before trusting her burst cadence.",
+  "model": "claude-opus-5"
+}

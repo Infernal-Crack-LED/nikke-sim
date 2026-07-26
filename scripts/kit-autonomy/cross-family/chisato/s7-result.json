@@ -1,0 +1,141 @@
+{
+  "slug": "chisato",
+  "kitDescription": "Chisato is a self-contained Burst III SMG attacker who runs on a personal meter called Extrasensory. The meter is filled to 100% the instant the battle starts and then bleeds away by 1% every 2 seconds, and her own Burst Skill tops it straight back up to 100%. How much of the meter she has left decides which of three stacked self-buffs she is holding: above 70% she gets ATK +53.69%, above 55% she also gets True Damage +48.62%, and above 25% she also gets Hit Rate +22.37% — so as the meter drains the strongest buff drops off first, and at exactly 100% she is briefly invulnerable for 2 seconds. Her second skill turns her ordinary gunfire into true damage for 10 seconds each time she bursts, and every 48 normal shots that land also fire off an extra hit worth 472.18% of her final ATK as true damage. Her burst adds ATK +73.16% for 10 seconds on top of refilling the meter. Practically, she wants to burst on cooldown: bursting keeps all three meter tiers alive, and it is also what puts her normals into the true-damage window her own True Damage buff feeds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: Extrasensory to 100%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Listed verbatim in unmodeled.skill1 as currency bookkeeping; its OBSERVABLE (all three tiers live at frame 0) is carried by the fused passives, which fire at frame 0.",
+        "blindSaid": "S2b + S6 both encode it literally as resources:[{extrasensory, initial:100, max:100}]; S2b's named nearest-wrong was a fillGauge (BURST-gauge) misread.",
+        "formulaCheck": "Not a damage/gauge term in any bucket (damage-calculation.md §1) — pool initialization only. The fillGauge misread is structurally excluded: driver's C6 pins the burst slot to EXACTLY {atkPct} with no resource/gauge effect, and S5's FB-cadence assertions pass, so burst-gauge economy (game-mechanics.md §6) is untouched.",
+        "fireRateOk": true,
+        "explanation": "Folded, not dropped: the driver's passives are asserted to apply at frame 0 (C1), which is exactly what 'starts full' buys. Documented in note + caveats + verbatim unmodeled entry. Driver's frame-0 encoding is strictly MORE faithful here than S6's interval-2s tiers, which are cold for the first 2s."
+      },
+      {
+        "kitLine": "at 100%: Invulnerable for 2 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1, verbatim; boss-inert (the partless scope-lock boss deals no damage to her). C2 pins the self-buff stat set to EXACTLY {atkPct, trueDamagePct, hitRatePct} — no shield/invuln/status effect and no mis-encoding as a damage stat.",
+        "blindSaid": "S2b UNMODELED (loadBearing false); S5 it.skip with the same reason; S6 unmodeled + caveat. Unanimous.",
+        "formulaCheck": "No bucket in §1 consumes invulnerability; v1 has no HP/incoming-damage model. Zero damage observable by construction.",
+        "fireRateOk": true,
+        "explanation": "The sole genuinely skippable line, agreed by all four passes, recorded verbatim rather than as an `ignored` block (non-negotiable 6 respected). C2 makes it a PIN, not a silent absence."
+      },
+      {
+        "kitLine": "above 70%: ATK 53.69% continuous",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self buff atkPct 53.69 durationSec 60, PLUS a skill1 burstCast block re-applying it (same key → refresh) on each of her own casts.",
+        "blindSaid": "S6: interval-2s resourceGate min 71 buff durationSec 2 (self-refreshing) over a real pool. S2b: passive + resourceGate min>70. Same magnitude, same stat, same self scope, same lapse behaviour.",
+        "formulaCheck": "atkPct lands in the (1 + ΣATK%) term inside FinalATK (§1a) — a plain ATK▲ that dilutes, correctly NOT casterAtkPct (which would add a flat caster-ATK term). Self-scoped: S5 proves liter/crown/helm byte-identical when stripped. Duration arithmetic is exact: from 100 at 1pt/2s, pool reaches 70 (no longer 'above') at t=60s ⇒ durationSec 60; the refresh-to-100 always regrants the full 60s, so the timer is isomorphic to the pool for every reachable state.",
+        "fireRateOk": true,
+        "explanation": "The fused-passive encoding is trajectory-EXACT, not an approximation, because the pool is monotone-decreasing between full refills. S2b named the calibration-invisible hardcoded-permanent-passive as the single biggest shared-prior trap; the driver's cfPermanent and cfNoRefresh counterfactuals kill exactly that (permanent ⇒ dur null; no-refresh ⇒ one apply at frame 0 and a strictly lower total). Also verified: the same-(caster,slot,stat,value) dedupe of game-mechanics.md §11 refreshes rather than co-stacks the passive and burstCast copies — asserted by apply count 1+casts with a uniform 3600-frame expiry."
+      },
+      {
+        "kitLine": "above 55%: True Damage 48.62%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self buff trueDamagePct 48.62 durationSec 90, refreshed on her own burstCast.",
+        "blindSaid": "S6 identical magnitude/stat via resourceGate min 56; S2b identical, naming generic attackDamagePct as the nearest-wrong. Full convergence on stat identity.",
+        "formulaCheck": "trueDamagePct is a FLAVOR-GATED DamageUp entry (§1e; sim.ts:1414 gates it on opts.trueFlavor), so it must reach ONLY her true-flavored hits — the 10s swap-window normals and the 472.18% rider — and never her ordinary normals. Driver's C3 proves precisely that: outside-window normal dmgUp is byte-identical with the buff removed, every elevated normal is inside a [cast, cast+10s) window, and every window is covered. Lapse arithmetic exact: 100→55 at 45 ticks = 90s.",
+        "fireRateOk": true,
+        "explanation": "The strongest test in the driver's suite. It simultaneously refutes the generic-attackDamagePct nearest-wrong (which would move out-of-window normals) and proves non-vacuity (window normals and riders really do gain the +0.4862 DamageUp term). Timing-stability of the counterfactual is itself asserted (identical normal frames), so the frame-paired comparison is legitimate."
+      },
+      {
+        "kitLine": "above 25%: Hit Rate 22.37%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive → self buff hitRatePct 22.37 durationSec 150, refreshed on her own burstCast.",
+        "blindSaid": "S6 identical (resourceGate min 26) and explicitly notes the HR→core conversion is unmeasured for this unit; S2b identical, naming 'skipped as defensive/no damage' and 'generic damage buff' as the two nearest-wrongs; S5 asserts DIRECTION only (removing it strictly lowers core-bucket damage) and passes.",
+        "formulaCheck": "hitRatePct feeds the SMG core-hit fraction through acrForHR → UNIGEO (§1b; sim.ts:1356-1358), i.e. it moves the Core term inside the Major bracket — NOT a DamageUp or coreDamagePct multiplier. C2's exact-stat-set pin excludes a coreDamagePct mis-encoding. Reload-speed/accuracy-as-defensive dismissal is refuted by the live HRCORE path.",
+        "fireRateOk": true,
+        "explanation": "FAITHFUL on stat, scope, magnitude and lapse time (100→25 at 75 ticks = 150s). The HR→core CONVERSION magnitude is the engine-global ⚑ (UNIGEO's saturated SMG δ0/f_bloom fit, DECISIONS 2026-07-22) — out of scope per contract F and correctly left unpinned by both test suites; only direction is asserted."
+      },
+      {
+        "kitLine": "every 2 sec: Extrasensory ▼ 1%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; the drain is the DERIVATION of the 60/90/150s fuse lengths rather than a modeled tick.",
+        "blindSaid": "S6/S2b encode it literally as an interval sec:2 resource delta -1; S2b flags the omit-the-decay model (pool pinned at 100) as a load-bearing misread, and S5's drain test is deliberately written as ≤ so that a decay-inert override REPORTS a divergence to this judge instead of passing silently.",
+        "formulaCheck": "No bucket consumes the tick itself; its only observable is the lapse LADDER, which the driver reproduces exactly (ATK dead at 60s, True Damage 90s, Hit Rate 150s of a 180s fight). S5's monotone-prefix and no-improvement-when-recharge-stripped assertions both pass against the driver's encoding.",
+        "fireRateOk": true,
+        "explanation": "The drain is modeled in its observable effect and documented as folded — the case S5 built its ≤ escape hatch for, and the escape hatch did not trigger: cfNoRefresh strictly LOWERS her total, proving the fuse really burns. The interval first-fire phase ⚑ (t=2 vs t=0) that both blind passes flag is moot under the driver's encoding, which is why it has no 2s cold start."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "on Burst: normals true damage 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self weaponSwap {damagePct 10.12, durationSec 10, trueNormals true} — a same-weapon mirror swap whose only effect is the flavor tag (takina precedent).",
+        "blindSaid": "S6 chose the IDENTICAL encoding independently (burstCast weaponSwap damagePct 10.12 / 10s / trueNormals, plus redundant weapon:'SMG' + maxAmmo:120) and flagged '⚑ verify the swap does not grant a free magazine'. S2b specified the same, naming fullBurstEnter mis-keying and a trueDamagePct-buff encoding as the two nearest-wrongs.",
+        "formulaCheck": "A flavor conversion, not a bucket entry: it makes her normals true-flavored so the flavor-gated trueDamagePct (§1e) reaches them, without touching rate%, cadence or ammo. The S6 ⚑ is RESOLVED against the code the driver cites — sim.ts:1944 `if (!e.trueNormals) owner.ammo = maxAmmo` and sim.ts:2487 (same-weapon flavor swap ⇒ no free reload on exit) — so the encoding carries NO shot-count optimism, and the driver correspondingly retired the note's stale 'swap start+end each instant-refill the mag' claim. atkPct on window normals is pinned at 10.12, her datamined normalAttackMultiplier, so rate% is unchanged.",
+        "fireRateOk": true,
+        "explanation": "Trigger identity is the live risk and it is discriminated on FRAMES, not counts: helm is a co-Burst-III in controlComp, so burstCast and fullBurstEnter genuinely diverge, and C5's fullBurstEnter counterfactual lands the buff on FB-start frames with a different count. One residual worth the owner's eye rather than a finding: S5's negative-space guard nominally asserts 'no swapped shots (no weaponSwap in the kit)', yet reported GREEN against a weaponSwap-carrying override — so that clause is either scoped to a signal a same-weapon flavor swap does not set, or vacuous. The kit-side question it gestures at ('is weaponSwap the right channel?') is settled the other way by S6 independently reaching for the same primitive and by the schema offering no other trueNormals channel."
+      },
+      {
+        "kitLine": "after 48 normals: 472.18% true dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:48 → enemy flatDamage {atkPct 472.18, flavor 'true'}; crit left to the engine default, core deliberately absent.",
+        "blindSaid": "S6 identical but with crit:true written explicitly; S2b identical, naming a flavor-less rider (loses the 48.62 DamageUp) and FB/window-gating as the nearest-wrongs. Complete convergence on count, magnitude, flavor and no-core.",
+        "formulaCheck": "Function-type skill damage: crits at the caster's rate, NEVER cores absent 'as core damage', never takes range, takes FB by landing time (§2b + the §1 applicability table). Driver's omitted `core` ⇒ coreEligible false (asserted); omitted `crit` ⇒ crit:e.crit!==false at sim.ts:1844 ⇒ crit-eligible, matching S6's explicit crit:true. flavor 'true' routes the 48.62 trueDamagePct into its DamageUp bucket — asserted frame-paired against both the no-trueDamagePct and plain-flavor counterfactuals.",
+        "fireRateOk": true,
+        "explanation": "Cadence is proven, not assumed: riders.length === floor(chisatoNormals/48) exactly, over the full 180s including long out-of-Full-Burst stretches, which refutes once-per-battle, FB-gating and window-gating in one assertion. hitCount 24 raises the count (pulls-vs-rounds discrimination); hitsPerShot 1 makes pulls == rounds here, and correctly no assertion pins an absolute count off the nominal SMG rate (effective 20/s = 60/ceil(60/24), the frame-quantized default)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Charges Extrasensory to 100%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim; functionally carried by the skill1 burstCast block that re-applies all three tier buffs (the recharge's entire observable). C6 pins the burst slot to EXACTLY {atkPct} with no resource/gauge effect.",
+        "blindSaid": "S6 puts a literal resource delta +100 in the burst block; S2b specifies the same and names the fillGauge (burst-gauge) misread as the trap, wanting FB-cadence inertness asserted.",
+        "formulaCheck": "Not a damage or burst-gauge term (§1, §6). The fillGauge misread — which would pump the team gauge every rotation and distort FB cadence — is excluded structurally by C6 (no resource/gauge effect in the slot at all), which is a stronger check than a cadence delta.",
+        "fireRateOk": true,
+        "explanation": "Modeled in effect, documented as folded, and the fold is a PIN rather than an absence. Attribution note in the driver's favour: the refresh lives in skill1, which is where the buffs it revives are defined, with the burst cast as its trigger — arguably cleaner slot attribution than S6's split."
+      },
+      {
+        "kitLine": "ATK 73.16% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self buff atkPct 73.16 durationSec 10.",
+        "blindSaid": "S6 and S2b both identical (burstCast, self, atkPct 73.16, durationSec 10). S5 layers four discriminations on it: magnitude+target, wall-clock-vs-durationShots, real expiry, trigger identity — all green.",
+        "formulaCheck": "Additive with the S1 53.69 inside the single (1 + ΣATK%) sum (§1a) — they dilute together rather than multiplying, which is correct for two plain ATK▲ lines. durationShots absent (S5 asserts null), so the window is wall-clock 600 frames, not round-scoped — the live nearest-wrong for a 120-round SMG per game-mechanics.md §11.",
+        "fireRateOk": true,
+        "explanation": "Apply count === her own burstCast count, applies land exactly on her cast frames, never at frame 0 (which would confuse it with the S1 53.69 gate), self-scoped, uniform 10s expiry. The fullBurstEnter counterfactual fires on FB-start frames with a different count — non-vacuous only because helm is a second Burst III in the fixture."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "The SSOT docs and DECISIONS.md:554 assert a landed `crit && !trueFlavor` guard making true damage crit-exempt, but no such guard is in sim.ts on this branch — so chisato's true swap normals and her 472.18% true rider are crit-eligible (and the swap normals core-eligible) in the shipped engine, the opposite of what the docs describe.",
+      "evidence": "Kit: 'Normal attacks deal true damage for 10 sec' / 'as true damage'. game-mechanics.md §9 and damage-calculation.md §2c both state 'TRUE DAMAGE NEVER CRITS (owner ruling 2026-07-21; engine `crit && !trueFlavor` guard), so flavor:\"true\" dots/flatDamage + trueNormals windows are crit-exempt'. Against that: sim.ts:2843 hardcodes crit:true on swap normals, sim.ts:1844 uses crit:e.crit!==false on flatDamage, `git log -S '!opts.trueFlavor'` is empty, the driver's probe reads critEligible/coreEligible true on window normals and critEligible true on the rider, and open-questions.md:481 records 'true-damage-window normals RETAIN core+crit — MEASURED, faithful'. The override's own note previously claimed the guard was live AND board-confirmed on this unit (1.154→1.119) — the driver has now marked that claim stale. Blind corroboration: S6 independently set crit:true on the rider, i.e. it read the engine the same way the code actually behaves.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "No override change — the encoding (trueNormals on the swap, flavor:'true' on the rider) is the faithful representation of the kit, and crit/core routing of true damage is the engine's domain. Owner-facing reconciliation instead: decide whether the 2026-07-21 crit-off guard was deliberately reverted or lost, then make code and docs agree in one direction (re-land the guard, or supersede the DECISIONS/SSOT claim in favour of open-questions.md:481's MEASURED retention). Do not pick whichever branch flatters the board. Core-on-true-damage stays a separate ⚑ needing measurement: an SMG at coreMult 250 makes it a large lever — recipe is a popup read inside one 10s post-burst window, counting red 'CORE HIT' popups on her normals (per the popup-colour convention) versus a matched out-of-window stretch. The driver's C3 pin locks current behaviour so any future guard fails loudly rather than silently moving the board."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The Extrasensory meter itself is not modeled as a resource; the driver encodes its downstream effect (buff fuses of 60/90/150s, refreshed on her own burst) instead of the named mechanic.",
+      "evidence": "Kit: 'Charges Extrasensory to 100%' / 'Effects vary according to the charge level' / 'Extrasensory ▼ 1%' every 2 sec. Driver: three fused passives with finite durationSec plus a burstCast refresh block; the pool, the drain tick and the recharge all sit in `unmodeled` as folded bookkeeping. Blind: BOTH independent passes (S2b spec and S6 override) reached for a literal pool — S6 shipping resources:[{extrasensory, initial 100, min 0, max 100}] with interval-2s resourceGated tier buffs and a burst delta +100.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Nothing to change now: because the pool only ever decreases between full refills, a duration timer is isomorphic to it, and the fuse lengths are exact rather than approximate (100→70 at 60s, →55 at 90s, →25 at 150s at 1pt/2s), so every reachable state matches — while S6's literal encoding is slightly WORSE at the edges (interval first-fires at t=2, so its tiers are cold for the first ~1.1% of the fight and threshold crossings lag up to 2s). Migrate to the S6-style `resources` pool only if a source ever appears that moves Extrasensory by anything other than a refill to 100 (a partial charge, a drain buff, or a status consumer reading 'Dodging Bullets') — that is the single condition under which the isomorphism breaks. Record that trigger in the note so the decision is not re-litigated."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO at faithfulness 1.0 (10/10 kit lines FAITHFUL or DOCUMENTED_GAP, zero REAL-GOTCHAs). Convergence is GREEN and unusually strong: the S5 blind test suite runs 35 passed / 1 skipped (the invuln GAP, which all four passes independently called unmodelable) against the driver's SHIPPED override, and the S6 blind override independently chose the SAME mechanics and the SAME magnitudes across the board — most tellingly the trueNormals weaponSwap at damagePct 10.12 for 10s on burstCast and the hitCount-48 → 472.18% flavor:'true' rider, which are the two lines where an unforced alternative existed. Neither gotcha is an override defect: ranked first, the true-damage crit/core routing is a live doc-vs-code inconsistency in the ENGINE (the SSOT and DECISIONS.md:554 assert a `crit && !trueFlavor` guard that is provably not on this branch, and the driver correctly retired both stale note claims — the phantom guard and the phantom swap mag-refill — after code reads at sim.ts:1844/1944/2487/2843 plus a behavioural probe); second, the fused-passive encoding of Extrasensory models the meter's effect rather than the meter, which is isomorphic for every reachable state and documented, with the migration trigger named. Discrimination holds: seven counterfactuals cover the drain (permanent vs fused), the refresh (load-bearing — stripping it strictly lowers her total, so S5's deliberately-loose ≤ escape hatch did NOT fire), the flavor gate (outside-window normals byte-identical), the swap mechanism, the rider count and flavor, and the burstCast-vs-fullBurstEnter trigger — the last non-vacuous only because helm is a co-Burst-III in the fixture, and the fixture is correct on burst eligibility (a lone Burst III would make zero Full Bursts and silence half the kit). Every FAITHFUL block is shown to FIRE, not merely exist: frame-0 applies plus one per cast for the tiers, one 10s window per her own cast, and riders at exactly floor(normals/48) over 180s. Magnitudes were not graded (contract F); the HR→core conversion is the engine-global UNIGEO ⚑, direction-only asserted, correctly unpinned. Same-model residual for the owner to spot-check, in priority order: (1) whether the 2026-07-21 true-damage-crit-off guard was deliberately reverted or silently lost — the override's own history claims it moved this unit's board ratio 1.154→1.119, so the answer changes her calibration and the SSOT needs correcting either way; (2) core-on-true-damage in game, the SMG coreMult-250 lever, still unmeasured; (3) S5's negative-space clause 'no swapped shots (no weaponSwap in the kit)' reported green against a weaponSwap-carrying override, so that one clause is either scoped to a signal a same-weapon flavor swap never sets or is vacuous — worth confirming, though the kit-side question it points at is settled the other way by S6 reaching for the same primitive independently and by the schema exposing no other trueNormals channel. Also note the driver ran the blind suite with four schema-only adaptations; three are plainly mechanical (array-shaped slots, null-vs-undefined durationShots, no 'core' damage bucket), while the fourth re-scopes the weapon-state over-model guard from holder to caster — legitimate, since controlComp teammates really do grant chisato weapon-state stats, but it does loosen that guard, and the driver's own C2/C6 exact-stat-set pins are what actually carry over-model coverage.",
+  "model": "claude-opus-5"
+}

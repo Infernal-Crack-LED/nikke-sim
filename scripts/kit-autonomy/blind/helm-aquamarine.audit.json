@@ -1,0 +1,141 @@
+{
+  "slug": "helm-aquamarine",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 30 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount{count:30} — recurring conditional, counts owner rounds (AR hitsPerShot 1, so 30 pulls); target enemy"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deals 131.34% of final ATK as add dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 131.34, crit:true (riders crit at caster rate), core omitted (text says 'additional damage', not 'core strike'), noFb unset (FB by timing)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team-wide FB entry, NOT burstCast — the text says 'entering Full Burst'; this unit is B2 and the clause is not gated on her own cast)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (no excludeSelf — 'all allies' includes the caster)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: CD of Burst Skill ▼1.82 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating.steps[0] = burstCdr{seconds:1.82}"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: CD of Burst Skill ▼2.2 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating.steps[1] = burstCdr{seconds:2.2}; 'each subsequent triggers all before it' == the escalating primitive (Nth activation applies steps 1..N)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: CD of Burst ▼2.6 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating.steps[2] = burstCdr{seconds:2.6}; no oncePerBattle (the escalator caps at step 3 and repeats the full stack thereafter)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects 1 enemy unit(s) randomly",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy (v1 has a single boss, so 'random 1 enemy' == the boss)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 105.58% of final ATK as damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 105.58, crit:true, on ⚑ INVENTED trigger interval{sec:10} — the line carries no activation clause (hard rule: no clause = interval); first fire at t=sec per the skill-CD convention"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when attacking Electric tgt",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired + bossElementGate:'Electric' (composes with a real trigger; inert vs the neutral/Fire scope-lock boss)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▲5.64%, 5 stacks, 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 5.64, durationSec 5, maxStacks 5 — a BOSS debuff benefiting the whole team (tandem rule), not a self buff"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 164.83% as Burst Skill damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, flatDamage atkPct 164.83, crit:true, noFb:true (burst-cast damage lands before the FB window)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when attacking Electric tgt",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "bossElementGate:'Electric' on a burstCast-triggered block — ⚑ trigger identity: read as a burst-scoped conditional rider, not a per-shot one (see caveat 3)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 164.83% of final ATK as add dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 164.83, crit:true, noFb:true — same cast, doubling the burst against an Electric-Code boss"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill2[0].trigger",
+      "estimate": "interval{sec:10} (first fire t=10s; ~6 procs in a 60s fight)",
+      "reasoning": "ALWAYS-⚑ #2: the 105.58% line has NO activation clause, so both the trigger KIND and its cadence are outside the input domain. Hard rules say a clause-less damage line = interval; 10s is a mid-range placeholder for an AR attacker S2 internal CD, chosen without evidence. If the true CD is 5s this block is under-credited 2×; if 20s, over-credited 2×.",
+      "recipe": "Read skillCooldownsSec for helm-aquamarine skill2 in the datamine (per the skill-CD first-fire convention: no 'Activates when' clause ⇒ interval trigger, first fire at t=CD). Cross-check by counting 105.58%-tier popups per minute in a solo recording."
+    },
+    {
+      "field": "override.burst[1].trigger + bossElementGate",
+      "estimate": "burstCast + bossElementGate 'Electric' (fires once per own burst), NOT shotFired",
+      "reasoning": "ALWAYS-⚑ trigger identity. The clause reads 'when attacking an Electric Code target', which literally suggests per-attack; but 164.83% of final ATK per normal shot is ~12× this unit's own normal-attack multiplier (13.65%) — a whole-picture contradiction. Its identical magnitude to the burst's main hit is the tell: it is the burst's conditional half. The sibling skill2 Electric clause (5.64% stacking debuff, 5 stacks) IS plausibly per-shot and is modeled that way, so the two clauses are deliberately read differently.",
+      "recipe": "Record a fight vs an ELECTRIC-code boss and count 164.83%-tier popups: exactly 2 per burst cast ⇒ current model; a steady per-shot stream ⇒ re-key to shotFired. No Electric boss available ⇒ this stays a HYPOTHESIS (both blocks are inert on the graded board, so no regression can discriminate them)."
+    },
+    {
+      "field": "override.burst[0].effects[0].noFb / burst[1].effects[0].noFb",
+      "estimate": "true (both burst hits excluded from the +50% Full-Burst major)",
+      "reasoning": "ALWAYS-⚑ #6 (per-kit noFb is measured-only, default OFF) held against the kit-parse hard rule that burst-cast/instant damage is always FB-exempt because the cast resolves before the FB window opens. I applied the hard rule, but it is a CONVENTION here, not a measurement for this unit; if the engine instead expresses this via burstSnapshotsPreFb, this flag double-counts the exemption (no damage error, but a redundant encoding).",
+      "recipe": "Read one burst popup off a recording and divide by (final ATK × 1.6483 × crit/core state): a 1.5× residual ⇒ drop noFb. Also confirm with the engine owner whether burst flatDamage on a burstCast trigger already force-sets FB-exempt (then remove the field)."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 81 / ammo 60)",
+      "estimate": "datamined values as given; AR ~12 pulls/s ⇒ hitCount:30 fires roughly every ~2.5s of sustained fire (~1 proc per magazine-third)",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and a NOMINAL rate must be snapped to 60fps frame boundaries (effective = 60/ceil(60/nominal)). The S1 rider's whole cadence — and therefore its share of total damage — hangs on this, since it is a hit-count trigger, not a timer.",
+      "recipe": "Read the ammo counter frame-by-frame in a solo recording (shots/sec measured directly) rather than inferring from FB counts; compare against the datamined nominal and the 60fps-snapped effective rate."
+    },
+    {
+      "field": "override.skill1[0].effects[0] (crit true / core absent)",
+      "estimate": "rider crits at the caster's sheet rate, never core-boosted",
+      "reasoning": "Prior #9: function-damage riders crit at the caster's rate but get NO core unless the text says 'core strike damage' — this text says only 'additional damage'. Range is engine-automatic (not set). Not derivable from prose alone; it is a prior, not a measurement.",
+      "recipe": "Read 131.34%-tier popups in a solo recording: orange/crit-iconed bodies present ⇒ crit:true confirmed; any red 'CORE HIT' at that tier ⇒ add core."
+    },
+    {
+      "field": "override.skill1[1].effects[0] (escalating burstCdr)",
+      "estimate": "cumulative — FB#1 = 1.82s, FB#2 = 4.02s, FB#3+ = 6.62s total CDR to all allies",
+      "reasoning": "'Each subsequent effect triggers all effects before it' maps 1:1 onto the escalating primitive (Nth activation applies steps 1..N). The open question is the post-3rd behaviour: does it hold at the full 6.62s stack every subsequent FB (assumed) or stop? The prose does not say. This is a rotation-shaping effect, so an error here moves FB counts, not just a damage number.",
+      "recipe": "Judge by MEASURED FB count, not board ratio: run a comp with this unit and compare simulated FB timestamps against a recording anchored to the exact 03:00→02:59 frame. An extra/missing FB late in the fight indicates the post-3rd-entry behaviour is wrong."
+    },
+    {
+      "field": "override.skill2[1].trigger (shotFired vs on-hit)",
+      "estimate": "shotFired (every trigger pull applies a stack while the boss is Electric)",
+      "reasoning": "'When attacking' is ambiguous between pull-fired and hit-landed. With 5 stacks × 5s and an AR cadence, either reading saturates the debuff at 5 stacks almost immediately, so the choice is very likely damage-neutral in practice — but it is still an unmeasured reading, and it would matter for a missed-shot model.",
+      "recipe": "Inert on the current board (non-Electric boss). If an Electric-boss recording exists, check the debuff-icon stack count ramp on the boss HP bar over the first ~1s of fire."
+    }
+  ],
+  "model": "claude-opus-5"
+}

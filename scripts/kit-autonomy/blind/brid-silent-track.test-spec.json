@@ -1,0 +1,45 @@
+{
+  "slug": "brid-silent-track",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter / Wind enemies / Dmg Taken 15.12%",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves the line is a boss-held damageTakenPct debuff of 15.12% for 10 SECONDS on a fullBurstEnter trigger, suppressed by a Wind bossElementGate against the Fire control boss. Base run must contain ZERO damageTakenPct=15.12 applies (fails under the nearest-wrong ungated encoding, which fires once per FB and lifts the whole team's damage); the ungated counterfactual must produce exactly fbStarts applies with casterIdx/targetIdx null, durationShots null, and a strictly higher team total (fails if the value, trigger, or target set is wrong, and fails if the driver keyed the gate as a bossElement TRIGGER that cannot compose with fullBurstEnter)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter / all enemies / 636% final ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves an ungated flatDamage rider firing exactly once per FULL BURST ENTRY with srcSlot skill1 and inFullBurst true, and no core rate. Isolated by multiset-diffing the damage stream against a run with the flatDamage effect removed. Fails under the nearest-wrong burstCast keying (separate counterfactual: the burstCast variant must differ in fire count or land with inFullBurst false), and under any hitCount/interval keying (count would not equal fbStarts). Magnitude pinned by a halved-atkPct run: contribution ratio must be 0.5."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 10 normals / Wind / Dmg Taken 12.12%",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves a hitCount(10) boss debuff of 12.12% for 10 seconds, Wind-gated. Base has zero 12.12 applies; the ungated counterfactual applies it repeatedly with null caster/target idx, null durationShots, a higher team total, and a fire count 0.35-0.65x the 5-attack damage counter's - which discriminates threshold 10 from threshold 5 (a copy of the 5-counter would come out at ratio 1.0) and from a per-shot trigger."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 5 normals / lowest HP / 675% ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves a hitCount(5) flatDamage rider with srcSlot skill2 that fires far more often than there are Full Bursts (kills an FB-keyed misread) and whose fire count halves when the threshold is patched to 10 (kills a shotFired misread, which would land near 0.1, and kills a threshold-10 misread, which would land near 1.0). Magnitude pinned by the halved-atkPct run (ratio 0.5) and cross-checked against the skill1 rider at 636/675 using best-buffed in-FB instances."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies except self / ATK 66.52% of user ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "Proves stat casterAtkPct (not atkPct) by asserting the emitted buffApply value is a FLAT-resolved ATK number greater than 500 rather than the raw 66.52; proves the target set by asserting 3 distinct targetSlugs, none equal to the unit, in multiples of 3 per cast; proves seconds-not-rounds duration by durationShots null. Inertness pair: removing the grant leaves this unit's total byte-identical (fails if the driver included self) while strictly lowering all three allies' totals (fails if the grant is inert/mis-scoped)."
+    }
+  ],
+  "fixtures": "controlComp('brid-silent-track', true) only - liter B1 / crown B2 / carry / helm B3 against the Fire control boss, deterministic, no seed. helm=true is mandatory: three of the five kit lines are full-burst-keyed and a comp with no Burst III unit chains ZERO Full Bursts, so every one of them would read as vacuously absent. 10 hoisted runs: base, skill1-rider-off, skill1-rider-halved, skill1-rider-retriggered-to-burstCast, skill2-rider-off, skill2-rider-halved, skill2-threshold-10, skill1-debuff-ungated, skill2-debuff-ungated, burst-ATK-grant-off. All per-unit attribution is done by multiset-diffing the base event stream against the matching effect-removed run (other units' events are identical across runs because the boss is immortal and the sim deterministic), so no assertion depends on an undocumented event owner field.",
+  "gaps": [
+    "it.skip - ACTIVE case for both 'Wind Code enemies' Damage Taken lines: controlComp pins a Fire boss and exposes no boss-element parameter, so the element gate can only be shown inert-here plus live-when-ungated. A Wind-boss comp helper would close it.",
+    "ctx.skip guard - the 636:675 cross-rider ratio test skips if damage events carry no numeric amount under amount/damage/dmg/total (the field is not in the documented event contract); the per-rider magnitudes are still pinned independently by the halved-atkPct linearity runs.",
+    "Not asserted (flagged, outside the input domain): SG cadence / pulls-per-sec is a datamine-unreliable value, so no absolute rider count is asserted anywhere - only ratios between counterfactual runs.",
+    "Flagged semantic, not asserted: 'after N normal attack(s)' for a 10-pellet SG is read as N ROUNDS (trigger pulls), not N pellet hits. The threshold tests are ratio-based so they hold under either reading, but the round-vs-pellet convention itself is unobservable without a shot-count-to-rider-count tie, which needs owner-attributed shot events.",
+    "Not asserted: 'the 1 enemy with the lowest remaining HP' selector is degenerate in a single-boss fight and carries no observable payload."
+  ],
+  "model": "claude-opus-5"
+}
