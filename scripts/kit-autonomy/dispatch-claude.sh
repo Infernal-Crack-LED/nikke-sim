@@ -79,37 +79,37 @@ if [[ -z "$RESULT_TEXT" ]]; then
   exit 1
 fi
 
-# Strip markdown code fences (```json ... ``` or ``` ... ```) if present,
-# then extract the JSON object using brace-matching (models sometimes add
-# preamble text before the JSON or trailing commentary after it).
+# Strip markdown code fences (```json ... ``` or ``` ... ```) if present, then extract the
+# JSON object. Extraction uses Python's json.raw_decode — a REAL JSON parser — scanning for
+# the first parseable object. This replaces the old hand-rolled brace-matcher, which tracked
+# string/escape state manually and desynced on large embedded-code payloads (a testSource
+# field full of escaped quotes + braces), truncating the response (dorothy-serendipity,
+# 2026-07-25). raw_decode handles arbitrary embedded code correctly and ignores any preamble
+# before / commentary after the JSON object.
 CLEANED="$(printf '%s' "$RESULT_TEXT" | sed -e '/^```[a-zA-Z]*$/d' -e '/^```$/d')"
-CLEANED="$(printf '%s' "$CLEANED" | python3 -c "
-import sys
+EXTRACTED="$(printf '%s' "$CLEANED" | python3 -c "
+import sys, json
 text = sys.stdin.read()
-idx = text.find('{')
-if idx < 0:
-    sys.exit(1)
-depth = 0
-in_str = False
-escape = False
-for i, c in enumerate(text[idx:], idx):
-    if escape:
-        escape = False
-        continue
-    if c == '\\\\' and in_str:
-        escape = True
-        continue
-    if c == '\"' and not escape:
-        in_str = not in_str
-        continue
-    if in_str:
-        continue
-    if c == '{': depth += 1
-    elif c == '}': depth -= 1
-    if depth == 0:
-        print(text[idx:i+1])
+dec = json.JSONDecoder()
+start = 0
+while True:
+    idx = text.find('{', start)
+    if idx < 0:
+        sys.exit(1)
+    try:
+        _, end = dec.raw_decode(text[idx:])
         break
-")"
+    except json.JSONDecodeError:
+        start = idx + 1
+sys.stdout.write(text[idx:idx + end])
+")" || {
+  echo "❌ could not extract a JSON object from the model response" >&2
+  echo "--- first 500 chars ---" >&2
+  printf '%s' "$CLEANED" | head -c 500 >&2
+  echo >&2
+  exit 1
+}
+CLEANED="$EXTRACTED"
 
 # Validate: must parse as JSON.
 if ! printf '%s' "$CLEANED" | jq empty 2>/dev/null; then

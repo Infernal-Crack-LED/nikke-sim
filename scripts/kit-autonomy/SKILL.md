@@ -139,10 +139,11 @@ no FIX/MISSING — S3 makes NO encoding change: add only the `Kit-autonomy gaunt
 then flip provenance at Land. The gauntlet CERTIFIES structure; do not manufacture a change to look productive.
 (5 of the 10-unit 2026-07-24 bottom-up batch were certify-only.)
 
-**Kit-silent cadence ⚑ (recurring).** When fire rate / reload / charge cadence is absent from the datamine and
-the recording, apply the STANDARD `⚑ cadence tuple` flag (`docs/engine-modeling-gaps.md` theme 1) with its
-video-plan recipe (solo scope-lock clip: rounds/10s + mag-empty→first-shot gap) — do not re-derive the
-limitation per unit. Same for the other catalog themes: cite the theme, attach its recipe, move on.
+**Kit-silent cadence — RESOLVED 2026-07-25 (no longer flagged).** The datamine cadence tuple (fire rate /
+reload / charge frames) is reliable: the SMG `read-ammo` test showed the only discrepancy was an SMG-specific
+frame-data confound (now understood), not a per-unit cadence error. Do NOT apply the former `⚑ cadence tuple`
+flag (`docs/engine-modeling-gaps.md` theme 1, marked SOLVED) — per-unit cadence measurement is no longer
+required. For the OTHER catalog themes: cite the theme, attach its recipe, move on.
 
 ## Stage 4 — engine updates (driver, isolated worktree) — ONLY if a primitive is genuinely missing
 
@@ -220,8 +221,14 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
   npx tsx scripts/kit-status.ts --gauntlet <slug> \
     --evidence "kit-autonomy gauntlet <date>; GO faithfulness <score>; <provenance: 'cross-family S2b(fable)/S5/S6/S7(opus) converged' — OR 'same-model only (Qwen reviewers)'>" \
     --residual "<the owner spot-check cluster from manual-review/<slug>.md>"
-  npx tsx scripts/kit-status.ts --refresh   # regenerate AUTO mirrors (provenance/unmodeled/caveats/board) + counts
   ```
+  `--gauntlet` syncs the unit's AUTO mirrors (provenance/unmodeled/caveats) ITSELF, so `kit-status.ts --check`
+  passes with no further step. **Do NOT run a full `--refresh` per-unit** — it rewrites the global `counts` +
+  EVERY unit's board row, which is the conflict surface when concurrent batches share `kit-status.json` (each
+  per-unit refresh guaranteed a merge conflict on the shared global region). The global aggregates are
+  regenerated once at batch-end / merge reconciliation — see "Reconciling concurrent batches" below. (A
+  single-unit gauntlet run off-batch MAY run `--refresh` to update that unit's board row immediately; it is
+  never required for `--check`.)
   `--gauntlet` reads the S7 judge result (`scripts/kit-autonomy/results/<slug>.json`) and sets
   `kitParse.status: "unit-tested"`, `kitParse.provenance: "gauntlet"` (derived from the note marker),
   `kitParse.date` (the gauntlet date), and the `kitParse.findings` (a GO summary + one line per judge gotcha).
@@ -259,6 +266,44 @@ When running the gauntlet for a BATCH of units on one shared worktree (one commi
   prior unit's accumulated `cross-family/` dir too. Add paths explicitly: this unit's override + test +
   `results/` + `manual-review/` + `cross-family/<slug>/` + the `kit-status.json` flip.
 
+## Reconciling concurrent batches
+
+Multiple gauntlet batches run concurrently on separate branches (one batch per worktree). The PER-UNIT work
+is disjoint — different slugs' overrides / tests / `results/` / `manual-review/` / `cross-family/<slug>/` never
+collide. Conflicts are confined to the DERIVED aggregate files, and only because they carry repo-wide state:
+
+- `data/kit-status.json` — the global `counts` object + every unit's `board` row (the per-unit `kitParse` /
+  `unmodeled` / `caveats` entries are disjoint across batches).
+- `scripts/regression-snapshot.json` — per-comp damage totals.
+- `docs/STATE.md` §5 primitive tables + `docs/engine-modeling-gaps.md` census.
+
+**Per-commit mitigation (already in the Land step):** `--gauntlet <slug>` syncs the gauntleted unit's AUTO
+mirrors itself and does NOT run a full `--refresh`, so each commit touches only that unit's `kit-status.json`
+entry (disjoint) — not the global `counts`/`board` region. This removes ~all kit-status conflict surface.
+
+**Merge reconciliation (when landing a batch branch on top of a `main` that moved):**
+
+1. `git fetch origin && git rebase origin/main` in the batch worktree.
+2. `data/kit-status.json` conflicts: resolve by OVERLAYING the batch unit's entry onto the main-side file —
+   keep main's file, set `units[<slug>] = <the batch commit's units[<slug>]>` (the slug is in the commit
+   subject `kit-autonomy gauntlet <slug>: …`). Do this per conflicting commit. **Never union-merge the whole
+   file** — the batch commit's copy of OTHER units is stale (pre-main-gauntlet) and would clobber main's
+   gauntlet data on shared "bystander" units (e.g. a unit your batch re-simmed for board rows but main actually
+   gauntleted). Global `counts`/`board` are regenerated in step 5, so leave them as main's during the rebase.
+3. `scripts/regression-snapshot.json`: keep either side — regenerated in step 5.
+4. `docs/STATE.md` / `docs/engine-modeling-gaps.md`: union-merge the §5 prose rows (a primitive's user list is
+   the union of both batches' edits); `doc-drift --update` (step 5) prunes any false members against the
+   combined overrides.
+5. Regenerate the derived aggregates against the combined tree:
+   ```sh
+   npx tsx scripts/kit-status.ts --refresh   # global counts + all board rows + AUTO mirrors (sims all comps)
+   npx tsx scripts/regression.ts --update    # regression snapshot
+   npx tsx scripts/doc-drift.ts --update     # primitive census + STATE.md §5 false-member prune
+   ```
+6. `bash scripts/verify.sh` green, then ONE clearly-labeled reconciliation commit (the derived aggregates are
+   not hand-mergeable — board rows need re-simming). Result: the batch's per-unit commits + one reconciliation
+   commit on top of `main`.
+
 ## Verify
 
 ```sh
@@ -277,6 +322,17 @@ bash scripts/verify.sh                              # the canonical repo gate
 
 ## Change log
 
+- 2026-07-25 (concurrent-batch hardening, 20-unit blanc..isabel batch) — two batches ran concurrently and
+  collided on the derived aggregate files. (1) `kit-status.ts --gauntlet` now syncs the gauntleted unit's AUTO
+  mirrors (provenance/unmodeled/caveats) itself, so the Land step needs NO per-unit `--refresh` — a full
+  `--refresh` rewrites the global `counts` + every unit's board row, which guaranteed a merge conflict on every
+  commit when batches share `kit-status.json`. Verified: a stale mirror fails `--check`, `--gauntlet` re-syncs
+  it, `--check` passes with no `--refresh`. (2) New "Reconciling concurrent batches" section: rebase + overlay
+  the batch unit's `kit-status.json` entry (never union-merge the whole file — it clobbers the other batch's
+  gauntlet data on shared bystander units) + regenerate aggregates (`kit-status --refresh`, `regression
+--update`, `doc-drift --update`) + `verify.sh` + one reconciliation commit. (3) `dispatch-claude.sh` JSON
+  extraction switched from a hand-rolled brace-matcher (desynced on large embedded-code `testSource` payloads,
+  truncating the response) to `json.raw_decode`.
 - 2026-07-24 (post-batch hardening, 10-unit bottom-up batch) — rolled the batch's recurring re-derivations
   into the skill: (1) harness import boilerplate + structural shape cheat-sheet (totals/unitOf per-slug maps,
   slot-keyed OverrideFile with NO top-level `blocks`, `gainPierce` effect vs `hasPierce` flag, flat-resolved

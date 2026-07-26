@@ -390,10 +390,18 @@ if (mode === '--refresh') {
   u.evidence = u.evidence ? `${u.evidence} | ${evidence}` : evidence;
   u.residual = u.residual ? `${u.residual} | ${residual}` : residual;
   if (u.graded === undefined) u.graded = { teams: 0, within3pct: 0 };
+  // AUTO mirrors — sync from the override so `--check` (provenance/unmodeled/caveats mirrors) passes
+  // WITHOUT a full `--refresh`. A full --refresh rewrites the global `counts` + EVERY unit's board row;
+  // running it per-unit is the conflict surface when concurrent batches share kit-status.json, so defer
+  // the global refresh to batch-end / merge reconciliation (SKILL.md "Reconciling concurrent batches").
+  // The board row is AUTO and not --check-validated, so it is left to the global refresh as well.
+  u.unmodeled = o.unmodeled ?? { skill1: [], skill2: [], burst: [] };
+  if (o.caveats) u.caveats = o.caveats;
+  else delete u.caveats;
   saveDoc(doc);
   console.log(
     `${slug}: kitParse.status=unit-tested provenance=${u.kitParse.provenance} date=${date}; ` +
-      `${u.kitParse.findings.length} finding(s); tier=${u.tier} tuned=${u.tuned} (unchanged)`,
+      `${u.kitParse.findings.length} finding(s); tier=${u.tier} tuned=${u.tuned} (unchanged); AUTO mirrors synced`,
   );
 } else {
   console.error(

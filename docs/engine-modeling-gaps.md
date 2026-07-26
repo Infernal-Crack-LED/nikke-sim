@@ -154,7 +154,7 @@
 
 | Theme                                      | Why it's here                                                               |
 | ------------------------------------------ | --------------------------------------------------------------------------- |
-| 1. Cadence tuple (~22 units)               | measurement backlog (video plan), not an engine gap                         |
+| 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
 | 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                          |
 | 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                        |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                               |
@@ -186,7 +186,8 @@
   all kit-verbatim coefficients, none calibrated-absorbed, so no de-credit was applied. → A32 (U13),
   DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit):** `extraHitDamagePct` generates
   no burst gauge while an equivalent `flatDamage` proc emits `skillGauge` per proc, and it is a summed
-  stat so a per-rider `flavor` (e.g. a true-damage rider, which must not crit) cannot be represented.
+  stat so a per-rider `flavor` cannot be represented (moot for crit now that true damage CAN crit,
+  owner ruling 2026-07-25; the summed stat still can't distinguish flavor for other flavor-gated behavior).
   The gauge half is **LIVE on all three carriers today** (they generate less gauge than the same kit
   line would under `flatDamage`, and the one measured function rider DOES generate gauge — so it is a
   probable under-generation, not a neutral unknown); the flavor half is genuinely inert (no
@@ -231,9 +232,10 @@
 
 **Genuinely-new owner-flagged ENGINE questions** (rulings needed, not primitives to build here):
 
-- `takina` — **true swap normals CRIT.** `sim.ts:2842` crits true swap normals (`crit: true`); the §2c "true
-  damage cannot crit" carve-out covers riders / `RIDER_CRIT` only, NOT swap normals. Broad blast radius —
-  `chisato` and `laplace` also carry `trueNormals`. Owner ruling needed; not changed by the gauntlet.
+- `takina` — **true swap normals CRIT — RESOLVED 2026-07-25 (owner ruling, in-game confirmed: true damage
+  CAN crit).** `sim.ts` crits true swap normals (`crit: true`), which is CORRECT; the former §2c "true
+  damage cannot crit" carve-out is reversed (and was never an engine guard). `chisato`/`laplace`
+  `trueNormals` critting is faithful. No change needed.
 - `snow-white-heavy-arms` — **`sequentialDamagePct` inert on flatDamage riders.** The engine flatDamage path
   does not route `flavor: 'sequential'` → `seqMult`, so her W16 `sequentialDamagePct 158.4` never lands on the
   flatDamage rider (relates to theme 12-tail / eve Mk2 sequential-doubling). Low severity — inert on the
@@ -269,12 +271,17 @@ Systematic limitations, not per-unit fudge — each corrects many units at once.
    `pierceUntilFrame`; grave enabled 0.83→1.18 HOT kept on purpose, faithful>fit, residual → U19).
    milk-blooming-bunny/prika deferred. (Pierce Damage ▲ applies on the partless boss; only the pierce
    CORE+BODY double-hit is multipart-only — don't conflate.)
-8. **Cadence-tuple measurement** (theme 1) — largest population (~22 units), a measurement backlog owned
-   by the full-sweep video plan, not an engine change.
+8. **Cadence-tuple measurement** (theme 1) — **SOLVED 2026-07-25**: the SMG `read-ammo` test traced the
+   perceived discrepancies to an SMG-specific frame-data confound; datamine cadence is reliable, no per-unit testing needed.
 
 ## Full theme catalog (ranked by unit count)
 
-### 1. Cadence-tuple datamine estimates — ~22 units
+### 1. Cadence-tuple datamine estimates — ~22 units — **SOLVED 2026-07-25**
+
+> **SOLVED 2026-07-25 (owner):** the SMG `read-ammo` test showed the perceived cadence discrepancies traced to an
+> SMG-specific frame-data confound (now understood), not per-unit cadence errors. The datamine cadence tuple is
+> reliable; per-unit cadence measurement is no longer required and the `⚑ cadence tuple` flag is retired. The
+> historical context below is retained.
 
 Class-default fire rate / `reloadFrames` / charge frames / SR-RL 22-frame bolt-gap shipped
 unverified on every non-focus-recorded unit ("⚑ cadence tuple"). Direction unknown per unit but
