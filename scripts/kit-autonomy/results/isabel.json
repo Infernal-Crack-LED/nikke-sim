@@ -1,0 +1,136 @@
+{
+  "slug": "isabel",
+  "kitDescription": "Isabel is an Electric shotgun Attacker on Burst III who builds a personal \"Marked Target\" stage every time she fires her own burst. Her first burst gives herself +6.26% Critical Rate for 45 seconds, her second adds +18.03% Critical Damage, and her third adds +17.28% ATK — each stage keeps the earlier ones, and since the buffs last 45 seconds against a 40-second burst cooldown, all three stay up permanently once she reaches stage 3 (around her third burst). Separately, a passive skill drops a single 170.58%-of-ATK hit on the highest-defence enemies roughly every 15 seconds all fight long, independent of her burst. Her burst deals 149.85% of ATK to all enemies, and its payload grows with her Marked Target stage: stage 1 also puts a 39.96% Damage Taken debuff on the boss for 5 seconds (which lifts the whole team's damage), stage 2 adds a 299.7% hit, and stage 3 adds a further 349.65% hit on top. The catch is that her burst also shortens Full Burst by 5 seconds for every ally — a genuine team downside that trades window length for a faster rotation.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": [
+      "NONE on encoding: 21 passed / 2 skipped (the 2 skips are the blind's own multi-enemy GAP skips) / 0 failed vs the driver's shipped override.",
+      "ONE blind assertion was RETIRED, not flipped: the blind test additionally claimed the NET SIGN of 'Full Burst Duration ▼5 sec' (that removing it RAISES team damage). It fails against the shipped override because in this engine the shortener is a net BENEFIT (faster burst re-cycle dominates the shorter +50% window). This is not a kit line and not an encoding claim — it is the driver's own documented UNVERIFIED ⚑ blast-radius. Retiring it (rather than flipping it green) is the correct call; asserting either sign would fabricate a verdict on an unmeasured rotation quantity.",
+      "Schema adaptations only (ov.<slot> array shape, slug-keyed damage/burstCast events, 0-based casterIdx vs 1-based position, self-cast constraint on selfBuffs, CF-C dropping the escalating STEP instead of a top-level buff) — scaffolding, no assertion substance changed. Note: strictly UNMODIFIED the blind file does not compile against the real schema, so the mechanical convergence check is on the reconciled file; every substantive assertion survives reconciliation intact."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Once: MT1 - Critical Rate 6.26%/45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → escalating step 1: buff critRatePct 6.26, durationSec 45",
+        "blindSaid": "IDENTICAL (S6 byte-equal block); S5 test pins value 6.26, self-target, finite expiresFrame, durationShots null, and critRateNormalPct absent",
+        "formulaCheck": "Prose says plain 'Critical Rate ▲', no 'of normal attacks' qualifier → the unscoped critRatePct term, which joins the Major additive bracket (Crit = critRate × critBonus) on ALL of her instances including skill/burst buckets. A critRateNormalPct encoding would restrict it to normals and under-credit her S2 rider and burst. Driver's cfCrScoped counterfactual proves the shipped key lifts the SKILL bucket, so the scope is discriminated, not assumed.",
+        "fireRateOk": true,
+        "explanation": "Fires on all 7 of her own burst casts over 180s; 45s duration > 40s CD so it holds continuously at steady state, as the prose implies."
+      },
+      {
+        "kitLine": "Twice: MT2 - Critical Damage 18.03%/45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 2: buff critDamagePct 18.03, durationSec 45; applies from her 2nd cast → casts-1 = 6 applications",
+        "blindSaid": "IDENTICAL encoding; S5 asserts the strict ladder cd.length < cr.length, which fails under an all-stages-at-once model",
+        "formulaCheck": "critBonus = (critDamage−100)/100 + Crit Damage ▲%/100, inside the same Major bracket — correct bucket. 'Each subsequent effect triggers all effects before it' = cumulative, so step 1 must still re-apply on cast 2; engine's slice(0, min(activations, steps)) does exactly that.",
+        "fireRateOk": true,
+        "explanation": "Count is casts-1 (6), the signature of a cumulative ladder; both the driver's cfS1NoEscalate and the blind's monotone-ladder assertion kill the 'always max' nearest-wrong."
+      },
+      {
+        "kitLine": "Three times: MT3 - ATK 17.28%/45s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 3: buff atkPct 17.28, durationSec 45; casts-2 = 5 applications; ladder caps at stage 3 (casts 4-7 re-apply steps 1..3, no wrap)",
+        "blindSaid": "IDENTICAL; S5 additionally pins casterAtkPct absent (not the caster-scaled flat-ATK path) and the cr > cd > atk strict ordering",
+        "formulaCheck": "Plain 'ATK ▲ 17.28%' → atkPct, summing into effectiveAtk = staticAtk × (1 + Σ ATK%), NOT the 'X% of caster's ATK' flat-add path. Blind's casterAtkPct-absent assertion is the right discriminator and passes.",
+        "fireRateOk": true,
+        "explanation": "The cap is implicit and correct: over 7 casts the counts are 7/6/5, which is only reproducible if stage 3 is terminal and all three re-apply thereafter."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 170.58% of final ATK as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive (t=0) flatDamage atkPct 170.58 crit:true + interval sec:15 flatDamage atkPct 170.58 crit:true → 12 hits/180s at t=0,15,…,165",
+        "blindSaid": "Same coefficient 170.58 and crit:true, but a single interval block at sec:10 — explicitly labelled an UNMEASURED ⚑ estimate because the cadence is kit-silent. The blind correctly refused to assert a cadence; the driver resolves it with measurement.",
+        "formulaCheck": "Function-type '% of final ATK' damage: crits at the caster's rate, NEVER core, NEVER range, FB by landing time, no charge bucket. Driver's test pins bucket='skill', critEligible true, coreEligible false, rangeApplied false — all four match the SSOT routing. Coefficient is the FAITHFUL kit 170.58 (the old fudged 174.49, which absorbed a since-corrected scope-lock ATK term, was correctly reverted).",
+        "fireRateOk": true,
+        "explanation": "Cadence is the one kit-silent field here, and it is resolved by an INDEPENDENT instrument, not a guess: the 2026-07-16 solo read (docs/probe-data/isabel-sg-band.json, ~14.7s period / 12 fires per 180s) corroborated by the datamined skillCooldownsSec.skill2 = 15. The t=0 first-fire is load-bearing for the measured count (interval-only first-fires at t=15 → 11 hits) and cfS2NoT0 pins exactly that. Note the driver's override note contains one STALE claim — 'the global DOT_CRIT default stays OFF' — which the SSOT superseded on 2026-07-21 (DOT_CRIT is now default ON); this is note drift only, since the line is now a flatDamage with an explicit crit:true and is behaviourally unaffected."
+      },
+      {
+        "kitLine": "Affects 5 enemies w/ highest final DEF",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Caveat: 'modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)'; test explicitly pins ONE hit per proc (12, not 60)",
+        "blindSaid": "Same disposition, recorded as an it.skip GAP ('no multi-enemy primitive; the 5-target clause collapses to one hit') plus a matching caveat",
+        "formulaCheck": "The scope-lock boss is a single partless target, so a 5-enemy selection is unobservable by construction. Multiplying the hit ×5 would be a pure fabrication against a one-enemy fixture.",
+        "fireRateOk": true,
+        "explanation": "Both agents independently reached the same collapse and both documented it; the driver's '12 not 60' assertion actively guards against the ×5 misread. Correctly a documented gap, not a drop."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Deals 149.85% as Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage atkPct 149.85; fires every cast (7) regardless of Marked Target stage; fbMajorApplied false",
+        "blindSaid": "Same trigger/target/coefficient; blind additionally writes explicit crit:true, noRange:true, noFb:true where the driver relies on engine defaults",
+        "formulaCheck": "MEASURED boundary rule: damage dealt BY a burst skill at its cast lands before the Full Burst window opens — no +50%, no entry auras. Driver's test asserts fbMajorApplied === false on all 7 nukes, which is the direct pin of that rule. 'Affects all enemies' collapses to the single boss (same gap as S2, documented).",
+        "fireRateOk": true,
+        "explanation": "Trigger, target, coefficient and the FB-exemption all match prose + SSOT. The only unresolved item is crit-eligibility of this hit (see gotchas) — see the driver note's 'no crit' phrasing versus the SSOT's 'burst nuke: crit ✅'."
+      },
+      {
+        "kitLine": "MT1: Damage Taken 39.96% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 1 on a second burstCast→enemy block: buff damageTakenPct 39.96, durationSec 5; lands with targetIdx null (boss-held) on every cast (7)",
+        "blindSaid": "Same stat/value/duration and same boss-debuff semantics; S5's CF-C (re-scope the debuff off the boss) proves every TEAMMATE loses damage under the self-scoped nearest-wrong — the strongest available check that this is modelled as a team-wide benefit, and it passes vs shipped",
+        "formulaCheck": "Taken = 1 + Σ Damage Taken ▲ on the boss — a boss-side bucket that multiplies EVERY unit's damage, not a self buff. casterIdx/targetIdx null is the correct engine representation. Damage-Taken sources from different casters stack, no cap.",
+        "fireRateOk": true,
+        "explanation": "Count == casts (7) confirms the post-increment stage read (her 1st burst already carries MT1), which is the reading the S2b reviewer flagged for an off-by-one and which the blind's own stage-1-on-first-cast intent independently corroborates. 5s duration pinned exactly."
+      },
+      {
+        "kitLine": "MT2: 299.7% of final ATK additional",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 2: flatDamage atkPct 299.7 → casts-1 = 6 fires, burst bucket",
+        "blindSaid": "RECON_ERROR (self-flagged): blind encoded it as a separate block gated on trigger burstCast{stage:2}. In this engine burstCast.stage is the BURST TIER (I/II/III), so for a Burst III unit every cast is stage 3 — the blind encoding would have fired ONLY the 349.65 rider and SILENTLY DROPPED both MT1 and MT2. The blind model itself named the escalating single-block alternative in its caveats as the correct fallback; the driver shipped exactly that.",
+        "formulaCheck": "'Additional damage' at % of final ATK = function-type skill damage in the burst bucket: crits at the caster's rate, never core, never range, FB-exempt at cast. Cumulative wording ('each subsequent effect triggers all effects before it') → casts-1 is the correct count.",
+        "fireRateOk": true,
+        "explanation": "This is the packet's single most valuable cross-check and it favours the DRIVER: the blind's stage-gated encoding is a latent SILENT_DROP that the driver's escalating block avoids, and cfBurstNoEscalate (all three every cast → 7/7) discriminates the collapsed-ladder nearest-wrong."
+      },
+      {
+        "kitLine": "MT3: 349.65% of final ATK additional",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating step 3: flatDamage atkPct 349.65 → casts-2 = 5 fires, burst bucket",
+        "blindSaid": "Same coefficient; same stage-gating RECON_ERROR as MT2 (would have been the only rider to fire)",
+        "formulaCheck": "Same function-damage routing as MT2. The 7/6/5 triple across MT1/MT2/MT3 is arithmetically the unique signature of a cumulative 3-stage ladder over 7 casts — it cannot be produced by either the 'all stages at once' or the 'exclusive tier' nearest-wrong.",
+        "fireRateOk": true,
+        "explanation": "The S5 blind test's independent MONOTONE LADDER assertion (per-cast burst payload strictly increasing across casts 1→2→3) passes against the shipped override — an independent confirmation of the ladder derived from damage totals rather than from block structure."
+      },
+      {
+        "kitLine": "All allies: Full Burst Duration 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → fullBurstExtend seconds:-5; test pins the sub-10s windows exist and are EXACTLY 5s (300f), RED vs cfNoExt (dropped → no sub-10s window) and RED vs cfExtSignFlip (+5 → 15s windows)",
+        "blindSaid": "EXACT MATCH on the encoding (fullBurstExtend seconds:-5, allies). The blind further asserted the NET rotation sign; that assertion was retired as an unverified ⚑, correctly.",
+        "formulaCheck": "Full Burst is a 10s window whose only inherent effect is the +0.5 Major term (owner ruling 2026-07-22). Shortening it to 5s cuts in-FB uptime for the whole team, so this is a genuine team NERF and damage-relevant — dropping it as 'defensive / no damage' would be a real SILENT_DROP. It is not dropped.",
+        "fireRateOk": true,
+        "explanation": "This is the kit's most-droppable line and the S2b reviewer's only FIX-flag; the driver encodes it faithfully, pins BOTH the drop and the sign-flip counterfactuals, and correctly refuses to assert the net rotation direction (shorter window vs faster re-cycle), which remains an open ⚑ requiring a /sim-battery diff. Only Isabel-initiated windows are shortened (helm's co-B3 windows stay 10s), which is the right per-cast semantics."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Crit-eligibility of the three burst-bucket damage instances (149.85 / 299.7 / 349.65) is neither set explicitly nor pinned by any test, and the driver's override note asserts the nuke is 'no crit' — which contradicts the formula SSOT. UNRESOLVED BY INSPECTION; needs a one-line check, not a code change on faith.",
+      "evidence": "Kit: 'Deals 149.85% of final ATK as Burst Skill damage' + 'Deals 299.7%/349.65% … as additional damage'. SSOT damage-calculation.md §1b table: 'burst nuke: crit ✅'; §2b: function-type instances 'CRIT at the caster's rate (default on)'. DRIVER: the three burst flatDamage effects carry no crit field, and the note reads '(burstCast, FB-exempt auto, no crit)'. BLIND S6: sets crit:true on all four flatDamage effects with the caveat 'Riders set crit:true (they crit at the caster's sheet rate)'. TWO BRANCHES, and the packet cannot settle which: (a) if the engine's flatDamage default is crit-ON, the omission is inert and only the note's 'no crit' wording is wrong — supported by the fact that the driver's S2 blocks also omit noRange yet the test still reads rangeApplied false and coreEligible false, i.e. the engine applies function-damage defaults on its own; (b) if the default is crit-OFF, all three burst instances are under-credited by roughly the full Major crit term (~14-15% of her burst payload once MT1/MT2 stack crit rate 6.26 and crit damage 18.03 onto her sheet). Neither the driver's 18 tests nor the S5 blind test asserts critEligible on ANY burst-bucket event, so no artifact discriminates the branches. Compounding note drift: the same note calls S2's crit:true a 'per-DoT opt-in' against a 'DOT_CRIT default OFF' global — stale framing left over from the pre-2026-07-20 dot encoding, and DOT_CRIT has been default ON since 2026-07-21.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add one assertion to scripts/tests/units/isabel.test.ts pinning critEligible on the burst-bucket 149.85 / 299.7 / 349.65 events (mirroring the existing S2 critEligible pin). If it reads TRUE, delete the '(… no crit)' clause from the override note — the encoding is already faithful and nothing else changes. If it reads FALSE, add crit:true to the three burst flatDamage effects, since the SSOT states burst-skill and function damage crit at the caster's rate. Also drop the stale 'global DOT_CRIT default stays OFF' sentence from the note. NO magnitude is being proposed either way — this is a routing flag, not a tuned number."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdictRationale": "GO. All 10 gradeable kit clauses land FAITHFUL or DOCUMENTED_GAP (9 faithful encodings + the 5-highest-DEF-enemies clause, which both agents independently collapsed to the single partless boss and both documented). Convergence is mechanical and GREEN: the S5 blind test, written from prose alone against a redacted schema, runs 21 pass / 2 legitimate GAP skips / 0 fails against the driver's SHIPPED override, and its independent instruments (the monotone per-cast burst-payload ladder from damage totals; CF-C proving the Damage Taken debuff lifts TEAMMATES, not just Isabel; the casterAtkPct-absent and critRateNormalPct-absent scope pins; the burstCast-vs-fullBurstEnter trigger split, which is LIVE here because co-B3 helm gives the team 13 Full Bursts against Isabel's 7 casts) all corroborate the driver rather than merely echoing it. The one blind assertion that does not pass — that removing the ▼5s Full Burst shortening RAISES team damage — was RETIRED, not flipped, and that is the correct call: it asserts a net rotation SIGN that is this unit's documented unverified ⚑, and in this engine the shortener is actually a net benefit; asserting either direction would fabricate a verdict on an unmeasured quantity. The most valuable cross-check runs the other way and vindicates the driver: the blind S6 override gated the three burst riders on trigger burstCast{stage:1/2/3}, believing stage meant the Nth activation, when in this engine it is the burst TIER — for a Burst III unit that encoding would have fired ONLY the 349.65% rider and silently dropped both the 39.96% Damage Taken debuff and the 299.7% hit. The blind model flagged the risk itself and named the single-escalating-block alternative, which is exactly what the driver shipped; that is a RECON_ERROR, not a finding. Nothing is silently dropped (unmodeled is empty in all three slots and correctly so), every modelled line demonstrably FIRES at prose-implied cadence over 180s (S1 7 casts, S2 12 hits at t=0+15s, burst riders 7/6/5, FB shortening on 7 of 13 windows), and every load-bearing assertion has a named counterfactual that turns it RED — including the two nearest-wrongs most likely to be gotten wrong here (the collapsed 'all stages every cast' ladder and a sign-flipped fullBurstExtend). ONE unresolved item, ranked first and the owner's spot-check: no artifact in this packet pins crit-eligibility on the three burst-bucket damage instances, and the driver's note calls the nuke 'no crit' while the formula SSOT says burst nuke and function damage crit at the caster's rate. I could not settle it by inspection — if the engine's flatDamage default is crit-on (as the parallel noRange/coreEligible defaults suggest) it is inert note-wording; if not, her burst payload is under-credited by the full Major crit term. It is a one-assertion check, does not touch any kit line's structure, and does not block GO. Same-model residual to be aware of: S5/S6/S7 are all claude-opus-5, so their agreement proves stability rather than correctness; the genuinely cross-family signal here is the claude-fable-5 S2b review, which converged on all 9 lines with a single FIX watch-flag (the ▼5s line) that the shipped override already satisfies. The remaining standing ⚑ are unchanged and correctly documented, not asserted: the fullBurstExtend:-5 net rotation sign, the SG cadence tuple (pullsPerSec / reloadFrames 133 / rolling reload), and the unmodelled possibility of an in-game Marked-Target reset on the 45s expiry (inert here, since 45s > her 40s cooldown).",
+  "model": "claude-opus-5",
+  "verdict": "GO"
+}

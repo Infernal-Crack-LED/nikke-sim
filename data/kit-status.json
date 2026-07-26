@@ -1730,21 +1730,24 @@
       "weapon": "SG",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "S2 rider matches measured (coef 170.58 correct post-bond); crits in-game ~15-25% but engine DoT-crit off → reads ~4% cold (engine-global)",
-          "Marked-Target stage modeled as monotonic burst-count; possible in-game 45s stage reset unmodeled (over-credits MT2/3 on >45s burst spacing)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/isabel.json + scripts/kit-autonomy/manual-review/isabel.md.",
+          "low FIDELITY (burst) — RESOLVED 2026-07-25: the judge flagged that crit-eligibility of the three burst-bucket instances (149.85/299.7/349.65) was unpinned and the note said 'no crit'. One-line check settled it: the engine's flatDamage default is crit-on (MEASURED critEligible true, critRate 0.213 = sheet 15% + MT1 6.26%, never cores), so the encoding was already faithful; 2 spec assertions now pin it and the override note is corrected."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "fullBurstExtend:-5 net rotation sign (unverified); SG cadence tuple; MT 45s stage reset; S2 team-fight period",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
