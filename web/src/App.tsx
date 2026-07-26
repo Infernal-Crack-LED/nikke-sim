@@ -1661,8 +1661,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // Kicks in at the first width where the 5-across card row would otherwise
   // reflow to a second row; above it all five cards show side by side.
   const compactTeam = useMediaQuery('(max-width: 900px)');
+  const portrait = useMediaQuery('(orientation: portrait)');
   const mobileNav = useMediaQuery('(max-width: 640px)'); // tabs → focused dropdown
-  const [settingsOpen, setSettingsOpen] = useState(!mobileNav);
+  const [settingsOpen, setSettingsOpen] = useState(!portrait);
   const [expandedSlot, setExpandedSlot] = useState(0);
 
   // reorder a team slot (drives the sim: position sets camera focus / burst
@@ -4493,7 +4494,7 @@ export function App({ user }: { user: AuthUser | null }) {
               onClick={() => setHealerNeeded((v) => !v)}
               title='Require at least one healer on the generated team'
             >
-              Healer needed
+              Include Healer
             </button>
           </div>
           <button
@@ -4554,7 +4555,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   onClick={() => setHealerNeeded((v) => !v)}
                   title='Require at least one healer in every generated team'
                 >
-                  Healer needed
+                  Include Healer
                 </button>
               </div>
               <div className='genpanels'>
@@ -6915,17 +6916,6 @@ export function App({ user }: { user: AuthUser | null }) {
                   </div>
                 </>
               )}
-              <div className='field'>
-                <label>Synchro level</label>
-                <div className='pills'>
-                  <input
-                    className='num'
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                    title='synchro level'
-                  />
-                </div>
-              </div>
             </section>
 
             <section className='global bulk'>
@@ -7146,13 +7136,25 @@ export function App({ user }: { user: AuthUser | null }) {
                 </PillGrid>
               </div>
             </section>
+
+            <div className='field synchro-level-field'>
+              <label>Synchro level</label>
+              <div className='pills'>
+                <input
+                  className='num'
+                  value={level}
+                  onChange={(e) => setLevel(e.target.value)}
+                  title='synchro level'
+                />
+              </div>
+            </div>
             </div>
           </details>
         )}
 
       {tab === 'sim' && (
         <>
-          <div className='sim-browse-row'>
+          <div className='roster-sim-actions'>
             <button
               className='share-btn'
               title='filter the full roster by weapon, burst, class, element, manufacturer, or kit role'

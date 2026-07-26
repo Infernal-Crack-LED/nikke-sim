@@ -292,20 +292,20 @@ header h1 {
   color: var(--text);
   display: flex;
   align-items: center;
-  justify-content: space-between;
   user-select: none;
 }
 .global-summary::-webkit-details-marker {
   display: none;
 }
-.global-summary::after {
-  content: '▾';
+.global-summary::before {
+  content: '▶';
   color: var(--muted);
-  font-size: 12px;
+  font-size: 10px;
+  margin-right: 10px;
   transition: transform 0.15s ease;
 }
-.global-details[open] > .global-summary::after {
-  transform: rotate(180deg);
+.global-details[open] > .global-summary::before {
+  transform: rotate(90deg);
 }
 .global-details-content {
   padding: 0 16px 14px;
@@ -404,11 +404,6 @@ input.num {
   border-radius: 8px;
   padding: 4px 8px;
   font-size: 13px;
-}
-
-/* entry point to the Browse Nikkes picker, above the team cards */
-.sim-browse-row {
-  margin: 12px 0 10px;
 }
 
 /* team cards */
