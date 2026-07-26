@@ -1,0 +1,72 @@
+{
+  "slug": "maxwell",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 4.48,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 43.1,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 813.42,
+          "chargeTimeSec": 2,
+          "chargeMultPct": 300,
+          "maxAmmo": 1,
+          "hasPierce": true,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "■ Activates when there are above 5 enemy unit(s), excluding Nikkes. Affects self.",
+      "Critical Rate ▲ 4.83%.",
+      "Critical Damage ▲ 13.91%."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ burst weaponSwap.durationSec = 10 is UNMEASURED. The kit text states no duration for the weapon change; 10s is the standard Full Burst window assumed as the swap's bound. If the swap is instead uses-bound (ends after its single shot) or ends at Full Burst end regardless, the shot economy changes materially.",
+    "⚑ burst weapon-swap SHOT ECONOMY is kit-silent and unmodeled beyond the time bound: maxAmmo 1 forces a reload after every swapped shot, so shots fired = f(2s charge time, SR reload, swap start phase). No maxShots is set (the kit gives no uses limit); the engine's cadence + reload model decides the count. Estimate ~2 full-charge shots in a 10s window (2s charge + ~2.35s reload from reloadFrames 141).",
+    "⚑ Cadence tuple (chargeFrames 60 / reloadFrames 141 / rate-of-fire) is datamine-sourced and known-unreliable; the burst swap overrides charge time to 2s but inherits the base reload cadence.",
+    "Pierce is scoped to the SWAPPED weapon only (weaponSwap.hasPierce), NOT the unit-level hasPierce flag — the 'Additional Effect: Pierce' line sits inside the burst's weapon-change block, so her base SR shots are not Pierce-tagged.",
+    "skill1 target is authored WITHOUT excludeSelf: 'Affects 2 allies with the highest final ATK' is read as a self-inclusive candidate pool (no 'except the skill user' clause). If self is excluded in game, maxwell loses her own 43.1% ATK / 4.48% Charge Speed and her burst damage drops materially — this is the single highest-leverage open question in this baseline.",
+    "byFinalAtk:true is set because the kit says 'highest FINAL ATK' literally (live buffed ranking), not plain 'highest ATK'.",
+    "skill2 is entirely INERT in solo-raid scope: its gate is '>5 enemy units, excluding Nikkes' and the scope-lock boss is a single partless enemy. The schema has no enemy-count gate, so the block is omitted rather than modeled as a passive — modeling it passively would silently grant permanent +4.83% Crit Rate / +13.91% Crit Damage that the fight never earns."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Maxwell (SR/Iron/Attacker/Burst III) is modeled as: S1 = a team buff on Full Burst entry (charge speed + ATK, 10s, to the 2 highest-final-ATK allies, self-inclusive); S2 = inert in this scope (>5-enemy gate, unsatisfiable vs a single boss — see unmodeled); burst = a self weapon swap to a 2s-charge, 1-round, Pierce-tagged cannon at 813.42% with a 300% full-charge multiplier. The swap's duration and shot economy are kit-silent and flagged."
+}

@@ -1,0 +1,93 @@
+{
+  "slug": "maxwell",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst → 2 allies highest final ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Generic stat buffs (Charge Speed / ATK), no normal-attack or crit scoping in the text.",
+      "durationSemantics": "durationSec: 10 for both effect lines — wall-clock seconds, explicitly stated 'for 10 sec'. NOT rounds, NOT permanent.",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' fires on ANY team Full Burst, not only rotations Maxwell casts. No everyN/fbGate/status gate.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true (text literally says 'highest final ATK' → live effectiveAtk ranking per the A3 literal-word rule). NO excludeSelf — the text has no '(except self)' clause, so Maxwell herself is in the candidate pool and, as the Attacker with class-static 118,027 ATK, will usually occupy one of the two slots.",
+      "nearestWrongModel": "Keying the block to burstCast (fires only on rotations Maxwell casts her own burst) instead of fullBurstEnter — plausible because the buffs feed her own burst-swap shots so a modeler may couple them to her cast.",
+      "distinguishingAssertion": "In controlComp('maxwell') (helm is a co-B3, so some Full Bursts are entered off helm's cast), collect buffApply events with stat 'chargeSpeedPct' value 4.48: their count must equal 2 × (number of fullBurstStart events), i.e. the buff applies on EVERY Full Burst including ones Maxwell did not cast. RED under burstCast (applies only on Maxwell's rotations).",
+      "inertness": "Must never apply to more than 2 targets per Full Burst; expiresFrame on each buffApply must be applyFrame + 600 (10 s), never permanent.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 43.1% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic atkPct on the two targets (scales each target's own ATK). Plain percentage stat — buffApply value stays the raw 43.1, not flat-resolved (that path is casterAtkPct only).",
+      "durationSemantics": "durationSec: 10 — explicit seconds.",
+      "triggerIdentity": "Same block as the Charge Speed line: fullBurstEnter.",
+      "targetSet": "alliesTopAtk count:2, byFinalAtk:true, self included.",
+      "nearestWrongModel": "Static-ATK ranking (omitting byFinalAtk) — the schema default; kits saying plain 'highest ATK' keep static ranking, so the FINAL-ATK wording is easy to gloss over. Secondary misread: excludeSelf:true.",
+      "distinguishingAssertion": "Patch a low-static-ATK ally (e.g. liter, Supporter static 98,367) via withPatchedOverride with a large passive self atkPct so her live effectiveAtk exceeds a higher-static ally at FB entry; assert the buffApply {stat:'atkPct', value:43.1} events at that FB carry targetSlug of the LIVE-ranked top-2 (the buffed liter selected). RED under static ranking (selection unchanged by live buffs). Self-inclusion check: with no patches, one of the two targetSlug values per FB is 'maxwell'.",
+      "inertness": "Exactly 2 buffApply of atkPct 43.1 per Full Burst; the three non-selected units' effectiveAtk must not move.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ above 5 enemy unit(s) → self",
+      "disposition": "UNMODELED",
+      "scope": "Self crit-stat buffs (Critical Rate ▲ 4.83%, Critical Damage ▲ 13.91%), gated on enemy COUNT.",
+      "durationSemantics": "No duration stated — would be continuous WHILE the condition holds; but the condition ('above 5 enemy units, excluding Nikkes') is structurally unsatisfiable in this sim: the scope-lock fight is one partless boss, and the engine has no enemy-count primitive at all.",
+      "triggerIdentity": "Conditional passive on enemy count — no schema gate expresses it, and against the single-boss target the gate is permanently FALSE. The faithful model is INERT (recorded verbatim in `unmodeled`), not a passive.",
+      "targetSet": "Self only.",
+      "nearestWrongModel": "Dropping the enemy-count clause and shipping an always-on passive self buff (critRatePct 4.83 + critDamagePct 13.91) — a classic 'gate I can't express → ignore the gate' over-credit that permanently inflates Maxwell's crit and every crit-eligible hit including the burst-swap shots.",
+      "distinguishingAssertion": "Run controlComp('maxwell'); assert ZERO buffApply events with stat 'critRatePct' value 4.83 and ZERO with stat 'critDamagePct' value 13.91 across the whole fight, and that damage events' crit rate for maxwell reflects the base sheet rate only. RED under the ungated-passive misread.",
+      "inertness": "Stripping skill2 blocks entirely via withPatchedOverride must produce identical totals(res)['maxwell'] — the slot must be damage-inert as shipped.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Change the weapon in use (813.42%, 2s charge)",
+      "disposition": "FAITHFUL",
+      "scope": "Self weaponSwap: damagePct 813.42, chargeTimeSec 2, chargeMultPct 300 ('Full Charge Damage: 300% of damage' — a ×3 multiplier ON the 813.42% swap damage, so a full-charge swap shot resolves at 2440.26% of final ATK through the charge bucket, before FB/range/buffs), maxAmmo 1.",
+      "durationSemantics": "durationSec is KIT-SILENT here — the prose states no window. ⚑ CALIBRATED: the conventional 10 s Full-Burst window is the estimate; also ⚑ the whole swap shot economy (charge 2 s at base + reload of a 1-round magazine ⇒ roughly 2–3 full-charge shots per window, more if her own S1 Charge Speed lands on her). ALWAYS-⚑ field #3, must not ship silently.",
+      "triggerIdentity": "burstCast (self mode in Maxwell's OWN burst block) — fires ONLY on rotations Maxwell casts her burst, never on a teammate's B3 rotation. NOT fullBurstEnter. The swap's SHOTS land during the FB window and take the +50% FB major by timing (the swap itself is not an instant burst-damage line).",
+      "targetSet": "Self.",
+      "nearestWrongModel": "TWO stacked misreads to distinguish: (1) 'Max Ammunition Capacity: 1 round(s)' encoded as maxShots:1 — swap terminates after ONE shot — when it is the swap weapon's MAGAZINE size (fire 1 → reload ~141f → fire again, cycling for the whole window); (2) keying the swap to fullBurstEnter so helm's rotations also trigger it.",
+      "distinguishingAssertion": "(1) Within a single Full Burst window that Maxwell opened, count damage/shot events carrying the swap multiplier (mult reflecting 813.42×3 on full charge): must be ≥2, with at least one reload event for maxwell INSIDE the swap window. RED under maxShots:1 (exactly one swapped shot, no in-window reload). (2) Filter burstCast events: swap-multiplier shots must appear ONLY in FB windows preceded by a burstCast with srcSlot === maxwell's slot; in helm-cast rotations Maxwell's shots keep the base SR mult 69.04. RED under fullBurstEnter keying.",
+      "inertness": "Outside Maxwell's own burst windows her cadence/mult must be the base SR (69.04 normal / 200 core, 6-round magazine); the swap must not leak past its window end.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional Effect: Pierce",
+      "disposition": "FAITHFUL",
+      "scope": "Pierce scoped to the SWAPPED weapon only — encode as weaponSwap.hasPierce:true (per-shot pierce tag on swap shots), NOT the top-level override hasPierce flag.",
+      "durationSemantics": "Coextensive with the swap window.",
+      "triggerIdentity": "Rides the burstCast weaponSwap; no independent trigger.",
+      "targetSet": "Self (her swap shots).",
+      "nearestWrongModel": "Top-level hasPierce:true on the override — tags her base SR shots as Pierce for the WHOLE fight, making any teammate's or own Pierce Damage ▲ buff feed all of her damage instead of only the swap window.",
+      "distinguishingAssertion": "Add a Pierce Damage ▲ buff to the comp via withPatchedOverride (pierceDamagePct on maxwell); assert damage events OUTSIDE her swap windows are unchanged versus the unpatched run while swap-window shots move. Simpler structural check: the shipped override must not set top-level hasPierce while the burst weaponSwap carries the pierce tag. RED under whole-fight hasPierce (out-of-window damage moves / crossFight pierce tagging).",
+      "inertness": "pierceDamagePct is parsed-but-inert in v1, so the tag itself must be damage-neutral on the graded board; only the TAGGING SCOPE is asserted.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Charge Speed ▲4.48% ×10s (fullBurstEnter, top-2 final ATK)",
+    "skill1:ATK ▲43.1% ×10s (fullBurstEnter, top-2 final ATK, byFinalAtk)",
+    "burst:weaponSwap 813.42%/2s charge/300% full-charge/maxAmmo 1 (burstCast, self)",
+    "burst:Pierce (swap-scoped tag)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Activates when there are above 5 enemy unit(s), excluding Nikkes. Affects self.",
+      "Critical Rate ▲ 4.83%.",
+      "Critical Damage ▲ 13.91%."
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to reconcile against the driver: (1) 'Max Ammunition Capacity: 1 round(s)' is the swap MAGAZINE size (reload-and-refire cycling), not maxShots:1 — the single-big-shot reading roughly halves-to-thirds her burst-window output; (2) skill1 says 'highest FINAL ATK' → byFinalAtk:true live ranking, and self IS in the pool (no except-self clause) — static ranking or excludeSelf both mis-target; (3) skill1 is fullBurstEnter (every team FB, including helm-cast rotations in the control fixture) while the burst swap is burstCast (Maxwell's rotations only) — collapsing the two either over-credits the swap or under-credits the team buff; (4) skill2's >5-enemy gate is permanently false vs the partless solo boss — the only wrong move is shipping it as an ungated crit passive; it must be verbatim-unmodeled and provably inert; (5) the swap durationSec is kit-silent — a ⚑ CALIBRATED 10 s FB-window estimate with the shot-economy (charge 2 s + 141-frame reload per 1-round mag, accelerated by her own S1 Charge Speed when she self-selects) stated as the recipe, never a silent constant; (6) Pierce must be swap-scoped (weaponSwap.hasPierce), not the whole-fight top-level flag. Interaction worth one composed assertion: her S1 lands at FB entry AFTER her burstCast swap begins, so swap shots fired inside the window should snapshot the +43.1% ATK and the faster charge — a model that resolves swap shots pre-FB (burstSnapshotsPreFb-style) would miss both.",
+  "model": "claude-fable-5"
+}

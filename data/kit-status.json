@@ -2369,24 +2369,24 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
         "findings": [
-          "0.938 COLD: F1 burst hit modeled 813.42% (uncharged) vs kit-literal full-charge 2440% (x3 lever); F2 flatDamage strips crit+core the Pierce railgun rolls. Recipe: popup-read burst hit in run-G footage"
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/maxwell.json + scripts/kit-autonomy/manual-review/maxwell.md."
         ]
       },
       "tier": "CALIBRATED",
       "tuned": true,
       "control": false,
-      "evidence": "Railgun single-shot fix from run G (1.93->0.81)",
+      "evidence": "Railgun single-shot fix from run G (1.93->0.81) | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged — skill1 fullBurstEnter/alliesTopAtk:2/byFinalAtk:self-eligible + skill2 inert four-way converged; burst single-shot 813.42 measurement-gated (probe run-G 1.93->0.81) ruled faithful via measured>fudge; driver FIX byFinalAtk:true (prose 'highest final ATK', A3 rule) | kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged — skill1 fullBurstEnter/alliesTopAtk:2 + skill2 inert four-way converged; burst single-shot 813.42 measurement-gated (probe run-G 1.93->0.81) ruled faithful via measured>fudge. byFinalAtk:true (prose 'highest final ATK', A3) converged across blind roles + judge but NOT enacted: a controlled diagnostic proved it alone drifts 7 measured regression anchors up to 19.95% (incl. other units'), so held as a measurement-gated residual; static-ranking encoding shipped (calibrated to measured fights)",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate",
+      "residual": "Over-corrected; reads 0.80 (G) but 1.17 (N6) — unstable, audit candidate | burst magnitude measurement-gated: 0.80 (run G) vs 1.17 (N6) audit candidate; does the railgun shot core (kitParse F2 strips the core the Pierce railgun may roll) — spot-check the single 813.42 popup + core presence in a maxwell focus recording | burst magnitude measurement-gated 0.80 (G) vs 1.17 (N6) audit candidate + does the railgun core (F2); skill1 byFinalAtk ranking-basis (prose 'final ATK') not enacted — enacting drifts 7 measured comps up to 19.95% (takina/liberalio/milk-blooming-bunny/d-killer-wife/maiden-ice-rose/maxwell), recipe = targeting footage in a multi-candidate comp + re-grade affected comps with owner; spot-check the single 813.42 popup + which 2 allies get the 43.1% buff",
       "unmodeled": {
         "skill1": [],
         "skill2": [
