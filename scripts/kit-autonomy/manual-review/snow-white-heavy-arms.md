@@ -61,9 +61,9 @@ full-charge shots.
 - **S1 Auto Fire Effect 1 — 41.9% AoE** `shotFired → enemy → flatDamage 41.9`, once per full charge (×84). **W5**
   discriminates presence (removed → 0).
 - **S1 Auto Fire Effect 2 — 105.59% × 5 ammo = 527.95% sequential baseline volley** `shotFired → enemy → flatDamage
-  527.95 flavor:sequential`, once per full charge (×84). **W6** discriminates magnitude (single ammo 105.59 → 0 of 527.95).
+527.95 flavor:sequential`, once per full charge (×84). **W6** discriminates magnitude (single ammo 105.59 → 0 of 527.95).
 - **S1 Fully Active EXTRA volley — 105.59% × 10 = 1055.9% sequential, swapGate:'swapped'** `shotFired, swapGate:swapped →
-  enemy → flatDamage 1055.9 flavor:sequential`. THE FIX LINE (2026-07-13 volley-placement): in Fully Active the ammo cap
+enemy → flatDamage 1055.9 flavor:sequential`. THE FIX LINE (2026-07-13 volley-placement): in Fully Active the ammo cap
   rises 5→15, so a swap shot's volley is 105.59×15 = 1583.85%; the EXTRA over the 527.95 baseline is 1055.9%, riding ONLY
   the two swapped full-charge shots inside the FB window (COMMUNITY twice-confirmed: gamewith JP + prydwen 7→15-hit
   structure). **W7** fires exactly 2×/burst (10 total), all inside [burstCast,+10s] swap windows; discriminates the FIX
@@ -79,17 +79,18 @@ full-charge shots.
 - **S2 entering Burst Stage 3 — ATK ▲73.92%/10s (self)** `stageEnter:3 → self → atkPct 73.92 (10s)`, fires on her burstCast
   frames (entering stage 3 = casting her B3). **W14** discriminates duration (5s vs 10s). (Residual (a): trigger identity
   stageEnter:3 vs burstCast is frame-indiscriminable in a sole-B3 fixture.)
-- **S2 at Full Charge while Fully Active — Charge Damage ▲528% (whileSwapped)** `burstCast → self → chargeDamagePct 528
-  (10s, whileSwapped)`. APPLIED: swap-weapon normals carry charge mult **7.78** (= 2.5 base + 5.28 additive charge points),
+- **S2 at Full Charge while Fully Active — Charge Damage ▲528% (durationShots:2)** `burstCast → self → chargeDamagePct 528
+(durationShots:2)`. APPLIED: swap-weapon normals carry charge mult **7.78** (= 2.5 base + 5.28 additive charge points),
   base normals 2.5. **W15** discriminates presence (removed → no 7.78 normals).
-- **S2 at Full Charge while Fully Active — Sequential Damage ▲158.4% (whileSwapped)** `burstCast → self →
-  sequentialDamagePct 158.4 (10s, whileSwapped)`. **W16** PINS the encoding (emitted on burstCast). **RESIDUAL (c):** the
-  buff is encoded faithfully but INERT on the 527.95/1055.9 riders — the engine flatDamage path does not route
-  `flavor:'sequential'` into the seqMult bucket (measured seqMult=1 with/without whileSwapped/flavor). See §3.
+- **S2 at Full Charge while Fully Active — Sequential Damage ▲158.4% (durationShots:2)** `burstCast → self →
+sequentialDamagePct 158.4 (durationShots:2)`. **W16** PINS the encoding (emitted on burstCast). **RESOLVED (owner
+  ruling 2026-07-26):** the buff is LIVE on the 527.95/1055.9 riders — the engine routes `flavor:'sequential'`
+  flatDamage riders into the `dmgUp` bucket via `sequentialDamagePct` (sim.ts:1415, `opts.sequential` gate). The
+  gauntlet residual measured `seqMult` (the `sequentialMultPct` bucket) and misidentified the consumption path.
 - **Burst Attack Damage ▲84.48%/10s (self)** `burstCast → self → attackDamagePct 84.48 (10s)`. **W17** discriminates
   trigger (`fullBurstEnter` fires on FB-START frames, strictly after the cast frames) and target (`allies` → all 3 slots).
 - **Burst Seven Dwarves Fully Active — weaponSwap** `burstCast → self → weaponSwap damagePct 69.04, chargeTimeSec 3.2,
-  durationSec 10, maxShots 2`. The 3.2s-charge swap mode; `maxShots:2` terminates after the 2nd swapped shot (uses-based,
+durationSec 10, maxShots 2`. The 3.2s-charge swap mode; `maxShots:2` terminates after the 2nd swapped shot (uses-based,
   NOT a naive 10s window — a 10s window would admit a 3rd 3.2s shot at ~9.6s). Observable via the W7 1055.9 riders + the
   W15 charge-7.78 normals. **W18** removing the swap removes BOTH; swha deals ZERO burst-bucket damage (the W20 projectile
   41.9% is skipped, not mis-encoded as a boss nuke).
@@ -100,23 +101,22 @@ full-charge shots.
 
 ## 3. Residuals for owner spot-check (NOT faithfulness failures)
 
-The judge graded faithfulness **1.0** with these three documented residuals (all flagged in the override `note`):
+The judge graded faithfulness **1.0** with these three documented residuals (all flagged in the override `note`).
+**Owner rulings 2026-07-26:**
 
 - **(a) W14 trigger identity — `stageEnter:3` vs `burstCast`.** The override encodes the literal prose trigger
   ("entering Burst Stage 3" = `stageEnter:3`). In the sole-B3 fixture this coincides frame-wise with `burstCast`, so it
-  is not behaviorally discriminable here. **Spot-check:** run a comp with a co-B3 (e.g. helm) where swha's 40s cd forces
-  alternation — `stageEnter:3` fires on the co-B3's casts too, `burstCast` would not.
-- **(b) W15/W16 duration representation — `burstCast`+`whileSwapped`+`durationSec:10` vs literal per-swap-full-charge
-  `durationShots:1`.** Damage-equivalent: both buff EXACTLY the two swap shots (charge 7.78 probe-verified on both). The
-  S6 blind independently chose `durationShots:2` (same equivalence class). **Spot-check:** confirm both swap shots carry
-  the 528 charge boost in a focus recording (popup delta on the 2 post-burst charges).
-- **(c) W16 `sequentialDamagePct 158.4` inert-on-riders (ENGINE).** Encoded faithfully per prose, but the engine's
-  flatDamage path does not route `flavor:'sequential'` into the seqMult bucket — measured `seqMult=1` on both the 527.95
-  baseline and the 1055.9 lump regardless of `whileSwapped`/flavor. This is **src/engine/** plumbing, OUT of gauntlet
-  scope (the gauntlet must not edit the engine). The 158.4 is a small support-diluted contribution; the model is
-  graded/validated in this state. **Spot-check / possible engine follow-up:** route flatDamage `flavor:'sequential'`
-  riders into seqMult if the sequential-damage bucket should apply to them. (The S2b fable-5 reviewer assumed the 158.4
-  feeds the volley per INTENT — correct about intent; the engine doesn't consume it for flatDamage.)
+  is not behaviorally discriminable here. **Owner ruling: `stageEnter:3` is correct** — she gets the ATK buff whenever
+  burst stage 3 is entered, regardless of whether she is the one bursting. No change needed.
+- **(b) W15/W16 duration representation — RESOLVED.** Owner ruling: **`durationShots:2` is the correct encoding**
+  (kit-literal "for 1 round(s)" × 2 uses). The prior `burstCast`+`whileSwapped`+`durationSec:10` was damage-equivalent
+  but less faithful. Override updated to `durationShots:2`; `whileSwapped` and `durationSec` removed.
+- **(c) W16 `sequentialDamagePct 158.4` — RESOLVED.** Owner ruling: **route `flavor:'sequential'`** — confirmed the
+  engine SHOULD route sequential-flavored flatDamage riders into the sequential damage bucket. Investigation shows the
+  engine ALREADY does this: `dealDamage` routes `opts.sequential` into the `dmgUp` bucket via `sequentialDamagePct`
+  (sim.ts:1415). The gauntlet residual measured `seqMult` (which uses the _different_ stat `sequentialMultPct` — eve's
+  multiplicative mechanic) and misidentified the consumption path. The 158.4 feeds `dmgUp`, not `seqMult`, and is
+  **LIVE** on the 527.95/1055.9 riders. No engine change needed; the residual was a measurement error.
 
 ---
 

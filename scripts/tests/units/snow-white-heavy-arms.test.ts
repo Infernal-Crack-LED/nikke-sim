@@ -46,11 +46,10 @@
 //       buffs per fully-charged shot, prydwen the 7→15-hit structure). The fixture makes this discriminable:
 //       she fires 84 full charges over 180s but only 10 swap shots (2 per burst × 5 bursts), so the 1055.9 must
 //       fire exactly 10× and every instance must land inside a [burstCast, +10s] swap window.
-//   W15/W16  "Charge Damage ▲528%" + "Sequential attack damage ▲158.4%" each read "for 1 round(s)", but Fully
+//   W15/W16  "Charge Damage ▲528%" + "Sequential attack damage ▲158.4%" each read "for 1 round(s)", and Fully
 //       Active has 2 uses (two swapped full charges), so both are encoded as burstCast self buffs with
-//       whileSwapped:true and durationSec 10 — the outer bound covering both swap rounds, while whileSwapped
-//       confines their ACTIVITY to the swap window itself (sim.ts:1228 drops a whileSwapped buff the instant the
-//       unit's swap ends).
+//       durationShots:2 — the kit-literal round count covering exactly the two swap shots (owner ruling
+//       2026-07-26; the prior whileSwapped+durationSec:10 was damage-equivalent but less faithful).
 //
 // EVENT-LOG CONVENTIONS (measured for this fixture): the W4 boss debuff emits buffApply with casterIdx===null
 // AND targetIdx===null, but the buff KEY carries the caster SLOT (`2:skill1:damageTakenPct:4.2`, swha = slot 2)
@@ -59,17 +58,13 @@
 // observables are the swap-weapon normal shots (normal-bucket 69.04 with charge mult 7.78 = 2.5 + 5.28 additive
 // charge points from W15) and the W7 1055.9 riders (which the swapGate confines to those swap shots).
 //
-// ENGINE-FIDELITY RESIDUAL (⚑, flagged for owner spot-check — NOT an override-encoding gotcha): the W16
-// sequentialDamagePct 158.4 buffApply FIRES faithfully (stat/value/target/trigger all asserted below), but the
-// engine's flatDamage rider path does NOT route flavor:'sequential' into the seqMult bucket — measured seqMult=1
-// on BOTH the 527.95 baseline and the 1055.9 lump regardless of whether whileSwapped is present or the flavor tag
-// is stripped (probe-verified). So the 158.4 is encoded-but-inert on the riders in this fixture. The note's
-// "applies ONLY to sequential-flavored hits" describes the INTENT; the engine does not consume it there. This is
-// an engine-core question (flatDamage→seqMult plumbing), which the gauntlet must NOT edit (src/engine/**). The
-// override encodes the prose faithfully; the model is graded/validated in this state (the 158.4 is a small,
-// support-diluted contribution). W15 chargeDamagePct 528, by contrast, IS consumed — it lifts the swap-weapon
-// normal shots' charge mult to 7.78 (asserted below). The asymmetry is purely the engine's two different stat
-// consumption paths (charge bucket vs seqMult bucket), not an override inconsistency.
+// ENGINE-FIDELITY RESIDUAL — RESOLVED (owner ruling 2026-07-26): the W16 sequentialDamagePct 158.4 buffApply
+// FIRES faithfully AND is consumed by the engine: dealDamage routes flavor:'sequential' flatDamage riders into
+// the dmgUp bucket via sequentialDamagePct (sim.ts:1415, opts.sequential gate). The gauntlet residual measured
+// seqMult (the sequentialMultPct bucket — eve's multiplicative mechanic) and misidentified the consumption path;
+// the 158.4 feeds dmgUp, not seqMult, and is LIVE on the 527.95/1055.9 riders. W15 chargeDamagePct 528 lifts
+// the swap-weapon normal shots' charge mult to 7.78 (asserted below). Both buffs now use durationShots:2
+// (kit-literal 'for 1 round(s)' × 2 uses; owner ruling 2026-07-26).
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest-wrong gates nothing):
 //   W4  boss debuff (targetIdx null, permanent, value 4.2). Nearest-wrong (target): retarget `self` → the debuff
@@ -85,15 +80,16 @@
 //       helm-H4 pattern), AND the encoding still fires (self, 5s).
 //   W14 stageEnter(B3) self ATK ▲73.92% 10s — fires precisely on her burstCast frames (entering stage 3 = casting
 //       her B3 burst). Nearest-wrong (duration): 5s, not the prose 10s.
-//   W15 burstCast self Charge Damage ▲528% whileSwapped — encoding fires on cast frames; APPLIED: swap-weapon
+//   W15 burstCast self Charge Damage ▲528% durationShots:2 — encoding fires on cast frames; APPLIED: swap-weapon
 //       normals carry charge mult 7.78 (= 2.5 + 5.28), base normals 2.5. Nearest-wrong: removed → no 7.78 normals.
-//   W16 burstCast self Sequential Damage ▲158.4% whileSwapped — encoding fires on cast frames (the inert-on-riders
-//       residual is documented above, NOT asserted as scaling). Nearest-wrong (presence): removed → no buffApply.
+//   W16 burstCast self Sequential Damage ▲158.4% durationShots:2 — encoding fires on cast frames; LIVE on the
+//       527.95/1055.9 riders via the dmgUp bucket (sequentialDamagePct, opts.sequential gate). Nearest-wrong
+//       (presence): removed → no buffApply.
 //   W17 burstCast self Attack Damage ▲84.48% 10s. Nearest-wrong (trigger): fullBurstEnter → fires on FB-START
 //       frames (380,…), strictly AFTER her burstCast frames (358,…). (target): `allies` → all 3 slots.
-//   W18 weaponSwap (charge 3.2s, 2 uses) — observable ONLY via its swap shots (the W7 1055.9 riders + the W15
-//       charge-7.78 normals). Removing it removes BOTH. No fabricated burst-bucket damage (W20 skip ⇒ swha deals
-//       ZERO burst-bucket damage; the swap shots are normal-bucket weapon fire).
+//   W18 weaponSwap (charge 3.2s, 2 uses) — observable via the W7 1055.9 riders (swapGate:'swapped'). Removing it
+//       removes the riders. The W15 charge-7.78 normals persist (durationShots:2 is swap-independent). No fabricated
+//       burst-bucket damage (W20 skip ⇒ swha deals ZERO burst-bucket damage; the swap shots are normal-bucket weapon fire).
 //   W2/W3/W11/W20 documented-skip PINs: skill1-keyed buffs emit EXACTLY {damageTakenPct} (no DEF/ammo stat);
 //       skill2-keyed buffs emit EXACTLY {atkPct, partsDamagePct, chargeDamagePct, sequentialDamagePct} (no Pierce);
 //       burst-keyed buffs emit EXACTLY {attackDamagePct} (no fabricated projectile/nuke); swha burst-bucket damage
@@ -470,11 +466,12 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
   });
 
-  describe('W15 — S2 at Full Charge while Fully Active: Charge Damage ▲528% (whileSwapped) — APPLIED to swap shots', () => {
+  describe('W15 — S2 at Full Charge while Fully Active: Charge Damage ▲528% (durationShots:2) — APPLIED to swap shots', () => {
     const cd = swhaBuff(base.events, 'chargeDamagePct', 528);
-    it('encoding: 528% fires on her burstCast frames, self-scoped', () => {
+    it('encoding: 528% fires on her burstCast frames, self-scoped, durationShots 2', () => {
       expect(cd.length).toBe(casts);
       expect(targetsOf(cd)).toEqual([S]);
+      expect(cd.every((b) => b.durationShots === 2)).toBe(true);
       const cf = castFrames(base.events);
       expect(cd.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
         [...cf].sort((a, b) => a - b),
@@ -493,15 +490,16 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
   });
 
-  describe('W16 — S2 at Full Charge while Fully Active: Sequential Damage ▲158.4% (whileSwapped) — encoding pin', () => {
-    // ENGINE-FIDELITY RESIDUAL (⚑, see header): the buffApply FIRES faithfully, but the engine's flatDamage path
-    // does not route flavor:'sequential' into seqMult, so this buff is inert on the 527.95/1055.9 riders in-fixture
-    // (measured seqMult=1 with/without whileSwapped, with/without the flavor tag). Asserted here as an ENCODING pin
-    // only — NOT as damage scaling. Engine-core plumbing question flagged for owner spot-check; model graded in this state.
+  describe('W16 — S2 at Full Charge while Fully Active: Sequential Damage ▲158.4% (durationShots:2) — LIVE on riders', () => {
+    // RESOLVED (owner ruling 2026-07-26): the engine routes flavor:'sequential' flatDamage riders into the dmgUp
+    // bucket via sequentialDamagePct (sim.ts dealDamage opts.sequential gate). The gauntlet residual measured
+    // seqMult (the sequentialMultPct bucket) and misidentified the consumption path — the 158.4 feeds dmgUp, not
+    // seqMult, and is LIVE on the 527.95/1055.9 riders.
     const sq = swhaBuff(base.events, 'sequentialDamagePct', 158.4);
-    it('encoding: 158.4% fires on her burstCast frames, self-scoped', () => {
+    it('encoding: 158.4% fires on her burstCast frames, self-scoped, durationShots 2', () => {
       expect(sq.length).toBe(casts);
       expect(targetsOf(sq)).toEqual([S]);
+      expect(sq.every((b) => b.durationShots === 2)).toBe(true);
       const cf = castFrames(base.events);
       expect(sq.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
         [...cf].sort((a, b) => a - b),
@@ -541,9 +539,11 @@ describe('snow-white-heavy-arms — kit spec', () => {
   });
 
   describe('W18 — Burst: Seven Dwarves Fully Active weaponSwap (charge 3.2s, 2 uses) — observable via its swap shots', () => {
-    it('removing the swap removes BOTH swap observables: the W7 1055.9 riders AND the W15 charge-7.78 normals', () => {
+    it('removing the swap removes the W7 1055.9 riders (swapGate never satisfied)', () => {
       expect(s1At(noSwap.events, 1055.9).length).toBe(0);
-      expect(normalsWithCharge(noSwap.events, 7.78).length).toBe(0);
+    });
+    it('charge-7.78 normals persist without the swap (durationShots:2 is swap-independent; the buff covers the next 2 shots regardless)', () => {
+      expect(normalsWithCharge(noSwap.events, 7.78).length).toBeGreaterThan(0);
     });
     it('swha deals ZERO burst-bucket damage (the swap shots are normal-bucket weapon fire; W20 projectile line skipped)', () => {
       expect(

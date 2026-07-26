@@ -50,7 +50,7 @@
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
 | `critRateNormalPct` | 1 | helm |
 | `delaySec` | 3 | asuka-wille, rapi-red-hood, snow-white |
-| `durationShots` | 3 | helm, miranda, zwei |
+| `durationShots` | 4 | helm, miranda, snow-white-heavy-arms, zwei |
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 4 | mast-romantic-maid, neon-vision-eye, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 1 | neon-vision-eye |
@@ -114,7 +114,7 @@
 | `unswapped` | 0 | _none_ |
 | `weapon` | 10 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
-| `whileSwapped` | 1 | snow-white-heavy-arms |
+| `whileSwapped` | 0 | _none_ |
 
 <!-- END GENERATED: primitive-census -->
 
