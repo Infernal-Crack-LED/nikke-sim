@@ -1,0 +1,183 @@
+{
+  "slug": "milk-blooming-bunny",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Full Charge attack → Gain Pierce 6 sec",
+      "disposition": "FAITHFUL",
+      "scope": "full-charge shots only; SR (chargeFrames 60) presumably always full-charges in sim, so effectively per shot",
+      "durationSemantics": "6 s wall-clock, refreshed per full-charge attack",
+      "triggerIdentity": "per-full-charge (chargeCounter count:1, or shotFired if the sim treats every SR pull as a full charge); no gate",
+      "targetSet": "self",
+      "nearestWrongModel": "top-level hasPierce:true whole-fight boolean instead of a gainPierce effect with durationSec:6 — pierce-tags her from t=0 and through any window where 6 s could lapse (e.g. the Embarrassment slowed forced reload + recharge)",
+      "distinguishingAssertion": "withPatchedOverride removing ONLY this gainPierce effect must make ALL Pierce Damage ▲ lines (64.7 / 117.64) damage-inert (totals unchanged when they are zeroed on the patched run); with it present they move damage. Encoding check: effect kind 'gainPierce' with durationSec 6, not hasPierce:true",
+      "inertness": "must not pierce-tag the 290%/447.7% distributed riders — only her weapon attacks",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ not Embarrassed + Full Charge ≥0.5 sec",
+      "disposition": "GAP",
+      "scope": "fires on a full charge HELD ≥0.5 s, only while NOT already in the Embarrassment state — a self-status-gated hold-time trigger with no TriggerDef primitive",
+      "durationSemantics": "gate lifetime = the Embarrassment state duration, which is NOT stated in the prose (⚑ — plausibly 40 s to match Effect 5, but that is an assumption, not text)",
+      "triggerIdentity": "closest encodings: interval sec≈EmbarrassmentDuration (cycle approximation), or per-charge trigger + a self-status gate the schema lacks. Cadence tuple is an ALWAYS-⚑",
+      "targetSet": "self (package application); Effect 1 targets enemy",
+      "nearestWrongModel": "firing on EVERY full charge (ignoring the not-in-state gate) — multiplies the 290% hit, the ammo dump, and ATK-buff refreshes by ~10-40×; the opposite failure is never firing because the sim never models a 0.5 s hold",
+      "distinguishingAssertion": "290-mult damage events are spaced ≥ EmbarrassmentDuration apart (≈1 per cycle over the fight), NOT one per shot; and at least one occurs (the cycle is live)",
+      "inertness": "must not fire during the burst's 10 s immunity window; must not fire while the state is already up",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 1: 290% final ATK Distributed Damage",
+      "disposition": "FAITHFUL",
+      "scope": "instant rider on Embarrassment entry; single boss so the full 290% lands",
+      "durationSemantics": "instant, once per Embarrassment activation",
+      "triggerIdentity": "rides the Embarrassment block trigger; FB bonus by landing timing (default ON per rider rule); no core; crit at caster rate",
+      "targetSet": "enemy (all enemies)",
+      "nearestWrongModel": "pierce-tagging the rider so Pierce Damage ▲ (64.7/117.64) boosts it, or encoding as a dot; both over-credit",
+      "distinguishingAssertion": "damage event with mult 290, flavor distributed, exactly once per Embarrassment cycle; zeroing all pierceDamagePct in a patched override leaves this event's damage unchanged",
+      "inertness": "unaffected by Pierce Damage ▲ buffs; no core bucket",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 2+4: Removes 100% ammo; Forced Reload",
+      "disposition": "FAITHFUL",
+      "scope": "empties her own 6-round magazine and forces an immediate reload — a shot-count COST, not defensive fluff (taxonomy 6)",
+      "durationSemantics": "instant",
+      "triggerIdentity": "rides the Embarrassment trigger; consumeAmmo{fraction:1} inherently forces the reload and fires lastBullet triggers",
+      "targetSet": "self",
+      "nearestWrongModel": "instantReload (sign flip: a free refill BUFF instead of losing the remaining magazine), or dropping both effects as damage-irrelevant",
+      "distinguishingAssertion": "a reload event follows each Embarrassment activation regardless of ammo remaining; total shots fired is LOWER than a patched run with the consumeAmmo effect removed",
+      "inertness": "must not refill ammo for free; must not skip the reload cost",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 3: reload fixed −50% for 1 reload(s)",
+      "disposition": "FIX",
+      "scope": "the ONE forced reload only — a stat CLAMP for a reload-count window (asuka-wille-class primitive gap); approximate as reloadSpeedPct −50 scoped to exactly that reload",
+      "durationSemantics": "\"for 1 reload(s)\" is a RELOAD COUNT, never durationSec; expires when that reload completes",
+      "triggerIdentity": "rides the Embarrassment trigger",
+      "targetSet": "self",
+      "nearestWrongModel": "durationSec:40 (or permanent) reloadSpeedPct −50 slowing ALL reloads in the cycle, or skipping it as 'defensive, no damage' — it gates shots fired",
+      "distinguishingAssertion": "the Embarrassment forced reload spans ≈2× base reloadFrames (≈282 f vs 141 f); every subsequent NATURAL reload in the same cycle spans base 141 f",
+      "inertness": "must not slow reloads after the first post-trigger reload",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 5: ATK ▲ 118.7% for 40 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic self ATK buff",
+      "durationSemantics": "40 s wall-clock, refreshed per Embarrassment activation; single stack",
+      "triggerIdentity": "rides the Embarrassment trigger",
+      "targetSet": "self",
+      "nearestWrongModel": "stacking instances if the trigger over-fires, or tying its lifetime to the status (purged by burst immunity) — the 40 s is its own clock, independent of the state",
+      "distinguishingAssertion": "buffApply stat atkPct value 118.7, expiresFrame = apply+40 s, at most 1 stack; re-applies at the Embarrassment cadence, not per shot",
+      "inertness": "not team-wide; not removed early by the burst window",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ only in Embarrassment: Pierce Dmg ▲64.7%",
+      "disposition": "FIX",
+      "scope": "STATUS-GATED — live only while the Embarrassment state holds, 'continuously' = for the state's lifetime, not a fixed timer of its own",
+      "durationSemantics": "state-linked (⚑ same unstated Embarrassment duration as the gate line); NOT permanent",
+      "triggerIdentity": "applied with Embarrassment entry, dropped at state end",
+      "targetSet": "self",
+      "nearestWrongModel": "unconditional passive pierceDamagePct 64.7 — live at t=0 before the first Embarrassment and (if immunity purges the state) through the burst window",
+      "distinguishingAssertion": "no buffApply with stat pierceDamagePct value 64.7 at frame 0; first application coincides with the first Embarrassment trigger",
+      "inertness": "moves damage ONLY while her attacks are pierce-tagged (S1 gainPierce feed); must not boost the distributed riders",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ only in Overconfident: 447.7% every 2 sec",
+      "disposition": "FAITHFUL",
+      "scope": "ticks only during the 10 s Overconfident, Huh?! window opened by HER OWN burst",
+      "durationSemantics": "10 s window, 2 s interval → 5 ticks per own burst (first tick at t=+2 s by interval convention, ⚑ phase)",
+      "triggerIdentity": "burstCast-keyed dot {atkPct:447.7, intervalSec:2, durationSec:10, flavor:'distributed'} — the status comes from her own burst, so burstCast, NEVER fullBurstEnter",
+      "targetSet": "enemy (all enemies)",
+      "nearestWrongModel": "keying to fullBurstEnter — over-credits on every helm-led Full Burst in any 2-B3 comp (controlComp itself has helm as second B3); secondary misreads: a single flatDamage, or 6 ticks via a t=0 first fire",
+      "distinguishingAssertion": "447.7-mult damage events appear ONLY inside [cast, cast+10 s] of milk-blooming-bunny's OWN burstCast events, exactly 5 per cast, and ZERO following Full Bursts she did not lead",
+      "inertness": "no ticks on rotations where the other B3 bursts; not boosted by Pierce Damage ▲ (untagged rider); never core",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Immunity to Embarrassment for 10 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "blocks NEW Embarrassment application for 10 s post-cast; whether it PURGES an active state (dropping the 64.7% mid-window) is not stated — ⚑ needs measurement",
+      "durationSemantics": "10 s wall-clock from her cast",
+      "triggerIdentity": "burstCast, self",
+      "targetSet": "self",
+      "nearestWrongModel": "ignoring it, letting Embarrassment fire mid-burst-window — inserts a 290% hit + full ammo dump + slowed reload inside her highest-ATK 10 s and desyncs the whole cycle",
+      "distinguishingAssertion": "no 290-mult damage event and no Embarrassment-package buffApply within 10 s after any of her burstCast events",
+      "inertness": "must not itself add or remove damage beyond the scheduling gate",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Damage ▲ 117.64% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "self, her pierce-tagged weapon attacks only",
+      "durationSemantics": "10 s wall-clock",
+      "triggerIdentity": "burstCast (self mode in her OWN burst block), not fullBurstEnter",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter keying — applies on helm-led rotations too; or double-counting it onto the distributed riders",
+      "distinguishingAssertion": "buffApply stat pierceDamagePct value 117.64 emitted only on rotations where she cast; additive with a concurrent 64.7 (two keys, both live if the state survives the window)",
+      "inertness": "zero effect on any window where her pierce tag has lapsed; never applied on helm-led FBs",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 220% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic self ATK",
+      "durationSemantics": "10 s wall-clock",
+      "triggerIdentity": "burstCast, self",
+      "targetSet": "self",
+      "nearestWrongModel": "fullBurstEnter keying (fires on helm's rotations), or treating it as REPLACING the 118.7% instead of stacking additively in the atkPct bucket",
+      "distinguishingAssertion": "buffApply stat atkPct value 220 only on her own cast rotations; during her window both 118.7 and 220 are simultaneously live (distinct keys), summing additively",
+      "inertness": "no application on Full Bursts she did not lead",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:gainPierce-6s-on-full-charge",
+    "skill1:embarrassment-trigger-cadence",
+    "skill1:effect1-290pct-distributed",
+    "skill1:effect2+4-consumeAmmo-forced-reload",
+    "skill1:effect3-reload-clamp-1-reload",
+    "skill1:effect5-atk-118.7-40s",
+    "skill2:pierce-64.7-while-embarrassed",
+    "skill2:447.7-tick-2s-overconfident",
+    "burst:pierce-117.64-10s",
+    "burst:atk-220-10s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Function: Forcefully reloads at reduced reload speed, but increases attack capabilities and deals Distributed Damage. (descriptive header — substance carried by Effects 1-5)"
+    ],
+    "skill2": [],
+    "burst": [
+      "Gains Immunity to Embarrassment for 10 sec. (acceptable ONLY if the Embarrassment scheduler provably cannot fire inside her burst window; otherwise it must be a gate)"
+    ]
+  },
+  "notes": "Expected shared-prior misreads, in risk order: (1) burstCast vs fullBurstEnter — the Overconfident tick and BOTH burst self-buffs derive from HER burst; controlComp includes helm as a co-B3, so this divergence is live in the standard fixture, not hypothetical. Every one of those three lines needs an own-cast-only assertion. (2) The Embarrassment STATE DURATION is nowhere in the prose — a driver will likely silently assume 40 s (matching Effect 5). That assumption must be an explicit ⚑ with a recipe, and the 'not in Embarrassment' gate + 0.5 s charge-hold trigger have no primitive, so the cycle cadence is itself an ALWAYS-⚑ (interval approximation). Tests must pin cycle SPACING (≥ state duration apart), not a hardcoded proc count derived from the same assumption. (3) The distributed riders (290 / 447.7) must NOT be pierce-tagged — Pierce Damage ▲ feeds only her weapon attacks via S1's gainPierce; a patched-override inertness check (zero all pierceDamagePct → riders unchanged) distinguishes this. (4) Effects 2-4 are weapon-state DAMAGE effects: consumeAmmo{fraction:1} (never instantReload — sign flip) plus a reload-count-scoped −50% clamp ('for 1 reload(s)' is a count, not seconds; clamp primitive is a known gap — approximation must scope to exactly one reload). (5) Immunity purge-vs-block ambiguity decides whether the 64.7% survives her burst window — measurement-gated; the test should at minimum assert no Embarrassment entry during the 10 s window. Save target: scripts/kit-autonomy/reviews/milk-blooming-bunny.test-review.json (no tools available this run — JSON returned inline).",
+  "model": "claude-fable-5"
+}

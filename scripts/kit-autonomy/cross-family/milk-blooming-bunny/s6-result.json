@@ -1,0 +1,289 @@
+{
+  "slug": "milk-blooming-bunny",
+  "leakDetected": null,
+  "override": {
+    "slug": "milk-blooming-bunny",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 6
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 12
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 290,
+            "flavor": "distributed",
+            "crit": true
+          },
+          {
+            "kind": "consumeAmmo",
+            "fraction": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": -50,
+            "durationSec": 5
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 118.7,
+            "durationSec": 40
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 12
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "pierceDamagePct",
+            "value": 64.7,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "dot",
+            "atkPct": 447.7,
+            "durationSec": 10,
+            "intervalSec": 2,
+            "flavor": "distributed"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "pierceDamagePct",
+            "value": 117.64,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 220,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Gains Immunity to Embarrassment for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ TRIGGER STAND-IN: the Embarrassment entry condition ('not in the Embarrassment state' AND 'Full Charge lasts for 0.5 sec or more') is a HELD-CHARGE player action the engine has no primitive for (it fires a charge shot as soon as it completes). Modeled as interval sec:12 on BOTH the skill1 Embarrassment block and the skill2 Embarrassment-gated Pierce buff so they co-fire. Cadence is an UNMEASURED estimate; her whole damage profile scales roughly linearly in 1/sec.",
+      "⚑ EMBARRASSMENT WINDOW LENGTH is not stated anywhere in the kit. Assumed to equal the forced slow reload it describes (~4.7 s at −50% reload speed → durationSec 5 on the skill2 Pierce Damage ▲64.7%). If the status actually persists longer (e.g. until the next full charge, or for the 40 s of the ATK buff), that Pierce buff is badly under-credited.",
+      "⚑ CLAMP APPROXIMATION: 'Reload speed is fixed at a 50% reduction for 1 reload(s)' is a stat CLAMP (engine-modeling-gaps §1b), which the schema has no primitive for. Encoded as an ADDITIVE buff reloadSpeedPct −50 for 5 s. Solo/near-solo this matches; in a comp carrying reload-speed buffs the clamp would OVERRIDE them while this additive model only offsets them (mildly over-credits shots fired).",
+      "⚑ 'Immunity to Embarrassment for 10 sec' (burst) is UNMODELED — there is no self-status-immunity primitive and the interval stand-in cannot be suppressed. Consequence: the model can fire an Embarrassment (290% + ATK ▲118.7% refresh) inside her own 10 s burst window where the real unit CANNOT. This is the single largest known over-credit in this baseline; the real kit forces the 290% procs to live outside the burst window.",
+      "hasPierce is deliberately NOT set: her Pierce is a timed 6 s per-full-charge grant (gainPierce), not whole-fight tagging. Because 6 s ≫ her charge cadence, Pierce is effectively continuous while she is firing — but it lapses across the forced slow reload, and a boolean could not express that.",
+      "The two distributed-damage lines (290% instant, 447.7%/2 s) are NOT pierce-tagged: the kit does not describe them as Pierce, so her own Pierce Damage ▲ buffs (64.7 / 117.64) are modeled as feeding only her weapon hits. If popups show the distributed hits scaling with the Pierce buffs, add pierce:true to the flatDamage and re-check the dot path.",
+      "Distributed Damage against the v1 partless single-target boss is treated as one undivided hit; no split-vs-merge modeling applied.",
+      "Damage blocks are authored with target {kind:'self'} (the caster is the damage source) rather than {kind:'enemy'}, since resolveTargets({kind:'enemy'}) returns [] in v1. If repo convention is the opposite for flatDamage/dot blocks, re-scope — the effect values are unchanged.",
+      "noFb is NOT set anywhere (default OFF): the 290% rider and the 447.7% ticks take Full Burst by TIMING. The 447.7% ticks all land inside her own post-burst 10 s window, so essentially every tick is FB-boosted — a measured noFb exemption would cut her burst damage by ~1/3."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no override, tests, probe data, or board output consulted). Structure: (1) skill1 grants 6 s Pierce per full charge — keyed to shotFired because every trigger pull of a charge weapon IS a full charge (chargeCounter{count:1} was rejected: its per-phase effects[] indexing is unsafe with a single effect). (2) skill1's Embarrassment package (290% distributed + full-ammo dump + forced reload + −50% reload-speed clamp + ATK ▲118.7%/40 s) is one block on an interval:12 s stand-in for the held-charge trigger; its ⚑ cadence assumes the optimal play pattern of emptying the magazine (~5 shots) before holding a charge, so little ammo is wasted by 'Removes 100% of ammo' (floor is ~6 s = charge 1 s + hold 0.5 s + slowed reload 4.7 s if she triggers on a full belt). 'Forced Reload' needs no separate effect — consumeAmmo{fraction:1} empties the belt and the engine forces the reload (and fires lastBullet triggers). (3) skill2's Pierce Damage ▲64.7% is gated on Embarrassment status, so it rides the SAME interval:12 with a ⚑ 5 s window (= the slowed reload). (4) skill2's 447.7%/2 s is gated on 'Overconfident, Huh?!', a status granted by her OWN burst block → burstCast trigger (NOT fullBurstEnter, which would over-fire in multi-B3 comps), encoded as ONE dot instance per cast (durationSec 10, intervalSec 2 → 5 ticks), never as a repeating flatDamage. Its ticks are left non-crit per the default DOT_CRIT gate; the 290% instant rider is crit:true per the rider-crit rule and gets no core. The burst slot is pure self-buff (Pierce Damage ▲117.64%, ATK ▲220%, both 10 s); the Immunity-to-Embarrassment line is unmodeled and is the known over-credit vector (see caveats)."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (every trigger pull of a charge weapon is a full charge; chargeCounter{count:1} rejected as unsafe with one effect) — ⚑ mapping"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gain Pierce for 6 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce durationSec 6 on self (NOT the whole-fight hasPierce flag — it lapses over the forced reload)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "not in the Embarrassment state",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "re-entry lockout folded into the interval:12 stand-in (one firing per 12 s) — ⚑ no status primitive"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when Full Charge lasts for 0.5 sec+",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {interval, sec:12} — ⚑ invented trigger + cadence (engine cannot hold a completed charge)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 1: 290% ATK Distributed Damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 290, flavor distributed, crit true (rider-crit rule), no core, FB by timing"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 2: Removes 100% of ammo.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "consumeAmmo fraction 1 (weapon-state → gates shots fired; never skippable)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 3: Reload fixed 50% reduction",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct −50 durationSec 5 — ⚑ ADDITIVE approximation of a clamp for '1 reload' (gaps §1b)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 4: Forced Reload.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "covered by consumeAmmo{fraction:1}: belt hits 0 → engine forces an immediate reload and fires lastBullet triggers"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 5: ATK 118.7% for 40 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 118.7 durationSec 40, self (refreshed by each Embarrassment entry)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "only when in Embarrassment status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same interval:12 trigger as the skill1 Embarrassment block so the two co-fire — ⚑ status stand-in"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Pierce Damage 64.7% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 64.7, durationSec 5 = ⚑ estimated Embarrassment window ('continuously' = for the status's life, not the fight)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "only in Overconfident, Huh?! status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast — the status is granted by her OWN burst block, so fullBurstEnter would over-credit in multi-B3 comps"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all enemies every 2 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot intervalSec 2, durationSec 10 (= the status window) → 5 ticks per own burst; ONE instance per cast, no dedup needed"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "447.7% of final ATK Distributed",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 447.7 flavor distributed; crit left OFF per the default DOT_CRIT gate (measured-only opt-in)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Immunity to Embarrassment for 10 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "no self-status-immunity primitive; verbatim in unmodeled.burst. Real consequence: it BLOCKS Embarrassment re-entry during her window, which the interval stand-in cannot honour → over-credits the 290% + ATK refresh"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Pierce Damage 117.64% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 117.64 durationSec 10, self, burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK 220% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 220 durationSec 10, self, burstCast (stacks additively with the 118.7% Embarrassment ATK)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[1].trigger.sec (and skill2[0].trigger.sec)",
+      "estimate": "interval 12 s (plausible range 6–13 s)",
+      "reasoning": "The kit trigger is a held full charge ≥0.5 s while not already Embarrassed — a player action with no engine primitive, so both the trigger and its cadence are invented. Floor is ~6.2 s (charge 1 s + hold 0.5 s + slowed reload 141f/0.5 = 4.7 s) but that dumps a full 6-round magazine every cycle; the optimal pattern fires ~5 rounds first (~6 s of SR shots) and then holds the last charge, giving ~12 s. The 40 s ATK ▲118.7% only needs one entry per 40 s, so a lazier pattern is also viable. Every 290% proc, the whole Pierce-64.7% uptime, and the reload penalty scale with this number.",
+      "recipe": "Count the 290% distributed popups (and the forced-reload animations) per minute in a real Milk: Blooming Bunny recording; set sec = 60/count. Cross-check against her magazine cadence: sec should ≈ (shots fired before the hold)×(shot period) + 1.5 s + slowed reload."
+    },
+    {
+      "field": "skill1[0].trigger (full-charge → shotFired)",
+      "estimate": "shotFired ≈ one full charge per trigger pull",
+      "reasoning": "The engine has no explicit full-charge trigger; chargeCounter is a per-phase cycling counter whose effects[P] indexing is unsafe with a single effect. For an SR with chargeFrames 60 every pull is a full charge, so shotFired is behaviourally equivalent — but this rides the datamine-unreliable cadence tuple (chargeFrames 60 / reloadFrames 141 / pulls-per-sec), which sets both the Pierce refresh rate and shots-per-cycle.",
+      "recipe": "Frame-count her shot period and reload from footage (ammo counter transitions), then confirm the 6 s Pierce window never lapses mid-magazine; if the engine later gains a full-charge trigger, re-key this block to it."
+    },
+    {
+      "field": "skill2[0].effects[0].durationSec (Embarrassment window)",
+      "estimate": "5 s (= the −50% forced reload, 141f/0.5 ≈ 4.7 s)",
+      "reasoning": "The kit never states how long Embarrassment lasts. The status is described entirely in terms of the forced slow reload, so I assume it ends when that reload completes. If it instead runs until her next full charge, or for the 40 s of the ATK buff, the Pierce Damage ▲64.7% uptime is badly under-credited (5 s vs 40 s out of a 12 s cycle).",
+      "recipe": "Read the status icon duration on her portrait in footage (Embarrassment icon appear→disappear frames), or A/B the sim: set durationSec to 5 vs the full cycle length and compare her total against a recorded fight."
+    },
+    {
+      "field": "skill1[1].effects[2] (reloadSpeedPct −50, durationSec 5)",
+      "estimate": "additive −50% for 5 s ≈ one slowed reload",
+      "reasoning": "'Fixed at a 50% reduction for 1 reload(s)' is a CLAMP, a primitive the schema lacks. Additive −50% matches the clamp only when no other reload-speed buff is live; with a support's reload buff the real value stays clamped while this model partially recovers, over-crediting shots. The 5 s duration assumes the engine snapshots reload duration at reload START (so the window only needs to cover the reload's beginning) and that the following reload starts >5 s later (it does at 6 rounds/12 s cycle).",
+      "recipe": "Measure her reload duration in a fight with and without an ally reload buff (frame-count empty→full ammo counter). If the buffed case is identical to the unbuffed case, the clamp is real and this needs the clamp primitive, not an additive buff."
+    },
+    {
+      "field": "burst — 'Immunity to Embarrassment for 10 sec' (unmodeled)",
+      "estimate": "over-credits ≈ one 290% proc + one premature ATK refresh per burst rotation, worst case",
+      "reasoning": "The immunity exists to STOP her entering Embarrassment during 'Overconfident, Huh?!' — i.e. the real unit's 290% procs and Pierce-64.7% windows are pushed OUT of her burst window (where the FB major and her ATK ▲220% would inflate them). The interval stand-in has no way to suppress firing inside that window, so this baseline lands some procs at their most-buffed moment, which the real kit forbids.",
+      "recipe": "Once the Embarrassment cadence is footage-pinned, check whether any 290% popup ever appears inside her 10 s burst window; if none do, phase the interval block (everyN/everyNOffset, or an explicit outFb-style gate) so it never lands there, and re-grade."
+    },
+    {
+      "field": "noFb on skill1[1].effects[0] and skill2[1] (both unset = FB-eligible)",
+      "estimate": "FB by timing, ON (default)",
+      "reasoning": "Per the priors, function-damage riders take Full Burst by timing and noFb is measured-only. Worth flagging because it is load-bearing here: all 5 of the 447.7% ticks land inside her own post-burst 10 s window, so ~100% of that channel is FB-boosted — a wrong default costs/adds ~1/3 of it.",
+      "recipe": "Compare a 447.7% popup value inside Full Burst against one just after FB ends (same buff state) — a 1.5× ratio confirms FB applies; equal values mean noFb:true."
+    },
+    {
+      "field": "skill1[1].effects[0].crit / skill2[1] (crit) and pierce tagging of both distributed channels",
+      "estimate": "290% rider crit:true, no core; 447.7% dot non-crit; neither pierce-tagged",
+      "reasoning": "Rider-crit rule says flat riders crit at the caster's rate but get no core (no 'core strike' wording here); the DoT path is default non-crit and opt-in only where measured. Pierce tagging is left off because the kit does not call either distributed hit Pierce — but she carries 64.7 + 117.64 + a self gainPierce, so if those hits ARE pierce-tagged in game the miss is large.",
+      "recipe": "Read popup colours on her distributed hits (orange+icon = crit, red 'CORE HIT' = core) and check whether the 447.7% value jumps when the Pierce Damage buffs are live vs lapsed; set crit/pierce accordingly."
+    }
+  ],
+  "model": "claude-opus-5"
+}

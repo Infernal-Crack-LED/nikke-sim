@@ -16,9 +16,9 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 43,
+      "unit-tested": 44,
       "authored": 13,
-      "audited": 18,
+      "audited": 17,
       "reconciled": 3
     },
     "tier": {
@@ -2392,24 +2392,28 @@
       "weapon": "SR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "0.70 COLD: F3 dead block — burst pierceDamagePct 117.64 never fires (no hasPierce; modeled!=working) + auto-mode too pessimistic (real procs Embarrassment partially). Fix hasPierce. F5: the old 'poor auto-play' 0.70 DECISION rationale is DIRECTION-SUSPECT (predates ratio-direction fix — poor auto = HOT sim, but she's COLD)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/milk-blooming-bunny.json + scripts/kit-autonomy/manual-review/milk-blooming-bunny.md.",
+          "med ENGINE (skill2): The engine's pierceDamagePct applies to ALL of a Pierce-tagged unit's damage, so her 447.7% Distributed rider inherits the burst's +117.64% Pierce Damage — the S2b reviewer reads the kit as Pierce feeding weapon attacks only.",
+          "med FIDELITY (skill1): The whole graded basis rests on one COMMUNITY-tier premise — that full-auto never holds a completed charge 0.5 s, so Embarrassment never fires — which no blind agent could see or corroborate, and her standing COLD kit-status is directionally consistent with the premise being wrong.",
+          "low FIDELITY (skill2): Manual mode is internally inconsistent: it models Embarrassment as a PERMANENT state but omits the +64.7% Pierce Damage that state grants, while also ignoring the burst's 10 s immunity that would suspend the cycle.",
+          "low FIDELITY (skill2): The 447.7% rider is authored as a dot with no flavor field, so it is not tagged 'distributed' — it routes through the sustained/DoT path instead of the Distributed/Taken buckets."
         ]
       },
       "tier": "VALIDATED",
       "tuned": true,
       "control": false,
-      "evidence": "Run G + N10 focus: 0.56-0.73",
+      "evidence": "Run G + N10 focus: 0.56-0.73 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0 (S7 opus binding judge, discriminationOk=true); cross-family S2b(fable-5)/S5/S6/S7(opus-5) converged on gainPierce6s + burst pierce117.64/atk220 10s burstCast-self + S2 DoT 447.7/2s/10s; driver test 17 assertions GREEN; blind S5 11/22 (8 fails traced to mode-split/unmodeled-64.7, no encoding error)",
       "date": "2026-07-14",
       "graded": {
         "teams": 1,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0",
+      "residual": "~0.7 is an ACCEPTED DECISION (poor auto-play) — validated-by-decision, not tuned to 1.0 | auto-mode premise (Embarrassment never fires on full-auto) is COMMUNITY-tier Prydwen knowledge, uncorroborated by blind agents, COLD kit-status 0.56-0.73 directionally consistent -> needs 1 full-auto focus recording (290% popup OR 1-round/reload cadence); + engine pierce-tags 447.7 distributed rider (measurement-gated, engine-core)",
       "unmodeled": {
         "skill1": [],
         "skill2": [

@@ -1,0 +1,138 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-bu-batch-2026-07-25[39m
+
+ [31m❯[39m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts [2m([22m[2m22 tests[22m[2m | [22m[31m8 failed[39m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 12[2mms[22m[39m
+     [32m✓[39m bursts on every rotation as the sole Burst III (non-vacuity)[32m 2[2mms[22m[39m
+     [32m✓[39m is a timed gainPierce effect with a 6 sec window[32m 0[2mms[22m[39m
+     [32m✓[39m is NOT encoded as the static whole-fight hasPierce flag[32m 0[2mms[22m[39m
+     [32m✓[39m removing the grant cannot RAISE milk damage, and never moves a teammate[32m 0[2mms[22m[39m
+     [32m✓[39m e1: a 290% Distributed rider lives in skill1[32m 0[2mms[22m[39m
+[31m     [31m×[31m e1: the rider fires at a GATED cadence, not once per full charge[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m e2/e4: the 100% ammo removal + forced reload are modeled and move the reload economy[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m e5: ATK 118.7% for 40 sec, self only[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m e5: the 40 sec window is real - shrinking it to 10 sec strictly removes damage[39m[32m 1[2mms[22m[39m
+     [2m[90m↓[39m[22m e3: reload speed FIXED at -50% for 1 reload - GAP: stat CLAMP primitive, no engine branch (a reloadSpeedPct buff is an additive modifier, and durationShots is explicitly NOT for fixed-at lines)
+     [2m[90m↓[39m[22m Embarrassment STATE duration (how soon a second entry may occur) - MEASUREMENT-GATED: the kit gives no duration for the state itself, only for its ATK buff (40s); the entry cadence is a per-unit estimate until read off footage
+[31m     [31m×[31m Pierce Damage 64.7% is applied to milk only[39m[32m 1[2mms[22m[39m
+[31m     [31m×[31m Pierce Damage 64.7% is continuous (no wall-clock window authored)[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m the 447.7% rider is a 2 sec cadence bounded by the 10 sec burst window[39m[32m 1[2mms[22m[39m
+     [32m✓[39m the 447.7% rider pays out per burst, not for the whole fight[32m 1[2mms[22m[39m
+     [32m✓[39m ATK 220% and Pierce Damage 117.64% are self-scoped burst-cast buffs, 10 sec each[32m 0[2mms[22m[39m
+     [32m✓[39m ATK 220% is emitted to milk only, as a raw percentage[32m 0[2mms[22m[39m
+     [32m✓[39m the ATK 220% window is 10 sec - stretching it to 40 sec strictly ADDS damage[32m 0[2mms[22m[39m
+[31m     [31m×[31m Pierce Damage 117.64% is self-targeted and its removal cannot RAISE damage[39m[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m Immunity to Embarrassment for 10 sec - GAP: no primitive suppresses a self kit-state for a window (targetStatus is enemy-only; mode/resourceGate cannot be flipped by a burst for 10s), so the burst window can re-enter Embarrassment in-sim
+     [32m✓[39m milk self-buff counterfactuals leave every teammate byte-identical[32m 0[2mms[22m[39m
+     [32m✓[39m milk is the only unit whose damage the 290% and 447.7% riders move[32m 0[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 8 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill1 - Embarrassment entry[2m > [22me1: the rider fires at a GATED cadence, not once per full charge
+[31m[1mAssertionError[22m: expected 0 to be greater than or equal to 1[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m235:19[22m[39m
+    [90m233|[39m     [34mexpect[39m([33mP_NO_290[39m[33m.[39mtouched)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m234|[39m     [35mconst[39m delta [33m=[39m [34mriderHits[39m([33mBASE[39m) [33m-[39m [34mriderHits[39m([33mNO_290[39m)[33m;[39m
+    [90m235|[39m     [34mexpect[39m(delta)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m1[39m)[33m;[39m
+    [90m   |[39m                   [31m^[39m
+    [90m236|[39m     // ~0.69 shots/s over 180s = ~125 full charges; an ungated per-cha…
+    [90m237|[39m     [34mexpect[39m(delta)[33m.[39m[34mtoBeLessThanOrEqual[39m([34m40[39m)[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill1 - Embarrassment entry[2m > [22me2/e4: the 100% ammo removal + forced reload are modeled and move the reload economy
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m242:31[22m[39m
+    [90m240|[39m
+    [90m241|[39m   it('e2/e4: the 100% ammo removal + forced reload are modeled and mov…
+    [90m242|[39m     [34mexpect[39m([33mP_NO_AMMO[39m[33m.[39mtouched)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                               [31m^[39m
+    [90m243|[39m     [35mconst[39m e2 [33m=[39m [34meffectsOfSlot[39m([33mOV[39m[33m,[39m [32m'skill1'[39m)[33m.[39m[34mfilter[39m(
+    [90m244|[39m       (e[33m:[39m any) [33m=>[39m e[33m.[39mkind [33m===[39m [32m'consumeAmmo'[39m[33m,[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill1 - Embarrassment entry[2m > [22me5: ATK 118.7% for 40 sec, self only
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m256:22[22m[39m
+    [90m254|[39m   [34mit[39m([32m'e5: ATK 118.7% for 40 sec, self only'[39m[33m,[39m () [33m=>[39m {
+    [90m255|[39m     [35mconst[39m b [33m=[39m [34mbuffApplies[39m([33mBASE[39m[33m,[39m [32m'atkPct'[39m[33m,[39m [34m118.7[39m)[33m;[39m
+    [90m256|[39m     [34mexpect[39m(b[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                      [31m^[39m
+    [90m257|[39m     [34mexpect[39m(b[33m.[39m[34mevery[39m((e[33m:[39m any) [33m=>[39m e[33m.[39mtargetSlug [33m===[39m [33mSLUG[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m258|[39m     [35mconst[39m authored [33m=[39m [34meffectsOfSlot[39m([33mOV[39m[33m,[39m [32m'skill1'[39m)[33m.[39m[34mfilter[39m(
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill1 - Embarrassment entry[2m > [22me5: the 40 sec window is real - shrinking it to 10 sec strictly removes damage
+[31m[1mAssertionError[22m: expected 409637848.65207815 to be greater than 409637848.65207815[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m271:24[22m[39m
+    [90m269|[39m     [34mexpect[39m([33mP_NO_EMB_ATK[39m[33m.[39mtouched)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m270|[39m     [34mexpect[39m([33mP_EMB_ATK_10[39m[33m.[39mtouched)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m271|[39m     [34mexpect[39m([33mBASE[39m[33m.[39mtotal)[33m.[39m[34mtoBeGreaterThan[39m([33mNO_EMB_ATK[39m[33m.[39mtotal)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m272|[39m     [34mexpect[39m([33mBASE[39m[33m.[39mtotal)[33m.[39m[34mtoBeGreaterThan[39m([33mEMB_ATK_10[39m[33m.[39mtotal)[33m;[39m
+    [90m273|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill2[2m > [22mPierce Damage 64.7% is applied to milk only
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m283:22[22m[39m
+    [90m281|[39m   [34mit[39m([32m'Pierce Damage 64.7% is applied to milk only'[39m[33m,[39m () [33m=>[39m {
+    [90m282|[39m     [35mconst[39m b [33m=[39m [34mbuffApplies[39m([33mBASE[39m[33m,[39m [32m'pierceDamagePct'[39m[33m,[39m [34m64.7[39m)[33m;[39m
+    [90m283|[39m     [34mexpect[39m(b[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                      [31m^[39m
+    [90m284|[39m     [34mexpect[39m(b[33m.[39m[34mevery[39m((e[33m:[39m any) [33m=>[39m e[33m.[39mtargetSlug [33m===[39m [33mSLUG[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m285|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill2[2m > [22mPierce Damage 64.7% is continuous (no wall-clock window authored)
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m294:29[22m[39m
+    [90m292|[39m         [34mnear[39m(e[33m.[39mvalue[33m,[39m [34m64.7[39m)[33m,[39m
+    [90m293|[39m     )[33m;[39m
+    [90m294|[39m     [34mexpect[39m(authored[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   |[39m                             [31m^[39m
+    [90m295|[39m     // nearest-wrong: a short refreshing window; the kit word is conti…
+    [90m296|[39m     expect(authored.every((e: any) => e.durationSec === undefined)).to…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / skill2[2m > [22mthe 447.7% rider is a 2 sec cadence bounded by the 10 sec burst window
+[31m[1mAssertionError[22m: expected undefined to be 'distributed' // Object.is equality[39m
+
+[32m- Expected:[39m
+"distributed"
+
+[31m+ Received:[39m
+undefined
+
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m304:24[22m[39m
+    [90m302|[39m     [35mconst[39m blk [33m=[39m holders[[34m0[39m][33m;[39m
+    [90m303|[39m     const eff = (blk.effects as any[]).find((x) => near(x.atkPct ?? -1…
+    [90m304|[39m     [34mexpect[39m(eff[33m.[39mflavor)[33m.[39m[34mtoBe[39m([32m'distributed'[39m)[33m;[39m
+    [90m   |[39m                        [31m^[39m
+    [90m305|[39m     [35mconst[39m cadence2 [33m=[39m
+    [90m306|[39m       (eff[33m.[39mkind [33m===[39m [32m'dot'[39m [33m&&[39m [34mnear[39m(eff[33m.[39mintervalSec [33m??[39m [34m1[39m[33m,[39m [34m2[39m)) [33m||[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯[22m[39m
+
+[41m[1m FAIL [22m[49m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts[2m > [22mmilk-blooming-bunny / burst - Overconfident, Huh?![2m > [22mPierce Damage 117.64% is self-targeted and its removal cannot RAISE damage
+[31m[1mAssertionError[22m: expected 1 to be greater than or equal to 2[39m
+[36m [2m❯[22m scripts/kit-autonomy/blind/milk-blooming-bunny.test.ts:[2m375:38[22m[39m
+    [90m373|[39m     [34mexpect[39m(b[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m374|[39m     [34mexpect[39m(b[33m.[39m[34mevery[39m((e[33m:[39m any) [33m=>[39m e[33m.[39mtargetSlug [33m===[39m [33mSLUG[39m))[33m.[39m[34mtoBe[39m([35mtrue[39m)[33m;[39m
+    [90m375|[39m     [34mexpect[39m([33mP_NO_PIERCE_BUFF[39m[33m.[39mtouched)[33m.[39m[34mtoBeGreaterThanOrEqual[39m([34m2[39m)[33m;[39m
+    [90m   |[39m                                      [31m^[39m
+    [90m376|[39m     [34mexpect[39m([33mNO_PIERCE_BUFF[39m[33m.[39mtotal)[33m.[39m[34mtoBeLessThanOrEqual[39m([33mBASE[39m[33m.[39mtotal)[33m;[39m
+    [90m377|[39m   })[33m;[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/8]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m8 failed[39m[22m[2m | [22m[1m[32m11 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (22)[39m
+[2m   Start at [22m 18:46:53
+[2m   Duration [22m 527ms[2m (transform 93ms, setup 0ms, import 412ms, tests 12ms, environment 0ms)[22m
+
