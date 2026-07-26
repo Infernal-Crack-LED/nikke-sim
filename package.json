@@ -15,7 +15,7 @@
     "web:build": "vite build && node scripts/prerender.mjs",
     "web:preview": "vite preview",
     "build": "vite build && node scripts/prerender.mjs",
-    "build:deploy": "npm run dpschart && npm run build",
+    "build:deploy": "npm run dpschart && npm run ranks:all && npm run build",
     "start": "node scripts/serve.mjs",
     "typecheck": "tsc -p web/tsconfig.json --noEmit && tsc -p tsconfig.json --noEmit",
     "test": "npm run web:build && node scripts/web-smoke.mjs",
