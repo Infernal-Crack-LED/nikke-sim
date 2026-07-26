@@ -154,7 +154,7 @@
 
 | Theme                                      | Why it's here                                                               |
 | ------------------------------------------ | --------------------------------------------------------------------------- |
-| 1. Cadence tuple (~22 units)               | measurement backlog (video plan), not an engine gap                         |
+| 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
 | 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                          |
 | 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                        |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                               |
@@ -269,12 +269,17 @@ Systematic limitations, not per-unit fudge — each corrects many units at once.
    `pierceUntilFrame`; grave enabled 0.83→1.18 HOT kept on purpose, faithful>fit, residual → U19).
    milk-blooming-bunny/prika deferred. (Pierce Damage ▲ applies on the partless boss; only the pierce
    CORE+BODY double-hit is multipart-only — don't conflate.)
-8. **Cadence-tuple measurement** (theme 1) — largest population (~22 units), a measurement backlog owned
-   by the full-sweep video plan, not an engine change.
+8. **Cadence-tuple measurement** (theme 1) — **SOLVED 2026-07-25**: the SMG `read-ammo` test traced the
+   perceived discrepancies to an SMG-specific frame-data confound; datamine cadence is reliable, no per-unit testing needed.
 
 ## Full theme catalog (ranked by unit count)
 
-### 1. Cadence-tuple datamine estimates — ~22 units
+### 1. Cadence-tuple datamine estimates — ~22 units — **SOLVED 2026-07-25**
+
+> **SOLVED 2026-07-25 (owner):** the SMG `read-ammo` test showed the perceived cadence discrepancies traced to an
+> SMG-specific frame-data confound (now understood), not per-unit cadence errors. The datamine cadence tuple is
+> reliable; per-unit cadence measurement is no longer required and the `⚑ cadence tuple` flag is retired. The
+> historical context below is retained.
 
 Class-default fire rate / `reloadFrames` / charge frames / SR-RL 22-frame bolt-gap shipped
 unverified on every non-focus-recorded unit ("⚑ cadence tuple"). Direction unknown per unit but

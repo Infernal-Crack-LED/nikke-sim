@@ -139,10 +139,11 @@ no FIX/MISSING — S3 makes NO encoding change: add only the `Kit-autonomy gaunt
 then flip provenance at Land. The gauntlet CERTIFIES structure; do not manufacture a change to look productive.
 (5 of the 10-unit 2026-07-24 bottom-up batch were certify-only.)
 
-**Kit-silent cadence ⚑ (recurring).** When fire rate / reload / charge cadence is absent from the datamine and
-the recording, apply the STANDARD `⚑ cadence tuple` flag (`docs/engine-modeling-gaps.md` theme 1) with its
-video-plan recipe (solo scope-lock clip: rounds/10s + mag-empty→first-shot gap) — do not re-derive the
-limitation per unit. Same for the other catalog themes: cite the theme, attach its recipe, move on.
+**Kit-silent cadence — RESOLVED 2026-07-25 (no longer flagged).** The datamine cadence tuple (fire rate /
+reload / charge frames) is reliable: the SMG `read-ammo` test showed the only discrepancy was an SMG-specific
+frame-data confound (now understood), not a per-unit cadence error. Do NOT apply the former `⚑ cadence tuple`
+flag (`docs/engine-modeling-gaps.md` theme 1, marked SOLVED) — per-unit cadence measurement is no longer
+required. For the OTHER catalog themes: cite the theme, attach its recipe, move on.
 
 ## Stage 4 — engine updates (driver, isolated worktree) — ONLY if a primitive is genuinely missing
 
