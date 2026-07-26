@@ -1453,24 +1453,25 @@
       "weapon": "AR",
       "class": "Supporter",
       "kitParse": {
-        "status": "authored",
-        "provenance": "partial-hand",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "burst 10s-Pierce grant engine-inexpressible (hasPierce static; shipped inert to protect solo anchor 1.005) + Prediction-end forced reload unmodeled = her ~0.835 comp-cold cause; NOTE grave is actually MEASURED (solo-recon n=19) despite tuned=false flag"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/grave.json + scripts/kit-autonomy/manual-review/grave.md.",
+          "low ENCODING (skill2): Overheat I 'Removed upon reloading to max ammunition' is modelled as a permanently-sustained buff. This is DOCUMENTED (verbatim in unmodeled.skill2, called a hand approximation), so it is NOT a faithfulness defect and does not reduce the score — it is listed because, uniquely among grave's residuals, it is NOT primitive-blocked and both blind agents reached for the existing primitive unprompted."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "run I: 1.19-1.23",
+      "evidence": "run I: 1.19-1.23 | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged",
       "date": "2026-07-13",
       "graded": {
         "teams": 2,
         "within3pct": 0
       },
       "reference": false,
-      "residual": "Mild B3 heat, untuned",
+      "residual": "Mild B3 heat, untuned | Overheat I removeOnReload (enactable); Overheat II/III ramp-in + Prediction-end ammo dump (primitive-blocked); board 1.104 HOT = documented U19 burst-window residual",
       "unmodeled": {
         "skill1": [
           "Activates when Prediction status ends. Affects self. Removes 100% of ammo.",
