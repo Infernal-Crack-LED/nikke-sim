@@ -1,0 +1,170 @@
+{
+  "slug": "eve",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 60% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC crit — prose says 'Critical Rate', NOT 'of normal attacks'; applies to every crit-eligible hit (normals + any proc/burst hit flagged crit:true)",
+      "durationSemantics": "permanent ('continuously') — no durationSec, no expiresFrame",
+      "triggerIdentity": "passive (start of battle)",
+      "targetSet": "self only",
+      "nearestWrongModel": "critRateNormalPct 60 (scoped to normals — under-credits Unstable Energy / burst crit), or a durationSec window, or ally-shared",
+      "distinguishingAssertion": "buffApply {stat:'critRatePct', key~skill1, value:60, casterIdx===targetIdx===eve, no expiresFrame} present from frame 0; NO buffApply with stat 'critRateNormalPct' for eve",
+      "inertness": "no other unit in controlComp receives a critRatePct buffApply from eve",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 44 critical hit(s) w/ normals",
+      "disposition": "FIX",
+      "scope": "counts CRITICAL hits from NORMAL ATTACKS only — not all rounds, not skill/burst hits",
+      "durationSemantics": "instant proc, repeating counter (repeat license from skill2 'Previous effects trigger repeatedly')",
+      "triggerIdentity": "schema has NO crit-filtered hitCount → GAP closed by derivation: hitCount ≈ ceil(44 / effectiveCritRate). With base AR crit + S1's +60 (≈75%), threshold ≈ 58–59 ROUNDS ⚑ (derive from the unit's sheet crit; static — cannot track team crit buffs, flag that too)",
+      "targetSet": "enemy (random enemy units → sole boss)",
+      "nearestWrongModel": "hitCount:44 counting ALL rounds (~33% over-fire at 75% crit); secondary misread: 240% as the TOTAL split across 3 hits instead of per-hit",
+      "distinguishingAssertion": "each proc emits exactly 3 damage events with mult 240 (flavor 'sequential', srcSlot skill1) — 720% per proc; proc cadence over a fixed run ≈ one per ~59 eve rounds fired, NOT one per 44 (count shot events between proc batches)",
+      "inertness": "procs must NOT be core-boosted (no 'core strike' text); whether they CRIT is measured-only ⚑ (flatDamage crit defaults off — do not silently set crit:true to spend the +60%)",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "UE hits Electric Code → DT ▲10% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "rider on Unstable Energy landing, only vs an Electric-element boss",
+      "durationSemantics": "durationSec 10, wall-clock, refreshable per proc",
+      "triggerIdentity": "same hitCount block (or chained), gated bossElementGate:'Electric'",
+      "targetSet": "ENEMY debuff (taxonomy #4: Damage Taken ▲ is a boss debuff benefiting the whole team — never a self buff)",
+      "nearestWrongModel": "ungated damageTakenPct 10 (team-wide +10% vs ANY boss — large over-credit), or mis-targeted as a self buff",
+      "distinguishingAssertion": "vs the controlComp Fire boss: ZERO buffApply events with stat 'damageTakenPct' value 10 (boss-held debuffs have casterIdx===null); override block must carry bossElementGate:'Electric'",
+      "inertness": "must move NOTHING on the Fire/neutral test boss — graded comps unchanged with the line present vs deleted",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Previous effects trigger repeatedly.",
+      "disposition": "FAITHFUL",
+      "scope": "licenses skill1's Unstable Energy counter to loop (not once-per-battle)",
+      "durationSemantics": "permanent",
+      "triggerIdentity": "implicit — engine hitCount already fires every N hits repeatedly, so faithful encoding is the plain repeating counter",
+      "targetSet": "self (modifies own skill1)",
+      "nearestWrongModel": "Unstable Energy modeled as once-per-battle, or this line inventing a NEW damage instance",
+      "distinguishingAssertion": "≥2 distinct Unstable Energy proc batches (3-hit groups) occur in a standard-length run",
+      "inertness": "adds no new effect of its own — no extra buffApply/damage beyond the repetition",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 50% of the skill user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "generic ATK, all damage",
+      "durationSemantics": "permanent ('continuously')",
+      "triggerIdentity": "passive (start of battle)",
+      "targetSet": "self — 'of the skill user's ATK' = caster-scaled FLAT add, i.e. casterAtkPct 50, not atkPct",
+      "nearestWrongModel": "atkPct 50 (percentage of own ATK — different stacking vs other flat/pct buffs; buffApply would emit raw 50 instead of a flat ATK number)",
+      "distinguishingAssertion": "buffApply {stat:'casterAtkPct', value ≈ 0.5 × eve.staticAtk} (flat-resolved per harness note), permanent, self-targeted; no atkPct:50 buffApply from skill2",
+      "inertness": "no ally receives it",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 25%",
+      "disposition": "FAITHFUL",
+      "scope": "weapon-state modifier — IS damage (taxonomy #6: gates shots fired / reload frequency)",
+      "durationSemantics": "permanent",
+      "triggerIdentity": "passive",
+      "targetSet": "self",
+      "nearestWrongModel": "dropped as 'QoL/defensive, no damage', or encoded maxAmmoFlat 25 (+25 rounds vs +15)",
+      "distinguishingAssertion": "buffApply {stat:'maxAmmoPct', value:25}; eve's reload events are spaced 75 rounds apart (60×1.25), not 60 — count shot events between consecutive reload events",
+      "inertness": "n/a — must be live",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "10 normals on Electric → Reloads 3 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "normal-attack landings vs an Electric boss only",
+      "durationSemantics": "instant ammo refund, repeating",
+      "triggerIdentity": "hitCount:10 (counts ROUNDS) + bossElementGate:'Electric'; effect instantReload fraction ≈ 3/75 ⚑ (fraction-of-max encoding of a flat 3-round refund — document that it assumes the +25% capacity)",
+      "targetSet": "self",
+      "nearestWrongModel": "ungated on any boss — a 30% ammo-sustain loop (3 back per 10 fired) that materially stretches magazines and cuts reloads on the Fire test boss",
+      "distinguishingAssertion": "vs the Fire controlComp boss: eve's reload cadence equals the natural 75-round magazine exactly, and no instantReload fires; block carries bossElementGate:'Electric'",
+      "inertness": "zero effect on the neutral/Fire boss — graded comps unmoved",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "457.14% … sequentially for 6 time(s)",
+      "disposition": "FAITHFUL",
+      "scope": "instant burst damage, per-hit multiplier",
+      "durationSemantics": "instant (6 sequential hits at cast)",
+      "triggerIdentity": "burstCast (eve's OWN cast) — burst-cast instant damage is FB-exempt by timing (methodology #9): lands before the FB window opens",
+      "targetSet": "enemy (random → boss)",
+      "nearestWrongModel": "a single 457.14% hit (dropping ×6 → 2742.84% total lost to 457%), or +50% FB major applied, or keyed to fullBurstEnter",
+      "distinguishingAssertion": "each eve burstCast event is followed by exactly 6 damage events with mult 457.14 (flavor 'sequential', srcSlot burst), each with fbMajorApplied === false",
+      "inertness": "no procs on FBs where eve did not cast (helm-B3 rotations)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mk2 10s: UE seq mult scaled by 100%",
+      "disposition": "FIX",
+      "scope": "scales Unstable Energy's BASE multiplier (240 → 480 per hit) — a base-mult scaling, NOT an additive Damage-Up entry",
+      "durationSemantics": "durationSec 10 from eve's own burst cast",
+      "triggerIdentity": "burstCast — the mode sits in eve's OWN burst block; burstCast ≠ fullBurstEnter, and controlComp has helm as co-B3, so the divergence is LIVE in the standard fixture",
+      "targetSet": "self (modifies own skill1 proc)",
+      "nearestWrongModel": "two, both plausible: (1) fullBurstEnter keying — window opens on EVERY team FB incl. helm's rotations (over-credits ~2×); (2) sequentialDamagePct 100 buff — additive in the diluted Damage-Up bucket instead of doubling the 240 base (under-credits whenever any other Damage-Up buff is live)",
+      "distinguishingAssertion": "an Unstable Energy proc landing inside the window emits damage events with mult 480 (vs 240 outside); count of Mk2 window openings === count of eve burstCast events, NOT count of fullBurstStart events",
+      "inertness": "'scaled by 100%' read as ×2 is a convention ⚑ — if read as no-op the whole line is dead; assert in-window/out-window proc ratio is exactly 2.0",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Mk2 10s: Eagle Eye mult scaled by 100%",
+      "disposition": "FIX",
+      "scope": "doubles Eagle Eye's damage-side effect — the only damage-bearing Eagle Eye stat is the ATK ▲ 50% of user's ATK, so faithful reading = 50 → 100 (an EXTRA casterAtkPct 50 flat) for 10s; the ammo line is capacity, not a 'damage multiplier' ⚑ interpretation",
+      "durationSemantics": "durationSec 10 from eve's own burst cast",
+      "triggerIdentity": "burstCast (same window as the other Mk2 rider)",
+      "targetSet": "self",
+      "nearestWrongModel": "ignored as flavor text (drops a full +50% caster-ATK window), or over-read to also double max ammo for 10s, or encoded as a generic attackDamagePct 100",
+      "distinguishingAssertion": "on each eve burstCast, a buffApply {stat:'casterAtkPct', value ≈ 0.5 × staticAtk, durationSec-derived expiresFrame ≈ cast + 600 frames} appears IN ADDITION to the permanent skill2 grant; absent on helm-cast FBs",
+      "inertness": "max-ammo must NOT change during the window (no maxAmmoPct buffApply at burst cast)",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:critRate60-passive",
+    "skill1:unstableEnergy-44crit-240x3",
+    "skill1:electric-damageTaken10-gate-inertness",
+    "skill2:repeat-license",
+    "skill2:casterAtk50-flat",
+    "skill2:maxAmmo25pct",
+    "skill2:electric-reload3-gate-inertness",
+    "burst:457.14x6-burstCast-noFbMajor",
+    "burst:mk2-UE-x2-burstCast-window",
+    "burst:mk2-eagleEye-atk-doubling"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Eagle Eye-Type Exospine."
+    ],
+    "burst": [
+      "Exospine Mk2",
+      "Function: Enhances Exospine."
+    ]
+  },
+  "notes": "Expected shared-prior misreads to force apart: (1) the 44-counter counts CRITICAL normal hits, not rounds — schema has no crit-gated hitCount, so any faithful encoding is a derived threshold ⚑ (~ceil(44/0.75)≈59 at sheet crit incl. S1's +60); a raw hitCount:44 over-fires ~33% and a static derived threshold silently breaks if team crit buffs exist — the driver must state which they shipped and why. (2) BOTH Mk2 riders key to burstCast, never fullBurstEnter — controlComp's helm co-B3 makes this divergence live, so assert window-count === eve burstCast count. (3) 'scaled by 100%' = ×2 of the BASE multiplier (240→480 event mult), not an additive sequentialDamagePct 100 in the diluted Damage-Up bucket and not a no-op — the in/out window ratio must be exactly 2.0. (4) Sequential damage is PER-HIT (240×3, 457.14×6); a total-split reading loses 3–6×. (5) Both Electric-gated lines (Damage Taken ▲10%, Reloads 3) must carry bossElementGate:'Electric' and be provably inert on the Fire/neutral test boss — the reload rider ungated is a ~30% ammo-sustain over-credit. (6) Whether Unstable Energy hits themselves crit (spending the +60%) is flatDamage crit:false by default and measured-only ⚑ — flag, don't guess. (7) 'ATK ▲ 50% of the skill user's ATK' is casterAtkPct (flat vs static) not atkPct; the buffApply value assertion (≈0.5×staticAtk flat) distinguishes them. Could not write the file to scripts/kit-autonomy/reviews/eve.test-review.json — no tools available in this run; JSON returned inline.",
+  "model": "claude-fable-5"
+}

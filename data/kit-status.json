@@ -1411,22 +1411,27 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "audited",
-        "provenance": "hand-authored",
-        "date": "2026-07-16",
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
         "findings": [
-          "8/8 modeled; crit-count nuke + Mk2 doubling confirmed. F3 reload refund grants 4 rounds not 3 + drops Electric-target gate. Crit-count proxy hitCount 59 (stale under external crit)"
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/eve.json + scripts/kit-autonomy/manual-review/eve.md.",
+          "low FIDELITY (skill1): Unstable Energy's three sequential hits are consolidated into ONE damage event, which is damage-equivalent but feeds the burst gauge only once instead of three times.",
+          "low FIDELITY (burst): The burst nuke is shipped without its 'sequential' flavor, so it is immune to any genuine Sequential Damage ▲ buff as well as to Mk2.",
+          "med FIDELITY (skill1+burst): Crit-eligibility of the 720% proc and the 2742.84% nuke is left to the engine default and is nowhere stated — and the two blind families disagree about what that default is."
         ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
       "control": false,
-      "evidence": "Pure model — audit/review language only, not fight-validated",
+      "evidence": "Pure model — audit/review language only, not fight-validated | kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; judge 0 REAL-GOTCHA, discriminationOk",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "G1 UE-consolidation skill-hit gauge under-feed (low, conservative, documented); G2 unflavored nuke forfeits ally Sequential Damage ▲ (low, inert, documented); G3 crit-default settled crit-ON faithful; doc-hygiene: historical note palimpsest",
       "unmodeled": {
         "skill1": [],
         "skill2": [],
@@ -1436,7 +1441,9 @@
         "skill1: Unstable Energy cadence (hitCount 59) assumes 75% crit at scope lock (44 crit hits / 0.75 = 58.67); external crit-rate buffs on eve would shorten the real cadence — the static threshold cannot respond.",
         "skill1: Damage Taken ▲10% is modeled as permanent while the boss is Electric (kit: 10s per Unstable Energy hit on an Electric target; ~full uptime after the first proc at ~4.9s, so the approximation over-credits only the opening seconds).",
         "skill2: the 3-round reload refund is now GATED on Electric bosses (bossElementGate Electric — inert vs non-Electric, kit-faithful) and fraction 0.04 (0.04 × 75 buffed mag = exactly 3 rounds, matching the kit's flat 3; the prior 0.05 rounded to 4). Enacted 2026-07-20 (kit-audit Phase C ENACT-NOW; Fable pre-op APPROVED). eve is ungraded — validated by solo unit-test (off-Electric total is now element/refund-clean: Iron == neutral).",
-        "burst: Mk2's Unstable Energy doubling is a TRUE ×2 via sequentialMultPct +100 — its OWN multiplicative bucket (multiplicative with Damage Up, not additive into it; engine seqMult, kit-audit Phase A4 2026-07-20), so the ×2 holds regardless of other live Damage-Up buffs (no dilution). Distinct from the additive sequentialDamagePct that snow-white-heavy-arms uses (her 'Sequential Attack Damage ▲158.4%' is a Damage-Up-bucket buff that SHOULD dilute — untouched). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say. Solo unit-test verified (eve is ungraded): the 720% proc is ×2 with Mk2 and does NOT dilute against a synthetic extra Damage-Up buff; normal attacks stay ×1 under Mk2."
+        "burst: Mk2's Unstable Energy doubling is a TRUE ×2 via sequentialMultPct +100 — its OWN multiplicative bucket (multiplicative with Damage Up, not additive into it; engine seqMult, kit-audit Phase A4 2026-07-20), so the ×2 holds regardless of other live Damage-Up buffs (no dilution). Distinct from the additive sequentialDamagePct that snow-white-heavy-arms uses (her 'Sequential Attack Damage ▲158.4%' is a Damage-Up-bucket buff that SHOULD dilute — untouched). The burst nuke itself carries no sequential flavor: kit tags it sequential, but flavoring it would also let Mk2 double the nuke, which the kit does NOT say. Solo unit-test verified (eve is ungraded): the 720% proc is ×2 with Mk2 and does NOT dilute against a synthetic extra Damage-Up buff; normal attacks stay ×1 under Mk2.",
+        "skill1: the Unstable Energy proc is CONSOLIDATED to one 720% flatDamage event (== 240%×3, damage-equivalent — seqMult multiplies the whole packet and crit folds linearly in the deterministic path). Burst GAUGE is the one place this is not inert: gauge counts HITS, not damage (game-mechanics §6), so the single event feeds the skill-hit gauge once instead of three times — an under-generation of 2 skill-hit contributions per proc (~30 procs/fight). Small and in the CONSERVATIVE direction; documented per kit-autonomy judge gotcha G1 (2026-07-25). The same consolidation on the burst nuke (6→1) is strictly inert because burst casts land inside the chain, where gauge generation is locked.",
+        "skill1+burst: the 720% proc and the 2742.84% nuke carry no explicit `crit` field, so they take the engine flatDamage DEFAULT = crit-ON (sim.ts dealDamage `crit: e.crit !== false`); both therefore crit at eve's 75% sheet rate, never core, never range — faithful per the function-damage rule (damage-calculation §2b: '% of final ATK' skill damage crits at caster rate). Settled read-only for kit-autonomy judge gotcha G3 (2026-07-25); S2b's 'flatDamage defaults off' was incorrect, S6's explicit crit:true is redundant with the default."
       ],
       "board": null
     },
