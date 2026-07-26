@@ -82,6 +82,19 @@ async function mountAt(url) {
 const sim = await mountAt(
   'http://localhost:4173/?team=liter,crown,naga,modernia,alice',
 );
+
+// The Team Sim tab now requires a manual Run sim click (it no longer auto-runs
+// on load). Click the button and wait for the 25-seed mean to render.
+const runSimBtn = sim.window.document.querySelector('.calc-run');
+runSimBtn?.dispatchEvent(
+  new sim.window.MouseEvent('click', { bubbles: true, button: 0 }),
+);
+await waitFor(
+  () => /full\s*bursts/.test(sim.window.document.body.textContent),
+  8000,
+  'the manual Run sim result to render',
+);
+
 const text = sim.window.document.body.textContent;
 
 // The right-side actions collapse into a hamburger menu; open it so its items

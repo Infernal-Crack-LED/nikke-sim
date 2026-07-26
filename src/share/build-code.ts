@@ -37,6 +37,7 @@ export interface GlobalsBuild {
   coreCustom: boolean;
   coreCustomVal: string;
   level: string; // synchro
+  bossRange?: 'near' | 'mid' | 'midfar' | 'far' | null; // optional fixed range band
 }
 
 export interface Build {
@@ -57,6 +58,7 @@ export interface UnionBossBuild {
   core: number;
   coreCustom: boolean;
   coreCustomVal: string;
+  bossRange?: 'near' | 'mid' | 'midfar' | 'far' | null;
 }
 
 export const BUILD_VERSION = 1;
