@@ -1,14 +1,13 @@
-// Rank Boards page (/ranks) — four ranked boards over the precomputed
-// artifacts: Burst Generation, Burst CDR, Sustain, Buffer. One shared
-// ranked-bar UI (RankBarChart) with a board pill-switcher; the buffer board
-// gets a second pill row (Generic / Typed carries). Only the active board's
-// artifact fetches. Every board's `methodology` string sits in a collapsible
+// Support Rankings tab (/ranks/support, inside the sim App's rankings
+// section) — four ranked boards over the precomputed artifacts: Burst
+// Generation, Burst CDR, Sustain, Buffer. One shared ranked-bar UI
+// (RankBarChart) with a board pill-switcher; the buffer board gets a second
+// pill row (Generic / Typed carries). Only the active board's artifact
+// fetches. Every board's `methodology` string sits in a collapsible
 // "How this works" card — mirroring the DPS chart's Custom Profiles
 // disclosure (DpsChartTab). No row links into the sim: the sustain board
 // includes non-simSupported units, so no links at all is the simplest truth.
 import { useEffect, useState } from 'react';
-import type { MouseEvent } from 'react';
-import { hrefFor, navigate } from './router';
 import { RankBarChart, type RankChartBar } from './components/RankBarChart';
 import {
   loadBurstGen,
@@ -67,22 +66,6 @@ type AnyArtifact =
   | SustainArtifact
   | BufferChartArtifact;
 
-// Intercept left-clicks for in-app (pushState) navigation; let modified
-// clicks and the real href behave natively (same pattern as SiteChrome).
-function navClick(e: MouseEvent, route: Parameters<typeof hrefFor>[0]) {
-  if (
-    e.defaultPrevented ||
-    e.button !== 0 ||
-    e.metaKey ||
-    e.ctrlKey ||
-    e.shiftKey ||
-    e.altKey
-  )
-    return;
-  e.preventDefault();
-  navigate(hrefFor(route));
-}
-
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
 // a collapsible card with the board's conventions one click away, plus the
 // comp-profile legend when the board has profiles.
@@ -124,7 +107,7 @@ function rampText(ramp: number[]): string {
     .join(' · ');
 }
 
-export function RankBoardsPage() {
+export function SupportRankings() {
   const [board, setBoard] = useState<BoardId>('burstgen');
   const [bufferBoard, setBufferBoard] = useState<BufferBoard>('generic');
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyArtifact>>>({});
@@ -225,21 +208,15 @@ export function RankBoardsPage() {
   }
 
   return (
-    <div className='app ranks-page'>
-      <header>
-        <h1>Unit Rankings</h1>
-        <p className='muted'>
-          Four precomputed boards over the same standardized solo-raid
-          frameworks: burst gauge generation, burst cooldown reduction, team
-          sustain, and buffer value added to two standard carries. Units with a
-          comp profile appear twice — plain and profiled — so both standings
-          are comparable at a glance. For carry damage rankings see the{' '}
-          <a href={hrefFor('rankings')} onClick={(e) => navClick(e, 'rankings')}>
-            DPS chart
-          </a>
-          .
-        </p>
-      </header>
+    <section className='calc-tab'>
+      <h2>Support Rankings</h2>
+      <p className='muted'>
+        Four precomputed boards over the same standardized solo-raid
+        frameworks: burst gauge generation, burst cooldown reduction, team
+        sustain, and buffer value added to two standard carries. Units with a
+        comp profile appear twice — plain and profiled — so both standings are
+        comparable at a glance.
+      </p>
 
       <div className='pills ranks-boards'>
         {BOARDS.map((b) => (
@@ -290,6 +267,6 @@ export function RankBoardsPage() {
           <Methodology methodology={art.methodology} profiles={profiles} />
         </>
       )}
-    </div>
+    </section>
   );
 }

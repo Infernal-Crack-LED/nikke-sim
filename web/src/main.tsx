@@ -43,9 +43,6 @@ const RosterSyncPage = lazy(() =>
 const CreditsPage = lazy(() =>
   import('./CreditsPage').then((m) => ({ default: m.CreditsPage })),
 );
-const RankBoardsPage = lazy(() =>
-  import('./RankBoardsPage').then((m) => ({ default: m.RankBoardsPage })),
-);
 
 // Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
 // percentage), so the `object-position` on portrait <img>s stays in lockstep with
@@ -99,8 +96,6 @@ function Root() {
           <HowToPage />
         ) : route === 'mechanics' ? (
           <MechanicsPage />
-        ) : route === 'ranks' ? (
-          <RankBoardsPage />
         ) : route === 'dev' ? (
           <DevPage />
         ) : route === 'patch-notes' ? (

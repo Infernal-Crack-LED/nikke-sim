@@ -27,9 +27,9 @@ const META: Record<string, HeadMeta> = {
       'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   ranks: {
-    title: 'NIKKE Unit Rankings — Burst Gen, CDR, Sustain & Buffer Boards',
+    title: 'NIKKE Rankings — DPS Chart, Support Boards & Unit Comparison',
     description:
-      'Ranked boards for every NIKKE: burst gauge generation, burst cooldown reduction, team sustain, and buffer value added to standard carries — precomputed under standardized solo-raid frameworks.',
+      'NIKKE rankings hub: ranked DPS of every B3 carry under standardized solo-raid frameworks, support boards (burst gen, burst CDR, sustain, buffer value), and head-to-head unit comparison.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',

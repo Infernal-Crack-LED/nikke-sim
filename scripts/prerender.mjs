@@ -16,6 +16,8 @@ const ROUTES = [
   { path: '/dpschart', key: 'dpschart' },
   { path: '/dps', key: 'dps' },
   { path: '/ranks', key: 'ranks' },
+  { path: '/ranks/support', key: 'ranks' },
+  { path: '/ranks/compare', key: 'ranks' },
   { path: '/overload', key: 'overload' },
   { path: '/team', key: 'team' },
   { path: '/roster', key: 'roster' },
@@ -49,8 +51,8 @@ const META = {
     desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   ranks: {
-    title: 'NIKKE Unit Rankings — Burst Gen, CDR, Sustain & Buffer Boards',
-    desc: 'Ranked boards for every NIKKE: burst gauge generation, burst cooldown reduction, team sustain, and buffer value added to standard carries — precomputed under standardized solo-raid frameworks.',
+    title: 'NIKKE Rankings — DPS Chart, Support Boards & Unit Comparison',
+    desc: 'NIKKE rankings hub: ranked DPS of every B3 carry under standardized solo-raid frameworks, support boards (burst gen, burst CDR, sustain, buffer value), and head-to-head unit comparison.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',

@@ -10,7 +10,6 @@ import { useEffect, useRef, useState } from 'react';
 export type Route =
   | 'sim'
   | 'rankings'
-  | 'ranks'
   | 'overload'
   | 'tools'
   | 'howto'
@@ -24,7 +23,6 @@ export type Route =
 export const ROUTES: Route[] = [
   'sim',
   'rankings',
-  'ranks',
   'overload',
   'tools',
   'howto',
@@ -37,10 +35,9 @@ export const ROUTES: Route[] = [
 ];
 
 // Top-level PAGE routes. The sim app owns "/" plus its sub-tab paths
-// (/dpschart, /overload, …); any segment that isn't a page or a section path
+// (/ranks, /overload, …); any segment that isn't a page or a section path
 // resolves to sim.
 const PAGE_ROUTES: Route[] = [
-  'ranks',
   'howto',
   'mechanics',
   'dev',
@@ -52,14 +49,14 @@ const PAGE_ROUTES: Route[] = [
 // The App hosts four tool SECTIONS — Sim, Rankings, Overload, Tools. Each sub-tab
 // is still served by the App at its own path; these maps group the paths under
 // their section in the top nav.
-const RANKINGS_PATHS = ['dpschart', 'dps'];
+const RANKINGS_PATHS = ['ranks', 'dpschart', 'dps'];
 const OVERLOAD_PATHS = ['overload', 'olsim', 'charge'];
 // Team Generator + Roster Generator live in the Sim section, so their paths
 // (/team, /roster) fall through to 'sim' below.
 const TOOL_PATHS = ['teambuilder', 'doll', 'resources'];
 // Where each section's nav link lands — the section's first tab.
 const SECTION_LANDING: Record<'rankings' | 'overload' | 'tools', string> = {
-  rankings: '/dpschart',
+  rankings: '/ranks',
   overload: '/overload',
   tools: '/teambuilder',
 };

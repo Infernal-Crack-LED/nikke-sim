@@ -1,7 +1,8 @@
-// Smoke test for the Rank Boards page (/ranks): boots the built bundle at
-// /ranks, shims fetch to serve the four real artifacts from dist/, and asserts
-// the board pills, burst-gen bars, profile badge, methodology disclosure, and
-// the Buffer → Typed switch all render. Mirrors web-smoke-dpschart.mjs.
+// Smoke test for the Support Rankings tab (/ranks/support inside the sim
+// App's rankings section): boots the built bundle, shims fetch to serve the
+// four real artifacts from dist/, and asserts the section tabs, board pills,
+// burst-gen bars, profile badge, methodology disclosure, and the Buffer →
+// Typed switch all render. Mirrors web-smoke-dpschart.mjs.
 import { JSDOM } from 'jsdom';
 import { readFileSync, readdirSync } from 'node:fs';
 
@@ -25,7 +26,7 @@ const typedTopName = artifacts['bufferchart.json'].units[typedTop].name;
 const dom = new JSDOM(
   '<!doctype html><html><body><div id="root"></div></body></html>',
   {
-    url: 'http://localhost:4173/ranks',
+    url: 'http://localhost:4173/ranks/support',
     pretendToBeVisual: true,
     runScripts: 'outside-only',
   },
@@ -75,7 +76,9 @@ const waitFor = async (re, what) => {
     await new Promise((r) => setTimeout(r, 50));
   }
 };
-await waitFor(/Burst Gen/, 'rank boards page');
+// the boards live inside the lazy App chunk — wait for the section tab bar
+// first, then for the burst-gen artifact fetch to render its top row
+await waitFor(/Support Rankings/, 'rankings section tabs');
 await waitFor(
   new RegExp(burstgenTopName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
   'burst-gen bars',
@@ -83,6 +86,11 @@ await waitFor(
 
 const text = () => dom.window.document.body.textContent ?? '';
 const checks = {
+  'section tabs render': [
+    'DPS Rankings',
+    'Support Rankings',
+    'Unit Comparisons',
+  ].every((s) => text().includes(s)),
   'board pills render': ['Burst Gen', 'Burst CDR', 'Sustain', 'Buffer'].every(
     (s) => text().includes(s),
   ),
@@ -128,5 +136,5 @@ if (!ok) {
   process.exit(1);
 }
 console.log(
-  '\nranks smoke passed — pills, burst-gen bars, profile badge, methodology, buffer typed board',
+  '\nranks smoke passed — section tabs, board pills, burst-gen bars, profile badge, methodology, buffer typed board',
 );
