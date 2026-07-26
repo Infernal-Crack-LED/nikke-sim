@@ -7135,19 +7135,18 @@ export function App({ user }: { user: AuthUser | null }) {
                   </button>
                 </PillGrid>
               </div>
-            </section>
-
-            <div className='field synchro-level-field'>
-              <label>Synchro level</label>
-              <div className='pills'>
-                <input
-                  className='num'
-                  value={level}
-                  onChange={(e) => setLevel(e.target.value)}
-                  title='synchro level'
-                />
+              <div className='field'>
+                <label>Synchro level</label>
+                <div className='pills'>
+                  <input
+                    className='num'
+                    value={level}
+                    onChange={(e) => setLevel(e.target.value)}
+                    title='synchro level'
+                  />
+                </div>
               </div>
-            </div>
+            </section>
             </div>
           </details>
         )}
