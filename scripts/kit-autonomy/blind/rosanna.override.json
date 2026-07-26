@@ -1,0 +1,68 @@
+{
+  "slug": "rosanna",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 19.34,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1310.4,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+      "Affects 2 enemy unit(s) with the highest final ATK.",
+      "Removes 5 buff(s). Activates 1 time(s) per battle."
+    ],
+    "skill2": [
+      "Activates at the start of battle.",
+      "Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.",
+      "Activates when a Nikke is incapacitated.",
+      "Frenzy: ATK ▲ 22.61%, stacks up to 10 time(s) and lasts for 30 sec.",
+      "Fills Burst Gauge by 36.54%."
+    ],
+    "burst": [
+      "Prioritizes 2 Attacker enemy unit(s).",
+      "Affects the same target(s) when in Concealment status.",
+      "Deals 561.6% of final ATK as additional damage."
+    ]
+  },
+  "caveats": [
+    "⚑ Concealment is a defensive self-status with no engine representation; all Concealment lines and the burst Concealment rider are skipped.",
+    "⚑ 'Nikke incapacitated' trigger is unsupported; Frenzy ATK stack + gauge fill are skipped.",
+    "⚑ Enemy-target selection (2 highest-final-ATK attackers) and buff removal are unsupported.",
+    "⚑ Burst damage is treated as burst-cast instant with noFb:true; confirm timing vs Full Burst."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rosanna MG/Electric B1. Modeled only the self critRate buff on hitCount:120 and the unconditional burst-cast nuke. All defensive/targeting/unsupported mechanics are unmodeled."
+}

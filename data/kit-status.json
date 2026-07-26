@@ -3347,6 +3347,53 @@
       ],
       "board": null
     },
+    "rosanna": {
+      "name": "Rosanna",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rosanna.json + scripts/kit-autonomy/manual-review/rosanna.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "control": false,
+      "reference": false,
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0 (judge kimi-code/k3); cross-family S2b/S7=kimi-k3 + S5/S6=kimi-k2.7 (owner routing override, Claude quota exhausted); blind roles converge on all modeled lines + gap set; judge independently verified R1/R3/R5 (the blinds' shared omission) vs prose+SSOT as FAITHFUL",
+      "residual": "burst 561.6% concealment-gated rider unmodeled (flag1: no self-status primitive; in-sim concealment uptime ~100% on the no-damage basis, so an ungated+marker encoding would be exact in-domain — owner may greenlight for ~+43% burst); MG cadence tuple datamine-default (flag2, proc counts only)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Concealment: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+          "■ Activates after performing 10 normal attacks. Affects the 2 enemy unit(s) with the highest final ATK. Removes 5 buff(s). Activates once per battle."
+        ],
+        "skill2": [
+          "■ Activates at the start of battle. Affects self. Concealment: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit.",
+          "■ Activates when a Nikke is incapacitated. Affects self. Frenzy: ATK ▲ 22.61%. Stacks up to 10 times and lasts for 30 sec. Fills Burst Gauge by 36.54%.",
+          "■ Activates when a Nikke is incapacitated. Prioritizes Attacker-type enemies. Affects 1 unit(s). Deals 400% of final ATK as damage."
+        ],
+        "burst": [
+          "■ Activates when the skill user is in the Concealment state. Affects the target(s) hit by Assalto. Deals 561.6% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "burst: the 561.6% additional damage is GATED on the Concealment self-state and is NOT modeled — concealment is a targeting-prevention status with no engine primitive (out-of-domain for DPS); ≈+43% burst damage when concealment is up, uptime measurement-gated (⚑1)",
+        "skill2: only the 500-normal-attack Frenzy source is modeled; the ally-incapacitation Frenzy (+Burst Gauge 36.54%) and the ally-incapacitation 400% hit never fire on the immortal-boss basis (no ally is ever incapacitated)",
+        "skill1: the Concealment (10s) and enemy buff-removal (5 buffs, once per battle) lines are out-of-domain (targeting / buff-strip) and unmodeled",
+        "burst: the Damage Taken ▲29% debuff applies only against Water Code bosses (bossElementGate 'Water'); inert vs a non-Water boss",
+        "cadence: MG fire rate and reload timing are datamined defaults, not yet measured from video (⚑2)"
+      ]
+    },
     "rosanna-chic-ocean": {
       "name": "Rosanna: Chic Ocean",
       "burst": "II",
