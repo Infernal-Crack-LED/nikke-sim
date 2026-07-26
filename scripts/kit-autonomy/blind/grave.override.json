@@ -1,0 +1,210 @@
+{
+  "slug": "grave",
+  "hasPierce": false,
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "consumeAmmo",
+          "fraction": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": -50,
+          "removeOnReload": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 38.96,
+          "durationSec": 2.7
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 48.4,
+          "durationSec": 2.7
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 15
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.48,
+          "removeOnReload": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 20.66,
+          "removeOnReload": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 30.8,
+          "removeOnReload": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "unlimitedAmmo",
+          "durationSec": 10
+        },
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 52.8,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 85.19,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 48.2,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 39.98,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 3,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ S1 trigger 'Activates when Prediction status ends' has no engine primitive. Prediction is a 10s self status opened by her OWN burst cast; the team Full Burst window is also 10s and opens moments after that cast, so Prediction end ≈ Full Burst end. Modeled as fullBurstEnd + ownBurstGate:'cast' (so it never fires on rotations where another Burst II casts). Real Prediction end is slightly EARLIER than FB end (by the cast→FB-open gap) — pin from footage.",
+    "⚑ 'Removes Heat Emission under certain conditions' is deliberately vague in the prose. HYPOTHESIS: the condition is reloading to max ammunition — S1 dumps 100% of ammo at Prediction end, forcing an immediate (half-speed) reload, and the sibling Overheat I line uses that exact removal wording. Self-side modeled with removeOnReload:true; ally-side cannot use removeOnReload (it would strip on each ALLY's own reload, not on Grave's), so the ally buffs carry a ⚑ durationSec instead.",
+    "⚑ Heat Emission window length = Grave's slowed reload. Derived, not measured: reloadFrames 81 (1.35s) ÷ 0.5 reload ratio ≈ 2.7s. Both the ally burstGen/pierce buffs (durationSec 2.7) and the 2%/sec self heal (ticks 3) ride this derivation.",
+    "⚑ Overheat II/III are counted 'after Prediction takes effect' — a burst-scoped attack counter the engine does not have. hitCount is cumulative from battle start, so counts 30/60 are a PROXY; the fbGate:'inFb' + ownBurstGate:'cast' pair restricts application to her own Prediction window but the exact in-window arrival frame will not match the real 30th/60th landed attack.",
+    "⚑ Overheat chain dependency ('While in Prediction and Overheat I/II status') is modeled implicitly: all three Overheat buffs carry removeOnReload:true, and the S1 forced reload at Prediction end strips the whole chain together. The engine does not enforce II-requires-I; if a future change lets II/III apply without I the model over-credits.",
+    "⚑ Cadence tuple (AR pulls/sec, reloadFrames 81) is datamine-sourced and unreliable; it drives BOTH the hit-threshold arrival times (15/30/60) and the Heat Emission window length, so two ⚑ estimates share one unverified input.",
+    "hasPierce is deliberately FALSE: Pierce is a 10s burst-window grant, encoded as a gainPierce effect. A whole-fight boolean would over-credit both her own 52.8% and the team's 39.98%/48.4% Pierce Damage buffs.",
+    "'Current HP ▼ 1% every 1 sec' is skipped, not ignored: v1 models no HP pool and the boss deals no damage, so self-drain has no offensive or survival consequence. It is NOT a heal/shield/DEF tandem line."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6 cross-family). Structure: burst opens Prediction (10s unlimited ammo + Pierce + self Pierce Dmg/Crit Rate) plus a 10s team Attack Damage / Pierce Damage / +3 Max Ammo aura. S2 is a three-tier Overheat ramp (15 landed attacks → ATK 15.48%; 30 in-Prediction → ATK 20.66%; 60 in-Prediction → Attack Damage 30.8%), all removed on reload-to-max. S1 fires at Prediction end: it dumps the whole magazine and halves reload ratio (a WEAPON-STATE damage line — it costs real shots, do not skip it), and during the resulting Heat Emission window grants the team Burst Gauge speed 38.96% + Pierce Damage 48.4% and self-heals 2% Max HP/sec. The Prediction-end trigger, the Heat Emission removal condition, and its window length are all proxies — see caveats.",
+  "unmodeledNote": null
+}

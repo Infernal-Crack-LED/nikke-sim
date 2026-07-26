@@ -32,7 +32,7 @@
 | `alliesOfWeapon` | 7 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, tove |
 | `alliesTopAtk` | 5 | alice, maxwell, miranda, naga, soda-twinkling-bunny |
 | `atkOfMaxHpPct` | 2 | cinderella, maiden-ice-rose |
-| `bossElement` | 2 | eve, helm-aquamarine |
+| `bossElement` | 1 | eve |
 | `bossElementGate` | 4 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study |
 | `burstCasters` | 3 | ada, arcana, crown |
 | `burstCdr` | 14 | anis-star, arcana, blanc, d-killer-wife, helm-aquamarine, liter, little-mermaid, moran, … |
@@ -40,7 +40,7 @@
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
-| `cast` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
+| `cast` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
@@ -69,19 +69,19 @@
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
-| `interval` | 6 | helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, snow-white |
+| `interval` | 9 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, sakura-bloom-in-summer, … |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 4 | grave, noir, tove, trina |
 | `maxShots` | 1 | snow-white-heavy-arms |
-| `mode` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
-| `modes` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, milk-blooming-bunny, mint, prika |
+| `mode` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
+| `modes` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `nonBurstCasters` | 1 | crown |
 | `normalAttackPct` | 5 | arcana-fortune-mate, asuka-wille, jill, leona, mast-romantic-maid |
-| `notCast` | 0 | _none_ |
+| `notCast` | 1 | diesel-winter-sweets |
 | `outFb` | 1 | velvet |
-| `ownBurstGate` | 4 | arcana, asuka-wille, cinderella-crystal-wave, marciana-marine-study |
+| `ownBurstGate` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `pelletCountFlat` | 2 | arcana-fortune-mate, dorothy-serendipity |
 | `perResource` | 2 | marciana-marine-study, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
@@ -90,15 +90,15 @@
 | `recovery` | 2 | asuka, crown |
 | `reenterStage` | 1 | anis-star |
 | `removeOnReload` | 0 | _none_ |
-| `requiresCore` | 4 | d-killer-wife, liberalio, ludmilla-winter-owner, mari |
+| `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
-| `resourceGate` | 1 | soda-twinkling-bunny |
+| `resourceGate` | 3 | elegg-boom-and-shock, guillotine-winter-slayer, soda-twinkling-bunny |
 | `selfAndAdjacent` | 1 | rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
-| `shotFired` | 21 | ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, helm, laplace, … |
+| `shotFired` | 22 | ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, helm, helm-aquamarine, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageEnter` | 8 | cinderella, ein, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
 | `storedHit` | 1 | rapi-red-hood |
@@ -107,7 +107,7 @@
 | `swapped` | 5 | laplace, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
 | `targetStatus` | 4 | asuka-wille, d-killer-wife, marciana-marine-study, privaty |
-| `teamAmmo` | 2 | cinderella-crystal-wave, little-mermaid |
+| `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
@@ -154,7 +154,7 @@
 
 | Theme                                      | Why it's here                                                               |
 | ------------------------------------------ | --------------------------------------------------------------------------- |
-| 1. Cadence tuple (~22 units)               | measurement backlog (video plan), not an engine gap                         |
+| 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
 | 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                          |
 | 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                        |
 | 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                               |
@@ -186,7 +186,8 @@
   all kit-verbatim coefficients, none calibrated-absorbed, so no de-credit was applied. → A32 (U13),
   DECISIONS 2026-07-22. **Residual gap at the same call site (NOT crit):** `extraHitDamagePct` generates
   no burst gauge while an equivalent `flatDamage` proc emits `skillGauge` per proc, and it is a summed
-  stat so a per-rider `flavor` (e.g. a true-damage rider, which must not crit) cannot be represented.
+  stat so a per-rider `flavor` cannot be represented (moot for crit now that true damage CAN crit,
+  owner ruling 2026-07-25; the summed stat still can't distinguish flavor for other flavor-gated behavior).
   The gauge half is **LIVE on all three carriers today** (they generate less gauge than the same kit
   line would under `flatDamage`, and the one measured function rider DOES generate gauge — so it is a
   probable under-generation, not a neutral unknown); the flavor half is genuinely inert (no
@@ -231,9 +232,10 @@
 
 **Genuinely-new owner-flagged ENGINE questions** (rulings needed, not primitives to build here):
 
-- `takina` — **true swap normals CRIT.** `sim.ts:2842` crits true swap normals (`crit: true`); the §2c "true
-  damage cannot crit" carve-out covers riders / `RIDER_CRIT` only, NOT swap normals. Broad blast radius —
-  `chisato` and `laplace` also carry `trueNormals`. Owner ruling needed; not changed by the gauntlet.
+- `takina` — **true swap normals CRIT — RESOLVED 2026-07-25 (owner ruling, in-game confirmed: true damage
+  CAN crit).** `sim.ts` crits true swap normals (`crit: true`), which is CORRECT; the former §2c "true
+  damage cannot crit" carve-out is reversed (and was never an engine guard). `chisato`/`laplace`
+  `trueNormals` critting is faithful. No change needed.
 - `snow-white-heavy-arms` — **`sequentialDamagePct` inert on flatDamage riders.** The engine flatDamage path
   does not route `flavor: 'sequential'` → `seqMult`, so her W16 `sequentialDamagePct 158.4` never lands on the
   flatDamage rider (relates to theme 12-tail / eve Mk2 sequential-doubling). Low severity — inert on the
@@ -269,12 +271,17 @@ Systematic limitations, not per-unit fudge — each corrects many units at once.
    `pierceUntilFrame`; grave enabled 0.83→1.18 HOT kept on purpose, faithful>fit, residual → U19).
    milk-blooming-bunny/prika deferred. (Pierce Damage ▲ applies on the partless boss; only the pierce
    CORE+BODY double-hit is multipart-only — don't conflate.)
-8. **Cadence-tuple measurement** (theme 1) — largest population (~22 units), a measurement backlog owned
-   by the full-sweep video plan, not an engine change.
+8. **Cadence-tuple measurement** (theme 1) — **SOLVED 2026-07-25**: the SMG `read-ammo` test traced the
+   perceived discrepancies to an SMG-specific frame-data confound; datamine cadence is reliable, no per-unit testing needed.
 
 ## Full theme catalog (ranked by unit count)
 
-### 1. Cadence-tuple datamine estimates — ~22 units
+### 1. Cadence-tuple datamine estimates — ~22 units — **SOLVED 2026-07-25**
+
+> **SOLVED 2026-07-25 (owner):** the SMG `read-ammo` test showed the perceived cadence discrepancies traced to an
+> SMG-specific frame-data confound (now understood), not per-unit cadence errors. The datamine cadence tuple is
+> reliable; per-unit cadence measurement is no longer required and the `⚑ cadence tuple` flag is retired. The
+> historical context below is retained.
 
 Class-default fire rate / `reloadFrames` / charge frames / SR-RL 22-frame bolt-gap shipped
 unverified on every non-focus-recorded unit ("⚑ cadence tuple"). Direction unknown per unit but

@@ -1,0 +1,37 @@
+{
+  "slug": "isabel",
+  "stage": "S2c-reconciliation",
+  "date": "2026-07-25",
+  "reviewer": "claude-fable-5 (S2b, cross-family blind)",
+  "driver": "qwen (kit-gauntlet-driver)",
+  "verdict": "GO (cross-family corroborated)",
+  "convergence": "FULL — all 9 kit lines converge FAITHFUL. The reviewer's single FIX disposition (L9 Full Burst Duration ▼5s) is a 'most-droppable-line / team-NERF' watch-flag, NOT a divergence: the driver's shipped override already encodes it faithfully as fullBurstExtend:-5, and the test now pins it GREEN vs shipped + RED vs both the dropped (cfNoExt) and sign-flipped (cfExtSignFlip) counterfactuals. Reviewer's FIX concern is fully satisfied → reconciles to FAITHFUL.",
+  "lineByLine": [
+    { "line": "L1 S1 MT1 critRate 6.26/45s self", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. Reviewer flagged burstCast-vs-fullBurstEnter as the defining LIVE discrimination in this fixture (helm co-B3 → FB count 13 > Isabel casts 7). Driver test now has an explicit cfS1FbEnter counterfactual asserting the self-buff count tracks casts (7), not FB count (13). Scope (generic critRatePct, not critRateNormalPct) discriminated via cfCrScoped on the skill bucket." },
+    { "line": "L2 S1 MT2 critDmg 18.03/45s self", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. Cumulative escalation (2nd cast applies step1+step2) pinned by the casts-1 ladder count + cfS1NoEscalate (drops the step)." },
+    { "line": "L3 S1 MT3 ATK 17.28/45s self", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. casts-2 ladder count; counter caps at stage 3 (casts 3-7 all apply step3, no wrap) is implicit in the 5 = casts-2 count over 7 casts." },
+    { "line": "L4 S2 170.58% periodic single hit", "driver": "FAITHFUL", "reviewer": "FAITHFUL (CALIBRATED tier; cadence ⚑ from prose-alone)", "note": "Converged on disposition. Reviewer correctly flags the interval seconds as an ALWAYS-⚑ invented-trigger field from a prose-only read; the DRIVER resolves it with measurement (2026-07-16 docs/probe-data/isabel-sg-band.json: time-based ~14.7s, re-encoded as passive-t0 + interval:15 = 12 hits/180s). Test pins 12 hits, t=0+15s spacing, ONE hit per proc (not ×5), skill bucket, critEligible, never cores/range; cfS2NoT0 (11 hits) discriminates the load-bearing battle-start fire." },
+    { "line": "L5 burst 149.85% nuke", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. FB-exempt (fbMajorApplied false) pinned; fires every cast." },
+    { "line": "L6 burst MT1 damageTakenPct 39.96/5s boss debuff", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. Boss-held debuff (casterIdx/targetIdx null) pinned; fires every cast (post-increment stage read — count==casts kills the off-by-one the reviewer flagged); 5s duration." },
+    { "line": "L7 burst MT2 299.7% additional", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. Cumulative (casts-1); cfBurstNoEscalate (exclusive-tier → casts) discriminates." },
+    { "line": "L8 burst MT3 349.65% additional", "driver": "FAITHFUL", "reviewer": "FAITHFUL", "note": "Converged. Cumulative (casts-2); cfBurstNoEscalate discriminates." },
+    { "line": "L9 burst Full Burst Duration ▼5s (allies)", "driver": "FAITHFUL", "reviewer": "FIX (watch-flag)", "note": "Reconciled to FAITHFUL. Reviewer's FIX = 'do not drop / do not sign-flip this team NERF'; driver already encodes fullBurstExtend:-5. Test pins sub-10s (5s) FB windows GREEN vs shipped, RED vs cfNoExt (dropped → all 10s) AND RED vs cfExtSignFlip (+5 → 15s). ⚑ BLAST-RADIUS retained: the NET rotation sign (shorter window vs faster re-cycle) is unverified and is NOT asserted." }
+  ],
+  "reviewerFlagsHonored": [
+    "Added explicit burstCast-vs-fullBurstEnter counterfactual (cfS1FbEnter) — reviewer priority #2, live in this fixture.",
+    "Added fullBurstExtend sign-flip counterfactual (cfExtSignFlip, +5 → 15s windows) — reviewer's named nearest-wrong for L9.",
+    "Added S2 'ONE hit per proc, never cores, never range' pin — reviewer's ×5 / range discrimination."
+  ],
+  "driverMeasurementBeyondBlind": [
+    "S2 cadence: driver has a 2026-07-16 solo measurement (time-based ~14.7s period, 12 hits/180s) the blind prose-only reviewer correctly left as ⚑. Disposition unchanged (FAITHFUL); the measurement resolves the reviewer's cadence ⚑."
+  ],
+  "residualFlags": [
+    "⚑ fullBurstExtend:-5 net rotation blast-radius (per-cycle FB shortening vs faster re-cycle) — unverified, documented, not asserted.",
+    "⚑ SG cadence tuple (pullsPerSec / reloadFrames 133 / rolling-reload) — datamine-unreliable, always-⚑, inert to kit-line faithfulness.",
+    "Unmodeled: possible in-game Marked-Target 45s stage reset (burst spacing > 45s) — not modeled; inert in this fixture (45s durations > 40s CD).",
+    "Engine-global: DoT/periodic-hit crit gating (DOT_CRIT default OFF) — S2 modeled with per-hit crit:true opt-in (MEASURED 3/11 crits); global default is an engine decision, not a kit-faithfulness gap."
+  ],
+  "testFile": "scripts/tests/units/isabel.test.ts",
+  "testResult": "18/18 PASS vs shipped override (scripts/kit-autonomy/reviews/isabel.verify.txt)",
+  "model": "claude-fable-5"
+}

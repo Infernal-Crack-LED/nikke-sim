@@ -1,0 +1,164 @@
+{
+  "slug": "ein",
+  "kitDescription": "Ein is an Electric sniper who fights largely through summoned 'Near Feathers'. She enters every battle with 4 feathers already summoned, and each feather that gets summoned immediately strikes an enemy for true damage (damage that ignores defence). Her Burst III summons 6 more feathers at once, and for the next 10 seconds raises her own true damage and her charged-shot damage, while simultaneously hitting the highest-defence enemy for a large true-damage nuke. Separately, whenever the team's burst chain reaches Stage 3 — whether she casts it or another Burst III unit does — she gains a 10-second attack buff. Her sniper fire also feeds itself: every full-charged shot leaves her charged damage boosted for the following shot, so in practice she is permanently charge-buffed while firing.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "battle-start feather count === 4 separate damage events — driver folds the 4 into ONE flatDamage 363.24 (=4×90.81). Shape divergence, identical expected total; lumping is kit-silent and the S6 blind flagged split-vs-merge as a ⚑ itself.",
+      "feather 90.81-halving counterfactual is a no-op against the driver's 363.24 lump — same lumping root cause, not an independent failure.",
+      "S2 chargeDamagePct 80 carries durationShots === 1 (3 assertions: durationShots field, expiresFrame null, seconds-window counterfactual) — driver ships a permanent passive instead. Documented in the note; see gotcha 4.",
+      "6 feather hits per ein burst cast — driver ships a 34×90.81 = 3087.54 burstCast lump plus a 6×90.81 = 544.86 fullBurstEnd trickle (Prydwen COMMUNITY count, ⚑2). Count divergence 6 vs 34; this is the substantive RED.",
+      "(the 4 skipped S5 cases are the blind writer's own declared unobservables — summon indirection, target-selection collapse, feather noFb/noRange — not divergences)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "start of battle: Summons 4 Near Feathers",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive block, target enemy, flatDamage atkPct 363.24 flavor:true noRange:true — one event at frame 0 (test E8 pins frame===0, atkPct/90.81===4).",
+        "blindSaid": "S6 authored 4 SEPARATE flatDamage 90.81 true on the same passive block and flagged split-vs-merge as a ⚑ with 'expected total unchanged'; S5 asserted count===4 (RED on shape only).",
+        "formulaCheck": "4 × 90.81 = 363.24 exact. flatDamage rider: no core, no range (noRange set + engine-automatic), no FB major at t=0 (no FB exists) — matches damage-calculation §2b rider rules. Expectation-mode damage is identical for lump vs split; only Monte-Carlo crit variance differs.",
+        "fireRateOk": true,
+        "explanation": "Prose-exact in count and magnitude; the engine has no summon primitive so folding the on-summon payload into the summoning block is the faithful encoding, and all three agents did it. Lumping is kit-silent. NOTE the internal-consistency point carried into gotcha 2: 4 summons here yield 4 hits, while 6 summons on burst yield 34 — the model is not self-consistent about whether feathers repeat."
+      },
+      {
+        "kitLine": "entering Burst Stage 3: ATK ▲70.12% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stageEnter{stage:3}, target self, buff atkPct 70.12 durationSec 10; test E1 pins value, targetIdx===EIN, expiresFrame−frame===600, and applied.length >= ein's own burstCast count.",
+        "blindSaid": "S2b and S6 BOTH independently chose stageEnter:3 over burstCast and named burstCast as the nearest-wrong (halves uptime with helm as co-B3). Full triple convergence on the highest-risk trigger read.",
+        "formulaCheck": "Plain ATK ▲ → sums into (1+ΣATK%) on staticAtk (damage-calculation §1a), self-scoped, 10s wall-clock. Correct bucket, correct scope, correct duration semantics.",
+        "fireRateOk": true,
+        "explanation": "Encoding is right and independently corroborated twice. The TEST, however, does not discriminate it: `applied.length >= einBursts.length` is also green under a burstCast encoding (which would give exact equality). S2b's distinguishing assertion required at least one 70.12 apply on a rotation with no ein burstCast. Fix: strict `>` (helm fills B3 on the rotations ein is on cooldown, so `>` holds), or assert an apply frame with no adjacent ein burstCast."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Near Feather Attack: 90.81% true dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Per-instance magnitude 90.81 kept exactly; COUNTS shipped as 34/her burst (burstCast lump 3087.54) + 6/full-burst-end (trickle 544.86), sourced to Prydwen, flagged ⚑2 with estimate + recipe (U8 ein-focus recording) + tier 2.",
+        "blindSaid": "S2b spec: total 90.81-mult hits == 4 + 6×burstCasts, 'never an interval model'. S6: 4 + 6 literal, with its own ⚑ 'if feathers persist and attack repeatedly, this model UNDERSTATES her'. Both blinds land on the kit-literal count and both name the persistence question.",
+        "formulaCheck": "flavor:true → def-ignore path (damage-calculation §1a/buckets); rider gets Element/DamageUp/FB-by-timing, no core, no range. trueDamagePct feeds it via the DamageUp bucket. Magnitude routing is correct; only the instance COUNT is at issue, and 34 contradicts the prose's own '6'.",
+        "fireRateOk": true,
+        "explanation": "Scored DOCUMENTED_GAP strictly per the rubric (⚑ with estimate + recipe + tier = decision recorded), but this is the single highest-leverage unverified number on the unit — see gotcha 2. The fullBurstEnd trickle additionally fires on rotations where ein never bursts, i.e. feather attacks with no kit summon source at all (documented in caveat 2 as comp-speed-dependent)."
+      },
+      {
+        "kitLine": "Full Charge: Charge Dmg ▲80% 1 shot",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "passive buff chargeDamagePct 80, no duration (permanent from frame 0); note argues durationShots:1 on a shotFired trigger is mechanically infeasible because shotFired applies the buff AFTER the shot's damage is computed (claims verified zero benefit).",
+        "blindSaid": "S2b called durationSec:1 the single highest-leverage misread and demanded durationShots:1 be read off the buffApply; S6 authored shotFired + durationShots:1 and flagged the self-apply ordering (this shot vs next) as unverified ⚑.",
+        "formulaCheck": "chargeDamagePct is additive percentage points inside the Charge bucket (damage-calculation §1d) — correct bucket, correct stat (not chargeDamageMultPct, which needs 'Multiplier' wording). game-mechanics §11 documents durationShots as IMPLEMENTED (2026-07-23) and 'spent right after the shot so the Nth shot still benefits'.",
+        "fireRateOk": true,
+        "explanation": "Steady-state equivalence is real: an SR at chargeFrames 60 full-charges every pull, so the literal 1-round window is continuously refreshed and a permanent +80 differs only on the fight's FIRST shot (~1 of ~120 pulls). Documented in the note, so DOCUMENTED_GAP — but the driver's infeasibility claim sits against game-mechanics §11's stated semantics, which is an engine-ordering question, not a kit question (gotcha 4)."
+      },
+      {
+        "kitLine": "(non-kit) orb burst-gauge dot",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "passive zero-damage dot (atkPct 0, intervalSec 2.83, durationSec 999) whose ticks emit her flat target gauge (560) — sourced to nikke-synergy arena data special_burst_gauge add_interval_from_start 5.6 / 170f, pre-existing since 2026-07-13.",
+        "blindSaid": "Neither blind could derive this — it is datamined, not kit prose (S6 saw prose only). Correctly excluded from the kit-faithfulness comparison.",
+        "formulaCheck": "game-mechanics §6: dot ticks generate the caster's flat target value (56000/100 = 560 for this shot table) — 560 per 170f ≈ 5.6% of the 10,000 gauge per 2.83s matches the datamined value exactly. Zero atkPct keeps it damage-inert.",
+        "fireRateOk": true,
+        "explanation": "Not a kit line; excluded from the faithfulness fraction. Modeled correctly against its datamined source, but test E7 only asserts that zero-damage ticks exist and disappear when removed — it never asserts the SIDE EFFECT the block exists for (team gauge / full-burst count). 'Modeled ≠ working' is unproven here (gotcha 5)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "self: Summons 6 Near Feathers",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Folded into the skill2 burstCast lump at 34 instances, not 6 (⚑2).",
+        "blindSaid": "S2b: 'exactly 6 additional 90.81-mult hits per ein burstCast, zero on helm rotations'. S6: 6 separate flatDamage 90.81 on a burstCast block.",
+        "formulaCheck": "Trigger identity is right (burstCast = ein's OWN burst; both blinds named fullBurstEnter as the nearest-wrong and the driver avoided it). Only the count diverges from the prose's own number.",
+        "fireRateOk": true,
+        "explanation": "Same ⚑2 gate as the skill2 line — documented with tier and recipe, so it passes the rubric, but it is a 5.67× override of a number the prose states explicitly. Ranked gotcha 2."
+      },
+      {
+        "kitLine": "True Damage ▲ 55.3% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, buff trueDamagePct 55.3 durationSec 10; test E2 pins one apply per ein burst, value, targetIdx, 600-frame window, and a removal counterfactual.",
+        "blindSaid": "S2b and S6 both: trueDamagePct 55.3, self, 10s, burstCast — EXACT match, and S6 deliberately ordered buffs BEFORE the damage blocks so the burst's own true hits ride it.",
+        "formulaCheck": "True Damage ▲ is a DamageUp-bucket term gated on true flavor (damage-calculation §1e) — correct bucket and correct flavor gate; it moves the feathers and the nuke, not her normals.",
+        "fireRateOk": true,
+        "explanation": "The line itself is encoded exactly right and does fire once per ein burst. Its practical reach is the problem: the 3087.54 feather lump resolves at cast-instant in the skill2 slot, before this buff registers, so removing the buff costs her only ~0.7% of total — the buff is near-inert on the damage it is meant to govern. Ranked gotcha 3; the SSOT already answers the ordering question, so this one does NOT need measurement."
+      },
+      {
+        "kitLine": "Charge Damage ▲ 140.68% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, self, buff chargeDamagePct 140.68 durationSec 10; test E3 pins count == ein burst count, value, self target, 600-frame window, plus removal counterfactual.",
+        "blindSaid": "S2b and S6 both EXACT; S2b explicitly ruled out chargeDamageMultPct ('Multiplier' wording absent) and fullBurstEnter keying.",
+        "formulaCheck": "Additive points in the Charge bucket, stacking with the S2 +80 → +220.68 points during her window (damage-calculation §1d). Correct stat, correct additivity, correct scope.",
+        "fireRateOk": true,
+        "explanation": "Triple convergence, no divergence. Her charged shots inside the 10s window are the intended beneficiary and the removal counterfactual confirms it is live."
+      },
+      {
+        "kitLine": "10 highest-DEF: 300.02% true dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, enemy, flatDamage atkPct 300.02 flavor:true; test E4 pins exactly one instance per cast, bucket 'burst', fbMajorApplied false, rangeApplied false, critEligible true.",
+        "blindSaid": "S2b and S6 both EXACT, both naming the ×10-target multiplication as the nearest-wrong and both requiring FB-exemption. S5 asserted the same and went GREEN.",
+        "formulaCheck": "Single partless boss ⇒ the 10-target clause collapses to one instance (never ×10). Burst-cast direct damage is FB-exempt by the MEASURED boundary rule (damage-calculation §1b) ✓; riders take no range ✓. Block ordering places the burst buffs before this block, so it correctly rides her own cast-granted True Damage ▲55.3% — consistent with the cinderella worked example (§5b), where the caster's own cast-granted conversion applied to her burst nuke.",
+        "fireRateOk": true,
+        "explanation": "Fully faithful on count, magnitude, flavor, timing and bucket. The one open question attached to it is crit-on-true-damage (gotcha 1), which is engine/SSOT-level and cross-cutting, not an ein encoding choice."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1 / skill2 / burst (all true-flavored flatDamage)",
+      "summary": "Every ein rider — the 4-feather start lump, the 34-feather burst lump, the 6-feather trickle and the 300.02% nuke — is crit-eligible, which contradicts game-mechanics.md §9's explicit ruling that flavor:\"true\" flatDamage never crits; the driver's test PINS the higher-damage branch.",
+      "evidence": "Kit: 'Deals 90.81% of final ATK as true damage' / 'Deals 300.02% of final ATK as true damage'. SSOT game-mechanics.md §9: 'TRUE DAMAGE NEVER CRITS (owner ruling 2026-07-21; engine `crit && !trueFlavor` guard), so `flavor:\"true\"` dots/flatDamage + `trueNormals` windows are crit-exempt.' damage-calculation.md §2c states the same ruling but names only dots (ada's grenade DoT). Driver's ein.test.ts E4/E5 assert `critEligible === true` on both the nuke and the feathers and PASS, and the test header argues the carve-out is 'DOT-scoped ... Prydwen-confirmed for Near Feathers' — a COMMUNITY claim placed above an owner ruling. Neither blind agent addressed it (S2b assumed riders 'crit at caster rate'; S6 set no crit field), so no blind corroboration either way. This is the one finding the blinds did not surface.",
+      "documentedByDriver": false,
+      "severity": "high",
+      "suggestedFix": "PLAUSIBLE, not confirmed — resolve the SSOT conflict before trusting the pin, do NOT adjust any number. Recipe: (a) grep the engine's `trueFlavor` guard in dealDamage and confirm whether it gates only the dot/tick path or all flavor:'true' instances, and whether the event's `critEligible` field is emitted pre- or post-guard; (b) `git log -S trueFlavor` + the 2026-07-21 DECISIONS entry to read the owner ruling's stated scope; (c) owner ruling on whether Near Feathers crit in game. If §9 stands as written, the engine must apply `crit && !trueFlavor` to flatDamage as well and the E4/E5 pins invert — that removes ~7–15% from the bulk of ein's output and touches every true-flavor unit (ada et al.). If the carve-out really is dot-only, amend §9 so the two SSOT docs stop contradicting each other. Leaving a contested behavior asserted by a green regression pin is exactly the 'passing tests don't justify known-wrong code' failure mode."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2 / burst (Near Feather cadence)",
+      "summary": "Feather instance counts are 34 per her burst plus 6 per full-burst end, against the prose's explicit '4 at battle start' + '6 summoned at burst' — roughly 185 feather hits per fight versus a kit-literal ~28 (~6.6×), on what is her largest damage term.",
+      "evidence": "Kit skill1: 'Summons 4 Near Feathers'; kit burst: 'Summons 6 Near Feathers'; kit skill2: 'Activates when Near Feather is summoned ... Deals 90.81% of final ATK as true damage' — one attack per summon, and no kit clause summons feathers at full-burst end. Driver ships 34×90.81 = 3087.54 (burstCast) + 6×90.81 = 544.86 (fullBurstEnd, fires on EVERY rotation including ones ein never bursts), sourced to Prydwen, flagged ⚑2 with recipe (U8 ein-focus recording) and tier 2. Both blinds independently derived the kit-literal 4 + 6/burst; S6 flagged the opposite risk ('if feathers persist and attack repeatedly, this model UNDERSTATES her'), so the direction is genuinely open. WHOLE-PICTURE: the driver's own model is internally inconsistent — 4 battle-start summons yield exactly 4 hits, but 6 burst summons yield 34. Either feathers repeat (then the t=0 four should repeat too) or they do not (then 34 is wrong). ein is already a listed kit-level board outlier (damage-calculation §6).",
+      "documentedByDriver": true,
+      "severity": "high",
+      "suggestedFix": "Keep as shipped and flagged (the ⚑ is properly formed), but tighten the documentation and resolve the inconsistency: state in the note whether the model's premise is 'feathers persist and re-attack' — and if so, why the 4 battle-start feathers do not. Then measure: an ein-focus recording (U8), counting true-damage popups per burst window and per inter-burst window, settles 34 / 6 / the battle-start 4 in one pass and is the same recording ⚑3 needs. Do not tune the count against the board."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst / skill2 (⚑3 ordering)",
+      "summary": "Her own True Damage ▲55.3% burst buff never reaches the 3087.54 feather lump — the lump resolves at cast-instant in the skill2 slot, before the burst-slot buff registers — so the buff moves only ~0.7% of her total and the lump is under-credited ×1.553.",
+      "evidence": "Kit burst prose lists the self buffs BEFORE the 300.02% damage line; the buffs are same-cast self-grants. damage-calculation §5b (cinderella worked example) establishes that a caster's OWN cast-granted buff DOES apply to its own burst damage ('her own cast-granted HP→ATK conversion included'), while only ally full-burst-ENTRY auras are excluded by the boundary rule. Driver's own test E2 documents the ~0.7% drop as the measured consequence. S6 blind ordered its burst block buffs-first for exactly this reason and flagged the alternative as the thing to check.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "This one is SSOT-derivable and should NOT be gated on measurement: move the feather lump so it resolves after the burst's self-buff block (author it in the burst slot below the buff block, or give it a ≥1-frame delaySec), citing damage-calculation §5b. CAUTION — land it together with gotcha 2, not before: the fix multiplies the largest term by 1.553 in the same direction that an over-stated 34 count already pushes, and a board ratio that currently looks acceptable may be riding compensating errors. Measure the cadence first, then land both, or land the ordering fix ENV-gated default-OFF."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2 (Charge Damage ▲80% 'for 1 shot')",
+      "summary": "A round-scoped window is encoded as a permanent passive on the grounds that durationShots:1 is mechanically infeasible on a shotFired trigger — but game-mechanics §11 documents durationShots as implemented with 'spent right after the shot so the Nth shot still benefits'.",
+      "evidence": "Kit: 'Activates when attacking with Full Charge. Affects self. Charge Damage ▲ 80% for 1 shot(s).' game-mechanics.md §11 (IMPLEMENTED 2026-07-23): round-scoped windows end after the holder fires N bullets, and the count is spent right after the shot. Driver note claims the shotFired trigger applies the buff after the shot's damage is computed, yielding zero benefit (self-reported verification). Both blinds encoded durationShots:1; S2b called durationSec:1 the highest-leverage misread on this kit line.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Board impact is ~one shot in ~120 (an SR that always full-charges is continuously re-primed, so permanent ≈ literal from shot 2 onward) — no urgency. But if the driver's observation is right, that is an ENGINE ordering defect in the shotFired + durationShots interaction, not an ein problem: it would silently zero every future 'for N shot(s)' buff authored on a per-shot trigger. File it against the durationShots primitive with the two-line repro, rather than leaving the workaround as the precedent."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill2 (orb burst-gauge dot)",
+      "summary": "Test E7 proves the orb's zero-damage ticks exist, but never asserts the gauge side-effect that is the block's entire purpose — 'modeled ≠ working' is unverified for the orb.",
+      "evidence": "Override models the orb as a zero-damage permanent dot whose ticks feed skillGauge 560 per 2.83s (datamined special_burst_gauge 5.6 / 170f). E7 asserts orbTicks.length > 0, summed amount === 0, and that removing the dot removes the ticks. A zero-damage tick that failed to reach addGauge/skillGauge would pass all three assertions identically.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Add one discriminating assertion: removing the orb dot must reduce the comp's full-burst count (or the team's gauge-fill events) — per game-mechanics §6 a dot tick contributes the caster's flat target value, so at 560 per 2.83s over 180s the effect on rotation is large enough to be observable. Assert the rotation delta, not the ticks."
+    }
+  ],
+  "discriminationOk": false,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 8 kit lines are FAITHFUL or DOCUMENTED_GAP, so the rubric fraction is a literal 8/8 = 1.0 — but read that number narrowly: it scores kit-line encoding only, and three of the eight ride ⚑ gates while the highest-severity finding is scored outside the kit-line rubric. The blind re-derivations converged hard where it mattered most: both S2b and S6 independently chose stageEnter:3 for the ATK buff (the single highest-risk trigger read, where burstCast would halve uptime against helm as co-B3), both derived burstCast rather than fullBurstEnter for the burst self-lines, both collapsed the 10-target nuke clause to one instance, and both folded the on-summon payload into the summoning block. S5's six REDs are all shape or documented-gap divergences (lumping, durationShots, feather count), none a silent drop. Ranked findings: (1) crit-eligibility on true-flavored flatDamage contradicts game-mechanics.md §9's explicit owner-ruling text and is now PINNED by the driver's tests — PLAUSIBLE not confirmed, cross-cutting beyond ein, and it is the item neither blind surfaced; (2) the 34-feather cadence, properly ⚑-flagged but a 5.67× override of the prose's own '6' on her largest term, and internally inconsistent with the 4-summons-4-hits battle-start block; (3) the ⚑3 ordering gap, which — unlike the driver's framing — is answerable from damage-calculation §5b today and does not need the U8 recording, though it must land WITH the cadence measurement because the two errors point the same way and may currently be cancelling. GO is warranted because every kit line's encoding matches the prose, the two genuinely load-bearing trigger reads are triple-corroborated, and every divergence carries an estimate, recipe and tier; nothing here is a fudge. discriminationOk is FALSE for one reason: E1 asserts `applied.length >= ein's burst count`, which is equally green under the burstCast nearest-wrong — tighten to a strict `>` (helm fills B3 on ein's cooldown rotations) or assert an apply with no adjacent ein burstCast; also add the orb's gauge side-effect assert. Same-model residual for the owner to spot-check: the crit-on-true-damage ruling scope (§9 vs §2c) — I could not run the engine, and the driver's 'Prydwen-confirmed feathers crit' rests on a COMMUNITY claim sitting above a 2026-07-21 owner ruling; that single question moves the bulk of ein's output and every other true-flavor unit.",
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,128 @@
+{
+  "slug": "cinderella",
+  "kitDescription": "Cinderella is an Electric RL Defender (Burst III, 40s cooldown) whose defensive stat block is actually her damage engine. She fires charged rockets: the first full charge of a magazine unlocks doubled charge speed (in practice the whole 24-rocket magazine autofires until she reloads to max), and every fully-charged hit tacks on an extra 136.6% of her final ATK. She summons a decoy avatar at the start of battle and again whenever the team enters Burst Stage 3, and while a decoy is standing she gains 'Beautiful' — a permanent Max HP +1.6% every 3 seconds, up to 12 stacks (capping around the 36-second mark). Entering Burst Stage 3 converts 2.71% of her final Max HP into flat ATK for 10 seconds, which is what turns all that stacked Max HP into offense. Her burst hits random enemies for 1365.92% of final ATK ten times in sequence, plus an extra 28.9% per Beautiful stack riding the same targets — so her nuke gets bigger the longer the fight has run.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1b block-shape assertions (chargeSpeedPct effect exists / value 100 / removeOnReload / trigger shotFired) — driver encodes this line as charFixes.magDumpRof, not a chargeSpeedPct buff. ENCODING-FORM divergence, footage-grounded (ammo-counter read, cindy solo neutral.MP4); the blind had no access to that measurement.",
+      "S1b event assertions (buffApply chargeSpeedPct ×N, buffRemove cause:'reload') — same cause; no such events exist under the mag-dump primitive.",
+      "S2c block-shape assertions (skill2 HP buff, value 1.6, maxStacks 12, trigger interval sec:3) — driver files Beautiful as skill1[1] casterMaxHpPct 19.2 rampSec 36. Behaviorally equivalent at every 3s boundary; the ≤1-stack intra-window difference is now quantified in a caveat (G3).",
+      "S2c event assertions (stacks 1..12 in buffApply log, stacks[0]===1) — the smooth ramp emits no discrete stack counts.",
+      "burst 'TEN discrete 1365.92% effects' — driver consolidates to one 13659.2 sequential-flavored packet. Arithmetically identical under a multiplicative seqMult; the flavor gap that made this a real divergence (G2) is now fixed.",
+      "1 harness-API misuse in the blind file (opts.onEvent instead of cfg.onEvent), which vacates its own event-level groups — a test-authoring defect, not an encoding divergence."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 2.71% of final Max HP, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1[0] stageEnter{stage:3} → self buff atkOfMaxHpPct 2.71 durationSec 10",
+        "blindSaid": "S6 identical (atkOfMaxHpPct 2.71 / 10s / stageEnter 3 / self); S2b named the ATK-scaling misread as nearest-wrong",
+        "formulaCheck": "SSOT: effectiveAtk includes (atkOfMaxHpPct/100)×liveMaxHp with liveMaxHp = base + OWN-kit maxHpFlat only (cindy e3 rule). Correct stat, correct conversion base.",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on stat, trigger, scope and duration. Driver test C1 discriminates against the atkPct model two ways (buff-name absence + >1.5× nuke baseAtk separation)."
+      },
+      {
+        "kitLine": "Charge Speed ▲ 100%, removed on reload",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "charFixes.magDumpRof true + reloadFrames 120 — one ~1.0s prime, then the whole 24-rocket magazine autofires at datamine rate_of_fire 180, reload re-arms the prime",
+        "blindSaid": "S5/S6 both expect a literal chargeSpeedPct 100 buff with removeOnReload",
+        "formulaCheck": "SSOT magDumpRof is the sanctioned primitive for exactly this shape: 'one charge primes the mag, the whole magazine autofires without recharging, reload-to-max re-arms the prime. Charge Speed shortens only the prime.' The kit's own 'removed upon reloading to max ammunition' is the reload re-arm.",
+        "fireRateOk": true,
+        "explanation": "The blind agents encoded the kit's WORDING; the driver encodes the MEASURED observable that wording describes (ammo-counter frame read, ~390 pulls/180s vs ~300 under per-rocket charging — the documented cause of the old COLD 0.937). Measured > literal-prose here, and the substitution is recorded in the note plus a dedicated caveat. Driver test C2 pins the cadence against the per-rocket model (>2× pull count, intra-mag median gap ≤25f)."
+      },
+      {
+        "kitLine": "Deals 136.6% final ATK add'l dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1[2] shotFired → enemy flatDamage atkPct 136.6 (no core, crit-eligible by default, FB by landing timing)",
+        "blindSaid": "S6 identical; S2b: one per shot, skill bucket, no core",
+        "formulaCheck": "flatDamage riders are critEligible by default and take FB by landing timing; noRange engine-forced. Routing correct.",
+        "fireRateOk": true,
+        "explanation": "Driver test C3 asserts rider count === pull count (not merely >0), magnitude, bucket and crit eligibility — the every-N under-frequencing misread would fail it. Popup recon at ~97.5s independently confirms 136.6% × ATK 80,385."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Start of battle: Decoy @96% Max HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim; caveat states the v1 boss deals no damage so full decoy uptime (and thus full Beautiful uptime) is assumed",
+        "blindSaid": "S6 unmodeled with the same load-bearing-premise note; S2b flagged the silently-zeroed-Beautiful failure mode",
+        "formulaCheck": "No avatar-entity or damage-taken primitive in v1; encoding it as shield/heal would wrongly fire allies' shielded/recovery triggers.",
+        "fireRateOk": true,
+        "explanation": "Correctly unmodeled AND the consequence (presence-gate always true) is stated rather than left implicit — the exact failure S2b warned about is avoided."
+      },
+      {
+        "kitLine": "B3 entry: Decoy @96% Max HP again",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim",
+        "blindSaid": "Same",
+        "formulaCheck": "Re-summon is unobservable in a model with no avatar entity and an immortal first decoy.",
+        "fireRateOk": true,
+        "explanation": "Genuinely indistinguishable in v1; recorded, not dropped. Stacks correctly do not reset at this entry (the S2b nearest-wrong)."
+      },
+      {
+        "kitLine": "Every 3 sec: Max HP ▲ 1.6% ×12",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1[1] passive → self buff casterMaxHpPct 19.2 rampSec 36 (1.6×12 over 3s×12); skill2 array deliberately empty, now stated in a caveat",
+        "blindSaid": "S6/S2b: skill2 interval sec:3, value 1.6, maxStacks 12, no durationSec",
+        "formulaCheck": "casterMaxHpPct on a SELF target ⇒ caster===target ⇒ converts to an own-kit maxHpFlat grant that DOES feed atkOfMaxHpPct. rampSec on a buff = linear min(1,(frame−start)/rampFrames). Both forms coincide at every 3s boundary.",
+        "fireRateOk": true,
+        "explanation": "Continuous ramp from t=0 to cap at 36s reproduces the measured e3 early→late FB-proc growth (633.7k→667.0k). The linear-vs-discrete difference is now quantified (≤1 stack, ≤1.6% Max HP, sub-1% of damage) with the discrete form recorded as available — G3, resolved to a documented modeling choice. Driver test C5 pins the ramp against both no-Beautiful and instant-Beautiful counterfactuals."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "1365.92% ATK, sequentially ×10",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst[0] burstCast → enemy flatDamage atkPct 13659.2 flavor:'sequential' (10× consolidated)",
+        "blindSaid": "S5/S6: ten discrete 1365.92 sequential-flavored effects",
+        "formulaCheck": "seqMult is a single multiplicative bucket applied to the packet, so 1×13659.2 flavored ≡ 10×1365.92 flavored. fbMajorApplied=false is correct — burst-cast damage resolves before the FB window opens.",
+        "fireRateOk": true,
+        "explanation": "G2 FIXED and PINNED: the flavor is now present, and the driver test asserts both the flavor on the shipped effect and seqMult===1 on every instance (engaged, undistorted). validate-overrides unchanged at 347.1M confirms the predicted board-inertness in a comp with no sequential buffer. Per-hit-vs-total (the S6 ⚑ and the 10× swing S2b flagged) resolves correctly to per-hit. Carries the G1 same-cast-snapshot residual below, which is a timing property, not an encoding of this line."
+      },
+      {
+        "kitLine": "28.9% add'l dmg, mirrors Beautiful",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst[1] burstCast → enemy flatDamage atkPct 346.8 rampSec 36 (28.9×12, ramping with Beautiful)",
+        "blindSaid": "S6 identical (346.8 + rampSec 36, derived from 3s×12 not fitted); S2b accepted either the live-mirror or ramped-max encoding",
+        "formulaCheck": "rampSec on a flatDamage = per-battle-elapsed scale min(1, frame/round(rampSec×60)) snapshotted at cast — exactly reproduces the stack count live at cast time. FB-exempt by burst-cast timing.",
+        "fireRateOk": true,
+        "explanation": "Independent convergence on a non-obvious encoding, and the ramp is DERIVED from the kit's own 3s×12, not fitted. Both S2b nearest-wrongs are excluded: not 12 stacks from t=0 (first cast ≈51.7, driver test C7 asserts a sub-346.8 value the instant model cannot produce) and not a boss-status gate (mirror >0 on every cast)."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENGINE",
+      "slot": "burst",
+      "summary": "burstSnapshotsPreFb:false means the nuke snapshots her OWN same-cast stage-3 atkOfMaxHpPct conversion; the file's [HISTORICAL] BURST TIMING sentence (e3 video + U10) says it must LOSE that stack. The contradiction is now stated verbatim in the file with a resolution recipe, but which reading is correct remains unmeasured.",
+      "evidence": "Kit: 'Activates when entering Burst Stage 3 … ATK ▲ 2.71% of the skill user's final Max HP'. SSOT: 'stageEnter blocks run before burstCast blocks at a cast' ⇒ with the flag false the conversion is live when the nuke resolves. Driver's own pin measures >1.3× baseAtk separation vs removing the conversion. Neither blind agent set the flag either way (out of their view); the two candidate readings differ ~1.5× on nuke baseAtk, ~20-25% nuke over-credit if the historical reading holds.",
+      "documentedByDriver": true,
+      "severity": "high",
+      "suggestedFix": "NEEDS MEASUREMENT (owner, ~5 min): re-read ONE nuke popup from docs/probes/u8 e3 (cindy focus) and compare against the two predicted baseAtk values — the file already reports early/late FB procs 633.7k/667.0k from that same footage, so a single popup settles it. Then either set burstSnapshotsPreFb:true, or delete the stale BURST TIMING sentence and record the superseding measurement in the note + DECISIONS. Tier 2. Do NOT pick a value to move the board."
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "Beautiful is filed as a smooth casterMaxHpPct 19.2 rampSec 36 in the skill1 array rather than 12 discrete interval-3s stacks in skill2 — a modeling choice with a bounded sub-stack difference, now explicitly documented.",
+      "evidence": "Kit: 'every 3 sec … Max HP ▲ 1.6% continuously, stacks up to 12 times' (discrete). Driver caveat quantifies the divergence: linear and discrete coincide at every 3s boundary, intra-window over-credit ≤1 stack (≤1.6% Max HP, sub-1% of damage; 2.88% vs 1.6% at the t≈5.4s first cast). S5/S6 both expected the discrete skill2 form.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "None required — no magnitude change is warranted. The discrete form (skill2 / interval sec:3 / value 1.6 / maxStacks 12) is recorded as available if step-vs-line ever becomes material."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO — G1 is carried as a documented measurement-gated residual, and that is the correct disposition under this contract, not a concession. My first verdict scored G1 a REAL-GOTCHA because the shipped flag SILENTLY contradicted an in-file measurement note; the defect was the silence, not the value. That is now cured: the contradiction is stated verbatim, the coupling of the historical sentence's reasoning to the since-removed TWIN-INSTANCE model is noted, the board impact is bounded (~20-25% nuke over-credit if the historical reading holds), a one-popup resolution recipe and Tier 2 are recorded, and the shipped behavior is PINNED by a test that fails if the conversion is removed. That is precisely the ⚑ = estimate + recipe + tier shape my contract admits as DOCUMENTED_GAP, and non-negotiable 2 makes the blind honest flag the CORRECT output — the driver explicitly declined to fabricate a measurement to reach GO, which is the behavior the gauntlet exists to produce. Holding NO-GO would demand an action the driver structurally cannot take (it cannot view the e3 footage) on a flag this landing does not change (false is already on disk from the 2026-07-21 rebuild), so blocking buys the board nothing and costs a real regression in documentation quality. G2 is fixed and doubly pinned — the sequential flavor is asserted on the shipped effect AND seqMult===1 is asserted on every nuke instance, with validate-overrides unchanged at 347.1M confirming the predicted inertness. G3 is a quantified low-severity modeling choice with no magnitude change warranted. Faithfulness 8/8 = 1.0. On convergence: the pure S5 run is RED, but every red resolves to encoding FORM, not behavior — chargeSpeedPct-buff vs magDumpRof, discrete-skill2 vs ramped-skill1 Beautiful, ten effects vs one consolidated sequential packet — plus one harness-API misuse in the blind file itself; the driver-reconciled adaptation runs 20 green / 3 skipped, which is the behavioral convergence that matters. The strongest independent signal is that S6 arrived at rampSec 36 on both the Beautiful feed and the burst mirror from the prose alone, deriving it from the kit's own 3s×12 rather than fitting it. SAME-MODEL RESIDUAL FOR THE OWNER TO SPOT-CHECK, in priority order: (1) G1 — the one nuke popup from docs/probes/u8 e3; it is the single highest-leverage unresolved question in this file and no amount of agent agreement can settle it, since every agent shares the same prior about stageEnter/burstCast ordering; (2) the mag-dump substitution for the charge-speed line rests on n=1 footage, and both blind agents independently expected the literal buff — if the ammo-counter read is ever revisited, this line and the 136.6% rider's proc count move together; (3) whether the burst mirror fires once per cast or once per sequential hit (a 10× swing on the rider) is unsettled by the prose and remains an open ⚑ from S5/S6 that no artifact in this gauntlet resolves.",
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,185 @@
+{
+  "slug": "cinderella-crystal-wave",
+  "kitDescription": "Cinderella: Crystal Wave is an Iron-element Burst III machine-gun attacker who fights in one of two weapon states. By default she empties a 300-round MG into the boss while carrying permanent self-buffs — +24% Attack Damage, +29% ATK, and +26% core damage from her Pinpoint stance — plus a 900%-of-final-ATK hit on the nearest target every five seconds and a team burst-gauge top-up (+12%) every 200 rounds the squad consumes. Reloading to a full magazine while she is in her short-lived 'Preparation for Change' state swaps her into Snipe Mode: a piercing 1-second-charge sniper shot (62.13% per shot, ×250% on a full charge, 15-round magazine, and each full charge burns 40 rounds), which trades Pinpoint's core bonus for Destroy's +26.21% part damage. Her burst hits the highest-ATK enemy for 6000% of final ATK and gives herself +92% Attack Damage and +65% ATK for ten seconds. If she is the unit that burst, entering Full Burst fires a second nuke sized by her current stance — 1189.66% to all enemies in Snipe Mode, or 833.79% as a core strike while on the MG — and only one of the two ever applies. She also maintains a decoy avatar worth 70.34% of her final Max HP to absorb enemy attention.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1 'Snipe Mode maxAmmo' (SOLE remaining RED, 1 of 17): blind asserts `e.maxAmmo === 15` (the literally listed Snipe magazine); driver ships `maxAmmo: 1` from the clamp-to-empty reading of 'Additional Effect 2: Expends ammo. Amount: 40 round(s)' against a 15-round mag. The blind test's OWN header raises this exact kit-internal contradiction as a whole-picture flag, S6 independently reached the same clamp reading (maxShots 1), and the driver records both readings plus a measurement recipe as FLAG 3. Classified DOCUMENTED_GAP on the non-validated Snipe path — not a faithfulness divergence.",
+      "RESOLVED THIS PASS — skill1 'every-5-sec 900% rider': the blind splice predicate `e.kind === 'flatDamage' && e.atkPct === 900` previously matched 0 effects against the driver's `dot` encoding (a vocabulary mismatch, classified RECON_ERROR). The driver's interval re-encode makes the predicate match and the whole assertion group GREEN (nInterval > 0, ~35 procs, rangeApplied false, fbMajorApplied in both states)."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Changes the weapon in use: Snipe Mode",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Static user-selectable `modes:['MG','Snipe']`; the weaponSwap sits in a passive block gated `mode:'Snipe'` with durationSec 100000 (100% uptime for the chosen mode). Documented as FLAG 2 with estimate + recipe.",
+        "blindSaid": "S6 approximated with `trigger:{kind:'lastBullet'}` + weaponSwap durationSec 5 / maxShots 1 and flagged the duty cycle as ⚑; S2b called the double-reload-toggle the load-bearing state machine and demanded an explicit ⚑ rather than an implicit snipe-from-t0.",
+        "formulaCheck": "No engine primitive expresses 'reload-to-max while a status is held' as a symmetric toggle; weaponSwap requires a wall-clock bound. All three agents independently converge on 'not derivable, must be flagged'.",
+        "fireRateOk": true,
+        "explanation": "Both approximations err in the same direction (uptime unknowable from prose); the driver's is explicitly labelled and INERT on the graded board — MG is modes[0] so the Snipe block never applies in the validated sample. Verified by W3: normal-attack atkPct is 5.57 in the default run and 62.13 only after flipping modes. Unchanged by the post-fix pass."
+      },
+      {
+        "kitLine": "Full Charge Damage: 250% of damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeMultPct 250 + chargeTimeSec 1 on the swap (the charge BUCKET multiplier, not an additive chargeDamagePct).",
+        "blindSaid": "S6 identical (62.13 / 1 / 250); S2b named the nearest-wrong as encoding 250 as additive chargeDamagePct.",
+        "formulaCheck": "§1d — 'X% of damage' is the chargeMult term, and the driver routes it there rather than into the additive Charge Damage ▲ points. Correct bucket.",
+        "fireRateOk": true,
+        "explanation": "Magnitudes are pure kit text and match exactly. Residual (low, Snipe-only, unchanged): 'Additional Effect 3: Charge time is fixed at 1 sec' is a stat CLAMP, and nothing in the artifacts proves a Charge Speed ▲ ally buff cannot shorten the 1s — untested because no comp supplies one and the Snipe path is unvalidated."
+      },
+      {
+        "kitLine": "Additional Effect 1: Gains Pierce.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "`pierceModes:['Snipe']` at top level, no unconditional `hasPierce:true`; note records Pierce as inert on the v1 boss.",
+        "blindSaid": "S6 hasPierce:false + weaponSwap.hasPierce:true; S2b's nearest-wrong was exactly a whole-fight hasPierce that would tag her MG rounds all fight.",
+        "formulaCheck": "§11 — Pierce core+body doubling is a multi-part-boss mechanic (PIERCE_CORE_DOUBLE false) and Pierce Damage ▲ is a DamageUp entry with no source in these comps, so the line is offensively inert here either way. The scoping (Snipe only) is what the prose demands and what both encodings deliver.",
+        "fireRateOk": true,
+        "explanation": "Driver and blind pick different but equally mode-scoped carriers; neither commits the named nearest-wrong error. The blind test's conditional `if (ov.hasPierce === true) …` clause passes vacuously against the driver's `hasPierce` absence, so it neither confirms nor refutes the pierceModes carrier — unobservable on the partless boss with no Pierce Damage ▲ source, zero board consequence."
+      },
+      {
+        "kitLine": "Expends ammo. Amount: 40 round(s).",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "maxAmmo 1 (40 >= the 15-round Snipe mag ⇒ clamp-to-empty ⇒ one full-charge shot per reload cycle), with the alternative reading and a measurement recipe recorded as FLAG 3.",
+        "blindSaid": "S6 reached the SAME clamp reading (maxShots 1) and raised the identical caveat; S2b flagged the 40-vs-15 arithmetic as a contradiction the driver must resolve openly, never silently. The S5 blind test asserts the literal 15 and is the sole remaining RED.",
+        "formulaCheck": "Whole-picture: 40 rounds cannot be paid from a 15-round magazine, so the literal reading forces a reload after every full charge. The competing reading (the 40 feeds the teamAmmo-200 consumption counter) is equally consistent with the text.",
+        "fireRateOk": true,
+        "explanation": "Three independent reads converge on the contradiction and none resolves it by fiat. Correct handling of an unresolvable kit-internal conflict; it lives entirely on the non-validated Snipe path (MG is modes[0]) and is the only S5 assertion still failing."
+      },
+      {
+        "kitLine": "Beauty-Full: Attack Damage ▲ 24%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill1 passive → self buff attackDamagePct 24, no duration.",
+        "blindSaid": "S6 and S2b identical; S2b's nearest-wrong was atkPct 24 (bucket swap). S5 GREEN (self-scoped, no atkPct:24 apply exists, removal drops her total, teammates byte-identical).",
+        "formulaCheck": "§1e — Attack Damage ▲ belongs in the DamageUp bucket, multiplicative against her ATK-bucket 29%/65%. Driver routes it there.",
+        "fireRateOk": true,
+        "explanation": "W1 pins self-scope (targetIdx == her slot), continuity (expiresFrame null, distinguishing it from her 600-frame burst 92%), and liveness (removal drops her total). Corroborated GREEN by the blind."
+      },
+      {
+        "kitLine": "Reload time is fixed at 3 sec for 6 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Listed in `unmodeled.skill1`; reloads use her normal 171f.",
+        "blindSaid": "S6 unmodeled with a signed-error caveat (171f = 2.85s, so a 3s clamp is a slight LOSS on the MG); S2b classed it GAP and warned that dropping the STATUS also deletes the snipe-entry gate.",
+        "formulaCheck": "Stat CLAMPS ('fixed at x') are an acknowledged missing primitive — §11 explicitly separates a clamp from reloadSpeedPct/durationShots. No faithful encoding exists today.",
+        "fireRateOk": true,
+        "explanation": "Correctly declared rather than approximated as a reload BUFF (the named nearest-wrong). The consequential half of S2b's warning — that the status is also the Snipe entry gate — is separately carried as FLAG 2. Bookkeeping nit carried forward: the `unmodeled` string is an older prose paraphrase, not the current blablalink wording, so a verbatim grep will not match it."
+      },
+      {
+        "kitLine": "Activates every 5 sec … 900% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "POST-FIX: `trigger:{kind:'interval', sec:5}` + `{kind:'flatDamage', atkPct:900}` targeting enemy — the named primitive matching the kit wording. Verified deterministically: 35 firings/180s, first at frame 300 (t=5.00s), bucket 'skill', critEligible true, coreEligible false, rangeApplied false, fbMajorApplied in BOTH states. MG total moved -0.08% (board-inert). Was `{kind:'dot', intervalSec:5}` — my prior FIDELITY gotcha.",
+        "blindSaid": "S6 used a `hitCount:60` proxy, self-flagged it as inferior (stalls in Snipe, scales with fire rate) and explicitly asked the judge to adjudicate the primitive; S2b specified `interval` 5s with first fire at t=CD and named 'first proc at t=0' and 'core:true' as the nearest-wrong models. The driver now matches S2b exactly, and the S5 splice predicate (flatDamage/900) matches, flipping that assertion group GREEN.",
+        "formulaCheck": "§2b/§9 — the `interval` trigger (landed 2026-07-20, snow-white S2a) fires every N sec, first at t=N. 'Deals X% of final ATK as damage' is FUNCTION-type damage: crits at the caster's rate, NEVER core, NEVER range, FB by landing timing. The shipped flavor flags match that row of the per-type table term for term; the prior `dot` encoding tagged the instance SUSTAINED-flavored (admitting Sustained Damage ▲ per the §1e flavor gate and routing crit through the DOT_CRIT switch). The substitution is now removed, not merely documented.",
+        "fireRateOk": true,
+        "explanation": "GOTCHA 2 RESOLVED. Cadence (35 in 180s ≈ 180/5 − 1, consistent with first-fire at t=5 and none at t=0), bucket, flavor and phase are all now text-exact, and the fix is behaviorally verified rather than structural. The driver also closed the discrimination hole I raised: the spec adds a first-fire-phase pin (`ds[0].frame === 300`) that discriminates S2b's named 'one extra proc at t=0' model, plus an explicit function-flavor pin (critEligible / !coreEligible / !rangeApplied / both fbMajorApplied states). Residual documentation nit: the override note's gauntlet paragraph still calls this line a '900%/5s interval dot' — stale wording against the shipped `interval` + `flatDamage` encoding."
+      },
+      {
+        "kitLine": "total ammo consumed by allies reaches 200",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "`trigger:{kind:'teamAmmo', count:200}` → allies `fillGauge` 12%.",
+        "blindSaid": "S6 byte-identical; S2b called it a TANDEM/gauge line that must never be skipped as 'utility' and warned against own-ammo-only or per-ally-multiplied fills. S5 GREEN (live + directional).",
+        "formulaCheck": "§6 — a team-level gauge channel; the same primitive Little Mermaid uses (count 400 → 37%). Threshold and pct are pure kit text.",
+        "fireRateOk": true,
+        "explanation": "Verified to FIRE, not merely be present: W8 shows removing the block strictly reduces helm's burst count over 180s (a teammate-side observable no other ccw line supplies), and the blind's independent hyper-variant (count 20 / 40%) proves the fixture is gauge-sensitive rather than the comparison being tautological."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Decoy: avatar with 70.34% of final Max HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "`unmodeled.skill2`.",
+        "blindSaid": "S6 and S2b both unmodeled, both warning specifically against encoding it as a `shield` (which would falsely satisfy other kits' `shielded`/`requiresShielded` gates).",
+        "formulaCheck": "Purely defensive; the v1 boss deals no damage and there is no decoy HP pool. No damage channel, no tandem consumer.",
+        "fireRateOk": true,
+        "explanation": "Unanimous and correct — the driver avoided the shield mis-encoding all three roles named as the dangerous alternative."
+      },
+      {
+        "kitLine": "ATK ▲ 29% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2 passive → self buff atkPct 29, no duration.",
+        "blindSaid": "S6 and S2b identical; nearest-wrong is attackDamagePct 29. S5 GREEN.",
+        "formulaCheck": "§1a — plain ATK ▲ sums into (1 + ΣATK%) on staticAtk, a different bucket from her 24%/92% Attack Damage.",
+        "fireRateOk": true,
+        "explanation": "W2 pins self-scope, null expiry, and liveness (~13% of her total)."
+      },
+      {
+        "kitLine": "Destroy: Damage to Parts ▲ 26.21% … Removes Pinpoint",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2 passive self buff partsDamagePct 26.21 gated `mode:'Snipe'`.",
+        "blindSaid": "S6 used `whileSwapped:true` and CONCEDED it had no complement for Pinpoint, so it left Pinpoint unconditional and flagged the resulting over-credit; S2b named 'applying Destroy without removing Pinpoint' as the nearest-wrong.",
+        "formulaCheck": "partsDamagePct is offensively inert on the partless scope-lock boss; the load-bearing payload of the line is the mutual removal, which the driver's mode partition enforces structurally.",
+        "fireRateOk": true,
+        "explanation": "The driver is MORE faithful than the blind here — the mode partition makes Destroy and Pinpoint provably non-simultaneous, the property S6 could not express and flagged as a known over-credit. W3 pins both directions and proves partsDamagePct moves zero damage; the blind's own parts test is GREEN."
+      },
+      {
+        "kitLine": "Pinpoint: core ▲ 26% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "skill2 passive self buff coreDamagePct 26 gated `mode:'MG'`.",
+        "blindSaid": "S6 unconditional (self-flagged as over-crediting Snipe windows); S2b required core-scoping and mode-gating, nearest-wrong being a permanent unconditional passive or a critDamagePct misread. S5 GREEN.",
+        "formulaCheck": "§1b — coreBonus = (coreAttackMultiplier−100)/100 + Core Damage ▲/100, so 26 joins the core term only, never the generic DamageUp bucket.",
+        "fireRateOk": true,
+        "explanation": "Live from frame 0 with null expiry and mode-exclusive against Destroy; removing it drops her total on the 100%-core-exposure graded boss, so the assertion is non-vacuous."
+      },
+      {
+        "kitLine": "entering Full Burst after this unit uses her",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "`trigger:{kind:'fullBurstEnter'}` + `ownBurstGate:'cast'` on BOTH branches, one branch selected by mode so exactly one can fire.",
+        "blindSaid": "S6 derived the identical fullBurstEnter + ownBurstGate:'cast' pairing blind; S2b called this the single highest-leverage assertion in the kit and named both failure directions (plain fullBurstEnter over-fires in a co-B3 comp; re-keying to burstCast wrongly drops the +50%). S5 GREEN from the opposite direction.",
+        "formulaCheck": "§8 scope clarification — a skill-slot block triggering at FB ENTRY resolves after fbEndFrame is set and legitimately receives the +50% FB major, unlike burst-cast direct damage. The 'after this unit uses her Burst Skill' clause is a caster gate, precisely what ownBurstGate:'cast' expresses.",
+        "fireRateOk": true,
+        "explanation": "The centerpiece, triply discriminated in W5: 6 firings (== her own casts) vs 12 under the ungated counterfactual, fbMajorApplied true vs false under a burstCast re-key, coreEligible true vs false under core:false. The blind reaches the same property independently (riderProcs < FB, ungatedProcs > riderProcs) on a two-B3 fixture chosen for exactly this purpose."
+      },
+      {
+        "kitLine": "Snipe branch: 1189.66% … as damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "POST-FIX: `flatDamage atkPct 1189.66, core:false` on the mode:'Snipe' block; the MG 833.79% branch retains core:true. Verified: the Snipe rider now reports coreEligible false / coreRate 0, the MG rider coreEligible true / coreRate 0.95. Was core:true — my prior ENCODING gotcha.",
+        "blindSaid": "S6 set this branch NON-core and the 833.79 branch core:true; S2b independently reached the same split ('including parts' + 'as damage' = plain; only the MG branch says 'as core strike damage'). The driver now matches both blind roles.",
+        "formulaCheck": "§1b/§2b and the per-type table — skill/function damage is core-INELIGIBLE unless the text explicitly says 'as core damage/core strike'. The MG line earns the exception by its wording; the Snipe line does not, and its 'all enemies (including parts)' scope is the opposite of a core-strike scope.",
+        "fireRateOk": true,
+        "explanation": "GOTCHA 1 RESOLVED, on the text rather than parked pending confirmation — the correct treatment, since the prose IS the ground truth being graded and a green regression proves a defect UNREACHED, not absent. The driver also added a mode-split core-flag pin to the spec (MG branch coreEligible true / Snipe branch coreEligible false), so the property is now asserted, not merely encoded. Documentation nit: the override note's FLAG 1 paragraph still describes the Snipe core:true as an open flag awaiting owner confirmation — stale against the shipped core:false."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack Damage ▲ 92% / ATK ▲ 65% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "One burstCast self block carrying both buffs with durationSec 10.",
+        "blindSaid": "S6 identical; S2b required both buckets kept distinct, one block, burstCast (not fullBurstEnter) keying. S5 GREEN (equinumerous, shared expiry, self-only).",
+        "formulaCheck": "attackDamagePct → DamageUp (§1e), atkPct → the (1+ΣATK%) term (§1a): different buckets, multiplicative, correctly not merged.",
+        "fireRateOk": true,
+        "explanation": "W6 pins count == her burst casts (so they never leak onto helm's rotations), self-target, and expiresFrame − frame == 600 for BOTH."
+      },
+      {
+        "kitLine": "Deals 6000% of final ATK as Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 6000, no explicit noFb (the engine forces noFb on burst-cast direct damage).",
+        "blindSaid": "S6 wrote it with an explicit `noFb:true`; S2b required FB-exemption and core-ineligibility. S5 GREEN on inFullBurst === false.",
+        "formulaCheck": "§8 / damage-calculation §1b — burst-cast damage lands 22f before the FB countdown starts, so it takes neither the +50% nor entry auras. This is the popup-verified Cinderella-family measurement itself (§5b), and the engine forces it rather than relying on the override flag.",
+        "fireRateOk": true,
+        "explanation": "'Modeled ≠ working' is discharged behaviorally: W7 asserts every burst-slot damage event has fbMajorApplied false, and the blind independently asserts inFullBurst === false on the same events. Count == her casts, so a fullBurstEnter mis-key would desynchronise it from the 92/65 applies."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Both gotchas from my prior verdict are fixed on the text, verified behaviorally rather than structurally, and the score moves 0.875 → 1.0 (16/16 kit lines FAITHFUL or DOCUMENTED_GAP, 12 faithful + 4 documented gaps, zero surviving gotchas). Gotcha 1 (Snipe 1189.66% core flag) is now core:false, matching the prose ('as damage', 'including parts') and the §2b rule that function damage is core-ineligible absent an explicit core-strike label — the split both blind roles derived independently, with the MG 833.79% core-strike branch correctly left at core:true and the mode split now PINNED by a new assertion (Snipe coreEligible false / coreRate 0; MG coreEligible true / coreRate 0.95). Gotcha 2 (the 900%/5s line) is re-encoded from the `dot` primitive to the named `interval` trigger + flatDamage, removing the sustained-flavor exposure and the DOTCRIT-arm coupling entirely rather than merely documenting them; the fix is confirmed by side-effect, not presence — 35 firings/180s, first at frame 300 (t=5.00s, the documented first-fire-at-t=N convention, which also discriminates S2b's named 'extra proc at t=0' model now that the spec pins the first frame), bucket 'skill', critEligible true / coreEligible false / rangeApplied false, fbMajorApplied in both states, and a -0.08% MG total move confirming board-inertness. Discrimination is stronger than at my prior pass: the spec grew to 27 green assertions adding exactly the three pins I asked for, and every load-bearing line still fails under its named nearest-wrong model (the centerpiece FB rider remains triply discriminated at 6 gated vs 12 ungated firings, fbMajorApplied true vs a burstCast re-key, coreEligible true vs core:false). Blind convergence is now 10 passed / 6 skipped / 1 failed, and the sole remaining RED is the maxAmmo 15-vs-1 contradiction that the blind test's own header raises as a kit-internal conflict, that S6 independently resolved the same way the driver did, and that the driver records as FLAG 3 with both readings and a measurement recipe — a DOCUMENTED_GAP on the non-validated Snipe path, not a divergence. Two things for the owner to spot-check, neither blocking: (1) the override note is now STALE against its own JSON in two places — FLAG 1 still describes the Snipe core:true as an open flag awaiting owner/e3 confirmation, and the gauntlet paragraph still calls the 900% line an 'interval dot'; both should be rewritten to describe the shipped encoding before this note becomes the thing a future session reasons from. (2) The same-model residual: S5, S6 and S7 are all claude-opus-5, so the strongest independent signal here remains the cross-family S2b (claude-fable-5), which reached the Snipe-branch non-core split, the interval-5s-first-fire-at-t=N convention, and the ownBurstGate requirement without seeing the driver — the driver has now converged on all three. By contrast the Snipe uptime model (FLAG 2) and the maxAmmo clamp (FLAG 3) still have no measurement behind them from any role; both are confined to the non-default Snipe path and are the two items a footage read should settle before anyone tunes that path.",
+  "model": "claude-opus-5"
+}

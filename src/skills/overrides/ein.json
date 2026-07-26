@@ -1,13 +1,28 @@
 {
-  "note": "Tier audit (Bossing A). Parser skipped her three core mechanics; rebuilt from kit text + Prydwen's exact counts. S1: ATK 70.12%/10s on every Burst Stage 3 entry (parser missed the trigger phrasing; Prydwen confirms it lands BEFORE the burst cast and buffs burst damage — matches engine ordering). S2 Near Feathers: 90.81% true damage per instance; Prydwen: 34 instances per her burst ('1-4 after FB ends' — folded in) and ~6 instances between her bursts; feathers CAN CRIT, get the FB multiplier, but NOT the +30% range bonus (crit:true, noRange:true — this mechanic motivated the engine flags) -> burstCast flatDamage 34x90.81=3087.54 + fullBurstEnd flatDamage 6x90.81=544.86 (fires each rotation incl. hers; slight smear). S2 'Charge Damage 80% for 1 shot' primes every next shot ~= permanent +80 (parser read kept as passive). Burst restated: True Damage 55.3%/10s + Charge Damage 140.68%/10s self buffs + 300.02% true nuke. Feather burst-gen (4 at battle start) skipped as minor. ORB GAUGE (2026-07-13, nikke-synergy arena data special_burst_gauge: add_interval_from_start value 5.6 interval 170f): her orb generates 560 energy every ~2.83s for the team - modeled as a zero-damage permanent dot whose ticks drive skillGauge (= her flat target 560 per tick, exactly the documented amount).",
+  "note": "Tier audit (Bossing A). Parser skipped her three core mechanics; rebuilt from kit text + Prydwen's exact counts. S1: ATK 70.12%/10s on every Burst Stage 3 entry (parser missed the trigger phrasing; Prydwen confirms it lands BEFORE the burst cast and buffs burst damage — matches engine ordering). S1 battle-start: 4 Near Feathers summoned at t=0 -> passive flatDamage 4x90.81=363.24 true noRange, fires once at frame 0 (kit-autonomy gauntlet 2026-07-25; was previously skipped as minor). S2 Near Feathers: 90.81% true damage per instance; Prydwen: 34 instances per her burst ('1-4 after FB ends' — folded in) and ~6 instances between her bursts; feathers CAN CRIT, get the FB multiplier, but NOT the +30% range bonus (crit:true, noRange:true — this mechanic motivated the engine flags) -> burstCast flatDamage 34x90.81=3087.54 + fullBurstEnd flatDamage 6x90.81=544.86 (fires each rotation incl. hers; slight smear). S2 'Charge Damage 80% for 1 shot' primes every next shot ~= permanent +80 (parser read kept as passive; a per-shot trigger + durationShots:1 is mechanically infeasible — the shotFired trigger applies the buff AFTER the shot's damage is computed, verified zero benefit — so the permanent passive is the faithful steady-state for an SR that always full-charges). Burst restated: True Damage 55.3%/10s + Charge Damage 140.68%/10s self buffs + 300.02% true nuke. ORB GAUGE (2026-07-13, nikke-synergy arena data special_burst_gauge: add_interval_from_start value 5.6 interval 170f): her orb generates 560 energy every ~2.83s for the team - modeled as a zero-damage permanent dot whose ticks drive skillGauge (= her flat target 560 per tick, exactly the documented amount). Kit-autonomy gauntlet 2026-07-25.",
   "unmodeled": {
-    "skill1": [
-      "Activates at the start of battle. Affects self. Summons 4 Near Feathers."
-    ],
+    "skill1": [],
     "skill2": [],
     "burst": []
   },
   "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 363.24,
+          "flavor": "true",
+          "noRange": true
+        }
+      ]
+    },
     {
       "slot": "skill1",
       "trigger": {
@@ -138,8 +153,8 @@
     }
   ],
   "caveats": [
-    "skill2: Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst; needs an ein-focused recording (U8)",
-    "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it",
-    "burst: the 34-feather burst lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up"
+    "⚑2 MEASUREMENT-GATED (tier 2): Near Feather cadence (34 instances per her burst, 6 per rotation between bursts) is a community-sourced (Prydwen) estimate, not kit-derivable — kit only states 4 feathers at battle start + 6 summoned at burst. estimate: as shipped (34/burst burstCast lump + 6/rotation fullBurstEnd lump). recipe: ein-focused recording (U8) to read the real per-window feather count, then re-split the lumps.",
+    "skill2: the between-burst feather trickle is keyed to full-burst COUNT (6 per FB end), not to time — comps with long rotations under-count it, fast rotations over-count it (part of ⚑2).",
+    "⚑3 MEASUREMENT-GATED (tier 2): the 34-feather burstCast lump resolves at cast-instant, BEFORE her own True Damage ▲ 55.3% burst buff and teammates' full-burst-entry auras register (block order) — real feathers land inside the 10s window with those buffs up. Consequence: removing the true-damage buff drops her total only ~0.7% (the big lump never sees it) — the lump is under-credited ×1.553. estimate: +55.3% on the burstCast lump once inside the buff window. recipe: delaySec on the burstCast lump (or distribute it across the 10s window) once the ein-focus recording (U8) supplies the real feather timing."
   ]
 }

@@ -1,0 +1,105 @@
+{
+  "slug": "helm-aquamarine",
+  "leakDetected": "The bossElementGate comment in the redacted effect schema retains a stripped-name example reading 'attacking an Electric Code target → +164.83%' — that magnitude+phrasing is exactly this unit's burst rider, so the target unit's answer leaked into the schema doc (name removed, magnitude kept). Also present but NOT leaks: 'helm' references in critRateNormalPct/durationShots/chargeDamageMultPct comments describe the base unit `helm` (SR/B3), a different unit from `helm-aquamarine` (AR/Iron/B2) — reasoned from prose regardless.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "after landing 30 normal attacks: 131.34%",
+      "disposition": "FAITHFUL",
+      "scope": "Counts LANDED normal-attack rounds only (AR hitsPerShot=1, so pulls==rounds; skill/burst proc hits must NOT advance the counter). Rider damage: crit-eligible at caster's sheet rate (engine-wide rider rule), NO core, engine force-sets noRange.",
+      "durationSemantics": "Instant hit per proc; counter is cumulative across reloads and resets only on fire.",
+      "triggerIdentity": "hitCount count:30 (counts rounds). No countInFb — prose gives no in-FB acceleration. Takes the +50% FB major by landing TIMING (default ON; not a burst-cast hit).",
+      "targetSet": "enemy (the attacked target)",
+      "nearestWrongModel": "interval trigger with a cadence-derived sec (~30 shots ÷ fire rate): keeps firing through reload downtime and drifts from the true round-counted proc schedule; second-nearest: noFb:true applied by over-generalizing the burst-cast FB exemption to all riders.",
+      "distinguishingAssertion": "Collect damage events for the skill1 flat rider: proc count === floor(totalRoundsFired/30), and no proc's frame falls inside a reload window (procs pause while the magazine refills); a rider landing inside FB has fbMajorApplied true. Interval model fails the reload-pause check; noFb misread fails the fbMajorApplied check.",
+      "inertness": "Zero procs before 30 rounds fired; counter unaffected by skill2/burst proc damage events; rangeApplied false on every rider hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "entering Full Burst: Burst CD ▼ escalating",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldown reduction only — moves rotation cadence, never per-hit damage.",
+      "durationSemantics": "Instantaneous CDR application per FB entry; the Once/Twice/Three-times ladder is per-battle escalation state. 'Each subsequent effect triggers all effects before it' = CUMULATIVE: entry 1 → 1.82s; entry 2 → 1.82+2.2 = 4.02s; entry 3 (and every later entry, ladder capped) → 1.82+2.2+2.6 = 6.62s.",
+      "triggerIdentity": "fullBurstEnter (prose: 'when entering Full Burst') — fires on ANY team FB, including rotations where the other B2 (crown in the control fixture) casts stage 2. NOT burstCast.",
+      "targetSet": "allies (all allies — every unit's burst CD is reduced, compressing the whole chain)",
+      "nearestWrongModel": "Non-cumulative ladder: Nth entry applies ONLY step N (−2.6 at entry 3 instead of −6.62), i.e. plain stepped buff instead of escalating steps-1..N. Second-nearest: burstCast keying (silent whenever crown takes stage 2) or target self-only.",
+      "distinguishingAssertion": "burstCdr emits no event, so assert on rotation timing: gap between fullBurstStart N and N+1 shrinks by the cumulative CDR vs the 20s-CD baseline — by rotation 4 the compression per rotation is ~6.62s, not ~2.6s; and vs withPatchedOverride('helm-aquamarine', zero the CDR block) the committed override produces strictly more fullBurstStart events over a fixed sim length. Non-cumulative model yields measurably fewer FB cycles.",
+      "inertness": "Zero damage events sourced from this block; per-shot damage values identical with the block removed (only event TIMING/count moves).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "1 enemy randomly: 105.58% damage",
+      "disposition": "FAITHFUL",
+      "scope": "Skill proc damage; random single-enemy targeting collapses to the lone boss in this sim. Crit-eligible rider, no core, noRange.",
+      "durationSemantics": "Instant hit per activation.",
+      "triggerIdentity": "NO activation clause in prose → interval trigger by convention, first fire t=sec. ⚑ ALWAYS-FLAG #2: the cadence is NOT in the kit text — take sec from the datamined skillCooldownsSec if present, else flag with an estimate + recipe (pin from footage popup cadence). Never ship a silent guess.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "shotFired keying (105.58% per trigger pull — an AR at ~12 pulls/s would add >1200%/s, a massive over-credit) or hitCount with an invented count. Also plausible: pausing the proc during reloads (interval must be wall-clock).",
+      "distinguishingAssertion": "Damage events for this bucket occur at fixed wall-clock spacing sec apart (first at t=sec), CONTINUE through reload windows, and total floor(fightLen/sec) — independent of rounds fired. A shotFired model produces counts proportional to shots and pauses during reloads; both fail.",
+      "inertness": "Proc count must not change when ammo/fire-rate buffs change shots fired; no core bucket contribution.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "vs Electric: Dmg Taken ▲5.64% ×5, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Boss DEBUFF ('Damage Taken ▲' benefits the WHOLE TEAM's damage, not a self buff — taxonomy #4), gated on the boss being Electric Code.",
+      "durationSemantics": "durationSec 5, maxStacks 5, stacks refresh on re-application ('lasts for 5 sec' is literal seconds — no round-count language here). Steady-state = pinned at 5 stacks while she keeps attacking (AR cadence ≪ 5s).",
+      "triggerIdentity": "'Activates when attacking' = shotFired (per pull, on-hit), composed with bossElementGate:'Electric'. NOT the bossElement permanent-passive trigger — the gate composes with the real per-attack trigger.",
+      "targetSet": "enemy (boss-held debuff — buffApply with casterIdx===null AND targetIdx===null; filter by stat+value)",
+      "nearestWrongModel": "Dropping the element gate (ungated damageTakenPct 5.64×5 ≈ +28.2% team damage vs the FIRE control boss — the largest possible over-credit in this kit); second-nearest: encoding as a self attackDamagePct buff so only helm-aquamarine benefits.",
+      "distinguishingAssertion": "Vs the default Fire boss: ZERO buffApply events with stat 'damageTakenPct' value 5.64, and totals(res) for every slug identical with this block deleted via withPatchedOverride. Vs an Electric boss (if CompOptions allows boss element): buffApply events with casterIdx===null, stat 'damageTakenPct', value 5.64, stacks ramping to maxStacks 5, and ALL units' totals rise — not just hers.",
+      "inertness": "Entire block board-inert on the neutral/Fire control fixture — this is the primary assertion; any movement on the graded comp means the gate is missing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "164.83% Burst Skill damage, all enemies",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill-bucket damage on her own burst cast; all-enemies collapses to the boss.",
+      "durationSemantics": "Instant on cast; 20s burst CD (shortened by her own S1 CDR).",
+      "triggerIdentity": "burstCast (stage 2) — fires ONLY on rotations helm-aquamarine herself casts. Burst-cast damage is FB-EXEMPT by timing (lands before the FB window opens — noFb per rule 9).",
+      "targetSet": "enemy",
+      "nearestWrongModel": "fullBurstEnter keying — the canonical B2-contention trap: the control fixture carries crown (also Burst II), so an FB-enter model deals this damage on EVERY team FB including rotations crown takes stage 2, over-crediting exactly when another same-tier unit is present. Second-nearest: fbMajorApplied true on the cast hit.",
+      "distinguishingAssertion": "Count of burst-bucket damage events with her srcSlot === count of HER burstCast events (never the fullBurstStart count); on any rotation where crown casts stage 2, zero helm-aquamarine burst damage; every such hit has fbMajorApplied false. FB-enter model fails whenever burstCast count < fullBurstStart count.",
+      "inertness": "No burst damage on rotations she does not cast; no +50% FB major on the cast hit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "vs Electric: 164.83% additional damage",
+      "disposition": "FAITHFUL",
+      "scope": "Element-gated flat rider on her burst attack — same 164.83% magnitude again as ADDITIONAL damage when the burst attacks an Electric Code target.",
+      "durationSemantics": "Instant, once per qualifying burst cast.",
+      "triggerIdentity": "burstCast composed with bossElementGate:'Electric' (the gate composes with the real trigger; NOT the permanent bossElement passive, NOT a separate always-on proc). FB-exempt like the base hit (burst-cast timing).",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Ungated (rider fires vs the Fire control boss, double-dipping her burst to ~329.66% every cast); second-nearest: merging it into the base hit as a single 329.66% burst-bucket line, which mis-buckets the rider (additional-damage rider vs Burst Skill damage may diverge under bucket-scoped buffs).",
+      "distinguishingAssertion": "Vs the Fire control boss: exactly ONE damage event per burstCast from her burst slot (the 164.83% base), totals identical with the rider block deleted. Vs an Electric boss: exactly TWO (base + rider), the rider carrying the additional/rider bucket, both scaling 164.83.",
+      "inertness": "Rider contributes ZERO vs any non-Electric boss including the neutral scope-lock boss — must not disturb graded comps.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hitCount-30-rider-131.34",
+    "skill1:fb-enter-escalating-burst-cdr",
+    "skill2:interval-105.58-random-enemy",
+    "skill2:electric-gated-dmg-taken-stack-debuff",
+    "burst:burstcast-164.83-base",
+    "burst:electric-gated-164.83-rider"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "(1) FIXTURE VALIDITY IS THE FIRST ASSERTION: helm-aquamarine is Burst II, and controlComp fixes crown (also Burst II) in the comp — stage-2 contention means she may never win the burst slot depending on the engine's tie-break, which would leave the ENTIRE burst slot untested (and a fullBurstEnter misread of her burst would silently pass with nonzero damage!). The test must assert unitOf(res,'helm-aquamarine') has ≥1 burstCast event before any burst-slot assertion; if crown always wins stage 2, the fixture cannot exercise her burst and the driver must say so, not fake it. Note helm=true must stay — dropping the base `helm` (B3) removes the only Burst III and kills ALL full bursts. (2) Expected shared-prior misreads, in priority order: (a) skill2/burst Electric gates dropped → both blocks over-credit vs the Fire control boss (Damage-Taken debuff alone ≈ +28% TEAM damage at 5 stacks) — the inertness assertions vs the default boss are the highest-value tests; (b) burst keyed fullBurstEnter instead of burstCast — diverges precisely because crown shares her tier; (c) S1 CDR ladder applied non-cumulatively (−2.6 at entry 3 instead of −6.62) or targeted self-only — 'Each subsequent effect triggers all effects before it' is explicit cumulative, target 'all allies'; (d) skill2 105.58% keyed shotFired instead of interval. (3) The skill2 interval cadence is the ONLY value not in prose — ALWAYS-⚑; prefer the datamined skillCooldownsSec, first-fire t=sec (no force-cast language). (4) 'Damage Taken ▲' assertions must filter boss-held buffApply by stat+value with casterIdx===null. (5) Leak declared above: the schema's bossElementGate example retains this unit's '+164.83% vs Electric' answer with the name stripped — my dispositions were derived from the kit prose, which independently states it.",
+  "model": "claude-fable-5"
+}

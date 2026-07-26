@@ -551,7 +551,15 @@ fillGauge 14.31` DUPLICATED her gauge-table `flatPerTrigger 1431` (both = her S2
   seeded `[min,max]` — a comp fails only if the sim can NEVER produce a measured value. Per-unit total snapshots
   stay on the EV run (byte-stable mean; snapshot-gen ≡ verify). This removes the ±1 false failures (PE elec-DPS,
   T4/T7/N2/N4/N5) without weakening the measured-FB truth. Trail: `regression.ts` `fbDistribution`.
-- **(2026-07-21) TRUE DAMAGE CANNOT CRIT — engine `crit && !trueFlavor` guard (owner ruling) — LANDED.**
+- **(2026-07-25) TRUE DAMAGE CAN CRIT — reverses the 2026-07-21 §2c ruling (owner ruling, in-game confirmed) — LANDED (docs/comments).**
+  Owner re-tested in game and confirmed true damage crits. The 2026-07-21 entry below recorded a
+  `crit && !trueFlavor` engine guard as LANDED, but **no such guard was ever implemented** (`git log -S` empty;
+  `dealDamage` gates crit on `opts.crit` alone) — the engine has always critted true damage (`flatDamage`
+  `crit: e.crit !== false`, riders `RIDER_CRIT`, dots `DOT_CRIT`, true swap normals `crit: true`), which matches
+  this ruling. Corrected the engine comments (`sim.ts` RIDER_CRIT block + the `extraHitDamagePct` rider note)
+  and the SSOT docs (game-mechanics §9, damage-calculation §2c) to match. No behavior change (the guard never
+  existed), so no regression re-pin. Core-on-true-damage stays measured-gated ⚑ (unchanged).
+- **(2026-07-21) TRUE DAMAGE CANNOT CRIT — engine `crit && !trueFlavor` guard (owner ruling) — REVERSED 2026-07-25 (the guard was recorded as LANDED but never implemented in code; see the 2026-07-25 entry above).**
   Owner mechanic ruling: true damage never crits (a game fact). Enforced at the engine — the crit-major
   block is guarded by `!opts.trueFlavor`, so every true-flavored hit is crit-exempt regardless of any
   per-entry `crit` flag: `flavor:"true"` dots/flatDamage (`ada` grenade DoT, `ein`/`laplace`/`chisato`

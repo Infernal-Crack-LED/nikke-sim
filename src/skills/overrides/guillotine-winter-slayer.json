@@ -1,5 +1,5 @@
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || BANNER SCOPE (kit-parse AUTHOR wave 6): the banner applies to the AUTHORED skill2 slot + the ADDITIVE skill1 heal-event block ONLY. skill1 aura/reload blocks + the entire burst slot are PRESERVED VERBATIM from the partial-hand model — kit-status residual: 'burst DoT + Hero-Level auras MEASURED accurate' — do NOT regenerate them. || MODEL: Hero Level currency (prior 4, DERIVABLE): EXP +1 per 3 core hits (scope-lock 100% core exposure; the 6-non-core-hit branch never fires there — blended-rate ⚑2), 10 EXP = +1 Hero Level, cap 11 (~30 hits/level → level 11 in ~25s firing / ~32s wall at 12/s, 60 ammo, 81f reload). skill1 (PRESERVED): Water-ally passive auras at level-11 steady-state — elemAdvantageDamagePct 1.16x11=12.76, casterAtkPct 0.91x11=10.01; level-up rewards KEEP TRIGGERING at max level (review-confirmed) → hitCount 30 instantReload 0.1026. skill1 (NEW, additive, HARD RULE 2): the level-up reward 'Recovers 2.44% of the skill user's final Max HP' was previously a SILENT DROP — now a `heal` event block on the same hitCount-30 cadence, self-target, event-only (zero self-damage impact; exists so recovery-consumer teammates, e.g. crown, see the proc). Driver may strip if strict-verbatim wins — flagged in findings. skill2 (AUTHORED): EXP ATK stack → hitCount 3 (core branch; was materialized hitCount 6 = the non-core branch, inconsistent with the preserved skill1 hitCount-30 level cadence which assumes 3 hits/EXP) x atkPct 1.81, maxStacks 100 (+181% at cap; engine ramps the stack natively — cap at ~32s wall, no haircut needed); 'Hero Level 2 or above' elemAdvantageDamagePct 7.46 → passive (level 2 at ~3s in; first-3s over-credit negligible). burst (PRESERVED): burstCast Water-ally attackDamagePct 10.14 + elemAdvantageDamagePct 18.75 (10s); burstCast dot 229.57%/s x10s on the boss (=20.87x11; level 11 guaranteed by the first burst at 40s CD — whole-picture consistent). || ⚑ NEEDS-MEASUREMENT: (⚑1 TOP, cadence tuple — MANDATORY + ESCALATED) pullsPerSec 12 (datamined rate_of_fire 720) + reloadFrames 81: the measured residual already reads normal-fire ~26% HOT with these values (kit-status U8; 12/1.26≈9.5/s is the arithmetic suspect) — owner ruling: do NOT refit by fudge; pin via focus video rounds/min + reload gap, then fix via charFixes. (⚑2) EXP build blend: shipped 3 hits/stack (100% core); if the real core-hit fraction c<1, effective = 1/(c/3+(1-c)/6) ∈ [3,6] — recipe: focus video, count hits between level-up procs (30 hits/level = pure core branch). (⚑3, low) level-11 steady-state auras are passive full-value from t=0 (no ~25s ramp haircut) — measured-accurate per residual, keep unless a future solo read disagrees. || SKIPS: none — every kit line is represented (the non-core EXP line jointly via the blended hitCount-3 block, see ⚑2).",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || BANNER SCOPE (kit-parse AUTHOR wave 6): the banner applies to the AUTHORED skill2 slot + the ADDITIVE skill1 heal-event block ONLY. skill1 aura/reload blocks + the entire burst slot are PRESERVED VERBATIM from the partial-hand model — kit-status residual: 'burst DoT + Hero-Level auras MEASURED accurate' — do NOT regenerate them. || MODEL: Hero Level currency (prior 4, DERIVABLE): EXP +1 per 3 core hits (the core branch DOMINATES at scope-lock core exposure 1.0; the 6-non-core-hit branch is folded in at an unmeasured blend — note the realised core-hit fraction is exposure × ACR, and ACR < 1 for an AR without hit-rate support, so non-core hits DO occur and the true cadence is slower than 3 hits/EXP — blended-rate ⚑2), 10 EXP = +1 Hero Level, cap 11 (~30 hits/level at the pure-core branch → level 11 in ~25s firing / ~28s wall, 60 ammo, 81f reload; later in reality per ⚑2). skill1 (PRESERVED): Water-ally passive auras at level-11 steady-state — elemAdvantageDamagePct 1.16x11=12.76, casterAtkPct 0.91x11=10.01; level-up rewards are CAPPED at 10 firings — kit arithmetic self-closes: S2 EXP cap 100 ÷ 10 EXP/level = 10 level-ups = Level 1→11 = the stated cap, so there is no 11th reward. Modeled via a heroLevel resource pool (initial 1, max 11) incremented once per hitCount-30 level-up, with resourceGate {heroLevel max 10} on BOTH reward blocks (instantReload 0.1026 + heal). [gauntlet S7: the prior uncapped hitCount-30 fired ~56× = REAL-GOTCHA; both blind agents (opus S6 resourceGate{max10}, fable S2b 'rewards stop at cap') had specified the cap; the old 'review-confirmed keep triggering at max level' claim was unsupported and is retracted.] skill1 (NEW, additive, HARD RULE 2): the level-up reward 'Recovers 2.44% of the skill user's final Max HP' was previously a SILENT DROP — now a `heal` event block on the same hitCount-30 cadence, self-target, event-only (zero self-damage impact; exists so recovery-consumer teammates, e.g. crown, see the proc). Driver may strip if strict-verbatim wins — flagged in findings. skill2 (AUTHORED): EXP ATK stack → hitCount 3 (core branch; was materialized hitCount 6 = the non-core branch, inconsistent with the preserved skill1 hitCount-30 level cadence which assumes 3 hits/EXP) x atkPct 1.81, maxStacks 100 (+181% at cap; engine ramps the stack natively — cap at ~32s wall, no haircut needed); 'Hero Level 2 or above' elemAdvantageDamagePct 7.46 → passive (level 2 at ~3s in; first-3s over-credit negligible). burst (PRESERVED): burstCast Water-ally attackDamagePct 10.14 + elemAdvantageDamagePct 18.75 (10s); burstCast dot 229.57%/s x10s on the boss (=20.87x11; steady-state level-11 snapshot — NOTE the FIRST burst lands at ~5s on an early B1->B2->B3 chain, NOT at 40s CD, so its DoT is over-credited at level 11 vs the true low-level value; later ~40s-CD bursts genuinely reach level 11. Part of the measured-accurate steady-state collapse — see ⚑3). || ⚑ NEEDS-MEASUREMENT: (⚑1 TOP, cadence tuple — MANDATORY + ESCALATED) pullsPerSec 12 (datamined rate_of_fire 720) + reloadFrames 81: the measured residual already reads normal-fire ~26% HOT with these values (kit-status U8; 12/1.26≈9.5/s is the arithmetic suspect) — owner ruling: do NOT refit by fudge; pin via focus video rounds/min + reload gap, then fix via charFixes. (⚑2) EXP build blend: shipped 3 hits/stack (100% core); if the real core-hit fraction c<1, effective = 1/(c/3+(1-c)/6) ∈ [3,6] — recipe: focus video, count hits between level-up procs (30 hits/level = pure core branch). (⚑3, low) level-11 steady-state collapse: auras are passive full-value from t=0 (no ~25s ramp haircut) AND the burst DoT snapshots level 11 on EVERY cast including the first (~5s, before level 11 is reached — the first-burst DoT is over-credited; later ~40s-CD bursts genuinely reach level 11). Both are deliberate steady-state approximations, measured-accurate per residual ('burst DoT + Hero-Level auras measured accurate'); keep unless a future solo read disagrees. Recipe (if ever refit): ramp the auras 1.16xL / 0.91xL over the level trajectory and snapshot the DoT at cast-time level. Cross-family S2b (claude-fable-5) independently flagged the ramp as the literal-kit refinement; reconciled to FAITHFUL-as-calibrated, not a faithfulness break. || SKIPS: none — every kit line is represented (the non-core EXP line jointly via the blended hitCount-3 block, see ⚑2). || Kit-autonomy gauntlet 2026-07-25: all 12 load-bearing lines pinned by scripts/tests/units/guillotine-winter-slayer.test.ts (18 tests, GREEN); cross-family S2b (claude-fable-5) converged on every line incl. the heal-inertness / reload-load-bearing / casterAtk-flat / Water-scope / burstCast-vs-fullBurstEnter / DoT-x11 discriminators; the single reviewer FIX (Hero-Level ramp) reconciled to FAITHFUL-as-calibrated steady-state per ⚑3. S7 judge (claude-opus-5) ruled the steady-state collapse FAITHFUL-as-calibrated but NO-GO'd the uncapped level-up rewards (REAL-GOTCHA) — FIXED: heroLevel resource pool + resourceGate{max10} cap the rewards at 10 firings (the kit-permitted count), with a discriminating uncapped-counterfactual assertion; note's unsupported 'review-confirmed keep triggering' claim retracted and the skill2 'never fires' prose softened to match ⚑2.",
   "unmodeled": {
     "skill1": [],
     "skill2": [],
@@ -9,6 +9,14 @@
     "skill1/skill2: normal-fire cadence (12/s, reload 81f) is datamined and measured ~26% hot — flagged for video measurement, deliberately NOT refit",
     "skill2: EXP build rate modeled at 3 hits/stack (core branch at scope-lock 100% core exposure); the blend with the 6-hit non-core branch is an unmeasured estimate",
     "skill2: Elemental Advantage Attack Damage 7.46% modeled as passive (Hero Level 2 is reached ~3s into the fight)"
+  ],
+  "resources": [
+    {
+      "name": "heroLevel",
+      "initial": 1,
+      "min": 1,
+      "max": 11
+    }
   ],
   "skill1": [
     {
@@ -42,6 +50,10 @@
       "target": {
         "kind": "self"
       },
+      "resourceGate": {
+        "name": "heroLevel",
+        "max": 10
+      },
       "effects": [
         {
           "kind": "instantReload",
@@ -58,9 +70,30 @@
       "target": {
         "kind": "self"
       },
+      "resourceGate": {
+        "name": "heroLevel",
+        "max": 10
+      },
       "effects": [
         {
           "kind": "heal"
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "heroLevel",
+          "delta": 1
         }
       ]
     }

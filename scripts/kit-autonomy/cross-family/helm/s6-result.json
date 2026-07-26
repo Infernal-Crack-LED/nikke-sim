@@ -1,0 +1,261 @@
+{
+  "slug": "helm",
+  "leakDetected": null,
+  "override": {
+    "slug": "helm",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRateNormalPct",
+            "value": 14.64,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "maxHpPct": 0.59
+          },
+          {
+            "kind": "fillGauge",
+            "pct": 14.31
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 3.08
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 27.87,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 178.98,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 8236.8,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 158.4,
+            "durationShots": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Affects all allies. Recovers 54.45% of attack damage as HP for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ Both full-charge-keyed blocks (skill1 heal+gauge, skill2 178.98% rider) are encoded as `shotFired`: helm is an SR with chargeFrames 60, so every modeled trigger pull is assumed to be a FULL charge. If the engine ever models partial-charge shots, or if a charge-specific trigger kind exists, these over-fire. `chargeCounter` was rejected for the skill1 block because it phase-cycles across effects[] (heal and gauge would alternate instead of both firing per charge).",
+      "⚑ `heal` effect kind is NOT present in the redacted types.ts EffectDef union handed to me, but the `recovery` TriggerDef comment states 'a heal effect targets them', so the kind exists; field name `maxHpPct` copied from the `shield` effect ('% of CASTER final Max HP'), matching the kit's 'skill user's final Max HP' wording. Validator may want a different field name — verify before landing.",
+      "⚑ Burst nuke noFb: NOT set. HARD RULE 9 says burst-cast damage is FB-exempt because the cast lands before the FB window opens — that is a TIMING property the engine already resolves, and per-kit noFb is measured-only (ALWAYS-⚑ #6). If the engine credits the +50% FB major to burstCast-triggered flatDamage, this over-credits and noFb:true is the fix.",
+      "⚑ crit:true set on both flatDamage effects (skill2 rider, burst nuke) per the prior 'riders crit at the caster's rate'. Neither line says 'core strike damage', so no core on either.",
+      "SKIPPED lifesteal (burst line 2, 54.45% of attack damage as HP for 10s): no lifesteal StatKey and no continuous-heal primitive in the schema. Beyond the lost HP, this drops a TANDEM channel — an ally with a `recovery` trigger (Crown-style 'when recovery takes effect') will not fire during helm's 10s window. If such an ally is graded with helm, this override under-credits the team.",
+      "durationShots:10 on the burst charge-damage buff is the literal 'for 10 round(s)' reading. With datamined ammo 6, the window necessarily spans a reload — that is the intended round-count semantics, not a bug.",
+      "partsDamagePct 3.08 is inert on the partless scope-lock boss; kept for kit completeness."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of helm (Helm: Treasure, SR/Water/Attacker/B3) from kit prose only. Structure: S1 = team scoped-crit on last bullet + per-full-charge team heal & 14.31% gauge fill; S2 = passive parts buff, FB-enter team Attack Damage, per-full-charge 178.98% rider on the target; Burst = 8236.8% single-target nuke, a skipped 10s team lifesteal (no schema primitive), and a self Charge Damage Multiplier for 10 ROUNDS (durationShots, not seconds). Scoped `critRateNormalPct` used deliberately over generic `critRatePct` — the kit says 'Critical Rate of normal attacks'. The gauge-fill magnitude compounds per charge shot; if board burst cadence looks fast, the suspect is the shotFired cadence (datamined chargeFrames/reloadFrames), not the 14.31% figure."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet + target allies + buff critRateNormalPct 14.64 durationSec 5 — SCOPED to normal attacks per the literal text, not generic critRatePct"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacking w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (⚑ full-charge proxy for an SR) + target allies"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 0.59% of user's final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal maxHpPct 0.59 (caster-scaled). Not skippable — drives allies' `recovery` triggers (tandem rule)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Fills Burst Gauge by 14.31%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fillGauge pct 14.31 on the same per-charge block — gauge lines are not skippable"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage to Interruption Parts ▲ 3.08%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "passive + allies + buff partsDamagePct 3.08 — 'continuously' = passive, no duration. Inert in v1 (partless boss), kept for completeness"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (team-wide, NOT burstCast — the text says 'entering Full Burst') + allies + buff attackDamagePct 27.87 durationSec 10"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "hitting a target with Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (⚑ on-hit full-charge proxy; hitsPerShot 1 so one rider per shot) + target enemy"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 178.98% of final ATK as add'l",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 178.98, crit true, no core (text does not say 'core strike'), noRange omitted (engine-automatic on riders), noFb omitted (FB by timing)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "enemy with the highest final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single boss, so the highest-final-ATK selector is degenerate"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 8236.8% of final ATK as Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast + flatDamage atkPct 8236.8, crit true, no core, noFb NOT set (see caveats)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 54.45% of atk damage as HP",
+      "status": "SKIPPED",
+      "effectOrReason": "No lifesteal StatKey and no continuous-heal-over-window primitive in the schema. Verbatim in unmodeled.burst. Known cost: ally `recovery` triggers do not fire during the 10s window (tandem under-credit)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Damage Multiplier ▲158.4%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast + self + buff chargeDamagePct 158.4 with durationShots 10 — 'for 10 round(s)' is a ROUND count (spans reloads), never 10 seconds"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[1].trigger / override.skill2[2].trigger",
+      "estimate": "shotFired (one activation per trigger pull; with ammo 6 + reloadFrames 141 + chargeFrames 60 that is ~6 activations per magazine cycle)",
+      "reasoning": "The kit says 'attacking with Full Charge' / 'hitting a target with Full Charge' but the TriggerDef union has no full-charge kind. helm is an SR with a 60-frame charge, so under normal play every shot is a full charge and shotFired is 1:1. chargeCounter was rejected because it phase-cycles effects[] across charges, which would split the heal and the gauge fill onto alternating shots.",
+      "recipe": "Record a solo helm fight; count full-charge shots per magazine and confirm the 178.98% rider popup appears once per shot (not per hit, not per charge-tick). If any partial-charge shots occur, the rider count will fall short of the shot count — then a fbGate-free chargeCounter{count:1} single-effect block per line is the fallback encoding."
+    },
+    {
+      "field": "cadence tuple (base stats: ammo 6, reloadFrames 141, chargeFrames 60, hitsPerShot 1)",
+      "estimate": "as datamined",
+      "reasoning": "ALWAYS-⚑ #1: datamined cadence fields are unreliable, and here EVERY skill1/skill2 rider is cadence-driven — shots/sec sets the 178.98% rider frequency, the 14.31% gauge rate and the heal rate; ammo 6 sets the lastBullet (crit buff) frequency; reloadFrames sets the duty cycle. An error here scales three of helm's four damage-relevant channels at once.",
+      "recipe": "Ammo-counter read off a recording (shots per magazine + wall-clock magazine period) — the instrument that measures the disputed quantity directly. Cross-check against the count of 178.98% popups in a fixed window."
+    },
+    {
+      "field": "override.skill2[2].effects[0].crit / override.burst[0].effects[0].crit",
+      "estimate": "crit: true on both",
+      "reasoning": "The kit-parse prior states function-damage riders crit at the caster's sheet rate; neither line says 'core strike damage', so core stays off. Whether a BURST-skill nuke is crit-eligible is not stated in the kit text and I am blind to any measurement.",
+      "recipe": "Read popup colour on a recording (orange + crit icon = crit) for the 178.98% rider and the 8236.8% nuke separately; a mixed orange/white population at the sheet rate confirms crit:true, a uniformly white population means crit:false."
+    },
+    {
+      "field": "override.burst[0].effects[0].noFb",
+      "estimate": "unset (rely on cast-before-FB timing)",
+      "reasoning": "HARD RULE 9 says burst-cast damage is always FB-exempt because it lands before the FB window opens — a timing property, not a flag. But per-kit noFb is measured-only (ALWAYS-⚑ #6), so setting it blind would be a guess. If the engine's burstCast dispatch is inside the FB window, this silently grants +50%.",
+      "recipe": "Run controlComp with helm as carry, capture the damage event for the 8236.8% hit via cfg.onEvent and read inFullBurst / fbMajorApplied. If fbMajorApplied is true, set noFb:true."
+    },
+    {
+      "field": "override.skill1[1].effects[0] (heal effect shape)",
+      "estimate": "{ kind: 'heal', maxHpPct: 0.59 }",
+      "reasoning": "The redacted EffectDef union handed to me omits a 'heal' kind, yet the `recovery` trigger doc references one, so it exists in the real schema. Field name copied from `shield` ({maxHpPct = % of CASTER final Max HP}), which matches the kit's 'skill user's final Max HP' scoping.",
+      "recipe": "Read the unredacted src/skills/types.ts EffectDef for the heal member and run validate-overrides (post-parallel-run only, per non-negotiable #5) to confirm the field name before landing."
+    },
+    {
+      "field": "override.unmodeled.burst[0] (54.45% lifesteal)",
+      "estimate": "unmodeled — 0 damage, 0 recovery events",
+      "reasoning": "No lifesteal stat or windowed-heal primitive exists in the schema, so it cannot be encoded faithfully; inventing a per-shot heal to stand in would fabricate a cadence the kit does not state.",
+      "recipe": "If a graded comp pairs helm with a `recovery`-triggered ally, quantify the gap by measuring that ally's on-heal proc count during helm's 10s burst window; if non-trivial, this needs a new engine primitive (windowed lifesteal), not an override workaround."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,185 @@
+{
+  "slug": "cinderella",
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. S1a = ATK-from-own-MaxHP conversion on stage-3 entry (10s). S1b = Charge Speed ▲100% held per magazine, ended by reload-to-max (weapon-state ⇒ IS damage: it gates full-charge shot count on a 60-frame charge). S1c = per-full-charge on-hit rider, crit-eligible, FB by timing. S2 decoy lines are unmodeled (no decoy/avatar primitive; boss deals no damage in v1) but their CONSEQUENCE — a decoy present from t=0 — is the premise that makes the every-3s Beautiful stack fire from battle start; if that premise is wrong the whole Beautiful ramp is wrong. Beautiful = self Max HP ▲1.6%, 12 stacks, continuous, accruing 1/3s from t=0 (cap at t=36s); it feeds S1a's HP→ATK conversion, so the two skills are coupled. Burst = 10 sequential hits + a Beautiful-mirroring rider modeled at MAX stacks (28.9×12 = 346.8%) with rampSec 36 so an early burst mirrors the stacks that actually exist at cast (12 stacks × 3s = 36s — DERIVED from the kit text, not fitted). ⚑ Open: per-hit-vs-total reading of 1365.92%; whether the mirror rider applies once or once per sequential hit; cadence tuple (datamine-unreliable). noFb deliberately NOT set (default OFF, measured-only); noRange is engine-automatic.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Activates at the start of battle. Affects self. Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous.",
+      "Activates when entering Burst Skill Stage 3. Affects self. Decoy: Creates an avatar with 96% of the skill user's final Max HP. This effect is continuous."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Burst 1365.92% is modeled PER sequential hit (10 hits, 13659.2% total) per the standard 'Deals X%… Attacks sequentially for N time(s)' convention. If the datamine shows X% is the TOTAL split across 10, this override over-credits the burst by 10×. Highest-leverage single check in this file.",
+    "⚑ The Beautiful mirror (28.9% × stacks) is modeled as ONE additional hit at max-stack magnitude (346.8%) with rampSec 36. If 'the same target(s)' means it rides EACH of the 10 sequential hits, the rider is 10× under-credited. Read burst popups: count how many small numbers accompany the 10 big ones.",
+    "⚑ rampSec 36 is DERIVED, not guessed: Beautiful accrues 1 stack/3s from t=0 (decoy present at battle start) and caps at 12, so linear min(1, elapsed/36) reproduces the true stack count at any cast time. It becomes wrong only if the decoy is absent at t=0 or stacks are lost/reset.",
+    "⚑ Cadence tuple (pullsPerSec / reloadFrames 141 / chargeFrames 60) is datamine-sourced and unreliable; it drives BOTH the Charge Speed ▲100% payoff and the S1c rider's fire count, so a cadence error scales two mechanics at once. Verify shots-per-magazine from an ammo-counter read, not from a damage total.",
+    "⚑ S1b Charge Speed is applied on shotFired with removeOnReload and NO durationSec, per the schema's stated pattern for '…Removed upon reloading to max ammunition'. This assumes every RL trigger pull IS a full charge (chargeFrames 60). If the engine lets her fire uncharged, the trigger is over-broad.",
+    "⚑ Beautiful uses targetMaxHpPct (self-granted, so it DOES feed the atkOfMaxHpPct conversion per the e3 caster===target rule). If the engine snapshots already-buffed Max HP per stack, 12 stacks compound rather than adding 19.2% flat — check the 12th buffApply value against 1.6% of BASE Max HP.",
+    "⚑ noFb is not set anywhere (default OFF). The burst hits resolve at burstCast, i.e. before the FB window opens, so they are FB-exempt by TIMING and need no flag; S1c takes FB by timing as normal.",
+    "The two decoy lines are unmodeled, not ignored — v1 has no HP pool or avatar entity, and modeling the decoy as a `shield` would wrongly fire teammates' `shielded` triggers. They remain load-bearing as the gate on Beautiful."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "stageEnter",
+        "stage": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 2.71,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 100,
+          "removeOnReload": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 136.6,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 3
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 1.6,
+          "maxStacks": 12
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 1365.92,
+          "flavor": "sequential",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 346.8,
+          "crit": true,
+          "rampSec": 36
+        }
+      ]
+    }
+  ]
+}

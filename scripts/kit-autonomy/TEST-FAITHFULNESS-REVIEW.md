@@ -12,20 +12,25 @@ instead of echoing.
 > `Affects …` target clause, the stat keyword before a `▲`/`▼`); quote ≤ ~40 chars; keep output clinical.
 
 ## You are given
+
 - The unit's **kit prose** (skill1/skill2/burst) + base stats (weapon/class/element/burst/ammo/reloadFrames/
   chargeFrames/hitsPerShot/multipliers). This is ground truth — read it literally.
 - A **REDACTED** methodology excerpt (the recurring failure-mode taxonomy + the 4 per-line questions + the
   disposition vocabulary). It has been stripped of THIS unit's name/answer; if you spot a leak (this unit's
   slug or magnitudes named in the methodology), declare it in `leakDetected` and reason from the prose anyway.
-- The **harness API** (`scripts/tests/lib/harness.ts`: `controlComp(carry,helm?)`, `runComp`, `totals`,
-  `unitOf`, `withPatchedOverride`, `cfg.onEvent` event kinds) and the **effect schema** (`src/skills/types.ts`).
+- The **harness API** (`scripts/tests/lib/harness.ts`: `controlComp(carry, …)` — carry + fixed B3 slot,
+  `runComp`, `totals`, `unitOf`, `withPatchedOverride`, `cfg.onEvent` event kinds) and the **effect schema**
+  (`src/skills/types.ts`). The exact `controlComp` signature is restated in the HARNESS API block below.
 
 ## You must NOT see
+
 The driver's tests, the driver's spec/dispositions, the driver's reasoning, the shipped override's encoding
 choices, the truth file. If handed any of these, the review is void — say so.
 
 ## Method — per kit line (a `■` header = trigger+target; each following sentence = one effect line)
+
 For EVERY line, independently produce:
+
 1. **Disposition** (FAITHFUL / FIX / MISSING / GAP / UNMODELED / MEASUREMENT-GATED) — from the prose alone.
 2. **The 4 questions:** (a) SCOPE — normal-attacks vs charge vs crit-only? (b) DURATION SEMANTICS — seconds
    vs ROUNDS (`durationShots`) vs stacks vs until-reload vs permanent? "for N round(s)" is never `durationSec`.
@@ -44,19 +49,35 @@ Then propose the **load-bearing set**: every FAITHFUL/FIX/MISSING line that is n
 the driver cannot declare a divergent line non-load-bearing).
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "leakDetected": "<null, or what leaked into the redacted methodology>",
   "spec": [
-    { "slot": "skill1|skill2|burst", "kitLine": "<≤40-char structural fragment>", "disposition": "FAITHFUL|FIX|MISSING|GAP|UNMODELED|MEASUREMENT-GATED",
-      "scope": "...", "durationSemantics": "...", "triggerIdentity": "...", "targetSet": "...",
-      "nearestWrongModel": "<the most plausible misread>", "distinguishingAssertion": "<event-log assertion green-under-faithful / red-under-nearest-wrong>",
-      "inertness": "<what must NOT move>", "evidenceTier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED", "loadBearing": true }
+    {
+      "slot": "skill1|skill2|burst",
+      "kitLine": "<≤40-char structural fragment>",
+      "disposition": "FAITHFUL|FIX|MISSING|GAP|UNMODELED|MEASUREMENT-GATED",
+      "scope": "...",
+      "durationSemantics": "...",
+      "triggerIdentity": "...",
+      "targetSet": "...",
+      "nearestWrongModel": "<the most plausible misread>",
+      "distinguishingAssertion": "<event-log assertion green-under-faithful / red-under-nearest-wrong>",
+      "inertness": "<what must NOT move>",
+      "evidenceTier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED",
+      "loadBearing": true
+    }
   ],
-  "loadBearingSet": [ "<slot:line refs>" ],
-  "unmodeledVerbatim": { "skill1": ["..."], "skill2": ["..."], "burst": ["..."] },
+  "loadBearingSet": ["<slot:line refs>"],
+  "unmodeledVerbatim": {
+    "skill1": ["..."],
+    "skill2": ["..."],
+    "burst": ["..."]
+  },
   "notes": "<anything the driver must reconcile — esp. where you expect a shared-prior misread>"
 }
 ```
+
 Tight structured JSON, not an essay. Save to `scripts/kit-autonomy/reviews/<slug>.test-review.json`.

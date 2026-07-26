@@ -1,0 +1,262 @@
+{
+  "slug": "dorothy-serendipity",
+  "leakDetected": null,
+  "override": {
+    "slug": "dorothy-serendipity",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 80
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 2.2
+          },
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 98.18,
+            "durationShots": 3
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 72,
+            "durationShots": 3
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "pierceDamagePct",
+            "value": 55.08
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 75.24,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "hitRatePct",
+            "value": 40.68,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackSpeedPct",
+            "value": 65,
+            "durationSec": 15
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 88.12,
+            "durationSec": 15
+          },
+          {
+            "kind": "buff",
+            "stat": "pelletCountFlat",
+            "value": 5,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Pellet count is fixed at 1 for 3 round(s).",
+        "Expands Pierce range by 200% for 3 round(s)."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ hitCount:80 — kit counts landed PELLETS, not trigger pulls. Whether the engine's hitCount accumulator counts pellets/hits or rounds is UNVERIFIED from the schema alone; if it counts rounds, this block fires ~10x too often and must become count:8-ish (SG hitsPerShot=10, ammo=9).",
+      "⚑ 'Pellet count is fixed at 1' is a stat CLAMP with damage consolidation (1 pellet carrying the whole shot's damage), which the EffectDef schema cannot express — pelletCountFlat is an ADDITIVE pellet count whose per-pellet share stays 1/base, so pelletCountFlat:-9 would DIVIDE the shot by 10, the opposite of the real mechanic. Left unmodeled rather than encoded wrong. Net damage effect of the real mechanic ≈ forcing landing fraction to 1 for 3 rounds; the co-active Hit Rate ▲98.18% covers only the CORE lift (sim.ts hrCoreMult), NOT the landing fraction, so this override UNDER-credits the 3-round window by the (1 - landedFraction) share.",
+      "⚑ gainPierce has no durationShots field, so the '3 round(s)' pierce window is approximated as durationSec 2.2 (≈3 SG rounds at an assumed base cadence). Every other line of the same block uses durationShots:3 and is faithful.",
+      "noFb NOT set anywhere (default OFF / FB-by-timing) — per methodology, per-kit noFb is measured-only and there are no function-damage riders in this kit regardless.",
+      "hasPierce top-level flag deliberately NOT set: this kit's Pierce is STEP-GATED behind the 80-pellet threshold, which a whole-fight boolean cannot express (schema's stated gainPierce use case)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6 cross-family). Structure: S1 is a single 80-landed-pellet threshold block granting pierce + Hit Rate + Attack Damage for 3 ROUNDS (durationShots, not seconds — the window spans reloads); its 4th line (pellet count fixed at 1) and the 160-pellet pierce-range expansion are unmodeled (see caveats: no clamp primitive; pierce range is inert vs a single-target boss). S2 is a battle-start Pierce Damage passive (inert in v1 unless the S1 gainPierce is live) plus an FB-scoped ATK/Hit Rate pair keyed to fullBurstEnter with durationSec 10 (assumed FB length). Burst is a self-only 15s attack-speed / ATK / +5-pellet package on burstCast. Interaction worth measuring FIRST: the burst's pelletCountFlat +5 and S1's fix-at-1 clamp are directly contradictory during overlap, and the clamp also lengthens re-accumulation of the next 80 pellets (1 pellet/round instead of 10), so S1 uptime is self-limiting in a way this baseline does not reproduce."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hitting w/ 80 pellets",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:80}, target self — recurring threshold trigger, not one-shot. ⚑ pellet-vs-round accounting."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Gains Pierce for 3 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce (durationSec 2.2 ⚑ — no durationShots field on gainPierce). NOT the top-level hasPierce flag: step-gated pierce."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hit Rate ▲ 98.18% for 3 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 98.18, durationShots 3 (core-hit lift path). ⚑ HR→core magnitude is measured-only."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack damage ▲ 72% for 3 round(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 72 (Damage Up bucket), durationShots 3. Unscoped in the prose — no normal/charge/crit qualifier."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Pellet count is fixed at 1 for 3 rnd",
+      "status": "SKIPPED",
+      "effectOrReason": "Stat CLAMP + damage consolidation; schema has no clamp primitive and pelletCountFlat's per-pellet share semantics would invert the mechanic. Verbatim in unmodeled.skill1. Under-credits the window."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when hitting w/ 160 pellets",
+      "status": "SKIPPED",
+      "effectOrReason": "Header for the pierce-range line only; carries no other effect, so no empty block authored."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Expands Pierce range by 200% 3 rnd",
+      "status": "SKIPPED",
+      "effectOrReason": "Pierce RANGE (how far the piercing shot travels through targets) — inert against a single partless boss; no schema field. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'}, target self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Pierce damage ▲ 55.08% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pierceDamagePct 55.08, no duration (permanent). Schema notes it is v1-inert; kept for completeness + future consumer, and it is the payoff for S1's gainPierce."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates only during Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} + durationSec 10 (team FB, fires on ANY team full burst — prose says 'during Full Burst', not 'when using Burst Skill', so NOT burstCast)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 75.24% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 75.24, durationSec 10 (⚑ FB length assumption)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hit Rate ▲ 40.68% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff hitRatePct 40.68, durationSec 10. Stacks additively with the S1 98.18% when both are live."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'}, target self — own-burst block, so burstCast (not fullBurstEnter); diverges in multi-B3 comps."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack speed ▲ 65% for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackSpeedPct 65, durationSec 15 — weapon-state modifier, gates shot count, NOT skippable."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 88.12% for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 88.12, durationSec 15."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Number of pellets ▲ 5 for 15 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff pelletCountFlat 5, durationSec 15 — the schema's literal carrier line ('Number of pellets ▲ N', SG-only, threaded through the landing/gauge path)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].trigger.count",
+      "estimate": "80 (as written), assuming the engine's hitCount accumulator counts landed PELLETS/hits",
+      "reasoning": "The kit says 'hitting the target with 80 pellets'. The methodology's trigger taxonomy warns that hit-count 'counts ROUNDS not pulls', which for an SG (hitsPerShot 10) would make 80 mean 80 SHOTS — ~9 magazines — instead of ~8-16 shots. Off by 10x in one direction. The schema comment for hitCount says 'cumulative hits', which favours pellets, but I cannot read sim.ts's accumulator from this packet.",
+      "recipe": "Grep the hitCount increment site in src/sim.ts for whether it adds 1 per trigger pull or hitsPerShot/landed pellets; cross-check against footage by timing the first proc (first appearance of the consolidated single-slug shot) — pellet-counting predicts the proc inside magazine 1-2, round-counting predicts ~t=40s+."
+    },
+    {
+      "field": "override.skill1[0].effects[0].durationSec (gainPierce)",
+      "estimate": "2.2 sec ≈ 3 SG rounds",
+      "reasoning": "The kit duration is 3 ROUNDS, but gainPierce exposes only durationSec — no durationShots. 2.2s assumes ~1.4 rounds/sec at base cadence; the true window shrinks to ~1.3s under the burst's Attack Speed ▲65% and stretches across a reload if the proc lands on the last round of a magazine.",
+      "recipe": "Either (a) extend gainPierce with durationShots in types.ts so it matches the sibling buffs exactly, or (b) measure the pierce window in a probe recording (pierce is visible as through-hits) and pin durationSec per fire-rate state. Until then the 55.08% Pierce Damage passive's uptime is an estimate."
+    },
+    {
+      "field": "override.skill1 — 'Pellet count is fixed at 1' (unmodeled)",
+      "estimate": "Real mechanic ≈ landing fraction forced to 1.0 for 3 rounds; baseline under-credits those 3 rounds by roughly (1 − landedFraction) of shot damage, plus whatever the consolidated slug does to core-hit eligibility",
+      "reasoning": "The clamp makes one pellet carry the shot's whole damage, so the SG's partial-spray landing loss vanishes. pelletCountFlat is additive with a fixed 1/base per-pellet share, so encoding it as -9 would divide the shot by ~10 — a large wrong number is worse than an honest omission. Also self-limiting: at 1 pellet/round the next 80-pellet threshold takes ~10x longer, which this baseline does not reproduce (S1 uptime here will be too HIGH).",
+      "recipe": "Add a pellet-count clamp primitive (e.g. pelletCountFixed:N on the buff, consuming the whole shot multiplier for the clamped pellet) OR a landingFractionOverride. Validate with a solo Dorothy: Serendipity recording: count damage popups per shot (10 small vs 1 large) and compare total damage across the 3-round window against the unclamped sim."
+    },
+    {
+      "field": "override.skill2[1] trigger/durationSec (FB-scoped ATK + Hit Rate)",
+      "estimate": "fullBurstEnter + durationSec 10",
+      "reasoning": "'Activates only during Full Burst … continuously' is a state gate, not a timed buff. Encoding it as fullBurstEnter+10s assumes the standard FB window; any fullBurstExtend in the comp would leave the tail of FB unbuffed. The alternative encoding (passive trigger + fbGate:'inFb') is state-exact but the fbGate doc says it is 'checked when the trigger fires', which is ill-defined for a passive.",
+      "recipe": "Confirm how the engine evaluates fbGate on a passive-trigger block; if it is re-evaluated per frame, switch to passive+fbGate:'inFb' (exact) and drop the durationSec assumption. Otherwise verify no graded comp extends FB beyond 10s."
+    },
+    {
+      "field": "base cadence (pullsPerSec) / reloadFrames — not authored, but load-bearing",
+      "estimate": "SG base cadence as datamined; reloadFrames 111",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and this unit is unusually cadence-sensitive — cadence sets how fast 80 pellets accrue (proc frequency), how long '3 round(s)' lasts in wall-clock, and how much the burst's Attack Speed ▲65% is worth. A cadence error compounds across all three.",
+      "recipe": "Read shots/sec directly off an ammo counter in a recording (the instrument that measures the disputed quantity), not off burst-gauge or FB counts; nominal rates must be frame-quantized to 60/ceil(60/nominal)."
+    },
+    {
+      "field": "override.skill1[0].effects[1] hitRatePct magnitude → core",
+      "estimate": "98.18 as written, passed straight to the hrCoreMult path",
+      "reasoning": "ALWAYS-⚑ #7: the Hit-Rate→core conversion is a derived engine relationship, not a kit number; a 98.18% Hit Rate buff plus S2's 40.68% in FB is a very large combined input, and whether the conversion saturates is unknown to me.",
+      "recipe": "Check hrCoreMult's saturation behaviour in sim.ts at ~139% combined Hit Rate; validate the resulting core rate against CORE-HIT popup counts in a Dorothy: Serendipity recording (red 'CORE HIT' popups / total popups) during the S1 window inside Full Burst."
+    }
+  ],
+  "model": "claude-opus-5"
+}

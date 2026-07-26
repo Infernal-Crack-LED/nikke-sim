@@ -1,0 +1,155 @@
+{
+  "slug": "eve",
+  "kitDescription": "EVE is an Iron-element assault-rifle Attacker on Burst III. From the start of battle she permanently runs +60% Critical Rate, an ATK boost worth 50% of her own attack, and a 25% larger magazine. Every 44 critical hits from her normal attacks she launches Unstable Energy at a random enemy — three sequential hits of 240% of final ATK — and if those hits land on an Electric-code enemy, that enemy takes 10% more damage for 10 seconds. Against Electric enemies she also gets 3 rounds back every 10 normal hits, so she reloads less often. Her burst hits a random enemy six times for 457.14% of final ATK each, and for the next 10 seconds Exospine Mk2 doubles both her Unstable Energy damage and her Eagle Eye ATK bonus.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1-b 'procs in groups of exactly 3 sequential hits' — RECON_ERROR (event granularity): driver emits ONE flatDamage atkPct 720 per proc, blind expected 3x240. Arithmetically identical (720 == 240x3) and seqMult multiplies the whole packet, so Mk2's x2 is unaffected. See gotcha G1 for the one place granularity is NOT inert (skill-hit burst-gauge feed).",
+      "S1-b 'counter is CRIT-gated: proc count tracks 44 critical hits' — RECON_ERROR, SAME root cause: blind derives activations = UEevents/3, which undercounts 3x against a 1-event encoding. The cadence itself is correct and independently converged: driver hitCount 59 == ceil(44/0.75) == the S6 blind's own derivation == S2b's derivation.",
+      "S1-c 'with the element gate removed it fires and lifts TEAM damage' — RECON_ERROR (trigger-vs-gate shape): blind's counterfactual deletes a bossElementGate field that the driver's skill1 does not use; the driver encodes the Electric condition as trigger.kind 'bossElement'. Stripping a non-existent field is a no-op, so the blind counterfactual was vacuous rather than the line being dropped. Driver E3 proves the gating the other way (Electric: boss damageTakenPct 10, mult.taken 1.1; Iron: absent, mult.taken 1.0).",
+      "burst-A 'emits hits in multiples of 6, one group per cast' — RECON_ERROR (event granularity): driver emits ONE flatDamage atkPct 2742.84 per cast (== 457.14x6). Gauge-inert here because the burst cast happens inside the chain, where gauge generation is locked."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Critical Rate ▲ 60% continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive/self buff critRatePct 60, no expiry",
+        "blindSaid": "S6 identical; S2b required unscoped critRatePct, NOT critRateNormalPct",
+        "formulaCheck": "Major bucket 1b: unscoped critRate joins every crit-eligible instance; the normals-only term (critRateNormalPct) would exclude her procs/burst. Prose carries no 'of normal attacks' scoping, so the generic stat is correct.",
+        "fireRateOk": true,
+        "explanation": "Live from frame 0: driver E1 pins normal-attack critRate to exactly 0.75 shipped vs 0.15 with the block deleted, self-held with expiresFrame null and targetIdx eve only. The S5 blind's critZero and critScoped counterfactuals both passed against the shipped file, independently confirming it is load-bearing, self-scoped, and unscoped-by-hit-type."
+      },
+      {
+        "kitLine": "after landing 44 critical hit(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 59 -> flatDamage atkPct 720 flavor sequential (240 x 3 consolidated), documented ⚑ crit-count proxy",
+        "blindSaid": "S6 hitCount 59 -> 3 x flatDamage 240 sequential crit:true; S2b independently derived ceil(44/0.75) ~= 59",
+        "formulaCheck": "Schema has no crit-filtered counter; sheet crit at scope lock is 15 + 60 = 75%, so 44 crits == 58.67 normal hits -> 59. 720 == 240x3 and seqMult multiplies the whole packet, so the consolidated packet doubles identically under Mk2 and, in the deterministic expected-value path, crit folds linearly.",
+        "fireRateOk": true,
+        "explanation": "Cadence is asserted behaviorally, not just structurally: driver E2 bounds proc count to shots/59 +/- 20% AND below 0.85 x shots/44, so the literal-44 reading fails the test. Magnitude discriminated by the 240-instead-of-720 counterfactual. Two independent families derived the same 59, so the proxy is convergent, not a driver invention. Residual ⚑ (documented in caveats): the threshold is static and cannot track external crit-rate buffs on eve, which would make the real trigger faster."
+      },
+      {
+        "kitLine": "UE hits Electric -> Dmg Taken ▲10% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "trigger bossElement 'Electric' -> enemy damageTakenPct 10, PERMANENT while the boss is Electric; caveat #2 states the approximation and its cost",
+        "blindSaid": "S6 rode it on the hitCount 59 block with bossElementGate + durationSec 10; S2b demanded bossElementGate + provable off-Electric inertness",
+        "formulaCheck": "Taken bucket 1g: Damage Taken ▲ is a boss-held debuff benefiting the whole team (targetIdx null) — the driver's routing is correct and the element gate is genuine kit text.",
+        "fireRateOk": true,
+        "explanation": "Two deliberate simplifications, both documented: (a) it fires on boss-element rather than on an Unstable Energy landing, so it is live from t=0 instead of from the first proc at ~4.9s; (b) it is permanent rather than a 10s window refreshed per proc. With procs every ~4.9s and a 10s window, real uptime after the first proc is 100%, so the only over-credit is the opening ~4.9s of a 180s fight (~0.27% of team damage) and only on Electric bosses — which no graded comp uses. Driver E3 discriminates the gate both ways (Electric: debuff present, mult.taken reaches 1.1; Iron: debuff absent, mult.taken pinned to exactly 1.0)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Previous effects trigger repeatedly.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "inherent — the hitCount trigger re-arms every N hits; no separate block, nothing listed as unmodeled",
+        "blindSaid": "S6 listed it under unmodeled (documentation choice); S5 skipped it as a GAP with no resolvable referent; S2b called the plain repeating counter the faithful encoding",
+        "formulaCheck": "The line grants no damage of its own; it licenses skill1's counter to loop. A repeating hitCount trigger IS that license.",
+        "fireRateOk": true,
+        "explanation": "Observably satisfied: ~30 Unstable Energy procs land over the 180s fight (driver E2's cadence band), i.e. far more than once-per-battle. The nearest wrong model — Unstable Energy as a once-per-battle proc — is excluded by that count. S6's placement of the line in `unmodeled` is a documentation difference, not a mechanical one."
+      },
+      {
+        "kitLine": "ATK ▲ 50% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive/self buff casterAtkPct 50, no expiry",
+        "blindSaid": "S6 identical (casterAtkPct 50); S2b named atkPct 50 as the nearest wrong model",
+        "formulaCheck": "1a: '% of caster's ATK' converts at application time to a FLAT add of the caster's static ATK x 0.5, outside the recipient's (1+ATK%) sum — it does not dilute. atkPct 50 would instead join the diluting sum.",
+        "fireRateOk": true,
+        "explanation": "Driver E4 asserts the RESOLVED value 59,833.5 (= 0.5 x 119,667 scope-lock ATK), which is the assertion that separates casterAtkPct from atkPct (the latter would emit the raw 50) and from a literal flat +50. The S5 blind's atkZero counterfactual independently confirmed the line is load-bearing and self-only (ally totals byte-identical)."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 25%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive/self buff maxAmmoPct 25, no expiry",
+        "blindSaid": "S6 identical; S2b flagged 'dropped as defensive' and maxAmmoFlat 25 as the wrong models",
+        "formulaCheck": "Weapon-state modifier: magazine 60 -> 75 changes shots fired per reload cycle, so it IS damage (reload-speed/uptime lines are never 'defensive-only').",
+        "fireRateOk": true,
+        "explanation": "Driver E4 pins stat name + value + self-scope + no expiry, which excludes maxAmmoFlat 25 by stat identity. The behavioral half comes from the S5 blind, whose ammoZero counterfactual passed against the shipped file: zeroing it strictly increased eve's reload count and lowered her damage — so the line is not merely present, it is consumed."
+      },
+      {
+        "kitLine": "10 normals on Electric -> Reloads 3",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount 10 + bossElementGate 'Electric' -> instantReload fraction 0.04",
+        "blindSaid": "S6 byte-identical (hitCount 10, same gate, fraction 0.04)",
+        "formulaCheck": "0.04 x 75 (60 base x 1.25 from the same skill's max-ammo line) == exactly 3 rounds, matching the kit's flat 3. Capacity-dependent encoding, documented in caveat #3.",
+        "fireRateOk": true,
+        "explanation": "Both discriminations are present. Driver E5: vs Electric, deleting the refund strictly RAISES reload count (so it fires); vs Iron, reload count is byte-identical to the deleted version (so the gate holds). The S5 blind's s2GateOff independently confirmed modeled-but-gated rather than silently dropped — stripping the gate raised eve's damage. The ungated reading S2b warned about (a ~30% ammo-sustain loop on every boss) is excluded."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "457.14% ... sequentially for 6 time(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy flatDamage atkPct 2742.84, deliberately UNFLAVORED (caveat #4)",
+        "blindSaid": "S6 6 x 457.14 flavor sequential crit:true; S2b required 6x per cast with fbMajorApplied false",
+        "formulaCheck": "2742.84 == 457.14 x 6 exactly. Full-Burst boundary rule (1b): burst-cast damage lands before the FB window opens, so no +50% major and no entry auras. Skill-type damage takes no core and no range.",
+        "fireRateOk": true,
+        "explanation": "Driver E6 pins one nuke per eve burstCast at magnitude 2742.84 in the burst bucket, with fbMajorApplied never set — the boundary rule is asserted, not assumed. The dropped 'sequential' flavor is deliberate and documented: with the engine's seqMult keyed on flavor, tagging the nuke would let Mk2 double it, which the kit authorizes only for Unstable Energy. See gotcha G2 for the (currently inert) cost of that choice. S6 avoided the same over-credit by a different route, so both families independently refused to double the nuke."
+      },
+      {
+        "kitLine": "Mk2: UE seq mult scaled by 100%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> self buff sequentialMultPct 100, durationSec 10 (a TRUE x2 in its own multiplicative bucket)",
+        "blindSaid": "S6 improvised a duplicate hitCount 59 block gated fbGate 'inFb' + ownBurstGate 'cast' (sequentialMultPct was redacted from the blind schema); S2b named additive sequentialDamagePct and fullBurstEnter keying as the two wrong models",
+        "formulaCheck": "'Scaled by 100%' = x2 of the base multiplier, which requires an own-bucket multiplier. The additive sequentialDamagePct lands in Damage Up (1e), where it dilutes against every other Damage-Up buff and cannot hold a clean x2. The driver's primitive is the correct one; S6's duplicate-block workaround reaches the same x2 concept via an FB-window proxy that its own caveat flags as imprecise.",
+        "fireRateOk": true,
+        "explanation": "Driver E7 asserts one buff per eve burstCast, value 100, self-held, expiry exactly 600 frames, AND the behavioral consequence: procs read seqMult exactly 2.0 inside the window and exactly 1.0 outside — no dilution. The counterfactual swapping in sequentialDamagePct leaves seqMult at 1, so the assertion genuinely fails under the nearest wrong model. The S5 blind's in-window/out-window RATIO test (which cancels the shared FB uplift) passed independently against the shipped file, confirming Mk2 moves Unstable Energy specifically."
+      },
+      {
+        "kitLine": "Mk2: Eagle Eye mult scaled by 100%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> self buff casterAtkPct 50, durationSec 10 (re-grants the same 50%-of-ATK, so Eagle Eye ATK runs at x2 for the window); ammo half deliberately not doubled",
+        "blindSaid": "S6 byte-identical (casterAtkPct 50, durationSec 10) with a ⚑ on the ambiguity; S5 skipped it as a GAP (no damage-multiplier referent in the prose); S2b read it the same way the driver did",
+        "formulaCheck": "Eagle Eye's only damage-bearing component is the caster-scaled ATK grant; Max Ammunition is capacity, not a damage multiplier. Doubling the ATK component is the reading the prose supports; per 1a the second grant is a second flat add, so x2 is exact rather than diluted.",
+        "fireRateOk": true,
+        "explanation": "Driver E8 asserts one TIMED casterAtkPct per burst cast, resolved flat value EQUAL to the permanent passive grant, expiry exactly 600 frames, self-held — distinguishing it from the permanent grant by expiry and from a generic attackDamagePct by stat. Two of three independent readers landed on the identical encoding; the third (S5) declined to decide, which is a conservative skip rather than a contradiction. Coverage note: the driver's fixture (liter/crown/eve) has eve as the SOLE Burst III, so 'one buff per burstCast' is green under a fullBurstEnter encoding too — that specific nearest-wrong is excluded by inspection of the literal trigger.kind 'burstCast', not by the test. The S5 blind ran the co-B3 (helm) fixture and surfaced no anomaly there."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "Unstable Energy's three sequential hits are consolidated into ONE damage event, which is damage-equivalent but feeds the burst gauge only once instead of three times.",
+      "evidence": "Kit: 'Attacks sequentially 3 time(s).' Driver ships one flatDamage atkPct 720; S6 blind ships 3 x 240. game-mechanics.md §6 / damage-calculation.md §3: 'Skill hits and DoT ticks generate the caster's flat target value' — gauge counts HITS, not damage, so the two encodings are equivalent on the damage side and NOT equivalent on the gauge side. The driver's own S5 triage justified the merge purely on damage arithmetic (720 == 240x3, seqMult multiplies the whole packet, crit folds linearly in the deterministic path) and did not consider the gauge feed. Magnitude: ~30 procs over 180s x 2 missing skill-hit contributions at eve's per-hit value — small (well under one extra gauge fill at her 0.2 per-shot value) and in the CONSERVATIVE direction (under-generation). The same merge on the burst nuke (6 -> 1) is strictly inert because burst casts happen inside the chain, where generation is locked.",
+      "documentedByDriver": false,
+      "severity": "low",
+      "suggestedFix": "Either split the proc into 3 x flatDamage atkPct 240 flavor sequential (the S6 encoding — costless, strictly more faithful, and it also makes the S5 blind's group-of-3 assertions green), or add a caveat recording that the consolidation under-feeds the skill-hit burst gauge by 2 hits per proc. Do NOT compensate with a magnitude change."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "The burst nuke is shipped without its 'sequential' flavor, so it is immune to any genuine Sequential Damage ▲ buff as well as to Mk2.",
+      "evidence": "Kit: 'Attacks sequentially for 6 time(s)' — the nuke IS sequential-flavored damage. Driver drops the flavor so that Mk2's flavor-keyed sequentialMultPct cannot double it, which is correct per the Mk2 wording ('Damage multiplier of Unstable Energy sequential attacks'), and states this in caveat #4. Cost: per damage-calculation.md §1e, a Sequential Damage ▲ % buff gates on hit flavor, so an ally-granted sequential buff would legitimately apply to the nuke and now cannot. Currently INERT — the only Sequential Damage ▲ carrier on the board (snow-white-heavy-arms, +158.4%) grants it to herself, and eve's fixture is liter/crown/eve.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Preferred long-term: scope the Mk2 multiplier to the emitting skill (a per-effect or per-slot seqMult scope) so the nuke can carry its true 'sequential' flavor without being doubled. Until that primitive exists the current trade is the right one — keep the caveat, and re-check it the moment a team-wide Sequential Damage ▲ source enters the roster."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1+burst",
+      "summary": "Crit-eligibility of the 720% proc and the 2742.84% nuke is left to the engine default and is nowhere stated — and the two blind families disagree about what that default is.",
+      "evidence": "damage-calculation.md §2b and game-mechanics.md §9 (DATAMINED): function-type '% of final ATK' skill damage CRITS at the caster's rate, never cores, never takes range. S6 blind set crit:true explicitly on all six flatDamage effects; S2b asserted the opposite about the engine ('flatDamage crit defaults off — do not silently set crit:true to spend the +60%') and called it measured-only. The driver leaves the field unset and neither the override note/caveats nor the driver test says anything about crit on these instances. This is load-bearing for THIS unit specifically: eve carries +60% crit rate and her kit counts crits, so if the default is OFF her two largest non-normal sources silently forgo a ~1.375x expectation. I could not resolve the engine default by inspection in this run, so this is a HYPOTHESIS, not a confirmed divergence. Corroborating context that the default is likely ON: the SSOT says stored hits are the path with a 'default crit-OFF exemption' that was removed in 2026-07-16 'so the release crits like every other hit', and DoT crit is ON by default since 2026-07-21.",
+      "documentedByDriver": false,
+      "severity": "med",
+      "suggestedFix": "Read dealDamage's flatDamage path and settle the default in one place. If it is crit-ON, add one line to eve's note recording that the procs crit at her 75% sheet rate per the function-damage rule (no file change). If it is crit-OFF, that contradicts the DATAMINED rule for every flatDamage unit on the board — raise it as a repo-wide item rather than patching eve alone, and in the interim set crit:true here per the SSOT. Either way this is a routing question, not a magnitude: never pick the setting that lands a board number."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Ten kit lines, ten FAITHFUL-or-DOCUMENTED_GAP, zero REAL-GOTCHA. Every load-bearing quantity converged across three independent derivations: critRatePct 60 unscoped, hitCount 59 as the ceil(44/0.75) crit-count proxy (derived identically by the driver, S2b/fable, and S6/opus), 720% sequential, casterAtkPct 50 flat-not-atkPct, maxAmmoPct 25, instantReload 0.04 == 3/75 behind an Electric gate, the 2742.84% nuke, and both Mk2 riders keyed to eve's OWN burstCast with a 10s window. The S5 blind's four RED assertions are all RECON_ERRORs I verified rather than accepted: three are event-granularity artifacts of the blind assuming one damage event per sequential hit, and one is a counterfactual that deleted a bossElementGate field the driver's skill1 does not use (it encodes the same condition as a bossElement trigger) — the blind's probe was vacuous, not the line dropped, and the driver's Electric-vs-Iron discrimination proves the gate the other way. The three findings I do raise are all low-or-contingent and none blocks landing: the consolidated proc under-feeds the skill-hit burst gauge by two hits per proc (small, conservative direction, undocumented — the driver's equivalence argument covered damage but not gauge); the deliberately unflavored nuke also forfeits genuine ally Sequential Damage ▲ (documented, currently no team-wide source exists); and crit-eligibility of the proc and nuke rests on an unstated engine default that S2b and S6 flatly disagree about. That last one is the same-model residual the owner should spot-check first — it is worth ~1.375x on eve's two biggest non-normal sources and is a repo-wide flatDamage convention question, not an eve misread, which is why it does not gate this unit. Discrimination is otherwise sound: E1/E2/E3/E5/E6/E7 each carry a counterfactual that flips, and E4's behavioral half is supplied by the S5 blind's ammoZero and atkZero runs passing against the shipped file. One coverage note for the record: the driver's fixture makes eve the sole Burst III, so E8's 'one buff per cast' is green under a fullBurstEnter encoding too — the burstCast keying is excluded by inspection of the literal trigger, and the S5 co-B3 fixture showed no anomaly, but a co-B3 assertion would close it properly. Documentation hygiene, not a defect: the override note still contains the superseded sentence 'S2's reload-3-per-10-hits-on-Electric skipped' alongside the later 'ADDED the missed 3-rounds-per-10th-hit refund', and it claims 'She grades ~1.14 (over)' while caveat #3 says eve is ungraded — worth one cleanup pass so a future reader does not plan on the stale half.",
+  "model": "claude-opus-5"
+}

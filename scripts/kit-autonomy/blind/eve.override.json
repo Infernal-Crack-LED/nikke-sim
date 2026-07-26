@@ -1,0 +1,232 @@
+{
+  "slug": "eve",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 60
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 59
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 59
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 240,
+          "flavor": "sequential",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 59
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Electric",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 50
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 25
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "bossElementGate": "Electric",
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.04
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 457.14,
+          "flavor": "sequential",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 50,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Eagle Eye-Type Exospine.",
+      "Previous effects trigger repeatedly."
+    ],
+    "burst": [
+      "Exospine Mk2",
+      "Function: Enhances Exospine.",
+      "Duration: 10 sec",
+      "Triggers Impact-Type Exospine Mk2.",
+      "Triggers Eagle Eye-Type Exospine Mk2."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 Unstable Energy trigger: the kit counts 44 CRITICAL normal-attack hits; the schema has no crit-hit counter, so it is proxied by hitCount:59 = 44 / (0.15 base sheet crit + 0.60 kit crit). Any change to the sheet crit rate (gear/cube/ally crit buffs) moves the true cadence and this constant does NOT track it — a support comp with extra crit rate makes the real trigger FASTER than modeled.",
+    "⚑ skill1 Unstable Energy split-vs-merge: 'Attacks sequentially 3 time(s)' authored as 3 separate 240% hits (popup-unread).",
+    "⚑ burst Exospine Mk2 doubling of Unstable Energy is modeled as a SECOND hitCount block carrying the +240%×3 increment, gated fbGate:'inFb' + ownBurstGate:'cast'. Mk2's real window is 10 s from HER burst cast; the FB window is a 10 s proxy that starts slightly later. Also, an Unstable Energy proc that fires inside the FB window credits the doubling for BOTH blocks only if the engine fires both on the same threshold crossing — verify with a buffApply/damage event trace before trusting the magnitude.",
+    "⚑ burst 'Damage multiplier of Eagle Eye-Type Exospine is scaled by 100%' is ambiguous: Eagle Eye as written carries no damage multiplier, only ATK ▲50% + Max Ammo ▲25%. Read here as doubling the ATK component (+50 casterAtkPct for 10 s). It could instead double the ammo component, both, or neither.",
+    "⚑ skill2 'Reloads 3 round(s)' authored as instantReload fraction 0.04 (3 / 75 = 60 base ammo × 1.25). The fraction is capacity-dependent, so OL/gear ammo lines silently change the refill size. Electric-gated → inert on the Fire/neutral scope-lock boss.",
+    "⚑ Both Electric Code branches (Damage Taken ▲10%, the 10-hit reload) are INERT on every graded comp; they are authored for completeness and are unvalidated.",
+    "noFb left unset everywhere (default FB-by-timing ON) per the ALWAYS-⚑ rule — measured-only. The burst's 6×457.14% is expected to be FB-exempt by cast timing (it lands pre-FB); this is NOT asserted here."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of eve's kit prose only. Structure: S1 = permanent unscoped Critical Rate ▲60% + a crit-hit-counted 3×240% sequential enemy rider + an Electric-gated Damage Taken ▲10% debuff riding that same rider. S2 = permanent casterAtkPct 50 (kit says 'of the skill user's ATK', so caster-scaled flat, not atkPct) + maxAmmoPct 25 (a weapon-state modifier and therefore damage: it lengthens the magazine and lowers reload frequency), plus an Electric-gated 3-round partial reload every 10 normal hits. Burst = 6×457.14% sequential enemy nuke on burstCast + a 10 s self Exospine Mk2 window modeled as (a) +50 casterAtkPct for 10 s and (b) a duplicate Unstable Energy block carrying the +240%×3 doubling increment, gated fbGate:'inFb' + ownBurstGate:'cast'. The crit-hit trigger (44 crits → hitCount 59) is the single largest source of error in this file."
+}

@@ -1,0 +1,500 @@
+{
+  "slug": "elegg-boom-and-shock",
+  "leakDetected": null,
+  "override": {
+    "slug": "elegg-boom-and-shock",
+    "resources": [
+      {
+        "name": "ghost",
+        "initial": 0,
+        "min": 0,
+        "max": 13
+      }
+    ],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "teamAmmo",
+          "count": 100
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "resource",
+            "name": "ghost",
+            "delta": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 1
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Water"
+        },
+        "resourceGate": {
+          "name": "ghost",
+          "min": 1
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 16.2,
+            "durationSec": 2,
+            "maxStacks": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 1
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Water"
+        },
+        "resourceGate": {
+          "name": "ghost",
+          "min": 4
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "elemAdvantageDamagePct",
+            "value": 35,
+            "durationSec": 2,
+            "maxStacks": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 40,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "teamAmmo",
+          "count": 100
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "ghost",
+          "min": 13
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 1100,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "ghost",
+          "max": 12
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "resource",
+            "name": "ghost",
+            "delta": -6
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "ghost",
+          "min": 13
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 800,
+            "flavor": "sequential",
+            "crit": true
+          },
+          {
+            "kind": "resource",
+            "name": "ghost",
+            "delta": -9
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Ability: Find and capture ghosts possessing the enemy."
+      ],
+      "skill2": [],
+      "burst": [
+        "Maintains at least 1 ghost."
+      ]
+    },
+    "caveats": [
+      "⚑ BLOCK ORDER IS LOAD-BEARING in `burst`: the ghosts≤12 branch MUST precede the ghosts=13 branch. resourceGate reads the live pool, so if the 13-branch ran first it would spend 9 (13→4) and the ≤12 branch would then ALSO fire — double burst. Do not reorder.",
+      "⚑ The ghost counter is mapped to the `teamAmmo` trigger (total ally AMMO CONSUMED crossing 100), not literal landed hits. Shots ≠ hits for SG pellets / misses, so ghost accrual is an upper bound on teams with shotguns or low hit rate.",
+      "⚑ The 1+ / 4+ threshold buffs are re-applied on a 1s interval with a 2s duration + maxStacks 1 (never a gap, never stacks) because a `passive` trigger evaluates its resourceGate once and could never turn ON as ghosts accrue, nor OFF when the burst spends them. This is an engine-idiom encoding of \"continuously\", not a kit-stated cadence.",
+      "⚑ \"Maintains at least 1 ghost\" is NOT expressible: the resource clamps at min 0, so a burst cast with 1–6 ghosts leaves 0 instead of 1. Only matters for the 1+ ATK threshold in the window right after an early burst.",
+      "⚑ The skill2 max-capacity nuke gate (min:13) reads the POST-add pool, because the skill1 +1 block dispatches first. The capture that takes 12→13 will therefore fire one 1100% proc that the kit text (\"captured WHILE AT maximum capacity\") does not grant — a one-per-battle over-credit.",
+      "⚑ Both the burst hits and the 1100% AoE are authored crit:true (RIDERCRIT: riders crit at the caster's sheet rate) and core-less (no \"core strike\" wording). Neither is measured.",
+      "⚑ `noFb` is deliberately unset everywhere (default OFF, measured-only). Burst-cast damage is FB-exempt by TIMING, not by flag."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Elegg: Boom and Shock is a team-hit-count currency unit: 100 cumulative ally hits = 1 ghost (cap 13), modeled as a `ghost` resource driven by the `teamAmmo` trigger. Ghosts gate two continuous Water-ally auras (≥1: casterAtkPct 16.2; ≥4: elemAdvantageDamagePct 35) and switch the burst between a 6×800% branch (spend 6) and a 13×800% branch (spend 9). At cap, every further capture fires a 1100% AoE (skill2). The whole damage profile is therefore a function of TEAM fire rate, not Elegg's own — validate the ghost trajectory (time to 4, time to 13, nuke count per fight) before touching any magnitude."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Possession vehicle is live from t=0; capture accrual runs whole fight (teamAmmo trigger, no start gate needed)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 1 random enemy.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Single boss in v1 — the random-enemy pick is degenerate; possession target carries no damage of its own."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Possession lasts for 6 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Duration == recurring interval (6s), so possession has ZERO downtime → modeled as continuously available capture."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Ability: Find and capture ghosts",
+      "status": "SKIPPED",
+      "effectOrReason": "Flavor label for the mechanic; the numeric mechanic is implemented as the `ghost` resource. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Required hit count: 100 time(s) in total",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger teamAmmo count 100 (⚑ ammo-consumed proxy for team-cumulative hits)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Captures 1 ghost when hit count = 100%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect resource {name:'ghost', delta:+1}."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "A maximum of 13 ghost(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resources[].max = 13 (engine clamp)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recurring interval: 6 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Equals the 6s possession duration → continuous re-possession; no gap to model."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Water Code allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfElement {element:'Water'} (includes self — no exclude clause)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "1+: ATK 16.2% of skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 16.2, resourceGate {ghost,min:1}, 1s-interval refresh (⚑ encoding of 'continuously')."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "4+: Elem Advantage Atk Dmg 35%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 35, resourceGate {ghost,min:4}. Prior 8: an explicit elemental-advantage damage buff beyond the flat x1.10."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Each subsequent effect triggers all",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Cumulative-by-construction: the two tiers are independent min-gated blocks, so ≥4 ghosts has both live."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (literal 'when using Burst Skill' = own-cast, NOT fullBurstEnter) + target self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK 40% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 40, durationSec 10 (self-scaling %, not caster-flat)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when a ghost is captured at max",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger teamAmmo 100 + resourceGate {ghost,min:13} — recurring conditional, fires on every post-cap capture."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy (single boss)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 1100% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 1100, crit:true, no core (no 'core strike' wording), noFb unset (FB by timing)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "random enemies if ghosts is not 13",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {ghost,max:12}; placed FIRST so it evaluates before the 13-branch spends."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "800% ATK, sequentially 6 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "6 x flatDamage atkPct 800, flavor 'sequential' (literal 'Attacks sequentially'), crit:true."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Number of ghosts 6.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect resource {ghost, delta:-6}, ordered after the damage effects."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Maintains at least 1 ghost.",
+      "status": "SKIPPED",
+      "effectOrReason": "Resource clamp min is 0; no per-effect floor primitive. Bursting with 1-6 ghosts leaves 0 instead of 1. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "random enemies if ghosts is 13",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {ghost,min:13}; placed SECOND (order is load-bearing — see caveats)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "800% ATK, sequentially 13 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "13 x flatDamage atkPct 800, flavor 'sequential', crit:true."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Number of ghosts 9.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect resource {ghost, delta:-9} (13 -> 4, which keeps the 4+ aura alive by exactly one ghost)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "teamAmmo count 100",
+      "reasoning": "The kit counts LANDED HITS cumulative across all allies; the schema's only team-wide counter is `teamAmmo` (total ally ammo CONSUMED). Shots != hits: SG pellets, misses, and infinite-ammo windows all diverge, and MG hitsPerShot expands rounds. This is the single highest-leverage ⚑ on the unit — every ghost-gated effect (both auras, the burst branch, the 1100% nuke cadence) is downstream of it.",
+      "recipe": "Record a graded fight and count Elegg ghost-icon increments off the HUD; compare to the sim's teamAmmo crossings over the same window. If the sim over-accrues, apply a hit-rate haircut to the effective count (raise the threshold above 100) rather than fudging any magnitude."
+    },
+    {
+      "field": "resources[0] trajectory (time-to-4, time-to-13)",
+      "estimate": "13 ghosts = 1300 team hits; on a 5-unit comp expect the 4-ghost tier (400 hits) early-mid fight and cap reached at most once or twice, with 0-3 max-capacity nukes per fight",
+      "reasoning": "ALWAYS-⚑ #4 (stack/currency steady-state). Start + consume + rebuild ARE kit-stated (0 start, -6/-9 per burst, +1 per 100 hits), so the trajectory is DERIVABLE from the engine rather than guessed — but the derivation is only as good as the hit-count proxy above, and the burst spend makes it a sawtooth that repeatedly crosses the 4-ghost threshold.",
+      "recipe": "Instrument via cfg.onEvent + a resource read at each burstCast; assert the ghost count at each burst in a vitest pin. Cross-check against footage: the burst that fires 13 sequential hits instead of 6 is unmistakable in popup count."
+    },
+    {
+      "field": "skill1[1].trigger / skill1[2].trigger (interval 1s + durationSec 2 + maxStacks 1)",
+      "estimate": "1s re-apply, 2s window, non-stacking",
+      "reasoning": "Kit says 'continuously', which is a passive — but a `passive` trigger fires once at setup, so its resourceGate would latch at ghosts=0 and the aura would never turn on (or never turn off after a burst spend). The interval-refresh idiom is the only schema-expressible way to make a threshold-gated continuous buff track a live pool. Not a kit-stated cadence.",
+      "recipe": "If the engine re-evaluates resourceGate on passive blocks per-frame, collapse both blocks to {kind:'passive'} with no durationSec — verify by asserting a buffApply for casterAtkPct exists at a frame where ghosts>=1 and is absent immediately after a burst drops the pool below 1."
+    },
+    {
+      "field": "burst[0].effects (resource -6) / 'Maintains at least 1 ghost'",
+      "estimate": "floor unmodeled; clamps to 0",
+      "reasoning": "No per-effect floor primitive exists, and the resource declaration cannot carry min:1 while starting at 0. Error is bounded at exactly 1 ghost, and only bites the 1+ ATK aura in the window after a burst cast with fewer than 7 ghosts.",
+      "recipe": "If it proves to matter, add a compensating resource +1 block gated resourceGate {ghost,max:0} on a short interval, or extend the schema with a per-effect floor. Measure first: check whether any graded-comp burst actually lands with <7 ghosts."
+    },
+    {
+      "field": "skill2[1].resourceGate (pre- vs post-add pool)",
+      "estimate": "one spurious 1100% proc per battle",
+      "reasoning": "'captured WHILE AT maximum capacity' means the gate should read the PRE-add pool, but skill1's +1 dispatches before skill2's block, so the 12->13 capture satisfies min:13. Cross-slot ordering cannot express pre-add.",
+      "recipe": "Count 1100% popups in footage from the moment the ghost HUD hits 13; if the sim shows exactly one extra, raise the gate to a sentinel (e.g. track a separate 'atCap' resource set on the following tick)."
+    },
+    {
+      "field": "burst[*].effects[*].flavor = 'sequential'",
+      "estimate": "sequential-flavored",
+      "reasoning": "'Attacks sequentially for N time(s)' is the literal sequential-attack phrasing, so the hits should be eligible for Sequential Attack Damage buffs (sequentialDamagePct / sequentialMultPct). Risk: if the engine reserves that flavor for a narrower mechanic, this over-credits on teams carrying a sequential buffer (e.g. snow-white-heavy-arms).",
+      "recipe": "Run the comp with and without a sequential-damage buffer and confirm Elegg's burst bucket moves by the buffer's magnitude; if the game shows no interaction, drop the flavor."
+    },
+    {
+      "field": "burst[*] / skill2[1] flatDamage crit:true",
+      "estimate": "crits at the caster's sheet rate",
+      "reasoning": "RIDERCRIT convention — riders crit at the caster's rate. Unmeasured for this unit. No core: the text never says 'core strike', so no core:true anywhere.",
+      "recipe": "Read popup colour on the burst hits and on the 1100% AoE (orange + icon = crit, red CORE HIT = core). If all bodies are white, set crit:false."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 171 / ammo 300)",
+      "estimate": "datamined values used as-is",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire and reloadFrames are known-unreliable datamine fields, and the nominal rate must be frame-quantized (effective = 60/ceil(60/nominal)). For an MG this also feeds the team hit counter that drives every ghost effect, so cadence error compounds into ghost accrual.",
+      "recipe": "Ammo-counter read off footage: count rounds/sec directly (the instrument that measures the disputed quantity), and time a full 300-round reload."
+    },
+    {
+      "field": "override.noFb (absent everywhere)",
+      "estimate": "not set",
+      "reasoning": "ALWAYS-⚑ #6: per-kit noFb defaults OFF and is measured-only. Burst-cast damage is FB-exempt by TIMING (the cast resolves before the FB window opens), not by flag; the skill2 nuke fires on team-hit crossings so it takes FB by timing whenever it lands inside a window.",
+      "recipe": "Only set noFb if popup values for the 1100% AoE inside a Full Burst measure at the same magnitude as outside it."
+    }
+  ],
+  "model": "claude-opus-5"
+}

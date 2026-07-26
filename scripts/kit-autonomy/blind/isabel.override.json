@@ -1,0 +1,168 @@
+{
+  "slug": "isabel",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 6.26,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 18.03,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 17.28,
+              "durationSec": 45
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 170.58,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 149.85,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 1
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 39.96,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 2
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 299.7,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 349.65,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "fullBurstExtend",
+          "seconds": -5
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 trigger is KIT-SILENT: the kit gives a damage line with no activation clause, so it is modeled as an interval. sec:10 is an UNMEASURED estimate (prior: kit-silent damage lines run on an internal CD). Pin from popup cadence in footage before trusting the skill2 contribution.",
+    "⚑ skill2 target 'the 5 enemy units with the highest final DEF' collapses to the single scope-lock boss; the 5-target multi-hit is NOT multiplied (one enemy = one hit). If the sim ever models multiple enemies this must fan out to 5.",
+    "⚑ Marked Target stage is modeled by mapping the escalating stage counter onto burstCast stage 1/2/3 of ISABEL'S OWN casts (her 1st/2nd/3rd burst of the fight). If the engine's burstCast.stage means the BURST-TIER stage (I/II/III) rather than the Nth activation, this encoding is WRONG and the burst riders must instead be one `escalating` effect on a single burstCast block — see flags.",
+    "⚑ Burst-cast instant damage is FB-exempt (noFb:true) per prior 9 (a burst cast lands before the FB window opens). skill2's interval damage keeps FB-by-timing ON (default).",
+    "⚑ Riders set crit:true (they crit at the caster's sheet rate) and take NO core (the text never says 'core strike damage').",
+    "⚑ 'Full Burst Duration ▼ 5 sec' is a SELF/TEAM DOWNSIDE modeled as fullBurstExtend with a NEGATIVE seconds. If the engine clamps or rejects negative fullBurstExtend, this line is effectively unmodeled and must move to `unmodeled.burst` verbatim.",
+    "⚑ Cadence tuple (pullsPerSec / reloadFrames 133 / hitsPerShot 10) is datamine-sourced and unreliable for SGs; effective fire rate quantizes to 60fps frame boundaries. Not overridden here.",
+    "⚑ Hit-Rate→core magnitude: no hitRatePct line in this kit, so nothing set; engine default hrCoreMult applies.",
+    "⚑ SG pellet split-vs-merge (10 hitsPerShot) is kit-silent — no consolidation config authored; read popups before adding one."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Isabel (isabel), SG/Electric/Attacker/Burst III. Structure: S1 is a self-only escalating Marked-Target ladder keyed to HER OWN burst casts (crit rate → crit damage → ATK, 45s each, cumulative). S2 is a trigger-less damage line (170.58%) modeled as an interval with a ⚑ estimated 10s cadence, targeting the highest-final-DEF enemies (one boss in v1). Burst deals 149.85% base plus stage-gated riders that mirror the S1 Marked-Target ladder: stage 1 opens a 39.96%/5s Damage Taken debuff on the boss (a TEAM-WIDE benefit, not a self buff), stages 2 and 3 add 299.7% and 349.65% instant hits. The burst also SHORTENS Full Burst by 5s for all allies — a real downside modeled as a negative fullBurstExtend. Nothing in the kit is silently dropped; every line is IMPLEMENTED, so `unmodeled` is empty in all three slots. The single largest risk in this baseline is the Marked-Target stage encoding (see caveats + flags): the ladder is inherently stateful across the fight and the blind read maps it onto burstCast stage gating.",
+  "hasPierce": false
+}

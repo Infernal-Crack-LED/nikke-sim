@@ -1,0 +1,265 @@
+{
+  "slug": "blanc",
+  "leakDetected": null,
+  "override": {
+    "slug": "blanc",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 120
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 11.8,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 5,
+            "intervalSec": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "teamHas": {
+          "slugs": [
+            "noir"
+          ]
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 40.76
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 8,
+            "intervalSec": 1
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesLowestHp",
+          "count": 1,
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxHpPct",
+            "value": 31.68,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 39.26,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Gain Indomitability for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ CADENCE: skill1's 120-normal-attack threshold is kit-stated, but the wall-clock cadence it produces depends on the datamine-unreliable AR pull rate + reloadFrames 81 / ammo 60. With hitsPerShot 1 a 120-round cycle ≈ two full magazines incl. one reload; if the sim's AR cadence is wrong the shield (and any teammate's `shielded` consumer) fires at the wrong rate. UNMEASURED.",
+      "⚑ BURST-CDR SEMANTICS: skill2's 40.76 s cooldown reduction against a 60 s burst CD is a ROTATION-shaping effect (effective ~19 s), the single largest lever in this kit. Modeled as a per-FB-end burstCdr on self, gated on a same-squad ally (Blanc/Noir) via teamHas.slugs. Both the gate resolution (is 'same squad' exactly Noir in this data model?) and the engine's cdr-vs-remaining-cooldown arithmetic are UNVERIFIED here.",
+      "⚑ HEAL MAGNITUDES ARE NOT REPRESENTABLE: the 3.68%/1 s×5 and 3.84%/1 s×8 Max-HP recoveries carry no HP amount in the schema — only the recovery EVENT count matters (tandem consumers such as on-recovery damage buffs). Tick counts 5 and 8 are read straight off the kit text; no HP pool exists in v1.",
+      "⚑ ALLY MAX-HP GRANT IS OFFENSIVELY INERT: burst's Max HP ▲31.68% is authored as maxHpPct on an ally target and (per the e3 rule) does not feed a teammate's atkOfMaxHpPct conversion. Kept for completeness / future consumers; it moves no damage today.",
+      "⚑ LOWEST-REMAINING-HP TARGETING: v1 has no HP pool, so alliesLowestHp resolves deterministically to a leftmost stand-in. Since the only payload is the inert Max-HP grant (Indomitability is unmodeled), the stand-in choice is damage-neutral.",
+      "NO DAMAGE LINES: Blanc's kit contains zero damage-dealing effects, so per-kit noFb / range / core / Hit-Rate questions do not arise. Her entire offensive contribution is the enemy Damage Taken ▲39.26% debuff plus the rotation acceleration from the burst-CDR line."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind prose→JSON read of the raw kit only. skill1 = shared team shield (11.8% of caster final Max HP, 5 s) on a 120-normal-attack counter — modeled as a hitCount:120 trigger targeting all allies so shield-synergy consumers (`shielded` triggers / requiresShielded gates) fire. skill2a = a 5-tick team heal-over-time on Full Burst END (fullBurstEnd, not fullBurstEnter — read literally), emitting 5 recovery events for on-recovery consumers. skill2b = self burst-cooldown reduction 40.76 s at FB end, gated on a same-squad ally being present (teamHas.slugs ['noir']); this is the kit's real engine lever and should be the first thing verified against a rotation log. burst = an 8-tick team heal-over-time, a lowest-HP ally Max HP ▲31.68%/10 s (Indomitability unmodeled — pure survivability, no damage channel), and the load-bearing all-enemy Damage Taken ▲39.26% for 10 s (a boss debuff benefiting the WHOLE team, never a self buff). All burst blocks keyed to burstCast: they are in Blanc's own burst block with no activation clause, so they fire only on rotations she actually casts, and the enemy debuff lands pre-FB by design. No `ignored` blocks; every skipped line is recorded verbatim in `unmodeled`."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 120 normal attack(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind:'hitCount', count:120 } — counts ROUNDS fired by the owner (hitsPerShot 1, so 120 trigger pulls ≈ 2 magazines + 1 reload). ⚑ wall-clock cadence depends on the datamine-unreliable AR pull rate."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "shared Shield 11.8% of final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{ kind:'shield', maxHpPct:11.8, durationSec:5 } on target { kind:'allies' } (shared → all allies incl. self). NOT skipped on isolation: shield lines drive teammates' `shielded` triggers / requiresShielded gates (HARD RULE 4)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "protects all allies / Lasts for 5 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies + durationSec 5. The damage-absorption function itself has no consumer (v1 boss deals no damage), but the event + window are recorded."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after Full Burst ends.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind:'fullBurstEnd' } — read literally; NOT fullBurstEnter and NOT burstCast. Fires on ANY team Full Burst ending, independent of whether Blanc bursted."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'allies' } (no except-self clause, so self included)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "recovers 3.68% Max HP every 1 sec 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{ kind:'heal', ticks:5, intervalSec:1 } — a per-second HoT emits 5 discrete recovery events, keeping on-recovery consumers refreshed. HP magnitude (3.68%) is not representable in the schema; ⚑ recorded in caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Full Burst ends with an",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind:'fullBurstEnd' } + block gate teamHas { slugs:['noir'] } for the 'ally from the same squad still on the battlefield' clause (no squad axis exists in the data; Blanc's squad-mate is Noir). ⚑ gate resolution unverified."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'self' }."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Cooldown of Burst Skill ▼ 40.76 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{ kind:'burstCdr', seconds:40.76 } — NOT oncePerBattle (the activation clause recurs every FB end). Against her 60 s base CD this is the kit's dominant rotation lever."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. / 3.84% every 1 sec 8s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger { kind:'burstCast' }, target { kind:'allies' }, { kind:'heal', ticks:8, intervalSec:1 }. Burst-slot block with no activation clause → fires only on rotations Blanc herself casts."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 ally with lowest HP (except user)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'alliesLowestHp', count:1, excludeSelf:true }. No HP pool in v1 → deterministic leftmost stand-in; damage-neutral because the payload is inert."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Indomitability for 10 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Pure survivability status (death-prevention); no damage, buff-stat, gauge, weapon-state or tandem channel exists for it in the schema. Recorded verbatim in unmodeled.burst — no `ignored` block."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 31.68% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{ kind:'buff', stat:'maxHpPct', value:31.68, durationSec:10 } — target's OWN Max HP scaling (not casterMaxHpPct: the kit gives no 'of the skill user's Max HP' clause). Kept despite being offensively inert per prior 7 (future scaler consumer)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind:'enemy' } — a boss debuff, so it benefits the whole team; explicitly NOT modeled as a self/ally buff."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 39.26% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{ kind:'buff', stat:'damageTakenPct', value:39.26, durationSec:10 }. This is Blanc's entire offensive contribution."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count (cadence tuple)",
+      "estimate": "120 rounds ≈ 12–13 s of sustained fire → roughly 1 shield application per ~12.7 s, i.e. ~2 magazines (ammo 60, hitsPerShot 1) plus one reload (reloadFrames 81 ≈ 1.35 s) at a nominal ~12 pulls/s AR cadence.",
+      "reasoning": "The 120 threshold is kit-stated and safe; what is NOT in the input domain is the pulls/s that converts rounds→wall-clock. rate_of_fire / reloadFrames are known-unreliable datamine fields, and the game fires on 60 fps frame boundaries, so effective cadence = 60/ceil(60/nominal). Every downstream consumer of the shield (a teammate's `shielded` trigger) inherits this error directly.",
+      "recipe": "Instrument cfg.onEvent for kind:'shot' with srcSlot === blanc's slot in a controlComp run; take the frame delta between the 1st and 121st shot to get the true 120-round period, and cross-check against reload events. Independently, count Blanc's shield popups in a recorded fight and divide fight length by the count."
+    },
+    {
+      "field": "skill2[1] (burstCdr 40.76 + teamHas gate)",
+      "estimate": "Effective burst cooldown ≈ 60 − 40.76 ≈ 19.2 s while a squad-mate is alive, i.e. Blanc is burst-ready every rotation rather than every third. Gate authored as teamHas { slugs:['noir'] }.",
+      "reasoning": "Two separate unknowns. (a) 'an ally from the same squad' has no representation in the data model — Blanc's canonical squad-mate is Noir, so a slug gate is the only faithful encoding, but if the roster models more squad members the gate is too narrow. (b) burstCdr's engine arithmetic (subtract from remaining cooldown at fire time vs. shorten the next cycle) is not visible from the kit text, and a 40.76 s cut on a 60 s CD is large enough that the two semantics produce different FB counts.",
+      "recipe": "Run a comp with Blanc + Noir vs Blanc + a non-squad ally and diff the burstCast event timestamps for Blanc; the gate is correct iff the CDR only appears in the former. Then verify FB-count preservation on a graded comp (judge a rotation change by MEASURED FB count, not aggregate ratio) and pin against Blanc's burst-icon readiness in footage."
+    },
+    {
+      "field": "skill2[0].effects[0].ticks / burst[0].effects[0].ticks",
+      "estimate": "ticks 5 (skill2) and 8 (burst), intervalSec 1 — taken literally from 'every 1 sec for 5/8 sec'.",
+      "reasoning": "The heal effect models no HP amount, so 3.68% and 3.84% of caster final Max HP are lost information; only the number and spacing of recovery EVENTS matter for tandem consumers (e.g. a teammate whose damage buff triggers on recovery). Whether the game emits 5 ticks or 6 (t=0 plus 5) is a first-fire-phase convention not stated by the kit.",
+      "recipe": "Count recovery-driven buffApply events on a heal-consumer teammate in a Blanc comp and compare the count per window against 5/8; alternatively count the green heal numbers per window in a recording (green = heal per the popup-colour convention)."
+    },
+    {
+      "field": "burst[1].effects[0] (maxHpPct 31.68)",
+      "estimate": "Authored as maxHpPct (target's own Max HP), durationSec 10, expected to move zero damage.",
+      "reasoning": "The kit says plain 'Max HP ▲ 31.68%' with no 'of the skill user's Max HP' clause, so it is the target's own-HP scaling rather than casterMaxHpPct. Ally-granted Max HP does not feed a teammate's atkOfMaxHpPct conversion, so it is inert unless the recipient is an HP-scaling carrier — and even then the feed rule blocks it. Kept for kit completeness per the HP/DEF-scaler prior, not because it is expected to register.",
+      "recipe": "Toggle the block off in a withPatchedOverride clone and confirm totals(res) are byte-identical across the comp; if any unit moves, the recipient is an HP scaler and the casterMaxHpPct-vs-maxHpPct choice must be re-adjudicated against the e3 feed rule."
+    },
+    {
+      "field": "burst[1].target (alliesLowestHp stand-in)",
+      "estimate": "Resolves to the leftmost eligible non-self ally.",
+      "reasoning": "v1 has no HP pool (immortal boss, nobody takes damage), so 'lowest remaining HP' is indeterminate and the engine uses a documented deterministic stand-in. Damage-neutral here because the only payload on this target is the inert Max-HP grant plus the unmodeled Indomitability.",
+      "recipe": "No measurement needed while the payload stays inert; if a future effect with a damage channel is attached to this target, the stand-in must be re-examined against a real fight's HP trace first."
+    },
+    {
+      "field": "whole-kit (no damage lines / noFb N/A)",
+      "estimate": "Blanc contributes damage ONLY through the burst's Damage Taken ▲39.26%/10 s debuff and indirectly through burst-cooldown acceleration.",
+      "reasoning": "There is no flatDamage, dot, storedHit, weaponSwap, ammo, fire-rate, reload or Hit-Rate line anywhere in the kit, so the usual ⚑ axes (per-kit noFb, split-vs-merge, Hit-Rate→core magnitude, swap shot economy, stack steady-state) have no carrier. Per the methodology, noFb is left unset (FB-by-timing default ON) and noRange is engine-automatic — neither is set or flagged.",
+      "recipe": "Sanity-check by asserting unitOf(res,'blanc').totalDamage is driven purely by her normal attacks, and that removing the burst block changes OTHER units' totals (the debuff) while leaving Blanc's own normal-attack damage untouched apart from her own share of the debuff."
+    }
+  ],
+  "model": "claude-opus-5"
+}

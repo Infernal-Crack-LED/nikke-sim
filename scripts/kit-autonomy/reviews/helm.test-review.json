@@ -1,0 +1,71 @@
+{
+  "slug": "helm",
+  "driverModel": "qwen",
+  "reviewerModel": "claude-fable-5",
+  "verdict": "GO (cross-family corroborated)",
+  "leakDetected": null,
+  "reconciliation": {
+    "H1_S1_lastBullet_critRateNormal_14.64": {
+      "driver": "FAITHFUL — critRateNormalPct 14.64/5s, scoped to NORMAL ATTACKS only, all allies; H1 pins shipped==noCrit on skill/burst buckets, differs on normal, AND genericCrit counterfactual moves skill/burst",
+      "reviewer": "FAITHFUL — scoped critRateNormalPct (never generic critRatePct), lastBullet per-magazine, 5s wall-clock with real downtime; nearest-wrong is generic critRatePct over-crediting team skill/burst crit",
+      "agreement": "CONVERGED"
+    },
+    "H2_S1_fullCharge_heal_0.59": {
+      "driver": "FAITHFUL (event-only) — shotFired -> allies heal event every full charge (~1.5s); H2 asserts crown recovery firings >= 0.9x helm shot count (her cadence, not burst cadence)",
+      "reviewer": "FAITHFUL, load-bearing — per-shot recovery event drives crown's 'when recovery takes effect' block; dropping it silently changes crown output in every helm comp",
+      "agreement": "CONVERGED"
+    },
+    "H3_S1_fullCharge_fillGauge_14.31": {
+      "driver": "FAITHFUL — carried by data/gauge-per-shot.json (helm.flatPerTrigger 1431, datamined 2-way confirmed), a per-trigger FLAT fill unscaled by focus and suppressed during FB/chain; NOT an override block; H3 asserts flatPerTrigger===1431",
+      "reviewer": "FAITHFUL, load-bearing — per-shot fillGauge (not a passive burstGenPct scaler); massive rotation accelerator shifting every FB timestamp",
+      "agreement": "CONVERGED (location differs: driver models it in the gauge data pipeline as a per-trigger flat term; reviewer expected an override fillGauge effect because the gauge-data location was de-contaminated — both agree it is a per-trigger fill, load-bearing through rotation, not a passive scaler)"
+    },
+    "H4_S2_passive_partsDamage_3.08": {
+      "driver": "FAITHFUL (recognized-INERT) — partsDamagePct 3.08 passive, all allies; H4 asserts base.totals === noParts.totals byte-identical (partless boss)",
+      "reviewer": "FAITHFUL, load-bearing-inert — live buffApply that moves nothing; ZERO board movement is the assertion",
+      "agreement": "CONVERGED"
+    },
+    "H5_S2_fullBurstEnter_attackDamage_27.87": {
+      "driver": "FAITHFUL — fullBurstEnter -> allies attackDamagePct 27.87/10s (TREASURE value, base 11.85); H5 pins value [27.87], 4 allies incl self, expiresFrame-frame === 600",
+      "reviewer": "FAITHFUL, load-bearing — fullBurstEnter (NOT burstCast), generic Damage-Up bucket, 10s; flags dual-B3 fixture caveat: where helm is sole caster the two triggers coincide",
+      "agreement": "CONVERGED on value/scope/target/duration. Reviewer's trigger-identity counterfactual (fullBurstEnter vs burstCast) is advisory: the override correctly uses fullBurstEnter; H5 pins the load-bearing TREASURE magnitude (27.87 vs 11.85) and the 4-ally/10s shape. The rounds/seconds and burstCast/FB-exempt discriminations the reviewer ranks highest are pinned at H9 and H7 respectively."
+    },
+    "H6_S2_fullCharge_rider_178.98": {
+      "driver": "FAITHFUL — shotFired -> enemy flatDamage atkPct 178.98, crit-eligible (engine rider convention), once per pull; H6 asserts rider count == shot count, atkPct [178.98], critEligible all true",
+      "reviewer": "FAITHFUL, load-bearing — per full-charge hit rider, 1:1 with shots, no core, no range, DOES take FB major by landing timing",
+      "agreement": "CONVERGED (driver pins count/magnitude/crit-eligibility; reviewer's no-core/no-range/FB-by-timing notes are engine rider defaults the override inherits)"
+    },
+    "H7_burst_burstCast_nuke_8236.8": {
+      "driver": "FAITHFUL — burstCast -> enemy flatDamage atkPct 8236.8 (TREASURE nuke, base 1237.5), burst bucket, FB-exempt; H7 asserts count == burstCast count, atkPct [8236.8], bucket [burst], fbMajorApplied none",
+      "reviewer": "FAITHFUL, load-bearing — burstCast, FB-EXEMPT (lands before FB window), highest-ATK selector collapses to boss; nearest-wrong is the +50% FB major",
+      "agreement": "CONVERGED"
+    },
+    "H8_burst_burstCast_lifesteal_54.45_window": {
+      "driver": "FAITHFUL (event-only window) — burstCast -> allies heal ticks:10 intervalSec:1, modeling the kit-literal 'for 10 sec' recovery WINDOW (no HP pool, magnitude not fabricated); H8 isolates S1+crown heals and asserts recovery keeps firing across ~10s after each cast",
+      "reviewer": "GAP / unmodeled-verbatim — no schema lifesteal primitive; warns a per-hit heal stream would machine-gun crown's recovery trigger; non-load-bearing",
+      "agreement": "PARTIAL — both refuse to fabricate the 54.45 magnitude and both refuse a per-hit stream. Driver models a FIXED 10-tick/1s window (not per-hit), so the reviewer's machine-gun concern does not apply; the window's only observable (on-recovery consumers refreshed across its length) is kit-literal and H8 pins it under isolation. Reviewer preferred unmodeled-verbatim; driver's event-window is a defensible, documented superset (override caveats name the tick-cadence approximation explicitly). Non-load-bearing; not a faithfulness blocker."
+    },
+    "H9_burst_burstCast_self_chargeMult_158.4_10rounds": {
+      "driver": "FAITHFUL — burstCast -> self chargeDamageMultPct 158.4 durationShots:10 (ROUND count, no wall-clock expiry), self-scoped; H9 asserts value [158.4], durationShots [10], expiresFrame [null], targetIdx [HELM]; rounds-vs-seconds discrimination lives in engine/duration-shots.test.ts",
+      "reviewer": "FAITHFUL, load-bearing — durationShots:10 NOT durationSec:10; window spans her reload (~12.4s), shots 7-10 post-reload still buffed; self-only; nearest-wrong (highest-leverage) is durationSec:10",
+      "agreement": "CONVERGED (reviewer's stat-name guess 'chargeDamagePct' is a de-contamination artifact; the schema-correct key is chargeDamageMultPct, which the override + H9 use)"
+    }
+  },
+  "testDiscrimination": {
+    "H1": "shipped==noCrit on skill/burst, differs on normal; genericCrit counterfactual MOVES skill/burst (proves the scoped assertion is one the generic model fails)",
+    "H2": "crown recovery firings >= 0.9x helm shot count (per-shot cadence, not burst/magazine)",
+    "H3": "gauge-per-shot.json flatPerTrigger===1431 (per-trigger flat fill, datamined)",
+    "H4": "base.totals byte-identical to noParts.totals (exact inertness)",
+    "H5": "value pinned [27.87] (TREASURE, not base 11.85), 4 allies, 600-frame expiry",
+    "H6": "rider count == shot count, atkPct [178.98], crit-eligible",
+    "H7": "nuke count == burstCast count, atkPct [8236.8], burst bucket, fbMajorApplied none",
+    "H8": "under S1+crown-heal isolation, recovery fires across ~10s after each cast (>=8 firings, span >=8s) — not a single instant",
+    "H9": "durationShots [10], expiresFrame [null] (round-count, no timed expiry), targetIdx [HELM] (self-scoped)"
+  },
+  "residualFlags": [
+    "H3: gauge fill modeled in data/gauge-per-shot.json (flatPerTrigger 1431), not an override block — reviewer expected an override effect (gauge-data location was de-contaminated); both agree per-trigger fill, load-bearing through rotation",
+    "H5: trigger-identity counterfactual (fullBurstEnter vs burstCast) not separately asserted; advisory only — override is correct (fullBurstEnter) and the TREASURE magnitude is pinned",
+    "H8: burst lifesteal is event-only (10-tick/1s window, no magnitude, no HP pool); reviewer preferred unmodeled-verbatim; driver's window is a documented approximation pinned under isolation; non-load-bearing",
+    "override ⚑ (carried): the 178.98% full-charge rider trigger read as shotFired (every SR pull = full charge) — verify against a helm focus video; MEASUREMENT-GATED, does not block GO"
+  ]
+}

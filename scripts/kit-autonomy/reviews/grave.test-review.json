@@ -1,0 +1,61 @@
+{
+  "slug": "grave",
+  "stage": "S2c-reconciliation",
+  "date": "2026-07-25",
+  "reviewerModel": "claude-fable-5",
+  "driverModel": "qwen",
+  "reviewerVerdict": "independent re-derivation; 16 load-bearing lines spec'd",
+  "convergence": [
+    "burstCast trigger (her OWN B2 cast), NOT fullBurstEnter — reviewer + driver agree",
+    "unlimitedAmmo / gainPierce / pierceDamagePct 52.8 / critRatePct 85.19 = self, 10s, keyed to the burst",
+    "attackDamagePct 48.2 (NOT atkPct) to all allies INCLUDING self, 10s",
+    "pierceDamagePct 39.98 to all allies, live ONLY on pierce-tagged attackers (inert on non-pierce teammates)",
+    "critRatePct 85.19 is UNSCOPED (generic critRatePct, not critRateNormalPct)",
+    "maxAmmoFlat 3 is kit-literal FLAT ROUNDS, durationSec 10 — NOT durationShots:3, NOT the old maxAmmoPct proxy",
+    "Overheat III is attackDamagePct (Damage-Up bucket), NOT atkPct",
+    "Reload Ratio ▼50% is a weapon-state DAMAGE line (gates shot count), NOT defensive QoL to be dropped",
+    "self-heal (2% Max HP) and Prediction HP-drain are genuinely inert (self-target, no own recovery scaler) — safe UNMODELED",
+    "gainPierce is what makes the Pierce Damage ▲ a real Damage-Up entry (windowed, not whole-fight hasPierce)"
+  ],
+  "divergences": [
+    {
+      "line": "skill1 Heat Emission TIMING (team 38.96/48.4 + reload + ammo-dump key to Prediction END = cast+10s)",
+      "reviewerDisposition": "FIX (load-bearing); a fight-long passive over-credits the pre-first-burst ramp and the Prediction windows",
+      "driverRuling": "KNOWN, OWNER-DOCUMENTED, DELIBERATE approximation. The override note states the team buffs are 'modeled as passive; slightly overcounts during the ~10s Prediction windows when Heat Emission is off.' The reviewer independently found the SAME gap the owner already ⚑'d — corroboration that the documentation is honest and complete. The faithful windowed model is BLOCKED by a missing engine primitive (no status-end / Prediction-end trigger; reviewer concurs: 'engine has no status-end trigger'). Per S4: a missing primitive on a bounded, documented, non-anchor line is a ⚑/residual, NOT NO-GO(engine-core). The solo anchor (1.005) is measured and unaffected. Test G1 pins the SHIPPED passive encoding (the encoding under test); the idealized-window refinement stays a documented ⚑.",
+      "outcome": "no functional change; corroborated ⚑ (primitive-blocked, bounded, documented)"
+    },
+    {
+      "line": "skill1 Reload Ratio ▼50% — reviewer's refill-fraction reading (reload refills only 50% of max, protecting Overheat I from removeOnReload)",
+      "reviewerDisposition": "GAP / CALIBRATED; flags a refill-fraction primitive the schema lacks",
+      "driverRuling": "REFUTED BY MEASUREMENT. The override note already adjudicated this exact reading: 'reload-AMOUNT-halved (partial mag) refuted by 61.5 shots/gap = full 60-round mags.' The owner measured full-magazine reloads (grave solo.MP4, n=19), so the operative model is the MEASURED slow reload charFixes.reloadFrames=193 (effective 201f), not a refill fraction. Test G3 pins the measured value + the behavioural direction (fewer shots than the datamined 81f). Reviewer's hypothesis is independently reasonable but empirically superseded.",
+      "outcome": "no change; measured value stands, reviewer hypothesis refuted by full-mag observation"
+    },
+    {
+      "line": "skill2 Overheat II/III duration — reviewer reads 'continuously' + no removal clause as PERMANENT once earned (survives Prediction end)",
+      "reviewerDisposition": "FAITHFUL but 'permanently once earned'; nearest-wrong is 'dying with the 10s Prediction'",
+      "driverRuling": "DRIVER/SHIPPED READING IS MORE FAITHFUL. The prose explicitly GATES both tiers: 'While in Prediction and Overheat I status, Overheat II ...' / 'While in Prediction and Overheat II status, Overheat III ...'. 'While in Prediction' is an active gate, not merely an acquisition condition — when Prediction ends the gate fails and the buff deactivates. The shipped burstCast + durationSec 10 (= the Prediction window) captures that deactivation; the reviewer's 'permanent once earned' would OVER-credit ATK/Attack-Damage outside the Prediction window. The 30/60-hit ramp-in is approximated as full-window uptime (documented slight early-window overcount). Test G5 pins the 10s window (first fires on the first burst frame, once per burst, expiresFrame-frame == 600).",
+      "outcome": "no change; shipped 'While in Prediction' 10s gate is the faithful reading, reviewer permanent-reading over-credits"
+    },
+    {
+      "line": "skill1 Heat Emission removal condition ('under certain conditions')",
+      "reviewerDisposition": "MEASUREMENT-GATED, load-bearing (sets team-block uptime AND whether 48.4 ever stacks on grave's own Prediction)",
+      "driverRuling": "HONEST ⚑, condition unspecified in kit → correctly UNMODELED (verbatim). The reviewer's ⚑ hypothesis (removed at next burst cast → 48.4 never buffs grave herself) is exactly the outcome the shipped override achieves via excludeSelf on the 48.4 (note: 'grave-self can never benefit ... excludeSelf gives her the faithful zero-from-48.4 AND prevents a burst-window double-count'). Test G2 pins that grave receives zero 48.4 buffs and that dropping excludeSelf lifts her in-window Damage-Up. Reviewer hypothesis corroborates the shipped excludeSelf encoding.",
+      "outcome": "no change; removal-condition stays ⚑/unmodeled, excludeSelf encoding corroborated by reviewer hypothesis"
+    },
+    {
+      "line": "skill2 Overheat I removeOnReload ('Removed upon reloading to max ammunition')",
+      "reviewerDisposition": "FAITHFUL with removeOnReload:true (persists until a reload reaches max)",
+      "driverRuling": "OWNER HAND-DECISION, documented: the override lists it verbatim in unmodeled.skill2 ('absorbed by the sustained hitCount-15 approximation, hand decision'). The sustained approximation (no expiry) is a deliberate simplification; the reviewer's refill-fraction protection argument is moot (refill reading refuted, see above). Test G4 pins the shipped sustained behaviour (expiresFrame null) + the structural hitCount-15 self block.",
+      "outcome": "no change; documented hand approximation"
+    }
+  ],
+  "realGotcha": false,
+  "testDiscrimination": "all 7 driver groups (G1-G7) carry a GREEN-vs-shipped pin + a RED-vs-counterfactual discrimination; 6 hoisted counterfactual runs (noExcludeSelf, dataminedReload, noGainPierce, noUnlimitedAmmo, noBurstCrit) all separate cleanly from shipped (probe-verified: window dmgUp 2.72/3.00 -> 1.79/2.07 no-pierce; window shots 120 unlimited -> 80 non-unlimited; shots 1857 -> 1972 on datamined reload; grave 48.4 count 0 -> 1; window crit 1.0 -> 0.15/0.30)",
+  "verdict": "GO (cross-family corroborated). Reviewer's independent re-derivation matches the shipped model on every load-bearing burst mechanic and exact magnitude; its flagged gaps are all already documented in the override (Heat Emission timing, reload primitive, removal condition, Overheat I removeOnReload), refuted by measurement (reload refill-fraction), or minority readings that over-credit (Overheat II/III permanent-vs-window). No REAL-GOTCHA. No functional override change required — the override is mature, measured (solo 1.005), and faithful; S3 stamps provenance only.",
+  "residualsForManualReview": [
+    "Heat Emission team buffs modeled as fight-long passive vs the idealized Prediction-end-windowed model (primitive-blocked: no status-end trigger; bounded, owner-documented, solo anchor unaffected)",
+    "Prediction-end 'Removes 100% of ammo' forced reload (~9-11/fight in comps) unmodeled — needs an empty-magazine effect + a Prediction-end trigger (no engine primitive)",
+    "Overheat II/III 30/60-hit ramp-in approximated as full 10s-window uptime (real ramp ~2.5s/~5s at 12 rounds/s)",
+    "comps run ~1.18 HOT on purpose after enabling the real pierce — the residual is a SEPARATE, now-isolated burst-window over-model tracked in open-questions U19 (fix with a measurement), not a pierce error"
+  ]
+}

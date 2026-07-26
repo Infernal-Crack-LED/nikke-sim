@@ -1,0 +1,136 @@
+{
+  "slug": "d-killer-wife",
+  "leakDetected": "The 'redacted' effect schema retains this unit's answer tokens: the targetStatus comment describes the deleted hardcoded `wipeOut` effect + `requiresWipeOut` boolean, and the requiresTargetStatus comment's example — 'allies hit an area of the Wipe-Out-afflicted target' (core-only proxy via requiresCore; parts-hit branch awaits destructible-part modeling) — names Wipe Out and reveals the shipped encoding choice for this unit's burst rider. Declared per protocol; all dispositions below were re-derived from the kit prose alone.",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge x3 -> Gain Pierce, 1 shot",
+      "disposition": "FIX",
+      "scope": "self only; counts FULL-CHARGE attacks (SR always full-charges in sim, so ~every shot advances the counter)",
+      "durationSemantics": "1 SHOT — a round-count window, never durationSec; gainPierce has no durationShots field, so the encoding needs either a one-shot-interval durationSec proxy (⚑) or an engine extension",
+      "triggerIdentity": "chargeCounter (or hitCount) count:3 — cycling counter, resets each proc; NOT interval, NOT passive",
+      "targetSet": "self",
+      "nearestWrongModel": "top-level hasPierce:true (whole-fight pierce tag) or gainPierce with absent durationSec (= permanent from the 3rd charge onward)",
+      "distinguishingAssertion": "With S1b's pierceDamagePct live during FB, only the single shot following each 3rd full charge carries the pierce-fed Damage-Up delta; shots 1–2 of each 3-charge cycle show no pierce bucket. RED if every shot from t=0 (hasPierce flag) or every shot after the first proc (permanent gainPierce) is boosted.",
+      "inertness": "No pierce tag before the 3rd full charge; deleting S1b must make this line damage-inert on a partless single boss (pierce adds no extra targets)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "FB enter: SR allies Pierce Dmg ^13.55%",
+      "disposition": "FAITHFUL",
+      "scope": "Pierce Damage bucket — only feeds pierce-TAGGED hits of the holders",
+      "durationSemantics": "10 sec wall-clock (durationSec:10)",
+      "triggerIdentity": "fullBurstEnter — ANY team Full Burst, explicitly not burstCast (fires even on rotations where a different B1 casts)",
+      "targetSet": "alliesOfWeapon weapon:'SR', self INCLUDED (she is SR; no 'except self' clause)",
+      "nearestWrongModel": "target all allies unscoped by weapon; or keyed to burstCast so it skips rotations another B1 initiates; or encoded as attackDamagePct (unconditional Damage-Up)",
+      "distinguishingAssertion": "buffApply {stat:'pierceDamagePct', value:13.55} on EVERY fullBurstStart, with targetSlugs = exactly the SR wielders in comp (helm + self in the control comp); fires on rotations where liter cast B1. RED if liter/crown receive it, or if it only appears on her own-burst rotations.",
+      "inertness": "Non-SR allies never receive it; for an SR holder with no pierce-tagged shots in the window, damage totals must not move",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge x8 -> Burst CD v7s, allies",
+      "disposition": "FAITHFUL",
+      "scope": "burst-cooldown economy, not a damage stat",
+      "durationSemantics": "instant one-shot cooldown reduction per proc, NO duration — repeats every 8 full charges all fight",
+      "triggerIdentity": "chargeCounter/hitCount count:8, effect burstCdr seconds:7 (oncePerBattle ABSENT)",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "burstCdr with oncePerBattle:true, or a timed 'buff' misencoding, or an interval trigger decoupled from her actual full-charge cadence (ammo 6 + 141f reload gates the rate)",
+      "distinguishingAssertion": "Team burstCast timestamps compress progressively vs a withPatchedOverride run with this block removed — later rotations arrive earlier by accumulating 7s reductions per 8 charges (~one proc per ~11–12s given 6-round magazine + 2.35s reload). RED if only the first rotation shifts (oncePerBattle) or if procs continue during reload dead-time at a flat wall-clock rate (interval misread).",
+      "inertness": "No buffApply damage-stat events from this block; direct per-shot damage unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge x5 -> Atk dmg ^5.06% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "'Attack damage' = attackDamagePct (Damage-Up bucket, additive, diluted) — NOT the ATK stat",
+      "durationSemantics": "10 sec wall-clock, refreshed each proc; ~5-charge cadence (< 10s even across a reload) gives near-continuous uptime after the first ~5 shots",
+      "triggerIdentity": "chargeCounter/hitCount count:5 — its own counter, independent of the x3 and x8 counters",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "stat atkPct 5.06 (multiplies each holder's own ATK — different bucket, different dilution) or a passive always-on buff from t=0",
+      "distinguishingAssertion": "buffApply {stat:'attackDamagePct', value:5.06} to every unit, FIRST occurrence only after ~5 full charges (≥ ~5s in, never frame 0), with refresh events at the 10/15/... charge marks. RED if stat==='atkPct', or if an apply exists at t=0.",
+      "inertness": "No application before the 5th full charge; a stunned/non-firing d-killer-wife stops the refreshes",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 269.28% final ATK addl damage",
+      "disposition": "FAITHFUL",
+      "scope": "instant burst-cast rider on the enemy; per methodology riders get noRange and NO core; burst-cast damage is FB-exempt (lands pre-window)",
+      "durationSemantics": "instant, once per her own burst cast (cd 20s)",
+      "triggerIdentity": "burstCast (HER cast only) — never fullBurstEnter; with a second B1 (liter) in comp these diverge every rotation she doesn't cast",
+      "targetSet": "enemy",
+      "nearestWrongModel": "keyed to fullBurstEnter (procs on every team FB even when liter takes the B1 slot — over-credits) or fbMajorApplied true (+50% it never earns)",
+      "distinguishingAssertion": "Exactly one damage event with mult 269.28 (srcSlot 'burst', fbMajorApplied===false, rangeApplied===false) per rotation SHE casts, and ZERO on rotations where the other B1 casts. RED if the count equals total FB count in a two-B1 comp, or fbMajorApplied is true.",
+      "inertness": "No proc on team Full Bursts she did not initiate",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Inflicts Wipe Out on target for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "named enemy status; damage-inert itself — exists solely to open the rider gate",
+      "durationSemantics": "10 sec window from HER cast (not from FB start, not FB-duration-keyed)",
+      "triggerIdentity": "burstCast; effect targetStatus {name:<WipeOut key>, durationSec:10}; block authored target:'enemy' (validator requirement)",
+      "targetSet": "enemy (boss)",
+      "nearestWrongModel": "modeled as a damageTakenPct debuff (adds damage it shouldn't), or the rider gate keyed to the FB window / left ungated so rider buffs run outside the 10s status",
+      "distinguishingAssertion": "The burst rider buffs (casterAtkPct 12.19-of-caster / any core branch) appear ONLY inside [castFrame, castFrame+600f]; an ally hit at cast+11s produces no buffApply. RED if rider buffs apply outside the window or a damageTakenPct buffApply exists.",
+      "inertness": "Zero direct damage contribution; boss-held status must not emit a damage-stat buff",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "hit parts: core dmg ^16.26% for 10 sec",
+      "disposition": "GAP",
+      "scope": "allies whose NORMAL attacks hit destructible PARTS of the Wipe-Out target — the scope-lock boss is PARTLESS, so the real trigger condition never occurs in v1",
+      "durationSemantics": "10 sec per grant, per hitting ally",
+      "triggerIdentity": "ally-hit-on-parts + requiresTargetStatus(WipeOut) — no parts model exists; any core-hit proxy is a CALIBRATED encoding decision (⚑), not prose (parts ≠ core: the body branch already covers non-part hits, and core is not stated to be a 'part')",
+      "targetSet": "the allies that landed the parts hit",
+      "nearestWrongModel": "granting coreDamagePct 16.26 to all allies on burst cast (or proxying parts:=core without a flag) — invents a buff the partless fight cannot produce",
+      "distinguishingAssertion": "On the partless boss, NO buffApply {stat:'coreDamagePct', value:16.26} exists anywhere in the event log, and deleting this line moves totals by exactly 0. RED if any such buffApply appears ungated. If the shipped override DOES proxy it via requiresCore, the driver must carry an explicit ⚑ and a test pinning the proxy's conditionality — my prose-only reading says default-inert.",
+      "inertness": "Must not move the partless-boss board at all",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "hit body: ATK ^12.19% of user's ATK 10s",
+      "disposition": "FIX",
+      "scope": "allies' NORMAL attacks hitting the body of the Wipe-Out target (skill/burst hits don't trigger); on a partless boss every normal hit is a body (or core) hit, so effectively all attacking allies hold it while the status is live",
+      "durationSemantics": "10 sec per ally, refreshed per qualifying hit — so the buff can outlive the status window by up to ~10s (a naive burst-cast-synced 10s buff under-credits the tail)",
+      "triggerIdentity": "ally-normal-hit gated on requiresTargetStatus(WipeOut); the schema has NO ally-hit trigger, so a proxy is required (⚑) — e.g. a burstCast-triggered allies grant with durationSec spanning the status window; the proxy shape must be flagged, not shipped silently",
+      "targetSet": "the hitting allies (in practice all allies attacking during the window)",
+      "nearestWrongModel": "stat atkPct 12.19 (each ally's OWN ATK) instead of casterAtkPct — a Supporter SR's ATK is well below the B3 carry's, so the own-ATK misread OVER-credits the carry; second misread: leaving it ungated/permanent instead of Wipe-Out-windowed",
+      "distinguishingAssertion": "buffApply events with stat==='casterAtkPct' whose value is the FLAT number (12.19/100)×d-killer-wife.staticAtk — NOT the raw 12.19 — targeting allies, occurring only within Wipe Out windows and never before her first burst cast. RED if stat==='atkPct', if value===12.19 raw, or if an apply precedes her first burstCast.",
+      "inertness": "Nothing before her first burst; nothing on rotations she doesn't cast (two-B1 comp)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:full-charge-x3-gain-pierce-1-shot",
+    "skill1:fb-enter-sr-allies-pierce-dmg-13.55",
+    "skill2:full-charge-x8-burst-cdr-7s",
+    "skill2:full-charge-x5-attack-damage-5.06",
+    "burst:flat-damage-269.28",
+    "burst:wipe-out-status-10s",
+    "burst:body-hit-casterAtkPct-12.19"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Allies that hit parts: Damage dealt when attacking core ▲ 16.26% for 10 sec."
+    ]
+  },
+  "notes": "(1) FIXTURE HAZARD: d-killer-wife is Burst I, but controlComp(carry) seats the carry in the B3 slot alongside liter (B1). The test comp must guarantee SHE actually casts her burst (all burst-slot lines are burstCast-gated) — either verify via burstCast events that d-killer-wife is the caster, or the Wipe Out riders and the 269.28% nuke silently never fire and every burst assertion is vacuously green. (2) Expected shared-prior misreads to adversarially pin: 'Attack damage' → atkPct (it is attackDamagePct), '12.19% of the skill user's ATK' → atkPct (it is casterAtkPct, flat-resolved at apply), the burst rider → fullBurstEnter (it is burstCast; diverges in any two-B1 comp), and S1a → whole-fight hasPierce flag (it is a step-gated 1-shot gainPierce). (3) 'Attacking with Full Charge N times' counters: SR always full-charges in-sim so hitCount≈chargeCounter, but the three counters (3/8/5) are INDEPENDENT per block — a shared counter is a misencoding; assert the 5-count and 8-count procs interleave at their own cadences. (4) Pierce value chain: S1a+S1b only move damage if the pierce Damage-Up path is live for gainPierce-tagged shots (the StatKey comment 'pierceDamagePct parsed but inert in v1' contradicts the gainPierce comment — a test must prove the bucket actually moves a pierced shot's damage, else both skill1 lines are silently inert and that must be surfaced, not papered over). (5) Cadence context for CDR math: ammo 6, ~1s charge + 141f reload → ~8.65s per 6-charge magazine, so the x8 CDR procs roughly every ~11.6s — assert cadence respects reload dead-time. (6) Helm is the only other SR in the control comp — she is the S1b coverage witness. (7) The schema-comment leak (see leakDetected) suggests the shipped override proxies the parts/area rider via requiresCore; my blind prose reading makes the parts branch inert on the partless boss and the body branch the live one — the driver must reconcile which branch (if either) the requiresCore proxy encodes and carry an explicit ⚑ for it.",
+  "model": "claude-fable-5"
+}

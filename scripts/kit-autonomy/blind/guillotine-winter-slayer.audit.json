@@ -1,0 +1,147 @@
+{
+  "slug": "guillotine-winter-slayer",
+  "leakDetected": null,
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates every time EXP stacks 10",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "hitCount:50 block (=10× the ⚑ EXP cadence of 5 hits/stack) → resource heroLevel +1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hero Level Up: max Level 11",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resources[heroLevel].max=11 plus resourceGate {heroLevel max:10} on the level-up block (10 level-ups from L1)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Level Up Reward: Reloads 10.26%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload {fraction:0.1026} — weapon-state/ammo effect, gates shots fired (HARD RULE 6)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reward: Recovers 2.44% Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal (self) — no HP pool in v1, but emits the recovery event teammates' on-recovery triggers read"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Hero levels up",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Modeled as a passive perResource aura on heroLevel instead of a discrete on-level-up re-apply: the buffs are 'continuously' and re-scale with level, so a live pool read is equivalent and cannot drift"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Elem Adv Atk Dmg ▲1.16% * Hero Lv",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct, perResource {heroLevel × 1.16}, target alliesOfElement Water (includes the Water caster)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲0.91% of user's ATK * Hero Lv",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct (flat add off caster ATK), perResource {heroLevel × 0.91}, alliesOfElement Water"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "After 6 normals without hitting core",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "MERGED with the core branch into one hitCount:5 block (⚑) — see caveat 1; not a drop"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "EXP: ATK ▲1.81%, stacks to 100",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 1.81, maxStacks 100, no duration ('continuously' = permanent), target self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when hitting Core 3 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "MERGED into the same hitCount:5 EXP block; its 1/3-per-core-hit rate is inside the (1+coreRate)/6 effective cadence"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when Hero Level is 2+",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {heroLevel min:2} on a hitCount:50 block (a passive trigger would evaluate at setup with heroLevel=1 and never re-check)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elem Adv Atk Dmg ▲7.46% cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 7.46, no duration, target self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Water Code allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target alliesOfElement Water (self included), trigger burstCast — her OWN burst block, so it fires only on rotations she casts"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲10.14% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 10.14, durationSec 10 (Damage Up bucket)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elem Adv Atk Dmg ▲18.75% for 10 s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 18.75, durationSec 10 — element advantage exceeds the flat ×1.10 for this kit"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 enemy w/ highest final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy (single boss in v1, so the highest-Max-HP selector is degenerate and needs no selector primitive)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "20.87% of ATK * Hero Lv/sec, 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "dot atkPct 20.87, durationSec 10, intervalSec 1, perResource {heroLevel × 20.87} so each tick re-reads the live level; ONE instance per burst cast (40 s CD, no overlap)"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.count",
+      "estimate": "5 landed hits per EXP stack (assumes AR core rate ≈ 0.30)",
+      "reasoning": "The kit's two EXP branches are mutually exclusive per hit: rate = coreRate/3 + (1−coreRate)/6 = (1+coreRate)/6 stacks per landed hit. The engine's hitCount cannot partition hits by core, so both branches are merged into one counter. coreRate for an AR at scope-lock range is not in the kit text and is itself a ⚑ (Hit-Rate→core is measured-only), so count is an estimate, not a datum. At coreRate 0 → count 6; at 1/3 → 4.5; at 1.0 → 3.",
+      "recipe": "From a recorded fight, count the unit's landed normal hits and the CORE-tagged (red 'CORE HIT') subset over a fixed window → coreRate. Then count = round(6/(1+coreRate)). Cross-check independently by timing the first ATK-buff buffApply stacks: stacks(t) should be hits(t)/count until the 100 cap."
+    },
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "50 landed hits per Hero Level (10 × the EXP cadence)",
+      "reasoning": "The kit fixes the RATIO (10 EXP per level) but not the hit count; 50 is 10× the ⚑ EXP cadence and inherits its uncertainty. It is corroborated internally: the 100-stack EXP cap × 1 level/10 EXP = 10 level-ups = the stated max Level 11 from a Level-1 start, so initial=1 / max=11 is kit-derived, not guessed.",
+      "recipe": "Re-derive as 10 × the measured EXP cadence above. Verify directly by watching the level-up reward: a partial reload every level-up is visible as an ammo-counter jump in footage — time the first 2-3 jumps and confirm the interval equals 10 EXP stacks' worth of hits."
+    },
+    {
+      "field": "skill1[1].effects[*].perResource (ally scope)",
+      "estimate": "perResource resolves against the CASTER's pool for ally targets (assumed)",
+      "reasoning": "The schema's perResource note describes the self-buff application pattern ('apply as a passive self-buff so it is always present and re-reads the live pool'). This kit's level aura is explicitly team-scoped to Water allies, so ally-target resolution is load-bearing here. If unsupported, the aura silently pays only the caster and every other Water ally gets nothing.",
+      "recipe": "Run a comp with a second Water ally, capture buffApply events filtered by stat casterAtkPct / elemAdvantageDamagePct with targetSlug ≠ guillotine-winter-slayer, and assert the emitted value climbs with heroLevel (casterAtkPct emits FLAT ATK = 0.91×level/100 × caster.staticAtk). If no ally event appears, split the aura into a self perResource block + an ally block using a stepped stack model."
+    },
+    {
+      "field": "skill2[1] (Level ≥2 elemental buff) trigger",
+      "estimate": "lands at the first level-up (~50 hits, ≈5 s); worst case one level-up late",
+      "reasoning": "resourceGate is evaluated at trigger time, so it needs a RE-FIRING trigger; a passive would be evaluated once at setup with heroLevel=1 and be dead for the whole fight. Keying it to the same hitCount:50 cadence makes it exact only if skill1's level-up block dispatches before skill2's in the same frame.",
+      "recipe": "Assert the buffApply frame for stat elemAdvantageDamagePct value 7.46 against the frame of the first heroLevel increment. If it lags a full cycle, halve the gate cadence (hitCount:25, gate min:2) — the gate, not the cadence, controls correctness."
+    },
+    {
+      "field": "burst[1].effects[0].noFb / .crit",
+      "estimate": "noFb OFF (FB-eligible by tick timing), crit OFF",
+      "reasoning": "Per the rider prior, function damage takes Full Burst by TIMING and per-kit noFb is measured-only; the DoT ticks for 10 s across the FB window, so ticks inside it should take the +50%. DoT crit is validated-off for most carriers and the global gate is default-OFF; the kit gives no crit language.",
+      "recipe": "Read the boss popup stream during a burst: DoT ticks inside FB should be ~1.5× the out-of-FB ticks (isolate by casting the burst so ticks straddle the FB edge). Colour-check the same ticks for orange/crit icons before ever setting crit:true."
+    },
+    {
+      "field": "resources[0].initial",
+      "estimate": "1 (Hero Level 1 at battle start)",
+      "reasoning": "Kit-derived rather than guessed — 100 EXP cap ÷ 10 EXP/level = 10 level-ups, and the stated maximum is Level 11, which only closes if the fight starts at Level 1. Consequence: the Level-aura pays 1×(1.16/0.91) from t=0, before any level-up has occurred, which the literal 'Activates when Hero levels up' clause arguably withholds until Level 2.",
+      "recipe": "If a t=0 aura is disproven (no buffApply before the first level-up in footage/event log), set initial to 1 but move the aura onto the level-up block with a resourceGate min:2, or set initial 0 and shift every level-scaled coefficient by one step."
+    }
+  ],
+  "model": "claude-opus-5"
+}

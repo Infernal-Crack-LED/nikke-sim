@@ -1,0 +1,85 @@
+{
+  "slug": "guillotine-winter-slayer",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates every time EXP stacks 10",
+      "disposition": "FIX",
+      "assertion": "Hero Level must be a derived pool (EXP/10, cap Lv 11) driving the level-scaled magnitudes. Test 9 requires either stepping emitted magnitudes or a declared resource/perResource pool, plus a hard cap of 1.16x11 on any per-level elemental magnitude. RED under the nearest-wrong: Hero Level frozen to a single constant (max-level from t=0, or level 1 forever)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Hero Level Up Reward: Reloads 10.26%",
+      "disposition": "GAP",
+      "assertion": "Weapon-state = shot economy = damage (taxonomy 6). Test 13 requires an instantReload with fraction ~0.1026 OR an explicit note/unmodeled entry. RED under a silent drop, which would under-count shots fired over ~10 level-ups."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 2.44% of final Max HP",
+      "disposition": "GAP",
+      "assertion": "Self-heal: offensively inert alone but it is the on-recovery channel a teammate can consume (taxonomy 4). Test 13 requires a heal effect OR an explicit audit-text entry. RED under a silent drop."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Elem Adv Atk Dmg 1.16% * Hero Lv",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 7 asserts the carrier block targets alliesOfElement Water with excludeSelf falsy, and the two-sided counterfactual proves helm (Water) moves while liter/crown (non-Water) are byte-identical. RED under {kind:'allies'} (leaks to liter/crown) and RED under {kind:'self'} (helm never moves). Test 9 pins the Lv-11 cap. Note: vs the Fire control boss this stat is damage-inert, so the scope check rides on the event log + the casterAtkPct sibling."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 0.91% of skill user's ATK * Lv",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 8 groups casterAtkPct applies by flat-resolved value and requires some group whose target set is exactly {carry, helm}. RED under atkPct (wrong stat key: scales each target's own ATK), RED under allies scope (liter/crown enter the group), RED under self scope (no group contains helm). Grouping is what separates this line from crown's own team-wide casterAtkPct."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 6 normal atks without core",
+      "disposition": "FIX",
+      "assertion": "Test 10 requires a hitCount:6 block that is NOT core-gated. RED if the two accrual clauses are collapsed into one counter or if the 6-path is core-gated."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when hitting the Core 3 time(s)",
+      "disposition": "FIX",
+      "assertion": "Test 10 requires a hitCount:3 block with requiresCore true. RED if the core path is dropped (under-credits EXP by roughly half at a high core rate) or left ungated (over-credits every hit)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "EXP: ATK 1.81%, stacks up to 100",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 11 pins the per-stack magnitude at 1.81 (value, or perResource mult) with a cap of 100 (maxStacks or a resource pool max) and self target; test 11b proves it is material (>3% of carry total) and inert for teammates. RED if authored as one flat max-stack buff (1.81x100 with no cap and no ramp), which over-credits the entire opening of the fight."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Hero Lv >= 2: Elem Adv Atk Dmg 7.46%",
+      "disposition": "FIX",
+      "assertion": "Test 12 asserts stat elemAdvantageDamagePct value 7.46 targeting the carry ONLY (helm must never receive it - this clause is Affects self, unlike the S1 Water-ally clause), and that the carrier block is not an unconditional t=0 passive. RED under a Water-ally scope copy-paste and RED under an always-on encoding (Hero Level starts at 1)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage 10.14% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 3 pins stat attackDamagePct at 10.14, target set {carry, helm} with liter/crown excluded, finite expiresFrame and durationShots unset. RED under a permanent buff, RED under a ROUND-count duration, RED under either wrong scope."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elem Adv Atk Dmg 18.75% for 10 sec",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 4 pins stat elemAdvantageDamagePct at 18.75 with the same scope/duration checks, and additionally asserts NO attackDamagePct apply at 18.75 or at the merged 28.89. RED if the elemental line is folded into the generic Damage Up bucket - that version would be live against a non-advantaged boss and over-credit the whole comp."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "burst block trigger identity",
+      "disposition": "FIX",
+      "assertion": "Test 5 requires every burst-slot block to trigger on burstCast. RED under fullBurstEnter, which over-credits precisely in this fixture because helm is a second Burst III that can complete the chain without this unit casting."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "20.87% of ATK * Lv every sec, 10s",
+      "disposition": "FAITHFUL",
+      "assertion": "Test 6 requires exactly ONE dot effect in the burst slot with durationSec 10 and intervalSec 1, and Hero-Level scaling either via perResource mult 20.87 or a static atkPct that is a whole-level multiple within the Lv-11 cap. RED under multiple/duplicated DoT instances (the engine never dedups), under a duration longer than the stated 10s on a repeating trigger, and under a level-free flat magnitude. Test 6b proves the damage is reachable (stripping it lowers the carry) and teammate-inert. The block target is deliberately NOT asserted: the sim has no enemy entity, so enemy-directed damage is authored caster-side."
+    }
+  ],
+  "model": "claude-opus-5"
+}
