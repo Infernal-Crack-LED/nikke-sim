@@ -1694,18 +1694,23 @@
       "weapon": "AR",
       "class": "Attacker",
       "kitParse": {
-        "status": "authored",
-        "provenance": "parser-baseline",
-        "date": "2026-07-16",
-        "findings": []
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-25",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-25: GO, faithfulness 1.0 (judge claude-opus-5). Artifacts: scripts/kit-autonomy/results/helm-aquamarine.json + scripts/kit-autonomy/manual-review/helm-aquamarine.md."
+        ]
       },
       "tier": "MODEL_ONLY",
       "tuned": false,
+      "evidence": "kit-autonomy gauntlet 2026-07-25; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6/S7(opus) converged; S6 blind override line-for-line on 5/6 lines; S2b revised to granular stacking encoding on cross-family evidence",
+      "date": "2026-07-25",
       "graded": {
         "teams": 0,
         "within3pct": 0
       },
       "reference": false,
+      "residual": "HA3 first-fire phase (t=4 vs t=0, ~1 proc); HA4 Electric uptime untestable under scope-lock; HA2 burstCdr rotation lever -> /sim-battery diff before board claims; AR cadence tuple datamined-not-measured",
       "unmodeled": {
         "skill1": [],
         "skill2": [],

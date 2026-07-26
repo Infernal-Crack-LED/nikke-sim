@@ -163,7 +163,7 @@ current but not a contract.
 | `lastBullet`             | On owner's last bullet / reload start                                | anis-sparkling-summer, helm, privaty                                                                                      |
 | `recovery` / `shielded`  | When owner receives a heal / shield event                            | asuka, crown / naga                                                                                                       |
 | `stageEnter`             | When a stage-N burst is cast by anyone                               | cinderella, ein, mast-romantic-maid, mint, mihara-bonding-chain, rei-ayanami, snow-white-heavy-arms, soda-twinkling-bunny |
-| `bossElement`            | Permanent passive, active only if boss has this element              | eve, helm-aquamarine                                                                                                      |
+| `bossElement`            | Permanent passive, active only if boss has this element              | eve |
 
 ### Block-level gates
 

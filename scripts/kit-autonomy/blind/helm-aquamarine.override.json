@@ -1,0 +1,138 @@
+{
+  "slug": "helm-aquamarine",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 131.34,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "burstCdr",
+              "seconds": 1.82
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.2
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 105.58,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Electric",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 5.64,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "bossElementGate": "Electric",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 164.83,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill2 block 1 (105.58%) has NO activation clause in the prose — trigger AND cadence are INVENTED (interval 10s placeholder). Its whole damage contribution is unmeasured; treat the slot-2 total as unpinned until the internal CD is datamined or popup-counted.",
+    "⚑ Both Electric-Code-gated blocks (skill2 Damage Taken ▲5.64%×5, burst +164.83%) are INERT on the neutral scope-lock boss and on any non-Electric graded comp — they move zero damage in the current board and are therefore unvalidated by any regression run.",
+    "⚑ burst block 2 is keyed to burstCast + bossElementGate, NOT to a per-shot trigger, despite the literal 'when attacking' wording — a per-normal-attack 164.83% rider would be ~12× the unit's own normal-attack multiplier (13.65%), which fails the whole-picture check. If footage on an Electric target shows repeating 164.83% popups outside the burst cast, re-key to shotFired.",
+    "⚑ noFb:true on both burst hits follows the burst-cast FB-exemption convention (a burst cast lands before the FB window opens), not a measurement.",
+    "Sibling-name note (NOT a leak): the redacted schema comments reference base `helm` (charge-damage multiplier / treasure burst / heal-to-Crown / critRateNormalPct). `helm` and `helm-aquamarine` are DIFFERENT units; none of this unit's magnitudes or slug appear in the methodology, and none of base helm's mechanics were carried into this override."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (no board, no driver override, no probe data). Structure: S1 = a 30-normal-hit-count rider (131.34% flat, crits, no core — the text does not say 'core strike') + an FB-enter team burst-CDR escalator (Liter-style cumulative: 1st FB 1.82s, 2nd 1.82+2.2s, 3rd+ 1.82+2.2+2.6s per the 'each subsequent effect triggers all effects before it' clause). S2 = a trigger-less 105.58% single-random-enemy hit modeled as an interval (⚑ cadence invented) + an Electric-Code-gated stacking boss debuff (Damage Taken ▲5.64%, 5 stacks, 5s — a team-wide boss debuff, not a self buff). Burst = 164.83% to all enemies on cast, plus an equal 164.83% additional hit gated on an Electric-Code boss. No weapon-state, heal/shield, HP/DEF, Hit-Rate, stack-currency, pierce or weapon-swap lines exist in this kit, so none were skipped; `unmodeled` is empty for all three slots because every kit line is represented by a block. `noRange` left unset (engine-automatic); `noFb` left unset on the S1/S2 riders so they take Full Burst by timing (default ON)."
+}
