@@ -63,7 +63,6 @@ const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / asuka 2 / helm 3. */
 const ASUKA = 2;
 
-type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
@@ -89,8 +88,9 @@ const noRecoverySource = (() => {
     const bu = ov.burst.length;
     ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
     ov.burst = ov.burst.filter((b: any) => !hasHeal(b));
-    if (ov.skill1.length === s1 || ov.burst.length === bu)
-      {throw new Error('helm heal blocks missing — fixture is stale');}
+    if (ov.skill1.length === s1 || ov.burst.length === bu) {
+      throw new Error('helm heal blocks missing — fixture is stale');
+    }
   });
   const asukaNoLifesteal = withPatchedOverride('asuka', (ov) => {
     let removed = 0;
@@ -99,8 +99,9 @@ const noRecoverySource = (() => {
       b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
       removed += before - b.effects.length;
     }
-    if (!removed)
-      {throw new Error('asuka burst lifesteal missing — fixture is stale');}
+    if (!removed) {
+      throw new Error('asuka burst lifesteal missing — fixture is stale');
+    }
   });
   return { helm: helmNoHeal, asuka: asukaNoLifesteal };
 })();
@@ -112,21 +113,24 @@ const lifestealOnly = withPatchedOverride('helm', (ov) => {
   const bu = ov.burst.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
   ov.burst = ov.burst.filter((b: any) => !hasHeal(b));
-  if (ov.skill1.length === s1 || ov.burst.length === bu)
-    {throw new Error('helm heal blocks missing — fixture is stale');}
+  if (ov.skill1.length === s1 || ov.burst.length === bu) {
+    throw new Error('helm heal blocks missing — fixture is stale');
+  }
 });
 
 /** H2 counterfactual: the pre-gauntlet encoding — S1 ATK as an always-on PASSIVE (healer-team
  *  uptime proxy), instead of the kit-faithful recovery trigger. */
 const asukaPassiveS1 = withPatchedOverride('asuka', (ov) => {
   let patched = 0;
-  for (const b of ov.skill1)
-    {if (b.trigger?.kind === 'recovery') {
+  for (const b of ov.skill1) {
+    if (b.trigger?.kind === 'recovery') {
       b.trigger = { kind: 'passive' };
       patched++;
-    }}
-  if (!patched)
-    {throw new Error('asuka S1 recovery block missing — fixture is stale');}
+    }
+  }
+  if (!patched) {
+    throw new Error('asuka S1 recovery block missing — fixture is stale');
+  }
 });
 
 /** H3/H4 counterfactual: both S2 buffs un-scoped to ALL allies (drops the self-only and
@@ -144,8 +148,9 @@ const asukaS2All = withPatchedOverride('asuka', (ov) => {
       patched++;
     }
   }
-  if (patched < 2)
-    {throw new Error('asuka S2 buff blocks missing — fixture is stale');}
+  if (patched < 2) {
+    throw new Error('asuka S2 buff blocks missing — fixture is stale');
+  }
 });
 
 /** H3 gate-discrimination: remove crown's burst SHIELD (the comp's only shield source). With the
@@ -158,8 +163,9 @@ const crownNoShield = withPatchedOverride('crown', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'shield');
     removed += before - b.effects.length;
   }
-  if (!removed)
-    {throw new Error('crown burst shield missing — fixture is stale');}
+  if (!removed) {
+    throw new Error('crown burst shield missing — fixture is stale');
+  }
 });
 
 /** PIERCE inertness: drop the timed gainPierce effect. Pierce moves no damage vs the v1 boss
@@ -171,8 +177,9 @@ const asukaNoPierce = withPatchedOverride('asuka', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
     removed += before - b.effects.length;
   }
-  if (!removed)
-    {throw new Error('asuka burst gainPierce missing — fixture is stale');}
+  if (!removed) {
+    throw new Error('asuka burst gainPierce missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

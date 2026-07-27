@@ -4,7 +4,7 @@
 // numbers, no approximation. We store the arrays; the loader matches parsed
 // prose values against index 9 (max level) to scale them down.
 import { readFileSync, writeFileSync } from 'node:fs';
-// @ts-ignore — plain .mjs helper
+// @ts-expect-error — plain .mjs helper
 import { getRoleData } from '../../scripts/blablalink-stats.mjs';
 import type { DataFile } from '../types.js';
 
@@ -19,7 +19,9 @@ function extractArrays(detail: any): SlotArrays {
     const vals = entry?.description_value;
     if (Array.isArray(vals) && vals.length === 10) {
       const nums = vals.map((v: string) => Number(v));
-      if (nums.every((n) => Number.isFinite(n))) {out.push(nums);}
+      if (nums.every((n) => Number.isFinite(n))) {
+        out.push(nums);
+      }
     }
   }
   return out;

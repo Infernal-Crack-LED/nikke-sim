@@ -75,8 +75,6 @@ const FPS = 60;
 const SLUG = 'rei-ayanami';
 /** controlComp(SLUG, false) slot order: liter 0 / crown 1 / rei-ayanami 2 (helm omitted). */
 const REI = 2;
-/** controlComp(SLUG, true) slot order: liter 0 / crown 1 / rei-ayanami 2 / helm 3. */
-const HELM = 3;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -119,79 +117,90 @@ function runHelm(
 }
 
 // ---- counterfactual / reference patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) =>
-  b.effects.some((e: any) => e.stat === stat);
 
 /** RA1 reference: her S1 elemental-advantage line removed. */
 const reiNoElemAdv = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.flatMap((b: any) => b.effects).length;
-  for (const b of ov.skill1)
-    {b.effects = b.effects.filter(
+  for (const b of ov.skill1) {
+    b.effects = b.effects.filter(
       (e: any) => e.stat !== 'elemAdvantageDamagePct'
-    );}
-  if (ov.skill1.flatMap((b: any) => b.effects).length === before)
-    {throw new Error(
+    );
+  }
+  if (ov.skill1.flatMap((b: any) => b.effects).length === before) {
+    throw new Error(
       'rei S1 elemAdvantageDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** RA1 counterfactual: the same line as an UNGATED Damage-Up buff (over-credits when not advantaged). */
 const reiUngatedElemAdv = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'elemAdvantageDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'rei S1 elemAdvantageDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 /** RA2/RA5 encoding reference: both flatDamage riders made core-eligible (text says "as damage"). */
 const reiCoreRider = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
-  for (const slot of ['skill1', 'burst'] as const)
-    {for (const b of ov[slot])
-      {for (const e of b.effects)
-        {if (e.kind === 'flatDamage') {
+  for (const slot of ['skill1', 'burst'] as const) {
+    for (const b of ov[slot]) {
+      for (const e of b.effects) {
+        if (e.kind === 'flatDamage') {
           e.core = true;
           patched++;
-        }}}}
-  if (patched !== 2)
-    {throw new Error(
+        }
+      }
+    }
+  }
+  if (patched !== 2) {
+    throw new Error(
       'rei expected 2 flatDamage riders (S1 + burst) — fixture is stale'
-    );}
+    );
+  }
 });
 /** RA3 encoding reference: casterAtkPct → atkPct (self-scaling % instead of flat caster add). */
 const reiAtkPct = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('rei S2 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('rei S2 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** RA3/RA4 counterfactual: re-target every Fire-element-scoped block to ALL allies. */
 const reiGenericAllies = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
-  for (const slot of ['skill2', 'burst'] as const)
-    {for (const b of ov[slot])
-      {if (b.target?.kind === 'alliesOfElement') {
+  for (const slot of ['skill2', 'burst'] as const) {
+    for (const b of ov[slot]) {
+      if (b.target?.kind === 'alliesOfElement') {
         b.target = { kind: 'allies' };
         patched++;
-      }}}
-  if (patched !== 2)
-    {throw new Error(
+      }
+    }
+  }
+  if (patched !== 2) {
+    throw new Error(
       'rei expected 2 alliesOfElement blocks (S2 + burst) — fixture is stale'
-    );}
+    );
+  }
 });
 /** RA4 reference: her burst Attack-damage line removed (the load-bearing Damage-Up buff). */
 const reiNoBurstDmgUp = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.flatMap((b: any) => b.effects).length;
-  for (const b of ov.burst)
-    {b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');}
-  if (ov.burst.flatMap((b: any) => b.effects).length === before)
-    {throw new Error(
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');
+  }
+  if (ov.burst.flatMap((b: any) => b.effects).length === before) {
+    throw new Error(
       'rei burst attackDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -262,7 +271,9 @@ describe('rei-ayanami — kit spec', () => {
         applied.length,
         `${applied.length} procs vs ${procsExpected} = floor(shots/100)`
       ).toBe(procsExpected);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      }
     });
 
     it('is LIVE under Fire advantage (Wind boss): removing it changes her total', () => {
@@ -324,8 +335,12 @@ describe('rei-ayanami — kit spec', () => {
       expect([...new Set(applied.map((b) => b.stat))]).toEqual([
         'casterAtkPct',
       ]);
-      for (const b of applied) {expect(b.key).toBe(S2_ATK_KEY);}
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.key).toBe(S2_ATK_KEY);
+      }
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('fires on her burstCast frames (sole B3 in fixture ⇒ once per burst cast)', () => {
@@ -365,7 +380,9 @@ describe('rei-ayanami — kit spec', () => {
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([48.02]);
       expect(applied.length).toBe(reiBursts(base.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('reaches the Fire ally (herself) and EXCLUDES every non-Fire ally', () => {

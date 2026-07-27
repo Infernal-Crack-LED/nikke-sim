@@ -106,7 +106,9 @@ const fbWindowLens = (evs: SimEvent[]): number[] => {
   const lens: number[] = [];
   for (const s of starts) {
     const end = evs.find((e) => e.kind === 'fullBurstEnd' && e.frame > s.frame);
-    if (end) {lens.push(end.frame - s.frame);}
+    if (end) {
+      lens.push(end.frame - s.frame);
+    }
   }
   return lens;
 };
@@ -117,7 +119,9 @@ function critRatesByUnit(
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of dmg(evs)) {
-    if (!buckets.includes(d.bucket)) {continue;}
+    if (!buckets.includes(d.bucket)) {
+      continue;
+    }
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
@@ -131,8 +135,9 @@ const cfS1NoEscalate = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
-    {throw new Error('isabel S1 escalating block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   b.effects = [{ kind: 'buff', stat: 'atkPct', value: 17.28, durationSec: 45 }];
 });
 /** L1 nearest-wrong (scope): the 6.26% crit as a normal-scoped critRateNormalPct. */
@@ -140,13 +145,15 @@ const cfCrScoped = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
-    {throw new Error('isabel S1 escalating block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   const step = b.effects
     .find((e: any) => e.kind === 'escalating')
     .steps.find((s: any) => s.stat === 'critRatePct');
-  if (!step)
-    {throw new Error('isabel S1 critRatePct step missing — fixture is stale');}
+  if (!step) {
+    throw new Error('isabel S1 critRatePct step missing — fixture is stale');
+  }
   step.stat = 'critRateNormalPct';
 });
 /** L1 nearest-wrong (trigger): the S1 ladder re-keyed burstCast → fullBurstEnter. LIVE in this
@@ -156,24 +163,27 @@ const cfS1FbEnter = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
-    {throw new Error('isabel S1 escalating block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** L4 nearest-wrong (cadence): the battle-start passive hit removed → 11 hits, not 12. */
 const cfS2NoT0 = withPatchedOverride('isabel', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'passive');
-  if (ov.skill2.length === before)
-    {throw new Error('isabel S2 passive block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('isabel S2 passive block missing — fixture is stale');
+  }
 });
 /** L6-L8 nearest-wrong (escalating): the burst rider ladder collapsed to "all three every cast". */
 const cfBurstNoEscalate = withPatchedOverride('isabel', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
-    {throw new Error('isabel burst escalating block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('isabel burst escalating block missing — fixture is stale');
+  }
   b.effects = [
     { kind: 'buff', stat: 'damageTakenPct', value: 39.96, durationSec: 5 },
     { kind: 'flatDamage', atkPct: 299.7 },
@@ -186,18 +196,25 @@ const cfNoExt = withPatchedOverride('isabel', (ov) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend')
   );
-  if (ov.burst.length === before)
-    {throw new Error('isabel fullBurstExtend block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('isabel fullBurstExtend block missing — fixture is stale');
+  }
 });
 /** L9 nearest-wrong (sign): the ▼5s nerf flipped to ▲5s — Isabel's FB windows grow to 15s, the
  *  opposite of the kit's "Full Burst Duration ▼ 5 sec". */
 const cfExtSignFlip = withPatchedOverride('isabel', (ov) => {
   let hit = 0;
-  for (const b of ov.burst)
-    {for (const e of b.effects)
-      {if (e.kind === 'fullBurstExtend') {((e.seconds = 5), hit++);}}}
-  if (!hit)
-    {throw new Error('isabel fullBurstExtend block missing — fixture is stale');}
+  for (const b of ov.burst) {
+    for (const e of b.effects) {
+      if (e.kind === 'fullBurstExtend') {
+        e.seconds = 5;
+        hit++;
+      }
+    }
+  }
+  if (!hit) {
+    throw new Error('isabel fullBurstExtend block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -297,8 +314,9 @@ describe('isabel — kit spec', () => {
     it('is a battle-start hit (t=0) then every 15s — the measured CD-gated cadence', () => {
       const secs = hits.map((d) => d.sec).sort((a, b) => a - b);
       expect(secs[0]).toBeLessThan(1); // the load-bearing t=0 passive fire
-      for (let i = 1; i < secs.length; i++)
-        {expect(secs[i] - secs[i - 1]).toBeCloseTo(15, 0);}
+      for (let i = 1; i < secs.length; i++) {
+        expect(secs[i] - secs[i - 1]).toBeCloseTo(15, 0);
+      }
     });
 
     it('DISCRIMINATING (cadence): dropping the battle-start hit leaves 11, not 12', () => {

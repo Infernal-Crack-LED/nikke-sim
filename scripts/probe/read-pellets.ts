@@ -33,12 +33,14 @@ import { fileURLToPath } from 'node:url';
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 if (!video || !existsSync(video)) {
   console.error(
     'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--mock] [--out DIR]'
@@ -84,10 +86,16 @@ function extract(
   label: string
 ) {
   const vf = [`fps=${rate}`, crop];
-  if (z !== 1) {vf.push(`scale=iw*${z}:ih*${z}`);}
+  if (z !== 1) {
+    vf.push(`scale=iw*${z}:ih*${z}`);
+  }
   const args = ['-y', '-loglevel', 'error'];
-  if (at) {args.push('-ss', String(at));}
-  if (dur) {args.push('-t', String(dur));}
+  if (at) {
+    args.push('-ss', String(at));
+  }
+  if (dur) {
+    args.push('-t', String(dur));
+  }
   args.push('-i', video, '-vf', vf.join(','), `${dir}/f_%05d.png`);
   execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });
   const files = readdirSync(dir)
@@ -156,19 +164,24 @@ async function readTimerVlm(b64: string): Promise<number | null> {
       },
       body: JSON.stringify(body),
     });
-    if (!res.ok) {return null;}
+    if (!res.ok) {
+      return null;
+    }
     const j = (await res.json()) as {
       choices?: { message?: { content?: unknown } }[];
     };
     let content = j?.choices?.[0]?.message?.content ?? '';
-    if (Array.isArray(content))
-      {content = content
+    if (Array.isArray(content)) {
+      content = content
         .map((c) => (c as { text?: string }).text ?? '')
-        .join('');}
+        .join('');
+    }
     let s = String(content).trim();
     const a = s.indexOf('{'),
       b = s.lastIndexOf('}');
-    if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
+    if (a >= 0 && b > a) {
+      s = s.slice(a, b + 1);
+    }
     const o = (JSON.parse(s) ?? {}) as { timerSec?: unknown };
     return typeof o.timerSec === 'number' ? Math.round(o.timerSec) : null;
   } catch {
@@ -184,7 +197,7 @@ const t0Timer = Date.now();
 const timerReads: { videoT: number; timerSec: number | null }[] = [];
 for (let i = 0; i < timerFiles.length; i++) {
   const videoT = at + i / TIMER_FPS;
-  let timerSec: number | null = null;
+  let timerSec: number | null;
   if (mock) {
     timerSec = Math.max(0, 180 - Math.floor(videoT - 5));
   } else {
@@ -194,10 +207,11 @@ for (let i = 0; i < timerFiles.length; i++) {
     timerSec = await readTimerVlm(b64);
   }
   timerReads.push({ videoT, timerSec });
-  if ((i + 1) % 10 === 0 || i + 1 === timerFiles.length)
-    {console.log(
+  if ((i + 1) % 10 === 0 || i + 1 === timerFiles.length) {
+    console.log(
       `    ${i + 1}/${timerFiles.length}  t=${videoT.toFixed(0)}s  timer=${timerSec}`
-    );}
+    );
+  }
 }
 console.log(`  timer VLM: ${((Date.now() - t0Timer) / 1000).toFixed(1)}s`);
 
@@ -243,19 +257,24 @@ Respond with ONLY this JSON: {"x": <int or null>, "y": <int or null>}`;
         },
         body: JSON.stringify(body),
       });
-      if (!res.ok) {return { x: null, y: null };}
+      if (!res.ok) {
+        return { x: null, y: null };
+      }
       const j = (await res.json()) as {
         choices?: { message?: { content?: unknown } }[];
       };
       let content = j?.choices?.[0]?.message?.content ?? '';
-      if (Array.isArray(content))
-        {content = content
+      if (Array.isArray(content)) {
+        content = content
           .map((c) => (c as { text?: string }).text ?? '')
-          .join('');}
+          .join('');
+      }
       let s = String(content).trim();
       const a = s.indexOf('{'),
         b = s.lastIndexOf('}');
-      if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
+      if (a >= 0 && b > a) {
+        s = s.slice(a, b + 1);
+      }
       const o = (JSON.parse(s) ?? {}) as { x?: unknown; y?: unknown };
       return {
         x: typeof o.x === 'number' ? Math.round(o.x) : null,
@@ -278,7 +297,7 @@ Respond with ONLY this JSON: {"x": <int or null>, "y": <int or null>}`;
   for (let i = 0; i < pelletFiles.length; i += crosshairInterval) {
     const videoT =
       at + (parseInt(pelletFiles[i].replace(/\D/g, ''), 10) - 1) / fps;
-    let pos = { x: null as number | null, y: null as number | null };
+    let pos: { x: number | null; y: number | null };
     if (mock) {
       pos = { x: 500, y: 500 };
     } else {
@@ -289,13 +308,19 @@ Respond with ONLY this JSON: {"x": <int or null>, "y": <int or null>}`;
       // VLMs often return pixel coords instead of normalized — detect and convert
       const imgW = 1303 * zoom,
         imgH = 396 * zoom; // damage area crop at zoom
-      if (pos.x != null && pos.x > 1000)
-        {pos.x = Math.round((pos.x / imgW) * 1000);}
-      if (pos.y != null && pos.y > 1000)
-        {pos.y = Math.round((pos.y / imgH) * 1000);}
+      if (pos.x != null && pos.x > 1000) {
+        pos.x = Math.round((pos.x / imgW) * 1000);
+      }
+      if (pos.y != null && pos.y > 1000) {
+        pos.y = Math.round((pos.y / imgH) * 1000);
+      }
       // Clamp to valid range
-      if (pos.x != null) {pos.x = Math.max(0, Math.min(1000, pos.x));}
-      if (pos.y != null) {pos.y = Math.max(0, Math.min(1000, pos.y));}
+      if (pos.x != null) {
+        pos.x = Math.max(0, Math.min(1000, pos.x));
+      }
+      if (pos.y != null) {
+        pos.y = Math.max(0, Math.min(1000, pos.y));
+      }
     }
     crosshairSamples.push({ videoT, ...pos });
   }
@@ -384,9 +409,9 @@ function buildTimerSpine(
   for (let i = 1; i < reads.length; i++) {
     const prev = reads[i - 1].timerSec,
       cur = reads[i].timerSec;
-    if (prev != null && cur != null && Math.abs(prev - cur - step) <= 0.5)
-      {runLen++;}
-    else {
+    if (prev != null && cur != null && Math.abs(prev - cur - step) <= 0.5) {
+      runLen++;
+    } else {
       if (runLen > bestLen) {
         bestStart = runStart;
         bestLen = runLen;
@@ -399,7 +424,9 @@ function buildTimerSpine(
     bestStart = runStart;
     bestLen = runLen;
   }
-  if (bestLen < 3) {return { fightStartVideoT: null, timerAt: () => null };}
+  if (bestLen < 3) {
+    return { fightStartVideoT: null, timerAt: () => null };
+  }
   const spineIdx = bestStart + Math.floor(bestLen / 2);
   const spineVal = reads[spineIdx].timerSec!;
   const spineVideoT = reads[spineIdx].videoT;
@@ -414,8 +441,9 @@ function buildTimerSpine(
   };
 }
 const spine = buildTimerSpine(timerReads);
-if (spine.fightStartVideoT != null)
-  {console.log(`  fight starts at videoT=${spine.fightStartVideoT}s`);}
+if (spine.fightStartVideoT != null) {
+  console.log(`  fight starts at videoT=${spine.fightStartVideoT}s`);
+}
 
 // ---- assemble pellet reads with timer from spine ----
 interface Read {
@@ -509,13 +537,17 @@ let zeroRun = 0;
 for (let i = 0; i <= reads.length; i++) {
   const inEvent = i < reads.length && reads[i].total >= EVENT_MIN;
   if (inEvent) {
-    if (eventStart < 0) {eventStart = i;}
+    if (eventStart < 0) {
+      eventStart = i;
+    }
     zeroRun = 0;
     continue;
   }
   if (eventStart >= 0) {
     zeroRun++;
-    if (zeroRun <= MAX_GAP && i < reads.length) {continue;} // bridge the gap
+    if (zeroRun <= MAX_GAP && i < reads.length) {
+      continue;
+    } // bridge the gap
     // Flush event (exclude trailing zero frames)
     const eventEnd = i - zeroRun;
     const eventFrames = eventEnd - eventStart;
@@ -526,8 +558,11 @@ for (let i = 0; i <= reads.length; i++) {
       // reported that spike as the shot count. The median-level frame rejects it while
       // still returning a real observed frame (so white + red === total).
       const activeIdx: number[] = [];
-      for (let j = eventStart; j < eventEnd; j++)
-        {if (reads[j].total >= EVENT_MIN) {activeIdx.push(j);}}
+      for (let j = eventStart; j < eventEnd; j++) {
+        if (reads[j].total >= EVENT_MIN) {
+          activeIdx.push(j);
+        }
+      }
       const sortedTotals = activeIdx
         .map((j) => reads[j].total)
         .sort((a, b) => a - b);
@@ -552,8 +587,11 @@ for (let i = 0; i <= reads.length; i++) {
       // "rare 2" needs real red-pellet detection — see HANDOFF). Outer-zone red is VFX noise
       // (area ~43px², not pellet-sized) and is deliberately NOT counted here.
       let coreHit = false;
-      for (let j = eventStart; j < eventEnd; j++)
-        {if (reads[j].marker >= MARKER_MIN) {coreHit = true;}}
+      for (let j = eventStart; j < eventEnd; j++) {
+        if (reads[j].marker >= MARKER_MIN) {
+          coreHit = true;
+        }
+      }
       const shotRed = coreHit ? 1 : 0;
       const agreement = ['numpy', 'pil', 'opencv']
         .map((b) => {
@@ -635,9 +673,12 @@ if (validShots.length) {
     `  avg total: ${result.summary.avgTotal}  avg red: ${result.summary.avgRed}`
   );
   console.log('  shots:');
-  for (const s of shots.slice(0, 25))
-    {console.log(
+  for (const s of shots.slice(0, 25)) {
+    console.log(
       `    fight=${s.fightT != null ? s.fightT.toFixed(2) + 's' : '?'}  W=${s.white} R=${s.red} T=${s.total}${s.total >= MIN_PELLETS && s.total <= MAX_PELLETS ? '' : ' ⚠'}${s.core ? ' ◆core' : ''}  (${s.frames}f)  [${s.backendAgreement}]`
-    );}
-  if (shots.length > 25) {console.log(`    ... and ${shots.length - 25} more`);}
+    );
+  }
+  if (shots.length > 25) {
+    console.log(`    ... and ${shots.length - 25} more`);
+  }
 }

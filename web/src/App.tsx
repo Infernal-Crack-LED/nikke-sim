@@ -33,7 +33,6 @@ import {
 import { SaveProfileControl } from './components/SaveProfileControl';
 import { SavedRostersDropdown } from './components/SavedRostersDropdown';
 import { InlineNameField } from './components/InlineNameField';
-import { useIconThumbs } from './useIconThumbs';
 import { manifestThumbUrl } from './portraitManifest';
 import { navigate } from './router';
 import { MatrixChart } from './components/MatrixChart';
@@ -65,7 +64,6 @@ import {
   solveDp as dollSolveDp,
   monteCarlo as dollMc,
   calibrateWeights as dollCalibrate,
-  costFrom as dollCostFrom,
 } from '../../src/doll/policy';
 import type {
   Calibration as DollCalibration,
@@ -211,42 +209,50 @@ function buildRollGuide(
   const reqs = desired
     .map((d) => ({ key: d.key, tier: d.tier }))
     .filter((d): d is { key: OlKey; tier: number } => d.key !== '');
-  if (reqs.length === 0)
-    {return {
+  if (reqs.length === 0) {
+    return {
       kind: 'invalid',
       msg: 'Add at least one desired line (stat + target tier).',
-    };}
+    };
+  }
   const dkeys = reqs.map((r) => r.key);
-  if (new Set(dkeys).size !== dkeys.length)
-    {return {
+  if (new Set(dkeys).size !== dkeys.length) {
+    return {
       kind: 'invalid',
       msg: 'A piece can’t hold the same stat twice — remove the duplicate desired stat.',
-    };}
+    };
+  }
   const presentCur = current.filter((c) => c.key !== '');
-  if (new Set(presentCur.map((c) => c.key)).size !== presentCur.length)
-    {return {
+  if (new Set(presentCur.map((c) => c.key)).size !== presentCur.length) {
+    return {
       kind: 'invalid',
       msg: 'Two current lines share a stat — a piece can’t hold the same stat twice.',
-    };}
+    };
+  }
 
   const cur = current.map((c) => ({ key: c.key, tier: c.tier }));
   const targetTier = (k: OlKey) => reqs.find((r) => r.key === k)!.tier;
   const satisfies = (k: OlKey, minTier: number) =>
     cur.some((l) => l.key === k && l.tier >= minTier);
 
-  if (reqs.every((r) => satisfies(r.key, r.tier)))
-    {return {
+  if (reqs.every((r) => satisfies(r.key, r.tier))) {
+    return {
       kind: 'done',
       msg: 'This piece already meets every desired stat and tier — you’re done. 🎉',
-    };}
+    };
+  }
 
   const desiredKeys = new Set(reqs.map((r) => r.key));
   // Phase-1 lock set (smart policy): lock Line 2/3 that hold a desired stat; lock
   // Line 1 only when it already meets its target tier (else leave it cheap to
   // reroll, since Line 1 always reappears).
   const phase1Lock = cur.map((l, i) => {
-    if (l.key === '' || !desiredKeys.has(l.key as OlKey)) {return false;}
-    if (i === 0) {return l.tier >= targetTier(l.key as OlKey);}
+    if (l.key === '' || !desiredKeys.has(l.key as OlKey)) {
+      return false;
+    }
+    if (i === 0) {
+      return l.tier >= targetTier(l.key as OlKey);
+    }
     return true;
   });
   const securedKeys = new Set(
@@ -279,20 +285,22 @@ function buildRollGuide(
       .map((l, i) => ({ l, i }))
       .filter(({ i }) => phase1Lock[i])
       .map(({ l, i }) => `${Ln(i)} (${statLabel(l.key as OlKey)})`);
-    if (keepers.length)
-      {p1.push(
+    if (keepers.length) {
+      p1.push(
         <>
           <b>Lock</b> {keepers.join(', ')} — keeper
           {keepers.length > 1 ? 's' : ''}.
         </>
-      );}
-    if (junkL1)
-      {p1.push(
+      );
+    }
+    if (junkL1) {
+      p1.push(
         <>
           Leave <b>{Ln(0)}</b> ({statLabel(cur[0].key as OlKey)} T{cur[0].tier})
           unlocked — always reappears, don’t lock.
         </>
-      );}
+      );
+    }
 
     if (F === 1) {
       const i = freeLines[0];
@@ -316,12 +324,13 @@ function buildRollGuide(
           {huntJoin}) — take whichever lands first.
         </>
       );
-      if (line1Free)
-        {p1.push(
+      if (line1Free) {
+        p1.push(
           <>
             <b>Reroll</b> {Ln(0)} → last needed stat (final roll, no lock).
           </>
-        );}
+        );
+      }
     } else {
       // M < F: slack — grab stats on any lines, skip the spare rare slot(s)
       p1.push(
@@ -335,18 +344,19 @@ function buildRollGuide(
   }
 
   // ---- Phase 2: value reset (tier push) ----
-  if (toHunt.length > 0)
-    {p2.push(
+  if (toHunt.length > 0) {
+    p2.push(
       <>
         <b>Unlock all</b> → <b>Value-reset</b> (keeps stat, rerolls tier only).
       </>
-    );}
-  else
-    {p2.push(
+    );
+  } else {
+    p2.push(
       <>
         <b>Value-reset</b> (keeps stat, rerolls tier only).
       </>
-    );}
+    );
+  }
   p2.push(
     <>
       Lock lines already ≥ target; value-reset the rest; lock each at target.
@@ -410,7 +420,9 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
 // DPS-chart cell) still implies the DPS Chart tab; else Sim.
 function tabFromLocation(): CalcTab {
   const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && CALC_TABS.some((x) => x.key === seg)) {return seg as CalcTab;}
+  if (seg && CALC_TABS.some((x) => x.key === seg)) {
+    return seg as CalcTab;
+  }
   return new URLSearchParams(window.location.search).has('chart')
     ? 'dpschart'
     : 'sim';
@@ -442,7 +454,9 @@ function ammoBreakpoints(base: number, perLinePct: number) {
   for (let v = base + 1; v <= maxAmmo; v++) {
     const minPct = (v / base - 1) * 100;
     const linesNeeded = Math.ceil(minPct / perLinePct - 1e-9);
-    if (linesNeeded <= 4) {out.push({ ammo: v, minPct, linesNeeded });}
+    if (linesNeeded <= 4) {
+      out.push({ ammo: v, minPct, linesNeeded });
+    }
   }
   return out;
 }
@@ -534,8 +548,12 @@ const unionBossLabel = (o: UnionBossOpts): string => {
   const parts: string[] = [];
   parts.push(o.weakness ? `${o.weakness}-weak` : 'no element');
   const def = Number(o.bossDef) || 0;
-  if (def) {parts.push(`DEF ${def}`);}
-  if (o.bossRange) {parts.push(o.bossRange);}
+  if (def) {
+    parts.push(`DEF ${def}`);
+  }
+  if (o.bossRange) {
+    parts.push(o.bossRange);
+  }
   parts.push(
     o.coreCustom
       ? `${o.coreCustomVal}% core`
@@ -635,14 +653,18 @@ function TeamPortraits({
   const [cols, setCols] = useState(5);
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el) {return;}
+    if (!el) {
+      return;
+    }
     const GAP = 4,
       MIN = 32,
       N = slugs.length; // fits N-across at the 32px floor?
     const compute = () =>
       setCols(el.clientWidth >= N * MIN + (N - 1) * GAP ? 5 : 3);
     compute();
-    if (typeof ResizeObserver === 'undefined') {return;} // jsdom / SSR
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    } // jsdom / SSR
     const ro = new ResizeObserver(compute);
     ro.observe(el);
     return () => ro.disconnect();
@@ -703,7 +725,9 @@ const advSet = (t: TeamResult) =>
 // split into rows of n (for centering a partial last row)
 function chunk<T>(arr: T[], n: number): T[][] {
   const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += n) {out.push(arr.slice(i, i + n));}
+  for (let i = 0; i < arr.length; i += n) {
+    out.push(arr.slice(i, i + n));
+  }
   return out;
 }
 
@@ -776,17 +800,6 @@ const OL_LINE_TYPES = [
   { key: 'hitrate', label: 'Hit Rate' },
   { key: 'def', label: 'DEF' },
 ] as const;
-const OL_STAT_BY_TYPE: Record<string, string> = {
-  elem: 'elementDamagePct',
-  atk: 'atkPct',
-  ammo: 'maxAmmoPct',
-  chargedmg: 'chargeDamagePct',
-  chargespd: 'chargeSpeedPct',
-  critrate: 'critRatePct',
-  critdmg: 'critDamagePct',
-  hitrate: 'hitRatePct',
-  def: 'defPct',
-};
 
 // Overload investment presets for the bulk "Overload" pill group. The tiers name
 // how many of the 12 rollable OL lines are filled: none (no lines), 8/12 (4×
@@ -807,7 +820,9 @@ const optimalOlExtra = (
   slug: string | null
 ): { type: string; value: string }[] => {
   const picks = slug ? olOptimal[slug] : undefined;
-  if (!picks?.length) {return [];}
+  if (!picks?.length) {
+    return [];
+  }
   const tv = olTierValues(11);
   return picks.map((p) => ({
     type: p.type,
@@ -824,11 +839,17 @@ function buildOlLines(
   const out: { type: string; count: number; value: number }[] = [];
   const push = (type: string, raw: string) => {
     const v = Number(raw);
-    if (Number.isFinite(v) && v > 0) {out.push({ type, count: 1, value: v });}
+    if (Number.isFinite(v) && v > 0) {
+      out.push({ type, count: 1, value: v });
+    }
   };
   push('elem', s.olElem);
   push('atk', s.olAtk);
-  for (const line of s.olExtra) {if (line.type) {push(line.type, line.value);}}
+  for (const line of s.olExtra) {
+    if (line.type) {
+      push(line.type, line.value);
+    }
+  }
   return out;
 }
 
@@ -910,9 +931,13 @@ const emptyTeam = (): SlotState[] =>
 function loadStoredTeam(): SlotState[] | null {
   try {
     const raw = localStorage.getItem(TEAM_STORAGE_KEY);
-    if (!raw) {return null;}
+    if (!raw) {
+      return null;
+    }
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr) || arr.length !== 5) {return null;}
+    if (!Array.isArray(arr) || arr.length !== 5) {
+      return null;
+    }
     // merge over defaults so slots saved before a schema change still load,
     // and drop any slug no longer present in the data
     return arr.map((s) => {
@@ -950,9 +975,13 @@ function loadStoredRoster(
 ): (string | null)[][] | null {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) {return null;}
+    if (!raw) {
+      return null;
+    }
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) {return null;}
+    if (!Array.isArray(arr)) {
+      return null;
+    }
     return Array.from({ length: rows }, (_, i) =>
       Array.from({ length: 5 }, (_, j) => {
         const s = arr[i]?.[j];
@@ -1115,8 +1144,11 @@ function triggerLabel(tr: any): string {
 function collectBuffs(effects: any[]): any[] {
   const out: any[] = [];
   for (const e of effects ?? []) {
-    if (e?.kind === 'buff') {out.push(e);}
-    else if (e?.kind === 'escalating') {out.push(...collectBuffs(e.steps));}
+    if (e?.kind === 'buff') {
+      out.push(e);
+    } else if (e?.kind === 'escalating') {
+      out.push(...collectBuffs(e.steps));
+    }
   }
   return out;
 }
@@ -1141,9 +1173,15 @@ function buffLines(blocks: any[]): string[] {
 // where an expanded-card index lands after a reorder from→to (so the open card
 // in compact mode keeps following the same slot)
 function remapIndex(e: number, from: number, to: number): number {
-  if (e === from) {return to;}
-  if (from < e && to >= e) {return e - 1;}
-  if (from > e && to <= e) {return e + 1;}
+  if (e === from) {
+    return to;
+  }
+  if (from < e && to >= e) {
+    return e - 1;
+  }
+  if (from > e && to <= e) {
+    return e + 1;
+  }
   return e;
 }
 
@@ -1300,7 +1338,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // over ?team= / localStorage; computed once on mount
   const boot = useMemo(bootBuild, []);
   const [slots, setSlots] = useState<SlotState[]>(() => {
-    if (boot) {return boot.s.map(slotFromBuild);}
+    if (boot) {
+      return boot.s.map(slotFromBuild);
+    }
     // shareable prefill: ?team=liter,crown,naga,modernia,alice
     const param = new URLSearchParams(window.location.search).get('team');
     if (param) {
@@ -1318,7 +1358,9 @@ export function App({ user }: { user: AuthUser | null }) {
   const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
   const [bossRange, setBossRange] = useState<BossRange | null>(() => {
     const fromBuild = (boot?.g.bossRange as BossRange | null) ?? null;
-    if (fromBuild) {return fromBuild;}
+    if (fromBuild) {
+      return fromBuild;
+    }
     const p = new URLSearchParams(window.location.search).get('br');
     return p && BOSS_RANGE_OPTIONS.some((o) => o.id === p)
       ? (p as BossRange)
@@ -1396,7 +1438,9 @@ export function App({ user }: { user: AuthUser | null }) {
     ) => {
       setTbSlugs(slugs);
       setTbRosterMode(rosterMode);
-      if (unionBoss) {setTbUnionBossOpts(unionBoss);}
+      if (unionBoss) {
+        setTbUnionBossOpts(unionBoss);
+      }
     },
     []
   );
@@ -1465,7 +1509,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // Roster Sim mode pill: Solo Raid (5×5) vs Union Raid (3×5)
   const [rosterSimMode, setRosterSimMode] = useState<'solo' | 'union'>(() => {
     const m = new URLSearchParams(window.location.search).get('mode');
-    if (m === 'union' || m === 'solo') {return m;}
+    if (m === 'union' || m === 'solo') {
+      return m;
+    }
     // no mode in the URL — reopen whichever raid was last active
     return loadStoredRosterMode() ?? 'solo';
   });
@@ -1493,8 +1539,9 @@ export function App({ user }: { user: AuthUser | null }) {
   );
   const [unionBossOpts, setUnionBossOpts] = useState<UnionBossOpts[]>(() => {
     const p = new URLSearchParams(window.location.search);
-    if (p.get('mode') !== 'union')
-      {return Array.from({ length: 3 }, defaultUnionBossOpts);}
+    if (p.get('mode') !== 'union') {
+      return Array.from({ length: 3 }, defaultUnionBossOpts);
+    }
     const bw = p.get('bw')?.split(',') ?? [];
     const bd = p.get('bd')?.split(',') ?? [];
     const cv = p.get('cv')?.split(',') ?? [];
@@ -1668,7 +1715,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // reorder a team slot (drives the sim: position sets camera focus / burst
   // order), keeping the expanded card pointed at the same slot it followed.
   const moveSlot = (from: number, to: number) => {
-    if (from === to) {return;}
+    if (from === to) {
+      return;
+    }
     setSlots((s) => {
       const a = [...s];
       const [m] = a.splice(from, 1);
@@ -1710,12 +1759,17 @@ export function App({ user }: { user: AuthUser | null }) {
       olAtk: OL_8_12_ATK,
       olExtra: optimalOlExtra(s.slug),
     });
-    if (tab === 'dps') {setDpsGroups((gs) => gs.map((g) => g.map(patch)));}
-    else {setSlots((s) => s.map(patch));}
+    if (tab === 'dps') {
+      setDpsGroups((gs) => gs.map((g) => g.map(patch)));
+    } else {
+      setSlots((s) => s.map(patch));
+    }
   };
   // does a slot already carry its 12/12 loadout? (floor + its own optimal remainder)
   const isOl12of12 = (s: SlotState): boolean => {
-    if (s.olElem !== OL_8_12_ELEM || s.olAtk !== OL_8_12_ATK) {return false;}
+    if (s.olElem !== OL_8_12_ELEM || s.olAtk !== OL_8_12_ATK) {
+      return false;
+    }
     const exp = optimalOlExtra(s.slug);
     return (
       s.olExtra.length === exp.length &&
@@ -1757,9 +1811,13 @@ export function App({ user }: { user: AuthUser | null }) {
     s: SlotState,
     idx: Map<string, SlotLoadout>
   ): SlotState => {
-    if (!s.slug) {return s;}
+    if (!s.slug) {
+      return s;
+    }
     const L = idx.get(s.slug);
-    if (!L) {return s;} // slot unit not owned / not modeled — leave as-is
+    if (!L) {
+      return s;
+    } // slot unit not owned / not modeled — leave as-is
     return {
       ...s,
       ol: L.ol,
@@ -1820,7 +1878,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // same slug-swap semantics as the old Copy to Sim (the slots' loadouts stay
   // put; only the units change).
   const savePickerToSim = () => {
-    if (!pickerStaged) {return;}
+    if (!pickerStaged) {
+      return;
+    }
     setSlots((prev) =>
       prev.map((slot, i) => ({ ...slot, slug: pickerStaged[i] ?? null }))
     );
@@ -1833,7 +1893,9 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   // Save Roster: write the staged 5×5 into the page wholesale.
   const savePickerToRoster = () => {
-    if (!rosterPickerStaged) {return;}
+    if (!rosterPickerStaged) {
+      return;
+    }
     setRosterSim(rosterPickerStaged.map((row) => [...row]));
     setShowRosterPicker(false);
   };
@@ -1846,7 +1908,9 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   // Save Union Roster: write the staged 3×5 into the page wholesale.
   const saveUnionPickerToRoster = () => {
-    if (!unionRosterPickerStaged) {return;}
+    if (!unionRosterPickerStaged) {
+      return;
+    }
     setUnionRosterSim(unionRosterPickerStaged.map((row) => [...row]));
     setShowUnionRosterPicker(false);
   };
@@ -1888,19 +1952,27 @@ export function App({ user }: { user: AuthUser | null }) {
         arr.filter((s) => s.slug && idx!.has(s.slug)).length;
       const applied =
         tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
-      if (tab === 'dps')
-        {setDpsGroups((gs) =>
+      if (tab === 'dps') {
+        setDpsGroups((gs) =>
           gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!)))
-        );}
-      else {setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));}
-      if (lvl) {setLevel(String(lvl));}
+        );
+      } else {
+        setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
+      }
+      if (lvl) {
+        setLevel(String(lvl));
+      }
       setActivePreset('synced'); // armed: newly picked owned nikkes inherit their synced build
       // Surface any synced content the sim couldn't map instead of dropping it
       // silently — this is how a mislabelled OL line (e.g. Ele/Ammo) gets caught.
       const unmapped = new Set<string>();
       for (const L of idx!.values()) {
-        for (const u of L.unmappedLines ?? []) {unmapped.add(u);}
-        if (L.unmappedCube) {unmapped.add(`cube “${L.unmappedCube}”`);}
+        for (const u of L.unmappedLines ?? []) {
+          unmapped.add(u);
+        }
+        if (L.unmappedCube) {
+          unmapped.add(`cube “${L.unmappedCube}”`);
+        }
       }
       const unmappedNote = unmapped.size
         ? ` Unmapped synced content (ignored): ${[...unmapped].join(', ')}.`
@@ -2008,7 +2080,9 @@ export function App({ user }: { user: AuthUser | null }) {
     refreshTeams();
   };
   const suggestedName = () => {
-    if (loadedTeamName) {return loadedTeamName;}
+    if (loadedTeamName) {
+      return loadedTeamName;
+    }
     const names = slots
       .map((s) => (s.slug ? data.characters[s.slug].name : null))
       .filter(Boolean) as string[];
@@ -2021,7 +2095,9 @@ export function App({ user }: { user: AuthUser | null }) {
       setLoadedTeamName(name);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) {refreshTeams();}
+      if (showTeams) {
+        refreshTeams();
+      }
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2029,7 +2105,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Roster Sim roster (25 units + shared loadout + boss options) to the same
   // saved-teams store, tagged by the `roster` field in the build code.
   const rosterSuggestedName = () => {
-    if (loadedRosterName) {return loadedRosterName;}
+    if (loadedRosterName) {
+      return loadedRosterName;
+    }
     const first = rosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} roster`
@@ -2046,7 +2124,9 @@ export function App({ user }: { user: AuthUser | null }) {
       setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) {refreshTeams();}
+      if (showTeams) {
+        refreshTeams();
+      }
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2054,7 +2134,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Union Raid roster (3 teams + per-team boss options) — same store,
   // tagged rosterMode:'union' so loading restores the union grid, not solo.
   const unionRosterSuggestedName = () => {
-    if (loadedUnionRosterName) {return loadedUnionRosterName;}
+    if (loadedUnionRosterName) {
+      return loadedUnionRosterName;
+    }
     const first = unionRosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} union raid`
@@ -2083,7 +2165,9 @@ export function App({ user }: { user: AuthUser | null }) {
       setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) {refreshTeams();}
+      if (showTeams) {
+        refreshTeams();
+      }
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2134,7 +2218,9 @@ export function App({ user }: { user: AuthUser | null }) {
     }
   };
   const onDeleteTeam = async (t: SavedTeam) => {
-    if (!window.confirm(`Delete "${t.name}"?`)) {return;}
+    if (!window.confirm(`Delete "${t.name}"?`)) {
+      return;
+    }
     try {
       await deleteTeam(t.id);
       setTeams((ts) => ts.filter((x) => x.id !== t.id));
@@ -2251,9 +2337,12 @@ export function App({ user }: { user: AuthUser | null }) {
       active,
       runNonce,
     } = deferredSimInput;
-    if (!active || runNonce === 0) {return {};}
-    if (slots.some((s) => !s.slug))
-      {return { error: 'pick 5 nikkes to run the sim' };}
+    if (!active || runNonce === 0) {
+      return {};
+    }
+    if (slots.some((s) => !s.slug)) {
+      return { error: 'pick 5 nikkes to run the sim' };
+    }
     const chars = slots.map((s) => data.characters[s.slug!]);
     const counts: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
     chars.forEach((c) => counts[c.burst]++);
@@ -2340,7 +2429,9 @@ export function App({ user }: { user: AuthUser | null }) {
           aria-label="share link"
           onFocus={(e) => e.currentTarget.select()}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') {setLinkFallback(null);}
+            if (e.key === 'Escape') {
+              setLinkFallback(null);
+            }
           }}
         />
         <button
@@ -2383,7 +2474,9 @@ export function App({ user }: { user: AuthUser | null }) {
       imageUrlFor,
       'nikke-team.png'
     );
-    if (res !== 'unsupported') {flashImaged();}
+    if (res !== 'unsupported') {
+      flashImaged();
+    }
   };
 
   // Share the roster summary card (5 teams: portraits + total-damage bars).
@@ -2405,7 +2498,9 @@ export function App({ user }: { user: AuthUser | null }) {
       imageUrlFor,
       'nikke-roster.png'
     );
-    if (res !== 'unsupported') {flashImaged();}
+    if (res !== 'unsupported') {
+      flashImaged();
+    }
   };
 
   // Share the Union Raid card (3 teams + per-team boss options).
@@ -2432,7 +2527,9 @@ export function App({ user }: { user: AuthUser | null }) {
       imageUrlFor,
       'nikke-union-raid.png'
     );
-    if (res !== 'unsupported') {flashImaged();}
+    if (res !== 'unsupported') {
+      flashImaged();
+    }
   };
 
   // Generate link for the Roster Sim (solo or union mode).
@@ -2472,7 +2569,9 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((s) => s ?? '')
           .join(',')
       );
-      if (bossRange) {u.searchParams.set('br', bossRange);}
+      if (bossRange) {
+        u.searchParams.set('br', bossRange);
+      }
     }
     await copyLink(u.toString());
   };
@@ -2505,7 +2604,9 @@ export function App({ user }: { user: AuthUser | null }) {
         imageUrlFor,
         'nikke-union-raid.png'
       );
-      if (res !== 'unsupported') {flashImaged();}
+      if (res !== 'unsupported') {
+        flashImaged();
+      }
     } else {
       const rows = rosterSim;
       const res = await shareRosterCard(
@@ -2527,7 +2628,9 @@ export function App({ user }: { user: AuthUser | null }) {
         imageUrlFor,
         'nikke-roster.png'
       );
-      if (res !== 'unsupported') {flashImaged();}
+      if (res !== 'unsupported') {
+        flashImaged();
+      }
     }
   };
 
@@ -2589,11 +2692,15 @@ export function App({ user }: { user: AuthUser | null }) {
           .map((s) => s ?? '')
           .join(',')
       );
-      if (bossRange) {u.searchParams.set('br', bossRange);}
+      if (bossRange) {
+        u.searchParams.set('br', bossRange);
+      }
     } else {
       u.pathname = '/';
       u.searchParams.set('team', rows[0].map((s) => s ?? '').join(','));
-      if (bossRange) {u.searchParams.set('br', bossRange);}
+      if (bossRange) {
+        u.searchParams.set('br', bossRange);
+      }
     }
     await copyLink(u.toString());
   };
@@ -2669,14 +2776,18 @@ export function App({ user }: { user: AuthUser | null }) {
               imageUrlFor,
               'nikke-team.png'
             );
-    if (res !== 'unsupported') {flashImaged();}
+    if (res !== 'unsupported') {
+      flashImaged();
+    }
   };
 
   // Copy the Sim-tab result card (real portraits) to the clipboard via the shared
   // teamShare pipeline (same isomorphic drawTeamCard the bot uses). Falls back to
   // a download where the async clipboard image API isn't available (Firefox).
   const onShareImage = async () => {
-    if (!r) {return;}
+    if (!r) {
+      return;
+    }
     const share: ShareTeamData = {
       teamDamage: r.teamDamage,
       teamDps: r.teamDps,
@@ -2699,7 +2810,9 @@ export function App({ user }: { user: AuthUser | null }) {
       imageUrlFor,
       'nikke-team.png'
     );
-    if (res !== 'unsupported') {flashImaged();}
+    if (res !== 'unsupported') {
+      flashImaged();
+    }
   };
 
   // Remove/clear handlers for the generator include/exclude lists — shared by
@@ -2901,7 +3014,9 @@ export function App({ user }: { user: AuthUser | null }) {
         <div className="gen-portraits-grid">
           {slugs.map((slug) => {
             const c = data.characters[slug];
-            if (!c) {return null;}
+            if (!c) {
+              return null;
+            }
             return (
               <div className="gen-portrait-wrap" key={slug}>
                 <img
@@ -2998,8 +3113,9 @@ export function App({ user }: { user: AuthUser | null }) {
         }
       : loadoutFor;
     const map: Record<string, UnitOptions> = {};
-    for (const slug of Object.keys(generatorCharacters))
-      {map[slug] = resolve(slug);}
+    for (const slug of Object.keys(generatorCharacters)) {
+      map[slug] = resolve(slug);
+    }
     return map;
   };
   // Serializable generator-calc request for the worker (buildGenCalc reconstructs
@@ -3029,8 +3145,12 @@ export function App({ user }: { user: AuthUser | null }) {
   // excluded, and — with a synced roster — owned/eligible). Used to decide which
   // always-combos apply (unavailable combos relax silently).
   const genAvailable = (slug: string): boolean => {
-    if (!generatorCharacters[slug]) {return false;}
-    if (blocked.includes(slug)) {return false;}
+    if (!generatorCharacters[slug]) {
+      return false;
+    }
+    if (blocked.includes(slug)) {
+      return false;
+    }
     return genSynced ? genEligible(slug) : true;
   };
   // Soft downward-sloped prydwen meta-sum targets for the 5 solo teams (owner
@@ -3133,14 +3253,21 @@ export function App({ user }: { user: AuthUser | null }) {
         const params = genParams(unionCalcCfg(opts), opts.weakness, locks);
         // keep later teams' reserved units out of this team's pool
         const exclude = new Set(used);
-        for (let j = i + 1; j < 3; j++)
-          {for (const s of reserved[j]) {exclude.add(s);}}
+        for (let j = i + 1; j < 3; j++) {
+          for (const s of reserved[j]) {
+            exclude.add(s);
+          }
+        }
         const t = await genBestTeam(params, {
           exclude,
           mustInclude: reserved[i],
         });
-        if (!t) {break;}
-        for (const s of t.slugs) {used.add(s);}
+        if (!t) {
+          break;
+        }
+        for (const s of t.slugs) {
+          used.add(s);
+        }
         out.push(t);
       }
       // (The old mint→prika output post-pass is gone: the mint+prika together
@@ -3202,11 +3329,18 @@ export function App({ user }: { user: AuthUser | null }) {
   // an opened link reproduces the result from the encoded inputs.
   const didAutoRun = useRef(false);
   useEffect(() => {
-    if (didAutoRun.current) {return;}
+    if (didAutoRun.current) {
+      return;
+    }
     didAutoRun.current = true;
-    if (new URLSearchParams(window.location.search).get('run') !== '1') {return;}
-    if (tab === 'team') {runBestTeam();}
-    else if (tab === 'roster') {runTopTeams();}
+    if (new URLSearchParams(window.location.search).get('run') !== '1') {
+      return;
+    }
+    if (tab === 'team') {
+      runBestTeam();
+    } else if (tab === 'roster') {
+      runTopTeams();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -3223,7 +3357,9 @@ export function App({ user }: { user: AuthUser | null }) {
     );
     setRosterSimResults(null);
     // on a pick, advance to the next empty slot (fast sequential entry); clear on a clear
-    if (!slug) {return setRosterActive([ti, ui]);}
+    if (!slug) {
+      return setRosterActive([ti, ui]);
+    }
     let n: [number, number] | null = null;
     for (let k = ti * 5 + ui + 1; k < 25; k++) {
       const [t, u] = [Math.floor(k / 5), k % 5];
@@ -3344,7 +3480,9 @@ export function App({ user }: { user: AuthUser | null }) {
       )
     );
     setUnionRosterSimResults(null);
-    if (!slug) {return setUnionRosterActive([ti, ui]);}
+    if (!slug) {
+      return setUnionRosterActive([ti, ui]);
+    }
     let n: [number, number] | null = null;
     for (let k = ti * 5 + ui + 1; k < 15; k++) {
       const [t, u] = [Math.floor(k / 5), k % 5];
@@ -3468,7 +3606,9 @@ export function App({ user }: { user: AuthUser | null }) {
         const seen = new Set<OlKey>();
         const reqs: Target = [];
         for (const l of card) {
-          if (!l.key || seen.has(l.key)) {continue;}
+          if (!l.key || seen.has(l.key)) {
+            continue;
+          }
           seen.add(l.key);
           reqs.push({ key: l.key, minTier: l.tier });
         }
@@ -3486,14 +3626,18 @@ export function App({ user }: { user: AuthUser | null }) {
         const seen = new Set<OlKey>();
         const reqs: Target = [];
         for (const l of card.desired) {
-          if (!l.key || seen.has(l.key)) {continue;}
+          if (!l.key || seen.has(l.key)) {
+            continue;
+          }
           seen.add(l.key);
           reqs.push({ key: l.key, minTier: l.tier });
         }
         targets.push(reqs);
         const slots: (Line | null)[] = [null, null, null];
         card.current.forEach((l, i) => {
-          if (l.key && i < 3) {slots[i] = { key: l.key, tier: l.tier };}
+          if (l.key && i < 3) {
+            slots[i] = { key: l.key, tier: l.tier };
+          }
         });
         starts.push(slots as Piece);
       }
@@ -3547,8 +3691,11 @@ export function App({ user }: { user: AuthUser | null }) {
   // Show the common case by default: OL 8/12 on the Roll Calculator, and the doll
   // 0→15 throughput + per-phase guide on the Doll Calculator (calibration computed once).
   useEffect(() => {
-    if (tab === 'doll' && !dollCal && !calcBusy)
-      {runCalc(() => setDollCal(getDollCalibration()));}
+    if (tab === 'doll' && !dollCal && !calcBusy) {
+      runCalc(() => setDollCal(getDollCalibration()));
+    }
+    // calcBusy is intentionally omitted to avoid retriggering once it becomes false.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, dollCal]);
   useEffect(() => {
     if (
@@ -3557,12 +3704,18 @@ export function App({ user }: { user: AuthUser | null }) {
       dollCal &&
       !dollResult &&
       !calcBusy
-    )
-      {runDollCalc();}
+    ) {
+      runDollCalc();
+    }
+    // calcBusy/dollResult/runDollCalc intentionally omitted to avoid reruns.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, dollSub, dollCal]);
   useEffect(() => {
-    if (tab === 'olsim' && olSimSub === 'calc' && !olSimResult && !calcBusy)
-      {runOlSim();}
+    if (tab === 'olsim' && olSimSub === 'calc' && !olSimResult && !calcBusy) {
+      runOlSim();
+    }
+    // calcBusy/olSimResult/runOlSim intentionally omitted to avoid reruns.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, olSimSub]);
   const runOlMatrix = () =>
     runCalc(() => {
@@ -4123,7 +4276,9 @@ export function App({ user }: { user: AuthUser | null }) {
         )}
         {(() => {
           const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
-          if (!modes?.length) {return null;}
+          if (!modes?.length) {
+            return null;
+          }
           return (
             <div className="pills small">
               {modes.map((m) => (
@@ -5691,7 +5846,11 @@ export function App({ user }: { user: AuthUser | null }) {
           H = 150,
           PAD = 6;
         let maxC = 1;
-        for (const x of d) {if (x.count > maxC) {maxC = x.count;}}
+        for (const x of d) {
+          if (x.count > maxC) {
+            maxC = x.count;
+          }
+        }
         const maxX = d.length ? d[d.length - 1].hi : 1;
         const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
         const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
@@ -6232,7 +6391,11 @@ export function App({ user }: { user: AuthUser | null }) {
           H = 120,
           PAD = 6;
         let maxC = 1;
-        for (const x of d) {if (x.count > maxC) {maxC = x.count;}}
+        for (const x of d) {
+          if (x.count > maxC) {
+            maxC = x.count;
+          }
+        }
         const maxX = d.length ? d[d.length - 1].hi : 1;
         const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
         const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
@@ -6555,13 +6718,17 @@ export function App({ user }: { user: AuthUser | null }) {
           .filter((s): s is string => !!s)
           .map((s) => data.characters[s])
           .filter((c) => c && !c.simSupported);
-        if (!unsupported.length) {return null;}
+        if (!unsupported.length) {
+          return null;
+        }
         const names = unsupported.map((c) => c.name).join(', ');
         return `${names} ${unsupported.length === 1 ? 'is' : 'are'} currently unsupported for the sim. We're constantly updating the backlog of unsupported Nikkes, check back soon.`;
       };
       const onTbCopyToSim = (slugs: (string | null)[]): string | null => {
         const warning = unsupportedWarning(slugs);
-        if (warning) {return warning;}
+        if (warning) {
+          return warning;
+        }
         setSlots((prev) =>
           prev.map((slot, i) => ({
             ...slot,
@@ -6578,7 +6745,9 @@ export function App({ user }: { user: AuthUser | null }) {
         mode: 'solo' | 'union'
       ): string | null => {
         const warning = unsupportedWarning(rows.flat());
-        if (warning) {return warning;}
+        if (warning) {
+          return warning;
+        }
         if (mode === 'union') {
           setUnionRosterSim(normalizeUnionRoster(rows));
           setUnionRosterSimResults(null);
@@ -7286,8 +7455,9 @@ export function App({ user }: { user: AuthUser | null }) {
                   const filled = slots
                     .map((s) => (s.slug ? data.characters[s.slug] : null))
                     .filter(Boolean) as any[];
-                  if (!filled.length)
-                    {return <div className="notes">pick nikkes to analyze</div>;}
+                  if (!filled.length) {
+                    return <div className="notes">pick nikkes to analyze</div>;
+                  }
                   return (
                     <div className="notes">
                       <p className="muted">
@@ -7504,8 +7674,9 @@ export function App({ user }: { user: AuthUser | null }) {
                 <div className="notes">
                   {r.units.map((u) => {
                     const notes = [...u.warnings];
-                    if (u.loadout.length)
-                      {notes.unshift(`loadout: ${u.loadout.join(' | ')}`);}
+                    if (u.loadout.length) {
+                      notes.unshift(`loadout: ${u.loadout.join(' | ')}`);
+                    }
                     // kit text the override deliberately does not model (audit record)
                     const un = overrides[u.slug]?.unmodeled;
                     const unmodeled = un

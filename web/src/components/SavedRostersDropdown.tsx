@@ -31,24 +31,32 @@ export function SavedRostersDropdown({
   // fetch on mount (so we know whether to reveal the chip) and again each
   // time it opens (cheap; always up to date)
   useEffect(() => {
-    if (user) {refresh();}
-    else {setRosters(null);}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (user) {
+      refresh();
+    } else {
+      setRosters(null);
+    }
   }, [user, refreshKey]);
   useEffect(() => {
-    if (open && user) {refresh();}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (open && user) {
+      refresh();
+    }
   }, [open, user]);
 
   // dismiss on outside-click / Escape (shared dropdown pattern)
   useEffect(() => {
-    if (!open) {return;}
+    if (!open) {
+      return;
+    }
     const onDocDown = (e: globalThis.MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        {setOpen(false);}
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {setOpen(false);}
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -58,11 +66,15 @@ export function SavedRostersDropdown({
     };
   }, [open]);
 
-  if (!user) {return null;}
+  if (!user) {
+    return null;
+  }
 
   const onDelete = async (t: SavedTeam, e: ReactMouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete "${t.name}"?`)) {return;}
+    if (!window.confirm(`Delete "${t.name}"?`)) {
+      return;
+    }
     try {
       await deleteTeam(t.id);
       setRosters((rs) => (rs ? rs.filter((x) => x.id !== t.id) : rs));

@@ -78,8 +78,6 @@ import {
 const FPS = 60;
 const SLUG = 'guillotine-winter-slayer';
 /** controlComp slot order: liter 0 / crown 1 / gws 2 / helm 3. */
-const LITER = 0;
-const CROWN = 1;
 const GWS = 2;
 const HELM = 3;
 /** The two Water-Code allies in this comp (liter=Fire, crown=Fire are excluded from Water grants). */
@@ -101,8 +99,6 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual patches ------------------------------------------------------------------
-const hasStat = (b: any, stat: string) =>
-  b.effects.some((e: any) => e.stat === stat);
 const hasKind = (b: any, kind: string) =>
   b.effects.some((e: any) => e.kind === kind);
 
@@ -110,22 +106,25 @@ const hasKind = (b: any, kind: string) =>
 const gwsNoAuras = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger.kind !== 'passive');
-  if (ov.skill1.length === before)
-    {throw new Error('gws S1 passive aura block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('gws S1 passive aura block missing — fixture is stale');
+  }
 });
 /** G2 counterfactual: her S1 level-up reload reward removed. */
 const gwsNoReload = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'instantReload'));
-  if (ov.skill1.length === before)
-    {throw new Error('gws S1 instantReload block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('gws S1 instantReload block missing — fixture is stale');
+  }
 });
 /** G3 counterfactual: her S1 level-up heal reward removed. */
 const gwsNoHeal = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'heal'));
-  if (ov.skill1.length === before)
-    {throw new Error('gws S1 heal block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('gws S1 heal block missing — fixture is stale');
+  }
 });
 /** G2/G3 counterfactual: the level-CAP removed (resourceGate stripped from both reward blocks),
  *  so the level-up rewards fire on EVERY 30-hit cadence (~56×) instead of the kit-permitted 10×.
@@ -139,10 +138,11 @@ const gwsNoGate = withPatchedOverride(SLUG, (ov) => {
       removed++;
     }
   }
-  if (removed < 2)
-    {throw new Error(
+  if (removed < 2) {
+    throw new Error(
       'gws S1 reward blocks missing the heroLevel resourceGate — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -253,7 +253,9 @@ describe('guillotine-winter-slayer — kit spec', () => {
         (b) => b.resourceGate?.name === 'heroLevel'
       );
       expect(gated.length).toBe(2);
-      for (const b of gated) {expect(b.resourceGate.max).toBe(10);}
+      for (const b of gated) {
+        expect(b.resourceGate.max).toBe(10);
+      }
       const increment = (ov.skill1 as any[]).find((b) =>
         hasKind(b, 'resource')
       );
@@ -378,7 +380,9 @@ describe('guillotine-winter-slayer — kit spec', () => {
           bursts.length * WATER_ALLIES.length
         );
         expect(targetSet(bs)).toEqual(WATER_ALLIES);
-        for (const b of bs) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+        for (const b of bs) {
+          expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+        }
       }
     });
   });

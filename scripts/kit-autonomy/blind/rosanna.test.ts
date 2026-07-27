@@ -10,7 +10,6 @@ import type { SimEvent } from '../../../src/types.js';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
@@ -64,7 +63,9 @@ describe('rosanna kit', () => {
       const b = ov.skill1!.blocks.find(
         (x: any) => x.trigger.kind === 'hitCount' && x.trigger.count === 120
       );
-      if (b) {b.trigger = { kind: 'hitCount', count: 999999 };}
+      if (b) {
+        b.trigger = { kind: 'hitCount', count: 999999 };
+      }
     });
     const { res } = run({
       ...controlComp('rosanna', true),

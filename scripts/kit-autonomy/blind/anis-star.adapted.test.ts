@@ -69,19 +69,14 @@ const allBlocks = (o: any): any[] => [
   ...(o.burst ?? []),
 ];
 function eachEffect(o: any, fn: (e: any, b: any) => void) {
-  for (const b of allBlocks(o)) {for (const e of b.effects ?? []) {fn(e, b);}}
+  for (const b of allBlocks(o)) {
+    for (const e of b.effects ?? []) {
+      fn(e, b);
+    }
+  }
 }
 const near = (a: number, b: number, eps = 0.5) =>
   Math.abs((a ?? NaN) - b) <= eps;
-const compose =
-  (...ms: Mut[]): Mut =>
-  (o) => {
-    for (const m of ms) {m(o);}
-  };
-
-const ungateNoB1: Mut = (o) => {
-  for (const b of allBlocks(o)) {if (b.formation === 'noB1') {delete b.formation;}}
-};
 const zeroBuff =
   (stat: string, value?: number): Mut =>
   (o) =>
@@ -90,24 +85,33 @@ const zeroBuff =
         e.kind === 'buff' &&
         e.stat === stat &&
         (value === undefined || near(e.value, value))
-      )
-        {e.value = 0;}
+      ) {
+        e.value = 0;
+      }
     });
 const zeroRider: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) {e.atkPct = 0;}
+    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) {
+      e.atkPct = 0;
+    }
   });
 const zeroStars: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'dot') {e.atkPct = 0;}
+    if (e.kind === 'dot') {
+      e.atkPct = 0;
+    }
   });
 const zeroCdr: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'burstCdr') {e.seconds = 0;}
+    if (e.kind === 'burstCdr') {
+      e.seconds = 0;
+    }
   });
 const doubleCaster: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.value = 70.02;}
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+      e.value = 70.02;
+    }
   });
 
 // the committed (driver) override, captured through the patch clone (never mutated)
@@ -125,7 +129,9 @@ function go(slugs: string[], mutate?: Mut) {
     focusSlug: 'ada',
     cfg: { onEvent: (e: Ev) => evs.push(e) },
   };
-  if (mutate) {opts.overrides = { [SLUG]: withPatchedOverride(SLUG, mutate) };}
+  if (mutate) {
+    opts.overrides = { [SLUG]: withPatchedOverride(SLUG, mutate) };
+  }
   return { res: runComp(opts), evs };
 }
 
@@ -263,7 +269,9 @@ describe('anis-star :: S2-a FB-enter ATK +35.01% OF CASTER ATK (noB1)', () => {
     const a = appliesFrom(BASE.evs, ANIS_NOB1, 'casterAtkPct');
     expect(a.length).toBeGreaterThan(0);
     expect(new Set(a.map((e) => e.targetIdx)).size).toBe(4);
-    for (const e of a) {expect(e.expiresFrame - e.frame).toBe(600);}
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   // ADAPTED [P7]: value is the flat ATK add (pct/100 × caster ATK); discriminate by linear scaling.
   it('scales off the CASTER ATK (doubling the pct doubles the applied value)', () => {
@@ -285,7 +293,9 @@ describe("anis-star :: S2-b Everyone's-Star full-charge heal (DRIVER: documented
   it('the override carries no heal block and lists the line in unmodeled', () => {
     let hasHeal = false;
     eachEffect(OVR, (e) => {
-      if (e.kind === 'heal') {hasHeal = true;}
+      if (e.kind === 'heal') {
+        hasHeal = true;
+      }
     });
     expect(hasHeal).toBe(false);
     expect(JSON.stringify(OVR.unmodeled?.skill2 ?? [])).toContain('1.26%');
@@ -299,7 +309,9 @@ describe('anis-star :: S2-c Projectile Explosion Damage +92.03% on FB enter, 10s
     expect(
       targetsOf(BASE.evs, 'projectileExplosionPct', 92.03).has(ANIS_NOB1)
     ).toBe(true);
-    for (const e of a) {expect(e.expiresFrame - e.frame).toBe(600);}
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   it('feeds RL consumers (Anis) and is inert on the genuinely non-RL teammates', () => {
     // ADAPTED [P13]: the blind assumed non-RL teammates (its controlComp was liter/crown/helm), but
@@ -353,7 +365,9 @@ describe('anis-star :: burst charge time fixed at 0.7s for 10s', () => {
     const a = applies(BASE.evs, 'chargeSpeedPct', 30);
     expect(a.length).toBe(anisCasts(BASE.evs));
     expect(new Set(a.map((e) => e.targetIdx))).toEqual(new Set([ANIS_NOB1]));
-    for (const e of a) {expect(e.expiresFrame - e.frame).toBe(600);}
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   it('raises Anis shot count inside the burst window', () => {
     const shots = (r: any) =>

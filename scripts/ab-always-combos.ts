@@ -80,12 +80,18 @@ const prydwenScoreOf = (slug: string): number =>
   PRYDWEN_TIER_SCORE[TIERS[slug] ?? ''] ?? 0;
 
 function metaScoringFor(weakness: Element | null): MetaScoring | undefined {
-  if (!weakness) {return undefined;}
+  if (!weakness) {
+    return undefined;
+  }
   const entry = META_WEIGHTS.byWeakness[weakness];
-  if (!entry) {return undefined;}
+  if (!entry) {
+    return undefined;
+  }
   const fallback = new Set(META_WEIGHTS.fallbackSlugs);
   const compPop: Record<string, number> = {};
-  for (const c of entry.comps) {compPop[[...c.slugs].sort().join('|')] = c.pop;}
+  for (const c of entry.comps) {
+    compPop[[...c.slugs].sort().join('|')] = c.pop;
+  }
   return {
     unitScore: (slug: string) =>
       fallback.has(slug)
@@ -154,7 +160,9 @@ function scoreOf(t: TeamResult, weakness: Element | null): number {
   let prior = 0;
   if (meta) {
     let sum = 0;
-    for (const s of slugs) {sum += meta.unitScore(s);}
+    for (const s of slugs) {
+      sum += meta.unitScore(s);
+    }
     prior = Math.min(
       1,
       sum / slugs.length +
@@ -169,12 +177,14 @@ function scoreOf(t: TeamResult, weakness: Element | null): number {
   );
 }
 
-async function runArm(
+function runArm(
   weakness: Element | null,
   withCombos: boolean
 ): Promise<TeamResult[]> {
   const calc = calcFor(weakness);
-  if (!withCombos) {return calc.topTeams(5, { spreadTargets: spreadTargets() });}
+  if (!withCombos) {
+    return calc.topTeams(5, { spreadTargets: spreadTargets() });
+  }
   // mirror App.tsx runTopTeams: fold combos, then the crown+naga → helm rule
   const ac = assignAlwaysCombos(
     SOLO_ALWAYS_COMBOS,
@@ -238,8 +248,9 @@ function report(
     `  curated fielded — TREATMENT (on merit): ${tf.length}/${CURATED.length} [${tf.join(' ')}]`
   );
   const dropped = cf.filter((s) => !tf.includes(s));
-  if (dropped.length)
-    {console.log(`  dropped by treatment: [${dropped.join(' ')}]`);}
+  if (dropped.length) {
+    console.log(`  dropped by treatment: [${dropped.join(' ')}]`);
+  }
   const dScore = totalScore(treatment) / totalScore(control) - 1;
   console.log(
     `  Δ roster score (treatment vs control): ${(dScore * 100).toFixed(1)}%`

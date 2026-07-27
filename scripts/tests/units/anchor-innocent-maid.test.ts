@@ -74,8 +74,6 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) =>
-  b.effects.some((e: any) => e.stat === stat);
 const hasHeal = (b: any) => b.effects.some((e: any) => e.kind === 'heal');
 
 /** L2 counterfactual: distributedDamagePct → attackDamagePct (wrong stat). */
@@ -85,10 +83,11 @@ const aimDistributedAsAtkDmg = withPatchedOverride(
     const e = ov.skill1
       .flatMap((b: any) => b.effects.flatMap((x: any) => x.steps ?? [x]))
       .find((x: any) => x.stat === 'distributedDamagePct');
-    if (!e)
-      {throw new Error(
+    if (!e) {
+      throw new Error(
         'anchor-innocent-maid S1 distributedDamagePct missing — fixture stale'
-      );}
+      );
+    }
     e.stat = 'attackDamagePct';
   }
 );
@@ -98,8 +97,9 @@ const aimHealSingleTick = withPatchedOverride('anchor-innocent-maid', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'heal');
-  if (!e)
-    {throw new Error('anchor-innocent-maid S1 heal missing — fixture stale');}
+  if (!e) {
+    throw new Error('anchor-innocent-maid S1 heal missing — fixture stale');
+  }
   e.ticks = 1;
   delete e.intervalSec;
 });
@@ -109,10 +109,11 @@ const aimS2AtkAsAtkPct = withPatchedOverride('anchor-innocent-maid', (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects.flatMap((x: any) => x.steps ?? [x]))
     .find((x: any) => x.stat === 'casterAtkPct' && x.value === 35.02);
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'anchor-innocent-maid S2 casterAtkPct 35.02 missing — fixture stale'
-    );}
+    );
+  }
   e.stat = 'atkPct';
 });
 
@@ -123,10 +124,11 @@ const aimBurstAtkAsAtkPct = withPatchedOverride(
     const e = ov.burst
       .flatMap((b: any) => b.effects)
       .find((x: any) => x.stat === 'casterAtkPct' && x.value === 30.09);
-    if (!e)
-      {throw new Error(
+    if (!e) {
+      throw new Error(
         'anchor-innocent-maid burst casterAtkPct 30.09 missing — fixture stale'
-      );}
+      );
+    }
     e.stat = 'atkPct';
   }
 );
@@ -135,8 +137,9 @@ const aimBurstAtkAsAtkPct = withPatchedOverride(
 const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before)
-    {throw new Error('crown S2 heal block missing — fixture stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('crown S2 heal block missing — fixture stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

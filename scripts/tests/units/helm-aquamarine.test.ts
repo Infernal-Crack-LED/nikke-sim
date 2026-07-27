@@ -91,7 +91,7 @@ import {
   type CompOptions,
 } from '../lib/harness.js';
 
-const HA = 1; // slot order: liter 0 / helm-aquamarine 1 / helm 2
+// slot order: liter 0 / helm-aquamarine 1 / helm 2
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -145,20 +145,22 @@ const distinct = <T>(xs: T[]): T[] => [...new Set(xs)];
 const cfS1aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'hitCount');
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'helm-aquamarine S1 hitCount rider missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA1 nearest-wrong (magnitude): the rider at the level-9 value 121.05 instead of 131.34. */
 const cfS1aMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e || e.atkPct !== 131.34)
-    {throw new Error(
+  if (!e || e.atkPct !== 131.34) {
+    throw new Error(
       'helm-aquamarine S1 131.34% flatDamage missing — fixture is stale'
-    );}
+    );
+  }
   e.atkPct = 121.05;
 });
 const isCdrBlock = (b: any) =>
@@ -171,85 +173,107 @@ const isCdrBlock = (b: any) =>
 /** HA2 nearest-wrong (trigger): the CDR ladder re-keyed fullBurstEnter → burstCast (over-applies). */
 const cfS1bBurstCast = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill1)
-    {if (isCdrBlock(b)) {((b.trigger = { kind: 'burstCast' }), hit++);}}
-  if (!hit)
-    {throw new Error(
+  for (const b of ov.skill1) {
+    if (isCdrBlock(b)) {
+      b.trigger = { kind: 'burstCast' };
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'helm-aquamarine S1 burstCdr block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA2 nearest-wrong (escalating): the ladder collapsed to a flat "always 2.6" burstCdr. */
 const cfS1bFlat = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.skill1.find((x: any) => isCdrBlock(x));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'helm-aquamarine S1 burstCdr block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects = [{ kind: 'burstCdr', seconds: 2.6 }];
 });
 /** HA3 nearest-wrong (presence): the random-enemy hit removed entirely. */
 const cfS2aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'interval');
-  if (ov.skill2.length === before)
-    {throw new Error(
+  if (ov.skill2.length === before) {
+    throw new Error(
       'helm-aquamarine S2 interval hit missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA3 nearest-wrong (cadence): the pre-2026-07-20 invented hitCount:30 proxy (ties to shot count). */
 const cfS2aHitCount = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
-    {if (b.trigger?.kind === 'interval')
-      {((b.trigger = { kind: 'hitCount', count: 30 }), hit++);}}
-  if (!hit)
-    {throw new Error(
+  for (const b of ov.skill2) {
+    if (b.trigger?.kind === 'interval') {
+      b.trigger = { kind: 'hitCount', count: 30 };
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'helm-aquamarine S2 interval hit missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA4 nearest-wrong (gate): the Electric gate stripped → the stacking debuff fires vs every boss (fudge). */
 const cfS2bUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
-    {if (
+  for (const b of ov.skill2) {
+    if (
       b.bossElementGate &&
       b.effects?.some((e: any) => e.stat === 'damageTakenPct')
-    )
-      {(delete b.bossElementGate, hit++);}}
-  if (!hit)
-    {throw new Error(
+    ) {
+      delete b.bossElementGate;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'helm-aquamarine S2 Electric-gated debuff missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA5 nearest-wrong (magnitude): the burst nuke at the level-9 value 157.33 instead of 164.83. */
 const cfBaMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.burst.find(
     (x: any) => x.trigger?.kind === 'burstCast' && !x.bossElementGate
   );
-  if (!b || b.effects[0]?.atkPct !== 164.83)
-    {throw new Error(
+  if (!b || b.effects[0]?.atkPct !== 164.83) {
+    throw new Error(
       'helm-aquamarine burst 164.83% nuke missing — fixture is stale'
-    );}
+    );
+  }
   b.effects[0].atkPct = 157.33;
 });
 /** HA6 nearest-wrong (presence): the Electric extra-hit block removed. */
 const cfBbRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !b.bossElementGate);
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'helm-aquamarine burst bossElementGate block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** HA6 nearest-wrong (gate): the bossElementGate dropped → the extra hit fires vs every boss (fudge). */
 const cfBbUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.burst)
-    {if (b.bossElementGate) {(delete b.bossElementGate, hit++);}}
-  if (!hit)
-    {throw new Error(
+  for (const b of ov.burst) {
+    if (b.bossElementGate) {
+      delete b.bossElementGate;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'helm-aquamarine burst bossElementGate block missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------

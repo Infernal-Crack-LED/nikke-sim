@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness';
@@ -65,7 +64,9 @@ const base = runCollecting(controlComp(SLUG, true));
 
 const riderOff = runPatched((ov) =>
   eachEffect(ov, (e) => {
-    if (e.kind === 'flatDamage' && approx(e.atkPct, 82.8)) {e.atkPct = 0;}
+    if (e.kind === 'flatDamage' && approx(e.atkPct, 82.8)) {
+      e.atkPct = 0;
+    }
   })
 );
 const riderHalfThreshold = runPatched((ov) =>
@@ -80,13 +81,16 @@ const riderHalfThreshold = runPatched((ov) =>
 );
 const atkBuffOff = runPatched((ov) =>
   eachEffect(ov, (e) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && approx(e.value, 8.28))
-      {e.value = 0;}
+    if (e.kind === 'buff' && e.stat === 'atkPct' && approx(e.value, 8.28)) {
+      e.value = 0;
+    }
   })
 );
 const skill2DmgOff = runPatched((ov) =>
   eachEffect(ov, (e) => {
-    if (e.kind === 'flatDamage' && approx(e.atkPct, 144.73)) {e.atkPct = 0;}
+    if (e.kind === 'flatDamage' && approx(e.atkPct, 144.73)) {
+      e.atkPct = 0;
+    }
   })
 );
 const critGateOff = runPatched((ov) =>
@@ -96,13 +100,16 @@ const critGateOff = runPatched((ov) =>
         (e) =>
           e.kind === 'buff' && e.stat === 'critRatePct' && approx(e.value, 26.1)
       )
-    )
-      {delete b.fbGate;}
+    ) {
+      delete b.fbGate;
+    }
   })
 );
 const swapOff = runPatched((ov) =>
   eachEffect(ov, (e) => {
-    if (e.kind === 'weaponSwap') {e.damagePct = 0;}
+    if (e.kind === 'weaponSwap') {
+      e.damagePct = 0;
+    }
   })
 );
 
@@ -129,7 +136,9 @@ describe('snow-white skill1 — every-30-HITS self ATK \u25b2 8.28% / 5s', () =>
   it('applies to SELF only (targetIdx === casterIdx on every application)', () => {
     const applies = buffApplies(base.events, 'atkPct', 8.28);
     expect(applies.length).toBeGreaterThan(0);
-    for (const e of applies) {expect(e.targetIdx).toBe(e.casterIdx);}
+    for (const e of applies) {
+      expect(e.targetIdx).toBe(e.casterIdx);
+    }
   });
   it('raises SW damage (non-vacuous) but leaves teammates identical (self-scoped, not allies)', () => {
     expect(swTotal(base.res)).toBeGreaterThan(swTotal(atkBuffOff.res));
@@ -149,7 +158,9 @@ describe('snow-white skill2 — Critical Rate \u25b2 26.1% / 10s, ONLY when used
   it('is GENERIC crit rate applied to SELF (not critRateNormalPct, not allies)', () => {
     const applies = buffApplies(base.events, 'critRatePct', 26.1);
     expect(applies.length).toBeGreaterThan(0);
-    for (const e of applies) {expect(e.targetIdx).toBe(e.casterIdx);}
+    for (const e of applies) {
+      expect(e.targetIdx).toBe(e.casterIdx);
+    }
     // guard the scope: must NOT be encoded as the normal-attack-scoped crit stat
     expect(buffApplies(base.events, 'critRateNormalPct', 26.1).length).toBe(0);
   });

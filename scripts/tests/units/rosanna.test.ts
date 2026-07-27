@@ -55,8 +55,6 @@ import { runComp, totals, withPatchedOverride } from '../lib/harness.js';
 const FPS = 60;
 /** slugs order: rosanna 0 / crown 1 / helm 2. */
 const ROSANNA = 0;
-const CROWN = 1;
-const HELM = 2;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -85,49 +83,56 @@ const noElem = withPatchedOverride('rosanna', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !hasStat(b, 'elemAdvantageDamagePct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'rosanna S1 elemAdvantageDamagePct block missing — fixture stale'
-    );}
+    );
+  }
 });
 /** R1 counterfactual: the same magnitude as a plain always-on Damage-Up buff (NOT advantage-gated). */
 const genericElem = withPatchedOverride('rosanna', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'elemAdvantageDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'rosanna S1 elemAdvantageDamagePct effect missing — fixture stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 /** R2 reference: the crit-rate line removed. */
 const noCrit = withPatchedOverride('rosanna', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('rosanna S1 critRatePct block missing — fixture stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('rosanna S1 critRatePct block missing — fixture stale');
+  }
 });
 /** R2 counterfactual: the crit rate scoped to normal attacks only (the kit says UNSCOPED). */
 const scopedCrit = withPatchedOverride('rosanna', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'critRatePct');
-  if (!e)
-    {throw new Error('rosanna S1 critRatePct effect missing — fixture stale');}
+  if (!e) {
+    throw new Error('rosanna S1 critRatePct effect missing — fixture stale');
+  }
   e.stat = 'critRateNormalPct';
 });
 /** R3 reference: the 500-normal Frenzy line removed. */
 const noFrenzy = withPatchedOverride('rosanna', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill2.length === before)
-    {throw new Error('rosanna S2 atkPct block missing — fixture stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('rosanna S2 atkPct block missing — fixture stale');
+  }
 });
 /** R3 counterfactual: Frenzy as an always-on passive (one apply at frame 0, 100% uptime). */
 const passiveFrenzy = withPatchedOverride('rosanna', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'atkPct'));
-  if (!b) {throw new Error('rosanna S2 atkPct block missing — fixture stale');}
+  if (!b) {
+    throw new Error('rosanna S2 atkPct block missing — fixture stale');
+  }
   b.trigger = { kind: 'passive' };
 });
 /** R4 counterfactual: the burst nuke at the lvl-9 magnitude instead of the max 1310.4. */
@@ -135,26 +140,29 @@ const lowBurst = withPatchedOverride('rosanna', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 1310.4);
-  if (!e)
-    {throw new Error('rosanna burst Assalto flatDamage missing — fixture stale');}
+  if (!e) {
+    throw new Error('rosanna burst Assalto flatDamage missing — fixture stale');
+  }
   e.atkPct = 1244.88;
 });
 /** R5 reference: the Water-Code taken debuff removed. */
 const noTaken = withPatchedOverride('rosanna', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'rosanna burst damageTakenPct block missing — fixture stale'
-    );}
+    );
+  }
 });
 /** R5 counterfactual: the taken debuff UNGATED (no bossElementGate) — fires vs every boss. */
 const ungatedTaken = withPatchedOverride('rosanna', (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'damageTakenPct'));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'rosanna burst damageTakenPct block missing — fixture stale'
-    );}
+    );
+  }
   delete b.bossElementGate;
 });
 
@@ -253,7 +261,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.stat))]).toEqual(['critRatePct']);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([19.34]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ROSANNA]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      }
     });
 
     it('fires every 120 normal attacks (floor(shots/120) applies)', () => {
@@ -282,7 +292,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([22.61]);
       expect([...new Set(applied.map((b) => b.maxStacks))]).toEqual([10]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ROSANNA]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      }
     });
 
     it('is a hitCount:500 PULSE: floor(shots/500) applies, none at frame 0', () => {
@@ -341,7 +353,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(taken.map((b) => b.value))]).toEqual([29]);
       expect([...new Set(taken.map((b) => b.casterIdx))]).toEqual([null]);
       expect([...new Set(taken.map((b) => b.targetIdx))]).toEqual([null]);
-      for (const b of taken) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
+      for (const b of taken) {
+        expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      }
     });
 
     it('is LIVE on her normals in-window (mult.taken reaches 1.29)', () => {

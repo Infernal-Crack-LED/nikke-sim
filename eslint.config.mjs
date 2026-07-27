@@ -1,5 +1,6 @@
 import eslint from '@eslint/js';
 import globals from 'globals';
+import reactHooks from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
@@ -33,12 +34,31 @@ export default tseslint.config(
     },
   },
   {
+    files: ['web/src/**/*.{ts,tsx}'],
+    plugins: {
+      'react-hooks': reactHooks,
+    },
+    rules: {
+      'react-hooks/exhaustive-deps': 'error',
+    },
+  },
+  {
+    files: ['.qwen/icon-diag/*.mjs', 'scripts/pool-browser-check.mjs'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+  },
+  {
     ignores: [
       'dist/**/*',
       'web/dist/**/*',
       'node_modules/**/*',
       '.vite/**/*',
       '**/*.tsbuildinfo',
+      'scripts/blind-rebuild/code-bundle/**/*',
+      '**/*.txt',
     ],
   }
 );

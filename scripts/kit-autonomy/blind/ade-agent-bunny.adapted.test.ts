@@ -1,4 +1,3 @@
- 
 // ADAPTED COPY (driver reconciliation, 2026-07-24): pristine blind artifact preserved at
 // blind/ade-agent-bunny.test.ts. Four structural corrections to blind-writer assumptions that were
 // unverifiable from the redacted packet — assertion INTENT unchanged. See manual-review.
@@ -38,13 +37,7 @@
  * If the exemplar (helm.test.ts) differs, fix baseOpts/runPatched/teamDmg/uDmg only.
  */
 import { describe, it, expect } from 'vitest';
-import {
-  controlComp,
-  runComp,
-  totals,
-  unitOf,
-  withPatchedOverride,
-} from '../lib/harness';
+import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
 
 const SLUG = 'ade-agent-bunny';
 const MATES = ['liter', 'ada', 'helm'];
@@ -60,7 +53,9 @@ function baseOpts(onEvent?: (ev: Ev) => void): any {
     bossElement: 'Fire',
     focusSlug: 'ade-agent-bunny',
   };
-  if (onEvent) {o.cfg = { ...(o.cfg ?? {}), onEvent };}
+  if (onEvent) {
+    o.cfg = { ...(o.cfg ?? {}), onEvent };
+  }
   return o;
 }
 function runPatched(mutate: (o: any) => number): { res: any; hits: number } {
@@ -103,8 +98,9 @@ function findBuffs(o: any, stat: string, value?: number): any[] {
         e.kind === 'buff' &&
         e.stat === stat &&
         (value === undefined || near(e.value, value))
-      )
-        {out.push({ b, e });}
+      ) {
+        out.push({ b, e });
+      }
     }
   }
   return out;
@@ -171,11 +167,14 @@ const PIERCE_ZERO = runPatched((o) => {
 });
 const PIERCE_OFF = runPatched((o) => {
   o.hasPierce = false;
-  if (o.skills) {o.skills.hasPierce = false;}
-  for (const blk of blocksOf(o))
-    {blk.effects = (blk.effects ?? []).filter(
+  if (o.skills) {
+    o.skills.hasPierce = false;
+  }
+  for (const blk of blocksOf(o)) {
+    blk.effects = (blk.effects ?? []).filter(
       (e: any) => e.kind !== 'gainPierce'
-    );}
+    );
+  }
   return 1;
 });
 
@@ -310,7 +309,9 @@ describe('S2a — allies Pierce Damage +18.36%, 5s, per full charge', () => {
 
   it('inertness: zeroing the pierce channel leaves the non-pierce teammates byte-identical', () => {
     expect(PIERCE_ZERO.hits).toBeGreaterThan(0);
-    for (const m of MATES) {expect(uDmg(PIERCE_ZERO.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(PIERCE_ZERO.res, m)).toBe(uDmg(BASE, m));
+    }
     expect(uDmg(PIERCE_ZERO.res, SLUG)).toBeLessThanOrEqual(uDmg(BASE, SLUG));
   });
 
@@ -355,7 +356,9 @@ describe('S2b — at MAX Spy Lens: gains Pierce + ATK +16% continuously (self)',
   it('is live: zeroing it lowers ADE damage and moves nobody else (inertness)', () => {
     expect(S2B_ZERO.hits).toBeGreaterThan(0);
     expect(uDmg(S2B_ZERO.res, SLUG)).toBeLessThan(uDmg(BASE, SLUG));
-    for (const m of MATES) {expect(uDmg(S2B_ZERO.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(S2B_ZERO.res, m)).toBe(uDmg(BASE, m));
+    }
   });
 
   it('non-vacuity: the gate really BITES — an ungated clone out-damages the gated baseline', () => {
@@ -372,7 +375,9 @@ describe('S2b — at MAX Spy Lens: gains Pierce + ATK +16% continuously (self)',
       Boolean(OV.hasPierce ?? OV.skills?.hasPierce) ||
       JSON.stringify(OV).includes('"gainPierce"');
     expect(tagged).toBe(true);
-    for (const m of MATES) {expect(uDmg(PIERCE_OFF.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(PIERCE_OFF.res, m)).toBe(uDmg(BASE, m));
+    }
     expect(uDmg(PIERCE_OFF.res, SLUG)).toBeLessThanOrEqual(uDmg(BASE, SLUG));
   });
 });

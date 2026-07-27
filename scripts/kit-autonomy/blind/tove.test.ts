@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness';
@@ -60,7 +59,9 @@ function runCollect(override?: any) {
     ...BASE,
     cfg: { ...(BASE as any).cfg, onEvent: (e: Ev) => evs.push(e) },
   };
-  if (override) {opts.overrides = { tove: override };}
+  if (override) {
+    opts.overrides = { tove: override };
+  }
   const res = runComp(opts);
   return { res, evs };
 }
@@ -76,21 +77,31 @@ const count = (evs: Ev[], kind: string): number =>
 
 // ---- override patch helpers (operate on the withPatchedOverride clone) -------
 const zeroStat = (stat: string) => (o: any) => {
-  for (const b of o.blocks || [])
-    {for (const e of b.effects || [])
-      {if (e.kind === 'buff' && e.stat === stat) {e.value = 0;}}}
+  for (const b of o.blocks || []) {
+    for (const e of b.effects || []) {
+      if (e.kind === 'buff' && e.stat === stat) {
+        e.value = 0;
+      }
+    }
+  }
 };
 const retargetStat = (stat: string, target: any) => (o: any) => {
-  for (const b of o.blocks || [])
-    {if (
+  for (const b of o.blocks || []) {
+    if (
       (b.effects || []).some((e: any) => e.kind === 'buff' && e.stat === stat)
-    )
-      {b.target = target;}}
+    ) {
+      b.target = target;
+    }
+  }
 };
 const renameStat = (from: string, to: string) => (o: any) => {
-  for (const b of o.blocks || [])
-    {for (const e of b.effects || [])
-      {if (e.kind === 'buff' && e.stat === from) {e.stat = to;}}}
+  for (const b of o.blocks || []) {
+    for (const e of b.effects || []) {
+      if (e.kind === 'buff' && e.stat === from) {
+        e.stat = to;
+      }
+    }
+  }
 };
 
 // ---- hoisted runs (each runComp is a full 180s sim) --------------------------

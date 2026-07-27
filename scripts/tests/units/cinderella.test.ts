@@ -71,7 +71,6 @@ import {
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / cinderella 2 / helm 3. */
 const CINDY = 2;
-const RAMP_FRAMES = 36 * FPS; // Beautiful accrues over 3s × 12 stacks = 36s
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -97,28 +96,31 @@ const hasStat = (b: any, stat: string) =>
 const cindyNoS1Buff = withPatchedOverride('cinderella', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkOfMaxHpPct'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'cinderella S1 atkOfMaxHpPct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** C1 nearest-wrong: her S1 ATK conversion as a GENERIC ATK% buff (ATK-scaling, not HP-scaling). */
 const cindyAtkNotHp = withPatchedOverride('cinderella', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'atkOfMaxHpPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'cinderella S1 atkOfMaxHpPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'atkPct';
 });
 /** C2 nearest-wrong: per-rocket charging (the mag-dump primitive turned off). */
 const cindyNoMagDump = withPatchedOverride('cinderella', (ov) => {
-  if (!ov.charFixes?.magDumpRof)
-    {throw new Error(
+  if (!ov.charFixes?.magDumpRof) {
+    throw new Error(
       'cinderella charFixes.magDumpRof missing — fixture is stale'
-    );}
+    );
+  }
   ov.charFixes.magDumpRof = false;
 });
 /** C3 reference: her full-charge rider removed. */
@@ -131,25 +133,28 @@ const cindyNoRider = withPatchedOverride('cinderella', (ov) => {
         b.effects.some((e: any) => e.kind === 'flatDamage')
       )
   );
-  if (ov.skill1.length === before)
-    {throw new Error('cinderella S1 rider block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('cinderella S1 rider block missing — fixture is stale');
+  }
 });
 /** C5 reference: Beautiful removed entirely (no Max-HP ramp → no HP-scaling ATK feed). */
 const cindyNoBeautiful = withPatchedOverride('cinderella', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'casterMaxHpPct'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'cinderella Beautiful (casterMaxHpPct) block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** C5 nearest-wrong: Beautiful present but INSTANT (ramp removed → full from t=0). */
 const cindyInstantBeautiful = withPatchedOverride('cinderella', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterMaxHpPct');
-  if (!e || e.rampSec == null)
-    {throw new Error('cinderella Beautiful rampSec missing — fixture is stale');}
+  if (!e || e.rampSec == null) {
+    throw new Error('cinderella Beautiful rampSec missing — fixture is stale');
+  }
   delete e.rampSec;
 });
 /** C7 nearest-wrong: the burst mirror present but INSTANT (ramp removed → full 346.8 every cast). */
@@ -157,10 +162,11 @@ const cindyInstantMirror = withPatchedOverride('cinderella', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.rampSec != null);
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'cinderella burst mirror rampSec missing — fixture is stale'
-    );}
+    );
+  }
   delete e.rampSec;
 });
 
@@ -317,7 +323,9 @@ describe('cinderella — kit spec', () => {
         [...new Set(maxHpFlat.map((b) => b.expiresFrame))],
         'Beautiful is continuous — no wall-clock expiry'
       ).toEqual([null]);
-      for (const b of maxHpFlat) {expect(b.value).toBeGreaterThan(0);}
+      for (const b of maxHpFlat) {
+        expect(b.value).toBeGreaterThan(0);
+      }
     });
 
     it('FEEDS her ATK: the shipped nuke baseAtk exceeds the no-Beautiful counterfactual', () => {

@@ -82,14 +82,18 @@ const SLUG = 'raven';
 // the container.
 function blocksOf(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 
 function eachEffect(ov: any, fn: (e: any, b: any, slot: string) => void): void {
   for (const slot of ['skill1', 'skill2', 'burst']) {
     for (const b of blocksOf(ov, slot)) {
-      for (const e of b.effects ?? []) {fn(e, b, slot);}
+      for (const e of b.effects ?? []) {
+        fn(e, b, slot);
+      }
     }
   }
 }
@@ -119,7 +123,6 @@ let nBurstSust = 0;
 let nAtkZero = 0;
 let nAtkShort = 0;
 let nNukeZero = 0;
-let nParts = 0;
 
 const BASE = run();
 const SOLO = run(undefined, false);
@@ -255,7 +258,9 @@ const sustSolo = soloEv.filter(
 const committed: any = withPatchedOverride(SLUG, () => {});
 const partsEffects: any[] = [];
 eachEffect(committed, (e) => {
-  if (e.kind === 'buff' && e.stat === 'partsDamagePct') {partsEffects.push(e);}
+  if (e.kind === 'buff' && e.stat === 'partsDamagePct') {
+    partsEffects.push(e);
+  }
 });
 const unmodeledBlob = JSON.stringify(committed?.unmodeled ?? {});
 
@@ -466,12 +471,16 @@ describe('raven burst - 492.3% nuke + A.N. Mode sustained up 89.44% (10 sec)', (
       (e) => e.kind === 'damage' && e.srcSlot === 'burst'
     );
     expect(burstHits.length).toBeGreaterThan(0);
-    for (const h of burstHits) {expect(h.fbMajorApplied).not.toBe(true);}
+    for (const h of burstHits) {
+      expect(h.fbMajorApplied).not.toBe(true);
+    }
   });
 
   it('A.N. Mode sustained buff is self-scoped, 89.44, and burst-CAST keyed', () => {
     expect(sustSolo.length).toBeGreaterThan(0);
-    for (const e of sustSolo) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of sustSolo) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
     // SOLO: raven is the only Burst III, so she casts on every Full Burst and the
     // counts coincide (non-vacuity - the buff really does fire every rotation).
     expect(sustSolo.length).toBe(fbStartsSolo.length);
@@ -498,7 +507,9 @@ describe('raven burst - 492.3% nuke + A.N. Mode sustained up 89.44% (10 sec)', (
       }
     });
     expect(sustEffects.length).toBeGreaterThan(0);
-    for (const e of sustEffects) {expect(e.durationSec).toBe(10);}
+    for (const e of sustEffects) {
+      expect(e.durationSec).toBe(10);
+    }
   });
 });
 

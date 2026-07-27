@@ -84,9 +84,15 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
-  if (Array.isArray(s.blocks)) {return s.blocks;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   return [];
 }
 function slotEffects(ov: any, slot: string): any[] {
@@ -129,8 +135,6 @@ const isAtkBuff = (e: any) =>
 const isChargeSpeed = (e: any) =>
   e.kind === 'buff' && e.stat === 'chargeSpeedPct';
 const isFlat = (e: any) => e.kind === 'flatDamage';
-const isHpBuff = (e: any) =>
-  e.kind === 'buff' && /hp/i.test(String(e.stat ?? ''));
 const isBigBurst = (e: any) => isFlat(e) && Number(e.atkPct) >= 1000;
 const isMirror = (e: any) => isFlat(e) && Number(e.atkPct) < 1000;
 
@@ -144,7 +148,9 @@ function run(ov?: any, helm = true) {
       evs.push(ev as Ev);
     },
   };
-  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
+  if (ov) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  }
   const res = runComp(opts);
   return { res, evs, total: totals(res)[SLUG] ?? 0 };
 }
@@ -156,7 +162,9 @@ const CF_ATK_ZERO = patch((ov) =>
 );
 const CF_ATK_BURSTCAST = patch((ov) => {
   const b = blockFor(ov, 'skill1', isAtkBuff);
-  if (!b) {return 0;}
+  if (!b) {
+    return 0;
+  }
   b.trigger = { kind: 'burstCast' };
   return 1;
 });
@@ -226,12 +234,12 @@ const CF_BEAUTIFUL_INSTANT = patch((ov) => {
 });
 
 const BASE = run();
-const R_ATK_ZERO = run(CF_ATK_ZERO.ov);
-const R_ATK_BURSTCAST = run(CF_ATK_BURSTCAST.ov);
-const R_CS_ZERO = run(CF_CS_ZERO.ov);
-const R_CS_TIMED = run(CF_CS_TIMED.ov);
-const R_RIDER_ZERO = run(CF_RIDER_ZERO.ov);
-const R_RIDER_NOFB = run(CF_RIDER_NOFB.ov);
+run(CF_ATK_ZERO.ov);
+run(CF_ATK_BURSTCAST.ov);
+run(CF_CS_ZERO.ov);
+run(CF_CS_TIMED.ov);
+run(CF_RIDER_ZERO.ov);
+run(CF_RIDER_NOFB.ov);
 const R_BEAUTIFUL_ZERO = run(CF_BEAUTIFUL_ZERO.ov);
 const R_MIRROR_ZERO = run(CF_MIRROR_ZERO.ov);
 const R_MIRROR_NORAMP = run(CF_MIRROR_NORAMP.ov);
@@ -277,11 +285,18 @@ const IDX_FIELDS = [
   'idx',
 ];
 function fromHer(e: any): boolean {
-  for (const f of SLUG_FIELDS)
-    {if (typeof e[f] === 'string') {return e[f] === SLUG;}}
-  if (IDX >= 0)
-    {for (const f of IDX_FIELDS)
-      {if (typeof e[f] === 'number') {return e[f] === IDX;}}}
+  for (const f of SLUG_FIELDS) {
+    if (typeof e[f] === 'string') {
+      return e[f] === SLUG;
+    }
+  }
+  if (IDX >= 0) {
+    for (const f of IDX_FIELDS) {
+      if (typeof e[f] === 'number') {
+        return e[f] === IDX;
+      }
+    }
+  }
   return false;
 }
 const herDamage = (evs: Ev[]) =>

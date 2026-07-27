@@ -39,18 +39,15 @@ import {
   controlComp,
   runComp,
   totals,
-  unitOf,
   withPatchedOverride,
 } from '../../tests/lib/harness.js';
 
 const FPS = 60;
 const CARRY = 'zwei';
 /** controlComp slot order: liter 0 / crown 1 / zwei 2 / helm 3. */
-const LITER = 0;
 const ZWEI = 2;
 const ALL_ALLIES = new Set([0, 1, 2, 3]); // 4-unit team, slot 5 empty
 
-type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
@@ -73,24 +70,30 @@ const allSlots = (ov: any) => [
 /** Zero every Pierce Damage ▲ magnitude — kills the S1/BU pierce contribution to teammate damage. */
 const zeroPierce = withPatchedOverride('zwei', (ov) => {
   let n = 0;
-  for (const slot of allSlots(ov))
-    {for (const b of slot)
-      {for (const e of b.effects)
-        {if (e.stat === 'pierceDamagePct') {
+  for (const slot of allSlots(ov)) {
+    for (const b of slot) {
+      for (const e of b.effects) {
+        if (e.stat === 'pierceDamagePct') {
           e.value = 0;
           n++;
-        }}}}
-  if (n === 0)
-    {throw new Error(
+        }
+      }
+    }
+  }
+  if (n === 0) {
+    throw new Error(
       'zwei: no pierceDamagePct effects found — fixture is stale'
-    );}
+    );
+  }
 });
 /** Remove the burst's Pierce GRANT (my gainPierce read of "Pierce Attacks 101"). If the driver did
  *  NOT model a grant, this patch is a no-op and the Z7 grant-dependency assertion goes RED — payload. */
 const noGainPierce = withPatchedOverride('zwei', (ov) => {
-  for (const slot of allSlots(ov))
-    {for (const b of slot)
-      {b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');}}
+  for (const slot of allSlots(ov)) {
+    for (const b of slot) {
+      b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
+    }
+  }
 });
 /** Remove the burst weapon swap. */
 const noSwap = withPatchedOverride('zwei', (ov) => {
@@ -100,8 +103,9 @@ const noSwap = withPatchedOverride('zwei', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
     n += before - b.effects.length;
   }
-  if (n === 0)
-    {throw new Error('zwei: no weaponSwap effect in burst — fixture is stale');}
+  if (n === 0) {
+    throw new Error('zwei: no weaponSwap effect in burst — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) ---------------------------------------------------
@@ -140,10 +144,11 @@ const inSomeFb = (frame: number, w: [number, number][]) =>
 /** allies reached per application frame — a self-scoped mis-encoding collapses this to {ZWEI}. */
 function targetsPerFrame(apps: BuffApply[]): Set<number | null>[] {
   const byFrame = new Map<number, Set<number | null>>();
-  for (const b of apps)
-    {(byFrame.get(b.frame) ?? byFrame.set(b.frame, new Set()).get(b.frame)!).add(
+  for (const b of apps) {
+    (byFrame.get(b.frame) ?? byFrame.set(b.frame, new Set()).get(b.frame)!).add(
       b.targetIdx
-    );}
+    );
+  }
   return [...byFrame.values()];
 }
 
@@ -190,7 +195,9 @@ describe('zwei — kit spec', () => {
     it('is applied at 15% for 5 sec (distinct from the 18.63% FB-enter buff)', () => {
       expect(apps.length).toBeGreaterThan(0);
       expect([...new Set(apps.map((b) => b.value))]).toEqual([15]);
-      for (const b of apps) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
+      for (const b of apps) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
     });
     it('GATE APPROXIMATION: applications occur only AFTER zwei has cast her burst (status opens then)', () => {
       // No ally-self-status gate primitive exists in the schema; "Pierce Attacks 101" is granted by
@@ -199,7 +206,9 @@ describe('zwei — kit spec', () => {
       const firstBurst = Math.min(
         ...zweiBursts(base.events).map((c: any) => c.frame)
       );
-      for (const b of apps) {expect(b.frame).toBeGreaterThanOrEqual(firstBurst);}
+      for (const b of apps) {
+        expect(b.frame).toBeGreaterThanOrEqual(firstBurst);
+      }
     });
   });
 
@@ -221,8 +230,9 @@ describe('zwei — kit spec', () => {
       }
     });
     it('both reach all four allies', () => {
-      for (const holders of targetsPerFrame([...a, ...b]))
-        {expect(holders).toEqual(ALL_ALLIES);}
+      for (const holders of targetsPerFrame([...a, ...b])) {
+        expect(holders).toEqual(ALL_ALLIES);
+      }
     });
   });
 
@@ -239,7 +249,9 @@ describe('zwei — kit spec', () => {
     });
     it('every application lands inside a Full Burst window (fbGate inFb)', () => {
       const w = fbWindows(base.events);
-      for (const x of z2) {expect(inSomeFb(x.frame, w)).toBe(true);}
+      for (const x of z2) {
+        expect(inSomeFb(x.frame, w)).toBe(true);
+      }
     });
   });
 
@@ -263,14 +275,10 @@ describe('zwei — kit spec', () => {
     // grant), teammates never become pierce-tagged, every Pierce Damage ▲ stays inert, and BOTH go
     // RED — surfacing the divergence.
     it('teammate damage DROPS when all Pierce Damage ▲ magnitudes are zeroed', () => {
-      expect(base.totals.liter).toBeGreaterThan(
-        pierceZeroed.totals.liter
-      );
+      expect(base.totals.liter).toBeGreaterThan(pierceZeroed.totals.liter);
     });
     it('teammate damage DROPS when the pierce GRANT is removed (proves the grant, not just the ▲)', () => {
-      expect(base.totals.liter).toBeGreaterThan(
-        grantRemoved.totals.liter
-      );
+      expect(base.totals.liter).toBeGreaterThan(grantRemoved.totals.liter);
     });
   });
 

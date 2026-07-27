@@ -94,7 +94,6 @@ const FPS = 60;
 const SLUG = 'cinderella-crystal-wave';
 /** controlComp slot order: liter 0 / crown 1 / ccw 2 / helm 3. */
 const CCW = 2;
-const HELM = 3;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -119,7 +118,9 @@ const mgRiderBlock = (ov: any) => {
     (b: any) =>
       b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!blk) {throw new Error('ccw MG FB rider block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('ccw MG FB rider block missing — fixture is stale');
+  }
   return blk;
 };
 
@@ -127,27 +128,31 @@ const mgRiderBlock = (ov: any) => {
 const noBeauty = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'attackDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('ccw Beauty-Full block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('ccw Beauty-Full block missing — fixture is stale');
+  }
 });
 /** W2 reference: ATK 29% passive removed. */
 const noAtk29 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill2.length === before)
-    {throw new Error('ccw ATK 29% block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ccw ATK 29% block missing — fixture is stale');
+  }
 });
 /** W3 reference: Pinpoint (coreDamagePct 26) removed. */
 const noPinpoint = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'coreDamagePct'));
-  if (ov.skill2.length === before)
-    {throw new Error('ccw Pinpoint block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ccw Pinpoint block missing — fixture is stale');
+  }
 });
 /** W3 mode flip: Snipe becomes the default mode (modes[0]). */
 const snipeMode = withPatchedOverride(SLUG, (ov) => {
-  if (!Array.isArray(ov.modes) || !ov.modes.includes('Snipe'))
-    {throw new Error('ccw modes list missing Snipe — fixture is stale');}
+  if (!Array.isArray(ov.modes) || !ov.modes.includes('Snipe')) {
+    throw new Error('ccw modes list missing Snipe — fixture is stale');
+  }
   ov.modes = ['Snipe', 'MG'];
 });
 /** W3 Snipe + Destroy removed (to prove Destroy is inert vs the partless boss). */
@@ -155,15 +160,17 @@ const snipeNoParts = withPatchedOverride(SLUG, (ov) => {
   ov.modes = ['Snipe', 'MG'];
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before)
-    {throw new Error('ccw Destroy block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ccw Destroy block missing — fixture is stale');
+  }
 });
 /** W4 reference: the every-5s 900% interval line removed (engine `interval` trigger + flatDamage). */
 const noInterval = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'interval');
-  if (ov.skill1.length === before)
-    {throw new Error('ccw 900% interval block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('ccw 900% interval block missing — fixture is stale');
+  }
 });
 /** W5 reference: the MG FB rider removed entirely. */
 const noRider = withPatchedOverride(SLUG, (ov) => {
@@ -172,39 +179,44 @@ const noRider = withPatchedOverride(SLUG, (ov) => {
     (b: any) =>
       !(b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage'))
   );
-  if (ov.skill2.length === before)
-    {throw new Error('ccw MG FB rider block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ccw MG FB rider block missing — fixture is stale');
+  }
 });
 /** W5b counterfactual: rider present but UNGATED (ownBurstGate removed → fires on every team FB). */
 const ungatedRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
-  if (!blk.ownBurstGate)
-    {throw new Error('ccw MG rider ownBurstGate missing — fixture is stale');}
+  if (!blk.ownBurstGate) {
+    throw new Error('ccw MG rider ownBurstGate missing — fixture is stale');
+  }
   delete blk.ownBurstGate;
 });
 /** W5c counterfactual: rider re-triggered to burstCast (lands before FB → loses the +50% major). */
 const burstCastRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
-  if (blk.trigger?.kind !== 'fullBurstEnter')
-    {throw new Error(
+  if (blk.trigger?.kind !== 'fullBurstEnter') {
+    throw new Error(
       'ccw MG rider trigger is not fullBurstEnter — fixture is stale'
-    );}
+    );
+  }
   blk.trigger.kind = 'burstCast';
 });
 /** W5d counterfactual: rider core flag cleared (loses the core bucket). */
 const noCoreRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
   const e = blk.effects.find((x: any) => x.kind === 'flatDamage');
-  if (e.core !== true)
-    {throw new Error('ccw MG rider core flag is not true — fixture is stale');}
+  if (e.core !== true) {
+    throw new Error('ccw MG rider core flag is not true — fixture is stale');
+  }
   e.core = false;
 });
 /** W8 reference: the teamAmmo gauge-fill block removed. */
 const noTeamAmmo = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'teamAmmo');
-  if (ov.skill1.length === before)
-    {throw new Error('ccw teamAmmo block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('ccw teamAmmo block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

@@ -2,7 +2,6 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness';
@@ -58,14 +57,17 @@ function zeroStat(stat: string, val?: number) {
   return {
     overrides: {
       takina: withPatchedOverride('takina', (o: any) => {
-        for (const blk of o.blocks)
-          {for (const e of blk.effects)
-            {if (
+        for (const blk of o.blocks) {
+          for (const e of blk.effects) {
+            if (
               e.kind === 'buff' &&
               e.stat === stat &&
               (val == null || near(e.value, val))
-            )
-              {e.value = 0;}}}
+            ) {
+              e.value = 0;
+            }
+          }
+        }
       }),
     },
   };
@@ -75,9 +77,13 @@ function zeroSwap() {
   return {
     overrides: {
       takina: withPatchedOverride('takina', (o: any) => {
-        for (const blk of o.blocks)
-          {for (const e of blk.effects)
-            {if (e.kind === 'weaponSwap') {e.damagePct = 0;}}}
+        for (const blk of o.blocks) {
+          for (const e of blk.effects) {
+            if (e.kind === 'weaponSwap') {
+              e.damagePct = 0;
+            }
+          }
+        }
       }),
     },
   };

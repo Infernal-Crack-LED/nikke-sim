@@ -5,7 +5,6 @@
 // spawn/ammo + low-n cells face-value binomial. Holdouts predicted, never fit.
 import {
   offsetCoreProb,
-  rayleighWithin,
   pelletLandFrac,
   BAND_SG_HIT_FRAC,
 } from '../src/engine/sg-geometry.js';
@@ -296,8 +295,11 @@ function nll(p: P): number {
     if (c.interval) {
       // soft interval: no penalty inside [lo,hi]; quadratic (in logit-ish px) outside
       const [lo, hi] = c.interval;
-      if (pr < lo) {L += c.n * (lo - pr) ** 2 * 8;}
-      else if (pr > hi) {L += c.n * (pr - hi) ** 2 * 8;}
+      if (pr < lo) {
+        L += c.n * (lo - pr) ** 2 * 8;
+      } else if (pr > hi) {
+        L += c.n * (pr - hi) ** 2 * 8;
+      }
     } else {
       L -= c.k * Math.log(pr) + (c.n - c.k) * Math.log(1 - pr); // binomial NLL on n_eff
     }
@@ -375,10 +377,11 @@ for (const c of CELLS) {
   );
 }
 console.log('\n=== SG LANDING anchors ===');
-for (const a of LANDING)
-  {console.log(
+for (const a of LANDING) {
+  console.log(
     `  hr ${a.hr} ${a.band}: pred ${pelletLandFrac(BAND_SG_HIT_FRAC[a.band], sigma('SG', a.hr, best.s, best.floor)).toFixed(3)} vs target ${a.target}`
-  );}
+  );
+}
 
 console.log('\n=== HOLDOUT PREDICTIONS (not fit) ===');
 // soda-twinkling-bunny SG ▲38.91 windows; chisato SMG midfar HR22; dorothy consolidation (single bullet, keeps coreRate — not cone)

@@ -50,7 +50,6 @@ import { execFileSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
-  readFileSync,
   readdirSync,
   rmSync,
   writeFileSync,
@@ -66,12 +65,14 @@ const TEMPLATE = join(HERE, 'ammo-box-template.png');
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 
 if (!video || !existsSync(video)) {
   console.error(
@@ -114,10 +115,16 @@ rmSync(framesDir, { recursive: true, force: true });
 mkdirSync(framesDir, { recursive: true });
 
 const vf = [`fps=${fps}`, crop];
-if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
+if (zoom !== 1) {
+  vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+}
 const a = ['-y', '-loglevel', 'error'];
-if (at) {a.push('-ss', String(at));}
-if (dur) {a.push('-t', String(dur));}
+if (at) {
+  a.push('-ss', String(at));
+}
+if (dur) {
+  a.push('-t', String(dur));
+}
 a.push('-i', video, '-vf', vf.join(','), `${framesDir}/f_%05d.png`);
 console.log(
   `extracting @ ${fps}fps zoom ${zoom}${dur ? ` (${at}s +${dur}s)` : ' (whole video)'} ...`
@@ -180,7 +187,9 @@ const RELOAD_JUMP = 5; // a reload restores a whole magazine; a misread rises by
 const reloads: { videoT: number; from: number; to: number }[] = [];
 let prev: Read | null = null;
 for (const r of reads) {
-  if (r.ammo == null) {continue;}
+  if (r.ammo == null) {
+    continue;
+  }
   if (prev == null) {
     prev = r;
     continue;
@@ -193,8 +202,9 @@ for (const r of reads) {
     r.ammo = null;
     continue;
   }
-  if (d >= RELOAD_JUMP)
-    {reloads.push({ videoT: r.videoT, from: pa, to: r.ammo });}
+  if (d >= RELOAD_JUMP) {
+    reloads.push({ videoT: r.videoT, from: pa, to: r.ammo });
+  }
   prev = r;
 }
 
@@ -241,14 +251,17 @@ const flush = () => {
   cur = [];
 };
 for (const r of reads) {
-  if (r.ammo == null) {continue;}
+  if (r.ammo == null) {
+    continue;
+  }
   const last = cur[cur.length - 1];
   // a run ends at a reload, at a gap in readable frames, or if the value stops falling
   if (
     last &&
     (r.ammo > (last.ammo as number) || r.videoT - last.videoT > 3 / fps)
-  )
-    {flush();}
+  ) {
+    flush();
+  }
   cur.push(r);
 }
 flush();
@@ -300,18 +313,23 @@ console.log(
 console.log(
   `  firing runs: ${firing.length} (>=${minRounds} rounds, r2>=0.9), ${weight} rounds counted`
 );
-for (const r of firing.slice(0, 12))
-  {console.log(
+for (const r of firing.slice(0, 12)) {
+  console.log(
     `    ${r.startT.toFixed(1)}-${r.endT.toFixed(1)}s  ${r.from}->${r.to}  ${r.roundsPerSec.toFixed(2)}/s  (r2 ${r.r2})`
-  );}
-if (firing.length > 12) {console.log(`    ... and ${firing.length - 12} more`);}
+  );
+}
+if (firing.length > 12) {
+  console.log(`    ... and ${firing.length - 12} more`);
+}
 console.log(
   `  CADENCE: overall ${overall ?? '?'} rounds/s   median ${median ?? '?'} rounds/s`
 );
-if (expectRate != null && overall != null)
-  {console.log(
+if (expectRate != null && overall != null) {
+  console.log(
     `  ${Math.abs(overall - expectRate) <= 0.5 ? 'PASS' : 'FAIL'} — expected ~${expectRate}/s, measured ${overall}/s`
-  );}
+  );
+}
 
-if (flags['keep-frames'] !== 'true')
-  {rmSync(framesDir, { recursive: true, force: true });}
+if (flags['keep-frames'] !== 'true') {
+  rmSync(framesDir, { recursive: true, force: true });
+}

@@ -96,7 +96,9 @@ function critRatesByUnit(
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of evs.filter((e): e is Damage => e.kind === 'damage')) {
-    if (!buckets.includes(d.bucket)) {continue;}
+    if (!buckets.includes(d.bucket)) {
+      continue;
+    }
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
@@ -128,16 +130,22 @@ const isCdrBlock = (b: any) =>
 const cfNoCdr = withPatchedOverride('volume', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isCdrBlock(b));
-  if (ov.skill2.length === before)
-    {throw new Error('volume S2 burstCdr block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('volume S2 burstCdr block missing — fixture is stale');
+  }
 });
 /** V2 nearest-wrong (trigger): the burstCdr block re-keyed fullBurstEnter → burstCast (over-applies the refund). */
 const cfCdrBurstCast = withPatchedOverride('volume', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
-    {if (isCdrBlock(b)) {((b.trigger = { kind: 'burstCast' }), hit++);}}
-  if (!hit)
-    {throw new Error('volume S2 burstCdr block missing — fixture is stale');}
+  for (const b of ov.skill2) {
+    if (isCdrBlock(b)) {
+      b.trigger = { kind: 'burstCast' };
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('volume S2 burstCdr block missing — fixture is stale');
+  }
 });
 /** The skill2 burstCast escalating-critDamage block (V3 under test). */
 const isCdBlock = (b: any) =>
@@ -150,16 +158,22 @@ const isCdBlock = (b: any) =>
 /** V3 nearest-wrong (trigger): the critDamage ladder re-keyed burstCast → fullBurstEnter (5×/target not 10×). */
 const cfCdFbEnter = withPatchedOverride('volume', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
-    {if (isCdBlock(b)) {((b.trigger = { kind: 'fullBurstEnter' }), hit++);}}
-  if (!hit)
-    {throw new Error('volume S2 critDamage block missing — fixture is stale');}
+  for (const b of ov.skill2) {
+    if (isCdBlock(b)) {
+      b.trigger = { kind: 'fullBurstEnter' };
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('volume S2 critDamage block missing — fixture is stale');
+  }
 });
 /** V3 nearest-wrong (escalating): the ladder collapsed to a single "always max" 14.42% buff. */
 const cfCdNoEscalate = withPatchedOverride('volume', (ov: any) => {
   const b = ov.skill2.find((x: any) => isCdBlock(x));
-  if (!b)
-    {throw new Error('volume S2 critDamage block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('volume S2 critDamage block missing — fixture is stale');
+  }
   b.effects = [
     { kind: 'buff', stat: 'critDamagePct', value: 14.42, durationSec: 5 },
   ];
@@ -169,8 +183,9 @@ const cfCrFbEnter = withPatchedOverride('volume', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9)
   );
-  if (!b)
-    {throw new Error('volume burst critRate block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('volume burst critRate block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** V4 nearest-wrong (scope): the 31.9% crit as scoped critRateNormalPct (normal attacks only). */
@@ -178,8 +193,9 @@ const cfCrScoped = withPatchedOverride('volume', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9)
   );
-  if (!b)
-    {throw new Error('volume burst critRate block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('volume burst critRate block missing — fixture is stale');
+  }
   b.effects.find(
     (e: any) => e.stat === 'critRatePct' && e.value === 31.9
   ).stat = 'critRateNormalPct';
@@ -264,8 +280,9 @@ describe('volume — kit spec', () => {
         expect([...new Set(c.map((b) => b.expiresFrame! - b.frame))]).toEqual([
           5 * FPS,
         ]);
-        for (const tgt of [0, 1, 2])
-          {expect(perTarget(c, tgt).length).toBeGreaterThan(0);}
+        for (const tgt of [0, 1, 2]) {
+          expect(perTarget(c, tgt).length).toBeGreaterThan(0);
+        }
       }
       // distinct buff keys → the three steps stack rather than overwrite one another
       expect(new Set([...c10, ...c12, ...c14].map((b) => b.key)).size).toBe(3);
@@ -304,8 +321,9 @@ describe('volume — kit spec', () => {
         ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
       ]).toEqual([5 * FPS]);
       expect(perTarget(applied, VOL).length).toBe(casts);
-      for (const tgt of [0, 1, 2])
-        {expect(perTarget(applied, tgt).length).toBe(casts);}
+      for (const tgt of [0, 1, 2]) {
+        expect(perTarget(applied, tgt).length).toBe(casts);
+      }
       // ally buff, never a boss debuff
       expect(applied.every((b) => b.targetIdx != null)).toBe(true);
     });

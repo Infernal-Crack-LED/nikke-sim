@@ -36,7 +36,7 @@ if (!c) {
   process.exit(1);
 }
 
-const { skills, baseStats, ...meta } = c;
+const { skills, baseStats: _baseStats, ...meta } = c;
 const { role, ...flat } = meta as Record<string, unknown> & { role?: any };
 console.log('=== character ===');
 console.log(JSON.stringify(flat, null, 1));
@@ -92,10 +92,14 @@ if (un && (un.skill1.length || un.skill2.length || un.burst.length)) {
   for (const slot of ['skill1', 'skill2', 'burst'] as const) {
     un[slot].forEach((l) => console.log(`- ${slot}: ${l}`));
   }
-} else {console.log('(none recorded)');}
+} else {
+  console.log('(none recorded)');
+}
 console.log('\n=== caveats / warnings ===');
 resolved.warnings.forEach((w) => console.log('- ' + w));
-if (!resolved.warnings.length) {console.log('(none)');}
+if (!resolved.warnings.length) {
+  console.log('(none)');
+}
 
 console.log(
   '\n=== offline parser draft (authoring reference only — NOT what runs) ==='
@@ -105,7 +109,9 @@ for (const slot of ['skill1', 'skill2', 'burst'] as const) {
   console.log(
     `--- ${slot}: ${p.blocks.length} block(s), ${p.warnings.length} warning(s), ${p.unmodeled.length} unmodeled line(s)`
   );
-  if (p.blocks.length) {console.log(JSON.stringify(p.blocks, null, 1));}
+  if (p.blocks.length) {
+    console.log(JSON.stringify(p.blocks, null, 1));
+  }
   p.warnings.forEach((w) => console.log(`  ⚠ ${w}`));
   p.unmodeled.forEach((l) => console.log(`  ∅ ${l}`));
 }

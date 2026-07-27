@@ -68,8 +68,6 @@ const FPS = 60;
 const ALLIES = 4;
 const COMP = ['miranda', 'crown', 'ada', 'helm'];
 const MIRANDA = 0;
-const ADA = 2;
-const HELM = 3;
 
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
@@ -93,8 +91,9 @@ const hasStat = (b: any, stat: string) =>
 /** M1 counterfactual: the self ATK line retargeted to all allies. */
 const mirandaSelfAtkToAllies = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).skill1.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk)
-    {throw new Error('miranda S1 atkPct block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('miranda S1 atkPct block missing — fixture is stale');
+  }
   blk.target = { kind: 'allies' };
 });
 /** M2/M3 load-bearing reference: remove BOTH Hit Rate lines (best-effort — absent pre-S3 FIX). */
@@ -105,19 +104,22 @@ const mirandaNoHR = withPatchedOverride('miranda', (ov) => {
 });
 /** M3 counterfactual: the SMG-scoped HR line retargeted to all allies (best-effort pre-S3). */
 const mirandaSMGToAllAllies = withPatchedOverride('miranda', (ov) => {
-  for (const b of (ov as any).skill1)
-    {if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon')
-      {b.target = { kind: 'allies' };}}
+  for (const b of (ov as any).skill1) {
+    if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon') {
+      b.target = { kind: 'allies' };
+    }
+  }
 });
 /** M4 counterfactual: the team critDmg line retargeted to self only. */
 const mirandaS2CritDmgSelf = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).skill2.find(
     (b: any) => hasStat(b, 'critDamagePct') && b.target?.kind === 'allies'
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'miranda S2 allies critDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   blk.target = { kind: 'self' };
 });
 /** M5 counterfactual: the self Attack Damage line bucket-swapped to atkPct (base, not DamageUp). */
@@ -125,10 +127,11 @@ const mirandaS2ADWrongBucket = withPatchedOverride('miranda', (ov) => {
   const e = (ov as any).skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'attackDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'miranda S2 attackDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'atkPct';
 });
 /** M6 counterfactual: the 85.42 crit snapshot count bumped 1 → 2. */
@@ -138,10 +141,11 @@ const mirandaS2Crit85Count2 = withPatchedOverride('miranda', (ov) => {
       (e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01
     )
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'miranda S2 85.42 critRate block missing — fixture is stale'
-    );}
+    );
+  }
   blk.target.count = 2;
 });
 /** M6 counterfactual: the round-count snapshot forced back to a 1.5s wall-clock window. */
@@ -151,18 +155,20 @@ const mirandaS2Crit85Seconds = withPatchedOverride('miranda', (ov) => {
     .find(
       (x: any) => x.stat === 'critRatePct' && Math.abs(x.value - 85.42) < 0.01
     );
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'miranda S2 85.42 critRate effect missing — fixture is stale'
-    );}
+    );
+  }
   delete e.durationShots;
   e.durationSec = 1.5;
 });
 /** M7 counterfactual: the burst ATK line retargeted to all allies. */
 const mirandaBurstAtkAllAllies = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).burst.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk)
-    {throw new Error('miranda burst atkPct block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('miranda burst atkPct block missing — fixture is stale');
+  }
   blk.target = { kind: 'allies' };
 });
 /** M7 counterfactual: the burst ATK line swapped to casterAtkPct (% of miranda's OWN low ATK). */
@@ -170,8 +176,9 @@ const mirandaBurstAtkCaster = withPatchedOverride('miranda', (ov) => {
   const e = (ov as any).burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'atkPct');
-  if (!e)
-    {throw new Error('miranda burst atkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('miranda burst atkPct effect missing — fixture is stale');
+  }
   e.stat = 'casterAtkPct';
 });
 /** Load-bearing reference: miranda's whole kit zeroed. */

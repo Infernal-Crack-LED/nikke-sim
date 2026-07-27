@@ -1,7 +1,6 @@
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness';
@@ -73,7 +72,9 @@ const noStartChip = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
       const gc = (o.resources ?? []).find((r: any) => /chip/i.test(r.name));
-      if (gc) {gc.initial = 0;}
+      if (gc) {
+        gc.initial = 0;
+      }
     }) as any,
     true
   )
@@ -82,13 +83,15 @@ const noStartChip = collect(
 const flatCrit = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
-      for (const b of o.blocks)
-        {for (const e of b.effects ?? [])
-          {if (e.kind === 'buff' && e.stat === 'critDamagePct') {
+      for (const b of o.blocks) {
+        for (const e of b.effects ?? []) {
+          if (e.kind === 'buff' && e.stat === 'critDamagePct') {
             delete e.perResource;
             e.value = 1.32;
             e.maxStacks = 1;
-          }}}
+          }
+        }
+      }
     }) as any,
     true
   )
@@ -97,15 +100,16 @@ const flatCrit = collect(
 const noAtkDmg = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
-      for (const b of o.blocks)
-        {b.effects = (b.effects ?? []).filter(
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
           (e: any) =>
             !(
               e.kind === 'buff' &&
               e.stat === 'attackDamagePct' &&
               near(e.value, 10.51)
             )
-        );}
+        );
+      }
     }) as any,
     true
   )
@@ -114,10 +118,11 @@ const noAtkDmg = collect(
 const noFbExtend = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
-      for (const b of o.blocks)
-        {b.effects = (b.effects ?? []).filter(
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
           (e: any) => e.kind !== 'fullBurstExtend'
-        );}
+        );
+      }
     }) as any,
     true
   )
@@ -126,14 +131,15 @@ const noFbExtend = collect(
 const noRider = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
-      for (const b of o.blocks)
-        {b.effects = (b.effects ?? []).filter(
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
           (e: any) =>
             !(
               e.kind === 'flatDamage' &&
               (near(e.atkPct, 52.04) || near(e.atkPct, 85.02))
             )
-        );}
+        );
+      }
     }) as any,
     true
   )
@@ -142,15 +148,16 @@ const noRider = collect(
 const noBurstBuffs = collect(
   controlComp(
     withPatchedOverride(SLUG, (o: any) => {
-      for (const b of o.blocks)
-        {b.effects = (b.effects ?? []).filter(
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
           (e: any) =>
             !(
               e.kind === 'buff' &&
               ((e.stat === 'hitRatePct' && near(e.value, 38.91)) ||
                 (e.stat === 'atkPct' && near(e.value, 65.25)))
             )
-        );}
+        );
+      }
     }) as any,
     true
   )
@@ -170,8 +177,9 @@ const fbWindows = (evs: any[]) => {
   const out: number[] = [];
   let start: number | null = null;
   for (const e of evs) {
-    if (e.kind === 'fullBurstStart') {start = tOf(e);}
-    else if (e.kind === 'fullBurstEnd' && start != null) {
+    if (e.kind === 'fullBurstStart') {
+      start = tOf(e);
+    } else if (e.kind === 'fullBurstEnd' && start != null) {
       out.push(tOf(e) - start);
       start = null;
     }
@@ -202,7 +210,9 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
     expect(others.length).toBe(1); // exactly ONE ally besides self
     expect(others.length).toBeLessThan(allySlugs(base.res).length); // discriminates "all allies"
     const dur = applies[0].durationSec;
-    if (dur != null) {expect(near(dur, 2, 0.05)).toBe(true);} // 2s, not rounds/permanent
+    if (dur != null) {
+      expect(near(dur, 2, 0.05)).toBe(true);
+    } // 2s, not rounds/permanent
   });
 
   it('S1c inertness: removing it leaves the NON-buffed teammates byte-identical', () => {
@@ -210,7 +220,9 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
     const buffed = new Set(applies.map((e) => e.targetIdx));
     for (const s of allySlugs(base.res)) {
       const idx = unitOf(base.res, s)?.idx;
-      if (idx === sodaIdx || buffed.has(idx)) {continue;} // soda + the top-ATK ally legitimately move
+      if (idx === sodaIdx || buffed.has(idx)) {
+        continue;
+      } // soda + the top-ATK ally legitimately move
       expect(dmg(noAtkDmg.res, s)).toEqual(dmg(base.res, s)); // everyone else unchanged
     }
   });
@@ -251,15 +263,17 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
     expect(atk.length).toBeGreaterThan(0);
     for (const e of [...hr, ...atk]) {
       expect(e.targetIdx).toBe(sodaIdx); // self only
-      if (e.durationSec != null)
-        {expect(near(e.durationSec, 15, 0.1)).toBe(true);}
+      if (e.durationSec != null) {
+        expect(near(e.durationSec, 15, 0.1)).toBe(true);
+      }
     }
   });
 
   it('BURST S3 inertness+lever: removing the two self burst-buffs lowers soda total, teammates identical', () => {
     expect(dmg(base.res, SLUG)).toBeGreaterThan(dmg(noBurstBuffs.res, SLUG));
-    for (const s of allySlugs(base.res))
-      {expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));}
+    for (const s of allySlugs(base.res)) {
+      expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));
+    }
   });
 
   // NON-VACUITY for the >=20 / >=30 stack GATES: because burst consumes 17 and rebuild is slow,
@@ -272,7 +286,9 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
         (e.casterIdx === sodaIdx || e.srcSlot === sodaIdx)
     );
     const atk = buffApplies(base.evs, 'atkPct', 65.25);
-    if (casts.length < 3) {return;} // guard: need enough rotations for the pool to draw down
+    if (casts.length < 3) {
+      return;
+    } // guard: need enough rotations for the pool to draw down
     expect(atk.length).toBeLessThan(casts.length); // the >=30 gate must exclude at least one late burst
   });
 

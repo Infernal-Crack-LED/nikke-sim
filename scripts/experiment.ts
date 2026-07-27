@@ -3,12 +3,7 @@
 // per-unit sim/real ratios per variant. Not part of the product.
 //   npx tsx scripts/experiment.ts
 import { readFileSync } from 'node:fs';
-import type {
-  DataFile,
-  LevelMultiplier,
-  SimConfig,
-  Element,
-} from '../src/types.js';
+import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { runSim, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import type { OverrideFile } from '../src/skills/index.js';
@@ -585,7 +580,9 @@ function run(comp: Comp, patch: Patch = {}, seed?: number) {
   });
   // BOSSPELLET=small|medium|large — SG pellet-landing boss-size profile (seeded runs only).
   const bp = process.env.BOSSPELLET as 'small' | 'medium' | 'large' | undefined;
-  if (bp) {cfg.bossPelletProfile = bp;}
+  if (bp) {
+    cfg.bossPelletProfile = bp;
+  }
   const prepared = prepareTeam(chars, unitOpts, {
     overrides,
     skillLevels,
@@ -612,9 +609,13 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
       const res = run(comp, patch, 1000 + i);
       fbCounts.push(res.fullBursts);
       const fb1 = res.rotationLog.find((l) => l.includes('FULL BURST'));
-      if (fb1) {firstFb.push(parseFloat(fb1));}
+      if (fb1) {
+        firstFb.push(parseFloat(fb1));
+      }
       for (const u of res.units) {
-        if (!totals.has(u.slug)) {totals.set(u.slug, []);}
+        if (!totals.has(u.slug)) {
+          totals.set(u.slug, []);
+        }
         totals.get(u.slug)!.push(u.totalDamage);
         pulls.set(u.slug, u.pulls);
       }
@@ -626,7 +627,9 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
       // comparing vs a real run, condition on the real run's observed FB count
       // (compare against the seeds in that stratum).
       const dist = new Map<number, number>();
-      for (const c of fbCounts) {dist.set(c, (dist.get(c) ?? 0) + 1);}
+      for (const c of fbCounts) {
+        dist.set(c, (dist.get(c) ?? 0) + 1);
+      }
       const distStr = [...dist.entries()]
         .sort((a, b) => a[0] - b[0])
         .map(([c, n]) => `${c}x${Math.round((100 * n) / nSeeds)}%`)
@@ -657,8 +660,11 @@ function report(comp: Comp, label: string, patch: Patch = {}) {
     );
   }
   // ROT=1 dumps the burst rotation log (debug workflows)
-  if (process.env.ROT)
-    {for (const line of res.rotationLog) {console.log('  ' + line);}}
+  if (process.env.ROT) {
+    for (const line of res.rotationLog) {
+      console.log('  ' + line);
+    }
+  }
   for (const u of res.units) {
     const real = comp.real[u.slug];
     const total = u.totalDamage;
@@ -682,8 +688,9 @@ if (isMain) {
     if (
       process.env.ONLY &&
       !c.name.toLowerCase().includes(process.env.ONLY.toLowerCase())
-    )
-      {continue;}
+    ) {
+      continue;
+    }
     report(c, 'scope lock');
   }
 }

@@ -28,33 +28,43 @@ for (const k of [
   'CustomEvent',
   'Event',
 ]) {
-  if (!(k in globalThis)) {globalThis[k] = dom.window[k] ?? globalThis[k];}
+  if (!(k in globalThis)) {
+    globalThis[k] = dom.window[k] ?? globalThis[k];
+  }
 }
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
-if (!globalThis.requestAnimationFrame)
-  {globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);}
+if (!globalThis.requestAnimationFrame) {
+  globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+}
 // serve the artifact for loadDpsChart()'s fetch
-globalThis.fetch = async () => ({
-  ok: true,
-  status: 200,
-  json: async () => JSON.parse(artifact),
-});
+globalThis.fetch = () =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve(JSON.parse(artifact)),
+  });
 
 // routes are code-split — the entry chunk is the index-*.js bundle; the sim
 // chunk it lazy-imports resolves over file:// as a real Node module
 const bundle = readdirSync('dist/assets').find(
   (f) => f.startsWith('index') && f.endsWith('.js')
 );
-if (!bundle) {throw new Error('no entry chunk (index-*.js) in dist/assets');}
+if (!bundle) {
+  throw new Error('no entry chunk (index-*.js) in dist/assets');
+}
 await import('file://' + process.cwd() + '/dist/assets/' + bundle);
 // wait for the lazy sim chunk + the chart tab's artifact fetch to render
 const t0 = Date.now();
 for (;;) {
-  if (/rank\s*\d+\s*\/\s*\d+/.test(dom.window.document.body.textContent ?? ''))
-    {break;}
-  if (Date.now() - t0 > 8000)
-    {throw new Error('timed out waiting for chart tab');}
+  if (
+    /rank\s*\d+\s*\/\s*\d+/.test(dom.window.document.body.textContent ?? '')
+  ) {
+    break;
+  }
+  if (Date.now() - t0 > 8000) {
+    throw new Error('timed out waiting for chart tab');
+  }
   await new Promise((r) => setTimeout(r, 50));
 }
 
@@ -74,7 +84,9 @@ const checks = {
 let ok = true;
 for (const [name, pass] of Object.entries(checks)) {
   console.log(pass ? '  ✓' : '  ✗', name);
-  if (!pass) {ok = false;}
+  if (!pass) {
+    ok = false;
+  }
 }
 if (!ok) {
   console.log('\n--- body excerpt:\n', text.slice(0, 800));

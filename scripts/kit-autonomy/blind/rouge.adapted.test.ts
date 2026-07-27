@@ -13,7 +13,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import {
-  controlComp,
   runComp,
   totals,
   unitOf,
@@ -80,7 +79,9 @@ function run(overrides?: Record<string, any>) {
     focusSlug: 'ada',
   }; // ADAPTED (3): rouge at edge slot 0 so selfAndAdjacent(2) != all allies
   opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) };
-  if (overrides) {opts.overrides = overrides;}
+  if (overrides) {
+    opts.overrides = overrides;
+  }
   const res = runComp(opts);
   return { res, events };
 }
@@ -100,7 +101,9 @@ const cfAtkPct = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.burst ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+        if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+          e.stat = 'atkPct';
+        }
       }
     }
   }),
@@ -111,8 +114,9 @@ const cfSwordBucket = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.skill2 ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'attackDamagePct')
-          {e.stat = 'atkPct';}
+        if (e.kind === 'buff' && e.stat === 'attackDamagePct') {
+          e.stat = 'atkPct';
+        }
       }
     }
   }),
@@ -125,7 +129,9 @@ const cfSwordTargets = run({
       const hasSword = (b.effects ?? []).some(
         (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct'
       );
-      if (hasSword) {b.target = { kind: 'allies' };}
+      if (hasSword) {
+        b.target = { kind: 'allies' };
+      }
     }
   }),
 });

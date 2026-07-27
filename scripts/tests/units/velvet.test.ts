@@ -118,7 +118,9 @@ function fbWindows(evs: SimEvent[]): [number, number][] {
   const wins: [number, number][] = [];
   let start: number | null = null;
   for (const e of evs) {
-    if (e.kind === 'fullBurstStart') {start = e.frame;}
+    if (e.kind === 'fullBurstStart') {
+      start = e.frame;
+    }
     if (e.kind === 'fullBurstEnd' && start != null) {
       wins.push([start, e.frame]);
       start = null;
@@ -158,11 +160,17 @@ const isS1SelfBuff = (b: any) =>
 /** V2 nearest-wrong (gate): drop the outFb gate (buff also refreshes on in-FB charges). */
 const cfS1NoGate = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill1) {if (isS1SelfBuff(b)) {(delete b.fbGate, hit++);}}
-  if (!hit)
-    {throw new Error(
+  for (const b of ov.skill1) {
+    if (isS1SelfBuff(b)) {
+      delete b.fbGate;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'velvet S1 outFb self-buff block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** The skill2 inFb team-buff block (V3 under test). */
 const isS2TeamBuff = (b: any) =>
@@ -172,28 +180,36 @@ const isS2TeamBuff = (b: any) =>
 /** V3 nearest-wrong (gate): drop the inFb gate (team buff up outside FB). */
 const cfS2NoGate = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2) {if (isS2TeamBuff(b)) {(delete b.fbGate, hit++);}}
-  if (!hit)
-    {throw new Error(
+  for (const b of ov.skill2) {
+    if (isS2TeamBuff(b)) {
+      delete b.fbGate;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'velvet S2 inFb team-buff block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** V3 nearest-wrong (stat): casterAtkPct → atkPct (a 25.2% scaler on each ally's OWN ATK). */
 const cfS2AtkPct = withPatchedOverride('velvet', (ov: any) => {
   const b = ov.skill2.find((x: any) => isS2TeamBuff(x));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'velvet S2 inFb team-buff block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 /** V3 nearest-wrong (stat): chargeDamagePct → chargeDamageMultPct (a base-charge multiplier). */
 const cfS2ChargeMult = withPatchedOverride('velvet', (ov: any) => {
   const b = ov.skill2.find((x: any) => isS2TeamBuff(x));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'velvet S2 inFb team-buff block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects.find((e: any) => e.stat === 'chargeDamagePct').stat =
     'chargeDamageMultPct';
 });
@@ -202,16 +218,28 @@ const isS2Proc = (b: any) => b.trigger?.kind === 'hitCount';
 /** V4 nearest-wrong (gate): drop the inFb gate — the 50-hit threshold crosses OUT of FB and procs. */
 const cfProcNoGate = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2) {if (isS2Proc(b)) {(delete b.fbGate, hit++);}}
-  if (!hit)
-    {throw new Error('velvet S2 hitCount proc block missing — fixture is stale');}
+  for (const b of ov.skill2) {
+    if (isS2Proc(b)) {
+      delete b.fbGate;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('velvet S2 hitCount proc block missing — fixture is stale');
+  }
 });
 /** V4 nearest-wrong (threshold/effect): lower hitCount 50 → 5 so the proc fires in-FB (proves the encoding). */
 const cfProcCount5 = withPatchedOverride('velvet', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2) {if (isS2Proc(b)) {((b.trigger.count = 5), hit++);}}
-  if (!hit)
-    {throw new Error('velvet S2 hitCount proc block missing — fixture is stale');}
+  for (const b of ov.skill2) {
+    if (isS2Proc(b)) {
+      b.trigger.count = 5;
+      hit++;
+    }
+  }
+  if (!hit) {
+    throw new Error('velvet S2 hitCount proc block missing — fixture is stale');
+  }
 });
 /** V5 nearest-wrong (trigger): burst attackDamage re-keyed burstCast → fullBurstEnter (5× not 10×). */
 const cfBurstFbEnter = withPatchedOverride('velvet', (ov: any) => {
@@ -220,10 +248,11 @@ const cfBurstFbEnter = withPatchedOverride('velvet', (ov: any) => {
       (e: any) => e.stat === 'attackDamagePct' && e.value === 34.52
     )
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'velvet burst attackDamage block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** V5 nearest-wrong (duration): the 34.52% Attack Damage window shortened 10s → 3s. */
@@ -233,10 +262,11 @@ const cfBurstDur3 = withPatchedOverride('velvet', (ov: any) => {
       (e: any) => e.stat === 'attackDamagePct' && e.value === 34.52
     )
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'velvet burst attackDamage block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects.find(
     (e: any) => e.stat === 'attackDamagePct' && e.value === 34.52
   ).durationSec = 3;
@@ -246,8 +276,9 @@ const cfSwap70 = withPatchedOverride('velvet', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects?.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (!b)
-    {throw new Error('velvet burst weaponSwap block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('velvet burst weaponSwap block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.kind === 'weaponSwap').damagePct = 70;
 });
 
@@ -348,8 +379,9 @@ describe('velvet — kit spec', () => {
       // inFb gate: every application lands inside a Full Burst window, none outside
       expect(countInFb(casterAtk, wins)).toBe(casterAtk.length);
       // all allies including self (slots 0,1,2)
-      for (const tgt of [0, 1, 2])
-        {expect(perTarget(casterAtk, tgt).length).toBeGreaterThan(0);}
+      for (const tgt of [0, 1, 2]) {
+        expect(perTarget(casterAtk, tgt).length).toBeGreaterThan(0);
+      }
     });
     it('chargeDamagePct 100.8 is the additive charge bucket, in FB only, reaching all three allies, 3s', () => {
       expect(chargeDmg.length).toBeGreaterThan(0);
@@ -357,8 +389,9 @@ describe('velvet — kit spec', () => {
       expect([
         ...new Set(chargeDmg.map((b) => b.expiresFrame! - b.frame)),
       ]).toEqual([3 * FPS]);
-      for (const tgt of [0, 1, 2])
-        {expect(perTarget(chargeDmg, tgt).length).toBeGreaterThan(0);}
+      for (const tgt of [0, 1, 2]) {
+        expect(perTarget(chargeDmg, tgt).length).toBeGreaterThan(0);
+      }
     });
     it('DISCRIMINATING (gate): dropping inFb lets the team buff apply OUTSIDE Full Burst', () => {
       const cf = velBuffs(s2NoGate.events, 'casterAtkPct');

@@ -21,9 +21,12 @@ const GLOBALS = [
 async function waitFor(pred, timeoutMs, what) {
   const t0 = Date.now();
   for (;;) {
-    if (pred()) {return;}
-    if (Date.now() - t0 > timeoutMs)
-      {throw new Error(`timed out after ${timeoutMs}ms waiting for ${what}`);}
+    if (pred()) {
+      return;
+    }
+    if (Date.now() - t0 > timeoutMs) {
+      throw new Error(`timed out after ${timeoutMs}ms waiting for ${what}`);
+    }
     await new Promise((r) => setTimeout(r, 50));
   }
 }
@@ -36,29 +39,35 @@ async function mountAt(url) {
     '<!doctype html><html><body><div id="root"></div></body></html>',
     { url, pretendToBeVisual: true, runScripts: 'outside-only' }
   );
-  for (const k of GLOBALS)
-    {if (!(k in globalThis)) {globalThis[k] = dom.window[k] ?? globalThis[k];}}
+  for (const k of GLOBALS) {
+    if (!(k in globalThis)) {
+      globalThis[k] = dom.window[k] ?? globalThis[k];
+    }
+  }
   // jsdom doesn't provide Image; the portrait-thumbnail hooks use it for canvas
-  if (!globalThis.Image)
-    {globalThis.Image =
+  if (!globalThis.Image) {
+    globalThis.Image =
       dom.window.Image ??
       class {
         set src(_) {}
-      };}
+      };
+  }
   globalThis.window = dom.window;
   globalThis.document = dom.window.document;
-  if (!globalThis.requestAnimationFrame)
-    {globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);}
+  if (!globalThis.requestAnimationFrame) {
+    globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+  }
   // Vite's modulepreload polyfill probes lazy chunks via fetch() when the DOM
   // lacks modulepreload support (JSDOM does) — answer the probes with an empty
   // ok response; the real chunk load goes through Node's file:// import().
   // (Real browsers support modulepreload and never take the fetch path.)
-  globalThis.fetch = async () => ({
-    ok: true,
-    status: 200,
-    text: async () => '',
-    json: async () => ({}),
-  });
+  globalThis.fetch = () =>
+    Promise.resolve({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve(''),
+      json: () => Promise.resolve({}),
+    });
   // Routes are code-split — the entry chunk is the index-*.js bundle; the page
   // chunks it lazy-imports resolve over file:// as real Node modules. Import
   // it exactly once (bare URL): the lazy chunks import shared modules back
@@ -67,7 +76,9 @@ async function mountAt(url) {
   const bundle = readdirSync('dist/assets').find(
     (f) => f.startsWith('index') && f.endsWith('.js')
   );
-  if (!bundle) {throw new Error('no entry chunk (index-*.js) in dist/assets');}
+  if (!bundle) {
+    throw new Error('no entry chunk (index-*.js) in dist/assets');
+  }
   await import('file://' + process.cwd() + '/dist/assets/' + bundle);
   // wait for the lazy route chunk to resolve + render (Suspense)
   await waitFor(
@@ -174,7 +185,9 @@ const checks = {
 let ok = true;
 for (const [name, pass] of Object.entries(checks)) {
   console.log(pass ? '  ✓' : '  ✗', name);
-  if (!pass) {ok = false;}
+  if (!pass) {
+    ok = false;
+  }
 }
 if (!ok) {
   console.log('\n--- sim body excerpt:\n', text.slice(0, 600));

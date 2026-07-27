@@ -15,12 +15,7 @@
 //   npx tsx scripts/regression.ts            # assert
 //   npx tsx scripts/regression.ts --update   # regenerate snapshots
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import type {
-  DataFile,
-  LevelMultiplier,
-  SimConfig,
-  Element,
-} from '../src/types.js';
+import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { runSim, MC_SEED_BASE, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import { scopeLockCfg } from './lib/scope-lock.js';
@@ -290,7 +285,9 @@ function run(comp: Comp, seed?: number) {
     lambdaStage: comp.lambda?.[slug],
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const cfg = scopeLockCfg(comp.slugs, comp.boss, {
     focusSlug: comp.focus,
     seed,
@@ -362,19 +359,25 @@ for (const comp of COMPS) {
 
   // 2. snapshots — per-unit totals (deterministic run must be byte-stable)
   const totals: Record<string, number> = {};
-  for (const u of res.units) {totals[u.slug] = Math.round(u.totalDamage);}
+  for (const u of res.units) {
+    totals[u.slug] = Math.round(u.totalDamage);
+  }
   if (update) {
     snapshot[comp.name] = totals;
   } else if (snapshot[comp.name]) {
     for (const [slug, val] of Object.entries(totals)) {
       const prev = snapshot[comp.name][slug];
-      if (prev === undefined) {continue;}
+      if (prev === undefined) {
+        continue;
+      }
       const drift = Math.abs(val - prev) / prev;
-      if (drift > 0.001)
-        {fail(
+      if (drift > 0.001) {
+        fail(
           `${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`
-        );}
-      else {ok(`${slug} snapshot stable`);}
+        );
+      } else {
+        ok(`${slug} snapshot stable`);
+      }
     }
   } else {
     console.log('  (no snapshot yet — run with --update)');
@@ -414,7 +417,9 @@ for (const comp of COMPS) {
   };
   const team = assembleTeam(cell, tested);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of team.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of team.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const chars = team.slugs.map((s) => data.characters[s]);
   const prepared = prepareTeam(chars, team.unitOpts, {
     overrides,
@@ -449,7 +454,9 @@ for (const comp of COMPS) {
     };
     const team = assembleTeam(cell, tested);
     const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-    for (const s of team.slugs) {overrides[s] = loadOverride(s);}
+    for (const s of team.slugs) {
+      overrides[s] = loadOverride(s);
+    }
     const chars = team.slugs.map(
       (s) => data.characters[s] ?? NOOP_CHARACTERS[s]
     );

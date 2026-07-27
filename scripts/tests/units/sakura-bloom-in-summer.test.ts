@@ -60,7 +60,6 @@ import {
   withPatchedOverride,
 } from '../lib/harness.js';
 
-const FPS = 60;
 const SLUG = 'sakura-bloom-in-summer';
 /** controlComp slot order: liter 0 / crown 1 / sbis 2 / helm 3. */
 const SBIS = 2;
@@ -80,10 +79,6 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- block selectors (the shipped skill2/burst shapes) ---------------------------------------
-const isS2PassiveBuff = (b: any) =>
-  b.trigger?.kind === 'passive' &&
-  b.target?.kind === 'self' &&
-  b.effects.some((e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct');
 const isS2PassiveDot = (b: any) =>
   b.trigger?.kind === 'passive' &&
   b.target?.kind === 'enemy' &&
@@ -103,16 +98,18 @@ const isBurstDot = (b: any) =>
 const noForceCast = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isS2PassiveDot(b));
-  if (ov.skill2.length !== before - 1)
-    {throw new Error('sbis S2 passive dot block missing — fixture is stale');}
+  if (ov.skill2.length !== before - 1) {
+    throw new Error('sbis S2 passive dot block missing — fixture is stale');
+  }
 });
 /** SB2: the naive "passive ignores duration → full 15.64" over-count. */
 const naiveFullBuff = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'buff' && x.stat === 'attackDamagePct');
-  if (!e)
-    {throw new Error('sbis Dancing Flower buff missing — fixture is stale');}
+  if (!e) {
+    throw new Error('sbis Dancing Flower buff missing — fixture is stale');
+  }
   e.value = 15.64;
 });
 /** SB2: the old single-window under-count 1.30 (= 15.64 × 15/180). */
@@ -120,28 +117,34 @@ const singleWindowBuff = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'buff' && x.stat === 'attackDamagePct');
-  if (!e)
-    {throw new Error('sbis Dancing Flower buff missing — fixture is stale');}
+  if (!e) {
+    throw new Error('sbis Dancing Flower buff missing — fixture is stale');
+  }
   e.value = 1.3;
 });
 /** SB3: drop the 30s re-cast (keep only the t=0 force window). */
 const noRecast = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isS2IntervalDot(b));
-  if (ov.skill2.length !== before - 1)
-    {throw new Error('sbis S2 interval dot block missing — fixture is stale');}
+  if (ov.skill2.length !== before - 1) {
+    throw new Error('sbis S2 interval dot block missing — fixture is stale');
+  }
 });
 /** SB4: the crown misparse — collapse the 10 sequential hits to ONE 457.14 hit. */
 const singleHitNuke = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find(isBurstNuke);
-  if (!b) {throw new Error('sbis burst nuke block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('sbis burst nuke block missing — fixture is stale');
+  }
   const first = b.effects.find((e: any) => e.kind === 'flatDamage');
   b.effects = [first];
 });
 /** SB5: a single stack (35.16%/s) instead of the full 10-stack 351.6%/s. */
 const singleStackDot = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find(isBurstDot);
-  if (!b) {throw new Error('sbis burst dot block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('sbis burst dot block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.kind === 'dot').atkPct = 35.16;
 });
 
@@ -337,8 +340,9 @@ describe('sakura-bloom-in-summer — kit spec', () => {
         const band = Math.floor(t.sec / 30);
         perBand.set(band, (perBand.get(band) ?? 0) + 1);
       }
-      for (const [band, n] of perBand)
-        {expect(n, `band ${band} has ${n} ticks`).toBe(15);}
+      for (const [band, n] of perBand) {
+        expect(n, `band ${band} has ${n} ticks`).toBe(15);
+      }
     });
   });
 });

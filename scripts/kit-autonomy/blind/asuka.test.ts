@@ -58,21 +58,26 @@ const allBlocks = (ov: any): any[] => [
 ];
 
 const eachEffect = (ov: any, fn: (e: any, b: any) => void) => {
-  for (const b of allBlocks(ov)) {for (const e of b.effects ?? []) {fn(e, b);}}
+  for (const b of allBlocks(ov)) {
+    for (const e of b.effects ?? []) {
+      fn(e, b);
+    }
+  }
 };
 const setValue = (pred: (e: any) => boolean, value: number) => (ov: any) =>
   eachEffect(ov, (e) => {
-    if (pred(e)) {e.value = value;}
+    if (pred(e)) {
+      e.value = value;
+    }
   });
 const dropEffect = (pred: (e: any) => boolean) => (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => !pred(e));}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => !pred(e));
+  }
 };
 
 // Effect predicates. The prose magnitudes are unique inside this kit, so they are the identity —
 // this keeps the patches independent of how the driver ordered or split the blocks.
-const isAtk9698 = (e: any) =>
-  e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 96.98);
 const isElemAdv30 = (e: any) => e.kind === 'buff' && near(e.value, 30.02);
 const isCore60 = (e: any) => e.kind === 'buff' && near(e.value, 60.07);
 const isAtkDmg150 = (e: any) => e.kind === 'buff' && near(e.value, 150.04);
@@ -81,12 +86,18 @@ const isPierce = (e: any) => e.kind === 'gainPierce';
 const isHeal = (e: any) => e.kind === 'heal';
 
 const retargetCore = (target: any) => (ov: any) => {
-  for (const b of allBlocks(ov))
-    {if ((b.effects ?? []).some(isCore60)) {b.target = target;}}
+  for (const b of allBlocks(ov)) {
+    if ((b.effects ?? []).some(isCore60)) {
+      b.target = target;
+    }
+  }
 };
 const ungateShield = (ov: any) => {
-  for (const b of allBlocks(ov))
-    {if ((b.effects ?? []).some(isElemAdv30)) {delete b.requiresShielded;}}
+  for (const b of allBlocks(ov)) {
+    if ((b.effects ?? []).some(isElemAdv30)) {
+      delete b.requiresShielded;
+    }
+  }
 };
 
 // ---------------------------------------------------------------- runs (hoisted; each is a full 180s sim)
@@ -119,7 +130,9 @@ const idxIn = (evs: Ev[]) => {
         near(e.value, v) &&
         typeof e.targetIdx === 'number'
     );
-    if (hit) {return hit.targetIdx as number;}
+    if (hit) {
+      return hit.targetIdx as number;
+    }
   }
   return -1;
 };
@@ -152,7 +165,9 @@ describe('asuka S1a — Damage dealt to Shield ▲601.01% (no primitive)', () =>
     const smuggled = inspect((ov: any) => {
       let f = false;
       eachEffect(ov, (e) => {
-        if (near(e.value, 601.01, 0.5) || near(e.atkPct, 601.01, 0.5)) {f = true;}
+        if (near(e.value, 601.01, 0.5) || near(e.atkPct, 601.01, 0.5)) {
+          f = true;
+        }
       });
       return f;
     });
@@ -287,7 +302,9 @@ describe('asuka burst — Gain Pierce for 25 sec (self)', () => {
     const p: any = inspect((ov: any) => {
       let hit: any = null;
       eachEffect(ov, (e) => {
-        if (!hit && e.kind === 'gainPierce') {hit = e;}
+        if (!hit && e.kind === 'gainPierce') {
+          hit = e;
+        }
       });
       return hit;
     });

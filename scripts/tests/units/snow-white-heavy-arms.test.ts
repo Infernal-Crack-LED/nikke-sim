@@ -193,16 +193,15 @@ const slotKeyedStats = (evs: SimEvent[], slot: 'skill1' | 'skill2' | 'burst') =>
   ].sort();
 
 // ---- counterfactual patches (nearest-wrong readings) -----------------------------------------
-const eff = (b: any, stat: string) =>
-  b.effects.find((e: any) => e.stat === stat);
 
 // W4 nearest-wrong (target): the boss debuff retargeted to `self` (debuffs swha, not the boss).
 const cfTakenSelf = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
-  if (!b)
-    {throw new Error('swha S1 damageTakenPct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S1 damageTakenPct block missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 // W5 nearest-wrong (presence): the 41.9% AoE auto-fire effect removed.
@@ -210,7 +209,9 @@ const cfNo41 = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 41.9)
   );
-  if (!b) {throw new Error('swha S1 41.9 block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S1 41.9 block missing — fixture is stale');
+  }
   b.effects = b.effects.filter(
     (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 41.9)
   );
@@ -220,7 +221,9 @@ const cfVolley105 = withPatchedOverride(SWHA, (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 527.95);
-  if (!e) {throw new Error('swha S1 527.95 effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('swha S1 527.95 effect missing — fixture is stale');
+  }
   e.atkPct = 105.59;
 });
 // W7 nearest-wrong (a, the FIX): remove the weaponSwap → no swap exists → swapGate never satisfied.
@@ -229,15 +232,18 @@ const cfNoSwap = withPatchedOverride(SWHA, (ov: any) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (ov.burst.length === before)
-    {throw new Error('swha burst weaponSwap block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('swha burst weaponSwap block missing — fixture is stale');
+  }
 });
 // W7 nearest-wrong (b, UNGATED): strip swapGate → the 1055.9 fires on EVERY full charge.
 const cfUngated = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 1055.9)
   );
-  if (!b) {throw new Error('swha S1 1055.9 block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S1 1055.9 block missing — fixture is stale');
+  }
   delete b.swapGate;
 });
 // W12 nearest-wrong (target): the shotFired ATK buff retargeted to `allies`.
@@ -245,8 +251,9 @@ const cfAtk46Allies = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'atkPct' && e.value === 46.84)
   );
-  if (!b)
-    {throw new Error('swha S2 atkPct 46.84 block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S2 atkPct 46.84 block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // W13 reference: her parts-damage EFFECT removed (the inert-discrimination). The partsDamagePct effect SHARES its
@@ -256,20 +263,23 @@ const cfNoParts = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'partsDamagePct')
   );
-  if (!b)
-    {throw new Error('swha S2 partsDamagePct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S2 partsDamagePct block missing — fixture is stale');
+  }
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
-  if (b.effects.length === before)
-    {throw new Error('swha S2 partsDamagePct effect missing — fixture is stale');}
+  if (b.effects.length === before) {
+    throw new Error('swha S2 partsDamagePct effect missing — fixture is stale');
+  }
 });
 // W14 nearest-wrong (duration): the stageEnter ATK buff at 5s instead of the prose 10s.
 const cfAtk73Dur5 = withPatchedOverride(SWHA, (ov: any) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'atkPct' && x.value === 73.92);
-  if (!e)
-    {throw new Error('swha S2 atkPct 73.92 effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('swha S2 atkPct 73.92 effect missing — fixture is stale');
+  }
   e.durationSec = 5;
 });
 // W15 nearest-wrong (presence): the Charge Damage 528 buff removed → swap shots lose the 7.78 charge mult.
@@ -277,8 +287,9 @@ const cfNoChargeDmg = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'chargeDamagePct')
   );
-  if (!b)
-    {throw new Error('swha S2 chargeDamagePct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('swha S2 chargeDamagePct block missing — fixture is stale');
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
 });
 // W16 nearest-wrong (presence): the Sequential Damage 158.4 buff removed → no buffApply.
@@ -286,10 +297,11 @@ const cfNoSeqDmg = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'sequentialDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'swha S2 sequentialDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'sequentialDamagePct');
 });
 // W17 nearest-wrong (trigger): the burst Attack Damage keyed to fullBurstEnter (FB-START frames) instead of burstCast.
@@ -297,10 +309,11 @@ const cfAtkDmgFbEnter = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'swha burst attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // W17 nearest-wrong (target): the burst Attack Damage retargeted to `allies`.
@@ -308,10 +321,11 @@ const cfAtkDmgAllies = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'swha burst attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'allies' };
 });
 

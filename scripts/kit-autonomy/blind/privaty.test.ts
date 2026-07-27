@@ -81,7 +81,6 @@ const ALL_ALLIES = [0, 1, 2, 3];
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type Shot = Extract<SimEvent, { kind: 'shot' }>;
-type Reload = Extract<SimEvent, { kind: 'reload' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 type FBStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 
@@ -114,7 +113,9 @@ function tryPatch(
   }
 }
 const requireFound = (found: boolean, msg: string) => {
-  if (!found) {throw new Error(msg);}
+  if (!found) {
+    throw new Error(msg);
+  }
 };
 
 /** P1-P4 reference: S1 removed entirely (robust — empty the slot, structure-independent). */
@@ -133,7 +134,9 @@ const noBurstSelfOv = tryPatch('privaty', (ov) => {
     b.effects = b.effects.filter(
       (e: any) => e.stat !== 'elemAdvantageDamagePct'
     );
-    if (b.effects.length !== before) {found = true;}
+    if (b.effects.length !== before) {
+      found = true;
+    }
   }
   ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
   requireFound(found, 'burst elemAdvantageDamagePct not found');
@@ -141,42 +144,47 @@ const noBurstSelfOv = tryPatch('privaty', (ov) => {
 /** P8 counterfactual: re-type the self buff as a GENERIC Damage-Up (attackDamagePct). */
 const elemAsAttackOv = tryPatch('privaty', (ov) => {
   let found = false;
-  for (const b of ov.burst)
-    {for (const e of b.effects)
-      {if (e.stat === 'elemAdvantageDamagePct') {
+  for (const b of ov.burst) {
+    for (const e of b.effects) {
+      if (e.stat === 'elemAdvantageDamagePct') {
         e.stat = 'attackDamagePct';
         found = true;
-      }}}
+      }
+    }
+  }
   requireFound(found, 'burst elemAdvantageDamagePct not found');
 });
 /** P1-P4 trigger counterfactual: fullBurstEnter → burstCast (privaty's own casts only). */
 const s1BurstCastOv = tryPatch('privaty', (ov) => {
   let found = false;
-  for (const b of ov.skill1)
-    {if (b.trigger?.kind === 'fullBurstEnter') {
+  for (const b of ov.skill1) {
+    if (b.trigger?.kind === 'fullBurstEnter') {
       b.trigger = { kind: 'burstCast' };
       found = true;
-    }}
+    }
+  }
   requireFound(found, 'no fullBurstEnter trigger in skill1');
 });
 /** P6 trigger counterfactual: lastBullet → shotFired (every trigger pull). */
 const s2ShotFiredOv = tryPatch('privaty', (ov) => {
   let found = false;
-  for (const b of ov.skill2)
-    {if (b.trigger?.kind === 'lastBullet') {
+  for (const b of ov.skill2) {
+    if (b.trigger?.kind === 'lastBullet') {
       b.trigger = { kind: 'shotFired' };
       found = true;
-    }}
+    }
+  }
   requireFound(found, 'no lastBullet trigger in skill2');
 });
 /** P7 gate counterfactual: drop the Designated-Target status gate (fires every last bullet). */
 const s2UngatedOv = tryPatch('privaty', (ov) => {
   let found = false;
-  for (const b of ov.skill2)
-    {if (b.requiresTargetStatus) {
+  for (const b of ov.skill2) {
+    if (b.requiresTargetStatus) {
       delete b.requiresTargetStatus;
       found = true;
-    }}
+    }
+  }
   requireFound(found, 'no requiresTargetStatus gate in skill2');
 });
 /** P3 isolation: remove only the maxAmmo▼ effect from S1. */
@@ -185,7 +193,9 @@ const noMaxAmmoOv = tryPatch('privaty', (ov) => {
   for (const b of ov.skill1) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
-    if (b.effects.length !== before) {found = true;}
+    if (b.effects.length !== before) {
+      found = true;
+    }
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
   requireFound(found, 'skill1 maxAmmoPct not found');
@@ -219,8 +229,6 @@ const privBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === PRIVATY && b.stat === stat);
 const shots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'privaty');
-const reloads = (evs: SimEvent[]) =>
-  evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === 'privaty');
 const privBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'privaty'
@@ -250,15 +258,17 @@ function s1Describe(stat: string, value: number, label: string) {
       expect([...new Set(ap.map((b) => b.value))]).toEqual([value]);
       // scope: all 4 allies (incl. self) per application frame
       const perFrame = new Map<number, Set<number | null>>();
-      for (const b of ap)
-        {(
+      for (const b of ap) {
+        (
           perFrame.get(b.frame) ??
           perFrame.set(b.frame, new Set()).get(b.frame)!
-        ).add(b.targetIdx);}
-      for (const [, holders] of perFrame)
-        {expect([...holders].sort((a, b) => (a ?? 9) - (b ?? 9))).toEqual(
+        ).add(b.targetIdx);
+      }
+      for (const [, holders] of perFrame) {
+        expect([...holders].sort((a, b) => (a ?? 9) - (b ?? 9))).toEqual(
           ALL_ALLIES
-        );}
+        );
+      }
       // duration: 10s wall-clock, NOT a round count
       for (const b of ap) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -323,7 +333,9 @@ describe('S2 P5 — last-bullet Damage Taken ▲10.01% is a BOSS debuff (benefit
       [...new Set(taken.map((b) => b.targetIdx))],
       'Damage Taken must target the boss, not an ally'
     ).toEqual([null]);
-    for (const b of taken) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+    for (const b of taken) {
+      expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+    }
     // same lastBullet cadence as the 256.17 rider (±1 for fight-end reload timing)
     expect(
       Math.abs(taken.length - rider256(base.events).length)
@@ -385,11 +397,12 @@ describe('S2 P7 — gated rider: 1687% on last bullets hitting a Designated Targ
     expect([...new Set(r1687.map((d) => d.atkPct))]).toEqual([1687]);
   });
   it('every gated rider lands inside a Designated-Target window (~10s after a privaty cast)', () => {
-    for (const d of r1687)
-      {expect(
+    for (const d of r1687) {
+      expect(
         inWindow(d.frame),
         `gated rider at ${d.sec.toFixed(2)}s is outside every cast window`
-      ).toBe(true);}
+      ).toBe(true);
+    }
   });
   it.skipIf(!s2Ungated)(
     'DISCRIMINATING: dropping the gate fires 1687 on EVERY last bullet',
@@ -427,7 +440,9 @@ describe('Burst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast
       [...new Set(elemAdv.map((b) => b.targetIdx))],
       'self-scoped'
     ).toEqual([PRIVATY]);
-    for (const b of elemAdv) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+    for (const b of elemAdv) {
+      expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+    }
     expect(elemAdv.length).toBe(privBursts(base.events).length);
     expect(elemAdv.length).toBeLessThan(fbStarts(base.events).length);
   });

@@ -86,7 +86,7 @@
 // Slot order: tove 0 / crown 1 / helm 2 / noir 3 / isabel 4.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, unitOf, withPatchedOverride } from '../lib/harness.js';
+import { runComp, withPatchedOverride } from '../lib/harness.js';
 
 const FPS = 60;
 const TOVE = 0;
@@ -155,21 +155,29 @@ const isS1Passive = (b: any) =>
 // T2 nearest-wrong (stat): maxAmmoFlat 6 → maxAmmoPct 6 (a percentage, not flat rounds).
 const cfS1MaxAmmoPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove S1 passive block missing — fixture is stale');
+  }
   const eff = b.effects.find((e: any) => e.stat === 'maxAmmoFlat');
   eff.stat = 'maxAmmoPct';
 });
 // T2/T3 nearest-wrong (scope): allies → alliesOfWeapon SG (hit only the 2 SG allies, not all 5).
 const cfS1ScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove S1 passive block missing — fixture is stale');
+  }
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // T2/T3 nearest-wrong (duration): add a 5s expiry to the steady-state permanent passive.
 const cfS1Dur5 = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
-  for (const e of b.effects) {e.durationSec = 5;}
+  if (!b) {
+    throw new Error('tove S1 passive block missing — fixture is stale');
+  }
+  for (const e of b.effects) {
+    e.durationSec = 5;
+  }
 });
 // The S2 critRatePct 10.08 block (T4 under test, target allies).
 const isS2CritRate = (b: any) =>
@@ -178,7 +186,9 @@ const isS2CritRate = (b: any) =>
 // T4 nearest-wrong (scope): allies → alliesOfWeapon SG (the line says "all allies", not SG-only).
 const cfS2CritRateScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill2.find(isS2CritRate);
-  if (!b) {throw new Error('tove S2 critRate block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove S2 critRate block missing — fixture is stale');
+  }
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // The S2 attackSpeedPct 42.24 block (T5 under test, target alliesOfWeapon SG).
@@ -188,8 +198,9 @@ const isS2AtkSpeed = (b: any) =>
 // T5 nearest-wrong (scope): alliesOfWeapon SG → allies (the classic scope-collapse: SG line as generic).
 const cfS2AtkSpeedScopeAllies = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill2.find(isS2AtkSpeed);
-  if (!b)
-    {throw new Error('tove S2 attackSpeed block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove S2 attackSpeed block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // The burst all-ally casterAtkPct 6.96 block (T6 under test).
@@ -199,36 +210,41 @@ const isBurstAll = (b: any) =>
 // T6 nearest-wrong (trigger): burstCast → fullBurstEnter (every team FB-start frame, not Tove's cast frame).
 const cfBurstAllFbEnter = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b)
-    {throw new Error('tove burst all-ally block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst all-ally block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T6 nearest-wrong (scope): allies → alliesOfWeapon SG (only the 2 SG allies, not all 5).
 const cfBurstAllScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b)
-    {throw new Error('tove burst all-ally block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst all-ally block missing — fixture is stale');
+  }
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // T6 nearest-wrong (stat): casterAtkPct → atkPct (a percentage in the ATK bucket, not a caster-keyed flat add).
 const cfBurstAllAtkPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b)
-    {throw new Error('tove burst all-ally block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst all-ally block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 // T6 nearest-wrong (duration): the stale datamine 10s window (the prose says 15s).
 const cfBurstAllDur10 = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b)
-    {throw new Error('tove burst all-ally block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst all-ally block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').durationSec = 10;
 });
 // T6 nearest-wrong (mirror): the UN-mirrored per-stack value 2.32 (ignoring "mirrors the stack count" ×3).
 const cfBurstAllUnmirrored = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b)
-    {throw new Error('tove burst all-ally block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst all-ally block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').value = 2.32;
 });
 // The burst SG casterAtkPct 72.63 block (T7 under test).
@@ -238,13 +254,17 @@ const isBurstSG = (b: any) =>
 // T7 nearest-wrong (scope): alliesOfWeapon SG → allies (hit all 5, not just the 2 SG allies).
 const cfBurstSGScopeAllies = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstSG);
-  if (!b) {throw new Error('tove burst SG block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst SG block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // T7 nearest-wrong (stat): casterAtkPct → atkPct.
 const cfBurstSGAtkPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstSG);
-  if (!b) {throw new Error('tove burst SG block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('tove burst SG block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 

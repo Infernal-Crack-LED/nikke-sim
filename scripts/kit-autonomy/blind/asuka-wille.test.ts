@@ -41,7 +41,6 @@ import { describe, it, expect } from 'vitest';
 import {
   controlComp,
   runComp,
-  unitOf,
   withPatchedOverride,
   // DRIVER NOTE (gauntlet S5): import path retargeted from '../lib/harness' to the blind/ location,
   // and three field-name shims fixed exactly as the blind author invited ("fix the shim — not the
@@ -74,12 +73,13 @@ const OV: any = normBlocks(withPatchedOverride(SLUG, () => {}));
 // concatenation of the slot arrays so the blind introspection below mutates the REAL blocks
 // (the sim reads skill1/skill2/burst, which share these object references).
 function normBlocks(ov: any): any {
-  if (!ov.blocks)
-    {ov.blocks = [
+  if (!ov.blocks) {
+    ov.blocks = [
       ...(ov.skill1 ?? []),
       ...(ov.skill2 ?? []),
       ...(ov.burst ?? []),
-    ];}
+    ];
+  }
   return ov;
 }
 
@@ -89,8 +89,11 @@ function allEffects(ov: any): Array<{ e: any; b: any }> {
   for (const b of ov.blocks ?? []) {
     for (const e of b.effects ?? []) {
       out.push({ e, b });
-      if (e.kind === 'escalating')
-        {for (const s of e.steps ?? []) {out.push({ e: s, b });}}
+      if (e.kind === 'escalating') {
+        for (const s of e.steps ?? []) {
+          out.push({ e: s, b });
+        }
+      }
     }
   }
   return out;
@@ -113,7 +116,9 @@ function dropEffects(
     b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b));
     n += before - b.effects.length;
   }
-  if (!n) {throw new Error(`MISSING kit line in override: ${label}`);}
+  if (!n) {
+    throw new Error(`MISSING kit line in override: ${label}`);
+  }
   ov.blocks = (ov.blocks ?? []).filter(
     (b: any) => (b.effects?.length ?? 0) > 0
   );
@@ -126,7 +131,9 @@ const isDamageEffect = (e: any) =>
 // 6.62% x N stacks — the driver can only ship a DERIVED constant (no stack-mirroring primitive),
 // so match any near-integer multiple of 6.62 in [1,30] that is not one of the other two riders.
 const isAnnihilationHit = (e: any) => {
-  if (!isDamageEffect(e)) {return false;}
+  if (!isDamageEffect(e)) {
+    return false;
+  }
   const k = e.atkPct / 6.62;
   return (
     k >= 0.9 &&
@@ -146,14 +153,15 @@ function runWith(patch?: (o: any) => void, helm = true) {
     ...base,
     cfg: { ...(base.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) },
   };
-  if (patch)
-    {opts.overrides = {
+  if (patch) {
+    opts.overrides = {
       ...(base.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, (o: any) => {
         normBlocks(o);
         patch(o);
       }),
-    };}
+    };
+  }
   const res: any = runComp(opts);
   return { res, events };
 }
@@ -171,10 +179,11 @@ const HITCOUNT_100 = runWith((o) => {
   const b = (o.blocks ?? []).find(
     (b: any) => b.trigger?.kind === 'hitCount' && b.trigger.count === 50
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'MISSING: skill1 hitCount(50) trigger for the 471.86% rider'
-    );}
+    );
+  }
   b.trigger.count = 100;
 });
 const NO_R1562 = runWith((o) =>
@@ -202,8 +211,9 @@ const S2A_UNGATED = runWith((o) => {
         near(e.value, 30.97, 0.1)
     )
   );
-  if (!bs.length)
-    {throw new Error('MISSING: skill2 Attack Damage +30.97% block');}
+  if (!bs.length) {
+    throw new Error('MISSING: skill2 Attack Damage +30.97% block');
+  }
   for (const b of bs) {
     delete b.ownBurstGate;
     b.trigger = { kind: 'fullBurstEnter' };
@@ -238,7 +248,9 @@ function slotOfUnit(res: any): number {
   // SHIM FIX (driver): the unit row carries no slot field; the slot index IS the unit's position
   // in the comp's ordered units array (controlComp = liter/crown/asuka-wille/helm → 2).
   const idx = res.units.findIndex((x: any) => x.slug === SLUG);
-  if (idx < 0) {throw new Error(`cannot resolve slot index for ${SLUG}`);}
+  if (idx < 0) {
+    throw new Error(`cannot resolve slot index for ${SLUG}`);
+  }
   return idx;
 }
 const SLOT = slotOfUnit(BASE.res);
@@ -260,12 +272,17 @@ const allyTotal = (evts: Ev[]) =>
 /** multiset difference a \\ b — the timestamps present in the base run and absent once dropped. */
 function removedTimes(a: number[], b: number[]): number[] {
   const bag = new Map<number, number>();
-  for (const t of b) {bag.set(t, (bag.get(t) ?? 0) + 1);}
+  for (const t of b) {
+    bag.set(t, (bag.get(t) ?? 0) + 1);
+  }
   const out: number[] = [];
   for (const t of a) {
     const c = bag.get(t) ?? 0;
-    if (c > 0) {bag.set(t, c - 1);}
-    else {out.push(t);}
+    if (c > 0) {
+      bag.set(t, c - 1);
+    } else {
+      out.push(t);
+    }
   }
   return out;
 }
@@ -466,8 +483,9 @@ describe('S2a — entering Full Burst WHILE in Annihilation State: self Attack D
       const opened = applies()
         .map(tOf)
         .filter((t) => t <= tOf(rm));
-      if (opened.length)
-        {expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5);}
+      if (opened.length) {
+        expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5);
+      }
     }
   });
 });
@@ -621,8 +639,9 @@ describe('burst a — Annihilation State self package (9 s)', () => {
       const a = buffApplies(BASE.events, stat as string, val as number, 0.05);
       expect(a.length).toBe(HER_CASTS.length);
       expect(a.length).toBeLessThan(FB_STARTS.length);
-      for (const e of a)
-        {expect(HER_CASTS.some((c) => Math.abs(tOf(e) - c) < 0.5)).toBe(true);}
+      for (const e of a) {
+        expect(HER_CASTS.some((c) => Math.abs(tOf(e) - c) < 0.5)).toBe(true);
+      }
     }
   });
 

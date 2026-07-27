@@ -36,7 +36,6 @@ import {
   controlComp,
   runComp,
   totals,
-  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -44,9 +43,7 @@ const CARRY = 'ada';
 /** controlComp slot order: liter 0 / crown 1 / ada 2 / helm 3. */
 const CROWN_SLOT = 1;
 
-type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
-type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
@@ -95,7 +92,9 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
       crown: withPatchedOverride('crown', (ov) => {
         for (const block of ov.skill1) {
           for (const eff of block.effects) {
-            if (eff.stat === 'casterAtkPct') {eff.stat = 'atkPct';}
+            if (eff.stat === 'casterAtkPct') {
+              eff.stat = 'atkPct';
+            }
           }
         }
       }),

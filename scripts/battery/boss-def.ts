@@ -26,7 +26,7 @@
 // as an evidence-backed approximation (error <0.2%); revisit only if a future low-ATK
 // low-coefficient popup shows a uniform cold bias.
 
-import { loadWorld, BEATS, autoWire, type BatteryTeam } from './lib.js';
+import { loadWorld, autoWire, type BatteryTeam } from './lib.js';
 import { prepareTeam, type UnitOptions } from '../../src/prepare.js';
 import { loadOverride } from '../../src/skills/overrides-node.js';
 import { runSim } from '../../src/engine/sim.js';
@@ -37,7 +37,9 @@ const w = loadWorld();
 function runWithDef(team: BatteryTeam, boss: Element | null, bossDef: number) {
   const chars = team.slugs.map((s) => w.data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of team.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of team.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = team.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -134,10 +136,14 @@ for (const s of SWEEP) {
     for (const u of res.units) {
       const b = baseByUnit.get(u.slug) ?? u.totalDamage;
       const pct = b > 0 ? ((u.totalDamage - b) / b) * 100 : 0;
-      if (Math.abs(pct) > maxAbs) {maxAbs = Math.abs(pct);}
+      if (Math.abs(pct) > maxAbs) {
+        maxAbs = Math.abs(pct);
+      }
       cells.push(pct.toFixed(2).padStart(11));
     }
-    if (def === 140 && maxAbs > worstAt140) {worstAt140 = maxAbs;}
+    if (def === 140 && maxAbs > worstAt140) {
+      worstAt140 = maxAbs;
+    }
     console.log(
       String(def).padStart(8) + cells.join('') + `   ${maxAbs.toFixed(2)}%`
     );

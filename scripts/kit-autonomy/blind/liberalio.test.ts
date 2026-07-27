@@ -56,18 +56,17 @@ import {
 
 const SLUG = 'liberalio';
 const ALLY_SLUGS = ['liter', 'crown', 'helm'];
-const SLOTS: Array<'skill1' | 'skill2' | 'burst'> = [
-  'skill1',
-  'skill2',
-  'burst',
-];
 
 /* ------------------------------------------------------------------ helpers */
 
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 
@@ -77,8 +76,11 @@ function findEffect(
   pred: (e: any) => boolean
 ): { block: any; eff: any } | undefined {
   for (const block of slotBlocks(ov, slot)) {
-    for (const eff of block?.effects ?? [])
-      {if (pred(eff)) {return { block, eff };}}
+    for (const eff of block?.effects ?? []) {
+      if (pred(eff)) {
+        return { block, eff };
+      }
+    }
   }
   return undefined;
 }
@@ -108,7 +110,9 @@ function scaleFlat(
 ): void {
   for (const block of slotBlocks(ov, slot)) {
     for (const eff of block?.effects ?? []) {
-      if (eff?.kind === 'flatDamage') {eff.atkPct = eff.atkPct * factor;}
+      if (eff?.kind === 'flatDamage') {
+        eff.atkPct = eff.atkPct * factor;
+      }
     }
   }
 }
@@ -124,7 +128,9 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function comp(mutate?: (ov: any) => void): any {
   const base: any = controlComp(SLUG, true);
-  if (!mutate) {return base;}
+  if (!mutate) {
+    return base;
+  }
   return {
     ...base,
     overrides: {
@@ -161,7 +167,9 @@ function alliesIdentical(
   b: ReturnType<typeof run>
 ): void {
   for (const s of ALLY_SLUGS) {
-    if (s in a.dmg) {expect(b.dmg[s]).toBe(a.dmg[s]);}
+    if (s in a.dmg) {
+      expect(b.dmg[s]).toBe(a.dmg[s]);
+    }
   }
 }
 
@@ -177,7 +185,9 @@ const NO_S1A = run(
 const S1A_LONG = run(
   comp((ov) => {
     const h = findEffect(ov, 'skill1', (e) => isBuff(e, 'atkPct', 160));
-    if (h) {h.eff.durationSec = 9;}
+    if (h) {
+      h.eff.durationSec = 9;
+    }
   })
 );
 const S1B_SHORT = run(
@@ -185,7 +195,9 @@ const S1B_SHORT = run(
     const h = findEffect(ov, 'skill1', (e) =>
       isBuff(e, 'attackDamagePct', 20.83)
     );
-    if (h) {h.eff.durationSec = 0.5;}
+    if (h) {
+      h.eff.durationSec = 0.5;
+    }
   })
 );
 const S1B_NOCORE = run(
@@ -193,7 +205,9 @@ const S1B_NOCORE = run(
     const h = findEffect(ov, 'skill1', (e) =>
       isBuff(e, 'attackDamagePct', 20.83)
     );
-    if (h) {h.block.requiresCore = false;}
+    if (h) {
+      h.block.requiresCore = false;
+    }
   })
 );
 const NO_S1C = run(
@@ -211,7 +225,9 @@ const S1D_ALL = run(
     const h = findEffect(ov, 'skill1', (e) =>
       isBuff(e, 'chargeSpeedPct', 12.74)
     );
-    if (h) {h.block.target = { kind: 'allies' };}
+    if (h) {
+      h.block.target = { kind: 'allies' };
+    }
   })
 );
 const S2_PASSIVE = run(
@@ -219,7 +235,9 @@ const S2_PASSIVE = run(
     const h = findEffect(ov, 'skill2', (e) =>
       isBuff(e, 'attackDamagePct', 231)
     );
-    if (h) {h.block.trigger = { kind: 'passive' };}
+    if (h) {
+      h.block.trigger = { kind: 'passive' };
+    }
   })
 );
 const S2_SHORT = run(
@@ -227,7 +245,9 @@ const S2_SHORT = run(
     const h = findEffect(ov, 'skill2', (e) =>
       isBuff(e, 'attackDamagePct', 231)
     );
-    if (h) {h.eff.durationSec = 0.5;}
+    if (h) {
+      h.eff.durationSec = 0.5;
+    }
   })
 );
 const NO_S2 = run(
@@ -238,7 +258,9 @@ const NO_S2 = run(
 const BURST_SHORT = run(
   comp((ov) => {
     const h = findEffect(ov, 'burst', (e) => isBuff(e, 'attackDamagePct', 50));
-    if (h) {h.eff.durationSec = 0.5;}
+    if (h) {
+      h.eff.durationSec = 0.5;
+    }
   })
 );
 const NO_BURST_NUKE = run(
@@ -297,7 +319,9 @@ describe('liberalio s1a — FB-enter self ATK +160% for 3 sec', () => {
   it('fires once per full burst, on liberalio only', () => {
     const evs = applied(BASE.events, 'atkPct', 160);
     expect(evs.length).toBe(FB_STARTS.length);
-    for (const e of evs as any[]) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of evs as any[]) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('is load-bearing, and its 3s window is not a 10s window', () => {
@@ -338,7 +362,9 @@ describe('liberalio s1b — full charge ON CORE: self Attack Damage +20.83% for 
   it('applies only to liberalio, at 20.83 percentage points', () => {
     const evs = applied(BASE.events, 'attackDamagePct', 20.83);
     expect(evs.length).toBeGreaterThan(0);
-    for (const e of evs as any[]) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of evs as any[]) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('the core gate is real and non-vacuous in this fixture', () => {
@@ -367,8 +393,13 @@ describe('liberalio s1b — full charge ON CORE: self Attack Damage +20.83% for 
 describe('liberalio s1c — full charge: 40.5% of final ATK additional damage', () => {
   it("is authored as an enemy-targeted flatDamage rider on the owner's charge", () => {
     const flats: any[] = [];
-    for (const b of slotBlocks(OV, 'skill1'))
-      {for (const e of b?.effects ?? []) {if (isFlat(e)) {flats.push({ b, e });}}}
+    for (const b of slotBlocks(OV, 'skill1')) {
+      for (const e of b?.effects ?? []) {
+        if (isFlat(e)) {
+          flats.push({ b, e });
+        }
+      }
+    }
     expect(flats.length).toBeGreaterThan(0);
     for (const { b, e } of flats) {
       // 40.5 per instance, or 202.5 if the "Activates 5 times" multiplicity was folded into one
@@ -497,7 +528,9 @@ describe('liberalio s2a — full charge vs the stage target: Raging Current, Att
   it('applies to liberalio only', () => {
     const evs = applied(BASE.events, 'attackDamagePct', 231) as any[];
     expect(evs.length).toBeGreaterThan(0);
-    for (const e of evs) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of evs) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('is earned on her first landed charge, not granted from t=0', () => {
@@ -573,7 +606,9 @@ describe('liberalio burst A — self Attack Damage +50% for 10 sec', () => {
     // fullBurstEnter discriminator; when they coincide it still pins the count exactly.
     const evs = applied(BASE.events, 'attackDamagePct', 50) as any[];
     expect(evs.length).toBe(LIB_BURSTS.length);
-    for (const e of evs) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of evs) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('its 10s window is load-bearing', () => {

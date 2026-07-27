@@ -59,7 +59,7 @@ describe('flora', () => {
 
   // Inactive case: no fixed B3 means no Full Burst and no burst cast.
   const noFbEvents: SimEvent[] = [];
-  const noFbRes = runComp({
+  runComp({
     ...controlComp('flora', false),
     cfg: { onEvent: (ev: SimEvent) => noFbEvents.push(ev) },
   });

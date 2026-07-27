@@ -54,7 +54,6 @@
  */
 import { describe, expect, it } from 'vitest';
 import {
-  controlComp,
   runComp,
   totals,
   unitOf,
@@ -75,7 +74,9 @@ const dropFx = (o: any, pred: (e: any) => boolean) => {
   for (const b of [].concat(o.skill1 ?? [], o.skill2 ?? [], o.burst ?? [])) {
     b.effects = (b.effects ?? []).filter((e: any) => {
       const hit = pred(e);
-      if (hit) {patchHits++;}
+      if (hit) {
+        patchHits++;
+      }
       return !hit;
     });
   }
@@ -85,12 +86,14 @@ const mapFx = (
   pred: (e: any) => boolean,
   fn: (e: any, b: any) => void
 ) => {
-  for (const b of [].concat(o.skill1 ?? [], o.skill2 ?? [], o.burst ?? []))
-    {for (const e of b.effects ?? [])
-      {if (pred(e)) {
+  for (const b of [].concat(o.skill1 ?? [], o.skill2 ?? [], o.burst ?? [])) {
+    for (const e of b.effects ?? []) {
+      if (pred(e)) {
         patchHits++;
         fn(e, b);
-      }}}
+      }
+    }
+  }
 };
 
 interface Run {
@@ -116,11 +119,12 @@ function run(mutate?: (o: any) => void): Run {
       },
     },
   };
-  if (mutate)
-    {opts.overrides = {
+  if (mutate) {
+    opts.overrides = {
       ...(base.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, mutate),
-    };}
+    };
+  }
   const res = runComp(opts);
   return { res, events, patched: patchHits };
 }
@@ -306,8 +310,9 @@ describe('S1-b / S1-c  Snapshots of Youth: Normal Attack Damage Multiplier +10%,
   it('is modeled and load-bearing, and moves nobody else (inertness)', () => {
     expect(NO_SNAP.patched).toBeGreaterThan(0);
     expect(totalOf(BASE)).toBeGreaterThan(totalOf(NO_SNAP));
-    for (const m of MATES)
-      {expect(unitDmg(NO_SNAP, m)).toEqual(unitDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(unitDmg(NO_SNAP, m)).toEqual(unitDmg(BASE, m));
+    }
   });
 
   it('is SCOPED to the normal multiplier, not generic Attack Damage', () => {
@@ -352,8 +357,9 @@ describe('S2-a  normal-attack thresholds while in Making Memories (2 / 4 / 6)', 
     expect(vals.every((v: number) => v >= 1 && v <= 3.001)).toBe(true);
     expect(totalOf(BASE)).toBeGreaterThan(totalOf(NO_PELLET));
     // pellets do not pump the gauge, so the rotation - and therefore every teammate - is untouched
-    for (const m of MATES)
-      {expect(unitDmg(NO_PELLET, m)).toEqual(unitDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(unitDmg(NO_PELLET, m)).toEqual(unitDmg(BASE, m));
+    }
   });
 
   it('4x: the pellet primitive is NOT interchangeable with a normalAttackPct proxy for this unit', () => {
@@ -374,8 +380,9 @@ describe('S2-a  normal-attack thresholds while in Making Memories (2 / 4 / 6)', 
     expect(new Set(ap.map((e) => e.targetIdx))).toEqual(new Set([arcanaIdx]));
     expect(ap.every((e) => e.value <= 7.471)).toBe(true);
     expect(totalOf(BASE)).toBeGreaterThan(totalOf(NO_PRECIOUS));
-    for (const m of MATES)
-      {expect(unitDmg(NO_PRECIOUS, m)).toEqual(unitDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(unitDmg(NO_PRECIOUS, m)).toEqual(unitDmg(BASE, m));
+    }
   });
 
   it('2x reload 6 rounds + burst reload 2 rounds are damage: they add real shots', () => {
@@ -430,8 +437,9 @@ describe('burst  Making Memories self-mode + 554.4% burst hit', () => {
       (e) => e.kind === 'damage' && idxOf(e) === arcanaIdx
     );
     const byBucket = new Map<string, any[]>();
-    for (const d of mine)
-      {byBucket.set(d.bucket, [...(byBucket.get(d.bucket) ?? []), d]);}
+    for (const d of mine) {
+      byBucket.set(d.bucket, [...(byBucket.get(d.bucket) ?? []), d]);
+    }
     // heuristic, bucket-name-agnostic: the burst hit is the bucket with exactly one event per cast
     const nuke = [...byBucket.values()].find(
       (list) => list.length === arcanaCasts.length

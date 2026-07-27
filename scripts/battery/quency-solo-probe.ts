@@ -1,7 +1,7 @@
 // One-off diagnostic: Quency SOLO, neutral boss, core exposure 100%.
 // Solo B3 => zero Full Bursts (verify fbCount===0). Reconcile against the
 // measured solo total 136,918,771 (quency smg.MP4, neutral, no burst).
-import { loadWorld, runOnce, type BatteryTeam } from './lib.js';
+import { loadWorld, runOnce } from './lib.js';
 
 const w = loadWorld();
 // Measured solo totals (neutral, 0 FB — lone B-unit cannot burst):

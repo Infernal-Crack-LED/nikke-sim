@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness';
@@ -75,8 +74,9 @@ const dmgOf = (res: any, slug: string) => unitOf(res, slug).total;
 function zeroBuff(ov: any, stat: string, value: number) {
   for (const b of ov.blocks ?? []) {
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === stat && near(e.value, value))
-        {e.value = 0;}
+      if (e.kind === 'buff' && e.stat === stat && near(e.value, value)) {
+        e.value = 0;
+      }
     }
   }
 }

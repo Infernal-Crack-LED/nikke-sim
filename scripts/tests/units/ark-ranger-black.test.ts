@@ -49,12 +49,10 @@ import {
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / ark-ranger-black 2 / helm 3. */
 const ARB = 2;
-const N_ALLIES = 4;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
-type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
@@ -74,10 +72,11 @@ const arbNoParts = withPatchedOverride('ark-ranger-black', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'partsDamagePct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'ark-ranger-black S1 partsDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 /** A3 counterfactual: ATK buff keyed to fullBurstEnter instead of burstCast (fires on every FB). */
@@ -87,10 +86,11 @@ const arbAtkFullBurst = withPatchedOverride('ark-ranger-black', (ov) => {
       (e: any) => e.stat === 'atkPct' && Math.abs(e.value - 156.19) < 0.01
     )
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'ark-ranger-black burst atkPct 156.19 block missing — fixture is stale'
-    );}
+    );
+  }
   blk.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -102,10 +102,11 @@ const arbSustainedPassive = withPatchedOverride('ark-ranger-black', (ov) => {
         e.stat === 'sustainedDamagePct' && Math.abs(e.value - 59.6) < 0.01
     )
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'ark-ranger-black S1 sustainedDamagePct 59.6 block missing — fixture is stale'
-    );}
+    );
+  }
   blk.trigger = { kind: 'passive' };
   delete blk.effects[0].durationSec;
 });
@@ -117,10 +118,11 @@ const arbColliderPermanent = withPatchedOverride('ark-ranger-black', (ov) => {
       (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01
     )
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'ark-ranger-black burst Ark Black Collider DoT block missing — fixture is stale'
-    );}
+    );
+  }
   const eff = blk.effects.find(
     (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01
   );
@@ -135,10 +137,11 @@ const arbS2AllAllies = withPatchedOverride('ark-ranger-black', (ov) => {
         e.stat === 'sustainedDamagePct' && Math.abs(e.value - 77.5) < 0.01
     )
   );
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'ark-ranger-black S2 sustainedDamagePct 77.5 block missing — fixture is stale'
-    );}
+    );
+  }
   blk.target = { kind: 'allies' };
 });
 
@@ -159,10 +162,6 @@ const arbBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
       e.kind === 'burstCast' && e.slug === 'ark-ranger-black'
-  );
-const arbShots = (evs: SimEvent[]) =>
-  evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'ark-ranger-black'
   );
 const fullBursts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -237,7 +236,6 @@ describe('ark-ranger-black — kit spec', () => {
         'sustainedDamagePct 59.6% must fire at least once'
       ).toBeGreaterThan(0);
       const firstFrame = Math.min(...sustBuffs.map((b) => b.frame));
-      const shots = arbShots(base.events);
       // 30 shots at 720 RPM (12/s) ≈ 2.5s = 150 frames; allow generous margin for reload timing
       expect(
         firstFrame,

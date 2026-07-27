@@ -11,7 +11,6 @@ import { loadOverride } from './skills/overrides-node.js';
 import {
   prepareTeam,
   type CubesFile,
-  type LineSelection,
   type OlLinesFile,
   type SkillLevelData,
   type UnitOptions,
@@ -20,7 +19,9 @@ import {
 const ELEMENTS = ['Fire', 'Water', 'Wind', 'Electric', 'Iron'];
 
 function usage(msg?: string): never {
-  if (msg) {console.error(`error: ${msg}\n`);}
+  if (msg) {
+    console.error(`error: ${msg}\n`);
+  }
   console.error(
     `usage: npm run sim -- <slug1> <slug2> <slug3> <slug4> <slug5> [options]
 
@@ -86,17 +87,21 @@ if (argv[0] === '--coverage') {
     if (caveats.length || unmodeled) {
       flagged++;
       rows.push([c.slug, caveats.length, unmodeled, caveats[0] ?? '']);
-    } else {clean++;}
+    } else {
+      clean++;
+    }
   }
   rows.sort((a, b) => b[1] + b[2] - (a[1] + a[2]));
-  for (const [slug, nc, nu, first] of rows)
-    {console.log(
+  for (const [slug, nc, nu, first] of rows) {
+    console.log(
       `${slug.padEnd(30)} ${String(nc).padStart(2)} caveat(s)  ${String(nu).padStart(2)} unmodeled  ${first}`
-    );}
-  if (missing.length)
-    {console.log(
+    );
+  }
+  if (missing.length) {
+    console.log(
       `\nMISSING OVERRIDE (run scripts/materialize-overrides.ts --write): ${missing.join(', ')}`
-    );}
+    );
+  }
   console.log(
     `\n${clean} fully modeled, ${flagged} with caveats/unmodeled text, ${missing.length} missing override (of ${Object.keys(data.characters).length})`
   );
@@ -125,18 +130,25 @@ const slugs: string[] = [];
 const opts: Record<string, string | boolean> = {};
 for (let i = 0; i < argv.length; i++) {
   const a = argv[i];
-  if (a === '--no-range') {opts.noRange = true;}
-  else if (a === '--rotation') {opts.rotation = true;}
-  else if (a.startsWith('--')) {
+  if (a === '--no-range') {
+    opts.noRange = true;
+  } else if (a === '--rotation') {
+    opts.rotation = true;
+  } else if (a.startsWith('--')) {
     const key = a.slice(2);
     const val = argv[++i];
-    if (val === undefined) {usage(`missing value for --${key}`);}
+    if (val === undefined) {
+      usage(`missing value for --${key}`);
+    }
     opts[key] = val;
-  } else {slugs.push(a.toLowerCase());}
+  } else {
+    slugs.push(a.toLowerCase());
+  }
 }
 
-if (slugs.length < 1 || slugs.length > 5)
-  {usage(`need 1-5 nikkes, got ${slugs.length}`);}
+if (slugs.length < 1 || slugs.length > 5) {
+  usage(`need 1-5 nikkes, got ${slugs.length}`);
+}
 
 const chars = slugs.map((slug) => {
   const c = data.characters[slug];
@@ -153,7 +165,9 @@ const chars = slugs.map((slug) => {
 
 // team composition check: 1×BI, 1×BII, 2×BIII, 1 flex (Λ wildcards)
 const counts = { I: 0, II: 0, III: 0, Λ: 0 } as Record<string, number>;
-for (const c of chars) {counts[c.burst]++;}
+for (const c of chars) {
+  counts[c.burst]++;
+}
 const flexOk =
   counts['Λ'] >= 0 &&
   counts.I >= 1 &&
@@ -192,9 +206,12 @@ const cfg: SimConfig = {
   rangeBonus: !opts.noRange,
   durationSec: opts.duration ? Number(opts.duration) : 180,
 };
-if (cfg.copies < 0 || cfg.copies > 10) {usage(`--copies must be 0-10`);}
-if (cfg.coreHitRate < 0 || cfg.coreHitRate > 1)
-  {usage(`--core-rate must be 0-1`);}
+if (cfg.copies < 0 || cfg.copies > 10) {
+  usage(`--copies must be 0-10`);
+}
+if (cfg.coreHitRate < 0 || cfg.coreHitRate > 1) {
+  usage(`--core-rate must be 0-1`);
+}
 
 // ---- loadout flags ----
 const cubesData: CubesFile = JSON.parse(
@@ -214,28 +231,34 @@ try {
 
 function perSlot(raw: string | undefined, sep: string): (string | undefined)[] {
   const n = slugs.length;
-  if (!raw) {return Array(n).fill(undefined);}
+  if (!raw) {
+    return Array(n).fill(undefined);
+  }
   const parts = String(raw)
     .split(sep)
     .map((s) => s.trim());
-  if (parts.length === 1) {return Array(n).fill(parts[0]);}
-  if (parts.length !== n)
-    {usage(`expected 1 or ${n} ${sep}-separated entries, got ${parts.length}`);}
+  if (parts.length === 1) {
+    return Array(n).fill(parts[0]);
+  }
+  if (parts.length !== n) {
+    usage(`expected 1 or ${n} ${sep}-separated entries, got ${parts.length}`);
+  }
   return parts.map((p) => (p === '' || p === '-' ? undefined : p));
 }
 
 const unitOpts: UnitOptions[] = perSlot(opts.cubes as string, ',').map(
-  (cubeSpec, i) => {
+  (cubeSpec, _i) => {
     const u: UnitOptions = {};
     if (cubeSpec) {
       const [id, lvl] = cubeSpec.split('@');
       const match = Object.keys(cubesData.cubes).find((k) =>
         k.startsWith(id.toLowerCase())
       );
-      if (!match)
-        {usage(
+      if (!match) {
+        usage(
           `unknown cube "${id}" (options: ${Object.keys(cubesData.cubes).join(', ')})`
-        );}
+        );
+      }
       u.cube = { id: match, level: lvl ? Number(lvl) : 15 };
     }
     return u;
@@ -243,67 +266,86 @@ const unitOpts: UnitOptions[] = perSlot(opts.cubes as string, ',').map(
 );
 
 perSlot(opts.ol as string, ',').forEach((spec, i) => {
-  if (spec === undefined) {return;}
+  if (spec === undefined) {
+    return;
+  }
   const s = spec.toLowerCase();
-  if (s !== '0' && s !== '5' && s !== 'base' && s !== 'base5')
-    {usage(`--ol entries must be base5, 0, or 5 (got "${spec}")`);}
+  if (s !== '0' && s !== '5' && s !== 'base' && s !== 'base5') {
+    usage(`--ol entries must be base5, 0, or 5 (got "${spec}")`);
+  }
   unitOpts[i].ol = s === '5' ? 5 : s === '0' ? 0 : 'base5';
 });
 
 perSlot(opts.doll as string, ',').forEach((spec, i) => {
-  if (spec === undefined) {return;}
+  if (spec === undefined) {
+    return;
+  }
   unitOpts[i].doll = /^y(es)?$|^true$|^1$|^on$/i.test(spec);
 });
 
 perSlot(opts.mode as string, ',').forEach((spec, i) => {
-  if (spec === undefined) {return;}
+  if (spec === undefined) {
+    return;
+  }
   const modes = loadOverride(slugs[i])?.modes;
-  if (!modes?.length)
-    {usage(
+  if (!modes?.length) {
+    usage(
       `--mode set for slot ${i + 1} (${chars[i].name}) but their kit declares no modes`
-    );}
+    );
+  }
   const match = modes.find((m) =>
     m.toLowerCase().startsWith(spec.toLowerCase())
   );
-  if (!match)
-    {usage(
+  if (!match) {
+    usage(
       `unknown mode "${spec}" for ${chars[i].name} (options: ${modes.join(', ')})`
-    );}
+    );
+  }
   unitOpts[i].mode = match;
 });
 
 perSlot(opts['mp-priority'] as string, ',').forEach((spec, i) => {
-  if (spec === undefined) {return;}
+  if (spec === undefined) {
+    return;
+  }
   unitOpts[i].mpPriority = /^y(es)?$|^true$|^1$|^on$/i.test(spec);
 });
 
 perSlot(opts['lambda-as'] as string, ',').forEach((spec, i) => {
-  if (spec === undefined) {return;}
-  if (!['1', '2', '3'].includes(spec))
-    {usage(`--lambda-as entries must be 1, 2, or 3 (got "${spec}")`);}
-  if (chars[i].burst !== 'Λ')
-    {usage(
+  if (spec === undefined) {
+    return;
+  }
+  if (!['1', '2', '3'].includes(spec)) {
+    usage(`--lambda-as entries must be 1, 2, or 3 (got "${spec}")`);
+  }
+  if (chars[i].burst !== 'Λ') {
+    usage(
       `--lambda-as set for slot ${i + 1} (${chars[i].name}) but they are B${chars[i].burst}, not Λ`
-    );}
+    );
+  }
   unitOpts[i].lambdaStage = Number(spec) as 1 | 2 | 3;
 });
 
 perSlot(opts.lines as string, ';').forEach((spec, i) => {
-  if (!spec) {return;}
+  if (!spec) {
+    return;
+  }
   unitOpts[i].lines = spec
     .split(/[+,]/)
     .filter(Boolean)
     .map((token) => {
       const m = token.trim().match(/^([a-z]+)(?:\*(\d+))?(?:@([\d.]+))?$/i);
-      if (!m)
-        {usage(`bad OL line token "${token}" (format: type[*count][@value])`);}
+      if (!m) {
+        usage(`bad OL line token "${token}" (format: type[*count][@value])`);
+      }
       const type = Object.keys(olLinesData.lines).find((k) =>
         k.startsWith(m[1].toLowerCase())
       );
-      if (!type)
-        {usage(
+      if (!type) {
+        usage(
           `unknown OL line type "${m[1]}" (options: ${Object.keys(olLinesData.lines).join(', ')})`
-        );}
+        );
+      }
       return {
         type,
         count: m[2] ? Number(m[2]) : 1,
@@ -313,7 +355,9 @@ perSlot(opts.lines as string, ';').forEach((spec, i) => {
 });
 
 perSlot(opts['skill-levels'] as string, ',').forEach((spec, i) => {
-  if (!spec) {return;}
+  if (!spec) {
+    return;
+  }
   const parts = spec.split('/').map(Number);
   const [s1, s2, b] =
     parts.length === 1 ? [parts[0], parts[0], parts[0]] : parts;
@@ -336,8 +380,9 @@ printReport(result, Boolean(opts.rotation));
 
 if (opts['best-ol']) {
   const slot = Number(opts['best-ol']);
-  if (!Number.isInteger(slot) || slot < 1 || slot > 5)
-    {usage(`--best-ol needs a slot number 1-5`);}
+  if (!Number.isInteger(slot) || slot < 1 || slot > 5) {
+    usage(`--best-ol needs a slot number 1-5`);
+  }
   console.log(
     `best OL lines for slot ${slot} (${chars[slot - 1].name}) — greedy, max-roll lines, cap 4/type:\n`
   );
@@ -347,7 +392,9 @@ if (opts['best-ol']) {
       `  ${i + 1}. ${p.name.padEnd(30)} +${p.unitGainPct.toFixed(2)}% unit dmg  (+${p.teamGainPct.toFixed(2)}% team)`
     )
   );
-  if (!r.picks.length) {console.log('  no line adds ≥0.05% damage');}
+  if (!r.picks.length) {
+    console.log('  no line adds ≥0.05% damage');
+  }
   const total = r.baselineDamage
     ? ((r.finalDamage - r.baselineDamage) / r.baselineDamage) * 100
     : 0;

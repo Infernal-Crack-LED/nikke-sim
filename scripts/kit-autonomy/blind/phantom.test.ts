@@ -4,7 +4,6 @@ import {
   controlComp,
   runComp,
   totals,
-  unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
 
@@ -54,8 +53,13 @@ function patchEffects(
     for (const slot of SLOTS) {
       const cs = ov[slot];
       const blocks = cs && cs.blocks ? cs.blocks : [];
-      for (const b of blocks)
-        {for (const e of b.effects || []) {if (pred(e, b, slot)) {mut(e, b, slot);}}}
+      for (const b of blocks) {
+        for (const e of b.effects || []) {
+          if (pred(e, b, slot)) {
+            mut(e, b, slot);
+          }
+        }
+      }
     }
   });
 }
@@ -229,8 +233,9 @@ describe('phantom kit spec', () => {
       noMaxStackRider,
       distributedCappedAtOne,
       noBurst,
-    ])
-      {teammatesUnmoved(res);}
+    ]) {
+      teammatesUnmoved(res);
+    }
   });
 
   it.skip('s1 Calling Card DEF down 32.19 magnitude: skipped - schema exposes no enemy DEF-down scalar; only the named Calling Card status window is observable through gates', () => {});
