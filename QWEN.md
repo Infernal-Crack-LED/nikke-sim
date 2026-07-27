@@ -9,6 +9,8 @@
 
 ## Qwen's role: front-end first
 
+- **Pre-commit hooks:** Husky + lint-staged run `eslint --fix`, `prettier --write`, and `npm run typecheck` on every commit. If the hook surfaces errors or warnings in files you are committing — even pre-existing ones — fix them as part of your change. Full details in [CLAUDE.md](CLAUDE.md) § "Pre-commit hooks".
+
 Primary use: **front-end development** (React 18 + Vite 5 + TypeScript in `web/`). The sim engine
 and data pipeline are mature; treat the protected paths in CLAUDE.md as read-only unless
 explicitly asked to change them.

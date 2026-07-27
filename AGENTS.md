@@ -10,6 +10,7 @@
 
 ## Kimi-harness specifics
 
+- **Pre-commit hooks:** Husky + lint-staged run `eslint --fix`, `prettier --write`, and `npm run typecheck` on every commit. If the hook surfaces errors or warnings in files you are committing — even pre-existing ones — fix them as part of your change. Full details in [CLAUDE.md](CLAUDE.md) § "Pre-commit hooks".
 - **Hooks:** Kimi's hooks live in `~/.kimi-code/config.toml` and route to the same hook scripts
   Claude uses under `.claude/hooks/` (commit-state-hygiene, stop-doc-drift, pre-write-discipline,
   pre-pr-patch-notes) — one copy, both harnesses.

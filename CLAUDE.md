@@ -94,6 +94,20 @@ overrides/**` edit while other sessions may be active — do the work in a dedic
   probe-runs (measurement log), DECISIONS/CONVENTIONS, handoffs (AI-facing),
   probes/ (recordings, gitignored media).
 
+## Pre-commit hooks
+
+Husky + lint-staged run on every commit. Do not bypass with `--no-verify`.
+
+- `lint-staged` formats and fixes staged files:
+  - `*.{ts,tsx,js,mjs,cjs}` → `eslint --fix` then `prettier --write`
+  - `*.{json,md,yml,yaml}` → `prettier --write`
+- Then `npm run typecheck` runs for the whole repo.
+
+If the hook surfaces **errors or warnings in files you are committing** — including pre-existing
+issues that happen to touch your staged files — fix them as part of your change. Don't leave the
+hook red for the next session. `eslint` errors block the commit; `eslint` warnings and `tsc` errors
+also block because `npm run typecheck` runs after lint-staged.
+
 ## Discipline forcing-functions (2026-07-16)
 
 - **PreToolUse discipline hook** (`.claude/hooks/pre-write-discipline.py`, wired for Edit/Write/Agent —
