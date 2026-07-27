@@ -47,7 +47,7 @@ Not a theoretical maintenance cost — the two copies **render different images 
 
 - **Font:** nikke-sim `FONT = "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"`;
   bakery-bot `FONT = "Roboto"` + `import './fonts.js'`. Different glyph metrics ⇒ different text
-  widths, different truncation, different layout.
+  widths, different truncation, different layout. **This one is not a preference — see §1a.**
 - **Fields the bot added and nikke-sim never got:** `DpsChartData.icon`, `DpsChartData.footer`,
   `DpsBar.slug`, `TeamCardMeta.icon`, `TeamCardMeta.footer`. The bot draws a branded header icon;
   the web does not.
@@ -57,6 +57,40 @@ Not a theoretical maintenance cost — the two copies **render different images 
   today; it is a demonstration that the fork drifts silently in the direction that eventually _will_
   break, with no test that would catch it.
 - `tableCard.ts` exists only in the bot, so the site cannot render the tables the bot posts.
+
+### 1a. Fonts are a hard requirement with a SILENT failure mode
+
+**This already happened in bakery-bot: cards rendered with no text at all, because the font was not
+packaged with the render.** Railway's Linux container ships no system fonts, so `@napi-rs/canvas`
+resolves the family to nothing and draws nothing. There is **no exception and no warning** — the
+canvas is produced, the PNG is valid, the layout, bars, and portraits are all correct, and every
+string is simply absent. That is the worst possible failure shape: it passes any "did we get a PNG?"
+check and only a human looking at the image catches it.
+
+`fonts.ts` is the fix, and it is load-bearing. The working mechanism is **three separate guarantees**,
+all of which must survive the move — losing any one of them silently reproduces the blank-text bug:
+
+| #   | Guarantee                                | Mechanism today (bakery-bot)                                                                                                                                                 |
+| --- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | **The font files exist at runtime**      | 3 × Roboto TTF (Regular/Medium/Bold, ~920 KB total) in `apps/bot/src/assets/`                                                                                                |
+| 2   | **They survive the build**               | `apps/bot/scripts/copy-assets.mjs`, run in the `build` script — `tsc` emits only JS, so without this step `dist/assets/` has no TTFs and `registerFromPath` fails at runtime |
+| 3   | **Registration runs before any drawing** | a side-effect import, `import './fonts.js'` at the top of `teamCard.ts` — the single entry point; `dpsChart.ts` inherits it transitively by importing from `teamCard.ts`     |
+
+Guarantee 3 is the fragile one, and **the `core/` + `node/` split proposed in §2 breaks it.** Once
+`core/teamCard.ts` must stay DOM-free and browser-safe it can no longer `import './fonts.js'` — that
+would drag `@napi-rs/canvas` into the web bundle. The ordering guarantee has to be **re-established in
+`node/`**, not inherited. See §2 for how.
+
+Two further traps worth pinning down now:
+
+- **The registered family name must match the `FONT` constant exactly.** `theme.ts` saying `Roboto`
+  while registration registered nothing (or a different name) is the same blank output.
+  `GlobalFonts.registerFromPath()` returns a **boolean** — check it and throw on false. A render host
+  that starts with unregistered fonts should refuse to boot, not serve blank cards.
+- **Bundling Roboto on the browser path has its own version of this bug.** A `@font-face` font is not
+  usable by `canvas` until it is loaded; drawing before `await document.fonts.ready` yields fallback
+  metrics or blank text on the first "Copy image" click, then works on the second. If the web path
+  bundles Roboto (§6.1), the `await` is mandatory and belongs in `teamShare.ts` / `shareImage.ts`.
 
 ### The cache problem, precisely
 
@@ -110,13 +144,35 @@ src/infographics/
   node/                 # Node-only render host (everything currently bot-only)
     fonts.ts            # bundled Roboto registration        (MOVED IN from bakery-bot)
     portraits.ts        # slug -> Image, from web/public/img/portraits — ONE copy, no bot mirror
-    render.ts           # renderDpsChart(spec) -> {png: Buffer, hash} etc.
+    render.ts           # THE ONLY Node entry point — imports ./fonts.js FIRST (see below)
+  assets/fonts/         # Roboto-{Regular,Medium,Bold}.ttf   (MOVED IN from bakery-bot, ~920 KB)
   spec.ts               # the request contract — shared by the prebuild script AND the API
 src/share/build-code.ts # STAYS — a codec, not a renderer
 ```
 
 `web/` keeps importing `core/` and hosting it on the browser canvas (`teamShare.ts`, `shareImage.ts`
-shrink to thin hosts). `scripts/build-infographics.ts` and the API both import `node/`.
+shrink to thin hosts). `scripts/build-infographics.ts` and the API both import `node/render.ts` —
+**and nothing outside `node/` may import a `core/` draw function on the server path.**
+
+#### Preserving the font guarantees through the split
+
+The split removes the mechanism that guarantees registration-before-draw today (§1a, guarantee 3),
+so it must be rebuilt deliberately:
+
+1. **`node/render.ts` is the single Node entry point** and is the only module that may
+   `import './fonts.js'` as its first statement. `core/*` never imports `fonts.ts` — that is what
+   keeps `@napi-rs/canvas` out of the web bundle. Every server-side render goes through `render.ts`,
+   so no caller can reach a draw function with fonts unregistered.
+2. **`fonts.ts` throws on failure.** `GlobalFonts.registerFromPath()` returns a boolean; if any of the
+   three faces fails to register, throw at import. The render service then fails to boot loudly
+   instead of serving a deploy's worth of textless cards.
+3. **A build step copies `assets/fonts/` into the deploy output**, the nikke-sim equivalent of
+   bakery-bot's `copy-assets.mjs`. Vite copies `web/public/`, not `src/` — the Node render path is
+   outside Vite entirely, so the TTFs need their own copy step (or must be resolved from source via
+   `import.meta.url` and included in the deploy). **This is the step most likely to be forgotten, and
+   forgetting it reproduces the original blank-text bug exactly.**
+4. **The golden-image test is the actual guard** (Phase 0). See §4 Phase 0 for the specific assertion —
+   a byte-comparison against a committed fixture fails on blank text, which no smoke test would.
 
 ### The API contract
 
@@ -255,23 +311,52 @@ Nothing can be centralized while two copies disagree about what the image looks 
 
 - Diff both copies line-by-line; merge the bot's additions (`icon`, `footer`, `slug`, `tableCard.ts`)
   **into nikke-sim** as the surviving source.
-- **Pick one font.** Recommend bundling Roboto on the browser path too, so a user's "Copy image" and
-  a bot-posted PNG are byte-comparable. Otherwise accept and document permanent divergence.
+- **Copy bakery-bot's font implementation over wholesale** — `fonts.ts`, the three Roboto TTFs, _and_
+  the `copy-assets.mjs`-equivalent build step. It is proven working on Railway Linux; the blank-text
+  bug is what happens without it (§1a). Do not reimplement it, and do not port `fonts.ts` without also
+  porting the asset-copy step — the file alone is two of the three guarantees.
+- Set `theme.ts` `FONT = 'Roboto'` (dropping the system-font stack) so the server path uses a family it
+  can actually guarantee. Whether the _browser_ path also bundles Roboto is the one genuinely open
+  question — §6.1.
+- Add `fonts.ts` failure-throwing (check `registerFromPath`'s boolean) so a misconfigured host refuses
+  to boot rather than emitting textless cards.
 - Add a **golden-image regression test**: render each card type to PNG in Node, compare against a
   committed fixture. This is what stops the fork re-forming, and it makes every later phase verifiable.
+  **It is also the only automated guard that catches blank text** — a PNG with no glyphs is a
+  perfectly valid PNG of the right dimensions, so byte-comparison against a fixture is the test that
+  fails. Add one cheap explicit assertion alongside it: measure text-region ink coverage (or
+  `ctx.measureText('X').width > 0` after registration) and fail at zero, so the failure names itself
+  instead of showing up as an opaque fixture mismatch.
 - Reconcile `build-code.ts` (`bossRange` missing in the bot's copy — harmless today, see §1).
 
 ### Phase 1 — extract `src/infographics/` _(nikke-sim)_
 
 Move `src/share/{teamCard,dpsChart}.ts` → `core/`, port `tableCard.ts` in, add `node/` (fonts,
-portraits, render). Re-point `web/src/{teamShare,shareImage}.ts`. Pure refactor — the golden tests
-from Phase 0 prove no pixel moved. `src/share/build-code.ts` stays where it is.
+portraits, render) and `assets/fonts/`. Re-point `web/src/{teamShare,shareImage}.ts`. Pure refactor —
+the golden tests from Phase 0 prove no pixel moved. `src/share/build-code.ts` stays where it is.
+
+**The font-ordering guarantee is the risk in this phase, not the file moves.** Implement §2's
+"Preserving the font guarantees" list as part of the move: `node/render.ts` as the sole Node entry
+point importing `./fonts.js` first, `core/*` importing it never. Add a lint rule or a unit test
+asserting no `core/**` module imports `@napi-rs/canvas` or `fonts.ts` — that invariant is what keeps
+both the web bundle clean _and_ the ordering guarantee honest, and it is invisible to a code review
+six months from now.
 
 ### Phase 2 — build-time pre-generation _(nikke-sim)_
 
 `scripts/build-infographics.ts` → `dist/img/**` + `manifest.json`, wired into `build:deploy`
 alongside `dpschart` / `ranks:all`. Fix the `serve.mjs` cache headers here. Adds `@napi-rs/canvas` as
 a nikke-sim dependency — **validate the NIXPACKS build early**, it is the one genuine deploy risk.
+
+**Two font-specific checks belong in this phase's deploy validation**, because Phase 2 is the first
+time nikke-sim renders on Railway rather than on the owner's Mac — which is exactly the environment
+difference that caused the original blank-text bug (macOS has system fonts and hides the mistake
+locally; Railway Linux does not):
+
+- Confirm the TTFs are present in the deployed artifact, not just in the repo.
+- Have the build script itself render one card and assert non-zero text ink **before** writing the
+  full set, so a fontless deploy fails the build instead of publishing ~200 textless images to a CDN
+  under `immutable` cache headers — where they would then be near-impossible to evict.
 
 ### Phase 3 — the render API _(nikke-sim)_
 
@@ -282,8 +367,18 @@ earns its keep. Content-addressed on-disk cache for dynamic renders, LRU-evicted
 ### Phase 4 — bakery-bot becomes a client _(bakery-bot)_
 
 Replace `lib/nikke-sim/` with `lib/nikkesim/client.ts`; rewrite the six commands to reference URLs;
-delete the fork, the portraits, the fonts, `warmup.ts`, and `@napi-rs/canvas`. Keep a
-short-TTL manifest cache — but now staleness is harmless by construction.
+delete the fork, the portraits, `warmup.ts`, and `@napi-rs/canvas`. Keep a short-TTL manifest cache —
+but now staleness is harmless by construction.
+
+The fonts, TTFs, and `copy-assets.mjs` are **deleted from bakery-bot only after Phase 1 has them
+running in nikke-sim** — they are moving, not going away.
+
+Verified this is a clean move, not a copy: every `@napi-rs/canvas` importer in bakery-bot is either
+`lib/nikke-sim/*` or one of the six nikkesim commands, so nothing else in the bot needs registered
+fonts. Two things must survive the deletion, though — `apps/bot/src/lib/nikke/portrait.ts` uses
+**`sharp`** (unrelated to this work, keep the dependency), and `copy-assets.mjs` also copies
+`nikkesim-icon.png` and `blablalink-icon.png` for `icon.ts` / `blabla.ts`, so the script is trimmed,
+not removed.
 
 ### Phase 5 — hosting _(infra)_
 
@@ -316,8 +411,15 @@ a card from site data. Every one ships the watermark.
 
 ## 6. Open decisions for the owner
 
-1. **Font:** bundle Roboto in the browser too (pixel-identical everywhere, ~170 KB added to the web
-   bundle), or accept web/server divergence? _Recommend: bundle._
+1. **Font on the _browser_ path.** The server path is settled, not a decision: bundle + register
+   Roboto or render textless cards (§1a). What is open is whether the web also self-hosts Roboto
+   (~300 KB for Regular, more if Medium/Bold are needed as real faces rather than synthesized) so a
+   user's "Copy image" and a bot-posted PNG are pixel-identical — versus keeping the system-font stack
+   in-browser and accepting that the two paths lay out text differently.
+   _Recommend: bundle, subset to the Latin glyphs actually used (~40–60 KB/face)._ Note the cost is
+   not only bytes: the browser path then **must** `await document.fonts.ready` before drawing, or the
+   first copy-image click silently produces fallback-metric or blank text — the browser-side echo of
+   the same bug.
 2. **Dynamic cards to Discord:** URL-reference (fast, public, zero bytes) vs. byte-upload (private,
    ephemeral, slower)? _Recommend: URL by default, byte-upload available in the client._
 3. **Cloudflare now or later?** The proxy step is ~10 minutes and free. _Recommend: now, at Phase 2._

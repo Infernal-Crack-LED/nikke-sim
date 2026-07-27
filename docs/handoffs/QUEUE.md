@@ -56,7 +56,13 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `docs/handoffs/2026-07-27-infographics-centralization-plan.md`.** Renderer logic is forked across
   nikke-sim `src/share/` and bakery-bot `apps/bot/src/lib/nikke-sim/` (1,113 lines) and the two copies
   already produce different images (different `FONT`, bot-only `icon`/`footer`/`tableCard.ts`, stale
-  `bossRange`). Plan: reconcile the fork + golden-image tests (Phase 0, blocking) → extract
+  `bossRange`). **Fonts are a hard requirement with a silent failure mode (§1a):** bakery-bot's cards
+  once rendered with NO TEXT because the font wasn't packaged with the render — Railway Linux has no
+  system fonts, `@napi-rs/canvas` draws nothing, and the PNG is still valid, so no smoke test catches
+  it. Copy bakery-bot's `fonts.ts` + 3 Roboto TTFs + the `copy-assets.mjs` step over wholesale (all
+  three are load-bearing), and note the proposed `core/`+`node/` split BREAKS the current
+  registration-before-draw guarantee (a side-effect `import './fonts.js'` in `teamCard.ts`) — it must
+  be rebuilt in `node/render.ts`. Plan: reconcile the fork + golden-image tests (Phase 0, blocking) → extract
   `src/infographics/{core,node}` → build-time pre-generation + `manifest.json` → `/api/v1/img/*` →
   bakery-bot becomes a URL-only client (−1,100 lines, −2 MB, drops `@napi-rs/canvas`). **Side bug
   found, fixable independently:** `scripts/serve.mjs:183-185` serves every non-`index.html` file
