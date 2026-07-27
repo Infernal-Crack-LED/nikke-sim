@@ -328,6 +328,11 @@ Nothing can be centralized while two copies disagree about what the image looks 
   `ctx.measureText('X').width > 0` after registration) and fail at zero, so the failure names itself
   instead of showing up as an opaque fixture mismatch.
 - Reconcile `build-code.ts` (`bossRange` missing in the bot's copy — harmless today, see §1).
+- **Add a max-aspect-ratio rule to every row-based card** (§6.5). At 79 rows the burstgen board is
+  1 : 4.7 and ~1 MB — an unreadable sliver in a Discord embed or Twitter card. Rank boards cut to
+  top-25; the DPS chart needs the same treatment once ranked units pass ~30 (21 today, and rising
+  with the roster). This is a renderer design point, so it belongs here rather than in the
+  pre-generation phase — it applies to on-demand renders identically.
 
 ### Phase 1 — extract `src/infographics/` _(nikke-sim)_
 
@@ -348,6 +353,10 @@ six months from now.
 alongside `dpschart` / `ranks:all`. Fix the `serve.mjs` cache headers here. Adds `@napi-rs/canvas` as
 a nikke-sim dependency — **validate the NIXPACKS build early**, it is the one genuine deploy risk.
 
+Scope per §6.5: **head-only, ~208 images (~25–40 MB)** — 2 headline cells × 6 element variants, 4
+rank boards at top-25, 192 unit cards — with the list **derived from real link surfaces**, not
+hardcoded. The tail renders on demand at Phase 3. Cloudflare goes in front here (6.3).
+
 **Two font-specific checks belong in this phase's deploy validation**, because Phase 2 is the first
 time nikke-sim renders on Railway rather than on the owner's Mac — which is exactly the environment
 difference that caused the original blank-text bug (macOS has system fonts and hides the mistake
@@ -360,9 +369,20 @@ locally; Railway Linux does not):
 
 ### Phase 3 — the render API _(nikke-sim)_
 
-Add the `/api/v1/img/*` routes. `serve.mjs` is 227 lines of hand-rolled routing; adding a request
-body, query parsing, rate limiting, and a shared secret is the point where a small framework (hono)
-earns its keep. Content-addressed on-disk cache for dynamic renders, LRU-evicted.
+Add the `/api/v1/img/*` routes. Per §6.4 this phase is **a server build step plus two hand-rolled GET
+routes — no framework yet**:
+
+- **Add the server compile step** (esbuild or `tsc` → `dist/`) so `serve.mjs`'s successor can import
+  `src/infographics/node/render.ts`. This is mandatory and is the actual work of the phase; it also
+  puts the server on the typecheck surface for the first time (`tsconfig.json` includes only `.ts`
+  today, so `serve.mjs` is checked by nothing).
+- **Two GET routes**, `team.png?b=` and `roster.png?b=` — `new URL()` parsing, a build-code length
+  cap + validation, content-addressed disk lookup, 302 to the hashed path. ~80–100 lines.
+- **Rate limiting goes in Cloudflare, not in-process** (6.3) — it protects the origin before the
+  request costs anything, and works across instances and restarts.
+- Content-addressed on-disk cache for dynamic renders, LRU-evicted.
+
+Defer hono to Phase 6, on the triggers listed in §6.4.
 
 ### Phase 4 — bakery-bot becomes a client _(bakery-bot)_
 
@@ -409,21 +429,184 @@ a card from site data. Every one ships the watermark.
 
 ---
 
-## 6. Open decisions for the owner
+## 6. Decisions
 
-1. **Font on the _browser_ path.** The server path is settled, not a decision: bundle + register
-   Roboto or render textless cards (§1a). What is open is whether the web also self-hosts Roboto
-   (~300 KB for Regular, more if Medium/Bold are needed as real faces rather than synthesized) so a
-   user's "Copy image" and a bot-posted PNG are pixel-identical — versus keeping the system-font stack
-   in-browser and accepting that the two paths lay out text differently.
-   _Recommend: bundle, subset to the Latin glyphs actually used (~40–60 KB/face)._ Note the cost is
-   not only bytes: the browser path then **must** `await document.fonts.ready` before drawing, or the
-   first copy-image click silently produces fallback-metric or blank text — the browser-side echo of
-   the same bug.
-2. **Dynamic cards to Discord:** URL-reference (fast, public, zero bytes) vs. byte-upload (private,
-   ephemeral, slower)? _Recommend: URL by default, byte-upload available in the client._
-3. **Cloudflare now or later?** The proxy step is ~10 minutes and free. _Recommend: now, at Phase 2._
-4. **Framework at Phase 3** — grow `serve.mjs`, or adopt hono? _Recommend: hono once there are POST
-   bodies and rate limits to handle._
-5. **Pre-generation breadth** — head-only (~40 MB) vs. the full 600-image matrix (~120 MB)?
-   _Recommend: head-only + on-demand tail._
+### 6.1–6.3 — DECIDED (owner, 2026-07-27): recommendation accepted on all three
+
+1. **Font — bundle Roboto on the browser path too.** ⇒ Web self-hosts Roboto via `@font-face`,
+   subset to the Latin glyphs actually used (~40–60 KB/face). `theme.ts` `FONT = 'Roboto'` on both
+   paths, so a user's "Copy image" and a bot-posted PNG are pixel-identical.
+   **Mandatory consequence:** `teamShare.ts` / `shareImage.ts` must `await document.fonts.ready`
+   before drawing to canvas, or the first copy-image click silently yields fallback-metric or blank
+   text (§1a). This is a Phase 1 acceptance criterion, not a nicety.
+2. **Dynamic cards to Discord — URL-reference by default**, with byte-upload available in the client
+   for anything account-identifying (§2).
+3. **Cloudflare — proxy now, at Phase 2.** ⇒ Orange-cloud `nikkesim.app`, cache rule on
+   `/api/v1/img/*`. This decision materially changes 6.4 (see below): edge caching and CF's own
+   rate-limiting rules remove the two things that were going to justify a framework.
+
+### 6.4 — Framework at Phase 3: grow `serve.mjs`, or adopt hono?
+
+**Revised recommendation: split the question. Do the server _build step_ at Phase 3 (mandatory).
+Defer hono to Phase 6 (deferrable, and 6.3 removed most of its justification).**
+
+#### The real decision is hidden underneath, and it is not the framework
+
+`scripts/serve.mjs` is plain `.mjs`, executed directly by node. Verified: `tsconfig.json` includes
+only `src/**/*.ts`, `scripts/**/*.ts`, and `vitest.config.ts` — **`serve.mjs` is not type-checked
+today, by anything.**
+
+The dynamic render route has to call `renderTeamCard()` from `src/infographics/node/render.ts`, which
+is TypeScript. A `.mjs` file run by bare node cannot import it. So Phase 3 forces one of:
+
+- **compile the server** (esbuild or `tsc`) into `dist/` as a build step — the server joins the
+  typecheck surface, which it should have been on all along; or
+- **`tsx` at runtime** — adds a production dependency and startup cost, and leaves the server
+  untyped. Not recommended; `tsx` is a dev tool here today.
+
+**This build step is required whether or not hono is adopted.** It is the actual Phase 3 work. Once
+it exists, adopting hono later is a small, contained change — which is exactly why it can wait.
+
+#### What Phase 3 actually needs, and what each option costs
+
+| Need                  | Hand-rolled on `node:http`                                                    | hono                                 |
+| --------------------- | ----------------------------------------------------------------------------- | ------------------------------------ |
+| Route matching        | manual prefix/regex switch                                                    | typed router                         |
+| Query parsing         | `new URL(req.url, base)` — already free in node                               | built-in                             |
+| POST JSON body        | ~15 lines of stream accumulation **+ a size cap** (skipping the cap is a DoS) | `await c.req.json()`                 |
+| Shared-secret auth    | ~5 lines                                                                      | middleware                           |
+| Rate limiting         | ~40 lines (Map + periodic sweep), and **per-instance only**                   | middleware, same per-instance caveat |
+| ETag / 304            | ~15 lines                                                                     | middleware                           |
+| Error → status        | manual try/catch per route                                                    | built-in                             |
+| Static + OG injection | **already written and working** (227 lines)                                   | keep as-is, or port it               |
+
+#### Why 6.3 changes the answer
+
+My original "adopt hono" rested on POST bodies and rate limiting. Decision 6.3 undercuts both:
+
+- **Rate limiting belongs at the edge, not in-process.** A Cloudflare rate-limiting rule protects the
+  origin _before_ the request costs you anything, and works across instances and restarts. In-process
+  limiting on a single Railway container is strictly worse at the job — it only fires after the
+  request already arrived. So the rate-limiting row above largely disappears from the origin.
+- **There is no POST body at Phase 3.** With 6.2 (URL-reference) and content-addressing, the dynamic
+  surface is **two GET routes with query params** — `team.png?b=` and `roster.png?b=`. `POST /render`
+  with arbitrary specs is a Phase 6 item.
+
+So Phase 3's genuine hand-rolled surface is: two routes, `new URL()` parsing, a build-code length cap
+
+- validation, a content-addressed disk lookup, and a 302. Realistically **~80–100 lines**, not the
+  200–300 I estimated when I assumed POST bodies and in-process limiting.
+
+#### The trigger for adopting hono
+
+Adopt it when **any** of these becomes true — don't pre-adopt:
+
+- `POST /api/v1/img/render` with arbitrary JSON specs ships (Phase 6) — real body parsing + validation
+- the route count passes ~6, or routes need shared middleware chains
+- the API needs anything stateful per-request (sessions, per-user quotas, signed URLs)
+
+At that point it is 2 dependencies (`hono` + `@hono/node-server`, both small and dependency-light),
+and the build step already exists, so the migration is mechanical.
+
+#### A third option, named for later: split the service
+
+Keep `serve.mjs` as the static server and run the renderer as a **separate Railway service**. Not
+worth it now (a second service costs money and adds CORS + a second deploy), but it is the natural
+move if the renderer starts hurting the site — and there is a specific reason it might.
+`@napi-rs/canvas` rendering is CPU- and memory-heavy; a burst of tail renders on a small shared
+instance can starve the static file server, so **the site goes slow because someone shared a chart**.
+That coupling is the real trigger to split, not route count. Worth watching once Phase 3 is live.
+
+**⇒ Phase 3 action: add the server compile step, hand-roll the two GET routes, put rate limiting in
+Cloudflare. Revisit hono at Phase 6.**
+
+### 6.5 — Pre-generation breadth: head-only vs. the full matrix
+
+**Recommendation stands — head-only + on-demand tail — and the real numbers make the case much
+stronger than my estimate did. Two refinements: derive the head from real link surfaces rather than
+hardcoding it, and cut the rank boards to a top-N (they are unusable as single images).**
+
+#### Verified population numbers (2026-07-27)
+
+| Quantity              | Value                                            | Source                                                                         |
+| --------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Matrix cells          | **90**                                           | 5 frameworks × 2 eleadv × 3 core × 3 invest (`src/dpschart/matrix.ts:130-139`) |
+| Ranked bars per chart | **21**                                           | SSS (4) + SS (17), `data/bossing-tiers.json` — **grows with the roster**       |
+| Selector population   | **101**                                          | SSS–B                                                                          |
+| Characters            | **192**                                          | `data/characters.json`                                                         |
+| Rank board rows       | burstgen **79**, sustain **52**, burstcdr **15** | `web/public/*.json`                                                            |
+
+Note the committed `dpschart.json` (2026-07-23) still shows 13 ranked / 40 selector — it predates the
+current tiers file. **Ranked bar count is roster-driven and rising**, which matters below.
+
+#### Size model, from a real datapoint
+
+`web/public/og.png` is 1200×630 at 52 KB ⇒ **~0.07 bytes/px** for this project's flat design. Applying
+it (portraits push it up somewhat, flat fills push it down):
+
+| Image                           | Geometry @2×    | Est. size   |
+| ------------------------------- | --------------- | ----------- |
+| DPS chart, 21 bars              | 1800 × 2508     | ~230–320 KB |
+| Team card, 5 units              | 2080 × 1268     | ~150–200 KB |
+| **burstgen board, all 79 rows** | **1800 × 8540** | **~1 MB**   |
+
+#### Finding: the rank boards cannot be one image
+
+At 79 rows the burstgen board is **900 × 4270 logical px — a 1 : 4.7 aspect ratio.** Discord embeds
+and Twitter cards scale that to an unreadable vertical sliver, and it is ~1 MB. This is a **renderer
+design point that applies to pre-generated and on-demand equally**: rank boards need a **top-N cut
+(recommend top 25, ~1 : 1.6)**, with pagination or a multi-column layout if the full board is wanted.
+Fold this into Phase 0's card-type inventory. The same ceiling will eventually bite the DPS chart —
+21 bars is 1 : 1.4 today and fine, but at ~40 ranked units it reaches 1 : 2.3 and needs the same cut.
+
+#### The two sets, costed
+
+**Full cartesian (the trap):**
+
+- 90 cells × 6 element variants (all + 5 elements) = **540 charts** × ~270 KB ≈ **145 MB**
+- 192 unit cards × ~100 KB ≈ **19 MB**
+- ⇒ **~165 MB baked into every deploy artifact, rebuilt on every deploy**
+
+**Head-only (what actually has a shareable URL):**
+
+- 2 headline cells (eleweak + neutral @ c100/8of12) × 6 element variants = **12**
+- 4 rank boards at top-25 = **4**
+- 192 unit cards = **192**
+- ⇒ **~208 images, ~25–40 MB**
+
+#### Five reasons the head-only set is the right call
+
+1. **Build time is the cost nobody budgets for.** 540 charts is 540 canvas renders + PNG encodes on
+   every deploy. PNG-encoding a 4.5 Mpx image is on the order of 100–300 ms ⇒ **~2 minutes added to
+   every deploy**, on a repo whose build already runs `verify.sh`. Head-only is ~30–45 s.
+2. **Most of the matrix is never linked.** The DPS tab renders client-side from `dpschart.json`; it
+   does not need PNGs. PNGs exist to be _shared_, and you can only share what you can link. A cell
+   reachable only by fiddling the tab's selectors has no stable public URL until someone clicks
+   "share this view" — which is precisely the on-demand case.
+3. **Element-filtered charts are thin.** With 21 ranked units, a Fire filter yields ~4 bars.
+   Pre-rendering 540 mostly-tiny charts spends the whole budget on the least valuable images. They
+   remain perfectly legitimate _on demand_.
+4. **Invalidation churn.** Content-hashed names mean every deploy's regenerated set is a new set;
+   old objects linger until swept. Smaller head ⇒ less churn, cheaper sweeps, smaller R2 bill later.
+5. **The tail is self-warming and self-measuring.** First request renders (~200–400 ms once), writes
+   to the content-addressed cache, and Cloudflare (6.3) holds it at edge thereafter. Popular cells
+   converge into the cache on their own — the real head gets **discovered rather than guessed**.
+
+The one argument for full pre-generation is guaranteed zero cold-render on every possible URL. With
+6.3 in place that reduces to a one-time ~300 ms for one user on an unpopular cell. Not worth 165 MB
+and two minutes a deploy.
+
+#### Refinement: derive the head, don't hardcode it
+
+Make the pre-generation list **data-driven** — the union of:
+
+- every URL the site's own share buttons can emit,
+- every URL the bot's command surface can reference (the `/dps` default + element choices),
+- anything flagged `featured` in the manifest.
+
+Then "what's in the head" tracks real link surfaces automatically instead of drifting from a
+hardcoded list. **Close the loop at Phase 5:** Umami is already wired into `serve.mjs` — log tail
+renders and promote the top N into the head on each deploy.
+
+**⇒ Phase 2 action: head-only (~208 images), derived from link surfaces, rank boards cut to top-25.
+Measure one real render early and replace the ~0.07 B/px estimate above with the actual figure.**

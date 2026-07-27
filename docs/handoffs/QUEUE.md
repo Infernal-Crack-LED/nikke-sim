@@ -70,7 +70,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   live) — that is the layer under the bot's 6 h TTL and the likely cache-race root. Hosting verdict:
   self-host the renderer on Railway (Workers can't run `@napi-rs/canvas`), Cloudflare proxy at
   Phase 2, R2 for the static set once it outgrows the deploy artifact. Gate: `/logic-gate` pre-op
-  before Phase 1 (structural change, not a damage-model surface); owner decisions in §6.
+  before Phase 1 (structural change, not a damage-model surface). **All five §6 decisions are now
+  made (owner, 2026-07-27):** bundle Roboto on the browser path too (+ mandatory
+  `await document.fonts.ready`); URL-reference to Discord by default; Cloudflare proxy at Phase 2;
+  **no framework at Phase 3** — the real work is a server compile step (`serve.mjs` is `.mjs` and
+  typechecked by nothing today, yet must import TS render code), then two hand-rolled GET routes with
+  rate limiting pushed to Cloudflare, hono deferred to Phase 6; **pre-generate head-only** (~208
+  images / ~25–40 MB, derived from real link surfaces) vs. 165 MB + ~2 min per deploy for the full
+  540-chart cartesian. Two findings that need renderer changes at Phase 0: rank boards are unusable
+  as single images (burstgen at 79 rows = 1 : 4.7 aspect, ~1 MB) so every row-based card needs a
+  top-N/max-aspect rule; and the DPS chart hits the same wall as ranked units grow (21 today).
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
