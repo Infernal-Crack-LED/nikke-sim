@@ -52,6 +52,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PLAN ONLY, NOT STARTED →
+  `docs/handoffs/2026-07-27-infographics-centralization-plan.md`.** Renderer logic is forked across
+  nikke-sim `src/share/` and bakery-bot `apps/bot/src/lib/nikke-sim/` (1,113 lines) and the two copies
+  already produce different images (different `FONT`, bot-only `icon`/`footer`/`tableCard.ts`, stale
+  `bossRange`). Plan: reconcile the fork + golden-image tests (Phase 0, blocking) → extract
+  `src/infographics/{core,node}` → build-time pre-generation + `manifest.json` → `/api/v1/img/*` →
+  bakery-bot becomes a URL-only client (−1,100 lines, −2 MB, drops `@napi-rs/canvas`). **Side bug
+  found, fixable independently:** `scripts/serve.mjs:183-185` serves every non-`index.html` file
+  `immutable, max-age=1y`, including the unversioned data JSONs (`/dpschart.json` etc., verified
+  live) — that is the layer under the bot's 6 h TTL and the likely cache-race root. Hosting verdict:
+  self-host the renderer on Railway (Workers can't run `@napi-rs/canvas`), Cloudflare proxy at
+  Phase 2, R2 for the static set once it outgrows the deploy artifact. Gate: `/logic-gate` pre-op
+  before Phase 1 (structural change, not a damage-model surface); owner decisions in §6.
+
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
   hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
