@@ -85,6 +85,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `#1` dps into `drawDpsChart` explicitly instead of inferring it from `bars[0]` — otherwise a window
   starting at rank 30 renders rank 30 as `relScore 1.000`, silently making the score mean something
   different in every shared image (`src/share/dpsChart.ts:19-20`).
+  **Phase-3 review follow-ups (opus cross-family review 2026-07-27, branch `infographics-centralization`;
+  blocker + 6 fixes landed same day):** (1) **startCommand flip is owner-gated** — `railway.json` still
+  starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod until the owner flips to
+  `npm run start:server` (dist-server/ now builds in the `verify.sh deploy` tier); (2) **API surface
+  gaps vs Phase 4** — `/ol`, `/max-ammo`, `/charge-speed` render `drawTableCard` with no route, no
+  on-demand route for non-headline DPS cells or §6.6 per-unit windows (the bot fork can't be deleted
+  until these exist); (3) **no test boots the compiled bundle** — serve-api.test.ts runs the server
+  from source; env-defaults.ts asset resolution is exercised only at deploy; (4) review NOTES
+  unaddressed: Matrix-tab share PNG silently gained portraits + a wider label column (unrequested,
+  untested path); committed woff2 subsets have no generation script/glyph manifest and declare the
+  bare family `Roboto` (overrides body text on Linux/Android).
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is

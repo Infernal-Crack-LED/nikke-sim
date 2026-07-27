@@ -46,6 +46,61 @@ export interface CardCharacter {
 
 const SCALE = 2; // retina, same as build-infographics.ts
 
+// ---- input bounds (the render API is UNAUTHENTICATED — plan §6.3/§6.4) ------
+// decodeBuild() only checks the envelope (v/g/s.length); everything below is
+// attacker-controlled until proven otherwise. The roster grid in the web app is
+// exactly 5 teams × 5 slots, so anything larger is a garbage code, not an edge
+// case — before this cap a 655-char code allocated a 2080×29228 canvas
+// (243 MB RGBA) and the 4096-char code cap allowed ~1.6 GB from ONE GET.
+export const MAX_ROSTER_TEAMS = 5;
+// Hard pixel backstop on canvas allocation, checked BEFORE createCanvas even
+// after the shape caps above (defense in depth — a future card variant must
+// not get to size a canvas from unvalidated input). The biggest legit card
+// (5-team roster at scale 2) is 2080×1456 ≈ 3.0 Mpx; 12 Mpx is ~4× headroom.
+export const MAX_CANVAS_PIXELS = 12_000_000;
+
+const isSlug = (v: unknown): v is string | null =>
+  v === null || typeof v === 'string';
+
+const checkPixels = (w: number, h: number): string | null =>
+  w * h > MAX_CANVAS_PIXELS ? 'card exceeds the pixel budget' : null;
+
+// Validate the DECODED build for rendering. Returns an error string for the
+// 400 response, or null when the build is safe to render. decodeBuild's null
+// case is handled by the caller; this covers everything decodeBuild doesn't.
+export function cardBuildError(
+  build: Build,
+  type: 'team' | 'roster'
+): string | null {
+  for (const s of build.s) {
+    if (!s || typeof s !== 'object' || !isSlug(s.slug)) {
+      return 'invalid slot';
+    }
+  }
+  if (type === 'team') {
+    if (!build.s.some((s) => s.slug)) {
+      return 'build has no units';
+    }
+    return checkPixels(
+      CARD_W * SCALE,
+      cardHeight(build.s.filter((s) => s.slug).length) * SCALE
+    );
+  }
+  const roster = build.roster;
+  if (!Array.isArray(roster) || roster.length === 0) {
+    return 'build has no roster';
+  }
+  if (roster.length > MAX_ROSTER_TEAMS) {
+    return `roster has ${roster.length} teams (max ${MAX_ROSTER_TEAMS})`;
+  }
+  for (const team of roster) {
+    if (!Array.isArray(team) || team.length > 5 || !team.every(isSlug)) {
+      return 'invalid roster team';
+    }
+  }
+  return checkPixels(CARD_W * SCALE, rosterCardHeight(roster.length) * SCALE);
+}
+
 const FALLBACK_CHAR = (slug: string | null): CardCharacter => ({
   slug: slug ?? '???',
   name: slug ?? '???',
@@ -122,7 +177,14 @@ export async function renderTeamCardPng(
         };
       })
   );
-  const canvas = createCanvas(CARD_W * SCALE, cardHeight(units.length) * SCALE);
+  const w = CARD_W * SCALE;
+  const h = cardHeight(units.length) * SCALE;
+  // Hard backstop — cardBuildError already checked this, but a renderer must
+  // never size a canvas from input that didn't pass through it.
+  if (w * h > MAX_CANVAS_PIXELS) {
+    throw new Error(`team card ${w}×${h} exceeds the pixel budget`);
+  }
+  const canvas = createCanvas(w, h);
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
   ctx.imageSmoothingEnabled = true;
@@ -173,10 +235,13 @@ export async function renderRosterCardPng(
       ),
     }))
   );
-  const canvas = createCanvas(
-    CARD_W * SCALE,
-    rosterCardHeight(teams.length) * SCALE
-  );
+  const w = CARD_W * SCALE;
+  const h = rosterCardHeight(teams.length) * SCALE;
+  // Hard backstop — see renderTeamCardPng.
+  if (w * h > MAX_CANVAS_PIXELS) {
+    throw new Error(`roster card ${w}×${h} exceeds the pixel budget`);
+  }
+  const canvas = createCanvas(w, h);
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
   ctx.imageSmoothingEnabled = true;

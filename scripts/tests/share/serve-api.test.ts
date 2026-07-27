@@ -124,6 +124,7 @@ beforeAll(async () => {
   put('img/manifest.json', '{"generatedAt":"t","images":{}}');
   put('img/dps/solo.eleweak.c100.8of12.all.deadbeef.png', 'png');
   put('img/unit/liter.0123abcd.png', 'png');
+  put('img/portraits/liter-128.webp', 'webp');
 
   server = await createNikkesimServer({
     distDir: dist,
@@ -195,6 +196,59 @@ describe('api/v1/img dynamic render routes', () => {
     ).toBe(400);
   });
 
+  // The render routes are UNAUTHENTICATED — the decoded build must be
+  // validated before it sizes a canvas (the pre-fix DoS: 1000 empty teams in
+  // a 4055-char code demanded a ~1.6 GB canvas from ONE anonymous GET).
+  it('rejects unvalidated-but-decodable builds with 400, never 500', async () => {
+    const encode = (b: unknown) =>
+      Buffer.from(JSON.stringify(b)).toString('base64url');
+    // null slots (threw → 500 pre-fix)
+    const nullSlots = encode({
+      v: 1,
+      g: {},
+      s: [null, null, null, null, null],
+    });
+    expect(
+      (await fetch(`${base}/api/v1/img/team.png?b=${nullSlots}`)).status
+    ).toBe(400);
+    // oversized roster — the canvas DoS
+    const bigRoster = encode({
+      ...TEAM_BUILD,
+      roster: Array.from({ length: 150 }, () => []),
+    });
+    expect(
+      (await fetch(`${base}/api/v1/img/roster.png?b=${bigRoster}`)).status
+    ).toBe(400);
+    // roster team wider than the 5-slot grid
+    const wideTeam = encode({
+      ...TEAM_BUILD,
+      roster: [['liter', 'crown', 'naga', 'modernia', 'alice', 'liter']],
+    });
+    expect(
+      (await fetch(`${base}/api/v1/img/roster.png?b=${wideTeam}`)).status
+    ).toBe(400);
+    // non-string slugs in the roster
+    const badSlug = encode({ ...TEAM_BUILD, roster: [[42, 'liter']] });
+    expect(
+      (await fetch(`${base}/api/v1/img/roster.png?b=${badSlug}`)).status
+    ).toBe(400);
+  });
+
+  it('hostile slugs degrade to placeholder boxes, never a path lookup', async () => {
+    // a traversal-shaped slug must NOT reach join(PORTRAIT_DIR, …) — the card
+    // renders with a placeholder (302), and nothing outside the dir is read
+    const evil = encodeBuild({
+      ...TEAM_BUILD,
+      s: TEAM_BUILD.s.map((slot, i) =>
+        i === 0 ? { ...slot, slug: '../../../../etc/hosts' } : slot
+      ),
+    });
+    const res = await fetch(`${base}/api/v1/img/team.png?b=${evil}`, {
+      redirect: 'manual',
+    });
+    expect(res.status).toBe(302);
+  });
+
   it('team.png 302s to a hashed cache URL, renders once, then hits cache', async () => {
     const res1 = await fetch(`${base}/api/v1/img/team.png?b=${TEAM_CODE}`, {
       redirect: 'manual',
@@ -207,13 +261,15 @@ describe('api/v1/img dynamic render routes', () => {
     const png = statSync(file);
     expect(png.size).toBeGreaterThan(10_000); // a real card, not an error page
 
-    // second request: same Location, file untouched (no re-render)
+    // second request: same Location, same BYTES (no re-render). mtime is NOT
+    // the proof — the LRU cache deliberately refreshes it on every read
+    // (render-cache.ts has()), so hot cards evict last.
     const res2 = await fetch(`${base}/api/v1/img/team.png?b=${TEAM_CODE}`, {
       redirect: 'manual',
     });
     expect(res2.status).toBe(302);
     expect(res2.headers.get('location')).toBe(loc);
-    expect(statSync(file).mtimeMs).toBe(png.mtimeMs);
+    expect(statSync(file).size).toBe(png.size);
 
     // the cached URL serves the PNG immutable
     const res3 = await fetch(`${base}${loc}`);
@@ -256,5 +312,17 @@ describe('static port parity with serve.mjs', () => {
     const spa = await fetch(`${base}/mechanics`);
     expect(spa.status).toBe(200);
     expect(await spa.text()).toContain('NIKKE Game Mechanics');
+  });
+
+  it('no-cache portraits carry a validator and revalidate to a 304', async () => {
+    const res = await fetch(`${base}/img/portraits/liter-128.webp`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('cache-control')).toBe(NO_CACHE);
+    const etag = res.headers.get('etag');
+    expect(etag).toBeTruthy();
+    const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-none-match': etag! },
+    });
+    expect(re.status).toBe(304);
   });
 });

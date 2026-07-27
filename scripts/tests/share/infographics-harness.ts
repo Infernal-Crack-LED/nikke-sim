@@ -340,6 +340,8 @@ export async function renderAll(): Promise<FixtureRender[]> {
     out.push({ name, png: canvas.toBuffer('image/png') });
   };
 
+  // Ink regions start at the title's textX (padX + ICON + 12) — NEVER at padX,
+  // or the site icon alone satisfies the guard with zero glyphs (render.ts).
   const team = await buildTeamCard();
   const teamCanvas = createCanvas(CARD_W, cardHeight(team.data.units.length));
   drawTeamCard(
@@ -347,7 +349,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     team.data,
     team.meta
   );
-  finish('team-card.png', teamCanvas, { x: 40, y: 26, w: 460, h: 40 });
+  finish('team-card.png', teamCanvas, { x: 88, y: 26, w: 400, h: 40 });
 
   const roster = await buildRosterCard();
   const rosterCanvas = createCanvas(
@@ -359,7 +361,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     roster.data,
     roster.meta
   );
-  finish('roster-card.png', rosterCanvas, { x: 40, y: 26, w: 560, h: 40 });
+  finish('roster-card.png', rosterCanvas, { x: 88, y: 26, w: 500, h: 40 });
 
   const chart = await buildDpsChart();
   const chartWin = chartWindow(chart);
@@ -368,7 +370,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     chartHeight(chartWin.end - chartWin.start, !!chart.compare)
   );
   drawDpsChart(chartCanvas.getContext('2d') as unknown as Canvas2DLike, chart);
-  finish('dps-chart.png', chartCanvas, { x: 36, y: 24, w: 500, h: 36 });
+  finish('dps-chart.png', chartCanvas, { x: 82, y: 24, w: 420, h: 36 });
 
   const chartWindowed = await buildDpsChartWindow();
   const chartWindowedWin = chartWindow(chartWindowed);
@@ -384,9 +386,9 @@ export async function renderAll(): Promise<FixtureRender[]> {
     chartWindowed
   );
   finish('dps-chart-window.png', chartWindowedCanvas, {
-    x: 36,
+    x: 82,
     y: 24,
-    w: 500,
+    w: 420,
     h: 36,
   });
 
@@ -396,7 +398,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     tableHeight(visibleRows(table.rows, table.window).rows.length)
   );
   drawTableCard(tableCanvas.getContext('2d') as unknown as Canvas2DLike, table);
-  finish('table-card.png', tableCanvas, { x: 32, y: 16, w: 400, h: 34 });
+  finish('table-card.png', tableCanvas, { x: 76, y: 16, w: 340, h: 34 });
 
   const tableWindowed = await buildTableCardWindow();
   const tableWindowedCanvas = createCanvas(
@@ -410,9 +412,9 @@ export async function renderAll(): Promise<FixtureRender[]> {
     tableWindowed
   );
   finish('table-card-window.png', tableWindowedCanvas, {
-    x: 32,
+    x: 76,
     y: 16,
-    w: 400,
+    w: 340,
     h: 34,
   });
 

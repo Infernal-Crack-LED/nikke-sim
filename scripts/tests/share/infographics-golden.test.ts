@@ -6,6 +6,13 @@
 // fails. It also pins the fork reconciliation — nikke-sim and bakery-bot must
 // render the same pixels.
 //
+// PLATFORM GATE: the fixtures were generated on macOS arm64, and byte-exact
+// Skia/zlib output is NOT guaranteed across platforms — the native canvas
+// binary differs on linux-x64 (Railway). The byte compare therefore runs ONLY
+// on the fixture platform; everywhere else the render still runs (including
+// the harness's assertFontsLive + per-card ink assertions — the actual
+// blank-text protection on the deploy box, which cannot regenerate fixtures).
+//
 // Regenerate fixtures after an intentional renderer change:
 //   npm run fixtures:infographics
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -17,6 +24,9 @@ const FIXTURE_DIR = new URL('../fixtures/infographics/', import.meta.url);
 const REGEN_HINT =
   'fixture mismatch — regenerate with `npm run fixtures:infographics` ' +
   '(and eyeball the diff before committing it)';
+// The platform the committed fixtures were generated on (see the header).
+const FIXTURE_PLATFORM =
+  process.platform === 'darwin' && process.arch === 'arm64';
 
 const sha = (buf: Buffer) => createHash('sha256').update(buf).digest('hex');
 
@@ -38,6 +48,12 @@ describe('infographic golden images', () => {
     it(name, () => {
       const render = renders.find((r) => r.name === name);
       expect(render, `${name}: harness produced no render`).toBeDefined();
+      // Every platform: the card rendered at a sane size (the ink assertions
+      // already ran in renderAll — THAT is the deploy-box blank-text gate).
+      expect(render!.png.length).toBeGreaterThan(1_000);
+      if (!FIXTURE_PLATFORM) {
+        return; // byte-exact goldens are pinned to the fixture platform
+      }
       const path = new URL(name, FIXTURE_DIR);
       if (!existsSync(path)) {
         throw new Error(

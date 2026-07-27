@@ -2,15 +2,22 @@
 // (team/roster cards). Filenames carry a hash of the render inputs
 // (`team.<hash16>.png`), so a cached file is valid FOREVER and is served
 // immutable; the cache is bounded by bytes with LRU eviction by mtime.
+// LRU recency is maintained by READS (has() touches mtime), so a hot card
+// never evicts ahead of a cold one — eviction is by last-READ, not last-write.
 import {
   mkdir,
   readdir,
   rename,
   stat,
   unlink,
+  utimes,
   writeFile,
 } from 'node:fs/promises';
 import { join } from 'node:path';
+
+// Orphaned `.tmp` files (a crash between writeFile and rename) are reaped once
+// they are clearly not an in-flight write.
+const TMP_MAX_AGE_MS = 10 * 60 * 1000;
 
 export class RenderCache {
   constructor(
@@ -24,7 +31,15 @@ export class RenderCache {
 
   async has(name: string): Promise<boolean> {
     try {
-      return (await stat(this.pathFor(name))).isFile();
+      const p = this.pathFor(name);
+      if (!(await stat(p)).isFile()) {
+        return false;
+      }
+      // LRU recency: a read refreshes mtime, which is sweep()'s eviction key.
+      // Best-effort — a failed touch must not 404 a cached card.
+      const now = new Date();
+      await utimes(p, now, now).catch(() => {});
+      return true;
     } catch {
       return false;
     }
@@ -40,12 +55,13 @@ export class RenderCache {
     await this.sweep();
   }
 
-  // Evict oldest-by-mtime files until the cache fits. Runs on boot and after
-  // every write — cheap at this scale (a 200 MB cap ≈ a few thousand PNGs).
+  // Evict least-recently-READ files until the cache fits, and reap orphaned
+  // .tmp files. Runs on boot and after every write — cheap at this scale (a
+  // 200 MB cap ≈ a few thousand PNGs).
   async sweep(): Promise<void> {
     let entries: { name: string; size: number; mtimeMs: number }[];
     try {
-      const names = (await readdir(this.dir)).filter((n) => n.endsWith('.png'));
+      const names = await readdir(this.dir);
       entries = await Promise.all(
         names.map(async (name) => {
           const s = await stat(this.pathFor(name));
@@ -55,9 +71,18 @@ export class RenderCache {
     } catch {
       return; // cache dir doesn't exist yet — nothing to sweep
     }
-    let total = entries.reduce((sum, e) => sum + e.size, 0);
-    entries.sort((a, b) => a.mtimeMs - b.mtimeMs); // oldest first
+    const now = Date.now();
+    const pngs: typeof entries = [];
     for (const e of entries) {
+      if (e.name.endsWith('.png')) {
+        pngs.push(e);
+      } else if (e.name.endsWith('.tmp') && now - e.mtimeMs > TMP_MAX_AGE_MS) {
+        await unlink(this.pathFor(e.name)).catch(() => {}); // orphaned write
+      }
+    }
+    let total = pngs.reduce((sum, e) => sum + e.size, 0);
+    pngs.sort((a, b) => a.mtimeMs - b.mtimeMs); // least-recently-read first
+    for (const e of pngs) {
       if (total <= this.maxBytes) {
         break;
       }

@@ -57,6 +57,12 @@ export function assertFontsLive(): void {
 // Ink coverage in a region of a finished render — the per-card blank-text
 // guard. Fails loudly (naming fonts) instead of surfacing as an opaque fixture
 // diff.
+//
+// ⚠ THE REGION MUST COVER TEXT AND ONLY TEXT. Every card that takes an icon
+// draws it at the far left of the title row (core/* textX = padX + ICON + 12),
+// so a region that starts at padX passes on ICON PIXELS alone with zero
+// glyphs — that was the vacuous-guard bug (team/dps/table cards "passed" with
+// all text removed). Callers must start the region at the title's textX.
 export function assertTitleInk(
   pngCtx: ReturnType<Canvas['getContext']>,
   cardName: string,

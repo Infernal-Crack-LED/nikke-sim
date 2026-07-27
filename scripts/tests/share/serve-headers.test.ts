@@ -89,6 +89,20 @@ describe('serve.mjs cache-control classes', () => {
     expect(await cacheOf('/img/portraits/liter-128.webp')).toBe(NO_CACHE);
   });
 
+  it('no-cache art carries a validator and revalidates to a 304', async () => {
+    // 384 portrait webps are no-cache — without an ETag that is a full ~5.7 MB
+    // re-download per page load (the cache-class fix's regression).
+    const res = await fetch(`${base}/img/portraits/liter-128.webp`);
+    expect(res.status).toBe(200);
+    const etag = res.headers.get('etag');
+    expect(etag).toBeTruthy();
+    expect(res.headers.get('last-modified')).toBeTruthy();
+    const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-none-match': etag! },
+    });
+    expect(re.status).toBe(304);
+  });
+
   it('index.html and the SPA fallback are no-cache with OG injection intact', async () => {
     const res = await fetch(`${base}/dpschart`);
     expect(res.headers.get('cache-control')).toBe(NO_CACHE);

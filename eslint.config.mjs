@@ -80,6 +80,7 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**/*',
+      'dist-server/**/*',
       'web/dist/**/*',
       'node_modules/**/*',
       '.vite/**/*',

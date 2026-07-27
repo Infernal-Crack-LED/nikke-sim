@@ -272,10 +272,12 @@ function dpsJobs(art: DpsArtifact): Job[] {
             width: canvas.width,
             height: canvas.height,
             canvas,
+            // starts at the title's textX (padX 36 + ICON 34 + 12), never at
+            // padX — the site icon alone must not satisfy the ink guard
             inkRegion: {
-              x: 36 * SCALE,
+              x: 82 * SCALE,
               y: 24 * SCALE,
-              w: 500 * SCALE,
+              w: 420 * SCALE,
               h: 36 * SCALE,
             },
           };
@@ -411,10 +413,11 @@ function rankJobs(): Job[] {
         width: canvas.width,
         height: canvas.height,
         canvas,
+        // starts at the title's textX (padX 32 + ICON 32 + 12) — see above
         inkRegion: {
-          x: 32 * SCALE,
+          x: 76 * SCALE,
           y: 16 * SCALE,
-          w: 400 * SCALE,
+          w: 340 * SCALE,
           h: 34 * SCALE,
         },
       };

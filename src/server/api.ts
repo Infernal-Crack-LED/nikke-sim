@@ -23,6 +23,7 @@ import type { RenderCache } from './render-cache.js';
 import {
   renderTeamCardPng,
   renderRosterCardPng,
+  cardBuildError,
   type CardCharacter,
 } from './card-from-build.js';
 
@@ -126,12 +127,12 @@ async function handleDynamic(
     text(res, 400, 'invalid build code');
     return;
   }
-  if (type === 'team' && !build.s.some((s) => s.slug)) {
-    text(res, 400, 'build has no units');
-    return;
-  }
-  if (type === 'roster' && !build.roster?.length) {
-    text(res, 400, 'build has no roster');
+  // decodeBuild checks only the envelope — the roster/slot contents are
+  // attacker-controlled and size the canvas, so validate BEFORE rendering
+  // (an unvalidated roster was a one-request ~1.6 GB canvas allocation).
+  const invalid = cardBuildError(build, type);
+  if (invalid) {
+    text(res, 400, invalid);
     return;
   }
 

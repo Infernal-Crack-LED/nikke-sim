@@ -231,16 +231,44 @@ export function cacheControlFor(path: string): string {
   return NO_CACHE;
 }
 
+// Weak ETag (size + mtime) so `no-cache` assets — the 384 portrait webps above
+// all — revalidate to a cheap 304 instead of re-downloading in full on every
+// page load. The Phase-2 cache-class fix made no-cache the default for
+// unversioned art; without a validator that is a full ~5.7 MB refetch where
+// the portraits were previously cached for a year. (Mirror of serve.mjs —
+// keep in lockstep.)
+function etagFor(s: { size: number; mtimeMs: number }): string {
+  return `W/"${s.size}-${Math.floor(s.mtimeMs)}"`;
+}
+
 export async function sendFile(
   res: ServerResponse,
   file: string,
   urlPath: string,
-  status = 200
+  status = 200,
+  ifNoneMatch?: string | string[]
 ): Promise<void> {
+  const s = await stat(file);
+  const etag = etagFor(s);
+  const cacheControl = cacheControlFor(urlPath);
+  if (
+    ifNoneMatch &&
+    [ifNoneMatch]
+      .flat()
+      .flatMap((v) => v.split(','))
+      .map((v) => v.trim())
+      .includes(etag)
+  ) {
+    res.writeHead(304, { etag, 'cache-control': cacheControl });
+    res.end();
+    return;
+  }
   const body = await readFile(file);
   res.writeHead(status, {
     'content-type': mimeFor(file),
-    'cache-control': cacheControlFor(urlPath),
+    'cache-control': cacheControl,
+    etag,
+    'last-modified': s.mtime.toUTCString(),
   });
   res.end(body);
 }
@@ -275,7 +303,7 @@ export async function handleStatic(
       await sendIndex(res, req.url ?? '/', opts);
       return;
     }
-    await sendFile(res, file, rel);
+    await sendFile(res, file, rel, 200, req.headers['if-none-match']);
   } catch {
     // last-resort fallback
     try {

@@ -85,6 +85,8 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
     node scripts/web-smoke-ranks.mjs
     say "infographics pre-generation (dist/img + manifest — deploy tier only; reads the artifacts above, writes after vite's emptyOutDir)"
     npm run build:infographics
+    say "server bundle (dist-server — exercises esbuild + asset copies on the deploy platform; startCommand flips to it separately)"
+    npm run build:server
   fi
 fi
 

@@ -43,12 +43,31 @@ export async function decodeToCanvas(file: URL): Promise<Canvas | null> {
 // burst or a build-time pre-generation pass re-renders the same units
 // constantly). Returns null on a missing/undecodable file so a card degrades
 // to its placeholder box instead of failing the render.
+//
+// The slug is ATTACKER-CONTROLLED on the render-API path (it comes from a
+// decoded build code), so it is validated before it ever touches a path —
+// otherwise `../../../../etc/hosts` reaches join(PORTRAIT_DIR, …) and escapes
+// the portrait dir (limited to files named `<target>-128.webp`, but still).
+// The cache is a bounded LRU: keyed on raw slugs it would otherwise grow
+// forever on a long-lived server (every garbage slug caches a null).
+const SLUG = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+const PORTRAIT_CACHE_MAX = 512; // 128×128 RGBA ≈ 64 KB each → ≤ ~32 MB
 const portraitCache = new Map<string, Promise<Canvas | null>>();
 export function loadPortrait(slug: string): Promise<Canvas | null> {
+  if (!SLUG.test(slug)) {
+    return Promise.resolve(null); // placeholder box, never a path
+  }
   let hit = portraitCache.get(slug);
-  if (!hit) {
-    hit = decodeToCanvas(pathToFileURL(join(PORTRAIT_DIR, `${slug}-128.webp`)));
+  if (hit) {
+    // LRU recency: re-insert so the entry ages to the back of the Map.
+    portraitCache.delete(slug);
     portraitCache.set(slug, hit);
+    return hit;
+  }
+  hit = decodeToCanvas(pathToFileURL(join(PORTRAIT_DIR, `${slug}-128.webp`)));
+  portraitCache.set(slug, hit);
+  if (portraitCache.size > PORTRAIT_CACHE_MAX) {
+    portraitCache.delete(portraitCache.keys().next().value!); // oldest
   }
   return hit;
 }
