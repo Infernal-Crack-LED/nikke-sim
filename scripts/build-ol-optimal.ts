@@ -43,8 +43,9 @@ try {
 }
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 
 // Solo isolation, elemental-advantage, full core exposure, 12/12 tier — the same
@@ -84,10 +85,14 @@ for (const [slug, c] of eligible) {
     FLOOR_SEED_COUNTS
   );
   const counts = new Map<string, number>();
-  for (const p of res.picks) {counts.set(p.type, (counts.get(p.type) ?? 0) + 1);}
+  for (const p of res.picks) {
+    counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
+  }
   units[slug] = [...counts].map(([type, count]) => ({ type, count }));
   done++;
-  if (done % 20 === 0) {process.stderr.write(`  …${done}/${eligible.length}\n`);}
+  if (done % 20 === 0) {
+    process.stderr.write(`  …${done}/${eligible.length}\n`);
+  }
 }
 
 const artifact = {

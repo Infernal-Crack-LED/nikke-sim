@@ -222,10 +222,18 @@ export function carryWithWeapon(weapon: Weapon): SyntheticCharacter {
 
 // Lookup for every synthetic this module can mint (fixed trio + carry weapon variants).
 export function syntheticFor(slug: string): SyntheticCharacter | undefined {
-  if (slug === NOOP_MG) {return NOOP_MG_CHAR;}
-  if (slug === CARRY_MG) {return CARRY_MG_CHAR;}
-  if (slug === CARRY_RL) {return CARRY_RL_CHAR;}
+  if (slug === NOOP_MG) {
+    return NOOP_MG_CHAR;
+  }
+  if (slug === CARRY_MG) {
+    return CARRY_MG_CHAR;
+  }
+  if (slug === CARRY_RL) {
+    return CARRY_RL_CHAR;
+  }
   const m = /^carry-(mg|rl|sg|ar|sr|smg)$/.exec(slug);
-  if (m) {return carryWithWeapon(m[1].toUpperCase() as Weapon);}
+  if (m) {
+    return carryWithWeapon(m[1].toUpperCase() as Weapon);
+  }
   return undefined;
 }

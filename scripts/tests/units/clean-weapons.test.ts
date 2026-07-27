@@ -265,7 +265,9 @@ describe('CW2 — bursts are disabled', () => {
       const { events, res } = runWithEvents(slugs);
       expect(countKind(events, 'burstCast')).toBe(0);
       expect(countKind(events, 'fullBurstStart')).toBe(0);
-      for (const u of res.units) {expect(u.burstCasts, u.slug).toBe(0);}
+      for (const u of res.units) {
+        expect(u.burstCasts, u.slug).toBe(0);
+      }
     }
   );
 
@@ -454,6 +456,8 @@ describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bur
         u.staticAtk
       );
     }
-    for (const [key, atks] of byGroup) {expect(atks.size, key).toBe(1);}
+    for (const [key, atks] of byGroup) {
+      expect(atks.size, key).toBe(1);
+    }
   });
 });

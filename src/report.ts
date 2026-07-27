@@ -71,8 +71,9 @@ export function printReport(r: SimResult, showRotation: boolean) {
   if (r.units.some((u) => u.loadout.length)) {
     console.log('\nloadout:');
     for (const u of r.units) {
-      if (u.loadout.length)
-        {console.log(`  ${u.name}: ${u.loadout.join(' | ')}`);}
+      if (u.loadout.length) {
+        console.log(`  ${u.name}: ${u.loadout.join(' | ')}`);
+      }
     }
   }
 

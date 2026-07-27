@@ -95,40 +95,50 @@ const hasStat = (b: any, stat: string) =>
 /** M1 nearest-wrong: the S1 crit-rate line scoped to self instead of all allies. */
 const mrmCritSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'critRatePct'));
-  if (!b) {throw new Error('mrm S1 critRatePct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mrm S1 critRatePct missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 /** M2 nearest-wrong: the S1 caster-ATK line scoped to self. */
 const mrmS1AtkSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'casterAtkPct'));
-  if (!b) {throw new Error('mrm S1 casterAtkPct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mrm S1 casterAtkPct missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 /** M3 reference: the self Hit-Rate-down (normalAttackPct -40) removed — must raise HER total only. */
 const mrmNoHitDown = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'normalAttackPct'));
-  if (ov.skill1.length === before)
-    {throw new Error('mrm S1 normalAttackPct missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('mrm S1 normalAttackPct missing — fixture is stale');
+  }
 });
 /** M4/M5 nearest-wrong: the x2 cycle-average knocked to x1 stacks (15.03 / 15.04). */
 const mrmX1Stacks = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'distributedDamagePct'));
-  if (!b)
-    {throw new Error('mrm S2 distributedDamagePct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mrm S2 distributedDamagePct missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'distributedDamagePct').value = 15.03;
   b.effects.find((e: any) => e.stat === 'reloadSpeedPct').value = 15.04;
 });
 /** M6 nearest-wrong: the burst crit-damage line scoped to self. */
 const mrmBurstSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'critDamagePct'));
-  if (!b) {throw new Error('mrm burst critDamagePct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mrm burst critDamagePct missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 /** M8 nearest-wrong: the burst caster-ATK x2 (40.12) knocked to x1 stacks (20.06). */
 const mrmBurstX1 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'casterAtkPct'));
-  if (!b) {throw new Error('mrm burst casterAtkPct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mrm burst casterAtkPct missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterAtkPct').value = 20.06;
 });
 /** M9 reference: the Hangover stun removed — the 10s shot gap must vanish. */
@@ -137,8 +147,9 @@ const mrmNoStun = withPatchedOverride(SLUG, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'stun')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('mrm S2 stun missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('mrm S2 stun missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -191,9 +202,11 @@ const shotGaps = (evs: SimEvent[], threshSec: number) => {
     .map((x) => x.sec)
     .sort((a, b) => a - b);
   const gaps: { start: number; dur: number }[] = [];
-  for (let i = 1; i < s.length; i++)
-    {if (s[i] - s[i - 1] > threshSec)
-      {gaps.push({ start: s[i - 1], dur: s[i] - s[i - 1] });}}
+  for (let i = 1; i < s.length; i++) {
+    if (s[i] - s[i - 1] > threshSec) {
+      gaps.push({ start: s[i - 1], dur: s[i] - s[i - 1] });
+    }
+  }
   return gaps;
 };
 
@@ -272,7 +285,9 @@ describe('mast-romantic-maid — kit spec', () => {
         [...holders(applied)],
         'the miss rate bites HER spray only'
       ).toEqual([MRM]);
-      for (const b of applied) {expect(b.expiresFrame).toBeNull();}
+      for (const b of applied) {
+        expect(b.expiresFrame).toBeNull();
+      }
     });
 
     it('is LIVE: removing it raises her own normal total, leaving every ally byte-identical', () => {
@@ -281,10 +296,11 @@ describe('mast-romantic-maid — kit spec', () => {
         'without the miss rate her MG spray must deal MORE'
       ).toBeGreaterThan(mrmNormalTotal(base.events) * 1.3);
       // Self-only: no ally's total moves a single point.
-      for (const s of COMP.filter((x) => x !== SLUG))
-        {expect(noHitDown.totals[s], `${s} total must be unchanged`).toBe(
+      for (const s of COMP.filter((x) => x !== SLUG)) {
+        expect(noHitDown.totals[s], `${s} total must be unchanged`).toBe(
           base.totals[s]
-        );}
+        );
+      }
     });
   });
 
@@ -300,7 +316,9 @@ describe('mast-romantic-maid — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size}, expected ${N_ALLIES}`
       ).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('fires on the B3 stage-3 cast frame, NOT on her own stage-2 cast', () => {
@@ -337,7 +355,9 @@ describe('mast-romantic-maid — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size}, expected ${N_ALLIES}`
       ).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: an x1-stack model would grant 15.04%, not 30.08%', () => {
@@ -361,7 +381,9 @@ describe('mast-romantic-maid — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size}, expected ${N_ALLIES}`
       ).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to mrm alone', () => {
@@ -383,7 +405,9 @@ describe('mast-romantic-maid — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size}, expected ${N_ALLIES}`
       ).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 
@@ -420,7 +444,9 @@ describe('mast-romantic-maid — kit spec', () => {
         cf.length,
         'x1 counterfactual produced no burst casterAtkPct'
       ).toBeGreaterThan(0);
-      for (const b of cf) {expect(b.value).toBeCloseTo(0.2006 * staticAtk, 4);}
+      for (const b of cf) {
+        expect(b.value).toBeCloseTo(0.2006 * staticAtk, 4);
+      }
       expect(Math.abs(cf[0].value - expectedFlat)).toBeGreaterThan(1000);
     });
   });
@@ -452,7 +478,9 @@ describe('mast-romantic-maid — kit spec', () => {
 
     it('no gap follows casts 1, 2, 4, 5 (the stun is NOT every cast)', () => {
       for (const idx of [0, 1, 3, 4]) {
-        if (idx >= casts.length) {continue;}
+        if (idx >= casts.length) {
+          continue;
+        }
         const c = casts[idx].sec;
         const near = gaps.filter((g) => Math.abs(g.start - c) < 1.5);
         expect(

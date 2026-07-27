@@ -115,8 +115,9 @@ function run(overrides: Record<string, any> = {}) {
 /** B3 reference: the PRE-PATCH S1 magnitudes (override note: 250.47/500/750.47 → 283.03/565/848.03). */
 const sbsPrePatch = withPatchedOverride(SLUG, (ov) => {
   const fx = ov.skill1[0]?.effects;
-  if (!fx || fx.length !== 3)
-    {throw new Error('sbs S1 phase effects missing — fixture is stale');}
+  if (!fx || fx.length !== 3) {
+    throw new Error('sbs S1 phase effects missing — fixture is stale');
+  }
   fx[0].atkPct = 250.47;
   fx[1].atkPct = 500;
   fx[2].atkPct = 750.47;
@@ -124,36 +125,45 @@ const sbsPrePatch = withPatchedOverride(SLUG, (ov) => {
 /** B4 reference: strip the distributed flavor from the 6x/9x phases (all three plain). */
 const sbsAllPlain = withPatchedOverride(SLUG, (ov) => {
   const fx = ov.skill1[0]?.effects;
-  if (!fx || fx[1]?.flavor !== 'distributed' || fx[2]?.flavor !== 'distributed')
-    {throw new Error('sbs S1 distributed phases missing — fixture is stale');}
+  if (
+    !fx ||
+    fx[1]?.flavor !== 'distributed' ||
+    fx[2]?.flavor !== 'distributed'
+  ) {
+    throw new Error('sbs S1 distributed phases missing — fixture is stale');
+  }
   delete fx[1].flavor;
   delete fx[2].flavor;
 });
 /** B5 counterfactual: S2 keyed off her OWN burstCast instead of Full Burst entry. */
 const sbsS2OnCast = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
-  if (!b)
-    {throw new Error('sbs S2 fullBurstEnter block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('sbs S2 fullBurstEnter block missing — fixture is stale');
+  }
   b.trigger.kind = 'burstCast';
 });
 /** B10 counterfactual: remove the in-burst threshold lowering (countInFb = count = 3, no cluster). */
 const sbsNoLowering = withPatchedOverride(SLUG, (ov) => {
   const t = ov.skill1[0]?.trigger;
-  if (!t || t.kind !== 'chargeCounter')
-    {throw new Error('sbs S1 chargeCounter missing — fixture is stale');}
+  if (!t || t.kind !== 'chargeCounter') {
+    throw new Error('sbs S1 chargeCounter missing — fixture is stale');
+  }
   t.countInFb = t.count; // 3 in-burst too → no lowering → procs never cluster into the burst window
 });
 /** B7 counterfactual: strip BOTH S2 ammo effects (the +60% cap AND the 100% reload). */
 const sbsNoAmmoFx = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.flatMap((b: any) => b.effects).length;
-  for (const b of ov.skill2)
-    {b.effects = b.effects.filter(
+  for (const b of ov.skill2) {
+    b.effects = b.effects.filter(
       (e: any) => e.stat !== 'maxAmmoPct' && e.kind !== 'instantReload'
-    );}
-  if (ov.skill2.flatMap((b: any) => b.effects).length !== before - 2)
-    {throw new Error(
+    );
+  }
+  if (ov.skill2.flatMap((b: any) => b.effects).length !== before - 2) {
+    throw new Error(
       'sbs S2 maxAmmoPct/instantReload effects missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

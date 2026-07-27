@@ -42,8 +42,12 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
 function slotBlocks(ov: AnyRec, slot: string): AnyRec[] {
   const s = ov[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s as AnyRec[];}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s as AnyRec[];
+  }
   return Array.isArray(s.blocks) ? (s.blocks as AnyRec[]) : [];
 }
 
@@ -60,16 +64,25 @@ function allEffects(ov: AnyRec): AnyRec[] {
 /** note + unmodeled text, whichever layout carries it - the 'no silent drop' audit trail. */
 function auditText(ov: AnyRec): string {
   const parts: string[] = [];
-  if (typeof ov.note === 'string') {parts.push(ov.note);}
+  if (typeof ov.note === 'string') {
+    parts.push(ov.note);
+  }
   const collect = (u: AnyRec | undefined) => {
-    if (!u) {return;}
-    for (const slot of SLOTS)
-      {if (Array.isArray(u[slot])) {parts.push(...(u[slot] as string[]));}}
+    if (!u) {
+      return;
+    }
+    for (const slot of SLOTS) {
+      if (Array.isArray(u[slot])) {
+        parts.push(...(u[slot] as string[]));
+      }
+    }
   };
   collect(ov.unmodeled as AnyRec | undefined);
   for (const slot of SLOTS) {
     const s = ov[slot];
-    if (s && !Array.isArray(s)) {collect(s.unmodeled as AnyRec | undefined);}
+    if (s && !Array.isArray(s)) {
+      collect(s.unmodeled as AnyRec | undefined);
+    }
   }
   return parts.join(' | ');
 }
@@ -121,15 +134,20 @@ const OV = patch(NAGA, () => {}) as unknown as AnyRec;
 
 /** nearest-wrong for both shield lines: the gate does not exist (block always fires). */
 const OV_UNGATE_SHIELD = patch(NAGA, (ov) => {
-  for (const b of allBlocks(ov)) {delete b.requiresShielded;}
+  for (const b of allBlocks(ov)) {
+    delete b.requiresShielded;
+  }
 });
 
 /** the shield lines removed outright - proves they leak nothing while unshielded. */
 const OV_NO_SHIELD_BLOCKS = patch(NAGA, (ov) => {
   for (const slot of SLOTS) {
     const blocks = slotBlocks(ov, slot);
-    for (let i = blocks.length - 1; i >= 0; i -= 1)
-      {if (blocks[i].requiresShielded) {blocks.splice(i, 1);}}
+    for (let i = blocks.length - 1; i >= 0; i -= 1) {
+      if (blocks[i].requiresShielded) {
+        blocks.splice(i, 1);
+      }
+    }
   }
 });
 
@@ -152,17 +170,26 @@ const OV_RARE_CORE_PROC = patch(NAGA, (ov) => {
     const carriesCore = ((b.effects ?? []) as AnyRec[]).some(
       (e) => e.stat === 'coreDamagePct'
     );
-    if (carriesCore && b.trigger?.kind === 'hitCount' && b.trigger.count === 5)
-      {b.trigger.count = 200;}
+    if (
+      carriesCore &&
+      b.trigger?.kind === 'hitCount' &&
+      b.trigger.count === 5
+    ) {
+      b.trigger.count = 200;
+    }
   }
 });
 
 /** nearest-wrong for 'for 5 sec': the window collapsed - proves the duration is load-bearing seconds. */
 const OV_SHORT_CORE = patch(NAGA, (ov) => {
   for (const b of allBlocks(ov)) {
-    if (b.requiresShielded) {continue;}
+    if (b.requiresShielded) {
+      continue;
+    }
     for (const e of (b.effects ?? []) as AnyRec[]) {
-      if (e.kind === 'buff' && e.stat === 'coreDamagePct') {e.durationSec = 0.2;}
+      if (e.kind === 'buff' && e.stat === 'coreDamagePct') {
+        e.durationSec = 0.2;
+      }
     }
   }
 });

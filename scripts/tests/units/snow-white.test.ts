@@ -90,8 +90,9 @@ const findBlock = (
   pred: (b: any) => boolean
 ) => {
   const b = ov[slot].find(pred);
-  if (!b)
-    {throw new Error(`snow-white ${slot} block missing — fixture is stale`);}
+  if (!b) {
+    throw new Error(`snow-white ${slot} block missing — fixture is stale`);
+  }
   return b;
 };
 const isRider = (b: any) =>
@@ -210,7 +211,9 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     const times = procs.map((d) => +d.sec.toFixed(2));
     it('fires ~12×/180s at exact multiples of 15s (interval, first fire t=15)', () => {
       expect(procs.length).toBe(11); // t=15,30,…,165 (engine interval convention; ⚑ phase t=15 vs t=0)
-      for (const t of times) {expect(t % 15).toBe(0);}
+      for (const t of times) {
+        expect(t % 15).toBe(0);
+      }
     });
     it('is the lvl-10 magnitude 144.73 in the skill bucket', () => {
       expect([...new Set(procs.map((d) => d.atkPct))]).toEqual([144.73]);

@@ -32,8 +32,11 @@ interface CatalogEntry {
 function walk(dir: string, out: string[] = []): string[] {
   for (const e of readdirSync(dir)) {
     const p = `${dir}${e}`;
-    if (statSync(p).isDirectory()) {walk(p + '/', out);}
-    else if (VIDEO_RE.test(e)) {out.push(p);}
+    if (statSync(p).isDirectory()) {
+      walk(p + '/', out);
+    } else if (VIDEO_RE.test(e)) {
+      out.push(p);
+    }
   }
   return out;
 }
@@ -49,7 +52,9 @@ const parsed = new Set(listParsed());
 
 if (process.argv.includes('--scan')) {
   console.log(`${media.length} video files under docs/probes/:`);
-  for (const m of media) {console.log('  ' + m);}
+  for (const m of media) {
+    console.log('  ' + m);
+  }
   process.exit(0);
 }
 
@@ -62,8 +67,12 @@ console.log('  ' + 'catalogued'.padEnd(11) + 'parsed'.padEnd(8) + 'video');
 for (const m of media) {
   const c = byVideo.get(m);
   const isParsed = c?.parsedSlug ? parsed.has(c.parsedSlug) : false;
-  if (c) {catalogued++;}
-  if (isParsed) {parsedCount++;}
+  if (c) {
+    catalogued++;
+  }
+  if (isParsed) {
+    parsedCount++;
+  }
   console.log(
     '  ' +
       (c ? '✓' : '—').padEnd(11) +

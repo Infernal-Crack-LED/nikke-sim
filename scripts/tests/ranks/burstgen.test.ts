@@ -17,7 +17,9 @@ import type { OverrideFile } from '../../../src/skills/index.js';
 import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const s of Object.keys(data.characters)) {overrides[s] = loadOverride(s);}
+for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
@@ -68,10 +70,11 @@ describe('burst-gen board', () => {
 
   it('rankBurstGen ranks descending and dual-enters profiled units', () => {
     const ranked = rankBurstGen(['liter', 'little-mermaid', 'modernia'], ctx);
-    for (let i = 1; i < ranked.length; i++)
-      {expect(ranked[i].gaugeTotal).toBeLessThanOrEqual(
+    for (let i = 1; i < ranked.length; i++) {
+      expect(ranked[i].gaugeTotal).toBeLessThanOrEqual(
         ranked[i - 1].gaugeTotal
-      );}
+      );
+    }
     expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
     // little-mermaid appears twice: plain (null) and with-2mg — the frontend
     // differentiates on the profile flag (owner ruling 2026-07-26)

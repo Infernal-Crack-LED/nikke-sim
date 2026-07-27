@@ -100,7 +100,9 @@ describe('S1b — Full Charge outside FB: self ATK + Attack Damage 30.5% / 3s', 
     expect(dmg.length).toBeGreaterThan(0);
   });
   it('self-scoped: every application targets velvet (nearest-wrong: allies scope)', () => {
-    for (const e of [...atk, ...dmg]) {expect(e.targetIdx).toBe(vIdx);}
+    for (const e of [...atk, ...dmg]) {
+      expect(e.targetIdx).toBe(vIdx);
+    }
   });
   it('inert on teammates: removing the block leaves teammate totals byte-identical', () => {
     const cf = go(hasBuff('atkPct', 30.5));
@@ -154,11 +156,16 @@ describe('S2b — 50 normals during FB: self Attack Damage 15.03% + 400.92% ride
   ).length;
 
   it('the self 15.03% buff fires iff velvet lands >=50 normals in a FB window', () => {
-    if (fbNormals >= 50) {expect(self15.length).toBeGreaterThan(0);}
-    else {expect(self15.length).toBe(0);} // trigger correctly unreached (payload if driver over-fires)
+    if (fbNormals >= 50) {
+      expect(self15.length).toBeGreaterThan(0);
+    } else {
+      expect(self15.length).toBe(0);
+    } // trigger correctly unreached (payload if driver over-fires)
   });
   it('self-scoped when it fires', () => {
-    for (const e of self15) {expect(e.targetIdx).toBe(vIdx);}
+    for (const e of self15) {
+      expect(e.targetIdx).toBe(vIdx);
+    }
   });
   it('counterfactual: removing the block never increases velvet damage and drops the buff', () => {
     const cf = go(

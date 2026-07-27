@@ -59,17 +59,18 @@ const PROFILE_LABELS: Record<string, string> = {
   'w/ Bunny': 'w/ Bunny',
 };
 function profileLabel(id: string): string {
-  if (PROFILE_LABELS[id]) return PROFILE_LABELS[id];
-  if (id.startsWith('w/ ')) return id;
+  if (PROFILE_LABELS[id]) {
+    return PROFILE_LABELS[id];
+  }
+  if (id.startsWith('w/ ')) {
+    return id;
+  }
   const rest = id.startsWith('with-') ? id.slice(5) : id;
   return `w/ ${rest.replace(/-/g, ' ')}`;
 }
 
 type AnyArtifact =
-  | BurstGenArtifact
-  | BurstCdrArtifact
-  | SustainArtifact
-  | BufferChartArtifact;
+  BurstGenArtifact | BurstCdrArtifact | SustainArtifact | BufferChartArtifact;
 
 // Methodology disclosure — the Custom Profiles pattern from DpsChartTab:
 // a collapsible card with the board's conventions one click away, plus the
@@ -83,9 +84,9 @@ function Methodology({
 }) {
   const ids = Object.keys(profiles);
   return (
-    <details className='dpschart-frameworks ranks-method'>
+    <details className="dpschart-frameworks ranks-method">
       <summary>How this works</summary>
-      <p className='muted'>{methodology}</p>
+      <p className="muted">{methodology}</p>
       {ids.length > 0 && (
         <dl>
           {ids.map((id) => (
@@ -120,7 +121,9 @@ export function SupportRankings() {
 
   // lazy per-board fetch — only the active board's artifact downloads
   useEffect(() => {
-    if (arts[board]) return;
+    if (arts[board]) {
+      return;
+    }
     const loaders = {
       burstgen: loadBurstGen,
       burstcdr: loadBurstCdr,
@@ -130,10 +133,14 @@ export function SupportRankings() {
     let alive = true;
     loaders[board]()
       .then((a) => {
-        if (alive) setArts((prev) => ({ ...prev, [board]: a }));
+        if (alive) {
+          setArts((prev) => ({ ...prev, [board]: a }));
+        }
       })
       .catch((e) => {
-        if (alive) setErr(String(e?.message ?? e));
+        if (alive) {
+          setErr(String(e?.message ?? e));
+        }
       });
     return () => {
       alive = false;
@@ -212,17 +219,17 @@ export function SupportRankings() {
   }
 
   return (
-    <section className='calc-tab'>
+    <section className="calc-tab">
       <h2>Support Rankings</h2>
-      <p className='muted'>
-        Four precomputed boards over the same standardized solo-raid
-        frameworks: burst gauge generation, burst cooldown reduction, team
-        sustain, and buffer value added to two standard carries. Units with a
-        comp profile appear twice — plain and profiled — so both standings are
-        comparable at a glance.
+      <p className="muted">
+        Four precomputed boards over the same standardized solo-raid frameworks:
+        burst gauge generation, burst cooldown reduction, team sustain, and
+        buffer value added to two standard carries. Units with a comp profile
+        appear twice — plain and profiled — so both standings are comparable at
+        a glance.
       </p>
 
-      <div className='pills ranks-boards'>
+      <div className="pills ranks-boards">
         {BOARDS.map((b) => (
           <button
             key={b.id}
@@ -234,7 +241,7 @@ export function SupportRankings() {
         ))}
       </div>
       {board === 'buffer' && (
-        <div className='pills ranks-subboards'>
+        <div className="pills ranks-subboards">
           {(['generic', 'typed'] as BufferBoard[]).map((bb) => (
             <button
               key={bb}
@@ -253,18 +260,20 @@ export function SupportRankings() {
       )}
 
       {err && !art ? (
-        <p className='muted'>
-          The rankings data failed to load ({err}). Try refreshing the page —
-          if it keeps failing, report it in the Discord (link in the footer).
+        <p className="muted">
+          The rankings data failed to load ({err}). Try refreshing the page — if
+          it keeps failing, report it in the Discord (link in the footer).
         </p>
       ) : !art ? (
-        <p className='muted'>Loading {meta.label} data…</p>
+        <p className="muted">Loading {meta.label} data…</p>
       ) : (
         <>
           <RankBarChart
-            title={board === 'buffer' ? `${meta.title} · ${bufferBoard}` : meta.title}
+            title={
+              board === 'buffer' ? `${meta.title} · ${bufferBoard}` : meta.title
+            }
             subtitle={`${bars.length} entries · generated ${new Date(
-              art.generatedAt,
+              art.generatedAt
             ).toLocaleDateString()}`}
             bars={bars}
           />

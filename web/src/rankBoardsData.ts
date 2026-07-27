@@ -36,7 +36,9 @@ function load<T>(board: BoardId): Promise<T> {
   if (!p) {
     const file = FILES[board];
     p = fetch(`${import.meta.env.BASE_URL}${file}`).then((r) => {
-      if (!r.ok) throw new Error(`${file} ${r.status}`);
+      if (!r.ok) {
+        throw new Error(`${file} ${r.status}`);
+      }
       return r.json() as Promise<T>;
     });
     caches.set(board, p);
@@ -66,7 +68,7 @@ function base(
   units: Record<string, RankUnitMeta>,
   slug: string,
   rank: number,
-  profile: string | null,
+  profile: string | null
 ): RowBase {
   const m = units[slug];
   return {
@@ -100,13 +102,15 @@ export interface BurstCdrBar extends RowBase {
   selfCdr: number | null; // self-only CDR seconds (muted note)
 }
 export function burstCdrBars(art: BurstCdrArtifact): BurstCdrBar[] {
-  return art.entries.map(([slug, cdrPer40s, ramp, condition, selfCdr, profile], i) => ({
-    ...base(art.units, slug, i + 1, profile),
-    cdrPer40s,
-    ramp,
-    condition,
-    selfCdr,
-  }));
+  return art.entries.map(
+    ([slug, cdrPer40s, ramp, condition, selfCdr, profile], i) => ({
+      ...base(art.units, slug, i + 1, profile),
+      cdrPer40s,
+      ramp,
+      condition,
+      selfCdr,
+    })
+  );
 }
 
 export interface SustainBar extends RowBase {
@@ -118,14 +122,17 @@ export interface SustainBar extends RowBase {
 }
 export function sustainBars(art: SustainArtifact): SustainBar[] {
   return art.entries.map(
-    ([slug, totalHp, totalPct, healPct, shieldPct, lifestealPct, profile], i) => ({
+    (
+      [slug, totalHp, totalPct, healPct, shieldPct, lifestealPct, profile],
+      i
+    ) => ({
       ...base(art.units, slug, i + 1, profile),
       totalHp,
       totalPct,
       healPct,
       shieldPct,
       lifestealPct,
-    }),
+    })
   );
 }
 
@@ -134,7 +141,10 @@ export interface BufferBar extends RowBase {
   rules: string[] | null; // typed board: derivation audit ("why did the carries change?")
 }
 export type BufferBoard = 'generic' | 'typed';
-export function bufferBars(art: BufferChartArtifact, board: BufferBoard): BufferBar[] {
+export function bufferBars(
+  art: BufferChartArtifact,
+  board: BufferBoard
+): BufferBar[] {
   return art.cells[board].map(([slug, addedPct, rules, profile], i) => ({
     ...base(art.units, slug, i + 1, profile),
     addedPct,

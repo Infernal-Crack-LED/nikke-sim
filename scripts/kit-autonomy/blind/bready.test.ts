@@ -65,7 +65,9 @@ function dropEffects(ov: Ov, pred: (e: any) => boolean): any[] {
   const dropped: any[] = [];
   for (const b of blocksOf(ov)) {
     const keep: any[] = [];
-    for (const e of b.effects ?? []) {(pred(e) ? dropped : keep).push(e);}
+    for (const e of b.effects ?? []) {
+      (pred(e) ? dropped : keep).push(e);
+    }
     b.effects = keep;
   }
   return dropped;
@@ -83,8 +85,9 @@ function retrigger(ov: Ov, pred: (e: any) => boolean, trigger: any): number {
 }
 
 const reverseModes = (ov: Ov) => {
-  if (Array.isArray(ov.modes) && ov.modes.length > 1)
-    {ov.modes = [...ov.modes].reverse();}
+  if (Array.isArray(ov.modes) && ov.modes.length > 1) {
+    ov.modes = [...ov.modes].reverse();
+  }
 };
 
 // --- effect predicates (magnitudes straight off the prose) ---
@@ -125,7 +128,11 @@ const nFb = (r: Run) => r.evs.filter((e) => e.kind === 'fullBurstStart').length;
 const teamOf = (r: Run) => {
   const t = totals(r.res) as Record<string, number>;
   const out: Record<string, number> = {};
-  for (const k of Object.keys(t)) {if (k !== SLUG) {out[k] = t[k];}}
+  for (const k of Object.keys(t)) {
+    if (k !== SLUG) {
+      out[k] = t[k];
+    }
+  }
   return out;
 };
 const teamSum = (r: Run) => Object.values(teamOf(r)).reduce((a, b) => a + b, 0);
@@ -156,8 +163,9 @@ const slotCounts: Record<string, number> = {};
 let inv: { slot: string; block: any; effect: any }[] = [];
 withPatchedOverride(SLUG, (ov: Ov) => {
   modes = ov.modes;
-  for (const s of SLOTS)
-    {slotCounts[s] = Array.isArray(ov[s]) ? ov[s].length : -1;}
+  for (const s of SLOTS) {
+    slotCounts[s] = Array.isArray(ov[s]) ? ov[s].length : -1;
+  }
   inv = blocksOf(ov).flatMap((b) =>
     (b.effects ?? []).map((e: any) => ({ slot: b.slot, block: b, effect: e }))
   );
@@ -179,10 +187,14 @@ const flipped = exec(reverseModes);
 
 const lingeringInBase = evBuff(base.evs, 'damageTakenPct', 10.2).length > 0;
 const asLingering = (ov: Ov) => {
-  if (!lingeringInBase) {reverseModes(ov);}
+  if (!lingeringInBase) {
+    reverseModes(ov);
+  }
 };
 const asRecommended = (ov: Ov) => {
-  if (lingeringInBase) {reverseModes(ov);}
+  if (lingeringInBase) {
+    reverseModes(ov);
+  }
 };
 const ling = lingeringInBase ? base : flipped;
 const rec = lingeringInBase ? flipped : base;
@@ -267,7 +279,9 @@ describe('bready - instrumentation and fixture sanity', () => {
   });
 
   it('the override carries all three slots and no parser-only effect kinds', () => {
-    for (const s of SLOTS) {expect(slotCounts[s]).toBeGreaterThanOrEqual(1);}
+    for (const s of SLOTS) {
+      expect(slotCounts[s]).toBeGreaterThanOrEqual(1);
+    }
     expect(inv.length).toBeGreaterThan(0);
     expect(inv.some((r) => r.effect.kind === 'ignored')).toBe(false);
     expect(inv.some((r) => r.effect.kind === 'unsupported')).toBe(false);

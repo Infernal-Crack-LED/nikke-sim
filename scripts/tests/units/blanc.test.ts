@@ -64,8 +64,9 @@ const blancNoCdr = withPatchedOverride('blanc', (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('blanc S2 burstCdr block missing — fixture stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('blanc S2 burstCdr block missing — fixture stale');
+  }
 });
 
 /** B7 counterfactual: level-1 value 20.08 instead of 39.26. */
@@ -73,10 +74,11 @@ const blancWrongDebuff = withPatchedOverride('blanc', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'damageTakenPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'blanc burst damageTakenPct effect missing — fixture stale'
-    );}
+    );
+  }
   e.value = 20.08;
 });
 
@@ -85,10 +87,11 @@ const blancWrongMaxHp = withPatchedOverride('blanc', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'targetMaxHpPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'blanc burst targetMaxHpPct effect missing — fixture stale'
-    );}
+    );
+  }
   e.value = 18.72;
 });
 

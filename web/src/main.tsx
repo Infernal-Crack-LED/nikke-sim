@@ -70,10 +70,11 @@ function Root() {
   const [user, setUser] = useState<AuthUser | null>(null);
   useEffect(() => {
     captureTokenFromUrl();
-    if (getToken())
-      {fetchMe()
+    if (getToken()) {
+      fetchMe()
         .then(setUser)
-        .catch(() => setUser(null));}
+        .catch(() => setUser(null));
+    }
   }, []);
   const onLogin = () => {
     window.location.href = loginUrl();

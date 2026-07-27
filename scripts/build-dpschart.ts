@@ -54,8 +54,13 @@ try {
 
 // overrides for every character (undefined where none) — teams pull controls + carries
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// The no-op B3 (RL) is a synthetic control, not a roster entry, so it is not in
+// characters.json. Load its mock-B3 override explicitly so the Solo framework
+// gives it a damage profile during its stage-3 casts.
+overrides['noop-b3-rl'] = loadOverride('noop-b3-rl');
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RunCtx = { characters: data.characters as any, mult, deps };
@@ -78,13 +83,19 @@ interface UnitMeta {
 }
 const population: UnitMeta[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (c.burst !== 'III') {continue;}
+  if (c.burst !== 'III') {
+    continue;
+  }
   // generatorSupported gates chart eligibility (enikk-proven); simSupported is required too —
   // without a kit override the damage number would be near-meaningless (no buffs/burst behavior).
   // Today the two always coincide, but they're independent tags going forward (src/types.ts).
-  if (!c.generatorSupported || !c.simSupported) {continue;}
+  if (!c.generatorSupported || !c.simSupported) {
+    continue;
+  }
   const tier = tiersFile.tiers[slug];
-  if (!tier || !SELECTOR_TIERS.has(tier)) {continue;}
+  if (!tier || !SELECTOR_TIERS.has(tier)) {
+    continue;
+  }
   population.push({
     slug,
     name: c.name,
@@ -108,8 +119,9 @@ for (const cell of CELLS) {
   const ranked = runCell(cell as Cell, tested, ctx, memo);
   cells[cellId(cell as Cell)] = ranked.map((r) => [r.slug, Math.round(r.dps)]);
   done++;
-  if (done % 12 === 0)
-    {process.stderr.write(`  …${done}/${CELLS.length} cells\n`);}
+  if (done % 12 === 0) {
+    process.stderr.write(`  …${done}/${CELLS.length} cells\n`);
+  }
 }
 
 const axis = <T extends { id: string; label: string }>(

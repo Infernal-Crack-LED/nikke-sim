@@ -20,7 +20,9 @@ import {
 } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const s of Object.keys(data.characters)) {overrides[s] = loadOverride(s);}
+for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
@@ -77,8 +79,9 @@ describe('burst-CDR board', () => {
   it('rankCdr sorts descending and numbers ranks', () => {
     const ranked = rankCdr(Object.keys(CDR_TABLE), ctx);
     expect(ranked).toHaveLength(15);
-    for (let i = 1; i < ranked.length; i++)
-      {expect(ranked[i].cdrPer40s).toBeLessThanOrEqual(ranked[i - 1].cdrPer40s);}
+    for (let i = 1; i < ranked.length; i++) {
+      expect(ranked[i].cdrPer40s).toBeLessThanOrEqual(ranked[i - 1].cdrPer40s);
+    }
     expect(ranked.map((e) => e.rank)).toEqual(ranked.map((_, i) => i + 1));
   });
 

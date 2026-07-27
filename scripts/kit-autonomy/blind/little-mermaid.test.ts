@@ -235,8 +235,9 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
                 eff.kind === 'buff' &&
                 eff.stat === 'attackDamagePct' &&
                 eff.value === 4
-              )
-                {eff.value = 0;}
+              ) {
+                eff.value = 0;
+              }
             }
           }
         }),
@@ -357,8 +358,9 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
           for (const b of ov.skill2 ?? []) {
             for (const e of b.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
-              if (eff.kind === 'buff' && eff.stat === 'damageTakenPct')
-                {eff.value = 0;}
+              if (eff.kind === 'buff' && eff.stat === 'damageTakenPct') {
+                eff.value = 0;
+              }
             }
           }
         }),
@@ -401,7 +403,9 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     // "Attacks sequentially 4 times" — four separate hits of 63.36% each, NOT one 253.44% hit
     // (which would mis-price crit variance and the sequential flavour).
     expect(hits.length).toBe(4);
-    for (const h of hits) {expect(h.atkPct).toBeCloseTo(63.36, 5);}
+    for (const h of hits) {
+      expect(h.atkPct).toBeCloseTo(63.36, 5);
+    }
   });
 
   it('every one of its damage events lands INSIDE Full Burst (the gate is real)', () => {
@@ -432,7 +436,9 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
       overrides: {
         [SLUG]: withPatchedOverride(SLUG, (ov) => {
           ov.skill2 = (ov.skill2 ?? []).map((b) => {
-            if ((b.trigger as { kind: string }).kind !== 'interval') {return b;}
+            if ((b.trigger as { kind: string }).kind !== 'interval') {
+              return b;
+            }
             return {
               ...b,
               effects: b.effects.filter(
@@ -446,7 +452,9 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     const after = totals(run(patched).res);
     expect(after[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
     for (const s of Object.keys(baseTotals)) {
-      if (s === SLUG) {continue;}
+      if (s === SLUG) {
+        continue;
+      }
       expect(after[s]!).toBe(baseTotals[s]!);
     }
   });
@@ -467,7 +475,9 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
     ) as { atkPct: number }[];
     // "Attacks sequentially 10 times" at 85% each.
     expect(hits.length).toBe(10);
-    for (const h of hits) {expect(h.atkPct).toBeCloseTo(85, 5);}
+    for (const h of hits) {
+      expect(h.atkPct).toBeCloseTo(85, 5);
+    }
   });
 
   it('fires at least once in a 180 s fight and moves only her own damage', () => {
@@ -476,7 +486,9 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
       overrides: {
         [SLUG]: withPatchedOverride(SLUG, (ov) => {
           ov.skill2 = (ov.skill2 ?? []).map((b) => {
-            if ((b.trigger as { kind: string }).kind !== 'teamAmmo') {return b;}
+            if ((b.trigger as { kind: string }).kind !== 'teamAmmo') {
+              return b;
+            }
             return {
               ...b,
               effects: b.effects.filter(
@@ -493,7 +505,9 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
     // ammo, which a 120-round SMG would reach far more slowly).
     expect(after[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
     for (const s of Object.keys(baseTotals)) {
-      if (s === SLUG) {continue;}
+      if (s === SLUG) {
+        continue;
+      }
       expect(after[s]!).toBe(baseTotals[s]!);
     }
   });
@@ -559,8 +573,9 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
           for (const blk of ov.burst ?? []) {
             for (const e of blk.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
-              if (eff.kind === 'buff' && eff.stat === 'attackDamagePct')
-                {eff.value = 0;}
+              if (eff.kind === 'buff' && eff.stat === 'attackDamagePct') {
+                eff.value = 0;
+              }
             }
           }
         }),
@@ -573,8 +588,9 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
           for (const blk of ov.burst ?? []) {
             for (const e of blk.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
-              if (eff.kind === 'buff' && eff.stat === 'casterAtkPct')
-                {eff.value = 0;}
+              if (eff.kind === 'buff' && eff.stat === 'casterAtkPct') {
+                eff.value = 0;
+              }
             }
           }
         }),
@@ -584,7 +600,9 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const selfAfter = totals(run(noSelf).res);
     const allies = Object.keys(baseTotals).filter((s) => s !== SLUG);
     expect(allies.some((s) => allyAfter[s]! < baseTotals[s]!)).toBe(true);
-    for (const s of allies) {expect(selfAfter[s]!).toBe(baseTotals[s]!);}
+    for (const s of allies) {
+      expect(selfAfter[s]!).toBe(baseTotals[s]!);
+    }
     expect(selfAfter[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
   });
 });
@@ -610,7 +628,9 @@ describe('cross-cutting inertness', () => {
     });
     for (const r of riders) {
       const coreRate = (r as { coreRate?: number }).coreRate;
-      if (typeof coreRate === 'number') {expect(coreRate).toBe(0);}
+      if (typeof coreRate === 'number') {
+        expect(coreRate).toBe(0);
+      }
     }
   });
 

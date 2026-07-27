@@ -16,7 +16,9 @@ export async function copyDpsChartImage(
   // preload each bar's portrait into `img` so the isomorphic renderer can draw it
   await Promise.all(
     data.bars.map(async (b) => {
-      if (b.imageUrl) {b.img = (await loadPortrait(b.imageUrl)) ?? undefined;}
+      if (b.imageUrl) {
+        b.img = (await loadPortrait(b.imageUrl)) ?? undefined;
+      }
     })
   );
 
@@ -25,7 +27,9 @@ export async function copyDpsChartImage(
   cv.width = CHART_W * dpr;
   cv.height = chartHeight(data.bars.length, !!data.compare) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) {return 'unsupported';}
+  if (!ctx) {
+    return 'unsupported';
+  }
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
@@ -33,7 +37,9 @@ export async function copyDpsChartImage(
   const blob = await new Promise<Blob | null>((res) =>
     cv.toBlob((b) => res(b), 'image/png')
   );
-  if (!blob) {return 'unsupported';}
+  if (!blob) {
+    return 'unsupported';
+  }
   try {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     return 'copied';

@@ -100,8 +100,8 @@ Two boards per unit:
 **Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Bunny`):
 **Mint**, **Prika**, **Mast: Romantic Maid**, and **Blanc** are ranked with and
 without their canonical B2 partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
-Bunny` / `null`). The value shown is the *tested buffer's marginal added team
-damage %* when the pair is played together, versus a baseline where the tested
+Bunny` / `null`). The value shown is the _tested buffer's marginal added team
+damage %_ when the pair is played together, versus a baseline where the tested
 slot is a no-op B2 but the partner is still present in solo/default mode. Mint
 and Prika force each other into their duet kit modes; Mast and Anchor are real
 units; Blanc's `w/ Bunny` partner is a synthetic no-op placeholder that

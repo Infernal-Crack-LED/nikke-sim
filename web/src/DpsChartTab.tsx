@@ -125,12 +125,21 @@ export function DpsChartTab() {
   const shareLink = (c: Cell) => {
     const u = new URL(window.location.href);
     u.searchParams.set('chart', cellId(c));
-    if (compareSlug) {u.searchParams.set('cmp', compareSlug);}
-    else {u.searchParams.delete('cmp');}
-    if (eleFilter) {u.searchParams.set('ele', eleFilter);}
-    else {u.searchParams.delete('ele');}
-    if (fwMode === 'team') {u.searchParams.set('fw', 'team');}
-    else {u.searchParams.delete('fw');}
+    if (compareSlug) {
+      u.searchParams.set('cmp', compareSlug);
+    } else {
+      u.searchParams.delete('cmp');
+    }
+    if (eleFilter) {
+      u.searchParams.set('ele', eleFilter);
+    } else {
+      u.searchParams.delete('ele');
+    }
+    if (fwMode === 'team') {
+      u.searchParams.set('fw', 'team');
+    } else {
+      u.searchParams.delete('fw');
+    }
     void navigator.clipboard?.writeText(u.toString());
   };
 
@@ -232,7 +241,9 @@ export function DpsChartTab() {
               // a unit whose kit grants a second code's advantage (Rapi: Red Hood is
               // Fire + Iron) is listed under both of its elements
               const group = units.filter((u) => u.elements.includes(ele));
-              if (!group.length) {return null;}
+              if (!group.length) {
+                return null;
+              }
               return (
                 <optgroup key={ele} label={ele}>
                   {group.map((u) => (

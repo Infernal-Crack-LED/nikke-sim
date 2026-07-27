@@ -100,8 +100,9 @@ const nayutaS1Self = withPatchedOverride('nayuta', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'coreDamagePct')
   );
-  if (!b)
-    {throw new Error('nayuta S1 coreDamagePct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('nayuta S1 coreDamagePct block missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 /** N2 encoding reference: S1 casterAtkPct → atkPct (% of each ally's OWN ATK, not nayuta's flat). */
@@ -109,8 +110,9 @@ const nayutaS1AtkPct = withPatchedOverride('nayuta', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('nayuta S1 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('nayuta S1 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** N3 nearest-wrong: the Memory-Incineration full-charge rider removed. */
@@ -119,10 +121,11 @@ const nayutaNoRider = withPatchedOverride('nayuta', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'nayuta S1 extraHitDamagePct rider missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** N4/N5/N6 nearest-wrong: the naive FULL-from-t0 stack values (ramp ignored). */
 const nayutaFullStacks = withPatchedOverride('nayuta', (ov) => {
@@ -132,24 +135,28 @@ const nayutaFullStacks = withPatchedOverride('nayuta', (ov) => {
     coreDamagePct: 21.05,
   };
   let patched = 0;
-  for (const b of ov.skill2)
-    {for (const e of b.effects)
-      {if (e.stat in map) {
+  for (const b of ov.skill2) {
+    for (const e of b.effects) {
+      if (e.stat in map) {
         e.value = map[e.stat];
         patched++;
-      }}}
-  if (patched < 3)
-    {throw new Error('nayuta S2 stack-gate buffs missing — fixture is stale');}
+      }
+    }
+  }
+  if (patched < 3) {
+    throw new Error('nayuta S2 stack-gate buffs missing — fixture is stale');
+  }
 });
 /** N7 nearest-wrong: burst Attack Damage scoped to self. */
 const nayutaBurstSelf = withPatchedOverride('nayuta', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'nayuta burst attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'self' };
 });
 /** N9 nearest-wrong: Memory Incineration removed. The S1 full-charge rider (extraHitDamagePct
@@ -162,16 +169,19 @@ const nayutaNoSwap = withPatchedOverride('nayuta', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
-    if (b.effects.length !== before) {swapped++;}
+    if (b.effects.length !== before) {
+      swapped++;
+    }
   }
   const beforeS1 = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct')
   );
-  if (!swapped || ov.skill1.length === beforeS1)
-    {throw new Error(
+  if (!swapped || ov.skill1.length === beforeS1) {
+    throw new Error(
       'nayuta Memory Incineration blocks missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -310,7 +320,9 @@ describe('nayuta — kit spec', () => {
       ).toBe(nayutaCasts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([530.46]);
       expect([...holders(applied)]).toEqual([NAYUTA]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('emits one 530.46% hit per swapped full charge (rider is live, not inert)', () => {
@@ -372,7 +384,9 @@ describe('nayuta — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to nayuta alone', () => {

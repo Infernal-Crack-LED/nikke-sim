@@ -386,7 +386,9 @@ export function scaleBlocks(
 
   const scaleVal = (v: number, slot: SkillSlot): number => {
     const lvl = levels[slot];
-    if (lvl >= 10 || v === 0) {return v;}
+    if (lvl >= 10 || v === 0) {
+      return v;
+    }
     const abs = Math.abs(v);
     const arr = (arrays[slot] ?? []).find((a) => Math.abs(a[9] - abs) < 0.005);
     if (!arr) {
@@ -634,7 +636,9 @@ export function rangeFromCoreDpx(coreD: number): number {
 // Concentric core inside the accuracy circle ⇒ fraction of shots on the core ≈ area ratio.
 // Clamped to 1 (the core cannot be more than fully covered).
 export function coreFracGeo(coreD: number, circleD: number): number {
-  if (circleD <= 0) {return 1;}
+  if (circleD <= 0) {
+    return 1;
+  }
   const r = coreD / circleD;
   return Math.min(1, r * r);
 }
@@ -661,7 +665,9 @@ export const CORE_AUTOAIM = 0.55; // core-ONLY auto-aim loss (reticle never nail
 
 // P(a pellet lands within radius R of the aim point) for an isotropic 2D Gaussian, σ.
 export function rayleighWithin(R: number, sigma: number): number {
-  if (sigma <= 0) {return R > 0 ? 1 : 0;}
+  if (sigma <= 0) {
+    return R > 0 ? 1 : 0;
+  }
   return 1 - Math.exp(-(R * R) / (2 * sigma * sigma));
 }
 
@@ -751,7 +757,9 @@ export function coneSigma(scale: number, hr: number, shrink: number): number {
 // Unknown weapon (MG/SR/RL) → 0 (they have no accuracy-circle model and never route here).
 export function coneDelta(weapon: string, hr: number): number {
   const d0 = CONE_DELTA0[weapon];
-  if (d0 === undefined) {return 0;}
+  if (d0 === undefined) {
+    return 0;
+  }
   return d0 * Math.max(0, 1 - Math.max(0, hr) / CONE_DELTA_H);
 }
 
@@ -803,9 +811,15 @@ export function offsetCoreProb(
   sigma: number,
   delta: number
 ): number {
-  if (sigma <= 0) {return R > 0 ? 1 : 0;}
-  if (R <= 0) {return 0;}
-  if (delta === 0) {return rayleighWithin(R, sigma);} // exact centered reduction
+  if (sigma <= 0) {
+    return R > 0 ? 1 : 0;
+  }
+  if (R <= 0) {
+    return 0;
+  }
+  if (delta === 0) {
+    return rayleighWithin(R, sigma);
+  } // exact centered reduction
   const s2 = sigma * sigma;
   const d2 = delta * delta;
   const N = 64; // even ⇒ Simpson
@@ -815,6 +829,8 @@ export function offsetCoreProb(
     Math.exp(-(rho * rho + d2) / (2 * s2)) *
     besselI0((rho * delta) / s2);
   let sum = f(0) + f(R);
-  for (let i = 1; i < N; i++) {sum += (i % 2 ? 4 : 2) * f(i * h);}
+  for (let i = 1; i < N; i++) {
+    sum += (i % 2 ? 4 : 2) * f(i * h);
+  }
   return Math.min(1, (h / 3) * sum);
 }

@@ -61,9 +61,13 @@ describe(`boss weakness gate (most-populated element = the test element)`, () =>
     let built = 0;
     for (const weak of [E, ELEMENTS.find((x) => x !== E)!]) {
       const t = await calcWith(weak).bestTeam({ exclude: used });
-      if (!t) {break;}
+      if (!t) {
+        break;
+      }
       built++;
-      if (!hasEl(t.slugs, weak)) {allHave = false;}
+      if (!hasEl(t.slugs, weak)) {
+        allHave = false;
+      }
       t.slugs.forEach((s) => used.add(s));
     }
     expect(built, 'fewer than 2 union teams built').toBeGreaterThanOrEqual(2);

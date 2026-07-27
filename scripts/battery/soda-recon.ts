@@ -25,7 +25,9 @@ for (const boss of [
   for (let i = 0; i < N; i++) {
     const r = runOnce(w, team, boss, 1, 1000 + i);
     fb += r.fullBursts;
-    for (const u of r.units) {(acc[u.slug] ??= []).push(u.totalDamage);}
+    for (const u of r.units) {
+      (acc[u.slug] ??= []).push(u.totalDamage);
+    }
   }
   const rat = (s: string) => {
     const m = acc[s].reduce((a, b) => a + b, 0) / N;

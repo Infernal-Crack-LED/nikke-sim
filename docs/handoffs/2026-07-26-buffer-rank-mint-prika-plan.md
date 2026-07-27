@@ -35,10 +35,22 @@ no-op B2 but the partner is still present in solo mode.
 ## Proposed implementation
 
 1. **Add a partner-profile registry in `src/ranks/buffer.ts`**
+
    ```ts
-   export const DUO_BUFFER_PROFILES: Record<string, { partner: string; id: string; note: string }> = {
-     mint: { partner: 'prika', id: 'w/ Prika', note: 'paired with Prika — Prika takes the first B2, Mint every B2 after' },
-     prika: { partner: 'mint', id: 'w/ Mint', note: 'paired with Mint — Prika takes the first B2, Mint every B2 after' },
+   export const DUO_BUFFER_PROFILES: Record<
+     string,
+     { partner: string; id: string; note: string }
+   > = {
+     mint: {
+       partner: 'prika',
+       id: 'w/ Prika',
+       note: 'paired with Prika — Prika takes the first B2, Mint every B2 after',
+     },
+     prika: {
+       partner: 'mint',
+       id: 'w/ Mint',
+       note: 'paired with Mint — Prika takes the first B2, Mint every B2 after',
+     },
    };
    ```
 
@@ -87,7 +99,7 @@ no-op B2 but the partner is still present in solo mode.
 ## Open questions / risks
 
 - **Value interpretation**: the number is the marginal DPS of adding the tested
-  B2 to a team that already has the partner B2. It is *not* the combined value of
+  B2 to a team that already has the partner B2. It is _not_ the combined value of
   the duo; the two profile rows are not additive. The methodology note must say
   this explicitly.
 - **Baseline asymmetry**: Prika solo keeps bursting every rotation; Mint solo
@@ -95,9 +107,9 @@ no-op B2 but the partner is still present in solo mode.
   tested unit add on top of the partner alone", but it is not a comparison against
   a generic no-op B2.
 - **Engine primitive**: the rotation is implemented by Prika's override (`burstFirst`
-  + `burstCdr -9999`). If/when a proper per-unit burst-selection primitive lands
-  (see QUEUE.md engine-work plan), this profile should migrate to it without
-  changing the emitted value.
+  - `burstCdr -9999`). If/when a proper per-unit burst-selection primitive lands
+    (see QUEUE.md engine-work plan), this profile should migrate to it without
+    changing the emitted value.
 
 ## Files to touch
 

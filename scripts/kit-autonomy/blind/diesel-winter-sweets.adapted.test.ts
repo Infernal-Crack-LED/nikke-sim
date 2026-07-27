@@ -99,9 +99,15 @@ function patchZero(pred: (e: Eff) => boolean) {
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
       for (const e of (b.effects ?? []) as Eff[]) {
-        if (!pred(e)) {continue;}
-        if ('value' in e) {e.value = 0;}
-        if ('atkPct' in e) {e.atkPct = 0;}
+        if (!pred(e)) {
+          continue;
+        }
+        if ('value' in e) {
+          e.value = 0;
+        }
+        if ('atkPct' in e) {
+          e.atkPct = 0;
+        }
         n += 1;
       }
     }
@@ -113,8 +119,12 @@ function patchUngate(pred: (e: Eff) => boolean) {
   let n = 0;
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
-      if (!((b.effects ?? []) as Eff[]).some(pred)) {continue;}
-      for (const k of GATE_KEYS) {delete (b as any)[k];}
+      if (!((b.effects ?? []) as Eff[]).some(pred)) {
+        continue;
+      }
+      for (const k of GATE_KEYS) {
+        delete (b as any)[k];
+      }
       n += 1;
     }
   });
@@ -130,7 +140,9 @@ function run(patched?: any, helm = false) {
       evs.push(ev);
     },
   };
-  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
+  if (patched) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  }
   const res = runComp(opts);
   return { res, evs, t: totals(res) };
 }

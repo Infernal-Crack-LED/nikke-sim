@@ -102,10 +102,11 @@ for (const b of BANDS) {
   );
 }
 console.log('SG core-per-landed @HR0:');
-for (const b of BANDS)
-  {console.log(
+for (const b of BANDS) {
+  console.log(
     `  ${b.padEnd(7)} off ${coneCore('SG', b, 0).toFixed(4)} -> on ${unigeoSgCorePerLanded(b, 0).toFixed(4)}`
-  );}
+  );
+}
 for (const w of ['AR', 'SMG'] as const) {
   for (const hr of [0, 22.37, 61.1, 80.78]) {
     const row = BANDS.map(
@@ -182,7 +183,9 @@ const rows: string[] = [];
 for (const comp of COMPS) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -221,4 +224,6 @@ for (const comp of COMPS) {
     }
   }
 }
-for (const r of rows) {console.log(r);}
+for (const r of rows) {
+  console.log(r);
+}

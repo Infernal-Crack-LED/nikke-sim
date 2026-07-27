@@ -56,8 +56,12 @@ const near = (a: any, b: number, eps = 0.01) =>
 // CharacterSkills carrying its own blocks[] - both are handled so the file cannot guess wrong.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
@@ -73,8 +77,11 @@ function findEffect(
   pred: (e: any) => boolean
 ): { block: any; effect: any } {
   for (const b of allBlocks(ov)) {
-    for (const e of b.effects ?? [])
-      {if (pred(e)) {return { block: b, effect: e };}}
+    for (const e of b.effects ?? []) {
+      if (pred(e)) {
+        return { block: b, effect: e };
+      }
+    }
   }
   throw new Error('scarlet override does not represent kit line: ' + label);
 }
@@ -100,7 +107,9 @@ function run(patch?: any) {
       onEvent: (e: SimEvent) => events.push(e as unknown as Ev),
     },
   };
-  if (patch) {opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };}
+  if (patch) {
+    opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
+  }
   const res = runComp(opts);
   return {
     res,
@@ -119,7 +128,9 @@ function ownEvents(res: any, events: Ev[], kind: string): Ev[] {
   const own = Array.isArray(row?.events)
     ? row.events.filter((e: any) => e?.kind === kind)
     : [];
-  if (own.length) {return own as Ev[];}
+  if (own.length) {
+    return own as Ev[];
+  }
   return evs(events, kind).filter((e) =>
     [e.slug, e.unit, e.srcSlug, e.casterSlug, e.ownerSlug].includes(SLUG)
   );
@@ -130,7 +141,9 @@ function expectTeammatesIdentical(
   b: Record<string, number>
 ) {
   for (const slug of Object.keys(a)) {
-    if (slug === SLUG) {continue;}
+    if (slug === SLUG) {
+      continue;
+    }
     expect(b[slug]).toBe(a[slug]);
   }
 }
@@ -238,7 +251,9 @@ describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec
     const stackVals = applies
       .map((a) => a.stacks)
       .filter((s) => typeof s === 'number');
-    if (stackVals.length) {expect(Math.max(...stackVals)).toBeGreaterThan(1);}
+    if (stackVals.length) {
+      expect(Math.max(...stackVals)).toBeGreaterThan(1);
+    }
   });
 
   it('counts 10 LANDED NORMALS, not every trigger pull', () => {
@@ -302,7 +317,9 @@ describe('scarlet S2b - HP<60%: self Critical Damage 6.61% continuously', () => 
       (e) => near(e.value, 6.61) && e.targetSlug === SLUG
     );
     expect(applies.length).toBeGreaterThanOrEqual(1);
-    for (const a of applies) {expect(a.stat).toBe('critDamagePct');}
+    for (const a of applies) {
+      expect(a.stat).toBe('critDamagePct');
+    }
     expect(S2_CD_ZERO.total).toBeLessThan(FAITHFUL.total); // it actually moves damage
   });
 
@@ -401,7 +418,9 @@ describe('scarlet - no silent drops', () => {
     expect(text).toContain('4.01'); // self current-HP cost
     expect(text).toContain('138.24'); // 30%-when-attacked rider
     for (const b of allBlocks(OV)) {
-      for (const e of b.effects ?? []) {expect(e.kind).not.toBe('ignored');}
+      for (const e of b.effects ?? []) {
+        expect(e.kind).not.toBe('ignored');
+      }
     }
   });
 

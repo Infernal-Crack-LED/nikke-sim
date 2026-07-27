@@ -43,7 +43,9 @@ const readings = JSON.parse(
 const sim: Record<string, number> = {};
 for (const slugs of Object.values(CLEAN_WEAPON_TEAMS)) {
   const res = runComp(bareWeaponComp(slugs));
-  for (const s of slugs) {sim[s] = unitOf(res, s).totalDamage;}
+  for (const s of slugs) {
+    sim[s] = unitOf(res, s).totalDamage;
+  }
 }
 
 // ---- real side: gather every reading per unit ----
@@ -107,7 +109,8 @@ console.log(
     `   |   worst: ${rows.slice().sort((a, b) => Math.abs(b.ratio - 1) - Math.abs(a.ratio - 1))[0]?.slug ?? '—'}\n`
 );
 for (const run of readings.runs) {
-  if (run.focusNote)
-    {console.log(`  note (${run.recording.split('/').pop()}): ${run.focusNote}`);}
+  if (run.focusNote) {
+    console.log(`  note (${run.recording.split('/').pop()}): ${run.focusNote}`);
+  }
 }
 console.log();

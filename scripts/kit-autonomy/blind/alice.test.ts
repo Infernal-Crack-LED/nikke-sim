@@ -61,8 +61,9 @@ function aliceIdx(evs: SimEvent[]): number {
       Math.abs(b.value - 55.12) < 1 &&
       b.casterIdx === b.targetIdx
   );
-  if (self == null || self.casterIdx == null)
-    {throw new Error('alice self ATK 55.12 buff not found');}
+  if (self == null || self.casterIdx == null) {
+    throw new Error('alice self ATK 55.12 buff not found');
+  }
   return self.casterIdx;
 }
 
@@ -82,8 +83,9 @@ beforeAll(() => {
           Math.abs(e.value - 55.12) < 1
         )
     );
-    if (ov.burst[0].effects.length === before)
-      {throw new Error('burst atkPct 55.12 missing — stale');}
+    if (ov.burst[0].effects.length === before) {
+      throw new Error('burst atkPct 55.12 missing — stale');
+    }
   });
   noBurstAtk = collect({ alice: patched });
 });
@@ -106,13 +108,16 @@ describe('alice (S5 blind) — burst ATK ▲55.12% self /10s', () => {
       (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1
     );
     expect(applies.length).toBeGreaterThan(0);
-    for (const a of applies) {expect(a.targetIdx).toBe(idx);}
+    for (const a of applies) {
+      expect(a.targetIdx).toBe(idx);
+    }
   });
 
   it('raises alice damage vs the nearest-wrong inert model; teammates byte-identical', () => {
     expect(base.totals.alice).toBeGreaterThan(noBurstAtk.totals.alice);
-    for (const slug of ['liter', 'crown', 'helm'])
-      {expect(noBurstAtk.totals[slug]).toBe(base.totals[slug]);}
+    for (const slug of ['liter', 'crown', 'helm']) {
+      expect(noBurstAtk.totals[slug]).toBe(base.totals[slug]);
+    }
     const cf = buffs(noBurstAtk.events).filter(
       (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1
     );
@@ -132,11 +137,14 @@ describe('alice (S5 blind) — skill1 Charge Damage ▲7% to 2 highest-ATK allie
     expect(applies.length).toBeGreaterThan(0);
     // per-firing count === 2 (the top-2 rotates across firings as final ATK is re-ranked).
     const perFrame = new Map<number, Set<number | null>>();
-    for (const b of applies)
-      {(
+    for (const b of applies) {
+      (
         perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!
-      ).add(b.targetIdx);}
-    for (const [, holders] of perFrame) {expect(holders.size).toBe(2);}
+      ).add(b.targetIdx);
+    }
+    for (const [, holders] of perFrame) {
+      expect(holders.size).toBe(2);
+    }
   });
 
   it('fires at Full Burst enter, never before the first Full Burst window opens', () => {

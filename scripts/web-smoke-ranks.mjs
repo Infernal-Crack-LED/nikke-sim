@@ -20,7 +20,7 @@ const artifacts = {
 const bufferTop = artifacts['bufferchart.json'].cells.generic[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
 const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
-  (e) => e[4],
+  (e) => e[4]
 );
 const profileBadge =
   { 'with-healer': 'w/ Healer', 'with-shielder': 'w/ Shielder' }[
@@ -39,7 +39,7 @@ const dom = new JSDOM(
     url: 'http://localhost:4173/ranks/support',
     pretendToBeVisual: true,
     runScripts: 'outside-only',
-  },
+  }
 );
 for (const k of [
   'window',
@@ -56,33 +56,47 @@ for (const k of [
   'Event',
   'MouseEvent',
 ]) {
-  if (!(k in globalThis)) globalThis[k] = dom.window[k] ?? globalThis[k];
+  if (!(k in globalThis)) {
+    globalThis[k] = dom.window[k] ?? globalThis[k];
+  }
 }
 globalThis.window = dom.window;
 globalThis.document = dom.window.document;
-if (!globalThis.requestAnimationFrame)
+if (!globalThis.requestAnimationFrame) {
   globalThis.requestAnimationFrame = (cb) => setTimeout(cb, 0);
+}
 // route each board's fetch by URL suffix to the real dist/ artifact
-globalThis.fetch = async (url) => {
+globalThis.fetch = (url) => {
   const file = Object.keys(artifacts).find((f) => String(url).endsWith(f));
-  if (!file) return { ok: false, status: 404, json: async () => ({}) };
-  return { ok: true, status: 200, json: async () => artifacts[file] };
+  if (!file) {
+    return Promise.resolve({ ok: false, status: 404, json: () => ({}) });
+  }
+  return Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => artifacts[file],
+  });
 };
 
 // routes are code-split — the entry chunk is the index-*.js bundle; the lazy
 // page chunk it imports resolves over file:// as a real Node module
 const bundle = readdirSync('dist/assets').find(
-  (f) => f.startsWith('index') && f.endsWith('.js'),
+  (f) => f.startsWith('index') && f.endsWith('.js')
 );
-if (!bundle) throw new Error('no entry chunk (index-*.js) in dist/assets');
+if (!bundle) {
+  throw new Error('no entry chunk (index-*.js) in dist/assets');
+}
 await import('file://' + process.cwd() + '/dist/assets/' + bundle);
 
 const waitFor = async (re, what) => {
   const t0 = Date.now();
   for (;;) {
-    if (re.test(dom.window.document.body.textContent ?? '')) return;
-    if (Date.now() - t0 > 8000)
+    if (re.test(dom.window.document.body.textContent ?? '')) {
+      return;
+    }
+    if (Date.now() - t0 > 8000) {
       throw new Error(`timed out waiting for ${what}`);
+    }
     await new Promise((r) => setTimeout(r, 50));
   }
 };
@@ -108,15 +122,13 @@ const checks = {
   // (first occurrences are the pills; the intro copy is lowercase)
   'pill order: buffer, burst gen, sustain, cdr': (() => {
     const i = ['Buffer', 'Burst Gen', 'Sustain', 'Burst CDR'].map((s) =>
-      text().indexOf(s),
+      text().indexOf(s)
     );
     return i.every((x) => x >= 0) && i[0] < i[1] && i[1] < i[2] && i[2] < i[3];
   })(),
   [`buffer default top bar renders (${bufferTopName})`]:
     text().includes(bufferTopName),
-  'profile badge renders': profileBadge
-    ? text().includes(profileBadge)
-    : false,
+  'profile badge renders': profileBadge ? text().includes(profileBadge) : false,
   'methodology disclosure present': text().includes('How this works'),
   // the boards are precomputed — the App's boss/team settings can't affect
   // them, so the shared panel is hidden on this tab (owner 2026-07-26)
@@ -125,9 +137,11 @@ const checks = {
 // switch boards like a user would: Burst Gen, then back to Buffer → Typed
 const clickPill = (label) => {
   const btn = [...dom.window.document.querySelectorAll('.pills button')].find(
-    (b) => b.textContent === label,
+    (b) => b.textContent === label
   );
-  if (!btn) throw new Error(`pill "${label}" not found`);
+  if (!btn) {
+    throw new Error(`pill "${label}" not found`);
+  }
   btn.dispatchEvent(new dom.window.MouseEvent('click', { bubbles: true }));
 };
 try {
@@ -153,12 +167,14 @@ try {
 let ok = true;
 for (const [name, pass] of Object.entries(checks)) {
   console.log(pass ? '  ✓' : '  ✗', name);
-  if (!pass) ok = false;
+  if (!pass) {
+    ok = false;
+  }
 }
 if (!ok) {
   console.log('\n--- body excerpt:\n', text().slice(0, 800));
   process.exit(1);
 }
 console.log(
-  '\nranks smoke passed — section tabs, buffer default board, hidden boss settings, board switching',
+  '\nranks smoke passed — section tabs, buffer default board, hidden boss settings, board switching'
 );

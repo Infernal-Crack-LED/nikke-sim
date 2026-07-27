@@ -153,23 +153,27 @@ const inWindow = (frame: number, wins: [number, number][]) =>
 /** C1 nearest-wrong (decay): strip durationSec from the S1 gates → permanent (dur null). */
 const cfPermanent = withPatchedOverride('chisato', (ov: any) => {
   let n = 0;
-  for (const b of ov.skill1)
-    {for (const e of b.effects)
-      {if (e.stat && e.durationSec != null) {
+  for (const b of ov.skill1) {
+    for (const e of b.effects) {
+      if (e.stat && e.durationSec != null) {
         delete e.durationSec;
         n++;
-      }}}
-  if (n === 0)
-    {throw new Error('chisato S1 durationSec missing — fixture is stale');}
+      }
+    }
+  }
+  if (n === 0) {
+    throw new Error('chisato S1 durationSec missing — fixture is stale');
+  }
 });
 /** C1 nearest-wrong (refresh): drop the S1 burstCast refresh block → gates fire once at frame 0 only. */
 const cfNoRefresh = withPatchedOverride('chisato', (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'burstCast');
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'chisato S1 burstCast refresh block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** C3 isolation (flavor gate): strip the self trueDamagePct buff entirely (timing-stable — a stat, not the swap). */
 const cfNoTrueDmg = withPatchedOverride('chisato', (ov: any) => {
@@ -180,23 +184,26 @@ const cfNoTrueDmg = withPatchedOverride('chisato', (ov: any) => {
     removed += before - b.effects.length;
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
-  if (removed === 0)
-    {throw new Error('chisato S1 trueDamagePct missing — fixture is stale');}
+  if (removed === 0) {
+    throw new Error('chisato S1 trueDamagePct missing — fixture is stale');
+  }
 });
 /** C3 nearest-wrong (mechanism): trueNormals:true → false (window normals lose the true flavor). */
 const cfNoTrueNormals = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (!b)
-    {throw new Error('chisato S2 weaponSwap block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('chisato S2 weaponSwap block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.kind === 'weaponSwap').trueNormals = false;
 });
 /** C4 nearest-wrong (count): hitCount 48 → 24 (~2× riders). */
 const cfCount24 = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) => x.trigger?.kind === 'hitCount');
-  if (!b)
-    {throw new Error('chisato S2 hitCount block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('chisato S2 hitCount block missing — fixture is stale');
+  }
   b.trigger.count = 24;
 });
 /** C4 nearest-wrong (flavor): the rider's flavor:'true' removed → loses trueDamagePct. */
@@ -204,8 +211,9 @@ const cfPlainRider = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b)
-    {throw new Error('chisato S2 flatDamage block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('chisato S2 flatDamage block missing — fixture is stale');
+  }
   delete b.effects.find((e: any) => e.kind === 'flatDamage').flavor;
 });
 /** C5 nearest-wrong (trigger): the burst ATK line keyed to fullBurstEnter (FB-START frames). */
@@ -213,8 +221,9 @@ const cfBurstFbEnter = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'atkPct')
   );
-  if (!b)
-    {throw new Error('chisato burst atkPct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('chisato burst atkPct block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -237,11 +246,13 @@ const wins = castWindows(base.events);
 const baseNormalFrames = chiNormals(base.events).map((d) => d.frame);
 const noTdNormalFrames = chiNormals(noTrueDmg.events).map((d) => d.frame);
 const baseDuByFrame = new Map<number, number>();
-for (const d of chiNormals(base.events))
-  {baseDuByFrame.set(d.frame, d.mult.dmgUp);}
+for (const d of chiNormals(base.events)) {
+  baseDuByFrame.set(d.frame, d.mult.dmgUp);
+}
 const noTdDuByFrame = new Map<number, number>();
-for (const d of chiNormals(noTrueDmg.events))
-  {noTdDuByFrame.set(d.frame, d.mult.dmgUp);}
+for (const d of chiNormals(noTrueDmg.events)) {
+  noTdDuByFrame.set(d.frame, d.mult.dmgUp);
+}
 
 describe('chisato — kit spec', () => {
   describe('fixture sanity — chisato casts her burst and the team reaches Full Burst', () => {
@@ -344,8 +355,9 @@ describe('chisato — kit spec', () => {
       expect(elevated.every((f) => inWindow(f, wins))).toBe(true);
       expect(notElevated.every((f) => !inWindow(f, wins))).toBe(true);
       // positive coverage: every cast opens a true-damage window
-      for (const [s, e] of wins)
-        {expect(elevated.some((f) => f >= s && f < e)).toBe(true);}
+      for (const [s, e] of wins) {
+        expect(elevated.some((f) => f >= s && f < e)).toBe(true);
+      }
       // cleanest proof of flavor-scoping: OUTSIDE-window normals are byte-identical with the
       // trueDamagePct buff removed (never true-flavored, so the buff never touched them)
       const outside = (m: Map<number, number>) =>
@@ -393,8 +405,9 @@ describe('chisato — kit spec', () => {
       const noTdByFrame = new Map(
         noTdRiders.map((d) => [d.frame, d.mult.dmgUp])
       );
-      for (const d of riders)
-        {expect(d.mult.dmgUp).toBeGreaterThan(noTdByFrame.get(d.frame)! + 0.01);}
+      for (const d of riders) {
+        expect(d.mult.dmgUp).toBeGreaterThan(noTdByFrame.get(d.frame)! + 0.01);
+      }
     });
     it('DISCRIMINATING (count): hitCount 24 (nearest-wrong) produces ~2× riders', () => {
       expect(chiRiders(count24.events).length).toBeGreaterThan(riders.length);
@@ -403,8 +416,9 @@ describe('chisato — kit spec', () => {
       const plain = chiRiders(plainRider.events);
       expect(plain.map((d) => d.frame)).toEqual(riders.map((d) => d.frame));
       const plainByFrame = new Map(plain.map((d) => [d.frame, d.mult.dmgUp]));
-      for (const d of riders)
-        {expect(d.mult.dmgUp).toBeGreaterThan(plainByFrame.get(d.frame)! + 0.01);}
+      for (const d of riders) {
+        expect(d.mult.dmgUp).toBeGreaterThan(plainByFrame.get(d.frame)! + 0.01);
+      }
     });
   });
 

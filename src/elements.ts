@@ -57,13 +57,18 @@ export function countsAsElements(
     override?.skill2,
     override?.burst,
   ];
-  for (const blocks of slots)
-    {for (const b of blocks ?? [])
-      {for (const e of b.effects)
-        {if (e.kind === 'advantageVs') {
+  for (const blocks of slots) {
+    for (const b of blocks ?? []) {
+      for (const e of b.effects) {
+        if (e.kind === 'advantageVs') {
           const as = ADVANTAGED_BY[e.element as Element];
-          if (as && !out.includes(as)) {out.push(as);}
-        }}}}
+          if (as && !out.includes(as)) {
+            out.push(as);
+          }
+        }
+      }
+    }
+  }
   return out;
 }
 

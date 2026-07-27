@@ -59,8 +59,12 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
 function blocksOf(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
@@ -124,7 +128,9 @@ function run(opts: any): Run {
   const events: SimEvent[] = [];
   const seen = new Set<SimEvent>();
   const sink = (ev: SimEvent) => {
-    if (seen.has(ev)) {return;} // belt: same object never counted twice if both sinks are honoured
+    if (seen.has(ev)) {
+      return;
+    } // belt: same object never counted twice if both sinks are honoured
     seen.add(ev);
     events.push(ev);
   };
@@ -389,6 +395,8 @@ describe('mana — burst', () => {
   });
 
   it('burst damage is self-only: teammates byte-identical with the DoT removed', () => {
-    for (const s of mates) {expect(rNoDot.tot[s]).toBe(baseTot[s]);}
+    for (const s of mates) {
+      expect(rNoDot.tot[s]).toBe(baseTot[s]);
+    }
   });
 });

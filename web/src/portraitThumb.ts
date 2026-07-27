@@ -36,21 +36,30 @@ export async function portraitThumb(
 ): Promise<string | null> {
   // No-op outside a real browser (SSR / JSDOM smoke): no Image/canvas to use, so
   // callers fall back to the raw <img>.
-  if (typeof document === 'undefined' || typeof Image === 'undefined')
-    {return null;}
+  if (typeof document === 'undefined' || typeof Image === 'undefined') {
+    return null;
+  }
 
   const key = `${url}@${size}`;
   const cached = cache.get(key);
-  if (cached) {return cached;}
+  if (cached) {
+    return cached;
+  }
   const pending = inflight.get(key);
-  if (pending) {return pending;}
+  if (pending) {
+    return pending;
+  }
 
   const job = (async (): Promise<string | null> => {
     const img = await loadImage(url);
-    if (!img) {return null;}
+    if (!img) {
+      return null;
+    }
     const iw = img.naturalWidth || img.width;
     const ih = img.naturalHeight || img.height;
-    if (!iw || !ih) {return null;}
+    if (!iw || !ih) {
+      return null;
+    }
 
     // crop the largest square out of the (tall) source, anchored PORTRAIT_CROP_TOP
     // down from the top (horizontally centered) — matches the Sim tab's object-position.
@@ -60,7 +69,9 @@ export async function portraitThumb(
 
     // high-quality square downscale via the shared stepped-halving helper
     const cv = steppedDownscale(img, sx, sy, side, side, size, size);
-    if (!cv) {return null;}
+    if (!cv) {
+      return null;
+    }
 
     const data = cv.toDataURL('image/png');
     cache.set(key, data);

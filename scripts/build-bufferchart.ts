@@ -17,7 +17,13 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { rankBuffers, COMP_PROFILES, DUO_BUFFER_PROFILES, EXCLUDED_BUFFER_SLUGS, type BufferValue } from '../src/ranks/buffer.js';
+import {
+  rankBuffers,
+  COMP_PROFILES,
+  DUO_BUFFER_PROFILES,
+  EXCLUDED_BUFFER_SLUGS,
+  type BufferValue,
+} from '../src/ranks/buffer.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { BufferChartArtifact, BufferRow } from '../src/ranks/types.js';
 
@@ -34,11 +40,14 @@ try {
 } catch {
   /* optional */
 }
-const tags = load<{ tags: Record<string, string[]> }>('../data/archetype-tags.json').tags;
+const tags = load<{ tags: Record<string, string[]> }>(
+  '../data/archetype-tags.json'
+).tags;
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
+for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -48,14 +57,24 @@ const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 // for ranking support value.
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (EXCLUDED_BUFFER_SLUGS.has(slug)) continue;
-  if (!c.simSupported) continue;
-  if (c.burst === 'I' || c.burst === 'II') population.push(slug);
-  else if (c.burst === 'III' && (tags[slug] ?? []).includes('buffer')) population.push(slug);
+  if (EXCLUDED_BUFFER_SLUGS.has(slug)) {
+    continue;
+  }
+  if (!c.simSupported) {
+    continue;
+  }
+  if (c.burst === 'I' || c.burst === 'II') {
+    population.push(slug);
+  } else if (c.burst === 'III' && (tags[slug] ?? []).includes('buffer')) {
+    population.push(slug);
+  }
 }
 population.sort();
 
-const boards = { generic: rankBuffers(population, 'generic', ctx), typed: rankBuffers(population, 'typed', ctx) };
+const boards = {
+  generic: rankBuffers(population, 'generic', ctx),
+  typed: rankBuffers(population, 'typed', ctx),
+};
 
 const pack = (ranked: BufferValue[]): BufferRow[] =>
   // fixed arity 4: [slug, addedPct, rules, profile] — profile null = plain run
@@ -76,10 +95,10 @@ const artifact: BufferChartArtifact = {
     'no-op × 100. B3 buffers sit rightmost and never burst. generic: plain ' +
     'MG+RL carries — only requirement-free buffs counted. typed: carries adapt ' +
     'to the kit (auto-derived from the override: weapon-typed targets swap both ' +
-    'carries\' weapon; pierce buffs grant both carries Pierce; ' +
+    "carries' weapon; pierce buffs grant both carries Pierce; " +
     'projectile-explosion buffs make both RL; element-typed targets and ' +
     'boss-element-gated enemy debuffs set both carries to the advantaged element). ' +
-    'The buffer\'s own damage is not counted; rotation value (gauge/CDR) is ' +
+    "The buffer's own damage is not counted; rotation value (gauge/CDR) is " +
     'captured. Defensive/sustain kits read ~0 (scope-lock boss deals no damage).',
   units: Object.fromEntries(
     population.map((slug) => {
@@ -95,7 +114,7 @@ const artifact: BufferChartArtifact = {
           imageUrl: c.imageUrl ?? null,
         },
       ];
-    }),
+    })
   ),
   profiles: Object.fromEntries([
     ...Object.values(COMP_PROFILES).map((p) => [p.id, p.note]),
@@ -112,7 +131,10 @@ const out =
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 const top = (b: BufferValue[]) =>
-  b.slice(0, 10).map((r) => `  #${r.rank} ${r.slug} +${r.valuePct.toFixed(1)}%`).join('\n');
+  b
+    .slice(0, 10)
+    .map((r) => `  #${r.rank} ${r.slug} +${r.valuePct.toFixed(1)}%`)
+    .join('\n');
 process.stderr.write(
-  `bufferchart: ${population.length} units × 2 boards → ${out}\nGENERIC:\n${top(boards.generic)}\nTYPED:\n${top(boards.typed)}\n`,
+  `bufferchart: ${population.length} units × 2 boards → ${out}\nGENERIC:\n${top(boards.generic)}\nTYPED:\n${top(boards.typed)}\n`
 );

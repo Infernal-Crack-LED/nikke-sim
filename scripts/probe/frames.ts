@@ -35,12 +35,14 @@ import { existsSync, mkdirSync } from 'node:fs';
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 if (!video || !existsSync(video)) {
   console.error(
     'usage: frames.ts <video> --at <sec> [--dur] [--fps] [--region] [--sheet] [--zoom] [--out]'
@@ -64,12 +66,20 @@ const sheet = flags.sheet ? Number(flags.sheet) : 0;
 const zoom = flags.zoom ? Number(flags.zoom) : 1;
 const out =
   flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/probe-frames';
-if (!existsSync(out)) {mkdirSync(out, { recursive: true });}
+if (!existsSync(out)) {
+  mkdirSync(out, { recursive: true });
+}
 
 const vf: string[] = [];
-if (fps) {vf.push(`fps=${fps}`);}
-if (region) {vf.push(region);}
-if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
+if (fps) {
+  vf.push(`fps=${fps}`);
+}
+if (region) {
+  vf.push(region);
+}
+if (zoom !== 1) {
+  vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+}
 const base = video
   .split('/')
   .pop()!
@@ -92,7 +102,9 @@ if (flags.times && flags.times !== 'true') {
   for (const t of times) {
     const of = `${out}/${base}_t${t}.png`;
     const a = ['-y', '-ss', t, '-i', video];
-    if (vf2) {a.push('-vf', vf2);}
+    if (vf2) {
+      a.push('-vf', vf2);
+    }
     a.push('-frames:v', '1', of);
     execFileSync('ffmpeg', a, { stdio: ['ignore', 'ignore', 'ignore'] });
     written.push(of);
@@ -104,7 +116,9 @@ if (flags.times && flags.times !== 'true') {
 }
 
 const args = ['-y', '-ss', String(at)];
-if (dur) {args.push('-t', String(dur));}
+if (dur) {
+  args.push('-t', String(dur));
+}
 args.push('-i', video);
 let outfile: string;
 if (sheet) {
@@ -120,7 +134,9 @@ if (sheet) {
 } else {
   // a single frame
   outfile = `${out}/${base}_${at}s.png`;
-  if (vf.length) {args.push('-vf', vf.join(','));}
+  if (vf.length) {
+    args.push('-vf', vf.join(','));
+  }
   args.push('-frames:v', '1', outfile);
 }
 execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });

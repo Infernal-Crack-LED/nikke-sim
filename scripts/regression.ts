@@ -468,13 +468,15 @@ for (const comp of COMPS) {
     });
     const r = runSim(chars, mult, team.cfg, prepared);
     const t = r.units[team.testedIndex];
-    const noopDmg = r.units.reduce(
-      (s, u, i) => (i === team.testedIndex ? s : s + u.totalDamage),
-      0
-    );
     const noopB3 = r.units.find((u) => u.slug === 'noop-b3-rl')!;
-    (noopDmg === 0 ? ok : fail)(
-      `${tslug}: no-op controls deal 0 damage (got ${noopDmg})`
+    const noopB1 = r.units.find((u) => u.slug === 'noop-b1-ar')!;
+    const noopB2 = r.units.find((u) => u.slug === 'noop-b2-sr')!;
+    const noopSupportDmg = noopB1.totalDamage + noopB2.totalDamage;
+    (noopSupportDmg === 0 ? ok : fail)(
+      `${tslug}: no-op B1/B2 controls deal 0 damage (got ${noopSupportDmg})`
+    );
+    (noopB3.totalDamage > 0 ? ok : fail)(
+      `${tslug}: no-op B3 contributes damage during its burst (got ${noopB3.totalDamage})`
     );
     const alternates =
       r.fullBursts > 0 &&

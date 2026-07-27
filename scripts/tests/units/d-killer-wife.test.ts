@@ -167,10 +167,11 @@ const cfPierceAll = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'pierceDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'd-killer-wife S1 pierceDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'allies' };
 });
 /** W3 nearest-wrong: the 2026-07-16 parser bug — team Burst CDR firing on EVERY shot (shotFired). */
@@ -178,10 +179,11 @@ const cfCdrEveryShot = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'burstCdr')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'd-killer-wife S2 burstCdr block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'shotFired' };
 });
 /** W4 nearest-wrong: the same parser-bug class — Attack Damage firing every shot (hitCount 5 → 1). */
@@ -191,10 +193,11 @@ const cfAtkEveryShot = withPatchedOverride('d-killer-wife', (ov: any) => {
       x.trigger?.kind === 'hitCount' &&
       x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'd-killer-wife S2 attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger.count = 1;
 });
 /** W5 nearest-wrong: the lv1 burst magnitude 159.12 instead of the lv10 269.28. */
@@ -202,10 +205,11 @@ const cfNukeLv1 = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'd-killer-wife burst flatDamage block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 159.12;
 });
 /** W6 nearest-wrong: re-add the REMOVED ungated parts branch (all-ally coreDamagePct 16.26) — the
@@ -302,8 +306,9 @@ describe('d-killer-wife — kit spec', () => {
       expect(atk.length).toBeGreaterThan(0);
       expect(distinctFrames(atk).length).toBe(Math.floor(shots / 5));
       // every firing reaches all three allies
-      for (const f of distinctFrames(atk))
-        {expect(atk.filter((b) => b.frame === f).length).toBe(3);}
+      for (const f of distinctFrames(atk)) {
+        expect(atk.filter((b) => b.frame === f).length).toBe(3);
+      }
       expect(targetsOf(atk)).toEqual(ALL_ALLIES);
       expect(dursOf(atk)).toEqual([10 * FPS]);
     });
@@ -354,8 +359,9 @@ describe('d-killer-wife — kit spec', () => {
         (b) => b.stat === 'coreDamagePct'
       );
       expect(cfCore.length).toBeGreaterThan(0);
-      for (const s of comp.slugs)
-        {expect(partsReadded.totals[s]).toBeGreaterThan(base.totals[s]);}
+      for (const s of comp.slugs) {
+        expect(partsReadded.totals[s]).toBeGreaterThan(base.totals[s]);
+      }
     });
   });
 
@@ -371,7 +377,9 @@ describe('d-killer-wife — kit spec', () => {
     });
     it("is 12.19% of the caster's ATK (casterAtkPct resolves to flat ATK)", () => {
       const expected = (12.19 / 100) * dkwStaticAtk;
-      for (const b of body) {expect(b.value).toBeCloseTo(expected, 6);}
+      for (const b of body) {
+        expect(b.value).toBeCloseTo(expected, 6);
+      }
     });
     it('GATE DIRECTION: NOT core-gated — fires identically at coreHitRate 0 and 1 (body = non-core)', () => {
       // "Allies that hit the body" = non-core on the partless boss, so the body branch is MAXIMALLY

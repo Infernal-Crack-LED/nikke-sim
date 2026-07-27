@@ -84,7 +84,9 @@ const charDataUsers = (name: string): string[] => {
   const present = Object.entries(chars).filter(
     ([, c]) => (c as any)?.[name] !== undefined
   );
-  if (!present.length) {return [];}
+  if (!present.length) {
+    return [];
+  }
   const counts = new Map<string, number>();
   for (const [, c] of present) {
     const k = JSON.stringify((c as any)[name]);
@@ -104,22 +106,31 @@ const sec5 =
   stateText
     .split('## 5. Opt-in kit primitives inventory')[1]
     ?.split('\n## ')[0] ?? '';
-if (!sec5)
-  {problems.push(
+if (!sec5) {
+  problems.push(
     'STATE.md: could not locate "## 5. Opt-in kit primitives inventory"'
-  );}
+  );
+}
 
 type Row = { prims: string[]; users: string; line: string; rawLine: string };
 const rows: Row[] = [];
 for (const line of sec5.split('\n')) {
-  if (!line.startsWith('|')) {continue;}
+  if (!line.startsWith('|')) {
+    continue;
+  }
   const cells = line.split('|').map((c) => c.trim());
   // cells[0] is '' (leading pipe). Need at least prim | meaning | users.
-  if (cells.length < 5) {continue;}
+  if (cells.length < 5) {
+    continue;
+  }
   const [, c1, , c3] = cells;
-  if (/^-+$/.test(c1) || c1 === 'Primitive') {continue;}
+  if (/^-+$/.test(c1) || c1 === 'Primitive') {
+    continue;
+  }
   const prims = [...c1.matchAll(/`([A-Za-z][A-Za-z0-9.]*)`/g)].map((m) => m[1]);
-  if (!prims.length) {continue;}
+  if (!prims.length) {
+    continue;
+  }
   rows.push({ prims, users: c3, line: line.slice(0, 90), rawLine: line });
 }
 
@@ -139,8 +150,11 @@ for (const row of rows) {
   const anyUser = new Set(
     row.prims.flatMap((p) => [...usersOf(p), ...charDataUsers(p)])
   );
-  for (const slug of new Set(named))
-    {if (!anyUser.has(slug)) {falseMembers.push({ slug, row });}}
+  for (const slug of new Set(named)) {
+    if (!anyUser.has(slug)) {
+      falseMembers.push({ slug, row });
+    }
+  }
 
   // EXACT prose counts ("8 units (…)") must match reality — this is the U14 class, where a stated
   // count outlived its landing and mis-set a priority. "~14 units" is approximate BY DESIGN
@@ -230,12 +244,15 @@ const STUB_HEADER = /~~U\d+~~|\(SUPERSEDED\b|MOVED TO ANSWERED/i;
 const qText = readFileSync(QUESTIONS_MD, 'utf8');
 const unanswered =
   qText.split('## UNANSWERED')[1]?.split('\n## ANSWERED')[0] ?? '';
-if (!unanswered)
-  {problems.push('open-questions.md: could not locate "## UNANSWERED"');}
+if (!unanswered) {
+  problems.push('open-questions.md: could not locate "## UNANSWERED"');
+}
 for (const chunk of unanswered.split(/\n(?=### )/)) {
   const lines = chunk.split('\n');
   const header = lines[0] ?? '';
-  if (!header.startsWith('### ')) {continue;}
+  if (!header.startsWith('### ')) {
+    continue;
+  }
   const body = lines.slice(1).filter((l) => l.trim() !== '');
   const stamped = STUB_HEADER.test(header)
     ? 'a superseded-stub header'
@@ -299,7 +316,9 @@ if (!hasMarkers) {
       console.log(
         `doc-drift: census updated (${censusPrims.length} primitives)`
       );
-    } else {console.log('doc-drift: census already fresh');}
+    } else {
+      console.log('doc-drift: census already fresh');
+    }
   } else if (current !== census) {
     problems.push(
       'engine-modeling-gaps.md: the generated primitive census is STALE — run `npx tsx scripts/doc-drift.ts --update`'
@@ -310,7 +329,9 @@ if (!hasMarkers) {
 // ── report ───────────────────────────────────────────────────────────────────────────────────
 if (problems.length) {
   console.error(`\ndoc-drift: ${problems.length} problem(s)\n`);
-  for (const p of problems) {console.error(`  ✗ ${p}`);}
+  for (const p of problems) {
+    console.error(`  ✗ ${p}`);
+  }
   console.error('');
   process.exit(1);
 }

@@ -96,26 +96,29 @@ const dwsStackingCrit = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'critDamagePct');
-  if (!e)
-    {throw new Error('dws S1 critDamagePct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('dws S1 critDamagePct effect missing — fixture is stale');
+  }
   e.maxStacks = 99;
 });
 /** D1 reference: her S1 Crit Damage line removed entirely (proves the buff is live + self-scoped). */
 const dwsNoCrit = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('dws S1 critDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('dws S1 critDamagePct block missing — fixture is stale');
+  }
 });
 /** D2 counterfactual: the Intro sustained value swapped for the Highlight branch (235.03%). */
 const dwsHighlightSustained = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 60.19);
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'dws S1 Intro sustainedDamagePct 60.19 missing — fixture is stale'
-    );}
+    );
+  }
   e.value = 235.03;
 });
 /** D3 counterfactual: the Full-Charge sustained buff capped at 1 stack (nearest wrong: no stacking). */
@@ -123,49 +126,55 @@ const dwsNoStackSustained = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 318.14);
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'dws S2 sustainedDamagePct 318.14 missing — fixture is stale'
-    );}
+    );
+  }
   e.maxStacks = 1;
 });
 /** D4 reference: her FB-entry 63.33%/s DoT removed. */
 const dwsNoS2Dot = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !dotAtk(b, 63.33));
-  if (ov.skill2.length === before)
-    {throw new Error('dws S2 63.33 DoT block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('dws S2 63.33 DoT block missing — fixture is stale');
+  }
 });
 /** D5 reference: her burst Damage Taken debuff removed. */
 const dwsNoDamageTaken = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'dws burst damageTakenPct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** D6 reference: her burst 18.43%/s all-enemy DoT removed. */
 const dwsNoBurstDot18 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !dotAtk(b, 18.43));
-  if (ov.burst.length === before)
-    {throw new Error('dws burst 18.43 DoT block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('dws burst 18.43 DoT block missing — fixture is stale');
+  }
 });
 /** D7 reference: her burst 181.2%/s stage-target DoT removed. */
 const dwsNoBurstDot181 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !dotAtk(b, 181.2));
-  if (ov.burst.length === before)
-    {throw new Error('dws burst 181.2 DoT block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('dws burst 181.2 DoT block missing — fixture is stale');
+  }
 });
 /** D-scope reference: BOTH sustainedDamagePct buffs removed (S1 60.19 + S2 318.14). Proves the
  *  stat feeds ONLY sustained-flavored damage (her DoTs), never her RL normal/charge bucket — the
  *  nearest wrong stat (attackDamagePct) would lift the normals too. */
 const dwsNoSustained = withPatchedOverride(SLUG, (ov) => {
   for (const slot of ['skill1', 'skill2'] as const) {
-    for (const b of ov[slot])
-      {b.effects = b.effects.filter((e: any) => e.stat !== 'sustainedDamagePct');}
+    for (const b of ov[slot]) {
+      b.effects = b.effects.filter((e: any) => e.stat !== 'sustainedDamagePct');
+    }
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
   ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
@@ -270,7 +279,9 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('is 60.19% for a 10-second window, self-scoped, once per Full Burst entry', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DWS]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('the Highlight value 235.03% is ABSENT here (sole-B3: she always casts -> Intro tier)', () => {
@@ -319,7 +330,9 @@ describe('diesel-winter-sweets — kit spec', () => {
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DWS]);
       expect([...new Set(applied.map((b) => b.maxStacks))]).toEqual([2]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      }
     });
 
     it('reaches 2 stacks (value×stacks = 636.28% sustained while both live)', () => {
@@ -398,7 +411,9 @@ describe('diesel-winter-sweets — kit spec', () => {
         [...new Set(applied.map((b) => b.targetIdx))],
         'a debuff on the boss'
       ).toEqual([null]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it("DISCRIMINATING: removing it drops the WHOLE team's damage (the amp is live)", () => {

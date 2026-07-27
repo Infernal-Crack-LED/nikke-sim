@@ -38,8 +38,9 @@ const tags = load<{ tags: Record<string, string[]> }>(
 ).tags;
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -50,12 +51,14 @@ const population = Object.keys(tags).filter((s) =>
   tags[s].includes('burst-cdr')
 );
 for (const slug of population) {
-  if (!CDR_TABLE[slug])
-    {throw new Error(`${slug}: burst-cdr tagged but missing from CDR_TABLE`);}
+  if (!CDR_TABLE[slug]) {
+    throw new Error(`${slug}: burst-cdr tagged but missing from CDR_TABLE`);
+  }
 }
 for (const slug of Object.keys(CDR_TABLE)) {
-  if (!population.includes(slug))
-    {throw new Error(`${slug}: in CDR_TABLE but not burst-cdr tagged`);}
+  if (!population.includes(slug)) {
+    throw new Error(`${slug}: in CDR_TABLE but not burst-cdr tagged`);
+  }
 }
 
 const ranked = rankCdr(population, ctx);

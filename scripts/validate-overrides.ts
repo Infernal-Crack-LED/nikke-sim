@@ -129,11 +129,17 @@ function collectEffectKinds(
   effects: any,
   out = new Set<string>()
 ): Set<string> {
-  if (!Array.isArray(effects)) {return out;}
+  if (!Array.isArray(effects)) {
+    return out;
+  }
   for (const e of effects) {
-    if (!e || typeof e !== 'object') {continue;}
+    if (!e || typeof e !== 'object') {
+      continue;
+    }
     out.add(e.kind);
-    if (e.kind === 'escalating') {collectEffectKinds(e.steps, out);}
+    if (e.kind === 'escalating') {
+      collectEffectKinds(e.steps, out);
+    }
   }
   return out;
 }
@@ -146,12 +152,16 @@ function checkEffect(e: any, path: string, errors: string[]) {
       `${path}: "${e.kind}" is not valid in an override — move the line to the "unmodeled" field`
     );
   }
-  if (!EFFECTS.has(e.kind))
-    {return errors.push(`${path}: unknown effect kind "${e.kind}"`);}
+  if (!EFFECTS.has(e.kind)) {
+    return errors.push(`${path}: unknown effect kind "${e.kind}"`);
+  }
   if (e.kind === 'buff') {
-    if (!STATS.has(e.stat)) {errors.push(`${path}: unknown stat "${e.stat}"`);}
-    if (typeof e.value !== 'number')
-      {errors.push(`${path}: buff needs numeric value`);}
+    if (!STATS.has(e.stat)) {
+      errors.push(`${path}: unknown stat "${e.stat}"`);
+    }
+    if (typeof e.value !== 'number') {
+      errors.push(`${path}: buff needs numeric value`);
+    }
     // "for N round(s)" — a whole positive number of the holder's own rounds
     if (
       e.durationShots !== undefined &&
@@ -163,10 +173,12 @@ function checkEffect(e: any, path: string, errors: string[]) {
     }
   }
   if (e.kind === 'flatDamage') {
-    if (typeof e.atkPct !== 'number')
-      {errors.push(`${path}: flatDamage needs atkPct`);}
-    if (e.flavor && !FLAVORS.has(e.flavor))
-      {errors.push(`${path}: unknown flavor "${e.flavor}"`);}
+    if (typeof e.atkPct !== 'number') {
+      errors.push(`${path}: flatDamage needs atkPct`);
+    }
+    if (e.flavor && !FLAVORS.has(e.flavor)) {
+      errors.push(`${path}: unknown flavor "${e.flavor}"`);
+    }
   }
   if (
     e.kind === 'dot' &&
@@ -178,10 +190,12 @@ function checkEffect(e: any, path: string, errors: string[]) {
     errors.push(`${path}: weaponSwap needs damagePct`);
   }
   if (e.kind === 'storedHit') {
-    if (typeof e.atkPct !== 'number')
-      {errors.push(`${path}: storedHit needs atkPct`);}
-    if (e.flavor && !FLAVORS.has(e.flavor))
-      {errors.push(`${path}: unknown flavor "${e.flavor}"`);}
+    if (typeof e.atkPct !== 'number') {
+      errors.push(`${path}: storedHit needs atkPct`);
+    }
+    if (e.flavor && !FLAVORS.has(e.flavor)) {
+      errors.push(`${path}: unknown flavor "${e.flavor}"`);
+    }
   }
   // `noFb` is INERT under the shipped FBRULE default ('timing', 2026-07-23): Full Burst is a timing
   // gate, so a non-burst-cast rider/DoT landing inside the window always takes the +50%. Reject the
@@ -204,12 +218,13 @@ function checkEffect(e: any, path: string, errors: string[]) {
     }
   }
   if (e.kind === 'escalating') {
-    if (!Array.isArray(e.steps))
-      {errors.push(`${path}: escalating needs steps[]`);}
-    else
-      {e.steps.forEach((s: any, i: number) =>
+    if (!Array.isArray(e.steps)) {
+      errors.push(`${path}: escalating needs steps[]`);
+    } else {
+      e.steps.forEach((s: any, i: number) =>
         checkEffect(s, `${path}.steps[${i}]`, errors)
-      );}
+      );
+    }
   }
 }
 
@@ -247,19 +262,27 @@ function validate(slug: string): boolean {
       if (b.mode && !(override as any).modes?.includes(b.mode)) {
         errors.push(`${p}: mode "${b.mode}" not declared in top-level modes[]`);
       }
-      if (!b.trigger?.kind || !TRIGGERS.has(b.trigger.kind))
-        {errors.push(`${p}: bad trigger`);}
-      if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count !== 'number')
-        {errors.push(`${p}: hitCount needs count`);}
+      if (!b.trigger?.kind || !TRIGGERS.has(b.trigger.kind)) {
+        errors.push(`${p}: bad trigger`);
+      }
+      if (
+        b.trigger?.kind === 'hitCount' &&
+        typeof b.trigger.count !== 'number'
+      ) {
+        errors.push(`${p}: hitCount needs count`);
+      }
       if (
         b.trigger?.kind === 'interval' &&
         !(typeof b.trigger.sec === 'number' && b.trigger.sec > 0)
-      )
-        {errors.push(`${p}: interval needs sec > 0`);}
-      if (!b.target?.kind || !TARGETS.has(b.target.kind))
-        {errors.push(`${p}: bad target`);}
-      if (b.formation && !['noB1', 'hasB1'].includes(b.formation))
-        {errors.push(`${p}: bad formation`);}
+      ) {
+        errors.push(`${p}: interval needs sec > 0`);
+      }
+      if (!b.target?.kind || !TARGETS.has(b.target.kind)) {
+        errors.push(`${p}: bad target`);
+      }
+      if (b.formation && !['noB1', 'hasB1'].includes(b.formation)) {
+        errors.push(`${p}: bad formation`);
+      }
       // `targetStatus` lands on the BOSS and the engine ignores block.target (there is no enemy
       // entity — see sim.ts). Require the authoring block to say so explicitly, so a real carrier
       // can never silently look owner- or ally-scoped. Collected RECURSIVELY: the engine runs
@@ -283,16 +306,18 @@ function validate(slug: string): boolean {
           `${p}: requiresTargetStatus must be a non-empty status name`
         );
       }
-      if (!Array.isArray(b.effects) || !b.effects.length)
-        {errors.push(`${p}: needs effects[]`);}
-      else
-        {b.effects.forEach((e: any, ei: number) =>
+      if (!Array.isArray(b.effects) || !b.effects.length) {
+        errors.push(`${p}: needs effects[]`);
+      } else {
+        b.effects.forEach((e: any, ei: number) =>
           checkEffect(e, `${p}.effects[${ei}]`, errors)
-        );}
+        );
+      }
     });
   }
-  if (!(override as any).note)
-    {errors.push('missing top-level "note" documenting modeling decisions');}
+  if (!(override as any).note) {
+    errors.push('missing top-level "note" documenting modeling decisions');
+  }
 
   // `unmodeled` is the auditable record of kit text NOT represented in blocks
   const un = (override as any).unmodeled;
@@ -311,8 +336,9 @@ function validate(slug: string): boolean {
       }
     }
     for (const k of Object.keys(un)) {
-      if (!['skill1', 'skill2', 'burst'].includes(k))
-        {errors.push(`unmodeled.${k}: unknown key`);}
+      if (!['skill1', 'skill2', 'burst'].includes(k)) {
+        errors.push(`unmodeled.${k}: unknown key`);
+      }
     }
   }
   const caveats = (override as any).caveats;
@@ -368,10 +394,12 @@ function validate(slug: string): boolean {
     const r = runSim(chars, mult, cfg, prepared);
     const u = r.units[slugs.indexOf(slug)];
     const flags: string[] = [];
-    if (u.totalDamage <= 0 && c.class === 'Attacker')
-      {flags.push('zero damage for an Attacker');}
-    if (u.share > 0.9)
-      {flags.push(`suspicious ${(u.share * 100).toFixed(0)}% team share`);}
+    if (u.totalDamage <= 0 && c.class === 'Attacker') {
+      flags.push('zero damage for an Attacker');
+    }
+    if (u.share > 0.9) {
+      flags.push(`suspicious ${(u.share * 100).toFixed(0)}% team share`);
+    }
     console.log(
       `✓ ${slug}: valid | dmg ${(u.totalDamage / 1e6).toFixed(1)}M (${(u.share * 100).toFixed(1)}%) bursts ${u.burstCasts} | remaining warnings: ${resolved.warnings.length}${flags.length ? ' | FLAGS: ' + flags.join('; ') : ''}`
     );
@@ -391,5 +419,7 @@ if (!slugs.length) {
   process.exit(1);
 }
 let ok = true;
-for (const s of slugs) {ok = validate(s) && ok;}
+for (const s of slugs) {
+  ok = validate(s) && ok;
+}
 process.exit(ok ? 0 : 1);

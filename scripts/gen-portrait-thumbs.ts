@@ -165,7 +165,9 @@ async function main() {
   console.log(
     `done: ${generated} generated, ${skipped} reused, ${failed} failed; manifest → web/src/portrait-manifest.json (${Object.keys(manifest).length} entries)`
   );
-  if (failed > 0) {process.exitCode = 1;}
+  if (failed > 0) {
+    process.exitCode = 1;
+  }
 }
 
 main().catch((e) => {

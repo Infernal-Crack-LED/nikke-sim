@@ -92,7 +92,9 @@ const hasKind = (b: any, kind: string) =>
  *  sustained buff; a one-shot passive dot is its cleanest proxy (ticks ~5× total, never stacks). */
 const ravenSingleDot = withPatchedOverride('raven', (ov) => {
   const b = ov.skill1.find((x: any) => hasKind(x, 'dot'));
-  if (!b) {throw new Error('raven S1 dot block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('raven S1 dot block missing — fixture is stale');
+  }
   b.trigger.kind = 'passive';
 });
 /** R2 counterfactual: the FB-enter ATK buff as a GENERIC (compounding) atkPct, not the flat
@@ -101,8 +103,9 @@ const ravenAtkPctS1 = withPatchedOverride('raven', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('raven S1 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('raven S1 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** R3/R4 reference: both Vital Attack parts-damage lines removed — totals must be byte-identical
@@ -110,19 +113,21 @@ const ravenAtkPctS1 = withPatchedOverride('raven', (ov) => {
 const ravenNoParts = withPatchedOverride('raven', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length !== before - 2)
-    {throw new Error(
+  if (ov.skill2.length !== before - 2) {
+    throw new Error(
       'raven S2 expected 2 partsDamagePct blocks — fixture is stale'
-    );}
+    );
+  }
 });
 /** R6 reference: the burst's sustainedDamagePct buff removed — isolates what the 89.44 feeds. */
 const ravenNoSustained = withPatchedOverride('raven', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
-  if (ov.burst.length !== before - 1)
-    {throw new Error(
+  if (ov.burst.length !== before - 1) {
+    throw new Error(
       'raven burst sustainedDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** R6 counterfactual: the same buff as a GENERIC attackDamagePct — would lift her normal shots too,
  *  which the sustained-scoped shipped encoding must NOT. */
@@ -130,10 +135,11 @@ const ravenSustainedAsAttack = withPatchedOverride('raven', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'raven burst sustainedDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 
@@ -228,7 +234,9 @@ describe('raven — kit spec', () => {
 
     it('is 47.52% of her STATIC ATK as a flat add (constant across every cast)', () => {
       const expected = (47.52 / 100) * RAVEN_STATIC_ATK;
-      for (const b of applied) {expect(b.value).toBeCloseTo(expected, 1);}
+      for (const b of applied) {
+        expect(b.value).toBeCloseTo(expected, 1);
+      }
       // A flat add of static ATK does not vary with the team's buff state at cast time.
       expect(new Set(applied.map((b) => b.value.toFixed(4))).size).toBe(1);
     });

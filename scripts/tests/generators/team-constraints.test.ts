@@ -41,9 +41,11 @@ const calcWith = (blocked: string[] = []) =>
 
 // the real rules only bite when the units exist in the pool — fail loudly if a
 // fixture unit ever drops out of the generator pool
-for (const s of ['mint', 'prika', 'naga'])
-  {if (!(chars as any)[s])
-    {throw new Error(`${s}: not in generator pool — fixture stale`);}}
+for (const s of ['mint', 'prika', 'naga']) {
+  if (!(chars as any)[s]) {
+    throw new Error(`${s}: not in generator pool — fixture stale`);
+  }
+}
 
 describe('team constraints (owner ruling 2026-07-24)', () => {
   it('locking mint pulls prika onto the same team (together rule)', async () => {

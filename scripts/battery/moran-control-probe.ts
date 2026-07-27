@@ -21,7 +21,9 @@ let fb = 0;
 for (let i = 0; i < N; i++) {
   const r = runOnce(w, team, null, 1, 1000 + i);
   fb += r.fullBursts;
-  for (const u of r.units) {(acc[u.slug] ??= []).push(u.totalDamage);}
+  for (const u of r.units) {
+    (acc[u.slug] ??= []).push(u.totalDamage);
+  }
 }
 console.log(`avg fullBursts=${(fb / N).toFixed(1)}  (real 11)`);
 for (const slug of team.slugs) {

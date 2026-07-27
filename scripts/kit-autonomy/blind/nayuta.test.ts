@@ -67,11 +67,21 @@ function run(opts: Opts) {
 }
 
 const frameOf = (ev: any): number => {
-  if (typeof ev?.frame === 'number') {return ev.frame;}
-  if (typeof ev?.f === 'number') {return ev.f;}
-  if (typeof ev?.t === 'number') {return Math.round(ev.t * FPS);}
-  if (typeof ev?.timeSec === 'number') {return Math.round(ev.timeSec * FPS);}
-  if (typeof ev?.sec === 'number') {return Math.round(ev.sec * FPS);}
+  if (typeof ev?.frame === 'number') {
+    return ev.frame;
+  }
+  if (typeof ev?.f === 'number') {
+    return ev.f;
+  }
+  if (typeof ev?.t === 'number') {
+    return Math.round(ev.t * FPS);
+  }
+  if (typeof ev?.timeSec === 'number') {
+    return Math.round(ev.timeSec * FPS);
+  }
+  if (typeof ev?.sec === 'number') {
+    return Math.round(ev.sec * FPS);
+  }
   return NaN;
 };
 const slugOf = (ev: any): string | undefined =>
@@ -80,7 +90,9 @@ const slugOf = (ev: any): string | undefined =>
 // slot value may be Block[] (file shape) or CharacterSkills{blocks} (harness cheat-sheet) — accept both
 const blocksOf = (ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] => {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 const effectsOf = (ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] =>
@@ -147,7 +159,9 @@ const NIDX: number | undefined = (() => {
         typeof e.value === 'number' &&
         NEAR(e.value, m)
     );
-    if (hit) {return hit.casterIdx as number;}
+    if (hit) {
+      return hit.casterIdx as number;
+    }
   }
   return undefined;
 })();
@@ -155,7 +169,9 @@ const mine = (e: any) => NIDX !== undefined && e.casterIdx === NIDX;
 
 const nEvs: any[] = (() => {
   const row: any = unitOf(BASE.res, SLUG);
-  if (Array.isArray(row?.events) && row.events.length) {return row.events;}
+  if (Array.isArray(row?.events) && row.events.length) {
+    return row.events;
+  }
   return evs.filter((e) => slugOf(e) === SLUG);
 })();
 
@@ -175,7 +191,9 @@ const castFrames: number[] = (() => {
     .filter((e) => e.kind === 'burstCast')
     .map(frameOf)
     .filter(Number.isFinite);
-  if (fromEv.length) {return fromEv;}
+  if (fromEv.length) {
+    return fromEv;
+  }
   return buffApplies
     .filter(
       (e) =>

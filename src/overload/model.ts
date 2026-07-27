@@ -72,11 +72,15 @@ export function makeRng(seed: number): () => number {
 // caller's job (pass a pool that already excludes used keys).
 function pickStat(rng: () => number, model: OlProbModel, pool: OlKey[]): OlKey {
   let total = 0;
-  for (const k of pool) {total += model.typeWeights[k];}
+  for (const k of pool) {
+    total += model.typeWeights[k];
+  }
   let r = rng() * total;
   for (const k of pool) {
     r -= model.typeWeights[k];
-    if (r <= 0) {return k;}
+    if (r <= 0) {
+      return k;
+    }
   }
   return pool[pool.length - 1];
 }
@@ -86,7 +90,9 @@ function pickTier(rng: () => number, model: OlProbModel): number {
   const bands = model.tierBands.bands;
   let r = rng();
   for (const b of bands) {
-    if (r < b.p) {return b.lo + Math.floor(rng() * (b.hi - b.lo + 1));}
+    if (r < b.p) {
+      return b.lo + Math.floor(rng() * (b.hi - b.lo + 1));
+    }
     r -= b.p;
   }
   const last = bands[bands.length - 1];
@@ -113,13 +119,16 @@ export function rollPiece(
   const gates = GATES(model);
   const out: (Line | null)[] = [null, null, null];
   const used = new Set<OlKey>();
-  for (let i = 0; i < 3; i++)
-    {if (locked[i] && prev[i]) {
+  for (let i = 0; i < 3; i++) {
+    if (locked[i] && prev[i]) {
       out[i] = prev[i];
       used.add(prev[i]!.key);
-    }}
+    }
+  }
   for (let i = 0; i < 3; i++) {
-    if (locked[i]) {continue;}
+    if (locked[i]) {
+      continue;
+    }
     if (rng() >= gates[i]) {
       out[i] = null;
       continue;
@@ -146,7 +155,9 @@ export function valueReset(
 ): Piece {
   const out: (Line | null)[] = [prev[0], prev[1], prev[2]];
   for (let i = 0; i < 3; i++) {
-    if (locked[i] || !prev[i]) {continue;}
+    if (locked[i] || !prev[i]) {
+      continue;
+    }
     out[i] = { key: prev[i]!.key, tier: pickTier(rng, model) };
   }
   return out as Piece;
@@ -162,7 +173,9 @@ export function satisfies(piece: Piece, target: Target): boolean {
 
 // Which requirement (if any) a present line fulfils — used to decide what to lock.
 export function reqOf(line: Line | null, target: Target): TargetReq | null {
-  if (!line) {return null;}
+  if (!line) {
+    return null;
+  }
   return (
     target.find((r) => r.key === line.key && line.tier >= r.minTier) ?? null
   );

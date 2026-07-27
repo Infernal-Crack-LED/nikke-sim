@@ -154,7 +154,9 @@ export function runOnce(
 ): SimResult {
   const chars = team.slugs.map((s) => w.data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of team.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of team.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = team.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -219,7 +221,9 @@ export function runCellMC(
     const res = runOnce(w, team, cell.boss, cell.coreHitRate, 1000 + i);
     fbDist[res.fullBursts] = (fbDist[res.fullBursts] ?? 0) + 1;
     for (const u of res.units) {
-      if (!totals.has(u.slug)) {totals.set(u.slug, []);}
+      if (!totals.has(u.slug)) {
+        totals.set(u.slug, []);
+      }
       totals.get(u.slug)!.push(u.totalDamage);
       pulls.set(u.slug, u.pulls);
     }
@@ -268,22 +272,32 @@ export function runBattery(
 
   // battery-wide repeat report
   const seen = new Map<string, number>();
-  for (const t of teams)
-    {for (const s of t.slugs) {seen.set(s, (seen.get(s) ?? 0) + 1);}}
+  for (const t of teams) {
+    for (const s of t.slugs) {
+      seen.set(s, (seen.get(s) ?? 0) + 1);
+    }
+  }
   const repeats = [...seen.entries()].filter(([, n]) => n > 1);
   const missing = w.roster.filter((s) => !seen.has(s));
-  if (opts?.title) {console.log(`===== ${opts.title} =====`);}
+  if (opts?.title) {
+    console.log(`===== ${opts.title} =====`);
+  }
   console.log(
     `${teams.length} teams, ${seen.size}/${w.roster.length} roster units, MC n=${nSeeds} per cell`
   );
-  if (repeats.length)
-    {console.log(
+  if (repeats.length) {
+    console.log(
       `repeated units (scarcity fills): ${repeats.map(([s, n]) => `${s} x${n}`).join(', ')}`
-    );}
-  if (missing.length) {console.log(`NOT COVERED: ${missing.join(', ')}`);}
+    );
+  }
+  if (missing.length) {
+    console.log(`NOT COVERED: ${missing.join(', ')}`);
+  }
 
   for (const team of teams) {
-    if (only && !team.name.toLowerCase().includes(only)) {continue;}
+    if (only && !team.name.toLowerCase().includes(only)) {
+      continue;
+    }
     const warnings = autoWire(w, team);
     console.log(`\n=== ${team.name} — ${team.source}`);
     console.log(`    ${team.slugs.join(', ')}`);
@@ -293,12 +307,17 @@ export function runBattery(
         ([s, l]) => `${s}: bursts as B${l}`
       ),
     ];
-    if (wired.length) {console.log(`    wiring: ${wired.join(' | ')}`);}
-    for (const wmsg of warnings) {console.log(`    ⚠ ${wmsg}`);}
+    if (wired.length) {
+      console.log(`    wiring: ${wired.join(' | ')}`);
+    }
+    for (const wmsg of warnings) {
+      console.log(`    ⚠ ${wmsg}`);
+    }
     const cells = cellsFor(team);
     const stats: Record<string, CellStats> = {};
-    for (const cell of cells)
-      {stats[cell.label] = runCellMC(w, team, cell, nSeeds);}
+    for (const cell of cells) {
+      stats[cell.label] = runCellMC(w, team, cell, nSeeds);
+    }
     out[team.name] = { team, warnings, cells: stats };
     for (const cell of cells) {
       const st = stats[cell.label];
@@ -412,8 +431,9 @@ function orderPool(pool: string[], priority: string[]): string[] {
   return [...pool].sort((a, b) => {
     const pa = priority.indexOf(a),
       pb = priority.indexOf(b);
-    if (pa !== -1 || pb !== -1)
-      {return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);}
+    if (pa !== -1 || pb !== -1) {
+      return (pa === -1 ? 99 : pa) - (pb === -1 ? 99 : pb);
+    }
     return a.localeCompare(b);
   });
 }
@@ -441,16 +461,22 @@ export function fillRoster(
   const groups = new Map<Element, string[]>();
   for (const s of b3s) {
     const e = elementOf(w, s);
-    if (!groups.has(e)) {groups.set(e, []);}
+    if (!groups.has(e)) {
+      groups.set(e, []);
+    }
     groups.get(e)!.push(s);
   }
-  for (const g of groups.values()) {g.sort();}
+  for (const g of groups.values()) {
+    g.sort();
+  }
   // prefElement is the battery's BOSS element: a B3 of element E is advantaged
   // when BEATS[E] === boss, so those groups lead.
   const groupOrder = [...groups.keys()].sort((a, b) => {
     const aAdv = prefElement !== undefined && BEATS[a] === prefElement ? 0 : 1;
     const bAdv = prefElement !== undefined && BEATS[b] === prefElement ? 0 : 1;
-    if (aAdv !== bAdv) {return aAdv - bAdv;}
+    if (aAdv !== bAdv) {
+      return aAdv - bAdv;
+    }
     const diff = groups.get(b)!.length - groups.get(a)!.length;
     return diff !== 0 ? diff : a.localeCompare(b);
   });
@@ -501,7 +527,9 @@ export function fillRoster(
     }
     const nB3 = b2b ? 2 : 3;
     const core = b3Queue.splice(0, nB3);
-    while (core.length < 2) {core.push(b3Queue.shift() ?? takeB2());} // degenerate tail; autoWire will flag
+    while (core.length < 2) {
+      core.push(b3Queue.shift() ?? takeB2());
+    } // degenerate tail; autoWire will flag
     // slot order: B1, B2, B3 core... (middle slot = a B3, the default camera)
     const slugs = b2b ? [b1, b2a, core[0], core[1], b2b] : [b1, b2a, ...core];
     // drain: if only 1-2 B2s remain with no B3s left, append them to the last team? no — keep 5-unit teams
@@ -511,13 +539,17 @@ export function fillRoster(
       slugs: slugs.slice(0, 5),
       source: 'roster fill (methodology-built)',
     });
-    if (!b3Queue.length && !b1s.length && !b2s.length) {break;}
+    if (!b3Queue.length && !b1s.length && !b2s.length) {
+      break;
+    }
     // leftover B2/B1-only tail: build a final support team padded with reused B3s?
     if (!b3Queue.length && (b1s.length || b2s.length)) {
       const rest = [...b1s.splice(0), ...b2s.splice(0)];
       // pad to 5 with the strongest already-used B3s (repeats, flagged in the report)
       const padB3 = w.roster.filter((s) => burstOf(w, s) === 'III').slice(0, 5);
-      while (rest.length < 5) {rest.push(padB3[rest.length % padB3.length]);}
+      while (rest.length < 5) {
+        rest.push(padB3[rest.length % padB3.length]);
+      }
       // order: B1 first if present, keep a B3 in the middle when we have one
       n++;
       teams.push({

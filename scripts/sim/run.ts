@@ -50,10 +50,11 @@ export function runScopeLock(
     if (issues.length) {
       console.log('  ⚠ SANITY FAIL (config drift?):');
       issues.forEach((i) => console.log('   ✗ ' + i));
-    } else
-      {console.log(
+    } else {
+      console.log(
         '  ✓ sanity: staticAtk matches scope-lock reference; same-class ATK uniform'
-      );}
+      );
+    }
   }
   console.log(`  full bursts: ${r.fullBursts ?? r.fullBurstCount ?? 'n/a'}`);
   r.units.forEach((u: any, i: number) => {

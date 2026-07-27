@@ -94,8 +94,9 @@ const noGainPierce = withPatchedOverride(SLUG, (ov: any) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
     removed += before - b.effects.length;
   }
-  if (!removed)
-    {throw new Error('ade S2 gainPierce effect missing — fixture is stale');}
+  if (!removed) {
+    throw new Error('ade S2 gainPierce effect missing — fixture is stale');
+  }
 });
 /** A4: always-on pierce from t=0 — the pre-2026-07-20 encoding the step-gate replaced. */
 const alwaysPierce = withPatchedOverride(SLUG, (ov: any) => {
@@ -104,7 +105,9 @@ const alwaysPierce = withPatchedOverride(SLUG, (ov: any) => {
 /** A4: atkPct:16 always-on from the 1st shot (trigger hitCount:10 → shotFired). */
 const atkAlwaysOn = withPatchedOverride(SLUG, (ov: any) => {
   const blk = ov.skill2.find((b: any) => b.trigger?.kind === 'hitCount');
-  if (!blk) {throw new Error('ade S2 hitCount block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('ade S2 hitCount block missing — fixture is stale');
+  }
   blk.trigger = { kind: 'shotFired' };
 });
 /** A1: generic atkPct (% of each target's OWN ATK) in place of casterAtkPct. */
@@ -112,15 +115,17 @@ const genericAtk = withPatchedOverride(SLUG, (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('ade S1 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('ade S1 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** A1/A3: shotFired → burstCast on the S1 caster block (cadence collapse). */
 const s1BurstTrig = withPatchedOverride(SLUG, (ov: any) => {
   const blk = ov.skill1.find((b: any) => b.trigger?.kind === 'shotFired');
-  if (!blk)
-    {throw new Error('ade S1 shotFired block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('ade S1 shotFired block missing — fixture is stale');
+  }
   blk.trigger = { kind: 'burstCast' };
 });
 /** A3: remove the S2 pierceDamagePct 18.36 block. */
@@ -133,13 +138,15 @@ const noS2Pierce = withPatchedOverride(SLUG, (ov: any) => {
         b.effects.some((e: any) => e.stat === 'pierceDamagePct')
       )
   );
-  if (ov.skill2.length === before)
-    {throw new Error('ade S2 pierceDamagePct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ade S2 pierceDamagePct block missing — fixture is stale');
+  }
 });
 /** B2/B3: remove the whole burst block. */
 const noBurst = withPatchedOverride(SLUG, (ov: any) => {
-  if (!ov.burst.length)
-    {throw new Error('ade burst block missing — fixture is stale');}
+  if (!ov.burst.length) {
+    throw new Error('ade burst block missing — fixture is stale');
+  }
   ov.burst = [];
 });
 /** B3 inertness: remove ONLY the burst pierceDamagePct 10.13 effect (keep attackDamagePct 55.04). */
@@ -153,10 +160,11 @@ const noBurstPierce = withPatchedOverride(SLUG, (ov: any) => {
     );
     removed += before - b.effects.length;
   }
-  if (!removed)
-    {throw new Error(
+  if (!removed) {
+    throw new Error(
       'ade burst pierceDamagePct 10.13 effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -218,7 +226,9 @@ describe('ade-agent-bunny — kit spec', () => {
     it('reaches all four allies for exactly 5 sec, once per shot', () => {
       const targets = new Set(applied.map((b) => b.targetIdx));
       expect(targets.size).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
       // shotFired fires once per shot, fanned to 4 allies.
       expect(applied.length).toBe(shots.length * N_ALLIES);
     });
@@ -259,7 +269,9 @@ describe('ade-agent-bunny — kit spec', () => {
       expect(applied.length).toBe(shots.length * N_ALLIES);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([18.36]);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing the block deletes the buff', () => {
@@ -271,7 +283,9 @@ describe('ade-agent-bunny — kit spec', () => {
     it('INERTNESS: provably inert on the three non-pierce teammates, moves only ade (cross-family S2b)', () => {
       // pierceDamagePct feeds the Damage-Up bucket of PIERCE-TAGGED hitters only; liter/ada/helm
       // are never pierce-tagged, so zeroing the line must leave them byte-identical…
-      for (const u of NON_PIERCE) {expect(cfNoS2Pierce.t[u]).toBe(base.t[u]);}
+      for (const u of NON_PIERCE) {
+        expect(cfNoS2Pierce.t[u]).toBe(base.t[u]);
+      }
       // …while ade (pierce-tagged after the Spy-Lens step) loses her own 18.36 self-feed.
       expect(cfNoS2Pierce.t[SLUG]).not.toBe(base.t[SLUG]);
     });
@@ -364,7 +378,9 @@ describe('ade-agent-bunny — kit spec', () => {
       expect(applied.length).toBe(bursts.length * N_ALLIES);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([55.04]);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('structural: trigger is burstCast', () => {
@@ -389,7 +405,9 @@ describe('ade-agent-bunny — kit spec', () => {
       expect(applied.length).toBe(bursts.length * N_ALLIES);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([10.13]);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(N_ALLIES);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing the burst block deletes the buff', () => {
@@ -399,7 +417,9 @@ describe('ade-agent-bunny — kit spec', () => {
     });
 
     it('INERTNESS: zeroing only 10.13 leaves non-pierce teammates byte-identical, moves only ade (cross-family S2b)', () => {
-      for (const u of NON_PIERCE) {expect(cfNoBurstPierce.t[u]).toBe(base.t[u]);}
+      for (const u of NON_PIERCE) {
+        expect(cfNoBurstPierce.t[u]).toBe(base.t[u]);
+      }
       expect(cfNoBurstPierce.t[SLUG]).not.toBe(base.t[SLUG]);
     });
   });

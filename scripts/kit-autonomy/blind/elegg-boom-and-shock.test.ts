@@ -52,7 +52,9 @@ const near = (a: unknown, b: number, tol = 1e-6) =>
 
 const blocksOf = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 const allBlocks = (ov: any): Array<{ b: any; slot: Slot }> =>
@@ -73,14 +75,25 @@ const blocksWith = (pred: (e: any) => boolean) =>
 
 const patchEffects = (pred: (e: any) => boolean, mutate: (e: any) => void) =>
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const slot of SLOTS)
-      {for (const b of blocksOf(ov, slot))
-        {for (const e of b.effects ?? []) {if (pred(e)) {mutate(e);}}}}
+    for (const slot of SLOTS) {
+      for (const b of blocksOf(ov, slot)) {
+        for (const e of b.effects ?? []) {
+          if (pred(e)) {
+            mutate(e);
+          }
+        }
+      }
+    }
   });
 const patchBlocks = (pred: (b: any) => boolean, mutate: (b: any) => void) =>
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const slot of SLOTS)
-      {for (const b of blocksOf(ov, slot)) {if (pred(b)) {mutate(b);}}}
+    for (const slot of SLOTS) {
+      for (const b of blocksOf(ov, slot)) {
+        if (pred(b)) {
+          mutate(b);
+        }
+      }
+    }
   });
 
 function run(patched?: any, sink?: SimEvent[]) {
@@ -92,7 +105,9 @@ function run(patched?: any, sink?: SimEvent[]) {
     cfg.onEvent = onEvent;
     o.onEvent = onEvent; // belt-and-braces: onEvent lives on cfg, mirrored top-level
   }
-  if (patched) {o.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
+  if (patched) {
+    o.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  }
   return runComp(o);
 }
 
@@ -480,7 +495,9 @@ describe('kit-wide hygiene — nothing invented that the prose does not state', 
         ({ e }) => e.kind === 'ignored' || e.kind === 'unsupported'
       ).length
     ).toBe(0);
-    for (const s of SLOTS) {expect(Array.isArray(blocksOf(OV, s))).toBe(true);}
+    for (const s of SLOTS) {
+      expect(Array.isArray(blocksOf(OV, s))).toBe(true);
+    }
   });
 });
 

@@ -159,10 +159,11 @@ function soloPulls(slug: string, ctx: RanksCtx): number {
 
 export function cdrFor(slug: string, ctx: RanksCtx): CdrEntry {
   const row = CDR_TABLE[slug];
-  if (!row)
-    {throw new Error(
+  if (!row) {
+    throw new Error(
       `${slug}: not on the burst-CDR board (no burst-cdr tag row)`
-    );}
+    );
+  }
   let cdrPer40s: number;
   let ramp: number[] | undefined;
   if (row.source.kind === 'perFb') {

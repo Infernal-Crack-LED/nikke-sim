@@ -94,16 +94,18 @@ const noMyOwnStar = withPatchedOverride('anis-star', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !(b.formation === 'noB1' && hasStat(b, 'atkPct'))
   );
-  if (ov.skill1.length === before)
-    {throw new Error('anis-star S1 noB1 atkPct block missing — fixture stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('anis-star S1 noB1 atkPct block missing — fixture stale');
+  }
 });
 /** A9 counterfactual: double the S2 caster-ATK magnitude (35.01 → 70.02). */
 const doubleCaster = withPatchedOverride('anis-star', (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e || e.value !== 35.01)
-    {throw new Error('anis-star S2 casterAtkPct 35.01 missing — fixture stale');}
+  if (!e || e.value !== 35.01) {
+    throw new Error('anis-star S2 casterAtkPct 35.01 missing — fixture stale');
+  }
   e.value = 70.02;
 });
 /** A7 counterfactual: double the Shooting Stars interval (0.25s → 0.5s) → half the ticks. */
@@ -111,8 +113,9 @@ const halfDot = withPatchedOverride('anis-star', (ov) => {
   const dot = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!dot || dot.intervalSec !== 0.25)
-    {throw new Error('anis-star burst dot 0.25s missing — fixture stale');}
+  if (!dot || dot.intervalSec !== 0.25) {
+    throw new Error('anis-star burst dot 0.25s missing — fixture stale');
+  }
   dot.intervalSec = 0.5;
 });
 /** A10 counterfactual: her noB1 team burst-CDR block removed entirely. */
@@ -125,8 +128,9 @@ const noCdr = withPatchedOverride('anis-star', (ov) => {
         b.effects.some((e: any) => e.kind === 'burstCdr')
       )
   );
-  if (ov.skill1.length === before)
-    {throw new Error('anis-star S1 noB1 burstCdr block missing — fixture stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('anis-star S1 noB1 burstCdr block missing — fixture stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -155,7 +159,9 @@ const anisBuff = (evs: SimEvent[], stat: string, casterSlot: number) =>
 /** Ticks of the Shooting Stars dot inside the FIRST full 10s burst window. */
 function firstWindowTicks(evs: SimEvent[]): number {
   const firstCast = anisBursts(evs)[0];
-  if (!firstCast) {return 0;}
+  if (!firstCast) {
+    return 0;
+  }
   return dmg(evs).filter(
     (d) =>
       d.slug === 'anis-star' &&
@@ -231,7 +237,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([92.03]);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
     });
   });
 
@@ -246,7 +254,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
         'no FB-entry attackDamagePct 34 applied'
       ).toBeGreaterThan(0);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
     });
   });
 
@@ -264,7 +274,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
         [...new Set(applied.map((b) => b.targetIdx))],
         'self-scoped'
       ).toEqual([ANIS]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
     });
   });
 
@@ -298,7 +310,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
         [...new Set(applied.map((b) => b.targetIdx))],
         'self-scoped'
       ).toEqual([ANIS]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
     });
   });
 
@@ -311,7 +325,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
         'no FB-entry casterAtkPct applied'
       ).toBeGreaterThan(0);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      }
       // single consistent magnitude (35.01% of caster ATK), strictly positive
       const vals = [...new Set(applied.map((b) => b.value))];
       expect(vals.length).toBe(1);

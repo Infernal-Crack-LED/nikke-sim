@@ -49,69 +49,81 @@ export function RankBarChart({
   const zeroPct = min < 0 ? (max / span) * 100 : 0;
   const thumbs = usePortraitThumbs(
     bars.map((b) => b.imageUrl),
-    PORTRAIT_CSS,
+    PORTRAIT_CSS
   );
   return (
-    <div className='dpschart-card ranks-card'>
-      <div className='dpschart-head'>
+    <div className="dpschart-card ranks-card">
+      <div className="dpschart-head">
         <div>
-          <div className='dpschart-title'>{title}</div>
-          {subtitle && <div className='dpschart-sub'>{subtitle}</div>}
+          <div className="dpschart-title">{title}</div>
+          {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
       </div>
       {bars.length === 0 ? (
-        <div className='dpschart-empty'>no data</div>
+        <div className="dpschart-empty">no data</div>
       ) : (
-        <div className='dpschart-bars'>
+        <div className="dpschart-bars">
           {bars.map((b) => {
             const color = ELEMENT_COLORS[b.element] ?? '#9aa3b2';
             // bar geometry: all-positive boards fill 0→value from the left;
             // boards with negatives span value↔0 on either side of the axis
-            const leftPct = min < 0 ? (Math.min(b.value, 0) - min) / span * 100 : 0;
+            const leftPct =
+              min < 0 ? ((Math.min(b.value, 0) - min) / span) * 100 : 0;
             const widthPct =
-              min < 0 ? (Math.abs(b.value) / span) * 100 : (b.value / span) * 100;
+              min < 0
+                ? (Math.abs(b.value) / span) * 100
+                : (b.value / span) * 100;
             const [heal, shield, steal] = b.split ?? [0, 0, 0];
             return (
-              <div className='dpschart-row ranks-row' key={b.key}>
-                <span className='dpschart-rank'>{b.rank}</span>
+              <div className="dpschart-row ranks-row" key={b.key}>
+                <span className="dpschart-rank">{b.rank}</span>
                 {b.imageUrl ? (
                   <img
-                    className='dpschart-portrait'
+                    className="dpschart-portrait"
                     src={thumbs[b.imageUrl] ?? b.imageUrl}
                     alt={b.name}
-                    loading='lazy'
+                    loading="lazy"
                     title={`${b.name} · ${b.burst} · ${b.weapon} · ${b.element}`}
                   />
                 ) : (
-                  <span className='dpschart-portrait ranks-no-portrait' aria-hidden='true' />
+                  <span
+                    className="dpschart-portrait ranks-no-portrait"
+                    aria-hidden="true"
+                  />
                 )}
-                <span className='ranks-name'>
-                  <span className='dpschart-name' title={b.name}>
+                <span className="ranks-name">
+                  <span className="dpschart-name" title={b.name}>
                     {b.name}
                     {b.badge && (
-                      <span className='ranks-badge' title={b.badgeTitle}>
+                      <span className="ranks-badge" title={b.badgeTitle}>
                         {b.badge}
                       </span>
                     )}
                     {b.condition && (
-                      <span className='ranks-cond' title={b.condition}>
+                      <span className="ranks-cond" title={b.condition}>
                         *
                       </span>
                     )}
                     {b.info && (
-                      <span className='ranks-info' title={b.info}>
+                      <span className="ranks-info" title={b.info}>
                         ⓘ
                       </span>
                     )}
                   </span>
-                  {b.sub && <span className='ranks-sub'>{b.sub}</span>}
+                  {b.sub && <span className="ranks-sub">{b.sub}</span>}
                 </span>
-                <span className='dpschart-track ranks-track' title={b.splitTitle}>
+                <span
+                  className="dpschart-track ranks-track"
+                  title={b.splitTitle}
+                >
                   {min < 0 && (
-                    <span className='ranks-zero' style={{ left: `${zeroPct}%` }} />
+                    <span
+                      className="ranks-zero"
+                      style={{ left: `${zeroPct}%` }}
+                    />
                   )}
                   <span
-                    className='dpschart-fill'
+                    className="dpschart-fill"
                     style={{
                       marginLeft: `${leftPct}%`,
                       width: `${Math.max(min < 0 ? 0.5 : 2, widthPct)}%`,
@@ -121,24 +133,26 @@ export function RankBarChart({
                     {b.split && (
                       <>
                         <span
-                          className='ranks-seg ranks-seg-heal'
+                          className="ranks-seg ranks-seg-heal"
                           style={{ width: `${heal * 100}%` }}
                         />
                         <span
-                          className='ranks-seg ranks-seg-shield'
+                          className="ranks-seg ranks-seg-shield"
                           style={{ width: `${shield * 100}%` }}
                         />
                         <span
-                          className='ranks-seg ranks-seg-steal'
+                          className="ranks-seg ranks-seg-steal"
                           style={{ width: `${steal * 100}%` }}
                         />
                       </>
                     )}
                   </span>
                 </span>
-                <span className='dpschart-val ranks-val' title={b.valueTitle}>
+                <span className="dpschart-val ranks-val" title={b.valueTitle}>
                   {b.valueText}
-                  {b.valueSub && <span className='ranks-val-sub'>{b.valueSub}</span>}
+                  {b.valueSub && (
+                    <span className="ranks-val-sub">{b.valueSub}</span>
+                  )}
                 </span>
               </div>
             );

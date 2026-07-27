@@ -53,7 +53,9 @@ function probe(block: Record<string, unknown>, cfg: Partial<SimConfig> = {}) {
   const inFb = (frame: number): boolean => {
     let open = false;
     for (const b of bounds) {
-      if (b.frame > frame) {break;}
+      if (b.frame > frame) {
+        break;
+      }
       open = b.kind === 'fullBurstStart';
     }
     return open;

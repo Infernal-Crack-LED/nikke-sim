@@ -90,9 +90,13 @@ if (hasFlag('--build')) {
 
 const target: Target = [];
 for (const a of argv) {
-  if (a.startsWith('--')) {continue;}
+  if (a.startsWith('--')) {
+    continue;
+  }
   const prev = argv[argv.indexOf(a) - 1];
-  if (prev && prev.startsWith('--')) {continue;} // it's a flag value
+  if (prev && prev.startsWith('--')) {
+    continue;
+  } // it's a flag value
   const [key, tierStr] = a.split(':');
   if (!ALL_KEYS.includes(key as OlKey)) {
     console.error(`unknown line key: ${key} (valid: ${ALL_KEYS.join(', ')})`);
@@ -130,8 +134,9 @@ if (haveSpec) {
   const slots: (Line | null)[] = [null, null, null];
   haveSpec.split(',').forEach((p, i) => {
     const [k, t] = p.split(':');
-    if (i < 3 && ALL_KEYS.includes(k as OlKey))
-      {slots[i] = { key: k as OlKey, tier: t ? parseInt(t, 10) : 1 };}
+    if (i < 3 && ALL_KEYS.includes(k as OlKey)) {
+      slots[i] = { key: k as OlKey, tier: t ? parseInt(t, 10) : 1 };
+    }
   });
   start = slots as Piece;
 }
@@ -148,10 +153,11 @@ const tgtLabel = target.map((t) => `${t.key}≥T${t.minTier}`).join(' + ');
 console.log(
   `\n=== OL roll-cost sim · target: ${tgtLabel} · ${trials.toLocaleString()} trials${fresh ? ' · fresh start' : ''} ===`
 );
-if (r.censoredFrac > 0)
-  {console.log(
+if (r.censoredFrac > 0) {
+  console.log(
     `  ⚠ ${(r.censoredFrac * 100).toFixed(2)}% of trials hit the ${cap.toLocaleString()}-roll cap (mean is a lower bound)`
-  );}
+  );
+}
 
 console.log(
   `\n  Total operations: mean ${r.ops.mean.toFixed(2)} ± ${r.ops.se.toFixed(2)} (sd ${r.ops.sd.toFixed(1)})`

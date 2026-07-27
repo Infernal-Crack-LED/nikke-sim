@@ -38,8 +38,12 @@ const tags = load<{ tags: Record<string, string[]> }>(
 ).tags;
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// Synthetic no-op B3 (RL) is not in characters.json; load its mock-B3 override so
+// sustain sims (which use no-op teammates) apply its 3× full-burst damage profile.
+overrides['noop-b3-rl'] = loadOverride('noop-b3-rl');
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -56,10 +60,11 @@ const population = [
 ].sort();
 const HOOKS = new Set(['prika', 'mint', 'mana', 'pepper']);
 for (const slug of population) {
-  if (!(slug in SUSTAIN_TABLE) && !HOOKS.has(slug))
-    {throw new Error(
+  if (!(slug in SUSTAIN_TABLE) && !HOOKS.has(slug)) {
+    throw new Error(
       `${slug}: sustain candidate with no table entry and no hook`
-    );}
+    );
+  }
 }
 
 const ranked = sustainRank(population, ctx);

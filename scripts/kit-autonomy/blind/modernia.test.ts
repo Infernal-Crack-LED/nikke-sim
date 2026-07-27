@@ -44,22 +44,34 @@ const SLOTS: Slot[] = ['skill1', 'skill2', 'burst'];
 /* ------------------------------ override readers ------------------------------ */
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) {return s;}
-  if (s && Array.isArray(s.blocks)) {return s.blocks;}
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (s && Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   return [];
 }
 function eachBlock(ov: any, fn: (b: any, slot: Slot) => void): void {
-  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
+  for (const slot of SLOTS) {
+    for (const b of blocksOf(ov, slot)) {
+      fn(b, slot);
+    }
+  }
 }
 function eachEffect(ov: any, fn: (e: any, b: any, slot: Slot) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of b.effects ?? []) {fn(e, b, slot);}
+    for (const e of b.effects ?? []) {
+      fn(e, b, slot);
+    }
   });
 }
 function find(ov: any, pred: (e: any, b: any, slot: Slot) => boolean) {
   const hits: { eff: any; block: any; slot: Slot }[] = [];
   eachEffect(ov, (e, b, slot) => {
-    if (pred(e, b, slot)) {hits.push({ eff: e, block: b, slot });}
+    if (pred(e, b, slot)) {
+      hits.push({ eff: e, block: b, slot });
+    }
   });
   return hits;
 }
@@ -67,8 +79,12 @@ const mag = (n: unknown) => (typeof n === 'number' ? Math.abs(n) : NaN);
 const isMag = (e: any, want: number, tol = 0.03) =>
   Math.abs(mag(e.value) - want) <= tol || Math.abs(mag(e.atkPct) - want) <= tol;
 function zeroMagnitude(e: any): void {
-  if (typeof e.value === 'number') {e.value = 0;}
-  if (typeof e.atkPct === 'number') {e.atkPct = 0;}
+  if (typeof e.value === 'number') {
+    e.value = 0;
+  }
+  if (typeof e.atkPct === 'number') {
+    e.atkPct = 0;
+  }
 }
 function dropEffects(ov: any, kind: string): void {
   eachBlock(ov, (b) => {
@@ -198,7 +214,9 @@ const NO_DESTROY = run((ov) =>
 );
 const DESTROY_LONG = run((ov) =>
   find(ov, (e, _b, s) => s === 'burst' && isMag(e, 2.24)).forEach((h) => {
-    if (typeof h.eff.durationSec === 'number') {h.eff.durationSec = 60;}
+    if (typeof h.eff.durationSec === 'number') {
+      h.eff.durationSec = 60;
+    }
   })
 );
 
@@ -212,11 +230,12 @@ describe('modernia — fixture non-vacuity', () => {
   });
 
   it('all three skill slots carry blocks (no silently-empty slot)', () => {
-    for (const slot of SLOTS)
-      {expect(
+    for (const slot of SLOTS) {
+      expect(
         blocksOf(OV, slot).length,
         `${slot} has no blocks`
-      ).toBeGreaterThan(0);}
+      ).toBeGreaterThan(0);
+    }
   });
 
   it('no `ignored` effects anywhere (validator rule; skips belong in `note`/`unmodeled`)', () => {
@@ -242,8 +261,9 @@ describe('S1a — normal-attack hit: 3.05% of final ATK additional damage', () =
 
   // INERTNESS: 'Affects the target(s)' = enemy-facing damage from HER hits; it must not touch allies.
   it('is self-sourced: teammates are byte-identical when it is zeroed', () => {
-    for (const s of TEAM)
-      {expect(NO_RIDER.all[s], `${s} moved`).toBe(BASE.all[s]);}
+    for (const s of TEAM) {
+      expect(NO_RIDER.all[s], `${s} moved`).toBe(BASE.all[s]);
+    }
   });
 });
 
@@ -289,8 +309,9 @@ describe('S1b — every 200 normal-attack hits: Crit Damage +14.25%, 5 stacks, 1
   });
 
   it('teammates are byte-identical when the self crit-damage buff is zeroed', () => {
-    for (const s of TEAM)
-      {expect(NO_CRITDMG.all[s], `${s} moved`).toBe(BASE.all[s]);}
+    for (const s of TEAM) {
+      expect(NO_CRITDMG.all[s], `${s} moved`).toBe(BASE.all[s]);
+    }
   });
 });
 
@@ -306,8 +327,9 @@ describe('S1b — every 200 hits: Max Ammunition Capacity DOWN 5.04%, 5 stacks, 
       expect(h.block.target?.kind).toBe('self');
       expect(h.eff.maxStacks).toBe(5);
       expect(h.eff.durationSec).toBe(10);
-      if (h.eff.stat === 'maxAmmoPct')
-        {expect(Math.abs(h.eff.value)).toBeCloseTo(5.04, 1);}
+      if (h.eff.stat === 'maxAmmoPct') {
+        expect(Math.abs(h.eff.value)).toBeCloseTo(5.04, 1);
+      }
     }
   });
 
@@ -467,8 +489,9 @@ describe('burst — Destroy Mode: 2.24% of final ATK as damage for 15 sec', () =
   });
 
   it('does not leak onto teammates', () => {
-    for (const s of TEAM)
-      {expect(NO_DESTROY.all[s], `${s} moved`).toBe(BASE.all[s]);}
+    for (const s of TEAM) {
+      expect(NO_DESTROY.all[s], `${s} moved`).toBe(BASE.all[s]);
+    }
   });
 
   // The line-of-sight / auto-aim / 'parts treated as a single enemy' text has no engine primitive and

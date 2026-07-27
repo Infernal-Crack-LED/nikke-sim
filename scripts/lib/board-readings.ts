@@ -82,7 +82,9 @@ export function collectBoardReadings(): Record<string, BoardReading[]> {
     const r = meanSimResults(runs);
     for (const u of r.units) {
       const real = c.real[u.slug];
-      if (real === undefined || real <= 0) {continue;}
+      if (real === undefined || real <= 0) {
+        continue;
+      }
       // seed spread for THIS unit in THIS comp: sd/mean of its per-seed totalDamage (population sd,
       // matching experiment.ts). u.totalDamage is already that mean, so ratio = mean/real is consistent.
       const dmgs = runs.map(

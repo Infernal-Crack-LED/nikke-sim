@@ -59,16 +59,26 @@ type AnyEv = SimEvent & Record<string, any>;
 // ---------- override-shape helpers ----------
 function blocksOf(ov: any, slot: (typeof SLOTS)[number]): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function eachBlock(ov: any, fn: (b: any, slot: string) => void): void {
-  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
+  for (const slot of SLOTS) {
+    for (const b of blocksOf(ov, slot)) {
+      fn(b, slot);
+    }
+  }
 }
 function eachEffect(ov: any, fn: (e: any, b: any, slot: string) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of b.effects ?? []) {fn(e, b, slot);}
+    for (const e of b.effects ?? []) {
+      fn(e, b, slot);
+    }
   });
 }
 
@@ -79,8 +89,9 @@ const zeroBuff = (stat: string, value: number) => (ov: any) =>
       e.kind === 'buff' &&
       e.stat === stat &&
       Math.abs(Number(e.value) - value) < 0.5
-    )
-      {e.value = 0;}
+    ) {
+      e.value = 0;
+    }
   });
 const dropKind = (kind: string) => (ov: any) =>
   eachBlock(ov, (b) => {
@@ -89,7 +100,9 @@ const dropKind = (kind: string) => (ov: any) =>
 const compose =
   (...fns: ((ov: any) => void)[]) =>
   (ov: any) => {
-    for (const f of fns) {f(ov);}
+    for (const f of fns) {
+      f(ov);
+    }
   };
 // Nearest-wrong for Acid Ammo: a per-magazine re-application holding a 30s window, which STACKS
 // (~14 concurrent instances at a ~2s magazine cycle) instead of one maintained instance.
@@ -102,7 +115,9 @@ const stackDot = (ov: any) =>
         hit = true;
       }
     }
-    if (hit) {b.trigger = { kind: 'lastBullet' };}
+    if (hit) {
+      b.trigger = { kind: 'lastBullet' };
+    }
   });
 
 const patch = (mutate: (ov: any) => void) => ({
@@ -117,7 +132,9 @@ function run(mutate?: (ov: any) => void) {
     events.push(ev as AnyEv);
   };
   const opts: any = { ...base, onEvent, cfg: { ...(base.cfg ?? {}), onEvent } };
-  if (mutate) {opts.overrides = { ...(base.overrides ?? {}), ...patch(mutate) };}
+  if (mutate) {
+    opts.overrides = { ...(base.overrides ?? {}), ...patch(mutate) };
+  }
   const res = runComp(opts as Opts);
   const all = totals(res);
   return { res, events, all, total: all[SLUG] };

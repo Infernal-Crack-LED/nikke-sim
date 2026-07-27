@@ -64,9 +64,15 @@ function effectsOf(ov: AnyOv): { slot: string; block: any; effect: any }[] {
 
 // magnitude of an effect regardless of encoding: perResource-scaled, flat atkPct, or buff value
 function magOf(e: any): number {
-  if (e?.perResource?.mult != null) {return e.perResource.mult;}
-  if (e?.atkPct != null) {return e.atkPct;}
-  if (e?.value != null) {return e.value;}
+  if (e?.perResource?.mult != null) {
+    return e.perResource.mult;
+  }
+  if (e?.atkPct != null) {
+    return e.atkPct;
+  }
+  if (e?.value != null) {
+    return e.value;
+  }
   return 0;
 }
 
@@ -83,15 +89,17 @@ const isSustBuff = (e: any) => e?.kind === 'buff' && near(magOf(e), 59.98, 1);
 function stripEffects(ov: AnyOv, pred: (e: any) => boolean): void {
   for (const s of SLOTS) {
     const blocks = (ov[s] ?? []) as any[];
-    for (const b of blocks)
-      {b.effects = ((b.effects ?? []) as any[]).filter((e) => !pred(e));}
+    for (const b of blocks) {
+      b.effects = ((b.effects ?? []) as any[]).filter((e) => !pred(e));
+    }
     ov[s] = blocks.filter((b) => ((b.effects ?? []) as any[]).length > 0);
   }
 }
 
 function stripBlocks(ov: AnyOv, pred: (b: any) => boolean): void {
-  for (const s of SLOTS)
-    {ov[s] = ((ov[s] ?? []) as any[]).filter((b) => !pred(b));}
+  for (const s of SLOTS) {
+    ov[s] = ((ov[s] ?? []) as any[]).filter((b) => !pred(b));
+  }
 }
 
 function run(mutate?: (ov: AnyOv) => void) {
@@ -124,13 +132,18 @@ const noRider = run((ov) =>
 );
 const riderUngated = run((ov) => {
   for (const { block } of blocksOf(ov)) {
-    if (block?.trigger?.kind === 'hitCount') {delete block.fbGate;}
+    if (block?.trigger?.kind === 'hitCount') {
+      delete block.fbGate;
+    }
   }
 });
 const noSust = run((ov) => stripEffects(ov, isSustBuff));
 const sustAsGeneric = run((ov) => {
-  for (const { effect } of effectsOf(ov))
-    {if (isSustBuff(effect)) {effect.stat = 'attackDamagePct';}}
+  for (const { effect } of effectsOf(ov)) {
+    if (isSustBuff(effect)) {
+      effect.stat = 'attackDamagePct';
+    }
+  }
 });
 const starved = run((ov) => {
   ov.skill1 = [];
@@ -144,7 +157,9 @@ const starvedNoDrag = run((ov) => {
 
 const mates = Object.keys(base.t).filter((s) => s !== SLUG);
 function expectMatesIdentical(other: { t: Record<string, number> }): void {
-  for (const s of mates) {expect(other.t[s]).toBe(base.t[s]);}
+  for (const s of mates) {
+    expect(other.t[s]).toBe(base.t[s]);
+  }
 }
 
 const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
@@ -194,7 +209,9 @@ describe('skill1 — Restraint Chains pool (S1a / S1b)', () => {
       const refills = ((block.effects ?? []) as any[]).some(
         (e) => e?.kind === 'resource' && (e?.delta ?? 0) > 0
       );
-      if (refills) {expect(block.ownBurstGate).toBe('cast');}
+      if (refills) {
+        expect(block.ownBurstGate).toBe('cast');
+      }
     }
   });
 
@@ -214,7 +231,9 @@ describe('skill1 — the chain volley, 50.06% per chain (S1c)', () => {
     // over-credit on an MG carry).
     const volleys = effectsOf(OV).filter(({ effect }) => isVolley(effect));
     expect(volleys.length).toBeGreaterThan(0);
-    for (const { effect } of volleys) {expect(effect.core === true).toBe(false);}
+    for (const { effect } of volleys) {
+      expect(effect.core === true).toBe(false);
+    }
     expect(base.t[SLUG]).toBeGreaterThan(noVolley.t[SLUG]);
     expectMatesIdentical(noVolley);
   });
@@ -235,8 +254,9 @@ describe('skill1 — the chain volley, 50.06% per chain (S1c)', () => {
       'passive',
     ];
     const carriers = effectsOf(OV).filter(({ effect }) => isVolley(effect));
-    for (const { block } of carriers)
-      {expect(ok).toContain(block?.trigger?.kind);}
+    for (const { block } of carriers) {
+      expect(ok).toContain(block?.trigger?.kind);
+    }
     const repeats = carriers.some(
       ({ block }) =>
         block?.trigger?.kind !== 'passive' || (block.effects ?? []).length >= 10

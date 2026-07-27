@@ -46,29 +46,39 @@ const SLUG = 'soline-frost-ticket';
 
 // ---- helpers ----------------------------------------------------------------
 function eachEff(ov: any, fn: (e: any, b: any) => void) {
-  for (const b of ov.blocks || []) {for (const e of b.effects || []) {fn(e, b);}}
+  for (const b of ov.blocks || []) {
+    for (const e of b.effects || []) {
+      fn(e, b);
+    }
+  }
 }
 const setCdr = (s: number) => (ov: any) =>
   eachEff(ov, (e) => {
-    if (e.kind === 'burstCdr') {e.seconds = s;}
+    if (e.kind === 'burstCdr') {
+      e.seconds = s;
+    }
   });
 const zeroMaxHp = (ov: any) =>
   eachEff(ov, (e) => {
     if (
       e.kind === 'buff' &&
       ['casterMaxHpPct', 'targetMaxHpPct', 'maxHpPct'].includes(e.stat)
-    )
-      {e.value = 0;}
+    ) {
+      e.value = 0;
+    }
   });
 const stripHeals = (ov: any) => {
-  for (const b of ov.blocks || [])
-    {b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');}
+  for (const b of ov.blocks || []) {
+    b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');
+  }
 };
 
 // runWith(null) = committed faithful override; else an in-memory patched clone for SLUG.
 function runWith(clone: any | null) {
   const opts: any = controlComp(SLUG, true);
-  if (clone) {opts.overrides = { ...(opts.overrides || {}), [SLUG]: clone };}
+  if (clone) {
+    opts.overrides = { ...(opts.overrides || {}), [SLUG]: clone };
+  }
   const events: any[] = [];
   opts.cfg = { ...(opts.cfg || {}), onEvent: (e: any) => events.push(e) };
   const res = runComp(opts);

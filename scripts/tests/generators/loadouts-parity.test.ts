@@ -40,7 +40,9 @@ const base = (loadouts?: Record<string, UnitOptions>): TeamCalcInput => ({
 
 // Materialize loadoutFor over every pool slug — the main-thread step the worker does.
 const materialized: Record<string, UnitOptions> = {};
-for (const slug of Object.keys(chars)) {materialized[slug] = loadoutFor(slug);}
+for (const slug of Object.keys(chars)) {
+  materialized[slug] = loadoutFor(slug);
+}
 
 describe('makeCalc loadouts map ≡ loadoutFor (item 1a parity gate)', () => {
   it('bestTeam is byte-identical', async () => {

@@ -169,33 +169,37 @@ const eff = (b: any, stat: string) =>
 // T2 nearest-wrong (trigger): the FB-END ATK line keyed to fullBurstEnter (FB-START frames).
 const cfS1AtkFbEnter = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnd');
-  if (!b)
-    {throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T2 nearest-wrong (target): self → allies (hit all 3 slots, not just takina).
 const cfS1AtkAllies = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnd');
-  if (!b)
-    {throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // T3 nearest-wrong (trigger): the FB-enter True Damage line keyed to burstCast (takina's CAST frames).
 const cfS1TrueBurstCast = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S1 fullBurstEnter block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'burstCast' };
 });
 // T3 nearest-wrong (duration): 15s → 5s.
 const cfS1TrueDur5 = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S1 fullBurstEnter block missing — fixture is stale'
-    );}
+    );
+  }
   eff(b, 'trueDamagePct').durationSec = 5;
 });
 // T4 nearest-wrong (value): the enemy debuff at the RAW prose magnitude 10.09 (no uptime-average).
@@ -203,10 +207,11 @@ const cfS2TakenRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S2 enemy damageTaken block missing — fixture is stale'
-    );}
+    );
+  }
   eff(b, 'damageTakenPct').value = 10.09;
 });
 // T4 nearest-wrong (target): enemy → allies (buff the team instead of debuffing the boss).
@@ -214,10 +219,11 @@ const cfS2TakenAllies = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S2 enemy damageTaken block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'allies' };
 });
 // T5 nearest-wrong (value): the ally True Damage buff at the RAW prose magnitude 140.49 (no uptime-average).
@@ -225,10 +231,11 @@ const cfS2TrueRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S2 ally trueDamage block missing — fixture is stale'
-    );}
+    );
+  }
   eff(b, 'trueDamagePct').value = 140.49;
 });
 // T5 nearest-wrong (target): allies → enemy.
@@ -236,10 +243,11 @@ const cfS2TrueEnemy = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina S2 ally trueDamage block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'enemy' };
 });
 // T7 nearest-wrong (swap): the burst weaponSwap removed → no 200.64 swap shots.
@@ -248,16 +256,18 @@ const cfNoSwap = withPatchedOverride('takina', (ov: any) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (ov.burst.length === before)
-    {throw new Error('takina burst weaponSwap block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('takina burst weaponSwap block missing — fixture is stale');
+  }
 });
 // T7 nearest-wrong (flavor): trueNormals:true → false (swap shots lose the true flavor → lose trueDamagePct).
 const cfNoTrueNormals = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (!b)
-    {throw new Error('takina burst weaponSwap block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('takina burst weaponSwap block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.kind === 'weaponSwap').trueNormals = false;
 });
 // T8 nearest-wrong (gate, UNGATED): strip the gate from the 6.04 shotFired debuff → fires on every takina shot.
@@ -265,10 +275,11 @@ const cfDebuffUngated = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina burst 6.04 debuff block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.fbGate;
   delete b.swapGate;
 });
@@ -277,10 +288,11 @@ const cfDebuffFbGate = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'takina burst 6.04 debuff block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.swapGate;
   b.fbGate = 'inFb';
 });

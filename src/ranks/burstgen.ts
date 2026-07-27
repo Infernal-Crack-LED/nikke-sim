@@ -126,12 +126,13 @@ export function rankBurstGen(
       },
     ];
     const profile = BURSTGEN_PROFILES[slug];
-    if (profile)
-      {rows.push({
+    if (profile) {
+      rows.push({
         slug,
         gaugeTotal: burstGenFor(slug, ctx, true),
         profile: profile.id,
-      });}
+      });
+    }
     return rows;
   });
   scored.sort((a, b) => b.gaugeTotal - a.gaugeTotal);

@@ -121,7 +121,9 @@ function skillNoFb(
   isBurstCast: boolean,
   flavor: string | undefined
 ): boolean {
-  if (isBurstCast) {return true;} // burst-cast/instant damage lands before FB begins → never +50%
+  if (isBurstCast) {
+    return true;
+  } // burst-cast/instant damage lands before FB begins → never +50%
   switch (ENV.FBRULE) {
     case 'perkit':
       return perKitNoFb; // legacy calibrated relics — no carrier remains (revert arm)
@@ -221,8 +223,12 @@ const NOMINAL_PULLS_PER_SEC: Record<string, number> = {
 const quantizeToFrames = (pps: number) => FPS / Math.ceil(FPS / pps - 1e-9);
 const PULLS_PER_SEC: Record<string, number> = Object.fromEntries(
   Object.entries(NOMINAL_PULLS_PER_SEC).map(([w, pps]) => {
-    if (w !== 'SMG') {return [w, pps];} // quantization is provably a no-op for every other weapon
-    if (Number(ENV.SMGRATE)) {return [w, Number(ENV.SMGRATE)];} // documented revert / A-B pin
+    if (w !== 'SMG') {
+      return [w, pps];
+    } // quantization is provably a no-op for every other weapon
+    if (Number(ENV.SMGRATE)) {
+      return [w, Number(ENV.SMGRATE)];
+    } // documented revert / A-B pin
     return [w, quantizeToFrames(pps)]; // DEFAULT: SMG frame-quantized 24 → 20.0 rounds/s
   })
 );
@@ -252,8 +258,9 @@ const MG_NO_CORE_RAMP_ROUNDS = 18;
 const MG_WINDDOWN_GRACE_FRAMES = 16;
 const MG_WINDDOWN_DECAY = 2.78; // ladder-frames lost per idle frame past the grace
 const MG_LADDER_CUM: number[] = [0];
-for (const iv of MG_RAMP_INTERVALS)
-  {MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);}
+for (const iv of MG_RAMP_INTERVALS) {
+  MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);
+}
 // RELOAD (2026-07-13): actual reload = displayed x 0.975 x (1 - buff) + 0.21s — SUBTRACTIVE,
 // like charge speed, with a fixed 0.21s tail; buffs past 100% only remove the scaled part
 // (https://ore-game.com/nikke/post/reload-limit/). Replaces the old divisive
@@ -373,7 +380,9 @@ function sgLandedPellets(
   rng: () => number,
   profile: 'small' | 'medium' | 'large' = 'small'
 ): number {
-  if (profile === 'large') {return pellets;} // big boss — the whole spray lands, every band
+  if (profile === 'large') {
+    return pellets;
+  } // big boss — the whole spray lands, every band
   const j = SG_LANDING_JITTER[band] ?? { min: 1, max: 1 };
   const lo = Math.round(j.min * pellets);
   const hi = Math.round(j.max * pellets);
@@ -603,7 +612,9 @@ export const MC_SEED_BASE = 1000;
 // non-numeric/timeline fields (names, warnings, loadout, rotationLog) are taken from the first run as a
 // representative sample. Units are matched by index (same team across runs). Empty array is invalid.
 export function meanSimResults(runs: SimResult[]): SimResult {
-  if (runs.length === 1) {return runs[0];}
+  if (runs.length === 1) {
+    return runs[0];
+  }
   const n = runs.length;
   const base = runs[0];
   const mean = (pick: (r: SimResult) => number) =>
@@ -643,8 +654,9 @@ export function runSimMean(
   prepared?: PreparedUnit[],
   nSeeds: number = DEFAULT_MC_SEEDS
 ): SimResult {
-  if (cfg.seed !== undefined || nSeeds <= 1)
-    {return runSim(chars, mult, cfg, prepared);}
+  if (cfg.seed !== undefined || nSeeds <= 1) {
+    return runSim(chars, mult, cfg, prepared);
+  }
   const runs: SimResult[] = [];
   for (let i = 0; i < nSeeds; i++) {
     runs.push(
@@ -680,8 +692,9 @@ export function runSim(
             ...(cdFix ? { burstCooldownSec: cdFix } : {}),
           }
         : rawChar;
-    if (!char.baseStats)
-      {throw new Error(`${char.slug} has no base stats in the DB`);}
+    if (!char.baseStats) {
+      throw new Error(`${char.slug} has no base stats in the DB`);
+    }
     const skills = prepared?.[idx]?.skills;
     if (!skills) {
       // the engine never parses skill prose — callers must prepareTeam/prepareUnit
@@ -852,8 +865,9 @@ export function runSim(
         e.stat === 'ammoRefundPer10' ||
         e.stat === 'burstGenPct' ||
         e.stat === 'flatAtk'
-      )
-        {continue;}
+      ) {
+        continue;
+      }
       // "Max HP ▲ x%" extras (Vigor cube): convert the percentage into a flat Max-HP
       // SELF-grant (casterIdx === own idx) so it raises the unit's live Max HP and feeds
       // HP-scaling ATK (atkOfMaxHpPct) exactly like an own-kit maxHpFlat buff — see effectiveAtk.
@@ -1021,7 +1035,9 @@ export function runSim(
   const geoCoreFrac = (weapon: string, band: string): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     const coreD = BAND_CORE_PX[band];
-    if (scale === undefined || coreD === undefined) {return null;}
+    if (scale === undefined || coreD === undefined) {
+      return null;
+    }
     return coreFracGeo(coreD, circleDpx(scale));
   };
   const acrForGeo = (
@@ -1030,11 +1046,15 @@ export function runSim(
     mode: string
   ): number | null => {
     const geo = geoCoreFrac(weapon, band);
-    if (geo === null) {return null;} // no circle model → let acrFor use the base table
+    if (geo === null) {
+      return null;
+    } // no circle model → let acrFor use the base table
     if (mode === 'shape' || mode === 'fill') {
       const geoNear = geoCoreFrac(weapon, 'near');
       const measuredNear = CORE_BY_WEAPON_BAND[weapon]?.near;
-      if (!geoNear || measuredNear === undefined) {return null;}
+      if (!geoNear || measuredNear === undefined) {
+        return null;
+      }
       return Math.min(1, (measuredNear / geoNear) * geo);
     }
     return geo; // raw
@@ -1043,13 +1063,20 @@ export function runSim(
     weapon: string,
     band: 'near' | 'mid' | 'midfar' | 'far'
   ): number => {
-    if (ENV.ACR !== undefined) {return Number(ENV.ACR);}
-    if (ENV.CORERATE === 'flat') {return 0.85;}
-    if (ENV.CORERATEBAND === 'off')
-      {return weapon === 'MG' || weapon === 'SR' || weapon === 'RL' ? HI : LO;}
+    if (ENV.ACR !== undefined) {
+      return Number(ENV.ACR);
+    }
+    if (ENV.CORERATE === 'flat') {
+      return 0.85;
+    }
+    if (ENV.CORERATEBAND === 'off') {
+      return weapon === 'MG' || weapon === 'SR' || weapon === 'RL' ? HI : LO;
+    }
     if (ENV.ACR_GEO) {
       const g = acrForGeo(weapon, band, ENV.ACR_GEO);
-      if (g !== null) {return g;}
+      if (g !== null) {
+        return g;
+      }
     }
     return coreByWeaponBand(weapon, band);
   };
@@ -1085,13 +1112,19 @@ export function runSim(
   const hrCoreExp = (weapon: string): number => {
     const c0 = HR_CORE_CIRCLE[weapon];
     const base = CORE_BY_WEAPON_BAND[weapon]?.near;
-    if (c0 === undefined || base === undefined || base <= 0) {return 0;} // MG/SR/RL or zero-base → no lift
+    if (c0 === undefined || base === undefined || base <= 0) {
+      return 0;
+    } // MG/SR/RL or zero-base → no lift
     return Math.log(base) / Math.log(HR_CORE_SAT / c0);
   };
   const hrCoreMult = (weapon: string, hr: number): number => {
-    if (!HRCORE || hr <= 0) {return 1;}
+    if (!HRCORE || hr <= 0) {
+      return 1;
+    }
     const p = hrCoreExp(weapon);
-    if (p === 0) {return 1;}
+    if (p === 0) {
+      return 1;
+    }
     const frac = Math.max(HR_RETICLE_FLOOR_FRAC, 1 - HR_RETICLE_SLOPE * hr);
     return Math.pow(1 / frac, p);
   };
@@ -1109,9 +1142,13 @@ export function runSim(
   const hrCoreMultGeo = (weapon: string, band: string, hr: number): number => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     const coreD = BAND_CORE_PX[band];
-    if (scale === undefined || coreD === undefined) {return 1;} // MG/SR/RL → no lift
+    if (scale === undefined || coreD === undefined) {
+      return 1;
+    } // MG/SR/RL → no lift
     const base0 = coreFracGeo(coreD, circleDpx(scale));
-    if (base0 <= 0) {return 1;}
+    if (base0 <= 0) {
+      return 1;
+    }
     const atHr = coreFracGeo(
       coreD,
       circleDpxAtHr(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC)
@@ -1128,7 +1165,9 @@ export function runSim(
   const PELLET_GAUSS = ENV.PELLET_GAUSS !== '0' && ENV.PELLET_GAUSS !== 'off';
   const pelletSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
-    if (scale === undefined) {return null;} // MG/SR/RL: no accuracy-circle model
+    if (scale === undefined) {
+      return null;
+    } // MG/SR/RL: no accuracy-circle model
     return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
   };
   // ── δ-offset cone (ENV.CONE_DELTA; LIVE by default 2026-07-19, CONE_DELTA=0 disables for A/B) ──
@@ -1154,7 +1193,9 @@ export function runSim(
     ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
-    if (scale === undefined) {return null;} // MG/SR/RL: no accuracy-circle model
+    if (scale === undefined) {
+      return null;
+    } // MG/SR/RL: no accuracy-circle model
     return coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon] ?? 0.009);
   };
   const acrForHR = (
@@ -1165,28 +1206,36 @@ export function runSim(
     if (UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small') {
       // UNIGEO core paths: SG in both modes; AR/SMG only in 'all'. MG/SR/RL return null → fall
       // through to the live chain unchanged.
-      if (weapon === 'SG') {return unigeoSgCorePerLanded(band, hr);}
+      if (weapon === 'SG') {
+        return unigeoSgCorePerLanded(band, hr);
+      }
       if (UNIGEO === 'all') {
         const p = unigeoSingleCoreProb(weapon, band, hr);
-        if (p !== null) {return p;}
+        if (p !== null) {
+          return p;
+        }
       }
     }
     if (CONE_DELTA) {
       const sig = coneSigmaFor(weapon, hr);
-      if (sig !== null)
-        {return Math.min(
+      if (sig !== null) {
+        return Math.min(
           1,
           offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr))
-        );}
+        );
+      }
       // MG/SR/RL fall through to the base table below
     } else if (PELLET_GAUSS) {
       const sig = pelletSigmaFor(weapon, hr);
-      if (sig !== null)
-        {return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig));} // unified geometric core
+      if (sig !== null) {
+        return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig));
+      } // unified geometric core
       // MG/SR/RL fall through to the base table below
     }
     const base = acrFor(weapon, band);
-    if (!HRCORE || hr <= 0) {return base;} // OFF ⇒ acrFor unchanged (regression byte-stable)
+    if (!HRCORE || hr <= 0) {
+      return base;
+    } // OFF ⇒ acrFor unchanged (regression byte-stable)
     const mult = ENV.HRCORE_GEO
       ? hrCoreMultGeo(weapon, band, hr)
       : hrCoreMult(weapon, hr);
@@ -1233,7 +1282,9 @@ export function runSim(
     const flat = (entry?.flatPerTrigger ?? 0) / 100;
     const isCharge =
       (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
-    if (!isCharge) {return per + flat;}
+    if (!isCharge) {
+      return per + flat;
+    }
     return (
       per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN) +
       flat
@@ -1246,7 +1297,9 @@ export function runSim(
     // measured ~3s post-FB chain-open delay, high-generation comps finish refilling
     // before the chain can open anyway, so rotations stay cooldown/chain-bound).
     // Also no generation during the chain itself (stages 1-3, einkk).
-    if (fbEndFrame > frame || stage !== 0) {return;}
+    if (fbEndFrame > frame || stage !== 0) {
+      return;
+    }
     if (ENV.DBG_GAUGE && frame < 30 * FPS) {
       console.log(
         `[g] t=${(frame / FPS).toFixed(2)} ${u.char.slug} +${(energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)).toFixed(2)} gauge=${gauge.toFixed(1)}`
@@ -1296,7 +1349,11 @@ export function runSim(
     .map((r) => Math.round(r.fromSec * FPS));
   const bandAt = (frame: number): 'near' | 'mid' | 'midfar' | 'far' => {
     let band = rangeScript[0].band;
-    for (const r of rangeScript) {if (frame >= r.fromSec * FPS) {band = r.band;}}
+    for (const r of rangeScript) {
+      if (frame >= r.fromSec * FPS) {
+        band = r.band;
+      }
+    }
     return band;
   };
   const bossUnhittable = (frame: number) =>
@@ -1360,8 +1417,9 @@ export function runSim(
         (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
         (b.whileSwappedIdx !== undefined &&
           units[b.whileSwappedIdx].swap == null)
-      )
-        {return s;}
+      ) {
+        return s;
+      }
       // live resource-scaled buff (soda's Golden-Chip crit): value = caster.resources[name]×mult,
       // re-read each frame from the caster's pool (ignores the static `value`).
       let contrib: number;
@@ -1401,8 +1459,12 @@ export function runSim(
     // measured early/late FB-proc growth 633.7k→667.0k).
     let ownMaxHpFlat = 0;
     for (const b of u.buffs) {
-      if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {continue;}
-      if (b.expiresFrame !== null && b.expiresFrame <= frame) {continue;}
+      if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {
+        continue;
+      }
+      if (b.expiresFrame !== null && b.expiresFrame <= frame) {
+        continue;
+      }
       let c = b.value * b.stacks;
       if (b.rampFrames && b.startFrame !== undefined) {
         c *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
@@ -1629,7 +1691,9 @@ export function runSim(
             }
           }
         }
-      } else {(u as any).__dbgN = -1;}
+      } else {
+        (u as any).__dbgN = -1;
+      }
     }
     u.damage[opts.category] += dmg;
     if (onEvent) {
@@ -1691,7 +1755,9 @@ export function runSim(
         const byElement = t.element
           ? casters.filter((u) => u.char.element === t.element)
           : casters;
-        if (t.stage === undefined) {return byElement;}
+        if (t.stage === undefined) {
+          return byElement;
+        }
         return byElement.filter(
           (u) =>
             (t.stage === 3 &&
@@ -1851,7 +1917,9 @@ export function runSim(
   // "reload to max" the kit line ("…Removed upon reloading to max ammunition") refers to. INERT for
   // every unit: no override sets removeOnReload today, so the filter is a no-op (regression-proven).
   function stripReloadBuffs(u: UnitState, frame: number) {
-    if (u.buffs.length === 0) {return;}
+    if (u.buffs.length === 0) {
+      return;
+    }
     for (let i = u.buffs.length - 1; i >= 0; i--) {
       if (u.buffs[i].removeOnReload) {
         const [gone] = u.buffs.splice(i, 1);
@@ -1875,7 +1943,9 @@ export function runSim(
   // scheduled heal-over-time emitter ticks)
   function fireRecovery(targetIdx: number, frame: number) {
     units[targetIdx].blocks.forEach((rb, ri) => {
-      if (rb.trigger.kind === 'recovery') {applyBlock(targetIdx, rb, ri, frame);}
+      if (rb.trigger.kind === 'recovery') {
+        applyBlock(targetIdx, rb, ri, frame);
+      }
     });
   }
 
@@ -1893,11 +1963,15 @@ export function runSim(
     // (No override combines everyN with these gates today — verified — so this is
     // behavior-neutral for every existing unit; the regression snapshot is the control.)
     // core-gated blocks never fire in zero-core fights
-    if (block.requiresCore && cfg.coreHitRate <= 0) {return;}
+    if (block.requiresCore && cfg.coreHitRate <= 0) {
+      return;
+    }
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
     if (block.fbGate) {
       const fbActive = fbEndFrame > frame;
-      if ((block.fbGate === 'inFb') !== fbActive) {return;}
+      if ((block.fbGate === 'inFb') !== fbActive) {
+        return;
+      }
     }
     // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
     // is (or is not) active — e.g. SWHA's Fully Active extra volley rides only
@@ -1905,13 +1979,17 @@ export function runSim(
     // shot, 1発間維持)
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
-      if ((block.swapGate === 'swapped') !== swapped) {return;}
+      if ((block.swapGate === 'swapped') !== swapped) {
+        return;
+      }
     }
     // shield-state gate: "if a Shield is set in front of this unit" evaluated at trigger
     // time — active only while a 'shield' effect's window covers the owner (naga's burst
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
-    if (block.requiresShielded && owner.shieldedUntilFrame <= frame) {return;}
+    if (block.requiresShielded && owner.shieldedUntilFrame <= frame) {
+      return;
+    }
     // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
     // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
     // window). Name-keyed, so an unrelated kit's status never opens it. Composes with requiresCore.
@@ -1920,13 +1998,15 @@ export function runSim(
     if (
       block.requiresTargetStatus &&
       (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
-    )
-      {return;}
+    ) {
+      return;
+    }
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
-    if (block.bossElementGate && cfg.bossElement !== block.bossElementGate)
-      {return;}
+    if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) {
+      return;
+    }
     // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
     // cast their own burst in the rotation leading into this Full Burst. Composes with a
     // `fullBurstEnter` trigger so "Entering Full Burst AFTER this unit uses her own Burst"
@@ -1937,7 +2017,9 @@ export function runSim(
     // unit is the sole/actual burster (owner is in the set → 'cast' always passes).
     if (block.ownBurstGate) {
       const cast = rotationCasters.includes(ownerIdx);
-      if ((block.ownBurstGate === 'cast') !== cast) {return;}
+      if ((block.ownBurstGate === 'cast') !== cast) {
+        return;
+      }
     }
     // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
     // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
@@ -1947,8 +2029,9 @@ export function runSim(
       if (
         rv < (block.resourceGate.min ?? -Infinity) ||
         rv > (block.resourceGate.max ?? Infinity)
-      )
-        {return;}
+      ) {
+        return;
+      }
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -1959,8 +2042,9 @@ export function runSim(
       if (
         activations < Math.max(off, 1) ||
         (activations - off) % block.everyN !== 0
-      )
-        {return;}
+      ) {
+        return;
+      }
     }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
@@ -2069,18 +2153,21 @@ export function runSim(
             Math.max(cfg?.min ?? 0, cur + e.delta)
           );
           owner.resources.set(e.name, next);
-          if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0)
-            {console.log(
+          if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0) {
+            console.log(
               `[res ${owner.char.slug}] t=${(frame / FPS).toFixed(2)} ${e.name} ` +
                 `${cur}${e.delta > 0 ? '+' : ''}${e.delta} → ${next}`
-            );}
+            );
+          }
           break;
         }
         case 'flatDamage': {
           // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
           // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at
           // ~68 shots had NO nuke; all >=120 banners did)
-          if (e.requiresPulls != null && owner.pulls < e.requiresPulls) {break;}
+          if (e.requiresPulls != null && owner.pulls < e.requiresPulls) {
+            break;
+          }
           // per-battle-elapsed ramp: a burst component that scales with a stack resource
           // accruing from battle start (cinderella's Beautiful-mirror). Snapshotted at cast.
           const fdRampMul =
@@ -2195,7 +2282,9 @@ export function runSim(
           // A same-weapon flavor swap (trueNormals — the gun never changes, only normals become true
           // damage: chisato/takina/laplace) does NOT reload the mag; only a real weapon swap picks up a
           // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.)
-          if (!e.trueNormals) {owner.ammo = maxAmmo(owner, frame);}
+          if (!e.trueNormals) {
+            owner.ammo = maxAmmo(owner, frame);
+          }
           break;
         case 'fillGauge':
           // gauge is locked during full burst — fills landing then are wasted
@@ -2209,7 +2298,9 @@ export function runSim(
           // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
           // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
           const healTargets = resolveTargets(block.target, ownerIdx, frame);
-          for (const t of healTargets) {fireRecovery(t.idx, frame);}
+          for (const t of healTargets) {
+            fireRecovery(t.idx, frame);
+          }
           // heal-over-time: "Recovers X% every 1 sec for N sec" = N ticks. The first tick fired
           // above; schedule the remaining N-1 so on-recovery consumers stay refreshed across the
           // whole window (default ticks 1 → no scheduling, back-compatible with instant heals).
@@ -2243,8 +2334,9 @@ export function runSim(
                 : Number.MAX_SAFE_INTEGER
             );
             t.blocks.forEach((rb, ri) => {
-              if (rb.trigger.kind === 'shielded')
-                {applyBlock(t.idx, rb, ri, frame);}
+              if (rb.trigger.kind === 'shielded') {
+                applyBlock(t.idx, rb, ri, frame);
+              }
             });
           }
           break;
@@ -2300,22 +2392,27 @@ export function runSim(
           break;
         }
         case 'burstEligibility':
-          for (const t of resolveTargets(block.target, ownerIdx, frame))
-            {t.extraStages.add(e.stage);}
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.extraStages.add(e.stage);
+          }
           break;
         case 'burstFirst':
-          for (const t of resolveTargets(block.target, ownerIdx, frame))
-            {t.burstFirstPending = true;}
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.burstFirstPending = true;
+          }
           break;
         case 'reenterStage':
           break; // handled by the rotation (stage hold) after the cast resolves
         case 'advantageVs':
-          for (const t of resolveTargets(block.target, ownerIdx, frame))
-            {t.advantageVs.add(e.element);}
+          for (const t of resolveTargets(block.target, ownerIdx, frame)) {
+            t.advantageVs.add(e.element);
+          }
           break;
         case 'burstCdr':
           if (e.oncePerBattle) {
-            if (usedOncePerBattle.has(key)) {break;}
+            if (usedOncePerBattle.has(key)) {
+              break;
+            }
             usedOncePerBattle.add(key);
           }
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
@@ -2342,8 +2439,11 @@ export function runSim(
           break;
         }
         case 'fullBurstExtend':
-          if (fbEndFrame > frame) {fbEndFrame += Math.round(e.seconds * FPS);}
-          else {pendingFbExtendSec += e.seconds;}
+          if (fbEndFrame > frame) {
+            fbEndFrame += Math.round(e.seconds * FPS);
+          } else {
+            pendingFbExtendSec += e.seconds;
+          }
           break;
         case 'unlimitedAmmo':
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
@@ -2435,13 +2535,17 @@ export function runSim(
     frame: number
   ) {
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === kind) {applyBlock(u.idx, b, bi, frame);}
+      if (b.trigger.kind === kind) {
+        applyBlock(u.idx, b, bi, frame);
+      }
     });
   }
 
   function maxAmmo(u: UnitState, frame: number): number {
     const base = u.swap?.maxAmmo ?? u.char.ammo;
-    if (u.swap?.maxAmmo !== undefined) {return u.swap.maxAmmo;} // swapped weapons use their spec directly
+    if (u.swap?.maxAmmo !== undefined) {
+      return u.swap.maxAmmo;
+    } // swapped weapons use their spec directly
     const pct = (u.doll.maxAmmoPct ?? 0) + stat(u, 'maxAmmoPct', frame);
     // flat "▲ N round(s)" grants add on top of the percent scaling (theme 14)
     const flat = stat(u, 'maxAmmoFlat', frame);
@@ -2450,8 +2554,9 @@ export function runSim(
 
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === 'teamAmmo')
-        {teamAmmoBlocks.push({ unitIdx: u.idx, block: b, bi, residual: 0 });}
+      if (b.trigger.kind === 'teamAmmo') {
+        teamAmmoBlocks.push({ unitIdx: u.idx, block: b, bi, residual: 0 });
+      }
     })
   );
 
@@ -2556,7 +2661,9 @@ export function runSim(
       pendingFbStartFrame = -1;
     }
     const fbActive = fbEndFrame > frame;
-    if (fbActive) {fbFrames++;}
+    if (fbActive) {
+      fbFrames++;
+    }
 
     // ---- internal-cooldown ('interval') skills ----
     for (const ib of intervalBlocks) {
@@ -2568,11 +2675,15 @@ export function runSim(
 
     // ---- full burst end ----
     if (fbEndFrame === frame) {
-      if (onEvent) {onEvent({ kind: 'fullBurstEnd', frame, sec: frame / FPS });}
+      if (onEvent) {
+        onEvent({ kind: 'fullBurstEnd', frame, sec: frame / FPS });
+      }
       units.forEach((u) => fireTriggered(u, 'fullBurstEnd', frame));
       // units that sat this rotation out accrue a missed-burst stack (MP)
       units.forEach((u) => {
-        if (!rotationCasters.includes(u.idx)) {u.fbMissedSinceBurst++;}
+        if (!rotationCasters.includes(u.idx)) {
+          u.fbMissedSinceBurst++;
+        }
       });
       rotationCasters = [];
       stage = 0;
@@ -2591,7 +2702,9 @@ export function runSim(
     // ---- burst rotation ----
     // the gauge only builds OUTSIDE full burst; during FB it is locked
     // gauge accrues via shotGauge() on each pull (see firePull)
-    if (stageGapFrames > 0) {stageGapFrames--;}
+    if (stageGapFrames > 0) {
+      stageGapFrames--;
+    }
     // cfg.disableBursts — the fight is played with bursting turned OFF. Guarding the CHAIN
     // OPENER (rather than the cast site) is what keeps this to a single condition: stage never
     // leaves 0, so every downstream burst path — cast selection, stage advance, Full Burst — is
@@ -2657,8 +2770,9 @@ export function runSim(
         // everyOther (Solo framework): a gated unit never takes stage 3 twice in a
         // row — it sits out the full burst right after one it cast, letting the
         // next stage-filling unit (the no-op B3) alternate in.
-        if (u.burstGate === 'everyOther' && stage === 3)
-          {return lastStage3Caster !== u.idx;}
+        if (u.burstGate === 'everyOther' && stage === 3) {
+          return lastStage3Caster !== u.idx;
+        }
         return true;
       };
       const eligible = (u: UnitState) =>
@@ -2746,7 +2860,9 @@ export function runSim(
         if (stage === 3) {
           gauge = 0;
           lastStage3Caster = cand.idx;
-          if (cand.idx === focusIdx) {focusBurstCount++;}
+          if (cand.idx === focusIdx) {
+            focusBurstCount++;
+          }
           if (FB_PRE_DELAY_FRAMES > 0) {
             // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later.
             // The extension snapshot is taken BELOW, after this cast's own blocks have run.
@@ -2777,15 +2893,16 @@ export function runSim(
         // has not begun, so the +50% major and every "during Full Burst" buff are
         // equally absent from cast-instant burst damage. Stored-hit releases stay
         // AFTER the entry triggers (they detonate inside the window and keep auras).
-        if (!cand.burstSnapshotsPreFb)
-          {cand.blocks.forEach((b, bi) => {
+        if (!cand.burstSnapshotsPreFb) {
+          cand.blocks.forEach((b, bi) => {
             if (
               b.trigger.kind === 'burstCast' &&
               (b.trigger.stage ?? castStage) === castStage
             ) {
               applyBlock(cand.idx, b, bi, frame);
             }
-          });}
+          });
+        }
         // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
         // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
         // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
@@ -2874,12 +2991,16 @@ export function runSim(
         u.mgIdleFrames++;
         continue;
       }
-      if (u.burstCdFrames > 0) {u.burstCdFrames--;}
+      if (u.burstCdFrames > 0) {
+        u.burstCdFrames--;
+      }
 
       if (u.swap && frame >= u.swap.untilFrame) {
         const wasFlavorSwap = u.swap.trueNormals; // same-weapon flavor swap → no free reload on exit either
         u.swap = null;
-        if (!wasFlavorSwap) {u.ammo = maxAmmo(u, frame);}
+        if (!wasFlavorSwap) {
+          u.ammo = maxAmmo(u, frame);
+        }
         u.chargeProgress = 0;
         u.primed = false; // leaving a weapon-swap re-arms the once-per-mag prime (magDumpRof)
       }
@@ -3001,8 +3122,9 @@ export function runSim(
             while (
               round < MG_RAMP_INTERVALS.length &&
               MG_LADDER_CUM[round + 1] <= pos
-            )
-              {round++;}
+            ) {
+              round++;
+            }
             u.mgRampRound = round;
             u.mgCooldown = 0;
           }
@@ -3057,7 +3179,9 @@ export function runSim(
       for (const u of units) {
         const envForce = XINSTEXPL.has(u.char.slug);
         for (const entry of u.storedHits.values()) {
-          if (!envForce && !entry.instantInFb) {continue;}
+          if (!envForce && !entry.instantInFb) {
+            continue;
+          }
           if (entry.freshFrame < frame) {
             entry.releasable += entry.fresh;
             entry.fresh = 0;
@@ -3141,10 +3265,14 @@ export function runSim(
     for (let i = recoveryEmitters.length - 1; i >= 0; i--) {
       const em = recoveryEmitters[i];
       if (frame === em.nextTickFrame) {
-        for (const idx of em.targetIdxs) {fireRecovery(idx, frame);}
+        for (const idx of em.targetIdxs) {
+          fireRecovery(idx, frame);
+        }
         em.ticksRemaining--;
         em.nextTickFrame += em.intervalFrames;
-        if (em.ticksRemaining <= 0) {recoveryEmitters.splice(i, 1);}
+        if (em.ticksRemaining <= 0) {
+          recoveryEmitters.splice(i, 1);
+        }
       }
     }
   }
@@ -3168,18 +3296,24 @@ export function runSim(
     // For sgEff===sgBase this draws exactly `sgBase` Bernoulli(mean) — identical rng sequence & return
     // to the pre-primitive `k / hitsPerShot`.
     const sgLandFromMean = (mean: number): { dmg: number; gauge: number } => {
-      if (!rng) {return { dmg: (mean * sgEff) / sgBase, gauge: mean };}
+      if (!rng) {
+        return { dmg: (mean * sgEff) / sgBase, gauge: mean };
+      }
       let k = 0;
       let kBase = 0;
       const full = Math.floor(sgEff);
       for (let i = 0; i < full; i++) {
         if (rng() < mean) {
           k++;
-          if (i < sgBase) {kBase++;}
+          if (i < sgBase) {
+            kBase++;
+          }
         }
       }
       const frac = sgEff - full;
-      if (frac > 0 && rng() < frac * mean) {k++;} // fractional extra pellet (ramp); never counts toward gauge
+      if (frac > 0 && rng() < frac * mean) {
+        k++;
+      } // fractional extra pellet (ramp); never counts toward gauge
       return { dmg: k / sgBase, gauge: Math.min(kBase, sgBase) / sgBase };
     };
     const bandSg: { dmg: number; gauge: number } =
@@ -3276,8 +3410,9 @@ export function runSim(
     const consol = u.consolidation;
     let consolidating = false;
     if (consol) {
-      if (u.consolShotsLeft > 0) {consolidating = true;}
-      else {
+      if (u.consolShotsLeft > 0) {
+        consolidating = true;
+      } else {
         // accrue LANDED pellets toward the 80-pellet trigger — the kit reads "after hitting the target
         // with 80 pellets", so this consumes the cone remodel's actual per-shot landed count
         // (bandSg.dmg × sgBase = k, the pellets that hit the boss BODY = BAND_SG_HIT_FRAC, 0.47–0.8× at
@@ -3330,7 +3465,9 @@ export function runSim(
       // value = full-shot base × dmgUp with major ≈ 1.0, not 1.3 — dorothy-solo-reanalysis.json)
       noRange: consolidating || undefined,
     });
-    if (consolidating) {u.consolShotsLeft--;}
+    if (consolidating) {
+      u.consolShotsLeft--;
+    }
     // Pierce double-hit (2026-07-13 research): a Pierce-tagged shot passes through the
     // core and hits the body behind it — two hits per shot on a core-exposed boss
     // (community-verified; the reason Alice/Red Hood overperform). Second hit: same
@@ -3368,8 +3505,9 @@ export function runSim(
 
     // hit-count and per-shot skill triggers
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === 'shotFired') {applyBlock(u.idx, b, bi, frame);}
-      else if (b.trigger.kind === 'hitCount') {
+      if (b.trigger.kind === 'shotFired') {
+        applyBlock(u.idx, b, bi, frame);
+      } else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
         // RRH rocket meter fills 2× faster in her Full Burst: threshold 120 → countInFb (60)
         // while in FB. The counter carries over across the boundary (no reset) — the faster
@@ -3429,7 +3567,9 @@ export function runSim(
     // its Nth shot fires — checked AFTER block dispatch so swapGate effects ride this shot
     if (u.swap?.maxShots != null) {
       u.swap.shotsFired = (u.swap.shotsFired ?? 0) + 1;
-      if (u.swap.shotsFired >= u.swap.maxShots) {u.swap = null;}
+      if (u.swap.shotsFired >= u.swap.maxShots) {
+        u.swap = null;
+      }
     }
 
     // ROUND-COUNT buff expiry ("for N round(s)"): spend this shot's rounds from every round-scoped

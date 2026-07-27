@@ -66,8 +66,12 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 /** The override file is slot-keyed; a slot is either a Block[] or a CharacterSkills carrying blocks[]. */
 function blocksOf(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function eachEffect(
@@ -76,18 +80,24 @@ function eachEffect(
 ): void {
   for (const slot of SLOTS) {
     for (const b of blocksOf(ov, slot)) {
-      for (const eff of b.effects ?? []) {fn(eff, b, slot);}
+      for (const eff of b.effects ?? []) {
+        fn(eff, b, slot);
+      }
     }
   }
 }
 function setStat(ov: any, stat: string, value: number): void {
   eachEffect(ov, (eff) => {
-    if (eff.kind === 'buff' && eff.stat === stat) {eff.value = value;}
+    if (eff.kind === 'buff' && eff.stat === stat) {
+      eff.value = value;
+    }
   });
 }
 function renameStat(ov: any, from: string, to: string): void {
   eachEffect(ov, (eff) => {
-    if (eff.kind === 'buff' && eff.stat === from) {eff.stat = to;}
+    if (eff.kind === 'buff' && eff.stat === from) {
+      eff.stat = to;
+    }
   });
 }
 
@@ -119,7 +129,9 @@ function runWith(patch?: (ov: any) => void): Run {
 function num(e: Ev, keys: string[]): number | undefined {
   for (const k of keys) {
     const v = (e as any)[k];
-    if (typeof v === 'number' && Number.isFinite(v)) {return v;}
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      return v;
+    }
   }
   return undefined;
 }
@@ -132,7 +144,9 @@ const FRAME_KEYS = ['frame', 'tick', 'f'];
 /** rates may be emitted as 0..1 or as percentage points; normalise to 0..1. */
 function rate(e: Ev, keys: string[]): number {
   const v = num(e, keys);
-  if (v === undefined) {return 0;}
+  if (v === undefined) {
+    return 0;
+  }
   return v > 1 ? v / 100 : v;
 }
 function amount(e: Ev): number | undefined {
@@ -140,7 +154,9 @@ function amount(e: Ev): number | undefined {
 }
 function timeSec(e: Ev): number | undefined {
   const t = num(e, TIME_KEYS);
-  if (t !== undefined) {return t;}
+  if (t !== undefined) {
+    return t;
+  }
   const f = num(e, FRAME_KEYS);
   return f === undefined ? undefined : f / 60;
 }
@@ -158,14 +174,17 @@ function eveIdx(evs: Ev[]): number | null {
       e.kind === 'buffApply' &&
       e.targetSlug === SLUG &&
       typeof e.targetIdx === 'number'
-    )
-      {return e.targetIdx;}
+    ) {
+      return e.targetIdx;
+    }
   }
   return null;
 }
 function isOwn(e: Ev, idx: number | null): boolean {
   const owner = e.slug ?? e.unit ?? e.casterSlug ?? e.sourceSlug ?? e.srcSlug;
-  if (owner === SLUG) {return true;}
+  if (owner === SLUG) {
+    return true;
+  }
   const i = e.srcIdx ?? e.casterIdx ?? e.unitIdx ?? e.idx;
   return idx !== null && typeof i === 'number' && i === idx;
 }
@@ -174,7 +193,9 @@ function eveDamage(r: Run): Ev[] {
   const row: any = unitOf(r.res, SLUG);
   if (Array.isArray(row?.events)) {
     const own = (row.events as Ev[]).filter((e) => e.kind === 'damage');
-    if (own.length) {return own;}
+    if (own.length) {
+      return own;
+    }
   }
   const idx = eveIdx(r.evs);
   return r.evs.filter((e) => e.kind === 'damage' && isOwn(e, idx));
@@ -210,7 +231,9 @@ function ueWindows(r: Run): { inW: number[]; outW: number[]; casts: number } {
   for (const e of eveDamage(r).filter((d) => srcSlot(d) === 'skill1')) {
     const t = timeSec(e);
     const a = amount(e);
-    if (t === undefined || a === undefined) {continue;}
+    if (t === undefined || a === undefined) {
+      continue;
+    }
     (castTimes.some((c) => t >= c && t <= c + 10) ? inW : outW).push(a);
   }
   return { inW, outW, casts: castTimes.length };
@@ -226,14 +249,21 @@ const critScoped = runWith((ov) =>
 const atkZero = runWith((ov) => setStat(ov, 'casterAtkPct', 0));
 const ammoZero = runWith((ov) => setStat(ov, 'maxAmmoPct', 0));
 const s1GateOff = runWith((ov) => {
-  for (const b of blocksOf(ov, 'skill1')) {delete b.bossElementGate;}
+  for (const b of blocksOf(ov, 'skill1')) {
+    delete b.bossElementGate;
+  }
 });
 const s2GateOff = runWith((ov) => {
-  for (const b of blocksOf(ov, 'skill2')) {delete b.bossElementGate;}
+  for (const b of blocksOf(ov, 'skill2')) {
+    delete b.bossElementGate;
+  }
 });
 const mk2Off = runWith((ov) => {
-  for (const b of blocksOf(ov, 'burst'))
-    {if (b.target?.kind === 'self') {b.effects = [];}}
+  for (const b of blocksOf(ov, 'burst')) {
+    if (b.target?.kind === 'self') {
+      b.effects = [];
+    }
+  }
 });
 
 const ALLIES = Object.keys(base.tot).filter((s) => s !== SLUG);
@@ -291,7 +321,9 @@ describe('eve S1-a — Impact-Type Exospine: Critical Rate ▲60%, self, continu
   });
 
   it('is self-scoped: allies are byte-identical when eve crit is zeroed', () => {
-    for (const a of ALLIES) {expect(critZero.tot[a]).toBe(base.tot[a]);}
+    for (const a of ALLIES) {
+      expect(critZero.tot[a]).toBe(base.tot[a]);
+    }
   });
 });
 
@@ -314,7 +346,9 @@ describe('eve S1-b — Unstable Energy: 240% x3 sequential, after 44 CRITICAL no
       Math.max(2, 0.25 * expected)
     );
     // non-vacuity: only assert the separation when the two models genuinely differ (crit rate well under 100%)
-    if (naive > expected * 1.15) {expect(activations).toBeLessThan(naive * 0.95);}
+    if (naive > expected * 1.15) {
+      expect(activations).toBeLessThan(naive * 0.95);
+    }
   });
 
   it('Unstable Energy hits take NO core bonus and NO range bonus (rider convention)', () => {
@@ -343,8 +377,9 @@ describe('eve S1-c — Damage Taken ▲10% / 10 s, gated on an ELECTRIC target',
       true
     ); // boss-held, not a self buff
     expect(teamTotal(s1GateOff.tot)).toBeGreaterThan(teamTotal(base.tot));
-    for (const a of ALLIES)
-      {expect(s1GateOff.tot[a]).toBeGreaterThan(base.tot[a]);} // team-wide, not eve-only
+    for (const a of ALLIES) {
+      expect(s1GateOff.tot[a]).toBeGreaterThan(base.tot[a]);
+    } // team-wide, not eve-only
   });
 
   it('the window is a bounded 10 s, not permanent', () => {
@@ -375,7 +410,9 @@ describe('eve S2-a — Eagle Eye-Type Exospine: ATK ▲50% of the skill user ATK
 
   it('the ATK line is live and SELF-only: zeroing it drops eve, allies byte-identical', () => {
     expect(atkZero.tot[SLUG]).toBeLessThan(base.tot[SLUG]);
-    for (const a of ALLIES) {expect(atkZero.tot[a]).toBe(base.tot[a]);}
+    for (const a of ALLIES) {
+      expect(atkZero.tot[a]).toBe(base.tot[a]);
+    }
   });
 
   it('Max Ammunition Capacity ▲25% is applied to eve', () => {
@@ -421,7 +458,9 @@ describe('eve burst A — 457.14% of final ATK, 6 sequential hits, random enemy'
     expect(baseBurstHits.length).toBeGreaterThanOrEqual(6);
     expect(baseBurstHits.length % 6).toBe(0);
     const casts = eveEvents(base, 'burstCast').length;
-    if (casts > 0) {expect(baseBurstHits.length).toBe(6 * casts);}
+    if (casts > 0) {
+      expect(baseBurstHits.length).toBe(6 * casts);
+    }
   });
 
   it('burst-cast damage is Full-Burst exempt (it resolves before the window opens)', () => {

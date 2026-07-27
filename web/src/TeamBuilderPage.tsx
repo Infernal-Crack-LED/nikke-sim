@@ -125,13 +125,18 @@ export function TeamBuilderPage({
 
   // Dismiss the expand-choice popover on outside click / Escape
   useEffect(() => {
-    if (!showExpandChoice) {return;}
+    if (!showExpandChoice) {
+      return;
+    }
     const onDocDown = (e: globalThis.MouseEvent) => {
-      if (expandRef.current && !expandRef.current.contains(e.target as Node))
-        {setShowExpandChoice(false);}
+      if (expandRef.current && !expandRef.current.contains(e.target as Node)) {
+        setShowExpandChoice(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {setShowExpandChoice(false);}
+      if (e.key === 'Escape') {
+        setShowExpandChoice(false);
+      }
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -150,7 +155,9 @@ export function TeamBuilderPage({
     setShowExpandChoice(false);
     setTeamSlots((prev) => {
       const target = mode === 'solo' ? 25 : 15;
-      if (prev.length >= target) {return prev.slice(0, target);}
+      if (prev.length >= target) {
+        return prev.slice(0, target);
+      }
       return [
         ...prev,
         ...Array.from({ length: target - prev.length }, () => null),
@@ -188,7 +195,9 @@ export function TeamBuilderPage({
         return next;
       }
       const emptyIdx = prev.indexOf(null);
-      if (emptyIdx < 0) {return prev;} // team full — remove one to add another
+      if (emptyIdx < 0) {
+        return prev;
+      } // team full — remove one to add another
       const next = [...prev];
       next[emptyIdx] = slug;
       return next;
@@ -220,7 +229,9 @@ export function TeamBuilderPage({
   // The name comes from the inline field (no window.prompt); the App-side
   // onSaveTeam no longer prompts either — the old flow prompted twice.
   const doSaveTeamBuilder = async (name: string) => {
-    if (!hasTeam) {return;}
+    if (!hasTeam) {
+      return;
+    }
     try {
       await onSaveTeam(teamSlots, name);
       setNamingTb(false);
@@ -240,12 +251,16 @@ export function TeamBuilderPage({
         );
 
   const handleCopyToSim = () => {
-    if (!hasTeam) {return;}
+    if (!hasTeam) {
+      return;
+    }
     setCopyWarning(onCopyToSim(teamSlots));
   };
 
   const handleCopyToRoster = () => {
-    if (!hasTeam) {return;}
+    if (!hasTeam) {
+      return;
+    }
     const mode = rosterMode === 'union' ? 'union' : 'solo';
     setCopyWarning(onCopyToRoster(currentRows(), mode));
   };

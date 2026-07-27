@@ -179,20 +179,26 @@ const isS2Passive = (b: any) =>
 // T2 nearest-wrong (scope): alliesOfElementWeapon → allies (hit all 5 slots, not just Electric AR).
 const cfS2ScopeAllies = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina S2 passive block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // T2 nearest-wrong (stat): casterMaxHpPct → targetMaxHpPct (per-target value, not caster-sourced constant).
 const cfS2TargetMaxHp = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina S2 passive block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterMaxHpPct').stat =
     'targetMaxHpPct';
 });
 // T2 nearest-wrong (duration): add a 10s expiry to the "constantly" passive.
 const cfS2PassiveDur = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina S2 passive block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.stat === 'casterMaxHpPct').durationSec = 10;
 });
 // The S2 burstCast 94.15/50.82 block (T4 under test).
@@ -204,23 +210,28 @@ const isS2BurstBuff = (b: any) =>
 // T4 nearest-wrong (count): count 1 → 99 (buff BOTH Electric AR allies, not just the leftmost).
 const cfS2Count99 = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
-  if (!b)
-    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina S2 burstCast block missing — fixture is stale');
+  }
   b.target.count = 99;
 });
 // T4 nearest-wrong (trigger): burstCast → fullBurstEnter (every team FB, not every trina cast).
 const cfS2FbEnter = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
-  if (!b)
-    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina S2 burstCast block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T4 nearest-wrong (duration): the 10s window shortened to 3s.
 const cfS2Dur3 = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
-  if (!b)
-    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
-  for (const e of b.effects) {e.durationSec = 3;}
+  if (!b) {
+    throw new Error('trina S2 burstCast block missing — fixture is stale');
+  }
+  for (const e of b.effects) {
+    e.durationSec = 3;
+  }
 });
 // The burst all-allies 20.9/20.14 block (T5 under test).
 const isBurstAllAllies = (b: any) =>
@@ -229,15 +240,17 @@ const isBurstAllAllies = (b: any) =>
 // T5 nearest-wrong (trigger): burstCast → fullBurstEnter.
 const cfBurstFbEnter = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstAllAllies);
-  if (!b)
-    {throw new Error('trina burst all-allies block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina burst all-allies block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T5 nearest-wrong (scope): allies → alliesOfElementWeapon (Electric AR only, not all 5).
 const cfBurstScopeElecAR = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstAllAllies);
-  if (!b)
-    {throw new Error('trina burst all-allies block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina burst all-allies block missing — fixture is stale');
+  }
   b.target = {
     kind: 'alliesOfElementWeapon',
     element: 'Electric',
@@ -253,8 +266,9 @@ const isBurstMaxAmmo = (b: any) =>
 // T8 nearest-wrong (the shipped encoding): flat 20 rounds → maxAmmoPct 33.3 (a percentage approximation).
 const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstMaxAmmo);
-  if (!b)
-    {throw new Error('trina burst maxAmmo block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina burst maxAmmo block missing — fixture is stale');
+  }
   const eff = b.effects.find(
     (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct'
   );
@@ -264,8 +278,9 @@ const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
 // T8 nearest-wrong (scope): Electric AR → allies (hit all 5 slots).
 const cfMaxAmmoScopeAllies = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstMaxAmmo);
-  if (!b)
-    {throw new Error('trina burst maxAmmo block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('trina burst maxAmmo block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 
@@ -478,7 +493,9 @@ describe('trina — kit spec', () => {
         'maxAmmoFlat',
         'maxAmmoPct',
       ]);
-      for (const s of burstStats) {expect(modeled.has(s)).toBe(true);}
+      for (const s of burstStats) {
+        expect(modeled.has(s)).toBe(true);
+      }
       expect(burstStats.has('attackDamagePct')).toBe(true);
       expect(burstStats.has('maxHpFlat')).toBe(true);
       expect(burstStats.size).toBe(3);

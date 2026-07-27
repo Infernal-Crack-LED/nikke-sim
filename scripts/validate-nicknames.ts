@@ -28,28 +28,36 @@ const claims = new Map<string, string[]>();
 const errors: string[] = [];
 for (const [slug, c] of Object.entries(chars)) {
   for (const n of c.nicknames ?? []) {
-    if (n !== n.toLowerCase().trim() || !n)
-      {errors.push(`"${n}" (${slug}): not lowercase/trimmed/non-empty`);}
+    if (n !== n.toLowerCase().trim() || !n) {
+      errors.push(`"${n}" (${slug}): not lowercase/trimmed/non-empty`);
+    }
     (claims.get(n) ?? claims.set(n, []).get(n)!).push(slug);
     const owner = fullNames.get(n);
-    if (owner) {errors.push(`"${n}" (${slug}): equals full name of ${owner}`);}
+    if (owner) {
+      errors.push(`"${n}" (${slug}): equals full name of ${owner}`);
+    }
     const bases = baseOwners.get(n);
-    if (bases && bases.size >= 2)
-      {errors.push(
+    if (bases && bases.size >= 2) {
+      errors.push(
         `"${n}" (${slug}): equals ambiguous base name (${[...bases].sort().join(', ')})`
-      );}
+      );
+    }
   }
 }
-for (const [n, slugs] of claims)
-  {if (slugs.length > 1)
-    {errors.push(
+for (const [n, slugs] of claims) {
+  if (slugs.length > 1) {
+    errors.push(
       `"${n}": claimed by multiple units (${slugs.sort().join(', ')})`
-    );}}
+    );
+  }
+}
 
 const total = [...claims.keys()].length;
 if (errors.length) {
   console.error(`nickname validation FAILED (${errors.length}):`);
-  for (const e of errors) {console.error(`  - ${e}`);}
+  for (const e of errors) {
+    console.error(`  - ${e}`);
+  }
   process.exit(1);
 }
 console.log(`nicknames OK — ${total} approved nicknames, all unambiguous`);

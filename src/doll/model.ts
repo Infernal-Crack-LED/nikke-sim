@@ -42,15 +42,22 @@ interface ProcFile {
 // Expected kits of each tier per box-open, from the box drop rates.
 function kitSupplyPerBox(economy: EconomyFile): Record<ToolboxTier, number> {
   const drops = economy.kitDropRates;
-  if (!drops) {return { R: 1, SR: 1, SSR: 1 };}
+  if (!drops) {
+    return { R: 1, SR: 1, SSR: 1 };
+  }
   const supply: Record<ToolboxTier, number> = { R: 0, SR: 0, SSR: 0 };
   let totW = 0;
   for (const box of drops.boxes) {
     totW += box.weight;
-    for (const o of box.outcomes)
-      {for (const t of TIERS) {supply[t] += box.weight * o.p * (o.kits[t] ?? 0);}}
+    for (const o of box.outcomes) {
+      for (const t of TIERS) {
+        supply[t] += box.weight * o.p * (o.kits[t] ?? 0);
+      }
+    }
   }
-  for (const t of TIERS) {supply[t] /= totW || 1;}
+  for (const t of TIERS) {
+    supply[t] /= totW || 1;
+  }
   return supply;
 }
 
@@ -76,7 +83,11 @@ export function buildModel(economy: EconomyFile, proc: ProcFile): DollModel {
 // The checkpoint a super-success from phase L jumps to (the first checkpoint > L),
 // or the max phase if already past the last one.
 export function nextCheckpoint(model: DollModel, L: number): number {
-  for (const c of model.checkpoints) {if (c > L) {return c;}}
+  for (const c of model.checkpoints) {
+    if (c > L) {
+      return c;
+    }
+  }
   return model.maxPhase;
 }
 
@@ -112,7 +123,9 @@ export function applyMiss(
     nxp -= threshold;
     nL++;
   }
-  if (nL >= model.maxPhase) {nxp = 0;}
+  if (nL >= model.maxPhase) {
+    nxp = 0;
+  }
   return { L: nL, xp: nxp };
 }
 

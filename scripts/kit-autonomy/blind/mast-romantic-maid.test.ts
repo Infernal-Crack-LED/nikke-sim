@@ -65,7 +65,9 @@ const SLUG = 'mast-romantic-maid';
 function run(overrides?: Record<string, unknown>) {
   const events: Ev[] = [];
   const opts = controlComp(SLUG, true) as Record<string, unknown>;
-  if (overrides) {opts.overrides = overrides;}
+  if (overrides) {
+    opts.overrides = overrides;
+  }
   const cfg = (opts.cfg ?? {}) as Record<string, unknown>;
   cfg.onEvent = (ev: SimEvent) => {
     events.push(ev as Ev);
@@ -133,8 +135,9 @@ describe('mast-romantic-maid — skill1a: Drunken (Hit Rate ▼20%, up to 3 stac
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const e of b.effects ?? []) {
-          if ((e as { stat?: string }).stat === 'hitRatePct')
-            {(e as { value: number }).value = 0;}
+          if ((e as { stat?: string }).stat === 'hitRatePct') {
+            (e as { value: number }).value = 0;
+          }
         }
       }
     });
@@ -271,8 +274,9 @@ describe('mast-romantic-maid — skill2a: on Burst Stage 3 entry while Drunken �
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2 ?? []) {
         for (const e of b.effects ?? []) {
-          if ((e as { stat?: string }).stat === 'reloadSpeedPct')
-            {(e as { value: number }).value = 0;}
+          if ((e as { stat?: string }).stat === 'reloadSpeedPct') {
+            (e as { value: number }).value = 0;
+          }
         }
       }
     });
@@ -326,8 +330,9 @@ describe('mast-romantic-maid — skill2b: Hangover (max stacks at end of Full Bu
     );
     expect(shots.length).toBeGreaterThan(0);
     let maxGap = 0;
-    for (let i = 1; i < shots.length; i++)
-      {maxGap = Math.max(maxGap, shots[i] - shots[i - 1]);}
+    for (let i = 1; i < shots.length; i++) {
+      maxGap = Math.max(maxGap, shots[i] - shots[i - 1]);
+    }
     // Her reload is 171 frames (~2.85 s); a 10 s stun is ~600 frames and cannot be confused
     // with a reload. Non-vacuity for the stun claim.
     expect(maxGap).toBeGreaterThan(400);
@@ -365,10 +370,12 @@ describe('mast-romantic-maid — burst: allies Crit DMG ▲40.04% + Attack DMG �
     );
     expect(cd.length).toBeGreaterThan(0);
     expect(ad.length).toBeGreaterThan(0);
-    for (const e of cd)
-      {expect((e as { value: number }).value).toBeCloseTo(40.04, 4);}
-    for (const e of ad)
-      {expect((e as { value: number }).value).toBeCloseTo(15.04, 4);}
+    for (const e of cd) {
+      expect((e as { value: number }).value).toBeCloseTo(40.04, 4);
+    }
+    for (const e of ad) {
+      expect((e as { value: number }).value).toBeCloseTo(15.04, 4);
+    }
     expect(
       new Set(cd.map((e) => (e as { targetSlug?: string }).targetSlug)).size
     ).toBeGreaterThanOrEqual(4);
@@ -452,7 +459,9 @@ describe('mast-romantic-maid — cross-cutting inertness', () => {
   it('with her entire override neutralised, teammates lose damage (she is a real support, not inert)', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-        for (const b of ov[slot] ?? []) {b.effects = [];}
+        for (const b of ov[slot] ?? []) {
+          b.effects = [];
+        }
       }
     });
     const alt = run({ [SLUG]: patched });

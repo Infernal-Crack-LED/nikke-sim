@@ -97,33 +97,46 @@ function run(
 const mintFullS1 = withPatchedOverride('mint', (ov) => {
   const solo = ov.skill1.find((b: any) => b.mode === 'solo');
   const e = solo?.effects.find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'mint solo S1 casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.value = 45.02;
 });
 /** M2 nearest-wrong: FULL Singing values on the solo stage-3 trio (19.94 / 50 / 32.72). */
 const mintFullS2 = withPatchedOverride('mint', (ov) => {
   const solo = ov.skill2.find((b: any) => b.mode === 'solo');
-  if (!solo) {throw new Error('mint solo S2 block missing — fixture is stale');}
+  if (!solo) {
+    throw new Error('mint solo S2 block missing — fixture is stale');
+  }
   const full: Record<string, number> = {
     critRatePct: 19.94,
     projectileExplosionPct: 50,
     pierceDamagePct: 32.72,
   };
-  for (const e of solo.effects) {if (e.stat in full) {e.value = full[e.stat];}}
+  for (const e of solo.effects) {
+    if (e.stat in full) {
+      e.value = full[e.stat];
+    }
+  }
 });
 /** M3 nearest-wrong: "the burst is Singing-gated too" → halve the Sing Along trio. */
 const mintHalvedBurst = withPatchedOverride('mint', (ov) => {
   const b = ov.burst[0];
-  if (!b) {throw new Error('mint burst block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('mint burst block missing — fixture is stale');
+  }
   const half: Record<string, number> = {
     attackDamagePct: 15.01,
     maxAmmoPct: 20,
     critDamagePct: 22.525,
   };
-  for (const e of b.effects) {if (e.stat in half) {e.value = half[e.stat];}}
+  for (const e of b.effects) {
+    if (e.stat in half) {
+      e.value = half[e.stat];
+    }
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

@@ -88,7 +88,9 @@ const hasStat = (b: any, stat: string) =>
   b.effects.some((e: any) => e.stat === stat);
 const blockWith = (ov: any, slot: string, pred: (b: any) => boolean) => {
   const b = ov[slot].find(pred);
-  if (!b) {throw new Error(`ebs ${slot} block missing — fixture is stale`);}
+  if (!b) {
+    throw new Error(`ebs ${slot} block missing — fixture is stale`);
+  }
   return b;
 };
 
@@ -96,8 +98,9 @@ const blockWith = (ov: any, slot: string, pred: (b: any) => boolean) => {
 const ebsNoS1Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'casterAtkPct'));
-  if (ov.skill1.length === before)
-    {throw new Error('ebs S1 casterAtkPct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('ebs S1 casterAtkPct block missing — fixture is stale');
+  }
 });
 /** H1 counterfactual: the ≥1 tier as an UNSCOPED all-ally ATK buff. */
 const ebsUnscopedS1Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
@@ -109,8 +112,9 @@ const ebsUnscopedS1Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
 const ebsNoS2Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill2.length === before)
-    {throw new Error('ebs S2 atkPct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ebs S2 atkPct block missing — fixture is stale');
+  }
 });
 /** H4 reference: ≥4-ghost Elemental Advantage tier removed. */
 const ebsNoElemAdv = withPatchedOverride('elegg-boom-and-shock', (ov) => {
@@ -169,8 +173,9 @@ const firstFrame = (bs: BuffApply[]) => Math.min(...bs.map((b) => b.frame));
 /** Burst hits land instant on the cast frame, so hits-per-cast = burst damage grouped by frame. */
 const hitsByFrame = (evs: SimEvent[]) => {
   const m = new Map<number, number>();
-  for (const d of ebsDamage(evs, 'burst'))
-    {m.set(d.frame, (m.get(d.frame) ?? 0) + 1);}
+  for (const d of ebsDamage(evs, 'burst')) {
+    m.set(d.frame, (m.get(d.frame) ?? 0) + 1);
+  }
   return [...m.entries()].sort((a, b) => a[0] - b[0]);
 };
 
@@ -232,7 +237,9 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
     });
 
     it('is a 10-second window', () => {
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is live: removing it changes her damage', () => {

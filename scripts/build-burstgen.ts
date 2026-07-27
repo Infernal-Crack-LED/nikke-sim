@@ -18,7 +18,11 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { rankBurstGen, BURSTGEN_PROFILES, type RanksCtx } from '../src/ranks/burstgen.js';
+import {
+  rankBurstGen,
+  BURSTGEN_PROFILES,
+  type RanksCtx,
+} from '../src/ranks/burstgen.js';
 import type { BurstGenArtifact, BurstGenRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
@@ -36,8 +40,9 @@ try {
 }
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
+for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -47,7 +52,9 @@ const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 // misses, e.g. trina/jill/mana).
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (!c.simSupported) continue;
+  if (!c.simSupported) {
+    continue;
+  }
   population.push(slug);
 }
 
@@ -75,10 +82,10 @@ const artifact: BurstGenArtifact = {
           imageUrl: c.imageUrl ?? null,
         },
       ];
-    }),
+    })
   ),
   profiles: Object.fromEntries(
-    Object.values(BURSTGEN_PROFILES).map((p) => [p.id, p.note]),
+    Object.values(BURSTGEN_PROFILES).map((p) => [p.id, p.note])
   ),
   entries: ranked.map((r): BurstGenRow => [
     r.slug,
@@ -98,7 +105,10 @@ process.stderr.write(
   `burstgen: ${ranked.length} units ranked → ${out}\n` +
     ranked
       .slice(0, 10)
-      .map((r) => `  #${r.rank} ${r.slug} ${r.barsPerFight.toFixed(1)} bars${r.profile ? ` [${r.profile}]` : ''}`)
+      .map(
+        (r) =>
+          `  #${r.rank} ${r.slug} ${r.barsPerFight.toFixed(1)} bars${r.profile ? ` [${r.profile}]` : ''}`
+      )
       .join('\n') +
-    '\n',
+    '\n'
 );

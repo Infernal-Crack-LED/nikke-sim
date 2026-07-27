@@ -68,9 +68,15 @@ const near = (a: number, b: number) => Math.abs(a - b) < 0.01;
 
 function slotBlocks(ov: any, slot: string): any[] {
   const v = ov?.[slot];
-  if (!v) {return [];}
-  if (Array.isArray(v)) {return v;}
-  if (Array.isArray(v.blocks)) {return v.blocks;}
+  if (!v) {
+    return [];
+  }
+  if (Array.isArray(v)) {
+    return v;
+  }
+  if (Array.isArray(v.blocks)) {
+    return v.blocks;
+  }
   return [];
 }
 function allBlocks(ov: any): any[] {
@@ -100,7 +106,9 @@ function patchEffects(fn: (e: any) => any | null): {
   let touched = 0;
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
-      if (!Array.isArray(b.effects)) {continue;}
+      if (!Array.isArray(b.effects)) {
+        continue;
+      }
       const next: any[] = [];
       for (const e of b.effects) {
         const r = fn(e);
@@ -108,7 +116,9 @@ function patchEffects(fn: (e: any) => any | null): {
           touched += 1;
           continue;
         }
-        if (r !== e) {touched += 1;}
+        if (r !== e) {
+          touched += 1;
+        }
         next.push(r);
       }
       b.effects = next;
@@ -130,7 +140,9 @@ function run(ov?: any): Run {
       evs.push(ev as any);
     },
   };
-  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
+  if (ov) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  }
   const res = runComp(opts);
   const all = totals(res) as unknown as Record<string, number>;
   return { total: all[SLUG], all, evs, res };

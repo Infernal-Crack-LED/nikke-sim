@@ -86,17 +86,25 @@ const mbcSingleChain = withPatchedOverride(SLUG, (ov) => {
   const dumps = ov.skill1.filter((b: any) =>
     b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (dumps.length !== 2)
-    {throw new Error('mbc S1 expected 2 flatDamage dumps — fixture is stale');}
-  for (const b of dumps)
-    {for (const e of b.effects) {if (e.kind === 'flatDamage') {e.atkPct = 50.06;}}}
+  if (dumps.length !== 2) {
+    throw new Error('mbc S1 expected 2 flatDamage dumps — fixture is stale');
+  }
+  for (const b of dumps) {
+    for (const e of b.effects) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 50.06;
+      }
+    }
+  }
 });
 /** M2: the OLD permanent-20-stack baseline (501.6%/s) that read 1.19–1.51 hot. */
 const mbcHot20Stack = withPatchedOverride(SLUG, (ov) => {
   const dot = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.kind === 'dot');
-  if (!dot) {throw new Error('mbc S1 baseline dot missing — fixture is stale');}
+  if (!dot) {
+    throw new Error('mbc S1 baseline dot missing — fixture is stale');
+  }
   dot.atkPct = 501.6;
 });
 /** M3: the NAIVE double-count — burst Dragging Chain at the full 1001%/s on top of the baseline. */
@@ -104,7 +112,9 @@ const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
   const dot = ov.burst
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.kind === 'dot');
-  if (!dot) {throw new Error('mbc burst dot missing — fixture is stale');}
+  if (!dot) {
+    throw new Error('mbc burst dot missing — fixture is stale');
+  }
   dot.atkPct = 1001;
 });
 /** M4: the stage-3 sustained-damage buff removed entirely (proves it is live). */
@@ -113,10 +123,11 @@ const mbcNoS2Buff = withPatchedOverride(SLUG, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'sustainedDamagePct')
   );
-  if (ov.skill2.length === before)
-    {throw new Error(
+  if (ov.skill2.length === before) {
+    throw new Error(
       'mbc S2 sustainedDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -264,8 +275,9 @@ describe('mihara-bonding-chain — kit spec', () => {
         'no stage-3 sustainedDamagePct buff applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([59.98]);
-      for (const b of applied)
-        {expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);
+      }
       expect(applied.length, 'fires once per Burst Stage 3 entry').toBe(
         mbcBursts(base.events).length
       );

@@ -130,18 +130,20 @@ const dotBlock = (ov: any) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'dot')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'rosanna-chic-ocean S2 dot block missing — fixture is stale'
-    );}
+    );
+  }
   return b;
 };
 const dotEffect = (ov: any) => {
   const e = dotBlock(ov).effects.find((x: any) => x.kind === 'dot');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'rosanna-chic-ocean S2 dot effect missing — fixture is stale'
-    );}
+    );
+  }
   return e;
 };
 
@@ -156,16 +158,19 @@ const cfDotLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
 });
 /** R2/R3 counterfactual: burst trigger re-keyed to fullBurstEnter (trigger-identity misread). */
 const cfFbEnter = withPatchedOverride('rosanna-chic-ocean', (ov) => {
-  for (const b of ov.burst) {b.trigger = { kind: 'fullBurstEnter' };}
+  for (const b of ov.burst) {
+    b.trigger = { kind: 'fullBurstEnter' };
+  }
 });
 /** R2 counterfactual: sustained Damage line removed (functional — collapses in-window dmgUp). */
 const cfNoSust = withPatchedOverride('rosanna-chic-ocean', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'rosanna-chic-ocean burst sustainedDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** R2 counterfactual: lvl-9 value 19.4 (value pin). */
 const cfSustLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
@@ -177,10 +182,11 @@ const cfSustLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
 const cfNoTaken = withPatchedOverride('rosanna-chic-ocean', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'rosanna-chic-ocean burst damageTakenPct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** R3 counterfactual: lvl-9 value 30.76 (value pin). */
 const cfTakenLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {

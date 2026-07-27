@@ -17,7 +17,11 @@ export interface RankUnitMeta {
 }
 
 // [slug, gaugeTotal, profile] — sorted desc by gaugeTotal; 100 = one full bar.
-export type BurstGenRow = [slug: string, gaugeTotal: number, profile: string | null];
+export type BurstGenRow = [
+  slug: string,
+  gaugeTotal: number,
+  profile: string | null,
+];
 export interface BurstGenArtifact {
   generatedAt: string;
   methodology: string;

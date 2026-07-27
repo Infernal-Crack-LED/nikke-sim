@@ -172,7 +172,9 @@ describe('cfg.onEvent structured event log', () => {
       const base = Math.min(...mine.map((e) => e.critRate)); // unbuffed sheet rate
       for (const e of mine) {
         if (e.bucket === 'normal') {
-          if (e.critRate > base) {sawBoost = true;}
+          if (e.critRate > base) {
+            sawBoost = true;
+          }
         } else if (e.critRate > base) {
           leaked.push(
             `${slug}/${e.bucket}@${e.sec.toFixed(2)}s rate=${e.critRate.toFixed(4)} > base ${base.toFixed(4)}`
@@ -251,11 +253,15 @@ describe('cfg.onEvent structured event log', () => {
     let seen = 0;
     const orphans: string[] = [];
     for (const e of events) {
-      if (e.kind === 'fullBurstStart') {open = true;}
-      else if (e.kind === 'fullBurstEnd') {open = false;}
-      else if (e.kind === 'damage' && e.inFullBurst) {
+      if (e.kind === 'fullBurstStart') {
+        open = true;
+      } else if (e.kind === 'fullBurstEnd') {
+        open = false;
+      } else if (e.kind === 'damage' && e.inFullBurst) {
         seen++;
-        if (!open) {orphans.push(`${e.slug}/${e.srcSlot}@${e.sec.toFixed(2)}s`);}
+        if (!open) {
+          orphans.push(`${e.slug}/${e.srcSlot}@${e.sec.toFixed(2)}s`);
+        }
       }
     }
     expect(

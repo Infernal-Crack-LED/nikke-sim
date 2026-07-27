@@ -62,12 +62,14 @@ const base = run(controlComp(ADA, true));
 const longCharge = run({
   ...controlComp(ADA, true),
   overridesPatch: withPatchedOverride(ADA, (ov: any) => {
-    for (const blk of ov.blocks)
-      {for (const eff of blk.effects)
-        {if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct') {
+    for (const blk of ov.blocks) {
+      for (const eff of blk.effects) {
+        if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct') {
           delete eff.durationShots;
           eff.durationSec = 10;
-        }}}
+        }
+      }
+    }
   }),
 });
 

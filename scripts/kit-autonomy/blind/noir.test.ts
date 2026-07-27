@@ -54,14 +54,20 @@ const TEAMMATES = ['liter', 'crown', 'helm'] as const;
 // CharacterSkills-per-slot shape so the patch helpers cannot silently no-op.
 const slotBlocks = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (Array.isArray(s)) {return s;}
-  if (s && Array.isArray(s.blocks)) {return s.blocks;}
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (s && Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   return [];
 };
 const setSlotBlocks = (ov: any, slot: Slot, blocks: any[]): void => {
-  if (Array.isArray(ov?.[slot])) {ov[slot] = blocks;}
-  else if (ov?.[slot] && Array.isArray(ov[slot].blocks))
-    {ov[slot].blocks = blocks;}
+  if (Array.isArray(ov?.[slot])) {
+    ov[slot] = blocks;
+  } else if (ov?.[slot] && Array.isArray(ov[slot].blocks)) {
+    ov[slot].blocks = blocks;
+  }
 };
 const effectsOf = (b: any): any[] =>
   Array.isArray(b?.effects) ? b.effects : [];
@@ -100,36 +106,49 @@ const pNoS2 = withPatchedOverride('noir', (ov: any) =>
   setSlotBlocks(ov, 'skill2', [])
 );
 const pNoReload = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'skill2'))
-    {b.effects = effectsOf(b).filter((e) => e.kind !== 'instantReload');}
+  for (const b of slotBlocks(ov, 'skill2')) {
+    b.effects = effectsOf(b).filter((e) => e.kind !== 'instantReload');
+  }
 });
 const pS2AsBurstCast = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'skill2')) {b.trigger = { kind: 'burstCast' };}
+  for (const b of slotBlocks(ov, 'skill2')) {
+    b.trigger = { kind: 'burstCast' };
+  }
 });
 const pUngated = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'burst')) {delete b.teamHas;}
+  for (const b of slotBlocks(ov, 'burst')) {
+    delete b.teamHas;
+  }
 });
 const pNoSgHitRate = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'burst'))
-    {b.effects = effectsOf(b).filter(
+  for (const b of slotBlocks(ov, 'burst')) {
+    b.effects = effectsOf(b).filter(
       (e) =>
         !(
           e.kind === 'buff' &&
           e.stat === 'hitRatePct' &&
           Math.abs(Number(e.value) - 13.93) < 1e-6
         )
-    );}
+    );
+  }
 });
 const pNoParts = withPatchedOverride('noir', (ov: any) => {
-  for (const slot of ['skill1', 'skill2', 'burst'] as Slot[])
-    {for (const b of slotBlocks(ov, slot))
-      {b.effects = effectsOf(b).filter(
+  for (const slot of ['skill1', 'skill2', 'burst'] as Slot[]) {
+    for (const b of slotBlocks(ov, slot)) {
+      b.effects = effectsOf(b).filter(
         (e) => !(e.kind === 'buff' && e.stat === 'partsDamagePct')
-      );}}
+      );
+    }
+  }
 });
 const pNoNuke = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'burst'))
-    {for (const e of effectsOf(b)) {if (e.kind === 'flatDamage') {e.atkPct = 0;}}}
+  for (const b of slotBlocks(ov, 'burst')) {
+    for (const e of effectsOf(b)) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+      }
+    }
+  }
 });
 
 // ---- hoisted runs --------------------------------------------------------------------------
@@ -208,7 +227,9 @@ describe('noir S1 — all allies, ATK ▲ 14.08% of the skill user\u2019s ATK, c
   });
 
   it('moves EVERY ally\u2019s damage (team-wide), not just noir\u2019s', () => {
-    for (const s of ALLIES) {expect(offS1.t[s]).toBeLessThan(base.t[s]);}
+    for (const s of ALLIES) {
+      expect(offS1.t[s]).toBeLessThan(base.t[s]);
+    }
   });
 
   it.skip('the ">70% HP" activation gate is unobservable in v1 (immortal boss, no HP pool) — modeled as permanently satisfied', () => {
@@ -266,7 +287,9 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
 
   it('the 351.64% burst nuke pays real damage and touches NOBODY else', () => {
     expect(noNuke.t.noir).toBeLessThan(base.t.noir);
-    for (const s of TEAMMATES) {expect(noNuke.t[s]).toBe(base.t[s]);} // enemy-targeted: inert on allies
+    for (const s of TEAMMATES) {
+      expect(noNuke.t[s]).toBe(base.t[s]);
+    } // enemy-targeted: inert on allies
   });
 
   it('Hit Rate ▲ 13.93% is SHOTGUN-scoped: a strict subset of allies that includes noir', () => {
@@ -283,12 +306,16 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
 
   it('Hit Rate ▲ 13.93% is load-bearing for noir and inert for the non-shotgun teammates', () => {
     expect(offSgHr.t.noir).toBeLessThan(base.t.noir); // hit rate lifts core rate
-    for (const s of TEAMMATES) {expect(offSgHr.t[s]).toBe(base.t[s]);}
+    for (const s of TEAMMATES) {
+      expect(offSgHr.t[s]).toBe(base.t[s]);
+    }
   });
 
   it('Interruption-Part Damage ▲ 23.23% rides the same block but MOVES NOTHING (v1 boss has no parts)', () => {
     expect(parts23).toHaveLength(hr13.length); // same trigger, same target set
-    for (const s of ALLIES) {expect(offParts.t[s]).toBe(base.t[s]);} // parsed-but-inert, byte-identical
+    for (const s of ALLIES) {
+      expect(offParts.t[s]).toBe(base.t[s]);
+    } // parsed-but-inert, byte-identical
   });
 
   it('the same-squad block is CLOSED with no squad-mate on the field', () => {

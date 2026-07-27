@@ -81,8 +81,12 @@ type AnyBlock = {
 
 function slotBlocks(ov: any, slot: Slot): AnyBlock[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s as AnyBlock[];}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s as AnyBlock[];
+  }
   return Array.isArray(s.blocks) ? (s.blocks as AnyBlock[]) : [];
 }
 const SLOTS: Slot[] = ['skill1', 'skill2', 'burst'];
@@ -118,8 +122,9 @@ const buffOf = (b: AnyBlock | undefined, re: RegExp) =>
   );
 
 function stripEffects(ov: any, pred: (e: any) => boolean) {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => !pred(e));}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => !pred(e));
+  }
 }
 
 /* ── run harness ─────────────────────────────────────────────────────────── */
@@ -199,7 +204,9 @@ function markerIndices(evs: SimEvent[], v: number): number[] {
 function precedingFbBoundary(evs: SimEvent[], idx: number): string | null {
   for (let i = idx - 1; i >= 0; i--) {
     const k = (evs[i] as any).kind;
-    if (k === 'fullBurstStart' || k === 'fullBurstEnd') {return k;}
+    if (k === 'fullBurstStart' || k === 'fullBurstEnd') {
+      return k;
+    }
   }
   return null;
 }
@@ -210,21 +217,23 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 /* ── mutators ────────────────────────────────────────────────────────────── */
 function instrument(ov: any) {
   const s1 = shieldBlock(ov);
-  if (s1)
-    {s1.effects.push({
+  if (s1) {
+    s1.effects.push({
       kind: 'buff',
       stat: MARK_STAT,
       value: MARK_S1,
       durationSec: 1,
-    });}
+    });
+  }
   const s2 = s2HealBlock(ov);
-  if (s2)
-    {s2.effects.push({
+  if (s2) {
+    s2.effects.push({
       kind: 'buff',
       stat: MARK_STAT,
       value: MARK_S2,
       durationSec: 1,
-    });}
+    });
+  }
 }
 
 /* ── hoisted runs (11 × 180 s sims) ──────────────────────────────────────── */
@@ -233,14 +242,20 @@ const INSTR = run(instrument);
 const INSTR60 = run((ov) => {
   instrument(ov);
   const b = shieldBlock(ov);
-  if (b && typeof b.trigger?.count === 'number')
-    {b.trigger.count = HIT_COUNT / 2;}
+  if (b && typeof b.trigger?.count === 'number') {
+    b.trigger.count = HIT_COUNT / 2;
+  }
 });
 const NO_SHIELD = run((ov) => stripEffects(ov, (e) => e.kind === 'shield'));
 const NO_HEAL = run((ov) => stripEffects(ov, (e) => e.kind === 'heal'));
 const ONE_TICK = run((ov) => {
-  for (const b of allBlocks(ov))
-    {for (const e of b.effects ?? []) {if (e.kind === 'heal') {e.ticks = 1;}}}
+  for (const b of allBlocks(ov)) {
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'heal') {
+        e.ticks = 1;
+      }
+    }
+  }
 });
 const NO_CDR = run((ov) => stripEffects(ov, (e) => e.kind === 'burstCdr'));
 const NO_GATE = run((ov) => {
@@ -255,7 +270,9 @@ const NO_DT = run((ov) =>
 );
 const DT_LONG = run((ov) => {
   const e = buffOf(dtBlock(ov), /^damageTakenPct$/);
-  if (e) {e.durationSec = 120;}
+  if (e) {
+    e.durationSec = 120;
+  }
 });
 const NO_MAXHP = run((ov) =>
   stripEffects(ov, (e) => e.kind === 'buff' && /maxhp/i.test(String(e.stat)))
@@ -312,7 +329,9 @@ describe('blanc S1 — shared shield after 120 normal attacks (all allies, 5 s)'
     // Target set, read from the live engine rather than the JSON: every comp member is shielded.
     const tg = markerTargets(INSTR, MARK_S1);
     expect(tg.size).toBe(ROSTER.length);
-    for (const s of ROSTER) {expect(tg.has(s)).toBe(true);}
+    for (const s of ROSTER) {
+      expect(tg.has(s)).toBe(true);
+    }
     // Discriminator: halving the threshold must roughly double the fires. RED under a
     // lastBullet / interval / hitCount:60 encoding, where the patch changes nothing.
     const ratio = markerFires(INSTR60, MARK_S1) / Math.max(1, fires);
@@ -350,11 +369,14 @@ describe('blanc S2a — Full-Burst-END team heal-over-time (5 ticks × 1 s)', ()
     expect(idxs.length).toBe(countKind(INSTR.evs, 'fullBurstEnd'));
     // Stream-order discriminator: each activation must sit after a fullBurstEnd, never after a
     // fullBurstStart. RED under a fullBurstEnter keying, whose per-fight COUNT is identical.
-    for (const i of idxs)
-      {expect(precedingFbBoundary(INSTR.evs, i)).toBe('fullBurstEnd');}
+    for (const i of idxs) {
+      expect(precedingFbBoundary(INSTR.evs, i)).toBe('fullBurstEnd');
+    }
     const tg = markerTargets(INSTR, MARK_S2);
     expect(tg.size).toBe(ROSTER.length);
-    for (const s of ROSTER) {expect(tg.has(s)).toBe(true);}
+    for (const s of ROSTER) {
+      expect(tg.has(s)).toBe(true);
+    }
   });
 
   it('blanc\u2019s heals are NOT damage-inert: they drive the comp\u2019s on-recovery consumer', () => {
@@ -448,7 +470,9 @@ describe('blanc burst — team HoT, lowest-HP ally grant, boss Damage Taken \u25
     );
     // One target per cast (count:1). RED if the target were `allies` (4 rows per cast).
     expect(rows.length).toBe(blancBursts(BASE));
-    for (const r of rows) {expect(r.targetSlug).not.toBe(SLUG);} // excludeSelf, read live
+    for (const r of rows) {
+      expect(r.targetSlug).not.toBe(SLUG);
+    } // excludeSelf, read live
     // Raw-percentage emission also rules out a casterMaxHpPct encoding (emits stat maxHpFlat).
     expect(BASE.buffs.some((b) => b.stat === 'maxHpFlat')).toBe(false);
   });
@@ -541,10 +565,11 @@ describe('blanc — no-invention pins (the kit has no damage and no weapon-state
   });
 
   it('every slot is populated (a roster unit needs all three)', () => {
-    for (const s of SLOTS)
-      {expect(slotBlocks(OV, s).length, `${s} must be authored`).toBeGreaterThan(
+    for (const s of SLOTS) {
+      expect(slotBlocks(OV, s).length, `${s} must be authored`).toBeGreaterThan(
         0
-      );}
+      );
+    }
   });
 });
 

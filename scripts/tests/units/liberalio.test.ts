@@ -103,8 +103,9 @@ const libAllCf = withPatchedOverride('liberalio', (ov) => {
   const l1 = ov.skill1.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'atkPct')
   );
-  if (!l1)
-    {throw new Error('liberalio S1 atkPct block missing — fixture is stale');}
+  if (!l1) {
+    throw new Error('liberalio S1 atkPct block missing — fixture is stale');
+  }
   l1.effects.find((e: any) => e.stat === 'atkPct').value = 152.73;
   // L2 cf: core-hit Attack Damage 20.83 → 19.89 (skill-level-9 row).
   const l2 = ov.skill1.find((b: any) =>
@@ -112,45 +113,53 @@ const libAllCf = withPatchedOverride('liberalio', (ov) => {
       (e: any) => e.stat === 'attackDamagePct' && e.value === 20.83
     )
   );
-  if (!l2)
-    {throw new Error('liberalio S1 20.83 block missing — fixture is stale');}
+  if (!l2) {
+    throw new Error('liberalio S1 20.83 block missing — fixture is stale');
+  }
   l2.effects.find((e: any) => e.stat === 'attackDamagePct').value = 19.89;
   // L3 cf: rider 202.5 → 40.5 (the single-hit misread; 0.70-cold regression).
   const l3 = ov.skill1.find((b: any) =>
     b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!l3) {throw new Error('liberalio S1 rider missing — fixture is stale');}
+  if (!l3) {
+    throw new Error('liberalio S1 rider missing — fixture is stale');
+  }
   l3.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 40.5;
   // L4 cf: lowest-final-ATK Burst-3 ally → top-3-ATK allies (the OLD misparse).
   const l4 = ov.skill1.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
-  if (!l4)
-    {throw new Error(
+  if (!l4) {
+    throw new Error(
       'liberalio S1 chargeSpeedPct block missing — fixture is stale'
-    );}
+    );
+  }
   l4.target = { kind: 'alliesTopAtk', count: 3 };
   // L5 cf: Raging Current 231 → 220.5 (skill-level-9 row).
   const l5 = ov.skill2.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!l5)
-    {throw new Error('liberalio S2 Raging Current missing — fixture is stale');}
+  if (!l5) {
+    throw new Error('liberalio S2 Raging Current missing — fixture is stale');
+  }
   l5.effects.find((e: any) => e.stat === 'attackDamagePct').value = 220.5;
   // L8 cf: burst self Attack Damage 50 → 47.73 (skill-level-9 row).
   const l8 = ov.burst.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!l8)
-    {throw new Error(
+  if (!l8) {
+    throw new Error(
       'liberalio burst Attack Damage block missing — fixture is stale'
-    );}
+    );
+  }
   l8.effects.find((e: any) => e.stat === 'attackDamagePct').value = 47.73;
   // L9 cf: nuke 925 → 882.95 (skill-level-9 row).
   const l9 = ov.burst.find((b: any) =>
     b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!l9) {throw new Error('liberalio burst nuke missing — fixture is stale');}
+  if (!l9) {
+    throw new Error('liberalio burst nuke missing — fixture is stale');
+  }
   l9.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 882.95;
 });
 
@@ -187,7 +196,9 @@ describe('liberalio — kit spec', () => {
       expect(applied.length).toBe(fbStarts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([160]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([LIB]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      }
     });
 
     it('DISCRIMINATING: the skill-level-9 magnitude 152.73 is not the shipped value', () => {
@@ -207,7 +218,9 @@ describe('liberalio — kit spec', () => {
     it('fires on core exposure and the 60s duration keeps it up permanently', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([LIB]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(60 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(60 * FPS);
+      }
     });
 
     it('DISCRIMINATING (requiresCore): at coreHitRate 0 the line is fully dark', () => {
@@ -278,7 +291,9 @@ describe('liberalio — kit spec', () => {
       expect(applied.length).toBe(fbStarts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([12.74]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([HELM]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: the old top-3-ATK-allies misparse spreads the buff across ≥2 holders', () => {
@@ -322,7 +337,9 @@ describe('liberalio — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect(applied.length).toBe(libBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([LIB]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: the skill-level-9 magnitude 47.73 is not the shipped value', () => {
