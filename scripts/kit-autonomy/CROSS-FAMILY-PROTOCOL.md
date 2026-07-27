@@ -56,3 +56,25 @@ files). Canonical Kimi model: **`kimi-code/k3`** (the strongest configured alias
 is a different, weaker model). Kimi counts as a separate FAMILY from both Qwen and Claude for cross-family
 purposes; besides owning S7, it is a valid second reviewer for the tier-2 **×2 models** requirement on any
 role (e.g. S2b reviewed by both `claude-fable-5` and `kimi-code/k3`).
+
+## Generic engineering gates (outside the gauntlet)
+
+The same shared-prior argument applies to ordinary code, so the gauntlet's cross-family pattern is
+generalized by two skills — **`.claude/skills/logic-gate`** (pre-op plan review + post-op blind verdict,
+role bodies `.claude/agents/logic-gate-preop.md` / `logic-gate-postop.md`) and
+**`.claude/skills/code-review`** (post-op diff review, role body `.claude/agents/code-review.md`).
+Their routing rule is one sentence: **the reviewer is always a different model FAMILY than the
+driver/author.** Canonical models for the generic gates (same names as above, same one-file rule):
+
+- **logic-gate pre-op + post-op** — Kimi/Qwen driver → `claude-fable-5` via `dispatch-claude.sh`;
+  Claude driver → `kimi-code/k3` via `dispatch-kimi.sh`.
+- **code-review** — Kimi/Qwen-authored code → `claude-opus-5` via `dispatch-claude.sh`;
+  Claude-authored code → `kimi-code/k3` via `dispatch-kimi.sh`.
+- Kimi-side gate dispatches override the blind agent profile with
+  `KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md` (absolute path). Native same-family runs of the
+  pinned `.claude/agents` defs are a labeled fallback ("same-family only"), never a silent substitute.
+- The logic-gate roles additionally ship per-model profiles for all three models
+  (`logic-gate-preop` / `logic-gate-postop` on fable, `-opus` variants on opus, kimi-gate-agent.md for
+  k3) so the invoker can explicitly name the gate model — see the logic-gate skill § "Choosing the
+  gate model". An explicit invoker choice overrides the defaults above; same-family picks must still
+  be labeled.

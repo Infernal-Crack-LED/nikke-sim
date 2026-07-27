@@ -24,7 +24,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-AGENT_FILE="$SCRIPT_DIR/kimi-blind-agent.md"
+# Agent profile: kit-autonomy's blind profile by default; generic gates (logic-gate /
+# code-review skills) override with KIMI_AGENT_FILE=scripts/gates/kimi-gate-agent.md.
+AGENT_FILE="${KIMI_AGENT_FILE:-$SCRIPT_DIR/kimi-blind-agent.md}"
 
 # Resolve the kimi binary: PATH first, then the default install location.
 KIMI="$(command -v kimi || true)"

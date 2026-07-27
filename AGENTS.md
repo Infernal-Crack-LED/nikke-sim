@@ -20,6 +20,11 @@
 - **Subagents:** before spawning any empirical subagent, paste
   `.claude/subagent-non-negotiables.md` at the top of the prompt (exact slugs, measured>fudge,
   structured findings return) and verify your own premises first.
+- **Cross-family gates:** for non-trivial engineering work, run `/logic-gate` (pre-op plan review +
+  post-op blind verdict) and `/code-review` (post-op diff review) — the reviewer is ALWAYS the
+  opposite model family (Kimi driver → Claude via `dispatch-claude.sh`; Claude driver → Kimi k3 via
+  `dispatch-kimi.sh`). Routing: `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md` § "Generic
+  engineering gates".
 - **Front end:** read `docs/frontend-conventions.md` before any UI work — named exports only, no
   CSS modules, `var(--token)` colors, `ResizeObserver` for responsive layouts, pills
   `border-radius: 999px`, cards 10px, inputs 8px.
