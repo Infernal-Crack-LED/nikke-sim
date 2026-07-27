@@ -79,10 +79,14 @@ const proseOf = (c: DataFile['characters'][string]) =>
 // Controlled, documented set. Each rule = a predicate over the parsed blocks.
 // Stat/damage `buffer`-family tags match a buff on self OR allies — a unit that
 // only buffs itself (e.g. privaty's self Elemental Advantage buff) still carries
-// the tag, because the tag answers "what does this kit buff", not "who does it
-// buff for". Burst-support, ally-filter and role tags stay ally-facing (they are
-// team roles, not self-buffs). Damage-profile tags (distributed/sustained/
-// pierce) key off what the kit deals OR enables. Keep ids kebab-case + ASCII
+// its specific family tag (attack-buffer, ele-buffer, …), because those answer
+// "what does this kit buff", not "who does it buff for". The umbrella `buffer`
+// tag is the one exception: it is ally-facing, so a unit whose stat buffs only
+// reach itself does NOT carry `buffer` (the Team Builder "Buffer" filter surfaces
+// units that buff the team, not self-buffers). Burst-support, ally-filter and
+// role tags stay ally-facing (they are team roles, not self-buffs). Damage-profile
+// tags (distributed/sustained/pierce) key off what the kit deals OR enables. Keep
+// ids kebab-case + ASCII
 // (they go into URLs via team-share); the player-facing label carries the ▲.
 // `group` buckets the tags for the UI filter panel (see docs/data/archetype-tags.md).
 interface TagDef {
@@ -167,10 +171,13 @@ const TAG_DEFS: TagDef[] = [
   {
     id: 'buffer',
     label: 'Buffer',
-    blurb:
-      'Buffs stats (ATK / HP / DEF / Crit / generic DMG up), self or ally.',
+    blurb: 'Buffs stats on allies (ATK / HP / DEF / Crit / generic DMG up).',
     group: G.stat,
-    test: (b) => buffSome(b, STAT_BUFF),
+    // The umbrella tag is ally-facing — the one buffer-family tag that is NOT
+    // self-or-ally. A stat buff must land on at least one ally; a self-only stat
+    // buffer (e.g. rapi's self ATK ▲) does NOT carry `buffer`, though it keeps its
+    // specific family tag (attack-buffer, …), which still matches self OR ally.
+    test: (b) => allySome(b, STAT_BUFF),
   },
   {
     id: 'attack-buffer',
@@ -599,8 +606,10 @@ const out = {
     'scripts/build-archetype-tags.ts (re-run as a sweep with --write). The prose is split on the ' +
     '"■" block marker and each block\'s "Affects …" target is read, so an ally ATK ▲ tags `buffer` ' +
     'while an enemy ATK ▼ tags `debuffer`. Stat/damage buffer-family tags match a buff on self OR ' +
-    'allies (a self-only buffer still carries the tag); burst-support, ally-filter and role tags stay ' +
-    'ally-facing. Each tag carries a `group` for the UI filter panel. ' +
+    'allies (a self-only buffer still carries its specific family tag); the umbrella `buffer` tag is ' +
+    'the exception — it is ally-facing, so a unit whose stat buffs only reach itself does not carry ' +
+    '`buffer`. Burst-support, ally-filter and role tags stay ally-facing. Each tag carries a `group` ' +
+    'for the UI filter panel. ' +
     'Manual edits are allowed for edge cases but will be overwritten by the next --write sweep; ' +
     'to make a change stick, adjust the rule in build-archetype-tags.ts. See docs/data/archetype-tags.md.',
   vocabulary,

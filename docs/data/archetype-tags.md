@@ -44,9 +44,12 @@ the id stays ASCII (`reload-buffer`) because it travels through team-share URLs.
 
 **Scope.** Stat- and damage-buffer tags match a buff on **self or allies** — a
 unit that only buffs itself (e.g. privaty's self Elemental Advantage buff) still
-carries the tag, because the tag answers "what does this kit buff", not "who does
-it buff for". Burst-support, ally-filter and role tags stay **ally-facing** (they
-are team roles, not self-buffs).
+carries its specific family tag (`attack-buffer`, `ele-buffer`, …), because those
+answer "what does this kit buff", not "who does it buff for". The umbrella
+`buffer` tag is the one exception: it is **ally-facing**, so a unit whose stat
+buffs only reach itself does not carry `buffer` (the Team Builder "Buffer" filter
+surfaces units that buff the team, not self-buffers). Burst-support, ally-filter
+and role tags stay **ally-facing** (they are team roles, not self-buffs).
 
 ### Groups (UI filter-panel buckets)
 
@@ -64,18 +67,18 @@ the `group` on each `TagDef` (the `G.*` constants) and re-running the sweep.
 
 ### Stat Buffs (▲ to core stats; self or ally)
 
-| id                        | label              | means                                                               |
-| ------------------------- | ------------------ | ------------------------------------------------------------------- |
-| `buffer`                  | Buffer             | Buffs stats: ATK / HP / DEF / Crit / generic DMG up (self or ally). |
-| `attack-buffer`           | ATK ▲              | Buffs ATK / Attack Damage (self or ally).                           |
-| `def-buffer`              | DEF ▲              | Buffs DEF (self or ally).                                           |
-| `hp-buffer`               | HP ▲               | Buffs Max HP (self or ally; not cover HP).                          |
-| `reload-buffer`           | Reload ▲           | Buffs Reload Speed (self or ally).                                  |
-| `charge-buffer`           | Charge ▲           | Buffs Charge Speed (self or ally; charge weapons).                  |
-| `charge-damage-buffer`    | Charge Damage ▲    | Buffs Charge Damage (self or ally; per charge shot, not speed).     |
-| `hit-rate-buffer`         | Hit Rate ▲         | Buffs Hit Rate / Accuracy (self or ally).                           |
-| `ammo-buffer`             | Ammo ▲             | Buffs Max Ammunition Capacity (self or ally).                       |
-| `incoming-healing-buffer` | Incoming Healing ▲ | Buffs Incoming Healing (self or ally; amplifies heals received).    |
+| id                        | label              | means                                                                      |
+| ------------------------- | ------------------ | -------------------------------------------------------------------------- |
+| `buffer`                  | Buffer             | Buffs allies' stats: ATK / HP / DEF / Crit / generic DMG up (ally-facing). |
+| `attack-buffer`           | ATK ▲              | Buffs ATK / Attack Damage (self or ally).                                  |
+| `def-buffer`              | DEF ▲              | Buffs DEF (self or ally).                                                  |
+| `hp-buffer`               | HP ▲               | Buffs Max HP (self or ally; not cover HP).                                 |
+| `reload-buffer`           | Reload ▲           | Buffs Reload Speed (self or ally).                                         |
+| `charge-buffer`           | Charge ▲           | Buffs Charge Speed (self or ally; charge weapons).                         |
+| `charge-damage-buffer`    | Charge Damage ▲    | Buffs Charge Damage (self or ally; per charge shot, not speed).            |
+| `hit-rate-buffer`         | Hit Rate ▲         | Buffs Hit Rate / Accuracy (self or ally).                                  |
+| `ammo-buffer`             | Ammo ▲             | Buffs Max Ammunition Capacity (self or ally).                              |
+| `incoming-healing-buffer` | Incoming Healing ▲ | Buffs Incoming Healing (self or ally; amplifies heals received).           |
 
 ### Damage Buffs (▲ to damage types; self or ally)
 
@@ -185,9 +188,11 @@ Wind Code enemies …`, `… when attacking an Electric Code target`) instead of
 buffing Elemental Advantage directly — `ele-buffer` tags both shapes.
 
 **Scoping.** A Stat Buffs / Damage Buffs tag fires on a buff in a **self or
-ally** block (`buffSome`), so a unit that only buffs itself still tags. Burst
-Support, Ally Filters and Role tags fire on **ally** blocks only (`debuffer` on
-enemy blocks). The Ally-Filter matchers (`shotgun-buffer` and friends)
+ally** block (`buffSome`), so a unit that only buffs itself still tags — with one
+exception: the umbrella `buffer` tag fires on **ally** blocks only (`allySome`),
+so a self-only stat buffer does not carry it (its specific family tag, e.g.
+`attack-buffer`, still does). Burst Support, Ally Filters and Role tags fire on
+**ally** blocks only (`debuffer` on enemy blocks). The Ally-Filter matchers (`shotgun-buffer` and friends)
 additionally require the weapon/class qualifier to name the target of a
 non-`Affects self` clause, plus a real benefit in the block (a `▲` or a utility
 effect such as a heal, shield or invulnerability) — so a passing mention, or a
@@ -337,3 +342,18 @@ enemies`). `buffer` now matches the generic `Attack Damage ▲` buff (was only a
   with the high-recall-heuristic policy; no slug special-case was added. Motivated
   by the generators' new like-tag synergy bias (teamcalc `countSynergyPairs` /
   App.tsx `SYNERGY_PAIRS`), which pairs a dealer with its matching buffer.
+- 2026-07-27 — umbrella `buffer` made ally-facing (owner-directed; re-swept
+  191/192 tagged, 41 tags). The `buffer` tag now requires a stat buff that lands
+  on at least one ally (`allySome(STAT_BUFF)`, was `buffSome`), so a unit whose
+  stat buffs only reach itself no longer carries `buffer` — the Team Builder
+  "Buffer" filter now surfaces units that buff the team, not self-buffers. The
+  specific buffer-family tags (`attack-buffer`, `def-buffer`, `ele-buffer`, …)
+  are unchanged and still match self OR ally. Net: `buffer` 168 → 99 (69 self-only
+  stat buffers dropped — e.g. rapi, scarlet, guillotine, julia, privaty-unkind-maid;
+  every unit that buffs an ally's stat keeps it). soline — a pure self-DPS kit
+  (self Crit Rate / Crit Damage ▲, no team facet) whose only tag was the old broad
+  `buffer` — is now correctly untagged (192 → 191 tagged), consistent with the
+  "pure self-DPS kits carry no team-role facet" design; no slug special-case was
+  added. This is the team-buffer-only signal the 2026-07-19 self-buff pass flagged
+  as a future option ("switch those two back to `allySome`"); only the umbrella
+  tag is switched, the family stays broad.
