@@ -1,0 +1,157 @@
+{
+  "note": "TREASURE (favorite-item) KIT, modeled from the blablalink treasure prose in data/characters.json (characters.sugar.skills) — the DB skill1_detail/skill2_detail/ulti_skill_detail descriptions carry the UNTREASURED base kit (crit-damage/reload proc, crit-rate/max-ammo, attack-speed/hit-rate only); the treasure prose adds the cover-intact Attack Damage line, the battle-start Fire elemental-advantage CONVERSION, the self ATK buffs, and the two Water/Iron-shotgun Elemental Advantage Attack Damage team buffs. Sugar is Iron/SG/Burst III (cd 40s, ammo 9, 10 pellets/shot). Iron is natively advantaged vs Electric (BEATS), NOT vs Fire — so without her S1 conversion she has NO elemental major vs a Fire boss; the conversion is what makes her (and her own Elemental Advantage Attack Damage buffs) pay out on the Fire control boss. MODEL (10 load-bearing lines): SKILL1 — (L4) 'Activates if this unit's cover is still intact. Attack Damage ▲19.98% continuously' = passive self attackDamagePct 19.98. The cover-intact clause is a STATUS GATE that collapses to always-on under the v1 sim's immortal-boss premise (the boss deals no damage, so cover is never destroyed and is intact for the whole fight) — modeled as a duration-less passive (frame 0, no expiry), which is faithful under that premise, not a fudge; see caveat + ⚑1. (L5) 'Activates at the start of battle. Converts damage to Elemental Advantage damage against Fire Code enemies. Continuous, cannot be removed' = passive self advantageVs:Fire (the Rapi:RH 'counts as advantaged vs a second code' primitive, elements.ts/sim.ts advantaged()). Self-gating: advantageVs.has(bossElement) is false vs a non-Fire boss, so the line is LIVE vs Fire (grants the x1.1 element major AND unlocks her own elemAdvantageDamagePct) and exactly INERT vs any other boss — pinned in both states in the unit spec. SKILL2 (all 'Cast when entering Full Burst' = fullBurstEnter, fires every Full Burst) — (L1) self critRatePct 13.02/10s; (L2) self atkPct 25.01/10s; (L3) 'all allies with shotguns' Max Ammunition Capacity ▲83.8%/15s = alliesOfWeapon:SG maxAmmoPct 83.8/15s (weapon-typed, class-blind; in the SG-only control fixture this reaches Sugar herself, the sole SG — scoping pinned by holder set vs an unscoped-allies counterfactual); (L4) 'all Water Code and Iron Code allies with shotguns' Elemental Advantage Attack Damage ▲40.02%/15s = TWO alliesOfElementWeapon blocks (Water/SG count99 + Iron/SG count99) elemAdvantageDamagePct 40.02/15s — the schema target carries a SINGLE element, so the 'Water AND Iron' union is encoded as two blocks (no unit is both codes, so no double-application); count99 = 'all' (trina convention; the target defaults to the leftmost 1). BURST (burstCast, fires on HER cast only) — (L1) self attackSpeedPct 66/15s; (L2) self hitRatePct 33/15s (Hit Rate -> core-hit lift via sim.ts hrCoreMult, LIVE by default); (L3) self atkPct 20/15s; (L4) 'all Water Code and Iron Code allies with shotguns' Elemental Advantage Attack Damage ▲60.01%/15s = TWO alliesOfElementWeapon blocks (Water/SG + Iron/SG, count99) elemAdvantageDamagePct 60.01/15s. elemAdvantageDamagePct lives in the ELEMENT bucket and is gated on advantaged() (sim.ts), so the team L4/B-L4 buffs only pay damage for recipients that are themselves elementally advantaged vs the boss — faithful to 'Elemental Advantage Attack Damage'. UNMODELED (3 lines, verbatim, all skill1): the cover-ATTACKED proc pair (Critical Damage ▲16.39%/10s + Reload Speed ▲12.12%/10s, 20% proc chance per the datamined skill1 description_value_01) — the engine has NO cover-attacked trigger primitive (the v1 boss never attacks, so cover is never hit and the proc has no firing event to key on); and the Cover HP restore (1.5% of final Max HP) — defensive, offensively inert on the immortal-boss basis. All three are recorded verbatim in unmodeled.skill1; see ⚑2. NO `ignored` blocks. ⚑1 (cover-intact gate, low): the 19.98% Attack Damage is modeled always-on because the sim's boss deals no damage; if a future engine models cover destruction, gate this on a cover-intact state. Recipe: a cover-destruction model + a recording where the cover breaks mid-fight. ⚑2 (cover-attacked procs, standard): the 16.39% crit-damage + 12.12% reload-speed procs (20% on cover-attacked) are unmodeled for lack of a cover-attacked trigger; on a real fight with cover damage they would add bounded self uptime. Recipe: a cover-attacked event primitive + a focus video measuring proc uptime. ⚑3 (hit-rate core yield, derived): the burst Hit Rate ▲33% is kit-stated, but its damage YIELD flows through sim.ts hrCoreMult — a DERIVED reticle-shrink -> core-fraction estimate (LIVE by default, HRCORE=0 disables), not a measured per-unit number; the 33 is faithful, the core-fraction conversion magnitude is calibrated. Recipe: a sugar focus video reading the in-window core-hit fraction with/without the burst. TIER 2: scoped team buffs (alliesOfWeapon / alliesOfElementWeapon), fullBurstEnter-vs-burstCast trigger split, the advantageVs element gate, the cover-intact status gate, and the meta-defining SG max-ammo buffer. Kit-autonomy gauntlet 2026-07-26: cross-family S2b (kimi-code/k3, owner routing override — Claude quota exhausted) independently re-derived the four highest-risk lines FAITHFUL with matching discriminations (leakDetected null) — the S2=fullBurstEnter vs burst=burstCast trigger split, SG-scoped max-ammo incl. self, generic critRatePct, live hitRatePct, and the honest UNMODELED cover-attacked procs; reconciled two reviewer misreads (maxAmmo duration is the treasure 15s not the base-kit 10s; helm is SR not SG so the SG recipient set is {sugar} alone, pinned by the test's dynamic holder set) and adopted the reviewer's ⚑3 on the derived hit-rate core yield.",
+  "unmodeled": {
+    "skill1": [
+      "Activates when cover is attacked (20% chance). Affects self. Critical Damage ▲ 16.39% for 10 sec. (no cover-attacked trigger primitive; the v1 boss never attacks so cover is never hit)",
+      "Activates when cover is attacked (20% chance). Affects self. Reload Speed ▲ 12.12% for 10 sec. (no cover-attacked trigger primitive)",
+      "Activates when cover is attacked. Restores Cover HP an amount equal to 1.5% of the skill user's final Max HP. (defensive; offensively inert on the immortal-boss basis)"
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "kitDescription": "Sugar (Treasure) is an Iron shotgun Burst-III attacker. Passively she keeps a cover-intact Attack Damage ▲19.98% aura and converts her damage to Elemental Advantage vs Fire Code enemies from battle start. On every Full Burst she buffs her own Critical Rate ▲13.02% and ATK ▲25.01% (10s), expands every shotgun ally's magazine ▲83.8% (15s), and grants Water/Iron shotgun allies Elemental Advantage Attack Damage ▲40.02% (15s). Her burst grants herself Attack Speed ▲66%, Hit Rate ▲33% and ATK ▲20% (15s) and a stronger Elemental Advantage Attack Damage ▲60.01% to Water/Iron shotgun allies (15s). Her cover-attacked crit-damage/reload-speed procs and cover-HP restore are not modeled (no cover-damage basis).",
+  "caveats": [
+    "skill1: the 19.98% Attack Damage line is gated on 'cover still intact' in kit; the v1 boss deals no damage so cover is never destroyed and the buff is modeled always-on (passive). If cover destruction is ever modeled, gate it on a cover-intact state.",
+    "skill1: the battle-start Fire elemental-advantage conversion (advantageVs:Fire) is self-gating — live vs a Fire boss, exactly inert vs every other boss.",
+    "skill1: the cover-attacked Critical Damage ▲16.39% / Reload Speed ▲12.12% procs and the Cover HP restore are UNMODELED (no cover-attacked trigger; defensive line inert) — see unmodeled.skill1.",
+    "skill2/burst: the Water/Iron-shotgun Elemental Advantage Attack Damage buffs are encoded as TWO alliesOfElementWeapon blocks (Water/SG + Iron/SG) because the target carries a single element; no unit is both codes, so there is no double-application.",
+    "skill2/burst: elemAdvantageDamagePct only pays damage for recipients that are elementally advantaged vs the boss (engine ELEMENT bucket gate), faithful to 'Elemental Advantage Attack Damage'."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "buff", "stat": "attackDamagePct", "value": 19.98 }]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "advantageVs", "element": "Fire" }]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 13.02,
+          "durationSec": 10
+        },
+        { "kind": "buff", "stat": "atkPct", "value": 25.01, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "alliesOfWeapon", "weapon": "SG" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 83.8,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Water",
+        "weapon": "SG",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 40.02,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Iron",
+        "weapon": "SG",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 40.02,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 66,
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 33,
+          "durationSec": 15
+        },
+        { "kind": "buff", "stat": "atkPct", "value": 20, "durationSec": 15 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Water",
+        "weapon": "SG",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 60.01,
+          "durationSec": 15
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": {
+        "kind": "alliesOfElementWeapon",
+        "element": "Iron",
+        "weapon": "SG",
+        "count": 99
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 60.01,
+          "durationSec": 15
+        }
+      ]
+    }
+  ]
+}

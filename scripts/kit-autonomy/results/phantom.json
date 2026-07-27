@@ -1,0 +1,194 @@
+{
+  "slug": "phantom",
+  "kitDescription": "Phantom (Treasure) is a Water AR Burst-III attacker built around a thief loop: her hits apply a 5-second Calling Card status to the target, and every hit on a card-carrying target grants her a 1-round Attack Damage ▲75.17% buff. She also builds Thief's Dagger stacks (Hit Rate ▲25.75% each, max 3) — one at the start of each firing cycle and one every 30 hits from her treasure — and at 3 stacks she consumes them for an 84.33% additional-damage hit plus a 250% distributed-damage hit to all enemies, while banking a permanent Distributed Damage ▲12.86% stack (max 3) that her own burst resets. Every 10 normal attacks she self-buffs ATK ▲85.12% for 5s and Distributed Damage ▲31.92% for 10s. Her burst deals 1457.28% of final ATK as distributed damage to all enemies, applies Damage Taken ▲18% for 30s if the stage target is Fire Code, and expands her own magazine by 50% for 10s.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "PRISTINE run: 6 of 7 active assertions red, ALL from S5 harness-wiring artifacts — (a) onEvent placed at CompOptions top level instead of CompOptions.cfg so the event log is empty; (b) patchEffects iterates ov[slot].blocks but OverrideFile slots are Block[] so every counterfactual patch is a no-op. Not a driver divergence.",
+      "WIRING-REPAIRED run (assertions untouched): 5 reds remain — (i) Thief's Dagger shape: blind expects vanilla hitRatePct 25.75 maxStacks:3/5s-expiry; driver ships a live perResource pool (documented: the 5s decay never binds, consume pre-empts it); (ii) Attack Damage durationShots===1: blind asserts the kit-literal 1; driver ships :2 as the documented engine-order compensation (⚑2, reconciled with S2b); blind's wall-clock counterfactual ties the driver total (no discrimination power); (iii) 84.33 test passes a SimResult where an OverrideFile is expected (test artifact, RECON_ERROR); (iv)+(v) two tests filter burstCast on e.unitSlug but the SimEvent field is e.slug (test artifact, RECON_ERROR).",
+      "GREEN after repair: the hitCount:10 ATK 85.12/5s + distributed 31.92/10s line (real blind-vs-driver convergence) and the non-vacuous inertness assertion."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "normal hit on non-Calling-Card target",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "targetStatus Calling Card 5s refreshed every shot; the not-in-CC clause collapses to near-permanent under continuous fire (⚑1, +0.8% total, recipe: requiresNotTargetStatus gate)",
+        "blindSaid": "S2b named every-hit-refresh the nearest-wrong model; S6 approximated with everyN:60 refresh",
+        "formulaCheck": "the status window is the real mechanic (two downstream lines gate on it); real window lapses at 5s and re-applies next hit → on-shot duty ~98.3-100%, collapse matches",
+        "fireRateOk": true,
+        "explanation": "Modeled with a documented ⚑1 collapse whose duty estimate is arithmetic, not fitted; P1/P4 pin the gate load-bearing two-sided. Documented enactment, not a silent divergence."
+      },
+      {
+        "kitLine": "Calling Card: DEF ▼ 32.19% for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill1: magnitude inert (enemy DEF negligible flat; engine drops enemy DEF debuffs sim.ts:1782)",
+        "blindSaid": "S5 it.skip (no schema scalar — matches driver verbatim); S6 kept a defPct -32.19 block the engine silently discards",
+        "formulaCheck": "SSOT: boss DEF ≈140 flat subtractive, ≤0.12% board shift, sim runs bossDef:0 — dropping the debuff changes nothing",
+        "fireRateOk": true,
+        "explanation": "Driver's audit trail is explicit; S6's block would have been the silent-drop version. Driver is the correct side."
+      },
+      {
+        "kitLine": "Thief's Dagger: Hit Rate ▲ 25.75% ×3",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "live thiefsDagger resource pool (cap 3) read by passive perResource hitRatePct ×25.75; the 5s per-stack decay never binds because the consume at t≈4.92s pre-empts it",
+        "blindSaid": "S5 expects vanilla maxStacks:3/5s buff (red, documented divergence); S6 same resource pool architecture + vanilla timed buff",
+        "formulaCheck": "hitRatePct feeds the UNIGEO ACR core-fraction path (LIVE default); yield flagged ⚑4 derived — correct bucket, correct stat (Hit Rate, not crit)",
+        "fireRateOk": true,
+        "explanation": "Pool tracks the exact live stack count; P2 discriminates against the always-at-max flat 77.25% wrong model (shipped < flat-max)."
+      },
+      {
+        "kitLine": "after 30 normal attacks: Dagger grant",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:30 → thiefsDagger +1; sets the one-consume-per-magazine cadence (P3: shipped consume count > 2× the no-treasure counterfactual)",
+        "blindSaid": "S6 MISSED this treasure bullet entirely — its consume fires every ~180 hits (3× too slow); S5 did not test it",
+        "formulaCheck": "3 grants per 60-hit cycle (magazine start + 2× every-30) → consume on the last shot of every magazine; P3 pins shots/consume in (50,70)",
+        "fireRateOk": true,
+        "explanation": "The blind miss is a blind-side RECON_ERROR (treasure prose bullet 3 is explicit); driver corroborated by prose + cadence arithmetic. Driver ahead of both blind agents here."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 75.17% for 1 round(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + requiresTargetStatus + durationShots:2 — ⚑2 engine-order compensation (shotFired blocks dispatch after the shot's damage, sim.ts:2913/2973, so :1 is a dead buff; :2 yields the exact 59/60 duty)",
+        "blindSaid": "S5 asserts durationShots===1 (kit literal, red); S2b reconciled :2 as enactment, not a faithfulness divergence; S6 authored :1",
+        "formulaCheck": "SSOT §11: round-scoped 'for N round(s)' lines are durationShots, never durationSec — correct mechanic class; DamageUp bucket, self scope, correct value",
+        "fireRateOk": true,
+        "explanation": "Right stat/value/scope/gate/duration-kind; the :2 magnitude rests on a verifiable engine-ordering claim (the one load-bearing citation the owner should spot-check). Block ordered before the status-inflicting block so the application shot is correctly excluded."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "84.33% of final ATK additional damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 84.33 in the consume block (resourceGate min:3 + requiresTargetStatus); no flavor",
+        "blindSaid": "S5/S6 agree it is plain additional damage, NOT distributed (S2b convergence); S5's red on this line is a test artifact (SimResult passed as override)",
+        "formulaCheck": "SSOT §2b function additional damage: crits at caster rate, never cores, never range — P5 pins critEligible true / coreEligible false / mult.distributed===1",
+        "fireRateOk": true,
+        "explanation": "Exactly the SSOT routing; the distributed-exclusion pin was adopted from the blind reviewer and holds."
+      },
+      {
+        "kitLine": "Removes Calling Card.",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled.skill2: no consume-target-status primitive (⚑3); moot — natural 5s lapse pre-empts reapplication at steady cadence",
+        "blindSaid": "S6 identical verbatim skip with the same missing-primitive reason (independent convergence)",
+        "formulaCheck": "no damage term attaches to the removal itself; both downstream consumers re-gate on the next application cycle",
+        "fireRateOk": true,
+        "explanation": "Two independent derivations hit the same schema wall; documented with a recipe (consumeTargetStatus effect)."
+      },
+      {
+        "kitLine": "Distributed Damage ▲ 12.86% cont. ×3",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "distAmp resource pool (cap 3) + perResource distributedDamagePct ×12.86 + burstCast delta:-3 reset ordered AFTER the nuke block — the burst-reset is EXACT via the soda-twinkling-bunny resource machinery",
+        "blindSaid": "S6 SKIPPED 'removed after Burst Skill' as unmodelable (flagged over-credit ⚑) — the blind missed the primitive the driver used; S5 expects vanilla maxStacks:3 (red, documented divergence)",
+        "formulaCheck": "SSOT §1g: distributedDamagePct feeds the Distributed bucket on distributed-flavored hits; P7 pins the oscillation (post-2nd-burst min < 1.4 shipped vs > 1.6 no-reset) and the casting burst enjoying pre-removal stacks ('removed AFTER Burst Skill is used')",
+        "fireRateOk": true,
+        "explanation": "Driver modeled exactly what the blind declared impossible; ordering claim (reset after nuke) is pinned by P7 and matches the prose's 'after'."
+      },
+      {
+        "kitLine": "250% of final ATK as Distributed Dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 250 flavor 'distributed' + thiefsDagger delta:-3 in the same consume block ('removes stacks'); 'all enemies' = the single v1 boss",
+        "blindSaid": "S6 converged independently on the same consume architecture (resourceGate + 250 distributed + stack drain)",
+        "formulaCheck": "distributed flavor routes through Taken+Distributed buckets with no split penalty (SSOT §1g); P6 pins 1:1 pairing with the 84.33 hit and mult.distributed > 1 on every hit (S2L4 live)",
+        "fireRateOk": true,
+        "explanation": "Stack-drain proven by >10 consumes in 180s (a never-drained pool would consume exactly once)."
+      },
+      {
+        "kitLine": "after 10 hits: ATK 85.12 / Dist 31.92",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:10 → atkPct 85.12/5s + distributedDamagePct 31.92/10s",
+        "blindSaid": "S5 wiring-repaired run is GREEN on this line — the one clean blind-vs-driver convergence; S6 identical block",
+        "formulaCheck": "ATK▲% into the (1+ΣATK%) bracket, distributedDamagePct into the Distributed bucket; P8 pins exact 300f/600f durations and apply count ≤ shots/10",
+        "fireRateOk": true,
+        "explanation": "Mechanical blind convergence achieved here — the strongest single convergence signal in the packet."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "1457.28% of final ATK distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 1457.28 flavor 'distributed'; noFb via the engine's burstCast default (U10); no range",
+        "blindSaid": "S6 identical (explicit noFb:true — behaviorally equivalent); S5 red is the unitSlug-vs-slug test artifact",
+        "formulaCheck": "SSOT §1b: burst-cast damage lands before Full Burst opens (no +50%); riders never take range; P9 pins fbMajorApplied===false and rangeApplied===false on every nuke, once per phantom cast",
+        "fireRateOk": true,
+        "explanation": "Correct bucket, trigger timing, and flavor; fires exactly once per cast (casts < FBs, helm alternates B3)."
+      },
+      {
+        "kitLine": "Fire target: Damage Taken ▲ 18% 30s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "bossElementGate 'Fire' → enemy damageTakenPct 18/30s; live vs Fire, exactly inert otherwise",
+        "blindSaid": "S6 omitted this line from its override entirely (blind-side miss); S2b listed it load-bearing",
+        "formulaCheck": "SSOT §1g Taken bucket, boss-side, stacks with other vuln sources; P10 pins once-per-cast to the boss (targetIdx null), 1800f duration, team-wide lift vs Fire, and byte-identical totals on removal vs Iron",
+        "fireRateOk": true,
+        "explanation": "Element gate matches 'if the enemy is a Fire Code stage target' exactly; the Iron counterfactual proves no leakage."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 50% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "self maxAmmoPct 50/10s per cast (60→90 for one post-burst magazine)",
+        "blindSaid": "S6 omitted this line from its override (blind-side miss); S5 untested",
+        "formulaCheck": "SSOT §11: max-ammo increases never clip; P11 pins 50%/self/600f/once-per-cast and load-bearing via reload downtime",
+        "fireRateOk": true,
+        "explanation": "Straightforward timed self-buff, correctly scoped and valued."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill1",
+      "summary": "Attack Damage 'for 1 round(s)' authored as durationShots:2 (engine-order compensation) rather than the kit-literal 1",
+      "evidence": "kit: 'Attack Damage ▲ 75.17% for 1 round(s).'; SSOT §11 durationShots is the right mechanic class; driver ⚑2 cites sim.ts:2913/2973 (shotFired dispatch after damage, round-count decrement immediately after) making :1 a dead buff; S2b reconciled :2 as enactment; S5 asserts :1 and its wall-clock counterfactual has no discrimination power",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Not a fudge to tune: verify the cited dispatch ordering (sim.ts:2913/2973) by inspection; the durable fix is an engine-order change (decrement the round-count budget after post-damage dispatch) then revert to durationShots:1. Until then keep the documented ⚑2."
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "'Not in Calling Card state' application gate modeled as a self-extending every-shot refresh (collapse) instead of the discrete lapse-then-reapply loop",
+      "evidence": "kit: '...on a Rapture that is not in the Calling Card state'; driver ⚑1: real on-shot duty ~98.3-100% at any magazine length, collapse matches within +1.7% of gated shots (<1% of total), and covers the post-burst 90-round magazine a fixed phase mis-modeled at 0.798 duty; no requiresNotTargetStatus primitive exists",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "needs measurement + primitive: a requiresNotTargetStatus gate modeling the discrete per-lapse re-application (driver's ⚑1 recipe, Tier 2); a focus-video read of CC application cadence would pin the real duty."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill2",
+      "summary": "'Removes Calling Card' unmodeled — no consume-target-status primitive exists",
+      "evidence": "kit skill2 line 1: 'Removes Calling Card.'; both driver (⚑3) and S6 independently hit the same schema wall; moot at steady cadence because the natural 5s lapse pre-empts the next reapplication",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "a consumeTargetStatus effect kind on the consume block (faithful representation; no number involved)."
+    },
+    {
+      "subkind": "ENGINE",
+      "slot": "skill1",
+      "summary": "Calling Card DEF ▼32.19% magnitude unmodeled (engine drops enemy DEF debuffs)",
+      "evidence": "kit: 'DEF ▼ 32.19% for 5 sec.'; SSOT: enemy DEF is a negligible flat subtractive term (≈140) run at bossDef:0; sim.ts:1782 drops enemy debuffs other than damageTaken/distributedDamage; driver records it verbatim in unmodeled.skill1 — S6's alternative (a defPct block the engine silently discards) would have been the silent-drop version",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "No faithful representation needed at bossDef:0 — the line is damage-inert by measurement; keep the verbatim unmodeled record."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented REAL-GOTCHA exists: every divergence between the prose and the driver's encoding is recorded in the override's note/caveats/unmodeled with an estimate and a recipe, and the four gotcha-class items (durationShots:2 compensation, self-extending CC window, unmodeled Removes-Calling-Card, inert DEF▼ magnitude) are all documented, low-severity, and damage-small by arithmetic rather than by fitting. The blind re-derivations partially converged: S5's pristine run is red purely from its own harness-wiring artifacts (onEvent at the wrong level, wrong OverrideFile shape, SimResult-as-override, unitSlug-vs-slug), and after a wiring-only repair it converges GREEN on the hitCount:10 line and non-vacuous inertness — the remaining reds are documented driver enactment choices (perResource pools, durationShots:2) that S2b had already reconciled, not fresh finds. S6 independently re-derived the same resource-pool consume architecture, the hitCount:10 block, the distributed burst nuke, and the identical verbatim skip of 'Removes Calling Card', but the driver is strictly ahead of both blind agents: S6 missed the treasure every-30 Dagger grant (3× too-slow cadence), missed the burst vuln and max-ammo lines, and declared the burst-reset of the 12.86% stacks unmodelable where the driver modeled it exactly — all blind-side RECON_ERRORs corroborated against the prose. Discrimination holds on the driver's own 25-assertion suite (two-sided P4 gate, P7 oscillation reset, P10 byte-identical Iron inertness, P3 2× treasure cadence, P2 flat-max over-credit). For GO nothing must change; the residuals the owner should spot-check are precisely the same-model-blind spots: S2b/S5/S6 all ran kimi-k3 so their agreements prove stability, not correctness — specifically (1) the sim.ts:2913/2973 dispatch-ordering citation underwriting durationShots:2, (2) the perResource/resourceGate/distAmp-reset machinery validated only by the driver's own suite (no blind agent reproduced it), (3) the treasure-prose provenance of skill1 bullet 3 (the datamined skill1_detail carries only 3 bullets), and (4) the unverified ⚑5 cadence tuple (RoF 720/reloadFrames 141) that the whole once-per-magazine consume cadence derives from.",
+  "model": "kimi-code/k3",
+  "faithfulnessNote": "1.0 (11/11 kit lines FAITHFUL or DOCUMENTED_GAP; three FAITHFUL lines carry documented ⚑ enactment caveats — ⚑1 window collapse, ⚑2 durationShots:2, ⚑4 derived hit-rate yield)"
+}

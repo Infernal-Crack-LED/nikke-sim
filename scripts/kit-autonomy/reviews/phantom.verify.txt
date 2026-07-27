@@ -1,0 +1,27 @@
+[90m [2m❯[22m runComp scripts/tests/lib/harness.ts:[2m115:20[22m[39m
+[90m [2m❯[22m run scripts/tests/units/phantom.test.ts:[2m98:15[22m[39m
+[90m [2m❯[22m scripts/tests/units/phantom.test.ts:[2m204:14[22m[39m
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [2mno tests[22m
+[2m   Start at [22m 17:44:32
+[2m   Duration [22m 203ms[2m (transform 89ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)[22m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m25 passed[39m[22m[90m (25)[39m
+[2m   Start at [22m 18:02:08
+[2m   Duration [22m 790ms[2m (transform 89ms, setup 0ms, import 682ms, tests 19ms, environment 0ms)[22m
+
+=== S5 pristine run (UNMODIFIED vs shipped): 1 passed / 6 failed / 1 skipped (8) ===
+=== S5 wiring-repaired run (onEvent into CompOptions.cfg; ov[slot] array shape; assertions UNTOUCHED): 2 passed / 5 failed / 1 skipped (8) ===
+[31m     [31m×[31m s1 Thief Dagger: hit-rate 25.75 is a self scoped stackable buff, max 3, about 5s expiry[39m[32m 3[2mms[22m[39m
+[31m     [31m×[31m s1 Calling Card branch: attack damage 75.17 lasts 1 round, not a 5s wall-clock window[39m[32m 2[2mms[22m[39m
+     [32m✓[39m s2 after 10 normal attacks: ATK 85.12 for 5s and distributed 31.92 for 10s are hit-count gated[32m 1[2mms[22m[39m
+[31m     [31m×[31m s2 max Thief Dagger: 84.33 final-ATK additional hit fires only from the max-stack consume branch[39m[32m 2[2mms[22m[39m
+[31m     [31m×[31m s2 max-stack self distributed: 12.86 continuously stacks to 3 and is burst-consumed[39m[32m 0[2mms[22m[39m
+[31m     [31m×[31m burst: 1457.28 final ATK distributed damage to all enemies is the dominant burst bucket[39m[32m 1[2mms[22m[39m
+     [32m✓[39m inertness: phantom-only counterfactuals never move liter or crown[32m 0[2mms[22m[39m
+     [2m[90m↓[39m[22m s1 Calling Card DEF down 32.19 magnitude: skipped - schema exposes no enemy DEF-down scalar; only the named Calling Card status window is observable through gates
