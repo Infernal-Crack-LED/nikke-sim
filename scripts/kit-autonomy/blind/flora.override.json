@@ -1,0 +1,64 @@
+{
+  "slug": "flora",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "selfAndAdjacent",
+        "sides": 2
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 42.39,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Incoming healing ▲ 4% continuously, stacks up to 5 time(s).",
+      "Activates after landing 100 normal attack(s). Affects all Electric Code allies. Stack count of buffs ▲ 1."
+    ],
+    "skill2": [
+      "Activates when the HP of one of the allies on both sides is lower than 90%. Affects all allies. Generates a Shield with 10.22% of the skill user's final Max HP for 10 sec.",
+      "Activates when the HP of one of the allies on both sides reaches Max HP. Affects all allies. True Damage ▲ 30.97% for 5 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ S1 continuous HoT duration/tick count is undefined; modeled as one recovery event.",
+    "⚑ S1 incoming-healing stack system and its 100-hit advancement are unmodeled (no matching StatKey/effect).",
+    "⚑ S2 HP-threshold triggers are unsupported by engine triggers; shield/true-damage lines are unmodeled.",
+    "⚑ MG cadence for the 100-hit trigger is not derivable from kit text."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Flora S1: continuous HoT modeled as a single recovery event because the kit gives no duration/fight length; incoming-healing stack system and its 100-hit advancement are unmodeled (no StatKey). S2: ally-HP threshold triggers (<90% and reaches Max HP) are unsupported by the engine's trigger vocabulary, so the shield and true-damage buff lines are recorded in unmodeled. Burst: one-time HP recovery plus a trueDamagePct buff on own burst cast. No weapon-swap, no piercing, no kit noFb data; range/noFb left to engine defaults."
+}

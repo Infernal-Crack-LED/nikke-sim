@@ -1,0 +1,148 @@
+{
+  "slug": "rosanna",
+  "kitDescription": "Rosanna is an Electric machine-gun Burst-I attacker built around Concealment and Frenzy. Every 120 normal attacks she gains a brief Critical Rate buff (and refreshes a defensive Concealment state); every 500 normal attacks she adds a stacking Frenzy ATK buff that can build to 10 stacks. She passively deals extra damage whenever she has elemental advantage, so she is at her best against Water bosses. Her burst, Assalto, slams priority targets for a large single hit, deals a sizable bonus hit if she is concealed at cast time, and — against Water Code targets only — leaves a 30-second Damage Taken debuff that lifts the whole team's damage. The rest of her kit (enemy buff-strip, ally-death procs, gauge fill on ally death) is survival/PvP-flavored and does nothing in a boss DPS fight where nobody dies.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1: 120 normals -> self crit +19.34%/3s (fails: blind helper rosEvents() reads unitOf(res).events, which is always []; the harness only delivers events via cfg.onEvent — blind harness-API bug, not a driver fault; driver pins 49 critRatePct/19.34/3s applies = floor(5991/120))",
+      "S1 counterfactual: threshold 999999 (fails: patch reads ov.skill1.blocks, but an override slot IS the Block[] array — blind .blocks API bug)",
+      "burst: cast deals 1310.4% (fails: empty events from the same rosEvents bug + filter compares e.mult (an object) to a number; driver pins 5 burst-bucket hits at atkPct 1310.4, fbMajorApplied false)",
+      "burst counterfactual: zero the 1310.4% effect (fails: same ov.burst.blocks API bug)",
+      "NOTE: the one S5 PASS ('incapacitated Frenzy is inert') is vacuous (empty event array) and would be RED if its API were fixed, because S5 — like S2b and S6 — omitted the DISTINCT 500-normal Frenzy the driver correctly models (11 atkPct/22.61 applies)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Concealment 10s after 120 normals",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — targeting-prevention status, no concealment primitive, out-of-domain (v1 boss deals no damage)",
+        "blindSaid": "S2b/S5/S6 all UNMODELED/skip, same reason",
+        "formulaCheck": "no damage effect on the DPS basis; recording in unmodeled is the faithful disposition",
+        "fireRateOk": true,
+        "explanation": "Documented gap; converge across all four roles. Not a silent drop."
+      },
+      {
+        "kitLine": "Critical Rate ▲19.34% for 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:120 -> self critRatePct 19.34 / durationSec 3, recurring; 49 applies = floor(5991/120); pinned GREEN vs shipped and RED vs the scoped critRateNormalPct counterfactual",
+        "blindSaid": "S6 override byte-identical block (trigger/target/stat/value/duration); S5 intended the same assertion; S2b FAITHFUL with the same two traps flagged",
+        "formulaCheck": "kit says plain 'Critical Rate' (unscoped) -> critRatePct feeds the Major bucket on ALL crit-eligible hits incl. burst (SSOT 1b); 3s duration, NOT the concealment line's 10s — both traps avoided",
+        "fireRateOk": true,
+        "explanation": "Exact match across driver + S6 + S2b; cadence, scope, stat, duration all correct."
+      },
+      {
+        "kitLine": "Removes 5 buff(s), once per battle",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — enemy buff-strip, boss carries no buffs",
+        "blindSaid": "S2b/S5/S6 all UNMODELED; S2b independently warns not to misread it as clearing boss-held damageTakenPct",
+        "formulaCheck": "no damage effect on this basis; documented",
+        "fireRateOk": true,
+        "explanation": "Convergent documented gap."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage ▲20%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> self elemAdvantageDamagePct 20; proven two-sided: mult.elem 1.30 live vs Water -> 1.10 on removal; inert vs Iron (1.00); always-on attackDamagePct counterfactual provably NON-inert vs Iron",
+        "blindSaid": "OMITTED by S2b, S5, and S6 (blind-side RECON_ERROR-level omission; does not contradict the driver)",
+        "formulaCheck": "SSOT damage-calculation 1c: elemAdvantageDamagePct lives in the ELEMENT bucket, applies only with advantage — MEASURED exactly (Privaty popup ratio 2.8244, 2026-07-14); the game-mechanics 10 'Damage-Up' wording is the SUPERSEDED placement. Driver's routing is the measured one.",
+        "fireRateOk": true,
+        "explanation": "Kit line unambiguous ('when the stage target appears ... continuously' = passive). Verified directly against prose + SSOT since all blinds missed it: encoding is correct."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Concealment 5s at battle start",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; note explicitly warns this 5s window is long expired before any 40s+ burst cast and is NOT the live gate for the 561.6% rider",
+        "blindSaid": "S2b/S5/S6 UNMODELED/skip; S2b independently flags counting this window as the burst-rider justification as the nearest-wrong model",
+        "formulaCheck": "no damage effect; documented",
+        "fireRateOk": true,
+        "explanation": "Convergent documented gap."
+      },
+      {
+        "kitLine": "Frenzy ATK ▲22.61% (ally incapacitated)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no incapacitation TriggerDef; immortal-boss fixture => zero stacks is the faithful behavior; the ~226% ATK passive-at-stacks over-credit trap explicitly avoided",
+        "blindSaid": "S2b/S5/S6 all UNMODELED with the same catastrophic nearest-wrong model flagged; driver R-adjacent assertions confirm no atkPct/22.61 from any ally-death source",
+        "formulaCheck": "correct: no ally is ever incapacitated on this basis, so zero stacks is the only honest encoding",
+        "fireRateOk": true,
+        "explanation": "Convergent documented gap; the largest potential error in the kit was avoided by every role."
+      },
+      {
+        "kitLine": "Fills Burst Gauge by 36.54%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — same ally-death trigger, never fires; rotation timing untouched",
+        "blindSaid": "S2b/S5/S6 UNMODELED; S2b warns against re-keying it to battle-start/hitCount",
+        "formulaCheck": "no gauge effect on this basis; documented",
+        "fireRateOk": true,
+        "explanation": "Convergent documented gap."
+      },
+      {
+        "kitLine": "Deals 400% (ally incapacitated)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim + R7 assertion: no rosanna hit at atkPct 400 exists (not silently proxied)",
+        "blindSaid": "S2b OMITTED this line; S6 lists it in unmodeled; S5 did not test it",
+        "formulaCheck": "same ally-death trigger; zero occurrences is faithful on this basis",
+        "fireRateOk": true,
+        "explanation": "Documented gap with a gap-honesty assertion; a driver line S2b missed, verified against prose."
+      },
+      {
+        "kitLine": "Frenzy ATK ▲22.61% after 500 normals",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:500 -> self atkPct 22.61 / maxStacks 10 / durationSec 30; 11 pulsed applies = floor(5991/500), none at frame 0; RED vs the always-on passive counterfactual (applies once at frame 0)",
+        "blindSaid": "OMITTED by S2b, S5, and S6 — all three conflated this with the ally-death Frenzy or missed the distinct 500-normal source (blind-side omission, not a contradiction)",
+        "formulaCheck": "kit line is unambiguous ('after landing 500 normal attacks on the stage target'); plain ATK% correctly dilutes into the (1+ΣATK%) sum per SSOT 1a; stacks/30s match prose",
+        "fireRateOk": true,
+        "explanation": "Verified directly against prose + SSOT: distinct from the ally-death Frenzy, correctly encoded, correctly pulsed."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Assalto 1310.4% of final ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy flatDamage 1310.4; 5 hits = 5 casts, burst bucket, fbMajorApplied false on every hit; RED vs the lvl-9 1244.88 counterfactual; fixture avoids the S2b liter-B1-contention trap (rosanna sole B1, BURSTS > 0 asserted)",
+        "blindSaid": "S6 identical block (+ redundant noFb:true, functionally equal); S5 intended the same assertion; S2b FAITHFUL with the fullBurstEnter trap flagged",
+        "formulaCheck": "SSOT: burst-cast direct damage is engine-forced noFb (lands pre-window), crit-eligible, never core (no 'as core dmg' text), noRange — all match; '2 enemies / prio Attacker' collapses to the single boss",
+        "fireRateOk": true,
+        "explanation": "Exact across all roles; the FB-exemption assertion also discriminates against the fullBurstEnter mis-encoding."
+      },
+      {
+        "kitLine": "561.6% additional when Concealed",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "honest ⚑1: NOT modeled — gated on a Concealment self-state with no engine primitive; estimate ≈+43% burst damage when concealed; recipe = concealment self-status primitive + burst-cast-timing uptime read; R6 asserts no 561.6% proxy hit exists",
+        "blindSaid": "S2b: GAP, load-bearing, recommends encoding UNGATED + an inert marker buff + asserting marker-active-at-every-castFrame (in-fixture uptime ≈100%). S5: it.skip. S6: unmodeled verbatim. 2-of-3 blinds corroborate the driver's gap disposition.",
+        "formulaCheck": "both sides agree on the mechanics: MG cadence re-procs concealment every ~3.6s < 10s window and the v1 boss never deals damage, so in-fixture uptime after the first proc is ≈100% and ungated would be exact ON THE SIM'S BASIS. Driver's counter — real-fight uptime is strictly lower and unmeasured — is true but the sim's scope-lock basis IS the no-damage boss, which cuts in S2b's favor. Either disposition is defensible; the documented gap is accounted-for, not silent.",
+        "fireRateOk": true,
+        "explanation": "The one substantive divergence, adjudicated: DOCUMENTED_GAP stands (honest ⚑ with estimate + recipe is protocol-correct). The owner's cheapest available upgrade is S2b's ungated encoding + marker assertion, which is provably exact in-domain — flagged for owner decision, not required for GO."
+      },
+      {
+        "kitLine": "Damage Taken ▲29%/30s vs Water Code",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast + bossElementGate:'Water' -> boss-held (casterIdx+targetIdx null) damageTakenPct 29/30s, once per cast; mult.taken 1.29 in-window on the whole team (crown and helm drop on removal); 0 applies vs Iron; ungated counterfactual provably fires vs Iron",
+        "blindSaid": "OMITTED by S2b, S5, and S6 (blind-side omission, not a contradiction)",
+        "formulaCheck": "SSOT 1g: Damage Taken lives in the boss-side Taken bucket and benefits all attackers — driver encodes it team-wide, matching; the Water-Code clause is a literal element gate, correctly bossElementGate'd",
+        "fireRateOk": true,
+        "explanation": "Kit line unambiguous; verified directly against prose + SSOT since all blinds missed it. Two-sided liveness/inertness proof is exactly the discrimination the gate needs."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found. All 12 kit lines are either FAITHFUL (5 modeled: S1 crit 19.34%/3s unscoped at hitCount:120; S1 Elemental-Advantage 20% as passive elemAdvantageDamagePct routed to the measured ELEMENT bucket; S2 500-normal Frenzy at hitCount:500 x10/30s; burst Assalto 1310.4% burstCast FB-exempt; burst Water-gated Damage Taken 29%/30s boss-held team-wide) or DOCUMENTED_GAP (6 verbatim unmodeled out-of-domain lines + the ⚑1 concealment-gated 561.6% rider with estimate + recipe), and every modeled line carries a discriminating RED counterfactual (scoped-crit, always-on-DamageUp, passive-Frenzy, lvl-9 magnitude, ungated-Taken) plus two gap-honesty assertions against silent proxies. The S5-vs-driver convergence reads RED but every failure is fully attributed to blind-side harness-API bugs (unit-row .events instead of the onEvent stream; a nonexistent .blocks wrapper; mult-as-number) with zero driver encoding faults — RECON_ERRORs, not findings — and the S5 spec dispositions converge with the driver wherever they speak; S6's override is byte-identical on the two lines it models and convergent on the gap set. The systematic blind-side weakness is omission, not contradiction: all three blind roles missed R1 (Elemental Advantage 20%), R3 (500-normal Frenzy), and R5 (Water-gated Taken), each unambiguous in the prose and each verified here directly against Section 3 + the SSOT as faithful. The one substantive divergence (S2b's model-ungated 561.6% vs the driver's honest gap) is adjudicated in the driver's favor as protocol-correct (documented, estimated, recipe'd; corroborated 2-of-3 blinds) — but the same-model residual the owner should spot-check is precisely this: the sim's basis IS the no-damage boss, so in-domain concealment uptime is provably ≈100% and S2b's ungated + marker-assertion encoding would be exact on that basis; landing it is a cheap, principled ~+43%-burst upgrade the owner may greenlight. Secondary residuals: none on magnitudes (owner/measurement-gated, out of scope); the ⚑2 MG cadence tuple is an inherited datamine-default flag affecting proc counts only, not encodings. For GO nothing must change.",
+  "model": "kimi-code/k3"
+}

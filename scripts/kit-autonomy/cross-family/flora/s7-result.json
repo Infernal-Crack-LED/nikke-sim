@@ -1,0 +1,125 @@
+{
+  "slug": "flora",
+  "kitDescription": "Flora is an Electric MG Supporter whose value is almost entirely team-wide rather than personal damage. Her Skill 1 passively places a Peace of Mind aura on herself and her two neighbors that trickle-heals 1% of her max HP every second, grants stacking incoming-healing, and after 100 of her shots bumps stack counts on Electric allies; it also briefly raises those allies' max HP when she enters Burst Stage 2. Her Skill 2 is a defensive reactive layer: it shields the team when an adjacent ally falls below 90% HP, grants team True Damage when an adjacent ally returns to full HP, and grants a large caster-scaled ATK buff when a shield is placed in front of her. Her Burst II is her defining contribution: a team heal plus 10 seconds of True Damage ▲42.39% and a very large ATK buff equal to 85.86% of her own ATK for the whole squad.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "COMPILE-LEVEL ONLY: S5's counterfactual helper reads ov.burst.blocks.forEach but the override schema stores burst as a bare array — the file cannot compile as written (blind-writer harness artifact, no harness source available to it). NOT a faithfulness divergence.",
+      "All substantive S5 assertions are GREEN vs the driver override in substance: trueDamagePct 42.39/allies/10s/flora-burstCast/damage-moving; S2 30.97 inert (driver skill2 = []); no-B3-chain ⇒ no true-damage buff."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Peace of Mind: 1% Max HP every 1s, self+adj",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:1 heal to selfAndAdjacent(sides:2) — models the 1s recovery cadence; HP magnitude unmodeled (no HP pool), documented in caveats",
+        "blindSaid": "S5: it.skip as unmodeled; S6: passive+ticks:1 (one recovery event total, self-flagged as wrong cadence)",
+        "formulaCheck": "heal effect emits recovery events without an HP pool; recovery consumers (crown +20.99%) key off events — cadence is the observable that matters; 'every 1 sec continuously' requires interval:1 (a passive trigger fires once)",
+        "fireRateOk": true,
+        "explanation": "Driver's interval:1 is strictly more faithful than both blinds (S5 skip, S6 single-fire passive) and is proven firing by F4 (~180 distinct consumer frames, collapsing to burst-only count when removed). HP magnitude documented as a caveat — magnitude is measurement-gated and out of scope per F."
+      },
+      {
+        "kitLine": "Incoming Healing ▲4%, stacks 5x",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no incomingHealingPct stat + no HP pool ⇒ doubly inert",
+        "blindSaid": "S5 it.skip; S6 unmodeled; S2b UNMODELED not load-bearing",
+        "formulaCheck": "no such bucket/stat exists in the SSOT; damage-neutral",
+        "fireRateOk": true,
+        "explanation": "All roles converge; inert line, recorded not dropped."
+      },
+      {
+        "kitLine": "after 100 hits: Electric allies +1 stack",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim ⚑ engine-core with estimate+recipe+tier (no addStack primitive)",
+        "blindSaid": "S5 it.skip (missing stack primitive); S6 unmodeled; S2b GAP 'recorded not dropped'",
+        "formulaCheck": "no stack-manipulation effect kind exists in the engine; magnitude depends on which stackable buffs are active — correctly not estimated into the model",
+        "fireRateOk": true,
+        "explanation": "Honest engine-core flag; measured>fudge satisfied (no invented uptime). Four-way convergence."
+      },
+      {
+        "kitLine": "entering Burst 2: Max HP ▲15.01% 2s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; inert (ally-granted Max HP does not feed atkOfMaxHpPct per e3 video rule; 'without restoring HP' ⇒ no recovery event; Peace-of-Mind gate unexpressible)",
+        "blindSaid": "S2b: inert/unmodeled; S5/S6: not separately pinned",
+        "formulaCheck": "SSOT confirms ally-granted Max HP does NOT feed a teammate's HP→ATK conversion (MEASURED, cinderella) — correctly classified damage-neutral",
+        "fireRateOk": true,
+        "explanation": "Correct inert treatment with formula citation; no loss."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "ally HP≤90%: shield 10.22% 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "skill2 = []; unmodeled verbatim ⚑ engine-core (no HP pool; boss deals no damage ⇒ trigger never fires; zero shield events emitted)",
+        "blindSaid": "S2b: faithful model fires ZERO times, must NOT emit shield events; S5 asserts inert; S6 unmodeled",
+        "formulaCheck": "no HP pool exists in the v1 engine; the only faithful behavior is non-firing — which [] produces exactly",
+        "fireRateOk": true,
+        "explanation": "Four-way convergence; same precedent as liter cover-HP NO-OP and alliesLowestHp stand-in. Documented, priced, never fudged."
+      },
+      {
+        "kitLine": "ally reaches max HP: True Dmg ▲30.97%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim ⚑ engine-core, option (a) of S2b: prices the loss in caveats ('meaningful unmodeled fraction; sim under-represents Flora')",
+        "blindSaid": "S2b accepted either (a) unmodeled+⚑-priced or (b) ⚑ near-permanent passive; driver took the more conservative (a); S5 asserts 30.97 never fires",
+        "formulaCheck": "trueDamagePct is flavor-gated DamageUp; modeling it as a permanent passive would invent uptime — measured>fudge forbids (b) without measurement",
+        "fireRateOk": true,
+        "explanation": "Conservative, honest, priced. The prose-vs-datamine duration discrepancy (10s vs 5) is immaterial while unmodeled and was surfaced by S2b — noted, not a finding."
+      },
+      {
+        "kitLine": "shield on self: PoM allies ATK ▲45.12%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim ⚑ engine-core; shielded trigger EXISTS but its only shield source is the HP-gated S2-1 ⇒ chain dead; PoM target gate unexpressible",
+        "blindSaid": "S2b folded into shield-inertness analysis (chain dead); S6 unmodeled",
+        "formulaCheck": "shielded-event machinery matches SSOT §9 (naga precedent); with no shield source the gate can never open in the no-damage sim",
+        "fireRateOk": true,
+        "explanation": "Correct dead-chain reasoning; flag carries estimate+recipe+tier."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "heal 10.45% caster Max HP, all allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast heal to allies — recovery event, magnitude unmodeled (documented); pinned by F3 (crown consumer fires exactly once per Flora burst, aligned to cast frames)",
+        "blindSaid": "S2b FAITHFUL load-bearing burstCast-not-fullBurstEnter; S5 it.skip ('no heal primitive') — S5 wrong, heal kind exists; S6 modeled it (ticks:1)",
+        "formulaCheck": "burstCast trigger, not fullBurstEnter — matches the FB timing rule (cast resolves pre-window; buffs still land on the team)",
+        "fireRateOk": true,
+        "explanation": "Driver + S6 + S2b converge; S5's skip is a blind miss, not a driver defect. F3's exact cadence-count assertion proves firing."
+      },
+      {
+        "kitLine": "True Damage ▲42.39% 10s, all allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast trueDamagePct 42.39/10s/allies; F2 pins value, duration, target count === bursts×4, and flavor-gate byte-identity on non-true units",
+        "blindSaid": "S5 asserts identical semantics (value/10s/all-targets/own-cast/damage-moving); S6 identical encoding; S2b FAITHFUL",
+        "formulaCheck": "True Damage ▲ lives in DamageUp bucket gated to true-flavored instances (SSOT §1e/§9) — engine flavor gate sim.ts:1430 matches; F2's ada-moves/liter-crown-flora-byte-identical is the correct discriminator",
+        "fireRateOk": true,
+        "explanation": "Full four-way convergence with a genuine flavor-gate discrimination test. FAITHFUL."
+      },
+      {
+        "kitLine": "ATK ▲85.86% of skill user's ATK 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast casterAtkPct 85.86/10s/allies; F1 pins flat resolution 0.8586×Flora.staticAtk identical across all 4 targets, discriminates vs generic atkPct, and proves liveness (removal drops carry)",
+        "blindSaid": "ALL THREE blind roles OMITTED this line (S2b loadBearingSet lacks burst:atk; S5 no assertion; S6 no burst ATK effect)",
+        "formulaCheck": "'% of the skill user's ATK' = caster-scaled FLAT add outside the recipient's (1+ATK%) — SSOT §1a/§11, engine uses owner.staticAtk ✓ (crown S1 precedent). Driver routing is exactly the SSOT path.",
+        "fireRateOk": true,
+        "explanation": "This is Flora's PRIMARY contribution and the driver is correct — indeed the ONLY role — to model it. The unanimous blind omission is a blind-side gap (noted for the owner), not a driver defect. Encoding, trigger, scope, and duration all match prose + formula."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA exists: every one of the 10 kit lines is either faithfully modeled (4: burst casterAtkPct/trueDamagePct/heal + S1 HoT cadence) or deliberately unmodeled verbatim with a ⚑ engine-core/inert flag carrying estimate+recipe+tier (6: Incoming Healing, 100-hit stack bump, S1 Max-HP grant, all of S2). The whole-S2 drop is NOT silent — v1 has no HP pool and the boss deals no damage, so the HP-threshold/max-HP/shield-chain triggers genuinely never fire; this matches the liter cover-HP and alliesLowestHp precedents, and the driver prices the loss ('sim under-represents Flora') rather than fudging uptime — DOCUMENTED_GAP, not NO-GO(engine-core). On the two contested points the driver is strictly better than the blinds: (a) interval:1 HoT models 'every 1 sec continuously' where S6's passive+ticks:1 fires once and S5 skipped outright (F4 proves ~1s cadence); (b) the burst ATK ▲85.86%-of-caster line — Flora's defining contribution, routed exactly per the SSOT caster-flat-ATK rule — was omitted by ALL THREE blind roles; the driver models and discriminately pins it (F1 casterAtkPct-vs-atkPct + liveness). Convergence note: the S5 run is RED at compile level only (ov.burst.blocks vs bare-array schema — a blind harness artifact), with all substantive assertions green in substance; I classify that RECON_ERROR-adjacent, not a driver finding. Discrimination holds on all four pins (F1 scaling contrast, F2 flavor byte-identity, F3/F4 cadence collapse). Same-model residual for the owner to spot-check: every agent this run is Kimi-family vs the Qwen driver, and all blinds coincidentally dropped the burst ATK line — the strongest evidence here is therefore the driver's formula-cited F1 discrimination test itself plus the F2 flavor-gate byte-identity, which the owner should glance at as the load-bearing artifacts; also confirm at harness-run time that the S5 compile fix (ov.burst as array) is applied before treating its suite as executable corroboration.",
+  "model": "kimi-code/k3"
+}

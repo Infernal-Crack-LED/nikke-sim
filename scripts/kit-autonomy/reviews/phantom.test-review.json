@@ -1,0 +1,42 @@
+{
+  "slug": "phantom",
+  "stage": "S2b/S2c",
+  "reviewerModel": "kimi-code/k3",
+  "reviewerProvenance": "cross-family blind (owner routing override 2026-07-26: Claude quota exhausted; kimi-k3 replaces claude-fable-5 for S2b)",
+  "verdict": "CONVERGED",
+  "leakDetected": null,
+  "loadBearingSet": [
+    "skill1:calling-card-status-window (DEF magnitude inert/unmodeled)",
+    "skill1:thiefs-dagger-hit-rate-pool",
+    "skill1:treasure-dagger-every-30 (cadence setter)",
+    "skill1:attack-damage-75.17-1round-gated",
+    "skill2:max-stack-consume-84.33-additional + 250-distributed + distAmp+1 + stack-drain",
+    "skill2:continuous-distributed-12.86-x3-reset-on-own-burst",
+    "skill2:10-hit-atk-85.12-5s + distributed-31.92-10s",
+    "burst:1457.28-distributed (burstCast, no FB major, no range)",
+    "burst:fire-damage-taken-18-30s (bossElementGate)",
+    "burst:max-ammo-50-10s"
+  ],
+  "convergences": [
+    "Calling Card = named targetStatus window gating two downstream lines; nearest-wrong = every-hit refresh (permanent CC) — both driver and reviewer",
+    "Thief's Dagger = hitRatePct (NOT crit), stack-limited accrual rate-limited by the CC window — both",
+    "Attack Damage 75.17 = ROUND-count duration (durationShots, never durationSec) + requiresTargetStatus gate — both",
+    "84.33 rider = plain additional damage, NOT distributed, consumes stacks, removes CC — both",
+    "12.86 continuous stacks removed AFTER her OWN burst resolves (casting burst benefits pre-removal) — both (driver: reset block ordered after nuke block)",
+    "every-10-normals = hitCount:10 self 5s/10s — both",
+    "burst nuke = burstCast (not fullBurstEnter), distributed, FB-exempt, range-off — both"
+  ],
+  "reconciliations": [
+    "durationShots: reviewer says ===1 (kit literal); driver authors :2 as an engine-order compensation — shotFired blocks dispatch AFTER the shot's damage (sim.ts block dispatch at :2913 follows dealDamage; round-count decrement at :2973), so a :1 budget decrements to 0 before any damage read sees it (dead buff). :2 yields the exact 59/60 duty the reviewer's own functional criterion demands ('apply-count ≈ shots landed inside CC windows'), with a 1-shot phase lag. Pinned in P4 with an explanatory comment; this is enactment, not a faithfulness divergence.",
+    "treasure cadence: reviewer's trajectory note under-counts the treasure every-30 grant ('stack 3 at ~10s+'); driver's P3 pins the treasure-driven cadence directly (shipped consume count > 2x the no-treasure count; one consume per ~60 shots). Reviewer's loadBearingSet folds the treasure into the dagger line rather than listing it separately — covered."
+  ],
+  "adoptedFromReviewer": [
+    "P5: pin mult.distributed === 1 on the 84.33 rider (must NOT eat distributedDamagePct buffs)",
+    "P9: pin rangeApplied === false on the 1457.28 nuke",
+    "caveat ⚑: cadence tuple (RoF 720 / reloadFrames 141) is datamine-sourced and unverified — recipe: read fire cadence + reload gap from a focus video",
+    "caveat ⚑: hitRatePct core-hit yield is a DERIVED estimate (sim.ts hrCoreMult, LIVE by default) — the 25.75/stack is kit-faithful, the core-fraction conversion is calibrated"
+  ],
+  "driverDeviations": [
+    "distAmp + thiefsDagger modeled as exact discrete resource pools (soda-twinkling-bunny machinery: resources + resourceGate + perResource) — the reviewer expected an approximation for 'removed after Burst Skill' (notes item 7); the resource delta makes the reset EXACT, not approximate. Documented in the override note."
+  ]
+}

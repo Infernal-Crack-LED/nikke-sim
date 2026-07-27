@@ -1,0 +1,73 @@
+{
+  "slug": "flora",
+  "stage": "S2c reconciliation (driver Qwen vs S2b reviewer kimi-code/k3)",
+  "reviewerModel": "kimi-code/k3",
+  "reviewerProvenance": "scripts/kit-autonomy/cross-family/flora/s2b-result.json (owner routing override: kimi-k3 replaces claude-fable-5; Claude quota exhausted)",
+  "verdict": "CONVERGED — no REAL-GOTCHA; driver implementation is faithful and MORE complete than the reviewer's enumeration",
+  "lineByLine": [
+    {
+      "line": "S1 Peace-of-Mind HoT (1% final Max HP every 1s, self + 2 adjacent)",
+      "reviewer": "FAITHFUL, load-bearing; trigger battle-start/passive; target selfAndAdjacent; continuous 1 tick/s; fires recovery consumers",
+      "driver": "FAITHFUL — interval:1 heal selfAndAdjacent(sides:2); pinned by F4 (crown recovery ~1s cadence)",
+      "status": "CONVERGED",
+      "note": "Reviewer labeled the trigger 'passive', but a `passive` heal fires ONCE (passive triggers ignore durationSec, sim.ts:983-993); the reviewer's OWN distinguishing assertion ('recovery consumer refreshing CONTINUOUSLY') requires the per-second cadence, which only `interval:1` produces. Driver encoding is the faithful one; observable converges."
+    },
+    {
+      "line": "S1 Incoming Healing ▲4% stacks 5x",
+      "reviewer": "UNMODELED, not load-bearing; no StatKey; verbatim in unmodeled",
+      "driver": "UNMODELED (no incomingHealingPct stat + no HP pool; doubly inert); verbatim in unmodeled.skill1",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "S1 after 100 normal attacks → all Electric allies: +1 stack to stackable buffs",
+      "reviewer": "GAP; no stack-increment effect kind; trigger hitCount:100 + target alliesOfElement Electric expressible, effect not; must be recorded not dropped",
+      "driver": "UNMODELED ⚑ engine-core (no addStack primitive); verbatim in unmodeled.skill1 with estimate+recipe+tier",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "S2 ally HP<=90% → shield 10.22% caster Max HP 10s (all allies)",
+      "reviewer": "UNMODELED; no HP pool / no incoming damage; faithful model fires ZERO times; must NOT emit any shield event",
+      "driver": "UNMODELED ⚑ engine-core; skill2 = [] (no blocks) → zero shield events all fight",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "S2 adjacent ally reaches max HP → True Damage ▲30.97% (all allies)",
+      "reviewer": "GAP, load-bearing; no TriggerDef for max-HP-reached; honest options (a) unmodeled+⚑ pricing the loss OR (b) ⚑ CALIBRATED near-permanent passive justified by S1 HoT; NEVER silent",
+      "driver": "UNMODELED ⚑ engine-core, option (a): verbatim in unmodeled.skill2 + caveat pricing the loss ('meaningful, unmodeled fraction of her real team contribution; sim under-represents Flora until an HP pool exists')",
+      "status": "CONVERGED (driver took reviewer-accepted option (a); more conservative — no invented uptime/cadence, consistent with measured>fudge)",
+      "note": "Duration discrepancy: kit PROSE says 'for 10 sec', datamine description_value_05 = 5. Immaterial (line is unmodeled); if ever enacted, resolve prose-vs-datamine first."
+    },
+    {
+      "line": "S2 shield placed in front of self → Peace-of-Mind allies ATK ▲45.12% of caster 10s",
+      "reviewer": "(folded into the S2 shield inertness analysis — the shielded trigger's only source is the HP-gated shield, so the chain is dead)",
+      "driver": "UNMODELED ⚑ engine-core (shielded trigger EXISTS but its shield source S2-1 is HP-gated → chain dead in no-damage sim; Peace-of-Mind target gate also unexpressible)",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "Burst heal 10.45% caster final Max HP (all allies)",
+      "reviewer": "FAITHFUL, load-bearing; burstCast stage:2 (flora's OWN cast, not fullBurstEnter); instant single tick; drives recovery triggers",
+      "driver": "FAITHFUL — burstCast heal allies; pinned by F3 (crown recovery once per flora burst, aligned to cast frames)",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "Burst True Damage ▲42.39% for 10s (all allies)",
+      "reviewer": "FAITHFUL, load-bearing; burstCast stage:2 NOT fullBurstEnter; durationSec 10; value 42.39; count === flora burstCast count",
+      "driver": "FAITHFUL — burstCast trueDamagePct 42.39 10s allies; pinned by F2 (value 42.39, 10s, all targets, count === flora bursts × N; flavor-gated byte-identical on non-true units)",
+      "status": "CONVERGED"
+    },
+    {
+      "line": "Burst ATK ▲85.86% of the skill user's ATK for 10s (all allies)",
+      "reviewer": "NOT ENUMERATED — the reviewer's spec omits this line entirely (loadBearingSet lacks burst:atk)",
+      "driver": "FAITHFUL, load-bearing (Flora's PRIMARY team contribution) — burstCast casterAtkPct 85.86 10s allies; pinned by F1 (flat resolution 0.8586×Flora.staticAtk identical across all targets; atkPct counterfactual moves the carry; removal drops the carry)",
+      "status": "DRIVER MORE COMPLETE — reviewer omission, not a driver defect; the line is in the kit prose the reviewer was given and is modeled + discriminately pinned"
+    }
+  ],
+  "sharedPriorTrapsChecked": [
+    "burst True Damage keyed to fullBurstEnter vs burstCast: driver uses burstCast (correct); F2 asserts count === flora burstCast × targets + 10s expiry",
+    "S2 True Damage 30.97 silent drop vs flagged: driver flags ⚑ engine-core + prices the loss (reviewer-accepted option a)",
+    "target-set conflation across headers: driver uses per-line targets (selfAndAdjacent for S1 HoT, allies for burst) — no conflation",
+    "heal lines skipped as inert: driver models BOTH heals (F3/F4) — reviewer agrees they are tandem-load-bearing via crown's recovery consumer",
+    "shield inertness: driver skill2 = [] → zero shield events (reviewer's distinguishing assertion satisfied)"
+  ],
+  "recommendation": "GO — all load-bearing lines accounted for and pinned; HP-gated S2 + no-primitive S1 lines flagged engine-core with estimate+recipe+tier; cross-family reviewer converged (and missed one line the driver covers). Proceed to S5/S6/S7."
+}

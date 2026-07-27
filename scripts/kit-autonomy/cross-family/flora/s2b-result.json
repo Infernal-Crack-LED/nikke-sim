@@ -1,0 +1,122 @@
+{
+  "slug": "flora",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 1% final Max HP every 1 sec cont.",
+      "disposition": "FAITHFUL",
+      "scope": "n/a (heal, no damage bucket)",
+      "durationSemantics": "continuous — battle-long HoT, 1 tick/sec from t=0; NOT a finite durationSec window",
+      "triggerIdentity": "passive ('Activates at the start of battle, only if self is alive') — no shot/hit/burst gate",
+      "targetSet": "self + 2 adjacent allies (selfAndAdjacent; 'on both sides' = immediate neighbors, total 3 units) — NOT all allies",
+      "nearestWrongModel": "target widened to {kind:'allies'} (every ally healed), or ticks modeled as a short finite heal that stops emitting recovery events",
+      "distinguishingAssertion": "a recovery-trigger consumer (crown in controlComp) slotted ADJACENT to flora shows her recovery-gated buffApply refreshing continuously from early in the fight; the same consumer slotted 2+ positions away from flora shows ZERO recovery-gated buffApply events. Green under selfAndAdjacent, red under target:allies (non-adjacent consumer would also fire)",
+      "inertness": "must NOT emit any damage-relevant stat buff; must NOT heal non-adjacent allies; must not require flora to fire/burst (alive-at-start is the only gate)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Incoming healing ▲4% cont., stacks ≤5",
+      "disposition": "UNMODELED",
+      "scope": "healing-received modifier — no StatKey exists for incoming-healing",
+      "durationSemantics": "continuous, stacking to 5",
+      "triggerIdentity": "passive (same start-of-battle header)",
+      "targetSet": "same as HoT line: self + 2 adjacent allies",
+      "nearestWrongModel": "encoded as maxHpPct / defPct / some proxy buff to 'keep the line', or silently dropped without an unmodeled entry",
+      "distinguishingAssertion": "no buffApply event with any damage-relevant stat keyed to this line; the verbatim text appears in override.unmodeled.skill1",
+      "inertness": "must NOT move any damage total; must NOT be proxied by an unrelated stat",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "After 100 normal attacks: buff stacks ▲1",
+      "disposition": "GAP",
+      "scope": "modifies stack count of existing buffs on targets — the schema has NO effect kind that increments another buff's stacks",
+      "durationSemantics": "permanent stack increment per activation",
+      "triggerIdentity": "hitCount count:100 on the OWNER's normal attacks; MG hitsPerShot 1 so 100 hits = 100 rounds = 100 pulls (no divergence here, but the count is rounds not seconds)",
+      "targetSet": "all Electric Code allies (alliesOfElement Electric) — element-scoped, NOT self+adjacent, NOT all allies",
+      "nearestWrongModel": "target read off the FIRST header (self+adjacent) instead of this line's own 'all Electric Code allies'; or trigger mis-keyed to interval:100s; or effect faked as a generic stat buff",
+      "distinguishingAssertion": "structural only: the override either (a) carries a documented GAP note + verbatim unmodeled entry, or (b) any block claiming this line must fire its first activation no earlier than 100 flora rounds (check flora's shot-event count at first activation) and must touch ONLY Electric-ally targets",
+      "inertness": "must NOT buff non-Electric allies; must NOT fire before 100 flora hits; must not be silently dropped",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ally HP <90%: Shield 10.22% caster MaxHP 10s",
+      "disposition": "UNMODELED",
+      "scope": "defensive shield; no HP pool / no incoming damage in v1",
+      "durationSemantics": "10 sec shield window",
+      "triggerIdentity": "ally-adjacent HP threshold crossing — NO TriggerDef exists for ally HP state; and in a damage-free sim the condition NEVER becomes true, so the faithful model fires ZERO times",
+      "targetSet": "all allies (shield granted to everyone once triggered)",
+      "nearestWrongModel": "passive shield at t=0 or interval shield 'to represent uptime' — this would fire 'shielded' triggers on shield-synergy teammates and over-credit",
+      "distinguishingAssertion": "ZERO shield-driven downstream activations all fight: no buffApply from any 'shielded'-trigger block on any ally; the verbatim line sits in override.unmodeled.skill2 with a note that the trigger is environmentally inert",
+      "inertness": "must NOT emit a shield event at battle start or on any timer; must NOT feed requiresShielded/shielded consumers",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Ally HP reaches Max: True Dmg ▲30.97% 5s",
+      "disposition": "GAP",
+      "scope": "generic trueDamagePct (Damage Up bucket), all damage — not normal-attack-scoped",
+      "durationSemantics": "5 sec per activation, refreshable (S1's continuous HoT re-tops adjacent allies in real play)",
+      "triggerIdentity": "'HP of one adjacent ally reaches Max HP' — no TriggerDef exists for this; engine cannot express it. Honest options: (a) unmodeled + ⚑ (large team-damage loss, must be declared), or (b) ⚑ CALIBRATED approximation as near-permanent passive justified by the S1 continuous HoT — NEVER an unflagged silent passive",
+      "targetSet": "all allies — includes self; NOT electric-only, NOT adjacent-only (the gate is positional, the buff is team-wide)",
+      "nearestWrongModel": "(1) silently dropped as 'heal-adjacent, inert' losing the biggest sustained team buff; (2) target narrowed to self+adjacent by conflating the trigger gate with the buff target; (3) unflagged permanent passive presented as measured",
+      "distinguishingAssertion": "if modeled: buffApply stat 'trueDamagePct' value 30.97 lands on EVERY ally (targetSlug set covers all 5 incl. flora), value exactly 30.97, and the override carries a ⚑ uptime justification in note; if unmodeled: verbatim line in unmodeled.skill2 AND notes must price the omission. Red under the narrowed-target misread: a non-adjacent ally shows the buffApply",
+      "inertness": "must NOT appear as a self-only buff; must NOT be folded into the burst's 42.39% as one merged line (different magnitudes/durations/triggers)",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 10.45% caster final Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "heal (no damage bucket) — tandem-relevant: drives 'recovery' triggers on teammates",
+      "durationSemantics": "instant single tick on cast",
+      "triggerIdentity": "burstCast stage:2 (flora is Burst II) — fires ONLY on rotations flora herself casts, never on another B2's cast",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "skipped as 'heals are inert in a no-HP sim' (taxonomy trap #4 — crown's recovery-gated buffs in the fixture make this damage-relevant), or keyed to fullBurstEnter so it also fires on crown-led full bursts",
+      "distinguishingAssertion": "crown's recovery-gated buffApply count steps exactly when flora's burstCast events occur; on a full-burst rotation where crown (not flora) cast stage 2, NO new recovery-driven buffApply originates from flora",
+      "inertness": "must NOT fire on non-flora rotations; must NOT itself grant any damage stat",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "True Damage ▲42.39% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic trueDamagePct (Damage Up bucket), all damage of every ally",
+      "durationSemantics": "durationSec 10 from cast — wall-clock, NOT rounds/stacks/permanent; the 10s window vs a 40s-cd B2 means real downtime",
+      "triggerIdentity": "burstCast stage:2 — flora's OWN cast only. Diverges from fullBurstEnter whenever crown (20s B2) completes the chain on off-rotations: fullBurstEnter mis-keying roughly doubles uptime",
+      "targetSet": "all allies including self (targetSlug set = full squad)",
+      "nearestWrongModel": "fullBurstEnter trigger (over-credits crown-led rotations), or permanent/30s duration, or value merged with the S2 30.97% line",
+      "distinguishingAssertion": "count(buffApply where stat='trueDamagePct' and value=42.39) === count(burstCast where slug='flora'), each with expiresFrame ≈ castFrame + 10s-worth-of-frames, and targetSlug covering all 5 units; on a crown-led full burst with flora idle, NO 42.39 buffApply appears. Green under burstCast, red under fullBurstEnter",
+      "inertness": "must NOT be active at t=0 before flora's first cast; must NOT refresh on other units' bursts; flora's own normal-attack damage outside the window unchanged",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:hot",
+    "skill2:trueDamage",
+    "burst:heal",
+    "burst:trueDamage"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Incoming healing ▲ 4% continuously, stacks up to 5 time(s).",
+      "■ Activates after landing 100 normal attack(s). Affects all Electric Code allies. Stack count of buffs ▲ 1. (if no stack-increment primitive is shipped — GAP, must be recorded not dropped)"
+    ],
+    "skill2": [
+      "■ Activates when the HP of one of the allies on both sides is lower than 90%. Affects all allies. Generates a Shield with 10.22% of the skill user's final Max HP for 10 sec. (trigger environmentally inert in a damage-free sim — must fire zero times)"
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, ranked: (1) burst True Damage keyed to fullBurstEnter instead of burstCast stage 2 — the controlComp fixture fields crown (20s B2) alongside flora (40s B2), so full bursts genuinely occur on rotations flora did not cast; this is THE discriminating test of the review. (2) S2 True Damage ▲30.97%: its trigger ('adjacent ally reaches Max HP') has no TriggerDef — the driver must EITHER ship a ⚑-flagged near-permanent approximation (justified by S1's continuous HoT keeping adjacent allies topped, uptime estimate + recipe in note) OR record it unmodeled with the damage cost priced; a silent passive with no ⚑, or a silent drop, both fail. (3) Target-set conflation across headers: S1a is self+2-adjacent, S1b is all-Electric, S2/burst are all-allies — each line's 'Affects' clause is independent; carrying the first header's target into later lines is wrong. (4) Skipping the two heal lines as 'inert in a no-HP sim' — crown's recovery trigger makes both tandem-load-bearing (taxonomy trap #4). (5) reloadFrames 171 is a known-unreliable datamine field → ⚑; ammo 300 / hitsPerShot 1 mean the S1b 100-hit trigger equals 100 pulls, so no hits-vs-rounds divergence to exploit there, but the first-activation-time check still distinguishes hitCount from an interval:100 misread. (6) The shield line's faithful sim behavior is total inertness — any shield event anywhere in the log is a red flag.",
+  "model": "kimi-code/k3"
+}

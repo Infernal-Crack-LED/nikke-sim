@@ -1,0 +1,57 @@
+{
+  "slug": "rosanna",
+  "leakDetected": null,
+  "testSource": "/*\n * Rosanna (rosanna) kit assertions.\n * S1: 120-hit self crit buff; Concealment/dispel skipped (missing primitives).\n * S2: start Concealment skipped; incapacitated Frenzy inert in v1.\n * Burst: 1310.4% damage on cast; Concealment rider skipped.\n * Fixture: controlComp('rosanna', true). Counterfactuals mutate the cloned override.\n */\nimport { describe, expect, it } from 'vitest';\nimport type { SimEvent } from '../../../src/types.js';\nimport {\n  controlComp,\n  runComp,\n  totals,\n  unitOf,\n  withPatchedOverride,\n} from '../lib/harness.js';\n\ndescribe('rosanna kit', () => {\n  const run = (opts: Parameters<typeof runComp>[0]) => {\n    const events: SimEvent[] = [];\n    const res = runComp({ ...opts, onEvent: (ev: SimEvent) => events.push(ev) });\n    return { res, events };\n  };\n\n  const rosEvents = (res: ReturnType<typeof runComp>) =>\n    ((unitOf(res, 'rosanna') as any).events || []) as SimEvent[];\n\n  it('S1: 120 normal attacks -> self crit rate +19.34% for 3s', () => {\n    const { res } = run(controlComp('rosanna', true));\n    const re = rosEvents(res);\n    const shotFrames = re\n      .filter((e: any) => e.kind === 'shot')\n      .map((e: any) => e.frame as number)\n      .sort((a: number, b: number) => a - b);\n    const crits = re.filter(\n      (e: any) =>\n        e.kind === 'buffApply' &&\n        e.stat === 'critRatePct' &&\n        Math.abs((e.value as number) - 19.34) < 0.001\n    );\n    expect(crits.length).toBeGreaterThan(0);\n    expect((crits[0] as any).frame).toBeGreaterThanOrEqual(shotFrames[119] ?? 0);\n    const early = crits.filter(\n      (e: any) => (e.frame as number) < (shotFrames[119] ?? Infinity)\n    );\n    expect(early.length).toBe(0);\n    const others = re.filter(\n      (e: any) =>\n        e.kind === 'buffApply' &&\n        e.stat === 'critRatePct' &&\n        Math.abs((e.value as number) - 19.34) < 0.001 &&\n        e.targetSlug !== 'rosanna'\n    );\n    expect(others.length).toBe(0);\n  });\n\n  it('S1 counterfactual: unreachable hit threshold -> no crit buff', () => {\n    const patched = withPatchedOverride('rosanna', (ov) => {\n      const b = ov.skill1!.blocks.find(\n        (x: any) => x.trigger.kind === 'hitCount' && x.trigger.count === 120\n      );\n      if (b) b.trigger = { kind: 'hitCount', count: 999999 };\n    });\n    const { res } = run({\n      ...controlComp('rosanna', true),\n      overrides: { rosanna: patched },\n    });\n    const re = rosEvents(res);\n    const crits = re.filter(\n      (e: any) =>\n        e.kind === 'buffApply' &&\n        e.stat === 'critRatePct' &&\n        Math.abs((e.value as number) - 19.34) < 0.001\n    );\n    expect(crits.length).toBe(0);\n  });\n\n  it('S2: incapacitated Frenzy is inert (no deaths in v1)', () => {\n    const { res } = run(controlComp('rosanna', true));\n    const re = rosEvents(res);\n    const frenzy = re.filter(\n      (e: any) =>\n        e.kind === 'buffApply' &&\n        e.stat === 'atkPct' &&\n        Math.abs((e.value as number) - 22.61) < 0.001 &&\n        e.targetSlug === 'rosanna'\n    );\n    expect(frenzy.length).toBe(0);\n  });\n\n  it('burst: cast deals 1310.4% final ATK damage', () => {\n    const { res } = run(controlComp('rosanna', true));\n    const re = rosEvents(res);\n    const hits = re.filter(\n      (e: any) =>\n        e.kind === 'damage' &&\n        e.srcSlot === 'burst' &&\n        (Math.abs((e.mult as number) - 13.104) < 0.001 ||\n          Math.abs((e.mult as number) - 1310.4) < 0.1)\n    );\n    expect(hits.length).toBeGreaterThan(0);\n    for (const h of hits) {\n      expect((h as any).inFullBurst).toBe(false);\n      expect((h as any).core).toBe(false);\n    }\n  });\n\n  it('burst counterfactual: zeroing the 1310.4% effect removes main burst damage', () => {\n    const patched = withPatchedOverride('rosanna', (ov) => {\n      for (const b of ov.burst!.blocks) {\n        for (const eff of b.effects) {\n          if (\n            eff.kind === 'flatDamage' &&\n            (Math.abs((eff.atkPct as number) - 1310.4) < 0.001 ||\n              Math.abs((eff.atkPct as number) - 13.104) < 0.001)\n          ) {\n            eff.atkPct = 0;\n          }\n        }\n      }\n    });\n    const { res } = run({\n      ...controlComp('rosanna', true),\n      overrides: { rosanna: patched },\n    });\n    const re = rosEvents(res);\n    const mainHits = re.filter(\n      (e: any) =>\n        e.kind === 'damage' &&\n        e.srcSlot === 'burst' &&\n        (Math.abs((e.mult as number) - 13.104) < 0.001 ||\n          Math.abs((e.mult as number) - 1310.4) < 0.1)\n    );\n    expect(mainHits.length).toBe(0);\n  });\n\n  it.skip('S1a: Concealment 10s self / removed on hit — no self-status primitive', () => {});\n  it.skip('S1b: 2 highest-final-ATK enemies, remove 5 buffs — no enemy-rank/dispel primitive', () => {});\n  it.skip('S2a: Start-of-battle 5s Concealment — no self-status primitive', () => {});\n  it.skip('burst rider: +561.6% when Concealment — gated by unmodeled self-status', () => {});\n});\n",
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "120 normal attacks: self crit ▲19.34% for 3s",
+      "disposition": "FAITHFUL",
+      "assertion": "buffApply critRatePct 19.34 on rosanna occurs only at/after the 120th shot and never on allies; raising the hit-count threshold to 999999 removes it (nearest-wrong)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Concealment 10s self, removed on direct hit",
+      "disposition": "GAP",
+      "assertion": "Skipped: no engine primitive for a self-Concealment status or remove-on-hit."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "10 hits: 2 highest-final-ATK enemies, dispel 5 buffs",
+      "disposition": "GAP",
+      "assertion": "Skipped: no target primitive for ranked enemies and no dispel effect."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Start of battle: Concealment 5s self",
+      "disposition": "GAP",
+      "assertion": "Skipped: no engine primitive for a self-Concealment status."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When Nikke incapacitated: Frenzy ATK ▲22.61%, gauge fill",
+      "disposition": "UNMODELED",
+      "assertion": "No atkPct 22.61 self buff appears in v1 (no ally deaths); catches a wrongly passive/incorrect trigger."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Prioritizes 2 Attacker enemies; deals 1310.4% ATK",
+      "disposition": "FAITHFUL",
+      "assertion": "burstCast emits non-core, out-of-FB flatDamage at ~13.104x/1310.4%; zeroing the flatDamage effect removes these hits (nearest-wrong)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "When Concealment: same targets +561.6% ATK",
+      "disposition": "GAP",
+      "assertion": "Skipped: rider is gated by the unmodeled self-Concealment status."
+    }
+  ],
+  "fixtures": "controlComp('rosanna', true) for all assertions: Rosanna as the unit under test with Liter B1, Crown B2, and Helm B3 so Full Bursts fire. Counterfactuals use withPatchedOverride on the cloned rosanna override.",
+  "gaps": [
+    "S1a Concealment 10s self/removed on hit — no self-status/remove-on-hit primitive",
+    "S1b 2 highest-final-ATK enemies / remove 5 buffs — no enemy-rank/dispel primitive",
+    "S2a Start-of-battle 5s Concealment — no self-status primitive",
+    "burst rider +561.6% when Concealment — gated by unmodeled self-Concealment status"
+  ],
+  "model": "kimi-code/kimi-for-coding"
+}
