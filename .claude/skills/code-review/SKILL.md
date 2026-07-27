@@ -1,6 +1,6 @@
 ---
 name: code-review
-description: Cross-family POST-OP code review — the diff gets reviewed by a DIFFERENT model family than the one that wrote it, before commit/merge. Kimi-authored code → claude-opus-5 via dispatch-claude.sh; Claude-authored code → kimi-code/k3 via dispatch-kimi.sh; Qwen-authored → claude-opus-5. Use after any non-trivial change passes verify.sh (and, if it ran, the logic-gate post-op). NOT for scientific-method landings — those already have implementation-reviewer.
+description: Cross-family POST-OP code review — the diff gets reviewed by a DIFFERENT model family than the one that wrote it, before commit/merge. Kimi-authored code → claude-opus-5 via dispatch-claude.sh; Claude-authored code → kimi-code/k3 via dispatch-kimi.sh; Qwen-authored → claude-opus-5. Invoke ONLY when the owner explicitly requests it (typically for higher-risk changes, after verify.sh is green and, if it ran, the logic-gate post-op) — never automatically. NOT for scientific-method landings — those already have implementation-reviewer.
 ---
 
 # code-review — the author never reviews their own diff

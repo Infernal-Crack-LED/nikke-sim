@@ -421,8 +421,9 @@ a card from site data. Every one ships the watermark.
   `src/skills/overrides/**`, or `scripts/regression-snapshot*.json`. `src/share/`, `src/infographics/`,
   `web/`, and `scripts/` are all unprotected.
 - **Not a `/scientific-method` surface.** No damage-model value changes. Per CLAUDE.md the gate for
-  tooling/scripts/renderers is `verify.sh` + fixtures. This _is_ a non-trivial structural change, so
-  the repo's own prescribed gate is **`/logic-gate` pre-op before Phase 1**, and `/code-review` per phase.
+  tooling/scripts/renderers is `verify.sh` + fixtures. `/logic-gate` and `/code-review` are
+  **owner-requested, not automatic** — they run only when the owner asks for them (typically on
+  higher-risk phases), never as a default step the agent triggers on its own.
 - **`bash scripts/verify.sh` green before any push; commit freely, never push unattended.**
 - **Engine-adjacent isolation rule (constraint 8):** none of this touches the engine, but the tree is
   shared — do the extraction on a dedicated worktree (`git worktree add ../nikke-sim-wt-infographics`)

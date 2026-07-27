@@ -1,9 +1,12 @@
 ---
 name: logic-gate
-description: Cross-family logical-reasoning gates for NON-trivial engineering changes — a PRE-OP gate (attack the plan's reasoning before code exists) and a POST-OP gate (blind second verdict on the implementation vs the approved plan). The reviewer is ALWAYS a different model family than the driver — Kimi/Qwen driver → claude-fable-5 via dispatch-claude.sh; Claude driver → kimi-code/k3 via dispatch-kimi.sh. Use for features, refactors, structural changes, and tricky bug fixes. NOT for empirical game-mechanics questions (those go through /scientific-method with preop-judge/postop-judge) and NOT for trivial edits (typos, obvious one-liners).
+description: Cross-family logical-reasoning gates for higher-risk engineering changes — a PRE-OP gate (attack the plan's reasoning before code exists) and a POST-OP gate (blind second verdict on the implementation vs the approved plan). The reviewer is ALWAYS a different model family than the driver — Kimi/Qwen driver → claude-fable-5 via dispatch-claude.sh; Claude driver → kimi-code/k3 via dispatch-kimi.sh. Invoke ONLY when the owner explicitly requests it (typically for higher-risk features, refactors, structural changes, or tricky bug fixes) — never automatically. NOT for empirical game-mechanics questions (those go through /scientific-method with preop-judge/postop-judge) and NOT for trivial edits (typos, obvious one-liners).
 ---
 
 # logic-gate — cross-family pre-op + post-op reasoning gates
+
+**Owner-invoked only:** these gates run when the owner explicitly asks for them (typically on
+higher-risk work) — they are not a default step the driver triggers on its own.
 
 Two gates around any non-trivial engineering change, generalizing the kit-autonomy cross-family
 protocol (`scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md` — the WHY and the canonical model names;
