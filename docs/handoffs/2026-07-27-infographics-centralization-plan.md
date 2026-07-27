@@ -328,11 +328,14 @@ Nothing can be centralized while two copies disagree about what the image looks 
   `ctx.measureText('X').width > 0` after registration) and fail at zero, so the failure names itself
   instead of showing up as an opaque fixture mismatch.
 - Reconcile `build-code.ts` (`bossRange` missing in the bot's copy — harmless today, see §1).
-- **Add a max-aspect-ratio rule to every row-based card** (§6.5). At 79 rows the burstgen board is
-  1 : 4.7 and ~1 MB — an unreadable sliver in a Discord embed or Twitter card. Rank boards cut to
-  top-25; the DPS chart needs the same treatment once ranked units pass ~30 (21 today, and rising
-  with the roster). This is a renderer design point, so it belongs here rather than in the
+- **Implement row windowing on every row-based card — top 10 default, 4-above/5-below on a target
+  (§6.6).** Without it the burstgen board renders all 79 rows at 1 : 4.7 and ~1 MB: an unreadable
+  sliver in a Discord embed. This is a renderer design point, so it lands here rather than in the
   pre-generation phase — it applies to on-demand renders identically.
+- **Pass the population `#1` dps into `drawDpsChart` explicitly** rather than inferring it from
+  `bars[0]`. This is the `DpsChartData` signature change §6.6 requires so `relScore` keeps meaning
+  the same thing on a windowed chart; doing it during reconciliation is far cheaper than retrofitting
+  it after the bot is already consuming the API.
 
 ### Phase 1 — extract `src/infographics/` _(nikke-sim)_
 
@@ -608,5 +611,75 @@ Then "what's in the head" tracks real link surfaces automatically instead of dri
 hardcoded list. **Close the loop at Phase 5:** Umami is already wired into `serve.mjs` — log tail
 renders and promote the top N into the head on each deploy.
 
-**⇒ Phase 2 action: head-only (~208 images), derived from link surfaces, rank boards cut to top-25.
-Measure one real render early and replace the ~0.07 B/px estimate above with the actual figure.**
+**⇒ Phase 2 action: head-only (~208 images), derived from link surfaces, rank boards windowed per
+§6.6. Measure one real render early and replace the ~0.07 B/px estimate above with the actual figure.**
+
+### 6.6 — Row windowing: top 10 default, ±window on a target (DECIDED, owner 2026-07-27)
+
+Supersedes the "top-25" placeholder in §6.5. Applies to **every row-based card** — the DPS chart and
+all four rank boards — on both the pre-generated and on-demand paths.
+
+**Rule:** default to the **top 10**. When a caller requests a specific unit, return a 10-row window
+centred on it: **4 above, the target, 5 below.**
+
+#### Exact windowing, including the clamps
+
+With `n` rows and the target at 0-indexed `i`:
+
+```
+start = min( max(i - 4, 0), max(0, n - 10) )
+end   = min(start + 10, n)
+```
+
+Behaviour at the edges, which the rule as stated does not cover and the implementation must:
+
+| Case                                  | Window      | Target lands at                            |
+| ------------------------------------- | ----------- | ------------------------------------------ |
+| `n ≤ 10`                              | all rows    | its natural position                       |
+| target rank ≤ 5                       | ranks 1–10  | its natural position (no room for 4 above) |
+| target mid-board (e.g. rank 34 of 79) | ranks 30–39 | 5th row — 4 above, 5 below ✓               |
+| target rank ≥ n−4 (e.g. 78 of 79)     | ranks 70–79 | shifted down (no room for 5 below)         |
+
+The 4-above/5-below asymmetry is deliberate: it biases toward showing **who you can still catch**,
+which is the more actionable direction for a player.
+
+#### ⚠ Windowing silently breaks `relScore` — decide this explicitly
+
+`relScore(dps, top)` is currently computed against `maxDps`, **the top bar of the rendered set**
+(`src/share/dpsChart.ts:19-20` — "against the chart's #1… the #1 is 1.000"). That identity holds only
+because the chart has always started at rank 1. **On a window starting at rank 30, `maxDps` becomes
+rank 30's dps, so rank 30 renders as `1.000`** — a number that means something entirely different
+from the `1.000` on the top-10 chart, with nothing in the image saying so.
+
+That directly attacks the goal of these images: two shared screenshots of the same unit would show
+different scores depending on which window they came from. Resolution:
+
+- **The label is always normalized against the population #1**, never the window max. The number must
+  mean the same thing in every image, or it is worse than no number.
+- **Bar length scales to the window max**, so a deep window is still readable rather than a row of
+  stubs.
+- **Every row shows its absolute rank number**, which is what makes the two decisions above
+  unambiguous rather than contradictory (a full-length bar labelled `0.742` reads correctly once the
+  row says `#30`).
+- **The header states the window** — e.g. `ranks 30–39 of 79`.
+
+`drawDpsChart` therefore needs the population `#1` dps passed in explicitly, not inferred from
+`bars[0]`. That is a **signature change to `DpsChartData`, so it belongs in Phase 0** with the rest of
+the reconciliation, not bolted on later.
+
+#### Consequences elsewhere
+
+- **`DpsCompare` is largely superseded.** The existing bottom-annotation row (`name · rank N / M ·
+score`, `COMPARE_H = 52`) exists to answer "where does my unit sit" — the window answers it better,
+  in context, with real bars. Keep the field for a caller that wants top-10 _plus_ an out-of-window
+  annotation, but the bot's `/nikke <unit>` should use the window.
+- **Sizing improves, and the aspect ratio becomes good for social.** A 10-row chart is
+  `118 + 10×52 + 44 = 682` px tall at 900 wide — **1.32 : 1**, which sits well in a Discord embed and
+  a Twitter card. At 2× that is 1800 × 1364 ≈ 2.45 Mpx ⇒ **~170 KB**, down from the ~230–320 KB
+  estimated for a 21-bar chart. The 1 : 4.7 / ~1 MB burstgen problem disappears entirely: no board
+  ever renders all 79 rows as one image.
+- **The §6.5 head-set arithmetic gets cheaper**, and the per-unit windows stay on-demand. Pre-
+  generating a window for every unit would be 101 selector units × 2 headline cells = **202 extra
+  images (~34 MB)**, roughly doubling the head for images that are inherently parameterized and
+  self-warming. Leave them to the tail and let the Umami promotion loop (§6.5) pull the popular ones
+  into the head.

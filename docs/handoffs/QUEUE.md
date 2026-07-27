@@ -77,9 +77,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   typechecked by nothing today, yet must import TS render code), then two hand-rolled GET routes with
   rate limiting pushed to Cloudflare, hono deferred to Phase 6; **pre-generate head-only** (~208
   images / ~25–40 MB, derived from real link surfaces) vs. 165 MB + ~2 min per deploy for the full
-  540-chart cartesian. Two findings that need renderer changes at Phase 0: rank boards are unusable
-  as single images (burstgen at 79 rows = 1 : 4.7 aspect, ~1 MB) so every row-based card needs a
-  top-N/max-aspect rule; and the DPS chart hits the same wall as ranked units grow (21 today).
+  540-chart cartesian; **§6.6 row windowing — top 10 by default, and 4-above/5-below when a specific
+  unit is requested** (`start = min(max(i-4,0), max(0,n-10))`, verified on all edge cases). Windowing
+  fixes the board-as-one-image problem (burstgen at 79 rows = 1 : 4.7 aspect, ~1 MB, an unreadable
+  sliver in a Discord embed) and gives a 1.32 : 1 / ~170 KB card that suits social. **Two Phase 0
+  renderer changes it forces:** implement windowing on every row-based card, and pass the population
+  `#1` dps into `drawDpsChart` explicitly instead of inferring it from `bars[0]` — otherwise a window
+  starting at rank 30 renders rank 30 as `relScore 1.000`, silently making the score mean something
+  different in every shared image (`src/share/dpsChart.ts:19-20`).
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
