@@ -23,6 +23,7 @@ export interface DpsBar {
   name: string;
   element: string;
   dps: number;
+  slug?: string; // character slug — lets a Node caller resolve portraits itself
   advantaged?: boolean;
   imageUrl?: string | null; // portrait source (loaded by the caller into `img`)
   img?: unknown; // pre-loaded CanvasImageSource; drawn if present
@@ -39,6 +40,8 @@ export interface DpsChartData {
   subtitle?: string;
   bars: DpsBar[]; // already sorted desc, already sliced to top-N
   compare?: DpsCompare | null;
+  icon?: unknown; // optional canvas-drawable image drawn beside the title
+  footer?: string; // override the default footer text
 }
 
 export const CHART_W = 900;
@@ -62,20 +65,30 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // title + subtitle
+  // icon + title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
+  const ICON = 34;
+  let textX = padX;
+  if (data.icon) {
+    ctx.drawImage(data.icon, padX, 50 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 26px ${FONT}`;
-  ctx.fillText(data.title, padX, 50);
+  ctx.fillText(data.title, textX, 50);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 16px ${FONT}`;
-    ctx.fillText(data.subtitle, padX, 78);
+    ctx.fillText(data.subtitle, textX, 78);
   }
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText('relative to #1 DPS (1.00 = top) · 180s · nikke-sim', padX, 102);
+  ctx.fillText(
+    'relative to #1 DPS (1.00 = top) · 180s · nikke-sim',
+    textX,
+    102
+  );
 
   const maxDps = Math.max(...data.bars.map((b) => b.dps), 1);
   const hasPortraits = data.bars.some((b) => b.img);
@@ -165,7 +178,8 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   ctx.font = `400 12px ${FONT}`;
   ctx.textAlign = 'left';
   ctx.fillText(
-    'nikke-sim · expected-value crits · scope-lock basis · partless boss',
+    data.footer ??
+      'nikke-sim · expected-value crits · scope-lock basis · partless boss',
     padX,
     H - 18
   );

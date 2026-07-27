@@ -51,7 +51,11 @@ export interface Canvas2DLike {
   ): void;
 }
 
-export const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
+// Single font family for every infographic. Node hosts MUST register a Roboto
+// face before drawing (src/share/fonts.ts — it throws if registration fails);
+// a missing family silently renders blank text on fontless hosts. The browser
+// path falls back to its default sans until Roboto is bundled (decision 6.1).
+export const FONT = 'Roboto';
 
 // Portrait square-crop framing — the single source of truth for how far down a
 // square is anchored when cropped out of a tall portrait (fraction of the vertical
@@ -91,6 +95,8 @@ export interface TeamCardMeta {
   weakness: string | null; // boss weakness element
   level: number; // synchro
   coreLabel: string; // e.g. "100% core"
+  icon?: unknown; // optional canvas-drawable image drawn beside the title
+  footer?: string; // override the default footer text
 }
 
 // layout constants (logical px; caller scales for device pixel ratio)
@@ -146,11 +152,17 @@ export function drawTeamCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // title + summary
+  // icon + title + summary
   ctx.textBaseline = 'alphabetic';
+  const ICON = 36;
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('NIKKE Solo Raid Sim', padX, 56);
+  ctx.fillText('NIKKE Solo Raid Sim', textX, 56);
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.teamDamage), padX, 108);
   const bigW = ctx.measureText(fmt(data.teamDamage)).width;
@@ -235,7 +247,8 @@ export function drawTeamCard(
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 13px ${FONT}`;
   ctx.fillText(
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
+    meta.footer ??
+      'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
     padX,
     H - 22
   );
@@ -291,14 +304,20 @@ export function drawRosterCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // title + summary (total only — no DPS/FB, per the roster card spec)
+  // icon + title + summary (total only — no DPS/FB, per the roster card spec)
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
+  const ICON = 36;
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 30px ${FONT}`;
   ctx.fillText(
     data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
-    padX,
+    textX,
     56
   );
   ctx.font = `700 40px ${FONT}`;
@@ -401,7 +420,8 @@ export function drawRosterCard(
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 13px ${FONT}`;
   ctx.fillText(
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
+    meta.footer ??
+      'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
     padX,
     H - 22
   );
