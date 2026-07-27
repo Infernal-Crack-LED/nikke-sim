@@ -68,14 +68,20 @@ zero by construction, not because the kit is weak.
 
 ## Buffer value (`bufferchart.json`)
 
-Ranks supports by the **damage they add to two standard carries**: synthetic
-class-modal machine-gun and rocket-launcher attackers (no skills, scope-lock
-attacker stats, both elementally advantaged), simulated with the tested buffer
-versus a no-op in the same burst slot. The buffer's own weapon damage is not
-counted. Burst-1 and Burst-2 units burst on cooldown; a tested Burst-3 buffer
-sits rightmost and never bursts, so its value must come through passives.
-Value that comes through faster rotations (gauge batteries, cooldown
-reduction) is captured, because the whole fight is simulated.
+Ranks supports by the **total % team damage increase** they provide to two
+standard carries: synthetic class-modal machine-gun and rocket-launcher
+attackers (no skills, scope-lock attacker stats, both elementally advantaged),
+simulated with the tested buffer versus a no-op in the same burst slot. The
+reported number is `(carry DPS with buffer − carry DPS with no-op) / carry DPS
+with no-op × 100`. The buffer's own weapon damage is not counted. Burst-1 and
+Burst-2 units burst on cooldown; a tested Burst-3 buffer sits rightmost and
+never bursts, so its value must come through passives. Value that comes through
+faster rotations (gauge batteries, cooldown reduction) is captured, because the
+whole fight is simulated.
+
+Soline: Frost Ticket is excluded from this board: her kit reduces team damage
+in the standard comp, so her negative percentage is not useful for ranking
+support value.
 
 Two boards per unit:
 
@@ -87,7 +93,24 @@ Two boards per unit:
   from its override: weapon-typed targets swap both carries to that weapon
   (Tove → shotguns), pierce buffs grant both carries pierce (Ade: Agent
   Bunny), projectile-explosion buffs make both rocket launchers (Anis:
-  Sparkling Summer), element-typed targets set both carries' element.
+  Sparkling Summer), element-typed targets set both carries' element, and
+  boss-element-gated enemy debuffs (Brid: Silent Track's Wind Code, Helm:
+  Aquamarine's Electric Code) set the carries to the advantaged element that
+  wakes the debuff.
+
+**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Bunny`):
+**Mint**, **Prika**, **Mast: Romantic Maid**, and **Blanc** are ranked with and
+without their canonical B2 partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
+Bunny` / `null`). The value shown is the *tested buffer's marginal added team
+damage %* when the pair is played together, versus a baseline where the tested
+slot is a no-op B2 but the partner is still present in solo/default mode. Mint
+and Prika force each other into their duet kit modes; Mast and Anchor are real
+units; Blanc's `w/ Bunny` partner is a synthetic no-op placeholder that
+represents her "ally from the same squad" condition being satisfied. The rows are
+not additive: each row measures what the tested unit adds on top of the partner
+already being in the team, including the synergy that forces the partner into
+its duet mode (Mint/Prika) or simply adds the tested B2 alongside the partner
+(Mast/Anchor/Blanc).
 
 Read generic as plug-and-play value and typed as built-around value. Purely
 defensive kits read near zero — the scope-lock boss deals no damage, so there

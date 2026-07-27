@@ -53,11 +53,16 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  'w/ Prika': 'w/ Prika',
+  'w/ Mint': 'w/ Mint',
+  'w/ Anchor': 'w/ Anchor',
+  'w/ Bunny': 'w/ Bunny',
 };
 function profileLabel(id: string): string {
   if (PROFILE_LABELS[id]) return PROFILE_LABELS[id];
+  if (id.startsWith('w/ ')) return id;
   const rest = id.startsWith('with-') ? id.slice(5) : id;
-  return `w/ ${rest.replace(/-/g, ' ').toUpperCase()}`;
+  return `w/ ${rest.replace(/-/g, ' ')}`;
 }
 
 type AnyArtifact =
@@ -197,11 +202,10 @@ export function SupportRankings() {
       bars = bufferBars(art as BufferChartArtifact, bufferBoard).map((b) => ({
         ...b,
         key: `${b.slug}:${b.profile ?? ''}`,
-        value: b.addedDps,
-        valueText: `${b.addedDps >= 0 ? '+' : '−'}${fmt(Math.abs(b.addedDps))}`,
-        valueSub: `carry ${fmt(b.carryDps)}`,
-        valueTitle: 'added carry DPS vs the no-op baseline',
-        info: b.rules?.length ? b.rules.join('\n') : null,
+        value: b.addedPct,
+        valueText: `${b.addedPct >= 0 ? '+' : '−'}${Math.abs(b.addedPct).toFixed(1)}%`,
+        valueTitle: 'total % team damage increase vs the no-op baseline',
+        info: null,
         ...badge(b),
       }));
     }

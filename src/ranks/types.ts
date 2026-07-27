@@ -64,13 +64,13 @@ export interface SustainArtifact {
   entries: SustainRow[];
 }
 
-// [slug, addedDps, carryDps, rules, profile] — fixed arity 5 (rules serialized
-// as null when absent). addedDps can be NEGATIVE (soline-frost-ticket) — the
+// [slug, addedPct, rules, profile] — fixed arity 4 (rules serialized as null
+// when absent). addedPct is the total % team damage increase vs the no-op
+// baseline and can be NEGATIVE (soline-frost-ticket was the precedent). The
 // chart needs a zero axis. rules (typed board) = derivation audit strings.
 export type BufferRow = [
   slug: string,
-  addedDps: number,
-  carryDps: number,
+  addedPct: number,
   rules: string[] | null,
   profile: string | null,
 ];

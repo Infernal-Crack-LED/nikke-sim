@@ -393,3 +393,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Per-unit rotation re-tunes (answered-questions U16)** — RESOLVED 2026-07-26: the rotation
   over-generation is settled (DECISIONS 2026-07-21); the per-unit over-models (chisato, trina, naga,
   soda-twinkling-bunny) are rotation-independent and tracked as standard hand-tune queue items.
+- **Blanc same-squad CDR override cleanup** — `src/skills/overrides/blanc.json` currently models the
+  S2 "ally from the same squad still on the battlefield" CDR (40.76s) as unconditional because nobody
+  dies at scope lock. The buffer-rank `w/ Bunny` profile works around this by suppressing the CDR in
+  Blanc's plain row and keeping it active when the synthetic Bunny partner is present. The engine/
+  override should instead gate the CDR with a `teamHas` slug condition (or a proper squad primitive)
+  so the plain row is naturally inert without the partner and active with the partner. Out of scope for
+  the current rank-board PR; the buffer-code workaround (`blancNoCdrOverride` in
+  `src/ranks/buffer.ts`) should be removed once the override/engine is fixed.

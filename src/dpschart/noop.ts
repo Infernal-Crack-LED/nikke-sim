@@ -74,6 +74,7 @@ function noop(
 export const NOOP_B1 = 'noop-b1-ar';
 export const NOOP_B2 = 'noop-b2-sr';
 export const NOOP_B3 = 'noop-b3-rl';
+export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
   [NOOP_B1]: noop(NOOP_B1, 'No-op B1 (AR)', 'I', 20, 'AR',
@@ -82,4 +83,6 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
     { ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, rl3: 8.4 }),
   [NOOP_B3]: noop(NOOP_B3, 'No-op B3 (RL)', 'III', 40, 'RL',
     { ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, rl3: 16.8 }),
+  [NOOP_BUNNY_B2]: noop(NOOP_BUNNY_B2, 'No-op Bunny B2 (SR)', 'II', 20, 'SR',
+    { ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, rl3: 8.4 }),
 };

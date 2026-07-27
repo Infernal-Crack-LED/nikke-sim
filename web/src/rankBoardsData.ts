@@ -130,16 +130,14 @@ export function sustainBars(art: SustainArtifact): SustainBar[] {
 }
 
 export interface BufferBar extends RowBase {
-  addedDps: number; // added carry DPS vs the no-op baseline (CAN BE NEGATIVE)
-  carryDps: number; // muted context: the two carries' baseline DPS
+  addedPct: number; // total % team damage increase vs the no-op baseline (CAN BE NEGATIVE)
   rules: string[] | null; // typed board: derivation audit ("why did the carries change?")
 }
 export type BufferBoard = 'generic' | 'typed';
 export function bufferBars(art: BufferChartArtifact, board: BufferBoard): BufferBar[] {
-  return art.cells[board].map(([slug, addedDps, carryDps, rules, profile], i) => ({
+  return art.cells[board].map(([slug, addedPct, rules, profile], i) => ({
     ...base(art.units, slug, i + 1, profile),
-    addedDps,
-    carryDps,
+    addedPct,
     rules,
   }));
 }
