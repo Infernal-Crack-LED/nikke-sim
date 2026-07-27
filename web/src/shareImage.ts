@@ -4,6 +4,7 @@
 import {
   CHART_W,
   chartHeight,
+  chartWindow,
   drawDpsChart,
   type DpsChartData,
 } from '../../src/share/dpsChart';
@@ -13,9 +14,12 @@ import { loadPortrait } from './teamShare';
 export async function copyDpsChartImage(
   data: DpsChartData
 ): Promise<'copied' | 'downloaded' | 'unsupported'> {
-  // preload each bar's portrait into `img` so the isomorphic renderer can draw it
+  // preload each SHOWN bar's portrait into `img` so the isomorphic renderer can
+  // draw it (on a windowed chart, bars outside the window never render)
+  const win = chartWindow(data);
+  const shown = data.bars.slice(win.start, win.end);
   await Promise.all(
-    data.bars.map(async (b) => {
+    shown.map(async (b) => {
       if (b.imageUrl) {
         b.img = (await loadPortrait(b.imageUrl)) ?? undefined;
       }
@@ -25,7 +29,7 @@ export async function copyDpsChartImage(
   const dpr = 2;
   const cv = document.createElement('canvas');
   cv.width = CHART_W * dpr;
-  cv.height = chartHeight(data.bars.length, !!data.compare) * dpr;
+  cv.height = chartHeight(shown.length, !!data.compare) * dpr;
   const ctx = cv.getContext('2d');
   if (!ctx) {
     return 'unsupported';

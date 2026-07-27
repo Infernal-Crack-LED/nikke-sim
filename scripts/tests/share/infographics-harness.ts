@@ -26,6 +26,7 @@ import {
 import {
   CHART_W,
   chartHeight,
+  chartWindow,
   drawDpsChart,
   type DpsChartData,
 } from '../../../src/share/dpsChart.js';
@@ -33,6 +34,7 @@ import {
   TABLE_W,
   tableHeight,
   drawTableCard,
+  visibleRows,
   type TableCardData,
 } from '../../../src/share/tableCard.js';
 
@@ -262,6 +264,7 @@ export async function buildDpsChart(): Promise<DpsChartData> {
   return {
     title: 'DPS Ranking — Solo Raid',
     subtitle: 'element-weak boss · 100% core · lvl 801 synchro',
+    topDps: rows[0].dps,
     bars: await Promise.all(
       rows.map(async (r) => ({
         name: CHARS[r.slug].name,
@@ -279,6 +282,60 @@ export async function buildDpsChart(): Promise<DpsChartData> {
       rank: 3,
       total: 21,
     },
+    icon: (await loadSiteIcon()) ?? undefined,
+  };
+}
+
+// §6.6 windowed chart: a 21-row population (6 synthetic leaders + the 10 real
+// units + 5 synthetic trailers) with the window centred on Liter (population
+// index 15 → renders ranks 12–21, Liter on the 5th row). The window covers real
+// units so portraits render, and its top row (Helm, 0.499) proves labels are
+// normalized to the population #1 — not the window max.
+export async function buildDpsChartWindow(): Promise<DpsChartData> {
+  const syn = (n: number, dps: number) => ({
+    slug: `synthetic-${n}`,
+    name: `Synthetic ${String(n).padStart(2, '0')}`,
+    element: 'Fire',
+    dps,
+  });
+  const population = [
+    syn(1, 60_000_000),
+    syn(2, 58_000_000),
+    syn(3, 56_000_000),
+    syn(4, 54_000_000),
+    syn(5, 52_000_000),
+    syn(6, 50_000_000),
+    { slug: 'red-hood', dps: 46_120_000 },
+    { slug: 'alice', dps: 41_980_000 },
+    { slug: 'scarlet', dps: 38_450_000 },
+    { slug: 'modernia', dps: 35_870_000 },
+    { slug: '2b', dps: 33_610_000 },
+    { slug: 'helm', dps: 29_940_000 },
+    { slug: 'crown', dps: 24_780_000 },
+    { slug: 'naga', dps: 15_320_000 },
+    { slug: 'little-mermaid', dps: 14_050_000 },
+    { slug: 'liter', dps: 8_910_000 },
+    syn(7, 8_000_000),
+    syn(8, 7_000_000),
+    syn(9, 6_000_000),
+    syn(10, 5_000_000),
+    syn(11, 4_000_000),
+  ];
+  return {
+    title: 'DPS Ranking — Solo Raid',
+    subtitle: 'element-weak boss · 100% core · lvl 801 synchro',
+    topDps: population[0].dps,
+    bars: await Promise.all(
+      population.map(async (r) => ({
+        name: 'name' in r ? r.name : CHARS[r.slug].name,
+        element: 'element' in r ? r.element : CHARS[r.slug].element,
+        dps: r.dps,
+        slug: r.slug,
+        advantaged: !('name' in r) && CHARS[r.slug].element === 'Iron',
+        img: (await loadPortraitSlug(r.slug)) ?? undefined,
+      }))
+    ),
+    window: { targetSlug: 'liter' },
     icon: (await loadSiteIcon()) ?? undefined,
   };
 }
@@ -305,6 +362,34 @@ export async function buildTableCard(): Promise<TableCardData> {
     footer: 'nikkesim.app/charge',
     icon: (await loadSiteIcon()) ?? undefined,
     portrait: (await loadPortraitSlug('2b')) ?? undefined,
+  };
+}
+
+// §6.6 windowed rank board: a 30-row burstgen-style table with an ABSOLUTE rank
+// column written by the caller, windowed on row index 20 (rank 21 → renders
+// rows 17–26, target on the 5th row). Exercises the slice + footer window note.
+export async function buildTableCardWindow(): Promise<TableCardData> {
+  const rows: string[][] = [];
+  for (let rank = 1; rank <= 30; rank++) {
+    rows.push([
+      `#${rank}`,
+      `Unit ${String(rank).padStart(2, '0')}`,
+      `${(120 - rank * 2.5).toFixed(1)}%`,
+    ]);
+  }
+  return {
+    title: 'Burst Gen Ranking',
+    subtitle: '180s · full burst count basis',
+    columns: [
+      { header: 'Rank' },
+      { header: 'Unit' },
+      { header: 'Gauge', align: 'right' },
+    ],
+    rows,
+    window: { targetIndex: 20 },
+    footer: 'nikkesim.app',
+    icon: (await loadSiteIcon()) ?? undefined,
+    portrait: (await loadPortraitSlug('crown')) ?? undefined,
   };
 }
 
@@ -350,17 +435,59 @@ export async function renderAll(): Promise<FixtureRender[]> {
   finish('roster-card.png', rosterCanvas, { x: 40, y: 26, w: 560, h: 40 });
 
   const chart = await buildDpsChart();
+  const chartWin = chartWindow(chart);
   const chartCanvas = createCanvas(
     CHART_W,
-    chartHeight(chart.bars.length, !!chart.compare)
+    chartHeight(chartWin.end - chartWin.start, !!chart.compare)
   );
   drawDpsChart(chartCanvas.getContext('2d') as unknown as Canvas2DLike, chart);
   finish('dps-chart.png', chartCanvas, { x: 36, y: 24, w: 500, h: 36 });
 
+  const chartWindowed = await buildDpsChartWindow();
+  const chartWindowedWin = chartWindow(chartWindowed);
+  const chartWindowedCanvas = createCanvas(
+    CHART_W,
+    chartHeight(
+      chartWindowedWin.end - chartWindowedWin.start,
+      !!chartWindowed.compare
+    )
+  );
+  drawDpsChart(
+    chartWindowedCanvas.getContext('2d') as unknown as Canvas2DLike,
+    chartWindowed
+  );
+  finish('dps-chart-window.png', chartWindowedCanvas, {
+    x: 36,
+    y: 24,
+    w: 500,
+    h: 36,
+  });
+
   const table = await buildTableCard();
-  const tableCanvas = createCanvas(TABLE_W, tableHeight(table.rows.length));
+  const tableCanvas = createCanvas(
+    TABLE_W,
+    tableHeight(visibleRows(table.rows, table.window).rows.length)
+  );
   drawTableCard(tableCanvas.getContext('2d') as unknown as Canvas2DLike, table);
   finish('table-card.png', tableCanvas, { x: 32, y: 16, w: 400, h: 34 });
+
+  const tableWindowed = await buildTableCardWindow();
+  const tableWindowedCanvas = createCanvas(
+    TABLE_W,
+    tableHeight(
+      visibleRows(tableWindowed.rows, tableWindowed.window).rows.length
+    )
+  );
+  drawTableCard(
+    tableWindowedCanvas.getContext('2d') as unknown as Canvas2DLike,
+    tableWindowed
+  );
+  finish('table-card-window.png', tableWindowedCanvas, {
+    x: 32,
+    y: 16,
+    w: 400,
+    h: 34,
+  });
 
   return out;
 }

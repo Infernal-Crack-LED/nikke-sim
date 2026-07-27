@@ -30,7 +30,9 @@ describe('infographic golden images', () => {
     'team-card.png',
     'roster-card.png',
     'dps-chart.png',
+    'dps-chart-window.png',
     'table-card.png',
+    'table-card-window.png',
   ]) {
     it(name, () => {
       const render = renders.find((r) => r.name === name);

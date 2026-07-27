@@ -10,16 +10,28 @@ import {
 } from './teamCard.js';
 
 export type { Canvas2DLike } from './teamCard.js';
+import { windowRows } from './window.js';
 
 export interface TableColumn {
   header: string;
   align?: 'left' | 'right';
+}
+// §6.6 window request for rank boards (burstgen / sustain / burstcdr / buffer).
+// Rows are plain strings, so the target is the unit's 0-indexed row position —
+// the caller resolves name/slug → index. Absent window = render all rows (the
+// small OL/breakpoint tables). Present = top 10, or the 4-above/target/5-below
+// window around targetIndex. Callers composing a rank column should write
+// ABSOLUTE population ranks into every row before handing it over — the slice
+// then keeps them correct.
+export interface TableWindow {
+  targetIndex?: number;
 }
 export interface TableCardData {
   title: string;
   subtitle?: string;
   columns: TableColumn[];
   rows: string[][];
+  window?: TableWindow;
   footer?: string;
   icon?: unknown; // optional canvas-drawable image drawn beside the title
   portrait?: unknown; // optional character portrait drawn top-right
@@ -35,10 +47,26 @@ const FOOT_H = 40;
 export const tableHeight = (rowCount: number): number =>
   HEAD_H + COL_HEADER_H + rowCount * ROW_H + FOOT_H;
 
+// The rows a card renders after §6.6 windowing — callers need this to size the
+// canvas (tableHeight(visibleRows(...).length)).
+export function visibleRows(
+  rows: string[][],
+  window?: TableWindow
+): { rows: string[][]; start: number; total: number } {
+  if (!window) {
+    return { rows, start: 0, total: rows.length };
+  }
+  const { start, end } = windowRows(rows.length, window.targetIndex);
+  return { rows: rows.slice(start, end), start, total: rows.length };
+}
+
 export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   const W = TABLE_W;
   const padX = PAD_X;
-  const H = tableHeight(data.rows.length);
+  const win = visibleRows(data.rows, data.window);
+  const rows = win.rows;
+  const windowed = rows.length < win.total;
+  const H = tableHeight(rows.length);
 
   // background + accent bar
   ctx.fillStyle = '#101216';
@@ -111,7 +139,7 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.fillRect(padX, sepY, W - padX * 2, 1);
 
   // rows
-  data.rows.forEach((row, ri) => {
+  rows.forEach((row, ri) => {
     const y = HEAD_H + COL_HEADER_H + ri * ROW_H + 26;
 
     // zebra striping
@@ -136,9 +164,17 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
     });
   });
 
-  // footer
+  // footer (right-aligned window note per §6.6 when rendering a population slice)
   ctx.textAlign = 'left';
   ctx.fillStyle = '#8b93a3';
   ctx.font = `400 12px ${FONT}`;
   ctx.fillText(data.footer ?? 'nikke-sim · nikkesim.app', padX, H - 16);
+  if (windowed) {
+    ctx.textAlign = 'right';
+    ctx.fillText(
+      `rows ${win.start + 1}–${win.start + rows.length} of ${win.total}`,
+      W - padX,
+      H - 16
+    );
+  }
 }
