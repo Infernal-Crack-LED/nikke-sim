@@ -10,6 +10,35 @@
   --warn: #e0b04b;
 }
 
+/* Self-hosted Roboto (subset, ~13 KB/face) — the infographic renderers draw
+   every string with family 'Roboto' (src/infographics/core/theme.ts FONT), and
+   decision 6.1 makes the browser card pixel-match the Node-rendered one. The
+   canvas hosts MUST await the faces before drawing (ensureRoboto in
+   web/src/teamShare.ts) or the first copy-image click renders fallback-metric
+   text. Glyphs Roboto lacks (▲ → ✓ …) fall back per-glyph, same as the Node
+   path. */
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Roboto';
+  src: url('/fonts/Roboto-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }

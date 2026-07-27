@@ -14,7 +14,7 @@ import {
 } from '../dpschartData';
 import { cellId, cellLabel, type Cell } from '../../../src/dpschart/matrix';
 import { copyDpsChartImage } from '../shareImage';
-import type { DpsChartData } from '../../../src/share/dpsChart';
+import type { DpsChartData } from '../../../src/infographics/core/dpsChart';
 
 const DEFAULT_CELL: Cell = {
   framework: 'standard',

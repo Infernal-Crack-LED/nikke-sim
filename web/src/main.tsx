@@ -12,7 +12,7 @@ import {
   type AuthUser,
 } from './auth';
 import './styles.css';
-import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
+import { PORTRAIT_CROP_TOP } from '../../src/infographics/core/canvas2d';
 
 // Route-level code splitting: every page — above all the sim App, which carries
 // the engine, unit data and skill overrides — loads as its own chunk. Static

@@ -2,15 +2,8 @@
 // Canvas2D-compatible context, so the web app (browser canvas) and the bakery-bot
 // (@napi-rs/canvas / node-canvas) produce a pixel-identical image. DOM-free — the
 // caller creates and sizes the canvas and hands us the ctx. Mirrors teamCard.ts.
-import {
-  type Canvas2DLike,
-  roundRect,
-  FONT,
-  ELEMENT_COLORS,
-  PORTRAIT_CROP_TOP,
-} from './teamCard.js';
-
-export type { Canvas2DLike } from './teamCard.js';
+import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
+import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
 
 // Relative-normalized score against the POPULATION #1's dps (`DpsChartData.topDps`
@@ -55,7 +48,7 @@ export interface DpsChartData {
   window?: DpsWindow;
   compare?: DpsCompare | null;
   icon?: unknown; // optional canvas-drawable image drawn beside the title
-  footer?: string; // override the default footer text
+  footer?: string; // descriptor added to the watermark footer (theme.ts)
 }
 
 export const CHART_W = 900;
@@ -230,14 +223,14 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     ctx.fillText(relScore(c.dps, data.topDps), W - padX, y + 32);
   }
 
-  // footer
-  ctx.fillStyle = '#8b93a3';
-  ctx.font = `400 12px ${FONT}`;
-  ctx.textAlign = 'left';
-  ctx.fillText(
-    data.footer ??
-      'nikke-sim · expected-value crits · scope-lock basis · partless boss',
+  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
+  // a descriptor; it can never remove or replace the nikkesim.app mark.
+  drawWatermark(
+    ctx,
     padX,
-    H - 18
+    H - 18,
+    12,
+    data.footer,
+    'nikke-sim · expected-value crits · scope-lock basis · partless boss'
   );
 }

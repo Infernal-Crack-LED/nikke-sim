@@ -2,144 +2,48 @@
 // (team card, roster card, DPS chart, table card) to a PNG buffer with the same
 // realistic data every run. Shared by the vitest golden test
 // (infographics-golden.test.ts) and the regen script
-// (scripts/update-infographic-fixtures.ts). This is the seed Phase 1 will
-// formalize into src/infographics/node/ (fonts + portraits + render entry).
+// (scripts/update-infographic-fixtures.ts).
 //
-// FONTS FIRST: fonts.ts registers the bundled Roboto faces with @napi-rs/canvas
-// and throws if any face fails — importing it before any canvas work is the
-// load-bearing ordering guarantee (a fontless host renders blank text silently).
-import '../../../src/share/fonts.js';
-import { createCanvas, type Canvas } from '@napi-rs/canvas';
-import sharp from 'sharp';
-import { readFileSync } from 'node:fs';
+// Everything render-side comes through src/infographics/node/render.ts — THE
+// single Node entry point, whose first statement registers the bundled Roboto
+// faces (throwing on failure) before any canvas work can happen. This harness
+// only adds the fixture DATA (real slugs + real portraits).
 import {
+  createCanvas,
+  loadPortrait,
+  decodeToCanvas,
+  assertFontsLive,
+  assertTitleInk,
   CARD_W,
   cardHeight,
   drawTeamCard,
   drawRosterCard,
   rosterCardHeight,
-  type Canvas2DLike,
-  type TeamCardData,
-  type TeamCardMeta,
-  type RosterCardData,
-} from '../../../src/share/teamCard.js';
-import {
   CHART_W,
   chartHeight,
   chartWindow,
   drawDpsChart,
-  type DpsChartData,
-} from '../../../src/share/dpsChart.js';
-import {
   TABLE_W,
   tableHeight,
   drawTableCard,
   visibleRows,
+  type Canvas,
+  type Canvas2DLike,
+  type TeamCardData,
+  type TeamCardMeta,
+  type RosterCardData,
+  type DpsChartData,
   type TableCardData,
-} from '../../../src/share/tableCard.js';
+} from '../../../src/infographics/node/render.js';
 
-const REPO_ROOT = new URL('../../../', import.meta.url);
-const PORTRAIT_DIR = new URL('web/public/img/portraits/', REPO_ROOT);
-const SITE_ICON_PATH = new URL('web/public/og.png', REPO_ROOT);
+const SITE_ICON_PATH = new URL('../../../web/public/og.png', import.meta.url);
 
 type NapiCanvas = Canvas;
-
-// ⚠ WHY NOT `new Image()`: @napi-rs/canvas's Image rasterization is BROKEN on
-// the owner's Mac (macOS 26 arm64, node 22) in both 1.0.2 and 0.1.x — src
-// assignment decodes dimensions but every drawImage(image) silently no-ops
-// (verified 2026-07-27 on PNG and WebP; the same code works on Railway Linux).
-// So images are decoded with sharp (dev dep) and painted onto a canvas via
-// putImageData — canvas→canvas drawImage works everywhere. Phase 1's
-// node/portraits.ts must keep this decode path, not skia's Image.
-async function decodeToCanvas(file: URL): Promise<NapiCanvas | null> {
-  try {
-    const { data, info } = await sharp(readFileSync(file))
-      .ensureAlpha()
-      .raw()
-      .toBuffer({ resolveWithObject: true });
-    const canvas = createCanvas(info.width, info.height);
-    const ctx = canvas.getContext('2d');
-    const imageData = ctx.createImageData(info.width, info.height);
-    imageData.data.set(data);
-    ctx.putImageData(imageData, 0, 0);
-    return canvas;
-  } catch {
-    return null;
-  }
-}
-
-// slug → portrait canvas, from the committed 128px webp thumbs (single copy —
-// the bot's mirrored assets/portraits/ set is what this replaces). Returns null
-// on a missing/undecodable file so a card degrades to its placeholder box.
-const portraitCache = new Map<string, Promise<NapiCanvas | null>>();
-export function loadPortraitSlug(slug: string): Promise<NapiCanvas | null> {
-  let hit = portraitCache.get(slug);
-  if (!hit) {
-    hit = decodeToCanvas(new URL(`${slug}-128.webp`, PORTRAIT_DIR));
-    portraitCache.set(slug, hit);
-  }
-  return hit;
-}
 
 let siteIcon: Promise<NapiCanvas | null> | null = null;
 function loadSiteIcon(): Promise<NapiCanvas | null> {
   siteIcon ??= decodeToCanvas(SITE_ICON_PATH);
   return siteIcon;
-}
-
-// Loud blank-text guard: after registration Roboto MUST measure and ink. An
-// unregistered family fails silently (valid PNG, zero glyphs), so check both
-// the metric and real pixels and name the font problem in the failure.
-export function assertFontsLive(): void {
-  const ctx = createCanvas(64, 64).getContext('2d');
-  ctx.font = '40px Roboto';
-  if (!(ctx.measureText('X').width > 0)) {
-    throw new Error(
-      'infographics fonts: Roboto registered but measureText("X") is 0 — ' +
-        'text would render blank. Check src/share/fonts.ts registration.'
-    );
-  }
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText('X', 4, 44);
-  const px = ctx.getImageData(0, 0, 64, 64).data;
-  for (let i = 3; i < px.length; i += 4) {
-    if (px[i] > 0) {
-      return; // some glyph ink landed
-    }
-  }
-  throw new Error(
-    'infographics fonts: Roboto drew zero pixels — text renders blank. ' +
-      'Check src/share/fonts.ts registration and the bundled TTFs.'
-  );
-}
-
-// Ink coverage in a region of a finished render — the per-card blank-text guard.
-// Fails loudly (naming fonts) instead of surfacing as an opaque fixture diff.
-export function assertTitleInk(
-  pngCtx: ReturnType<NapiCanvas['getContext']>,
-  cardName: string,
-  region: { x: number; y: number; w: number; h: number }
-): void {
-  const { x, y, w, h } = region;
-  const px = pngCtx.getImageData(x, y, w, h).data;
-  // background is #101216 (16,18,22); count pixels clearly off-background
-  let ink = 0;
-  for (let i = 0; i < px.length; i += 4) {
-    if (
-      Math.abs(px[i] - 16) > 12 ||
-      Math.abs(px[i + 1] - 18) > 12 ||
-      Math.abs(px[i + 2] - 22) > 12
-    ) {
-      ink++;
-    }
-  }
-  if (ink === 0) {
-    throw new Error(
-      `${cardName}: title region has ZERO non-background pixels — text ` +
-        'rendered blank (font registration problem). ' +
-        'Check src/share/fonts.ts and the bundled Roboto TTFs.'
-    );
-  }
 }
 
 // ---- realistic fixture data (real slugs from data/characters.json, real ----
@@ -201,7 +105,7 @@ export async function buildTeamCard(): Promise<{
           advantaged: CHARS[u.slug].element === meta.weakness,
           share: u.share,
           totalDamage: u.dmg,
-          img: (await loadPortraitSlug(u.slug)) ?? undefined,
+          img: (await loadPortrait(u.slug)) ?? undefined,
         }))
       ),
     },
@@ -238,7 +142,7 @@ export async function buildRosterCard(): Promise<{
             t.slugs.map(async (slug) => ({
               name: CHARS[slug].name,
               element: CHARS[slug].element,
-              img: (await loadPortraitSlug(slug)) ?? undefined,
+              img: (await loadPortrait(slug)) ?? undefined,
             }))
           ),
         }))
@@ -272,7 +176,7 @@ export async function buildDpsChart(): Promise<DpsChartData> {
         dps: r.dps,
         slug: r.slug,
         advantaged: CHARS[r.slug].element === 'Iron',
-        img: (await loadPortraitSlug(r.slug)) ?? undefined,
+        img: (await loadPortrait(r.slug)) ?? undefined,
       }))
     ),
     compare: {
@@ -332,7 +236,7 @@ export async function buildDpsChartWindow(): Promise<DpsChartData> {
         dps: r.dps,
         slug: r.slug,
         advantaged: !('name' in r) && CHARS[r.slug].element === 'Iron',
-        img: (await loadPortraitSlug(r.slug)) ?? undefined,
+        img: (await loadPortrait(r.slug)) ?? undefined,
       }))
     ),
     window: { targetSlug: 'liter' },
@@ -361,7 +265,7 @@ export async function buildTableCard(): Promise<TableCardData> {
     rows,
     footer: 'nikkesim.app/charge',
     icon: (await loadSiteIcon()) ?? undefined,
-    portrait: (await loadPortraitSlug('2b')) ?? undefined,
+    portrait: (await loadPortrait('2b')) ?? undefined,
   };
 }
 
@@ -389,7 +293,7 @@ export async function buildTableCardWindow(): Promise<TableCardData> {
     window: { targetIndex: 20 },
     footer: 'nikkesim.app',
     icon: (await loadSiteIcon()) ?? undefined,
-    portrait: (await loadPortraitSlug('crown')) ?? undefined,
+    portrait: (await loadPortrait('crown')) ?? undefined,
   };
 }
 

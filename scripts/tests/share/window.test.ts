@@ -1,7 +1,11 @@
-// Unit tests for the §6.6 row-windowing rule (src/share/window.ts) — the exact
-// clamp table from docs/handoffs/2026-07-27-infographics-centralization-plan.md.
+// Unit tests for the §6.6 row-windowing rule (src/infographics/core/window.ts)
+// — the exact clamp table from
+// docs/handoffs/2026-07-27-infographics-centralization-plan.md.
 import { describe, expect, it } from 'vitest';
-import { windowRows, WINDOW_SIZE } from '../../../src/share/window.js';
+import {
+  windowRows,
+  WINDOW_SIZE,
+} from '../../../src/infographics/core/window.js';
 
 describe('windowRows (§6.6)', () => {
   it('n ≤ 10 → all rows, regardless of target', () => {

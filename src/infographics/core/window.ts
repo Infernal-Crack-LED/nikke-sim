@@ -3,7 +3,7 @@
 // default top 10; a targeted window is 4 rows above the target, the target,
 // 5 below (biasing toward "who you can still catch"), clamped at both edges.
 // Pure and DOM-free; the renderers slice with it and callers use it to size
-// canvases. Phase 1 moves this to src/infographics/ with the rest of share/.
+// canvases.
 export const WINDOW_SIZE = 10;
 
 // n = full population row count; targetIndex = 0-indexed population position of

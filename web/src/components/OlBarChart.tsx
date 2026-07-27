@@ -2,7 +2,7 @@
 // spend the four free OL lines: a label (the line mix), a bar sized by its % gain
 // over the 8/12 baseline, the carry's damage, and that % delta. Sorted desc by the
 // caller. Styled with the shared .dpschart-* classes so it matches the DPS charts.
-import { ELEMENT_COLORS } from '../../../src/share/teamCard';
+import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 
 const fmt = (n: number) =>
   n >= 1e9

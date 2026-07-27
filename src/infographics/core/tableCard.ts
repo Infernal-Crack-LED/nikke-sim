@@ -2,14 +2,8 @@
 // context. Matches the visual style of dpsChart.ts / teamCard.ts (dark bg,
 // blue accent, same font). Ported from bakery-bot (used by its /ol, /max-ammo,
 // /charge-speed commands) so the site and the bot render identical tables.
-import {
-  type Canvas2DLike,
-  roundRect,
-  FONT,
-  PORTRAIT_CROP_TOP,
-} from './teamCard.js';
-
-export type { Canvas2DLike } from './teamCard.js';
+import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
+import { FONT, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
 
 export interface TableColumn {
@@ -32,7 +26,7 @@ export interface TableCardData {
   columns: TableColumn[];
   rows: string[][];
   window?: TableWindow;
-  footer?: string;
+  footer?: string; // descriptor added to the watermark footer (theme.ts)
   icon?: unknown; // optional canvas-drawable image drawn beside the title
   portrait?: unknown; // optional character portrait drawn top-right
 }
@@ -164,11 +158,10 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
     });
   });
 
-  // footer (right-aligned window note per §6.6 when rendering a population slice)
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#8b93a3';
-  ctx.font = `400 12px ${FONT}`;
-  ctx.fillText(data.footer ?? 'nikke-sim · nikkesim.app', padX, H - 16);
+  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
+  // a descriptor; it can never remove or replace the nikkesim.app mark.
+  // (Right-aligned window note per §6.6 when rendering a population slice.)
+  drawWatermark(ctx, padX, H - 16, 12, data.footer, 'nikke-sim');
   if (windowed) {
     ctx.textAlign = 'right';
     ctx.fillText(

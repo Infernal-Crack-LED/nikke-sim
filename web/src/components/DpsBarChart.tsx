@@ -1,8 +1,8 @@
 // Presentational ranked-DPS bar chart (one infographic). Element-colored horizontal
 // bars, sorted desc, with an optional compare-unit annotation row and share buttons.
-// The shareable PNG is rendered separately via src/share/dpsChart.ts.
-import { ELEMENT_COLORS } from '../../../src/share/teamCard';
-import { relScore } from '../../../src/share/dpsChart';
+// The shareable PNG is rendered separately via src/infographics/core/dpsChart.ts.
+import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
+import { relScore } from '../../../src/infographics/core/dpsChart';
 import type { BarEntry } from '../dpschartData';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 

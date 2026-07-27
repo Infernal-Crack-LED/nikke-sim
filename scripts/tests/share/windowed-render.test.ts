@@ -9,8 +9,8 @@ import {
   chartWindow,
   relScore,
   type DpsChartData,
-} from '../../../src/share/dpsChart.js';
-import type { Canvas2DLike } from '../../../src/share/teamCard.js';
+} from '../../../src/infographics/core/dpsChart.js';
+import type { Canvas2DLike } from '../../../src/infographics/core/canvas2d.js';
 
 // Recording Canvas2DLike: captures fillText strings and reconstructs roundRect
 // widths (beginPath → moveTo + 4×arcTo → closePath → fill) so bar lengths are

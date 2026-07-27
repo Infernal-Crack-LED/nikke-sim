@@ -43,6 +43,33 @@ export default tseslint.config(
     },
   },
   {
+    // Infographics core/ is DOM-free AND platform-free: it must never import
+    // the Node render host. This invariant is what keeps @napi-rs/canvas out of
+    // the web bundle AND keeps the fonts-before-draw ordering guarantee honest
+    // (node/render.ts is the only module that may import node/fonts.ts, as its
+    // first statement). Mirrored by scripts/tests/share/core-boundary.test.ts.
+    files: ['src/infographics/core/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@napi-rs/canvas', 'sharp'],
+              message:
+                'core/ must stay platform-free — Node-only deps belong in src/infographics/node/ (imported via node/render.ts).',
+            },
+            {
+              group: ['../node', '../node/**'],
+              message:
+                'core/ must never import the Node render host — the fonts-first ordering guarantee lives in node/render.ts only.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ['.qwen/icon-diag/*.mjs', 'scripts/pool-browser-check.mjs'],
     languageOptions: {
       globals: {
