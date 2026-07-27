@@ -1,0 +1,187 @@
+{
+  "slug": "phantom",
+  "resources": [
+    {
+      "name": "thiefsDagger",
+      "initial": 0,
+      "min": 0,
+      "max": 3
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": -32.19,
+          "durationSec": 5
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Calling Card",
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "everyN": 60,
+      "everyNOffset": 1,
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 25.75,
+          "durationSec": 5,
+          "maxStacks": 3
+        },
+        {
+          "kind": "resource",
+          "name": "thiefsDagger",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "requiresTargetStatus": "Calling Card",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 75.17,
+          "durationShots": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresTargetStatus": "Calling Card",
+      "resourceGate": {
+        "name": "thiefsDagger",
+        "min": 3
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 84.33
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "thiefsDagger",
+        "min": 3
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 12.86,
+          "maxStacks": 3
+        },
+        {
+          "kind": "resource",
+          "name": "thiefsDagger",
+          "delta": -3
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 10
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 85.12,
+          "durationSec": 5
+        },
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 31.92,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast",
+        "stage": 3
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1457.28,
+          "flavor": "distributed",
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Removes Calling Card.",
+      "Stacks are removed after Burst Skill is used."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 skill1 'not in Calling Card state' gate has no schema primitive (no not-in-status gate). Calling Card is instead refreshed every shot (\u2248permanent uptime, close to the real loop since it reapplies on expiry), and Thief's Dagger accrual is approximated with everyN:60 (~5s CC lockout at ~12 AR pulls/s) \u2014 see flags.",
+    "\u2691 Hit-Rate\u2192core magnitude of Thief's Dagger (25.75% x up to 3 stacks) is measured-only; relies on engine-default hrCoreMult.",
+    "\u2691 'Removes Calling Card' (skill2 line 1) is unmodelable \u2014 no remove-status effect kind exists. CC windows persist via refresh; near-neutral because block1 reapplies anyway.",
+    "\u2691 'Stacks removed after Burst Skill used' (skill2 line 2) is unmodelable \u2014 no remove-on-burst primitive. The 12.86% Distributed Damage stacks persist through bursts (over-credit after each 40s rotation).",
+    "\u2691 Stack spend (-3) is placed on the self-buff block only, assuming skill1's +1 grant resolves before skill2's gated blocks on the same shot; if slot/frame ordering differs, one effect per cycle may drop.",
+    "Burst flatDamage authored noFb:true per the methodology rule that burst-cast instant damage lands before the FB window opens."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Phantom loop as read: (a) shots on a non-CC target apply Calling Card (DEF -32.19%, 5s) + one Thief's Dagger stack (Hit Rate +25.75%, max 3); (b) shots during CC grant Attack Damage +75.17% for 1 round (durationShots:1); (c) at 3 daggers, skill2 fires an 84.33% additional-damage rider at the CC target + a stacking 12.86% Distributed Damage self-buff, then consumes all daggers; (d) every 10 hits: ATK +85.12% (5s) + Distributed Damage +31.92% (10s); (e) burst: 1457.28% Distributed Damage, FB-exempt. Dagger accrual cadence is the dominant unknown (everyN:60 is a derived guess from the 5s CC lockout, not a measurement)."
+}

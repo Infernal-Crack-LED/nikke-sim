@@ -1,0 +1,164 @@
+{
+  "note": "TREASURE (favorite-item) KIT, modeled from the blablalink treasure prose in data/characters.json (characters.phantom.skills) — the DB skill1_detail/skill2_detail/ulti_skill_detail descriptions carry the UNTREASURED base kit; the treasure prose adds the 'after landing 30 normal attacks' Thief's Dagger grant that sets the consume cadence. Phantom is Water/AR/Burst III (cd 40s, ammo 60, RoF 720 = 12 shots/s, reloadFrames 141 = 2.35s). THE CYCLE (steady single-target fire): a magazine burns 60 shots in 5.0s; Calling Card — applied on the first hit of each magazine, exactly the 'normal hit on a target NOT in Calling Card state' event under steady fire — lasts 5s = one magazine, so shots 2-60 carry the 1-round Attack Damage (59/60 duty) while the first shot of each magazine is the application shot. Thief's Dagger gains +1 at magazine start (S1) and +1 every 30 hits (treasure) = 3 gains per 60-hit cycle, so the dagger hits max stacks ON THE LAST SHOT OF EVERY magazine (hits 60, 120, 180...) and the max-stacks event CONSUMES: 84.33% additional damage to the CC-carrying boss + a permanent Distributed Damage ▲12.86% stack (cap 3, cleared by her own burst) + 250% distributed damage to all enemies + the dagger stacks drained to 0. MODEL (11 load-bearing lines): SKILL1 — (L1) Calling Card window = targetStatus 'Calling Card' 5s refreshed on EVERY normal hit (shotFired). The kit's 'on a target NOT in Calling Card state' clause means the window genuinely lapses at 5s and the very next hit re-applies it — under continuous AR fire (a 60-shot magazine burns in exactly the 5s the window lasts) the on-shot duty is ~98-100% whatever the magazine length, so the clause COLLAPSES to a self-extending near-permanent window with the battle's first shot as the sole application event (the sugar cover-intact-gate class: faithful under steady fire, not a fudge — see ⚑1). The DEF ▼32.19% MAGNITUDE is inert (enemy DEF is a negligible flat subtractive term, docs/data/damage-calculation.md; the engine drops enemy DEF debuffs, sim.ts:1782) and sits verbatim in unmodeled — the status WINDOW is what matters (two lines gate on it). (L2) Thief's Dagger = the live resource pool 'thiefsDagger' (cap 3) read by a passive perResource hitRatePct ×25.75 buff (live stack count; Hit Rate -> core-hit lift via sim.ts hrCoreMult, LIVE by default). The kit's 5s per-stack decay never binds: the consume at hit 60 (t≈4.92s) always pre-empts it, so the pool tracks the real stack count exactly. (L3 TREASURE) hitCount:30 -> thiefsDagger +1 (hits 30, 60, 90...). (L4) Attack Damage ▲75.17% 'for 1 round' = shotFired + requiresTargetStatus 'Calling Card' self attackDamagePct 75.17 with durationShots:2 — the kit says 1 round; :2 is the engine-order compensation (shotFired blocks dispatch AFTER the shot's damage and the round-count decrement runs right after, so a :1 budget is spent before any damage read sees it — a dead buff; :2 keeps the buff live on every shot from the 3rd on, ⚑2). BLOCK ORDER IS LOAD-BEARING: this gated block sits BEFORE the Calling-Card-inflicting block in the skill1 array, so the battle's first shot (the one application event, gate still closed) correctly does NOT receive it. Under the self-extending window the on-shot duty is ~100% thereafter (real kit ~98.3% — the real window lapses at 5s and re-applies on the next hit; the net duty difference is <2% of gated shots, ⚑1). SKILL2 — (L1+L3) the max-stacks CONSUME is one shotFired block gated on resourceGate thiefsDagger min:3 AND requiresTargetStatus 'Calling Card' (always satisfied at the consume instant under steady cadence — the consume lands at t≈4.92s inside the [0,5) window): flatDamage 84.33 (plain 'additional damage' — crits at caster rate / never cores / never distributed per SSOT damage-calculation.md §2b), flatDamage 250 flavor 'distributed' ('all enemies' = the single v1 boss), resource distAmp +1, resource thiefsDagger -3 (the stack drain that restarts the S1 cycle). (L2) Distributed Damage ▲12.86% 'continuously, ×3, removed after Burst Skill' = the live resource pool 'distAmp' (cap 3) read by a passive perResource distributedDamagePct ×12.86 buff; the burst's burstCast reset (delta -3) makes the removal EXACT (the soda-twinkling-bunny resource machinery, not an approximation). (L4) hitCount:10 -> self atkPct 85.12/5s + distributedDamagePct 31.92/10s. BURST (burstCast = HER casts only) — (L1) flatDamage 1457.28 flavor 'distributed' to all enemies (= the boss); burst-skill damage takes no +50% FB major (U10) and no range bonus (engine defaults). (L2) bossElementGate 'Fire' -> enemy damageTakenPct 18/30s (live vs Fire, exactly inert vs any other boss). (L3) self maxAmmoPct 50/10s (60 -> 90-round magazine for one post-burst magazine). ORDERING: the distAmp reset block sits AFTER the nuke block in the burst array, so the burst's own distributed hit resolves with the pre-removal stacks — faithful to 'removed AFTER Burst Skill is used' (the casting burst enjoys the stacks it built). UNMODELED (2 lines, verbatim): the Calling Card DEF ▼32.19% magnitude (skill1, inert) and the 'Removes Calling Card' clause (skill2 — no consume-target-status primitive; the window lapses naturally at 5s, which pre-empts the next magazine-start reapplication under steady fire, so it is moot). NO `ignored` blocks. ⚑1 (self-extending Calling Card window, low): the kit's 'on a target NOT in Calling Card state' application clause is modeled as a window that self-extends on every hit (shotFired refresh). Under continuous fire the REAL window lapses at 5s and the very next hit re-applies it, so the real on-shot duty is ~98.3-100% at ANY magazine length; the collapse matches that (on-shot duty ~100%, a +1.7% over-credit on gated shots = <1% of total) and correctly covers the post-burst maxAmmo-extended magazine (90 rounds = 7.5s > the 5s window), which a fixed magazine-start application phase mis-modeled badly (measured on-shot duty 0.798 = ~5% of total UNDER-credited across the drifted post-burst magazines — replaced). The ordered-before gate still excludes the battle's first shot. Estimate +0.8% of total; recipe: a requiresNotTargetStatus gate modeling the discrete per-lapse re-application; Tier 2. ⚑2 (durationShots:2 compensation, informational): authored 2 vs the kit's '1 round' — the engine-order off-by-one (above); the buff is active on every shot from the 3rd on (shot 1 gate-excluded as the application event, shot 2 is the apply lag), vs the real per-magazine shots 2-60 — net duty ~100% vs the real ~98.3%. ⚑3 ('Removes Calling Card', low): no consume-target-status primitive (asuka-wille ⚑6 class); moot at the steady cadence. Recipe: a consumeTargetStatus effect. ⚑4 (Hit Rate core yield, derived): the 25.75/stack is kit-stated but its damage YIELD flows through sim.ts hrCoreMult — a DERIVED reticle-shrink -> core-fraction estimate (LIVE by default, HRCORE=0 disables), not a measured per-unit number. Recipe: a phantom focus video reading the in-window core-hit fraction. ⚑5 (cadence tuple, standard): RoF 720 / reloadFrames 141 are the datamine (unverified for this unit) — the whole consume cadence derives from the 60-shot/5.0s magazine + 2.35s reload. Recipe: read fire cadence + the reload gap from any focus video. ⚑6 (burst-reset ordering, low): 'removed when using Burst Skill' is modeled as removed AFTER the burst's own distributed hit resolves (block order); the alternative (pre-cast removal) would drop the nuke's distributed multiplier by up to 38.58pp on each cast. TIER 2: named target-status gates (requiresTargetStatus on two lines), a resource-gated stack consume (resourceGate), live perResource pools, the bossElementGate Fire vuln, and the round-count duration. Kit-autonomy gauntlet 2026-07-26: test-first re-derivation (scripts/tests/units/phantom.test.ts, 11 groups P1-P11) with cross-family S2b (kimi-code/k3, owner routing override — Claude quota exhausted) independently re-deriving the same 7-line load-bearing set + nearest-wrong traps (permanent-CC refresh, every-hit dagger accrual, durationSec-vs-durationShots, distributed-flavored rider, burstCast-vs-fullBurstEnter), leakDetected null; reconciled the durationShots:2 compensation + the treasure cadence and adopted the reviewer's mult.distributed===1 rider pin, rangeApplied pin, and the cadence/hit-rate ⚑s.",
+  "unmodeled": {
+    "skill1": [
+      "Calling Card: DEF ▼ 32.19% for 5 sec. — the DEF▼ MAGNITUDE is inert (enemy DEF is a negligible flat subtractive term at scope-lock ATK, docs/data/damage-calculation.md; the engine drops enemy DEF debuffs, sim.ts:1782). The Calling Card status WINDOW itself IS modeled (targetStatus) as the gate for S1's Attack Damage line and S2's max-stacks consume."
+    ],
+    "skill2": [
+      "Removes Calling Card. — the engine has no consume-target-status primitive; the window lapses naturally 5s after application, which under steady fire pre-empts the next magazine-start reapplication (moot). The 84.33% additional damage and the Thief's Dagger stack drain of the same max-stacks event ARE modeled."
+    ],
+    "burst": []
+  },
+  "kitDescription": "Phantom (Treasure) is a Water AR Burst-III attacker built around a thief cycle: her first hit on a target not carrying Calling Card applies it (a 5s status window; the DEF-down content is inert in the sim), and every hit while it is up grants herself Attack Damage ▲75.17% for 1 round. Thief's Dagger stacks (Hit Rate ▲25.75% ×3, fed once per magazine start and once every 30 hits by her treasure) hit max on the last shot of every magazine, consuming for 84.33% additional damage + 250% distributed damage to all enemies + a permanent Distributed Damage ▲12.86% stack (×3, cleared by her own burst). Every 10 normal attacks she buffs ATK ▲85.12% (5s) and Distributed Damage ▲31.92% (10s). Her burst deals 1457.28% distributed damage to all enemies, marks Fire Code targets Damage Taken ▲18% (30s), and expands her own magazine ▲50% (10s).",
+  "caveats": [
+    "skill1: BLOCK ORDER IS LOAD-BEARING — the requiresTargetStatus-gated Attack Damage block precedes the targetStatus-inflicting block in the skill1 array, so the battle's first shot (the sole application event under the self-extending window, gate still closed at dispatch time) does NOT receive the buff. Reversing the two blocks would grant it.",
+    "skill1: the Calling Card window self-extends on every shot (shotFired refresh) — the kit's 'not in Calling Card state' application clause collapses to the battle's first shot under continuous fire, where the real window lapses at 5s and the next hit re-applies it immediately (on-shot duty ~98.3-100% at any magazine length). The collapse matches that duty (+1.7% on gated shots) and covers the post-burst extended magazine a fixed phase would mis-model (⚑1).",
+    "skill1: the Attack Damage line carries durationShots:2, authored against the kit's 'for 1 round(s)' as the engine-order compensation (⚑2): shotFired blocks dispatch after the shot's damage, so a :1 budget never contributes; :2 keeps the buff live on every shot from the 3rd on.",
+    "skill1: Thief's Dagger is a live resource pool read by a perResource hitRatePct buff; the kit's 5s per-stack duration never binds because the consume (hit 60, t≈4.92s) always pre-empts it, so the pool equals the real stack count at every frame. Hit Rate's core-fraction YIELD is a derived estimate (⚑4).",
+    "skill2: the max-stacks consume is one block (shotFired + resourceGate thiefsDagger min:3 + requiresTargetStatus 'Calling Card'); block order across slots puts every skill1 grant before this skill2 gate, so the treasure grant at hit 60 opens the gate on that same shot. The requiresTargetStatus clause is always satisfied at the consume instant under steady cadence (consume at t≈4.92s inside the [0,5) window).",
+    "skill2: 'Removes Calling Card' is unmodeled (no consume-target-status primitive, ⚑3) — moot: the natural 5s lapse pre-empts the next reapplication under steady fire.",
+    "skill2: the Distributed Damage ▲12.86% continuous stacks are the live resource pool 'distAmp' read by a perResource buff; the burstCast reset (delta -3) is EXACT via the resource machinery (not a steady-state approximation).",
+    "burst: the distAmp reset block is ordered AFTER the nuke block so the burst's own distributed hit resolves with the pre-removal stacks (⚑6 — 'removed AFTER Burst Skill is used').",
+    "burst: 'all enemies' resolves to the single v1 boss; the Damage Taken ▲18% line is bossElementGate 'Fire' — live vs Fire, exactly inert vs any other boss (pinned byte-identical on removal vs Iron).",
+    "whole kit: the consume cadence (one per magazine) derives from the datamined RoF 720 / reloadFrames 141 / ammo 60 tuple (⚑5 — unverified for this unit; read off a focus video before hand-tune)."
+  ],
+  "resources": [
+    { "name": "thiefsDagger", "initial": 0, "min": 0, "max": 3 },
+    { "name": "distAmp", "initial": 0, "min": 0, "max": 3 }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "requiresTargetStatus": "Calling Card",
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 75.17,
+          "durationShots": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Calling Card",
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "shotFired" },
+      "everyN": 60,
+      "everyNOffset": 1,
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "thiefsDagger", "delta": 1 }]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 30 },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "thiefsDagger", "delta": 1 }]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 0,
+          "perResource": { "name": "thiefsDagger", "mult": 25.75 }
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "resourceGate": { "name": "thiefsDagger", "min": 3 },
+      "requiresTargetStatus": "Calling Card",
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 84.33 },
+        { "kind": "flatDamage", "atkPct": 250, "flavor": "distributed" },
+        { "kind": "resource", "name": "distAmp", "delta": 1 },
+        { "kind": "resource", "name": "thiefsDagger", "delta": -3 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 10 },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 85.12, "durationSec": 5 },
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 31.92,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 0,
+          "perResource": { "name": "distAmp", "mult": 12.86 }
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        { "kind": "flatDamage", "atkPct": 1457.28, "flavor": "distributed" }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "bossElementGate": "Fire",
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 18,
+          "durationSec": 30
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        { "kind": "buff", "stat": "maxAmmoPct", "value": 50, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [{ "kind": "resource", "name": "distAmp", "delta": -3 }]
+    }
+  ]
+}
