@@ -4,25 +4,25 @@
 **Date:** 2026-07-25 · **Driver:** Qwen · **Blind roles:** claude-fable-5 (S2b) / claude-opus-5 (S5/S6/S7)
 
 Water SR Burst-III Attacker (Tetra). A **taste-mode machine**: her skill2 and two of three burst
-branches are gated on a mutually-exclusive Taste state entered by *gaining a teammate's* sustained-
+branches are gated on a mutually-exclusive Taste state entered by _gaining a teammate's_ sustained-
 (Lingering) or distributed- (Recommended) damage buff. The engine has **no buff-gain primitive**, so
 the taste is a user-selectable `modes` pair; the entry triggers and "Cancels …" lines are UNMODELED
 verbatim (out-of-domain), mutual exclusivity enforced structurally by the single selected mode.
 
 ## Line inventory (10 lines)
 
-| Line | Encoding | Disposition |
-| --- | --- | --- |
-| S1 entering FB → self ATK ▲70.01%/10s | `fullBurstEnter`/self/atkPct, UNCONDITIONAL | FAITHFUL |
-| S1 Lingering Charge Speed ▼20%/50s | `charFixes.chargeFrames 72` (unconditional payload); entry trigger UNMODELED | DOCUMENTED_GAP |
-| S1 Recommended Charge Speed ▼20%/50s | same charFixes payload; entry trigger UNMODELED | DOCUMENTED_GAP |
-| S2 3-FC (Lingering) → boss Damage Taken ▲10.2%/5s | `hitCount:3`/enemy/damageTakenPct/mode sustained | FAITHFUL |
-| S2 Aftertaste 150.04%/s sustained ×5s | dot 150.04/5s/1s/sustained, same 3-hit block | FAITHFUL |
-| S2 FC hit (Recommended) → self Attack Damage ▲60.01%/5s | shotFired/self/attackDamagePct/mode distributed | FAITHFUL |
-| S2 FC hit (Recommended) → 265.07% distributed to all enemies | shotFired/enemy/flatDamage 265.07 distributed | FAITHFUL |
-| Burst self Attack Damage ▲60.19%/10s | `burstCast`/self/attackDamagePct, UNCONDITIONAL | FAITHFUL |
-| Burst Lingering Aftertaste Effect ▲349.8%/10s | burstCast/self/sustainedDamagePct 349.8/mode sustained | DOCUMENTED_GAP |
-| Burst Recommended ATK ▲70.09%/10s | burstCast/self/atkPct 70.09/mode distributed | FAITHFUL |
+| Line                                                         | Encoding                                                                     | Disposition    |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- | -------------- |
+| S1 entering FB → self ATK ▲70.01%/10s                        | `fullBurstEnter`/self/atkPct, UNCONDITIONAL                                  | FAITHFUL       |
+| S1 Lingering Charge Speed ▼20%/50s                           | `charFixes.chargeFrames 72` (unconditional payload); entry trigger UNMODELED | DOCUMENTED_GAP |
+| S1 Recommended Charge Speed ▼20%/50s                         | same charFixes payload; entry trigger UNMODELED                              | DOCUMENTED_GAP |
+| S2 3-FC (Lingering) → boss Damage Taken ▲10.2%/5s            | `hitCount:3`/enemy/damageTakenPct/mode sustained                             | FAITHFUL       |
+| S2 Aftertaste 150.04%/s sustained ×5s                        | dot 150.04/5s/1s/sustained, same 3-hit block                                 | FAITHFUL       |
+| S2 FC hit (Recommended) → self Attack Damage ▲60.01%/5s      | shotFired/self/attackDamagePct/mode distributed                              | FAITHFUL       |
+| S2 FC hit (Recommended) → 265.07% distributed to all enemies | shotFired/enemy/flatDamage 265.07 distributed                                | FAITHFUL       |
+| Burst self Attack Damage ▲60.19%/10s                         | `burstCast`/self/attackDamagePct, UNCONDITIONAL                              | FAITHFUL       |
+| Burst Lingering Aftertaste Effect ▲349.8%/10s                | burstCast/self/sustainedDamagePct 349.8/mode sustained                       | DOCUMENTED_GAP |
+| Burst Recommended ATK ▲70.09%/10s                            | burstCast/self/atkPct 70.09/mode distributed                                 | FAITHFUL       |
 
 ## Cross-family convergence
 
@@ -39,13 +39,13 @@ verbatim (out-of-domain), mutual exclusivity enforced structurally by the single
   former `auto`).
 - **S7 (opus) reconciling judge:** **GO, faithfulness 1.0.** Ruled the S5 mechanical REDs are NOT
   faithfulness divergences — they trace to (a) the blind assuming a 2-element taste pair and (b) the
-  charge-speed *mechanism*, where the **driver is provably correct** (see below).
+  charge-speed _mechanism_, where the **driver is provably correct** (see below).
 
 ## The two charge-speed facts worth knowing
 
 1. **`chargeSpeedPct` cannot slow a unit.** `sim.ts:2559` clamps it to `[0,100]` then computes
    `needed = chargeFrames × (1 − cs/100)`. A ▼20% (−20) buff clamps to 0 ⇒ `needed = chargeFrames`
-   (no change). The engine can only *speed up* via `chargeSpeedPct`; a charge **slowdown** is
+   (no change). The engine can only _speed up_ via `chargeSpeedPct`; a charge **slowdown** is
    expressible **only** as a longer `chargeFrames`. The driver's `charFixes.chargeFrames 72` is the
    correct (only working) encoding; both blind roles' `chargeSpeedPct −20` buff would be silently
    inert. H2 pins this directionally (72f ⇒ fewer shots than the 60f counterfactual).

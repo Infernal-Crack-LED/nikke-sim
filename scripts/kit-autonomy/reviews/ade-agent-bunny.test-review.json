@@ -129,9 +129,7 @@
       "Minimum Effective Range ▲ 4.44% (stat only — stack counter IS modeled)"
     ],
     "skill2": [],
-    "burst": [
-      "Minimum Effective Range ▲ 55.56% for 10 sec"
-    ]
+    "burst": ["Minimum Effective Range ▲ 55.56% for 10 sec"]
   },
   "notes": "Three places I expect a shared-prior misread. (1) Spy Lens reachability: whether 10 stacks is ever attained hinges on refresh-all vs per-stack 5s expiry — under per-stack expiry at SR cadence (charge 1s, ammo 6, reload ~2.35s) the pool plateaus ~3–5 and the ENTIRE skill2 self-mode (Pierce + ATK 16) is dead; the driver must state which reading they encoded and ⚑ the ramp-to-max estimate (~12–16s under refresh-all). A test asserting only 'pierce eventually on' under both readings would mask this. (2) casterAtkPct vs atkPct on skill1 — 'of the skill user's ATK' is a flat add keyed to a Supporter's low ATK; the atkPct misread inflates the carry. (3) burstCast vs fullBurstEnter on both burst buffs — ade is B2 and the control comp's B2 slot is contested (crown), so the misread over-fires on every non-ade rotation; assert count-equality against her burstCast events, not fullBurstStart. Also reconcile the pierce plumbing: the schema's static hasPierce cannot express stack-gated pierce — a resourceGate-driven mechanism or a documented ⚑ steady-state approximation is required, and the pre-activation window (~first 12–16s) must show zero pierceDamagePct credit. Finally, both team pierce buffs must be provably inert on the non-pierce control-comp teammates — that inertness is itself a required assertion, not an excuse to skip the lines.",
   "model": "claude-fable-5"

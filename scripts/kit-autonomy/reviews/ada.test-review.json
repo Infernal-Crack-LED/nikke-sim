@@ -140,9 +140,7 @@
     "burst:Charge Damage ▲ 1500% for 1 ROUND (durationShots:1)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Recovers 10% of damage as HP for 10 sec."
-    ],
+    "skill1": ["Recovers 10% of damage as HP for 10 sec."],
     "skill2": [],
     "burst": []
   },

@@ -77,9 +77,7 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "Current HP ▼ 4.01%."
-    ],
+    "skill1": ["Current HP ▼ 4.01%."],
     "skill2": [
       "There is a 30% chance of activating when attacked.",
       "Deals 138.24% of final ATK as additional damage."

@@ -60,14 +60,14 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
-  if (Array.isArray(s.blocks)) return s.blocks;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
+  if (Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 }
 function slotEffects(ov: any, slot: string): any[] {
   return slotBlocks(ov, slot).flatMap((b: any) =>
-    Array.isArray(b.effects) ? b.effects : [],
+    Array.isArray(b.effects) ? b.effects : []
   );
 }
 function blockFor(ov: any, slot: string, pred: (e: any) => boolean): any {
@@ -77,7 +77,7 @@ function editEffects(
   ov: any,
   slot: string,
   pred: (e: any) => boolean,
-  fn: (e: any) => void,
+  fn: (e: any) => void
 ): number {
   let n = 0;
   for (const b of slotBlocks(ov, slot)) {
@@ -117,7 +117,7 @@ function run(ov?: any, helm = true) {
   opts.onEvent = (ev: SimEvent) => {
     evs.push(ev as Ev);
   };
-  if (ov) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
   const res = runComp(opts);
   return { res, evs, total: totals(res)[SLUG] ?? 0 };
 }
@@ -125,49 +125,49 @@ function run(ov?: any, helm = true) {
 const CF_ATK_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isAtkBuff, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_ATK_BURSTCAST = patch((ov) => {
   const b = blockFor(ov, 'skill1', isAtkBuff);
-  if (!b) return 0;
+  if (!b) {return 0;}
   b.trigger = { kind: 'burstCast' };
   return 1;
 });
 const CF_CS_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_CS_TIMED = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     delete e.removeOnReload;
     e.durationSec = 10;
-  }),
+  })
 );
 const CF_RIDER_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_RIDER_NOFB = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.noFb = true;
-  }),
+  })
 );
 const CF_BEAUTIFUL_ZERO = patch((ov) =>
   editEffects(ov, 'skill2', isHpBuff, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_MIRROR_ZERO = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_MIRROR_NORAMP = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     delete e.rampSec;
-  }),
+  })
 );
 
 const BASE = run();
@@ -192,7 +192,7 @@ const selfBuffs = (evs: Ev[]) =>
       e.kind === 'buffApply' &&
       e.targetSlug === SLUG &&
       e.casterIdx != null &&
-      e.casterIdx === e.targetIdx,
+      e.casterIdx === e.targetIdx
   );
 
 const IDX: number = (() => {
@@ -221,10 +221,10 @@ const IDX_FIELDS = [
 ];
 function fromHer(e: any): boolean {
   for (const f of SLUG_FIELDS)
-    if (typeof e[f] === 'string') return e[f] === SLUG;
+    {if (typeof e[f] === 'string') {return e[f] === SLUG;}}
   if (IDX >= 0)
-    for (const f of IDX_FIELDS)
-      if (typeof e[f] === 'number') return e[f] === IDX;
+    {for (const f of IDX_FIELDS)
+      {if (typeof e[f] === 'number') {return e[f] === IDX;}}}
   return false;
 }
 const herDamage = (evs: Ev[]) =>
@@ -281,20 +281,20 @@ describe('S1a — enter Burst Stage 3, self: ATK +2.71% of final Max HP for 10s'
 
   it('fires once per rotation, and the own-cast model fires no more often', () => {
     const grants = selfBuffs(BASE.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     const fbs = kind(BASE.evs, 'fullBurstStart').length;
     expect(grants.length).toBe(fbs); // one stage-3 entry per rotation
     expect(grants.every((e) => Number(e.value) > 0)).toBe(true);
     expect(grants.every((e) => Number.isFinite(Number(e.expiresFrame)))).toBe(
-      true,
+      true
     );
     // Discriminator vs the burstCast reading: re-keyed to her OWN cast, the
     // grant can only fire on rotations she bursts — never more often. (Strictly
     // fewer only when helm actually takes a stage-3 slot in this fixture; the
     // count equality above is the primary claim.)
     const cfGrants = selfBuffs(R_ATK_BURSTCAST.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     expect(CF_ATK_BURSTCAST.n).toBe(1);
     expect(cfGrants.length).toBeLessThanOrEqual(grants.length);
@@ -321,7 +321,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     expect(fx[0].durationSec).toBeUndefined();
     const b = blockFor(OV, 'skill1', isChargeSpeed);
     expect(['shotFired', 'hitCount']).toContain(b.trigger?.kind);
-    if (b.trigger?.kind === 'hitCount') expect(b.trigger.count).toBe(1);
+    if (b.trigger?.kind === 'hitCount') {expect(b.trigger.count).toBe(1);}
     expect(b.target?.kind).toBe('self');
   });
 
@@ -330,7 +330,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
       (e) =>
         e.kind === 'buffApply' &&
         e.stat === 'chargeSpeedPct' &&
-        e.targetSlug === SLUG,
+        e.targetSlug === SLUG
     );
     expect(applies.length).toBeGreaterThan(10);
     expect(applies.every((e) => Number(e.value) === 100)).toBe(true);
@@ -339,7 +339,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     const removes = BASE.evs.filter(
       (e) =>
         e.kind === 'buffRemove' &&
-        (e.stat === undefined || e.stat === 'chargeSpeedPct'),
+        (e.stat === undefined || e.stat === 'chargeSpeedPct')
     );
     expect(removes.length).toBeGreaterThan(0);
     // Nearest-wrong (timed window, no reload strip): zero reload-cause removals.
@@ -347,7 +347,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     const cfRemoves = R_CS_TIMED.evs.filter(
       (e) =>
         e.kind === 'buffRemove' &&
-        (e.stat === undefined || e.stat === 'chargeSpeedPct'),
+        (e.stat === undefined || e.stat === 'chargeSpeedPct')
     );
     expect(cfRemoves.length).toBe(0);
   });
@@ -449,7 +449,7 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
     const big = slotEffects(OV, 'burst').filter(isBigBurst);
     expect(big.length).toBe(10);
     expect(big.every((e: any) => near(Number(e.atkPct), 1365.92, 1e-6))).toBe(
-      true,
+      true
     );
     // Nearest-wrong: a single 13659.2% hit — same total, but wrong crit/core
     // granularity and wrong interaction with per-hit riders.
@@ -467,7 +467,7 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
 
   it('burst-cast damage is Full-Burst exempt and lands 10x per cast', () => {
     const casts = BASE.evs.filter(
-      (e) => e.kind === 'burstCast' && fromHer(e),
+      (e) => e.kind === 'burstCast' && fromHer(e)
     ).length;
     expect(casts).toBeGreaterThan(0);
     const hits = herDamage(BASE.evs).filter((e) => e.srcSlot === 'burst');

@@ -94,7 +94,6 @@ const FPS = 60;
 const SLUG = 'cinderella-crystal-wave';
 /** controlComp slot order: liter 0 / crown 1 / ccw 2 / helm 3. */
 const CCW = 2;
-const HELM = 3;
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -117,9 +116,11 @@ const hasStat = (b: any, stat: string) =>
 const mgRiderBlock = (ov: any) => {
   const blk = ov.skill2.find(
     (b: any) =>
-      b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage'),
+      b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!blk) throw new Error('ccw MG FB rider block missing — fixture is stale');
+  if (!blk) {
+    throw new Error('ccw MG FB rider block missing — fixture is stale');
+  }
   return blk;
 };
 
@@ -127,27 +128,31 @@ const mgRiderBlock = (ov: any) => {
 const noBeauty = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'attackDamagePct'));
-  if (ov.skill1.length === before)
+  if (ov.skill1.length === before) {
     throw new Error('ccw Beauty-Full block missing — fixture is stale');
+  }
 });
 /** W2 reference: ATK 29% passive removed. */
 const noAtk29 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('ccw ATK 29% block missing — fixture is stale');
+  }
 });
 /** W3 reference: Pinpoint (coreDamagePct 26) removed. */
 const noPinpoint = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'coreDamagePct'));
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('ccw Pinpoint block missing — fixture is stale');
+  }
 });
 /** W3 mode flip: Snipe becomes the default mode (modes[0]). */
 const snipeMode = withPatchedOverride(SLUG, (ov) => {
-  if (!Array.isArray(ov.modes) || !ov.modes.includes('Snipe'))
+  if (!Array.isArray(ov.modes) || !ov.modes.includes('Snipe')) {
     throw new Error('ccw modes list missing Snipe — fixture is stale');
+  }
   ov.modes = ['Snipe', 'MG'];
 });
 /** W3 Snipe + Destroy removed (to prove Destroy is inert vs the partless boss). */
@@ -155,56 +160,63 @@ const snipeNoParts = withPatchedOverride(SLUG, (ov) => {
   ov.modes = ['Snipe', 'MG'];
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('ccw Destroy block missing — fixture is stale');
+  }
 });
 /** W4 reference: the every-5s 900% interval line removed (engine `interval` trigger + flatDamage). */
 const noInterval = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'interval');
-  if (ov.skill1.length === before)
+  if (ov.skill1.length === before) {
     throw new Error('ccw 900% interval block missing — fixture is stale');
+  }
 });
 /** W5 reference: the MG FB rider removed entirely. */
 const noRider = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
     (b: any) =>
-      !(b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage')),
+      !(b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage'))
   );
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('ccw MG FB rider block missing — fixture is stale');
+  }
 });
 /** W5b counterfactual: rider present but UNGATED (ownBurstGate removed → fires on every team FB). */
 const ungatedRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
-  if (!blk.ownBurstGate)
+  if (!blk.ownBurstGate) {
     throw new Error('ccw MG rider ownBurstGate missing — fixture is stale');
+  }
   delete blk.ownBurstGate;
 });
 /** W5c counterfactual: rider re-triggered to burstCast (lands before FB → loses the +50% major). */
 const burstCastRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
-  if (blk.trigger?.kind !== 'fullBurstEnter')
+  if (blk.trigger?.kind !== 'fullBurstEnter') {
     throw new Error(
-      'ccw MG rider trigger is not fullBurstEnter — fixture is stale',
+      'ccw MG rider trigger is not fullBurstEnter — fixture is stale'
     );
+  }
   blk.trigger.kind = 'burstCast';
 });
 /** W5d counterfactual: rider core flag cleared (loses the core bucket). */
 const noCoreRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
   const e = blk.effects.find((x: any) => x.kind === 'flatDamage');
-  if (e.core !== true)
+  if (e.core !== true) {
     throw new Error('ccw MG rider core flag is not true — fixture is stale');
+  }
   e.core = false;
 });
 /** W8 reference: the teamAmmo gauge-fill block removed. */
 const noTeamAmmo = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'teamAmmo');
-  if (ov.skill1.length === before)
+  if (ov.skill1.length === before) {
     throw new Error('ccw teamAmmo block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -229,7 +241,7 @@ const ccwBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
 const helmBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -256,22 +268,22 @@ const intervalHits = (evs: SimEvent[]) =>
 describe('cinderella-crystal-wave — kit spec', () => {
   describe('W1 — S1 Beauty-Full: Attack Damage ▲ 24% continuous, self', () => {
     const applied = ccwBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 24,
+      (b) => b.value === 24
     );
 
     it('is a self-scoped, always-on (continuous) 24% buff', () => {
       expect(
         applied.length,
-        'no Beauty-Full 24% buff was applied',
+        'no Beauty-Full 24% buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([24]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CCW]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'Beauty-Full is continuous — no wall-clock expiry',
+        'Beauty-Full is continuous — no wall-clock expiry'
       ).toEqual([null]);
     });
 
@@ -282,7 +294,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
 
   describe('W2 — S2 ATK ▲ 29% continuous, self', () => {
     const applied = ccwBuffs(base.events, 'atkPct').filter(
-      (b) => b.value === 29,
+      (b) => b.value === 29
     );
 
     it('is a self-scoped, always-on (continuous) 29% buff', () => {
@@ -290,7 +302,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([29]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CCW]);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
@@ -308,7 +320,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(core.map((b) => b.expiresFrame))]).toEqual([null]);
       expect(
         ccwBuffs(base.events, 'partsDamagePct'),
-        'Destroy must NOT apply in MG mode',
+        'Destroy must NOT apply in MG mode'
       ).toEqual([]);
     });
 
@@ -318,7 +330,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(parts.map((b) => b.targetIdx))]).toEqual([CCW]);
       expect(
         ccwBuffs(snipe.events, 'coreDamagePct'),
-        'Pinpoint must NOT apply in Snipe mode',
+        'Pinpoint must NOT apply in Snipe mode'
       ).toEqual([]);
     });
 
@@ -336,22 +348,22 @@ describe('cinderella-crystal-wave — kit spec', () => {
       // (damage-calculation §1b/§2b). Gauntlet gotcha-1 fix pinned here (two blind roles + formula).
       expect(
         mgRider(base.events).every((d) => d.coreEligible),
-        'MG branch is a core strike',
+        'MG branch is a core strike'
       ).toBe(true);
       expect(
         snipeRider(snipe.events).every((d) => !d.coreEligible),
-        'Snipe branch is plain damage — never core',
+        'Snipe branch is plain damage — never core'
       ).toBe(true);
     });
 
     it('Snipe mode swaps the weapon to 62.13%/shot (the alt weapon-swap path)', () => {
       const norm = ccwDamage(snipe.events).filter(
-        (d) => d.srcSlot === 'normal',
+        (d) => d.srcSlot === 'normal'
       );
       expect([...new Set(norm.map((d) => d.atkPct))]).toEqual([62.13]);
       // MG normal shots are the datamined 5.57% MG round, NOT the snipe round.
       const mgNorm = ccwDamage(base.events).filter(
-        (d) => d.srcSlot === 'normal',
+        (d) => d.srcSlot === 'normal'
       );
       expect([...new Set(mgNorm.map((d) => d.atkPct))]).toEqual([5.57]);
     });
@@ -372,7 +384,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(ds.map((d) => d.bucket))]).toEqual(['skill']);
       expect(
         ds.length,
-        `${ds.length} firings — a 5s timer lands ~35×/180s; per-burst would be ~6, per-shot thousands`,
+        `${ds.length} firings — a 5s timer lands ~35×/180s; per-burst would be ~6, per-shot thousands`
       ).toBeGreaterThanOrEqual(30);
       expect(ds.length).toBeLessThanOrEqual(40);
     });
@@ -383,7 +395,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ds = intervalHits(base.events);
       expect(
         ds[0].frame,
-        'first firing must be at t=5s (frame 300), not t=0',
+        'first firing must be at t=5s (frame 300), not t=0'
       ).toBe(5 * FPS);
     });
 
@@ -391,15 +403,15 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ds = intervalHits(base.events);
       expect(
         ds.every((d) => d.critEligible),
-        'function damage crits at her sheet rate',
+        'function damage crits at her sheet rate'
       ).toBe(true);
       expect(
         ds.every((d) => !d.coreEligible),
-        'function damage is never core',
+        'function damage is never core'
       ).toBe(true);
       expect(
         ds.every((d) => !d.rangeApplied),
-        'riders carry no range bonus',
+        'riders carry no range bonus'
       ).toBe(true);
       // FB by landing timing: procs inside an FB window take the +50%, those outside do not —
       // both states appear over a 180s fight (it is NOT wrongly noFb'd, nor always-on).
@@ -429,7 +441,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect(rs, 'rider must fire exactly on her own FB entries').toBe(own);
       expect(
         teamFb,
-        'fixture must have co-B3 FB entries to gate against',
+        'fixture must have co-B3 FB entries to gate against'
       ).toBeGreaterThan(own);
     });
 
@@ -438,17 +450,17 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ungatedCount = mgRider(ungated.events).length;
       expect(
         ungatedCount,
-        `${ungatedCount} ungated vs ${gated} gated — ungated fires on helm's FB entries too`,
+        `${ungatedCount} ungated vs ${gated} gated — ungated fires on helm's FB entries too`
       ).toBeGreaterThan(gated);
       expect(ungatedCount).toBe(
-        ccwBursts(ungated.events).length + helmBursts(ungated.events).length,
+        ccwBursts(ungated.events).length + helmBursts(ungated.events).length
       );
     });
 
     it('DISCRIMINATING (trigger): fullBurstEnter takes the +50% FB major; burstCast loses it', () => {
       expect(mgRider(base.events).every((d) => d.fbMajorApplied)).toBe(true);
       expect(mgRider(burstCast.events).every((d) => !d.fbMajorApplied)).toBe(
-        true,
+        true
       );
     });
 
@@ -467,7 +479,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
 
   describe('W6 — burst self-buffs: Attack Damage ▲ 92% + ATK ▲ 65% for 10s, one per cast', () => {
     const ad = ccwBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 92,
+      (b) => b.value === 92
     );
     const atk = ccwBuffs(base.events, 'atkPct').filter((b) => b.value === 65);
 
@@ -478,7 +490,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       for (const b of [...ad, ...atk]) {
         expect(b.targetIdx).toBe(CCW);
         expect(b.expiresFrame! - b.frame, 'must be a 10s timed buff').toBe(
-          10 * FPS,
+          10 * FPS
         );
       }
     });
@@ -509,7 +521,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const took = nukes(base.events).filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
   });
@@ -520,7 +532,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       // ccw's per-200-ally-ammo 12% fill advances helm's bursts over the fight.
       expect(
         helmBursts(base.events).length,
-        "ccw's teamAmmo fill must advance helm's burst cadence",
+        "ccw's teamAmmo fill must advance helm's burst cadence"
       ).toBeGreaterThan(helmBursts(teamAmmo.events).length);
     });
 

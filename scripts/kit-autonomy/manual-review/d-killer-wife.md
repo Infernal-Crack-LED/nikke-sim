@@ -14,16 +14,16 @@ allies shooting the marked enemy earn an ATK bonus worth **12.19% of her own ATK
 
 ## Line inventory (8 lines)
 
-| Line | Encoding | Disposition |
-| --- | --- | --- |
-| S1 Full Charge ×3 → self: Gain Pierce 1 shot | UNMODELED verbatim (damage-inert on partless boss; W1 pins skill1 emits EXACTLY {pierceDamagePct}) | DOCUMENTED_GAP |
-| S1 FB-enter → SR allies: Pierce Damage ▲13.55%/10s | `fullBurstEnter`/`alliesOfWeapon SR`/pierceDamagePct 13.55 `durationSec 10` | FAITHFUL |
-| S2 Full Charge ×8 → allies: Burst CDR ▼7s | `hitCount:8`/allies/`burstCdr 7` (recurring; no event — observed via FB cadence) | FAITHFUL |
-| S2 Full Charge ×5 → allies: Attack damage ▲5.06%/10s | `hitCount:5`/allies/attackDamagePct 5.06 `durationSec 10` | FAITHFUL |
-| Burst: 269.28% final ATK additional damage | `burstCast`/enemy/`flatDamage` atkPct 269.28 (no core; FB-exempt by cast timing) | FAITHFUL |
-| Burst: inflicts Wipe Out 10s | `burstCast`/enemy/`targetStatus "Wipe Out"` `durationSec 10` (gate for the riders; block order load-bearing) | FAITHFUL |
-| Burst parts branch: core damage ▲16.26%/10s | REMOVED (skipped-conditional; out-of-domain — partless boss; was an all-ally core-bucket over-credit) | DOCUMENTED_GAP |
-| Burst body branch: ATK ▲12.19% of caster ATK/10s | `burstCast`/allies/casterAtkPct 12.19 `durationSec 10`, gated `requiresTargetStatus "Wipe Out"` | FAITHFUL |
+| Line                                                 | Encoding                                                                                                     | Disposition    |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ | -------------- |
+| S1 Full Charge ×3 → self: Gain Pierce 1 shot         | UNMODELED verbatim (damage-inert on partless boss; W1 pins skill1 emits EXACTLY {pierceDamagePct})           | DOCUMENTED_GAP |
+| S1 FB-enter → SR allies: Pierce Damage ▲13.55%/10s   | `fullBurstEnter`/`alliesOfWeapon SR`/pierceDamagePct 13.55 `durationSec 10`                                  | FAITHFUL       |
+| S2 Full Charge ×8 → allies: Burst CDR ▼7s            | `hitCount:8`/allies/`burstCdr 7` (recurring; no event — observed via FB cadence)                             | FAITHFUL       |
+| S2 Full Charge ×5 → allies: Attack damage ▲5.06%/10s | `hitCount:5`/allies/attackDamagePct 5.06 `durationSec 10`                                                    | FAITHFUL       |
+| Burst: 269.28% final ATK additional damage           | `burstCast`/enemy/`flatDamage` atkPct 269.28 (no core; FB-exempt by cast timing)                             | FAITHFUL       |
+| Burst: inflicts Wipe Out 10s                         | `burstCast`/enemy/`targetStatus "Wipe Out"` `durationSec 10` (gate for the riders; block order load-bearing) | FAITHFUL       |
+| Burst parts branch: core damage ▲16.26%/10s          | REMOVED (skipped-conditional; out-of-domain — partless boss; was an all-ally core-bucket over-credit)        | DOCUMENTED_GAP |
+| Burst body branch: ATK ▲12.19% of caster ATK/10s     | `burstCast`/allies/casterAtkPct 12.19 `durationSec 10`, gated `requiresTargetStatus "Wipe Out"`              | FAITHFUL       |
 
 ## Cross-family convergence
 
@@ -51,9 +51,9 @@ allies shooting the marked enemy earn an ATK bonus worth **12.19% of her own ATK
 the parts→core proxy left behind when the parts branch was deleted (2026-07-17). The kit splits the
 rider by area: "Allies that hit **parts**" → coreDamagePct, "Allies that hit the **body**" →
 casterAtkPct. On the partless boss the only modelable area split is core-vs-non-core, so **body =
-non-core** — gating the *body* branch on `requiresCore` asserted the **complement** of the kit line
+non-core** — gating the _body_ branch on `requiresCore` asserted the **complement** of the kit line
 (it would be maximally live at coreHitRate 0, where every hit is a body hit, yet `requiresCore` gated
-it *out* there). The blind S6 override, prose-only, had correctly put that gate on the parts branch.
+it _out_ there). The blind S6 override, prose-only, had correctly put that gate on the parts branch.
 
 **Fix (exactly as the judge prescribed):** deleted `requiresCore` from the body branch (Wipe Out is now
 the sole gate); re-pointed W7's third assertion to pin the correct **direction** (body branch fires

@@ -68,13 +68,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -270,16 +266,7 @@
             }
           ],
           "skill_cooltime_list": [
-            6000,
-            6000,
-            6000,
-            6000,
-            6000,
-            6000,
-            6000,
-            6000,
-            6000,
-            6000
+            6000, 6000, 6000, 6000, 6000, 6000, 6000, 6000, 6000, 6000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Constantly recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_02} sec.</color>\n■ Affects {description_value_03} ally unit(s) with the lowest remaining HP (except the skill user).\n<color=#00AEFF>Gain <word_group=10006>Indomitability</word_group> for {description_value_04} sec.\nMax HP ▲ {description_value_05}% for {description_value_06} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Damage Taken ▲ {description_value_07}% for {description_value_08} sec.</color>",
           "description_value_list": [
@@ -401,20 +388,10 @@
           ],
           "prefer_target_condition": "ExcludeSelf",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            127030101,
-            127030104
-          ],
-          "after_hurt_function_id_list": [
-            127030102,
-            127030103
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [127030101, 127030104],
+          "after_hurt_function_id_list": [127030102, 127030103],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -439,9 +416,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -472,9 +447,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Blanc's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

@@ -272,13 +272,9 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "Ability: Find and capture ghosts possessing the enemy."
-    ],
+    "skill1": ["Ability: Find and capture ghosts possessing the enemy."],
     "skill2": [],
-    "burst": [
-      "Maintains at least 1 ghost."
-    ]
+    "burst": ["Maintains at least 1 ghost."]
   },
   "caveats": [
     "⚑ BLOCK ORDER IS LOAD-BEARING in `burst`: the ghosts≤12 branch MUST precede the ghosts=13 branch. resourceGate reads the live pool, so if the 13-branch ran first it would spend 9 (13→4) and the ≤12 branch would then ALSO fire — double burst. Do not reorder.",

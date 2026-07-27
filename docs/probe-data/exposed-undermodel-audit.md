@@ -10,11 +10,11 @@ We replaced the flat per-weapon auto-aim core-hit rate (Assault Rifle / Submachi
 all 0.85) with a **range-dependent per-(weapon, band) table** measured from solo scope-lock
 recordings (`src/engine/sim.ts` around line 509):
 
-| weapon | near | mid | mid-far | far |
-|---|---|---|---|---|
-| Assault Rifle | 0.40 | 0.30 | 0.03 | 0.00 |
-| Submachine Gun | 0.28 | 0.244 | 0.076 | 0.059 |
-| Shotgun | 0.072 | 0.00 | 0.0045 | 0.00 |
+| weapon         | near  | mid   | mid-far | far   |
+| -------------- | ----- | ----- | ------- | ----- |
+| Assault Rifle  | 0.40  | 0.30  | 0.03    | 0.00  |
+| Submachine Gun | 0.28  | 0.244 | 0.076   | 0.059 |
+| Shotgun        | 0.072 | 0.00  | 0.0045  | 0.00  |
 
 Assault-Rifle values are measured from **Scarlet only** (small samples: mid n=20, near n=36) and
 are flagged **provisional** in the code and in open-questions A9. The Shotgun near value (0.072,
@@ -24,7 +24,7 @@ Dropping from a flat 0.85 to these much lower values removed a systematic hot bi
 several Assault-Rifle / Shotgun units that now read cold. The old 0.85 was over-crediting their
 cores, which **masked** whatever their true normal-attack model does. This audit asks, per unit:
 is the coldness (A) a genuinely missing observed mechanic, (B) the expected consequence of the
-Shotgun-near lower bound / provisional Assault-Rifle table (a *shared-table* refinement, not a
+Shotgun-near lower bound / provisional Assault-Rifle table (a _shared-table_ refinement, not a
 per-unit fix), (C) an honest documented approximation now un-masked, or (D) something needing new
 focused footage to localize?
 
@@ -42,14 +42,14 @@ honest OPEN note.
 Leverage = number of graded comps × distance from 1.0, weighted toward actionable class-A fixes and
 toward units whose own damage is a large share of the board.
 
-| rank | unit | weapon | comps | current cold ratio(s) | class |
-|---|---|---|---|---|---|
-| 1 | Dorothy: Serendipity | Shotgun | 2 | 0.76 (Fire boss), 0.61 (Electric boss) | **A** + B |
-| 2 | Grave | Assault Rifle | 3 | 0.83–0.84 | **B (Assault-Rifle table)** |
-| 3 | Noir | Shotgun | 2 | 0.73–0.74 | **B (Shotgun lower bound)** |
-| 4 | Soda: Twinkling Bunny | Shotgun | 1 | 0.61 | **A** + B |
-| 5 | Naga | Shotgun | 2 | 0.56 (with shielder), 0.71 (no shielder) | **B (Shotgun lower bound)** |
-| 6 | Guillotine: Winter Slayer | Assault Rifle | 2 | 0.93–0.94 | **B (Assault-Rifle table) / C** |
+| rank | unit                      | weapon        | comps | current cold ratio(s)                    | class                           |
+| ---- | ------------------------- | ------------- | ----- | ---------------------------------------- | ------------------------------- |
+| 1    | Dorothy: Serendipity      | Shotgun       | 2     | 0.76 (Fire boss), 0.61 (Electric boss)   | **A** + B                       |
+| 2    | Grave                     | Assault Rifle | 3     | 0.83–0.84                                | **B (Assault-Rifle table)**     |
+| 3    | Noir                      | Shotgun       | 2     | 0.73–0.74                                | **B (Shotgun lower bound)**     |
+| 4    | Soda: Twinkling Bunny     | Shotgun       | 1     | 0.61                                     | **A** + B                       |
+| 5    | Naga                      | Shotgun       | 2     | 0.56 (with shielder), 0.71 (no shielder) | **B (Shotgun lower bound)**     |
+| 6    | Guillotine: Winter Slayer | Assault Rifle | 2     | 0.93–0.94                                | **B (Assault-Rifle table) / C** |
 
 ---
 
@@ -59,6 +59,7 @@ toward units whose own damage is a large share of the board.
 the normal-attack bucket; she is never the camera focus in either comp.
 
 **Full kit audit (override present):**
+
 - Skill 1 "hit target with 80 pellets → Attack Damage +72%, Hit Rate +98.18%, **pellet count
   fixed at 1**, **gains Pierce**, for 3 rounds" — **PARTIALLY IMPLEMENTED.** Attack Damage +72%
   is modeled (hitCount 80 → re-triggers ~every 8 shots, effectively permanent). **The
@@ -100,13 +101,14 @@ class-A effect she also carries the class-B shotgun-near lower bound on her out-
 normal-attack bucket** (no skill riders, no damage-relevant burst).
 
 **Full kit audit (override present):**
+
 - Skill 1 team Burst-Gauge speed +38.96% + Pierce Damage +48.4% — IMPLEMENTED as passive (Pierce
   bonus inert on one target; gauge speed correct). Self-heal / "remove bullets / reload-ratio"
   dropped as non-damage (correct).
 - Skill 2 Overheat I ATK +15.48% (15 hits) — IMPLEMENTED, approximated as sustained (ignores the
   per-reload reset → slight **over**count). Overheat II +20.66% / III +30.8% require Prediction
   (burst) and ramp over 30/60 hits — modeled as full-window uptime tied to burst → slight
-  **over**count. Both approximations run *hot*, so they are not the cold source.
+  **over**count. Both approximations run _hot_, so they are not the cold source.
 - Burst: unlimited ammo, self Crit Rate +85.19% + Pierce, team Attack Damage +48.2% + Pierce +
   max ammo — IMPLEMENTED faithfully. HP-drain self-cost dropped (correct).
 
@@ -114,17 +116,17 @@ normal-attack bucket** (no skill riders, no damage-relevant burst).
 pure normal-attack Assault Rifle, so she is the **cleanest possible probe of the Assault-Rifle
 normal-attack model** — and she reads 0.83 cold. Note the tension: **Scarlet grades hot (~1.13)**
 with this same table, but Scarlet's total is dominated by her skill riders (large skill bucket),
-which *mask* her normal-attack bucket; Grave has no riders, so she *exposes* it. This is the exact
+which _mask_ her normal-attack bucket; Grave has no riders, so she _exposes_ it. This is the exact
 "exposed under-model" pattern: the provisional, small-sample (mid n=20 / near n=36),
 Scarlet-derived Assault-Rifle near/mid values may be **slightly low**, and a rider-free unit shows
-it. The two Assault-Rifle units here are cold in a *correlated, damage-mix-explained* way (Grave
+it. The two Assault-Rifle units here are cold in a _correlated, damage-mix-explained_ way (Grave
 100% normals → 0.83; Guillotine ~65% normals + 35% damage-over-time → milder 0.93), which points at
 the **shared table**, not per-unit mechanics.
 
 **Action (not a per-unit tune):** process the existing **Moran Assault-Rifle footage**
 (`docs/probes/ar-sg-smg/moran ar.MP4`) to give the Assault-Rifle core table a second independent
 anchor, and consider a focused Grave recording. If the second anchor confirms higher Assault-Rifle
-near/mid, that is a faithful *shared-table* correction (open-question A9), and Grave/Guillotine move
+near/mid, that is a faithful _shared-table_ correction (open-question A9), and Grave/Guillotine move
 toward 1.0 for free. Do **not** add a Grave-specific core rate or buff.
 
 ---
@@ -135,6 +137,7 @@ toward 1.0 for free. Do **not** add a Grave-specific core rate or buff.
 output only.**
 
 **Full kit audit (parser only):**
+
 - Skill 1 "above 70% HP → team ATK +14.08% of caster ATK" — IMPLEMENTED (passive caster-ATK aura).
 - Skill 2 full-burst-enter team max-ammo +5 + reload 39.88% — IMPLEMENTED.
 - Burst: 351.64% nuke (flatDamage), shotgun-ally hit-rate / interrupt-part buffs — IMPLEMENTED.
@@ -159,6 +162,7 @@ change.
 (29); no burst bucket (single Burst-III cast goes to the rotation, her nuke is modeled as flat).
 
 **Full kit audit (override present):**
+
 - Skill 1 "start with 50 Golden Chips" — represented only as a note; the chip economy is
   time-averaged in prose, not tracked.
 - Skill 1 "after 3 normal casts during Full Burst → **Golden Chip: Critical Damage +1.32%,
@@ -194,6 +198,7 @@ normal-attack bucket; she is a Supporter and her own damage (~97M / 48M) is a sm
 board.
 
 **Full kit audit (override present):**
+
 - Skill 1 shield-gated team Core-Damage +85.17% — IMPLEMENTED via the "with shielder" mode
   (full-burst-enter, full uptime); the engine has no shield tracking, so the mode is the faithful
   proxy for her always-run-with-a-shielder identity. This buff **helps her teammates' cores, not
@@ -202,7 +207,7 @@ board.
 - Burst caster-ATK +16.18% (+31.02% with shielder) team auras — IMPLEMENTED. Heals / cover
   restore dropped (non-damage; correct).
 
-**Classification — B.** Naga's *own* output is pure 10-pellet shotgun spray at the near lower
+**Classification — B.** Naga's _own_ output is pure 10-pellet shotgun spray at the near lower
 bound; that is why her personal ratio is low. Her value to the board is her ally buffs (correctly
 modeled). The with-shielder 0.56 vs no-shielder 0.71 gap is a small absolute swing on a supporter,
 not a mechanic gap. No per-unit under-model — she rides the shotgun-near lower bound. Low leverage
@@ -217,6 +222,7 @@ normal-attack plus a damage-over-time bucket (~35% of her total), which dilutes 
 sensitivity — hence she is only mildly cold.
 
 **Full kit audit (override present):**
+
 - Skill 1 Hero-Level system (max level 11) → Water-ally Elemental-Advantage +12.76% and caster-ATK
   +10.01%, self Elemental-Advantage +7.46% — IMPLEMENTED as steady-state level-11 auras with a
   slight ramp haircut. Level-up reload reward IMPLEMENTED (hitCount 30 instant reload).
@@ -260,6 +266,7 @@ This audit ran in PARALLEL with the SG-core online research (s1) and assumed the
 0.072 was a raisable LOWER BOUND. **s1 REFUTES that premise:** ore-game verify-memo measures SG
 front-row core ~6% (auto, base accuracy), converging with our 0.072 — SG near is CORRECT, not low,
 and must NOT be raised (`docs/probe-data/sg-core-research.md`). Consequences for this audit:
+
 - **Noir / Naga (pure-SG "class B, fixed by raising shotgun-near"): premise INVALID.** Their coldness
   is NOT fixed by a higher SG core rate. It is a genuine EXPOSED under-model in their non-core (body)
   damage — the old flat 0.85 core over-credit was masking it. Most likely the near-range **pellet-body

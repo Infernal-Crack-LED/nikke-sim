@@ -4,10 +4,10 @@
 export type SkillSlot = 'skill1' | 'skill2' | 'burst';
 
 export type StatKey =
-  | 'atkPct'            // ATK ▲ x% (scales target's own ATK)
-  | 'casterAtkPct'      // ATK ▲ x% of caster's ATK (flat add)
+  | 'atkPct' // ATK ▲ x% (scales target's own ATK)
+  | 'casterAtkPct' // ATK ▲ x% of caster's ATK (flat add)
   | 'highestAllyAtkPct' // ATK ▲ x% of the HIGHEST ally's ATK (flat add — guilty "Mind If I Borrow This?"). Resolves to (value/100)×max(all units' staticAtk) at apply time; feeds the same flat-ATK path as casterAtkPct. Solo (self is the max) == casterAtkPct.
-  | 'atkOfMaxHpPct'     // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
+  | 'atkOfMaxHpPct' // ATK ▲ x% of the unit's own final Max HP (flat add — Cinderella, Maiden:IR)
   | 'critRatePct'
   | 'critRateNormalPct' // "Critical Rate of normal attacks ▲x%" — Critical Rate that applies ONLY to
   //                       normal-attack hits, never to skill procs or burst damage. Distinct mechanic
@@ -20,34 +20,34 @@ export type StatKey =
   | 'critDamagePct'
   | 'coreDamagePct'
   | 'elementDamagePct'
-  | 'chargeDamagePct'     // additive percentage points in the charge bucket
+  | 'chargeDamagePct' // additive percentage points in the charge bucket
   | 'chargeDamageMultPct' // scales by BASE charge damage (collection items, Helm's max-treasure burst)
   | 'chargeSpeedPct'
-  | 'attackDamagePct'   // "Attack Damage" — Damage Up bucket
+  | 'attackDamagePct' // "Attack Damage" — Damage Up bucket
   | 'sustainedDamagePct'
-  | 'sequentialDamagePct'  // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)
+  | 'sequentialDamagePct' // "Sequential Attack Damage ▲x%" — ADDITIVE in the Damage Up bucket (diluted by other support buffs; e.g. snow-white-heavy-arms)
   | 'sequentialMultPct' // "Damage multiplier of sequential attacks scaled by x%" — a TRUE multiplier on sequential-flavored damage in its OWN multiplicative bucket (NOT diluted; eve Mk2 ×2). Distinct mechanic from the additive sequentialDamagePct above.
   | 'casterMaxHpPct' // grants Max HP = % of CASTER's Max HP ("X% of the skill user's Max HP" — rouge/anis/trina)
   | 'targetMaxHpPct' // grants Max HP = % of the TARGET's OWN Max HP ("Max HP ▲ X%" — blanc/maiden). Same
   //                    e3 feed rule as casterMaxHpPct: only feeds atkOfMaxHpPct when caster === target (self)
-  | 'partsDamagePct'    // parsed but inert in v1 (no parts on the boss)
-  | 'pierceDamagePct'   // parsed but inert in v1
-  | 'damageTakenPct'    // debuff on the boss (positive = boss takes more)
+  | 'partsDamagePct' // parsed but inert in v1 (no parts on the boss)
+  | 'pierceDamagePct' // parsed but inert in v1
+  | 'damageTakenPct' // debuff on the boss (positive = boss takes more)
   | 'maxAmmoPct'
-  | 'maxAmmoFlat'       // Max Ammunition ▲ N rounds — FLAT round count (not %), added on top of the
+  | 'maxAmmoFlat' // Max Ammunition ▲ N rounds — FLAT round count (not %), added on top of the
   //                      maxAmmoPct scaling in maxAmmo() (theme 14: "▲ N round(s)" kit lines that the
   //                      percent-only schema could only approximate — grave/noir/tove/drake/trina)
   | 'reloadSpeedPct'
   | 'attackSpeedPct'
   | 'fireRatePct'
   | 'extraHitDamagePct' // flat % of final ATK added per normal-attack hit while active
-  | 'trueDamagePct'          // Damage Up bucket (doc line 8)
+  | 'trueDamagePct' // Damage Up bucket (doc line 8)
   | 'projectileExplosionPct' // Damage Up bucket; only RL kits carry it
   | 'elemAdvantageDamagePct' // Damage Up bucket, active only with elemental advantage
-  | 'distributedDamagePct'   // boosts the caster's own distributed-damage hits
+  | 'distributedDamagePct' // boosts the caster's own distributed-damage hits
   | 'projectileAttachmentPct' // boosts the caster's projectile-attachment procs
-  | 'normalAttackPct'        // scales the normal attack multiplier (like the SMG/SG doll line)
-  | 'pelletCountFlat'        // "Number of pellets ▲ N" — flat effective SG pellet-count add for a window.
+  | 'normalAttackPct' // scales the normal attack multiplier (like the SMG/SG doll line)
+  | 'pelletCountFlat' // "Number of pellets ▲ N" — flat effective SG pellet-count add for a window.
   //                            Threaded through the SG landing/gauge path so extra pellets pass the SAME
   //                            per-pellet landing fraction / range falloff / shot-level core as the base
   //                            (each pellet = 1/base of the shot). Opt-in; SG-only & swap-off (inert on
@@ -55,18 +55,22 @@ export type StatKey =
   //                            unit with no OTHER normal-mult; the faithful gain is a real, queryable
   //                            pellet count (effectivePellets) + correct multiplicative interaction with
   //                            any co-active normalAttackPct. Gauge is NOT pumped (energy is per-trigger).
-  | 'burstGenPct'            // scales the unit's burst gauge contribution
-  | 'hitRatePct'        // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
-  | 'defPct'            // inert in v1 (self DEF doesn't affect own damage — Endurance cube)
-  | 'maxHpPct';         // self Max HP ▲ % (Vigor cube) — converted to a maxHpFlat self-grant in sim.ts, feeds HP-scaling ATK (atkOfMaxHpPct)
+  | 'burstGenPct' // scales the unit's burst gauge contribution
+  | 'hitRatePct' // core-hit lift (⚑ derived; sim.ts hrCoreMult; live by default, HRCORE=0 disables)
+  | 'defPct' // inert in v1 (self DEF doesn't affect own damage — Endurance cube)
+  | 'maxHpPct'; // self Max HP ▲ % (Vigor cube) — converted to a maxHpFlat self-grant in sim.ts, feeds HP-scaling ATK (atkOfMaxHpPct)
 
 export type TriggerDef =
-  | { kind: 'passive' }                     // always active
+  | { kind: 'passive' } // always active
   | { kind: 'burstCast'; stage?: 1 | 2 | 3 } // when the owner casts their burst (optionally only at that stage — Λ kits)
-  | { kind: 'fullBurstEnter' }              // when full burst begins
+  | { kind: 'fullBurstEnter' } // when full burst begins
   | { kind: 'fullBurstEnd' }
   | { kind: 'hitCount'; count: number; countInFb?: number } // fires every `count` cumulative hits; `countInFb` overrides the threshold DURING Full Burst (RRH rocket meter: 120 out of burst → 60 in her FB)
-  | { kind: 'chargeCounter'; count: number | number[]; countInFb?: number | number[] } // cycling per-full-charge phase counter:
+  | {
+      kind: 'chargeCounter';
+      count: number | number[];
+      countInFb?: number | number[];
+    } // cycling per-full-charge phase counter:
   // each full charge advances a phase counter; phase P fires (block.effects[P], in order) once its OWN
   // threshold accrues, then the counter resets and advances to P+1. `count`/`countInFb` may be a scalar
   // (same threshold every phase) OR a per-phase array (PREFERRED — the datamined "attack count required
@@ -75,11 +79,11 @@ export type TriggerDef =
   // matching video — N3 focus read shows the large phases barely materialise). +50% FB applies per-proc
   // by landing timing.
   | { kind: 'teamAmmo'; count: number } // fires each time TOTAL ally ammo consumed crosses count (infinite-ammo shots don't consume)     // every N normal-attack hits by the owner
-  | { kind: 'shotFired' }                   // every trigger pull by the owner
-  | { kind: 'lastBullet' }                  // on the owner's last bullet / reload start
-  | { kind: 'recovery' }                    // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
-  | { kind: 'shielded' }                    // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
-  | { kind: 'interval'; sec: number }       // fires every `sec` seconds of battle, first at t=sec — kit lines that "just happen" on an internal cooldown with no visible activation clause (snow-white S2a 144.73%, owner-stated 15s CD 2026-07-20). ⚑ first-fire phase (t=sec vs t=0) is a convention; pin from footage when a consumer's cadence is popup-read
+  | { kind: 'shotFired' } // every trigger pull by the owner
+  | { kind: 'lastBullet' } // on the owner's last bullet / reload start
+  | { kind: 'recovery' } // when the owner RECEIVES a heal (a 'heal' effect targets them) — Crown's "when recovery takes effect"
+  | { kind: 'shielded' } // when the owner RECEIVES a shield (a 'shield' effect targets them) — shield-synergy kits (e.g. naga's shield-gate)
+  | { kind: 'interval'; sec: number } // fires every `sec` seconds of battle, first at t=sec — kit lines that "just happen" on an internal cooldown with no visible activation clause (snow-white S2a 144.73%, owner-stated 15s CD 2026-07-20). ⚑ first-fire phase (t=sec vs t=0) is a convention; pin from footage when a consumer's cadence is popup-read
   | { kind: 'stageEnter'; stage: 1 | 2 | 3 } // when a stage-N burst is cast by anyone
   | { kind: 'bossElement'; element: string } // permanent, but only if the boss has this element
   | { kind: 'unsupported'; raw: string };
@@ -89,20 +93,25 @@ export type TargetDef =
   // excludeSelf: "all allies (except self)" — e.g. brid-silent-track burst
   | { kind: 'allies'; excludeSelf?: boolean }
   | { kind: 'enemy' }
-  | { kind: 'burstCasters'; stage?: number; element?: string }                // allies who cast a burst this rotation
+  | { kind: 'burstCasters'; stage?: number; element?: string } // allies who cast a burst this rotation
   | { kind: 'nonBurstCasters' }
   // excludeSelf: "N highest-ATK ally (except the skill user)" — miranda, soda-twinkling-bunny.
   // Applied to the candidate pool BEFORE the count-slice (exclude-then-take-N).
   // byFinalAtk: rank by LIVE effectiveAtk (buffed) instead of staticAtk (base) — set ONLY when the
   // kit text literally says "highest/lowest FINAL ATK" (A3, 2026-07-20). Absent = static ranking
   // (kits that say plain "highest ATK", e.g. naga, keep base-ATK ranking per the owner literal-word rule).
-  | { kind: 'alliesTopAtk'; count: number; excludeSelf?: boolean; byFinalAtk?: boolean }
+  | {
+      kind: 'alliesTopAtk';
+      count: number;
+      excludeSelf?: boolean;
+      byFinalAtk?: boolean;
+    }
   | {
       kind: 'alliesLowestAtk'; // "N [Burst X] ally unit(s) with the lowest final ATK"
       count: number;
       burst?: 'I' | 'II' | 'III';
       excludeSelf?: boolean; // e.g. Liberalio is immune to charge-speed buffs
-      byFinalAtk?: boolean;  // rank by live effectiveAtk when the kit says "lowest FINAL ATK" (A3)
+      byFinalAtk?: boolean; // rank by live effectiveAtk when the kit says "lowest FINAL ATK" (A3)
     }
   | { kind: 'alliesOfElement'; element: string; excludeSelf?: boolean }
   | { kind: 'alliesOfClass'; cls: string; excludeSelf?: boolean }
@@ -110,7 +119,12 @@ export type TargetDef =
   // (arcana-fortune-mate S1/S2, tove S2/burst). Weapon codes: AR/SMG/SG/SR/RL/MG.
   | { kind: 'alliesOfWeapon'; weapon: string; excludeSelf?: boolean }
   // "the N leftmost <element> ally unit(s) with <weapon>s" (Trina S2's real target)
-  | { kind: 'alliesOfElementWeapon'; element: string; weapon: string; count?: number }
+  | {
+      kind: 'alliesOfElementWeapon';
+      element: string;
+      weapon: string;
+      count?: number;
+    }
   // "self and N ally unit(s) on both sides" (Rouge's coin coverage — positional)
   | { kind: 'selfAndAdjacent'; sides: number }
   // "the N ally unit(s) with the lowest remaining HP [(except self)]" (blanc/moran survival grants).
@@ -121,7 +135,12 @@ export type TargetDef =
   | { kind: 'alliesLowestHp'; count: number; excludeSelf?: boolean };
 
 export type EffectDef =
-  | { kind: 'buff'; stat: StatKey; value: number; durationSec?: number; maxStacks?: number;
+  | {
+      kind: 'buff';
+      stat: StatKey;
+      value: number;
+      durationSec?: number;
+      maxStacks?: number;
       // ROUND-COUNT duration: kit lines that last "for N round(s)" expire after the HOLDER fires N
       // rounds, not after a wall-clock window — so the window stretches across reloads and shrinks
       // when the unit fires faster. A round is one bullet: 1 per trigger pull, hitsPerShot for an MG
@@ -156,37 +175,47 @@ export type EffectDef =
       // snap-refill) — kit lines "…Removed upon reloading to max ammunition" (cinderella's S1 Charge
       // Speed toggle). Apply it via a per-shot/full-charge trigger with NO durationSec so it persists
       // across the magazine and only the reload ends it. INERT for every unit that does not set it.
-      removeOnReload?: boolean }
+      removeOnReload?: boolean;
+    }
   | {
       // adjust a named resource pool (declared in CharacterSkills.resources) by `delta` when this
       // block's trigger fires — soda's burst spends 17 chips (delta:-17), her in-FB every-3-normals
       // block earns 1 (delta:1). Clamped to the resource's [min,max]. Order within a slot matters:
       // a spend placed AFTER the resource-gated blocks lets those gates read the PRE-spend pool.
-      kind: 'resource'; name: string; delta: number }
+      kind: 'resource';
+      name: string;
+      delta: number;
+    }
   | {
       kind: 'flatDamage'; // instant hit, % of caster final ATK
       atkPct: number;
-      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+      flavor?:
+        | 'distributed'
+        | 'sustained'
+        | 'sequential'
+        | 'true'
+        | 'projectileAttachment'
+        | 'projectileExplosion';
       core?: boolean; // direct core strike: receives the core bucket, scaled by core-rate
-      crit?: boolean;    // this hit can crit (e.g. Ein's Near Feathers)
+      crit?: boolean; // this hit can crit (e.g. Ein's Near Feathers)
       noRange?: boolean; // excluded from the +30% full-range bonus (Prydwen-confirmed for Near Feathers)
-      noFb?: boolean;    // excluded from the +50% full-burst bonus (Q1-calibrated proc exemption)
+      noFb?: boolean; // excluded from the +50% full-burst bonus (Q1-calibrated proc exemption)
       delaySec?: number; // flighted damage: lands delaySec later, snapshotting buffs/FB at
-                         // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
-                         // lands ~0.4s post-banner inside her window at the full buff state)
+      // LANDING (MEASURED 2026-07-14: rapi-red-hood's burst nuke missile
+      // lands ~0.4s post-banner inside her window at the full buff state)
       // A full-charge cannon shot dealt as a DELAYED hit while the caster keeps firing her base
       // weapon (snow-white: her AR fires through the ~5s cannon charge; the cannon is one flighted
       // charge shot, NOT a weaponSwap that halts the base weapon — sw.MP4 2026-07-20). These four
       // only take effect on the delaySec path; instant flatDamage riders keep charge:false/noRange:true.
-      charge?: boolean;       // route through the charge bucket (§1d) — a real full-charge shot
+      charge?: boolean; // route through the charge bucket (§1d) — a real full-charge shot
       chargeMultPct?: number; // full-charge multiplier for a `charge` hit when no swap sources it
-                              // (base AR chargeMultiplier is 0); only read when charge:true
-      pierce?: boolean;       // Pierce-tagged (Pierce Damage ▲ feeds this hit's Damage-Up bucket),
-                              // independent of the unit-level hasPierce flag — one-shot/swap-scoped pierce
-      rangeOk?: boolean;      // opt this DELAYED hit INTO the +30% range bonus (delayed hits force
-                              // noRange by default; the cannon gets range like the swap shot it replaces)
+      // (base AR chargeMultiplier is 0); only read when charge:true
+      pierce?: boolean; // Pierce-tagged (Pierce Damage ▲ feeds this hit's Damage-Up bucket),
+      // independent of the unit-level hasPierce flag — one-shot/swap-scoped pierce
+      rangeOk?: boolean; // opt this DELAYED hit INTO the +30% range bonus (delayed hits force
+      // noRange by default; the cannon gets range like the swap shot it replaces)
       requiresPulls?: number; // fires only if the caster has fired >= N shots (MEASURED
-                              // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
+      // 2026-07-14: her nuke needs >=1 sticky charge = 120 shots)
       // per-battle-elapsed ramp: scales this hit's atkPct by min(1, elapsed/rampSec) — for a
       // burst component that scales with a stack resource accruing from BATTLE START (cinderella's
       // Beautiful-mirror: 28.9%×12 stacks ramping over ~36s, so an early burst mirrors fewer
@@ -200,11 +229,17 @@ export type EffectDef =
       intervalSec?: number;
       noRange?: boolean;
       noFb?: boolean;
-      crit?: boolean;    // this DoT's ticks roll crit at the caster's sheet rate — opt-in ONLY where MEASURED
-                         // (isabel's ~14.7s periodic hit: ~15-25% of fires observed critting; docs/probe-data/isabel-sg-band.json).
-                         // Overrides the global DOT_CRIT gate (which stays default-OFF): most DoTs are validated NON-crit
-                         // (jill's acid tick video-confirmed at 99.7% non-crit; mihara's Ensnaring validated at 1.03 non-crit).
-      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
+      crit?: boolean; // this DoT's ticks roll crit at the caster's sheet rate — opt-in ONLY where MEASURED
+      // (isabel's ~14.7s periodic hit: ~15-25% of fires observed critting; docs/probe-data/isabel-sg-band.json).
+      // Overrides the global DOT_CRIT gate (which stays default-OFF): most DoTs are validated NON-crit
+      // (jill's acid tick video-confirmed at 99.7% non-crit; mihara's Ensnaring validated at 1.03 non-crit).
+      flavor?:
+        | 'distributed'
+        | 'sustained'
+        | 'sequential'
+        | 'true'
+        | 'projectileAttachment'
+        | 'projectileExplosion';
       // live resource-scaled DoT: each tick's atkPct is recomputed as owner.resources[name] × mult
       // (ignores the static atkPct) — mihara-bonding-chain's Ensnaring DoT (50.05%/s per stack,
       // stacks cancelled on burst + rebuilt), so a stack pool drives the DoT dynamically.
@@ -212,9 +247,9 @@ export type EffectDef =
     }
   | {
       kind: 'weaponSwap'; // "Changes the weapon in use:" — temporary weapon override
-      damagePct: number;        // per-shot multiplier while swapped
-      chargeTimeSec?: number;   // full-charge time (charge weapons)
-      chargeMultPct?: number;   // "Full Charge Damage: N% of damage"
+      damagePct: number; // per-shot multiplier while swapped
+      chargeTimeSec?: number; // full-charge time (charge weapons)
+      chargeMultPct?: number; // "Full Charge Damage: N% of damage"
       maxAmmo?: number;
       // The swap weapon's OWN datamined fire cadence (pulls/s), when it differs from the base
       // weapon — the swap loads a different shot spec (moran: swap shot_id fires 24/s vs base AR 12/s).
@@ -222,17 +257,17 @@ export type EffectDef =
       // The swap weapon's CLASS, when it differs from the base weapon — drives range-band
       // eligibility + auto-core rate for swap shots (nayuta: SMG base → SR "Memory Incineration" mode).
       weapon?: string;
-      trueNormals?: boolean;    // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
-      hasPierce?: boolean;      // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
-                                // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
-                                // per-shot pierce tag only (Pierce Damage ▲ bucket eligibility); never the
-                                // static whole-fight hasPierce flag
-      durationSec: number;      // hard time bound (e.g. the 10s burst window)
-      maxShots?: number;        // uses-based end: swap terminates right after the Nth swapped
-                                // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
+      trueNormals?: boolean; // swap shots are true-flavored (Takina: "Normal attacks deal true damage")
+      hasPierce?: boolean; // swap shots are Pierce-tagged ("Additional Effect: Pierce" scoped to the
+      // swapped weapon, snow-white's cannon — owner-ruled 2026-07-20). Feeds the
+      // per-shot pierce tag only (Pierce Damage ▲ bucket eligibility); never the
+      // static whole-fight hasPierce flag
+      durationSec: number; // hard time bound (e.g. the 10s burst window)
+      maxShots?: number; // uses-based end: swap terminates right after the Nth swapped
+      // shot fires, at variable time (MEASURED 2026-07-14, SWHA)
     }
-  | { kind: 'fillGauge'; pct: number }                        // instantly fills the burst gauge
-  | { kind: 'heal'; ticks?: number; intervalSec?: number }    // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
+  | { kind: 'fillGauge'; pct: number } // instantly fills the burst gauge
+  | { kind: 'heal'; ticks?: number; intervalSec?: number } // emits recovery event(s) to the target(s) — no HP amount modeled; fires their 'recovery' triggers (heal-synergy kits, e.g. Helm→Crown). A per-second heal-over-time ("Recovers X% every 1 sec for N sec") sets ticks:N (intervalSec default 1) so it emits N recovery events over time, keeping on-recovery consumers refreshed; default ticks:1 = a single instant event (back-compatible)
   | { kind: 'shield'; maxHpPct?: number; durationSec?: number } // emits a shield event to the target(s) — no HP pool modeled (v1 boss deals no damage); fires their 'shielded' triggers; maxHpPct = % of CASTER final Max HP (recorded for kit completeness)
   // inflicts a kit-NAMED status on the boss for durationSec. Windows are keyed per NAME, so two
   // characters' unrelated statuses never satisfy each other's gate. Opens/extends the window read
@@ -251,19 +286,25 @@ export type EffectDef =
   | { kind: 'targetStatus'; name: string; durationSec: number }
   | {
       kind: 'storedHit'; // accumulates charges that ALL release as hits when full burst begins
-      atkPct: number;    // per charge, % of caster's final ATK at release time
-      charges?: number;  // charges added per activation (default 1)
-      flavor?: 'distributed' | 'sustained' | 'sequential' | 'true' | 'projectileAttachment' | 'projectileExplosion';
-      core?: number;     // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table (RRH attached-rocket explosions core ~1/3, MEASURED 2026-07-16)
-      crit?: boolean;    // the release rolls crit at the caster's sheet rate (like every other hit) — removes the stored-hit path's default crit-OFF exemption; consistency, not a new mechanic (RRH explosions crit — orange bodies observed; 2026-07-16 DECISIONS)
+      atkPct: number; // per charge, % of caster's final ATK at release time
+      charges?: number; // charges added per activation (default 1)
+      flavor?:
+        | 'distributed'
+        | 'sustained'
+        | 'sequential'
+        | 'true'
+        | 'projectileAttachment'
+        | 'projectileExplosion';
+      core?: number; // per-release core RATE (0..1) via the coreOverride path — aim/range-INDEPENDENT, not the weapon/band acr table (RRH attached-rocket explosions core ~1/3, MEASURED 2026-07-16)
+      crit?: boolean; // the release rolls crit at the caster's sheet rate (like every other hit) — removes the stored-hit path's default crit-OFF exemption; consistency, not a new mechanic (RRH explosions crit — orange bodies observed; 2026-07-16 DECISIONS)
       instantInFb?: boolean; // charges added DURING Full Burst detonate immediately that same window (RRH: a rocket that attaches in FB explodes instantly), instead of only batch-releasing at the next FB start
     }
-  | { kind: 'burstEligibility'; stage: 1 | 2 | 3 }            // unit may also burst at this stage (Rapi:RH Combat Assist)
-  | { kind: 'burstFirst' }                                    // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
-  | { kind: 'reenterStage'; stage: 1 | 2 | 3 }                // "Re-enters Burst Stage N": the rotation stays at stage N so ANOTHER eligible unit can also cast (Tia, Anis:Star Everyone's Star)
-  | { kind: 'advantageVs'; element: string }                  // counts as elementally advantaged vs this boss element
+  | { kind: 'burstEligibility'; stage: 1 | 2 | 3 } // unit may also burst at this stage (Rapi:RH Combat Assist)
+  | { kind: 'burstFirst' } // takes the FIRST eligible burst of its stage regardless of slot order (Prika duet opener)
+  | { kind: 'reenterStage'; stage: 1 | 2 | 3 } // "Re-enters Burst Stage N": the rotation stays at stage N so ANOTHER eligible unit can also cast (Tia, Anis:Star Everyone's Star)
+  | { kind: 'advantageVs'; element: string } // counts as elementally advantaged vs this boss element
   | { kind: 'burstCdr'; seconds: number; oncePerBattle?: boolean } // reduce targets' burst cooldowns
-  | { kind: 'escalating'; steps: EffectDef[] }                // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
+  | { kind: 'escalating'; steps: EffectDef[] } // Liter-style "Once:/Twice:/…": Nth activation applies steps 1..N
   | { kind: 'fullBurstExtend'; seconds: number }
   | { kind: 'unlimitedAmmo'; durationSec: number }
   // "Removes N% of ammunition" / forced-reload dump (theme 15): empties the target's current
@@ -271,21 +312,21 @@ export type EffectDef =
   // the belt to 0, forces an immediate reload (fires lastBullet triggers, same as firing dry).
   // The inverse of instantReload. e.g. grave's Prediction-end forced reload, asuka-wille, jill.
   | { kind: 'consumeAmmo'; fraction?: number }
-  | { kind: 'gainPierce'; durationSec?: number }              // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
-  | { kind: 'instantReload'; fraction?: number }              // refill magazine (fraction of max, default full)
-  | { kind: 'stun'; durationSec: number }                     // target can't fire/charge/reload (bursting unaffected)
+  | { kind: 'gainPierce'; durationSec?: number } // "Gain Pierce": the target's attacks count as Pierce-tagged, so its (and teammates') Pierce Damage ▲ buffs go live. durationSec = timed "for N sec" window; ABSENT = continuous/permanent (pierceUntilFrame → ∞) — used to STEP-GATE pierce that turns on only after a stack threshold (ade-agent-bunny: on a hitCount:10 "Spy Lens at max stacks" trigger, replacing an always-on-from-t=0 hasPierce flag that a boolean can't step-gate)
+  | { kind: 'instantReload'; fraction?: number } // refill magazine (fraction of max, default full)
+  | { kind: 'stun'; durationSec: number } // target can't fire/charge/reload (bursting unaffected)
   | {
       kind: 'stackedNuke'; // Maiden:IR MP — hits once per full burst the unit SAT OUT since its last burst
-      atkPct: number;      // per stack, % of final ATK
-      hpPct?: number;      // per stack, % of final Max HP added on top
-      maxStacks?: number;  // default 12
+      atkPct: number; // per stack, % of final ATK
+      hpPct?: number; // per stack, % of final Max HP added on top
+      maxStacks?: number; // default 12
     }
   // OFFLINE-PARSER-ONLY kinds: emitted by scripts/lib/kit-parser.ts while
   // authoring/materializing, but NEVER valid in an override JSON (the validator
   // rejects them) — such kit text belongs verbatim in the override's `unmodeled`
   // field instead. The engine has no branch for either kind.
-  | { kind: 'ignored'; note: string }                         // recognized, deliberately unmodeled (defensive etc.)
-  | { kind: 'unsupported'; raw: string };                     // unparseable
+  | { kind: 'ignored'; note: string } // recognized, deliberately unmodeled (defensive etc.)
+  | { kind: 'unsupported'; raw: string }; // unparseable
 
 export interface Block {
   slot: SkillSlot;
@@ -308,7 +349,13 @@ export interface Block {
   // `slugs`: the team contains one of these SPECIFIC units (matches some OTHER ally's exact slug) —
   // for kit gates keyed to named squad-mates the data has no squad axis for (noir's burst block 3
   // "an ally from the same squad": owner-ruled 2026-07-20 satisfied by blanc or rouge).
-  teamHas?: { element?: string; class?: string; weapon?: string; burst?: string; slugs?: string[] };
+  teamHas?: {
+    element?: string;
+    class?: string;
+    weapon?: string;
+    burst?: string;
+    slugs?: string[];
+  };
   // mode gate: block active only when the unit's selected mode matches (the
   // override's top-level `modes` array declares the choices; first = default)
   mode?: string;

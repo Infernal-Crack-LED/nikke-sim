@@ -75,7 +75,10 @@ function exec(opts: any): Run {
   const events: Ev[] = [];
   const res = runComp({
     ...opts,
-    cfg: { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev as Ev) },
+    cfg: {
+      ...(opts.cfg ?? {}),
+      onEvent: (ev: SimEvent) => events.push(ev as Ev),
+    },
   } as any);
   return { res, events };
 }
@@ -91,7 +94,7 @@ function patched(mutate: (ov: any) => void): Run {
 const memo = new Map<string, Run>();
 function once(key: string, f: () => Run): Run {
   const hit = memo.get(key);
-  if (hit) return hit;
+  if (hit) {return hit;}
   const r = f();
   memo.set(key, r);
   return r;
@@ -101,13 +104,14 @@ const BASE = exec(baseOpts());
 const OV: any = withPatchedOverride('helm', () => {});
 
 const dmgOf = (slug: string, r: Run): number => totals(r.res)[slug] ?? 0;
-const fbCount = (r: Run): number => r.events.filter((e) => e.kind === 'fullBurstStart').length;
+const fbCount = (r: Run): number =>
+  r.events.filter((e) => e.kind === 'fullBurstStart').length;
 const applies = (r: Run, stat: string, value?: number): Ev[] =>
   r.events.filter(
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6),
+      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6)
   );
 const dmgEvents = (r: Run, slot: string): Ev[] =>
   r.events.filter((e) => e.kind === 'damage' && e.srcSlot === slot);
@@ -115,7 +119,8 @@ const dmgEvents = (r: Run, slot: string): Ev[] =>
 const slotBlocks = (ov: any, slot: string): any[] => (ov[slot] ?? []) as any[];
 function findBlock(ov: any, slot: string, pred: (b: any) => boolean): any {
   const hit = slotBlocks(ov, slot).find(pred);
-  if (!hit) throw new Error(`helm ${slot}: no block matching the kit line under test`);
+  if (!hit)
+    {throw new Error(`helm ${slot}: no block matching the kit line under test`);}
   return hit;
 }
 const hasBuff =
@@ -125,7 +130,7 @@ const hasBuff =
       (e: any) =>
         e.kind === 'buff' &&
         e.stat === stat &&
-        (value === undefined || Math.abs(Number(e.value) - value) < 1e-6),
+        (value === undefined || Math.abs(Number(e.value) - value) < 1e-6)
     );
 const hasEffKind =
   (kind: string) =>
@@ -135,26 +140,31 @@ const hasFlat =
   (atkPct: number) =>
   (b: any): boolean =>
     (b.effects ?? []).some(
-      (e: any) => e.kind === 'flatDamage' && Math.abs(Number(e.atkPct) - atkPct) < 1e-6,
+      (e: any) =>
+        e.kind === 'flatDamage' && Math.abs(Number(e.atkPct) - atkPct) < 1e-6
     );
 const buffEff = (b: any, stat: string): any =>
   (b.effects as any[]).find((e) => e.kind === 'buff' && e.stat === stat);
 const flatEff = (b: any, atkPct: number): any =>
   (b.effects as any[]).find(
-    (e) => e.kind === 'flatDamage' && Math.abs(Number(e.atkPct) - atkPct) < 1e-6,
+    (e) => e.kind === 'flatDamage' && Math.abs(Number(e.atkPct) - atkPct) < 1e-6
   );
 // "Activates when attacking with Full Charge" on a charge weapon: every trigger pull IS a full
 // charge, so shotFired is the faithful encoding; a chargeCounter with threshold 1 is equivalent.
 const fullChargeTrigger = (t: any): boolean =>
   t?.kind === 'shotFired' ||
   (t?.kind === 'chargeCounter' &&
-    (t.count === 1 || (Array.isArray(t.count) && t.count.every((c: number) => c === 1))));
+    (t.count === 1 ||
+      (Array.isArray(t.count) && t.count.every((c: number) => c === 1))));
 
 describe('helm — fixture sanity', () => {
   it('bursts, and all three units deal damage (no vacuous inertness checks)', () => {
     expect(fbCount(BASE)).toBeGreaterThan(0);
     expect(unitOf(BASE.res, 'helm').totalDamage).toBeGreaterThan(0);
-    expect(unitOf(BASE.res, 'helm').totalDamage).toBeCloseTo(dmgOf('helm', BASE), 3);
+    expect(unitOf(BASE.res, 'helm').totalDamage).toBeCloseTo(
+      dmgOf('helm', BASE),
+      3
+    );
     expect(dmgOf('liter', BASE)).toBeGreaterThan(0);
     expect(dmgOf('crown', BASE)).toBeGreaterThan(0);
   });
@@ -206,20 +216,23 @@ describe('helm — s1a: last-bullet normal-attack crit 14.64% / 5s / all allies'
       patched((ov) => {
         buffEff(
           findBlock(ov, 'skill1', hasBuff('critRateNormalPct', CRIT_PCT)),
-          'critRateNormalPct',
+          'critRateNormalPct'
         ).stat = 'critRatePct';
-      }),
+      })
     );
     // Unscoped crit also feeds any crit-eligible skill/burst hit; it is never smaller.
     // (The hard discrimination lives in the event-stream test above.)
-    expect(dmgOf('helm', wrong)).toBeGreaterThanOrEqual(dmgOf('helm', BASE) - 1e-6);
+    expect(dmgOf('helm', wrong)).toBeGreaterThanOrEqual(
+      dmgOf('helm', BASE) - 1e-6
+    );
   });
 
   it('is ally-wide, not self-only', () => {
     const wrong = once('critSelf', () =>
       patched((ov) => {
-        findBlock(ov, 'skill1', hasBuff('critRateNormalPct', CRIT_PCT)).target = { kind: 'self' };
-      }),
+        findBlock(ov, 'skill1', hasBuff('critRateNormalPct', CRIT_PCT)).target =
+          { kind: 'self' };
+      })
     );
     expect(dmgOf('liter', wrong)).toBeLessThan(dmgOf('liter', BASE));
     expect(dmgOf('crown', wrong)).toBeLessThan(dmgOf('crown', BASE));
@@ -230,9 +243,9 @@ describe('helm — s1a: last-bullet normal-attack crit 14.64% / 5s / all allies'
       patched((ov) => {
         buffEff(
           findBlock(ov, 'skill1', hasBuff('critRateNormalPct', CRIT_PCT)),
-          'critRateNormalPct',
+          'critRateNormalPct'
         ).durationSec = 60;
-      }),
+      })
     );
     expect(dmgOf('liter', wrong)).toBeGreaterThan(dmgOf('liter', BASE));
   });
@@ -240,10 +253,14 @@ describe('helm — s1a: last-bullet normal-attack crit 14.64% / 5s / all allies'
   it('fires once per 6-round magazine (lastBullet), not once per round (shotFired)', () => {
     const wrong = once('critShotFired', () =>
       patched((ov) => {
-        findBlock(ov, 'skill1', hasBuff('critRateNormalPct', CRIT_PCT)).trigger = {
+        findBlock(
+          ov,
+          'skill1',
+          hasBuff('critRateNormalPct', CRIT_PCT)
+        ).trigger = {
           kind: 'shotFired',
         };
-      }),
+      })
     );
     const b = applies(BASE, 'critRateNormalPct', CRIT_PCT).length;
     const w = applies(wrong, 'critRateNormalPct', CRIT_PCT).length;
@@ -265,7 +282,7 @@ describe('helm — s1b: full-charge team heal + 14.31% burst-gauge fill', () => 
       patched((ov) => {
         const b = findBlock(ov, 'skill1', hasEffKind('fillGauge'));
         (b.effects as any[]).find((x) => x.kind === 'fillGauge').pct = 0;
-      }),
+      })
     );
     // Directional: with liter+crown also generating, cooldowns may bind the count — removing
     // helm's contribution must never BUY full bursts.
@@ -276,9 +293,13 @@ describe('helm — s1b: full-charge team heal + 14.31% burst-gauge fill', () => 
     // Tandem risk (why this matters even with no HP pool): a heal feeds an ally's `recovery`
     // trigger — crown is in this very fixture.
     const encoded = slotBlocks(OV, 'skill1').some((b) =>
-      ((b.effects ?? []) as any[]).some((e) => /heal|recover/i.test(String(e.kind))),
+      ((b.effects ?? []) as any[]).some((e) =>
+        /heal|recover/i.test(String(e.kind))
+      )
     );
-    const documented = ((OV.unmodeled?.skill1 ?? []) as string[]).some((t) => /0\.59/.test(t));
+    const documented = ((OV.unmodeled?.skill1 ?? []) as string[]).some((t) =>
+      /0\.59/.test(t)
+    );
     expect(encoded || documented).toBe(true);
   });
 });
@@ -296,9 +317,9 @@ describe('helm — s2a: 3.08% interruption-parts damage (continuous, all allies)
       patched((ov) => {
         buffEff(
           findBlock(ov, 'skill2', hasBuff('partsDamagePct', PARTS_PCT)),
-          'partsDamagePct',
+          'partsDamagePct'
         ).value = 0;
-      }),
+      })
     );
     for (const u of ['helm', 'liter', 'crown']) {
       expect(dmgOf(u, zeroed)).toBeCloseTo(dmgOf(u, BASE), 3);
@@ -323,7 +344,7 @@ describe('helm — s2b: Full-Burst-enter Attack Damage ▲27.87% for 10s (all al
       (e) =>
         e.kind === 'buffApply' &&
         e.stat === 'attackDamagePct' &&
-        Math.abs(Number(e.value) - ATKDMG_PCT) < 1e-6,
+        Math.abs(Number(e.value) - ATKDMG_PCT) < 1e-6
     );
     expect(firstFb).toBeGreaterThanOrEqual(0);
     // A burstCast-keyed apply would necessarily land BEFORE the FB window opened.
@@ -335,9 +356,9 @@ describe('helm — s2b: Full-Burst-enter Attack Damage ▲27.87% for 10s (all al
       patched((ov) => {
         buffEff(
           findBlock(ov, 'skill2', hasBuff('attackDamagePct', ATKDMG_PCT)),
-          'attackDamagePct',
+          'attackDamagePct'
         ).stat = 'atkPct';
-      }),
+      })
     );
     expect(dmgOf('helm', wrong)).not.toBeCloseTo(dmgOf('helm', BASE), 1);
   });
@@ -347,9 +368,9 @@ describe('helm — s2b: Full-Burst-enter Attack Damage ▲27.87% for 10s (all al
       patched((ov) => {
         buffEff(
           findBlock(ov, 'skill2', hasBuff('attackDamagePct', ATKDMG_PCT)),
-          'attackDamagePct',
+          'attackDamagePct'
         ).durationSec = 40;
-      }),
+      })
     );
     expect(dmgOf('helm', wrong)).toBeGreaterThan(dmgOf('helm', BASE));
   });
@@ -379,8 +400,9 @@ describe('helm — s2c: 178.98%-of-final-ATK full-charge rider (on the target)',
   it('is load-bearing and helm-local', () => {
     const zeroed = once('riderZero', () =>
       patched((ov) => {
-        flatEff(findBlock(ov, 'skill2', hasFlat(RIDER_PCT)), RIDER_PCT).atkPct = 0;
-      }),
+        flatEff(findBlock(ov, 'skill2', hasFlat(RIDER_PCT)), RIDER_PCT).atkPct =
+          0;
+      })
     );
     expect(dmgOf('helm', zeroed)).toBeLessThan(dmgOf('helm', BASE));
     expect(dmgOf('liter', zeroed)).toBeCloseTo(dmgOf('liter', BASE), 3);
@@ -391,7 +413,7 @@ describe('helm — s2c: 178.98%-of-final-ATK full-charge rider (on the target)',
     const wrong = once('riderFbGate', () =>
       patched((ov) => {
         findBlock(ov, 'skill2', hasFlat(RIDER_PCT)).fbGate = 'inFb';
-      }),
+      })
     );
     expect(dmgOf('helm', wrong)).toBeLessThan(dmgOf('helm', BASE));
   });
@@ -414,7 +436,7 @@ describe('helm — burst: 8236.8%-of-final-ATK Burst Skill damage', () => {
     const zeroed = once('nukeZero', () =>
       patched((ov) => {
         flatEff(findBlock(ov, 'burst', hasFlat(NUKE_PCT)), NUKE_PCT).atkPct = 0;
-      }),
+      })
     );
     expect(dmgOf('helm', zeroed)).toBeLessThan(dmgOf('helm', BASE));
     expect(dmgOf('liter', zeroed)).toBeCloseTo(dmgOf('liter', BASE), 3);
@@ -446,11 +468,11 @@ describe('helm — burst: Charge Damage Multiplier ▲158.4% for 10 ROUND(S) (se
       patched((ov) => {
         const e = buffEff(
           findBlock(ov, 'burst', hasBuff('chargeDamagePct', CHARGE_PCT)),
-          'chargeDamagePct',
+          'chargeDamagePct'
         );
         delete e.durationShots;
         e.durationSec = 10;
-      }),
+      })
     );
     expect(dmgOf('helm', wrong)).not.toBeCloseTo(dmgOf('helm', BASE), 1);
     expect(dmgOf('liter', wrong)).toBeCloseTo(dmgOf('liter', BASE), 3);
@@ -462,9 +484,9 @@ describe('helm — burst: Charge Damage Multiplier ▲158.4% for 10 ROUND(S) (se
       patched((ov) => {
         buffEff(
           findBlock(ov, 'burst', hasBuff('chargeDamagePct', CHARGE_PCT)),
-          'chargeDamagePct',
+          'chargeDamagePct'
         ).stat = 'attackDamagePct';
-      }),
+      })
     );
     expect(dmgOf('helm', wrong)).not.toBeCloseTo(dmgOf('helm', BASE), 1);
   });
@@ -472,9 +494,13 @@ describe('helm — burst: Charge Damage Multiplier ▲158.4% for 10 ROUND(S) (se
 
 describe('helm — burst: 54.45%-of-attack-damage recovery for 10s', () => {
   it('records the un-modelable lifesteal line rather than silently dropping it', () => {
-    const documented = ((OV.unmodeled?.burst ?? []) as string[]).some((t) => /54\.45/.test(t));
+    const documented = ((OV.unmodeled?.burst ?? []) as string[]).some((t) =>
+      /54\.45/.test(t)
+    );
     const encoded = slotBlocks(OV, 'burst').some((b) =>
-      ((b.effects ?? []) as any[]).some((e) => /heal|lifesteal|recover/i.test(String(e.kind))),
+      ((b.effects ?? []) as any[]).some((e) =>
+        /heal|lifesteal|recover/i.test(String(e.kind))
+      )
     );
     expect(documented || encoded).toBe(true);
   });
@@ -483,4 +509,3 @@ describe('helm — burst: 54.45%-of-attack-damage recovery for 10s', () => {
     /* unobservable payload: no heal magnitude is emitted on the event stream */
   });
 });
-

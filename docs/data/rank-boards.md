@@ -36,8 +36,7 @@ in seconds, per 40 seconds of fight**. Cooldown reduction that triggers per
 Full Burst is counted at a standard 20-second full-burst cycle (two procs per
 40 seconds); escalating ladders (Liter, Volume, Dolla, Helm: Aquamarine) are
 ranked at their capped value with the ramp shown. Shot-triggered reduction
-(Dorothy per magazine, D: Killer Wife / Rouge per 8 full-charge shots, Milk per
-10) is valued off the unit's own simulated fire cadence.
+(Dorothy per magazine, D: Killer Wife / Rouge per 8 full-charge shots, Milk per 10) is valued off the unit's own simulated fire cadence.
 
 Nominal, not effective: reduction landing on a unit already off cooldown is
 wasted in real rotations, and conditional lines (formation requirements,

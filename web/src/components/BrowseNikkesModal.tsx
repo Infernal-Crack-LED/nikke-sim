@@ -28,18 +28,18 @@ function PickerShell({
   children: ReactNode;
 }) {
   return (
-    <div className='modal-backdrop' onClick={onClose}>
-      <div className='modal modal-wide' onClick={(e) => e.stopPropagation()}>
-        <div className='modal-head'>
+    <div className="modal-backdrop" onClick={onClose}>
+      <div className="modal modal-wide" onClick={(e) => e.stopPropagation()}>
+        <div className="modal-head">
           <h2>Browse Nikkes</h2>
-          <button className='modal-x' onClick={onClose}>
+          <button className="modal-x" onClick={onClose}>
             ×
           </button>
         </div>
         {portraits}
-        <div className='teambuilder-actions'>{actions}</div>
+        <div className="teambuilder-actions">{actions}</div>
         {children}
-        <p className='muted picker-hint'>{hint}</p>
+        <p className="muted picker-hint">{hint}</p>
       </div>
     </div>
   );
@@ -67,7 +67,7 @@ export function BrowseNikkesModal({
 
   const place = (slug: string) => {
     const empty = staged.indexOf(null);
-    if (empty < 0) return; // strip full — remove one to add another
+    if (empty < 0) {return;} // strip full — remove one to add another
     const next = [...staged];
     next[empty] = slug;
     onStagedChange(next);
@@ -86,7 +86,7 @@ export function BrowseNikkesModal({
       onStagedChange(next);
     },
     undefined,
-    { ignoreFrom: '.chip-x' },
+    { ignoreFrom: '.chip-x' }
   );
 
   return (
@@ -95,14 +95,14 @@ export function BrowseNikkesModal({
       actions={actions}
       onClose={onClose}
       portraits={
-        <div className='teambuilder-team'>
-          <div className='roster-slots'>
+        <div className="teambuilder-team">
+          <div className="roster-slots">
             {staged.map((slug, i) => {
               const c = slug ? data.characters[slug] : null;
               return (
                 <button
                   key={i}
-                  type='button'
+                  type="button"
                   ref={reorder.register(i)}
                   className={
                     'team-chip roster-slot' +
@@ -119,13 +119,13 @@ export function BrowseNikkesModal({
                       draggable={false}
                     />
                   ) : (
-                    <span className='chip-empty'>+</span>
+                    <span className="chip-empty">+</span>
                   )}
                   {slug && (
                     <span
-                      className='chip-x'
-                      role='button'
-                      aria-label='remove'
+                      className="chip-x"
+                      role="button"
+                      aria-label="remove"
                       onClick={(e) => {
                         e.stopPropagation();
                         remove(i);
@@ -186,7 +186,7 @@ export function BrowseRosterNikkesModal({
           }
         }
       }
-      if (!placed) return; // roster full — remove one to add another
+      if (!placed) {return;} // roster full — remove one to add another
     }
     onStagedChange(next);
   };
@@ -210,7 +210,7 @@ export function BrowseRosterNikkesModal({
       flat[from] = flat[to];
       flat[to] = tmp;
       onStagedChange(
-        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
+        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5))
       );
     },
     (i) => {
@@ -218,20 +218,20 @@ export function BrowseRosterNikkesModal({
       const u = i % 5;
       setActive((cur) => (cur && cur[0] === t && cur[1] === u ? null : [t, u]));
     },
-    { ignoreFrom: '.chip-x', commitOnDrop: true },
+    { ignoreFrom: '.chip-x', commitOnDrop: true }
   );
 
   return (
     <PickerShell
-      hint='Click a slot to target it, then click a card — or just click cards to fill the next open slot. Drag portraits between slots or across teams; click × to clear a slot. Nothing is applied to the page until you press Save Roster.'
+      hint="Click a slot to target it, then click a card — or just click cards to fill the next open slot. Drag portraits between slots or across teams; click × to clear a slot. Nothing is applied to the page until you press Save Roster."
       actions={actions}
       onClose={onClose}
       portraits={
-        <div className='roster-input'>
+        <div className="roster-input">
           {staged.map((row, t) => (
-            <div className='roster-input-row' key={t}>
-              <span className='rg-label muted'>team {t + 1}</span>
-              <div className='roster-slots'>
+            <div className="roster-input-row" key={t}>
+              <span className="rg-label muted">team {t + 1}</span>
+              <div className="roster-slots">
                 {row.map((slug, u) => {
                   const c = slug ? data.characters[slug] : null;
                   const i = t * 5 + u;
@@ -239,7 +239,7 @@ export function BrowseRosterNikkesModal({
                   return (
                     <button
                       key={u}
-                      type='button'
+                      type="button"
                       ref={reorder.register(i)}
                       className={`team-chip roster-slot${isActive ? ' active' : ''}${reorder.dragIndex === i ? ' dragging' : ''}${reorder.overIndex === i ? ' droptarget' : ''}`}
                       title={c?.name ?? `team ${t + 1} · slot ${u + 1}`}
@@ -252,13 +252,13 @@ export function BrowseRosterNikkesModal({
                           draggable={false}
                         />
                       ) : (
-                        <span className='chip-empty'>+</span>
+                        <span className="chip-empty">+</span>
                       )}
                       {slug && (
                         <span
-                          className='chip-x'
-                          role='button'
-                          aria-label='remove'
+                          className="chip-x"
+                          role="button"
+                          aria-label="remove"
                           onClick={(e) => {
                             e.stopPropagation();
                             clearAt(t, u);
@@ -303,7 +303,7 @@ export function BrowseExcludeModal({
 }) {
   const thumbs = usePortraitThumbs(staged, 72);
   const add = (slug: string) => {
-    if (staged.includes(slug)) return;
+    if (staged.includes(slug)) {return;}
     onStagedChange([...staged, slug]);
   };
   const remove = (slug: string) =>
@@ -316,13 +316,13 @@ export function BrowseExcludeModal({
       onClose={onClose}
       portraits={
         staged.length > 0 ? (
-          <div className='exclude-strip'>
+          <div className="exclude-strip">
             {staged.map((slug) => {
               const c = data.characters[slug];
               return (
                 <div
                   key={slug}
-                  className='team-chip exclude-chip active'
+                  className="team-chip exclude-chip active"
                   title={c?.name ?? slug}
                 >
                   {c?.imageUrl ? (
@@ -332,12 +332,12 @@ export function BrowseExcludeModal({
                       draggable={false}
                     />
                   ) : (
-                    <span className='chip-empty'>?</span>
+                    <span className="chip-empty">?</span>
                   )}
                   <span
-                    className='chip-x'
-                    role='button'
-                    aria-label='remove'
+                    className="chip-x"
+                    role="button"
+                    aria-label="remove"
                     onClick={() => remove(slug)}
                   >
                     ×
@@ -347,7 +347,7 @@ export function BrowseExcludeModal({
             })}
           </div>
         ) : (
-          <p className='muted exclude-empty'>
+          <p className="muted exclude-empty">
             No Nikkes excluded yet — click cards below to exclude them from the
             search.
           </p>
@@ -395,7 +395,7 @@ export function BrowseRosterGenModal({
   // a clicked grid card lands in the next open box slot ("use these Nikkes")
   const place = (slug: string) => {
     const empty = generic.indexOf(null);
-    if (empty < 0) return; // box full — remove one to add another
+    if (empty < 0) {return;} // box full — remove one to add another
     const next = [...generic];
     next[empty] = slug;
     onGenericChange(next);
@@ -419,35 +419,35 @@ export function BrowseRosterGenModal({
       const [item] = flat.splice(from, 1);
       flat.splice(to, 0, item);
       onStagedChange(
-        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5)),
+        Array.from({ length: rows }, (_, t) => flat.slice(t * 5, t * 5 + 5))
       );
       onGenericChange(flat.slice(teamLen));
     },
     undefined,
-    { ignoreFrom: '.chip-x' },
+    { ignoreFrom: '.chip-x' }
   );
 
   const dragging = reorder.dragIndex !== null;
 
   return (
     <PickerShell
-      hint='Click a card to drop it into the “Use these Nikkes” box — the generator fields each one on whichever team fits best. Drag a portrait onto a team row to pin it to that exact team; drag it back into the box to unpin. Every included Nikke is guaranteed to make the generated teams.'
+      hint="Click a card to drop it into the “Use these Nikkes” box — the generator fields each one on whichever team fits best. Drag a portrait onto a team row to pin it to that exact team; drag it back into the box to unpin. Every included Nikke is guaranteed to make the generated teams."
       actions={actions}
       onClose={onClose}
       portraits={
-        <div className='roster-input rostergen-input'>
-          <div className='rostergen-teams'>
+        <div className="roster-input rostergen-input">
+          <div className="rostergen-teams">
             {staged.map((row, t) => (
-              <div className='roster-input-row' key={t}>
-                <span className='rg-label muted'>team {t + 1}</span>
-                <div className='roster-slots'>
+              <div className="roster-input-row" key={t}>
+                <span className="rg-label muted">team {t + 1}</span>
+                <div className="roster-slots">
                   {row.map((slug, u) => {
                     const c = slug ? data.characters[slug] : null;
                     const i = t * 5 + u;
                     return (
                       <button
                         key={u}
-                        type='button'
+                        type="button"
                         ref={reorder.register(i)}
                         className={
                           'team-chip roster-slot' +
@@ -463,13 +463,13 @@ export function BrowseRosterGenModal({
                             draggable={false}
                           />
                         ) : (
-                          <span className='chip-empty'>+</span>
+                          <span className="chip-empty">+</span>
                         )}
                         {slug && (
                           <span
-                            className='chip-x'
-                            role='button'
-                            aria-label='remove'
+                            className="chip-x"
+                            role="button"
+                            aria-label="remove"
                             onClick={(e) => {
                               e.stopPropagation();
                               clearAt(t, u);
@@ -485,26 +485,26 @@ export function BrowseRosterGenModal({
               </div>
             ))}
           </div>
-          <aside className='rostergen-box'>
-            <div className='rostergen-box-head'>
-              <span className='rostergen-box-label'>Use these Nikkes</span>
-              <span className='muted rostergen-box-sub'>
+          <aside className="rostergen-box">
+            <div className="rostergen-box-head">
+              <span className="rostergen-box-label">Use these Nikkes</span>
+              <span className="muted rostergen-box-sub">
                 the generator picks their teams
               </span>
             </div>
-            <div className='rostergen-box-scroll'>
-              <div className='rostergen-box-slots'>
+            <div className="rostergen-box-scroll">
+              <div className="rostergen-box-slots">
                 {generic.map((slug, i) => {
                   const c = slug ? data.characters[slug] : null;
                   const flatIndex = teamLen + i;
                   // Empty slots only materialise mid-drag, as drop targets — the
                   // box otherwise shows just the Nikkes you've added (no
                   // placeholder grid).
-                  if (!slug && !dragging) return null;
+                  if (!slug && !dragging) {return null;}
                   return (
                     <button
                       key={i}
-                      type='button'
+                      type="button"
                       ref={reorder.register(flatIndex)}
                       className={
                         'team-chip roster-slot rostergen-box-slot' +
@@ -521,13 +521,13 @@ export function BrowseRosterGenModal({
                           draggable={false}
                         />
                       ) : (
-                        <span className='chip-empty'>+</span>
+                        <span className="chip-empty">+</span>
                       )}
                       {slug && (
                         <span
-                          className='chip-x'
-                          role='button'
-                          aria-label='remove'
+                          className="chip-x"
+                          role="button"
+                          aria-label="remove"
                           onClick={(e) => {
                             e.stopPropagation();
                             removeGeneric(i);
@@ -540,7 +540,7 @@ export function BrowseRosterGenModal({
                   );
                 })}
               </div>
-              <p className='muted rostergen-box-hint'>
+              <p className="muted rostergen-box-hint">
                 Click a card to add it here. Drag a portrait onto a team row to
                 pin it to that team — drag it back to unpin.
               </p>

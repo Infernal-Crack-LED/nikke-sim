@@ -51,7 +51,7 @@ function run(opts: any) {
 
 const comp = (patched?: any) => {
   const o: any = controlComp(SLUG, true);
-  if (patched) o.overrides = { ...(o.overrides ?? {}), [SLUG]: patched };
+  if (patched) {o.overrides = { ...(o.overrides ?? {}), [SLUG]: patched };}
   return o;
 };
 
@@ -68,18 +68,21 @@ const allBlocks = (ov: any): any[] => [
   ...slotBlocks(ov, 'skill2'),
   ...slotBlocks(ov, 'burst'),
 ];
-const effectsOf = (blocks: any[]) => blocks.flatMap((b: any) => b.effects ?? []);
-const hasEffect = (b: any, pred: (e: any) => boolean) => (b.effects ?? []).some(pred);
+const effectsOf = (blocks: any[]) =>
+  blocks.flatMap((b: any) => b.effects ?? []);
+const hasEffect = (b: any, pred: (e: any) => boolean) =>
+  (b.effects ?? []).some(pred);
 
 const applies = (evs: Ev[], stat: string, value?: number) =>
   evs.filter(
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs((e.value ?? NaN) - value) < 1e-6),
+      (value === undefined || Math.abs((e.value ?? NaN) - value) < 1e-6)
   );
 const targetsOf = (evs: Ev[]) => new Set(evs.map((e) => e.targetSlug));
-const fbCount = (evs: Ev[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fbCount = (evs: Ev[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').length;
 
 // ---------------------------------------------------------------------------
 // committed override, read-only clone (for structural/spec assertions)
@@ -90,28 +93,38 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 // counterfactuals (nearest-wrong models)
 // ---------------------------------------------------------------------------
 const pRmGainPierce = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');
+  for (const b of allBlocks(ov))
+    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');}
 });
 
 const pRmPierceDmg = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => e.stat !== 'pierceDamagePct');
+  for (const b of allBlocks(ov))
+    {b.effects = (b.effects ?? []).filter(
+      (e: any) => e.stat !== 'pierceDamagePct'
+    );}
 });
 
 // nearest-wrong trigger identity: "entering Full Burst" mis-read as "when she casts her burst"
 const pPierceDmgOnBurstCast = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (hasEffect(b, (e: any) => e.stat === 'pierceDamagePct')) b.trigger = { kind: 'burstCast' };
+    if (hasEffect(b, (e: any) => e.stat === 'pierceDamagePct'))
+      {b.trigger = { kind: 'burstCast' };}
   }
 });
 
 const pRmCdr = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');
+  for (const b of allBlocks(ov))
+    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');}
 });
 
 // nearest-wrong threshold: the CDR line keyed to the 5-charge counter instead of 8
 const pCdrAt5 = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (hasEffect(b, (e: any) => e.kind === 'burstCdr') && b.trigger && 'count' in b.trigger) {
+    if (
+      hasEffect(b, (e: any) => e.kind === 'burstCdr') &&
+      b.trigger &&
+      'count' in b.trigger
+    ) {
       b.trigger.count = 5;
     }
   }
@@ -120,7 +133,13 @@ const pCdrAt5 = withPatchedOverride(SLUG, (ov: any) => {
 // nearest-wrong target set: "Affects all allies" mis-scoped to self
 const pAtkDmgSelfOnly = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (hasEffect(b, (e: any) => e.stat === 'attackDamagePct' && Math.abs(e.value - 5.06) < 1e-6)) {
+    if (
+      hasEffect(
+        b,
+        (e: any) =>
+          e.stat === 'attackDamagePct' && Math.abs(e.value - 5.06) < 1e-6
+      )
+    ) {
       b.target = { kind: 'self' };
     }
   }
@@ -128,13 +147,14 @@ const pAtkDmgSelfOnly = withPatchedOverride(SLUG, (ov: any) => {
 
 const pBurstNukeZero = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'burst')) {
-    for (const e of b.effects ?? []) if (e.kind === 'flatDamage') e.atkPct = 0;
+    for (const e of b.effects ?? []) {if (e.kind === 'flatDamage') {e.atkPct = 0;}}
   }
 });
 
 // nearest-wrong: the riders left UNGATED (Wipe Out never inflicted)
 const pRmStatus = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'targetStatus');
+  for (const b of allBlocks(ov))
+    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'targetStatus');}
 });
 
 // ---------------------------------------------------------------------------
@@ -155,12 +175,14 @@ describe('d-killer-wife — fixture non-vacuity', () => {
     // A lone Burst I would make ZERO full bursts; every FB-keyed assertion below would be vacuous.
     expect(fbCount(base.events)).toBeGreaterThan(0);
     expect(unitOf(base.res, SLUG).totalDamage).toBeGreaterThan(0);
-    for (const m of MATES) expect(base.t[m]).toBeGreaterThan(0);
+    for (const m of MATES) {expect(base.t[m]).toBeGreaterThan(0);}
   });
 
   it('her burst really casts (its status-gated riders fire at least once)', () => {
     // Proves the burst slot is exercised without relying on burstCast event ownership fields.
-    expect(applies(base.events, 'coreDamagePct', 16.26).length).toBeGreaterThan(0);
+    expect(applies(base.events, 'coreDamagePct', 16.26).length).toBeGreaterThan(
+      0
+    );
   });
 });
 
@@ -168,12 +190,19 @@ describe('d-killer-wife S1a — "Full Charge for 3 time(s)" / self -> Gain Pierc
   it('is a gainPierce EFFECT on a 3-count full-charge counter targeting self', () => {
     // Discriminates against (a) the static hasPierce boolean flag — which cannot step-gate
     // pierce that only turns on after 3 full charges — and (b) a 5- or 8-count mis-keying.
-    const b = allBlocks(OV).find((x: any) => hasEffect(x, (e: any) => e.kind === 'gainPierce'));
-    expect(b, 'no gainPierce effect found — a whole-fight hasPierce flag is the wrong primitive').toBeTruthy();
+    const b = allBlocks(OV).find((x: any) =>
+      hasEffect(x, (e: any) => e.kind === 'gainPierce')
+    );
+    expect(
+      b,
+      'no gainPierce effect found — a whole-fight hasPierce flag is the wrong primitive'
+    ).toBeTruthy();
     expect(b.slot).toBe('skill1');
     expect(b.target.kind).toBe('self');
     expect(b.trigger.kind).toBe('chargeCounter');
-    const count = Array.isArray(b.trigger.count) ? b.trigger.count[0] : b.trigger.count;
+    const count = Array.isArray(b.trigger.count)
+      ? b.trigger.count[0]
+      : b.trigger.count;
     expect(count).toBe(3);
   });
 
@@ -185,7 +214,7 @@ describe('d-killer-wife S1a — "Full Charge for 3 time(s)" / self -> Gain Pierc
   it('is damage-INERT in v1 (pierceDamagePct is documented inert) — teammates byte-identical', () => {
     // Inertness assertion: removing the pierce tag must not move any teammate. If this ever
     // goes red, a Pierce consumer went live and the S1a/S1b pair needs a magnitude test.
-    for (const m of MATES) expect(rmGainPierce.t[m]).toBe(base.t[m]);
+    for (const m of MATES) {expect(rmGainPierce.t[m]).toBe(base.t[m]);}
   });
 
   it.skip('GAP: "for 1 shot" round-scoped expiry — gainPierce carries only durationSec, no durationShots', () => {
@@ -199,7 +228,7 @@ describe('d-killer-wife S1b — FB-enter, SR allies, Pierce Damage 13.55% / 10s'
 
   it('applies at 13.55 with a finite 10s window (not a permanent buff)', () => {
     expect(evs().length).toBeGreaterThan(0);
-    for (const e of evs()) expect(Number.isFinite(e.expiresFrame)).toBe(true);
+    for (const e of evs()) {expect(Number.isFinite(e.expiresFrame)).toBe(true);}
   });
 
   it('is WEAPON-scoped to Sniper Rifles — reaches herself + helm, never liter/crown', () => {
@@ -217,26 +246,35 @@ describe('d-killer-wife S1b — FB-enter, SR allies, Pierce Damage 13.55% / 10s'
     const perTarget = evs().filter((e) => e.targetSlug === SLUG).length;
     expect(perTarget).toBe(fbCount(base.events));
 
-    const wrong = applies(pierceDmgBurstCast.events, 'pierceDamagePct', 13.55).filter(
-      (e) => e.targetSlug === SLUG,
-    ).length;
+    const wrong = applies(
+      pierceDmgBurstCast.events,
+      'pierceDamagePct',
+      13.55
+    ).filter((e) => e.targetSlug === SLUG).length;
     expect(wrong).toBeLessThanOrEqual(perTarget);
   });
 
   it('is currently damage-inert (pierceDamagePct parsed-but-inert in v1) — nothing moves', () => {
     expect(rmPierceDmg.t[SLUG]).toBe(base.t[SLUG]);
-    for (const m of MATES) expect(rmPierceDmg.t[m]).toBe(base.t[m]);
+    for (const m of MATES) {expect(rmPierceDmg.t[m]).toBe(base.t[m]);}
   });
 });
 
 describe('d-killer-wife S2a — "Full Charge for 8 time(s)" / all allies -> Burst CD -7s', () => {
   it('is a repeating burstCdr of 7s on all allies (not once-per-battle, not self-only)', () => {
-    const b = allBlocks(OV).find((x: any) => hasEffect(x, (e: any) => e.kind === 'burstCdr'));
-    expect(b, 'no burstCdr block — the CDR line is a rotation accelerant, not a skip').toBeTruthy();
+    const b = allBlocks(OV).find((x: any) =>
+      hasEffect(x, (e: any) => e.kind === 'burstCdr')
+    );
+    expect(
+      b,
+      'no burstCdr block — the CDR line is a rotation accelerant, not a skip'
+    ).toBeTruthy();
     expect(b.slot).toBe('skill2');
     expect(b.target.kind).toBe('allies');
     expect(b.trigger.kind).toBe('chargeCounter');
-    const count = Array.isArray(b.trigger.count) ? b.trigger.count[0] : b.trigger.count;
+    const count = Array.isArray(b.trigger.count)
+      ? b.trigger.count[0]
+      : b.trigger.count;
     expect(count).toBe(8);
     const eff = (b.effects ?? []).find((e: any) => e.kind === 'burstCdr');
     expect(eff.seconds).toBe(7);
@@ -264,40 +302,50 @@ describe('d-killer-wife S2b — "Full Charge for 5 time(s)" / all allies -> Atta
     // stat instead and interact differently with every other support buff in the comp.
     expect(evs().length).toBeGreaterThan(0);
     expect(applies(base.events, 'atkPct', 5.06).length).toBe(0);
-    for (const e of evs()) expect(Number.isFinite(e.expiresFrame)).toBe(true); // 10s, not permanent
+    for (const e of evs()) {expect(Number.isFinite(e.expiresFrame)).toBe(true);} // 10s, not permanent
   });
 
   it('reaches ALL FOUR allies including herself', () => {
     const tgts = targetsOf(evs());
     expect(tgts.has(SLUG)).toBe(true);
-    for (const m of MATES) expect(tgts.has(m)).toBe(true);
+    for (const m of MATES) {expect(tgts.has(m)).toBe(true);}
   });
 
   it('is keyed to a 5-count full-charge counter, distinct from the 8-count CDR block', () => {
     const b = allBlocks(OV).find((x: any) =>
-      hasEffect(x, (e: any) => e.stat === 'attackDamagePct' && Math.abs(e.value - 5.06) < 1e-6),
+      hasEffect(
+        x,
+        (e: any) =>
+          e.stat === 'attackDamagePct' && Math.abs(e.value - 5.06) < 1e-6
+      )
     );
     expect(b).toBeTruthy();
     expect(b.slot).toBe('skill2');
     expect(b.trigger.kind).toBe('chargeCounter');
-    const count = Array.isArray(b.trigger.count) ? b.trigger.count[0] : b.trigger.count;
+    const count = Array.isArray(b.trigger.count)
+      ? b.trigger.count[0]
+      : b.trigger.count;
     expect(count).toBe(5);
     // three SEPARATE counters exist (3 / 5 / 8) — none collapsed into another
     const counts = allBlocks(OV)
       .filter((x: any) => x.trigger?.kind === 'chargeCounter')
-      .map((x: any) => (Array.isArray(x.trigger.count) ? x.trigger.count[0] : x.trigger.count));
+      .map((x: any) =>
+        Array.isArray(x.trigger.count) ? x.trigger.count[0] : x.trigger.count
+      );
     expect(new Set(counts)).toEqual(new Set([3, 5, 8]));
   });
 
   it('re-scoping it to self measurably robs the teammates (proves the ally target set)', () => {
     // Discriminating: under a self-only mis-scope the three mates must lose damage.
-    for (const m of MATES) expect(atkDmgSelfOnly.t[m]).not.toBe(base.t[m]);
+    for (const m of MATES) {expect(atkDmgSelfOnly.t[m]).not.toBe(base.t[m]);}
   });
 });
 
 describe('d-killer-wife burst A — 269.28% additional damage + Wipe Out (10s) on the enemy', () => {
   it('carries a flatDamage rider of 269.28% of final ATK', () => {
-    const e = effectsOf(slotBlocks(OV, 'burst')).find((x: any) => x.kind === 'flatDamage');
+    const e = effectsOf(slotBlocks(OV, 'burst')).find(
+      (x: any) => x.kind === 'flatDamage'
+    );
     expect(e, 'burst nuke missing').toBeTruthy();
     expect(e.atkPct).toBeCloseTo(269.28, 2);
     // Burst-cast instant damage lands before the FB window opens -> FB-exempt by timing;
@@ -308,12 +356,17 @@ describe('d-killer-wife burst A — 269.28% additional damage + Wipe Out (10s) o
 
   it('is real damage for HER and inert for everyone else', () => {
     expect(base.t[SLUG]).toBeGreaterThan(burstNukeZero.t[SLUG]);
-    for (const m of MATES) expect(burstNukeZero.t[m]).toBe(base.t[m]);
+    for (const m of MATES) {expect(burstNukeZero.t[m]).toBe(base.t[m]);}
   });
 
   it('inflicts a named 10s targetStatus authored on an `enemy`-targeted block', () => {
-    const b = slotBlocks(OV, 'burst').find((x: any) => hasEffect(x, (e: any) => e.kind === 'targetStatus'));
-    expect(b, 'no targetStatus effect — Wipe Out is the gate the whole burst B rider hangs on').toBeTruthy();
+    const b = slotBlocks(OV, 'burst').find((x: any) =>
+      hasEffect(x, (e: any) => e.kind === 'targetStatus')
+    );
+    expect(
+      b,
+      'no targetStatus effect — Wipe Out is the gate the whole burst B rider hangs on'
+    ).toBeTruthy();
     expect(b.target.kind).toBe('enemy'); // validator requires enemy scoping on this channel
     const eff = (b.effects ?? []).find((e: any) => e.kind === 'targetStatus');
     expect(eff.durationSec).toBe(10);
@@ -323,28 +376,36 @@ describe('d-killer-wife burst A — 269.28% additional damage + Wipe Out (10s) o
 
 describe('d-killer-wife burst B — area-dependent riders gated on Wipe Out', () => {
   const statusName = () =>
-    (effectsOf(slotBlocks(OV, 'burst')).find((e: any) => e.kind === 'targetStatus') ?? {}).name;
+    (
+      effectsOf(slotBlocks(OV, 'burst')).find(
+        (e: any) => e.kind === 'targetStatus'
+      ) ?? {}
+    ).name;
 
   it('every rider block is name-keyed to the SAME status this burst inflicts', () => {
     // Name-keying is what stops an unrelated kit\'s status from opening this gate.
     const gated = allBlocks(OV).filter((b: any) => b.requiresTargetStatus);
     expect(gated.length).toBeGreaterThan(0);
-    for (const b of gated) expect(b.requiresTargetStatus).toBe(statusName());
+    for (const b of gated) {expect(b.requiresTargetStatus).toBe(statusName());}
   });
 
   it('parts branch: Damage dealt when attacking core 16.26% for 10s, to allies', () => {
     const evs = applies(base.events, 'coreDamagePct', 16.26);
     expect(evs.length).toBeGreaterThan(0);
-    for (const e of evs) expect(Number.isFinite(e.expiresFrame)).toBe(true); // 10s window
+    for (const e of evs) {expect(Number.isFinite(e.expiresFrame)).toBe(true);} // 10s window
     // "Affects allies" — a self-only mis-scope would give a single target.
     expect(targetsOf(evs).size).toBeGreaterThanOrEqual(2);
   });
 
-  it('body branch: ATK 12.19% OF THE SKILL USER\'S ATK — caster-scaled, flat-resolved', () => {
+  it("body branch: ATK 12.19% OF THE SKILL USER'S ATK — caster-scaled, flat-resolved", () => {
     // casterAtkPct re-emits as a FLAT ATK number at apply time, so a buffApply value of 12.19
     // would mean the % was mis-encoded as a plain atkPct-style percentage.
-    const mine = applies(base.events, 'casterAtkPct').filter((e) => e.value > 12.19 * 10);
-    const gone = applies(rmStatus.events, 'casterAtkPct').filter((e) => e.value > 12.19 * 10);
+    const mine = applies(base.events, 'casterAtkPct').filter(
+      (e) => e.value > 12.19 * 10
+    );
+    const gone = applies(rmStatus.events, 'casterAtkPct').filter(
+      (e) => e.value > 12.19 * 10
+    );
     const attributable = mine.length - gone.length; // hers = the ones the status gate kills
     const unmodeled = JSON.stringify(OV.unmodeled ?? {});
     // No silent drops: model it, or record the line verbatim in `unmodeled`.
@@ -359,7 +420,7 @@ describe('d-killer-wife burst B — area-dependent riders gated on Wipe Out', ()
     // Active case asserted above; inactive case here: with no status inflicted the riders must
     // never apply, and the team must measurably lose the buffs.
     expect(applies(rmStatus.events, 'coreDamagePct', 16.26).length).toBe(0);
-    for (const m of MATES) expect(rmStatus.t[m]).not.toBe(base.t[m]);
+    for (const m of MATES) {expect(rmStatus.t[m]).not.toBe(base.t[m]);}
   });
 
   it.skip('GAP: parts-hit vs body-hit branch selection — the v1 boss is partless', () => {

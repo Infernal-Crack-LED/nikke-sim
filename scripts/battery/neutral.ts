@@ -13,12 +13,24 @@ import { loadWorld, runRealisticBattery, type BatteryTeam } from './lib.js';
 const ANCHORS: BatteryTeam[] = [
   {
     name: 'enikk N-1 soda shotguns',
-    slugs: ['tove', 'nayuta', 'soda-twinkling-bunny', 'dorothy-serendipity', 'drake'],
+    slugs: [
+      'tove',
+      'nayuta',
+      'soda-twinkling-bunny',
+      'dorothy-serendipity',
+      'drake',
+    ],
     source: 'enikk raid 34, 1180 players',
   },
   {
     name: 'enikk N-2 crown eve',
-    slugs: ['crown', 'rapi-red-hood', 'little-mermaid', 'eve', 'mast-romantic-maid'],
+    slugs: [
+      'crown',
+      'rapi-red-hood',
+      'little-mermaid',
+      'eve',
+      'mast-romantic-maid',
+    ],
     source: 'enikk raid 34, 910 players',
   },
   {
@@ -38,5 +50,9 @@ const ANCHORS: BatteryTeam[] = [
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, null,
-  'REALISTIC neutral battery (boss element none) — cross-raid enikk anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  null,
+  'REALISTIC neutral battery (boss element none) — cross-raid enikk anchors + roster fill, core exposure 0/50/100'
+);

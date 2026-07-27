@@ -74,20 +74,25 @@ import {
 } from 'node:fs';
 import type { Element } from '../../src/types.js';
 import { saveParsed, type ParsedProbe, type Popup } from './parsed.js';
-import { computeHitBands, matchBands, type BandHit, type HitBandTable } from './hit-bands.js';
+import {
+  computeHitBands,
+  matchBands,
+  type BandHit,
+  type HitBandTable,
+} from './hit-bands.js';
 
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
 for (let i = 1; i < argv.length; i++)
-  if (argv[i].startsWith('--'))
-    flags[argv[i].slice(2)] =
+  {if (argv[i].startsWith('--'))
+    {flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];
+        : argv[++i];}}
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-popups-vlm.ts <video> --focus <slug> [--boss E] [--comp a,b] [--fps 5] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--crop "..."] [--pos-tol 70] [--time-win 0.7] [--max-tokens 1024] [--json-mode] [--mock] [--out DIR] [--save SLUG]',
+    'usage: read-popups-vlm.ts <video> --focus <slug> [--boss E] [--comp a,b] [--fps 5] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--crop "..."] [--pos-tol 70] [--time-win 0.7] [--max-tokens 1024] [--json-mode] [--mock] [--out DIR] [--save SLUG]'
   );
   process.exit(1);
 }
@@ -104,7 +109,7 @@ const at = Number(flags.at ?? 0);
 const dur = flags.dur ? Number(flags.dur) : 0;
 const endpoint = (flags.endpoint ?? 'http://localhost:8090/v1').replace(
   /\/$/,
-  '',
+  ''
 );
 const model = flags.model ?? 'qwen2.5-vl';
 const apikey = flags.apikey ?? 'no-key';
@@ -129,16 +134,16 @@ mkdirSync(framesDir, { recursive: true });
 
 // ---- extract frames (ffmpeg) ----
 console.log(
-  `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`,
+  `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`
 );
 const vf: string[] = [];
-if (fps) vf.push(`fps=${fps}`);
-if (crop) vf.push(crop);
+if (fps) {vf.push(`fps=${fps}`);}
+if (crop) {vf.push(crop);}
 const ffArgs = ['-y', '-loglevel', 'error'];
-if (at) ffArgs.push('-ss', String(at));
-if (dur) ffArgs.push('-t', String(dur));
+if (at) {ffArgs.push('-ss', String(at));}
+if (dur) {ffArgs.push('-t', String(dur));}
 ffArgs.push('-i', video);
-if (vf.length) ffArgs.push('-vf', vf.join(','));
+if (vf.length) {ffArgs.push('-vf', vf.join(','));}
 ffArgs.push('-q:v', '3', `${framesDir}/f_%05d.jpg`);
 execFileSync('ffmpeg', ffArgs, { stdio: ['ignore', 'ignore', 'ignore'] });
 const frameFiles = readdirSync(framesDir)
@@ -198,16 +203,16 @@ const MAX_IDENTICAL_PER_FRAME = 10;
 function guardHallucination(read: VlmRead, frame: string): VlmRead {
   const counts = new Map<number, number>();
   for (const p of read.popups)
-    counts.set(p.value, (counts.get(p.value) ?? 0) + 1);
+    {counts.set(p.value, (counts.get(p.value) ?? 0) + 1);}
   const bad = new Set(
     [...counts.entries()]
       .filter(([, n]) => n > MAX_IDENTICAL_PER_FRAME)
-      .map(([v]) => v),
+      .map(([v]) => v)
   );
-  if (!bad.size) return read;
+  if (!bad.size) {return read;}
   const kept = read.popups.filter((p) => !bad.has(p.value));
   console.log(
-    `  frame ${frame}: hallucination guard dropped ${read.popups.length - kept.length} popups (values: ${[...bad].join(', ')})`,
+    `  frame ${frame}: hallucination guard dropped ${read.popups.length - kept.length} popups (values: ${[...bad].join(', ')})`
   );
   return { ...read, popups: kept };
 }
@@ -215,10 +220,10 @@ function guardHallucination(read: VlmRead, frame: string): VlmRead {
 function parseRead(text: string): VlmRead {
   let s = text.trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) s = fence[1].trim();
+  if (fence) {s = fence[1].trim();}
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) s = s.slice(a, b + 1);
+  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
   try {
     const o = (JSON.parse(s) ?? {}) as {
       timerSec?: unknown;
@@ -226,9 +231,9 @@ function parseRead(text: string): VlmRead {
     };
     const popups: VlmPopup[] = [];
     for (const item of Array.isArray(o.popups) ? o.popups : []) {
-      if (!item || typeof item !== 'object') continue;
+      if (!item || typeof item !== 'object') {continue;}
       const p = item as Record<string, unknown>;
-      if (typeof p.value !== 'number') continue;
+      if (typeof p.value !== 'number') {continue;}
       const cls = typeof p.cls === 'string' ? p.cls : 'normal';
       popups.push({
         value: Math.round(p.value),
@@ -264,7 +269,7 @@ async function readFrame(b64: string): Promise<VlmRead> {
     temperature: 0,
     max_tokens: maxTokens,
   };
-  if (jsonMode) body.response_format = { type: 'json_object' };
+  if (jsonMode) {body.response_format = { type: 'json_object' };}
   const res = await fetch(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -274,15 +279,15 @@ async function readFrame(b64: string): Promise<VlmRead> {
     body: JSON.stringify(body),
   });
   if (!res.ok)
-    throw new Error(
-      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`,
-    );
+    {throw new Error(
+      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
+    );}
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
   if (Array.isArray(content))
-    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
   return parseRead(String(content));
 }
 
@@ -292,18 +297,18 @@ function mockRead(idx: number): VlmRead {
   const popups: VlmPopup[] = [];
   // A: 12345 normal at ~(500,400), frames 1-3, drifts up
   if (idx >= 1 && idx <= 3)
-    popups.push({
+    {popups.push({
       value: 12345,
       cls: 'normal',
       x: 500,
       y: 400 - (idx - 1) * 8,
-    });
+    });}
   // B: 67890 crit at ~(620,360), frames 2-4
   if (idx >= 2 && idx <= 4)
-    popups.push({ value: 67890, cls: 'crit', x: 620, y: 360 - (idx - 2) * 8 });
+    {popups.push({ value: 67890, cls: 'crit', x: 620, y: 360 - (idx - 2) * 8 });}
   // C: SAME value 12345 but different position (700,500) + core, frames 2-3 -> must stay separate from A
   if (idx >= 2 && idx <= 3)
-    popups.push({ value: 12345, cls: 'core', x: 700, y: 500 });
+    {popups.push({ value: 12345, cls: 'core', x: 700, y: 500 });}
   return { timerSec, popups };
 }
 
@@ -327,8 +332,8 @@ for (const f of frameFiles) {
         break;
       } catch (e) {
         if (attempt === 2)
-          console.error(`  frame ${f}: FAILED — ${(e as Error).message}`);
-        else await new Promise((r) => setTimeout(r, 1000));
+          {console.error(`  frame ${f}: FAILED — ${(e as Error).message}`);}
+        else {await new Promise((r) => setTimeout(r, 1000));}
       }
     }
   }
@@ -336,9 +341,9 @@ for (const f of frameFiles) {
   totalMs += Date.now() - t0;
   reads.push({ frame: idx, videoT, read });
   if (++n % 5 === 0 || n === frameFiles.length)
-    console.log(
-      `  ${n}/${frameFiles.length}  t=${videoT.toFixed(1)}s  ${read.popups.length} popups  timer=${read.timerSec}  ~${Math.round(totalMs / n)}ms/frame`,
-    );
+    {console.log(
+      `  ${n}/${frameFiles.length}  t=${videoT.toFixed(1)}s  ${read.popups.length} popups  timer=${read.timerSec}  ~${Math.round(totalMs / n)}ms/frame`
+    );}
 }
 
 // ---- dedup: cluster same value + nearby position within the popup lifetime ----
@@ -352,15 +357,15 @@ interface Det {
 }
 const dets: Det[] = [];
 for (const r of reads)
-  for (const p of r.read.popups)
-    dets.push({
+  {for (const p of r.read.popups)
+    {dets.push({
       frame: r.frame,
       videoT: r.videoT,
       value: p.value,
       cls: p.cls,
       x: p.x,
       y: p.y,
-    });
+    });}}
 dets.sort((a, b) => a.videoT - b.videoT || a.value - b.value);
 
 interface Cluster {
@@ -381,7 +386,7 @@ for (const d of dets) {
       c.value === d.value &&
       Math.abs(c.xs[c.xs.length - 1] - d.x) < posTol &&
       Math.abs(c.ys[c.ys.length - 1] - d.y) < posTol &&
-      d.videoT - c.ts[c.ts.length - 1] < timeWin,
+      d.videoT - c.ts[c.ts.length - 1] < timeWin
   );
   if (c) {
     c.xs.push(d.x);
@@ -389,14 +394,14 @@ for (const d of dets) {
     c.ts.push(d.videoT);
     c.frames.push(d.frame);
   } else
-    clusters.push({
+    {clusters.push({
       value: d.value,
       cls: d.cls,
       xs: [d.x],
       ys: [d.y],
       ts: [d.videoT],
       frames: [d.frame],
-    });
+    });}
 }
 const median = (a: number[]) => {
   const s = [...a].sort((x, y) => x - y);
@@ -408,7 +413,7 @@ const timerMap = reads
   .filter((r) => r.read.timerSec != null)
   .map((r) => ({ videoT: r.videoT, gameT: r.read.timerSec as number }));
 function gameTAt(videoT: number): number | null {
-  if (!timerMap.length) return null;
+  if (!timerMap.length) {return null;}
   let best = timerMap[0],
     bd = Infinity;
   for (const m of timerMap) {
@@ -429,11 +434,12 @@ const fightClock = timerMap.length >= 3;
 function looksAt(c: Cluster): { agreeing: number; total: number } {
   const t0c = c.ts[0] - timeWin / 2;
   const t1c = c.ts[c.ts.length - 1] + timeWin / 2;
-  const cx = median(c.xs), cy = median(c.ys);
+  const cx = median(c.xs),
+    cy = median(c.ys);
   let total = 0;
   for (const d of dets) {
-    if (d.videoT < t0c || d.videoT > t1c) continue;
-    if (Math.abs(d.x - cx) >= posTol || Math.abs(d.y - cy) >= posTol) continue;
+    if (d.videoT < t0c || d.videoT > t1c) {continue;}
+    if (Math.abs(d.x - cx) >= posTol || Math.abs(d.y - cy) >= posTol) {continue;}
     total++;
   }
   return { agreeing: c.frames.length, total: Math.max(total, c.frames.length) };
@@ -444,10 +450,14 @@ let bandTable: HitBandTable | null = null;
 if (bandCheck) {
   try {
     bandTable = computeHitBands(focus, comp, boss);
-    console.log(`  hit-value bands for ${focus}: ${bandTable.bands.length} hit types`);
+    console.log(
+      `  hit-value bands for ${focus}: ${bandTable.bands.length} hit types`
+    );
   } catch (e) {
-    console.log(`  ⚠ could not build the hit-value band table (${(e as Error).message.split('\n')[0]}) — ` +
-      'nothing will auto-accept; pass --no-band-check to acknowledge, and confirm every popup by hand');
+    console.log(
+      `  ⚠ could not build the hit-value band table (${(e as Error).message.split('\n')[0]}) — ` +
+        'nothing will auto-accept; pass --no-band-check to acknowledge, and confirm every popup by hand'
+    );
   }
 }
 
@@ -457,7 +467,9 @@ const popups = clusters
     const gameT = gameTAt(videoT);
     const { agreeing, total } = looksAt(c);
     const confidence = Math.round((agreeing / total) * 100) / 100;
-    const bands: BandHit[] = bandTable ? matchBands(bandTable, c.value, bandTol) : [];
+    const bands: BandHit[] = bandTable
+      ? matchBands(bandTable, c.value, bandTol)
+      : [];
     const inBand = bands.length > 0;
     // The variant a band matched must be REACHABLE from the class the model reported: a popup it
     // called "normal" cannot be corroborated by a band's CORE image — that is a self-contradiction
@@ -466,9 +478,13 @@ const popups = clusters
     // digit concatenation — the same run had the hallucination guard drop 6473333 and 17333, and
     // 108,189 recurs in the neighbouring frames — the read does not corroborate itself either way.)
     const wantVariant: Record<string, BandHit['variant'][]> = {
-      normal: ['base'], crit: ['crit'], core: ['core', 'crit+core'],
+      normal: ['base'],
+      crit: ['crit'],
+      core: ['core', 'crit+core'],
     };
-    const classConsistent = bands.some((b) => wantVariant[c.cls].includes(b.variant));
+    const classConsistent = bands.some((b) =>
+      wantVariant[c.cls].includes(b.variant)
+    );
     // If one value sits in several variants of the same hit type, the band cannot pin the class —
     // that is the documented entanglement (LM's normals and their crit images overlap outright).
     // The value may still be right, but the crit/core call is NOT corroborated, so it is not
@@ -476,8 +492,11 @@ const popups = clusters
     const variants = new Set(bands.map((b) => b.variant));
     const classUnambiguous = variants.size === 1;
     const autoAccept =
-      confidence >= minAgreement && agreeing >= minLooks &&
-      inBand && classConsistent && classUnambiguous;
+      confidence >= minAgreement &&
+      agreeing >= minLooks &&
+      inBand &&
+      classConsistent &&
+      classUnambiguous;
     return {
       frame: c.frames[Math.floor(c.frames.length / 2)],
       videoT: Math.round(videoT * 100) / 100,
@@ -501,7 +520,9 @@ const popups = clusters
       reason: autoAccept
         ? undefined
         : !inBand
-          ? (bandTable ? 'value matches no hit-value band for the focus unit' : 'no band table available')
+          ? bandTable
+            ? 'value matches no hit-value band for the focus unit'
+            : 'no band table available'
           : !classConsistent
             ? `read as "${c.cls}" but the value only matches ${[...variants].join('/')} band(s) — self-inconsistent`
             : !classUnambiguous
@@ -531,7 +552,13 @@ const result = {
   timeWin,
   framesProcessed: frameFiles.length,
   fightClock,
-  confidencePolicy: { minLooks, minAgreement, bandCheck, bandTol, bandTypes: bandTable?.bands.length ?? 0 },
+  confidencePolicy: {
+    minLooks,
+    minAgreement,
+    bandCheck,
+    bandTol,
+    bandTypes: bandTable?.bands.length ?? 0,
+  },
   autoAccepted,
   needsConfirmation,
   timerReads: timerMap.map((m) => ({
@@ -549,26 +576,32 @@ const rawOut = `${outDir}/popup-reads.json`;
 writeFileSync(rawOut, JSON.stringify(result, null, 2) + '\n');
 console.log(`\nwrote ${rawOut}`);
 console.log(
-  `  ${popups.length} deduped popups  <-  ${dets.length} raw detections  <-  ${frameFiles.length} frames`,
+  `  ${popups.length} deduped popups  <-  ${dets.length} raw detections  <-  ${frameFiles.length} frames`
 );
 if (fightClock)
-  console.log(
-    `  fight-clock anchored: game timer ${timerMap[0].gameT}..${timerMap[timerMap.length - 1].gameT}`,
-  );
+  {console.log(
+    `  fight-clock anchored: game timer ${timerMap[0].gameT}..${timerMap[timerMap.length - 1].gameT}`
+  );}
 else
-  console.log(
-    '  NOTE: fight timer not read reliably — popup.t is video-relative; check timerReads.',
-  );
+  {console.log(
+    '  NOTE: fight timer not read reliably — popup.t is video-relative; check timerReads.'
+  );}
 console.log(
   `  AUTO-ACCEPTED ${autoAccepted.length}/${popups.length} ` +
     `(confidence >= ${minAgreement}, >= ${minLooks} agreeing looks, in-band); ` +
-    `${needsConfirmation.length} need confirmation`,
+    `${needsConfirmation.length} need confirmation`
 );
 if (needsConfirmation.length) {
-  const times = [...new Set(needsConfirmation.map((p) => p.videoT))].sort((a, b) => a - b);
-  console.log(`  confirm them in ONE batched call:\n` +
-    `    npx tsx scripts/probe/frames.ts "${video}" --times "${times.slice(0, 24).join(',')}" --region crosshair --zoom 2` +
-    (times.length > 24 ? `   (+${times.length - 24} more times in needsConfirmation[])` : ''));
+  const times = [...new Set(needsConfirmation.map((p) => p.videoT))].sort(
+    (a, b) => a - b
+  );
+  console.log(
+    `  confirm them in ONE batched call:\n` +
+      `    npx tsx scripts/probe/frames.ts "${video}" --times "${times.slice(0, 24).join(',')}" --region crosshair --zoom 2` +
+      (times.length > 24
+        ? `   (+${times.length - 24} more times in needsConfirmation[])`
+        : '')
+  );
 }
 
 // ---- optionally persist a (structurally validated) ParsedProbe ----
@@ -576,11 +609,13 @@ if (saveSlug) {
   // Only AUTO-ACCEPTED popups are persisted: docs/probe-data/ is the tracked record, and an
   // unconfirmed VLM read entering it is exactly what the skill forbids.
   if (needsConfirmation.length)
-    console.log(`  --save: omitting ${needsConfirmation.length} popup(s) that need confirmation`);
+    {console.log(
+      `  --save: omitting ${needsConfirmation.length} popup(s) that need confirmation`
+    );}
   const ppPopups: Popup[] = autoAccepted.map((p) => {
     const q: Popup = { t: p.t, value: p.value };
-    if (p.crit) q.crit = true;
-    if (p.core) q.core = true;
+    if (p.crit) {q.crit = true;}
+    if (p.core) {q.core = true;}
     return q;
   });
   const pp: ParsedProbe = {

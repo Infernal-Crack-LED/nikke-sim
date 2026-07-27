@@ -68,10 +68,10 @@ export function routeFromPath(pathname: string): Route {
     .replace(/^\/+|\/+$/g, '')
     .split('/')[0]
     .toLowerCase();
-  if ((PAGE_ROUTES as string[]).includes(seg)) return seg as Route;
-  if (RANKINGS_PATHS.includes(seg)) return 'rankings';
-  if (OVERLOAD_PATHS.includes(seg)) return 'overload';
-  if (TOOL_PATHS.includes(seg)) return 'tools';
+  if ((PAGE_ROUTES as string[]).includes(seg)) {return seg as Route;}
+  if (RANKINGS_PATHS.includes(seg)) {return 'rankings';}
+  if (OVERLOAD_PATHS.includes(seg)) {return 'overload';}
+  if (TOOL_PATHS.includes(seg)) {return 'tools';}
   return 'sim';
 }
 
@@ -94,7 +94,7 @@ export function navigate(url: string): void {
 
 export function useRoute(): Route {
   const [route, setRoute] = useState<Route>(() =>
-    routeFromPath(window.location.pathname),
+    routeFromPath(window.location.pathname)
   );
   const prev = useRef(route);
   useEffect(() => {

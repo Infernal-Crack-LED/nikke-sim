@@ -10,7 +10,13 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { makeCalc, type TeamResult } from '../../../src/teamcalc.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
-import { deps, effBurst, generatorPool, mult, rotationLegal } from '../lib/harness.js';
+import {
+  deps,
+  effBurst,
+  generatorPool,
+  mult,
+  rotationLegal,
+} from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
 
@@ -32,7 +38,10 @@ const legal = (slugs: string[]) => rotationLegal(chars, slugs);
 
 const byBurstCd = (b: string, lo: number, hi: number) =>
   genChars
-    .filter((c) => c.burst === b && c.burstCooldownSec > lo && c.burstCooldownSec <= hi)
+    .filter(
+      (c) =>
+        c.burst === b && c.burstCooldownSec > lo && c.burstCooldownSec <= hi
+    )
     .map((c) => c.slug);
 
 const B1_20 = byBurstCd('I', 0, 20);
@@ -44,19 +53,32 @@ const AMPLE_B3 = B3.slice(0, 16);
 
 describe('pool preconditions — the cooldown shapes under test exist', () => {
   it('has ≥1 20s B1 and ≥2 40s B1', () => {
-    expect(B1_20.length, 'no ≤20s Burst I in the pool').toBeGreaterThanOrEqual(1);
-    expect(B1_40.length, 'fewer than two 21-40s Burst I in the pool').toBeGreaterThanOrEqual(2);
+    expect(B1_20.length, 'no ≤20s Burst I in the pool').toBeGreaterThanOrEqual(
+      1
+    );
+    expect(
+      B1_40.length,
+      'fewer than two 21-40s Burst I in the pool'
+    ).toBeGreaterThanOrEqual(2);
   });
   it('has ≥1 20s B2 and ≥2 40s B2', () => {
-    expect(B2_20.length, 'no ≤20s Burst II in the pool').toBeGreaterThanOrEqual(1);
-    expect(B2_40.length, 'fewer than two 21-40s Burst II in the pool').toBeGreaterThanOrEqual(2);
+    expect(B2_20.length, 'no ≤20s Burst II in the pool').toBeGreaterThanOrEqual(
+      1
+    );
+    expect(
+      B2_40.length,
+      'fewer than two 21-40s Burst II in the pool'
+    ).toBeGreaterThanOrEqual(2);
   });
 });
 
 describe('B1 cooldown coverage', () => {
   it('refuses to build on a lone 40s B1', async () => {
     const keep = new Set([B1_40[0], ...B2_20.slice(0, 8), ...AMPLE_B3]);
-    expect(await calcForPool(keep).topTeams(1), `lone 40s B1 (${B1_40[0]}) built a team`).toHaveLength(0);
+    expect(
+      await calcForPool(keep).topTeams(1),
+      `lone 40s B1 (${B1_40[0]}) built a team`
+    ).toHaveLength(0);
   });
 
   it('covers the stage with a single 20s B1', async () => {
@@ -68,9 +90,17 @@ describe('B1 cooldown coverage', () => {
   });
 
   it('covers the stage with two alternating 40s B1', async () => {
-    const keep = new Set([B1_40[0], B1_40[1], ...B2_20.slice(0, 8), ...AMPLE_B3]);
+    const keep = new Set([
+      B1_40[0],
+      B1_40[1],
+      ...B2_20.slice(0, 8),
+      ...AMPLE_B3,
+    ]);
     const top = await calcForPool(keep).topTeams(1);
-    expect(top, `two 40s B1 (${B1_40[0]}+${B1_40[1]}) built no team`).toHaveLength(1);
+    expect(
+      top,
+      `two 40s B1 (${B1_40[0]}+${B1_40[1]}) built no team`
+    ).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B1_40[0]);
     expect(top[0].slugs).toContain(B1_40[1]);
@@ -80,7 +110,10 @@ describe('B1 cooldown coverage', () => {
 describe('B2 cooldown coverage', () => {
   it('refuses to build on a lone 40s B2', async () => {
     const keep = new Set([B2_40[0], ...B1_20.slice(0, 8), ...AMPLE_B3]);
-    expect(await calcForPool(keep).topTeams(1), `lone 40s B2 (${B2_40[0]}) built a team`).toHaveLength(0);
+    expect(
+      await calcForPool(keep).topTeams(1),
+      `lone 40s B2 (${B2_40[0]}) built a team`
+    ).toHaveLength(0);
   });
 
   it('covers the stage with a single 20s B2', async () => {
@@ -92,9 +125,17 @@ describe('B2 cooldown coverage', () => {
   });
 
   it('covers the stage with two alternating 40s B2', async () => {
-    const keep = new Set([B2_40[0], B2_40[1], ...B1_20.slice(0, 8), ...AMPLE_B3]);
+    const keep = new Set([
+      B2_40[0],
+      B2_40[1],
+      ...B1_20.slice(0, 8),
+      ...AMPLE_B3,
+    ]);
     const top = await calcForPool(keep).topTeams(1);
-    expect(top, `two 40s B2 (${B2_40[0]}+${B2_40[1]}) built no team`).toHaveLength(1);
+    expect(
+      top,
+      `two 40s B2 (${B2_40[0]}+${B2_40[1]}) built no team`
+    ).toHaveLength(1);
     expect(legal(top[0].slugs)).toBe(true);
     expect(top[0].slugs).toContain(B2_40[0]);
     expect(top[0].slugs).toContain(B2_40[1]);
@@ -113,7 +154,7 @@ describe('broad invariant: no emitted team has a gapped B1/B2 rotation', () => {
     const bad = top.filter((t) => !legal(t.slugs));
     expect(
       bad.map((t) => t.slugs.join(',')),
-      'team(s) with a gapped rotation',
+      'team(s) with a gapped rotation'
     ).toEqual([]);
   });
 
@@ -122,24 +163,37 @@ describe('broad invariant: no emitted team has a gapped B1/B2 rotation', () => {
     const dbl = top.filter(
       (t) =>
         t.slugs.filter((s) => effBurst(chars, s) === 'II').length >= 2 ||
-        t.slugs.filter((s) => effBurst(chars, s) === 'I').length >= 2,
+        t.slugs.filter((s) => effBurst(chars, s) === 'I').length >= 2
     ).length;
-    expect(dbl, 'topTeams(5) explored no double-support shape').toBeGreaterThanOrEqual(1);
+    expect(
+      dbl,
+      'topTeams(5) explored no double-support shape'
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it('builds the double-support shape deterministically from a locked pair', async () => {
     const t2 = await full.bestTeam({ mustInclude: [B2_20[0], B2_20[1]] });
-    expect(t2, `locked 2×B2 (${B2_20[0]}+${B2_20[1]}) built nothing`).not.toBeNull();
+    expect(
+      t2,
+      `locked 2×B2 (${B2_20[0]}+${B2_20[1]}) built nothing`
+    ).not.toBeNull();
     expect(legal(t2!.slugs)).toBe(true);
     expect(t2!.slugs).toContain(B2_20[0]);
     expect(t2!.slugs).toContain(B2_20[1]);
-    expect(t2!.slugs.filter((s) => effBurst(chars, s) === 'II').length).toBeGreaterThanOrEqual(2);
+    expect(
+      t2!.slugs.filter((s) => effBurst(chars, s) === 'II').length
+    ).toBeGreaterThanOrEqual(2);
 
     const t1 = await full.bestTeam({ mustInclude: [B1_20[0], B1_20[1]] });
-    expect(t1, `locked 2×B1 (${B1_20[0]}+${B1_20[1]}) built nothing`).not.toBeNull();
+    expect(
+      t1,
+      `locked 2×B1 (${B1_20[0]}+${B1_20[1]}) built nothing`
+    ).not.toBeNull();
     expect(legal(t1!.slugs)).toBe(true);
     expect(t1!.slugs).toContain(B1_20[0]);
     expect(t1!.slugs).toContain(B1_20[1]);
-    expect(t1!.slugs.filter((s) => effBurst(chars, s) === 'I').length).toBeGreaterThanOrEqual(2);
+    expect(
+      t1!.slugs.filter((s) => effBurst(chars, s) === 'I').length
+    ).toBeGreaterThanOrEqual(2);
   });
 });

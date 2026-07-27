@@ -62,7 +62,12 @@
 // burst ~6x over 180s — enough to exercise every burstCast line. Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / qeq 2 / helm 3. */
@@ -83,31 +88,42 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 
 /** L1 reference: her distributed-damage line removed entirely. */
 const qeqNoDistrib = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'distributedDamagePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 distributedDamagePct block missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'qeq S1 distributedDamagePct block missing — fixture is stale'
+    );}
 });
 /** L1 counterfactual: the same line as a GENERIC (unscoped) attack-damage buff. */
 const qeqDistribAsAtkDmg = withPatchedOverride('quency-escape-queen', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'distributedDamagePct');
-  if (!e) throw new Error('qeq S1 distributedDamagePct effect missing — fixture is stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'distributedDamagePct');
+  if (!e)
+    {throw new Error(
+      'qeq S1 distributedDamagePct effect missing — fixture is stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 /** L2 reference: her core-damage line removed. */
 const qeqNoCore = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'coreDamagePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');}
 });
 /** L3 reference: her crit-rate line removed. */
 const qeqNoCrit = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 critRatePct block missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error('qeq S1 critRatePct block missing — fixture is stale');}
 });
 /** L4-L9 isolation: strip ONLY the hit-rate effects from S2, keeping the three ATK stacks. */
 const qeqNoHitRate = withPatchedOverride('quency-escape-queen', (ov) => {
@@ -117,18 +133,28 @@ const qeqNoHitRate = withPatchedOverride('quency-escape-queen', (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
     removed += before - b.effects.length;
   }
-  if (removed !== 3) throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');
+  if (removed !== 3)
+    {throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');}
 });
 /** L4-L9 reference: her entire Explore Route block removed. */
 const qeqNoS2 = withPatchedOverride('quency-escape-queen', (ov) => {
-  if (!ov.skill2.length) throw new Error('qeq S2 block missing — fixture is stale');
+  if (!ov.skill2.length)
+    {throw new Error('qeq S2 block missing — fixture is stale');}
   ov.skill2 = [];
 });
 /** L12 counterfactual: strip the distributed flavor from the nuke (plain burst damage). */
 const qeqPlainNuke = withPatchedOverride('quency-escape-queen', (ov) => {
   let stripped = 0;
-  for (const b of ov.burst) for (const e of b.effects) if (e.kind === 'flatDamage' && e.flavor === 'distributed') { delete e.flavor; stripped++; }
-  if (!stripped) throw new Error('qeq burst distributed flatDamage missing — fixture is stale');
+  for (const b of ov.burst)
+    {for (const e of b.effects)
+      {if (e.kind === 'flatDamage' && e.flavor === 'distributed') {
+        delete e.flavor;
+        stripped++;
+      }}}
+  if (!stripped)
+    {throw new Error(
+      'qeq burst distributed flatDamage missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -142,44 +168,77 @@ const noS2 = run({ 'quency-escape-queen': qeqNoS2 });
 const plainNuke = run({ 'quency-escape-queen': qeqPlainNuke });
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const qeqDamage = (evs: SimEvent[], bucket: Damage['bucket']) =>
-  dmg(evs).filter((d) => d.slug === 'quency-escape-queen' && d.bucket === bucket);
+  dmg(evs).filter(
+    (d) => d.slug === 'quency-escape-queen' && d.bucket === bucket
+  );
 const qeqBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quency-escape-queen');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+  evs.filter(
+    (e): e is BurstCast =>
+      e.kind === 'burstCast' && e.slug === 'quency-escape-queen'
+  );
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 /** Buffs qeq applied to herself. */
 const qeqBuffs = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === QEQ && b.targetIdx === QEQ && b.stat === stat && (value === undefined || b.value === value),
+    (b) =>
+      b.casterIdx === QEQ &&
+      b.targetIdx === QEQ &&
+      b.stat === stat &&
+      (value === undefined || b.value === value)
   );
 const sum = (ds: Damage[]) => ds.reduce((a, d) => a + d.amount, 0);
-const distinct = (xs: number[], dp = 4) => [...new Set(xs.map((x) => x.toFixed(dp)))].sort();
+const distinct = (xs: number[], dp = 4) =>
+  [...new Set(xs.map((x) => x.toFixed(dp)))].sort();
 
 describe('quency-escape-queen — kit spec', () => {
   describe('L1 — S1 Distributed Damage ▲ 49.58% (passive permanent self; feeds the distributed nuke only)', () => {
     const applied = qeqBuffs(base.events, 'distributedDamagePct', 49.58);
 
     it('is a permanent self buff at the kit magnitude', () => {
-      expect(applied.length, 'no distributedDamagePct buff was applied').toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame, 'passive must be permanent (no wall-clock expiry)').toBeNull();
+      expect(
+        applied.length,
+        'no distributedDamagePct buff was applied'
+      ).toBeGreaterThan(0);
+      for (const b of applied)
+        {expect(
+          b.expiresFrame,
+          'passive must be permanent (no wall-clock expiry)'
+        ).toBeNull();}
     });
 
     it('lifts the distributed multiplier on her burst nuke to 1.4958 (= 1 + 0.4958)', () => {
-      expect(distinct(qeqDamage(base.events, 'burst').map((d) => d.mult.distributed))).toEqual(['1.4958']);
+      expect(
+        distinct(qeqDamage(base.events, 'burst').map((d) => d.mult.distributed))
+      ).toEqual(['1.4958']);
     });
 
     it('collapses the nuke multiplier to 1.0 when the line is removed (the buff is live)', () => {
-      expect(distinct(qeqDamage(noDistrib.events, 'burst').map((d) => d.mult.distributed))).toEqual(['1.0000']);
-      expect(base.totals['quency-escape-queen']).toBeGreaterThan(noDistrib.totals['quency-escape-queen']);
+      expect(
+        distinct(
+          qeqDamage(noDistrib.events, 'burst').map((d) => d.mult.distributed)
+        )
+      ).toEqual(['1.0000']);
+      expect(base.totals['quency-escape-queen']).toBeGreaterThan(
+        noDistrib.totals['quency-escape-queen']
+      );
     });
 
     it('does NOT touch normal attacks (distributed-flavor only)', () => {
-      expect(distinct(qeqDamage(base.events, 'normal').map((d) => d.mult.distributed))).toEqual(['1.0000']);
+      expect(
+        distinct(
+          qeqDamage(base.events, 'normal').map((d) => d.mult.distributed)
+        )
+      ).toEqual(['1.0000']);
     });
 
     it('DISCRIMINATING: a generic attackDamagePct would lift normals, which the shipped model does not', () => {
-      expect(sum(qeqDamage(distribAsAtkDmg.events, 'normal'))).toBeGreaterThan(sum(qeqDamage(base.events, 'normal')));
+      expect(sum(qeqDamage(distribAsAtkDmg.events, 'normal'))).toBeGreaterThan(
+        sum(qeqDamage(base.events, 'normal'))
+      );
     });
   });
 
@@ -187,7 +246,10 @@ describe('quency-escape-queen — kit spec', () => {
     const applied = qeqBuffs(base.events, 'coreDamagePct', 25.25);
 
     it('is a self buff at the kit magnitude, 1s window, single stack', () => {
-      expect(applied.length, 'no coreDamagePct buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no coreDamagePct buff was applied'
+      ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.maxStacks).toBe(1);
         expect(b.expiresFrame! - b.frame).toBe(1 * FPS);
@@ -195,7 +257,9 @@ describe('quency-escape-queen — kit spec', () => {
     });
 
     it('is LIVE — removing it drops her total (core hits land via the hit-rate→core-rate chain)', () => {
-      expect(base.totals['quency-escape-queen']).toBeGreaterThan(noCore.totals['quency-escape-queen']);
+      expect(base.totals['quency-escape-queen']).toBeGreaterThan(
+        noCore.totals['quency-escape-queen']
+      );
     });
   });
 
@@ -203,7 +267,9 @@ describe('quency-escape-queen — kit spec', () => {
     const applied = qeqBuffs(base.events, 'critRatePct', 16.73);
 
     it('is a self buff at the kit magnitude, 0.5s window, single stack', () => {
-      expect(applied.length, 'no critRatePct buff was applied').toBeGreaterThan(0);
+      expect(applied.length, 'no critRatePct buff was applied').toBeGreaterThan(
+        0
+      );
       for (const b of applied) {
         expect(b.maxStacks).toBe(1);
         expect(b.expiresFrame! - b.frame).toBe(0.5 * FPS);
@@ -211,32 +277,44 @@ describe('quency-escape-queen — kit spec', () => {
     });
 
     it('is LIVE — removing it collapses the top resolved crit rates on normals', () => {
-      const baseMax = Math.max(...qeqDamage(base.events, 'normal').map((d) => d.critRate));
-      const noCritMax = Math.max(...qeqDamage(noCrit.events, 'normal').map((d) => d.critRate));
+      const baseMax = Math.max(
+        ...qeqDamage(base.events, 'normal').map((d) => d.critRate)
+      );
+      const noCritMax = Math.max(
+        ...qeqDamage(noCrit.events, 'normal').map((d) => d.critRate)
+      );
       expect(baseMax).toBeGreaterThan(noCritMax);
-      expect(base.totals['quency-escape-queen']).toBeGreaterThan(noCrit.totals['quency-escape-queen']);
+      expect(base.totals['quency-escape-queen']).toBeGreaterThan(
+        noCrit.totals['quency-escape-queen']
+      );
     });
   });
 
   describe('L4-L9 — S2 Explore Route staged stacks (after 2 normal attacks; cascade)', () => {
     // [stat, value, maxStacks, durationSec] for each of the six faithful stack lines.
     const STACKS: [string, number, number, number][] = [
-      ['atkPct', 2.45, 10, 2],   // L5 stage 1
+      ['atkPct', 2.45, 10, 2], // L5 stage 1
       ['hitRatePct', 1.36, 10, 2], // L4 stage 1
-      ['atkPct', 4.9, 10, 1],    // L7 stage 2
+      ['atkPct', 4.9, 10, 1], // L7 stage 2
       ['hitRatePct', 2.71, 10, 1], // L6 stage 2
-      ['atkPct', 7.36, 5, 0.5],  // L9 stage 3
+      ['atkPct', 7.36, 5, 0.5], // L9 stage 3
       ['hitRatePct', 4.08, 5, 0.5], // L8 stage 3
     ];
 
-    it.each(STACKS)('%s ▲ %p%% caps at x%p for %ps, self-scoped', (stat, value, maxStacks, durSec) => {
-      const applied = qeqBuffs(base.events, stat, value);
-      expect(applied.length, `no ${stat}@${value} buff was applied`).toBeGreaterThan(0);
-      for (const b of applied) {
-        expect(b.maxStacks).toBe(maxStacks);
-        expect(b.expiresFrame! - b.frame).toBe(durSec * FPS);
+    it.each(STACKS)(
+      '%s ▲ %p%% caps at x%p for %ps, self-scoped',
+      (stat, value, maxStacks, durSec) => {
+        const applied = qeqBuffs(base.events, stat, value);
+        expect(
+          applied.length,
+          `no ${stat}@${value} buff was applied`
+        ).toBeGreaterThan(0);
+        for (const b of applied) {
+          expect(b.maxStacks).toBe(maxStacks);
+          expect(b.expiresFrame! - b.frame).toBe(durSec * FPS);
+        }
       }
-    });
+    );
 
     it('stage 3 caps at x5 while stages 1/2 cap at x10 (the cap is faithful, not a flat x10)', () => {
       expect(qeqBuffs(base.events, 'atkPct', 7.36)[0].maxStacks).toBe(5);
@@ -246,16 +324,22 @@ describe('quency-escape-queen — kit spec', () => {
     });
 
     it('the ATK stacks are load-bearing — removing S2 roughly halves her total', () => {
-      expect(base.totals['quency-escape-queen']).toBeGreaterThan(noS2.totals['quency-escape-queen'] * 1.5);
+      expect(base.totals['quency-escape-queen']).toBeGreaterThan(
+        noS2.totals['quency-escape-queen'] * 1.5
+      );
     });
 
     it('the hit-rate stacks are LIVE — they feed core rate, so removing ONLY them still drops her total', () => {
-      expect(base.totals['quency-escape-queen']).toBeGreaterThan(noHitRate.totals['quency-escape-queen']);
+      expect(base.totals['quency-escape-queen']).toBeGreaterThan(
+        noHitRate.totals['quency-escape-queen']
+      );
     });
 
     it('DISCRIMINATING: removing only the hit-rate stacks shifts the normal core-rate distribution', () => {
-      expect(distinct(qeqDamage(base.events, 'normal').map((d) => d.coreRate))).not.toEqual(
-        distinct(qeqDamage(noHitRate.events, 'normal').map((d) => d.coreRate)),
+      expect(
+        distinct(qeqDamage(base.events, 'normal').map((d) => d.coreRate))
+      ).not.toEqual(
+        distinct(qeqDamage(noHitRate.events, 'normal').map((d) => d.coreRate))
       );
     });
   });
@@ -267,11 +351,13 @@ describe('quency-escape-queen — kit spec', () => {
     it('is the kit magnitude for 10s, self-scoped', () => {
       expect(casts.length, 'qeq never casts her burst').toBeGreaterThan(0);
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('fires once per burst cast', () => {
-      expect([...new Set(applied.map((b) => b.frame))].length).toBe(casts.length);
+      expect([...new Set(applied.map((b) => b.frame))].length).toBe(
+        casts.length
+      );
     });
   });
 
@@ -281,13 +367,17 @@ describe('quency-escape-queen — kit spec', () => {
 
     it('is the kit magnitude for 10s, once per cast, self-scoped', () => {
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
-      expect([...new Set(applied.map((b) => b.frame))].length).toBe(casts.length);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      expect([...new Set(applied.map((b) => b.frame))].length).toBe(
+        casts.length
+      );
     });
   });
 
   describe('L12 — burst nuke: 1736.31% of final ATK as Distributed Damage (burstCast, all enemies)', () => {
-    const nukes = qeqDamage(base.events, 'burst').filter((d) => d.srcSlot === 'burst');
+    const nukes = qeqDamage(base.events, 'burst').filter(
+      (d) => d.srcSlot === 'burst'
+    );
     const casts = qeqBursts(base.events);
 
     it('lands once per cast at the kit magnitude, in the burst bucket', () => {
@@ -297,16 +387,26 @@ describe('quency-escape-queen — kit spec', () => {
     });
 
     it('is distributed-flavored (takes the 1.4958 multiplier from L1)', () => {
-      expect(distinct(nukes.map((d) => d.mult.distributed))).toEqual(['1.4958']);
+      expect(distinct(nukes.map((d) => d.mult.distributed))).toEqual([
+        '1.4958',
+      ]);
     });
 
     it('is FB-exempt — the cast lands before the Full Burst window, so it never takes the +50% major', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
 
     it('DISCRIMINATING: stripping the distributed flavor drops the nuke (== removing L1)', () => {
-      expect(sum(nukes)).toBeGreaterThan(sum(qeqDamage(plainNuke.events, 'burst')));
-      expect(distinct(qeqDamage(plainNuke.events, 'burst').map((d) => d.mult.distributed))).toEqual(['1.0000']);
+      expect(sum(nukes)).toBeGreaterThan(
+        sum(qeqDamage(plainNuke.events, 'burst'))
+      );
+      expect(
+        distinct(
+          qeqDamage(plainNuke.events, 'burst').map((d) => d.mult.distributed)
+        )
+      ).toEqual(['1.0000']);
     });
   });
 });

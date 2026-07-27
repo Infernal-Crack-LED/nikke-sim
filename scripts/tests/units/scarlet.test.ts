@@ -94,45 +94,45 @@ const findEffect = (blocks: any[], pred: (e: any) => boolean) =>
 /** H1 value: S1 ATK at level-1 17.48 (kit ships 23.15). */
 const scarletS1Wrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill1, (x) => x.stat === 'atkPct');
-  if (!e) throw new Error('scarlet S1 atkPct missing — fixture is stale');
+  if (!e) {throw new Error('scarlet S1 atkPct missing — fixture is stale');}
   e.value = 17.48;
 });
 /** H4 value: S2 crit damage at level-1 4.13 (kit ships 6.61). */
 const scarletS2Wrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill2, (x) => x.stat === 'critDamagePct');
   if (!e)
-    throw new Error('scarlet S2 critDamagePct missing — fixture is stale');
+    {throw new Error('scarlet S2 critDamagePct missing — fixture is stale');}
   e.value = 4.13;
 });
 /** H4 stat: the same 6.61 mis-keyed to critRatePct (rate buys ~0.5x/pt vs damage ~0.15x/pt → strictly larger). */
 const scarletS2AsRate = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill2, (x) => x.kind === 'buff');
-  if (!e) throw new Error('scarlet S2 buff missing — fixture is stale');
+  if (!e) {throw new Error('scarlet S2 buff missing — fixture is stale');}
   e.stat = 'critRatePct';
 });
 /** H5 value: burst crit rate at level-1 12.23 (kit ships 19.57). */
 const scarletBurstCritWrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.burst, (x) => x.stat === 'critRatePct');
   if (!e)
-    throw new Error('scarlet burst critRatePct missing — fixture is stale');
+    {throw new Error('scarlet burst critRatePct missing — fixture is stale');}
   e.value = 12.23;
 });
 /** H5 trigger: re-key the burst crit-rate to fullBurstEnter (fires on helm's rotations too). */
 const scarletBurstCritFBEnter = withPatchedOverride('scarlet', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'critRatePct'),
+    x.effects.some((e: any) => e.stat === 'critRatePct')
   );
   if (!b)
-    throw new Error(
-      'scarlet burst critRatePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'scarlet burst critRatePct block missing — fixture is stale'
+    );}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** H6 value: burst nuke at level-1 530.71% (kit ships 849.15%). */
 const scarletBurstDmgWrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.burst, (x) => x.kind === 'flatDamage');
   if (!e)
-    throw new Error('scarlet burst flatDamage missing — fixture is stale');
+    {throw new Error('scarlet burst flatDamage missing — fixture is stale');}
   e.atkPct = 530.71;
 });
 
@@ -156,13 +156,13 @@ const scarletDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'scarlet' && d.srcSlot === srcSlot);
 const scarletBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'scarlet',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'scarlet'
   );
 const scarletShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'scarlet');
 const buffValues = (evs: SimEvent[], stat: string) =>
   [...new Set(scarletBuffs(evs, stat).map((b) => b.value))].sort(
-    (a, b) => a - b,
+    (a, b) => a - b
   );
 
 describe('scarlet — kit spec', () => {
@@ -171,23 +171,23 @@ describe('scarlet — kit spec', () => {
 
     it('is the kit magnitude 23.15%, self-scoped, 5-sec duration', () => {
       expect(applied.length, 'no S1 atkPct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect(buffValues(base.events, 'atkPct')).toEqual([23.15]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([SCARLET]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame! - b.frame))],
-        '5 sec = 300 frames',
+        '5 sec = 300 frames'
       ).toEqual([5 * FPS]);
     });
 
     it('stacks up to 5 and reaches full stacks during the fight', () => {
       expect(
         [...new Set(applied.map((b) => b.maxStacks))],
-        'maxStacks',
+        'maxStacks'
       ).toEqual([5]);
       expect(Math.max(...applied.map((b) => b.stacks)), 'reaches 5/5').toBe(5);
     });
@@ -196,7 +196,7 @@ describe('scarlet — kit spec', () => {
       const shots = scarletShots(base.events).length;
       expect(
         applied.length,
-        `${applied.length} procs vs ${shots} shots — expected one proc per 10 hits`,
+        `${applied.length} procs vs ${shots} shots — expected one proc per 10 hits`
       ).toBe(Math.floor(shots / 10));
     });
 
@@ -217,17 +217,17 @@ describe('scarlet — kit spec', () => {
     it('is documented verbatim in the override unmodeled block (sanctioned skip)', () => {
       const ov = loadOverride('scarlet') as any;
       expect(ov.unmodeled.skill2).toContain(
-        'There is a 30% chance of activating when attacked.',
+        'There is a 30% chance of activating when attacked.'
       );
       expect(ov.unmodeled.skill2).toContain(
-        'Deals 138.24% of final ATK as additional damage.',
+        'Deals 138.24% of final ATK as additional damage.'
       );
     });
 
     it('is NOT smuggled in on an invented trigger (no skill2 damage in-sim)', () => {
       expect(
         scarletDamage(base.events, 'skill2').length,
-        'no skill2 damage channel',
+        'no skill2 damage channel'
       ).toBe(0);
     });
   });
@@ -238,16 +238,16 @@ describe('scarlet — kit spec', () => {
     it('is the kit magnitude 6.61%, passive (live from frame 0), permanent, self-scoped', () => {
       expect(
         applied.length,
-        'no S2 critDamagePct buff was applied',
+        'no S2 critDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect(buffValues(base.events, 'critDamagePct')).toEqual([6.61]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([SCARLET]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'permanent — no expiry',
+        'permanent — no expiry'
       ).toEqual([null]);
       expect(applied[0].frame, 'passive: live from the start').toBe(0);
     });
@@ -268,11 +268,11 @@ describe('scarlet — kit spec', () => {
     it('DISCRIMINATING (stat): mis-keying 6.61 to critRatePct leaves NO critDamagePct buff', () => {
       expect(
         scarletBuffs(s2AsRate.events, 'critDamagePct').length,
-        'stat moved off critDamagePct',
+        'stat moved off critDamagePct'
       ).toBe(0);
       expect(
         scarletBuffs(s2AsRate.events, 'critRatePct').length,
-        'stat moved onto critRatePct',
+        'stat moved onto critRatePct'
       ).toBeGreaterThan(0);
     });
   });
@@ -283,20 +283,20 @@ describe('scarlet — kit spec', () => {
     it('is the kit magnitude 19.57%, 10-sec duration, self-scoped, once per burst cast', () => {
       const bursts = scarletBursts(base.events).length;
       expect(bursts, 'scarlet cast no bursts in the fixture').toBeGreaterThan(
-        0,
+        0
       );
       expect(
         applied.length,
-        'one crit-rate buff per burst cast (ungated)',
+        'one crit-rate buff per burst cast (ungated)'
       ).toBe(bursts);
       expect(buffValues(base.events, 'critRatePct')).toEqual([19.57]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([SCARLET]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame! - b.frame))],
-        '10 sec = 600 frames',
+        '10 sec = 600 frames'
       ).toEqual([10 * FPS]);
     });
 
@@ -310,11 +310,11 @@ describe('scarlet — kit spec', () => {
     it("DISCRIMINATING (trigger): fullBurstEnter would over-fire on helm's rotations (co-B3)", () => {
       const fbEnter = scarletBuffs(
         burstCritFBEnter.events,
-        'critRatePct',
+        'critRatePct'
       ).length;
       expect(
         fbEnter,
-        `${fbEnter} fullBurstEnter applies vs ${applied.length} burstCast — helm shares the FB chain`,
+        `${fbEnter} fullBurstEnter applies vs ${applied.length} burstCast — helm shares the FB chain`
       ).toBeGreaterThan(applied.length);
     });
   });
@@ -330,7 +330,7 @@ describe('scarlet — kit spec', () => {
       expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
       expect(
         nukes.every((d) => d.critEligible),
-        'crit-eligible',
+        'crit-eligible'
       ).toBe(true);
     });
 
@@ -338,7 +338,7 @@ describe('scarlet — kit spec', () => {
       const took = nukes.filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
 

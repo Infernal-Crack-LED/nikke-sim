@@ -68,8 +68,6 @@ const FPS = 60;
 const ALLIES = 4;
 const COMP = ['miranda', 'crown', 'ada', 'helm'];
 const MIRANDA = 0;
-const ADA = 2;
-const HELM = 3;
 
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
@@ -87,30 +85,41 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual patches -------------------------------------------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 
 /** M1 counterfactual: the self ATK line retargeted to all allies. */
 const mirandaSelfAtkToAllies = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).skill1.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk) throw new Error('miranda S1 atkPct block missing — fixture is stale');
+  if (!blk) {
+    throw new Error('miranda S1 atkPct block missing — fixture is stale');
+  }
   blk.target = { kind: 'allies' };
 });
 /** M2/M3 load-bearing reference: remove BOTH Hit Rate lines (best-effort — absent pre-S3 FIX). */
 const mirandaNoHR = withPatchedOverride('miranda', (ov) => {
-  (ov as any).skill1 = (ov as any).skill1.filter((b: any) => !hasStat(b, 'hitRatePct'));
+  (ov as any).skill1 = (ov as any).skill1.filter(
+    (b: any) => !hasStat(b, 'hitRatePct')
+  );
 });
 /** M3 counterfactual: the SMG-scoped HR line retargeted to all allies (best-effort pre-S3). */
 const mirandaSMGToAllAllies = withPatchedOverride('miranda', (ov) => {
-  for (const b of (ov as any).skill1)
-    if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon')
+  for (const b of (ov as any).skill1) {
+    if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon') {
       b.target = { kind: 'allies' };
+    }
+  }
 });
 /** M4 counterfactual: the team critDmg line retargeted to self only. */
 const mirandaS2CritDmgSelf = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).skill2.find(
-    (b: any) => hasStat(b, 'critDamagePct') && b.target?.kind === 'allies',
+    (b: any) => hasStat(b, 'critDamagePct') && b.target?.kind === 'allies'
   );
-  if (!blk) throw new Error('miranda S2 allies critDamagePct block missing — fixture is stale');
+  if (!blk) {
+    throw new Error(
+      'miranda S2 allies critDamagePct block missing — fixture is stale'
+    );
+  }
   blk.target = { kind: 'self' };
 });
 /** M5 counterfactual: the self Attack Damage line bucket-swapped to atkPct (base, not DamageUp). */
@@ -118,36 +127,58 @@ const mirandaS2ADWrongBucket = withPatchedOverride('miranda', (ov) => {
   const e = (ov as any).skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'attackDamagePct');
-  if (!e) throw new Error('miranda S2 attackDamagePct effect missing — fixture is stale');
+  if (!e) {
+    throw new Error(
+      'miranda S2 attackDamagePct effect missing — fixture is stale'
+    );
+  }
   e.stat = 'atkPct';
 });
 /** M6 counterfactual: the 85.42 crit snapshot count bumped 1 → 2. */
 const mirandaS2Crit85Count2 = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).skill2.find((b: any) =>
-    b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
+    b.effects.some(
+      (e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01
+    )
   );
-  if (!blk) throw new Error('miranda S2 85.42 critRate block missing — fixture is stale');
+  if (!blk) {
+    throw new Error(
+      'miranda S2 85.42 critRate block missing — fixture is stale'
+    );
+  }
   blk.target.count = 2;
 });
 /** M6 counterfactual: the round-count snapshot forced back to a 1.5s wall-clock window. */
 const mirandaS2Crit85Seconds = withPatchedOverride('miranda', (ov) => {
   const e = (ov as any).skill2
     .flatMap((b: any) => b.effects)
-    .find((x: any) => x.stat === 'critRatePct' && Math.abs(x.value - 85.42) < 0.01);
-  if (!e) throw new Error('miranda S2 85.42 critRate effect missing — fixture is stale');
+    .find(
+      (x: any) => x.stat === 'critRatePct' && Math.abs(x.value - 85.42) < 0.01
+    );
+  if (!e) {
+    throw new Error(
+      'miranda S2 85.42 critRate effect missing — fixture is stale'
+    );
+  }
   delete e.durationShots;
   e.durationSec = 1.5;
 });
 /** M7 counterfactual: the burst ATK line retargeted to all allies. */
 const mirandaBurstAtkAllAllies = withPatchedOverride('miranda', (ov) => {
   const blk = (ov as any).burst.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk) throw new Error('miranda burst atkPct block missing — fixture is stale');
+  if (!blk) {
+    throw new Error('miranda burst atkPct block missing — fixture is stale');
+  }
   blk.target = { kind: 'allies' };
 });
 /** M7 counterfactual: the burst ATK line swapped to casterAtkPct (% of miranda's OWN low ATK). */
 const mirandaBurstAtkCaster = withPatchedOverride('miranda', (ov) => {
-  const e = (ov as any).burst.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'atkPct');
-  if (!e) throw new Error('miranda burst atkPct effect missing — fixture is stale');
+  const e = (ov as any).burst
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'atkPct');
+  if (!e) {
+    throw new Error('miranda burst atkPct effect missing — fixture is stale');
+  }
   e.stat = 'casterAtkPct';
 });
 /** Load-bearing reference: miranda's whole kit zeroed. */
@@ -172,12 +203,17 @@ const dead = run({ miranda: mirandaDead });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
-  evs.filter((e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === MIRANDA);
+  evs.filter(
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === MIRANDA
+  );
 const byStat = (evs: SimEvent[], stat: string, value: number) =>
   buffs(evs).filter((b) => b.stat === stat && Math.abs(b.value - value) < 0.01);
 const mirandaBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'miranda').length;
-const distinctTargets = (list: BuffApply[]) => new Set(list.map((b) => b.targetIdx));
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'miranda'
+  ).length;
+const distinctTargets = (list: BuffApply[]) =>
+  new Set(list.map((b) => b.targetIdx));
 const durationsSec = (list: BuffApply[]) =>
   new Set(list.map((b) => (b.expiresFrame! - b.frame) / FPS));
 const sum = (t: Record<string, number>) => COMP.reduce((a, s) => a + t[s], 0);
@@ -187,12 +223,19 @@ describe('miranda (Treasure) — kit spec', () => {
     const list = byStat(base.events, 'atkPct', 50.06);
     it('is self-scoped, 50.06%, for 5s, firing repeatedly at SMG cadence', () => {
       expect(list.length, 'no self ATK 50.06 buff applied').toBeGreaterThan(0);
-      expect([...distinctTargets(list)], 'must be miranda only').toEqual([MIRANDA]);
+      expect([...distinctTargets(list)], 'must be miranda only').toEqual([
+        MIRANDA,
+      ]);
       expect([...durationsSec(list)]).toEqual([5]);
-      expect(list.length, 'near-permanent at ~1.5s per 30 hits').toBeGreaterThan(20);
+      expect(
+        list.length,
+        'near-permanent at ~1.5s per 30 hits'
+      ).toBeGreaterThan(20);
     });
     it('DISCRIMINATES the target: all-allies reaches 4 and moves the carry total', () => {
-      expect(distinctTargets(byStat(selfAtkAllies.events, 'atkPct', 50.06)).size).toBe(ALLIES);
+      expect(
+        distinctTargets(byStat(selfAtkAllies.events, 'atkPct', 50.06)).size
+      ).toBe(ALLIES);
       expect(sum(selfAtkAllies.t)).not.toBe(sum(base.t));
     });
   });
@@ -200,7 +243,10 @@ describe('miranda (Treasure) — kit spec', () => {
   describe('M2 — S1 Hit Rate ▲5.44% to ALL allies (hitCount 30, 5s) [FIX]', () => {
     const list = byStat(base.events, 'hitRatePct', 5.44);
     it('reaches all four allies, 5.44%, for 5s', () => {
-      expect(list.length, 'no 5.44 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
+      expect(
+        list.length,
+        'no 5.44 Hit Rate buff applied — line still dropped'
+      ).toBeGreaterThan(0);
       expect(distinctTargets(list).size, 'all allies').toBe(ALLIES);
       expect([...durationsSec(list)]).toEqual([5]);
     });
@@ -212,11 +258,19 @@ describe('miranda (Treasure) — kit spec', () => {
   describe('M3 — S1 Hit Rate ▲3.79% to SMG-wielding allies only (hitCount 30, 5s) [FIX]', () => {
     const list = byStat(base.events, 'hitRatePct', 3.79);
     it('reaches exactly the SMG ally (miranda), not the MG/RL/SR allies', () => {
-      expect(list.length, 'no 3.79 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
-      expect([...distinctTargets(list)], 'only miranda is SMG in this comp').toEqual([MIRANDA]);
+      expect(
+        list.length,
+        'no 3.79 Hit Rate buff applied — line still dropped'
+      ).toBeGreaterThan(0);
+      expect(
+        [...distinctTargets(list)],
+        'only miranda is SMG in this comp'
+      ).toEqual([MIRANDA]);
     });
     it('DISCRIMINATES the weapon scope: retargeting to all allies reaches 4 holders', () => {
-      expect(distinctTargets(byStat(smgToAll.events, 'hitRatePct', 3.79)).size).toBe(ALLIES);
+      expect(
+        distinctTargets(byStat(smgToAll.events, 'hitRatePct', 3.79)).size
+      ).toBe(ALLIES);
     });
   });
 
@@ -226,11 +280,16 @@ describe('miranda (Treasure) — kit spec', () => {
       const windows = mirandaBursts(base.events);
       expect(windows).toBeGreaterThan(0);
       expect(distinctTargets(list).size).toBe(ALLIES);
-      expect(list.length, 'one application per ally per FB window').toBe(windows * ALLIES);
+      expect(list.length, 'one application per ally per FB window').toBe(
+        windows * ALLIES
+      );
       expect([...durationsSec(list)]).toEqual([10]);
     });
     it('DISCRIMINATES the target: self-only reaches 1 holder', () => {
-      expect(distinctTargets(byStat(s2CritDmgSelf.events, 'critDamagePct', 32.99)).size).toBe(1);
+      expect(
+        distinctTargets(byStat(s2CritDmgSelf.events, 'critDamagePct', 32.99))
+          .size
+      ).toBe(1);
     });
   });
 
@@ -256,16 +315,22 @@ describe('miranda (Treasure) — kit spec', () => {
       expect([...distinctTargets(list)]).not.toContain(MIRANDA);
     });
     it('is a ROUND count (durationShots 1), with NO wall-clock expiry', () => {
-      expect([...new Set(list.map((b) => b.durationShots))], '1 round → durationShots 1').toEqual([1]);
+      expect(
+        [...new Set(list.map((b) => b.durationShots))],
+        '1 round → durationShots 1'
+      ).toEqual([1]);
       expect(
         [...new Set(list.map((b) => b.expiresFrame))],
-        'a round-count buff must not also carry a timed expiry',
+        'a round-count buff must not also carry a timed expiry'
       ).toEqual([null]);
     });
     it('is encoded alliesTopAtk/byFinalAtk/count 1/excludeSelf (structural pin)', () => {
       const ov = withPatchedOverride('miranda', () => {}) as any;
       const blk = ov.skill2.find((b: any) =>
-        b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
+        b.effects.some(
+          (e: any) =>
+            e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01
+        )
       );
       expect(blk.target).toEqual({
         kind: 'alliesTopAtk',
@@ -276,9 +341,12 @@ describe('miranda (Treasure) — kit spec', () => {
       expect(blk.trigger).toEqual({ kind: 'fullBurstEnter' });
     });
     it('DISCRIMINATES the count: count 2 reaches two allies', () => {
-      expect(distinctTargets(byStat(s2Crit85Count2.events, 'critRatePct', 85.42)).size).toBe(2);
+      expect(
+        distinctTargets(byStat(s2Crit85Count2.events, 'critRatePct', 85.42))
+          .size
+      ).toBe(2);
     });
-    it('DISCRIMINATES the duration: a 1.5s window changes the buffed carry\'s damage vs one shot', () => {
+    it("DISCRIMINATES the duration: a 1.5s window changes the buffed carry's damage vs one shot", () => {
       expect(s2Crit85Seconds.t.ada).not.toBe(base.t.ada);
     });
   });
@@ -290,11 +358,15 @@ describe('miranda (Treasure) — kit spec', () => {
       expect(bursts).toBeGreaterThan(0);
       expect(distinctTargets(list).size, 'alliesTopAtk count 2').toBe(2);
       expect([...distinctTargets(list)]).not.toContain(MIRANDA);
-      expect(list.length, 'one application per ally per burst').toBe(bursts * 2);
+      expect(list.length, 'one application per ally per burst').toBe(
+        bursts * 2
+      );
       expect([...durationsSec(list)]).toEqual([10]);
     });
     it('DISCRIMINATES the count: all-allies reaches 4 and moves the total', () => {
-      expect(distinctTargets(byStat(burstAtkAllies.events, 'atkPct', 40.4)).size).toBe(ALLIES);
+      expect(
+        distinctTargets(byStat(burstAtkAllies.events, 'atkPct', 40.4)).size
+      ).toBe(ALLIES);
       expect(sum(burstAtkAllies.t)).not.toBe(sum(base.t));
     });
     it('DISCRIMINATES the stat: atkPct (% of target OWN) ≠ casterAtkPct (% of miranda low ATK)', () => {

@@ -29,7 +29,12 @@ import {
 } from '../src/teamcalc.js';
 import type { Element } from '../src/types.js';
 import { scopeLockCfg } from './lib/scope-lock.js';
-import { deps, mult, generatorPool, archetypeTags } from './tests/lib/harness.js';
+import {
+  deps,
+  mult,
+  generatorPool,
+  archetypeTags,
+} from './tests/lib/harness.js';
 import { META_WEIGHTS } from '../web/src/metaWeights.js';
 import bossingTiers from '../data/bossing-tiers.json' with { type: 'json' };
 
@@ -75,12 +80,18 @@ const prydwenScoreOf = (slug: string): number =>
   PRYDWEN_TIER_SCORE[TIERS[slug] ?? ''] ?? 0;
 
 function metaScoringFor(weakness: Element | null): MetaScoring | undefined {
-  if (!weakness) return undefined;
+  if (!weakness) {
+    return undefined;
+  }
   const entry = META_WEIGHTS.byWeakness[weakness];
-  if (!entry) return undefined;
+  if (!entry) {
+    return undefined;
+  }
   const fallback = new Set(META_WEIGHTS.fallbackSlugs);
   const compPop: Record<string, number> = {};
-  for (const c of entry.comps) compPop[[...c.slugs].sort().join('|')] = c.pop;
+  for (const c of entry.comps) {
+    compPop[[...c.slugs].sort().join('|')] = c.pop;
+  }
   return {
     unitScore: (slug: string) =>
       fallback.has(slug)
@@ -132,7 +143,11 @@ const calcFor = (weakness: Element | null) =>
     meta: metaScoringFor(weakness),
     requireElement: weakness,
     prydwenScore: prydwenScoreOf,
-    synergy: { tags: archetypeTags, pairs: SYNERGY_PAIRS, weight: SYNERGY_WEIGHT },
+    synergy: {
+      tags: archetypeTags,
+      pairs: SYNERGY_PAIRS,
+      weight: SYNERGY_WEIGHT,
+    },
     constraints: TEAM_CONSTRAINTS,
     cache: 'shared', // control/treatment share every sim for the same weakness
   });
@@ -145,11 +160,13 @@ function scoreOf(t: TeamResult, weakness: Element | null): number {
   let prior = 0;
   if (meta) {
     let sum = 0;
-    for (const s of slugs) sum += meta.unitScore(s);
+    for (const s of slugs) {
+      sum += meta.unitScore(s);
+    }
     prior = Math.min(
       1,
       sum / slugs.length +
-        meta.comboWeight * (meta.compPop[[...slugs].sort().join('|')] ?? 0),
+        meta.comboWeight * (meta.compPop[[...slugs].sort().join('|')] ?? 0)
     );
   }
   const pairs = countSynergyPairs(slugs, archetypeTags, SYNERGY_PAIRS);
@@ -160,19 +177,21 @@ function scoreOf(t: TeamResult, weakness: Element | null): number {
   );
 }
 
-async function runArm(
+function runArm(
   weakness: Element | null,
-  withCombos: boolean,
+  withCombos: boolean
 ): Promise<TeamResult[]> {
   const calc = calcFor(weakness);
-  if (!withCombos) return calc.topTeams(5, { spreadTargets: spreadTargets() });
+  if (!withCombos) {
+    return calc.topTeams(5, { spreadTargets: spreadTargets() });
+  }
   // mirror App.tsx runTopTeams: fold combos, then the crown+naga → helm rule
   const ac = assignAlwaysCombos(
     SOLO_ALWAYS_COMBOS,
     [],
     chars as any,
     5,
-    available,
+    available
   );
   const crownTeam = ac.pinnedByTeam.find((t) => t.includes('crown'));
   const placed = new Set([...ac.pinnedByTeam.flat(), ...ac.singles]);
@@ -194,7 +213,7 @@ async function runArm(
 function report(
   weakness: Element | null,
   control: TeamResult[],
-  treatment: TeamResult[],
+  treatment: TeamResult[]
 ): void {
   const label = weakness ?? 'none';
   const total = (ts: TeamResult[]) => ts.reduce((s, t) => s + t.teamDamage, 0);
@@ -208,27 +227,33 @@ function report(
     ts
       .map(
         (t) =>
-          `    ${t.slugs.join(',')}  ${(t.teamDamage / 1e6).toFixed(0)}M (score ${(scoreOf(t, weakness) / 1e6).toFixed(0)}M)`,
+          `    ${t.slugs.join(',')}  ${(t.teamDamage / 1e6).toFixed(0)}M (score ${(scoreOf(t, weakness) / 1e6).toFixed(0)}M)`
       )
       .join('\n');
   console.log(`\n== weakness: ${label} ==`);
   console.log(
-    `  control   (curated ON):  total ${(total(control) / 1e9).toFixed(2)}B, score ${(totalScore(control) / 1e9).toFixed(2)}B, ${control.length} teams`,
+    `  control   (curated ON):  total ${(total(control) / 1e9).toFixed(2)}B, score ${(totalScore(control) / 1e9).toFixed(2)}B, ${control.length} teams`
   );
   console.log(fmt(control));
   console.log(
-    `  treatment (curated OFF): total ${(total(treatment) / 1e9).toFixed(2)}B, score ${(totalScore(treatment) / 1e9).toFixed(2)}B, ${treatment.length} teams`,
+    `  treatment (curated OFF): total ${(total(treatment) / 1e9).toFixed(2)}B, score ${(totalScore(treatment) / 1e9).toFixed(2)}B, ${treatment.length} teams`
   );
   console.log(fmt(treatment));
   const cf = fielded(control);
   const tf = fielded(treatment);
-  console.log(`  curated fielded — control: ${cf.length}/${CURATED.length} [${cf.join(' ')}]`);
-  console.log(`  curated fielded — TREATMENT (on merit): ${tf.length}/${CURATED.length} [${tf.join(' ')}]`);
+  console.log(
+    `  curated fielded — control: ${cf.length}/${CURATED.length} [${cf.join(' ')}]`
+  );
+  console.log(
+    `  curated fielded — TREATMENT (on merit): ${tf.length}/${CURATED.length} [${tf.join(' ')}]`
+  );
   const dropped = cf.filter((s) => !tf.includes(s));
-  if (dropped.length) console.log(`  dropped by treatment: [${dropped.join(' ')}]`);
+  if (dropped.length) {
+    console.log(`  dropped by treatment: [${dropped.join(' ')}]`);
+  }
   const dScore = totalScore(treatment) / totalScore(control) - 1;
   console.log(
-    `  Δ roster score (treatment vs control): ${(dScore * 100).toFixed(1)}%`,
+    `  Δ roster score (treatment vs control): ${(dScore * 100).toFixed(1)}%`
   );
 }
 

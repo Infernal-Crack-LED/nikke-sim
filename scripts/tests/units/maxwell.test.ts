@@ -84,25 +84,25 @@ function run(overrides: Record<string, any> = {}) {
 const maxwellBurstCastTrigger = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
   if (!b || b.trigger?.kind !== 'fullBurstEnter')
-    throw new Error(
-      'maxwell S1 fullBurstEnter block missing — fixture is stale',
-    );
+    {throw new Error(
+      'maxwell S1 fullBurstEnter block missing — fixture is stale'
+    );}
   b.trigger.kind = 'burstCast';
 });
 /** M2 counterfactual: the same buffs to ALL allies instead of the top-2. */
 const maxwellAllAllies = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
   if (!b || b.target?.kind !== 'alliesTopAtk')
-    throw new Error(
-      'maxwell S1 alliesTopAtk target missing — fixture is stale',
-    );
+    {throw new Error(
+      'maxwell S1 alliesTopAtk target missing — fixture is stale'
+    );}
   b.target = { kind: 'allies' };
 });
 /** M7 counterfactual: the kit-literal FULL-CHARGE magnitude (813.42 × 3 = 2440.26). */
 const maxwellFullCharge = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
   if (!e)
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
   e.atkPct = 2440.26;
 });
 /** M6 counterfactual: a second shot in the burst window (the old multi-shot weaponSwap shape). */
@@ -110,14 +110,14 @@ const maxwellMultiShot = withPatchedOverride('maxwell', (ov) => {
   const b = ov.burst[0];
   const e = b?.effects?.find((x: any) => x.kind === 'flatDamage');
   if (!e)
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
   b.effects.push({ kind: 'flatDamage', atkPct: 813.42 });
 });
 /** M8 counterfactual: flip the eligibility — strip crit, add core. */
 const maxwellCritCoreFlip = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
   if (!e)
-    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
   e.crit = false;
   e.core = true;
 });
@@ -137,7 +137,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const maxwellBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'maxwell',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'maxwell'
   );
 /** maxwell's burst-bucket damage (her single railgun shot per cast). */
 const maxwellNukes = (evs: SimEvent[]) =>
@@ -147,7 +147,7 @@ const s1Atk = (evs: SimEvent[]) =>
   buffs(evs).filter((b) => b.casterIdx === MAXWELL && b.stat === 'atkPct');
 const s1Charge = (evs: SimEvent[]) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === MAXWELL && b.stat === 'chargeSpeedPct',
+    (b) => b.casterIdx === MAXWELL && b.stat === 'chargeSpeedPct'
   );
 /** Distinct frames on which maxwell's S1 ATK buff applied. */
 const s1Frames = (evs: SimEvent[]) => [
@@ -157,9 +157,9 @@ const s1Frames = (evs: SimEvent[]) => [
 const holdersPerFrame = (evs: SimEvent[]): Set<number | null>[] => {
   const m = new Map<number, Set<number | null>>();
   for (const b of s1Atk(evs))
-    (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
-      b.targetIdx,
-    );
+    {(m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+      b.targetIdx
+    );}
   return [...m.values()];
 };
 
@@ -172,13 +172,13 @@ describe('maxwell — kit spec', () => {
       expect(
         buffFrames,
         `${buffFrames} S1 apply-frames vs ${casts} maxwell casts — fullBurstEnter fires every FB ` +
-          'window (incl. ones helm casts); a burstCast trigger would tie the two together',
+          'window (incl. ones helm casts); a burstCast trigger would tie the two together'
       ).toBeGreaterThan(casts);
     });
 
     it('DISCRIMINATING: a burstCast trigger collapses the buff onto her casts only', () => {
       expect(s1Frames(burstCastTrigger.events).length).toBe(
-        maxwellBursts(burstCastTrigger.events).length,
+        maxwellBursts(burstCastTrigger.events).length
       );
     });
   });
@@ -190,7 +190,7 @@ describe('maxwell — kit spec', () => {
       for (const holders of perFrame) {
         expect(
           holders.size,
-          `an apply-frame reached ${holders.size} holders, expected 2`,
+          `an apply-frame reached ${holders.size} holders, expected 2`
         ).toBe(2);
       }
     });
@@ -218,7 +218,7 @@ describe('maxwell — kit spec', () => {
       });
       expect(
         ov.skill1[0].target.byFinalAtk,
-        'byFinalAtk is a residual, not enacted',
+        'byFinalAtk is a residual, not enacted'
       ).toBeUndefined();
     });
   });
@@ -246,15 +246,15 @@ describe('maxwell — kit spec', () => {
       expect(ov.skill2).toEqual([]);
       expect(
         dmg(base.events).filter(
-          (d) => d.slug === 'maxwell' && d.srcSlot === 'skill2',
-        ),
+          (d) => d.slug === 'maxwell' && d.srcSlot === 'skill2'
+        )
       ).toEqual([]);
       expect(
         buffs(base.events).filter(
           (b) =>
             b.casterIdx === MAXWELL &&
-            (b.stat === 'critRatePct' || b.stat === 'critDamagePct'),
-        ),
+            (b.stat === 'critRatePct' || b.stat === 'critDamagePct')
+        )
       ).toEqual([]);
     });
 
@@ -262,7 +262,7 @@ describe('maxwell — kit spec', () => {
       const ov = loadOverride('maxwell') as any;
       expect(ov.unmodeled.skill2.join(' ')).toContain('above 5 enemy units');
       expect(ov.unmodeled.skill2.join(' ')).toContain(
-        'Critical Damage ▲ 13.91%',
+        'Critical Damage ▲ 13.91%'
       );
     });
   });
@@ -274,13 +274,13 @@ describe('maxwell — kit spec', () => {
       expect(casts).toBeGreaterThan(0);
       expect(
         nukes,
-        `${nukes} burst hits vs ${casts} casts — a multi-shot model multiplies this`,
+        `${nukes} burst hits vs ${casts} casts — a multi-shot model multiplies this`
       ).toBe(casts);
     });
 
     it('DISCRIMINATING: a second shot in the window doubles the hit count', () => {
       expect(maxwellNukes(multiShot.events).length).toBe(
-        maxwellBursts(multiShot.events).length * 2,
+        maxwellBursts(multiShot.events).length * 2
       );
     });
   });
@@ -320,7 +320,7 @@ describe('maxwell — kit spec', () => {
       const nukes = maxwellNukes(base.events);
       expect(nukes.length).toBeGreaterThan(0);
       expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
   });

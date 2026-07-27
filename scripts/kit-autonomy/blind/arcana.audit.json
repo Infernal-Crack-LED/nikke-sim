@@ -156,9 +156,7 @@
       }
     ],
     "unmodeled": {
-      "skill1": [
-        "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
-      ],
+      "skill1": ["The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."],
       "skill2": [],
       "burst": []
     },

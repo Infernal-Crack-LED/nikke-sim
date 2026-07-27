@@ -10,10 +10,17 @@ import {
 import type { RanksCtx } from '../../../src/ranks/burstgen.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
 import type { OverrideFile } from '../../../src/skills/index.js';
-import { data, mult, cubes, olLines, skillLevels, archetypeTags } from '../lib/harness.js';
+import {
+  data,
+  mult,
+  cubes,
+  olLines,
+  skillLevels,
+  archetypeTags,
+} from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const s of Object.keys(data.characters)) overrides[s] = loadOverride(s);
+for (const s of Object.keys(data.characters)) {overrides[s] = loadOverride(s);}
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
@@ -25,7 +32,7 @@ const PROCS = 40 / FB_CYCLE_SEC;
 describe('burst-CDR board', () => {
   it('table and tag are in lockstep (every tagged unit has a row and vice versa)', () => {
     const tagged = Object.keys(archetypeTags).filter((s) =>
-      archetypeTags[s].includes('burst-cdr'),
+      archetypeTags[s].includes('burst-cdr')
     );
     expect(Object.keys(CDR_TABLE).sort()).toEqual(tagged.sort());
     expect(tagged).toHaveLength(15);
@@ -40,7 +47,13 @@ describe('burst-CDR board', () => {
   });
 
   it('flat 7.48-per-FB group (LM/anis-star/moran/rrh/soline) ranks at 14.96', () => {
-    for (const slug of ['little-mermaid', 'anis-star', 'moran', 'rapi-red-hood', 'soline-frost-ticket']) {
+    for (const slug of [
+      'little-mermaid',
+      'anis-star',
+      'moran',
+      'rapi-red-hood',
+      'soline-frost-ticket',
+    ]) {
       expect(cdrFor(slug, ctx).cdrPer40s).toBeCloseTo(7.48 * PROCS, 6);
     }
     // gates are noted, not deducted
@@ -55,7 +68,9 @@ describe('burst-CDR board', () => {
   });
 
   it('d-killer-wife/rouge out-rank flat 7.48 units on their SR cadence', () => {
-    expect(cdrFor('d-killer-wife', ctx).cdrPer40s).toBeGreaterThan(7.48 * PROCS);
+    expect(cdrFor('d-killer-wife', ctx).cdrPer40s).toBeGreaterThan(
+      7.48 * PROCS
+    );
     expect(cdrFor('rouge', ctx).cdrPer40s).toBeGreaterThan(7.48 * PROCS);
   });
 
@@ -63,7 +78,7 @@ describe('burst-CDR board', () => {
     const ranked = rankCdr(Object.keys(CDR_TABLE), ctx);
     expect(ranked).toHaveLength(15);
     for (let i = 1; i < ranked.length; i++)
-      expect(ranked[i].cdrPer40s).toBeLessThanOrEqual(ranked[i - 1].cdrPer40s);
+      {expect(ranked[i].cdrPer40s).toBeLessThanOrEqual(ranked[i - 1].cdrPer40s);}
     expect(ranked.map((e) => e.rank)).toEqual(ranked.map((_, i) => i + 1));
   });
 

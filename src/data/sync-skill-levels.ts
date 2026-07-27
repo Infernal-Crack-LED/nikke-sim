@@ -4,7 +4,7 @@
 // numbers, no approximation. We store the arrays; the loader matches parsed
 // prose values against index 9 (max level) to scale them down.
 import { readFileSync, writeFileSync } from 'node:fs';
-// @ts-ignore — plain .mjs helper
+// @ts-expect-error — plain .mjs helper
 import { getRoleData } from '../../scripts/blablalink-stats.mjs';
 import type { DataFile } from '../types.js';
 
@@ -19,7 +19,9 @@ function extractArrays(detail: any): SlotArrays {
     const vals = entry?.description_value;
     if (Array.isArray(vals) && vals.length === 10) {
       const nums = vals.map((v: string) => Number(v));
-      if (nums.every((n) => Number.isFinite(n))) out.push(nums);
+      if (nums.every((n) => Number.isFinite(n))) {
+        out.push(nums);
+      }
     }
   }
   return out;
@@ -29,7 +31,9 @@ async function main() {
   const data: DataFile = JSON.parse(
     readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
   );
-  const chars = Object.values(data.characters).filter((c: any) => c.baseStats?.resourceId);
+  const chars = Object.values(data.characters).filter(
+    (c: any) => c.baseStats?.resourceId
+  );
   const out: SkillLevelData = {};
   let failed = 0;
   const queue = [...chars];
@@ -54,7 +58,9 @@ async function main() {
     new URL('../../data/skill-levels.json', import.meta.url),
     JSON.stringify(out)
   );
-  console.log(`skill-level data for ${Object.keys(out).length} characters (${failed} failed)`);
+  console.log(
+    `skill-level data for ${Object.keys(out).length} characters (${failed} failed)`
+  );
 }
 
 main().catch((e) => {

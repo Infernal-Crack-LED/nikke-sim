@@ -230,9 +230,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Launches attachable projectiles that attach to hit locations."
-    ],
+    "skill2": ["Launches attachable projectiles that attach to hit locations."],
     "burst": [
       "When used in Stage 1: Squad Support Action Style",
       "Explosion Radius ▲ 100.62% for 10 sec.",

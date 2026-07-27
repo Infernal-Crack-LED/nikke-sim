@@ -38,12 +38,28 @@ export interface HitBandTable {
   focusTotal: number | null;
 }
 
-interface Inst { cat: string; atkPct: number; major: number; dmg: number }
+interface Inst {
+  cat: string;
+  atkPct: number;
+  major: number;
+  dmg: number;
+}
 
 /** Run the sim once with the debug tap on and group the focus unit's instances into value bands. */
-export function computeHitBands(focus: string, team: string[], boss: Element | null, focusSlug = focus): HitBandTable {
+export function computeHitBands(
+  focus: string,
+  team: string[],
+  boss: Element | null,
+  focusSlug = focus
+): HitBandTable {
   const w = loadWorld();
-  const bt: BatteryTeam = { name: focus, slugs: team.length ? team : [focus], focus: focusSlug, modes: {}, lambda: {} };
+  const bt: BatteryTeam = {
+    name: focus,
+    slugs: team.length ? team : [focus],
+    focus: focusSlug,
+    modes: {},
+    lambda: {},
+  };
   autoWire(w, bt);
 
   const prevUnit = process.env.DBG_UNIT;
@@ -54,42 +70,61 @@ export function computeHitBands(focus: string, team: string[], boss: Element | n
   const realLog = console.log;
   console.log = (...a: unknown[]) => {
     const s = a.join(' ');
-    if (s.includes(`[dbg ${focus}]`)) lines.push(s);
-    else realLog(...a);
+    if (s.includes(`[dbg ${focus}]`)) {lines.push(s);}
+    else {realLog(...a);}
   };
 
   let res;
   try {
     const chars = bt.slugs.map((s) => w.data.characters[s]);
     const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-    for (const s of bt.slugs) overrides[s] = loadOverride(s);
+    for (const s of bt.slugs) {overrides[s] = loadOverride(s);}
     const unitOpts: UnitOptions[] = bt.slugs.map((slug) => ({
-      doll: false, ol: 'base5', mode: bt.modes?.[slug], lambdaStage: bt.lambda?.[slug],
+      doll: false,
+      ol: 'base5',
+      mode: bt.modes?.[slug],
+      lambdaStage: bt.lambda?.[slug],
     }));
     // coreHitRate:0 so the printed dmg is the clean NON-core base; core is applied on top below.
     const cfg: SimConfig = {
-      slugs: bt.slugs, bossElement: boss, bossDef: 0, level: 400, copies: 10,
-      doll: false, ol: 'base5', coreHitRate: 0, rangeBonus: true, durationSec: 180, focusSlug,
+      slugs: bt.slugs,
+      bossElement: boss,
+      bossDef: 0,
+      level: 400,
+      copies: 10,
+      doll: false,
+      ol: 'base5',
+      coreHitRate: 0,
+      rangeBonus: true,
+      durationSec: 180,
+      focusSlug,
     };
     const prepared = prepareTeam(chars, unitOpts, {
-      overrides, skillLevels: w.skillLevels, cubes: w.cubes, olLines: w.olLines,
+      overrides,
+      skillLevels: w.skillLevels,
+      cubes: w.cubes,
+      olLines: w.olLines,
     });
     res = runSim(chars, w.mult, cfg, prepared);
   } finally {
     console.log = realLog;
-    if (prevUnit === undefined) delete process.env.DBG_UNIT; else process.env.DBG_UNIT = prevUnit;
-    if (prevN === undefined) delete process.env.DBG_N; else process.env.DBG_N = prevN;
+    if (prevUnit === undefined) {delete process.env.DBG_UNIT;}
+    else {process.env.DBG_UNIT = prevUnit;}
+    if (prevN === undefined) {delete process.env.DBG_N;}
+    else {process.env.DBG_N = prevN;}
   }
 
   const insts: Inst[] = [];
   for (const l of lines) {
-    const m = l.match(/\] t=[\d.]+ (\w+) atkPct=([\d.]+) baseAtk=\d+ major=([\d.]+) .* dmg=(\d+)/);
-    if (m) insts.push({ cat: m[1], atkPct: +m[2], major: +m[3], dmg: +m[4] });
+    const m = l.match(
+      /\] t=[\d.]+ (\w+) atkPct=([\d.]+) baseAtk=\d+ major=([\d.]+) .* dmg=(\d+)/
+    );
+    if (m) {insts.push({ cat: m[1], atkPct: +m[2], major: +m[3], dmg: +m[4] });}
   }
   const groups = new Map<string, Inst[]>();
   for (const i of insts) {
     const key = `${i.cat}|${i.atkPct.toFixed(1)}`;
-    if (!groups.has(key)) groups.set(key, []);
+    if (!groups.has(key)) {groups.set(key, []);}
     groups.get(key)!.push(i);
   }
 
@@ -100,37 +135,60 @@ export function computeHitBands(focus: string, team: string[], boss: Element | n
   const critBonus = ((fchar?.baseStats?.critDamage ?? 150) - 100) / 100;
   const coreBonus = ((fchar?.coreAttackMultiplier ?? 200) - 100) / 100;
 
-  const bands: HitBand[] = [...groups.entries()].map(([key, g]) => {
-    const [cat, coef] = key.split('|');
-    const dmgs = g.map((i) => i.dmg).sort((a, b) => a - b);
-    const lo = dmgs[0], hi = dmgs[dmgs.length - 1];
-    // A crit popup reads base x (major+critBonus)/major — during Full Burst the major is already
-    // ~1.5, so the visible crit factor is ~x1.333, not x1.5. Use each group's own major range.
-    const majMin = Math.min(...g.map((i) => i.major)), majMax = Math.max(...g.map((i) => i.major));
-    const critLo = Math.round((lo * (majMin + critBonus)) / majMin);
-    const critHi = Math.round((hi * (majMax + critBonus)) / majMax);
-    return {
-      cat, coefPct: Number(coef), n: g.length,
-      baseLo: lo, baseHi: hi,
-      critLo, critHi,
-      coreLo: Math.round(lo * (1 + coreBonus)), coreHi: Math.round(hi * (1 + coreBonus)),
-      critCoreLo: Math.round(critLo * (1 + coreBonus)), critCoreHi: Math.round(critHi * (1 + coreBonus)),
-    };
-  }).sort((a, b) => b.baseHi - a.baseHi);
+  const bands: HitBand[] = [...groups.entries()]
+    .map(([key, g]) => {
+      const [cat, coef] = key.split('|');
+      const dmgs = g.map((i) => i.dmg).sort((a, b) => a - b);
+      const lo = dmgs[0],
+        hi = dmgs[dmgs.length - 1];
+      // A crit popup reads base x (major+critBonus)/major — during Full Burst the major is already
+      // ~1.5, so the visible crit factor is ~x1.333, not x1.5. Use each group's own major range.
+      const majMin = Math.min(...g.map((i) => i.major)),
+        majMax = Math.max(...g.map((i) => i.major));
+      const critLo = Math.round((lo * (majMin + critBonus)) / majMin);
+      const critHi = Math.round((hi * (majMax + critBonus)) / majMax);
+      return {
+        cat,
+        coefPct: Number(coef),
+        n: g.length,
+        baseLo: lo,
+        baseHi: hi,
+        critLo,
+        critHi,
+        coreLo: Math.round(lo * (1 + coreBonus)),
+        coreHi: Math.round(hi * (1 + coreBonus)),
+        critCoreLo: Math.round(critLo * (1 + coreBonus)),
+        critCoreHi: Math.round(critHi * (1 + coreBonus)),
+      };
+    })
+    .sort((a, b) => b.baseHi - a.baseHi);
 
   return {
-    focus, team: bt.slugs, boss, critBonus, coreBonus, bands,
+    focus,
+    team: bt.slugs,
+    boss,
+    critBonus,
+    coreBonus,
+    bands,
     focusTotal: res.units.find((x) => x.slug === focus)?.totalDamage ?? null,
   };
 }
 
-export interface BandHit { cat: string; coefPct: number; variant: 'base' | 'crit' | 'core' | 'crit+core' }
+export interface BandHit {
+  cat: string;
+  coefPct: number;
+  variant: 'base' | 'crit' | 'core' | 'crit+core';
+}
 
 /**
  * Which hit types could produce this popup value. `tolPct` widens each band's edges — buffs the
  * sim models will already be inside the min/max, so the tolerance only absorbs rounding.
  */
-export function matchBands(table: HitBandTable, value: number, tolPct = 1): BandHit[] {
+export function matchBands(
+  table: HitBandTable,
+  value: number,
+  tolPct = 1
+): BandHit[] {
   const out: BandHit[] = [];
   const f = tolPct / 100;
   for (const b of table.bands) {
@@ -141,8 +199,8 @@ export function matchBands(table: HitBandTable, value: number, tolPct = 1): Band
       ['crit+core', b.critCoreLo, b.critCoreHi],
     ];
     for (const [variant, lo, hi] of variants)
-      if (value >= lo * (1 - f) && value <= hi * (1 + f))
-        out.push({ cat: b.cat, coefPct: b.coefPct, variant });
+      {if (value >= lo * (1 - f) && value <= hi * (1 + f))
+        {out.push({ cat: b.cat, coefPct: b.coefPct, variant });}}
   }
   return out;
 }

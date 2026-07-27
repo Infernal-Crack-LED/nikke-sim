@@ -23,7 +23,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 export function useDragReorder(
   onMove: (from: number, to: number) => void,
   onTap?: (i: number) => void,
-  opts?: { ignoreFrom?: string; commitOnDrop?: boolean },
+  opts?: { ignoreFrom?: string; commitOnDrop?: boolean }
 ) {
   const items = useRef(new Map<number, HTMLElement>());
   const drag = useRef<{
@@ -38,8 +38,8 @@ export function useDragReorder(
   const [overIndex, setOverIndex] = useState<number | null>(null);
 
   const register = (i: number) => (el: HTMLElement | null) => {
-    if (el) items.current.set(i, el);
-    else items.current.delete(i);
+    if (el) {items.current.set(i, el);}
+    else {items.current.delete(i);}
   };
 
   // index of the item whose centre is nearest the pointer (2D, so it works for
@@ -64,15 +64,15 @@ export function useDragReorder(
   // focuses that card's picker on tap, but reorders on drag)
   const handleProps = (
     i: number,
-    onItemTap?: (i: number, e: ReactPointerEvent) => void,
+    onItemTap?: (i: number, e: ReactPointerEvent) => void
   ) => ({
     onPointerDown: (e: ReactPointerEvent) => {
-      if (e.button && e.button !== 0) return;
+      if (e.button && e.button !== 0) {return;}
       if (
         opts?.ignoreFrom &&
         (e.target as HTMLElement).closest(opts.ignoreFrom)
       )
-        return;
+        {return;}
       drag.current = {
         pointerId: e.pointerId,
         startX: e.clientX,
@@ -84,11 +84,11 @@ export function useDragReorder(
     },
     onPointerMove: (e: ReactPointerEvent) => {
       const st = drag.current;
-      if (!st || e.pointerId !== st.pointerId) return;
+      if (!st || e.pointerId !== st.pointerId) {return;}
       if (!st.moved) {
         const dx = e.clientX - st.startX;
         const dy = e.clientY - st.startY;
-        if (dx * dx + dy * dy < 36) return; // ~6px threshold before it's a drag
+        if (dx * dx + dy * dy < 36) {return;} // ~6px threshold before it's a drag
         st.moved = true;
         setDragIndex(st.index);
       }
@@ -106,14 +106,14 @@ export function useDragReorder(
     },
     onPointerUp: (e: ReactPointerEvent) => {
       const st = drag.current;
-      if (!st || e.pointerId !== st.pointerId) return;
+      if (!st || e.pointerId !== st.pointerId) {return;}
       if (!st.moved) {
-        if (onItemTap) onItemTap(st.index, e);
-        else if (onTap) onTap(st.index);
+        if (onItemTap) {onItemTap(st.index, e);}
+        else if (onTap) {onTap(st.index);}
       } else if (opts?.commitOnDrop) {
         // displace only at the final drop point
         const target = nearest(e.clientX, e.clientY);
-        if (target >= 0 && target !== st.index) onMove(st.index, target);
+        if (target >= 0 && target !== st.index) {onMove(st.index, target);}
       }
       drag.current = null;
       setDragIndex(null);

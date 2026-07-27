@@ -110,7 +110,7 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  cfg: Record<string, any> = {},
+  cfg: Record<string, any> = {}
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -130,7 +130,7 @@ const dkwShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'd-killer-wife');
 const dkwCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'd-killer-wife',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'd-killer-wife'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -147,17 +147,17 @@ const dkwBuffs = (evs: SimEvent[], slot?: 'skill1' | 'skill2' | 'burst') =>
   buffs(evs).filter(
     (b) =>
       b.casterIdx === DKW &&
-      (slot == null || b.key.startsWith(`${DKW}:${slot}:`)),
+      (slot == null || b.key.startsWith(`${DKW}:${slot}:`))
   );
 const distinctFrames = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 
@@ -165,23 +165,23 @@ const dursOf = (bs: BuffApply[]) => [
 /** W2 nearest-wrong: the pre-2026-07-20 encoding — Pierce Damage to ALL allies (reaches the MG). */
 const cfPierceAll = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'pierceDamagePct'),
+    x.effects.some((e: any) => e.stat === 'pierceDamagePct')
   );
   if (!b)
-    throw new Error(
-      'd-killer-wife S1 pierceDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'd-killer-wife S1 pierceDamagePct block missing — fixture is stale'
+    );}
   b.target = { kind: 'allies' };
 });
 /** W3 nearest-wrong: the 2026-07-16 parser bug — team Burst CDR firing on EVERY shot (shotFired). */
 const cfCdrEveryShot = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'burstCdr'),
+    x.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (!b)
-    throw new Error(
-      'd-killer-wife S2 burstCdr block missing — fixture is stale',
-    );
+    {throw new Error(
+      'd-killer-wife S2 burstCdr block missing — fixture is stale'
+    );}
   b.trigger = { kind: 'shotFired' };
 });
 /** W4 nearest-wrong: the same parser-bug class — Attack Damage firing every shot (hitCount 5 → 1). */
@@ -189,23 +189,23 @@ const cfAtkEveryShot = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.skill2.find(
     (x: any) =>
       x.trigger?.kind === 'hitCount' &&
-      x.effects.some((e: any) => e.stat === 'attackDamagePct'),
+      x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
   if (!b)
-    throw new Error(
-      'd-killer-wife S2 attackDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'd-killer-wife S2 attackDamagePct block missing — fixture is stale'
+    );}
   b.trigger.count = 1;
 });
 /** W5 nearest-wrong: the lv1 burst magnitude 159.12 instead of the lv10 269.28. */
 const cfNukeLv1 = withPatchedOverride('d-killer-wife', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
   if (!b)
-    throw new Error(
-      'd-killer-wife burst flatDamage block missing — fixture is stale',
-    );
+    {throw new Error(
+      'd-killer-wife burst flatDamage block missing — fixture is stale'
+    );}
   b.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 159.12;
 });
 /** W6 nearest-wrong: re-add the REMOVED ungated parts branch (all-ally coreDamagePct 16.26) — the
@@ -263,7 +263,7 @@ describe('d-killer-wife — kit spec', () => {
 
   describe('W2 — S1 entering Full Burst → SR allies: Pierce Damage ▲13.55% for 10 sec', () => {
     const pierce = dkwBuffs(base.events, 'skill1').filter(
-      (b) => b.stat === 'pierceDamagePct',
+      (b) => b.stat === 'pierceDamagePct'
     );
     it('is 13.55%, fires on every Full Burst entry, for 10 sec', () => {
       expect(pierce.length).toBeGreaterThan(0);
@@ -277,7 +277,7 @@ describe('d-killer-wife — kit spec', () => {
     });
     it('DISCRIMINATING: the all-allies encoding (pre-2026-07-20) would reach the MG too', () => {
       const cf = dkwBuffs(pierceAll.events, 'skill1').filter(
-        (b) => b.stat === 'pierceDamagePct',
+        (b) => b.stat === 'pierceDamagePct'
       );
       expect(targetsOf(cf)).toEqual(ALL_ALLIES);
       expect(targetsOf(cf)).toContain(CROWN);
@@ -296,30 +296,30 @@ describe('d-killer-wife — kit spec', () => {
 
   describe('W4 — S2 Full Charge x5 → all allies: Attack damage ▲5.06% for 10 sec', () => {
     const atk = dkwBuffs(base.events, 'skill2').filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 5.06,
+      (b) => b.stat === 'attackDamagePct' && b.value === 5.06
     );
     it('fires floor(shots/5)× (every 5 of her own full charges), reaching all 3 allies for 10 sec', () => {
       expect(atk.length).toBeGreaterThan(0);
       expect(distinctFrames(atk).length).toBe(Math.floor(shots / 5));
       // every firing reaches all three allies
       for (const f of distinctFrames(atk))
-        expect(atk.filter((b) => b.frame === f).length).toBe(3);
+        {expect(atk.filter((b) => b.frame === f).length).toBe(3);}
       expect(targetsOf(atk)).toEqual(ALL_ALLIES);
       expect(dursOf(atk)).toEqual([10 * FPS]);
     });
     it('DISCRIMINATING: hitCount 1 (parser-bug class) fires every shot — far more firings', () => {
       const cf = dkwBuffs(atkEveryShot.events, 'skill2').filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 5.06,
+        (b) => b.stat === 'attackDamagePct' && b.value === 5.06
       );
       expect(distinctFrames(cf).length).toBeGreaterThan(
-        distinctFrames(atk).length,
+        distinctFrames(atk).length
       );
     });
   });
 
   describe('W5 — Burst: 269.28% of final ATK additional damage + inflicts Wipe Out 10 sec', () => {
     const nukes = dmg(base.events).filter(
-      (d) => d.slug === 'd-killer-wife' && d.srcSlot === 'burst',
+      (d) => d.slug === 'd-killer-wife' && d.srcSlot === 'burst'
     );
     it('lands once per cast at the lv10 magnitude, in the burst bucket', () => {
       expect(nukes.length).toBe(casts);
@@ -329,12 +329,12 @@ describe('d-killer-wife — kit spec', () => {
     });
     it('never takes the +50% Full Burst major (the cast lands before the FB window opens)', () => {
       expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
     it('DISCRIMINATING: the lv1 magnitude 159.12 is NOT the shipped value', () => {
       const cf = dmg(nukeLv1.events).filter(
-        (d) => d.slug === 'd-killer-wife' && d.srcSlot === 'burst',
+        (d) => d.slug === 'd-killer-wife' && d.srcSlot === 'burst'
       );
       expect([...new Set(cf.map((d) => d.atkPct))]).toEqual([159.12]);
       expect([...new Set(nukes.map((d) => d.atkPct))]).not.toEqual([159.12]);
@@ -351,17 +351,17 @@ describe('d-killer-wife — kit spec', () => {
     });
     it('DISCRIMINATING: re-adding the ungated parts branch makes coreDamagePct appear and lifts every total', () => {
       const cfCore = buffs(partsReadded.events).filter(
-        (b) => b.stat === 'coreDamagePct',
+        (b) => b.stat === 'coreDamagePct'
       );
       expect(cfCore.length).toBeGreaterThan(0);
       for (const s of comp.slugs)
-        expect(partsReadded.totals[s]).toBeGreaterThan(base.totals[s]);
+        {expect(partsReadded.totals[s]).toBeGreaterThan(base.totals[s]);}
     });
   });
 
   describe('W7 — Burst body branch → all allies: ATK ▲12.19% of caster ATK for 10 sec (gated)', () => {
     const body = dkwBuffs(base.events, 'burst').filter(
-      (b) => b.stat === 'casterAtkPct',
+      (b) => b.stat === 'casterAtkPct'
     );
     it('fires once per cast, reaching all 3 allies for 10 sec, on her cast frames', () => {
       expect(body.length).toBeGreaterThan(0);
@@ -371,7 +371,7 @@ describe('d-killer-wife — kit spec', () => {
     });
     it("is 12.19% of the caster's ATK (casterAtkPct resolves to flat ATK)", () => {
       const expected = (12.19 / 100) * dkwStaticAtk;
-      for (const b of body) expect(b.value).toBeCloseTo(expected, 6);
+      for (const b of body) {expect(b.value).toBeCloseTo(expected, 6);}
     });
     it('GATE DIRECTION: NOT core-gated — fires identically at coreHitRate 0 and 1 (body = non-core)', () => {
       // "Allies that hit the body" = non-core on the partless boss, so the body branch is MAXIMALLY
@@ -379,7 +379,7 @@ describe('d-killer-wife — kit spec', () => {
       // re-adds the stranded requiresCore proxy would gate it OUT at coreHitRate 0 — this catches it
       // (the S7 reconciling-judge REAL-GOTCHA: requiresCore inverts the kit's body condition).
       const atCore0 = dkwBuffs(core0.events, 'burst').filter(
-        (b) => b.stat === 'casterAtkPct',
+        (b) => b.stat === 'casterAtkPct'
       );
       expect(atCore0.length).toBeGreaterThan(0);
       expect(atCore0.length).toBe(body.length); // unchanged by core exposure → gate is Wipe Out, not core

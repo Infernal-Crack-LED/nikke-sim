@@ -31,14 +31,14 @@ export const FB_CYCLE_SEC = 20;
 const FB_PROCS_PER_40 = 40 / FB_CYCLE_SEC; // 2
 
 type CdrSource =
-  | { kind: 'perFb'; perFb: number; ramp?: number[] }      // per Full Burst (ramp = cumulative per-entry values)
-  | { kind: 'perShots'; cdr: number; shots: number };      // CDR per N charged/trigger shots
+  | { kind: 'perFb'; perFb: number; ramp?: number[] } // per Full Burst (ramp = cumulative per-entry values)
+  | { kind: 'perShots'; cdr: number; shots: number }; // CDR per N charged/trigger shots
 
 interface CdrRow {
   source: CdrSource;
   condition?: string; // gate that must hold for the line to fire
-  selfCdr?: number;   // self-only CDR component (sec) — note column
-  kit: string;        // one-line kit reference
+  selfCdr?: number; // self-only CDR component (sec) — note column
+  kit: string; // one-line kit reference
 }
 
 // The 15 burst-cdr-tagged units. Values = L10 prose (scope lock runs 10/10/10).
@@ -78,7 +78,8 @@ export const CDR_TABLE: Record<string, CdrRow> = {
   },
   arcana: {
     source: { kind: 'perFb', perFb: 6 },
-    condition: 'when Full Burst ends, only in Wheel of Fortune (rotations where she bursts)',
+    condition:
+      'when Full Burst ends, only in Wheel of Fortune (rotations where she bursts)',
     kit: 'S2 Death: when Full Burst ends in Wheel of Fortune, team ▼6',
   },
   sakura: {
@@ -114,8 +115,8 @@ export const CDR_TABLE: Record<string, CdrRow> = {
 
 export interface CdrEntry {
   slug: string;
-  cdrPer40s: number;    // nominal team CDR seconds per 40s (capped for escalating)
-  ramp?: number[];      // escalating: per-40s value by entry count (1st / 2nd / 3rd+)
+  cdrPer40s: number; // nominal team CDR seconds per 40s (capped for escalating)
+  ramp?: number[]; // escalating: per-40s value by entry count (1st / 2nd / 3rd+)
   condition?: string;
   selfCdr?: number;
   kit: string;
@@ -158,7 +159,10 @@ function soloPulls(slug: string, ctx: RanksCtx): number {
 
 export function cdrFor(slug: string, ctx: RanksCtx): CdrEntry {
   const row = CDR_TABLE[slug];
-  if (!row) throw new Error(`${slug}: not on the burst-CDR board (no burst-cdr tag row)`);
+  if (!row)
+    {throw new Error(
+      `${slug}: not on the burst-CDR board (no burst-cdr tag row)`
+    );}
   let cdrPer40s: number;
   let ramp: number[] | undefined;
   if (row.source.kind === 'perFb') {

@@ -81,7 +81,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const isabelBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'isabel',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'isabel'
   );
 /** Isabel's own damage on a given kit line, by atkPct. */
 const isabelDmg = (evs: SimEvent[], atkPct: number) =>
@@ -93,12 +93,12 @@ const selfBuff = (evs: SimEvent[], stat: string, value: number) =>
       b.casterIdx === ISABEL &&
       b.targetIdx === ISABEL &&
       b.stat === stat &&
-      b.value === value,
+      b.value === value
   );
 /** Boss debuffs (targetIdx null) on a given stat/value. */
 const bossDebuff = (evs: SimEvent[], stat: string, value: number) =>
   buffs(evs).filter(
-    (b) => b.targetIdx === null && b.stat === stat && b.value === value,
+    (b) => b.targetIdx === null && b.stat === stat && b.value === value
   );
 /** Lengths (frames) of every Full Burst window in the fight. */
 const fbWindowLens = (evs: SimEvent[]): number[] => {
@@ -106,22 +106,26 @@ const fbWindowLens = (evs: SimEvent[]): number[] => {
   const lens: number[] = [];
   for (const s of starts) {
     const end = evs.find((e) => e.kind === 'fullBurstEnd' && e.frame > s.frame);
-    if (end) lens.push(end.frame - s.frame);
+    if (end) {
+      lens.push(end.frame - s.frame);
+    }
   }
   return lens;
 };
 /** Distinct crit rates seen per unit on the given buckets — the L1 scope discriminator. */
 function critRatesByUnit(
   evs: SimEvent[],
-  buckets: Damage['bucket'][],
+  buckets: Damage['bucket'][]
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of dmg(evs)) {
-    if (!buckets.includes(d.bucket)) continue;
+    if (!buckets.includes(d.bucket)) {
+      continue;
+    }
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
-    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')]),
+    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')])
   );
 }
 
@@ -129,24 +133,27 @@ function critRatesByUnit(
 /** L1-L3 nearest-wrong (escalating): S1 ladder collapsed to a single "always max" atkPct 17.28. */
 const cfS1NoEscalate = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects?.some((e: any) => e.kind === 'escalating'),
+    x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
+  if (!b) {
     throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   b.effects = [{ kind: 'buff', stat: 'atkPct', value: 17.28, durationSec: 45 }];
 });
 /** L1 nearest-wrong (scope): the 6.26% crit as a normal-scoped critRateNormalPct. */
 const cfCrScoped = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects?.some((e: any) => e.kind === 'escalating'),
+    x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
+  if (!b) {
     throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   const step = b.effects
     .find((e: any) => e.kind === 'escalating')
     .steps.find((s: any) => s.stat === 'critRatePct');
-  if (!step)
+  if (!step) {
     throw new Error('isabel S1 critRatePct step missing — fixture is stale');
+  }
   step.stat = 'critRateNormalPct';
 });
 /** L1 nearest-wrong (trigger): the S1 ladder re-keyed burstCast → fullBurstEnter. LIVE in this
@@ -154,26 +161,29 @@ const cfCrScoped = withPatchedOverride('isabel', (ov) => {
  *  fullBurstEnter key over-applies the buff and escalates the Marked-Target counter twice as fast. */
 const cfS1FbEnter = withPatchedOverride('isabel', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects?.some((e: any) => e.kind === 'escalating'),
+    x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
+  if (!b) {
     throw new Error('isabel S1 escalating block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** L4 nearest-wrong (cadence): the battle-start passive hit removed → 11 hits, not 12. */
 const cfS2NoT0 = withPatchedOverride('isabel', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'passive');
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('isabel S2 passive block missing — fixture is stale');
+  }
 });
 /** L6-L8 nearest-wrong (escalating): the burst rider ladder collapsed to "all three every cast". */
 const cfBurstNoEscalate = withPatchedOverride('isabel', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects?.some((e: any) => e.kind === 'escalating'),
+    x.effects?.some((e: any) => e.kind === 'escalating')
   );
-  if (!b)
+  if (!b) {
     throw new Error('isabel burst escalating block missing — fixture is stale');
+  }
   b.effects = [
     { kind: 'buff', stat: 'damageTakenPct', value: 39.96, durationSec: 5 },
     { kind: 'flatDamage', atkPct: 299.7 },
@@ -184,20 +194,27 @@ const cfBurstNoEscalate = withPatchedOverride('isabel', (ov) => {
 const cfNoExt = withPatchedOverride('isabel', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend')
   );
-  if (ov.burst.length === before)
+  if (ov.burst.length === before) {
     throw new Error('isabel fullBurstExtend block missing — fixture is stale');
+  }
 });
 /** L9 nearest-wrong (sign): the ▼5s nerf flipped to ▲5s — Isabel's FB windows grow to 15s, the
  *  opposite of the kit's "Full Burst Duration ▼ 5 sec". */
 const cfExtSignFlip = withPatchedOverride('isabel', (ov) => {
   let hit = 0;
-  for (const b of ov.burst)
-    for (const e of b.effects)
-      if (e.kind === 'fullBurstExtend') ((e.seconds = 5), hit++);
-  if (!hit)
+  for (const b of ov.burst) {
+    for (const e of b.effects) {
+      if (e.kind === 'fullBurstExtend') {
+        e.seconds = 5;
+        hit++;
+      }
+    }
+  }
+  if (!hit) {
     throw new Error('isabel fullBurstExtend block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -239,14 +256,14 @@ describe('isabel — kit spec', () => {
       }
       // distinct buff keys → the three steps coexist/stack rather than overwrite one another
       expect(new Set([...cRate, ...cDmg, ...atk].map((b) => b.key)).size).toBe(
-        3,
+        3
       );
     });
 
     it('DISCRIMINATING (escalating): a non-escalating "always max" encoding drops the 6.26/18.03 steps', () => {
       expect(selfBuff(s1NoEscalate.events, 'critRatePct', 6.26).length).toBe(0);
       expect(selfBuff(s1NoEscalate.events, 'critDamagePct', 18.03).length).toBe(
-        0,
+        0
       );
       // …and fires atkPct 17.28 on EVERY cast (no ramp), unlike the faithful casts-2
       expect(selfBuff(s1NoEscalate.events, 'atkPct', 17.28).length).toBe(casts);
@@ -255,7 +272,7 @@ describe('isabel — kit spec', () => {
     it('DISCRIMINATING (scope): the crit line is GENERIC critRatePct — it lifts her skill-bucket crit', () => {
       // A normal-scoped critRateNormalPct would leave the skill bucket (her S2 periodic hit) unchanged.
       expect(critRatesByUnit(base.events, ['skill'])).not.toEqual(
-        critRatesByUnit(crScoped.events, ['skill']),
+        critRatesByUnit(crScoped.events, ['skill'])
       );
       expect(selfBuff(crScoped.events, 'critRatePct', 6.26).length).toBe(0);
     });
@@ -265,21 +282,21 @@ describe('isabel — kit spec', () => {
       // would apply (and escalate) the buff on every team FB, so its self-buff count tracks the FB
       // count, which is strictly greater than Isabel's own cast count.
       const fbCount = base.events.filter(
-        (e) => e.kind === 'fullBurstStart',
+        (e) => e.kind === 'fullBurstStart'
       ).length;
       expect(fbCount).toBeGreaterThan(casts); // fixture makes this discrimination live
       expect(selfBuff(s1FbEnter.events, 'critRatePct', 6.26).length).toBe(
-        fbCount,
+        fbCount
       );
       expect(selfBuff(s1FbEnter.events, 'critRatePct', 6.26).length).not.toBe(
-        casts,
+        casts
       );
     });
   });
 
   describe('L4 — S2 periodic single hit: 170.58% of final ATK, time-based ~15s, 12 hits/180s', () => {
     const hits = isabelDmg(base.events, 170.58).filter(
-      (d) => d.srcSlot === 'skill2',
+      (d) => d.srcSlot === 'skill2'
     );
 
     it('fires exactly 12×/180s in the skill bucket, crit-eligible, never the burst bucket', () => {
@@ -297,13 +314,14 @@ describe('isabel — kit spec', () => {
     it('is a battle-start hit (t=0) then every 15s — the measured CD-gated cadence', () => {
       const secs = hits.map((d) => d.sec).sort((a, b) => a - b);
       expect(secs[0]).toBeLessThan(1); // the load-bearing t=0 passive fire
-      for (let i = 1; i < secs.length; i++)
+      for (let i = 1; i < secs.length; i++) {
         expect(secs[i] - secs[i - 1]).toBeCloseTo(15, 0);
+      }
     });
 
     it('DISCRIMINATING (cadence): dropping the battle-start hit leaves 11, not 12', () => {
       const cf = isabelDmg(s2NoT0.events, 170.58).filter(
-        (d) => d.srcSlot === 'skill2',
+        (d) => d.srcSlot === 'skill2'
       );
       expect(cf.length).toBe(11);
     });
@@ -311,7 +329,7 @@ describe('isabel — kit spec', () => {
 
   describe('L5 — burst base nuke: 149.85% of final ATK, every cast, FB-exempt', () => {
     const nukes = isabelDmg(base.events, 149.85).filter(
-      (d) => d.srcSlot === 'burst',
+      (d) => d.srcSlot === 'burst'
     );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
@@ -322,7 +340,7 @@ describe('isabel — kit spec', () => {
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
       expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
 
@@ -351,10 +369,10 @@ describe('isabel — kit spec', () => {
 
   describe('L7-L8 — burst MT2/MT3 additional damage (299.7 / 349.65, escalating steps 2/3)', () => {
     const mt2 = isabelDmg(base.events, 299.7).filter(
-      (d) => d.srcSlot === 'burst',
+      (d) => d.srcSlot === 'burst'
     );
     const mt3 = isabelDmg(base.events, 349.65).filter(
-      (d) => d.srcSlot === 'burst',
+      (d) => d.srcSlot === 'burst'
     );
 
     it('ramp casts-1 / casts-2 (previous effects repeat) in the burst bucket', () => {
@@ -374,10 +392,10 @@ describe('isabel — kit spec', () => {
 
     it('DISCRIMINATING (escalating): a non-escalating "all three every cast" fires 299.7/349.65 casts times', () => {
       const cfMt2 = isabelDmg(burstNoEscalate.events, 299.7).filter(
-        (d) => d.srcSlot === 'burst',
+        (d) => d.srcSlot === 'burst'
       );
       const cfMt3 = isabelDmg(burstNoEscalate.events, 349.65).filter(
-        (d) => d.srcSlot === 'burst',
+        (d) => d.srcSlot === 'burst'
       );
       expect(cfMt2.length).toBe(casts);
       expect(cfMt3.length).toBe(casts);
@@ -391,7 +409,7 @@ describe('isabel — kit spec', () => {
       const short = lens.filter((l) => l < 10 * FPS);
       expect(
         short.length,
-        'no sub-10s FB window — the -5 extend is not firing',
+        'no sub-10s FB window — the -5 extend is not firing'
       ).toBeGreaterThan(0);
       // every shortened window is exactly 5s (10s base − 5s extend)
       expect([...new Set(short)]).toEqual([5 * FPS]);
@@ -406,7 +424,7 @@ describe('isabel — kit spec', () => {
       const lens = fbWindowLens(extSignFlip.events);
       expect(
         lens.some((l) => l > 10 * FPS),
-        'no over-10s window — the sign flip is not firing',
+        'no over-10s window — the sign flip is not firing'
       ).toBe(true);
       expect([...new Set(lens.filter((l) => l > 10 * FPS))]).toEqual([
         15 * FPS,

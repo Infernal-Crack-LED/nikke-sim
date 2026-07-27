@@ -41,12 +41,13 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
 type Ev = SimEvent & Record<string, any>;
 
-const near = (a: unknown, b: number) => typeof a === 'number' && Math.abs(a - b) < 1e-6;
+const near = (a: unknown, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 1e-6;
 
 function blocksOf(ov: any, slot: (typeof SLOTS)[number]): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 
@@ -59,10 +60,10 @@ function allEffects(ov: any): any[] {
   const walk = (es: any[]) => {
     for (const e of es ?? []) {
       out.push(e);
-      if (Array.isArray(e?.steps)) walk(e.steps);
+      if (Array.isArray(e?.steps)) {walk(e.steps);}
     }
   };
-  for (const b of allBlocks(ov)) walk(b?.effects);
+  for (const b of allBlocks(ov)) {walk(b?.effects);}
   return out;
 }
 
@@ -106,7 +107,8 @@ function retargetHitCount(ov: any, from: number, to: number): number {
 function run(baseOpts: any, overrides?: Record<string, any>) {
   const evs: Ev[] = [];
   const opts: any = { ...baseOpts };
-  if (overrides) opts.overrides = { ...(baseOpts.overrides ?? {}), ...overrides };
+  if (overrides)
+    {opts.overrides = { ...(baseOpts.overrides ?? {}), ...overrides };}
   opts.cfg = {
     ...(opts.cfg ?? {}),
     onEvent: (e: Ev) => {
@@ -126,7 +128,7 @@ const idxs = (evs: Ev[], stat: string, value: number): number[] =>
         e.kind === 'buffApply' &&
         e.stat === stat &&
         near(e.value, value) &&
-        (e.targetSlug === undefined || e.targetSlug === SLUG),
+        (e.targetSlug === undefined || e.targetSlug === SLUG)
     )
     .map(({ i }) => i);
 
@@ -134,7 +136,7 @@ const applies = (evs: Ev[], stat: string, value: number): Ev[] =>
   idxs(evs, stat, value).map((i) => evs[i]);
 
 const lastIdxBefore = (evs: Ev[], idx: number, kind: string): number => {
-  for (let i = idx - 1; i >= 0; i -= 1) if (evs[i].kind === kind) return i;
+  for (let i = idx - 1; i >= 0; i -= 1) {if (evs[i].kind === kind) {return i;}}
   return -1;
 };
 
@@ -143,9 +145,9 @@ const others = (t: Record<string, number>) =>
 
 function shotCount(r: any, evs: Ev[]): number {
   const row: any = unitOf(r, SLUG);
-  if (typeof row?.shots === 'number') return row.shots;
+  if (typeof row?.shots === 'number') {return row.shots;}
   return evs.filter(
-    (e) => e.kind === 'shot' && (e.slug ?? e.unitSlug ?? e.targetSlug) === SLUG,
+    (e) => e.kind === 'shot' && (e.slug ?? e.unitSlug ?? e.targetSlug) === SLUG
   ).length;
 }
 
@@ -223,14 +225,15 @@ describe('S1a — activates on hitting with 80 pellets (self)', () => {
     // RED if the line is missing, mis-magnitude, or mis-keyed to a generic ATK stat.
     const a = applies(base.evs, 'attackDamagePct', 72);
     expect(a.length).toBeGreaterThanOrEqual(2);
-    for (const e of a) expect(e.targetSlug ?? SLUG).toBe(SLUG);
+    for (const e of a) {expect(e.targetSlug ?? SLUG).toBe(SLUG);}
   });
 
   it('the window is 3 ROUNDS, not 3 seconds', () => {
     // durationShots is the round-count primitive; a durationSec:3 model is the nearest wrong one.
     // Her magazine is 9 with a 111f reload, so a 3-round window and a 3-second window cannot
     // coincide — the counterfactual must MOVE total damage.
-    for (const e of applies(base.evs, 'attackDamagePct', 72)) expect(e.durationShots).toBe(3);
+    for (const e of applies(base.evs, 'attackDamagePct', 72))
+      {expect(e.durationShots).toBe(3);}
     expect(nRounds).toBeGreaterThanOrEqual(1);
     expect(asSeconds.total).not.toBe(base.total);
   });
@@ -240,14 +243,18 @@ describe('S1a — activates on hitting with 80 pellets (self)', () => {
     // more often. GREEN only if the committed model is the coarser, pellet-counting one.
     expect(nTrigger).toBeGreaterThanOrEqual(1);
     const baseFires = applies(base.evs, 'attackDamagePct', 72).length;
-    const roundsFires = applies(roundsTrigger.evs, 'attackDamagePct', 72).length;
+    const roundsFires = applies(
+      roundsTrigger.evs,
+      'attackDamagePct',
+      72
+    ).length;
     expect(roundsFires).toBeGreaterThan(baseFires);
   });
 
   it('Hit Rate +98.18% rides the same 3-round window and lifts her own damage', () => {
     const a = applies(base.evs, 'hitRatePct', 98.18);
     expect(a.length).toBeGreaterThanOrEqual(1);
-    for (const e of a) expect(e.durationShots).toBe(3);
+    for (const e of a) {expect(e.durationShots).toBe(3);}
     expect(nHitRate).toBeGreaterThanOrEqual(1);
     // hitRatePct is the core-hit lift (live by default); zeroing it must cost her damage.
     expect(noHitRate.total).toBeLessThan(base.total);
@@ -267,10 +274,10 @@ describe('S1a — activates on hitting with 80 pellets (self)', () => {
     // over-credit that a boolean cannot step-gate (that is exactly what gainPierce exists for).
     expect(committed?.hasPierce === true).toBe(false);
     const pierceBlocks = allBlocks(committed).filter((b: any) =>
-      (b?.effects ?? []).some((e: any) => e?.kind === 'gainPierce'),
+      (b?.effects ?? []).some((e: any) => e?.kind === 'gainPierce')
     );
     expect(pierceBlocks.length).toBeGreaterThanOrEqual(1);
-    for (const b of pierceBlocks) expect(b.trigger?.kind).toBe('hitCount');
+    for (const b of pierceBlocks) {expect(b.trigger?.kind).toBe('hitCount');}
   });
 
   it.skip('pellet count is FIXED at 1 for 3 rounds — no clamp primitive, and the damage payload is kit-silent', () => {
@@ -299,7 +306,9 @@ describe('S1b — activates on hitting with 160 pellets (self)', () => {
   });
 
   it('the unmodelable S1 lines are recorded in `unmodeled`, not silently dropped', () => {
-    const text = SLOTS.flatMap((s) => (committed?.unmodeled?.[s] ?? []) as string[]).join(' | ');
+    const text = SLOTS.flatMap(
+      (s) => (committed?.unmodeled?.[s] ?? []) as string[]
+    ).join(' | ');
     expect(text.length).toBeGreaterThan(0);
     expect(/range/i.test(text)).toBe(true);
   });
@@ -343,7 +352,7 @@ describe('S2b — only during Full Burst (self)', () => {
       (e: any) =>
         e?.kind === 'buff' &&
         ((e.stat === 'atkPct' && near(e.value, 75.24)) ||
-          (e.stat === 'hitRatePct' && near(e.value, 40.68))),
+          (e.stat === 'hitRatePct' && near(e.value, 40.68)))
     );
     expect(fb.length).toBe(2);
     for (const e of fb) {
@@ -367,7 +376,7 @@ describe('burst — self, 15 sec', () => {
       expect(g.length).toBeGreaterThanOrEqual(1);
       for (const i of g) {
         expect(lastIdxBefore(base.evs, i, 'burstCast')).toBeGreaterThan(
-          lastIdxBefore(base.evs, i, 'fullBurstStart'),
+          lastIdxBefore(base.evs, i, 'fullBurstStart')
         );
       }
     }
@@ -383,10 +392,11 @@ describe('burst — self, 15 sec', () => {
     ];
     for (const [stat, value] of want) {
       const hits = allEffects(committed).filter(
-        (e: any) => e?.kind === 'buff' && e.stat === stat && near(e.value, value),
+        (e: any) =>
+          e?.kind === 'buff' && e.stat === stat && near(e.value, value)
       );
       expect(hits.length).toBeGreaterThanOrEqual(1);
-      for (const e of hits) expect(e.durationSec).toBe(15);
+      for (const e of hits) {expect(e.durationSec).toBe(15);}
     }
   });
 
@@ -408,4 +418,3 @@ describe('burst — self, 15 sec', () => {
     expect(withSpeed).toBeGreaterThan(without);
   });
 });
-

@@ -51,7 +51,13 @@
 // S1 gate). Deterministic (no seed); event-log over totals.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { CONTROL_CORE, controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  CONTROL_CORE,
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SLUG = 'mihara-bonding-chain';
@@ -77,27 +83,40 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactuals (nearest wrong model per line) ------------------------------------------
 /** M1: a single Restraint chain dumped (50.06%) instead of the full 10-chain 500.6%. */
 const mbcSingleChain = withPatchedOverride(SLUG, (ov) => {
-  const dumps = ov.skill1.filter((b: any) => b.effects.some((e: any) => e.kind === 'flatDamage'));
-  if (dumps.length !== 2) throw new Error('mbc S1 expected 2 flatDamage dumps — fixture is stale');
-  for (const b of dumps) for (const e of b.effects) if (e.kind === 'flatDamage') e.atkPct = 50.06;
+  const dumps = ov.skill1.filter((b: any) =>
+    b.effects.some((e: any) => e.kind === 'flatDamage')
+  );
+  if (dumps.length !== 2)
+    {throw new Error('mbc S1 expected 2 flatDamage dumps — fixture is stale');}
+  for (const b of dumps)
+    {for (const e of b.effects) {if (e.kind === 'flatDamage') {e.atkPct = 50.06;}}}
 });
 /** M2: the OLD permanent-20-stack baseline (501.6%/s) that read 1.19–1.51 hot. */
 const mbcHot20Stack = withPatchedOverride(SLUG, (ov) => {
-  const dot = ov.skill1.flatMap((b: any) => b.effects).find((e: any) => e.kind === 'dot');
-  if (!dot) throw new Error('mbc S1 baseline dot missing — fixture is stale');
+  const dot = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((e: any) => e.kind === 'dot');
+  if (!dot) {throw new Error('mbc S1 baseline dot missing — fixture is stale');}
   dot.atkPct = 501.6;
 });
 /** M3: the NAIVE double-count — burst Dragging Chain at the full 1001%/s on top of the baseline. */
 const mbcNaiveBurst = withPatchedOverride(SLUG, (ov) => {
-  const dot = ov.burst.flatMap((b: any) => b.effects).find((e: any) => e.kind === 'dot');
-  if (!dot) throw new Error('mbc burst dot missing — fixture is stale');
+  const dot = ov.burst
+    .flatMap((b: any) => b.effects)
+    .find((e: any) => e.kind === 'dot');
+  if (!dot) {throw new Error('mbc burst dot missing — fixture is stale');}
   dot.atkPct = 1001;
 });
 /** M4: the stage-3 sustained-damage buff removed entirely (proves it is live). */
 const mbcNoS2Buff = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !b.effects.some((e: any) => e.stat === 'sustainedDamagePct'));
-  if (ov.skill2.length === before) throw new Error('mbc S2 sustainedDamagePct block missing — fixture is stale');
+  ov.skill2 = ov.skill2.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'sustainedDamagePct')
+  );
+  if (ov.skill2.length === before)
+    {throw new Error(
+      'mbc S2 sustainedDamagePct block missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -108,18 +127,29 @@ const naiveBurst = run({ [SLUG]: mbcNaiveBurst });
 const noS2Buff = run({ [SLUG]: mbcNoS2Buff });
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const mbcDmg = (evs: SimEvent[], slot: Damage['srcSlot'], atkPct?: number) =>
-  dmg(evs).filter((d) => d.slug === SLUG && d.srcSlot === slot && (atkPct == null || d.atkPct === atkPct));
+  dmg(evs).filter(
+    (d) =>
+      d.slug === SLUG &&
+      d.srcSlot === slot &&
+      (atkPct == null || d.atkPct === atkPct)
+  );
 const mbcBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
-const fbEnds = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstEnd');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const fbEnds = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstEnd');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 
 describe('mihara-bonding-chain — kit spec', () => {
   it('fixture sanity: mbc is the sole B3 and actually casts bursts', () => {
     expect(MBC).toBe(2);
-    expect(mbcBursts(base.events).length, 'mbc never burst — fixture cannot exercise her kit').toBeGreaterThan(0);
+    expect(
+      mbcBursts(base.events).length,
+      'mbc never burst — fixture cannot exercise her kit'
+    ).toBeGreaterThan(0);
   });
 
   describe('M1 — S1 Restraint dump: full 10-chain 500.6%, at start + once per her Full Burst end', () => {
@@ -138,7 +168,11 @@ describe('mihara-bonding-chain — kit spec', () => {
     });
 
     it('DISCRIMINATING: a single-chain model lands 50.06% and deals less', () => {
-      expect([...new Set(mbcDmg(singleChain.events, 'skill1', 50.06).map((d) => d.atkPct))]).toEqual([50.06]);
+      expect([
+        ...new Set(
+          mbcDmg(singleChain.events, 'skill1', 50.06).map((d) => d.atkPct)
+        ),
+      ]).toEqual([50.06]);
       expect(base.totals[SLUG]).toBeGreaterThan(singleChain.totals[SLUG]);
     });
   });
@@ -151,19 +185,29 @@ describe('mihara-bonding-chain — kit spec', () => {
     });
 
     it('is permanent (ticks the whole fight), not burst-gated', () => {
-      expect(ticks.length, 'a permanent 1/s DoT should tick ~180× over the fight').toBeGreaterThanOrEqual(170);
-      expect(ticks.length, 'permanent baseline must vastly out-number the burst dumps').toBeGreaterThan(
-        mbcDmg(base.events, 'skill1', 500.6).length * 5,
-      );
+      expect(
+        ticks.length,
+        'a permanent 1/s DoT should tick ~180× over the fight'
+      ).toBeGreaterThanOrEqual(170);
+      expect(
+        ticks.length,
+        'permanent baseline must vastly out-number the burst dumps'
+      ).toBeGreaterThan(mbcDmg(base.events, 'skill1', 500.6).length * 5);
       expect(ticks[0].sec, 'first tick should land early').toBeLessThan(3);
-      expect(ticks[ticks.length - 1].sec, 'last tick should reach the end of the fight').toBeGreaterThan(FIGHT_SEC - 5);
+      expect(
+        ticks[ticks.length - 1].sec,
+        'last tick should reach the end of the fight'
+      ).toBeGreaterThan(FIGHT_SEC - 5);
     });
 
     it('DISCRIMINATING: the old 20-stack baseline (501.6%/s) over-counts vs shipped', () => {
-      expect([...new Set(mbcDmg(hot20.events, 'skill1', 501.6).map((d) => d.atkPct))]).toEqual([501.6]);
-      expect(base.totals[SLUG], 'shipped 12-stack avg must read below the hot 20-stack model').toBeLessThan(
-        hot20.totals[SLUG],
-      );
+      expect([
+        ...new Set(mbcDmg(hot20.events, 'skill1', 501.6).map((d) => d.atkPct)),
+      ]).toEqual([501.6]);
+      expect(
+        base.totals[SLUG],
+        'shipped 12-stack avg must read below the hot 20-stack model'
+      ).toBeLessThan(hot20.totals[SLUG]);
     });
   });
 
@@ -178,30 +222,53 @@ describe('mihara-bonding-chain — kit spec', () => {
 
     it('runs ~10s per burst (one tick per second across the mirror window)', () => {
       // Only bursts whose full 10s window fits inside the fight are measurable.
-      const fullWindow = bursts.filter((c) => c.frame + 10 * FPS <= FIGHT_SEC * FPS);
-      expect(fullWindow.length, 'no burst has a full 10s window to measure').toBeGreaterThan(0);
+      const fullWindow = bursts.filter(
+        (c) => c.frame + 10 * FPS <= FIGHT_SEC * FPS
+      );
+      expect(
+        fullWindow.length,
+        'no burst has a full 10s window to measure'
+      ).toBeGreaterThan(0);
       for (const c of fullWindow) {
-        const inWindow = ticks.filter((t) => t.frame > c.frame && t.frame <= c.frame + 10 * FPS);
-        expect(inWindow.length, `burst at ${c.sec.toFixed(1)}s produced ${inWindow.length} tick(s)`).toBeGreaterThanOrEqual(8);
+        const inWindow = ticks.filter(
+          (t) => t.frame > c.frame && t.frame <= c.frame + 10 * FPS
+        );
+        expect(
+          inWindow.length,
+          `burst at ${c.sec.toFixed(1)}s produced ${inWindow.length} tick(s)`
+        ).toBeGreaterThanOrEqual(8);
       }
     });
 
     it('DISCRIMINATING: the naive 1001%/s-on-top double-count over-counts vs shipped', () => {
-      expect([...new Set(mbcDmg(naiveBurst.events, 'burst', 1001).map((d) => d.atkPct))]).toEqual([1001]);
-      expect(base.totals[SLUG], 'decomposed 700 delta must read below the naive double-count').toBeLessThan(
-        naiveBurst.totals[SLUG],
-      );
+      expect([
+        ...new Set(
+          mbcDmg(naiveBurst.events, 'burst', 1001).map((d) => d.atkPct)
+        ),
+      ]).toEqual([1001]);
+      expect(
+        base.totals[SLUG],
+        'decomposed 700 delta must read below the naive double-count'
+      ).toBeLessThan(naiveBurst.totals[SLUG]);
     });
   });
 
   describe('M4 — S2 stage-3 Sustained Damage buff: +59.98% for 10s, live on her DoTs', () => {
-    const applied = buffs(base.events).filter((b) => b.casterIdx === MBC && b.stat === 'sustainedDamagePct');
+    const applied = buffs(base.events).filter(
+      (b) => b.casterIdx === MBC && b.stat === 'sustainedDamagePct'
+    );
 
     it('is the L10 value 59.98% for exactly 10 sec, once per burst', () => {
-      expect(applied.length, 'no stage-3 sustainedDamagePct buff applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no stage-3 sustainedDamagePct buff applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([59.98]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);
-      expect(applied.length, 'fires once per Burst Stage 3 entry').toBe(mbcBursts(base.events).length);
+      for (const b of applied)
+        {expect(b.expiresFrame! - b.frame, '10s duration').toBe(10 * FPS);}
+      expect(applied.length, 'fires once per Burst Stage 3 entry').toBe(
+        mbcBursts(base.events).length
+      );
     });
 
     it('DISCRIMINATING: removing the buff lowers her total (the sustained DoTs inherit it)', () => {
@@ -213,9 +280,13 @@ describe('mihara-bonding-chain — kit spec', () => {
     it('unmodeled.skill2 carries the incapacitated +20 and enemy-neutralized +1 lines', () => {
       const ov = withPatchedOverride(SLUG, () => {});
       const unmodeled = (ov as any).unmodeled?.skill2 ?? [];
-      expect(unmodeled).toContain('Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.');
+      expect(unmodeled).toContain(
+        'Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.'
+      );
       expect(unmodeled).toContain('Ensnaring Chains stacks ▲ 20.');
-      expect(unmodeled).toContain('Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.');
+      expect(unmodeled).toContain(
+        'Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.'
+      );
       expect(unmodeled).toContain('Restraint Chain ▲ 1, up to 10.');
     });
   });

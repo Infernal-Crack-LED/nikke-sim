@@ -26,9 +26,7 @@
         "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
       ],
       "skill2": [],
-      "burst": [
-        "Minimum Effective Range ▲ 55.56% for 10 sec."
-      ]
+      "burst": ["Minimum Effective Range ▲ 55.56% for 10 sec."]
     },
     "caveats": [
       "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",

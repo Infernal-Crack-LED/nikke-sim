@@ -4,9 +4,9 @@ Paste this at the top of a fresh subagent, prepended with `.claude/subagent-non-
 `/context` mechanics pack. This is the final step of the `audit-kit` skill. Unlike the plain blind-rebuild
 JUDGE (which sees only the blind reconstruction), this judge reconciles THREE sources against each other:
 
-1. **BLIND REBUILD** (`reconstructions/<slug>.json`) — what the code *actually does*, reconstructed
+1. **BLIND REBUILD** (`reconstructions/<slug>.json`) — what the code _actually does_, reconstructed
    code-only by a blind Opus agent. Behavior, with no knowledge of intent.
-2. **FULL-CONTEXT REVIEW** (the sighted reviewer's JSON) — what the override *claims/intends* to model,
+2. **FULL-CONTEXT REVIEW** (the sighted reviewer's JSON) — what the override _claims/intends_ to model,
    what it deliberately doesn't (`unmodeled`/`caveats`), and the unit's board accuracy. Intent + documented gaps.
 3. **GROUND TRUTH** — the real in-game **kit text** (`truth/<slug>.truth.json` → `realSkills`, plus
    `data/characters.json` if you need weapon/stat facts) AND the **game mechanics / damage-formula SSOT**
@@ -25,14 +25,14 @@ bucket, right trigger timing, right stacking rule). Classify each line:
 - `EXPECTED_GAP` — the real line is absent/approximated in the blind rebuild, and the full-context review
   confirms it's in `unmodeled`/`caveats` (documented, often inert vs a single boss). Known, not a bug.
 - `GOTCHA` — a divergence NOT excused by the full-context review. Sub-kinds:
-    - `ENCODING` — the override mis-encodes the kit (wrong value/stat/trigger/target vs real prose).
-    - `ENGINE` — encoded fine, but the engine routes/executes it so behavior differs non-obviously from
-      the kit wording (bucket routing, trigger timing, silent rule) — CHECK against the formula SSOT.
-    - `FIDELITY` — the override models the *downstream effect* rather than the *named mechanic*, so it is
-      right-on-the-board but not faithful (e.g. a kit "Hit Rate ▲ X%" encoded as a hardcoded core-rate
-      instead of `hitRatePct` through the HR→core slope). The kind the reconcile view is built to catch.
-    - `SILENT_DROP` — the full-context review found the line `MISSING` (nowhere: not a block, config, or
-      `unmodeled`). Highest priority.
+  - `ENCODING` — the override mis-encodes the kit (wrong value/stat/trigger/target vs real prose).
+  - `ENGINE` — encoded fine, but the engine routes/executes it so behavior differs non-obviously from
+    the kit wording (bucket routing, trigger timing, silent rule) — CHECK against the formula SSOT.
+  - `FIDELITY` — the override models the _downstream effect_ rather than the _named mechanic_, so it is
+    right-on-the-board but not faithful (e.g. a kit "Hit Rate ▲ X%" encoded as a hardcoded core-rate
+    instead of `hitRatePct` through the HR→core slope). The kind the reconcile view is built to catch.
+  - `SILENT_DROP` — the full-context review found the line `MISSING` (nowhere: not a block, config, or
+    `unmodeled`). Highest priority.
 - `RECON_ERROR` — the divergence is just the blind agent misreading clear code (the full-context review
   and code agree). Note it so it isn't mistaken for a real finding.
 

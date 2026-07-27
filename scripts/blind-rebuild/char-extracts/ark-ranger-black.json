@@ -19,12 +19,7 @@
     "rl3": 7.6,
     "burstGaugePerShot": 0.2,
     "treasure": false,
-    "nicknames": [
-      "arb",
-      "ark",
-      "ranger",
-      "black"
-    ],
+    "nicknames": ["arb", "ark", "ranger", "black"],
     "skills": {
       "skill1": "■ Activates at the start of battle. Affects self.\nDamage to Parts ▲ 20% continuously.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nCharges battery by 50% continuously, up to 100%. This effect cannot be removed.\n■ Activates when battery reaches 100%. Affects self.\nTransformation\nFunction: Transforms into an Ark Ranger and strengthens herself while depleting her battery.\nEffect 1: Battery ▼ 1% every 0.2 sec continuously. This effect cannot be removed.\nEffect 2: ATK ▲ 156.19% continuously. This effect cannot be removed.\nDeactivation condition: When the battery drops to 0%\n■ Activates after performing 30 normal attack(s). Affects self.\nSustained Damage ▲ 59.6% for 5 sec.",
       "skill2": "■ Activates when Transformation takes effect and when the enemy appears while Transformation is in effect. Affects all enemies.\nArk Black Collider: Deals 45.87% of final ATK as sustained damage every 1 sec until Transformation is canceled.\n■ Activates when entering Full Burst. Affects all Wind Code allies with assault rifles.\nSustained Damage ▲ 77.5% for 10 sec.",
@@ -74,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -341,16 +332,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Activates while in Transformation status. Affects self.\n<color=#00AEFF>Battery ▲ {description_value_03}%</color>\n■ Activates while not in Transformation status. Affects self.\n<color=#00AEFF>Emergency Charge Protocol\nFunction: Quickly charges the battery and transforms into an Ark Ranger.\nEffect 1: Battery ▲ 100%\nEffect 2: Battery ▼ {description_value_06}% after transforming.</color>\n■ Affects the {description_value_07} enemy unit(s) with the highest <word_group=10025>final</word_group> max HP.\n<color=#00AEFF>Deals {description_value_08}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_09} sec.</color>\n■ Affects self.\n<color=#00AEFF>Sustained Damage ▲ {description_value_10}% for {description_value_11} sec.</color>",
           "description_value_list": [
@@ -459,20 +441,10 @@
           ],
           "prefer_target_condition": "IncludeNoneTargetLast",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            157030102,
-            157030103,
-            157030107
-          ],
-          "after_hurt_function_id_list": [
-            157030106
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [157030102, 157030103, 157030107],
+          "after_hurt_function_id_list": [157030106],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -497,9 +469,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -530,9 +500,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Ark Ranger Black's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

@@ -22,6 +22,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -32,12 +33,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -63,35 +66,63 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## 2. MECHANICS SSOT (formula + mechanics pack)
 
 ### docs/data/damage-calculation.md
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -116,7 +147,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -154,29 +185,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -257,9 +288,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -295,7 +326,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -353,7 +384,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -496,12 +527,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -536,8 +567,8 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ### docs/data/game-mechanics.md
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -592,15 +623,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -943,7 +974,6 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ---
 
 ## 3. GROUND TRUTH — kit prose + base stats (data/characters.json → characters['red-hood'])
@@ -1229,9 +1259,7 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "DEF ▲ 50.68% of the skill user's DEF for 10 sec."
-    ],
+    "skill2": ["DEF ▲ 50.68% of the skill user's DEF for 10 sec."],
     "burst": [
       "Attract: Taunts all enemies for 10 sec.",
       "Incoming healing ▲ 74.88% for 10 sec.",
@@ -1276,21 +1304,23 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 
 S5 BLIND TEST vs DRIVER SHIPPED OVERRIDE (run by the driver via scripts/tests/lib/harness.ts, which loads
 the driver override from disk):
-  - PRISTINE blind/red-hood.test.ts:  28 passed / 2 failed / 6 skipped  (36 total).
-      Both REDs adjudicated RECON_ERROR (NOT REAL-GOTCHA):
-        RED 1 — S1b conversion: blind expected a separate charge-damage tier near 241.92 (=100.8x2.4) or
-                333.36 (=138.9x2.4); a mis-read of the excess-over-100 threshold. Faithful excess is
-                (138.9-100)x2.4 = 93.36 (driver models the single warm value 90). The blind test's SIBLING
-                assertion ("STACK excess at 240%", band [40,110] ~91.44) PASSED with the driver's 90.
-        RED 2 — Step-3 +100.8% CS: blind expected an explicit chargeSpeedPct 100.8 buff; the driver folds it
-                into the weaponSwap chargeTimeSec 0.3 (fire-rate-gated instant charge) + conversion armed per
-                cast — an equivalent encoding whose effect the driver's R6/R2 pin.
-  - ADAPTED blind/red-hood.adapted.test.ts (2 intent-preserving RECON_ERROR corrections):
-                30 passed / 6 skipped / 0 failed  = CONVERGENCE GREEN.
-  - The 6 skips are the documented UNMODELED gaps (taunt / incoming-healing / pierce-range / DEF /
-    lifesteal-payload / swap-economy) — each a line with no engine primitive, recorded in unmodeled.
+
+- PRISTINE blind/red-hood.test.ts: 28 passed / 2 failed / 6 skipped (36 total).
+  Both REDs adjudicated RECON_ERROR (NOT REAL-GOTCHA):
+  RED 1 — S1b conversion: blind expected a separate charge-damage tier near 241.92 (=100.8x2.4) or
+  333.36 (=138.9x2.4); a mis-read of the excess-over-100 threshold. Faithful excess is
+  (138.9-100)x2.4 = 93.36 (driver models the single warm value 90). The blind test's SIBLING
+  assertion ("STACK excess at 240%", band [40,110] ~91.44) PASSED with the driver's 90.
+  RED 2 — Step-3 +100.8% CS: blind expected an explicit chargeSpeedPct 100.8 buff; the driver folds it
+  into the weaponSwap chargeTimeSec 0.3 (fire-rate-gated instant charge) + conversion armed per
+  cast — an equivalent encoding whose effect the driver's R6/R2 pin.
+- ADAPTED blind/red-hood.adapted.test.ts (2 intent-preserving RECON_ERROR corrections):
+  30 passed / 6 skipped / 0 failed = CONVERGENCE GREEN.
+- The 6 skips are the documented UNMODELED gaps (taunt / incoming-healing / pierce-range / DEF /
+  lifesteal-payload / swap-economy) — each a line with no engine primitive, recorded in unmodeled.
 
 ### pristine blind test (blind/red-hood.test.ts, verbatim)
+
 ```ts
 /**
  * red-hood — BLIND per-line kit spec test (S5). Written from the kit prose ALONE;
@@ -1357,15 +1387,19 @@ function effs(b: any): any[] {
 }
 function pairs(ov: any): Array<{ block: any; effect: any }> {
   const out: Array<{ block: any; effect: any }> = [];
-  for (const b of allBlocks(ov)) for (const e of effs(b)) out.push({ block: b, effect: e });
+  for (const b of allBlocks(ov))
+    for (const e of effs(b)) out.push({ block: b, effect: e });
   return out;
 }
 function unmodeledText(ov: any): string {
   const u = ov?.unmodeled ?? {};
-  return (['skill1', 'skill2', 'burst'] as const).flatMap((s) => u[s] ?? []).join(' | ');
+  return (['skill1', 'skill2', 'burst'] as const)
+    .flatMap((s) => u[s] ?? [])
+    .join(' | ');
 }
 const stageOf = (b: any) => b?.trigger?.stage;
-const near = (a: number, b: number, tol = 0.02) => typeof a === 'number' && Math.abs(a - b) <= tol;
+const near = (a: number, b: number, tol = 0.02) =>
+  typeof a === 'number' && Math.abs(a - b) <= tol;
 
 // ---------------------------------------------------------------- run helpers
 function runWith(patch?: any) {
@@ -1373,7 +1407,10 @@ function runWith(patch?: any) {
   const events: Ev[] = [];
   const opts: any = {
     ...base,
-    cfg: { ...(base.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev as Ev) },
+    cfg: {
+      ...(base.cfg ?? {}),
+      onEvent: (ev: SimEvent) => events.push(ev as Ev),
+    },
   };
   if (patch) opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
   const res = runComp(opts);
@@ -1382,35 +1419,51 @@ function runWith(patch?: any) {
 }
 const applies = (events: Ev[]) => events.filter((e) => e.kind === 'buffApply');
 function rhIdxOf(events: Ev[]): number {
-  const e = applies(events).find((b) => b.targetSlug === SLUG && typeof b.targetIdx === 'number');
+  const e = applies(events).find(
+    (b) => b.targetSlug === SLUG && typeof b.targetIdx === 'number'
+  );
   return e ? (e.targetIdx as number) : -1;
 }
 function selfApplies(events: Ev[]) {
   const i = rhIdxOf(events);
-  return applies(events).filter((b) => b.targetSlug === SLUG && b.casterIdx === i);
+  return applies(events).filter(
+    (b) => b.targetSlug === SLUG && b.casterIdx === i
+  );
 }
 
 // ---------------------------------------------------------------- hoisted runs (7 sims)
 const BASE = runWith();
 const RH = rhIdxOf(BASE.events);
 const SELF = selfApplies(BASE.events);
-const RED_WOLF_CASTS = SELF.filter((b) => b.stat === 'atkPct' && near(b.value, 71.42)).length;
+const RED_WOLF_CASTS = SELF.filter(
+  (b) => b.stat === 'atkPct' && near(b.value, 71.42)
+).length;
 const FB_STARTS = BASE.events.filter((e) => e.kind === 'fullBurstStart').length;
 const MATES = Object.keys(BASE.tot).filter((s) => s !== SLUG);
 
 const NO_STACK_SPEED = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
     for (const { effect } of pairs(ov)) {
-      if (effect.kind === 'buff' && effect.stat === 'chargeSpeedPct' && near(effect.value, 3.81)) effect.value = 0;
+      if (
+        effect.kind === 'buff' &&
+        effect.stat === 'chargeSpeedPct' &&
+        near(effect.value, 3.81)
+      )
+        effect.value = 0;
     }
-  }),
+  })
 );
 const NO_STACKING = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
     for (const { effect } of pairs(ov)) {
-      if (effect.kind === 'buff' && effect.stat === 'chargeSpeedPct' && near(effect.value, 3.81)) effect.maxStacks = 1;
+      if (
+        effect.kind === 'buff' &&
+        effect.stat === 'chargeSpeedPct' &&
+        near(effect.value, 3.81)
+      )
+        effect.maxStacks = 1;
     }
-  }),
+  })
 );
 const NO_CHARGE_DMG = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
@@ -1420,32 +1473,46 @@ const NO_CHARGE_DMG = runWith(
         delete effect.perResource;
       }
     }
-  }),
+  })
 );
 const NO_RED_WOLF_ATK = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
     for (const { effect } of pairs(ov)) {
-      if (effect.kind === 'buff' && effect.stat === 'atkPct' && near(effect.value, 71.42)) effect.value = 0;
+      if (
+        effect.kind === 'buff' &&
+        effect.stat === 'atkPct' &&
+        near(effect.value, 71.42)
+      )
+        effect.value = 0;
     }
-  }),
+  })
 );
 const NO_SWAP_DMG = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const { effect } of pairs(ov)) if (effect.kind === 'weaponSwap') effect.damagePct = 0;
-  }),
+    for (const { effect } of pairs(ov))
+      if (effect.kind === 'weaponSwap') effect.damagePct = 0;
+  })
 );
 const NO_BURST_SPEED = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
     for (const { effect } of pairs(ov)) {
-      if (effect.kind === 'buff' && effect.stat === 'chargeSpeedPct' && near(effect.value, 100.8)) effect.value = 0;
+      if (
+        effect.kind === 'buff' &&
+        effect.stat === 'chargeSpeedPct' &&
+        near(effect.value, 100.8)
+      )
+        effect.value = 0;
     }
-  }),
+  })
 );
 
 // ================================================================= tests
 describe('red-hood — fixture sanity / non-vacuity', () => {
   it('the control comp resolves her and she deals damage', () => {
-    expect(RH, 'no buffApply targeted red-hood; her slot index is unresolvable').toBeGreaterThanOrEqual(0);
+    expect(
+      RH,
+      'no buffApply targeted red-hood; her slot index is unresolvable'
+    ).toBeGreaterThanOrEqual(0);
     expect(Object.keys(BASE.tot)).toContain(SLUG);
     expect(unitOf(BASE.res, SLUG).totalDamage).toBeGreaterThan(0);
   });
@@ -1454,23 +1521,36 @@ describe('red-hood — fixture sanity / non-vacuity', () => {
     // Non-vacuity for every step-3 assertion below, AND the precondition that makes
     // burstCast (fires only when SHE bursts) discriminable from fullBurstEnter
     // (fires on every team full burst, incl. the ones helm closes).
-    expect(RED_WOLF_CASTS, 'Red Wolf branch never fired — every step-3 assertion would be vacuous').toBeGreaterThanOrEqual(1);
+    expect(
+      RED_WOLF_CASTS,
+      'Red Wolf branch never fired — every step-3 assertion would be vacuous'
+    ).toBeGreaterThanOrEqual(1);
     expect(FB_STARTS).toBeGreaterThan(RED_WOLF_CASTS);
   });
 
   it('the override carries all three slots and no ignored-effect blocks', () => {
-    expect(slotBlocks(OV, 'skill1').length + slotBlocks(OV, 'skill2').length + slotBlocks(OV, 'burst').length).toBeGreaterThan(0);
-    expect(pairs(OV).filter((p) => p.effect.kind === 'ignored')).toHaveLength(0);
+    expect(
+      slotBlocks(OV, 'skill1').length +
+        slotBlocks(OV, 'skill2').length +
+        slotBlocks(OV, 'burst').length
+    ).toBeGreaterThan(0);
+    expect(pairs(OV).filter((p) => p.effect.kind === 'ignored')).toHaveLength(
+      0
+    );
   });
 });
 
 describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)', () => {
-  const hits = SELF.filter((b) => b.stat === 'chargeSpeedPct' && near(b.value, 3.81));
+  const hits = SELF.filter(
+    (b) => b.stat === 'chargeSpeedPct' && near(b.value, 3.81)
+  );
 
   it('is a chargeSpeedPct stack buff, not charge DAMAGE', () => {
     // Nearest-wrong: 3.81 authored as chargeDamagePct (a damage bucket) instead of a
     // cadence stat — it would never change her shot count.
-    expect(hits.length, 'no self chargeSpeedPct 3.81 applies').toBeGreaterThan(0);
+    expect(hits.length, 'no self chargeSpeedPct 3.81 applies').toBeGreaterThan(
+      0
+    );
     for (const h of hits) expect(h.stat).toBe('chargeSpeedPct');
   });
 
@@ -1488,14 +1568,27 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
 
   it('is time-bounded (5 sec), not a round-count or permanent window', () => {
     // Duration-semantics check: the kit says sec, so durationShots must be absent.
-    const e = pairs(OV).find((p) => p.effect.kind === 'buff' && p.effect.stat === 'chargeSpeedPct' && near(p.effect.value, 3.81));
-    expect(e, 'the 3.81 charge-speed stack buff is not in the override').toBeTruthy();
+    const e = pairs(OV).find(
+      (p) =>
+        p.effect.kind === 'buff' &&
+        p.effect.stat === 'chargeSpeedPct' &&
+        near(p.effect.value, 3.81)
+    );
+    expect(
+      e,
+      'the 3.81 charge-speed stack buff is not in the override'
+    ).toBeTruthy();
     expect(e!.effect.durationSec).toBeCloseTo(5, 3);
     expect(e!.effect.durationShots).toBeUndefined();
   });
 
   it('is self-scoped — no ally receives it', () => {
-    const leaked = applies(BASE.events).filter((b) => near(b.value, 3.81) && b.stat === 'chargeSpeedPct' && b.targetSlug !== SLUG);
+    const leaked = applies(BASE.events).filter(
+      (b) =>
+        near(b.value, 3.81) &&
+        b.stat === 'chargeSpeedPct' &&
+        b.targetSlug !== SLUG
+    );
     expect(leaked).toHaveLength(0);
   });
 
@@ -1510,16 +1603,24 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
 });
 
 describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240%', () => {
-  const cd = pairs(OV).filter((p) => p.effect.kind === 'buff' && CHARGE_DMG_STATS.includes(p.effect.stat));
+  const cd = pairs(OV).filter(
+    (p) => p.effect.kind === 'buff' && CHARGE_DMG_STATS.includes(p.effect.stat)
+  );
   const dynamic = cd.some((p) => p.effect.perResource);
   const effective = cd
     .filter((p) => !p.effect.perResource)
     .map((p) => Number(p.effect.value) * Number(p.effect.maxStacks ?? 1));
 
   it('the conversion is modeled at all (self charge-damage buff present and live)', () => {
-    expect(cd.length, 'no chargeDamagePct/chargeDamageMultPct buff — the 240% conversion is dropped').toBeGreaterThan(0);
+    expect(
+      cd.length,
+      'no chargeDamagePct/chargeDamageMultPct buff — the 240% conversion is dropped'
+    ).toBeGreaterThan(0);
     const live = SELF.filter((b) => CHARGE_DMG_STATS.includes(b.stat));
-    expect(live.length, 'the conversion block never fires in the fixture').toBeGreaterThan(0);
+    expect(
+      live.length,
+      'the conversion block never fires in the fixture'
+    ).toBeGreaterThan(0);
   });
 
   it('the passive tier converts the STACK excess at 240%, not 1:1', () => {
@@ -1530,7 +1631,10 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
       expect(cd.length).toBeGreaterThan(0);
       return;
     }
-    expect(effective.some((v) => v >= 40 && v <= 110), `charge-damage tiers seen: ${effective.join(', ')} — expected one near 91.44 (240% of 38.1)`).toBe(true);
+    expect(
+      effective.some((v) => v >= 40 && v <= 110),
+      `charge-damage tiers seen: ${effective.join(', ')} — expected one near 91.44 (240% of 38.1)`
+    ).toBe(true);
   });
 
   it('the Red Wolf +100.8% charge speed is ALSO converted', () => {
@@ -1541,7 +1645,10 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
       expect(cd.length).toBeGreaterThan(0);
       return;
     }
-    expect(effective.some((v) => v >= 150 && v <= 400), `charge-damage tiers seen: ${effective.join(', ')} — expected one near 241.92 or 333.36`).toBe(true);
+    expect(
+      effective.some((v) => v >= 150 && v <= 400),
+      `charge-damage tiers seen: ${effective.join(', ')} — expected one near 241.92 or 333.36`
+    ).toBe(true);
   });
 
   it('is load-bearing, and moves NO teammate (pure damage bucket, no gauge effect)', () => {
@@ -1556,22 +1663,43 @@ describe('S2a — Gain Pierce continuously (self, start of battle)', () => {
     // leave her un-pierced for most of the fight.
     const gp = pairs(OV).filter((p) => p.effect.kind === 'gainPierce');
     const flagged = OV?.hasPierce === true;
-    expect(flagged || gp.length > 0, 'continuous Pierce is not modeled (no hasPierce flag, no gainPierce effect)').toBe(true);
+    expect(
+      flagged || gp.length > 0,
+      'continuous Pierce is not modeled (no hasPierce flag, no gainPierce effect)'
+    ).toBe(true);
     if (!flagged) {
-      const continuous = gp.filter((p) => p.effect.durationSec === undefined && p.block?.trigger?.kind === 'passive');
-      expect(continuous.length, 'gainPierce is present but time-boxed / non-passive; the kit says continuously').toBeGreaterThan(0);
+      const continuous = gp.filter(
+        (p) =>
+          p.effect.durationSec === undefined &&
+          p.block?.trigger?.kind === 'passive'
+      );
+      expect(
+        continuous.length,
+        'gainPierce is present but time-boxed / non-passive; the kit says continuously'
+      ).toBeGreaterThan(0);
     }
   });
 });
 
 describe('S2b — Beast Cage: DEF +50.68% of the user DEF, all allies, 10s (step 1)', () => {
   it('is stage-1 gated or explicitly recorded as unmodeled — never silently dropped', () => {
-    const def = pairs(OV).find((p) => p.effect.kind === 'buff' && p.effect.stat === 'defPct' && near(p.effect.value, 50.68, 0.5));
+    const def = pairs(OV).find(
+      (p) =>
+        p.effect.kind === 'buff' &&
+        p.effect.stat === 'defPct' &&
+        near(p.effect.value, 50.68, 0.5)
+    );
     const ledger = /def/i.test(unmodeledText(OV));
-    expect(Boolean(def) || ledger, 'the Beast Cage DEF line is neither modeled nor listed in unmodeled').toBe(true);
+    expect(
+      Boolean(def) || ledger,
+      'the Beast Cage DEF line is neither modeled nor listed in unmodeled'
+    ).toBe(true);
     if (def) {
       expect(def.block?.trigger?.kind).toBe('burstCast');
-      expect(stageOf(def.block), 'the DEF grant must be gated to burst step 1 (Beast Cage)').toBe(1);
+      expect(
+        stageOf(def.block),
+        'the DEF grant must be gated to burst step 1 (Beast Cage)'
+      ).toBe(1);
       expect(def.effect.durationSec).toBeCloseTo(10, 3);
     }
   });
@@ -1579,8 +1707,10 @@ describe('S2b — Beast Cage: DEF +50.68% of the user DEF, all allies, 10s (step
   it('is offensively inert in v1 (self DEF does not feed damage)', () => {
     const zeroDef = runWith(
       withPatchedOverride(SLUG, (ov: any) => {
-        for (const { effect } of pairs(ov)) if (effect.kind === 'buff' && effect.stat === 'defPct') effect.value = 0;
-      }),
+        for (const { effect } of pairs(ov))
+          if (effect.kind === 'buff' && effect.stat === 'defPct')
+            effect.value = 0;
+      })
     );
     expect(zeroDef.self).toBe(BASE.self);
     for (const m of MATES) expect(zeroDef.tot[m]).toBe(BASE.tot[m]);
@@ -1594,7 +1724,10 @@ describe('S2c — The Last Howl: recovers 23.04% of attack damage as HP over 10s
     // Nearest-wrong #2: ungated, so it fires on her step-3 rotations too.
     const heal = pairs(OV).find((p) => p.effect.kind === 'heal');
     const ledger = /recover/i.test(unmodeledText(OV));
-    expect(Boolean(heal) || ledger, 'the Last Howl recovery line is neither modeled nor listed in unmodeled').toBe(true);
+    expect(
+      Boolean(heal) || ledger,
+      'the Last Howl recovery line is neither modeled nor listed in unmodeled'
+    ).toBe(true);
     if (heal) {
       expect(heal.block?.target?.kind).toBe('self');
       expect(heal.block?.trigger?.kind).toBe('burstCast');
@@ -1605,17 +1738,30 @@ describe('S2c — The Last Howl: recovers 23.04% of attack damage as HP over 10s
 
 describe('S2d — Red Wolf: ATK +71.42% self for 10s (step 3)', () => {
   it('applies to HER only, at her own burst cast', () => {
-    const hits = SELF.filter((b) => b.stat === 'atkPct' && near(b.value, 71.42));
+    const hits = SELF.filter(
+      (b) => b.stat === 'atkPct' && near(b.value, 71.42)
+    );
     expect(hits.length).toBe(RED_WOLF_CASTS);
     expect(RED_WOLF_CASTS).toBeGreaterThanOrEqual(1);
-    const leaked = applies(BASE.events).filter((b) => b.stat === 'atkPct' && near(b.value, 71.42) && b.targetSlug !== SLUG);
-    expect(leaked, 'ATK +71.42% leaked to an ally; the kit scopes it to self').toHaveLength(0);
+    const leaked = applies(BASE.events).filter(
+      (b) =>
+        b.stat === 'atkPct' && near(b.value, 71.42) && b.targetSlug !== SLUG
+    );
+    expect(
+      leaked,
+      'ATK +71.42% leaked to an ally; the kit scopes it to self'
+    ).toHaveLength(0);
   });
 
   it('is keyed to burstCast stage 3, NOT to full-burst entry', () => {
     // Discriminator: helm also closes stage 3, so FB_STARTS > RED_WOLF_CASTS. A
     // fullBurstEnter keying would fire on helm rotations too and over-credit.
-    const e = pairs(OV).find((p) => p.effect.kind === 'buff' && p.effect.stat === 'atkPct' && near(p.effect.value, 71.42));
+    const e = pairs(OV).find(
+      (p) =>
+        p.effect.kind === 'buff' &&
+        p.effect.stat === 'atkPct' &&
+        near(p.effect.value, 71.42)
+    );
     expect(e, 'the Red Wolf ATK buff is not in the override').toBeTruthy();
     expect(e!.block?.trigger?.kind).toBe('burstCast');
     expect(stageOf(e!.block)).toBe(3);
@@ -1633,8 +1779,16 @@ describe('Burst step 1 — ATK +77.55% of the skill user ATK, all allies, 10s', 
   it('is a CASTER-scaled ally grant gated to step 1', () => {
     // Nearest-wrong: atkPct (scales each ally OWN ATK) instead of casterAtkPct (flat add
     // off her ATK) — a completely different magnitude on low-ATK supports.
-    const e = pairs(OV).find((p) => p.effect.kind === 'buff' && p.effect.stat === 'casterAtkPct' && near(p.effect.value, 77.55));
-    expect(e, 'no casterAtkPct 77.55 ally grant found for Beast Cage').toBeTruthy();
+    const e = pairs(OV).find(
+      (p) =>
+        p.effect.kind === 'buff' &&
+        p.effect.stat === 'casterAtkPct' &&
+        near(p.effect.value, 77.55)
+    );
+    expect(
+      e,
+      'no casterAtkPct 77.55 ally grant found for Beast Cage'
+    ).toBeTruthy();
     expect(e!.block?.target?.kind).toBe('allies');
     expect(e!.block?.trigger?.kind).toBe('burstCast');
     expect(stageOf(e!.block)).toBe(1);
@@ -1644,20 +1798,33 @@ describe('Burst step 1 — ATK +77.55% of the skill user ATK, all allies, 10s', 
   it('never fires in this fixture — she takes step 3, so the ally ATK grant stays inert', () => {
     // The stage gate is what is under test: an ungated model would buff the team here.
     const crossGrants = applies(BASE.events).filter(
-      (b) => b.casterIdx === RH && b.targetIdx !== RH && b.stat === 'casterAtkPct',
+      (b) =>
+        b.casterIdx === RH && b.targetIdx !== RH && b.stat === 'casterAtkPct'
     );
-    expect(crossGrants, 'red-hood granted ally ATK despite only ever casting Red Wolf').toHaveLength(0);
+    expect(
+      crossGrants,
+      'red-hood granted ally ATK despite only ever casting Red Wolf'
+    ).toHaveLength(0);
   });
 });
 
 describe('Burst steps 1 and 2 — Cooldown of Burst Skill -40s, once per battle', () => {
   it('the CDR is once-per-battle and lives ONLY on steps 1 and 2', () => {
     const cdrs = pairs(OV).filter((p) => p.effect.kind === 'burstCdr');
-    expect(cdrs.length, 'no burstCdr effect — both step-1 and step-2 CDR lines are dropped').toBeGreaterThanOrEqual(1);
+    expect(
+      cdrs.length,
+      'no burstCdr effect — both step-1 and step-2 CDR lines are dropped'
+    ).toBeGreaterThanOrEqual(1);
     for (const c of cdrs) {
       expect(Math.abs(Number(c.effect.seconds))).toBeCloseTo(40, 3);
-      expect(c.effect.oncePerBattle, 'the kit says Activates once per battle').toBe(true);
-      expect([1, 2], `burstCdr found on stage ${String(stageOf(c.block))}; step 3 (Red Wolf) grants NO cooldown reduction`).toContain(stageOf(c.block));
+      expect(
+        c.effect.oncePerBattle,
+        'the kit says Activates once per battle'
+      ).toBe(true);
+      expect(
+        [1, 2],
+        `burstCdr found on stage ${String(stageOf(c.block))}; step 3 (Red Wolf) grants NO cooldown reduction`
+      ).toContain(stageOf(c.block));
     }
   });
 
@@ -1687,11 +1854,18 @@ describe('Burst step 3 — Red Wolf weapon swap (51.46% of final ATK, full charg
   });
 
   it('Charge Speed +100.8% rides the same window, self-scoped, and is load-bearing', () => {
-    const e = pairs(OV).find((p) => p.effect.kind === 'buff' && p.effect.stat === 'chargeSpeedPct' && near(p.effect.value, 100.8));
+    const e = pairs(OV).find(
+      (p) =>
+        p.effect.kind === 'buff' &&
+        p.effect.stat === 'chargeSpeedPct' &&
+        near(p.effect.value, 100.8)
+    );
     expect(e, 'the Red Wolf Charge Speed +100.8% buff is missing').toBeTruthy();
     expect(e!.effect.durationSec).toBeCloseTo(10, 3);
     expect(stageOf(e!.block)).toBe(3);
-    const live = SELF.filter((b) => b.stat === 'chargeSpeedPct' && near(b.value, 100.8));
+    const live = SELF.filter(
+      (b) => b.stat === 'chargeSpeedPct' && near(b.value, 100.8)
+    );
     expect(live.length).toBe(RED_WOLF_CASTS);
     expect(NO_BURST_SPEED.self).toBeLessThan(BASE.self);
   });
@@ -1700,14 +1874,23 @@ describe('Burst step 3 — Red Wolf weapon swap (51.46% of final ATK, full charg
 describe('no-silent-drops ledger (lines with no engine primitive)', () => {
   it('Attract/taunt and Incoming healing are recorded in unmodeled', () => {
     const led = unmodeledText(OV);
-    expect(/attract|taunt/i.test(led), 'the step-2 Attract/taunt line is not in unmodeled').toBe(true);
-    expect(/incoming healing/i.test(led), 'the step-2 Incoming healing line is not in unmodeled').toBe(true);
+    expect(
+      /attract|taunt/i.test(led),
+      'the step-2 Attract/taunt line is not in unmodeled'
+    ).toBe(true);
+    expect(
+      /incoming healing/i.test(led),
+      'the step-2 Incoming healing line is not in unmodeled'
+    ).toBe(true);
   });
 
   it('Pierce range expansion is either ledgered or folded into the swap pierce tag', () => {
     const led = unmodeledText(OV);
     const swap = pairs(OV).find((p) => p.effect.kind === 'weaponSwap');
-    expect(/pierce range/i.test(led) || swap?.effect?.hasPierce === true, 'the +100% Pierce range line is unaccounted for').toBe(true);
+    expect(
+      /pierce range/i.test(led) || swap?.effect?.hasPierce === true,
+      'the +100% Pierce range line is unaccounted for'
+    ).toBe(true);
   });
 
   it.skip('Attract: taunts all enemies for 10 sec — GAP: no aggro/taunt primitive, and the v1 boss deals no damage', () => {});
@@ -1722,7 +1905,6 @@ describe('no-silent-drops ledger (lines with no engine primitive)', () => {
 
   it.skip('Red Wolf swap shot economy (pulls/sec, magazine, charge time) — MEASUREMENT-GATED: the kit is silent; flag with a footage recipe', () => {});
 });
-
 ```
 
 ---
@@ -1767,6 +1949,7 @@ per-step refunds); B3 weaponSwap damagePct 51.46 / chargeMultPct 250 / 10s; UNMO
 S2 lifesteal 23.04, B2 taunt, B2 incoming-healing 74.88, B3 pierce-range-expand 100) all recorded verbatim.
 
 ### blind override (blind/red-hood.override.json, verbatim)
+
 ```json
 {
   "slug": "red-hood",
@@ -1971,6 +2154,7 @@ S2 lifesteal 23.04, B2 taunt, B2 incoming-healing 74.88, B3 pierce-range-expand 
 ```
 
 ### blind override audit + flags (blind/red-hood.audit.json, verbatim)
+
 ```json
 {
   "slug": "red-hood",
@@ -2138,6 +2322,7 @@ S2 lifesteal 23.04, B2 taunt, B2 incoming-healing 74.88, B3 pierce-range-expand 
 ## 7. DRIVER IMPLEMENTATION (test + override)
 
 ### driver test (scripts/tests/units/red-hood.test.ts)
+
 ```ts
 // PER-UNIT KIT SPEC — `red-hood` (Red Hood, Attacker/SR/Iron, Λ-burst, cd 40s, ammo 6,
 // chargeFrames 60). Kit-autonomy gauntlet 2026-07-25 (Tier 2).
@@ -2242,7 +2427,7 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactual patches ------------------------------------------------------------------
 const stage3 = (ov: any) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.kind === 'burstCast' && x.trigger.stage === 3,
+    (x: any) => x.trigger.kind === 'burstCast' && x.trigger.stage === 3
   );
   if (!b)
     throw new Error('red-hood stage-3 burst block missing — fixture is stale');
@@ -2253,11 +2438,11 @@ const stage3 = (ov: any) => {
 const rhNoChargeSpeed = withPatchedOverride('red-hood', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'chargeSpeedPct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
   if (ov.skill1.length === before)
     throw new Error(
-      'red-hood S1 chargeSpeedPct block missing — fixture is stale',
+      'red-hood S1 chargeSpeedPct block missing — fixture is stale'
     );
 });
 /** R2 counterfactual: the chargeDamagePct-90 conversion approximation removed from Red Wolf. */
@@ -2267,7 +2452,7 @@ const rhNoChargeDmg = withPatchedOverride('red-hood', (ov) => {
   b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
   if (b.effects.length === before)
     throw new Error(
-      'red-hood stage-3 chargeDamagePct missing — fixture is stale',
+      'red-hood stage-3 chargeDamagePct missing — fixture is stale'
     );
 });
 /** R3 counterfactual: permanent Pierce removed. */
@@ -2281,7 +2466,7 @@ const rhNoRedWolfAtk = withPatchedOverride('red-hood', (ov) => {
   const b = stage3(ov);
   const before = b.effects.length;
   b.effects = b.effects.filter(
-    (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct'),
+    (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct')
   );
   if (b.effects.length === before)
     throw new Error('red-hood stage-3 atkPct rider missing — fixture is stale');
@@ -2289,7 +2474,7 @@ const rhNoRedWolfAtk = withPatchedOverride('red-hood', (ov) => {
 /** R5 counterfactual: Beast Cage retargeted from all allies to self only. */
 const rhBeastCageSelf = withPatchedOverride('red-hood', (ov) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.stage === 1 && x.target.kind === 'allies',
+    (x: any) => x.trigger.stage === 1 && x.target.kind === 'allies'
   );
   if (!b)
     throw new Error('red-hood stage-1 allies block missing — fixture is stale');
@@ -2300,7 +2485,7 @@ const rhNoWeaponSwap = withPatchedOverride('red-hood', (ov) => {
   const b = stage3(ov);
   const before = b.effects.length;
   b.effects = b.effects.filter(
-    (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo',
+    (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo'
   );
   if (b.effects.length === before)
     throw new Error('red-hood stage-3 weaponSwap missing — fixture is stale');
@@ -2324,7 +2509,7 @@ const rhShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'red-hood');
 const rhBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'red-hood',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'red-hood'
   );
 const rhStageCasts = (evs: SimEvent[], stage: number) =>
   rhBursts(evs).filter((c) => c.stage === stage);
@@ -2347,7 +2532,7 @@ describe('red-hood — kit spec', () => {
 
     it('is 3.81% per stack, max 10 stacks, 5-sec duration, self-scoped', () => {
       expect(cs.length, 'no chargeSpeedPct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect([...new Set(cs.map((b) => b.value))]).toEqual([3.81]);
       expect([...new Set(cs.map((b) => b.maxStacks))]).toEqual([10]);
@@ -2361,7 +2546,7 @@ describe('red-hood — kit spec', () => {
       expect(cs.length).toBe(rhShots(base.events).length);
       expect(
         Math.max(...cs.map((b) => b.stacks)),
-        'stacks never reached the ×10 cap',
+        'stacks never reached the ×10 cap'
       ).toBe(10);
     });
 
@@ -2375,7 +2560,7 @@ describe('red-hood — kit spec', () => {
 
     it('is modeled as a static chargeDamagePct 90, self-scoped, 10 sec, fired on each Red Wolf cast', () => {
       expect(cd.length, 'no chargeDamagePct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect([...new Set(cd.map((b) => b.value))]).toEqual([90]);
       expect([...new Set(cd.map((b) => b.targetIdx))]).toEqual([RH]);
@@ -2388,25 +2573,25 @@ describe('red-hood — kit spec', () => {
     it('adds exactly +0.9 to the swap charge multiplier (2.5 full charge → 3.4)', () => {
       const shipped = [
         ...new Set(
-          swapDamage(base.events).map((d) => +d.mult.charge.toFixed(6)),
+          swapDamage(base.events).map((d) => +d.mult.charge.toFixed(6))
         ),
       ];
       expect(
         shipped,
-        'swap shots must carry a single charge multiplier',
+        'swap shots must carry a single charge multiplier'
       ).toEqual([3.4]);
     });
 
     it('DISCRIMINATING: removing the conversion drops the swap charge mult by exactly 0.9', () => {
       const counter = [
         ...new Set(
-          swapDamage(noChargeDmg.events).map((d) => +d.mult.charge.toFixed(6)),
+          swapDamage(noChargeDmg.events).map((d) => +d.mult.charge.toFixed(6))
         ),
       ];
       expect(counter.length).toBe(1);
       expect(
         3.4 - counter[0],
-        'the buff must contribute exactly +0.9 (90/100) to the charge mult',
+        'the buff must contribute exactly +0.9 (90/100) to the charge mult'
       ).toBeCloseTo(0.9, 6);
       expect(rhCastBuff(noChargeDmg.events, 'chargeDamagePct').length).toBe(0);
     });
@@ -2442,7 +2627,7 @@ describe('red-hood — kit spec', () => {
     it('DISCRIMINATING: removing the rider deletes the buff and lowers her total', () => {
       expect(rhCastBuff(noRedWolfAtk.events, 'atkPct').length).toBe(0);
       expect(noRedWolfAtk.totals['red-hood']).toBeLessThan(
-        base.totals['red-hood'],
+        base.totals['red-hood']
       );
     });
   });
@@ -2459,11 +2644,11 @@ describe('red-hood — kit spec', () => {
       const values = [...new Set(ca.map((b) => b.value))];
       expect(
         values.length,
-        'every holder must receive the identical caster-relative flat ATK',
+        'every holder must receive the identical caster-relative flat ATK'
       ).toBe(1);
       expect(
         values[0],
-        'stored as flat ATK, not a 77.55 percentage',
+        'stored as flat ATK, not a 77.55 percentage'
       ).toBeGreaterThan(1000);
       expect([...new Set(ca.map((b) => b.expiresFrame! - b.frame))]).toEqual([
         10 * FPS,
@@ -2488,7 +2673,7 @@ describe('red-hood — kit spec', () => {
       const swap = swapDamage(base.events);
       expect(
         swap.length,
-        'no Red Wolf swap shots were produced',
+        'no Red Wolf swap shots were produced'
       ).toBeGreaterThan(0);
       // base SR normals (69.04%) must also exist — she returns to base SR when the window ends
       expect(rhDamage(base.events).some((d) => d.atkPct === 69.04)).toBe(true);
@@ -2497,7 +2682,7 @@ describe('red-hood — kit spec', () => {
     it('is fire-rate-gated to exactly 1 shot / 18 frames (0.3s) on infinite ammo', () => {
       const ua = uaShots(base.events);
       expect(ua.length, 'no unlimited-ammo (Red Wolf) shots').toBeGreaterThan(
-        0,
+        0
       );
       // every Red Wolf shot is unlimited-ammo and there are no reloads inside a window
       expect(ua.length).toBe(swapDamage(base.events).length);
@@ -2507,7 +2692,7 @@ describe('red-hood — kit spec', () => {
       expect(withinWindow.length).toBeGreaterThan(0);
       expect(
         [...new Set(withinWindow)],
-        'cadence must be a constant 18 frames (0.3s)',
+        'cadence must be a constant 18 frames (0.3s)'
       ).toEqual([18]);
     });
 
@@ -2517,7 +2702,7 @@ describe('red-hood — kit spec', () => {
       const perWindow = swapDamage(base.events).length / windows;
       expect(
         perWindow,
-        'a 10s window at 0.3s cadence yields ~33 shots',
+        'a 10s window at 0.3s cadence yields ~33 shots'
       ).toBeGreaterThan(30);
       expect(perWindow).toBeLessThan(36);
     });
@@ -2526,15 +2711,15 @@ describe('red-hood — kit spec', () => {
       expect(swapDamage(noWeaponSwap.events).length).toBe(0);
       expect(uaShots(noWeaponSwap.events).length).toBe(0);
       expect(
-        rhDamage(noWeaponSwap.events).every((d) => d.atkPct === 69.04),
+        rhDamage(noWeaponSwap.events).every((d) => d.atkPct === 69.04)
       ).toBe(true);
     });
   });
 });
-
 ```
 
 ### driver shipped override (src/skills/overrides/red-hood.json)
+
 ```json
 {
   "note": "Lambda burst is stage-conditional. Step 1: team ATK 77.55% of caster ATK + own 40s CD refund (once per battle). Step 2: defensive + CD refund (once per battle). Step 3 Red Wolf: weapon swap (51.46%/shot, 250% full charge, 10s, keeps her 1s SR charge cycle) + self ATK 71.42% for 10s (the S2 rider). S1 excess-charge-speed -> charge-damage conversion not modeled. USER (2026-07-13): Red Wolf (her own B3 window) has INFINITE AMMO — no reloads for the 10s (unlimitedAmmo effect); ammo resets to max when the window ends (engine swap-expiry behavior). DEEP-DIVE 2026-07-13 (decoded game data, skill 1470610 + weapon 1047002): Red Wolf = weapon swap 51.46%/shot, 250% full charge, rate_of_fire 200rpm -> exactly 1 shot/18 frames (0.3s) regardless of charge speed (the +100.8% CS makes charge instant; cadence is fire-rate-gated) -> chargeTimeSec 0.3, ~33 shots/window, infinite ammo (max_ammo 99). S1's excess-over-100% CS -> Charge Damage x2.4 conversion: at 100.8 swap + 3.81x10 stacks, excess ~39 -> +93%; modeled as chargeDamagePct 90 ⚑ (mechanism exact, stack ramp averaged). hasPierce for Pierce Damage buffs (Mint 32.72). [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] OWNER-CONFIRMED 2026-07-20: her base SR OUTSIDE Red Wolf HAS bolt recovery (bolt-action; the engine's +22f SR default stands) — closes the blind-rebuild audit's open question (gotcha 1, 'autofire vs bolt-action untested'); no behavior change, the sim already modeled bolt-action. Her COLD 0.867 residual therefore lives elsewhere (prime suspect: the S1 excess-CS→Charge-Damage conversion still modeled as a static chargeDamagePct 90 average — gotcha 2, MEASUREMENT). Kit-autonomy gauntlet 2026-07-25: cross-family audit (claude-fable-5 S2b) converged FAITHFUL on all 10 load-bearing lines (S1 CS-stacks 3.81x10/5s; S2 hasPierce; S2 Red Wolf ATK 71.42 stage-3; B1 Beast Cage casterAtkPct 77.55 all-allies; B1/B2 burstCdr 40 oncePerBattle; B3 weaponSwap 51.46/250/0.3 + infinite ammo). Conversion stays chargeDamagePct 90 flagged (warm 93.36 = (138.9-100)x2.4 independently re-derived by the reviewer and already documented above; MEASURED>FUDGE — no fudge to 93.36). Stage-2 lifesteal 23.04% confirmed UNMODELED/out-of-domain (no HP pool; tandem recovery-feed to a future on-recovery teammate recorded as a residual, not a DPS-basis edit). burstCdr step1/step2 declared reading = two independent per-step once-per-battle refunds (prose-literal). scripts/tests/units/red-hood.test.ts PINs every load-bearing line (green vs shipped, red vs counterfactual).",
@@ -2668,5 +2853,4 @@ describe('red-hood — kit spec', () => {
     }
   ]
 }
-
 ```

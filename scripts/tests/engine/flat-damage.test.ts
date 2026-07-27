@@ -37,7 +37,10 @@ type Slot = 'skill1' | 'skill2' | 'burst';
  * Returns the whole event stream plus just the probe's own damage instances (`srcSlot` names
  * the slot the block was installed in, which is what makes them separable from her real kit).
  */
-function probe(slot: Slot, block: unknown): { events: SimEvent[]; procs: DamageEvent[] } {
+function probe(
+  slot: Slot,
+  block: unknown
+): { events: SimEvent[]; procs: DamageEvent[] } {
   const patched = withPatchedOverride(CARRY, (ov) => {
     ov[slot] = [block];
   });
@@ -48,26 +51,38 @@ function probe(slot: Slot, block: unknown): { events: SimEvent[]; procs: DamageE
     cfg: { onEvent: (e) => events.push(e) },
   });
   const procs = events.filter(
-    (e): e is DamageEvent => e.kind === 'damage' && e.slug === CARRY && e.srcSlot === slot,
+    (e): e is DamageEvent =>
+      e.kind === 'damage' && e.slug === CARRY && e.srcSlot === slot
   );
   return { events, procs };
 }
 
 /** A block that fires the given effects every `sec` seconds of battle (first at t=sec). */
-const everyN = (sec: number, effects: unknown[], extra: Record<string, unknown> = {}) => ({
+const everyN = (
+  sec: number,
+  effects: unknown[],
+  extra: Record<string, unknown> = {}
+) => ({
   trigger: { kind: 'interval', sec },
   target: { kind: 'self' },
   effects,
   ...extra,
 });
-const flat = (extra: Record<string, unknown> = {}) => ({ kind: 'flatDamage', atkPct: 100, ...extra });
+const flat = (extra: Record<string, unknown> = {}) => ({
+  kind: 'flatDamage',
+  atkPct: 100,
+  ...extra,
+});
 
 describe('flatDamage primitive', () => {
   it('fires at all — the synthetic probe is a live fixture', () => {
     // Guards every other assertion in this file against going vacuous: they all filter the
     // stream to srcSlot === the probe slot, and an empty filter passes most `.every()` arms.
     const { procs } = probe('skill1', everyN(10, [flat()]));
-    expect(procs.length, 'the interval probe never fired over 180s').toBeGreaterThan(10);
+    expect(
+      procs.length,
+      'the interval probe never fired over 180s'
+    ).toBeGreaterThan(10);
   });
 
   it('scales linearly in atkPct — nothing else moves', () => {
@@ -75,13 +90,24 @@ describe('flatDamage primitive', () => {
     // doubling atkPct cannot shift the timeline. Every proc must double, frame for frame.
     const a = probe('skill1', everyN(10, [flat({ atkPct: 100 })])).procs;
     const b = probe('skill1', everyN(10, [flat({ atkPct: 200 })])).procs;
-    expect(b.length, 'the two arms fired a different number of times').toBe(a.length);
+    expect(b.length, 'the two arms fired a different number of times').toBe(
+      a.length
+    );
     const bad = a
       .map((e, i) => ({ e, o: b[i] }))
-      .filter(({ e, o }) => e.frame !== o.frame || Math.abs(o.amount - 2 * e.amount) / Math.max(1, e.amount) > 1e-9);
+      .filter(
+        ({ e, o }) =>
+          e.frame !== o.frame ||
+          Math.abs(o.amount - 2 * e.amount) / Math.max(1, e.amount) > 1e-9
+      );
     expect(
-      bad.slice(0, 3).map(({ e, o }) => `${e.sec.toFixed(2)}s ${e.amount.toFixed(0)} → ${o.amount.toFixed(0)}`),
-      'doubling atkPct did not exactly double the instance',
+      bad
+        .slice(0, 3)
+        .map(
+          ({ e, o }) =>
+            `${e.sec.toFixed(2)}s ${e.amount.toFixed(0)} → ${o.amount.toFixed(0)}`
+        ),
+      'doubling atkPct did not exactly double the instance'
     ).toEqual([]);
   });
 
@@ -98,7 +124,7 @@ describe('flatDamage primitive', () => {
       expect(procs.length, `${slot}: probe never fired`).toBeGreaterThan(0);
       expect(
         [...new Set(procs.map((e) => e.bucket))],
-        `an interval-triggered ${slot} block should bank ${bucket} damage`,
+        `an interval-triggered ${slot} block should bank ${bucket} damage`
       ).toEqual([bucket]);
     }
   });
@@ -109,10 +135,22 @@ describe('flatDamage primitive', () => {
     // if inverted.
     const on = probe('skill1', everyN(10, [flat()])).procs;
     const off = probe('skill1', everyN(10, [flat({ crit: false })])).procs;
-    expect(on.every((e) => e.critEligible), 'a plain flatDamage was not crit-eligible').toBe(true);
-    expect(on.every((e) => e.critRate > 0), 'crit-eligible but resolved to a 0 rate').toBe(true);
-    expect(off.some((e) => e.critEligible), 'crit:false was ignored').toBe(false);
-    expect(off.every((e) => e.critRate === 0), 'a non-eligible instance reported a crit rate').toBe(true);
+    expect(
+      on.every((e) => e.critEligible),
+      'a plain flatDamage was not crit-eligible'
+    ).toBe(true);
+    expect(
+      on.every((e) => e.critRate > 0),
+      'crit-eligible but resolved to a 0 rate'
+    ).toBe(true);
+    expect(
+      off.some((e) => e.critEligible),
+      'crit:false was ignored'
+    ).toBe(false);
+    expect(
+      off.every((e) => e.critRate === 0),
+      'a non-eligible instance reported a crit rate'
+    ).toBe(true);
     // ...and the exemption is worth real damage, so it can never be a silent no-op.
     expect(off[0].amount).toBeLessThan(on[0].amount);
   });
@@ -120,36 +158,50 @@ describe('flatDamage primitive', () => {
   it('never cores by DEFAULT and honours core:true', () => {
     const off = probe('skill1', everyN(10, [flat()])).procs;
     const on = probe('skill1', everyN(10, [flat({ core: true })])).procs;
-    expect(off.some((e) => e.coreEligible), 'a plain flatDamage was core-eligible').toBe(false);
-    expect(on.every((e) => e.coreEligible), 'core:true was ignored').toBe(true);
+    expect(
+      off.some((e) => e.coreEligible),
+      'a plain flatDamage was core-eligible'
+    ).toBe(false);
+    expect(
+      on.every((e) => e.coreEligible),
+      'core:true was ignored'
+    ).toBe(true);
     expect(on[0].amount).toBeGreaterThan(off[0].amount);
   });
 
   it('instant riders NEVER take the +30% range bonus (owner rule 2026-07-13)', () => {
     const { events, procs } = probe('skill1', everyN(10, [flat()]));
-    expect(procs.some((e) => e.rangeApplied), 'a rider took the range bonus').toBe(false);
+    expect(
+      procs.some((e) => e.rangeApplied),
+      'a rider took the range bonus'
+    ).toBe(false);
     // Non-vacuous: the same fight DOES award the bonus to ordinary weapon fire, so `rangeApplied`
     // is not simply false everywhere.
     const normals = events.filter(
-      (e): e is DamageEvent => e.kind === 'damage' && e.srcSlot === 'normal',
+      (e): e is DamageEvent => e.kind === 'damage' && e.srcSlot === 'normal'
     );
     expect(
       normals.some((e) => e.rangeApplied),
       'no normal-fire damage took the range bonus either — the flag is inert in this fixture, ' +
-        'so the assertion above proves nothing. Pick a band/weapon where the bonus is live.',
+        'so the assertion above proves nothing. Pick a band/weapon where the bonus is live.'
     ).toBe(true);
   });
 
   it('delaySec flights the hit by exactly delaySec', () => {
     const instant = probe('skill1', everyN(10, [flat()])).procs;
-    const delayed = probe('skill1', everyN(10, [flat({ delaySec: 0.5 })])).procs;
+    const delayed = probe(
+      'skill1',
+      everyN(10, [flat({ delaySec: 0.5 })])
+    ).procs;
     expect(delayed.length, 'the flighted arm lost procs').toBe(instant.length);
     const bad = instant
       .map((e, i) => ({ e, o: delayed[i] }))
       .filter(({ e, o }) => o.frame !== e.frame + Math.round(0.5 * FPS));
     expect(
-      bad.slice(0, 3).map(({ e, o }) => `${e.frame} → ${o.frame} (want ${e.frame + 30})`),
-      'a flighted hit did not land exactly delaySec after its trigger',
+      bad
+        .slice(0, 3)
+        .map(({ e, o }) => `${e.frame} → ${o.frame} (want ${e.frame + 30})`),
+      'a flighted hit did not land exactly delaySec after its trigger'
     ).toEqual([]);
   });
 
@@ -167,19 +219,25 @@ describe('flatDamage primitive', () => {
       target: { kind: 'self' },
       effects: [flat({ delaySec: 10.5 })],
     }).procs;
-    expect(inside.length, 'the fixture never reached a Full Burst').toBeGreaterThan(0);
+    expect(
+      inside.length,
+      'the fixture never reached a Full Burst'
+    ).toBeGreaterThan(0);
     expect(
       inside.every((e) => e.inFullBurst && e.fbMajorApplied),
-      'a hit landing 1s into the Full Burst window missed the +50% major',
+      'a hit landing 1s into the Full Burst window missed the +50% major'
     ).toBe(true);
     expect(
       outside.filter((e) => e.inFullBurst).map((e) => e.sec.toFixed(2)),
-      'a hit landing 10.5s after FB entry (0.5s past the 10s window) was still credited in-FB',
+      'a hit landing 10.5s after FB entry (0.5s past the 10s window) was still credited in-FB'
     ).toEqual([]);
-    expect(outside.every((e) => !e.fbMajorApplied), 'an out-of-FB landing took the +50%').toBe(true);
+    expect(
+      outside.every((e) => !e.fbMajorApplied),
+      'an out-of-FB landing took the +50%'
+    ).toBe(true);
   });
 
-  it('requiresPulls gates on the OWNER\'s cumulative pulls (MEASURED 2026-07-14)', () => {
+  it("requiresPulls gates on the OWNER's cumulative pulls (MEASURED 2026-07-14)", () => {
     // rapi-red-hood's burst nuke needs >=1 sticky charge (>=120 shots banked at cast). The gate
     // is a pull COUNT, so raising the threshold must push the first proc later in the fight —
     // not merely mute it. A gate wired to elapsed time or to a fixed flag fails the shift arm.
@@ -187,19 +245,36 @@ describe('flatDamage primitive', () => {
     // 30th at ~60s, so the gate genuinely opens MID-fight (a threshold above 88 would only prove
     // the mute arm, and one below her first pull would prove nothing at all).
     const open = probe('skill1', everyN(5, [flat({ requiresPulls: 0 })])).procs;
-    const gated = probe('skill1', everyN(5, [flat({ requiresPulls: 30 })])).procs;
-    const shut = probe('skill1', everyN(5, [flat({ requiresPulls: 100_000 })])).procs;
+    const gated = probe(
+      'skill1',
+      everyN(5, [flat({ requiresPulls: 30 })])
+    ).procs;
+    const shut = probe(
+      'skill1',
+      everyN(5, [flat({ requiresPulls: 100_000 })])
+    ).procs;
     expect(open.length, 'the ungated probe never fired').toBeGreaterThan(0);
-    expect(shut, 'an unreachable pull threshold still let the hit through').toEqual([]);
-    expect(gated.length, 'the 30-pull gate blocked every proc for the whole fight').toBeGreaterThan(0);
-    expect(gated.length, 'the 30-pull gate never actually blocked anything').toBeLessThan(open.length);
+    expect(
+      shut,
+      'an unreachable pull threshold still let the hit through'
+    ).toEqual([]);
+    expect(
+      gated.length,
+      'the 30-pull gate blocked every proc for the whole fight'
+    ).toBeGreaterThan(0);
+    expect(
+      gated.length,
+      'the 30-pull gate never actually blocked anything'
+    ).toBeLessThan(open.length);
     expect(
       gated[0].frame,
-      `first gated proc at ${gated[0].sec.toFixed(1)}s vs first ungated at ${open[0].sec.toFixed(1)}s`,
+      `first gated proc at ${gated[0].sec.toFixed(1)}s vs first ungated at ${open[0].sec.toFixed(1)}s`
     ).toBeGreaterThan(open[0].frame);
     // and once the gate opens it never re-closes (pulls are monotonic) — proc counts differ by
     // exactly the procs skipped at the head.
-    expect(gated.map((e) => e.frame)).toEqual(open.map((e) => e.frame).slice(open.length - gated.length));
+    expect(gated.map((e) => e.frame)).toEqual(
+      open.map((e) => e.frame).slice(open.length - gated.length)
+    );
   });
 
   it('rampSec scales atkPct by min(1, elapsed / rampSec) from battle start', () => {
@@ -210,16 +285,25 @@ describe('flatDamage primitive', () => {
     const bad = ramped
       .map((e, i) => ({ e, base: full[i] }))
       .filter(({ e, base }) => {
-        const want = base.amount * Math.min(1, e.frame / Math.round(RAMP * FPS));
+        const want =
+          base.amount * Math.min(1, e.frame / Math.round(RAMP * FPS));
         return Math.abs(want - e.amount) / Math.max(1, base.amount) > 1e-9;
       });
     expect(
-      bad.slice(0, 3).map(({ e, base }) => `${e.sec.toFixed(1)}s got ${(e.amount / base.amount).toFixed(4)}× full`),
-      'ramp factor is not min(1, elapsed/rampSec) measured from battle start',
+      bad
+        .slice(0, 3)
+        .map(
+          ({ e, base }) =>
+            `${e.sec.toFixed(1)}s got ${(e.amount / base.amount).toFixed(4)}× full`
+        ),
+      'ramp factor is not min(1, elapsed/rampSec) measured from battle start'
     ).toEqual([]);
     // Non-vacuous both ways: the head is genuinely scaled down and the tail is genuinely at full.
     expect(ramped[0].amount).toBeLessThan(full[0].amount * 0.5);
-    expect(ramped[ramped.length - 1].amount).toBeCloseTo(full[full.length - 1].amount, 6);
+    expect(ramped[ramped.length - 1].amount).toBeCloseTo(
+      full[full.length - 1].amount,
+      6
+    );
   });
 
   it('U10: burst-CAST damage never takes the +50% Full Burst major', () => {
@@ -232,10 +316,13 @@ describe('flatDamage primitive', () => {
       target: { kind: 'self' },
       effects: [flat()],
     }).procs;
-    expect(cast.length, `${CARRY} never cast her burst — the fixture cannot exercise this rule`).toBeGreaterThan(0);
+    expect(
+      cast.length,
+      `${CARRY} never cast her burst — the fixture cannot exercise this rule`
+    ).toBeGreaterThan(0);
     expect(
       cast.filter((e) => e.fbMajorApplied).map((e) => e.sec.toFixed(2)),
-      'a burst-cast instant took the +50% Full Burst major',
+      'a burst-cast instant took the +50% Full Burst major'
     ).toEqual([]);
     // The same slot DOES take the major when the damage is keyed to Full Burst ENTRY instead, so
     // the exemption above is a property of the burst-cast trigger, not of the burst slot.
@@ -244,11 +331,13 @@ describe('flatDamage primitive', () => {
       target: { kind: 'self' },
       effects: [flat()],
     }).procs;
-    expect(atEnter.length, 'the FB-entry control never fired').toBeGreaterThan(0);
+    expect(atEnter.length, 'the FB-entry control never fired').toBeGreaterThan(
+      0
+    );
     expect(
       atEnter.every((e) => e.fbMajorApplied),
       'the FB-entry control did NOT take the major either — this fixture cannot distinguish the ' +
-        'burst-cast exemption from a fight that simply never applies the major to burst-slot damage',
+        'burst-cast exemption from a fight that simply never applies the major to burst-slot damage'
     ).toBe(true);
   });
 });

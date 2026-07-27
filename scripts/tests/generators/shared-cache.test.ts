@@ -35,7 +35,9 @@ describe('shared cross-run sim cache (item 5)', () => {
     expect(a).not.toBeNull();
     calls = 0;
     const b = await mk('shared', 1001).bestTeam(); // fresh instance, same cfg
-    expect(calls, 'shared re-run re-simmed instead of reusing the bundle').toBe(0);
+    expect(calls, 'shared re-run re-simmed instead of reusing the bundle').toBe(
+      0
+    );
     expect(b).toEqual(a); // correctness: reuse is not stale
   });
 
@@ -43,14 +45,20 @@ describe('shared cross-run sim cache (item 5)', () => {
     await mk('none', 1002).bestTeam();
     calls = 0;
     await mk('none', 1002).bestTeam();
-    expect(calls, 'default cache leaked across instances (not hermetic)').toBeGreaterThan(0);
+    expect(
+      calls,
+      'default cache leaked across instances (not hermetic)'
+    ).toBeGreaterThan(0);
   });
 
   it('a different cfg gets its own bundle (no cross-config reuse)', async () => {
     await mk('shared', 1003).bestTeam();
     calls = 0;
     await mk('shared', 2003).bestTeam(); // different bossDef → different bundle
-    expect(calls, 'a different cfg wrongly reused another cfg’s sims').toBeGreaterThan(0);
+    expect(
+      calls,
+      'a different cfg wrongly reused another cfg’s sims'
+    ).toBeGreaterThan(0);
   });
 
   it('shared and none produce the identical bestTeam', async () => {

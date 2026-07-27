@@ -46,23 +46,23 @@ export function SaveProfileControl({
   // fetch on mount (so we know whether to reveal the load dropdown) and again
   // each time it opens (cheap; always up to date)
   useEffect(() => {
-    if (user) refresh();
+    if (user) {refresh();}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
   useEffect(() => {
-    if (open && user) refresh();
+    if (open && user) {refresh();}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user]);
 
   // dismiss on outside-click / Escape (shared dropdown pattern)
   useEffect(() => {
-    if (!open) return;
+    if (!open) {return;}
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (wrapRef.current && !wrapRef.current.contains(e.target as Node))
-        setOpen(false);
+        {setOpen(false);}
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {setOpen(false);}
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -74,7 +74,7 @@ export function SaveProfileControl({
 
   if (!user) {
     return (
-      <span className='muted saveprofile-signin'>Log in to save {noun}s</span>
+      <span className="muted saveprofile-signin">Log in to save {noun}s</span>
     );
   }
 
@@ -107,7 +107,7 @@ export function SaveProfileControl({
 
   const onDelete = async (p: SavedProfile, e: ReactMouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm(`Delete "${p.name}"?`)) return;
+    if (!window.confirm(`Delete "${p.name}"?`)) {return;}
     try {
       await deleteProfile(p.id);
       setProfiles((ps) => (ps ? ps.filter((x) => x.id !== p.id) : ps));
@@ -120,7 +120,7 @@ export function SaveProfileControl({
   const hasContent = getCode() !== null;
 
   return (
-    <div className='saveprofile' ref={wrapRef}>
+    <div className="saveprofile" ref={wrapRef}>
       {naming ? (
         <InlineNameField
           initial={suggestName()}
@@ -130,7 +130,7 @@ export function SaveProfileControl({
         />
       ) : (
         <button
-          className='chip saveprofile-save'
+          className="chip saveprofile-save"
           onClick={() => setNaming(true)}
           disabled={!hasContent || busy}
           title={
@@ -144,7 +144,7 @@ export function SaveProfileControl({
       )}
       {count > 0 && (
         <button
-          className='chip saveprofile-load'
+          className="chip saveprofile-load"
           onClick={() => setOpen((o) => !o)}
           title={`Load a saved ${noun}`}
         >
@@ -152,23 +152,23 @@ export function SaveProfileControl({
         </button>
       )}
       {open && (
-        <div className='saveprofile-list'>
-          {profiles === null && <div className='muted pad'>loading…</div>}
+        <div className="saveprofile-list">
+          {profiles === null && <div className="muted pad">loading…</div>}
           {profiles && profiles.length === 0 && (
-            <div className='muted pad'>no saved {noun}s yet</div>
+            <div className="muted pad">no saved {noun}s yet</div>
           )}
           {profiles?.map((p) => (
-            <div key={p.id} className='saveprofile-row'>
+            <div key={p.id} className="saveprofile-row">
               <button
-                className='saveprofile-name'
+                className="saveprofile-name"
                 title={`Load "${p.name}"`}
                 onClick={() => onPick(p)}
               >
                 {p.name}
               </button>
               <button
-                className='saveprofile-del'
-                title='delete'
+                className="saveprofile-del"
+                title="delete"
                 aria-label={`delete ${p.name}`}
                 onClick={(e) => onDelete(p, e)}
               >

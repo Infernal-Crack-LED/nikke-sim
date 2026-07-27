@@ -1,5 +1,3 @@
-
-
 ===== SECTION 1 — RECONCILING-JUDGE CONTRACT (return JSON shape) =====
 
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
@@ -14,6 +12,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -24,12 +23,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -55,30 +56,56 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
-
 
 ===== SECTION 2 — MECHANICS SSOT: docs/data/damage-calculation.md =====
 
@@ -106,7 +133,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -144,29 +171,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -247,9 +274,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -285,7 +312,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -343,7 +370,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -486,12 +513,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -525,8 +552,6 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
-
-
 
 ===== SECTION 2b — MECHANICS SSOT: docs/data/game-mechanics.md =====
 
@@ -584,15 +609,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -935,8 +960,6 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
-
 ===== SECTION 3 — GROUND TRUTH: kit prose + base stats (data/characters.json -> characters.quency-escape-queen) =====
 
 name: Quency: Escape Queen | weapon SMG | class Attacker | element Water | burst III (cd 40s)
@@ -973,216 +996,214 @@ Reload Speed ▲ 25.87% for 10 sec.
 ■ Affects all enemies.
 Deals 1736.31% of final ATK as Distributed Damage.
 
-
 ===== SECTION 4 — S2b PRE-OP REVIEW (claude-fable-5, reconciled by driver) =====
 
 {
-  "slug": "quency-escape-queen",
-  "leakDetected": null,
-  "spec": [
-    {
-      "slot": "skill1",
-      "kitLine": "Stage 1 max: Distributed Damage ▲ 49.58%",
-      "disposition": "FAITHFUL",
-      "scope": "Scoped to the caster's OWN distributed-damage hits only (stat distributedDamagePct). Her sole distributed hit is the burst nuke (1736.31% Distributed Damage) — so this line is a burst-nuke amplifier, NOT a normal-attack buff.",
-      "durationSemantics": "'continuously' = active while the gate holds — a conditional passive, not a timed buff. The gate is dynamic: live only while Explore Route Stage 1 (the skill2 Stage-1 pool, max 10 stacks) is AT max; drops when stacks lapse (reload/downtime).",
-      "triggerIdentity": "passive with a stack-threshold gate (resourceGate-style on the Stage-1 pool at 10/10). No activation clause beyond the stack condition.",
-      "targetSet": "self",
-      "nearestWrongModel": "Unconditional passive from t=0 (gate dropped), and/or encoded as generic attackDamagePct so it boosts ALL her damage instead of only the distributed-flavored burst nuke.",
-      "distinguishingAssertion": "withPatchedOverride removing this line: ONLY the burst-cast damage event (bucket/flavor distributed, mult≈17.3631) shrinks by the ≈1.4958 factor; per-shot normal/core damage events are byte-identical. Additionally no buffApply{stat:'distributedDamagePct',value:49.58} may appear before the Stage-1 pool first reaches 10 stacks (≈20 rounds ≈1s of fire) — red if present at frame 0.",
-      "inertness": "Normal-attack, core, and crit buckets must NOT move when this line is toggled; teammates' totals must not move (self-only).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Stage 2 max: core dmg ▲ 25.25%",
-      "disposition": "FAITHFUL",
-      "scope": "Core-hit bucket only (coreDamagePct) — 'Damage dealt when attacking core'. Not generic damage-up.",
-      "durationSemantics": "'continuously' while Explore Route Stage 2 (skill2 Stage-2 pool, max 10 stacks) is at max; conditional passive, no timer.",
-      "triggerIdentity": "passive gated on Stage-2 pool = 10/10. Note the escalation chain: Stage-2 stacks only build while Stage-1 is at max, so this gate opens strictly later than the 49.58% line.",
-      "targetSet": "self",
-      "nearestWrongModel": "Generic attackDamagePct (boosts non-core hits too), or ungated always-on passive crediting core damage from t=0.",
-      "distinguishingAssertion": "buffApply{stat:'coreDamagePct',value:25.25} first appears strictly AFTER the distributedDamagePct 49.58 apply (chain order), never at frame 0; toggling the line moves ONLY the core bucket of her own damage events (non-core mult unchanged).",
-      "inertness": "Non-core hit damage and the burst nuke (no core flag stated) must NOT move; allies must not move.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Stage 3 max: Critical Rate ▲ 16.73%",
-      "disposition": "FAITHFUL",
-      "scope": "GENERIC crit rate (critRatePct) — the prose has no 'of normal attacks' scoping, so it applies to any crit-eligible hit at her sheet rate. Nearest trap is the inverse of the usual: over-scoping it down to critRateNormalPct.",
-      "durationSemantics": "'continuously' while Explore Route Stage 3 (skill2 Stage-3 pool, max 5 stacks) is at max. This is the TIGHTEST gate: 5 stacks each lasting 0.5s requires ≥5 trigger fires inside 0.5s (≈10 rounds/0.5s at every-2-rounds cadence) — exactly at SMG effective cadence, so uptime is marginal, not guaranteed. A steady-state 100%-uptime assumption is itself a nearest-wrong.",
-      "triggerIdentity": "passive gated on Stage-3 pool = 5/5.",
-      "targetSet": "self",
-      "nearestWrongModel": "Always-on +16.73 crit from t=0 (ignoring that the 0.5s/5-stack gate may have <100% uptime and collapses every reload), or scoping to normal attacks only.",
-      "distinguishingAssertion": "buffApply{stat:'critRatePct',value:16.73} never precedes the coreDamagePct 25.25 apply; after every reload event (magazine 120 spent) the buff must be re-earned (a fresh apply ≥ the re-ramp interval after firing resumes) — red under a permanent passive that shows exactly one apply for the whole fight.",
-      "inertness": "Crit rate on damage events fired during reload-adjacent windows where the pool cannot be at max must NOT show the lift.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 1: Hit Rate ▲ 1.36%, x10, 2 sec",
-      "disposition": "FAITHFUL",
-      "scope": "hitRatePct self-buff. In this engine Hit Rate feeds the HR→core lift (hrCoreMult, live by default) — it is a damage stat, not droppable as 'accuracy flavor'. The kit VALUE is stated; the HR→core conversion magnitude is the engine's ⚑ (measured-only) — do not invent a per-unit slope.",
-      "durationSemantics": "Stacking buff: maxStacks 10, durationSec 2 (wall-clock seconds — 'lasts for 2 sec', NOT rounds). 2s > reload (81f ≈ 1.35s), so Stage-1 stacks SURVIVE a reload; this asymmetry vs Stage 2/3 is load-bearing.",
-      "triggerIdentity": "hitCount count:2 — '■ Activates after 2 normal attacks'. hitCount counts ROUNDS; with hitsPerShot 2 the pull-vs-round-vs-hit ambiguity is the trap: counting per-HIT would double the cadence (fire every pull), counting per-PULL of 2 would halve it. Faithful read: 2 rounds.",
-      "targetSet": "self",
-      "nearestWrongModel": "Trigger shotFired (every pull) or hitCount counting the 2 hits/shot — doubling stack ramp speed; or durationSec long enough that stacks never lapse.",
-      "distinguishingAssertion": "buffApply{stat:'hitRatePct',value:1.36} events arrive once per 2 rounds fired (apply count ≈ roundsFired/2, not roundsFired), stacks field climbing 1→10 then refresh:true at 10; expiresFrame−applyFrame ≈ 120 frames. Red under a per-pull trigger (apply count ≈ pulls) or a 1s/permanent duration.",
-      "inertness": "No applies while reloading (no rounds fire); stacks present entering a reload must still be live when firing resumes (2s > 1.35s reload).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 1: ATK ▲ 2.45%, x10, 2 sec",
-      "disposition": "FAITHFUL",
-      "scope": "atkPct (scales her own ATK) self-buff, paired 1:1 with the Stage-1 Hit Rate stack (same trigger, same stack clock).",
-      "durationSemantics": "maxStacks 10, durationSec 2. At cap: +24.5% ATK sustained while firing.",
-      "triggerIdentity": "Same hitCount:2 block as the Stage-1 Hit Rate line — one trigger, two effects. Stage-1 effects fire on EVERY activation (the 'each subsequent effect triggers all effects before it' clause means higher stages ADD to, never replace, Stage 1).",
-      "targetSet": "self",
-      "nearestWrongModel": "casterAtkPct/flat encoding, or modeling the three stages as mutually exclusive modes (Stage 3 active ⇒ Stage 1/2 stop stacking) — the prose says subsequent stages trigger all prior effects, so at full escalation ALL THREE stack pools tick concurrently (+24.5% +49% +36.8% ATK ceiling).",
-      "distinguishingAssertion": "Once Stage-2 applies begin, Stage-1 atkPct 2.45 applies CONTINUE at the same cadence (interleaved buffApply streams for values 2.45 AND 4.9 in the same window) — red under a replace/mode model where 2.45 applies cease.",
-      "inertness": "Allies' ATK must not move (self-only); buffApply value must be the raw 2.45 (plain percentage stat), not flat-resolved.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 2: Hit Rate ▲ 2.71%, x10, 1 sec",
-      "disposition": "FAITHFUL",
-      "scope": "hitRatePct self, second independent stack pool ('Explore Route Stage 2' — the pool that gates skill1's 25.25% core line at 10/10).",
-      "durationSemantics": "maxStacks 10, durationSec 1. 1s < reload 1.35s ⇒ this pool COLLAPSES across every reload and must fully re-ramp (10 triggers = 20 rounds ≈ 1s of fire).",
-      "triggerIdentity": "Same every-2-rounds activation, but gated: adds a Stage-2 stack only while the Stage-1 pool is at max (resourceGate/threshold on pool 1 = 10). Not a separate trigger cadence.",
-      "targetSet": "self",
-      "nearestWrongModel": "Ungated (Stage-2 stacks from t=0, opening skill1's core line ~1s early and keeping it through reloads), or durationSec:2 copied from Stage 1 letting the pool survive reloads.",
-      "distinguishingAssertion": "First buffApply{stat:'hitRatePct',value:2.71} occurs only after ≥10 applies of value 1.36 (≥20 rounds); after each reload event the NEXT value-2.71 apply shows stacks:1 (pool reset) while Stage-1's next apply may show stacks>1. Red if 2.71 stacks persist across a reload.",
-      "inertness": "skill1's coreDamagePct 25.25 must NOT be live during the post-reload re-ramp window while this pool is below 10.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 2: ATK ▲ 4.9%, x10, 1 sec",
-      "disposition": "FAITHFUL",
-      "scope": "atkPct self, paired with the Stage-2 Hit Rate stack (same block/pool clock).",
-      "durationSemantics": "maxStacks 10, durationSec 1 (prose 'stacks up to 10 time(s) and lasts for 1 sec' — same semantics despite the phrasing wobble). Cap +49% ATK.",
-      "triggerIdentity": "Same Stage-2 gated activation as above.",
-      "targetSet": "self",
-      "nearestWrongModel": "Stack cap misread as 5 (bleeding from Stage 3), or duration 2s.",
-      "distinguishingAssertion": "buffApply stream for value 4.9 reaches stacks:10/maxStacks:10 with expiresFrame−applyFrame ≈ 60 frames — red at maxStacks:5 or ≈120 frames.",
-      "inertness": "Must not apply before pool 1 caps; allies untouched.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 3: Hit Rate ▲ 4.08%, x5, 0.5 sec",
-      "disposition": "FAITHFUL",
-      "scope": "hitRatePct self, third pool ('Explore Route Stage 3' — gates skill1's crit line at 5/5). NOTE the max-stack cap DROPS to 5 here.",
-      "durationSemantics": "maxStacks 5, durationSec 0.5. At every-2-rounds cadence and SMG effective fire, holding 5 live stacks inside a 0.5s window is at the edge of feasibility — uptime of this pool (and hence the skill1 crit gate) is NOT trivially 100%; a model asserting full uptime needs the arithmetic shown.",
-      "triggerIdentity": "Every-2-rounds activation gated on the Stage-2 pool at max (10). Chain: pool1@10 → pool2 builds; pool2@10 → pool3 builds.",
-      "targetSet": "self",
-      "nearestWrongModel": "maxStacks 10 / duration 1s copied from Stage 2 (inflating uptime of both this buff and the downstream 16.73% crit gate), or gating on pool-1-max instead of pool-2-max (skipping a chain link).",
-      "distinguishingAssertion": "First buffApply{stat:'hitRatePct',value:4.08} strictly follows the 10th value-2.71 apply; maxStacks field = 5; expiresFrame−applyFrame ≈ 30 frames. Red under 10-cap or 1s duration.",
-      "inertness": "skill1's critRatePct 16.73 must NOT be live in any frame where fewer than 5 Stage-3 stacks are concurrently unexpired.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Stage 3: ATK ▲ 7.36%, x5, 0.5 sec",
-      "disposition": "FAITHFUL",
-      "scope": "atkPct self, paired with the Stage-3 Hit Rate stack. Cap +36.8% ATK.",
-      "durationSemantics": "maxStacks 5, durationSec 0.5.",
-      "triggerIdentity": "Same Stage-3 gated activation.",
-      "targetSet": "self",
-      "nearestWrongModel": "Treating the three ATK lines as one merged pool (single stat stream at a blended value) rather than three concurrent independent pools with distinct caps/durations.",
-      "distinguishingAssertion": "In a fully-escalated firing window the event log shows THREE concurrent atkPct buff keys (values 2.45, 4.9, 7.36) with distinct maxStacks (10/10/5) — red if only one merged key exists.",
-      "inertness": "Total ATK lift ceiling ≈ +110.3% only while all three pools are capped; must decay stage-by-stage (3 first, then 2, then 1) across a reload, in that order.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Attack Damage ▲ 57.08% for 10 sec",
-      "disposition": "FAITHFUL",
-      "scope": "attackDamagePct (Damage Up bucket, additive with other damage-up sources) on self.",
-      "durationSemantics": "durationSec 10, wall-clock.",
-      "triggerIdentity": "burstCast — her OWN burst block, self mode. NOT fullBurstEnter: in any comp with a second B3 (the control fixture includes helm), a fullBurstEnter keying would fire this on rotations where the OTHER B3 bursts — classic over-credit.",
-      "targetSet": "self",
-      "nearestWrongModel": "fullBurstEnter trigger (fires every team FB regardless of who burst).",
-      "distinguishingAssertion": "Count of buffApply{stat:'attackDamagePct',value:57.08} equals HER burstCast event count, not the fullBurstStart count, in controlComp(quency-escape-queen, helm) where the two B3s alternate.",
-      "inertness": "Rotations where helm bursts must show NO 57.08 apply.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Reload Speed ▲ 25.87% for 10 sec",
-      "disposition": "FAITHFUL",
-      "scope": "reloadSpeedPct self. WEAPON-STATE modifier — this IS damage (taxonomy #6): 120-round SMG magazine + 81-frame reload means faster reloads add fired rounds; must not be skipped as 'defensive/QoL'.",
-      "durationSemantics": "durationSec 10 from her burst cast.",
-      "triggerIdentity": "burstCast, same block/window as the 57.08% line.",
-      "targetSet": "self",
-      "nearestWrongModel": "Dropped entirely as a no-damage utility line (the recurring dropped-reload-mechanic failure), or keyed to fullBurstEnter.",
-      "distinguishingAssertion": "A reload event that starts inside her 10s burst window completes in ≈81/1.2587 ≈ 64 frames (more rounds fired per unit time); patching the line out reduces her totals(res)['quency-escape-queen'] — red if totals are identical with the line removed while a reload fell in-window.",
-      "inertness": "Reloads outside the 10s window stay 81 frames; allies' reloads never change.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "1736.31% final ATK as Distributed Dmg",
-      "disposition": "FAITHFUL",
-      "scope": "flatDamage atkPct:1736.31, flavor:'distributed', target enemy (all enemies — single partless boss takes the full amount; distributed damage does not split further here). This is THE consumer of skill1's 49.58% distributedDamagePct — the two lines must be wired through the same flavor or skill1 goes silently inert.",
-      "durationSemantics": "Instant one-shot per cast; no duration.",
-      "triggerIdentity": "burstCast damage. Per convention, burst-cast instant damage is FB-EXEMPT (lands before the FB window opens) — expect noFb behavior; no core (text says nothing about core strike); crit eligibility unstated (default per engine convention; a crit:true choice is a ⚑ if asserted).",
-      "targetSet": "enemy",
-      "nearestWrongModel": "Nuke receives the +50% Full-Burst major (fbMajorApplied true / keyed to fullBurstEnter so it lands inside FB), and/or flavored generic so the 49.58% distributedDamagePct buff never touches it.",
-      "distinguishingAssertion": "Exactly one damage event per HER burstCast with mult ≈ 17.3631, fbMajorApplied:false, and its magnitude scales by ×(1.4958) when the Stage-1 pool is at max at cast time vs not — red if fbMajorApplied:true or if toggling skill1's 49.58% leaves this event unchanged.",
-      "inertness": "Event count = her burst count (2–3 casts at 40s cd in a ~180s fight), never the team FB count; no core bucket contribution.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    }
-  ],
-  "loadBearingSet": [
-    "skill1:distributed-49.58-stage1max",
-    "skill1:core-25.25-stage2max",
-    "skill1:crit-16.73-stage3max",
-    "skill2:hitrate-1.36-x10-2s",
-    "skill2:atk-2.45-x10-2s",
-    "skill2:hitrate-2.71-x10-1s",
-    "skill2:atk-4.9-x10-1s",
-    "skill2:hitrate-4.08-x5-0.5s",
-    "skill2:atk-7.36-x5-0.5s",
-    "burst:attackdamage-57.08-10s",
-    "burst:reloadspeed-25.87-10s",
-    "burst:nuke-1736.31-distributed"
-  ],
-  "unmodeledVerbatim": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "notes": "Every line is encodable in the schema; nothing legitimately lands in unmodeled, so any driver 'unmodeled' entry needs strong justification. Expected shared-prior misreads to check hardest: (1) THE CHAIN — skill1's three 'continuously' lines are NOT unconditional passives; each is gated on a skill2 stack pool being AT max (10/10/5), the pools build sequentially (Stage N+1 stacks only while Stage N is capped), and pools 2/3 (1s/0.5s durations) collapse across the 1.35s reload while pool 1 (2s) survives it — an always-on encoding over-credits every reload trough and the whole opening ramp. If the driver approximated the gates with rampSec or steady-state uptime instead of live pools, the tests must still pin the reload-trough and t=0 behavior, and any uptime haircut is a ⚑ CALIBRATED estimate requiring the arithmetic. (2) 'Distributed Damage ▲ 49.58%' is distributedDamagePct scoped to her OWN distributed hits — its only consumer is the burst's 1736.31% distributed nuke; encoding it as generic damage-up moves her normal attacks (wrong) and encoding the nuke without flavor:'distributed' makes skill1 silently inert (also wrong). A test must couple the two lines. (3) Trigger cadence: 'after 2 normal attacks' with hitsPerShot:2 — hits vs rounds vs pulls changes the ramp rate ×2 either way; hitCount counts ROUNDS, so count:2 = every 2 rounds. (4) Burst self-buffs are burstCast, not fullBurstEnter — diverges in the control fixture because helm is a co-B3. (5) The nuke is FB-exempt (burst cast lands pre-FB); asserting fbMajorApplied:false is the cheap pin. (6) Reload Speed ▲ is a damage line (shot economy), not skippable. (7) Hit Rate stacks feed the engine's HR→core lift; the kit percentages are DATAMINED-true but the HR→core conversion slope is the engine's measured-only ⚑ — the tests should assert the hitRatePct buffApply stream (values/stacks/durations), not a hand-derived core-rate delta. (8) Stage-3 full uptime is marginal (5 stacks × 0.5s at a ~0.1s trigger cadence needs ~perfect fire continuity, 60fps-quantized SMG cadence sits right at the boundary) — treat claimed 100% uptime of the 16.73% crit gate as a hypothesis, not a fact.",
-  "model": "claude-fable-5",
-  "driverReconciliation": {
-    "converged": true,
-    "driverVsReviewer": "Driver and claude-fable-5 CONVERGE on all 12 kit lines FAITHFUL + load-bearing (identical load-bearing set), empty unmodeled. Shared discriminations all pinned in the driver test: (a) distributed coupling L1<->L12 — mult.distributed 1.4958 on the nuke, plainNuke==noDistrib (622M); (b) burstCast NOT fullBurstEnter — buff count == HER 6 casts, not the team FB count (helm co-B3); (c) FB-exempt nuke — fbMajorApplied:false; (d) Reload Speed is damage (L11 pinned, not skipped); (e) hitRatePct feeds HR->core — removing ONLY hit-rate stacks shifts the normal core-rate distribution and drops her total 672->544M; (f) stage caps x10/x10/x5 and durations 2s/1s/0.5s pinned structurally off buffApply.",
-    "nuance": "S1 STAGE-GATE TIMING is a documented proxy, not a fabrication. Fable distinguishingAssertion would flag a frame-0 apply of distributedDamagePct as RED (faithful = gated on Stage-1 max ~1s of fire). The shipped override encodes L1 as a passive (frame-0 apply). RECONCILED faithful-in-effect: the only consumer of distributedDamagePct is the 1736.31% nuke, which first fires at frame 322 (~5.4s) — well after the Stage-1 pool builds (~1s) — and the 2s Stage-1 window outlasts the 1.35s reload, so the gate stays satisfied for every nuke thereafter. The frame-0 over-credit has ZERO observable effect on any damage instance. L2/L3 gate proxies (hitCount 20 dur 1s / hitCount 10 dur 0.5s) similarly approximate the Stage-2/3-max gates: magnitudes (25.25/16.73) and durations are exact datamine values and pinned; the gate TIMING is approximate (hit-counter carries over reloads -> slightly optimistic rebuild). No engine stack-count-gate primitive exists, so the real cascade gate is out-of-domain. Driver test pins magnitude/duration/self-target/liveness, NOT exact gate timing — consistent with fable note that any uptime haircut is a CALIBRATED estimate. Fable note (8) Stage-3 marginal uptime: driver test does NOT assert 100% uptime (asserts the crit buff fires + is live), consistent.",
-    "flagsRaised": [
-      "S1 stage-gate timing proxy (zero observable error on the nuke; ⚑ out-of-domain)",
-      "S2 stage-unlock ordering not encoded — parallel build over-credits ramp/post-reload by ~0.4-0.8s (⚑2)",
-      "HR->core conversion slope is engine-global measured-only ⚑ (kit hitRatePct magnitudes are DATAMINED-true)"
-    ],
-    "verdict": "GO at S2 level (cross-family corroborated); proceed to S5/S6/S7."
-  }
+"slug": "quency-escape-queen",
+"leakDetected": null,
+"spec": [
+{
+"slot": "skill1",
+"kitLine": "Stage 1 max: Distributed Damage ▲ 49.58%",
+"disposition": "FAITHFUL",
+"scope": "Scoped to the caster's OWN distributed-damage hits only (stat distributedDamagePct). Her sole distributed hit is the burst nuke (1736.31% Distributed Damage) — so this line is a burst-nuke amplifier, NOT a normal-attack buff.",
+"durationSemantics": "'continuously' = active while the gate holds — a conditional passive, not a timed buff. The gate is dynamic: live only while Explore Route Stage 1 (the skill2 Stage-1 pool, max 10 stacks) is AT max; drops when stacks lapse (reload/downtime).",
+"triggerIdentity": "passive with a stack-threshold gate (resourceGate-style on the Stage-1 pool at 10/10). No activation clause beyond the stack condition.",
+"targetSet": "self",
+"nearestWrongModel": "Unconditional passive from t=0 (gate dropped), and/or encoded as generic attackDamagePct so it boosts ALL her damage instead of only the distributed-flavored burst nuke.",
+"distinguishingAssertion": "withPatchedOverride removing this line: ONLY the burst-cast damage event (bucket/flavor distributed, mult≈17.3631) shrinks by the ≈1.4958 factor; per-shot normal/core damage events are byte-identical. Additionally no buffApply{stat:'distributedDamagePct',value:49.58} may appear before the Stage-1 pool first reaches 10 stacks (≈20 rounds ≈1s of fire) — red if present at frame 0.",
+"inertness": "Normal-attack, core, and crit buckets must NOT move when this line is toggled; teammates' totals must not move (self-only).",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "Stage 2 max: core dmg ▲ 25.25%",
+"disposition": "FAITHFUL",
+"scope": "Core-hit bucket only (coreDamagePct) — 'Damage dealt when attacking core'. Not generic damage-up.",
+"durationSemantics": "'continuously' while Explore Route Stage 2 (skill2 Stage-2 pool, max 10 stacks) is at max; conditional passive, no timer.",
+"triggerIdentity": "passive gated on Stage-2 pool = 10/10. Note the escalation chain: Stage-2 stacks only build while Stage-1 is at max, so this gate opens strictly later than the 49.58% line.",
+"targetSet": "self",
+"nearestWrongModel": "Generic attackDamagePct (boosts non-core hits too), or ungated always-on passive crediting core damage from t=0.",
+"distinguishingAssertion": "buffApply{stat:'coreDamagePct',value:25.25} first appears strictly AFTER the distributedDamagePct 49.58 apply (chain order), never at frame 0; toggling the line moves ONLY the core bucket of her own damage events (non-core mult unchanged).",
+"inertness": "Non-core hit damage and the burst nuke (no core flag stated) must NOT move; allies must not move.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "Stage 3 max: Critical Rate ▲ 16.73%",
+"disposition": "FAITHFUL",
+"scope": "GENERIC crit rate (critRatePct) — the prose has no 'of normal attacks' scoping, so it applies to any crit-eligible hit at her sheet rate. Nearest trap is the inverse of the usual: over-scoping it down to critRateNormalPct.",
+"durationSemantics": "'continuously' while Explore Route Stage 3 (skill2 Stage-3 pool, max 5 stacks) is at max. This is the TIGHTEST gate: 5 stacks each lasting 0.5s requires ≥5 trigger fires inside 0.5s (≈10 rounds/0.5s at every-2-rounds cadence) — exactly at SMG effective cadence, so uptime is marginal, not guaranteed. A steady-state 100%-uptime assumption is itself a nearest-wrong.",
+"triggerIdentity": "passive gated on Stage-3 pool = 5/5.",
+"targetSet": "self",
+"nearestWrongModel": "Always-on +16.73 crit from t=0 (ignoring that the 0.5s/5-stack gate may have <100% uptime and collapses every reload), or scoping to normal attacks only.",
+"distinguishingAssertion": "buffApply{stat:'critRatePct',value:16.73} never precedes the coreDamagePct 25.25 apply; after every reload event (magazine 120 spent) the buff must be re-earned (a fresh apply ≥ the re-ramp interval after firing resumes) — red under a permanent passive that shows exactly one apply for the whole fight.",
+"inertness": "Crit rate on damage events fired during reload-adjacent windows where the pool cannot be at max must NOT show the lift.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 1: Hit Rate ▲ 1.36%, x10, 2 sec",
+"disposition": "FAITHFUL",
+"scope": "hitRatePct self-buff. In this engine Hit Rate feeds the HR→core lift (hrCoreMult, live by default) — it is a damage stat, not droppable as 'accuracy flavor'. The kit VALUE is stated; the HR→core conversion magnitude is the engine's ⚑ (measured-only) — do not invent a per-unit slope.",
+"durationSemantics": "Stacking buff: maxStacks 10, durationSec 2 (wall-clock seconds — 'lasts for 2 sec', NOT rounds). 2s > reload (81f ≈ 1.35s), so Stage-1 stacks SURVIVE a reload; this asymmetry vs Stage 2/3 is load-bearing.",
+"triggerIdentity": "hitCount count:2 — '■ Activates after 2 normal attacks'. hitCount counts ROUNDS; with hitsPerShot 2 the pull-vs-round-vs-hit ambiguity is the trap: counting per-HIT would double the cadence (fire every pull), counting per-PULL of 2 would halve it. Faithful read: 2 rounds.",
+"targetSet": "self",
+"nearestWrongModel": "Trigger shotFired (every pull) or hitCount counting the 2 hits/shot — doubling stack ramp speed; or durationSec long enough that stacks never lapse.",
+"distinguishingAssertion": "buffApply{stat:'hitRatePct',value:1.36} events arrive once per 2 rounds fired (apply count ≈ roundsFired/2, not roundsFired), stacks field climbing 1→10 then refresh:true at 10; expiresFrame−applyFrame ≈ 120 frames. Red under a per-pull trigger (apply count ≈ pulls) or a 1s/permanent duration.",
+"inertness": "No applies while reloading (no rounds fire); stacks present entering a reload must still be live when firing resumes (2s > 1.35s reload).",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 1: ATK ▲ 2.45%, x10, 2 sec",
+"disposition": "FAITHFUL",
+"scope": "atkPct (scales her own ATK) self-buff, paired 1:1 with the Stage-1 Hit Rate stack (same trigger, same stack clock).",
+"durationSemantics": "maxStacks 10, durationSec 2. At cap: +24.5% ATK sustained while firing.",
+"triggerIdentity": "Same hitCount:2 block as the Stage-1 Hit Rate line — one trigger, two effects. Stage-1 effects fire on EVERY activation (the 'each subsequent effect triggers all effects before it' clause means higher stages ADD to, never replace, Stage 1).",
+"targetSet": "self",
+"nearestWrongModel": "casterAtkPct/flat encoding, or modeling the three stages as mutually exclusive modes (Stage 3 active ⇒ Stage 1/2 stop stacking) — the prose says subsequent stages trigger all prior effects, so at full escalation ALL THREE stack pools tick concurrently (+24.5% +49% +36.8% ATK ceiling).",
+"distinguishingAssertion": "Once Stage-2 applies begin, Stage-1 atkPct 2.45 applies CONTINUE at the same cadence (interleaved buffApply streams for values 2.45 AND 4.9 in the same window) — red under a replace/mode model where 2.45 applies cease.",
+"inertness": "Allies' ATK must not move (self-only); buffApply value must be the raw 2.45 (plain percentage stat), not flat-resolved.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 2: Hit Rate ▲ 2.71%, x10, 1 sec",
+"disposition": "FAITHFUL",
+"scope": "hitRatePct self, second independent stack pool ('Explore Route Stage 2' — the pool that gates skill1's 25.25% core line at 10/10).",
+"durationSemantics": "maxStacks 10, durationSec 1. 1s < reload 1.35s ⇒ this pool COLLAPSES across every reload and must fully re-ramp (10 triggers = 20 rounds ≈ 1s of fire).",
+"triggerIdentity": "Same every-2-rounds activation, but gated: adds a Stage-2 stack only while the Stage-1 pool is at max (resourceGate/threshold on pool 1 = 10). Not a separate trigger cadence.",
+"targetSet": "self",
+"nearestWrongModel": "Ungated (Stage-2 stacks from t=0, opening skill1's core line ~1s early and keeping it through reloads), or durationSec:2 copied from Stage 1 letting the pool survive reloads.",
+"distinguishingAssertion": "First buffApply{stat:'hitRatePct',value:2.71} occurs only after ≥10 applies of value 1.36 (≥20 rounds); after each reload event the NEXT value-2.71 apply shows stacks:1 (pool reset) while Stage-1's next apply may show stacks>1. Red if 2.71 stacks persist across a reload.",
+"inertness": "skill1's coreDamagePct 25.25 must NOT be live during the post-reload re-ramp window while this pool is below 10.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 2: ATK ▲ 4.9%, x10, 1 sec",
+"disposition": "FAITHFUL",
+"scope": "atkPct self, paired with the Stage-2 Hit Rate stack (same block/pool clock).",
+"durationSemantics": "maxStacks 10, durationSec 1 (prose 'stacks up to 10 time(s) and lasts for 1 sec' — same semantics despite the phrasing wobble). Cap +49% ATK.",
+"triggerIdentity": "Same Stage-2 gated activation as above.",
+"targetSet": "self",
+"nearestWrongModel": "Stack cap misread as 5 (bleeding from Stage 3), or duration 2s.",
+"distinguishingAssertion": "buffApply stream for value 4.9 reaches stacks:10/maxStacks:10 with expiresFrame−applyFrame ≈ 60 frames — red at maxStacks:5 or ≈120 frames.",
+"inertness": "Must not apply before pool 1 caps; allies untouched.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 3: Hit Rate ▲ 4.08%, x5, 0.5 sec",
+"disposition": "FAITHFUL",
+"scope": "hitRatePct self, third pool ('Explore Route Stage 3' — gates skill1's crit line at 5/5). NOTE the max-stack cap DROPS to 5 here.",
+"durationSemantics": "maxStacks 5, durationSec 0.5. At every-2-rounds cadence and SMG effective fire, holding 5 live stacks inside a 0.5s window is at the edge of feasibility — uptime of this pool (and hence the skill1 crit gate) is NOT trivially 100%; a model asserting full uptime needs the arithmetic shown.",
+"triggerIdentity": "Every-2-rounds activation gated on the Stage-2 pool at max (10). Chain: pool1@10 → pool2 builds; pool2@10 → pool3 builds.",
+"targetSet": "self",
+"nearestWrongModel": "maxStacks 10 / duration 1s copied from Stage 2 (inflating uptime of both this buff and the downstream 16.73% crit gate), or gating on pool-1-max instead of pool-2-max (skipping a chain link).",
+"distinguishingAssertion": "First buffApply{stat:'hitRatePct',value:4.08} strictly follows the 10th value-2.71 apply; maxStacks field = 5; expiresFrame−applyFrame ≈ 30 frames. Red under 10-cap or 1s duration.",
+"inertness": "skill1's critRatePct 16.73 must NOT be live in any frame where fewer than 5 Stage-3 stacks are concurrently unexpired.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Stage 3: ATK ▲ 7.36%, x5, 0.5 sec",
+"disposition": "FAITHFUL",
+"scope": "atkPct self, paired with the Stage-3 Hit Rate stack. Cap +36.8% ATK.",
+"durationSemantics": "maxStacks 5, durationSec 0.5.",
+"triggerIdentity": "Same Stage-3 gated activation.",
+"targetSet": "self",
+"nearestWrongModel": "Treating the three ATK lines as one merged pool (single stat stream at a blended value) rather than three concurrent independent pools with distinct caps/durations.",
+"distinguishingAssertion": "In a fully-escalated firing window the event log shows THREE concurrent atkPct buff keys (values 2.45, 4.9, 7.36) with distinct maxStacks (10/10/5) — red if only one merged key exists.",
+"inertness": "Total ATK lift ceiling ≈ +110.3% only while all three pools are capped; must decay stage-by-stage (3 first, then 2, then 1) across a reload, in that order.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Attack Damage ▲ 57.08% for 10 sec",
+"disposition": "FAITHFUL",
+"scope": "attackDamagePct (Damage Up bucket, additive with other damage-up sources) on self.",
+"durationSemantics": "durationSec 10, wall-clock.",
+"triggerIdentity": "burstCast — her OWN burst block, self mode. NOT fullBurstEnter: in any comp with a second B3 (the control fixture includes helm), a fullBurstEnter keying would fire this on rotations where the OTHER B3 bursts — classic over-credit.",
+"targetSet": "self",
+"nearestWrongModel": "fullBurstEnter trigger (fires every team FB regardless of who burst).",
+"distinguishingAssertion": "Count of buffApply{stat:'attackDamagePct',value:57.08} equals HER burstCast event count, not the fullBurstStart count, in controlComp(quency-escape-queen, helm) where the two B3s alternate.",
+"inertness": "Rotations where helm bursts must show NO 57.08 apply.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Reload Speed ▲ 25.87% for 10 sec",
+"disposition": "FAITHFUL",
+"scope": "reloadSpeedPct self. WEAPON-STATE modifier — this IS damage (taxonomy #6): 120-round SMG magazine + 81-frame reload means faster reloads add fired rounds; must not be skipped as 'defensive/QoL'.",
+"durationSemantics": "durationSec 10 from her burst cast.",
+"triggerIdentity": "burstCast, same block/window as the 57.08% line.",
+"targetSet": "self",
+"nearestWrongModel": "Dropped entirely as a no-damage utility line (the recurring dropped-reload-mechanic failure), or keyed to fullBurstEnter.",
+"distinguishingAssertion": "A reload event that starts inside her 10s burst window completes in ≈81/1.2587 ≈ 64 frames (more rounds fired per unit time); patching the line out reduces her totals(res)['quency-escape-queen'] — red if totals are identical with the line removed while a reload fell in-window.",
+"inertness": "Reloads outside the 10s window stay 81 frames; allies' reloads never change.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "1736.31% final ATK as Distributed Dmg",
+"disposition": "FAITHFUL",
+"scope": "flatDamage atkPct:1736.31, flavor:'distributed', target enemy (all enemies — single partless boss takes the full amount; distributed damage does not split further here). This is THE consumer of skill1's 49.58% distributedDamagePct — the two lines must be wired through the same flavor or skill1 goes silently inert.",
+"durationSemantics": "Instant one-shot per cast; no duration.",
+"triggerIdentity": "burstCast damage. Per convention, burst-cast instant damage is FB-EXEMPT (lands before the FB window opens) — expect noFb behavior; no core (text says nothing about core strike); crit eligibility unstated (default per engine convention; a crit:true choice is a ⚑ if asserted).",
+"targetSet": "enemy",
+"nearestWrongModel": "Nuke receives the +50% Full-Burst major (fbMajorApplied true / keyed to fullBurstEnter so it lands inside FB), and/or flavored generic so the 49.58% distributedDamagePct buff never touches it.",
+"distinguishingAssertion": "Exactly one damage event per HER burstCast with mult ≈ 17.3631, fbMajorApplied:false, and its magnitude scales by ×(1.4958) when the Stage-1 pool is at max at cast time vs not — red if fbMajorApplied:true or if toggling skill1's 49.58% leaves this event unchanged.",
+"inertness": "Event count = her burst count (2–3 casts at 40s cd in a ~180s fight), never the team FB count; no core bucket contribution.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
 }
-
+],
+"loadBearingSet": [
+"skill1:distributed-49.58-stage1max",
+"skill1:core-25.25-stage2max",
+"skill1:crit-16.73-stage3max",
+"skill2:hitrate-1.36-x10-2s",
+"skill2:atk-2.45-x10-2s",
+"skill2:hitrate-2.71-x10-1s",
+"skill2:atk-4.9-x10-1s",
+"skill2:hitrate-4.08-x5-0.5s",
+"skill2:atk-7.36-x5-0.5s",
+"burst:attackdamage-57.08-10s",
+"burst:reloadspeed-25.87-10s",
+"burst:nuke-1736.31-distributed"
+],
+"unmodeledVerbatim": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"notes": "Every line is encodable in the schema; nothing legitimately lands in unmodeled, so any driver 'unmodeled' entry needs strong justification. Expected shared-prior misreads to check hardest: (1) THE CHAIN — skill1's three 'continuously' lines are NOT unconditional passives; each is gated on a skill2 stack pool being AT max (10/10/5), the pools build sequentially (Stage N+1 stacks only while Stage N is capped), and pools 2/3 (1s/0.5s durations) collapse across the 1.35s reload while pool 1 (2s) survives it — an always-on encoding over-credits every reload trough and the whole opening ramp. If the driver approximated the gates with rampSec or steady-state uptime instead of live pools, the tests must still pin the reload-trough and t=0 behavior, and any uptime haircut is a ⚑ CALIBRATED estimate requiring the arithmetic. (2) 'Distributed Damage ▲ 49.58%' is distributedDamagePct scoped to her OWN distributed hits — its only consumer is the burst's 1736.31% distributed nuke; encoding it as generic damage-up moves her normal attacks (wrong) and encoding the nuke without flavor:'distributed' makes skill1 silently inert (also wrong). A test must couple the two lines. (3) Trigger cadence: 'after 2 normal attacks' with hitsPerShot:2 — hits vs rounds vs pulls changes the ramp rate ×2 either way; hitCount counts ROUNDS, so count:2 = every 2 rounds. (4) Burst self-buffs are burstCast, not fullBurstEnter — diverges in the control fixture because helm is a co-B3. (5) The nuke is FB-exempt (burst cast lands pre-FB); asserting fbMajorApplied:false is the cheap pin. (6) Reload Speed ▲ is a damage line (shot economy), not skippable. (7) Hit Rate stacks feed the engine's HR→core lift; the kit percentages are DATAMINED-true but the HR→core conversion slope is the engine's measured-only ⚑ — the tests should assert the hitRatePct buffApply stream (values/stacks/durations), not a hand-derived core-rate delta. (8) Stage-3 full uptime is marginal (5 stacks × 0.5s at a ~0.1s trigger cadence needs ~perfect fire continuity, 60fps-quantized SMG cadence sits right at the boundary) — treat claimed 100% uptime of the 16.73% crit gate as a hypothesis, not a fact.",
+"model": "claude-fable-5",
+"driverReconciliation": {
+"converged": true,
+"driverVsReviewer": "Driver and claude-fable-5 CONVERGE on all 12 kit lines FAITHFUL + load-bearing (identical load-bearing set), empty unmodeled. Shared discriminations all pinned in the driver test: (a) distributed coupling L1<->L12 — mult.distributed 1.4958 on the nuke, plainNuke==noDistrib (622M); (b) burstCast NOT fullBurstEnter — buff count == HER 6 casts, not the team FB count (helm co-B3); (c) FB-exempt nuke — fbMajorApplied:false; (d) Reload Speed is damage (L11 pinned, not skipped); (e) hitRatePct feeds HR->core — removing ONLY hit-rate stacks shifts the normal core-rate distribution and drops her total 672->544M; (f) stage caps x10/x10/x5 and durations 2s/1s/0.5s pinned structurally off buffApply.",
+"nuance": "S1 STAGE-GATE TIMING is a documented proxy, not a fabrication. Fable distinguishingAssertion would flag a frame-0 apply of distributedDamagePct as RED (faithful = gated on Stage-1 max ~1s of fire). The shipped override encodes L1 as a passive (frame-0 apply). RECONCILED faithful-in-effect: the only consumer of distributedDamagePct is the 1736.31% nuke, which first fires at frame 322 (~5.4s) — well after the Stage-1 pool builds (~1s) — and the 2s Stage-1 window outlasts the 1.35s reload, so the gate stays satisfied for every nuke thereafter. The frame-0 over-credit has ZERO observable effect on any damage instance. L2/L3 gate proxies (hitCount 20 dur 1s / hitCount 10 dur 0.5s) similarly approximate the Stage-2/3-max gates: magnitudes (25.25/16.73) and durations are exact datamine values and pinned; the gate TIMING is approximate (hit-counter carries over reloads -> slightly optimistic rebuild). No engine stack-count-gate primitive exists, so the real cascade gate is out-of-domain. Driver test pins magnitude/duration/self-target/liveness, NOT exact gate timing — consistent with fable note that any uptime haircut is a CALIBRATED estimate. Fable note (8) Stage-3 marginal uptime: driver test does NOT assert 100% uptime (asserts the crit buff fires + is live), consistent.",
+"flagsRaised": [
+"S1 stage-gate timing proxy (zero observable error on the nuke; ⚑ out-of-domain)",
+"S2 stage-unlock ordering not encoded — parallel build over-credits ramp/post-reload by ~0.4-0.8s (⚑2)",
+"HR->core conversion slope is engine-global measured-only ⚑ (kit hitRatePct magnitudes are DATAMINED-true)"
+],
+"verdict": "GO at S2 level (cross-family corroborated); proceed to S5/S6/S7."
+}
+}
 
 ===== SECTION 5 — S5 BLIND TEST (claude-opus-5, written from prose alone) + RESULT vs DRIVER override =====
 
@@ -1190,60 +1211,61 @@ RESULT: blind/quency-escape-queen.test.ts run UNMODIFIED (save the import-path a
 
 --- blind test source ---
 /**
- * quency-escape-queen -- Quency: Escape Queen (SMG / Water / Attacker / Burst III)
- * BLIND per-unit kit spec. Written from the kit prose ALONE: no sight of the driver
- * override, the driver tests, or any truth file.
- *
- * BASE: cd 40s, ammo 120, reloadFrames 81, hitsPerShot 2, normalAttackMultiplier 10.12,
- * coreAttackMultiplier 250 -- a high-cadence SMG, so every skill2 stack tier saturates
- * within ~1s of firing and re-ramps after each reload.
- *
- * KIT AS READ (structural):
- *   skill1 -- three continuous SELF passives, each gated on an Explore Route stage being
- *             at MAX STACKS (the stages are the skill2 stack tiers):
- *     A  stage-1 max -> Distributed Damage +49.58%  -> distributedDamagePct
- *     B  stage-2 max -> core damage +25.25%         -> coreDamagePct
- *     C  stage-3 max -> Critical Rate +16.73%       -> critRatePct. UNSCOPED: the line
- *        carries no normal-attack qualifier, so critRateNormalPct would be wrong.
- *   skill2 -- SELF, after 2 normal attacks, three cumulative stages (each stage also
- *             fires the ones before it):
- *     S1  hitRate +1.36% x10 / 2s    ATK +2.45% x10 / 2s
- *     S2  hitRate +2.71% x10 / 1s    ATK +4.9%  x10 / 1s   (needs stage-1 at max)
- *     S3  hitRate +4.08% x5  / 0.5s  ATK +7.36% x5  / 0.5s (needs stage-2 at max)
- *   burst -- SELF: Attack Damage +57.08% and Reload Speed +25.87%, both 10s;
- *            ALL ENEMIES: 1736.31% of final ATK as DISTRIBUTED damage. That flavor is
- *            what makes skill1-A a real consumer of her own burst, and it is the only
- *            distributed source in the fixture -- so the pairing is directly testable.
- *
- * FIXTURE: controlComp(SLUG, true) -- liter B1 / crown B2 / quency B3 / helm B3. A lone
- * B3 casts ZERO bursts, so B1+B2 are mandatory. helm is kept (standard fixture); every
- * assertion is a WITHIN-fixture counterfactual, so her constant contribution cancels.
- *
- * METHOD: counterfactuals are built with withPatchedOverride and mutate the clone
- * SLOT-AGNOSTICALLY -- each stat below appears in exactly one kit slot, so scanning all
- * three slots cannot over-reach, and the test stays robust to where the driver placed a
- * block. blocksOf() accepts both documented file shapes (slot: Block[] and
- * slot: {blocks: Block[]}). Every patch records how many effects it matched; a count of 0
- * means the kit line was never authored at all, asserted separately so a MISSING line is
- * never mis-read as an inert one.
- *
- * 13 hoisted runs (each a full 180s sim).
- */
-import { describe, expect, it } from 'vitest';
-import type { SimEvent } from '../../../src/types.js';
-import {
+
+- quency-escape-queen -- Quency: Escape Queen (SMG / Water / Attacker / Burst III)
+- BLIND per-unit kit spec. Written from the kit prose ALONE: no sight of the driver
+- override, the driver tests, or any truth file.
+-
+- BASE: cd 40s, ammo 120, reloadFrames 81, hitsPerShot 2, normalAttackMultiplier 10.12,
+- coreAttackMultiplier 250 -- a high-cadence SMG, so every skill2 stack tier saturates
+- within ~1s of firing and re-ramps after each reload.
+-
+- KIT AS READ (structural):
+- skill1 -- three continuous SELF passives, each gated on an Explore Route stage being
+-             at MAX STACKS (the stages are the skill2 stack tiers):
+-     A  stage-1 max -> Distributed Damage +49.58%  -> distributedDamagePct
+-     B  stage-2 max -> core damage +25.25%         -> coreDamagePct
+-     C  stage-3 max -> Critical Rate +16.73%       -> critRatePct. UNSCOPED: the line
+-        carries no normal-attack qualifier, so critRateNormalPct would be wrong.
+- skill2 -- SELF, after 2 normal attacks, three cumulative stages (each stage also
+-             fires the ones before it):
+-     S1  hitRate +1.36% x10 / 2s    ATK +2.45% x10 / 2s
+-     S2  hitRate +2.71% x10 / 1s    ATK +4.9%  x10 / 1s   (needs stage-1 at max)
+-     S3  hitRate +4.08% x5  / 0.5s  ATK +7.36% x5  / 0.5s (needs stage-2 at max)
+- burst -- SELF: Attack Damage +57.08% and Reload Speed +25.87%, both 10s;
+-            ALL ENEMIES: 1736.31% of final ATK as DISTRIBUTED damage. That flavor is
+-            what makes skill1-A a real consumer of her own burst, and it is the only
+-            distributed source in the fixture -- so the pairing is directly testable.
+-
+- FIXTURE: controlComp(SLUG, true) -- liter B1 / crown B2 / quency B3 / helm B3. A lone
+- B3 casts ZERO bursts, so B1+B2 are mandatory. helm is kept (standard fixture); every
+- assertion is a WITHIN-fixture counterfactual, so her constant contribution cancels.
+-
+- METHOD: counterfactuals are built with withPatchedOverride and mutate the clone
+- SLOT-AGNOSTICALLY -- each stat below appears in exactly one kit slot, so scanning all
+- three slots cannot over-reach, and the test stays robust to where the driver placed a
+- block. blocksOf() accepts both documented file shapes (slot: Block[] and
+- slot: {blocks: Block[]}). Every patch records how many effects it matched; a count of 0
+- means the kit line was never authored at all, asserted separately so a MISSING line is
+- never mis-read as an inert one.
+-
+- 13 hoisted runs (each a full 180s sim).
+  */
+  import { describe, expect, it } from 'vitest';
+  import type { SimEvent } from '../../../src/types.js';
+  import {
   controlComp,
   runComp,
   totals,
   unitOf,
   withPatchedOverride,
-} from '../../tests/lib/harness.js'; // DRIVER ADAPTATION: blind wrote '../lib/harness.js' (no such
-// module); the live harness is scripts/tests/lib/harness.ts. Assertion INTENT unchanged — the
-// blind writer used the real 2-arg withPatchedOverride / controlComp / totals API and the real
-// event fields (.frame/.targetSlug/.casterIdx/.srcSlot/.stacks/.maxStacks), so NO other correction
-// was needed. Its 5 it.skip gaps (stage-gate primitive, cascade ordering, stack-window duration,
-// nuke core/FB/range flags, pulls-vs-rounds) are the blind's honest dispositions and match the
-// driver's documented ⚑s; S7 adjudicates. Raw blind output: cross-family/quency-escape-queen/s5-result.json.
+  } from '../../tests/lib/harness.js'; // DRIVER ADAPTATION: blind wrote '../lib/harness.js' (no such
+  // module); the live harness is scripts/tests/lib/harness.ts. Assertion INTENT unchanged — the
+  // blind writer used the real 2-arg withPatchedOverride / controlComp / totals API and the real
+  // event fields (.frame/.targetSlug/.casterIdx/.srcSlot/.stacks/.maxStacks), so NO other correction
+  // was needed. Its 5 it.skip gaps (stage-gate primitive, cascade ordering, stack-window duration,
+  // nuke core/FB/range flags, pulls-vs-rounds) are the blind's honest dispositions and match the
+  // driver's documented ⚑s; S7 adjudicates. Raw blind output: cross-family/quency-escape-queen/s5-result.json.
 
 const SLUG = 'quency-escape-queen';
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
@@ -1254,107 +1276,107 @@ type Rec = Record<string, any>;
 // The override FILE is slot-keyed; the two documented shapes are slot: Block[] and
 // slot: { blocks: Block[] }. Accept both so the counterfactuals cannot silently no-op.
 function blocksOf(ov: Rec, slot: string): Rec[] {
-  const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s as Rec[];
-  return Array.isArray(s.blocks) ? (s.blocks as Rec[]) : [];
+const s = ov?.[slot];
+if (!s) return [];
+if (Array.isArray(s)) return s as Rec[];
+return Array.isArray(s.blocks) ? (s.blocks as Rec[]) : [];
 }
 
 function eachBlock(ov: Rec, fn: (b: Rec, slot: string) => void): void {
-  for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b, slot);
+for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b, slot);
 }
 
 function eachEffect(ov: Rec, fn: (e: Rec, b: Rec, slot: string) => void): void {
-  eachBlock(ov, (b, slot) => {
-    for (const e of (b.effects ?? []) as Rec[]) fn(e, b, slot);
-  });
+eachBlock(ov, (b, slot) => {
+for (const e of (b.effects ?? []) as Rec[]) fn(e, b, slot);
+});
 }
 
 type Mutator = (ov: Rec) => number;
 
 const zeroStat =
-  (stat: string): Mutator =>
-  (ov) => {
-    let n = 0;
-    eachEffect(ov, (e) => {
-      if (e.kind === 'buff' && e.stat === stat) {
-        e.value = 0;
-        n += 1;
-      }
-    });
-    return n;
-  };
+(stat: string): Mutator =>
+(ov) => {
+let n = 0;
+eachEffect(ov, (e) => {
+if (e.kind === 'buff' && e.stat === stat) {
+e.value = 0;
+n += 1;
+}
+});
+return n;
+};
 
 const setDuration =
-  (stat: string, sec: number): Mutator =>
-  (ov) => {
-    let n = 0;
-    eachEffect(ov, (e) => {
-      if (e.kind === 'buff' && e.stat === stat) {
-        e.durationSec = sec;
-        n += 1;
-      }
-    });
-    return n;
-  };
+(stat: string, sec: number): Mutator =>
+(ov) => {
+let n = 0;
+eachEffect(ov, (e) => {
+if (e.kind === 'buff' && e.stat === stat) {
+e.durationSec = sec;
+n += 1;
+}
+});
+return n;
+};
 
 // Remove (not zero) the burst damage payload, so its damage events disappear entirely
 // and can be counted by difference.
 const dropBurstDamage: Mutator = (ov) => {
-  let n = 0;
-  eachBlock(ov, (b, slot) => {
-    if (slot !== 'burst') return;
-    const before = ((b.effects ?? []) as Rec[]).length;
-    b.effects = ((b.effects ?? []) as Rec[]).filter(
-      (e) => !DAMAGE_KINDS.has(e.kind),
-    );
-    n += before - (b.effects as Rec[]).length;
-  });
-  return n;
+let n = 0;
+eachBlock(ov, (b, slot) => {
+if (slot !== 'burst') return;
+const before = ((b.effects ?? []) as Rec[]).length;
+b.effects = ((b.effects ?? []) as Rec[]).filter(
+(e) => !DAMAGE_KINDS.has(e.kind),
+);
+n += before - (b.effects as Rec[]).length;
+});
+return n;
 };
 
 const stripBurstDamageFlavor: Mutator = (ov) => {
-  let n = 0;
-  eachEffect(ov, (e, _b, slot) => {
-    if (
-      slot === 'burst' &&
-      DAMAGE_KINDS.has(e.kind) &&
-      e.flavor === 'distributed'
-    ) {
-      delete e.flavor;
-      n += 1;
-    }
-  });
-  return n;
+let n = 0;
+eachEffect(ov, (e, _b, slot) => {
+if (
+slot === 'burst' &&
+DAMAGE_KINDS.has(e.kind) &&
+e.flavor === 'distributed'
+) {
+delete e.flavor;
+n += 1;
+}
+});
+return n;
 };
 
 const touched: Record<string, number> = {};
 
 function patched(key: string, ...ms: Mutator[]): unknown {
-  return withPatchedOverride(SLUG, (ov: any) => {
-    let n = 0;
-    for (const m of ms) n += m(ov as Rec);
-    touched[key] = n;
-  });
+return withPatchedOverride(SLUG, (ov: any) => {
+let n = 0;
+for (const m of ms) n += m(ov as Rec);
+touched[key] = n;
+});
 }
 
 interface Run {
-  total: number;
-  events: SimEvent[];
-  res: any;
+total: number;
+events: SimEvent[];
+res: any;
 }
 
 function run(override?: unknown): Run {
-  const events: SimEvent[] = [];
-  const opts: any = controlComp(SLUG, true);
-  if (override)
-    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };
-  opts.cfg = {
-    ...(opts.cfg ?? {}),
-    onEvent: (ev: SimEvent) => events.push(ev),
-  };
-  const res: any = runComp(opts);
-  return { total: totals(res)[SLUG], events, res };
+const events: SimEvent[] = [];
+const opts: any = controlComp(SLUG, true);
+if (override)
+opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };
+opts.cfg = {
+...(opts.cfg ?? {}),
+onEvent: (ev: SimEvent) => events.push(ev),
+};
+const res: any = runComp(opts);
+return { total: totals(res)[SLUG], events, res };
 }
 
 // ---- hoisted runs (13 x 180s) ------------------------------------------------
@@ -1369,301 +1391,300 @@ const NO_RELOAD = run(patched('reloadSpeed', zeroStat('reloadSpeedPct')));
 const NO_NUKE = run(patched('nuke', dropBurstDamage));
 const PLAIN_NUKE = run(patched('flavor', stripBurstDamageFlavor));
 const PLAIN_NUKE_NO_DIST = run(
-  patched(
-    'flavorDist',
-    stripBurstDamageFlavor,
-    zeroStat('distributedDamagePct'),
-  ),
+patched(
+'flavorDist',
+stripBurstDamageFlavor,
+zeroStat('distributedDamagePct'),
+),
 );
 const AD_1S = run(patched('ad1', setDuration('attackDamagePct', 1)));
 const AD_30S = run(patched('ad30', setDuration('attackDamagePct', 30)));
 
 const PATCH_KEYS = [
-  'dist',
-  'core',
-  'crit',
-  'atk',
-  'hitRate',
-  'attackDamage',
-  'reloadSpeed',
-  'nuke',
-  'flavor',
-  'flavorDist',
-  'ad1',
-  'ad30',
+'dist',
+'core',
+'crit',
+'atk',
+'hitRate',
+'attackDamage',
+'reloadSpeed',
+'nuke',
+'flavor',
+'flavorDist',
+'ad1',
+'ad30',
 ];
 
 // ---- event readers -----------------------------------------------------------
 const buffApplies = (r: Run, stat: string, value: number): Rec[] =>
-  (r.events as unknown as Rec[]).filter(
-    (e) =>
-      e.kind === 'buffApply' &&
-      e.stat === stat &&
-      Math.abs(Number(e.value) - value) < 1e-6,
-  );
+(r.events as unknown as Rec[]).filter(
+(e) =>
+e.kind === 'buffApply' &&
+e.stat === stat &&
+Math.abs(Number(e.value) - value) < 1e-6,
+);
 
 const selfBuffApplies = (r: Run, stat: string, value: number): Rec[] =>
-  buffApplies(r, stat, value).filter((e) => e.targetSlug === SLUG);
+buffApplies(r, stat, value).filter((e) => e.targetSlug === SLUG);
 
 const burstDamageEvents = (r: Run): number =>
-  (r.events as unknown as Rec[]).filter(
-    (e) => e.kind === 'damage' && e.srcSlot === 'burst',
-  ).length;
+(r.events as unknown as Rec[]).filter(
+(e) => e.kind === 'damage' && e.srcSlot === 'burst',
+).length;
 
 const others = (r: Run): Record<string, number> => {
-  const t: Rec = { ...totals(r.res) };
-  delete t[SLUG];
-  return t;
+const t: Rec = { ...totals(r.res) };
+delete t[SLUG];
+return t;
 };
 
 // Her burst self-buff is the only per-cast, kit-unique marker available, so its apply
 // count IS her cast count (helm is the other B3 and never grants attackDamagePct 57.08).
 const castCount = (): number =>
-  selfBuffApplies(BASE, 'attackDamagePct', 57.08).length;
+selfBuffApplies(BASE, 'attackDamagePct', 57.08).length;
 
 describe('quency-escape-queen -- harness wiring and non-vacuity', () => {
-  it('the fixture runs, emits events, and deals damage', () => {
-    expect(BASE.events.length).toBeGreaterThan(0);
-    expect(BASE.total).toBeGreaterThan(0);
-    expect(unitOf(BASE.res, SLUG).totalDamage).toBe(BASE.total);
-  });
+it('the fixture runs, emits events, and deals damage', () => {
+expect(BASE.events.length).toBeGreaterThan(0);
+expect(BASE.total).toBeGreaterThan(0);
+expect(unitOf(BASE.res, SLUG).totalDamage).toBe(BASE.total);
+});
 
-  it('she actually casts her burst in this fixture', () => {
-    // Non-vacuity guard for every burst assertion below: with helm as a second B3 the
-    // rotation could in principle never hand her the stage-3 slot.
-    expect(castCount()).toBeGreaterThanOrEqual(2);
-  });
+it('she actually casts her burst in this fixture', () => {
+// Non-vacuity guard for every burst assertion below: with helm as a second B3 the
+// rotation could in principle never hand her the stage-3 slot.
+expect(castCount()).toBeGreaterThanOrEqual(2);
+});
 
-  it('every counterfactual matched at least one authored effect', () => {
-    expect(Object.keys(touched).sort()).toEqual([...PATCH_KEYS].sort());
-    for (const [k, v] of Object.entries(touched)) {
-      // 0 = the kit line is absent from the override, not merely inert.
-      expect(
-        v,
-        `patch ${k} matched no authored effect -- kit line MISSING`,
-      ).toBeGreaterThan(0);
-    }
-  });
+it('every counterfactual matched at least one authored effect', () => {
+expect(Object.keys(touched).sort()).toEqual([...PATCH_KEYS].sort());
+for (const [k, v] of Object.entries(touched)) {
+// 0 = the kit line is absent from the override, not merely inert.
+expect(
+v,
+`patch ${k} matched no authored effect -- kit line MISSING`,
+).toBeGreaterThan(0);
+}
+});
 });
 
 describe('skill1 -- three continuous self gates', () => {
-  it('A: Distributed Damage +49.58% is self-scoped and load-bearing', () => {
-    const evs = selfBuffApplies(BASE, 'distributedDamagePct', 49.58);
-    expect(evs.length).toBeGreaterThan(0);
-    expect(
-      buffApplies(BASE, 'distributedDamagePct', 49.58).every(
-        (e) => e.targetSlug === SLUG,
-      ),
-    ).toBe(true);
-    // Nearest-wrong: authored but never reaching a consumer (inert stat) -> equal totals.
-    expect(NO_DIST.total).toBeLessThan(BASE.total);
-    expect(others(NO_DIST)).toEqual(others(BASE));
-  });
+it('A: Distributed Damage +49.58% is self-scoped and load-bearing', () => {
+const evs = selfBuffApplies(BASE, 'distributedDamagePct', 49.58);
+expect(evs.length).toBeGreaterThan(0);
+expect(
+buffApplies(BASE, 'distributedDamagePct', 49.58).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+// Nearest-wrong: authored but never reaching a consumer (inert stat) -> equal totals.
+expect(NO_DIST.total).toBeLessThan(BASE.total);
+expect(others(NO_DIST)).toEqual(others(BASE));
+});
 
-  it('A: it reaches her burst nuke via the distributed FLAVOR, not a generic bucket', () => {
-    // With the flavor stripped, the distributed buff must become a no-op. If the driver
-    // routed distributedDamagePct into a generic Damage-Up bucket instead, these diverge.
-    expect(PLAIN_NUKE_NO_DIST.total).toBe(PLAIN_NUKE.total);
-    // ...and the pairing is non-vacuous: unstripped, the same zeroing DOES move damage.
-    expect(NO_DIST.total).not.toBe(BASE.total);
-  });
+it('A: it reaches her burst nuke via the distributed FLAVOR, not a generic bucket', () => {
+// With the flavor stripped, the distributed buff must become a no-op. If the driver
+// routed distributedDamagePct into a generic Damage-Up bucket instead, these diverge.
+expect(PLAIN_NUKE_NO_DIST.total).toBe(PLAIN_NUKE.total);
+// ...and the pairing is non-vacuous: unstripped, the same zeroing DOES move damage.
+expect(NO_DIST.total).not.toBe(BASE.total);
+});
 
-  it('B: core damage +25.25% is self-scoped and load-bearing', () => {
-    const evs = selfBuffApplies(BASE, 'coreDamagePct', 25.25);
-    expect(evs.length).toBeGreaterThan(0);
-    expect(
-      buffApplies(BASE, 'coreDamagePct', 25.25).every(
-        (e) => e.targetSlug === SLUG,
-      ),
-    ).toBe(true);
-    expect(NO_CORE.total).toBeLessThan(BASE.total);
-    expect(others(NO_CORE)).toEqual(others(BASE));
-  });
+it('B: core damage +25.25% is self-scoped and load-bearing', () => {
+const evs = selfBuffApplies(BASE, 'coreDamagePct', 25.25);
+expect(evs.length).toBeGreaterThan(0);
+expect(
+buffApplies(BASE, 'coreDamagePct', 25.25).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+expect(NO_CORE.total).toBeLessThan(BASE.total);
+expect(others(NO_CORE)).toEqual(others(BASE));
+});
 
-  it('C: Critical Rate +16.73% is UNSCOPED crit, self-only, load-bearing', () => {
-    const evs = selfBuffApplies(BASE, 'critRatePct', 16.73);
-    expect(evs.length).toBeGreaterThan(0);
-    // Nearest-wrong: critRateNormalPct (the normal-attack-scoped mechanic). Her line has
-    // no such qualifier; matching by VALUE avoids colliding with helm ally crit grants.
-    expect(buffApplies(BASE, 'critRateNormalPct', 16.73).length).toBe(0);
-    expect(NO_CRIT.total).toBeLessThan(BASE.total);
-    expect(others(NO_CRIT)).toEqual(others(BASE));
-  });
+it('C: Critical Rate +16.73% is UNSCOPED crit, self-only, load-bearing', () => {
+const evs = selfBuffApplies(BASE, 'critRatePct', 16.73);
+expect(evs.length).toBeGreaterThan(0);
+// Nearest-wrong: critRateNormalPct (the normal-attack-scoped mechanic). Her line has
+// no such qualifier; matching by VALUE avoids colliding with helm ally crit grants.
+expect(buffApplies(BASE, 'critRateNormalPct', 16.73).length).toBe(0);
+expect(NO_CRIT.total).toBeLessThan(BASE.total);
+expect(others(NO_CRIT)).toEqual(others(BASE));
+});
 
-  it('no skill1 gate leaks onto a teammate (all three lines say Affects self)', () => {
-    for (const [stat, value] of [
-      ['distributedDamagePct', 49.58],
-      ['coreDamagePct', 25.25],
-      ['critRatePct', 16.73],
-    ] as [string, number][]) {
-      for (const e of buffApplies(BASE, stat, value)) {
-        expect(e.targetSlug, `${stat} ${value} applied off-self`).toBe(SLUG);
-        expect(
-          e.casterIdx,
-          `${stat} ${value} looks like a boss debuff`,
-        ).not.toBeNull();
-      }
-    }
-  });
+it('no skill1 gate leaks onto a teammate (all three lines say Affects self)', () => {
+for (const [stat, value] of [
+['distributedDamagePct', 49.58],
+['coreDamagePct', 25.25],
+['critRatePct', 16.73],
+] as [string, number][]) {
+for (const e of buffApplies(BASE, stat, value)) {
+expect(e.targetSlug, `${stat} ${value} applied off-self`).toBe(SLUG);
+expect(
+e.casterIdx,
+`${stat} ${value} looks like a boss debuff`,
+).not.toBeNull();
+}
+}
+});
 });
 
 const LADDER: {
-  stat: string;
-  value: number;
-  maxStacks: number;
-  tier: string;
+stat: string;
+value: number;
+maxStacks: number;
+tier: string;
 }[] = [
-  { stat: 'hitRatePct', value: 1.36, maxStacks: 10, tier: 'S1' },
-  { stat: 'atkPct', value: 2.45, maxStacks: 10, tier: 'S1' },
-  { stat: 'hitRatePct', value: 2.71, maxStacks: 10, tier: 'S2' },
-  { stat: 'atkPct', value: 4.9, maxStacks: 10, tier: 'S2' },
-  { stat: 'hitRatePct', value: 4.08, maxStacks: 5, tier: 'S3' },
-  { stat: 'atkPct', value: 7.36, maxStacks: 5, tier: 'S3' },
+{ stat: 'hitRatePct', value: 1.36, maxStacks: 10, tier: 'S1' },
+{ stat: 'atkPct', value: 2.45, maxStacks: 10, tier: 'S1' },
+{ stat: 'hitRatePct', value: 2.71, maxStacks: 10, tier: 'S2' },
+{ stat: 'atkPct', value: 4.9, maxStacks: 10, tier: 'S2' },
+{ stat: 'hitRatePct', value: 4.08, maxStacks: 5, tier: 'S3' },
+{ stat: 'atkPct', value: 7.36, maxStacks: 5, tier: 'S3' },
 ];
 
 describe('skill2 -- after 2 normal attacks, three cumulative self stages', () => {
-  it('all six stage magnitudes and stack caps are encoded literally', () => {
-    // Nearest-wrong: collapsing the ladder into one pre-summed buff (110.3% ATK /
-    // 61.1% Hit Rate at full stacks) -- that model has none of these six pairs.
-    for (const L of LADDER) {
-      const evs = selfBuffApplies(BASE, L.stat, L.value);
-      expect(
-        evs.length,
-        `${L.tier} ${L.stat} ${L.value} never applied to self`,
-      ).toBeGreaterThan(0);
-      expect(evs[0].maxStacks, `${L.tier} ${L.stat} stack cap`).toBe(
-        L.maxStacks,
-      );
-      const peak = Math.max(...evs.map((e) => Number(e.stacks ?? 0)));
-      // At SMG cadence a tier refreshes far faster than its 2s/1s/0.5s window, so it must
-      // saturate; allow 1 stack of slack for the 0.5s tier landing on its own expiry frame.
-      expect(
-        peak,
-        `${L.tier} ${L.stat} never approaches its cap`,
-      ).toBeGreaterThanOrEqual(L.maxStacks - 1);
-    }
-  });
+it('all six stage magnitudes and stack caps are encoded literally', () => {
+// Nearest-wrong: collapsing the ladder into one pre-summed buff (110.3% ATK /
+// 61.1% Hit Rate at full stacks) -- that model has none of these six pairs.
+for (const L of LADDER) {
+const evs = selfBuffApplies(BASE, L.stat, L.value);
+expect(
+evs.length,
+`${L.tier} ${L.stat} ${L.value} never applied to self`,
+).toBeGreaterThan(0);
+expect(evs[0].maxStacks, `${L.tier} ${L.stat} stack cap`).toBe(
+L.maxStacks,
+);
+const peak = Math.max(...evs.map((e) => Number(e.stacks ?? 0)));
+// At SMG cadence a tier refreshes far faster than its 2s/1s/0.5s window, so it must
+// saturate; allow 1 stack of slack for the 0.5s tier landing on its own expiry frame.
+expect(
+peak,
+`${L.tier} ${L.stat} never approaches its cap`,
+).toBeGreaterThanOrEqual(L.maxStacks - 1);
+}
+});
 
-  it('the ATK ladder is load-bearing and self-only', () => {
-    for (const L of LADDER.filter((x) => x.stat === 'atkPct')) {
-      expect(
-        buffApplies(BASE, 'atkPct', L.value).every(
-          (e) => e.targetSlug === SLUG,
-        ),
-      ).toBe(true);
-    }
-    expect(NO_ATK.total).toBeLessThan(BASE.total);
-    expect(others(NO_ATK)).toEqual(others(BASE));
-  });
+it('the ATK ladder is load-bearing and self-only', () => {
+for (const L of LADDER.filter((x) => x.stat === 'atkPct')) {
+expect(
+buffApplies(BASE, 'atkPct', L.value).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+}
+expect(NO_ATK.total).toBeLessThan(BASE.total);
+expect(others(NO_ATK)).toEqual(others(BASE));
+});
 
-  it('the Hit Rate ladder is load-bearing (hit rate lifts her core rate)', () => {
-    for (const L of LADDER.filter((x) => x.stat === 'hitRatePct')) {
-      expect(
-        buffApplies(BASE, 'hitRatePct', L.value).every(
-          (e) => e.targetSlug === SLUG,
-        ),
-      ).toBe(true);
-    }
-    // Nearest-wrong: dropping Hit Rate as defensive/inert -> zeroing it changes nothing.
-    expect(NO_HR.total).toBeLessThan(BASE.total);
-    expect(others(NO_HR)).toEqual(others(BASE));
-  });
+it('the Hit Rate ladder is load-bearing (hit rate lifts her core rate)', () => {
+for (const L of LADDER.filter((x) => x.stat === 'hitRatePct')) {
+expect(
+buffApplies(BASE, 'hitRatePct', L.value).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+}
+// Nearest-wrong: dropping Hit Rate as defensive/inert -> zeroing it changes nothing.
+expect(NO_HR.total).toBeLessThan(BASE.total);
+expect(others(NO_HR)).toEqual(others(BASE));
+});
 
-  it('the trigger fires on a normal-attack cadence, not a burst or interval cadence', () => {
-    const n = selfBuffApplies(BASE, 'atkPct', 2.45).length;
-    // 180s at SMG cadence (~20 pulls/s nominal, ~70% fire uptime around 81f reloads) gives
-    // roughly 1.2k applications if the trigger counts 2 PULLS and ~2.5k if it counts 2
-    // ROUNDS (hitsPerShot 2). Both sit inside this band; a burstCast/fullBurstEnter mis-key
-    // (~4) or an interval mis-key (tens) falls far below it, a per-round trigger far above.
-    expect(n).toBeGreaterThan(400);
-    expect(n).toBeLessThan(6000);
-  });
+it('the trigger fires on a normal-attack cadence, not a burst or interval cadence', () => {
+const n = selfBuffApplies(BASE, 'atkPct', 2.45).length;
+// 180s at SMG cadence (~20 pulls/s nominal, ~70% fire uptime around 81f reloads) gives
+// roughly 1.2k applications if the trigger counts 2 PULLS and ~2.5k if it counts 2
+// ROUNDS (hitsPerShot 2). Both sit inside this band; a burstCast/fullBurstEnter mis-key
+// (~4) or an interval mis-key (tens) falls far below it, a per-round trigger far above.
+expect(n).toBeGreaterThan(400);
+expect(n).toBeLessThan(6000);
+});
 });
 
 describe('burst -- self window plus the distributed nuke', () => {
-  it('both self buffs are authored at kit magnitude, self-scoped, once per cast', () => {
-    const ad = selfBuffApplies(BASE, 'attackDamagePct', 57.08);
-    const rs = selfBuffApplies(BASE, 'reloadSpeedPct', 25.87);
-    expect(ad.length).toBeGreaterThanOrEqual(2);
-    // Both lines sit under the same Affects-self header, so they must co-fire.
-    expect(rs.length).toBe(ad.length);
-    expect(
-      buffApplies(BASE, 'attackDamagePct', 57.08).every(
-        (e) => e.targetSlug === SLUG,
-      ),
-    ).toBe(true);
-    expect(
-      buffApplies(BASE, 'reloadSpeedPct', 25.87).every(
-        (e) => e.targetSlug === SLUG,
-      ),
-    ).toBe(true);
-  });
+it('both self buffs are authored at kit magnitude, self-scoped, once per cast', () => {
+const ad = selfBuffApplies(BASE, 'attackDamagePct', 57.08);
+const rs = selfBuffApplies(BASE, 'reloadSpeedPct', 25.87);
+expect(ad.length).toBeGreaterThanOrEqual(2);
+// Both lines sit under the same Affects-self header, so they must co-fire.
+expect(rs.length).toBe(ad.length);
+expect(
+buffApplies(BASE, 'attackDamagePct', 57.08).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+expect(
+buffApplies(BASE, 'reloadSpeedPct', 25.87).every(
+(e) => e.targetSlug === SLUG,
+),
+).toBe(true);
+});
 
-  it('Attack Damage +57.08% is load-bearing and its 10s window is bounded', () => {
-    expect(NO_AD.total).toBeLessThan(BASE.total);
-    // Nearest-wrong 1: no durationSec (permanent) -> shrinking to 1s would still be
-    // strictly worse, but widening to 30s could not IMPROVE on a permanent buff.
-    expect(AD_1S.total).toBeLessThan(BASE.total);
-    expect(AD_30S.total).toBeGreaterThan(BASE.total);
-    expect(others(NO_AD)).toEqual(others(BASE));
-  });
+it('Attack Damage +57.08% is load-bearing and its 10s window is bounded', () => {
+expect(NO_AD.total).toBeLessThan(BASE.total);
+// Nearest-wrong 1: no durationSec (permanent) -> shrinking to 1s would still be
+// strictly worse, but widening to 30s could not IMPROVE on a permanent buff.
+expect(AD_1S.total).toBeLessThan(BASE.total);
+expect(AD_30S.total).toBeGreaterThan(BASE.total);
+expect(others(NO_AD)).toEqual(others(BASE));
+});
 
-  it('Reload Speed +25.87% is DAMAGE -- it buys shots inside the window', () => {
-    // Weapon-state modifiers gate shot count; a kit that drops reload speed as defensive
-    // leaves this run byte-identical to base.
-    expect(NO_RELOAD.total).toBeLessThan(BASE.total);
-    // Teammate inertness deliberately NOT asserted here: changing her shot count changes
-    // her burst-gauge contribution, which can legitimately shift the whole rotation.
-  });
+it('Reload Speed +25.87% is DAMAGE -- it buys shots inside the window', () => {
+// Weapon-state modifiers gate shot count; a kit that drops reload speed as defensive
+// leaves this run byte-identical to base.
+expect(NO_RELOAD.total).toBeLessThan(BASE.total);
+// Teammate inertness deliberately NOT asserted here: changing her shot count changes
+// her burst-gauge contribution, which can legitimately shift the whole rotation.
+});
 
-  it('the 1736.31% distributed nuke lands exactly once per burst cast', () => {
-    const delta = burstDamageEvents(BASE) - burstDamageEvents(NO_NUKE);
-    expect(delta).toBeGreaterThan(0);
-    // Nearest-wrong: encoding the nuke as a dot or a per-shot rider -> delta >> casts.
-    expect(delta).toBe(castCount());
-    expect(NO_NUKE.total).toBeLessThan(BASE.total);
-    expect(others(NO_NUKE)).toEqual(others(BASE));
-  });
+it('the 1736.31% distributed nuke lands exactly once per burst cast', () => {
+const delta = burstDamageEvents(BASE) - burstDamageEvents(NO_NUKE);
+expect(delta).toBeGreaterThan(0);
+// Nearest-wrong: encoding the nuke as a dot or a per-shot rider -> delta >> casts.
+expect(delta).toBe(castCount());
+expect(NO_NUKE.total).toBeLessThan(BASE.total);
+expect(others(NO_NUKE)).toEqual(others(BASE));
+});
 });
 
 describe('gaps -- kit text this fixture cannot discriminate', () => {
-  it.skip('skill1 gates only while the matching Explore Route stage is at MAX stacks', () => {
-    // GAP: the engine has no at-max-stacks gate primitive. Any faithful encoding
-    // (rampSec on a passive, or a resource + resourceGate) emits the same buffApply, so
-    // the opening ramp and the post-reload flicker (81f reload > the 1s/0.5s tier windows)
-    // are unobservable from the event stream. Recipe: expose per-frame buff state, or pin
-    // the ramp from footage.
-  });
-
-  it.skip('skill2 stage 2 requires stage 1 at max, stage 3 requires stage 2 at max', () => {
-    // GAP: same missing primitive. In steady state all three tiers are saturated, so the
-    // prerequisite is damage-visible only during the ~1-2s opening ramp and after reloads.
-  });
-
-  it.skip('stack windows are 2s / 1s / 0.5s per tier', () => {
-    // GAP: no buffRemove is emitted on natural lapse, and expiresFrame cannot be paired
-    // with an apply frame from the documented event fields. Duration is therefore encoded
-    // but unasserted; at SMG cadence it is near-inert except across reloads.
-  });
-
-  it.skip('the burst nuke is non-core, full-burst-exempt, and range-exempt', () => {
-    // GAP: damage events carry no slug, so her own burst hit cannot be isolated from the
-    // global stream to read core / fbMajorApplied / rangeApplied. Kit text gives no core
-    // strike wording, and a burst cast lands before the FB window opens.
-  });
-
-  it.skip('2 normal attacks means 2 trigger pulls, not 2 rounds (hitsPerShot 2)', () => {
-    // MEASUREMENT-GATED: both readings land inside the cadence band asserted above. The
-    // 2x difference in stack-rebuild speed is only visible in the post-reload ramp.
-    // Recipe: popup-count the first magazine after a reload against the ATK ladder.
-  });
+it.skip('skill1 gates only while the matching Explore Route stage is at MAX stacks', () => {
+// GAP: the engine has no at-max-stacks gate primitive. Any faithful encoding
+// (rampSec on a passive, or a resource + resourceGate) emits the same buffApply, so
+// the opening ramp and the post-reload flicker (81f reload > the 1s/0.5s tier windows)
+// are unobservable from the event stream. Recipe: expose per-frame buff state, or pin
+// the ramp from footage.
 });
 
+it.skip('skill2 stage 2 requires stage 1 at max, stage 3 requires stage 2 at max', () => {
+// GAP: same missing primitive. In steady state all three tiers are saturated, so the
+// prerequisite is damage-visible only during the ~1-2s opening ramp and after reloads.
+});
 
+it.skip('stack windows are 2s / 1s / 0.5s per tier', () => {
+// GAP: no buffRemove is emitted on natural lapse, and expiresFrame cannot be paired
+// with an apply frame from the documented event fields. Duration is therefore encoded
+// but unasserted; at SMG cadence it is near-inert except across reloads.
+});
+
+it.skip('the burst nuke is non-core, full-burst-exempt, and range-exempt', () => {
+// GAP: damage events carry no slug, so her own burst hit cannot be isolated from the
+// global stream to read core / fbMajorApplied / rangeApplied. Kit text gives no core
+// strike wording, and a burst cast lands before the FB window opens.
+});
+
+it.skip('2 normal attacks means 2 trigger pulls, not 2 rounds (hitsPerShot 2)', () => {
+// MEASUREMENT-GATED: both readings land inside the cadence band asserted above. The
+// 2x difference in stack-rebuild speed is only visible in the post-reload ramp.
+// Recipe: popup-count the first magazine after a reload against the ATK ladder.
+});
+});
 
 ===== SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5) + DIFF vs DRIVER override =====
 
 DIFF SUMMARY (blind vs driver — same 12 lines, same magnitudes; differs only in proxy MECHANISM):
+
 - S1 stage gates: blind = passive + rampSec 6/10/14 (invented staircase, blind flags it); driver = passive (S1a) / hitCount 20 dur 1s (S1b) / hitCount 10 dur 0.5s (S1c) firing-tracking proxies. Both approximate the undefined “Explore Route Stage N at max stacks” gate; both documented as ⚑.
 - S2 stacks: blind = PRE-SUMMED value (hitRatePct 13.6/27.1/20.4, atkPct 24.5/49.0/36.8 = perStack×maxStacks) + rampSec; driver = per-stack value (1.36/2.71/4.08, 2.45/4.9/7.36) + maxStacks (10/10/5) + durationSec (2/1/0.5). Driver models the real per-stack accrual + lapse/rebuild (probe: 3169 applies, stacks climb 1->cap); blind’s pre-summed ramp is coarser and the blind FLAGS it as an upper-bound over-credit.
 - Nuke: blind = flatDamage 1736.31 distributed + explicit noFb:true/crit:true; driver = flatDamage 1736.31 distributed (FB-exempt via burstCast convention; probe confirms fbMajorApplied:false, mult.distributed 1.4958). Equivalent in effect.
@@ -1671,202 +1692,201 @@ DIFF SUMMARY (blind vs driver — same 12 lines, same magnitudes; differs only i
 
 --- blind override JSON ---
 {
-  "slug": "quency-escape-queen",
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "distributedDamagePct",
-          "value": 49.58,
-          "rampSec": 6
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "coreDamagePct",
-          "value": 25.25,
-          "rampSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 16.73,
-          "rampSec": 14
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 2
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 13.6,
-          "durationSec": 2,
-          "rampSec": 6
-        },
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 24.5,
-          "durationSec": 2,
-          "rampSec": 6
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 2
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 27.1,
-          "durationSec": 1,
-          "rampSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 49,
-          "durationSec": 1,
-          "rampSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 2
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 20.4,
-          "durationSec": 0.5,
-          "rampSec": 14
-        },
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 36.8,
-          "durationSec": 0.5,
-          "rampSec": 14
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 57.08,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "reloadSpeedPct",
-          "value": 25.87,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 1736.31,
-          "flavor": "distributed",
-          "crit": true,
-          "noFb": true
-        }
-      ]
-    }
-  ],
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [
-      "Effects vary for each stage. Each subsequent effect triggers all effects before it:"
-    ],
-    "burst": []
-  },
-  "caveats": [
-    "⚑ STACK STEADY-STATE (skill2, all three stages): each stage's buffs are authored at MAX-stacks magnitude (per-stack% × maxStacks) with a rampSec haircut, NOT as engine stacks. The kit's stack windows are shorter than the accrual time at any plausible SMG cadence for stages 2-3 (1s and 0.5s windows, trigger every 2 normal attacks), so true steady-state stacks are almost certainly BELOW cap. The max-stacks encoding is an UPPER BOUND and likely OVER-CREDITS stages 2-3. Recipe: log buffApply stacks/expiresFrame for stat hitRatePct+atkPct over a 90s solo run and re-author value = perStack × observed mean stacks.",
-    "⚑ EXPLORE ROUTE STAGE MECHANIC IS KIT-SILENT: the prose gates skill1's three lines on 'Explore Route Stage N at max stacks' and skill2's stages 2/3 on the same, but never defines what Explore Route stacks are, how they accrue, or their caps. Stage 1's skill2 block (the only ungated one) is what BUILDS the ladder in-game; the higher stages presumably unlock as the lower stages saturate. Modeled here as always-on-after-ramp (rampSec staircase 6/10/14s) rather than as a real gate, which OVER-CREDITS early fight time and cannot express a stage that never reaches max. Recipe: read a solo recording's buff icons/timeline for when each stage's continuous buff first appears; convert to a resource pool + resourceGate if the accrual rule is recoverable.",
-    "⚑ skill2 TRIGGER IDENTITY: 'Activates after 2 normal attacks' encoded as hitCount:2. hitCount counts ROUNDS, and this unit has hitsPerShot 2 — so hitCount:2 fires once per trigger pull, not once per 2 pulls. If the kit means 2 PULLS, the correct value is 4. Unresolved from prose. Recipe: count buffApply events per shot event in a solo run; 1:1 with shots ⇒ keep 2, 1:2 ⇒ use 4.",
-    "⚑ HIT-RATE→CORE MAGNITUDE: hitRatePct feeds the engine's hrCoreMult conversion, which is a derived (unmeasured for this unit) lift. Total hitRatePct here is large at max-stacks encoding (13.6 + 27.1 + 20.4 = 61.1 pts) so any error in the conversion slope is amplified. Recipe: HRCORE=0 vs default A/B on a solo run; compare core-bucket share against a footage core-hit count.",
-    "⚑ CADENCE TUPLE: SMG pullsPerSec / reloadFrames 81 / hitsPerShot 2 come from the datamine, a known-unreliable field. Every skill2 activation count and every sub-1s stack window depends on it. Recipe: ammo-counter read (shots/sec) from a solo recording, per the datamined-nominal-vs-effective rate rule (effective = 60/ceil(60/nominal)).",
-    "⚑ BURST DISTRIBUTED NUKE noFb: set true per the standing rule that a burst-cast instant hit lands before the FB window opens. crit:true is the default rider convention (caster's sheet rate); no core (the text does not say core strike). Recipe: popup colour read on the burst frame — orange body ⇒ crit-eligible confirmed; compare magnitude against the pre-FB vs in-FB expectation to pin noFb.",
-    "Burst self-buffs keyed to burstCast (they sit in THIS unit's own burst block and affect self), not fullBurstEnter — she is a lone Burst III, so in a multi-B3 comp fullBurstEnter would over-credit rotations she does not cast."
-  ],
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose (S6). Structure: skill1 = three continuous self-buffs each gated on an Explore Route stage being at max stacks — the stage mechanic is never defined in the prose, so they are modeled as passives with a staircase rampSec (6/10/14s) standing in for progressive stage saturation. skill2 = a three-stage ladder on a 2-normal-attack trigger; per the 'each subsequent effect triggers all effects before it' line, all three blocks are authored as independently active (the ladder is cumulative, not exclusive), each at per-stack% × maxStacks with the same staircase ramp. Stage 2/3 windows (1s / 0.5s) are shorter than plausible accrual time, so those are UPPER BOUNDS. burst = self Attack Damage + Reload Speed for 10s on burstCast, plus a 1736.31% distributed-flavored instant hit on the enemy (crit-eligible, FB-exempt). Reload Speed is retained as a real damage lever (shots fired), not skipped as defensive. Nothing here is calibrated to any board or footage."
+"slug": "quency-escape-queen",
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "passive"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "distributedDamagePct",
+"value": 49.58,
+"rampSec": 6
 }
-
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "passive"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "coreDamagePct",
+"value": 25.25,
+"rampSec": 10
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "passive"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 16.73,
+"rampSec": 14
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 2
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 13.6,
+"durationSec": 2,
+"rampSec": 6
+},
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 24.5,
+"durationSec": 2,
+"rampSec": 6
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 2
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 27.1,
+"durationSec": 1,
+"rampSec": 10
+},
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 49,
+"durationSec": 1,
+"rampSec": 10
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 2
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 20.4,
+"durationSec": 0.5,
+"rampSec": 14
+},
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 36.8,
+"durationSec": 0.5,
+"rampSec": 14
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "attackDamagePct",
+"value": 57.08,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "reloadSpeedPct",
+"value": 25.87,
+"durationSec": 10
+}
+]
+},
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "enemy"
+},
+"effects": [
+{
+"kind": "flatDamage",
+"atkPct": 1736.31,
+"flavor": "distributed",
+"crit": true,
+"noFb": true
+}
+]
+}
+],
+"unmodeled": {
+"skill1": [],
+"skill2": [
+"Effects vary for each stage. Each subsequent effect triggers all effects before it:"
+],
+"burst": []
+},
+"caveats": [
+"⚑ STACK STEADY-STATE (skill2, all three stages): each stage's buffs are authored at MAX-stacks magnitude (per-stack% × maxStacks) with a rampSec haircut, NOT as engine stacks. The kit's stack windows are shorter than the accrual time at any plausible SMG cadence for stages 2-3 (1s and 0.5s windows, trigger every 2 normal attacks), so true steady-state stacks are almost certainly BELOW cap. The max-stacks encoding is an UPPER BOUND and likely OVER-CREDITS stages 2-3. Recipe: log buffApply stacks/expiresFrame for stat hitRatePct+atkPct over a 90s solo run and re-author value = perStack × observed mean stacks.",
+"⚑ EXPLORE ROUTE STAGE MECHANIC IS KIT-SILENT: the prose gates skill1's three lines on 'Explore Route Stage N at max stacks' and skill2's stages 2/3 on the same, but never defines what Explore Route stacks are, how they accrue, or their caps. Stage 1's skill2 block (the only ungated one) is what BUILDS the ladder in-game; the higher stages presumably unlock as the lower stages saturate. Modeled here as always-on-after-ramp (rampSec staircase 6/10/14s) rather than as a real gate, which OVER-CREDITS early fight time and cannot express a stage that never reaches max. Recipe: read a solo recording's buff icons/timeline for when each stage's continuous buff first appears; convert to a resource pool + resourceGate if the accrual rule is recoverable.",
+"⚑ skill2 TRIGGER IDENTITY: 'Activates after 2 normal attacks' encoded as hitCount:2. hitCount counts ROUNDS, and this unit has hitsPerShot 2 — so hitCount:2 fires once per trigger pull, not once per 2 pulls. If the kit means 2 PULLS, the correct value is 4. Unresolved from prose. Recipe: count buffApply events per shot event in a solo run; 1:1 with shots ⇒ keep 2, 1:2 ⇒ use 4.",
+"⚑ HIT-RATE→CORE MAGNITUDE: hitRatePct feeds the engine's hrCoreMult conversion, which is a derived (unmeasured for this unit) lift. Total hitRatePct here is large at max-stacks encoding (13.6 + 27.1 + 20.4 = 61.1 pts) so any error in the conversion slope is amplified. Recipe: HRCORE=0 vs default A/B on a solo run; compare core-bucket share against a footage core-hit count.",
+"⚑ CADENCE TUPLE: SMG pullsPerSec / reloadFrames 81 / hitsPerShot 2 come from the datamine, a known-unreliable field. Every skill2 activation count and every sub-1s stack window depends on it. Recipe: ammo-counter read (shots/sec) from a solo recording, per the datamined-nominal-vs-effective rate rule (effective = 60/ceil(60/nominal)).",
+"⚑ BURST DISTRIBUTED NUKE noFb: set true per the standing rule that a burst-cast instant hit lands before the FB window opens. crit:true is the default rider convention (caster's sheet rate); no core (the text does not say core strike). Recipe: popup colour read on the burst frame — orange body ⇒ crit-eligible confirmed; compare magnitude against the pre-FB vs in-FB expectation to pin noFb.",
+"Burst self-buffs keyed to burstCast (they sit in THIS unit's own burst block and affect self), not fullBurstEnter — she is a lone Burst III, so in a multi-B3 comp fullBurstEnter would over-credit rotations she does not cast."
+],
+"note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose (S6). Structure: skill1 = three continuous self-buffs each gated on an Explore Route stage being at max stacks — the stage mechanic is never defined in the prose, so they are modeled as passives with a staircase rampSec (6/10/14s) standing in for progressive stage saturation. skill2 = a three-stage ladder on a 2-normal-attack trigger; per the 'each subsequent effect triggers all effects before it' line, all three blocks are authored as independently active (the ladder is cumulative, not exclusive), each at per-stack% × maxStacks with the same staircase ramp. Stage 2/3 windows (1s / 0.5s) are shorter than plausible accrual time, so those are UPPER BOUNDS. burst = self Attack Damage + Reload Speed for 10s on burstCast, plus a 1736.31% distributed-flavored instant hit on the enemy (crit-eligible, FB-exempt). Reload Speed is retained as a real damage lever (shots fired), not skipped as defensive. Nothing here is calibrated to any board or footage."
+}
 
 ===== SECTION 7 — DRIVER IMPLEMENTATION =====
 
@@ -1881,54 +1901,54 @@ DIFF SUMMARY (blind vs driver — same 12 lines, same magnitudes; differs only i
 // model each assertion must discriminate against) — never to supply the encoding under test.
 //
 // Kit (data/characters.json → characters['quency-escape-queen'].skills, lvl 10/10/10):
-//   S1 "Secure Route" — three self permanents, EACH gated on an Explore Route stage at max stacks:
-//        ■ Stage 1 max → self: Distributed Damage ▲ 49.58% continuously          [L1 FAITHFUL]
-//        ■ Stage 2 max → self: Damage dealt when attacking core ▲ 25.25% cont.   [L2 FAITHFUL*]
-//        ■ Stage 3 max → self: Critical Rate ▲ 16.73% continuously               [L3 FAITHFUL*]
-//   S2 "Explore Route" — after 2 normal attacks; cascade (each stage triggers all before it):
-//        ■ Stage 1: self Hit Rate ▲ 1.36% (x10, 2s) + ATK ▲ 2.45% (x10, 2s)       [L4/L5 FAITHFUL]
-//        ■ Stage 2 (gated S1 max): Hit Rate ▲ 2.71% (x10, 1s) + ATK ▲ 4.9% (x10,1s)[L6/L7 FAITHFUL]
-//        ■ Stage 3 (gated S2 max): Hit Rate ▲ 4.08% (x5, 0.5s) + ATK ▲ 7.36% (x5,0.5s)[L8/L9 FAITHFUL]
-//   BU "The Great Thief" — burstCast:
-//        ■ self: Attack Damage ▲ 57.08% for 10 sec                               [L10 FAITHFUL]
-//        ■ self: Reload Speed ▲ 25.87% for 10 sec                                [L11 FAITHFUL]
-//        ■ all enemies: 1736.31% of final ATK as Distributed Damage              [L12 FAITHFUL]
+// S1 "Secure Route" — three self permanents, EACH gated on an Explore Route stage at max stacks:
+// ■ Stage 1 max → self: Distributed Damage ▲ 49.58% continuously [L1 FAITHFUL]
+// ■ Stage 2 max → self: Damage dealt when attacking core ▲ 25.25% cont. [L2 FAITHFUL*]
+// ■ Stage 3 max → self: Critical Rate ▲ 16.73% continuously [L3 FAITHFUL*]
+// S2 "Explore Route" — after 2 normal attacks; cascade (each stage triggers all before it):
+// ■ Stage 1: self Hit Rate ▲ 1.36% (x10, 2s) + ATK ▲ 2.45% (x10, 2s) [L4/L5 FAITHFUL]
+// ■ Stage 2 (gated S1 max): Hit Rate ▲ 2.71% (x10, 1s) + ATK ▲ 4.9% (x10,1s)[L6/L7 FAITHFUL]
+// ■ Stage 3 (gated S2 max): Hit Rate ▲ 4.08% (x5, 0.5s) + ATK ▲ 7.36% (x5,0.5s)[L8/L9 FAITHFUL]
+// BU "The Great Thief" — burstCast:
+// ■ self: Attack Damage ▲ 57.08% for 10 sec [L10 FAITHFUL]
+// ■ self: Reload Speed ▲ 25.87% for 10 sec [L11 FAITHFUL]
+// ■ all enemies: 1736.31% of final ATK as Distributed Damage [L12 FAITHFUL]
 //
 // *L2/L3 magnitudes/durations/self-target are FAITHFUL and pinned. Their STAGE GATE is a
-//  firing-tracking PROXY (hitCount 20 = 10 pulls for the stage-2-max gate; hitCount 10 = 5 pulls
-//  for the stage-3-max gate), because the engine has no "activate when buff X is at N stacks"
-//  trigger. The proxy is continuous-while-firing (the real gate is too, at 24 pulls/s) and lapses
-//  on the stage window, so the magnitude/duration pin is the load-bearing faithfulness claim; the
-//  exact gate TIMING is not pinned (⚑, out-of-domain — would need an engine stack-count gate).
+// firing-tracking PROXY (hitCount 20 = 10 pulls for the stage-2-max gate; hitCount 10 = 5 pulls
+// for the stage-3-max gate), because the engine has no "activate when buff X is at N stacks"
+// trigger. The proxy is continuous-while-firing (the real gate is too, at 24 pulls/s) and lapses
+// on the stage window, so the magnitude/duration pin is the load-bearing faithfulness claim; the
+// exact gate TIMING is not pinned (⚑, out-of-domain — would need an engine stack-count gate).
 //
 // NOT PINNED (documented proxy, ⚑2): the S2 stage-UNLOCK ORDERING. The kit gates stage 2 behind
-//  stage-1-max and stage 3 behind stage-2-max; the shipped override builds all six stacks in
-//  PARALLEL from the first pull (one hitCount-2 block). This over-credits stage 2/3 during the
-//  ~1s ramp and for ~0.4–0.8s after each reload rebuild — small at 24 pulls/s over 180s. The
-//  magnitudes / durations / stack-CAPS (stage 1/2 x10, stage 3 x5) ARE faithful and pinned below;
-//  only the unlock ordering is approximate. No engine primitive encodes the cascade order today.
+// stage-1-max and stage 3 behind stage-2-max; the shipped override builds all six stacks in
+// PARALLEL from the first pull (one hitCount-2 block). This over-credits stage 2/3 during the
+// ~1s ramp and for ~0.4–0.8s after each reload rebuild — small at 24 pulls/s over 180s. The
+// magnitudes / durations / stack-CAPS (stage 1/2 x10, stage 3 x5) ARE faithful and pinned below;
+// only the unlock ordering is approximate. No engine primitive encodes the cascade order today.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
-//   L1  distributedDamagePct is a DISTRIBUTED-bucket multiplier — it lifts ONLY distributed-flavor
-//       damage (her burst nuke), never normals. Proven two ways: the nuke carries mult.distributed
-//       1.4958 (= 1 + 0.4958) which collapses to 1.0 when the line is removed, while normals stay
-//       1.0 throughout; and the nearest wrong model (a generic attackDamagePct) WOULD lift normals,
-//       which the shipped model provably does not.
-//   L2  coreDamagePct 25.25 is LIVE because her hit-rate stacks feed core rate (acrForHR) — core
-//       hits land, so removing the line drops her total. A dead/innert coreDamagePct would not.
-//   L3  critRatePct 16.73 lifts the resolved crit rate on normals; removing it collapses the top
-//       crit-rate values (0.3173/0.4637 → 0.15/0.2964).
-//   L4-L9 the six distinct stack values, their stack-CAPS (x10/x10/x5) and durations (2s/1s/0.5s)
-//       are pinned structurally off the buffApply log; the ATK stacks are load-bearing (removing
-//       S2 halves her total) and the hit-rate stacks are LIVE — they feed core rate, so removing
-//       ONLY the hit-rate effects (keeping ATK) still drops her total and shifts the core-rate
-//       distribution. A wrong cap (stage 3 x10) or a wrong duration would fail the structural pin.
-//   L10/L11 burstCast self buffs: exact value + 10s duration + once per cast, self-scoped.
-//   L12 the nuke is 1736.31% in the BURST bucket, distributed-flavored (mult.distributed 1.4958),
-//       and FB-EXEMPT (burstCast lands before the Full Burst window → never takes the +50% major).
-//       Stripping the distributed flavor drops it identically to removing L1 — the two are the two
-//       halves of one distributed mechanic.
+// L1 distributedDamagePct is a DISTRIBUTED-bucket multiplier — it lifts ONLY distributed-flavor
+// damage (her burst nuke), never normals. Proven two ways: the nuke carries mult.distributed
+// 1.4958 (= 1 + 0.4958) which collapses to 1.0 when the line is removed, while normals stay
+// 1.0 throughout; and the nearest wrong model (a generic attackDamagePct) WOULD lift normals,
+// which the shipped model provably does not.
+// L2 coreDamagePct 25.25 is LIVE because her hit-rate stacks feed core rate (acrForHR) — core
+// hits land, so removing the line drops her total. A dead/innert coreDamagePct would not.
+// L3 critRatePct 16.73 lifts the resolved crit rate on normals; removing it collapses the top
+// crit-rate values (0.3173/0.4637 → 0.15/0.2964).
+// L4-L9 the six distinct stack values, their stack-CAPS (x10/x10/x5) and durations (2s/1s/0.5s)
+// are pinned structurally off the buffApply log; the ATK stacks are load-bearing (removing
+// S2 halves her total) and the hit-rate stacks are LIVE — they feed core rate, so removing
+// ONLY the hit-rate effects (keeping ATK) still drops her total and shifts the core-rate
+// distribution. A wrong cap (stage 3 x10) or a wrong duration would fail the structural pin.
+// L10/L11 burstCast self buffs: exact value + 10s duration + once per cast, self-scoped.
+// L12 the nuke is 1736.31% in the BURST bucket, distributed-flavored (mult.distributed 1.4958),
+// and FB-EXEMPT (burstCast lands before the Full Burst window → never takes the +50% major).
+// Stripping the distributed flavor drops it identically to removing L1 — the two are the two
+// halves of one distributed mechanic.
 //
 // Fixture: the control comp liter (B1) / crown (B2) / qeq (B3) / helm (B3), boss Fire (Water
 // advantage), focus qeq. Two 40s Burst-III casters alternate the ~20s FB cycle, so qeq casts her
@@ -1946,62 +1966,62 @@ type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(overrides: Record<string, any> = {}) {
-  const events: SimEvent[] = [];
-  const res = runComp({
-    ...controlComp('quency-escape-queen'),
-    overrides,
-    cfg: { onEvent: (e) => events.push(e) },
-  });
-  return { events, totals: totals(res) };
+const events: SimEvent[] = [];
+const res = runComp({
+...controlComp('quency-escape-queen'),
+overrides,
+cfg: { onEvent: (e) => events.push(e) },
+});
+return { events, totals: totals(res) };
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
 const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
 
-/** L1 reference: her distributed-damage line removed entirely. */
+/** L1 reference: her distributed-damage line removed entirely. _/
 const qeqNoDistrib = withPatchedOverride('quency-escape-queen', (ov) => {
-  const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'distributedDamagePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 distributedDamagePct block missing — fixture is stale');
+const before = ov.skill1.length;
+ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'distributedDamagePct'));
+if (ov.skill1.length === before) throw new Error('qeq S1 distributedDamagePct block missing — fixture is stale');
 });
-/** L1 counterfactual: the same line as a GENERIC (unscoped) attack-damage buff. */
+/_* L1 counterfactual: the same line as a GENERIC (unscoped) attack-damage buff. _/
 const qeqDistribAsAtkDmg = withPatchedOverride('quency-escape-queen', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'distributedDamagePct');
-  if (!e) throw new Error('qeq S1 distributedDamagePct effect missing — fixture is stale');
-  e.stat = 'attackDamagePct';
+const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'distributedDamagePct');
+if (!e) throw new Error('qeq S1 distributedDamagePct effect missing — fixture is stale');
+e.stat = 'attackDamagePct';
 });
-/** L2 reference: her core-damage line removed. */
+/_* L2 reference: her core-damage line removed. _/
 const qeqNoCore = withPatchedOverride('quency-escape-queen', (ov) => {
-  const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'coreDamagePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');
+const before = ov.skill1.length;
+ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'coreDamagePct'));
+if (ov.skill1.length === before) throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');
 });
-/** L3 reference: her crit-rate line removed. */
+/_* L3 reference: her crit-rate line removed. _/
 const qeqNoCrit = withPatchedOverride('quency-escape-queen', (ov) => {
-  const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before) throw new Error('qeq S1 critRatePct block missing — fixture is stale');
+const before = ov.skill1.length;
+ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
+if (ov.skill1.length === before) throw new Error('qeq S1 critRatePct block missing — fixture is stale');
 });
-/** L4-L9 isolation: strip ONLY the hit-rate effects from S2, keeping the three ATK stacks. */
+/_* L4-L9 isolation: strip ONLY the hit-rate effects from S2, keeping the three ATK stacks. _/
 const qeqNoHitRate = withPatchedOverride('quency-escape-queen', (ov) => {
-  let removed = 0;
-  for (const b of ov.skill2) {
-    const before = b.effects.length;
-    b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
-    removed += before - b.effects.length;
-  }
-  if (removed !== 3) throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');
+let removed = 0;
+for (const b of ov.skill2) {
+const before = b.effects.length;
+b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
+removed += before - b.effects.length;
+}
+if (removed !== 3) throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');
 });
-/** L4-L9 reference: her entire Explore Route block removed. */
+/_* L4-L9 reference: her entire Explore Route block removed. _/
 const qeqNoS2 = withPatchedOverride('quency-escape-queen', (ov) => {
-  if (!ov.skill2.length) throw new Error('qeq S2 block missing — fixture is stale');
-  ov.skill2 = [];
+if (!ov.skill2.length) throw new Error('qeq S2 block missing — fixture is stale');
+ov.skill2 = [];
 });
-/** L12 counterfactual: strip the distributed flavor from the nuke (plain burst damage). */
+/_* L12 counterfactual: strip the distributed flavor from the nuke (plain burst damage). */
 const qeqPlainNuke = withPatchedOverride('quency-escape-queen', (ov) => {
-  let stripped = 0;
-  for (const b of ov.burst) for (const e of b.effects) if (e.kind === 'flatDamage' && e.flavor === 'distributed') { delete e.flavor; stripped++; }
-  if (!stripped) throw new Error('qeq burst distributed flatDamage missing — fixture is stale');
+let stripped = 0;
+for (const b of ov.burst) for (const e of b.effects) if (e.kind === 'flatDamage' && e.flavor === 'distributed') { delete e.flavor; stripped++; }
+if (!stripped) throw new Error('qeq burst distributed flatDamage missing — fixture is stale');
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -2017,21 +2037,21 @@ const plainNuke = run({ 'quency-escape-queen': qeqPlainNuke });
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
 const qeqDamage = (evs: SimEvent[], bucket: Damage['bucket']) =>
-  dmg(evs).filter((d) => d.slug === 'quency-escape-queen' && d.bucket === bucket);
+dmg(evs).filter((d) => d.slug === 'quency-escape-queen' && d.bucket === bucket);
 const qeqBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quency-escape-queen');
+evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'quency-escape-queen');
 const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 /** Buffs qeq applied to herself. */
 const qeqBuffs = (evs: SimEvent[], stat: string, value?: number) =>
-  buffs(evs).filter(
-    (b) => b.casterIdx === QEQ && b.targetIdx === QEQ && b.stat === stat && (value === undefined || b.value === value),
-  );
+buffs(evs).filter(
+(b) => b.casterIdx === QEQ && b.targetIdx === QEQ && b.stat === stat && (value === undefined || b.value === value),
+);
 const sum = (ds: Damage[]) => ds.reduce((a, d) => a + d.amount, 0);
 const distinct = (xs: number[], dp = 4) => [...new Set(xs.map((x) => x.toFixed(dp)))].sort();
 
 describe('quency-escape-queen — kit spec', () => {
-  describe('L1 — S1 Distributed Damage ▲ 49.58% (passive permanent self; feeds the distributed nuke only)', () => {
-    const applied = qeqBuffs(base.events, 'distributedDamagePct', 49.58);
+describe('L1 — S1 Distributed Damage ▲ 49.58% (passive permanent self; feeds the distributed nuke only)', () => {
+const applied = qeqBuffs(base.events, 'distributedDamagePct', 49.58);
 
     it('is a permanent self buff at the kit magnitude', () => {
       expect(applied.length, 'no distributedDamagePct buff was applied').toBeGreaterThan(0);
@@ -2054,10 +2074,11 @@ describe('quency-escape-queen — kit spec', () => {
     it('DISCRIMINATING: a generic attackDamagePct would lift normals, which the shipped model does not', () => {
       expect(sum(qeqDamage(distribAsAtkDmg.events, 'normal'))).toBeGreaterThan(sum(qeqDamage(base.events, 'normal')));
     });
-  });
 
-  describe('L2 — S1 Core Damage ▲ 25.25% (stage-2-max gate, proxied hitCount/1s, self)', () => {
-    const applied = qeqBuffs(base.events, 'coreDamagePct', 25.25);
+});
+
+describe('L2 — S1 Core Damage ▲ 25.25% (stage-2-max gate, proxied hitCount/1s, self)', () => {
+const applied = qeqBuffs(base.events, 'coreDamagePct', 25.25);
 
     it('is a self buff at the kit magnitude, 1s window, single stack', () => {
       expect(applied.length, 'no coreDamagePct buff was applied').toBeGreaterThan(0);
@@ -2070,10 +2091,11 @@ describe('quency-escape-queen — kit spec', () => {
     it('is LIVE — removing it drops her total (core hits land via the hit-rate→core-rate chain)', () => {
       expect(base.totals['quency-escape-queen']).toBeGreaterThan(noCore.totals['quency-escape-queen']);
     });
-  });
 
-  describe('L3 — S1 Critical Rate ▲ 16.73% (stage-3-max gate, proxied hitCount/0.5s, self)', () => {
-    const applied = qeqBuffs(base.events, 'critRatePct', 16.73);
+});
+
+describe('L3 — S1 Critical Rate ▲ 16.73% (stage-3-max gate, proxied hitCount/0.5s, self)', () => {
+const applied = qeqBuffs(base.events, 'critRatePct', 16.73);
 
     it('is a self buff at the kit magnitude, 0.5s window, single stack', () => {
       expect(applied.length, 'no critRatePct buff was applied').toBeGreaterThan(0);
@@ -2089,18 +2111,19 @@ describe('quency-escape-queen — kit spec', () => {
       expect(baseMax).toBeGreaterThan(noCritMax);
       expect(base.totals['quency-escape-queen']).toBeGreaterThan(noCrit.totals['quency-escape-queen']);
     });
-  });
 
-  describe('L4-L9 — S2 Explore Route staged stacks (after 2 normal attacks; cascade)', () => {
-    // [stat, value, maxStacks, durationSec] for each of the six faithful stack lines.
-    const STACKS: [string, number, number, number][] = [
-      ['atkPct', 2.45, 10, 2],   // L5 stage 1
-      ['hitRatePct', 1.36, 10, 2], // L4 stage 1
-      ['atkPct', 4.9, 10, 1],    // L7 stage 2
-      ['hitRatePct', 2.71, 10, 1], // L6 stage 2
-      ['atkPct', 7.36, 5, 0.5],  // L9 stage 3
-      ['hitRatePct', 4.08, 5, 0.5], // L8 stage 3
-    ];
+});
+
+describe('L4-L9 — S2 Explore Route staged stacks (after 2 normal attacks; cascade)', () => {
+// [stat, value, maxStacks, durationSec] for each of the six faithful stack lines.
+const STACKS: [string, number, number, number][] = [
+['atkPct', 2.45, 10, 2], // L5 stage 1
+['hitRatePct', 1.36, 10, 2], // L4 stage 1
+['atkPct', 4.9, 10, 1], // L7 stage 2
+['hitRatePct', 2.71, 10, 1], // L6 stage 2
+['atkPct', 7.36, 5, 0.5], // L9 stage 3
+['hitRatePct', 4.08, 5, 0.5], // L8 stage 3
+];
 
     it.each(STACKS)('%s ▲ %p%% caps at x%p for %ps, self-scoped', (stat, value, maxStacks, durSec) => {
       const applied = qeqBuffs(base.events, stat, value);
@@ -2131,11 +2154,12 @@ describe('quency-escape-queen — kit spec', () => {
         distinct(qeqDamage(noHitRate.events, 'normal').map((d) => d.coreRate)),
       );
     });
-  });
 
-  describe('L10 — burst Attack Damage ▲ 57.08% for 10 sec (burstCast, self)', () => {
-    const applied = qeqBuffs(base.events, 'attackDamagePct', 57.08);
-    const casts = qeqBursts(base.events);
+});
+
+describe('L10 — burst Attack Damage ▲ 57.08% for 10 sec (burstCast, self)', () => {
+const applied = qeqBuffs(base.events, 'attackDamagePct', 57.08);
+const casts = qeqBursts(base.events);
 
     it('is the kit magnitude for 10s, self-scoped', () => {
       expect(casts.length, 'qeq never casts her burst').toBeGreaterThan(0);
@@ -2146,22 +2170,24 @@ describe('quency-escape-queen — kit spec', () => {
     it('fires once per burst cast', () => {
       expect([...new Set(applied.map((b) => b.frame))].length).toBe(casts.length);
     });
-  });
 
-  describe('L11 — burst Reload Speed ▲ 25.87% for 10 sec (burstCast, self)', () => {
-    const applied = qeqBuffs(base.events, 'reloadSpeedPct', 25.87);
-    const casts = qeqBursts(base.events);
+});
+
+describe('L11 — burst Reload Speed ▲ 25.87% for 10 sec (burstCast, self)', () => {
+const applied = qeqBuffs(base.events, 'reloadSpeedPct', 25.87);
+const casts = qeqBursts(base.events);
 
     it('is the kit magnitude for 10s, once per cast, self-scoped', () => {
       expect(applied.length).toBeGreaterThan(0);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       expect([...new Set(applied.map((b) => b.frame))].length).toBe(casts.length);
     });
-  });
 
-  describe('L12 — burst nuke: 1736.31% of final ATK as Distributed Damage (burstCast, all enemies)', () => {
-    const nukes = qeqDamage(base.events, 'burst').filter((d) => d.srcSlot === 'burst');
-    const casts = qeqBursts(base.events);
+});
+
+describe('L12 — burst nuke: 1736.31% of final ATK as Distributed Damage (burstCast, all enemies)', () => {
+const nukes = qeqDamage(base.events, 'burst').filter((d) => d.srcSlot === 'burst');
+const casts = qeqBursts(base.events);
 
     it('lands once per cast at the kit magnitude, in the burst bucket', () => {
       expect(nukes.length).toBe(casts.length);
@@ -2181,82 +2207,82 @@ describe('quency-escape-queen — kit spec', () => {
       expect(sum(nukes)).toBeGreaterThan(sum(qeqDamage(plainNuke.events, 'burst')));
       expect(distinct(qeqDamage(plainNuke.events, 'burst').map((d) => d.mult.distributed))).toEqual(['1.0000']);
     });
-  });
-});
 
+});
+});
 
 --- driver override: src/skills/overrides/quency-escape-queen.json ---
 {
-  "note": "Kit-autonomy gauntlet 2026-07-25: VALIDATED — all 12 kit lines FAITHFUL (magnitudes/durations/stack-caps exact vs datamine; cross-family corroborated S2b fable / S5/S6/S7 opus; GO). OUT-OF-DOMAIN ⚑ (none block GO): (a) S2 stage-UNLOCK ORDERING not encoded — the parallel build over-credits stage-2/3 by ~0.4–0.8s per ramp/post-reload rebuild (~0.5–1% of fight-total at 24 pulls/s); recipe: needs an engine stack-count-gate / cascade-order primitive to model the real stage-1→2→3 unlock; tier: engine-primitive (out-of-domain). (b) S1 stage-gate TIMING is proxied — S1a is a passive, faithful-IN-EFFECT because its only consumer (the 1736.31% distributed nuke) first fires ~5.4s, far later than the ~1s stage-1 build, and the 2s stage-1 window outlasts the 1.35s reload, so the frame-0 apply has zero observable effect on any damage instance; S1b (hitCount 20 / 1s) and S1c (hitCount 10 / 0.5s) carry exact magnitudes with approximate gate timing (the hit-counter carries over reloads → slightly optimistic rebuild); recipe: same engine stack-count-gate primitive; tier: engine-primitive. (c) HR→core conversion slope is engine-global measured-only (the kit hitRatePct magnitudes are DATAMINED-true). Builds on kit-parse AUTHOR pass 2026-07-16 (wave 4). KIT MACHINE: S2 (hitCount 2 = every pull at hitsPerShot 2) builds the Explore Route: stage-1 stacks (ATK 2.45 ×10, 2s + Hit Rate 1.36 ×10, 2s), stage-2 (ATK 4.9 ×10, 1s + HR 2.71 ×10, 1s; kit-gated on stage-1 max), stage-3 (ATK 7.36 ×5, 0.5s + HR 4.08 ×5, 0.5s; gated on stage-2 max). ENCODING: all six stacks on ONE hitCount-2 self block — the 'each subsequent effect triggers all effects before it' cascade means at stage 3 every activation applies all stages; the stage-unlock ORDERING is NOT encoded (⚑4: parallel build over-credits stage-2/3 by ~0.4–0.8s per ramp/post-reload rebuild — small at 24 pulls/s). Stack uptime is SELF-SIMULATED: stage-1 (2s) survives the 1.35s reload; stage-2 (1s) and stage-3 (0.5s) lapse each reload and rebuild on resume (engine buff refresh = re-apply per pull, distinct values = distinct co-stacking keys). Peak while firing: ATK +110.3%, Hit Rate +61.1% (hitRatePct LIVE since CONE_DELTA 2026-07-19 — feeds her SMG core rate via acrForHR; HARD RULE 4 — kept, ⚑5 in-game core-rate lift unmeasured). S1 = three Explore-Route-max-GATED self permanents, encoded as firing-tracking proxies rather than blind passives: S1a Distributed Damage 49.58 @stage-1 max → passive (2s stack window outlasts reload → effectively permanent; only boosts her distributed hits = the burst nuke); S1b core-dmg 25.25 @stage-2 max → hitCount 20 (=10 pulls = the 10-stack rebuild) dur 1s (mirrors the real gate: continuous while firing, lapses ~1s into reload, ~0.42s rebuild — ⚑3 proxy, hit-counter carries over reloads so rebuild is slightly optimistic); S1c crit 16.73 @stage-3 max → hitCount 10 (=5 pulls) dur 0.5s (same construction). BURST: burstCast self attackDamagePct 57.08 + reloadSpeedPct 25.87 (10s, prior 9 — reload speed = shot count) + 1736.31% distributed nuke on the boss (burstCast → auto-FB-exempt; S1a's +49.58 distributed bucket applies to it at cast — ⚑6 verify vs popup). ⚑1 MANDATORY cadence tuple: pullsPerSec 24 (datamined rate_of_fire 1440), reloadFrames 81, reload_start_ammo 119 (near-full rolling start — verify). ⚑2 'after 2 normal attacks' hits-vs-pulls ambiguity (count 2 hits = per pull; if it means 2 SHOTS use count 4 — steady-state insensitive, ramp-only). No noFb anywhere (prior 2 default); noRange automatic. Nothing skipped — unmodeled arrays empty by audit.",
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "caveats": [
-    "skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
-    "skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
-    "skill2: Hit Rate stacks modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19: feeds her SMG core rate via acrForHR); in-game magnitude of the core-rate lift unmeasured (⚑)",
-    "all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
-  ],
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": { "kind": "passive" },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "distributedDamagePct", "value": 49.58 }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 20 },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "coreDamagePct", "value": 25.25, "durationSec": 1, "maxStacks": 1 }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": { "kind": "hitCount", "count": 10 },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 16.73, "durationSec": 0.5, "maxStacks": 1 }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": { "kind": "hitCount", "count": 2 },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 2.45, "durationSec": 2, "maxStacks": 10 },
-        { "kind": "buff", "stat": "hitRatePct", "value": 1.36, "durationSec": 2, "maxStacks": 10 },
-        { "kind": "buff", "stat": "atkPct", "value": 4.9, "durationSec": 1, "maxStacks": 10 },
-        { "kind": "buff", "stat": "hitRatePct", "value": 2.71, "durationSec": 1, "maxStacks": 10 },
-        { "kind": "buff", "stat": "atkPct", "value": 7.36, "durationSec": 0.5, "maxStacks": 5 },
-        { "kind": "buff", "stat": "hitRatePct", "value": 4.08, "durationSec": 0.5, "maxStacks": 5 }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 57.08, "durationSec": 10 },
-        { "kind": "buff", "stat": "reloadSpeedPct", "value": 25.87, "durationSec": 10 }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": { "kind": "burstCast" },
-      "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 1736.31, "flavor": "distributed" }
-      ]
-    }
-  ]
+"note": "Kit-autonomy gauntlet 2026-07-25: VALIDATED — all 12 kit lines FAITHFUL (magnitudes/durations/stack-caps exact vs datamine; cross-family corroborated S2b fable / S5/S6/S7 opus; GO). OUT-OF-DOMAIN ⚑ (none block GO): (a) S2 stage-UNLOCK ORDERING not encoded — the parallel build over-credits stage-2/3 by ~0.4–0.8s per ramp/post-reload rebuild (~0.5–1% of fight-total at 24 pulls/s); recipe: needs an engine stack-count-gate / cascade-order primitive to model the real stage-1→2→3 unlock; tier: engine-primitive (out-of-domain). (b) S1 stage-gate TIMING is proxied — S1a is a passive, faithful-IN-EFFECT because its only consumer (the 1736.31% distributed nuke) first fires ~5.4s, far later than the ~1s stage-1 build, and the 2s stage-1 window outlasts the 1.35s reload, so the frame-0 apply has zero observable effect on any damage instance; S1b (hitCount 20 / 1s) and S1c (hitCount 10 / 0.5s) carry exact magnitudes with approximate gate timing (the hit-counter carries over reloads → slightly optimistic rebuild); recipe: same engine stack-count-gate primitive; tier: engine-primitive. (c) HR→core conversion slope is engine-global measured-only (the kit hitRatePct magnitudes are DATAMINED-true). Builds on kit-parse AUTHOR pass 2026-07-16 (wave 4). KIT MACHINE: S2 (hitCount 2 = every pull at hitsPerShot 2) builds the Explore Route: stage-1 stacks (ATK 2.45 ×10, 2s + Hit Rate 1.36 ×10, 2s), stage-2 (ATK 4.9 ×10, 1s + HR 2.71 ×10, 1s; kit-gated on stage-1 max), stage-3 (ATK 7.36 ×5, 0.5s + HR 4.08 ×5, 0.5s; gated on stage-2 max). ENCODING: all six stacks on ONE hitCount-2 self block — the 'each subsequent effect triggers all effects before it' cascade means at stage 3 every activation applies all stages; the stage-unlock ORDERING is NOT encoded (⚑4: parallel build over-credits stage-2/3 by ~0.4–0.8s per ramp/post-reload rebuild — small at 24 pulls/s). Stack uptime is SELF-SIMULATED: stage-1 (2s) survives the 1.35s reload; stage-2 (1s) and stage-3 (0.5s) lapse each reload and rebuild on resume (engine buff refresh = re-apply per pull, distinct values = distinct co-stacking keys). Peak while firing: ATK +110.3%, Hit Rate +61.1% (hitRatePct LIVE since CONE_DELTA 2026-07-19 — feeds her SMG core rate via acrForHR; HARD RULE 4 — kept, ⚑5 in-game core-rate lift unmeasured). S1 = three Explore-Route-max-GATED self permanents, encoded as firing-tracking proxies rather than blind passives: S1a Distributed Damage 49.58 @stage-1 max → passive (2s stack window outlasts reload → effectively permanent; only boosts her distributed hits = the burst nuke); S1b core-dmg 25.25 @stage-2 max → hitCount 20 (=10 pulls = the 10-stack rebuild) dur 1s (mirrors the real gate: continuous while firing, lapses ~1s into reload, ~0.42s rebuild — ⚑3 proxy, hit-counter carries over reloads so rebuild is slightly optimistic); S1c crit 16.73 @stage-3 max → hitCount 10 (=5 pulls) dur 0.5s (same construction). BURST: burstCast self attackDamagePct 57.08 + reloadSpeedPct 25.87 (10s, prior 9 — reload speed = shot count) + 1736.31% distributed nuke on the boss (burstCast → auto-FB-exempt; S1a's +49.58 distributed bucket applies to it at cast — ⚑6 verify vs popup). ⚑1 MANDATORY cadence tuple: pullsPerSec 24 (datamined rate_of_fire 1440), reloadFrames 81, reload_start_ammo 119 (near-full rolling start — verify). ⚑2 'after 2 normal attacks' hits-vs-pulls ambiguity (count 2 hits = per pull; if it means 2 SHOTS use count 4 — steady-state insensitive, ramp-only). No noFb anywhere (prior 2 default); noRange automatic. Nothing skipped — unmodeled arrays empty by audit.",
+"unmodeled": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"caveats": [
+"skill1: the three Explore-Route-max gates are firing-tracking proxies (passive / hitCount-threshold), not a real stack-count gate — rebuild timing after reloads is approximate (⚑)",
+"skill2: stage-2/stage-3 stacks build in parallel with stage-1 (the kit's stage-unlock ordering is not encoded) — slight over-credit during ramp/post-reload (⚑)",
+"skill2: Hit Rate stacks modeled as hitRatePct — LIVE since CONE_DELTA (2026-07-19: feeds her SMG core rate via acrForHR); in-game magnitude of the core-rate lift unmeasured (⚑)",
+"all: cadence = datamined 24 pulls/s (SHOT rate = rate_of_fire 1440rpm/60). muzzle_count 2 → 48 bullets/s, but the shot damage SPLITS over the 2 bullets (nAM 10.12 = per-bullet 5.06 × 2 muzzles, already baked in), so throughput = 24 shots × 10.12 is self-consistent, NOT over-modeled (owner-confirmed 2026-07-19). reloadFrames 81 still raw datamine (⚑). Her flag-off HOT baseline is the kit (Explore-Route stage-2/3 parallel-build over-credit, ⚑2), not cadence — deferred to the kit audit."
+],
+"skill1": [
+{
+"slot": "skill1",
+"trigger": { "kind": "passive" },
+"target": { "kind": "self" },
+"effects": [
+{ "kind": "buff", "stat": "distributedDamagePct", "value": 49.58 }
+]
+},
+{
+"slot": "skill1",
+"trigger": { "kind": "hitCount", "count": 20 },
+"target": { "kind": "self" },
+"effects": [
+{ "kind": "buff", "stat": "coreDamagePct", "value": 25.25, "durationSec": 1, "maxStacks": 1 }
+]
+},
+{
+"slot": "skill1",
+"trigger": { "kind": "hitCount", "count": 10 },
+"target": { "kind": "self" },
+"effects": [
+{ "kind": "buff", "stat": "critRatePct", "value": 16.73, "durationSec": 0.5, "maxStacks": 1 }
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": { "kind": "hitCount", "count": 2 },
+"target": { "kind": "self" },
+"effects": [
+{ "kind": "buff", "stat": "atkPct", "value": 2.45, "durationSec": 2, "maxStacks": 10 },
+{ "kind": "buff", "stat": "hitRatePct", "value": 1.36, "durationSec": 2, "maxStacks": 10 },
+{ "kind": "buff", "stat": "atkPct", "value": 4.9, "durationSec": 1, "maxStacks": 10 },
+{ "kind": "buff", "stat": "hitRatePct", "value": 2.71, "durationSec": 1, "maxStacks": 10 },
+{ "kind": "buff", "stat": "atkPct", "value": 7.36, "durationSec": 0.5, "maxStacks": 5 },
+{ "kind": "buff", "stat": "hitRatePct", "value": 4.08, "durationSec": 0.5, "maxStacks": 5 }
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": { "kind": "burstCast" },
+"target": { "kind": "self" },
+"effects": [
+{ "kind": "buff", "stat": "attackDamagePct", "value": 57.08, "durationSec": 10 },
+{ "kind": "buff", "stat": "reloadSpeedPct", "value": 25.87, "durationSec": 10 }
+]
+},
+{
+"slot": "burst",
+"trigger": { "kind": "burstCast" },
+"target": { "kind": "enemy" },
+"effects": [
+{ "kind": "flatDamage", "atkPct": 1736.31, "flavor": "distributed" }
+]
+}
+]
 }

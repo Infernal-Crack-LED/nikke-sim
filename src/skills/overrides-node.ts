@@ -4,6 +4,6 @@ import type { OverrideFile } from './index.js';
 
 export function loadOverride(slug: string): OverrideFile | undefined {
   const path = new URL(`./overrides/${slug}.json`, import.meta.url);
-  if (!existsSync(path)) return undefined;
+  if (!existsSync(path)) {return undefined;}
   return JSON.parse(readFileSync(path, 'utf8'));
 }

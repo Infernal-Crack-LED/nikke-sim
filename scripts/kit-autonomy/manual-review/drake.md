@@ -20,12 +20,12 @@ Drake (SG/Attacker/Fire/Burst III, treasure) — a Fire SG attacker whose kit ke
 
 ## Cross-family convergence
 
-| Stage | Model | Result |
-|-------|-------|--------|
-| S2b (test review) | claude-fable-5 | All 9 FAITHFUL, convergent |
-| S5 (blind test) | claude-opus-5 | 12/15 pass; 3 RED = null-vs-undefined durationShots API artifact |
-| S6 (blind override) | claude-opus-5 | Structure identical; hitCount 10/5 vs driver 100/50 (RECON_ERROR, resolves for driver) |
-| S7 (judge) | claude-opus-5 | GO, faithfulness 1.0, no REAL-GOTCHA, discrimination ok |
+| Stage               | Model          | Result                                                                                 |
+| ------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| S2b (test review)   | claude-fable-5 | All 9 FAITHFUL, convergent                                                             |
+| S5 (blind test)     | claude-opus-5  | 12/15 pass; 3 RED = null-vs-undefined durationShots API artifact                       |
+| S6 (blind override) | claude-opus-5  | Structure identical; hitCount 10/5 vs driver 100/50 (RECON_ERROR, resolves for driver) |
+| S7 (judge)          | claude-opus-5  | GO, faithfulness 1.0, no REAL-GOTCHA, discrimination ok                                |
 
 ## Residual spot-check cluster (owner)
 

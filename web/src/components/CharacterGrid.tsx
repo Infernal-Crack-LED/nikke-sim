@@ -28,7 +28,7 @@ const ARCHETYPE_GROUPS: { group: string; options: ArchetypeOption[] }[] =
   (() => {
     const byGroup = new Map<string, ArchetypeOption[]>();
     for (const [id, v] of Object.entries(archetypeData.vocabulary)) {
-      if (!byGroup.has(v.group)) byGroup.set(v.group, []);
+      if (!byGroup.has(v.group)) {byGroup.set(v.group, []);}
       byGroup.get(v.group)!.push({ id, label: v.label, blurb: v.blurb });
     }
     return [...byGroup.entries()].map(([group, options]) => ({
@@ -62,9 +62,9 @@ function FilterRow({
   thumbs,
 }: FilterRowProps) {
   return (
-    <div className='teambuilder-filter-row'>
-      <span className='teambuilder-filter-label'>{label}</span>
-      <div className='teambuilder-filter-icons'>
+    <div className="teambuilder-filter-row">
+      <span className="teambuilder-filter-label">{label}</span>
+      <div className="teambuilder-filter-icons">
         {options.map((opt) => {
           const active = selected.has(opt.id);
           const src = `/nikke-icons/${opt.icon}`;
@@ -241,8 +241,8 @@ export function CharacterGrid({
   const toggle = (current: Set<string>, setter: (s: Set<string>) => void) => {
     return (id: string) => {
       const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(id)) {next.delete(id);}
+      else {next.add(id);}
       setter(next);
     };
   };
@@ -253,34 +253,34 @@ export function CharacterGrid({
         (!restrict || restrict.has(c.slug)) &&
         // "Not In Sim" units only appear on the Team Builder page; hide them
         // from the Browse/Include/Exclude modals entirely
-        (allowUnsupported || c.simSupported),
+        (allowUnsupported || c.simSupported)
     );
     const q = search.toLowerCase();
     return all.filter((c) => {
       // Already placed — removed from the list entirely
-      if (exclude.has(c.slug)) return false;
+      if (exclude.has(c.slug)) {return false;}
       // Text search — slug, name, or approved community nickname
       if (q) {
         const textMatch =
           c.slug.includes(q) ||
           c.name.toLowerCase().includes(q) ||
           (c.nicknames ?? []).some((n) => n.includes(q));
-        if (!textMatch) return false;
+        if (!textMatch) {return false;}
       }
       // Weapon filter
-      if (weaponFilter.size > 0 && !weaponFilter.has(c.weapon)) return false;
+      if (weaponFilter.size > 0 && !weaponFilter.has(c.weapon)) {return false;}
       // Burst filter — Λ burst characters are always included (no dedicated filter)
       if (burstFilter.size > 0 && c.burst !== 'Λ' && !burstFilter.has(c.burst))
-        return false;
+        {return false;}
       // Class filter
-      if (classFilter.size > 0 && !classFilter.has(c.class)) return false;
+      if (classFilter.size > 0 && !classFilter.has(c.class)) {return false;}
       // Element filter — matches EVERY element the unit counts as, so a kit that grants a second
       // code's advantage (Rapi: Red Hood is Fire + Iron) shows under both filters. See src/elements.ts.
       if (
         elementFilter.size > 0 &&
         !unitElements(c).some((e) => elementFilter.has(e))
       )
-        return false;
+        {return false;}
       // Manufacturer filter — use the match function if present, else exact match
       if (manufacturerFilter.size > 0) {
         const matched = MANUFACTURER_OPTIONS.some(
@@ -288,16 +288,16 @@ export function CharacterGrid({
             manufacturerFilter.has(opt.id) &&
             (opt.match
               ? opt.match(c.manufacturer ?? '')
-              : c.manufacturer === opt.id),
+              : c.manufacturer === opt.id)
         );
-        if (!matched) return false;
+        if (!matched) {return false;}
       }
       // Archetype filter — OR within the row (a unit passes if it carries ANY
       // selected tag), AND with the other rows. Units with no tags only pass
       // while the row is inactive.
       if (archetypeFilter.size > 0) {
         const unitTags = archetypeData.tags[c.slug] ?? [];
-        if (!unitTags.some((t) => archetypeFilter.has(t))) return false;
+        if (!unitTags.some((t) => archetypeFilter.has(t))) {return false;}
       }
       return true;
     });
@@ -322,14 +322,14 @@ export function CharacterGrid({
       Object.values(data.characters)
         .map((c) => c.imageUrl)
         .filter(Boolean) as string[],
-    [],
+    []
   );
   const portraitThumbs = usePortraitThumbs(allPortraitUrls, 120);
 
   const total = Object.values(data.characters).filter(
     (c) =>
       (!restrict || restrict.has(c.slug)) &&
-      (allowUnsupported || c.simSupported),
+      (allowUnsupported || c.simSupported)
   ).length;
   const showing = characters.length;
   const anyActive =
@@ -342,42 +342,42 @@ export function CharacterGrid({
     archetypeFilter.size > 0;
 
   return (
-    <div className='teambuilder-picker'>
-      <details className='teambuilder-filters-details' open>
+    <div className="teambuilder-picker">
+      <details className="teambuilder-filters-details" open>
         <summary>Filters</summary>
-        <div className='teambuilder-filters'>
+        <div className="teambuilder-filters">
           {/* Left — the stat-axis icon rows */}
-          <div className='teambuilder-filters-stat'>
+          <div className="teambuilder-filters-stat">
             <FilterRow
-              label='Weapon'
+              label="Weapon"
               options={WEAPON_OPTIONS}
               selected={weaponFilter}
               onToggle={toggle(weaponFilter, setWeaponFilter)}
               thumbs={filterThumbs}
             />
             <FilterRow
-              label='Burst'
+              label="Burst"
               options={BURST_OPTIONS}
               selected={burstFilter}
               onToggle={toggle(burstFilter, setBurstFilter)}
               thumbs={filterThumbs}
             />
             <FilterRow
-              label='Class'
+              label="Class"
               options={CLASS_OPTIONS}
               selected={classFilter}
               onToggle={toggle(classFilter, setClassFilter)}
               thumbs={filterThumbs}
             />
             <FilterRow
-              label='Element'
+              label="Element"
               options={ELEMENT_OPTIONS}
               selected={elementFilter}
               onToggle={toggle(elementFilter, setElementFilter)}
               thumbs={filterThumbs}
             />
             <FilterRow
-              label='Manufacturer'
+              label="Manufacturer"
               options={MANUFACTURER_OPTIONS}
               selected={manufacturerFilter}
               onToggle={toggle(manufacturerFilter, setManufacturerFilter)}
@@ -388,19 +388,19 @@ export function CharacterGrid({
           {/* Right — kit-role archetype pills (fill the space beside the icon
             rows), bucketed into groups. Labels + blurbs + group names all come
             from the generated vocabulary; nothing is hardcoded here. */}
-          <div className='teambuilder-archetypes'>
+          <div className="teambuilder-archetypes">
             {ARCHETYPE_GROUPS.map(({ group, options }) => (
-              <div className='teambuilder-archetype-group' key={group}>
-                <span className='teambuilder-archetype-group-label'>
+              <div className="teambuilder-archetype-group" key={group}>
+                <span className="teambuilder-archetype-group-label">
                   {group}
                 </span>
-                <div className='teambuilder-archetype-pills'>
+                <div className="teambuilder-archetype-pills">
                   {options.map((opt) => {
                     const active = archetypeFilter.has(opt.id);
                     return (
                       <button
                         key={opt.id}
-                        type='button'
+                        type="button"
                         className={'teambuilder-pill' + (active ? ' on' : '')}
                         onClick={() =>
                           toggle(archetypeFilter, setArchetypeFilter)(opt.id)
@@ -419,18 +419,18 @@ export function CharacterGrid({
         </div>
       </details>
 
-      <div className='teambuilder-search'>
+      <div className="teambuilder-search">
         <input
-          type='text'
-          placeholder='Search by name or nickname…'
+          type="text"
+          placeholder="Search by name or nickname…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         {search && (
           <button
-            className='teambuilder-search-clear'
+            className="teambuilder-search-clear"
             onClick={() => setSearch('')}
-            aria-label='Clear search'
+            aria-label="Clear search"
           >
             ×
           </button>
@@ -438,10 +438,10 @@ export function CharacterGrid({
       </div>
 
       {anyActive && (
-        <div className='teambuilder-count muted'>
+        <div className="teambuilder-count muted">
           Showing {showing} of {total} NIKKEs
           <button
-            className='teambuilder-clear'
+            className="teambuilder-clear"
             onClick={() => {
               setSearch('');
               setWeaponFilter(emptySet());
@@ -457,7 +457,7 @@ export function CharacterGrid({
         </div>
       )}
 
-      <div className='teambuilder-grid'>
+      <div className="teambuilder-grid">
         {characters.map((c) => {
           const weaponSrc = `/nikke-icons/weapon_${c.weapon.toLowerCase()}.png`;
           // one code icon per element the unit counts as (its own, then any its kit grants)
@@ -470,7 +470,7 @@ export function CharacterGrid({
           return (
             <button
               key={c.slug}
-              type='button'
+              type="button"
               className={`teambuilder-card${c.simSupported ? '' : ' unsupported'}`}
               onClick={() => onToggle(c.slug)}
               title={
@@ -479,30 +479,30 @@ export function CharacterGrid({
                   : `${c.name} — not in the sim yet (can be placed, but not simmed)`
               }
             >
-              <div className='teambuilder-portrait'>
+              <div className="teambuilder-portrait">
                 {c.imageUrl ? (
                   <img
                     src={portraitThumbs[c.imageUrl] ?? c.imageUrl}
                     alt={c.name}
-                    loading='lazy'
+                    loading="lazy"
                   />
                 ) : (
-                  <span className='teambuilder-portrait-empty'>?</span>
+                  <span className="teambuilder-portrait-empty">?</span>
                 )}
                 {!c.simSupported && (
-                  <span className='teambuilder-unsupported-badge'>
+                  <span className="teambuilder-unsupported-badge">
                     Not In Sim
                   </span>
                 )}
               </div>
-              <div className='teambuilder-card-info'>
-                <span className='teambuilder-card-name'>{c.name}</span>
-                <div className='teambuilder-card-icons'>
+              <div className="teambuilder-card-info">
+                <span className="teambuilder-card-name">{c.name}</span>
+                <div className="teambuilder-card-icons">
                   <img
                     src={miniThumbs[weaponSrc] ?? weaponSrc}
                     alt={c.weapon}
                     title={c.weapon}
-                    className='teambuilder-mini-icon'
+                    className="teambuilder-mini-icon"
                   />
                   {elements.map((e) => (
                     <img
@@ -514,20 +514,20 @@ export function CharacterGrid({
                           ? e
                           : `counts as ${e} — this kit grants elemental advantage against ${BEATS[e]} Code enemies`
                       }
-                      className='teambuilder-mini-icon'
+                      className="teambuilder-mini-icon"
                     />
                   ))}
                   <img
                     src={burstSrc}
                     alt={`Burst ${c.burst}`}
                     title={`Burst ${c.burst}`}
-                    className='teambuilder-mini-icon'
+                    className="teambuilder-mini-icon"
                   />
                   <img
                     src={miniThumbs[classSrc] ?? classSrc}
                     alt={c.class}
                     title={c.class}
-                    className='teambuilder-mini-icon'
+                    className="teambuilder-mini-icon"
                   />
                 </div>
               </div>
@@ -537,7 +537,7 @@ export function CharacterGrid({
       </div>
 
       {characters.length === 0 && (
-        <div className='teambuilder-empty muted'>
+        <div className="teambuilder-empty muted">
           No NIKKEs match the selected filters.
         </div>
       )}

@@ -5,9 +5,7 @@
       "slot": "skill1",
       "trigger": { "kind": "passive" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 14.08 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "casterAtkPct", "value": 14.08 }]
     }
   ],
   "skill2": [
@@ -16,16 +14,19 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "maxAmmoPct", "value": 55.56, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 55.56,
+          "durationSec": 10
+        }
       ]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "instantReload", "fraction": 0.3988 }
-      ]
+      "effects": [{ "kind": "instantReload", "fraction": 0.3988 }]
     }
   ],
   "burst": [
@@ -33,17 +34,25 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 351.64 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 351.64 }]
     },
     {
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "hitRatePct", "value": 13.93, "durationSec": 10 },
-        { "kind": "buff", "stat": "partsDamagePct", "value": 23.23, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 13.93,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 23.23,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -51,8 +60,18 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "hitRatePct", "value": 11.61, "durationSec": 30 },
-        { "kind": "buff", "stat": "partsDamagePct", "value": 19.36, "durationSec": 30 }
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 11.61,
+          "durationSec": 30
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 19.36,
+          "durationSec": 30
+        }
       ]
     }
   ]

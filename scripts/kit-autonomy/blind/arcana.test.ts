@@ -103,15 +103,20 @@ const chars = data.characters as Record<string, any>;
 const ELECTRIC_B3: string = (() => {
   const pool = Object.values(chars)
     .filter(
-      (c) => c.element === 'Electric' && c.burst === 'III' && c.simSupported && c.slug !== SLUG,
+      (c) =>
+        c.element === 'Electric' &&
+        c.burst === 'III' &&
+        c.simSupported &&
+        c.slug !== SLUG
     )
     .sort(
-      (a, b) => a.burstCooldownSec - b.burstCooldownSec || (a.slug < b.slug ? -1 : 1),
+      (a, b) =>
+        a.burstCooldownSec - b.burstCooldownSec || (a.slug < b.slug ? -1 : 1)
     );
   if (!pool.length) {
     throw new Error(
       "no sim-supported Burst III Electric ally on the roster — arcana's S1a/S2a target set cannot " +
-        'be exercised by any comp, so this suite cannot gate them',
+        'be exercised by any comp, so this suite cannot gate them'
     );
   }
   return pool[0].slug;
@@ -127,7 +132,11 @@ const A_ARCANA = A_SLUGS.indexOf(SLUG);
 
 // Fixture B — arcana as sole B2, ELECTRIC_B3 as sole B3: every Full Burst requires both to cast.
 const B_SLUGS = ['liter', SLUG, ELECTRIC_B3];
-const COMP_B: CompOptions = { slugs: B_SLUGS, bossElement: 'Fire', focusSlug: SLUG };
+const COMP_B: CompOptions = {
+  slugs: B_SLUGS,
+  bossElement: 'Fire',
+  focusSlug: SLUG,
+};
 const B_ARCANA = 1;
 const B_TARGET = 2;
 
@@ -135,7 +144,11 @@ const B_TARGET = 2;
 
 function run(opts: CompOptions, overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  const res = runComp({ ...opts, overrides, cfg: { onEvent: (e) => events.push(e) } });
+  const res = runComp({
+    ...opts,
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return { events, totals: totals(res) };
 }
 
@@ -155,7 +168,7 @@ const arcanaFbEnter = withPatchedOverride(SLUG, (ov: any) => {
   if (n === 0) {
     throw new Error(
       'arcana: no fullBurstEnd-triggered skill block — every skill line reads "Activates when Full ' +
-        'Burst ends", so the shipped model is already mis-keyed',
+        'Burst ends", so the shipped model is already mis-keyed'
     );
   }
 });
@@ -173,7 +186,7 @@ const arcanaSelfAtk = withPatchedOverride(SLUG, (ov: any) => {
   }
   if (n === 0) {
     throw new Error(
-      'arcana: no casterAtkPct effect — three kit lines read "ATK ▲ x% OF THE SKILL USER\'S ATK"',
+      'arcana: no casterAtkPct effect — three kit lines read "ATK ▲ x% OF THE SKILL USER\'S ATK"'
     );
   }
 });
@@ -187,7 +200,9 @@ const arcanaNoCdr = withPatchedOverride(SLUG, (ov: any) => {
     n += before - b.effects.length;
   }
   if (n === 0) {
-    throw new Error('arcana: no burstCdr effect — S2b reads "Cooldown of Burst Skill ▼ 6 sec"');
+    throw new Error(
+      'arcana: no burstCdr effect — S2b reads "Cooldown of Burst Skill ▼ 6 sec"'
+    );
   }
 });
 
@@ -199,7 +214,8 @@ const B = run(COMP_B);
 const BNoCdr = run(COMP_B, { [SLUG]: arcanaNoCdr });
 
 // ---- readers --------------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const fbEndFrames = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstEnd').map((e) => e.frame);
 const fbStartFrames = (evs: SimEvent[]) =>
@@ -212,32 +228,44 @@ const arcanaDamage = (evs: SimEvent[]) =>
 /** Buff applications CAST BY arcana carrying `stat` (optionally pinned to `value`). */
 const grants = (evs: SimEvent[], idx: number, stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === idx && b.stat === stat && (value === undefined || b.value === value),
+    (b) =>
+      b.casterIdx === idx &&
+      b.stat === stat &&
+      (value === undefined || b.value === value)
   );
 
 /** One FIRING = one frame, even though an all-allies block emits one buffApply per holder. */
-const firings = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
+const firings = (bs: BuffApply[]) =>
+  [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
 
 /** Holder slots per firing frame. */
 function holders(bs: BuffApply[]): Map<number, Set<number | null>> {
   const m = new Map<number, Set<number | null>>();
   for (const b of bs) {
-    if (!m.has(b.frame)) m.set(b.frame, new Set());
+    if (!m.has(b.frame)) {m.set(b.frame, new Set());}
     m.get(b.frame)!.add(b.targetIdx);
   }
   return m;
 }
 
-const durations = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.expiresFrame! - b.frame))];
+const durations = (bs: BuffApply[]) => [
+  ...new Set(bs.map((b) => b.expiresFrame! - b.frame)),
+];
 const subset = (xs: number[], ys: number[]) => xs.every((x) => ys.includes(x));
 
 describe('arcana — kit spec (blind)', () => {
   describe('fixture sanity — the two comps exercise what they claim to', () => {
     it('A: contains NO Burst-3 Electric ally, so the gated lines have no legal target', () => {
       const qualifying = A_SLUGS.filter(
-        (s) => s !== SLUG && chars[s].element === 'Electric' && chars[s].burst === 'III',
+        (s) =>
+          s !== SLUG &&
+          chars[s].element === 'Electric' &&
+          chars[s].burst === 'III'
       );
-      expect(qualifying, 'control comp gained an Electric B3 — the K2/K4 inertness case is void').toEqual([]);
+      expect(
+        qualifying,
+        'control comp gained an Electric B3 — the K2/K4 inertness case is void'
+      ).toEqual([]);
     });
 
     it('A: makes Full Bursts (arcana is Burst II — helm is what closes the chain)', () => {
@@ -246,26 +274,31 @@ describe('arcana — kit spec (blind)', () => {
 
     it('B: arcana is the sole Burst II and the target is the sole Burst III', () => {
       expect(B_SLUGS.filter((s) => chars[s].burst === 'II')).toEqual([SLUG]);
-      expect(B_SLUGS.filter((s) => chars[s].burst === 'III')).toEqual([ELECTRIC_B3]);
+      expect(B_SLUGS.filter((s) => chars[s].burst === 'III')).toEqual([
+        ELECTRIC_B3,
+      ]);
     });
 
     it('B: every Full Burst is therefore preceded by an arcana cast (gate always ON)', () => {
       const ends = fbEndFrames(B.events);
-      expect(ends.length, `no Full Burst in [${B_SLUGS.join(', ')}]`).toBeGreaterThan(1);
+      expect(
+        ends.length,
+        `no Full Burst in [${B_SLUGS.join(', ')}]`
+      ).toBeGreaterThan(1);
       expect(arcanaBursts(B.events).length).toBeGreaterThanOrEqual(ends.length);
     });
 
     it('B: holds at least one NON-Electric ally, so element scoping is falsifiable', () => {
       expect(
         B_SLUGS.filter((s) => !isElectric(s)),
-        'every ally in fixture B is Electric — K7 could not distinguish alliesOfElement from allies',
+        'every ally in fixture B is Electric — K7 could not distinguish alliesOfElement from allies'
       ).not.toEqual([]);
     });
   });
 
   // -------------------------------------------------------------------------------------------
   describe('K1 — S1a "The Magician: Cooldown of Skill 2 ▼75% for 15 sec"', () => {
-    it.skip('cuts the target ally\'s skill-2 cooldown by 75% for 15 sec', () => {
+    it.skip("cuts the target ally's skill-2 cooldown by 75% for 15 sec", () => {
       // GAP — no primitive. EffectDef carries `burstCdr` (BURST cooldowns) and nothing else
       // cooldown-shaped; a unit's SKILL cadence is not a mutable pool in this engine but is baked
       // into its trigger (an `interval.sec`, or an event trigger with no cooldown at all), and
@@ -280,14 +313,22 @@ describe('arcana — kit spec (blind)', () => {
     const active = grants(B.events, B_ARCANA, 'attackDamagePct', 180);
 
     it('fires in fixture B, at Full Burst END, once per FB end', () => {
-      expect(active.length, 'the 180% Attack Damage line never fired even with a legal target').toBeGreaterThan(0);
+      expect(
+        active.length,
+        'the 180% Attack Damage line never fired even with a legal target'
+      ).toBeGreaterThan(0);
       expect(subset(firings(active), fbEndFrames(B.events))).toBe(true);
-      expect(firings(active).length).toBeLessThanOrEqual(fbEndFrames(B.events).length);
+      expect(firings(active).length).toBeLessThanOrEqual(
+        fbEndFrames(B.events).length
+      );
     });
 
     it('lands on the Electric B3 ALONE — not liter, not arcana herself (she is Burst II)', () => {
       for (const [frame, hs] of holders(active)) {
-        expect([...hs], `frame ${frame}: wrong holder set for a Burst-3-Electric-scoped buff`).toEqual([B_TARGET]);
+        expect(
+          [...hs],
+          `frame ${frame}: wrong holder set for a Burst-3-Electric-scoped buff`
+        ).toEqual([B_TARGET]);
       }
     });
 
@@ -302,7 +343,7 @@ describe('arcana — kit spec (blind)', () => {
     });
   });
 
-  describe('K3 — S1b ATK ▲5% OF THE SKILL USER\'S ATK, all allies, 10 sec, UNGATED', () => {
+  describe("K3 — S1b ATK ▲5% OF THE SKILL USER'S ATK, all allies, 10 sec, UNGATED", () => {
     const g = grants(A.events, A_ARCANA, 'casterAtkPct', 5);
 
     it('fires on EVERY Full Burst end (no Wheel of Fortune condition on this block)', () => {
@@ -312,19 +353,25 @@ describe('arcana — kit spec (blind)', () => {
 
     it('reaches all four allies including herself, for 10 sec', () => {
       for (const [frame, hs] of holders(g)) {
-        expect(hs.size, `frame ${frame} reached ${hs.size} allies, expected ${A_SLUGS.length}`).toBe(A_SLUGS.length);
-        expect(hs.has(A_ARCANA), 'the skill user must buff herself — the kit says "all allies"').toBe(true);
+        expect(
+          hs.size,
+          `frame ${frame} reached ${hs.size} allies, expected ${A_SLUGS.length}`
+        ).toBe(A_SLUGS.length);
+        expect(
+          hs.has(A_ARCANA),
+          'the skill user must buff herself — the kit says "all allies"'
+        ).toBe(true);
       }
       expect(durations(g)).toEqual([10 * FPS]);
     });
 
-    it('DISCRIMINATING: is a flat add off ARCANA\'s ATK, not a self-scaling percentage', () => {
+    it("DISCRIMINATING: is a flat add off ARCANA's ATK, not a self-scaling percentage", () => {
       // "x% OF THE SKILL USER'S ATK" (casterAtkPct — every ally gets the same flat number) vs the
       // nearest-wrong "ATK ▲x%" (atkPct — each ally scales its OWN ATK). The two agree only if
       // every ally's ATK equals arcana's, so the swap must move real damage.
       expect(
         ASelfAtk.totals,
-        'swapping casterAtkPct → atkPct changed nothing — the caster-ATK basis is not wired through',
+        'swapping casterAtkPct → atkPct changed nothing — the caster-ATK basis is not wired through'
       ).not.toEqual(A.totals);
     });
   });
@@ -333,10 +380,16 @@ describe('arcana — kit spec (blind)', () => {
     const active = grants(B.events, B_ARCANA, 'casterAtkPct', 180);
 
     it('fires at Full Burst end onto the Electric B3 alone, for 15 sec', () => {
-      expect(active.length, 'the 180% Strength grant never fired even with a legal target').toBeGreaterThan(0);
+      expect(
+        active.length,
+        'the 180% Strength grant never fired even with a legal target'
+      ).toBeGreaterThan(0);
       expect(subset(firings(active), fbEndFrames(B.events))).toBe(true);
       for (const [frame, hs] of holders(active)) {
-        expect([...hs], `frame ${frame}: Strength leaked outside the Burst-3-Electric target set`).toEqual([B_TARGET]);
+        expect(
+          [...hs],
+          `frame ${frame}: Strength leaked outside the Burst-3-Electric target set`
+        ).toEqual([B_TARGET]);
       }
       expect(durations(active)).toEqual([15 * FPS]);
     });
@@ -353,7 +406,10 @@ describe('arcana — kit spec (blind)', () => {
     it('ACTIVE case: fires on every Full Burst end when arcana always bursts (fixture B)', () => {
       expect(firings(gB)).toEqual(fbEndFrames(B.events));
       for (const [frame, hs] of holders(gB)) {
-        expect(hs.size, `frame ${frame} reached ${hs.size} allies, expected ${B_SLUGS.length}`).toBe(B_SLUGS.length);
+        expect(
+          hs.size,
+          `frame ${frame} reached ${hs.size} allies, expected ${B_SLUGS.length}`
+        ).toBe(B_SLUGS.length);
       }
       expect(durations(gB)).toEqual([5 * FPS]);
     });
@@ -367,12 +423,14 @@ describe('arcana — kit spec (blind)', () => {
       expect(
         firings(gA).length,
         `Death fired on ${firings(gA).length}/${ends} Full Burst ends with ` +
-          `${arcanaBursts(A.events).length} arcana bursts — an ungated model fires on all ${ends}`,
+          `${arcanaBursts(A.events).length} arcana bursts — an ungated model fires on all ${ends}`
       ).toBeLessThan(ends);
     });
 
     it('never fires more often than arcana bursts', () => {
-      expect(firings(gA).length).toBeLessThanOrEqual(arcanaBursts(A.events).length);
+      expect(firings(gA).length).toBeLessThanOrEqual(
+        arcanaBursts(A.events).length
+      );
     });
 
     it('every firing follows one of HER casts inside the Wheel of Fortune window', () => {
@@ -382,7 +440,10 @@ describe('arcana — kit spec (blind)', () => {
       const casts = arcanaBursts(A.events).map((c) => c.frame);
       for (const f of firings(gA)) {
         const ok = casts.some((c) => f >= c && f - c <= 15 * FPS);
-        expect(ok, `Death fired at frame ${f} with no arcana burst in the preceding 15s`).toBe(true);
+        expect(
+          ok,
+          `Death fired at frame ${f} with no arcana burst in the preceding 15s`
+        ).toBe(true);
       }
     });
   });
@@ -396,7 +457,7 @@ describe('arcana — kit spec (blind)', () => {
       const without = fbStartFrames(BNoCdr.events).length;
       expect(
         withCdr,
-        `${withCdr} Full Bursts with the 6s CDR vs ${without} without — the CDR is not reaching allies' cooldowns`,
+        `${withCdr} Full Bursts with the 6s CDR vs ${without} without — the CDR is not reaching allies' cooldowns`
       ).toBeGreaterThan(without);
     });
   });
@@ -408,36 +469,50 @@ describe('arcana — kit spec (blind)', () => {
       expect(g.length).toBeGreaterThan(0);
       expect(firings(g)).toEqual(fbEndFrames(A.events));
       for (const [frame, hs] of holders(g)) {
-        expect(hs.size, `frame ${frame} reached ${hs.size} allies, expected ${A_SLUGS.length}`).toBe(A_SLUGS.length);
+        expect(
+          hs.size,
+          `frame ${frame} reached ${hs.size} allies, expected ${A_SLUGS.length}`
+        ).toBe(A_SLUGS.length);
       }
       expect(durations(g)).toEqual([10 * FPS]);
     });
 
     it('is Damage Up (attackDamagePct), not an ATK grant', () => {
-      expect(grants(A.events, A_ARCANA, 'atkPct', 7.5), '"Attack damage ▲" is the Damage Up bucket, not ATK').toEqual([]);
+      expect(
+        grants(A.events, A_ARCANA, 'atkPct', 7.5),
+        '"Attack damage ▲" is the Damage Up bucket, not ATK'
+      ).toEqual([]);
     });
   });
 
   describe('K7 — burst "Wheel of Fortune": Attack damage ▲10% for 10 sec, all ELECTRIC allies', () => {
     const g = grants(B.events, B_ARCANA, 'attackDamagePct', 10);
-    const expected = new Set(B_SLUGS.map((s, i) => (isElectric(s) ? i : -1)).filter((i) => i >= 0));
+    const expected = new Set(
+      B_SLUGS.map((s, i) => (isElectric(s) ? i : -1)).filter((i) => i >= 0)
+    );
 
     it('fires once per burst CAST (not at FB entry, not at FB end)', () => {
       const casts = arcanaBursts(B.events).map((c) => c.frame);
       expect(firings(g).length).toBe(casts.length);
-      expect(subset(firings(g), casts), 'the WoF buff must land on the cast frame').toBe(true);
+      expect(
+        subset(firings(g), casts),
+        'the WoF buff must land on the cast frame'
+      ).toBe(true);
       expect(durations(g)).toEqual([10 * FPS]);
     });
 
     it('DISCRIMINATING: reaches the ELECTRIC allies only — an all-allies model would include liter', () => {
       for (const [frame, hs] of holders(g)) {
-        expect(new Set([...hs]), `frame ${frame}: WoF holder set is not the Electric allies`).toEqual(expected);
+        expect(
+          new Set([...hs]),
+          `frame ${frame}: WoF holder set is not the Electric allies`
+        ).toEqual(expected);
       }
     });
 
     it('includes arcana herself (she is Electric) — this is what arms her own WoF gate', () => {
       expect(expected.has(B_ARCANA)).toBe(true);
-      for (const [, hs] of holders(g)) expect(hs.has(B_ARCANA)).toBe(true);
+      for (const [, hs] of holders(g)) {expect(hs.has(B_ARCANA)).toBe(true);}
     });
   });
 
@@ -453,7 +528,7 @@ describe('arcana — kit spec (blind)', () => {
     it('never takes the +50% Full Burst major (a cast lands before the FB window opens)', () => {
       expect(
         nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec),
-        'burst-cast damage must precede the Full Burst window',
+        'burst-cast damage must precede the Full Burst window'
       ).toEqual([]);
     });
 
@@ -465,7 +540,9 @@ describe('arcana — kit spec (blind)', () => {
   describe('K9 — burst "Judgement": Damage taken ▲10% for 10 sec, on all enemies', () => {
     // Boss-held debuffs carry casterIdx === null AND targetIdx === null, so they are found by
     // stat+value rather than by caster.
-    const debuffs = buffs(B.events).filter((b) => b.stat === 'damageTakenPct' && b.value === 10);
+    const debuffs = buffs(B.events).filter(
+      (b) => b.stat === 'damageTakenPct' && b.value === 10
+    );
 
     it('is applied once per burst cast, for 10 sec', () => {
       expect(debuffs.length).toBeGreaterThan(0);
@@ -482,15 +559,19 @@ describe('arcana — kit spec (blind)', () => {
   });
 
   describe('K10 — TRIGGER IDENTITY: every skill line fires when Full Burst ENDS', () => {
-    const baseFirings = firings(grants(A.events, A_ARCANA, 'attackDamagePct', 7.5));
-    const cfFirings = firings(grants(AFbEnter.events, A_ARCANA, 'attackDamagePct', 7.5));
+    const baseFirings = firings(
+      grants(A.events, A_ARCANA, 'attackDamagePct', 7.5)
+    );
+    const cfFirings = firings(
+      grants(AFbEnter.events, A_ARCANA, 'attackDamagePct', 7.5)
+    );
 
     it('shipped: firings coincide with fullBurstEnd and NEVER with fullBurstStart', () => {
       expect(baseFirings.length).toBeGreaterThan(0);
       expect(baseFirings).toEqual(fbEndFrames(A.events));
       expect(
         baseFirings.filter((f) => fbStartFrames(A.events).includes(f)),
-        'a Full-Burst-END line must not fire on the FB entry frame',
+        'a Full-Burst-END line must not fire on the FB entry frame'
       ).toEqual([]);
     });
 
@@ -505,7 +586,7 @@ describe('arcana — kit spec (blind)', () => {
       // kit, so it must be a damage-visible difference, not a bookkeeping one.
       expect(
         AFbEnter.totals,
-        'FB-entry vs FB-end changed no damage — the trigger is not actually gating these buffs',
+        'FB-entry vs FB-end changed no damage — the trigger is not actually gating these buffs'
       ).not.toEqual(A.totals);
     });
   });
@@ -532,15 +613,23 @@ describe('arcana — kit spec (blind)', () => {
           [...buffs(A.events), ...buffs(B.events)]
             .filter((b) => b.casterIdx === A_ARCANA || b.casterIdx === B_ARCANA)
             .map((b) => b.stat)
-            .filter((s) => forbidden.has(s as string)),
+            .filter((s) => forbidden.has(s as string))
         ),
       ];
-      expect(seen, `arcana granted ${seen.join(', ')} — no kit line names any of these`).toEqual([]);
+      expect(
+        seen,
+        `arcana granted ${seen.join(', ')} — no kit line names any of these`
+      ).toEqual([]);
     });
 
     it('deals damage from her burst only (no kit line gives her a skill-slot damage rider)', () => {
-      const buckets = [...new Set(arcanaDamage(B.events).map((d) => d.bucket))].sort();
-      expect(buckets.filter((b) => b === 'skill'), 'arcana has no skill-damage line in her kit').toEqual([]);
+      const buckets = [
+        ...new Set(arcanaDamage(B.events).map((d) => d.bucket)),
+      ].sort();
+      expect(
+        buckets.filter((b) => b === 'skill'),
+        'arcana has no skill-damage line in her kit'
+      ).toEqual([]);
     });
   });
 });

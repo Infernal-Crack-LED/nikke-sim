@@ -16,14 +16,14 @@ borrow stacks are maxed, the target also takes DEF ▼20.25%/5s and a further 27
 
 ## Line-by-line
 
-| Line | Disposition | Notes |
-|------|-------------|-------|
-| S1: highestAllyAtkPct 8.81%, ×5, 10s | FAITHFUL | Engine emits as casterAtkPct with flat ATK value; key embeds 8.81 |
-| S2: stack-count boost +1 | UNMODELED | No engine primitive for cross-buff stack amplifier; documented |
-| S2: atkPct 4.13%, 10s, Wind allies | FAITHFUL | Targets Wind-only; fires after reload (cumulative counter) |
-| Burst: 284.32% Burst Skill damage | FAITHFUL | burstCast trigger, FB-exempt, once per cast |
-| Burst: DEF ▼20.25%/5s | FAITHFUL (inert) | Engine applies but emits no event; <0.1% effect at bossDef=140 |
-| Burst: 277.71% additional damage | FAITHFUL | burstCast trigger; max-stack gate NOT modeled (always-on) |
+| Line                                 | Disposition      | Notes                                                             |
+| ------------------------------------ | ---------------- | ----------------------------------------------------------------- |
+| S1: highestAllyAtkPct 8.81%, ×5, 10s | FAITHFUL         | Engine emits as casterAtkPct with flat ATK value; key embeds 8.81 |
+| S2: stack-count boost +1             | UNMODELED        | No engine primitive for cross-buff stack amplifier; documented    |
+| S2: atkPct 4.13%, 10s, Wind allies   | FAITHFUL         | Targets Wind-only; fires after reload (cumulative counter)        |
+| Burst: 284.32% Burst Skill damage    | FAITHFUL         | burstCast trigger, FB-exempt, once per cast                       |
+| Burst: DEF ▼20.25%/5s                | FAITHFUL (inert) | Engine applies but emits no event; <0.1% effect at bossDef=140    |
+| Burst: 277.71% additional damage     | FAITHFUL         | burstCast trigger; max-stack gate NOT modeled (always-on)         |
 
 ## Cross-family corroboration
 

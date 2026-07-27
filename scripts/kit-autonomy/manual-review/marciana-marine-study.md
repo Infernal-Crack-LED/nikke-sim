@@ -119,12 +119,12 @@ ATK ▲ (whistle × 32.73)%. At t=0: 4 stacks = 130.92% ATK. The `interval:5` tr
 
 ## 5. Cross-family provenance
 
-| Role | Model | Converged? |
-|------|-------|-----------|
-| S2b (pre-op reviewer) | claude-fable-5 | ✓ all load-bearing lines |
-| S5 (blind test-writer) | claude-opus-4-8 | ✓ (harness-API recon error only, not model disagreement) |
+| Role                       | Model           | Converged?                                                               |
+| -------------------------- | --------------- | ------------------------------------------------------------------------ |
+| S2b (pre-op reviewer)      | claude-fable-5  | ✓ all load-bearing lines                                                 |
+| S5 (blind test-writer)     | claude-opus-4-8 | ✓ (harness-API recon error only, not model disagreement)                 |
 | S6 (blind override-writer) | claude-opus-4-8 | ✓ (Whistle flat-cap vs driver's perResource ramp — driver more faithful) |
-| S7 (reconciling judge) | claude-opus-4-8 | GO faithfulness 1.0, 0 REAL-GOTCHAs |
+| S7 (reconciling judge)     | claude-opus-4-8 | GO faithfulness 1.0, 0 REAL-GOTCHAs                                      |
 
 **Same-model residual:** all reviewing agents are Claude (cross-family from the Qwen driver). The shared
 blind spot is Claude's systematic-prior-prone lines (scope / duration / trigger-identity). The owner

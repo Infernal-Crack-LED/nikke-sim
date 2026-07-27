@@ -1,8 +1,10 @@
 # S7 JUDGE PACKET — `tove` (compact, answer-faithful compilation of the gauntlet artifacts)
+
 Unit: Tove (slug `tove`) — AR / Water / Supporter / Burst I, cd 20s. Driver model family: Qwen. Cross-family reviewers:
 S2b claude-fable-5 (pre-op), S5/S6/S7 claude-opus-4-8 (post-op). Gauntlet date 2026-07-24.
 
 ## 1. Ground truth — kit prose (data/characters.json → characters.tove.skills, structural; levels 10/10/10)
+
 Base: AR/Water/Supporter/Burst I, cd 20s, ammo 60, reloadFrames 81, chargeFrames 0, hitsPerShot 1, normalAttackMultiplier 14.2, coreAttackMultiplier 200, 720 rate_of_fire (~12 shots/s). baseStats hp 15000 / atk 500 / def 100, critRate 15 / critDamage 150. Manufacturer Missilis.
 NOTE: the normalized `skills` prose below is the SSOT the sim reads. The RAW datamine is STALE on two values — S2 crit-rate (datamine 3.32 → prose 10.08) and burst duration (datamine 10s → prose 15s); both are already refreshed in the prose. The datamine also renders S1 as a "2% chance when attacking" while the normalized prose says "after 10 normal attacks" — the prose governs (flagged as a residual trigger-cadence ⚑; both cadences keep the buff stacked at this fire rate).
 
@@ -26,6 +28,7 @@ Miracle of Makeshifts: ATK ▲ 2.32% of the skill user's ATK. Mirrors the stack 
 Miracle of Makeshifts: ATK ▲ 24.21% of the skill user's ATK. Mirrors the stack count of Temporary Modification for 15 sec.
 
 ## 2. Damage-formula + mechanics SSOT (the facts the verdict turns on)
+
 Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucket × taken × distributed.
 
 **casterAtkPct vs atkPct:** "ATK ▲ x% of the skill USER'S ATK" = `casterAtkPct` — a FLAT add resolving to (x/100)×caster.staticAtk at apply time, feeding the ATK bucket as a flat add. The buffApply `value` is the RESOLVED flat ATK (e.g. ≈6941 for Tove's 6.96% line, ≈72437 for the 72.63% line), NOT the raw percentage; the original percentage rides the event KEY (`:6.96` / `:72.63`). `atkPct` instead scales each TARGET'S OWN ATK by x% (a percentage in the ATK bucket; buffApply value = x). Tove's burst "ATK ▲2.32%/24.21% of the skill user's ATK" → casterAtkPct (caster-keyed flat), NOT atkPct.
@@ -49,6 +52,7 @@ Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucke
 **Gates available:** fbGate(inFb/outFb), swapGate, requiresTargetStatus (ENEMY status only), requiresCore, everyN, hitCount, resourceGate, formation/teamHas. There is NO ally-buff-stack-count gate and NO partial-reload effect kind in v1.
 
 ## 3. Driver's override (src/skills/overrides/tove.json, structural — pre-gauntlet, hand-authored with a prior fable pre-op approval)
+
 ```json
 {
   "note": "Whole-kit built on Temporary Modification stacks (max 3), modeled at steady-state fully-stacked: her Emergency-Crafted Bullets procs on her OWN 10 normal attacks (AR ~12/s → sub-second cadence) and each proc applies/refreshes Temporary Modification, so across a 180s raid the buff stays maxed. [2026-07-21 SG-TEAM RECONCILIATION] Enacted the 3 previously-skipped datamined lines now that the engine primitives exist (maxAmmoFlat + alliesOfWeapon SG) — this executes the DECISIONS-queued tove SG reconciliation, NOT a re-litigation (the old skips were technical: 'no weapon-typed target' and 'maxAmmoPct is percent not flat', both since removed). Fable pre-op APPROVED-WITH-REVISIONS / HIGH; board-neutral (tove is in no graded comp → regression byte-identical); community submission 2026-07-15-1754-req1-tove (HIGH conf) video-confirmed the +6 max-ammo on ALL allies (tove 60→66, nayuta 120→126, the 3 SG allies 9→15). (1) S1 Temporary Modification Max Ammo +2/stack ×3 = maxAmmoFlat 6 to ALL allies (was skipped 'negligible' — video refutes it: +67% mag on a 9-round SG = materially more shots/mag). (2) S2 at max stacks, all shotgun-wielding allies Attack Speed ▲ 42.24% (alliesOfWeapon SG; passive/steady-state-max-stack, matching the S2 crit-rate line's gate). (3) Burst, all shotgun-wielding allies ATK ▲ 24.21% of caster ATK, mirrors stacks ×3 = 72.63% for 15s (alliesOfWeapon SG; burstCast) — co-stacks ADDITIVELY with the all-ally 6.96 line (different buff-key value, so no same-slot overwrite → SG allies get 79.59% total). S1 team Crit Damage 5.24% (passive, 3-stack). S2 team Crit Rate 10.08% (passive; refreshed 2026-07-20 from current prose, prior 3.32% was pre-rebalance). Burst all-ally ATK 2.32×3 = 6.96% of caster ATK for 15s (refreshed 2026-07-20). EVIDENCE TIER: the max-ammo line is video-confirmed + datamined; the two SG buffs (attack-speed, burst-ATK) are DATAMINED magnitudes only — community footage is gear-confounded so they were not independently video-measured (same tier as other landed datamine-faithful lines). Still skipped: the self 5%-reload QoL proc (Reload 5.31% of magazine, non-damage ammo refill).",
@@ -155,10 +159,10 @@ Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucke
     }
   ]
 }
-
 ```
 
 ## 4. S2b pre-op adversarial review (claude-fable-5, cross-family) — leakDetected null
+
 ```json
 {
   "slug": "tove",
@@ -283,6 +287,7 @@ Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucke
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-4-8, cross-family) — leakDetected null (spec + fixtures + gaps + testRun)
+
 ```json
 {
   "slug": "tove",
@@ -348,6 +353,7 @@ Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucke
 ```
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, cross-family) — leakDetected null (override + audit + flags)
+
 ```json
 {
   "slug": "tove",
@@ -579,6 +585,7 @@ Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucke
 ```
 
 ## 7. Driver's test (scripts/tests/units/tove.test.ts) — the gate (25 tests, 7 groups T1-T7, all GREEN vs the shipped override)
+
 ```ts
 // PER-UNIT KIT SPEC — `tove` (Tove, Supporter/AR/Water, Burst I, cd 20s, ammo 60, 720 RoF (~12 shots/s),
 // reloadFrames 81, chargeFrames 0, hitsPerShot 1, normalMult 14.2 / coreMult 200, critRate 15 / critDamage 150).
@@ -697,11 +704,11 @@ function run(overrides: Record<string, any> = {}) {
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 const buffs = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TOVE,
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TOVE
   );
 const byStat = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && (value === undefined || b.value === value),
+    (b) => b.stat === stat && (value === undefined || b.value === value)
   );
 /** buffApply events whose key carries the original (pre-conversion) effect value, e.g. 6.96 / 72.63. */
 const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
@@ -709,18 +716,18 @@ const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
 const targetsOf = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((t): t is number => t != null),
+      bs.map((b) => b.targetIdx).filter((t): t is number => t != null)
     ),
   ].sort((a, b) => a - b);
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const toveBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is Extract<SimEvent, { kind: 'burstCast' }> =>
-      e.kind === 'burstCast' && e.slug === 'tove',
+      e.kind === 'burstCast' && e.slug === 'tove'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -770,7 +777,8 @@ const isS2AtkSpeed = (b: any) =>
 // T5 nearest-wrong (scope): alliesOfWeapon SG → allies (the classic scope-collapse: SG line as generic).
 const cfS2AtkSpeedScopeAllies = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill2.find(isS2AtkSpeed);
-  if (!b) throw new Error('tove S2 attackSpeed block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove S2 attackSpeed block missing — fixture is stale');
   b.target = { kind: 'allies' };
 });
 // The burst all-ally casterAtkPct 6.96 block (T6 under test).
@@ -780,31 +788,36 @@ const isBurstAll = (b: any) =>
 // T6 nearest-wrong (trigger): burstCast → fullBurstEnter (every team FB-start frame, not Tove's cast frame).
 const cfBurstAllFbEnter = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove burst all-ally block missing — fixture is stale');
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T6 nearest-wrong (scope): allies → alliesOfWeapon SG (only the 2 SG allies, not all 5).
 const cfBurstAllScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove burst all-ally block missing — fixture is stale');
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // T6 nearest-wrong (stat): casterAtkPct → atkPct (a percentage in the ATK bucket, not a caster-keyed flat add).
 const cfBurstAllAtkPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove burst all-ally block missing — fixture is stale');
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 // T6 nearest-wrong (duration): the stale datamine 10s window (the prose says 15s).
 const cfBurstAllDur10 = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove burst all-ally block missing — fixture is stale');
   b.effects.find((e: any) => e.stat === 'casterAtkPct').durationSec = 10;
 });
 // T6 nearest-wrong (mirror): the UN-mirrored per-stack value 2.32 (ignoring "mirrors the stack count" ×3).
 const cfBurstAllUnmirrored = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    throw new Error('tove burst all-ally block missing — fixture is stale');
   b.effects.find((e: any) => e.stat === 'casterAtkPct').value = 2.32;
 });
 // The burst SG casterAtkPct 72.63 block (T7 under test).
@@ -858,7 +871,7 @@ describe('tove — kit spec', () => {
     it('the fixture fields exactly two SG allies (noir slot 3, isabel slot 4) for scope discrimination', () => {
       // the S2 attackSpeed line (alliesOfWeapon SG) reaches exactly noir + isabel
       expect(targetsOf(byStat(base.events, 'attackSpeedPct', 42.24))).toEqual(
-        SG_ALLIES,
+        SG_ALLIES
       );
     });
   });
@@ -868,14 +881,14 @@ describe('tove — kit spec', () => {
       const s1Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':skill1:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s1Stats].sort()).toEqual(['critDamagePct', 'maxAmmoFlat']);
     });
     it('PIN: Tove deals ZERO skill1-sourced damage (the slot is pure team buffing)', () => {
       const skill1Dmg = base.events.filter(
         (e) =>
-          e.kind === 'damage' && e.slug === 'tove' && e.srcSlot === 'skill1',
+          e.kind === 'damage' && e.slug === 'tove' && e.srcSlot === 'skill1'
       );
       expect(skill1Dmg.length).toBe(0);
     });
@@ -893,15 +906,13 @@ describe('tove — kit spec', () => {
     it('DISCRIMINATING (stat): maxAmmoPct 6 (nearest-wrong) is a percentage, not flat rounds', () => {
       expect(byStat(s1MaxAmmoPct.events, 'maxAmmoFlat', 6).length).toBe(0);
       expect(
-        byStat(s1MaxAmmoPct.events, 'maxAmmoPct', 6).length,
+        byStat(s1MaxAmmoPct.events, 'maxAmmoPct', 6).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
-      expect(
-        targetsOf(
-          byStat(s1ScopeSG.events, 'maxAmmoFlat', 6),
-        ),
-      ).toEqual(SG_ALLIES);
+      expect(targetsOf(byStat(s1ScopeSG.events, 'maxAmmoFlat', 6))).toEqual(
+        SG_ALLIES
+      );
     });
     it('DISCRIMINATING (duration): a 5s expiry (nearest-wrong) is NOT the faithful permanent steady-state passive', () => {
       expect(dursOf(byStat(s1Dur5.events, 'maxAmmoFlat', 6))).toEqual([
@@ -920,7 +931,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
       expect(
-        targetsOf(byStat(s1ScopeSG.events, 'critDamagePct', 5.24)),
+        targetsOf(byStat(s1ScopeSG.events, 'critDamagePct', 5.24))
       ).toEqual(SG_ALLIES);
     });
     it('DISCRIMINATING (duration): a 5s expiry (nearest-wrong) is NOT the faithful permanent steady-state passive', () => {
@@ -940,7 +951,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies — the line says "all allies"', () => {
       expect(
-        targetsOf(byStat(s2CritRateScopeSG.events, 'critRatePct', 10.08)),
+        targetsOf(byStat(s2CritRateScopeSG.events, 'critRatePct', 10.08))
       ).toEqual(SG_ALLIES);
     });
   });
@@ -955,7 +966,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong scope-collapse) hits all 5 slots, not just the 2 SG allies', () => {
       expect(
-        targetsOf(byStat(s2AtkSpeedScopeAllies.events, 'attackSpeedPct', 42.24)),
+        targetsOf(byStat(s2AtkSpeedScopeAllies.events, 'attackSpeedPct', 42.24))
       ).toEqual(ALL_SLOTS);
     });
   });
@@ -973,8 +984,12 @@ describe('tove — kit spec', () => {
       const toveAtk = vals[0] / 0.0696;
       expect(toveAtk).toBeGreaterThan(0);
       // applies on Tove's burstCast frames
-      const frames = [...new Set(atk.map((b) => b.frame))].sort((a, b) => a - b);
-      expect(frames).toEqual([...castFrames(base.events)].sort((a, b) => a - b));
+      const frames = [...new Set(atk.map((b) => b.frame))].sort(
+        (a, b) => a - b
+      );
+      expect(frames).toEqual(
+        [...castFrames(base.events)].sort((a, b) => a - b)
+      );
     });
     it("DISCRIMINATING (trigger): fullBurstEnter (nearest-wrong) lands on the later FB-start frames, not Tove's cast frames", () => {
       const cast = castFrames(base.events);
@@ -982,8 +997,8 @@ describe('tove — kit spec', () => {
       const cfFrames = [
         ...new Set(
           byKeyVal(burstAllFbEnter.events, 'casterAtkPct', 6.96).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -992,27 +1007,29 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
       expect(
-        targetsOf(byKeyVal(burstAllScopeSG.events, 'casterAtkPct', 6.96)),
+        targetsOf(byKeyVal(burstAllScopeSG.events, 'casterAtkPct', 6.96))
       ).toEqual(SG_ALLIES);
     });
     it('DISCRIMINATING (stat): atkPct (nearest-wrong) is a percentage in the ATK bucket, not a caster-keyed flat add', () => {
       // under the nearest-wrong there is NO casterAtkPct :6.96 …
-      expect(byKeyVal(burstAllAtkPct.events, 'casterAtkPct', 6.96).length).toBe(0);
+      expect(byKeyVal(burstAllAtkPct.events, 'casterAtkPct', 6.96).length).toBe(
+        0
+      );
       // … instead an atkPct 6.96 appears (a percentage, value NOT resolved to flat ATK)
       const pct = byStat(burstAllAtkPct.events, 'atkPct', 6.96);
       expect(pct.length).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (duration): the stale datamine 10s (nearest-wrong) is shorter than the faithful 15s', () => {
-      expect(dursOf(byKeyVal(burstAllDur10.events, 'casterAtkPct', 6.96))).toEqual([
-        10 * FPS,
-      ]);
+      expect(
+        dursOf(byKeyVal(burstAllDur10.events, 'casterAtkPct', 6.96))
+      ).toEqual([10 * FPS]);
     });
     it('DISCRIMINATING (mirror): the UN-mirrored per-stack value 2.32 (nearest-wrong) ignores "mirrors the stack count" ×3', () => {
       expect(
-        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 6.96).length,
+        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 6.96).length
       ).toBe(0);
       expect(
-        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 2.32).length,
+        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 2.32).length
       ).toBeGreaterThan(0);
     });
   });
@@ -1029,7 +1046,11 @@ describe('tove — kit spec', () => {
     it('DISCRIMINATING (co-stack): SG allies receive BOTH the 6.96 all-ally line AND the 72.63 SG line (additive, distinct keys → 79.59% total)', () => {
       const sgTotal = byKeyVal(base.events, 'casterAtkPct', 6.96)
         .filter((b) => b.targetIdx === NOIR)
-        .concat(byKeyVal(base.events, 'casterAtkPct', 72.63).filter((b) => b.targetIdx === NOIR));
+        .concat(
+          byKeyVal(base.events, 'casterAtkPct', 72.63).filter(
+            (b) => b.targetIdx === NOIR
+          )
+        );
       // noir gets both keys
       const keys = new Set(sgTotal.map((b) => b.key));
       expect([...keys].some((k) => k.endsWith(':6.96'))).toBe(true);
@@ -1037,21 +1058,23 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 SG allies', () => {
       expect(
-        targetsOf(byKeyVal(burstSGScopeAllies.events, 'casterAtkPct', 72.63)),
+        targetsOf(byKeyVal(burstSGScopeAllies.events, 'casterAtkPct', 72.63))
       ).toEqual(ALL_SLOTS);
     });
     it('DISCRIMINATING (stat): atkPct (nearest-wrong) is a percentage, not a caster-keyed flat add', () => {
-      expect(byKeyVal(burstSGAtkPct.events, 'casterAtkPct', 72.63).length).toBe(0);
+      expect(byKeyVal(burstSGAtkPct.events, 'casterAtkPct', 72.63).length).toBe(
+        0
+      );
       expect(
-        byStat(burstSGAtkPct.events, 'atkPct', 72.63).length,
+        byStat(burstSGAtkPct.events, 'atkPct', 72.63).length
       ).toBeGreaterThan(0);
     });
   });
 });
-
 ```
 
 ## 8. S2d independent verification matrix (driver) — gate PASSES
+
 ```
 S2d INDEPENDENT VERIFICATION GATE — `tove` (kit-autonomy gauntlet 2026-07-24, driver Qwen)
 =========================================================================================
@@ -1111,11 +1134,13 @@ frame 0 and persist (steady-state max-stack).
 ```
 
 ## 9. ⚑ flags the driver recorded (estimate + recipe + tier)
+
 1. **S1 trigger cadence (DATAMINED ⚑, trigger-identity):** the normalized SSOT prose says "after 10 normal attacks" (deterministic ~0.83s at 720 RoF); the raw datamine renders S1 as a "2% chance when attacking". The prose governs the sim. Both cadences keep Temporary Modification stacked at this fire rate (10 attacks = ~0.83s ≪ 5s expiry; 2% × 12/s = ~0.24 procs/s also refreshes inside 5s most of the time), so the steady-state max-stack encoding is robust to the discrepancy. Estimate: 10-attack deterministic counter (prose). Recipe: read the Emergency-Crafted Bullets proc cadence off a focused Tove video (does the Temporary Modification icon stay at 3 stacks continuously?). Tier: DATAMINED (prose) vs DATAMINED-UNRELIABLE (raw field).
 2. **Steady-state stack ramp (CALIBRATED ⚑, stack/currency steady-state):** the S1/S2 passives and the burst ×3 mirror assume Temporary Modification holds at 3 stacks. The ~2.5s opening ramp (3 procs to reach 3 stacks) is unmeasured; an early burst (stacks < 3) would be over-credited by the static ×3. Estimate: max stacks from ~2.5s onward (negligible over 180s). Recipe: confirm time-to-3-stacks and any dry/reload gaps from footage; if material, apply rampSec ≈ 2.5 to the passives and a per-burst stack snapshot. Tier: CALIBRATED ⚑.
 3. **Burst ×3 mirror is static (CALIBRATED ⚑):** casterAtkPct 6.96 / 72.63 bake the ×3 at cast; the engine has no live stack-mirror, so the grant does not re-track if stacks drop mid-window (practically moot at sustained max stacks; matters only if Tove is stunned/stalled mid-window). Estimate: ×3. Recipe: read the live stack count on Tove's burst frame. Tier: CALIBRATED ⚑.
 
 ## 10. Verdict instructions
+
 Grade the driver's IMPLEMENTATION (the override in §3 + the test in §7) against the ground-truth prose (§1) and the formula/mechanics SSOT (§2), using the S2b pre-op review (§4), the S5 blind test (§5), and the S6 blind override (§6) as two independent re-derivations. Do NOT trust the driver's self-report — grade the artifacts.
 
 Convergence is MECHANICAL: the S5 blind tests run vs the driver's shipped override showed 5 failed / 1 passed / 6 skipped — classify each failure (all 5 are documented blind harness artifacts: the `o.blocks` no-op patch shape + the `u.total`/`u.damage` unit-row misread; see §5 testRunVsDriverOverride). The blind SPEC table is the fixture-independent signal.
@@ -1126,20 +1151,20 @@ The three driver-vs-blind divergences to adjudicate: (1) S1 self-reload — driv
 
 Return ONLY this JSON (tight, structured — not an essay):
 {
-  "slug": "tove",
-  "kitDescription": "<plain-English 3-6 sentences: what the kit DOES in game terms>",
-  "convergence": {
-    "s2b_fable_preop": { "model": "claude-fable-5", "leakDetected": null, "result": "<convergence summary>" },
-    "s5_blind_tests": { "model": "claude-opus-4-8", "leakDetected": null, "specConvergence": "<...>", "testRun": "<5 failed/1 passed/6 skipped + classification>" },
-    "s6_blind_override": { "model": "claude-opus-4-8", "leakDetected": null, "result": "<convergence summary + divergences adjudicated>" },
-    "overall": "<CONVERGENT|... one line>"
-  },
-  "lineFindings": [ { "slot": "skill1|skill2|burst", "kitLine": "<≤40 chars>", "disposition": "FAITHFUL|UNMODELED|GAP", "classification": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "tier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED", "note": "<...>" } ],
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "...", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful rep or 'needs measurement' + recipe — NEVER a fudge>" } ],
-  "discriminationOk": true,
-  "discriminationNote": "<the §8 matrix + fire-rate check result>",
-  "faithfulnessScore": <0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>,
-  "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
-  "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
+"slug": "tove",
+"kitDescription": "<plain-English 3-6 sentences: what the kit DOES in game terms>",
+"convergence": {
+"s2b_fable_preop": { "model": "claude-fable-5", "leakDetected": null, "result": "<convergence summary>" },
+"s5_blind_tests": { "model": "claude-opus-4-8", "leakDetected": null, "specConvergence": "<...>", "testRun": "<5 failed/1 passed/6 skipped + classification>" },
+"s6_blind_override": { "model": "claude-opus-4-8", "leakDetected": null, "result": "<convergence summary + divergences adjudicated>" },
+"overall": "<CONVERGENT|... one line>"
+},
+"lineFindings": [ { "slot": "skill1|skill2|burst", "kitLine": "<≤40 chars>", "disposition": "FAITHFUL|UNMODELED|GAP", "classification": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "tier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED", "note": "<...>" } ],
+"gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "...", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful rep or 'needs measurement' + recipe — NEVER a fudge>" } ],
+"discriminationOk": true,
+"discriminationNote": "<the §8 matrix + fire-rate check result>",
+"faithfulnessScore": <0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>,
+"verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
+"verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 `gotchas` is [] if there are no REAL-GOTCHAs. `suggestedFix` is a faithful representation or a flagged measurement, NEVER a number chosen to hit the board. The verdict is BINDING.

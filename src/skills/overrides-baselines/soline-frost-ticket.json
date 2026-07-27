@@ -5,17 +5,13 @@
       "slot": "skill1",
       "trigger": { "kind": "passive" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }]
     },
     {
       "slot": "skill1",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "burstCdr", "seconds": 7.48 }
-      ]
+      "effects": [{ "kind": "burstCdr", "seconds": 7.48 }]
     }
   ],
   "burst": [
@@ -23,9 +19,7 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     }
   ]
 }

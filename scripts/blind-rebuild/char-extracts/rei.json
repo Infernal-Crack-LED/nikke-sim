@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "reitn"
-    ],
+    "nicknames": ["reitn"],
     "skills": {
       "skill1": "■ Activates after 60 normal attacks. Affects all allies.\nFills Burst Gauge by 2.47%. \n■ Activates when a decoy is present. Affects self.\nRestores the decoy's HP an amount equal to 2.1% of the skill user's final Max HP.",
       "skill2": "■ Activates at the start of battle. Affects self.\nDecoy: Creates an avatar with 96% of the skill user's final Max HP that lasts for 240 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -260,16 +254,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_01} sec.\nDamage Taken ▼ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates <word_group=10056>when a decoy is present</word_group>. Affects self.\n<color=#00AEFF><word_group=10058>Continuously restores the decoy's HP</word_group> an amount equal to {description_value_04}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -352,20 +337,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            139230101,
-            139230102,
-            139230103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [139230101, 139230102, 139230103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -390,9 +365,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -423,9 +396,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Rei's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

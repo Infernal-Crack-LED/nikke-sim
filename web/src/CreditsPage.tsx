@@ -39,10 +39,10 @@ export function CreditsPage() {
   })).filter((g) => g.items.length);
 
   return (
-    <div className='app patch-notes credits-page'>
+    <div className="app patch-notes credits-page">
       <header>
         <h1>Credits</h1>
-        <p className='muted'>
+        <p className="muted">
           This sim is built on community research, datamines, and companion
           tools — listed below with what each one contributes — validated
           against frame-by-frame recordings of real fights. Thanks to everyone
@@ -52,36 +52,36 @@ export function CreditsPage() {
       </header>
 
       {groups.map(({ tier, items }) => (
-        <article className='patch-entry' key={tier}>
-          <div className='patch-head'>
-            <span className='patch-title'>{TIER_LABEL[tier] ?? tier}</span>
-            <span className='patch-date'>{tier}</span>
+        <article className="patch-entry" key={tier}>
+          <div className="patch-head">
+            <span className="patch-title">{TIER_LABEL[tier] ?? tier}</span>
+            <span className="patch-date">{tier}</span>
           </div>
           {TIER_BLURB[tier] && (
-            <p className='muted' style={{ marginBottom: 12 }}>
+            <p className="muted" style={{ marginBottom: 12 }}>
               {TIER_BLURB[tier]}
             </p>
           )}
-          <ul className='credits-list'>
+          <ul className="credits-list">
             {items.map((s) => (
-              <li className='credit' key={s.id}>
-                <div className='credit-head'>
+              <li className="credit" key={s.id}>
+                <div className="credit-head">
                   <a
-                    className='credit-name'
+                    className="credit-name"
                     href={s.url}
-                    target='_blank'
-                    rel='noreferrer'
+                    target="_blank"
+                    rel="noreferrer"
                   >
                     {s.name}
                   </a>
                   {s.author && (
-                    <span className='credit-author'>by {s.author}</span>
+                    <span className="credit-author">by {s.author}</span>
                   )}
                   {s.region && (
-                    <span className='credit-region'>{s.region}</span>
+                    <span className="credit-region">{s.region}</span>
                   )}
                 </div>
-                <p className='credit-used muted'>{s.usedFor}</p>
+                <p className="credit-used muted">{s.usedFor}</p>
               </li>
             ))}
           </ul>

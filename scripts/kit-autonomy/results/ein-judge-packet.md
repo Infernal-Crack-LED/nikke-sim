@@ -12,6 +12,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -22,12 +23,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -53,32 +56,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
 ## MECHANICS SSOT
 
 ### damage-calculation.md (full)
+
 ```
 # Damage calculation — the exact math the sim computes
 
@@ -101,7 +133,9 @@ Every damage instance — one bullet, one pellet volley, one skill proc, one dot
 hit — is computed independently at the frame it lands (`dealDamage()`):
 
 ```
+
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
+
 ```
 
 Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
@@ -111,11 +145,11 @@ value), after any per-unit override corrections.
 ### 1a. FinalATK
 
 ```
-FinalATK = max(0, effectiveAtk − bossDef)                     // bossDef = 0 at scope lock
 
-effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100)
-             + Σ (caster-ATK grants, as flat values)
-             + (Σ ATK-of-Max-HP % / 100) × ownMaxHp
+FinalATK = max(0, effectiveAtk − bossDef) // bossDef = 0 at scope lock
+
+effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100) + Σ (caster-ATK grants, as flat values) + (Σ ATK-of-Max-HP % / 100) × ownMaxHp
+
 ```
 
 - `staticAtk` — the unit's out-of-combat attack: level-table base for its class × grade/core
@@ -133,13 +167,15 @@ independent multiplicative buckets**; same-type buffs **add within** a bucket, d
 **multiply**. THE ENGINE (`dealDamage`) ALREADY MATCHES THIS:
 
 ```
-finalATK = staticAtk × (1 + Σ ATK%)  +  Σ("% of caster's ATK" flat)  +  Σ(HP→ATK flat)
-dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts INSIDE the base, pre-coef
-    × major   [1 + crit + core + fullBurst(0.5) + range(0.3)]  ← ADDITIVE within (core does NOT ×crit)
-    × element [1 + 0.1 advantage + elem-dmg buffs]
-    × charge  [charged shots only]
-    × dmgUp   [1 + attackDamage + sustained + pierce + parts + …]   "Damage Up"
-    × taken   [1 + damageTaken(enemy) + distributed]
+
+finalATK = staticAtk × (1 + Σ ATK%) + Σ("% of caster's ATK" flat) + Σ(HP→ATK flat)
+dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef) ← DEF subtracts INSIDE the base, pre-coef
+× major [1 + crit + core + fullBurst(0.5) + range(0.3)] ← ADDITIVE within (core does NOT ×crit)
+× element [1 + 0.1 advantage + elem-dmg buffs]
+× charge [charged shots only]
+× dmgUp [1 + attackDamage + sustained + pierce + parts + …] "Damage Up"
+× taken [1 + damageTaken(enemy) + distributed]
+
 ```
 
 - **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
@@ -193,55 +229,57 @@ blast radius), as a dedicated owner-greenlit increment. See open-questions U13 +
 ### 1b. Major bucket (crit, core, Full Burst, range — one additive bracket)
 
 ```
+
 Major = 1 + FB + Range + Crit + Core
 
-FB    = 0.5   if Full Burst is active AND the instance is not boundary-timed (see below); else 0
-Range = 0.3   if the weapon is in its effective band vs the boss's current position; RL never;
-              skill/proc instances never (noRange)
-Crit  = critRate × critBonus         (expected-value mode)
-      | critBonus or 0, Bernoulli(critRate)      (Monte Carlo mode, cfg.seed set)
-        critRate  = (base crit rate + Crit Rate ▲ % + normal-only Crit Rate ▲ %) / 100,
-                    clamped 0..1   (base 15%)
-                    the normal-only term (`critRateNormalPct`) joins ONLY on normal-attack
-                    instances — kit lines reading "Critical Rate of normal attacks ▲x%"
-                    (helm S1). Skill procs and burst damage see the unscoped term alone.
-        critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100           (base +50%)
-Core  = coreExposure × ACR × coreBonus    (expected-value mode)
-      | coreBonus or 0, Bernoulli(coreExposure × ACR)   (Monte Carlo mode)
-        coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
-        ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
-        LIVE MODEL — UNIGEO uniform-in-circle (default 'all', 2026-07-22; DECISIONS 2026-07-22),
-              scope-lock (small) boss profile, accuracy-circle weapons (AR/SMG/SG):
-                R(hr)   = (CIRCLE_PX_K · scale_w)/2 · (1 − hr/100) px      (linear to ZERO at HR 100;
-                          CIRCLE_PX_K 0.648 measured, scale_w = datamined start_accuracy_circle_scale
-                          {AR 75, SMG 110, SG 250}; MEASURED at 79.3/48.2 px for SG @ HR 0/38.91)
-                SG:     ACR = min(1, (r_core(band)/R(hr))²) ÷ coverage(band, R(hr))   (per landed pellet)
-                AR/SMG: ACR = lensOverlap(disc R_eff = f_bloom_w·R(hr), offset δ_w(hr), core r_core)
-                              ÷ disc area                                              (per hit)
-                        δ_w(hr) = δ0_w · max(0, 1 − hr/120)
-              Pellet/shot placement inside the circle is UNIFORM PER AREA — MEASURED directly
-              (101 machine-read pellet-marker positions; the previous centered Gaussian is refuted
-              at KS 0.376 vs crit 0.135). r_core diameters: near 31 px MEASURED; mid/midfar/far
-              20.9/15.8/12.7 px ⚑ FIT-SELECTED (UNIGEO_CORE_PX; an owner re-trace supersedes).
-              ⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px; f_bloom = AR 0.578 / SMG 0.728
-              (SMG pair is a saturated 2-cell fit — flagged, see DECISIONS 2026-07-22). Rises
-              steeply with Hit Rate; AR ≥▲80 is all-core geometrically (circle inside the core).
-              MG/SR/RL → flat 0.95 (no accuracy circle; MG gated by its wind-up ramp).
-              Engine: acrForHR → unigeoSgCorePerLanded / unigeoSingleCoreProb (src/engine/unigeo.ts).
-        REVERT / FALLBACK ARMS: UNIGEO=off restores the pre-2026-07-22 engine byte-identically —
-              the δ-offset ("Rician") Gaussian cone (offsetCoreProb, frozen params in sg-geometry.ts:
-              δ0 = AR 18 / SMG 16 / SG 30 px, H 120, S_FLOOR 0.10, σ-shrink {AR .009, SMG .004,
-              SG .009}, K_SIGMA 2.53), which itself falls back at CONE_DELTA=0 to the measured
-              CORE_BY_WEAPON_BAND table × HRCORE lift (NEVER refit; Wilson CIs in
-              docs/probe-data/coreband2-*.json). The cone also remains the LIVE path for
-              medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
-              boss silhouette only).
-              PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
-              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
-              and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
-              they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
-              `coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
-        coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
+FB = 0.5 if Full Burst is active AND the instance is not boundary-timed (see below); else 0
+Range = 0.3 if the weapon is in its effective band vs the boss's current position; RL never;
+skill/proc instances never (noRange)
+Crit = critRate × critBonus (expected-value mode)
+| critBonus or 0, Bernoulli(critRate) (Monte Carlo mode, cfg.seed set)
+critRate = (base crit rate + Crit Rate ▲ % + normal-only Crit Rate ▲ %) / 100,
+clamped 0..1 (base 15%)
+the normal-only term (`critRateNormalPct`) joins ONLY on normal-attack
+instances — kit lines reading "Critical Rate of normal attacks ▲x%"
+(helm S1). Skill procs and burst damage see the unscoped term alone.
+critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100 (base +50%)
+Core = coreExposure × ACR × coreBonus (expected-value mode)
+| coreBonus or 0, Bernoulli(coreExposure × ACR) (Monte Carlo mode)
+coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
+ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
+LIVE MODEL — UNIGEO uniform-in-circle (default 'all', 2026-07-22; DECISIONS 2026-07-22),
+scope-lock (small) boss profile, accuracy-circle weapons (AR/SMG/SG):
+R(hr) = (CIRCLE_PX_K · scale_w)/2 · (1 − hr/100) px (linear to ZERO at HR 100;
+CIRCLE_PX_K 0.648 measured, scale_w = datamined start_accuracy_circle_scale
+{AR 75, SMG 110, SG 250}; MEASURED at 79.3/48.2 px for SG @ HR 0/38.91)
+SG: ACR = min(1, (r_core(band)/R(hr))²) ÷ coverage(band, R(hr)) (per landed pellet)
+AR/SMG: ACR = lensOverlap(disc R_eff = f_bloom_w·R(hr), offset δ_w(hr), core r_core)
+÷ disc area (per hit)
+δ_w(hr) = δ0_w · max(0, 1 − hr/120)
+Pellet/shot placement inside the circle is UNIFORM PER AREA — MEASURED directly
+(101 machine-read pellet-marker positions; the previous centered Gaussian is refuted
+at KS 0.376 vs crit 0.135). r_core diameters: near 31 px MEASURED; mid/midfar/far
+20.9/15.8/12.7 px ⚑ FIT-SELECTED (UNIGEO_CORE_PX; an owner re-trace supersedes).
+⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px; f_bloom = AR 0.578 / SMG 0.728
+(SMG pair is a saturated 2-cell fit — flagged, see DECISIONS 2026-07-22). Rises
+steeply with Hit Rate; AR ≥▲80 is all-core geometrically (circle inside the core).
+MG/SR/RL → flat 0.95 (no accuracy circle; MG gated by its wind-up ramp).
+Engine: acrForHR → unigeoSgCorePerLanded / unigeoSingleCoreProb (src/engine/unigeo.ts).
+REVERT / FALLBACK ARMS: UNIGEO=off restores the pre-2026-07-22 engine byte-identically —
+the δ-offset ("Rician") Gaussian cone (offsetCoreProb, frozen params in sg-geometry.ts:
+δ0 = AR 18 / SMG 16 / SG 30 px, H 120, S_FLOOR 0.10, σ-shrink {AR .009, SMG .004,
+SG .009}, K_SIGMA 2.53), which itself falls back at CONE_DELTA=0 to the measured
+CORE_BY_WEAPON_BAND table × HRCORE lift (NEVER refit; Wilson CIs in
+docs/probe-data/coreband2-*.json). The cone also remains the LIVE path for
+medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
+boss silhouette only).
+PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
+OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
+and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
+they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
+`coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
+coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100 (base +100%)
+
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
@@ -289,8 +327,10 @@ non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 ### 1c. Element bucket
 
 ```
-Element = 1.1 + (Element Damage ▲ % + Superior-element Damage ▲ %)/100   with elemental advantage
-        = 1.0                                                             without
+
+Element = 1.1 + (Element Damage ▲ % + Superior-element Damage ▲ %)/100 with elemental advantage
+= 1.0 without
+
 ```
 
 Wheel: Fire→Wind→Iron→Electric→Water→Fire. "Superior element" damage buffs
@@ -306,9 +346,9 @@ is retired (restorable via ENV.ELEMADV='damageup' for A/B comparison only).
 ### 1d. Charge bucket (charge shots only)
 
 ```
-Charge = chargeMult/100
-       + (chargeMult/100) × (doll charge % + Charge-Damage-multiplier buffs %) / 100
-       + Charge Damage ▲ %/100
+
+Charge = chargeMult/100 + (chargeMult/100) × (doll charge % + Charge-Damage-multiplier buffs %) / 100 + Charge Damage ▲ %/100
+
 ```
 
 `chargeMult` is the per-unit full-charge multiplier (SR typically 250, Alice 350, cinderella 200;
@@ -322,15 +362,12 @@ Charge Damage ▲ buffs add flat percentage points; "multiplies base charge dama
 ### 1e. DamageUp bucket
 
 ```
-DamageUp = 1 + ( Attack Damage ▲ %
-               + Sustained Damage ▲ %      [only on sustained-flavored instances (dots)]
-               + Sequential Damage ▲ %     [only on sequential-flavored instances]
-               + True Damage ▲ %           [only on true-flavored instances]
-               + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
-                                            a live gainPierce window, or a swap-scoped
-                                            weaponSwap.hasPierce shot (snow-white cannon)]
-               + Projectile Explosion ▲ %  [RL NORMAL attacks — see 1f]
-               ) / 100
+
+DamageUp = 1 + ( Attack Damage ▲ % + Sustained Damage ▲ % [only on sustained-flavored instances (dots)] + Sequential Damage ▲ % [only on sequential-flavored instances] + True Damage ▲ % [only on true-flavored instances] + Pierce Damage ▲ % [only for Pierce-tagged shots: static hasPierce,
+a live gainPierce window, or a swap-scoped
+weaponSwap.hasPierce shot (snow-white cannon)] + Projectile Explosion ▲ % [RL NORMAL attacks — see 1f]
+) / 100
+
 ```
 
 The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with no dot, etc.
@@ -338,7 +375,9 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 ### 1f. Projectile bucket
 
 ```
+
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
+
 ```
 
 Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
@@ -349,10 +388,11 @@ rocket/proc popup ratio test, 1.2491 = prediction to four digits).
 ### 1g. Taken and Distributed buckets (boss-side)
 
 ```
-Taken       = 1 + (Σ Damage Taken ▲ on the boss
-                   + Σ Distributed-damage Taken ▲ [distributed instances only, and only
-                                                   while a Damage Taken ▲ is active]) / 100
-Distributed = 1 + Distributed Damage ▲ %/100     [distributed instances only]
+
+Taken = 1 + (Σ Damage Taken ▲ on the boss + Σ Distributed-damage Taken ▲ [distributed instances only, and only
+while a Damage Taken ▲ is active]) / 100
+Distributed = 1 + Distributed Damage ▲ %/100 [distributed instances only]
+
 ```
 
 Distributed damage deals the same TOTAL against one target as against many (owner-verified) —
@@ -499,8 +539,10 @@ boundary rule), DamageUp 1.209 (trina's cast-granted +20.9% applies; anis-star's
 does not), Element 1.1, Major = 1.0 non-crit (no FB, no range for burst damage, no core ever):
 
 ```
-187,102 × 14.006 × 1.0 × 1.1 × 1.209 = 3,485,150   →  measured 3,448,659 (98.9%)
-crit: × 1.5                = 5,227,725              →  measured (other fight) ×1.5 pair exact
+
+187,102 × 14.006 × 1.0 × 1.1 × 1.209 = 3,485,150 → measured 3,448,659 (98.9%)
+crit: × 1.5 = 5,227,725 → measured (other fight) ×1.5 pair exact
+
 ```
 
 With the +50% (the rejected branch) the prediction is 34% hot — this single popup pair is what
@@ -526,6 +568,7 @@ guillotine-WS).
 ```
 
 ### game-mechanics.md (full)
+
 ```
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
@@ -567,7 +610,9 @@ Damage is a product of independent **buckets**; buffs _inside_ a bucket are addi
 buckets _multiply_. DATAMINED + COMMUNITY, cross-validated by our board.
 
 ```
+
 damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × Taken × Distributed
+
 ```
 
 Major bucket = `1 + 0.5·FB + 0.3·range + critRate·(critDmg−1) + coreRate·(coreMult−1)` —
@@ -934,7 +979,8 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ```
 
 ## GROUND TRUTH — ein kit prose + base stats (data/characters.json → characters.ein)
-```json
+
+````json
 {
   "slug": "ein",
   "name": "Ein",
@@ -1577,11 +1623,12 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   "notes": "Expected shared-prior misreads, in leverage order: (1) skill2's 'for 1 shot(s)' encoded as durationSec:1 — on a ~1s+ SR cadence this collapses an effectively-permanent +80 charge buff to near-zero uptime; the test MUST read durationShots off the buffApply, not just total damage. (2) skill1's ATK buff keyed to burstCast/fullBurstEnter instead of stage-3 entry — 'Activates when entering Burst Skill Stage 3' is a rotation event fired by ANY B3 (helm's casts included in controlComp), and the divergence only surfaces in a two-B3 fixture, so the assertion must land a 70.12 apply on a helm-cast rotation. (3) Burst self-lines (6 feathers, 55.3 true, 140.68 charge) keyed to fullBurstEnter instead of burstCast — over-credits every helm rotation. (4) The 300.02% nuke multiplied by its 10-target clause on the single boss. (5) Feather persistence — feathers are on-summon one-shot procs (4 at t=0, 6 per ein burst), never interval attackers. Ordering questions the driver must have pinned (either answer changes damage): does the S2 +80 apply to its own triggering shot or only the next; do the 6 burst feathers and the 300.02 nuke ride the just-applied True Damage ▲55.3 from the same cast (prose lists the buffs before the nuke, suggesting yes)? Also reconcile: 'Charge Damage ▲' here is additive chargeDamagePct, not the 'Multiplier' stat. Leak note: the effect-schema comment naming Near Feathers as noRange reveals a shipped encoding choice; my no-range/no-core/no-FB rider expectations are derived from the general rider rules, not that comment.",
   "model": "claude-fable-5"
 }
-```
+````
 
 ## S5 BLIND TEST (claude-opus-5) — 18/24 pass, 6 fail (all documented divergences), 4 skip
 
 ### S5 result vs driver override (adapted: mechanical field-name fixes only)
+
 ```
 S5 blind test (claude-opus-5) run vs DRIVER override (adapted: onEvent moved into cfg; srcSlug->slug;
 true-flavor predicate -> bucket!=='normal' && atkPct>0, since the SimEvent damage record exposes no
@@ -1617,6 +1664,7 @@ RED — 6 failures, ALL documented divergences (no REAL-GOTCHA):
 ```
 
 ### S5 blind test source (as authored; the adapted run fixes srcSlug->slug, onEvent into cfg, true-flavor predicate)
+
 ```ts
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
@@ -1675,23 +1723,30 @@ type Ev = SimEvent & Record<string, unknown>;
 
 function run(opts: ReturnType<typeof controlComp>) {
   const events: Ev[] = [];
-  const res = runComp({ ...opts, onEvent: (ev: SimEvent) => events.push(ev as Ev) });
+  const res = runComp({
+    ...opts,
+    onEvent: (ev: SimEvent) => events.push(ev as Ev),
+  });
   return { res, events };
 }
 
 const base = controlComp('ein', true);
 const BASE = run(base);
 
-const einDamage = () => BASE.events.filter((e) => e.kind === 'damage' && e.srcSlug === 'ein');
+const einDamage = () =>
+  BASE.events.filter((e) => e.kind === 'damage' && e.srcSlug === 'ein');
 const einBuffs = () =>
   BASE.events.filter(
-    (e) => e.kind === 'buffApply' && (e.targetSlug === 'ein' || e.casterIdx !== null),
+    (e) =>
+      e.kind === 'buffApply' && (e.targetSlug === 'ein' || e.casterIdx !== null)
   );
 const burstCasts = () => BASE.events.filter((e) => e.kind === 'burstCast');
 
 describe('ein — fixture sanity (non-vacuity)', () => {
   it('ein actually bursts in the control comp (B1+B2 present)', () => {
-    const einCasts = burstCasts().filter((e) => e.slug === 'ein' || e.srcSlug === 'ein');
+    const einCasts = burstCasts().filter(
+      (e) => e.slug === 'ein' || e.srcSlug === 'ein'
+    );
     expect(einCasts.length).toBeGreaterThan(0);
   });
 
@@ -1700,7 +1755,9 @@ describe('ein — fixture sanity (non-vacuity)', () => {
   });
 
   it('the fixture reaches Full Burst (so FB-exemption claims are testable)', () => {
-    expect(BASE.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      BASE.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -1733,7 +1790,10 @@ describe('ein skill1a + skill2a — 4 battle-start Near Feathers, 90.81% true ea
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - FEATHER_PCT) < 0.01) {
+          if (
+            eff.kind === 'flatDamage' &&
+            Math.abs(eff.atkPct - FEATHER_PCT) < 0.01
+          ) {
             eff.atkPct = FEATHER_PCT / 2;
           }
         }
@@ -1747,7 +1807,11 @@ describe('ein skill1a + skill2a — 4 battle-start Near Feathers, 90.81% true ea
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - FEATHER_PCT) < 0.01),
+          (eff) =>
+            !(
+              eff.kind === 'flatDamage' &&
+              Math.abs(eff.atkPct - FEATHER_PCT) < 0.01
+            )
         );
       }
     });
@@ -1771,7 +1835,7 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
       (e) =>
         e.targetSlug === 'ein' &&
         (e.stat === 'atkPct' || e.stat === 'casterAtkPct') &&
-        Math.abs((e.value as number) - 70.12) < 0.01,
+        Math.abs((e.value as number) - 70.12) < 0.01
     );
     expect(atk.length).toBeGreaterThan(0);
     // 10 sec at 60fps = 600 frames of window on each apply.
@@ -1784,7 +1848,7 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01),
+          (eff) => !(eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01)
         );
       }
     });
@@ -1799,7 +1863,8 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01) delete eff.durationSec;
+          if (eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01)
+            delete eff.durationSec;
         }
       }
     });
@@ -1823,7 +1888,7 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'chargeDamagePct' &&
-        Math.abs((e.value as number) - 80) < 0.01,
+        Math.abs((e.value as number) - 80) < 0.01
     );
     expect(cd.length).toBeGreaterThan(0);
     for (const e of cd) {
@@ -1834,7 +1899,9 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
 
   it('re-applies per full charge (non-vacuity: many charges over 180s, not one)', () => {
     const cd = einBuffs().filter(
-      (e) => e.stat === 'chargeDamagePct' && Math.abs((e.value as number) - 80) < 0.01,
+      (e) =>
+        e.stat === 'chargeDamagePct' &&
+        Math.abs((e.value as number) - 80) < 0.01
     );
     expect(cd.length).toBeGreaterThan(5);
   });
@@ -1843,7 +1910,11 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill2 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct' && Math.abs(eff.value - 80) < 0.01) {
+          if (
+            eff.kind === 'buff' &&
+            eff.stat === 'chargeDamagePct' &&
+            Math.abs(eff.value - 80) < 0.01
+          ) {
             delete eff.durationShots;
             eff.durationSec = 10;
           }
@@ -1859,7 +1930,11 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
       for (const b of ov.skill2 ?? []) {
         b.effects = b.effects.filter(
           (eff) =>
-            !(eff.kind === 'buff' && eff.stat === 'chargeDamagePct' && Math.abs(eff.value - 80) < 0.01),
+            !(
+              eff.kind === 'buff' &&
+              eff.stat === 'chargeDamagePct' &&
+              Math.abs(eff.value - 80) < 0.01
+            )
         );
       }
     });
@@ -1872,7 +1947,7 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
         (e) =>
           e.kind === 'damage' &&
           e.srcSlug === 'ein' &&
-          ((e as Ev).bucket === 'true' || (e as Ev).flavor === 'true'),
+          ((e as Ev).bucket === 'true' || (e as Ev).flavor === 'true')
       )
       .reduce((s, e) => s + ((e as Ev).amount as number), 0);
     // Charge-bucket-only buff: the (ATK-driven) true bucket is unchanged in shape.
@@ -1898,7 +1973,7 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
         (e) =>
           (e.bucket === 'true' || e.flavor === 'true') &&
           (e.frame as number) >= f &&
-          (e.frame as number) <= f + 6,
+          (e.frame as number) <= f + 6
       );
       // 6 feathers + the burst's own 300.02% true hit = 7 true hits in the cast frame window.
       expect(near.length).toBeGreaterThanOrEqual(6);
@@ -1910,10 +1985,11 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'trueDamagePct' &&
-        Math.abs((e.value as number) - 55.3) < 0.01,
+        Math.abs((e.value as number) - 55.3) < 0.01
     );
     expect(td.length).toBeGreaterThan(0);
-    for (const e of td) expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
+    for (const e of td)
+      expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
   });
 
   it('Charge Damage +140.68% is a self buff with a 10s window', () => {
@@ -1921,10 +1997,11 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'chargeDamagePct' &&
-        Math.abs((e.value as number) - 140.68) < 0.01,
+        Math.abs((e.value as number) - 140.68) < 0.01
     );
     expect(cd.length).toBeGreaterThan(0);
-    for (const e of cd) expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
+    for (const e of cd)
+      expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
   });
 
   it('both burst buffs are self-scoped (Affects self) — teammates byte-identical without them', () => {
@@ -1934,8 +2011,9 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
           (eff) =>
             !(
               eff.kind === 'buff' &&
-              (Math.abs(eff.value - 55.3) < 0.01 || Math.abs(eff.value - 140.68) < 0.01)
-            ),
+              (Math.abs(eff.value - 55.3) < 0.01 ||
+                Math.abs(eff.value - 140.68) < 0.01)
+            )
         );
       }
     });
@@ -1950,7 +2028,8 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && Math.abs(eff.value - 55.3) < 0.01) eff.value = 0;
+          if (eff.kind === 'buff' && Math.abs(eff.value - 55.3) < 0.01)
+            eff.value = 0;
         }
       }
     });
@@ -1970,12 +2049,15 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01) eff.atkPct = 0.02;
+          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01)
+            eff.atkPct = 0.02;
         }
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
-    const casts = burstCasts().filter((e) => e.slug === 'ein' || e.srcSlug === 'ein').length;
+    const casts = burstCasts().filter(
+      (e) => e.slug === 'ein' || e.srcSlug === 'ein'
+    ).length;
     const delta = totals(BASE.res)['ein'] - totals(alt.res)['ein'];
     expect(delta).toBeGreaterThan(0);
     // Sanity: the nuke's share is per-cast, so it scales with cast count, not with 10x targets.
@@ -1989,7 +2071,8 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     for (const f of casts) {
       const atCast = einDamage().filter((e) => (e.frame as number) === f);
       expect(atCast.length).toBeGreaterThan(0);
-      for (const e of atCast) expect(e.bucket === 'true' || e.flavor === 'true').toBe(true);
+      for (const e of atCast)
+        expect(e.bucket === 'true' || e.flavor === 'true').toBe(true);
     }
   });
 
@@ -2017,7 +2100,8 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01),
+          (eff) =>
+            !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01)
         );
       }
     });
@@ -2064,7 +2148,8 @@ describe('ein — GAP lines', () => {
 ```
 
 ## S6 BLIND OVERRIDE (claude-opus-5)
-```json
+
+````json
 {
   "slug": "ein",
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Structure: the kit splits SUMMON (skill1 start-of-battle ×4, burst ×6) from the SUMMON-TRIGGERED damage (skill2 'Activates when Near Feather is summoned' → 90.81% true). The engine has no summon primitive, so the Near Feather Attack is authored at each summon site: 4 instances on the skill1 passive block, 6 instances on the burst block. skill2 therefore holds only the Full-Charge buff; its damage line is IMPLEMENTED, not dropped. Read literally, the attack fires ONCE PER SUMMON — if feathers persist and attack repeatedly, this model UNDERSTATES her (⚑ feather-persistence). Feather attacks are authored as N separate flatDamage instances (split) rather than one merged hit — kit-silent, popup-read decides (⚑). Burst blocks are ordered buffs-first so the burst's own True Damage ▲55.3% is live for the 6 feather hits and the 300.02% hit; if the real cast snapshots pre-buff, drop the buff block below the damage blocks (⚑). Full-Charge trigger mapped to shotFired: every SR trigger pull on this unit is a full-charge shot (chargeFrames 60), so shotFired ≡ 'attacking with Full Charge'; the 'for 1 shot(s)' window is durationShots:1 (⚑ whether the triggering shot itself benefits or only the next one). noFb left default-ON-by-timing (unmeasured); noRange not set (engine-automatic).",
@@ -2643,9 +2728,10 @@ describe('ein — kit spec', () => {
     });
   });
 });
-```
+````
 
 ### src/skills/overrides/ein.json
+
 ```json
 {
   "note": "Tier audit (Bossing A). Parser skipped her three core mechanics; rebuilt from kit text + Prydwen's exact counts. S1: ATK 70.12%/10s on every Burst Stage 3 entry (parser missed the trigger phrasing; Prydwen confirms it lands BEFORE the burst cast and buffs burst damage — matches engine ordering). S1 battle-start: 4 Near Feathers summoned at t=0 -> passive flatDamage 4x90.81=363.24 true noRange, fires once at frame 0 (kit-autonomy gauntlet 2026-07-25; was previously skipped as minor). S2 Near Feathers: 90.81% true damage per instance; Prydwen: 34 instances per her burst ('1-4 after FB ends' — folded in) and ~6 instances between her bursts; feathers CAN CRIT, get the FB multiplier, but NOT the +30% range bonus (crit:true, noRange:true — this mechanic motivated the engine flags) -> burstCast flatDamage 34x90.81=3087.54 + fullBurstEnd flatDamage 6x90.81=544.86 (fires each rotation incl. hers; slight smear). S2 'Charge Damage 80% for 1 shot' primes every next shot ~= permanent +80 (parser read kept as passive; a per-shot trigger + durationShots:1 is mechanically infeasible — the shotFired trigger applies the buff AFTER the shot's damage is computed, verified zero benefit — so the permanent passive is the faithful steady-state for an SR that always full-charges). Burst restated: True Damage 55.3%/10s + Charge Damage 140.68%/10s self buffs + 300.02% true nuke. ORB GAUGE (2026-07-13, nikke-synergy arena data special_burst_gauge: add_interval_from_start value 5.6 interval 170f): her orb generates 560 energy every ~2.83s for the team - modeled as a zero-damage permanent dot whose ticks drive skillGauge (= her flat target 560 per tick, exactly the documented amount). Kit-autonomy gauntlet 2026-07-25.",

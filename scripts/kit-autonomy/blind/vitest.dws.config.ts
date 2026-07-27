@@ -5,7 +5,9 @@ import { defineConfig } from 'vitest/config';
 //   npx vitest run --config scripts/kit-autonomy/blind/vitest.dws.config.ts
 export default defineConfig({
   test: {
-    include: ['scripts/kit-autonomy/blind/diesel-winter-sweets.adapted.test.ts'],
+    include: [
+      'scripts/kit-autonomy/blind/diesel-winter-sweets.adapted.test.ts',
+    ],
     environment: 'node',
     testTimeout: 300_000,
     hookTimeout: 300_000,

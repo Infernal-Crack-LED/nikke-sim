@@ -6,7 +6,12 @@
       "trigger": { "kind": "shotFired" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 40.99, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 40.99,
+          "durationSec": 10
+        }
       ],
       "requiresCore": true
     }
@@ -25,7 +30,12 @@
       "trigger": { "kind": "shotFired" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 30.78, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 30.78,
+          "durationSec": 5
+        }
       ]
     }
   ],
@@ -34,16 +44,19 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 639.36 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 639.36 }]
     },
     {
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 40.99, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 40.99,
+          "durationSec": 10
+        }
       ]
     }
   ]

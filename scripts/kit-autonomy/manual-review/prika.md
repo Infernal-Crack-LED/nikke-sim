@@ -8,12 +8,12 @@ buffApply **event log** (value / duration / target-set / cadence), not a damage 
 
 ## Cross-family chain
 
-| Role | Model | Artifact | Outcome |
-| ---- | ----- | -------- | ------- |
-| S2b test-faithfulness review | claude-fable-5 | `reviews/prika.test-review.json` | converged on all 5 damage lines + burstCdr sign |
-| S5 blind test writer | claude-opus-5 | `blind/prika.test.ts` | S1 assertions **PASS** vs driver; burst assertions void (broken fixture, see below) |
-| S6 blind override writer | claude-opus-5 | `blind/prika.override.json` | S1 triad + burst chargeDamage **byte-identical** to driver |
-| S7 reconciling judge | claude-opus-5 | `results/prika.json` | **GO 0.92**, discriminationOk:true |
+| Role                         | Model          | Artifact                         | Outcome                                                                             |
+| ---------------------------- | -------------- | -------------------------------- | ----------------------------------------------------------------------------------- |
+| S2b test-faithfulness review | claude-fable-5 | `reviews/prika.test-review.json` | converged on all 5 damage lines + burstCdr sign                                     |
+| S5 blind test writer         | claude-opus-5  | `blind/prika.test.ts`            | S1 assertions **PASS** vs driver; burst assertions void (broken fixture, see below) |
+| S6 blind override writer     | claude-opus-5  | `blind/prika.override.json`      | S1 triad + burst chargeDamage **byte-identical** to driver                          |
+| S7 reconciling judge         | claude-opus-5  | `results/prika.json`             | **GO 0.92**, discriminationOk:true                                                  |
 
 ## What is verified faithful (pinned by `scripts/tests/units/prika.test.ts`, 20 assertions GREEN)
 
@@ -22,8 +22,8 @@ buffApply **event log** (value / duration / target-set / cadence), not a damage 
 - **P3** S1 ATK ▲20% **of the skill user's ATK** = `casterAtkPct`: a flat add off Prika's ATK, identical on every ally. Discriminated against `atkPct` (which emits the percentage 20, not a flat caster-scoped number).
 - **P4** S2 Encore Effect 3: all allies Attack Damage ▲25.01% / 10s, once per Full Burst entry (solo-mode `fullBurstEnter` proxy).
 - **P5** Burst Effect 2: all allies Charge Damage ▲25% / 25s on `burstCast`.
-- **P6** S2 Encore Effect 4: "Cooldown of Burst Skill ▲21 sec" is an **INCREASE** — `burstCdr seconds:-21` adds 21s (40s→61s, 3 casts/180s). Discriminated against the decrease misread (+21 → 9 casts). *The S5 blind role missed this (claimed "burstCdr models reduction only"); the judge ruled it RECON_ERROR, not a finding.*
-- **P7** Burst Effect 1 recovery **cadence**: `heal{ticks:25, intervalSec:1}` fires 25 recovery events over 25s per cast, keeping an on-recovery consumer (crown) refreshed across the whole window. Discriminated against `ticks:1`. *(Added this pass per judge gotcha 3 — see below.)*
+- **P6** S2 Encore Effect 4: "Cooldown of Burst Skill ▲21 sec" is an **INCREASE** — `burstCdr seconds:-21` adds 21s (40s→61s, 3 casts/180s). Discriminated against the decrease misread (+21 → 9 casts). _The S5 blind role missed this (claimed "burstCdr models reduction only"); the judge ruled it RECON_ERROR, not a finding._
+- **P7** Burst Effect 1 recovery **cadence**: `heal{ticks:25, intervalSec:1}` fires 25 recovery events over 25s per cast, keeping an on-recovery consumer (crown) refreshed across the whole window. Discriminated against `ticks:1`. _(Added this pass per judge gotcha 3 — see below.)_
 
 The S6 blind override is **byte-identical** to the driver on the S1 triad + burst chargeDamage; the
 S5 blind test's three S1 assertions **pass unmodified** against the shipped override (the meaningful
@@ -31,7 +31,7 @@ cross-family evidence, vs same-model agreement).
 
 ## Residuals (owner spot-checks — ranked by the S7 judge)
 
-1. **GOTCHA 1 — duet Encore Attack Damage 9999s vs printed "for 10 sec"** (med, PLAUSIBLE not confirmed). The duet block ships `attackDamagePct 25.01 durationSec:9999`, justified by "Mint's Sing Along re-extends Performance forever" — but that extension is Encore **Effect 2** (Performance duration); Effect 3 has its own printed 10s window. The neighbouring duet `chargeDamagePct 9999` IS defensible (Charge Damage is a Performance effect); Effect 3 is not, unless Encore re-procs at ≤10s intervals. **Action:** read `data/characters.json → characters.mint.skills`, establish Sing Along's cadence. If ≤10s re-proc, keep 9999 + re-label the reason; if on Mint's ~40s burst, encode Effect 3 at `durationSec:10` on the duet Encore trigger. Do NOT pick a duration that preserves the current board reading. *(Mode-gated, untouched by this pass; neither blind examined the duet block.)*
+1. **GOTCHA 1 — duet Encore Attack Damage 9999s vs printed "for 10 sec"** (med, PLAUSIBLE not confirmed). The duet block ships `attackDamagePct 25.01 durationSec:9999`, justified by "Mint's Sing Along re-extends Performance forever" — but that extension is Encore **Effect 2** (Performance duration); Effect 3 has its own printed 10s window. The neighbouring duet `chargeDamagePct 9999` IS defensible (Charge Damage is a Performance effect); Effect 3 is not, unless Encore re-procs at ≤10s intervals. **Action:** read `data/characters.json → characters.mint.skills`, establish Sing Along's cadence. If ≤10s re-proc, keep 9999 + re-label the reason; if on Mint's ~40s burst, encode Effect 3 at `durationSec:10` on the duet Encore trigger. Do NOT pick a duration that preserves the current board reading. _(Mode-gated, untouched by this pass; neither blind examined the duet block.)_
 
 2. **GOTCHA 2 — solo Encore proxy** (med, documented + owner-deliberate). Both cross-family blinds independently ruled the Encore should stay **wholly UNMODELED** (Sing Along is cross-unit-gated, no carrier/schema; "inventing a proxy trigger would over-credit +25.01%"). The shipped solo proxy fires Effect 3 on `fullBurstEnter` and Effect 4 on `burstCast` — splitting one proc across two triggers so benefit outruns price in any two-B2 comp, and firing on Full Bursts Prika sat out. **Action (owner's call):** the converged faithful fix is mode-gating BOTH Encore effects to `duet (w/ Mint)` only, leaving solo Prika with zero Encore. First check the graded roster for any comp running Prika WITHOUT Mint: if every graded Prika comp is duet, the change is board-inert and should just land; if a solo-Prika comp is graded, it is a board-moving recalibration — measure first, and if solo Encore is retained for board reasons, at minimum key Effect 3 and Effect 4 to the SAME trigger so benefit and price stay coupled.
 

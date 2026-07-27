@@ -110,9 +110,7 @@
     "burst:requiresShielded-casterAtk-31.02"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Restores 14.57% of Cover HP."
-    ],
+    "skill1": ["Restores 14.57% of Cover HP."],
     "skill2": [],
     "burst": []
   },

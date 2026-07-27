@@ -17,12 +17,17 @@
   "fightClockOffset": {
     "note": "fight_clock = video_time - offset, from the top-right MM:SS countdown (fight t = 180 - remaining). Countdown re-read at each window; video-minus-fight offset drifts ~6s early to ~3s late (integer-second rounding + minor clock drift).",
     "anchors": [
-      {"videoSec": 20, "countdown": "02:46", "fightSec": 14, "offset": 6},
-      {"videoSec": 58, "countdown": "02:07", "fightSec": 53, "offset": 5},
-      {"videoSec": 92, "countdown": "01:32", "fightSec": 88, "offset": 4},
-      {"videoSec": 130, "countdown": "00:53", "fightSec": 127, "offset": 3},
-      {"videoSec": 165, "countdown": "00:18", "fightSec": 162, "offset": 3},
-      {"videoSec": 183, "countdown": "gone (fight ended ~180)", "fightSec": 180, "offset": 3}
+      { "videoSec": 20, "countdown": "02:46", "fightSec": 14, "offset": 6 },
+      { "videoSec": 58, "countdown": "02:07", "fightSec": 53, "offset": 5 },
+      { "videoSec": 92, "countdown": "01:32", "fightSec": 88, "offset": 4 },
+      { "videoSec": 130, "countdown": "00:53", "fightSec": 127, "offset": 3 },
+      { "videoSec": 165, "countdown": "00:18", "fightSec": 162, "offset": 3 },
+      {
+        "videoSec": 183,
+        "countdown": "gone (fight ended ~180)",
+        "fightSec": 180,
+        "offset": 3
+      }
     ]
   },
   "colourConvention": {
@@ -47,44 +52,126 @@
   "method": "Per band: extracted full-res crosshair-region frames (crop=1100:640:780:110, zoom 2x) at 0.7s spacing so each frame is an INDEPENDENT popup stack (SMG popups live <0.6s -> no cross-frame double-count; a RATE is unbiased under independent sampling). Classified each legible body-band normal (~12-62k) as core (CORE HIT text/red) vs non-core (white/orange). Reload/black-screen frames counted as available. Boss distance visually cross-checked against band label from downscaled full frames. Near and Midfar each pool two windows to reach >=40 classified normals.",
   "bands": [
     {
-      "band": "mid", "fightWindowSec": "12-18 (in 0-33)", "videoWindowSec": "18-24.3",
+      "band": "mid",
+      "fightWindowSec": "12-18 (in 0-33)",
+      "videoWindowSec": "18-24.3",
       "bossDistance": "medium (spider mech, moderate size, reticle on central core)",
-      "core": 11, "total": 45, "coreRate": 0.244, "wilson95CI": [0.142, 0.387], "confidence": "low-medium",
+      "core": 11,
+      "total": 45,
+      "coreRate": 0.244,
+      "wilson95CI": [0.142, 0.387],
+      "confidence": "low-medium",
       "note": "Higher than first read (0.138): the hardened CORE-HIT-text detection catches red 52186/61505 cores that blend into the dark mech at medium range where the reticle sits on the core."
     },
     {
-      "band": "near", "fightWindowSec": "47-56 & 158-164 (pooled two near windows)", "videoWindowSec": "53-62.3 & 161-167.3",
+      "band": "near",
+      "fightWindowSec": "47-56 & 158-164 (pooled two near windows)",
+      "videoWindowSec": "53-62.3 & 161-167.3",
       "bossDistance": "close (large mech, centre)",
-      "core": 29, "total": 95, "coreRate": 0.305, "wilson95CI": [0.221, 0.403], "confidence": "medium",
+      "core": 29,
+      "total": 95,
+      "coreRate": 0.305,
+      "wilson95CI": [0.221, 0.403],
+      "confidence": "medium",
       "subWindows": [
-        {"label": "near1", "videoSec": "53-62.3", "fightSec": "~47-56", "core": 20, "total": 52, "coreRate": 0.385, "wilson95CI": [0.265, 0.520]},
-        {"label": "near2", "videoSec": "161-167.3", "fightSec": "~158-164", "core": 9, "total": 43, "coreRate": 0.209, "wilson95CI": [0.114, 0.352]}
+        {
+          "label": "near1",
+          "videoSec": "53-62.3",
+          "fightSec": "~47-56",
+          "core": 20,
+          "total": 52,
+          "coreRate": 0.385,
+          "wilson95CI": [0.265, 0.52]
+        },
+        {
+          "label": "near2",
+          "videoSec": "161-167.3",
+          "fightSec": "~158-164",
+          "core": 9,
+          "total": 43,
+          "coreRate": 0.209,
+          "wilson95CI": [0.114, 0.352]
+        }
       ],
       "note": "The two near windows disagree (0.385 vs 0.209), reproducing the first read (0.385 vs 0.219) — pose/animation-dependent core exposure adds variance beyond range. near1 shows persistent red 52186/61505 cores; near2 shows mostly white 15760 stacks with occasional cores."
     },
     {
-      "band": "far", "fightWindowSec": "84-91 (in 70-106)", "videoWindowSec": "88-95",
+      "band": "far",
+      "fightWindowSec": "84-91 (in 70-106)",
+      "videoWindowSec": "88-95",
       "bossDistance": "far (small, receded to background centre)",
-      "core": 3, "total": 51, "coreRate": 0.059, "wilson95CI": [0.020, 0.159], "confidence": "medium-high",
+      "core": 3,
+      "total": 51,
+      "coreRate": 0.059,
+      "wilson95CI": [0.02, 0.159],
+      "confidence": "medium-high",
       "note": "Overwhelmingly white 12123 + orange 18185 crits; red 30308 cores are rare. Consistent with first read (0.069)."
     },
     {
-      "band": "midfar", "fightWindowSec": "121-131 & 176-180 (pooled two midfar windows)", "videoWindowSec": "125-131.3 & 178.8-182.3",
+      "band": "midfar",
+      "fightWindowSec": "121-131 & 176-180 (pooled two midfar windows)",
+      "videoWindowSec": "125-131.3 & 178.8-182.3",
       "bossDistance": "intermediate (mf1) to intermediate-far (mf2, end of fight)",
-      "core": 6, "total": 79, "coreRate": 0.076, "wilson95CI": [0.035, 0.156], "confidence": "medium",
+      "core": 6,
+      "total": 79,
+      "coreRate": 0.076,
+      "wilson95CI": [0.035, 0.156],
+      "confidence": "medium",
       "subWindows": [
-        {"label": "midfar1", "videoSec": "125-131.3", "fightSec": "~122-128", "core": 6, "total": 41, "coreRate": 0.146, "wilson95CI": [0.069, 0.284], "note": "reticle on central core; red 30308/36370 cores present. Matches first read (0.133)."},
-        {"label": "midfar2", "videoSec": "178.8-182.3", "fightSec": "~176-180", "core": 0, "total": 38, "coreRate": 0.0, "wilson95CI": [0.0, 0.092], "note": "END OF FIGHT: ZERO cores across 38 classified normals — only orange 18185 crits + white 12123. Boss further + final-pose core not exposed."}
+        {
+          "label": "midfar1",
+          "videoSec": "125-131.3",
+          "fightSec": "~122-128",
+          "core": 6,
+          "total": 41,
+          "coreRate": 0.146,
+          "wilson95CI": [0.069, 0.284],
+          "note": "reticle on central core; red 30308/36370 cores present. Matches first read (0.133)."
+        },
+        {
+          "label": "midfar2",
+          "videoSec": "178.8-182.3",
+          "fightSec": "~176-180",
+          "core": 0,
+          "total": 38,
+          "coreRate": 0.0,
+          "wilson95CI": [0.0, 0.092],
+          "note": "END OF FIGHT: ZERO cores across 38 classified normals — only orange 18185 crits + white 12123. Boss further + final-pose core not exposed."
+        }
       ],
       "note": "The two midfar windows disagree STRONGLY (0.146 vs 0.0). The 106-144 window agrees with the first read; the 176-180 end-of-fight window has no cores at all, dragging the pooled rate down to 0.076."
     }
   ],
   "bossDistanceCrossCheck": "Boss apparent size/distance matches the band labels: near windows = large close mech; mid = medium mech (reticle on core); midfar1 = intermediate; midfar2/far = small receded boss. Frames: cb2_bossdist_{near,far,midfar}_*.png.",
   "perBandSummary": [
-    {"band": "near",   "core": 29, "total": 95, "rate": 0.305, "wilson95CI": [0.221, 0.403]},
-    {"band": "mid",    "core": 11, "total": 45, "rate": 0.244, "wilson95CI": [0.142, 0.387]},
-    {"band": "midfar", "core": 6,  "total": 79, "rate": 0.076, "wilson95CI": [0.035, 0.156]},
-    {"band": "far",    "core": 3,  "total": 51, "rate": 0.059, "wilson95CI": [0.020, 0.159]}
+    {
+      "band": "near",
+      "core": 29,
+      "total": 95,
+      "rate": 0.305,
+      "wilson95CI": [0.221, 0.403]
+    },
+    {
+      "band": "mid",
+      "core": 11,
+      "total": 45,
+      "rate": 0.244,
+      "wilson95CI": [0.142, 0.387]
+    },
+    {
+      "band": "midfar",
+      "core": 6,
+      "total": 79,
+      "rate": 0.076,
+      "wilson95CI": [0.035, 0.156]
+    },
+    {
+      "band": "far",
+      "core": 3,
+      "total": 51,
+      "rate": 0.059,
+      "wilson95CI": [0.02, 0.159]
+    }
   ],
   "monotonicity": {
     "pooledOrdering": "near (0.305) > mid (0.244) > midfar (0.076) > far (0.059)",

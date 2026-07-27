@@ -5,17 +5,13 @@
       "slot": "skill1",
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 58.08 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "atkPct", "value": 58.08 }]
     },
     {
       "slot": "skill1",
       "trigger": { "kind": "hitCount", "count": 10 },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     }
   ],
   "skill2": [
@@ -23,16 +19,19 @@
       "slot": "skill2",
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
-      "effects": [
-        { "kind": "buff", "stat": "burstGenPct", "value": 70.4 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "burstGenPct", "value": 70.4 }]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 21.12, "durationSec": 10 },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 21.12,
+          "durationSec": 10
+        },
         { "kind": "buff", "stat": "atkPct", "value": 63.36, "durationSec": 10 }
       ]
     },
@@ -41,7 +40,12 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "chargeSpeedPct", "value": 18, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 18,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -51,7 +55,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "sustainedDamagePct", "value": 52.8, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 52.8,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -59,7 +68,13 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "dot", "atkPct": 396, "durationSec": 10, "intervalSec": 1, "flavor": "sustained" }
+        {
+          "kind": "dot",
+          "atkPct": 396,
+          "durationSec": 10,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
       ]
     }
   ]

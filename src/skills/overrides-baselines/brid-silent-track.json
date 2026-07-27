@@ -5,9 +5,7 @@
       "slot": "skill1",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 636 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 636 }]
     }
   ],
   "skill2": [
@@ -15,9 +13,7 @@
       "slot": "skill2",
       "trigger": { "kind": "hitCount", "count": 50 },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 675 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 675 }]
     }
   ],
   "burst": [
@@ -26,7 +22,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 66.52, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 66.52,
+          "durationSec": 10
+        }
       ]
     }
   ]

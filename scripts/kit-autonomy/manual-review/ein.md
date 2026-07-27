@@ -9,14 +9,15 @@ gains a 10s ATK buff whenever the team's burst chain reaches Stage 3 (her own ca
 
 ## Cross-family corroboration
 
-| Role | Model | Outcome |
-| ---- | ----- | ------- |
-| S2b test-faithfulness review | claude-fable-5 | all 8 kit lines FAITHFUL; converged with driver |
-| S5 blind test writer | claude-opus-5 | 18/24 green vs driver override; 6 red = documented divergences; 4 skip (blind's own unobservables) |
-| S6 blind override writer | claude-opus-5 | independently re-derived the driver's encoding from prose alone |
-| S7 reconciling judge (binding) | claude-opus-5 | **GO**, faithfulness 1.0 |
+| Role                           | Model          | Outcome                                                                                            |
+| ------------------------------ | -------------- | -------------------------------------------------------------------------------------------------- |
+| S2b test-faithfulness review   | claude-fable-5 | all 8 kit lines FAITHFUL; converged with driver                                                    |
+| S5 blind test writer           | claude-opus-5  | 18/24 green vs driver override; 6 red = documented divergences; 4 skip (blind's own unobservables) |
+| S6 blind override writer       | claude-opus-5  | independently re-derived the driver's encoding from prose alone                                    |
+| S7 reconciling judge (binding) | claude-opus-5  | **GO**, faithfulness 1.0                                                                           |
 
 **Triple-corroborated reads** (the high-risk ones, all gotten right blind):
+
 - `stageEnter:3` for the ATK 70.12% buff — **not** `burstCast` (which would halve uptime against a co-B3).
   Both blinds independently named `burstCast` as the nearest-wrong. Driver test E1 now discriminates this
   with a strict `>` (12 applies > 6 ein casts) **and** a frame check (≥1 apply lands on a rotation ein did
@@ -69,7 +70,7 @@ gains a 10s ATK buff whenever the team's burst chain reaches Stage 3 (her own ca
   (feathers + nuke) are crit-eligible, and tests E4/E5 **pin** `critEligible === true`. game-mechanics.md §9
   states "TRUE DAMAGE NEVER CRITS (owner ruling 2026-07-21; engine `crit && !trueFlavor` guard) … flavor:'true'
   dots/flatDamage … are crit-exempt." **Driver verification: the engine has NO such guard** — `grep 'crit &&
-  !trueFlavor' src/engine/sim.ts` returns zero matches; the flatDamage path is `crit: e.crit !== false`
+!trueFlavor' src/engine/sim.ts` returns zero matches; the flatDamage path is `crit: e.crit !== false`
   (defaults true) with no trueFlavor gate, and the probe confirms ein's feathers/nuke roll crit. damage-calculation.md
   §2c states the same ruling but names **dots only** (ada's grenade DoT). So the two SSOT docs disagree (§9
   dots/flatDamage vs §2c dots) and §9's claimed guard is absent from the code. The override note rests on

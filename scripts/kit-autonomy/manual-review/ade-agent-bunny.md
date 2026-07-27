@@ -19,7 +19,7 @@ every load-bearing line. The binding judge (opus) adjudicated all 22 pristine-bl
 
 - **S1 (Agent's Gaze)** ■ Activates when landing Full Charge attacks on targets within the effective range.
   Affects all allies.
-  - ATK ▲ 15.2% of the skill user's ATK for 5 sec.   (caster-sourced ⇒ flat add of 15.2% of ADE's ATK)
+  - ATK ▲ 15.2% of the skill user's ATK for 5 sec. (caster-sourced ⇒ flat add of 15.2% of ADE's ATK)
   - ■ Activates when attacking with Full Charge. Affects self.
   - Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.
 - **S2 (Agent's Movement)** ■ Activates when landing a Full Charge attack on a target within the effective range.
@@ -46,6 +46,7 @@ The Spy Lens Minimum-Effective-Range STAT is UNMODELED (no range StatKey; the en
 takes no kit modifier), but its STACK COUNT is load-bearing and is carried by the S2 step-gate below.
 
 **skill2** — two blocks:
+
 - `shotFired` → `allies` → `pierceDamagePct 18.36` (5s). Same full-charge proxy. `pierceDamagePct` feeds the
   Damage-Up bucket ONLY for Pierce-tagged hits, so on a team with no other Pierce hitter this is inert on the three
   non-Pierce teammates and moves only ade herself once she gains Pierce (asserted byte-identical in the test).

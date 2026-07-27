@@ -19,9 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 0.2,
     "treasure": false,
-    "nicknames": [
-      "sbis"
-    ],
+    "nicknames": ["sbis"],
     "skills": {
       "skill1": "■ Activates at the start of battle. Affects self.\nForcefully uses Skill 2.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 5.1% for 30 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects self if in Dancing Flower status.\nDancing Flower Duration ▲ 10.02 sec.\n■ Activates when an ally or self destroys an enemy's part. Affects all enemies who are in Sakura Petals status.\nSakura Petals Duration ▲ 10.02 sec.",
       "skill2": "■ Affects self.\nDancing Flower: Attack Damage ▲ 15.64% for 15 sec.\n■ Affects the enemy with the highest final ATK.\nSakura Petals: Deals 256% of final ATK as sustained damage every 1 sec for 15 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects random enemies.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as damage. <word_group=10050>Attacks sequentially</word_group> {description_value_02} times.</color>\n■ Affects the same targets.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec, stacks up to {description_value_04} times and lasts for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -391,18 +376,10 @@
           ],
           "prefer_target_condition": "IncludeNoneTargetLast",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            128430101
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [128430101],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -427,9 +404,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -460,9 +435,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Sakura: Bloom in Summer's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

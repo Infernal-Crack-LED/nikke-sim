@@ -6,32 +6,33 @@
 Iron SMG Burst-III Attacker (Abnormal). A self-contained self-buff attacker built on a personal
 **Extrasensory** meter: filled to 100% at battle start, drains 1%/2s (0.5%/s), and her own burst
 recharges it to 100%. Three nested charge tiers (>70% ATK ▲53.69%, >55% True Damage ▲48.62%,
->25% Hit Rate ▲22.37%) lapse in order as the meter drains (≈60s/90s/150s from full). S2 opens a 10s
-true-damage window on her normals each burst and fires a 472.18%-of-final-ATK true rider every 48
-normals; the burst also grants ATK ▲73.16%/10s. In a bursting comp (casts ≲40s < the 60s ATK fuse)
-all three tiers stay permanently refreshed.
+
+> 25% Hit Rate ▲22.37%) lapse in order as the meter drains (≈60s/90s/150s from full). S2 opens a 10s
+> true-damage window on her normals each burst and fires a 472.18%-of-final-ATK true rider every 48
+> normals; the burst also grants ATK ▲73.16%/10s. In a bursting comp (casts ≲40s < the 60s ATK fuse)
+> all three tiers stay permanently refreshed.
 
 ## Line inventory (10 lines)
 
-| Line | Encoding | Disposition |
-| --- | --- | --- |
-| S1 battle start → Extrasensory to 100% | folded into the fused-passive trajectory (frame-0 apply); currency bookkeeping | DOCUMENTED_GAP |
-| S1 at 100%: Invulnerable 2 sec | UNMODELED verbatim (boss-inert; C2 pins the exact self-buff stat set) | DOCUMENTED_GAP |
-| S1 >70%: ATK ▲53.69% | `passive`/self/atkPct 53.69 `durationSec 60` + `burstCast` refresh | FAITHFUL |
-| S1 >55%: True Damage ▲48.62% | `passive`/self/trueDamagePct 48.62 `durationSec 90` + `burstCast` refresh | FAITHFUL |
-| S1 >25%: Hit Rate ▲22.37% | `passive`/self/hitRatePct 22.37 `durationSec 150` + `burstCast` refresh (feeds SMG core rate via acrForHR) | FAITHFUL |
-| S1 every 2s: Extrasensory ▼1% | folded into the 60/90/150s fuse derivation; currency bookkeeping | DOCUMENTED_GAP |
-| S2 on burst: normals true damage 10s | `burstCast`/self `weaponSwap` damagePct 10.12 / 10s / `trueNormals:true` (takina precedent) | FAITHFUL |
-| S2 after 48 normals: 472.18% true | `hitCount:48`/enemy `flatDamage` atkPct 472.18 `flavor:'true'` (no core) | FAITHFUL |
-| Burst: Charges Extrasensory to 100% | folded into the skill1 `burstCast` refresh; C6 pins the burst slot to exactly {atkPct} | DOCUMENTED_GAP |
-| Burst: ATK ▲73.16%/10s | `burstCast`/self/atkPct 73.16 `durationSec 10` | FAITHFUL |
+| Line                                   | Encoding                                                                                                   | Disposition    |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------- |
+| S1 battle start → Extrasensory to 100% | folded into the fused-passive trajectory (frame-0 apply); currency bookkeeping                             | DOCUMENTED_GAP |
+| S1 at 100%: Invulnerable 2 sec         | UNMODELED verbatim (boss-inert; C2 pins the exact self-buff stat set)                                      | DOCUMENTED_GAP |
+| S1 >70%: ATK ▲53.69%                   | `passive`/self/atkPct 53.69 `durationSec 60` + `burstCast` refresh                                         | FAITHFUL       |
+| S1 >55%: True Damage ▲48.62%           | `passive`/self/trueDamagePct 48.62 `durationSec 90` + `burstCast` refresh                                  | FAITHFUL       |
+| S1 >25%: Hit Rate ▲22.37%              | `passive`/self/hitRatePct 22.37 `durationSec 150` + `burstCast` refresh (feeds SMG core rate via acrForHR) | FAITHFUL       |
+| S1 every 2s: Extrasensory ▼1%          | folded into the 60/90/150s fuse derivation; currency bookkeeping                                           | DOCUMENTED_GAP |
+| S2 on burst: normals true damage 10s   | `burstCast`/self `weaponSwap` damagePct 10.12 / 10s / `trueNormals:true` (takina precedent)                | FAITHFUL       |
+| S2 after 48 normals: 472.18% true      | `hitCount:48`/enemy `flatDamage` atkPct 472.18 `flavor:'true'` (no core)                                   | FAITHFUL       |
+| Burst: Charges Extrasensory to 100%    | folded into the skill1 `burstCast` refresh; C6 pins the burst slot to exactly {atkPct}                     | DOCUMENTED_GAP |
+| Burst: ATK ▲73.16%/10s                 | `burstCast`/self/atkPct 73.16 `durationSec 10`                                                             | FAITHFUL       |
 
 ## Cross-family convergence
 
 - **S2b (fable) test-faithfulness review:** independently re-derived the SAME Extrasensory decay model
   (60/90/150s lapse ladder + burst recharge), the trueNormals flavor conversion (burstCast, takina
   precedent), the hitCount-48 → 472.18% true rider, and burst ATK 73.16/10s. Its BIGGEST flagged trap —
-  the calibration-invisible *permanent-passive hardcode* — is exactly what the driver's C1 `cfNoRefresh`
+  the calibration-invisible _permanent-passive hardcode_ — is exactly what the driver's C1 `cfNoRefresh`
   / `cfPermanent` counterfactuals discriminate.
 - **S5 (opus) blind test:** authored from prose alone (leakDetected null). Run against the driver's
   SHIPPED override: **35 passed / 1 skipped** (the invuln GAP) = GREEN. Needed four schema-only

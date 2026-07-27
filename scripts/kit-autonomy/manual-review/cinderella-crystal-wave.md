@@ -40,24 +40,27 @@ The override is **mode-selectable** (`modes: ["MG","Snipe"]`, MG default = the v
 apply in both modes; `mode:"MG"`/`mode:"Snipe"` blocks apply only in that mode.
 
 **skill1.**
+
 - `passive` self `attackDamagePct 24` (Beauty-Full, continuous — Damage-Up bucket).
 - `interval(sec:5)` enemy `flatDamage 900` (the every-5s hit — **function flavor**: crit at sheet rate, never
-  core, no range, +50% FB by landing timing; first fire at t=5s). *[gauntlet gotcha-2 fix: re-encoded from the
-  `dot` primitive to the engine `interval` trigger that matches the kit wording.]*
+  core, no range, +50% FB by landing timing; first fire at t=5s). _[gauntlet gotcha-2 fix: re-encoded from the
+  `dot` primitive to the engine `interval` trigger that matches the kit wording.]_
 - `teamAmmo(count:200)` allies `fillGauge 12%` (team burst-gauge top-up — same primitive Little Mermaid uses).
 - `mode:"Snipe"` `weaponSwap` (62.13%/shot, chargeTimeSec 1, chargeMultPct 250, maxAmmo 1) + `pierceModes:["Snipe"]`.
 
 **skill2.**
+
 - `passive` self `atkPct 29` (continuous — ATK bucket).
 - `mode:"MG"` `passive` self `coreDamagePct 26` (Pinpoint).
 - `mode:"Snipe"` `passive` self `partsDamagePct 26.21` (Destroy; inert vs the partless boss). The mode partition
   makes Pinpoint/Destroy provably non-simultaneous — the kit's "removes Pinpoint/Destroy" mutual exclusion.
 - `fullBurstEnter` + `ownBurstGate:"cast"` enemy `flatDamage 833.79 core:true` (`mode:"MG"`, core strike) and
-  `flatDamage 1189.66 core:false` (`mode:"Snipe"`, plain damage). *[gauntlet gotcha-1 fix: the Snipe branch was
+  `flatDamage 1189.66 core:false` (`mode:"Snipe"`, plain damage). _[gauntlet gotcha-1 fix: the Snipe branch was
   core:true; corrected to core:false to match its "as damage"/"including parts" text — only the MG branch says
-  "as core strike damage". Both blind roles independently derived this split.]*
+  "as core strike damage". Both blind roles independently derived this split.]_
 
 **burst.**
+
 - `burstCast` self `attackDamagePct 92` + `atkPct 65` (10s — two distinct buckets, one per cast).
 - `burstCast` enemy `flatDamage 6000` (FB-exempt: burst-cast damage lands before the FB window, never takes the
   +50% major; engine-forced, asserted from the event log).
@@ -67,6 +70,7 @@ fixed 3s — a stat CLAMP with no primitive, and inert to damage); Decoy avatar 
 damage). Pierce is modeled (`pierceModes`) but inert vs the partless boss.
 
 **codeDrivenSurprises (from the blind re-derivations):**
+
 - The FB-enter rider is **own-burst-gated**: it fires only on Full Bursts THIS unit's burst opened (6× in the
   control comp), not on the co-B3 helm's Full Bursts (which would make 12×). This is the single highest-leverage
   line — all three blind roles independently derived `fullBurstEnter + ownBurstGate:'cast'`.

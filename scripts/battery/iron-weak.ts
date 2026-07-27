@@ -12,12 +12,24 @@ import { loadWorld, runRealisticBattery, type BatteryTeam } from './lib.js';
 const ANCHORS: BatteryTeam[] = [
   {
     name: 'enikk 34-1 soda shotguns',
-    slugs: ['tove', 'nayuta', 'soda-twinkling-bunny', 'dorothy-serendipity', 'drake'],
+    slugs: [
+      'tove',
+      'nayuta',
+      'soda-twinkling-bunny',
+      'dorothy-serendipity',
+      'drake',
+    ],
     source: 'enikk raid 34, 1180 players',
   },
   {
     name: 'enikk 34-2 crown eve',
-    slugs: ['crown', 'rapi-red-hood', 'little-mermaid', 'eve', 'mast-romantic-maid'],
+    slugs: [
+      'crown',
+      'rapi-red-hood',
+      'little-mermaid',
+      'eve',
+      'mast-romantic-maid',
+    ],
     source: 'enikk raid 34, 910 players',
   },
   {
@@ -27,10 +39,20 @@ const ANCHORS: BatteryTeam[] = [
   },
   {
     name: 'enikk 34-4 cinderella red-hood',
-    slugs: ['cinderella', 'rouge', 'red-hood', 'ade-agent-bunny', 'mihara-bonding-chain'],
+    slugs: [
+      'cinderella',
+      'rouge',
+      'red-hood',
+      'ade-agent-bunny',
+      'mihara-bonding-chain',
+    ],
     source: 'enikk raid 34, 21 players',
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, 'Electric',
-  'REALISTIC iron-weak battery (boss Electric) — enikk raid 34 anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  'Electric',
+  'REALISTIC iron-weak battery (boss Electric) — enikk raid 34 anchors + roster fill, core exposure 0/50/100'
+);

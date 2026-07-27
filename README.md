@@ -32,6 +32,7 @@ npm run sim -- --coverage           # parser health across the roster
 Options: `--element`, `--boss-def`, `--doll yes,no,…` (per slot; 1 entry = all), `--ol 0,5,…` (per slot), `--level` (default 400), `--copies 0-10` (default 3), `--core-rate 0-1`, `--no-range`, `--duration`, `--rotation`.
 
 Loadout (per-slot lists in slot order; one entry applies to all 5):
+
 - `--cubes resilience@15,bastion@7,-,…` — harmony cube per slot (real values from `cubes.md`: flat ATK + elemental damage from L5 + effect)
 - `--lines "elem*4+atk*4;;;ammo*2;"` — OL lines, `type[*count][@value]` (max rolls from `data/ol-lines.json`)
 - `--skill-levels "10/4/10,…"` — per-skill levels using exact blablalink per-level tables

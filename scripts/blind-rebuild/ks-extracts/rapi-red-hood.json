@@ -27,12 +27,8 @@
       "skill1": [
         "Damage to Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
       ],
-      "skill2": [
-        "Attachable Projectile — Max Ammo: 1"
-      ],
-      "burst": [
-        "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"
-      ]
+      "skill2": ["Attachable Projectile — Max Ammo: 1"],
+      "burst": ["Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)"]
     },
     "board": {
       "records": [

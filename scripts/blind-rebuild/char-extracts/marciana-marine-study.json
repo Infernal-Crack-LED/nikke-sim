@@ -19,9 +19,7 @@
     "rl3": 7.6,
     "burstGaugePerShot": 0.2,
     "treasure": false,
-    "nicknames": [
-      "mms"
-    ],
+    "nicknames": ["mms"],
     "skills": {
       "skill1": "■ Activates when entering Full Burst after this unit uses her Burst Skill. Affects the 1 enemy unit(s) with the highest final Max HP.\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s).\nFlagged Target Designation\nEffect 1: Deals 3789.25% of final ATK as additional damage.\nEffect 2: Activates when the target is alive.\nFlagged Target: ATK ▼ 10.56% for 10 sec.\n■ Activates when landing 20 normal attacks against a target in the High-Risk Target state. Affects the target.\nDeals 152.68% of final ATK as additional damage.",
       "skill2": "■ Activates at the start of battle. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\nWhistle stacks ▲ 4.\n■ Activates every time there are 3 or fewer Raptures present for a period of 5 sec. Affects self.\nWhistle: ATK ▲ 32.73% continuously. Stacks up to 5 times.\n■ Activates every time there are 6 or more Raptures present for a period of 1 sec.\nPenguin Emergency Dispatch\nFunction: Expends Whistle stacks to attack Raptures when there are 6 or more present.\nEffect 1: Affects all enemies. Deals 214.36% of final ATK as additional damage.\nEffect 2: Affects self. Whistle stacks ▼ 1.\n■ Only activates when a Rapture appears or is neutralized while there are 5 or fewer Raptures. Affects self.\nElemental Advantage Attack Damage ▲ 20.41% continuously.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -416,16 +410,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF><word_group=10009>Elemental Advantage Attack Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nAttack Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all Electric Code enemies.\n<color=#00AEFF>High-Risk Target: DEF ▼ {description_value_05}% for {description_value_06} sec.</color>",
           "description_value_list": [
@@ -521,19 +506,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            132230104
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            132230101,
-            132230105
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [132230104],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [132230101, 132230105],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -558,9 +534,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -591,9 +565,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Marciana: Marine Study's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

@@ -159,10 +159,30 @@
       "one_outlier_s": 4.83,
       "measured_as": "Frames from the LAST shot's damage-commit (=last bullet, hitscan AR lands instantly) to the FIRST shot's damage-commit after the reload. Captures the FULL downtime: reload animation + re-aim/spin-up before fire resumes.",
       "sample_events": [
-        {"mag_end_t_s": 48.30, "resume_t_s": 51.65, "gap_s": 3.35, "gap_frames": 201},
-        {"mag_end_t_s": 56.57, "resume_t_s": 59.92, "gap_s": 3.35, "gap_frames": 201},
-        {"mag_end_t_s": 64.83, "resume_t_s": 68.18, "gap_s": 3.35, "gap_frames": 201},
-        {"mag_end_t_s": 100.02, "resume_t_s": 103.37, "gap_s": 3.35, "gap_frames": 201}
+        {
+          "mag_end_t_s": 48.3,
+          "resume_t_s": 51.65,
+          "gap_s": 3.35,
+          "gap_frames": 201
+        },
+        {
+          "mag_end_t_s": 56.57,
+          "resume_t_s": 59.92,
+          "gap_s": 3.35,
+          "gap_frames": 201
+        },
+        {
+          "mag_end_t_s": 64.83,
+          "resume_t_s": 68.18,
+          "gap_s": 3.35,
+          "gap_frames": 201
+        },
+        {
+          "mag_end_t_s": 100.02,
+          "resume_t_s": 103.37,
+          "gap_s": 3.35,
+          "gap_frames": 201
+        }
       ],
       "confidence": "high"
     },

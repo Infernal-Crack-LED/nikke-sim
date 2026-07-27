@@ -17,15 +17,15 @@ Gauntlet 2026-07-25. Naga (SG / Supporter / Electric / Burst II, cd 20s, ammo 9,
 
 `src/skills/overrides/naga.json` (7 kit lines → 4 FAITHFUL + 3 DOCUMENTED_GAP, 0 silent drops):
 
-| Line | Encoding | Status |
-| --- | --- | --- |
-| S1 cover restore 14.57% | unmodeled verbatim | DOCUMENTED_GAP (cover-object repair, NOT a unit heal — encoding it as `heal` would spuriously feed on-recovery consumers; the adversarially-correct skip) |
-| S1 shield → core ▲85.17%/10s | `{kind:'shielded'}` trigger → allies → coreDamagePct 85.17/10s | FAITHFUL (application trigger; inert with no shielder, owner-ruled default-off 2026-07-20) |
-| S2 5 hits → core ▲40.07%/5s | hitCount 5 → alliesTopAtk count 2 → coreDamagePct 40.07/5s | DOCUMENTED_GAP (values kit-literal; see hitCount residual §4) |
-| S2 5 hits → heal 9.58% | hitCount 5 → alliesLowestHp count 2 → `heal` (amountless) | DOCUMENTED_GAP (tandem recovery feed; HP magnitude + target stand-in unrepresentable in v1) |
-| Burst self Pierce 10s | burstCast → self → gainPierce durationSec 10 | FAITHFUL (timed window, not whole-fight hasPierce; damage-inert at scope, alice/prika convention) |
-| Burst ATK ▲16.18% | burstCast → allies → casterAtkPct 16.18/10s | FAITHFUL (unconditional; flat-resolved off naga's staticAtk) |
-| Burst shield → ATK ▲31.02% | burstCast + requiresShielded → allies → casterAtkPct 31.02/10s | FAITHFUL (cast-time state gate; the strongest-tested line — gate-closed/open/deleted + magnitude-ratio arms) |
+| Line                         | Encoding                                                       | Status                                                                                                                                                    |
+| ---------------------------- | -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1 cover restore 14.57%      | unmodeled verbatim                                             | DOCUMENTED_GAP (cover-object repair, NOT a unit heal — encoding it as `heal` would spuriously feed on-recovery consumers; the adversarially-correct skip) |
+| S1 shield → core ▲85.17%/10s | `{kind:'shielded'}` trigger → allies → coreDamagePct 85.17/10s | FAITHFUL (application trigger; inert with no shielder, owner-ruled default-off 2026-07-20)                                                                |
+| S2 5 hits → core ▲40.07%/5s  | hitCount 5 → alliesTopAtk count 2 → coreDamagePct 40.07/5s     | DOCUMENTED_GAP (values kit-literal; see hitCount residual §4)                                                                                             |
+| S2 5 hits → heal 9.58%       | hitCount 5 → alliesLowestHp count 2 → `heal` (amountless)      | DOCUMENTED_GAP (tandem recovery feed; HP magnitude + target stand-in unrepresentable in v1)                                                               |
+| Burst self Pierce 10s        | burstCast → self → gainPierce durationSec 10                   | FAITHFUL (timed window, not whole-fight hasPierce; damage-inert at scope, alice/prika convention)                                                         |
+| Burst ATK ▲16.18%            | burstCast → allies → casterAtkPct 16.18/10s                    | FAITHFUL (unconditional; flat-resolved off naga's staticAtk)                                                                                              |
+| Burst shield → ATK ▲31.02%   | burstCast + requiresShielded → allies → casterAtkPct 31.02/10s | FAITHFUL (cast-time state gate; the strongest-tested line — gate-closed/open/deleted + magnitude-ratio arms)                                              |
 
 **This gauntlet discharged the prior audit's open hard-rule-2 finding.** The 2026-07-16 audit had
 flagged "S2 heal in unmodeled violates hard rule 2 (crown consumer)"; the fable S2b review

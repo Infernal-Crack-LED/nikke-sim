@@ -1,9 +1,6 @@
 {
   "slug": "bready",
-  "modes": [
-    "lingeringTaste",
-    "recommendedTaste"
-  ],
+  "modes": ["lingeringTaste", "recommendedTaste"],
   "skill1": [
     {
       "slot": "skill1",
@@ -190,9 +187,7 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "This effect cannot be removed."
-    ],
+    "skill1": ["This effect cannot be removed."],
     "skill2": [],
     "burst": []
   },

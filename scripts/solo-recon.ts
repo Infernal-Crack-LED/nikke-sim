@@ -12,19 +12,31 @@ import { loadOverride } from '../src/skills/overrides-node.js';
 import { scopeLockCfg, sanityCheck, loadData } from './lib/scope-lock.js';
 
 const { data, mult } = loadData();
-const ref = JSON.parse(readFileSync(new URL('../data/reference-stats.json', import.meta.url), 'utf8'));
+const ref = JSON.parse(
+  readFileSync(new URL('../data/reference-stats.json', import.meta.url), 'utf8')
+);
 const REAL: Record<string, number> = ref.recordingSoloTotals;
 
-for (const [slug, w] of [['scarlet', 'AR'], ['chisato', 'SMG'], ['drake', 'SG']] as const) {
+for (const [slug, w] of [
+  ['scarlet', 'AR'],
+  ['chisato', 'SMG'],
+  ['drake', 'SG'],
+] as const) {
   const c: any = data.characters[slug];
   const cfg = scopeLockCfg([slug], null); // solo, forced neutral (matches the no-FB solo recording)
-  const prepared = [{ skills: resolveSkills(c, loadOverride(slug)), extraStats: [] as any[], loadout: [] as any[] }];
+  const prepared = [
+    {
+      skills: resolveSkills(c, loadOverride(slug)),
+      extraStats: [] as any[],
+      loadout: [] as any[],
+    },
+  ];
   const r: any = runSim([c], mult, cfg, prepared);
   const issues = sanityCheck([c], r);
-  if (issues.length) issues.forEach((i) => console.log('  ⚠ SANITY: ' + i));
+  if (issues.length) {issues.forEach((i) => console.log('  ⚠ SANITY: ' + i));}
   const real = REAL[`${slug}-${w.toLowerCase()}`];
   const u = r.units[0];
   console.log(
-    `${slug} (${w}): sim ${(u.totalDamage / 1e6).toFixed(1)}M vs real ${(real / 1e6).toFixed(1)}M  ratio ${(u.totalDamage / real).toFixed(2)} | ATK ${u.staticAtk} | FB ${r.fullBursts ?? 0} | bursts ${u.burstCasts}`,
+    `${slug} (${w}): sim ${(u.totalDamage / 1e6).toFixed(1)}M vs real ${(real / 1e6).toFixed(1)}M  ratio ${(u.totalDamage / real).toFixed(2)} | ATK ${u.staticAtk} | FB ${r.fullBursts ?? 0} | bursts ${u.burstCasts}`
   );
 }

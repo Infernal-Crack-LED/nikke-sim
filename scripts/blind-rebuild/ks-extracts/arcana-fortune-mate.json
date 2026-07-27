@@ -30,9 +30,7 @@
       "skill2": [
         "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
       ],
-      "burst": [
-        "Making Memories: Reload 2 rounds."
-      ]
+      "burst": ["Making Memories: Reload 2 rounds."]
     },
     "caveats": [
       "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories pellets as +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",

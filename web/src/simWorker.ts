@@ -5,11 +5,7 @@
 // (seed/refine/argmax) runs in the coordinator (main thread) — these workers only
 // execute sims, so output stays byte-identical to a single-thread run
 // (scripts/tests/generators/loadouts-parity.test.ts).
-import {
-  buildGenCalc,
-  type GenCalcParams,
-  type TeamResult,
-} from './genCalc';
+import { buildGenCalc, type GenCalcParams, type TeamResult } from './genCalc';
 
 export type PoolRequest =
   | { type: 'init'; params: GenCalcParams }

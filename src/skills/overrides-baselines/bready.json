@@ -21,8 +21,19 @@
       "target": { "kind": "enemy" },
       "mode": "lingering",
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 10.2, "durationSec": 5 },
-        { "kind": "dot", "atkPct": 150.04, "durationSec": 5, "intervalSec": 1, "flavor": "sustained" }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 10.2,
+          "durationSec": 5
+        },
+        {
+          "kind": "dot",
+          "atkPct": 150.04,
+          "durationSec": 5,
+          "intervalSec": 1,
+          "flavor": "sustained"
+        }
       ]
     },
     {
@@ -31,7 +42,12 @@
       "target": { "kind": "self" },
       "mode": "recommended",
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 60.01, "durationSec": 5 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.01,
+          "durationSec": 5
+        }
       ]
     },
     {
@@ -50,7 +66,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "attackDamagePct", "value": 60.19, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 60.19,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -59,7 +80,12 @@
       "target": { "kind": "self" },
       "mode": "lingering",
       "effects": [
-        { "kind": "buff", "stat": "sustainedDamagePct", "value": 349.8, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 349.8,
+          "durationSec": 10
+        }
       ]
     },
     {

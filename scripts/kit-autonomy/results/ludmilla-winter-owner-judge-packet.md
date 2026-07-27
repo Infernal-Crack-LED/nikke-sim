@@ -3,6 +3,7 @@
 You are the BINDING reconciling judge for ONE unit's kit-autonomy gauntlet. Read the contract below, then the materials, then return the verdict JSON the contract specifies. This is a MG/Water/Attacker/Burst III VARIANT of base Ludmilla (base is SMG/Water) — never conflate them.
 
 ===== (1) CONTRACT + RETURN JSON SHAPE =====
+
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
 
 Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md` AND the mechanics
@@ -15,6 +16,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -25,12 +27,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -56,30 +60,59 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
 ===== (2) MECHANICS SSOT — docs/data/damage-calculation.md =====
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -104,7 +137,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -142,29 +175,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -245,9 +278,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -283,7 +316,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -341,7 +374,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -485,12 +518,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -526,6 +559,7 @@ not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-
 guillotine-WS).
 
 ===== (2b) MECHANICS SSOT — docs/data/game-mechanics.md =====
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -580,15 +614,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -935,163 +969,165 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 
 ===== (3) GROUND TRUTH — kit prose + base stats (data/characters.json → characters['ludmilla-winter-owner']) =====
 {
-  "slug": "ludmilla-winter-owner",
-  "name": "Ludmilla: Winter Owner",
-  "weapon": "MG",
-  "burst": "III",
-  "class": "Attacker",
-  "element": "Water",
-  "burstCooldownSec": 40,
-  "normalAttackMultiplier": 5.86,
-  "coreAttackMultiplier": 200,
-  "ammo": 300,
-  "reloadFrames": 201,
-  "hitsPerShot": 1,
-  "burstGaugePerShot": 0.05,
-  "skills": {
-    "skill1": "■ Activates when landing 60 normal attack(s). Affects the target.\nDamage Taken ▲ 12.56% for 3 sec.\nDeals 158.43% of final ATK as additional damage.\n■ Activates when landing 60 normal attack(s). Affects self.\nReloads 20 round(s) of ammunition.",
-    "skill2": "■ Activates when hitting the Core for 60 time(s). Affects the target.\nDeals 109.64% of final ATK as additional damage. \n■ Activates at the beginning of Full Burst. Affects self.\nCritical Rate ▲ 14.6% for 10 sec.",
-    "burst": "■ Affects self. \nATK ▲ 62.54% for 10 sec.\nReload Speed ▲ 67.2% for 20 sec."
-  },
-  "baseStats": {
-    "hp": 13500,
-    "atk": 600,
-    "def": 75,
-    "core": {
-      "hp": 200,
-      "atk": 200,
-      "def": 200
-    },
-    "grade": {
-      "hp": 3000,
-      "atk": 20,
-      "def": 100,
-      "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 194
-  }
+"slug": "ludmilla-winter-owner",
+"name": "Ludmilla: Winter Owner",
+"weapon": "MG",
+"burst": "III",
+"class": "Attacker",
+"element": "Water",
+"burstCooldownSec": 40,
+"normalAttackMultiplier": 5.86,
+"coreAttackMultiplier": 200,
+"ammo": 300,
+"reloadFrames": 201,
+"hitsPerShot": 1,
+"burstGaugePerShot": 0.05,
+"skills": {
+"skill1": "■ Activates when landing 60 normal attack(s). Affects the target.\nDamage Taken ▲ 12.56% for 3 sec.\nDeals 158.43% of final ATK as additional damage.\n■ Activates when landing 60 normal attack(s). Affects self.\nReloads 20 round(s) of ammunition.",
+"skill2": "■ Activates when hitting the Core for 60 time(s). Affects the target.\nDeals 109.64% of final ATK as additional damage. \n■ Activates at the beginning of Full Burst. Affects self.\nCritical Rate ▲ 14.6% for 10 sec.",
+"burst": "■ Affects self. \nATK ▲ 62.54% for 10 sec.\nReload Speed ▲ 67.2% for 20 sec."
+},
+"baseStats": {
+"hp": 13500,
+"atk": 600,
+"def": 75,
+"core": {
+"hp": 200,
+"atk": 200,
+"def": 200
+},
+"grade": {
+"hp": 3000,
+"atk": 20,
+"def": 100,
+"ratio": 200
+},
+"critRate": 15,
+"maxLevel": 1200,
+"critDamage": 150,
+"resourceId": 194
+}
 }
 
 ===== (4) S2b CROSS-FAMILY TEST-FAITHFULNESS REVIEW (claude-fable-5) =====
 {
-  "slug": "ludmilla-winter-owner",
-  "stage": "S2c-reconciliation",
-  "date": "2026-07-26",
-  "reviewerModel": "claude-fable-5",
-  "driverModel": "qwen",
-  "leakDetected": null,
-  "reconciliation": {
-    "converged": true,
-    "summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: (1) skill2's counter must count CORE hits (hitCount 63 = 60/0.95 proxy + requiresCore), the single biggest swing — driver pins floor(shots/63)=137 vs naive floor(shots/60)=144 AND coreHitRate:0 -> 0 riders; (2) the +20-round refill is damage (weapon-state), not droppable defensive — driver pins fewer reloads + strictly more shots vs the effect removed; (3) Damage Taken is a BOSS-held debuff (casterIdx null / targetIdx null) that benefits the team, not a self buff — driver pins targetIdx null + mult.taken reaching 1.1256; (4) trigger-identity split: skill2 crit is fullBurstEnter (fires on helm-led FBs, count==fbStarts 11 != her 6 casts) while BOTH burst buffs are burstCast (count==her 6 casts) — driver pins both directions in the 2xB3 control comp; (5) the two burst buffs carry different durations (ATK 10s / Reload Speed 20s) — driver pins both expiresFrames. Reviewer additionally flagged the rider core:true nearest-wrong; driver added inertness pins (coreEligible false, coreRate 0, rangeApplied false) on both riders and re-ran GREEN.",
-    "lineByLine": [
-      {
-        "line": "S1 — every 60 normal hits -> boss Damage Taken +12.56% / 3s",
-        "driver": "FAITHFUL (hitCount 60, target enemy, damageTakenPct 12.56/3s; boss debuff casterIdx/targetIdx null; mult.taken reaches 1.1256)",
-        "reviewer": "FAITHFUL, load-bearing (boss DEBUFF benefits all five units; hitCount:60; expiresFrame-apply===180; must lapse across her reloads)",
-        "agree": true
-      },
-      {
-        "line": "S1 — every 60 normal hits -> 158.43% final ATK additional damage",
-        "driver": "FAITHFUL (flatDamage 158.43, skill bucket, crit-eligible, NOT core, no range; cadence floor(shots/60)=144)",
-        "reviewer": "FAITHFUL, load-bearing (flatDamage % of her final ATK, crits at caster rate, NO core, no range, FB by timing; nearest-wrong core:true)",
-        "agree": true
-      },
-      {
-        "line": "S1 — every 60 normal hits -> self Reloads 20 rounds",
-        "driver": "FAITHFUL (instantReload fraction 0.0667 = 20/300, self; fewer reload-to-max + strictly more shots vs removed)",
-        "reviewer": "FAITHFUL, load-bearing (instantReload fraction 20/300, NOT maxAmmoFlat / NOT fraction:1; stretches 300-belt to ~450 shots; reload events stay >0)",
-        "agree": true
-      },
-      {
-        "line": "S2 — every 60 CORE hits -> 109.64% final ATK additional damage",
-        "driver": "FAITHFUL-with-flag (hitCount 63 = round(60/0.95 MG core rate) + requiresCore; cadence floor(shots/63)=137; naive-60 -> 144; coreHitRate:0 -> 0)",
-        "reviewer": "FAITHFUL, load-bearing (hitCount + requiresCore:true; proc count === floor(coreHits/60) < floor(totalHits/60); exactly 0 at zero core exposure; THE key trap)",
-        "agree": true,
-        "note": "Both agree the encoding is faithful to the kit's 'core hits' intent via the engine's flat MG core rate; the 63-vs-63 core-rate proxy and the requiresCore gate are both pinned. The 0.95 MG core rate itself is an engine-owned unmeasured estimate (flagged in override note), so the pin is cadence-relative, not a hardcoded proc count."
-      },
-      {
-        "line": "S2 — beginning of Full Burst -> self Crit Rate +14.6% / 10s",
-        "driver": "FAITHFUL (fullBurstEnter, self, critRatePct 14.6/10s; count==fbStarts 11 != her 6 casts; lifts normal crit 0.15->0.296)",
-        "reviewer": "FAITHFUL, load-bearing (GENERIC critRatePct, fullBurstEnter = ANY team FB incl. helm-led; nearest-wrong burstCast under-credits helm-led FBs; expires ~600f)",
-        "agree": true
-      },
-      {
-        "line": "Burst — self ATK +62.54% / 10s",
-        "driver": "FAITHFUL (burstCast, self, atkPct 62.54/10s; count==her 6 casts)",
-        "reviewer": "FAITHFUL, load-bearing (atkPct self, burstCast NOT fullBurstEnter; count===her burstCast count; never on allies; absent on helm-led rotations)",
-        "agree": true
-      },
-      {
-        "line": "Burst — self Reload Speed +67.2% / 20s",
-        "driver": "FAITHFUL (burstCast, self, reloadSpeedPct 67.2/20s; distinct 20s vs ATK 10s; load-bearing: removing it costs ~1900 shots)",
-        "reviewer": "FAITHFUL, load-bearing (reloadSpeedPct self, 20s = DOUBLE the ATK window; nearest-wrong duration collapsed to 10s; shortened reload in t in (cast+10s, cast+20s))",
-        "agree": true
-      }
-    ],
-    "verdict": "GO",
-    "verdictBasis": "All 7 kit lines accounted for (all FAITHFUL, one with a documented engine-core-rate proxy flag), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named). Inert UNMODELED set is empty (every line maps to an existing primitive)."
-  }
+"slug": "ludmilla-winter-owner",
+"stage": "S2c-reconciliation",
+"date": "2026-07-26",
+"reviewerModel": "claude-fable-5",
+"driverModel": "qwen",
+"leakDetected": null,
+"reconciliation": {
+"converged": true,
+"summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: (1) skill2's counter must count CORE hits (hitCount 63 = 60/0.95 proxy + requiresCore), the single biggest swing — driver pins floor(shots/63)=137 vs naive floor(shots/60)=144 AND coreHitRate:0 -> 0 riders; (2) the +20-round refill is damage (weapon-state), not droppable defensive — driver pins fewer reloads + strictly more shots vs the effect removed; (3) Damage Taken is a BOSS-held debuff (casterIdx null / targetIdx null) that benefits the team, not a self buff — driver pins targetIdx null + mult.taken reaching 1.1256; (4) trigger-identity split: skill2 crit is fullBurstEnter (fires on helm-led FBs, count==fbStarts 11 != her 6 casts) while BOTH burst buffs are burstCast (count==her 6 casts) — driver pins both directions in the 2xB3 control comp; (5) the two burst buffs carry different durations (ATK 10s / Reload Speed 20s) — driver pins both expiresFrames. Reviewer additionally flagged the rider core:true nearest-wrong; driver added inertness pins (coreEligible false, coreRate 0, rangeApplied false) on both riders and re-ran GREEN.",
+"lineByLine": [
+{
+"line": "S1 — every 60 normal hits -> boss Damage Taken +12.56% / 3s",
+"driver": "FAITHFUL (hitCount 60, target enemy, damageTakenPct 12.56/3s; boss debuff casterIdx/targetIdx null; mult.taken reaches 1.1256)",
+"reviewer": "FAITHFUL, load-bearing (boss DEBUFF benefits all five units; hitCount:60; expiresFrame-apply===180; must lapse across her reloads)",
+"agree": true
+},
+{
+"line": "S1 — every 60 normal hits -> 158.43% final ATK additional damage",
+"driver": "FAITHFUL (flatDamage 158.43, skill bucket, crit-eligible, NOT core, no range; cadence floor(shots/60)=144)",
+"reviewer": "FAITHFUL, load-bearing (flatDamage % of her final ATK, crits at caster rate, NO core, no range, FB by timing; nearest-wrong core:true)",
+"agree": true
+},
+{
+"line": "S1 — every 60 normal hits -> self Reloads 20 rounds",
+"driver": "FAITHFUL (instantReload fraction 0.0667 = 20/300, self; fewer reload-to-max + strictly more shots vs removed)",
+"reviewer": "FAITHFUL, load-bearing (instantReload fraction 20/300, NOT maxAmmoFlat / NOT fraction:1; stretches 300-belt to ~450 shots; reload events stay >0)",
+"agree": true
+},
+{
+"line": "S2 — every 60 CORE hits -> 109.64% final ATK additional damage",
+"driver": "FAITHFUL-with-flag (hitCount 63 = round(60/0.95 MG core rate) + requiresCore; cadence floor(shots/63)=137; naive-60 -> 144; coreHitRate:0 -> 0)",
+"reviewer": "FAITHFUL, load-bearing (hitCount + requiresCore:true; proc count === floor(coreHits/60) < floor(totalHits/60); exactly 0 at zero core exposure; THE key trap)",
+"agree": true,
+"note": "Both agree the encoding is faithful to the kit's 'core hits' intent via the engine's flat MG core rate; the 63-vs-63 core-rate proxy and the requiresCore gate are both pinned. The 0.95 MG core rate itself is an engine-owned unmeasured estimate (flagged in override note), so the pin is cadence-relative, not a hardcoded proc count."
+},
+{
+"line": "S2 — beginning of Full Burst -> self Crit Rate +14.6% / 10s",
+"driver": "FAITHFUL (fullBurstEnter, self, critRatePct 14.6/10s; count==fbStarts 11 != her 6 casts; lifts normal crit 0.15->0.296)",
+"reviewer": "FAITHFUL, load-bearing (GENERIC critRatePct, fullBurstEnter = ANY team FB incl. helm-led; nearest-wrong burstCast under-credits helm-led FBs; expires ~600f)",
+"agree": true
+},
+{
+"line": "Burst — self ATK +62.54% / 10s",
+"driver": "FAITHFUL (burstCast, self, atkPct 62.54/10s; count==her 6 casts)",
+"reviewer": "FAITHFUL, load-bearing (atkPct self, burstCast NOT fullBurstEnter; count===her burstCast count; never on allies; absent on helm-led rotations)",
+"agree": true
+},
+{
+"line": "Burst — self Reload Speed +67.2% / 20s",
+"driver": "FAITHFUL (burstCast, self, reloadSpeedPct 67.2/20s; distinct 20s vs ATK 10s; load-bearing: removing it costs ~1900 shots)",
+"reviewer": "FAITHFUL, load-bearing (reloadSpeedPct self, 20s = DOUBLE the ATK window; nearest-wrong duration collapsed to 10s; shortened reload in t in (cast+10s, cast+20s))",
+"agree": true
+}
+],
+"verdict": "GO",
+"verdictBasis": "All 7 kit lines accounted for (all FAITHFUL, one with a documented engine-core-rate proxy flag), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named). Inert UNMODELED set is empty (every line maps to an existing primitive)."
+}
 }
 
 ===== (5) S5 BLIND TEST (claude-opus-5, written from kit prose alone) + ITS RESULT VS THE DRIVER OVERRIDE =====
 
 RUN RESULT vs the driver's shipped override: 23 passed / 5 failed / 1 skipped (29 total).
 DRIVER CLASSIFICATION OF THE 5 FAILURES (judge: confirm or overturn each):
-  F1 'S1a emits a boss-held debuff' -> durationShots expected undefined, got null. CONVENTION (engine emits durationShots:null for timed buffs; blind test expected JS-undefined). NOT a faithfulness issue.
-  F2 'S1a rider is self-sourced only' -> teammatesIdentical(noS1Rider) expected true, got false. OVER-STRICT: removing the rider drops LWO total -18.6% (it IS her damage), helm stays BYTE-identical, FB count (11) and her casts (6) unchanged; only liter/crown shift 0.03%/0.002% via frame-level timing coupling. The rider is correctly self-sourced; byte-identical-teammates is too strong for a frame-coupled sim.
-  F3 'S1b refill raises her damage' -> noReload.self (846006321) expected < base.self (845997158) but was +0.001% HIGHER. OVER-STRICT DIRECTION: the refill's robust observable is fewer reload-to-max (18 vs 26) and strictly more shots (8652 vs 8639); net total-damage sign is rotation-alignment noise at 0.001%. The line is live and faithful (instantReload fraction 0.0667).
-  F4 'S2a rider is self-sourced only' -> same as F2 (teammatesIdentical over-strict). NOT a faithfulness issue.
-  F5 'Burst ATK durationShots' -> expected undefined, got null. CONVENTION (same as F1). NOT a faithfulness issue.
+F1 'S1a emits a boss-held debuff' -> durationShots expected undefined, got null. CONVENTION (engine emits durationShots:null for timed buffs; blind test expected JS-undefined). NOT a faithfulness issue.
+F2 'S1a rider is self-sourced only' -> teammatesIdentical(noS1Rider) expected true, got false. OVER-STRICT: removing the rider drops LWO total -18.6% (it IS her damage), helm stays BYTE-identical, FB count (11) and her casts (6) unchanged; only liter/crown shift 0.03%/0.002% via frame-level timing coupling. The rider is correctly self-sourced; byte-identical-teammates is too strong for a frame-coupled sim.
+F3 'S1b refill raises her damage' -> noReload.self (846006321) expected < base.self (845997158) but was +0.001% HIGHER. OVER-STRICT DIRECTION: the refill's robust observable is fewer reload-to-max (18 vs 26) and strictly more shots (8652 vs 8639); net total-damage sign is rotation-alignment noise at 0.001%. The line is live and faithful (instantReload fraction 0.0667).
+F4 'S2a rider is self-sourced only' -> same as F2 (teammatesIdentical over-strict). NOT a faithfulness issue.
+F5 'Burst ATK durationShots' -> expected undefined, got null. CONVENTION (same as F1). NOT a faithfulness issue.
 DRIVER CONCLUSION: 0 REAL-GOTCHA. All 5 are blind-test over-strictness / null-vs-undefined convention. The 23 passing assertions independently corroborate every kit line's trigger/target/magnitude/duration.
 
 --- S5 blind test source ---
 /**
- * ludmilla-winter-owner - BLIND kit-spec test (kit-autonomy S5 post-op).
- *
- * Written from the kit prose ALONE (MG/Water/Attacker/Burst III, ammo 300,
- * reloadFrames 201, hitsPerShot 1, normalAttackMultiplier 5.86). No sight of the
- * driver's override, tests, or reasoning.
- *
- * KIT, reduced to its structural minimum:
- *   S1a  every 60 normal-attack hits -> enemy: Damage Taken +12.56% for 3s, +158.43% ATK hit
- *   S1b  every 60 normal-attack hits -> self:  reload 20 rounds
- *   S2a  every 60 CORE hits          -> enemy: +109.64% ATK hit
- *   S2b  at the beginning of Full Burst -> self: Critical Rate +14.6% for 10s
- *   B    own burst cast              -> self:  ATK +62.54% for 10s, Reload Speed +67.2% for 20s
- *
- * FIXTURE: controlComp(SLUG, true) - liter B1 / crown B2 / ludmilla B3 / helm B3.
- *   B1+B2 are mandatory: a lone Burst III unit makes ZERO full bursts, so every
- *   burst-keyed line would be vacuous. helm is KEPT as the second B3 on purpose -
- *   ludmilla therefore does not necessarily cast on every rotation, which is what
- *   lets 'fires on every Full Burst' (S2b) discriminate fullBurstEnter from
- *   burstCast. helm's own crit line uses the critRateNormalPct key, a different
- *   stat, so it cannot collide with the value-filtered assertions below.
- *
- * DISCRIMINATION STRATEGY (two independent layers per line):
- *   1. STRUCTURAL - trigger identity, target set, threshold, stat key and duration
- *      semantics are asserted against a CLONE of the shipped override, captured
- *      through withPatchedOverride's mutate callback (no fs access needed). A wrong
- *      trigger kind, a scoped-vs-generic crit key, or a round-count duration fails here.
- *   2. COUNTERFACTUAL - every line also gets a run with that one effect removed or its
- *      magnitude changed. The faithful model must be observably different from the
- *      nearest-wrong one, so no assertion can be satisfied by an inert block.
- *   INERTNESS - self-scoped lines (crit, ATK, both flat riders) must leave every
- *      teammate byte-identical; the enemy-scoped Damage Taken debuff must NOT (it is a
- *      boss debuff the whole team eats - failure-mode taxonomy #4). Reload-economy
- *      lines are deliberately NOT asserted inert: they change shot count, hence burst
- *      gauge, hence the team's whole rotation.
- */
+
+- ludmilla-winter-owner - BLIND kit-spec test (kit-autonomy S5 post-op).
+-
+- Written from the kit prose ALONE (MG/Water/Attacker/Burst III, ammo 300,
+- reloadFrames 201, hitsPerShot 1, normalAttackMultiplier 5.86). No sight of the
+- driver's override, tests, or reasoning.
+-
+- KIT, reduced to its structural minimum:
+- S1a every 60 normal-attack hits -> enemy: Damage Taken +12.56% for 3s, +158.43% ATK hit
+- S1b every 60 normal-attack hits -> self: reload 20 rounds
+- S2a every 60 CORE hits -> enemy: +109.64% ATK hit
+- S2b at the beginning of Full Burst -> self: Critical Rate +14.6% for 10s
+- B own burst cast -> self: ATK +62.54% for 10s, Reload Speed +67.2% for 20s
+-
+- FIXTURE: controlComp(SLUG, true) - liter B1 / crown B2 / ludmilla B3 / helm B3.
+- B1+B2 are mandatory: a lone Burst III unit makes ZERO full bursts, so every
+- burst-keyed line would be vacuous. helm is KEPT as the second B3 on purpose -
+- ludmilla therefore does not necessarily cast on every rotation, which is what
+- lets 'fires on every Full Burst' (S2b) discriminate fullBurstEnter from
+- burstCast. helm's own crit line uses the critRateNormalPct key, a different
+- stat, so it cannot collide with the value-filtered assertions below.
+-
+- DISCRIMINATION STRATEGY (two independent layers per line):
+- 1.  STRUCTURAL - trigger identity, target set, threshold, stat key and duration
+-      semantics are asserted against a CLONE of the shipped override, captured
+-      through withPatchedOverride's mutate callback (no fs access needed). A wrong
+-      trigger kind, a scoped-vs-generic crit key, or a round-count duration fails here.
+- 2.  COUNTERFACTUAL - every line also gets a run with that one effect removed or its
+-      magnitude changed. The faithful model must be observably different from the
+-      nearest-wrong one, so no assertion can be satisfied by an inert block.
+- INERTNESS - self-scoped lines (crit, ATK, both flat riders) must leave every
+-      teammate byte-identical; the enemy-scoped Damage Taken debuff must NOT (it is a
+-      boss debuff the whole team eats - failure-mode taxonomy #4). Reload-economy
+-      lines are deliberately NOT asserted inert: they change shot count, hence burst
+-      gauge, hence the team's whole rotation.
+
+*/
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import {
-  controlComp,
-  runComp,
-  totals,
-  unitOf,
-  withPatchedOverride,
+controlComp,
+runComp,
+totals,
+unitOf,
+withPatchedOverride,
 } from '../lib/harness.js';
 
 const SLUG = 'ludmilla-winter-owner';
@@ -1105,32 +1141,32 @@ const SLOTS: Array<'skill1' | 'skill2' | 'burst'> = ['skill1', 'skill2', 'burst'
 // carrying its own blocks[]. Both shapes are handled so a shape guess cannot void
 // the whole test file.
 const blocksOf = (ov: Ov, slot: string): any[] => {
-  const s: any = ov?.[slot];
-  if (!s) return [];
-  return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
+const s: any = ov?.[slot];
+if (!s) return [];
+return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 };
 const allBlocks = (ov: Ov): any[] => SLOTS.flatMap((s) => blocksOf(ov, s));
 const eff = (b: any): any[] => (Array.isArray(b?.effects) ? b.effects : []);
 
 const near = (a: any, b: number) => typeof a === 'number' && Math.abs(a - b) < 1e-6;
 const isBuff = (e: any, stat: string, value?: number) =>
-  e?.kind === 'buff' && e.stat === stat && (value === undefined || near(e.value, value));
+e?.kind === 'buff' && e.stat === stat && (value === undefined || near(e.value, value));
 const isFlat = (e: any, atkPct: number) => e?.kind === 'flatDamage' && near(e.atkPct, atkPct);
 const isInstantReload = (e: any) => e?.kind === 'instantReload';
 
 const blockWith = (ov: Ov, pred: (e: any) => boolean) =>
-  allBlocks(ov).find((b) => eff(b).some(pred));
+allBlocks(ov).find((b) => eff(b).some(pred));
 const effectWith = (ov: Ov, pred: (e: any) => boolean) =>
-  allBlocks(ov).flatMap(eff).find(pred);
+allBlocks(ov).flatMap(eff).find(pred);
 const slotWith = (ov: Ov, pred: (e: any) => boolean) =>
-  SLOTS.find((s) => blocksOf(ov, s).some((b) => eff(b).some(pred)));
+SLOTS.find((s) => blocksOf(ov, s).some((b) => eff(b).some(pred)));
 
 // ---------------------------------------------------------------------------
 // shipped override snapshot (structural layer)
 // ---------------------------------------------------------------------------
 let shipped: Ov = {};
 withPatchedOverride(SLUG, (ov: any) => {
-  shipped = JSON.parse(JSON.stringify(ov));
+shipped = JSON.parse(JSON.stringify(ov));
 });
 
 // ---------------------------------------------------------------------------
@@ -1138,106 +1174,106 @@ withPatchedOverride(SLUG, (ov: any) => {
 // so a MISSING line fails loudly instead of producing a silently-identical run.
 // ---------------------------------------------------------------------------
 const dropWhere = (ov: Ov, pred: (e: any) => boolean) => {
-  let n = 0;
-  for (const b of allBlocks(ov)) {
-    const before = eff(b).length;
-    b.effects = eff(b).filter((e: any) => !pred(e));
-    n += before - b.effects.length;
-  }
-  return n;
+let n = 0;
+for (const b of allBlocks(ov)) {
+const before = eff(b).length;
+b.effects = eff(b).filter((e: any) => !pred(e));
+n += before - b.effects.length;
+}
+return n;
 };
 
 let nDropDt = 0;
 const pNoDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
-  nDropDt = dropWhere(ov, (e) => isBuff(e, 'damageTakenPct', 12.56));
+nDropDt = dropWhere(ov, (e) => isBuff(e, 'damageTakenPct', 12.56));
 });
 
 let nLongDt = 0;
 const pLongDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    for (const e of eff(b))
-      if (isBuff(e, 'damageTakenPct', 12.56)) {
-        e.durationSec = 30;
-        nLongDt++;
-      }
+for (const b of allBlocks(ov))
+for (const e of eff(b))
+if (isBuff(e, 'damageTakenPct', 12.56)) {
+e.durationSec = 30;
+nLongDt++;
+}
 });
 
 let nThresh = 0;
 const pDoubleThreshold = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov)) {
-    if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) continue;
-    if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count === 'number') {
-      b.trigger.count *= 2;
-      nThresh++;
-    }
-  }
+for (const b of allBlocks(ov)) {
+if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) continue;
+if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count === 'number') {
+b.trigger.count *= 2;
+nThresh++;
+}
+}
 });
 
 let nNoS1Rider = 0;
 const pNoS1Rider = withPatchedOverride(SLUG, (ov: any) => {
-  nNoS1Rider = dropWhere(ov, (e) => isFlat(e, 158.43));
+nNoS1Rider = dropWhere(ov, (e) => isFlat(e, 158.43));
 });
 
 let nNoS2Rider = 0;
 const pNoS2Rider = withPatchedOverride(SLUG, (ov: any) => {
-  nNoS2Rider = dropWhere(ov, (e) => isFlat(e, 109.64));
+nNoS2Rider = dropWhere(ov, (e) => isFlat(e, 109.64));
 });
 
 let nNoReload = 0;
 const pNoInstantReload = withPatchedOverride(SLUG, (ov: any) => {
-  nNoReload = dropWhere(ov, isInstantReload);
+nNoReload = dropWhere(ov, isInstantReload);
 });
 
 let nFullReload = 0;
 const pFullReload = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    for (const e of eff(b))
-      if (isInstantReload(e)) {
-        e.fraction = 1;
-        nFullReload++;
-      }
+for (const b of allBlocks(ov))
+for (const e of eff(b))
+if (isInstantReload(e)) {
+e.fraction = 1;
+nFullReload++;
+}
 });
 
 let nNoCrit = 0;
 const pNoCrit = withPatchedOverride(SLUG, (ov: any) => {
-  nNoCrit = dropWhere(ov, (e) => isBuff(e, 'critRatePct', 14.6));
+nNoCrit = dropWhere(ov, (e) => isBuff(e, 'critRatePct', 14.6));
 });
 
 let nCritAllies = 0;
 const pCritAllies = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
-      b.target = { kind: 'allies' };
-      nCritAllies++;
-    }
+for (const b of allBlocks(ov))
+if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
+b.target = { kind: 'allies' };
+nCritAllies++;
+}
 });
 
 let nNoBurstAtk = 0;
 const pNoBurstAtk = withPatchedOverride(SLUG, (ov: any) => {
-  nNoBurstAtk = dropWhere(ov, (e) => isBuff(e, 'atkPct', 62.54));
+nNoBurstAtk = dropWhere(ov, (e) => isBuff(e, 'atkPct', 62.54));
 });
 
 let nNoBurstReload = 0;
 const pNoBurstReload = withPatchedOverride(SLUG, (ov: any) => {
-  nNoBurstReload = dropWhere(ov, (e) => isBuff(e, 'reloadSpeedPct', 67.2));
+nNoBurstReload = dropWhere(ov, (e) => isBuff(e, 'reloadSpeedPct', 67.2));
 });
 
 // ---------------------------------------------------------------------------
 // runs (hoisted - each is a full 180s sim)
 // ---------------------------------------------------------------------------
 const collect = (patched?: any) => {
-  const events: Ev[] = [];
-  const opts: any = controlComp(SLUG, true);
-  opts.cfg = {
-    ...(opts.cfg ?? {}),
-    onEvent: (ev: SimEvent) => {
-      events.push(ev as Ev);
-    },
-  };
-  if (patched) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
-  const res = runComp(opts);
-  const all = totals(res);
-  return { res, events, all, self: all[SLUG] };
+const events: Ev[] = [];
+const opts: any = controlComp(SLUG, true);
+opts.cfg = {
+...(opts.cfg ?? {}),
+onEvent: (ev: SimEvent) => {
+events.push(ev as Ev);
+},
+};
+if (patched) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+const res = runComp(opts);
+const all = totals(res);
+return { res, events, all, self: all[SLUG] };
 };
 
 const base = collect();
@@ -1255,18 +1291,18 @@ const rNoBurstReload = collect(pNoBurstReload);
 
 const others = Object.keys(base.all).filter((s) => s !== SLUG);
 const teammatesIdentical = (r: { all: Record<string, number> }) =>
-  others.every((s) => r.all[s] === base.all[s]);
+others.every((s) => r.all[s] === base.all[s]);
 const someTeammateMoved = (r: { all: Record<string, number> }) =>
-  others.some((s) => r.all[s] !== base.all[s]);
+others.some((s) => r.all[s] !== base.all[s]);
 
 const buffApplies = (evs: Ev[], stat: string, value?: number, target?: string) =>
-  evs.filter(
-    (e) =>
-      e.kind === 'buffApply' &&
-      e.stat === stat &&
-      (value === undefined || near(e.value, value)) &&
-      (target === undefined || e.targetSlug === target),
-  );
+evs.filter(
+(e) =>
+e.kind === 'buffApply' &&
+e.stat === stat &&
+(value === undefined || near(e.value, value)) &&
+(target === undefined || e.targetSlug === target),
+);
 
 const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
 // Her own burst casts, counted via the self ATK buff her burst block applies -
@@ -1274,270 +1310,270 @@ const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
 const herBursts = buffApplies(base.events, 'atkPct', 62.54, SLUG).length;
 
 describe('ludmilla-winter-owner - fixture sanity (non-vacuity)', () => {
-  it('wires cfg.onEvent and produces damage', () => {
-    expect(base.events.length).toBeGreaterThan(0);
-    expect(base.self).toBeGreaterThan(0);
-    expect(unitOf(base.res, SLUG).totalDamage).toBeCloseTo(base.self, 6);
-  });
+it('wires cfg.onEvent and produces damage', () => {
+expect(base.events.length).toBeGreaterThan(0);
+expect(base.self).toBeGreaterThan(0);
+expect(unitOf(base.res, SLUG).totalDamage).toBeCloseTo(base.self, 6);
+});
 
-  it('the override declares all three skill slots', () => {
-    for (const s of SLOTS) expect(blocksOf(shipped, s).length).toBeGreaterThan(0);
-  });
+it('the override declares all three skill slots', () => {
+for (const s of SLOTS) expect(blocksOf(shipped, s).length).toBeGreaterThan(0);
+});
 
-  it('the comp actually full-bursts and she actually casts', () => {
-    // Both burst-keyed lines below would be vacuous without these.
-    expect(fbStarts).toBeGreaterThanOrEqual(2);
-    expect(herBursts).toBeGreaterThanOrEqual(1);
-    // helm shares the B3 slot, so herBursts <= fbStarts; whenever it is strictly
-    // less, the S2b equality assertion genuinely separates fullBurstEnter from burstCast.
-    expect(herBursts).toBeLessThanOrEqual(fbStarts);
-  });
+it('the comp actually full-bursts and she actually casts', () => {
+// Both burst-keyed lines below would be vacuous without these.
+expect(fbStarts).toBeGreaterThanOrEqual(2);
+expect(herBursts).toBeGreaterThanOrEqual(1);
+// helm shares the B3 slot, so herBursts <= fbStarts; whenever it is strictly
+// less, the S2b equality assertion genuinely separates fullBurstEnter from burstCast.
+expect(herBursts).toBeLessThanOrEqual(fbStarts);
+});
 });
 
 describe('S1a - every 60 normal hits: Damage Taken +12.56% for 3s (enemy)', () => {
-  const b = blockWith(shipped, (e) => isBuff(e, 'damageTakenPct', 12.56));
+const b = blockWith(shipped, (e) => isBuff(e, 'damageTakenPct', 12.56));
 
-  it('is a hitCount:60 trigger aimed at the enemy', () => {
-    // Nearest-wrong: shotFired (counts pulls, not landed hits), interval, or a
-    // self/allies target (Damage Taken is a BOSS debuff, never a self buff).
-    expect(b).toBeDefined();
-    expect(b.trigger?.kind).toBe('hitCount');
-    expect(b.trigger?.count).toBe(60);
-    expect(b.target?.kind).toBe('enemy');
-  });
+it('is a hitCount:60 trigger aimed at the enemy', () => {
+// Nearest-wrong: shotFired (counts pulls, not landed hits), interval, or a
+// self/allies target (Damage Taken is a BOSS debuff, never a self buff).
+expect(b).toBeDefined();
+expect(b.trigger?.kind).toBe('hitCount');
+expect(b.trigger?.count).toBe(60);
+expect(b.target?.kind).toBe('enemy');
+});
 
-  it('lasts 3 wall-clock seconds, not N rounds', () => {
-    // Failure-mode taxonomy #2: 'for 3 sec' is seconds; durationShots would be wrong.
-    const e = eff(b).find((x: any) => isBuff(x, 'damageTakenPct', 12.56));
-    expect(e.durationSec).toBe(3);
-    expect(e.durationShots).toBeUndefined();
-  });
+it('lasts 3 wall-clock seconds, not N rounds', () => {
+// Failure-mode taxonomy #2: 'for 3 sec' is seconds; durationShots would be wrong.
+const e = eff(b).find((x: any) => isBuff(x, 'damageTakenPct', 12.56));
+expect(e.durationSec).toBe(3);
+expect(e.durationShots).toBeUndefined();
+});
 
-  it('emits a boss-held debuff many times over the fight', () => {
-    const applies = buffApplies(base.events, 'damageTakenPct', 12.56);
-    // Boss-held debuffs carry casterIdx === null AND targetIdx === null.
-    expect(applies.length).toBeGreaterThanOrEqual(5);
-    for (const a of applies) {
-      expect(a.casterIdx).toBeNull();
-      expect(a.targetIdx).toBeNull();
-      expect(a.durationShots).toBeUndefined();
-    }
-  });
+it('emits a boss-held debuff many times over the fight', () => {
+const applies = buffApplies(base.events, 'damageTakenPct', 12.56);
+// Boss-held debuffs carry casterIdx === null AND targetIdx === null.
+expect(applies.length).toBeGreaterThanOrEqual(5);
+for (const a of applies) {
+expect(a.casterIdx).toBeNull();
+expect(a.targetIdx).toBeNull();
+expect(a.durationShots).toBeUndefined();
+}
+});
 
-  it('is a TEAM-WIDE debuff: removing it moves teammates too', () => {
-    // Discriminates the faithful enemy-scoped debuff from a self-only ATK-ish buff:
-    // under the wrong model her teammates would be byte-identical.
-    expect(nDropDt).toBeGreaterThan(0);
-    expect(rNoDt.self).toBeLessThan(base.self);
-    expect(someTeammateMoved(rNoDt)).toBe(true);
-  });
+it('is a TEAM-WIDE debuff: removing it moves teammates too', () => {
+// Discriminates the faithful enemy-scoped debuff from a self-only ATK-ish buff:
+// under the wrong model her teammates would be byte-identical.
+expect(nDropDt).toBeGreaterThan(0);
+expect(rNoDt.self).toBeLessThan(base.self);
+expect(someTeammateMoved(rNoDt)).toBe(true);
+});
 
-  it('the 3s window is load-bearing (stretching it raises team damage)', () => {
-    // Non-vacuity for the duration: a 3s window covers only a slice of the fight,
-    // so 3 -> 30 must be observably better. Under a 'permanent debuff' model the
-    // two runs would be identical.
-    expect(nLongDt).toBeGreaterThan(0);
-    expect(rLongDt.self).toBeGreaterThan(base.self);
-    expect(someTeammateMoved(rLongDt)).toBe(true);
-  });
+it('the 3s window is load-bearing (stretching it raises team damage)', () => {
+// Non-vacuity for the duration: a 3s window covers only a slice of the fight,
+// so 3 -> 30 must be observably better. Under a 'permanent debuff' model the
+// two runs would be identical.
+expect(nLongDt).toBeGreaterThan(0);
+expect(rLongDt.self).toBeGreaterThan(base.self);
+expect(someTeammateMoved(rLongDt)).toBe(true);
+});
 
-  it('the 60-hit threshold actually drives the proc rate', () => {
-    // Doubling the threshold must roughly halve the procs. Slightly worse than half
-    // because the S1b reload procs halve too (fewer rounds -> fewer hits), hence the
-    // generous lower band rather than an exact ratio.
-    expect(nThresh).toBeGreaterThan(0);
-    const baseProcs = buffApplies(base.events, 'damageTakenPct', 12.56).length;
-    const halfProcs = buffApplies(rThresh.events, 'damageTakenPct', 12.56).length;
-    expect(halfProcs).toBeGreaterThanOrEqual(1);
-    expect(halfProcs).toBeLessThan(baseProcs);
-    expect(halfProcs * 2).toBeGreaterThan(baseProcs * 0.7);
-  });
+it('the 60-hit threshold actually drives the proc rate', () => {
+// Doubling the threshold must roughly halve the procs. Slightly worse than half
+// because the S1b reload procs halve too (fewer rounds -> fewer hits), hence the
+// generous lower band rather than an exact ratio.
+expect(nThresh).toBeGreaterThan(0);
+const baseProcs = buffApplies(base.events, 'damageTakenPct', 12.56).length;
+const halfProcs = buffApplies(rThresh.events, 'damageTakenPct', 12.56).length;
+expect(halfProcs).toBeGreaterThanOrEqual(1);
+expect(halfProcs).toBeLessThan(baseProcs);
+expect(halfProcs * 2).toBeGreaterThan(baseProcs * 0.7);
+});
 });
 
 describe('S1a - the +158.43% of final ATK rider', () => {
-  const b = blockWith(shipped, (e) => isFlat(e, 158.43));
+const b = blockWith(shipped, (e) => isFlat(e, 158.43));
 
-  it('rides the same 60-normal-hit / enemy activation', () => {
-    expect(b).toBeDefined();
-    expect(slotWith(shipped, (e) => isFlat(e, 158.43))).toBe('skill1');
-    expect(b.trigger?.kind).toBe('hitCount');
-    expect(b.trigger?.count).toBe(60);
-    expect(b.target?.kind).toBe('enemy');
-    expect(b.requiresCore).toBeFalsy(); // this half of S1 is NOT core-gated
-  });
+it('rides the same 60-normal-hit / enemy activation', () => {
+expect(b).toBeDefined();
+expect(slotWith(shipped, (e) => isFlat(e, 158.43))).toBe('skill1');
+expect(b.trigger?.kind).toBe('hitCount');
+expect(b.trigger?.count).toBe(60);
+expect(b.target?.kind).toBe('enemy');
+expect(b.requiresCore).toBeFalsy(); // this half of S1 is NOT core-gated
+});
 
-  it('is real damage and is self-sourced only', () => {
-    // Discriminates a live rider from a declared-but-inert one, and proves it feeds
-    // no shot/gauge channel (teammates must be byte-identical).
-    expect(nNoS1Rider).toBeGreaterThan(0);
-    expect(rNoS1Rider.self).toBeLessThan(base.self);
-    expect(teammatesIdentical(rNoS1Rider)).toBe(true);
-  });
+it('is real damage and is self-sourced only', () => {
+// Discriminates a live rider from a declared-but-inert one, and proves it feeds
+// no shot/gauge channel (teammates must be byte-identical).
+expect(nNoS1Rider).toBeGreaterThan(0);
+expect(rNoS1Rider.self).toBeLessThan(base.self);
+expect(teammatesIdentical(rNoS1Rider)).toBe(true);
+});
 });
 
 describe('S1b - every 60 normal hits: reload 20 rounds (self)', () => {
-  const b = blockWith(shipped, isInstantReload);
-  const e = effectWith(shipped, isInstantReload);
+const b = blockWith(shipped, isInstantReload);
+const e = effectWith(shipped, isInstantReload);
 
-  it('is a self-targeted hitCount:60 partial refill, not a full reload', () => {
-    // 20 of a 300-round belt = fraction ~0.0667. A missing fraction means a FULL
-    // magazine refill - the nearest-wrong model, and a large over-credit on an MG.
-    expect(b).toBeDefined();
-    expect(b.trigger?.kind).toBe('hitCount');
-    expect(b.trigger?.count).toBe(60);
-    expect(b.target?.kind).toBe('self');
-    expect(typeof e.fraction).toBe('number');
-    expect(e.fraction).toBeGreaterThan(0.04);
-    expect(e.fraction).toBeLessThan(0.11);
-  });
+it('is a self-targeted hitCount:60 partial refill, not a full reload', () => {
+// 20 of a 300-round belt = fraction ~0.0667. A missing fraction means a FULL
+// magazine refill - the nearest-wrong model, and a large over-credit on an MG.
+expect(b).toBeDefined();
+expect(b.trigger?.kind).toBe('hitCount');
+expect(b.trigger?.count).toBe(60);
+expect(b.target?.kind).toBe('self');
+expect(typeof e.fraction).toBe('number');
+expect(e.fraction).toBeGreaterThan(0.04);
+expect(e.fraction).toBeLessThan(0.11);
+});
 
-  it('the refill measurably raises her damage (reload economy IS damage)', () => {
-    // Taxonomy #6: weapon-state / ammo lines gate shot count. Removing the refill
-    // must cost damage; the runs would be identical if the line were skipped.
-    expect(nNoReload).toBeGreaterThan(0);
-    expect(rNoReload.self).toBeLessThan(base.self);
-  });
+it('the refill measurably raises her damage (reload economy IS damage)', () => {
+// Taxonomy #6: weapon-state / ammo lines gate shot count. Removing the refill
+// must cost damage; the runs would be identical if the line were skipped.
+expect(nNoReload).toBeGreaterThan(0);
+expect(rNoReload.self).toBeLessThan(base.self);
+});
 
-  it('20 rounds is strictly weaker than a full belt refill', () => {
-    // Discriminates the magnitude: under fraction:1 she would gain much more uptime.
-    expect(nFullReload).toBeGreaterThan(0);
-    expect(rFullReload.self).toBeGreaterThan(base.self);
-  });
+it('20 rounds is strictly weaker than a full belt refill', () => {
+// Discriminates the magnitude: under fraction:1 she would gain much more uptime.
+expect(nFullReload).toBeGreaterThan(0);
+expect(rFullReload.self).toBeGreaterThan(base.self);
+});
 
-  // No teammate-inertness assertion here on purpose: changing her shot count changes
-  // burst-gauge generation, which legitimately shifts the whole team's rotation.
+// No teammate-inertness assertion here on purpose: changing her shot count changes
+// burst-gauge generation, which legitimately shifts the whole team's rotation.
 });
 
 describe('S2a - every 60 CORE hits: +109.64% of final ATK (enemy)', () => {
-  const b = blockWith(shipped, (e) => isFlat(e, 109.64));
+const b = blockWith(shipped, (e) => isFlat(e, 109.64));
 
-  it('exists in skill2 and targets the enemy', () => {
-    expect(b).toBeDefined();
-    expect(slotWith(shipped, (e) => isFlat(e, 109.64))).toBe('skill2');
-    expect(b.target?.kind).toBe('enemy');
-  });
+it('exists in skill2 and targets the enemy', () => {
+expect(b).toBeDefined();
+expect(slotWith(shipped, (e) => isFlat(e, 109.64))).toBe('skill2');
+expect(b.target?.kind).toBe('enemy');
+});
 
-  it('is core-conditioned, not a plain 60-normal-hit clone of S1a', () => {
-    // Core hits are a strict SUBSET of normal hits, so a faithful model must either
-    // gate on core (requiresCore) or raise the threshold above 60 to account for the
-    // core rate. The nearest-wrong model - hitCount:60 with no core conditioning at
-    // all - makes S2a fire exactly as often as S1a and over-credits it.
-    const coreGated = b.requiresCore === true;
-    const rarer = b.trigger?.kind === 'hitCount' && (b.trigger?.count ?? 0) > 60;
-    expect(coreGated || rarer).toBe(true);
-  });
+it('is core-conditioned, not a plain 60-normal-hit clone of S1a', () => {
+// Core hits are a strict SUBSET of normal hits, so a faithful model must either
+// gate on core (requiresCore) or raise the threshold above 60 to account for the
+// core rate. The nearest-wrong model - hitCount:60 with no core conditioning at
+// all - makes S2a fire exactly as often as S1a and over-credits it.
+const coreGated = b.requiresCore === true;
+const rarer = b.trigger?.kind === 'hitCount' && (b.trigger?.count ?? 0) > 60;
+expect(coreGated || rarer).toBe(true);
+});
 
-  it('cannot fire more often than the un-gated 60-normal-hit line', () => {
-    // Cheap corollary of the subset relation, checked on the shipped structure.
-    const s1 = blockWith(shipped, (e) => isBuff(e, 'damageTakenPct', 12.56));
-    if (b.trigger?.kind === 'hitCount' && s1?.trigger?.kind === 'hitCount') {
-      expect(b.trigger.count).toBeGreaterThanOrEqual(s1.trigger.count);
-    }
-  });
+it('cannot fire more often than the un-gated 60-normal-hit line', () => {
+// Cheap corollary of the subset relation, checked on the shipped structure.
+const s1 = blockWith(shipped, (e) => isBuff(e, 'damageTakenPct', 12.56));
+if (b.trigger?.kind === 'hitCount' && s1?.trigger?.kind === 'hitCount') {
+expect(b.trigger.count).toBeGreaterThanOrEqual(s1.trigger.count);
+}
+});
 
-  it('is real damage and is self-sourced only', () => {
-    expect(nNoS2Rider).toBeGreaterThan(0);
-    expect(rNoS2Rider.self).toBeLessThan(base.self);
-    expect(teammatesIdentical(rNoS2Rider)).toBe(true);
-  });
+it('is real damage and is self-sourced only', () => {
+expect(nNoS2Rider).toBeGreaterThan(0);
+expect(rNoS2Rider.self).toBeLessThan(base.self);
+expect(teammatesIdentical(rNoS2Rider)).toBe(true);
+});
 
-  it.skip('fires once per 60 CORE hits at the measured core rate', () => {
-    // GAP: the engine has no core-hit counter - hitCount counts landed rounds, and
-    // requiresCore is only an exposure gate. The faithful threshold is 60/coreRate,
-    // whose magnitude is Hit-Rate->core derived and MEASUREMENT-GATED (always-flag
-    // field #7). Unassertable blind; recorded rather than guessed.
-  });
+it.skip('fires once per 60 CORE hits at the measured core rate', () => {
+// GAP: the engine has no core-hit counter - hitCount counts landed rounds, and
+// requiresCore is only an exposure gate. The faithful threshold is 60/coreRate,
+// whose magnitude is Hit-Rate->core derived and MEASUREMENT-GATED (always-flag
+// field #7). Unassertable blind; recorded rather than guessed.
+});
 });
 
 describe('S2b - Full Burst start: Critical Rate +14.6% for 10s (self)', () => {
-  const b = blockWith(shipped, (e) => isBuff(e, 'critRatePct', 14.6));
+const b = blockWith(shipped, (e) => isBuff(e, 'critRatePct', 14.6));
 
-  it('is fullBurstEnter + self, with no own-burst gate', () => {
-    // Trigger identity (taxonomy #3): the text says 'at the beginning of Full Burst',
-    // i.e. ANY team Full Burst - not burstCast (own-cast only, and pre-FB), and not
-    // ownBurstGate:'cast', which would silently drop the rotations helm completes.
-    expect(b).toBeDefined();
-    expect(b.trigger?.kind).toBe('fullBurstEnter');
-    expect(b.target?.kind).toBe('self');
-    expect(b.ownBurstGate).toBeUndefined();
-  });
+it('is fullBurstEnter + self, with no own-burst gate', () => {
+// Trigger identity (taxonomy #3): the text says 'at the beginning of Full Burst',
+// i.e. ANY team Full Burst - not burstCast (own-cast only, and pre-FB), and not
+// ownBurstGate:'cast', which would silently drop the rotations helm completes.
+expect(b).toBeDefined();
+expect(b.trigger?.kind).toBe('fullBurstEnter');
+expect(b.target?.kind).toBe('self');
+expect(b.ownBurstGate).toBeUndefined();
+});
 
-  it('is GENERIC crit rate for 10 seconds, not normal-attack-scoped', () => {
-    // The kit line is a bare 'Critical Rate' - critRateNormalPct would under-credit
-    // her burst and both flat riders.
-    const e = eff(b).find((x: any) => isBuff(x, 'critRatePct', 14.6));
-    expect(e.durationSec).toBe(10);
-    expect(e.durationShots).toBeUndefined();
-    expect(buffApplies(base.events, 'critRateNormalPct', 14.6).length).toBe(0);
-  });
+it('is GENERIC crit rate for 10 seconds, not normal-attack-scoped', () => {
+// The kit line is a bare 'Critical Rate' - critRateNormalPct would under-credit
+// her burst and both flat riders.
+const e = eff(b).find((x: any) => isBuff(x, 'critRatePct', 14.6));
+expect(e.durationSec).toBe(10);
+expect(e.durationShots).toBeUndefined();
+expect(buffApplies(base.events, 'critRateNormalPct', 14.6).length).toBe(0);
+});
 
-  it('applies on EVERY Full Burst, only ever to herself', () => {
-    const applies = buffApplies(base.events, 'critRatePct', 14.6);
-    expect(applies.length).toBe(fbStarts);
-    for (const a of applies) expect(a.targetSlug).toBe(SLUG);
-  });
+it('applies on EVERY Full Burst, only ever to herself', () => {
+const applies = buffApplies(base.events, 'critRatePct', 14.6);
+expect(applies.length).toBe(fbStarts);
+for (const a of applies) expect(a.targetSlug).toBe(SLUG);
+});
 
-  it('is load-bearing damage and inert on teammates', () => {
-    expect(nNoCrit).toBeGreaterThan(0);
-    expect(rNoCrit.self).toBeLessThan(base.self);
-    expect(teammatesIdentical(rNoCrit)).toBe(true);
-  });
+it('is load-bearing damage and inert on teammates', () => {
+expect(nNoCrit).toBeGreaterThan(0);
+expect(rNoCrit.self).toBeLessThan(base.self);
+expect(teammatesIdentical(rNoCrit)).toBe(true);
+});
 
-  it('the self scope is load-bearing (an allies-scoped model moves the team)', () => {
-    // Non-vacuity for 'Affects self': under the nearest-wrong allies target the
-    // teammates gain crit rate and their totals move.
-    expect(nCritAllies).toBeGreaterThan(0);
-    expect(someTeammateMoved(rCritAllies)).toBe(true);
-  });
+it('the self scope is load-bearing (an allies-scoped model moves the team)', () => {
+// Non-vacuity for 'Affects self': under the nearest-wrong allies target the
+// teammates gain crit rate and their totals move.
+expect(nCritAllies).toBeGreaterThan(0);
+expect(someTeammateMoved(rCritAllies)).toBe(true);
+});
 });
 
 describe('Burst - self: ATK +62.54% for 10s, Reload Speed +67.2% for 20s', () => {
-  const atkBlock = blockWith(shipped, (e) => isBuff(e, 'atkPct', 62.54));
-  const rsBlock = blockWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2));
+const atkBlock = blockWith(shipped, (e) => isBuff(e, 'atkPct', 62.54));
+const rsBlock = blockWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2));
 
-  it('both buffs hang off her own burst cast, self-targeted', () => {
-    expect(atkBlock).toBeDefined();
-    expect(rsBlock).toBeDefined();
-    expect(atkBlock.trigger?.kind).toBe('burstCast');
-    expect(rsBlock.trigger?.kind).toBe('burstCast');
-    expect(atkBlock.target?.kind).toBe('self');
-    expect(rsBlock.target?.kind).toBe('self');
-    expect(slotWith(shipped, (e) => isBuff(e, 'atkPct', 62.54))).toBe('burst');
-    expect(slotWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2))).toBe('burst');
-  });
+it('both buffs hang off her own burst cast, self-targeted', () => {
+expect(atkBlock).toBeDefined();
+expect(rsBlock).toBeDefined();
+expect(atkBlock.trigger?.kind).toBe('burstCast');
+expect(rsBlock.trigger?.kind).toBe('burstCast');
+expect(atkBlock.target?.kind).toBe('self');
+expect(rsBlock.target?.kind).toBe('self');
+expect(slotWith(shipped, (e) => isBuff(e, 'atkPct', 62.54))).toBe('burst');
+expect(slotWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2))).toBe('burst');
+});
 
-  it('ATK is self-scaling atkPct at the raw kit percentage', () => {
-    // 'ATK up 62.54%' scales her OWN ATK -> atkPct keeps the raw percentage.
-    // casterAtkPct (the nearest-wrong key) would re-emit as a flat ATK number instead.
-    const applies = buffApplies(base.events, 'atkPct', 62.54, SLUG);
-    expect(applies.length).toBeGreaterThanOrEqual(1);
-    expect(applies[0].casterIdx).toBe(applies[0].targetIdx);
-    expect(applies[0].durationShots).toBeUndefined();
-  });
+it('ATK is self-scaling atkPct at the raw kit percentage', () => {
+// 'ATK up 62.54%' scales her OWN ATK -> atkPct keeps the raw percentage.
+// casterAtkPct (the nearest-wrong key) would re-emit as a flat ATK number instead.
+const applies = buffApplies(base.events, 'atkPct', 62.54, SLUG);
+expect(applies.length).toBeGreaterThanOrEqual(1);
+expect(applies[0].casterIdx).toBe(applies[0].targetIdx);
+expect(applies[0].durationShots).toBeUndefined();
+});
 
-  it('the two windows differ by exactly 10s (10s ATK vs 20s reload speed)', () => {
-    // Both are applied on the same cast frame, so the expiresFrame delta is exactly
-    // (20 - 10) * 60 = 600 frames. A copy-paste 10s/10s or 20s/20s model fails here,
-    // and so does a permanent (no-expiry) model.
-    const atk = buffApplies(base.events, 'atkPct', 62.54, SLUG)[0];
-    const rs = buffApplies(base.events, 'reloadSpeedPct', 67.2, SLUG)[0];
-    expect(atk).toBeDefined();
-    expect(rs).toBeDefined();
-    expect(rs.expiresFrame - atk.expiresFrame).toBe(600);
-  });
+it('the two windows differ by exactly 10s (10s ATK vs 20s reload speed)', () => {
+// Both are applied on the same cast frame, so the expiresFrame delta is exactly
+// (20 - 10) * 60 = 600 frames. A copy-paste 10s/10s or 20s/20s model fails here,
+// and so does a permanent (no-expiry) model.
+const atk = buffApplies(base.events, 'atkPct', 62.54, SLUG)[0];
+const rs = buffApplies(base.events, 'reloadSpeedPct', 67.2, SLUG)[0];
+expect(atk).toBeDefined();
+expect(rs).toBeDefined();
+expect(rs.expiresFrame - atk.expiresFrame).toBe(600);
+});
 
-  it('the ATK buff is real and inert on teammates', () => {
-    expect(nNoBurstAtk).toBeGreaterThan(0);
-    expect(rNoBurstAtk.self).toBeLessThan(base.self);
-    expect(teammatesIdentical(rNoBurstAtk)).toBe(true);
-  });
+it('the ATK buff is real and inert on teammates', () => {
+expect(nNoBurstAtk).toBeGreaterThan(0);
+expect(rNoBurstAtk.self).toBeLessThan(base.self);
+expect(teammatesIdentical(rNoBurstAtk)).toBe(true);
+});
 
-  it('the Reload Speed buff is real damage (it buys shots on a 201-frame reload)', () => {
-    // Taxonomy #6 again: reload speed is never a defensive no-op. No teammate
-    // inertness claim - her shot count feeds burst gauge and may shift the rotation.
-    expect(nNoBurstReload).toBeGreaterThan(0);
-    expect(rNoBurstReload.self).toBeLessThan(base.self);
-  });
+it('the Reload Speed buff is real damage (it buys shots on a 201-frame reload)', () => {
+// Taxonomy #6 again: reload speed is never a defensive no-op. No teammate
+// inertness claim - her shot count feeds burst gauge and may shift the rotation.
+expect(nNoBurstReload).toBeGreaterThan(0);
+expect(rNoBurstReload.self).toBeLessThan(base.self);
+});
 });
 
 ===== (6) S6 BLIND OVERRIDE (claude-opus-5, written from kit prose alone) + DIFF VS DRIVER OVERRIDE =====
@@ -1545,135 +1581,135 @@ describe('Burst - self: ATK +62.54% for 10s, Reload Speed +67.2% for 20s', () =>
 LEAK FLAG (self-reported by S6 author): PARTIAL — METADATA ONLY. The harness preamble (git status) named the driver's in-flight FILENAMES (override/test/review/extract/progress) but NO file CONTENTS, magnitudes, encodings, verdicts, or reasoning were visible, and the author opened none (no tools). Judge: rule whether filename-level knowledge voids independence. Driver note: the blind author chose a DIFFERENT S2a core-rate proxy (200 vs driver 63) and independently flagged it as unmeasured — evidence it did NOT copy the driver override.
 
 DIFF (blind vs driver), line by line:
-  S1a damageTakenPct 12.56/3s + flatDamage 158.43, hitCount 60, enemy: IDENTICAL (blind adds explicit crit:true; driver relies on engine rider crit default — same behaviour).
-  S1b instantReload fraction 0.0667, hitCount 60, self: IDENTICAL.
-  S2a flatDamage 109.64, enemy: DIVERGENT TRIGGER ENCODING. Driver = hitCount 63 + requiresCore:true (60 core hits / 0.95 engine flat MG core rate, gated inert at zero core exposure). Blind = hitCount 200, NO requiresCore (60 / ~0.30 ASSUMED core rate, explicitly flagged unmeasured; blind author notes 'if requiresCore is a fight-level core-exposure gate, the correct encoding is count + requiresCore:true'). The engine's requiresCore IS a fight-level gate (sim.ts: 'if (block.requiresCore && cfg.coreHitRate <= 0) return;'), and the engine's flat MG core rate is 0.95 — so the driver encoding is the engine-grounded one; the blind 200 is an explicit guess at an engine-internal parameter the blind author could not know. Both agree on the KIT semantics (60 core hits -> 109.64% rider) and both flag the core-rate as unmeasured.
-  S2b fullBurstEnter self critRatePct 14.6/10s: IDENTICAL.
-  Burst burstCast self atkPct 62.54/10s + reloadSpeedPct 67.2/20s: IDENTICAL.
-  unmodeled: both EMPTY (every line modeled).
+S1a damageTakenPct 12.56/3s + flatDamage 158.43, hitCount 60, enemy: IDENTICAL (blind adds explicit crit:true; driver relies on engine rider crit default — same behaviour).
+S1b instantReload fraction 0.0667, hitCount 60, self: IDENTICAL.
+S2a flatDamage 109.64, enemy: DIVERGENT TRIGGER ENCODING. Driver = hitCount 63 + requiresCore:true (60 core hits / 0.95 engine flat MG core rate, gated inert at zero core exposure). Blind = hitCount 200, NO requiresCore (60 / ~0.30 ASSUMED core rate, explicitly flagged unmeasured; blind author notes 'if requiresCore is a fight-level core-exposure gate, the correct encoding is count + requiresCore:true'). The engine's requiresCore IS a fight-level gate (sim.ts: 'if (block.requiresCore && cfg.coreHitRate <= 0) return;'), and the engine's flat MG core rate is 0.95 — so the driver encoding is the engine-grounded one; the blind 200 is an explicit guess at an engine-internal parameter the blind author could not know. Both agree on the KIT semantics (60 core hits -> 109.64% rider) and both flag the core-rate as unmeasured.
+S2b fullBurstEnter self critRatePct 14.6/10s: IDENTICAL.
+Burst burstCast self atkPct 62.54/10s + reloadSpeedPct 67.2/20s: IDENTICAL.
+unmodeled: both EMPTY (every line modeled).
 AGREEMENT: 6 of 7 lines byte-identical in structure + all kit-literal magnitudes; the 7th (S2a) diverges only on the one engine-internal core-rate parameter, in the direction the engine grounds.
 
 --- S6 blind override ---
 {
-  "slug": "ludmilla-winter-owner",
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 60
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 12.56,
-          "durationSec": 3
-        },
-        {
-          "kind": "flatDamage",
-          "atkPct": 158.43,
-          "crit": true
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 60
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "instantReload",
-          "fraction": 0.0667
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 200
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 109.64,
-          "crit": true
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 14.6,
-          "durationSec": 10
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 62.54,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "reloadSpeedPct",
-          "value": 67.2,
-          "durationSec": 20
-        }
-      ]
-    }
-  ],
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "caveats": [
-    "⚑ skill2 rider cadence: the kit trigger is 60 CORE hits, but the schema has no core-hit counter. Encoded as hitCount count 200 normal hits = 60 ÷ ~0.30 assumed MG core rate. The real core rate sets this cadence 1:1 — a 0.20 rate means 300, a 0.45 rate means 133. UNMEASURED.",
-    "⚑ skill2 rider deliberately does NOT set requiresCore, to avoid double-discounting on top of the count conversion. If requiresCore is a per-activation core-hit check rather than a fight-level core-exposure gate, the correct encoding is count 60 + requiresCore:true instead.",
-    "⚑ skill1 partial reload: 'Reloads 20 round(s)' encoded as instantReload fraction 0.0667 (= 20/300, the BASE belt). Any Max-Ammo increase (cube/OL/ally maxAmmoPct or maxAmmoFlat) makes this refill MORE than the kit's 20 rounds; a flat-round primitive would be faithful.",
-    "⚑ instantReload semantics assumed ADDITIVE (tops the belt up by fraction×max, capped at max), not 'set the belt to fraction×max'. If the engine sets rather than adds, this line becomes a damage LOSS instead of a gain.",
-    "⚑ MG cadence tuple: pulls/sec is not supplied, and reloadFrames 201 is a datamine field on the known-unreliable list. Every hitCount cadence here (and the value of the 67.2% Reload Speed buff) is downstream of the real shots/sec and the MG wind-up ladder.",
-    "⚑ Both flat riders: noFb is UNSET (Full Burst by timing, the default) and crit:true is set (riders crit at the caster's sheet rate). Both are project conventions, not measurements on this unit. Neither rider sets core — the kit text says 'additional damage', not 'core strike damage'.",
-    "Damage Taken ▲ 12.56% is a BOSS debuff (whole-team benefit, not a self buff), and it lasts only 3 s against a ~60-normal-hit refresh cadence — expect low duty-cycle uptime, so its board footprint is team-wide but small and cadence-sensitive.",
-    "skill1's two ■ headers both read 'landing 60 normal attack(s)'. Modeled as two independent hitCount:60 blocks; whether the game runs ONE shared counter feeding both, or two, is kit-silent (damage-identical either way at hitsPerShot 1, but it matters if a future ammo/uptime change desynchronizes them)."
-  ],
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. MG/Water/Attacker/Burst III, 40 s burst CD, 300-round belt, hitsPerShot 1. Skill 1: a 60-normal-hit counter drives (a) a boss-side Damage Taken ▲ 12.56% / 3 s debuff plus a 158.43%-of-final-ATK rider, and (b) a self partial reload of 20 rounds. Skill 2: a 60-CORE-hit 109.64% rider (encoded as a normal-hit count via an assumed core rate — see caveats), plus a self Critical Rate ▲ 14.6% / 10 s on Full Burst ENTRY (team FB-enter as the text states, NOT own-burst-gated). Burst: self ATK ▲ 62.54% / 10 s and Reload Speed ▲ 67.2% / 20 s — the reload buff is modeled because reload speed gates shots fired and is therefore damage, and its 20 s duration deliberately outlasts the 10 s ATK window. Crit Rate is unscoped in the prose ('Critical Rate ▲'), so it is generic critRatePct, not critRateNormalPct. Nothing in the kit is skipped: all three unmodeled arrays are empty. No Pierce, no elemental-advantage damage buff (Water vs a Fire boss is the clean ×1.10), no stacks, no weapon swap, no DoT, no heal/shield, no gauge manipulation, no burst-eligibility change."
+"slug": "ludmilla-winter-owner",
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 60
+},
+"target": {
+"kind": "enemy"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "damageTakenPct",
+"value": 12.56,
+"durationSec": 3
+},
+{
+"kind": "flatDamage",
+"atkPct": 158.43,
+"crit": true
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 60
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "instantReload",
+"fraction": 0.0667
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 200
+},
+"target": {
+"kind": "enemy"
+},
+"effects": [
+{
+"kind": "flatDamage",
+"atkPct": 109.64,
+"crit": true
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 14.6,
+"durationSec": 10
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 62.54,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "reloadSpeedPct",
+"value": 67.2,
+"durationSec": 20
+}
+]
+}
+],
+"unmodeled": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"caveats": [
+"⚑ skill2 rider cadence: the kit trigger is 60 CORE hits, but the schema has no core-hit counter. Encoded as hitCount count 200 normal hits = 60 ÷ ~0.30 assumed MG core rate. The real core rate sets this cadence 1:1 — a 0.20 rate means 300, a 0.45 rate means 133. UNMEASURED.",
+"⚑ skill2 rider deliberately does NOT set requiresCore, to avoid double-discounting on top of the count conversion. If requiresCore is a per-activation core-hit check rather than a fight-level core-exposure gate, the correct encoding is count 60 + requiresCore:true instead.",
+"⚑ skill1 partial reload: 'Reloads 20 round(s)' encoded as instantReload fraction 0.0667 (= 20/300, the BASE belt). Any Max-Ammo increase (cube/OL/ally maxAmmoPct or maxAmmoFlat) makes this refill MORE than the kit's 20 rounds; a flat-round primitive would be faithful.",
+"⚑ instantReload semantics assumed ADDITIVE (tops the belt up by fraction×max, capped at max), not 'set the belt to fraction×max'. If the engine sets rather than adds, this line becomes a damage LOSS instead of a gain.",
+"⚑ MG cadence tuple: pulls/sec is not supplied, and reloadFrames 201 is a datamine field on the known-unreliable list. Every hitCount cadence here (and the value of the 67.2% Reload Speed buff) is downstream of the real shots/sec and the MG wind-up ladder.",
+"⚑ Both flat riders: noFb is UNSET (Full Burst by timing, the default) and crit:true is set (riders crit at the caster's sheet rate). Both are project conventions, not measurements on this unit. Neither rider sets core — the kit text says 'additional damage', not 'core strike damage'.",
+"Damage Taken ▲ 12.56% is a BOSS debuff (whole-team benefit, not a self buff), and it lasts only 3 s against a ~60-normal-hit refresh cadence — expect low duty-cycle uptime, so its board footprint is team-wide but small and cadence-sensitive.",
+"skill1's two ■ headers both read 'landing 60 normal attack(s)'. Modeled as two independent hitCount:60 blocks; whether the game runs ONE shared counter feeding both, or two, is kit-silent (damage-identical either way at hitsPerShot 1, but it matters if a future ammo/uptime change desynchronizes them)."
+],
+"note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. MG/Water/Attacker/Burst III, 40 s burst CD, 300-round belt, hitsPerShot 1. Skill 1: a 60-normal-hit counter drives (a) a boss-side Damage Taken ▲ 12.56% / 3 s debuff plus a 158.43%-of-final-ATK rider, and (b) a self partial reload of 20 rounds. Skill 2: a 60-CORE-hit 109.64% rider (encoded as a normal-hit count via an assumed core rate — see caveats), plus a self Critical Rate ▲ 14.6% / 10 s on Full Burst ENTRY (team FB-enter as the text states, NOT own-burst-gated). Burst: self ATK ▲ 62.54% / 10 s and Reload Speed ▲ 67.2% / 20 s — the reload buff is modeled because reload speed gates shots fired and is therefore damage, and its 20 s duration deliberately outlasts the 10 s ATK window. Crit Rate is unscoped in the prose ('Critical Rate ▲'), so it is generic critRatePct, not critRateNormalPct. Nothing in the kit is skipped: all three unmodeled arrays are empty. No Pierce, no elemental-advantage damage buff (Water vs a Fire boss is the clean ×1.10), no stacks, no weapon swap, no DoT, no heal/shield, no gauge manipulation, no burst-eligibility change."
 }
 ===== (7) DRIVER IMPLEMENTATION (under judgment) =====
 
@@ -1689,41 +1725,41 @@ AGREEMENT: 6 of 7 lines byte-identical in structure + all kit-literal magnitudes
 // test. Runs are deterministic (no seed); assertions are event-log relations, not totals.
 //
 // Kit (blablalink prose, data/characters.json → characters['ludmilla-winter-owner'].skills):
-//   S1 ■ every 60 normal attacks → the target: Damage Taken ▲12.56% for 3 sec            [L1a]
-//                              + 158.43% of final ATK as additional damage               [L1b]
-//      ■ every 60 normal attacks → self: Reloads 20 round(s) of ammunition               [L2]
-//   S2 ■ every 60 CORE hits → the target: 109.64% of final ATK as additional damage      [L3]
-//      ■ at the beginning of Full Burst → self: Critical Rate ▲14.6% for 10 sec          [L4]
-//   BU ■ self: ATK ▲62.54% for 10 sec  +  Reload Speed ▲67.2% for 20 sec                 [L5]
+// S1 ■ every 60 normal attacks → the target: Damage Taken ▲12.56% for 3 sec [L1a]
+// + 158.43% of final ATK as additional damage [L1b]
+// ■ every 60 normal attacks → self: Reloads 20 round(s) of ammunition [L2]
+// S2 ■ every 60 CORE hits → the target: 109.64% of final ATK as additional damage [L3]
+// ■ at the beginning of Full Burst → self: Critical Rate ▲14.6% for 10 sec [L4]
+// BU ■ self: ATK ▲62.54% for 10 sec + Reload Speed ▲67.2% for 20 sec [L5]
 //
 // Disposition: L1a/L1b/L2/L4/L5 FAITHFUL (pinned GREEN vs shipped, RED vs counterfactual).
-//   L3 FAITHFUL-with-⚑: the kit trigger is "hitting the Core for 60 time(s)" but the engine
-//   has no core-hit-count trigger, so it is PROXIED as hitCount 63 = round(60 / 0.95), the
-//   engine's flat MG core rate, gated requiresCore:true (inert at zero core exposure). The
-//   63-vs-naive-60 discrimination and the requiresCore gate are both pinned below.
+// L3 FAITHFUL-with-⚑: the kit trigger is "hitting the Core for 60 time(s)" but the engine
+// has no core-hit-count trigger, so it is PROXIED as hitCount 63 = round(60 / 0.95), the
+// engine's flat MG core rate, gated requiresCore:true (inert at zero core exposure). The
+// 63-vs-naive-60 discrimination and the requiresCore gate are both pinned below.
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model
 // gates nothing):
-//   L1a damageTakenPct must be a BOSS debuff (targetIdx null) at exactly 12.56 / 3s that
-//       actually amplifies her hits (mult.taken reaches 1.1256) — a self buff or a wrong
-//       magnitude/duration fails.
-//   L1b the 158.43% rider lands on the hitCount-60 cadence (count === floor(shots/60)), in the
-//       skill bucket, crit-eligible (engine rider convention; kit says plain "additional
-//       damage"). A per-shot or per-burst trigger fails the cadence pin.
-//   L2  the 20-round top-up is an ammo-economy line: with it she reloads-to-max FEWER times and
-//       fires STRICTLY more shots over 180s. Remove it and reloads rise / shots fall.
-//   L3  count 63 (core-rate proxy), NOT the naive 60: floor(shots/63)=137 ≠ floor(shots/60)=144.
-//       And requiresCore is live: at coreHitRate 0 the rider count collapses to 0.
-//   L4  fires on EVERY team Full Burst entry (count === fullBurstStarts, not burstCasts) — the
-//       "beginning of Full Burst" wording is team-FB-entry, self-scoped, 14.6 / 10s, and it lifts
-//       her normal-attack crit rate (0.15 → 0.296).
-//   L5  burstCast self-buff: ATK 62.54 / 10s AND Reload Speed 67.2 / 20s (distinct durations).
-//       The reload-speed half is load-bearing: remove it and she fires ~1900 fewer shots.
+// L1a damageTakenPct must be a BOSS debuff (targetIdx null) at exactly 12.56 / 3s that
+// actually amplifies her hits (mult.taken reaches 1.1256) — a self buff or a wrong
+// magnitude/duration fails.
+// L1b the 158.43% rider lands on the hitCount-60 cadence (count === floor(shots/60)), in the
+// skill bucket, crit-eligible (engine rider convention; kit says plain "additional
+// damage"). A per-shot or per-burst trigger fails the cadence pin.
+// L2 the 20-round top-up is an ammo-economy line: with it she reloads-to-max FEWER times and
+// fires STRICTLY more shots over 180s. Remove it and reloads rise / shots fall.
+// L3 count 63 (core-rate proxy), NOT the naive 60: floor(shots/63)=137 ≠ floor(shots/60)=144.
+// And requiresCore is live: at coreHitRate 0 the rider count collapses to 0.
+// L4 fires on EVERY team Full Burst entry (count === fullBurstStarts, not burstCasts) — the
+// "beginning of Full Burst" wording is team-FB-entry, self-scoped, 14.6 / 10s, and it lifts
+// her normal-attack crit rate (0.15 → 0.296).
+// L5 burstCast self-buff: ATK 62.54 / 10s AND Reload Speed 67.2 / 20s (distinct durations).
+// The reload-speed half is load-bearing: remove it and she fires ~1900 fewer shots.
 //
 // Inert / out-of-domain (documented, NOT asserted): the datamined MG cadence tuple
-//   (pullsPerSec / wind-up / reloadFrames 201) and the engine's flat 0.95 MG core rate are
-//   ⚑ unmeasured estimates (see override note) — they set the emergent shot COUNT, so pins are
-//   cadence-relative (floor(shots/N)), never absolute. No HP/shield/parts/gauge lines in this kit.
+// (pullsPerSec / wind-up / reloadFrames 201) and the engine's flat 0.95 MG core rate are
+// ⚑ unmeasured estimates (see override note) — they set the emergent shot COUNT, so pins are
+// cadence-relative (floor(shots/N)), never absolute. No HP/shield/parts/gauge lines in this kit.
 //
 // Fixture: the 720-kit-audit control comp (liter B1 / crown B2 / lwo B3 / helm B3, boss Fire,
 // focus lwo) — she needs a real rotation to cast her burst and to enter Full Burst at all.
@@ -1744,57 +1780,57 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 type Reload = Extract<SimEvent, { kind: 'reload' }>;
 
 function run(
-  overrides: Record<string, any> = {},
-  cfg: Record<string, any> = {},
+overrides: Record<string, any> = {},
+cfg: Record<string, any> = {},
 ) {
-  const events: SimEvent[] = [];
-  runComp({
-    ...controlComp(CARRY),
-    overrides,
-    cfg: { onEvent: (e) => events.push(e), ...cfg },
-  });
-  return events;
+const events: SimEvent[] = [];
+runComp({
+...controlComp(CARRY),
+overrides,
+cfg: { onEvent: (e) => events.push(e), ...cfg },
+});
+return events;
 }
 
 // ---- counterfactual patches (nearest-wrong models) -------------------------------------------
-/** L2 reference: her S1 20-round top-up removed. */
+/** L2 reference: her S1 20-round top-up removed. _/
 const noInstantReload = withPatchedOverride(CARRY, (ov) => {
-  const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'instantReload'),
-  );
-  if (ov.skill1.length === before)
-    throw new Error('lwo S1 instantReload block missing — fixture is stale');
+const before = ov.skill1.length;
+ov.skill1 = ov.skill1.filter(
+(b: any) => !b.effects.some((e: any) => e.kind === 'instantReload'),
+);
+if (ov.skill1.length === before)
+throw new Error('lwo S1 instantReload block missing — fixture is stale');
 });
-/** L3 counterfactual: the NAIVE reading "60 core hits = hitCount 60" (drops the ÷0.95 proxy). */
+/_* L3 counterfactual: the NAIVE reading "60 core hits = hitCount 60" (drops the ÷0.95 proxy). _/
 const naiveS2Count = withPatchedOverride(CARRY, (ov) => {
-  const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
-  );
-  if (!b) throw new Error('lwo S2 flatDamage block missing — fixture is stale');
-  b.trigger.count = 60;
+const b = ov.skill2.find((x: any) =>
+x.effects.some((e: any) => e.kind === 'flatDamage'),
+);
+if (!b) throw new Error('lwo S2 flatDamage block missing — fixture is stale');
+b.trigger.count = 60;
 });
-/** L4 reference: her FB-entry crit-rate line removed. */
+/_* L4 reference: her FB-entry crit-rate line removed. _/
 const noCrit = withPatchedOverride(CARRY, (ov) => {
-  const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct'),
-  );
-  if (ov.skill2.length === before)
-    throw new Error('lwo S2 critRatePct block missing — fixture is stale');
+const before = ov.skill2.length;
+ov.skill2 = ov.skill2.filter(
+(b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct'),
+);
+if (ov.skill2.length === before)
+throw new Error('lwo S2 critRatePct block missing — fixture is stale');
 });
-/** L5 reference: her burst Reload Speed half removed (ATK half kept). */
+/_* L5 reference: her burst Reload Speed half removed (ATK half kept). */
 const noReloadSpeed = withPatchedOverride(CARRY, (ov) => {
-  let removed = 0;
-  for (const b of ov.burst) {
-    const before = b.effects.length;
-    b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
-    removed += before - b.effects.length;
-  }
-  if (removed === 0)
-    throw new Error(
-      'lwo burst reloadSpeedPct effect missing — fixture is stale',
-    );
+let removed = 0;
+for (const b of ov.burst) {
+const before = b.effects.length;
+b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
+removed += before - b.effects.length;
+}
+if (removed === 0)
+throw new Error(
+'lwo burst reloadSpeedPct effect missing — fixture is stale',
+);
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -1807,33 +1843,33 @@ const core0 = run({}, { coreHitRate: 0 });
 
 // ---- readers ----------------------------------------------------------------------------------
 const lwoDamage = (evs: SimEvent[], srcSlot?: Damage['srcSlot']) =>
-  evs.filter(
-    (e): e is Damage =>
-      e.kind === 'damage' &&
-      e.slug === CARRY &&
-      (srcSlot === undefined || e.srcSlot === srcSlot),
-  );
+evs.filter(
+(e): e is Damage =>
+e.kind === 'damage' &&
+e.slug === CARRY &&
+(srcSlot === undefined || e.srcSlot === srcSlot),
+);
 const lwoShots = (evs: SimEvent[]) =>
-  evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === CARRY);
+evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === CARRY);
 const lwoReloads = (evs: SimEvent[]) =>
-  evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === CARRY);
+evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === CARRY);
 const lwoBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === CARRY);
+evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === CARRY);
 const fbStarts = (evs: SimEvent[]) =>
-  evs.filter((e) => e.kind === 'fullBurstStart');
+evs.filter((e) => e.kind === 'fullBurstStart');
 const buffs = (evs: SimEvent[]) =>
-  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 /** buffApply events caster-OR-debuff attributed to LWO's line for a stat (enemy debuffs carry casterIdx null). */
 const lwoBuffs = (evs: SimEvent[], stat: string) =>
-  buffs(evs).filter(
-    (b) => b.stat === stat && (b.casterIdx === LWO || b.targetIdx === null),
-  );
+buffs(evs).filter(
+(b) => b.stat === stat && (b.casterIdx === LWO || b.targetIdx === null),
+);
 
 const SHOTS_BASE = lwoShots(base).length;
 
 describe('ludmilla-winter-owner — kit spec', () => {
-  describe('L1a — S1 boss Damage Taken ▲12.56% for 3s (every 60 normal hits)', () => {
-    const applied = lwoBuffs(base, 'damageTakenPct');
+describe('L1a — S1 boss Damage Taken ▲12.56% for 3s (every 60 normal hits)', () => {
+const applied = lwoBuffs(base, 'damageTakenPct');
 
     it('is a BOSS debuff at the kit magnitude and 3s duration, on the 60-hit cadence', () => {
       expect(
@@ -1863,10 +1899,11 @@ describe('ludmilla-winter-owner — kit spec', () => {
         lwoDamage(base).filter((d) => d.mult.taken > 1.001).length,
       ).toBeGreaterThan(0);
     });
-  });
 
-  describe('L1b — S1 158.43% additional-damage rider (every 60 normal hits)', () => {
-    const riders = lwoDamage(base, 'skill1');
+});
+
+describe('L1b — S1 158.43% additional-damage rider (every 60 normal hits)', () => {
+const riders = lwoDamage(base, 'skill1');
 
     it('lands on the 60-hit cadence at the kit magnitude, skill bucket, crit-eligible', () => {
       expect(riders.length).toBe(Math.floor(SHOTS_BASE / 60));
@@ -1883,26 +1920,27 @@ describe('ludmilla-winter-owner — kit spec', () => {
       );
       expect(riders.every((d) => !d.rangeApplied)).toBe(true);
     });
-  });
 
-  describe('L2 — S1 self 20-round reload top-up (every 60 normal hits)', () => {
-    it('reduces reload-to-max count and never loses shots vs the top-up removed', () => {
-      const baseReloads = lwoReloads(base).length;
-      const irReloads = lwoReloads(noIR).length;
-      const irShots = lwoShots(noIR).length;
-      expect(
-        baseReloads,
-        `base ${baseReloads} reloads vs no-top-up ${irReloads}`,
-      ).toBeLessThan(irReloads);
-      expect(
-        SHOTS_BASE,
-        `base ${SHOTS_BASE} shots vs no-top-up ${irShots}`,
-      ).toBeGreaterThan(irShots);
-    });
-  });
+});
 
-  describe('L3 — S2 109.64% core-hit rider (every 60 core hits → proxied hitCount 63, requiresCore)', () => {
-    const riders = lwoDamage(base, 'skill2');
+describe('L2 — S1 self 20-round reload top-up (every 60 normal hits)', () => {
+it('reduces reload-to-max count and never loses shots vs the top-up removed', () => {
+const baseReloads = lwoReloads(base).length;
+const irReloads = lwoReloads(noIR).length;
+const irShots = lwoShots(noIR).length;
+expect(
+baseReloads,
+`base ${baseReloads} reloads vs no-top-up ${irReloads}`,
+).toBeLessThan(irReloads);
+expect(
+SHOTS_BASE,
+`base ${SHOTS_BASE} shots vs no-top-up ${irShots}`,
+).toBeGreaterThan(irShots);
+});
+});
+
+describe('L3 — S2 109.64% core-hit rider (every 60 core hits → proxied hitCount 63, requiresCore)', () => {
+const riders = lwoDamage(base, 'skill2');
 
     it('fires on the core-rate proxy cadence floor(shots/63), NOT the naive 60', () => {
       expect(riders.length).toBe(Math.floor(SHOTS_BASE / 63));
@@ -1926,12 +1964,13 @@ describe('ludmilla-winter-owner — kit spec', () => {
       expect(lwoDamage(core0, 'skill2').length).toBe(0);
       expect(riders.length).toBeGreaterThan(0);
     });
-  });
 
-  describe('L4 — S2 self Critical Rate ▲14.6% for 10s at the beginning of Full Burst', () => {
-    const applied = lwoBuffs(base, 'critRatePct').filter(
-      (b) => b.casterIdx === LWO,
-    );
+});
+
+describe('L4 — S2 self Critical Rate ▲14.6% for 10s at the beginning of Full Burst', () => {
+const applied = lwoBuffs(base, 'critRatePct').filter(
+(b) => b.casterIdx === LWO,
+);
 
     it('fires on EVERY team Full Burst entry (not only her own casts), self-scoped, 14.6 / 10s', () => {
       expect(applied.length, 'count must equal team FB entries').toBe(
@@ -1961,13 +2000,14 @@ describe('ludmilla-winter-owner — kit spec', () => {
       expect(critRates(base)).toContain((0.15 + 0.146).toFixed(4)); // 0.2960 = base 15% + 14.6%
       expect(critRates(base)).not.toEqual(critRates(noCritRun));
     });
-  });
 
-  describe('L5 — burst self ATK ▲62.54% / 10s + Reload Speed ▲67.2% / 20s', () => {
-    const atk = lwoBuffs(base, 'atkPct').filter((b) => b.casterIdx === LWO);
-    const rs = lwoBuffs(base, 'reloadSpeedPct').filter(
-      (b) => b.casterIdx === LWO,
-    );
+});
+
+describe('L5 — burst self ATK ▲62.54% / 10s + Reload Speed ▲67.2% / 20s', () => {
+const atk = lwoBuffs(base, 'atkPct').filter((b) => b.casterIdx === LWO);
+const rs = lwoBuffs(base, 'reloadSpeedPct').filter(
+(b) => b.casterIdx === LWO,
+);
 
     it('both fire once per burst cast, self-scoped, at the kit magnitudes', () => {
       const casts = lwoBursts(base).length;
@@ -1995,121 +2035,121 @@ describe('ludmilla-winter-owner — kit spec', () => {
         `base ${SHOTS_BASE} shots vs no-reload-speed ${lwoShots(noRS).length}`,
       ).toBeGreaterThan(lwoShots(noRS).length);
     });
-  });
+
+});
 });
 
 --- driver override: src/skills/overrides/ludmilla-winter-owner.json ---
 {
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — ludmilla-winter-owner (Ludmilla: Winter Owner, MG/Water/Attacker/B3), kit-parse AUTHOR wave 4. S1: every 60 normal hits → boss Damage Taken +12.56% (3s) + 158.43% flatDamage rider (FB-by-timing default, crits by engine default, no core — kit text says plain 'additional damage'), PLUS self 'Reloads 20 rounds' = instantReload fraction 0.0667 (20/300; engine adds ammo without interrupting fire — matches the in-game passive top-up; net mag ≈450 shots/cycle = 300/(1-1/3), fewer wind-up restarts). S2 proc: kit trigger is 'hitting the Core for 60 time(s)' — no core-hit-count trigger exists in types.ts, so PROXIED as hitCount 63 (⚑) = 60 ÷ 0.95, the engine's own flat MG core rate (acrFor HI; whole-picture-consistent with how the sim cores her normal hits — the prior materialized file's count 120 assumed 50% core, inconsistent with the engine's MG model), with requiresCore:true so the block is inert when core exposure is zero. S2 FB: 'beginning of Full Burst' → fullBurstEnter self Crit Rate +14.6% 10s (hard rule 6: fires on team FB entry regardless of burster — correct for this wording). Burst (burstCast, self): ATK +62.54% 10s + Reload Speed +67.2% 20s (kit-verified 67.2; reloadSpeedPct composes with reloadFrames 201 at sim.ts reloadFramesNeeded — hard rule 1, shot-count channel). No lines skipped — unmodeled empty. ⚑ LIST: (1) cadence tuple — MG pullsPerSec/wind-up + reloadFrames 201 datamined, unverified; (2) S2 hitCount 63 core-proxy — tied to the engine's flat HI 0.95 MG core rate (itself ⚑, not measured per-band): recompute if MG acr is ever refit per-band, and pin from footage (red CORE HIT popup fraction → count = round(60/coreRate)); (3) S1 20-round top-up economy — verify per-mag shot count ≈450 (=300/(1-1/3)) and that the in-game refill doesn't interrupt fire. Kit-autonomy gauntlet 2026-07-26: cross-family corroborated GO (S2b fable / S5+S6 opus / S7 kimi-k3 converged); all 7 kit lines FAITHFUL, scripts/tests/units/ludmilla-winter-owner.test.ts 13/13 GREEN; the S2 60-core-hit proxy (hitCount 63 + requiresCore) and the fullBurstEnter-vs-burstCast trigger split both pinned against independent blind re-derivations.",
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "caveats": [
-    "skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
-    "skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
-  ],
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 60
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": 12.56,
-          "durationSec": 3
-        },
-        {
-          "kind": "flatDamage",
-          "atkPct": 158.43
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 60
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "instantReload",
-          "fraction": 0.0667
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 63
-      },
-      "target": {
-        "kind": "enemy"
-      },
-      "requiresCore": true,
-      "effects": [
-        {
-          "kind": "flatDamage",
-          "atkPct": 109.64
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 14.6,
-          "durationSec": 10
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 62.54,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "reloadSpeedPct",
-          "value": 67.2,
-          "durationSec": 20
-        }
-      ]
-    }
-  ]
+"note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — ludmilla-winter-owner (Ludmilla: Winter Owner, MG/Water/Attacker/B3), kit-parse AUTHOR wave 4. S1: every 60 normal hits → boss Damage Taken +12.56% (3s) + 158.43% flatDamage rider (FB-by-timing default, crits by engine default, no core — kit text says plain 'additional damage'), PLUS self 'Reloads 20 rounds' = instantReload fraction 0.0667 (20/300; engine adds ammo without interrupting fire — matches the in-game passive top-up; net mag ≈450 shots/cycle = 300/(1-1/3), fewer wind-up restarts). S2 proc: kit trigger is 'hitting the Core for 60 time(s)' — no core-hit-count trigger exists in types.ts, so PROXIED as hitCount 63 (⚑) = 60 ÷ 0.95, the engine's own flat MG core rate (acrFor HI; whole-picture-consistent with how the sim cores her normal hits — the prior materialized file's count 120 assumed 50% core, inconsistent with the engine's MG model), with requiresCore:true so the block is inert when core exposure is zero. S2 FB: 'beginning of Full Burst' → fullBurstEnter self Crit Rate +14.6% 10s (hard rule 6: fires on team FB entry regardless of burster — correct for this wording). Burst (burstCast, self): ATK +62.54% 10s + Reload Speed +67.2% 20s (kit-verified 67.2; reloadSpeedPct composes with reloadFrames 201 at sim.ts reloadFramesNeeded — hard rule 1, shot-count channel). No lines skipped — unmodeled empty. ⚑ LIST: (1) cadence tuple — MG pullsPerSec/wind-up + reloadFrames 201 datamined, unverified; (2) S2 hitCount 63 core-proxy — tied to the engine's flat HI 0.95 MG core rate (itself ⚑, not measured per-band): recompute if MG acr is ever refit per-band, and pin from footage (red CORE HIT popup fraction → count = round(60/coreRate)); (3) S1 20-round top-up economy — verify per-mag shot count ≈450 (=300/(1-1/3)) and that the in-game refill doesn't interrupt fire. Kit-autonomy gauntlet 2026-07-26: cross-family corroborated GO (S2b fable / S5+S6 opus / S7 kimi-k3 converged); all 7 kit lines FAITHFUL, scripts/tests/units/ludmilla-winter-owner.test.ts 13/13 GREEN; the S2 60-core-hit proxy (hitCount 63 + requiresCore) and the fullBurstEnter-vs-burstCast trigger split both pinned against independent blind re-derivations.",
+"unmodeled": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"caveats": [
+"skill2: the '60 core hits' proc is proxied as every 63 normal hits (engine MG core rate 0.95) — unmeasured estimate",
+"skill1: MG cadence tuple (fire rate / wind-up / reloadFrames 201) is datamined, unverified"
+],
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 60
+},
+"target": {
+"kind": "enemy"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "damageTakenPct",
+"value": 12.56,
+"durationSec": 3
+},
+{
+"kind": "flatDamage",
+"atkPct": 158.43
 }
-
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 60
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "instantReload",
+"fraction": 0.0667
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 63
+},
+"target": {
+"kind": "enemy"
+},
+"requiresCore": true,
+"effects": [
+{
+"kind": "flatDamage",
+"atkPct": 109.64
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 14.6,
+"durationSec": 10
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 62.54,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "reloadSpeedPct",
+"value": 67.2,
+"durationSec": 20
+}
+]
+}
+]
+}

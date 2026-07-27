@@ -146,7 +146,7 @@ const swhaBuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === S &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 /** Boss-held debuffs: casterIdx null AND targetIdx null; read by stat+value (key carries caster slot). */
 const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
@@ -154,15 +154,15 @@ const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.targetIdx === null &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const swhaShots = (evs: SimEvent[]) =>
@@ -180,7 +180,7 @@ const inWindow = (frame: number, wins: [number, number][]) =>
 /** swha normal-bucket (swap-weapon + base) shots at a given charge multiplier. */
 const normalsWithCharge = (evs: SimEvent[], charge: number) =>
   swhaDamage(evs).filter(
-    (d) => d.srcSlot === 'normal' && Math.abs(d.mult.charge - charge) < 1e-6,
+    (d) => d.srcSlot === 'normal' && Math.abs(d.mult.charge - charge) < 1e-6
   );
 /** swha's skill-slot-keyed buffApply stats (key prefix `<S>:<slot>:`). */
 const slotKeyedStats = (evs: SimEvent[], slot: 'skill1' | 'skill2' | 'burst') =>
@@ -188,31 +188,32 @@ const slotKeyedStats = (evs: SimEvent[], slot: 'skill1' | 'skill2' | 'burst') =>
     ...new Set(
       buffs(evs)
         .filter((b) => b.key.startsWith(`${S}:${slot}:`))
-        .map((b) => b.stat),
+        .map((b) => b.stat)
     ),
   ].sort();
 
 // ---- counterfactual patches (nearest-wrong readings) -----------------------------------------
-const eff = (b: any, stat: string) =>
-  b.effects.find((e: any) => e.stat === stat);
 
 // W4 nearest-wrong (target): the boss debuff retargeted to `self` (debuffs swha, not the boss).
 const cfTakenSelf = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct'),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
-  if (!b)
+  if (!b) {
     throw new Error('swha S1 damageTakenPct block missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 // W5 nearest-wrong (presence): the 41.9% AoE auto-fire effect removed.
 const cfNo41 = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 41.9),
+    x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 41.9)
   );
-  if (!b) throw new Error('swha S1 41.9 block missing — fixture is stale');
+  if (!b) {
+    throw new Error('swha S1 41.9 block missing — fixture is stale');
+  }
   b.effects = b.effects.filter(
-    (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 41.9),
+    (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 41.9)
   );
 });
 // W6 nearest-wrong (magnitude): the baseline volley at a single ammo (105.59) instead of ×5 (527.95).
@@ -220,33 +221,39 @@ const cfVolley105 = withPatchedOverride(SWHA, (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 527.95);
-  if (!e) throw new Error('swha S1 527.95 effect missing — fixture is stale');
+  if (!e) {
+    throw new Error('swha S1 527.95 effect missing — fixture is stale');
+  }
   e.atkPct = 105.59;
 });
 // W7 nearest-wrong (a, the FIX): remove the weaponSwap → no swap exists → swapGate never satisfied.
 const cfNoSwap = withPatchedOverride(SWHA, (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (ov.burst.length === before)
+  if (ov.burst.length === before) {
     throw new Error('swha burst weaponSwap block missing — fixture is stale');
+  }
 });
 // W7 nearest-wrong (b, UNGATED): strip swapGate → the 1055.9 fires on EVERY full charge.
 const cfUngated = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 1055.9),
+    x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 1055.9)
   );
-  if (!b) throw new Error('swha S1 1055.9 block missing — fixture is stale');
+  if (!b) {
+    throw new Error('swha S1 1055.9 block missing — fixture is stale');
+  }
   delete b.swapGate;
 });
 // W12 nearest-wrong (target): the shotFired ATK buff retargeted to `allies`.
 const cfAtk46Allies = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'atkPct' && e.value === 46.84),
+    x.effects.some((e: any) => e.stat === 'atkPct' && e.value === 46.84)
   );
-  if (!b)
+  if (!b) {
     throw new Error('swha S2 atkPct 46.84 block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 // W13 reference: her parts-damage EFFECT removed (the inert-discrimination). The partsDamagePct effect SHARES its
@@ -254,64 +261,71 @@ const cfAtk46Allies = withPatchedOverride(SWHA, (ov: any) => {
 // intact — removing the whole block would drop the +46.84% ATK and masquerade as a parts effect (probe-verified).
 const cfNoParts = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'partsDamagePct'),
+    x.effects.some((e: any) => e.stat === 'partsDamagePct')
   );
-  if (!b)
+  if (!b) {
     throw new Error('swha S2 partsDamagePct block missing — fixture is stale');
+  }
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
-  if (b.effects.length === before)
+  if (b.effects.length === before) {
     throw new Error('swha S2 partsDamagePct effect missing — fixture is stale');
+  }
 });
 // W14 nearest-wrong (duration): the stageEnter ATK buff at 5s instead of the prose 10s.
 const cfAtk73Dur5 = withPatchedOverride(SWHA, (ov: any) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'atkPct' && x.value === 73.92);
-  if (!e)
+  if (!e) {
     throw new Error('swha S2 atkPct 73.92 effect missing — fixture is stale');
+  }
   e.durationSec = 5;
 });
 // W15 nearest-wrong (presence): the Charge Damage 528 buff removed → swap shots lose the 7.78 charge mult.
 const cfNoChargeDmg = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'chargeDamagePct'),
+    x.effects.some((e: any) => e.stat === 'chargeDamagePct')
   );
-  if (!b)
+  if (!b) {
     throw new Error('swha S2 chargeDamagePct block missing — fixture is stale');
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
 });
 // W16 nearest-wrong (presence): the Sequential Damage 158.4 buff removed → no buffApply.
 const cfNoSeqDmg = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'sequentialDamagePct'),
+    x.effects.some((e: any) => e.stat === 'sequentialDamagePct')
   );
-  if (!b)
+  if (!b) {
     throw new Error(
-      'swha S2 sequentialDamagePct block missing — fixture is stale',
+      'swha S2 sequentialDamagePct block missing — fixture is stale'
     );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'sequentialDamagePct');
 });
 // W17 nearest-wrong (trigger): the burst Attack Damage keyed to fullBurstEnter (FB-START frames) instead of burstCast.
 const cfAtkDmgFbEnter = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct'),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
+  if (!b) {
     throw new Error(
-      'swha burst attackDamagePct block missing — fixture is stale',
+      'swha burst attackDamagePct block missing — fixture is stale'
     );
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // W17 nearest-wrong (target): the burst Attack Damage retargeted to `allies`.
 const cfAtkDmgAllies = withPatchedOverride(SWHA, (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct'),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
+  if (!b) {
     throw new Error(
-      'swha burst attackDamagePct block missing — fixture is stale',
+      'swha burst attackDamagePct block missing — fixture is stale'
     );
+  }
   b.target = { kind: 'allies' };
 });
 
@@ -353,7 +367,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
     it('is a permanent frame-0 debuff on the BOSS (targetIdx null), value 4.2, keyed to her skill1 slot', () => {
       expect(taken.length).toBeGreaterThan(0);
       expect(taken.every((b) => b.targetIdx === null && b.value === 4.2)).toBe(
-        true,
+        true
       );
       expect(dursOf(taken)).toEqual([null]);
       expect(Math.min(...taken.map((b) => b.frame))).toBe(0);
@@ -363,10 +377,10 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
     it('DISCRIMINATING (target): self (nearest-wrong) debuffs swha, removing the boss debuff', () => {
       expect(bossDebuff(takenSelf.events, 'damageTakenPct', 4.2).length).toBe(
-        0,
+        0
       );
       expect(
-        targetsOf(swhaBuff(takenSelf.events, 'damageTakenPct', 4.2)),
+        targetsOf(swhaBuff(takenSelf.events, 'damageTakenPct', 4.2))
       ).toEqual([S]);
     });
   });
@@ -405,7 +419,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(hits.every((d) => inWindow(d.frame, wins))).toBe(true);
       // and they are NOT all on the cast frame itself (the old lump model): they ride the LATER swap shots
       expect(hits.every((d) => castFrames(base.events).includes(d.frame))).toBe(
-        false,
+        false
       );
     });
     it('DISCRIMINATING (the FIX): remove the weaponSwap → no swap exists → 0 of 1055.9', () => {
@@ -417,7 +431,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(ug.length).toBeGreaterThanOrEqual(shots - 1);
       expect(ug.length).toBeGreaterThan(2 * casts);
       expect(
-        ug.some((d) => !inWindow(d.frame, castWindows(ungated.events))),
+        ug.some((d) => !inWindow(d.frame, castWindows(ungated.events)))
       ).toBe(true);
     });
   });
@@ -431,7 +445,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) hits all 3 slots, not swha alone', () => {
       expect(targetsOf(swhaBuff(atk46Allies.events, 'atkPct', 46.84))).toEqual(
-        ALL_SLOTS,
+        ALL_SLOTS
       );
     });
   });
@@ -456,7 +470,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(dursOf(atk)).toEqual([10 * FPS]);
       const cf = castFrames(base.events);
       expect(atk.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...cf].sort((a, b) => a - b),
+        [...cf].sort((a, b) => a - b)
       );
     });
     it('DISCRIMINATING (duration): 5s (nearest-wrong) is not the prose 10s', () => {
@@ -474,7 +488,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(cd.every((b) => b.durationShots === 2)).toBe(true);
       const cf = castFrames(base.events);
       expect(cd.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...cf].sort((a, b) => a - b),
+        [...cf].sort((a, b) => a - b)
       );
     });
     it('APPLIED: swap-weapon normals carry charge mult 7.78 (= 2.5 base + 5.28 additive), one per swap shot', () => {
@@ -502,12 +516,12 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(sq.every((b) => b.durationShots === 2)).toBe(true);
       const cf = castFrames(base.events);
       expect(sq.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...cf].sort((a, b) => a - b),
+        [...cf].sort((a, b) => a - b)
       );
     });
     it('DISCRIMINATING (presence): removed (nearest-wrong) → no sequentialDamagePct buffApply', () => {
       expect(
-        swhaBuff(noSeqDmg.events, 'sequentialDamagePct', 158.4).length,
+        swhaBuff(noSeqDmg.events, 'sequentialDamagePct', 158.4).length
       ).toBe(0);
     });
   });
@@ -520,7 +534,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
       expect(dursOf(ad)).toEqual([10 * FPS]);
       const cf = castFrames(base.events);
       expect(ad.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...cf].sort((a, b) => a - b),
+        [...cf].sort((a, b) => a - b)
       );
     });
     it('DISCRIMINATING (trigger): fullBurstEnter (nearest-wrong) fires on FB-START frames, strictly after the cast frames', () => {
@@ -533,7 +547,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) hits all 3 slots, not swha alone', () => {
       expect(
-        targetsOf(swhaBuff(atkDmgAllies.events, 'attackDamagePct', 84.48)),
+        targetsOf(swhaBuff(atkDmgAllies.events, 'attackDamagePct', 84.48))
       ).toEqual(ALL_SLOTS);
     });
   });
@@ -547,7 +561,7 @@ describe('snow-white-heavy-arms — kit spec', () => {
     });
     it('swha deals ZERO burst-bucket damage (the swap shots are normal-bucket weapon fire; W20 projectile line skipped)', () => {
       expect(
-        swhaDamage(base.events).filter((d) => d.bucket === 'burst').length,
+        swhaDamage(base.events).filter((d) => d.bucket === 'burst').length
       ).toBe(0);
     });
   });

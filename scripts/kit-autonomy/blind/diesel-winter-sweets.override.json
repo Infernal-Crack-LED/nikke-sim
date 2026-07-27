@@ -1,9 +1,6 @@
 {
   "slug": "diesel-winter-sweets",
-  "modes": [
-    "Intro",
-    "Highlight"
-  ],
+  "modes": ["Intro", "Highlight"],
   "skill1": [
     {
       "slot": "skill1",

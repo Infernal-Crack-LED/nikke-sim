@@ -73,7 +73,7 @@ describe('enumerateTeams (item 3b)', () => {
     for (const { team } of out) {
       const b2 = b2sOf(team);
       if (team.includes('b2dead'))
-        expect(b2.some((s) => CD[s] <= 20)).toBe(true);
+        {expect(b2.some((s) => CD[s] <= 20)).toBe(true);}
     }
   });
 
@@ -92,7 +92,9 @@ describe('enumerateTeams (item 3b)', () => {
       expect(team).toContain('d5');
     }
     // two B1s fit no shape (double-B1 is deliberately not enumerated)
-    expect(enumerateTeams({ ...base(), mustInclude: ['b1x', 'b1y'] })).toEqual([]);
+    expect(enumerateTeams({ ...base(), mustInclude: ['b1x', 'b1y'] })).toEqual(
+      []
+    );
     // a lock outside every pool is infeasible
     expect(enumerateTeams({ ...base(), mustInclude: ['ghost'] })).toEqual([]);
     // a locked >20s B1 is filtered from the only B1 slot → infeasible
@@ -102,7 +104,7 @@ describe('enumerateTeams (item 3b)', () => {
   it('requires an advantaged unit on every team when the element rule is active', () => {
     const out = enumerateTeams({ ...base(), advantaged: (s) => s === 'd4' });
     expect(out.length).toBeGreaterThan(0);
-    for (const { team } of out) expect(team).toContain('d4');
+    for (const { team } of out) {expect(team).toContain('d4');}
   });
 
   it('applies the synergy multiplier (a satisfied pair outranks equal raw value)', () => {
@@ -156,7 +158,7 @@ describe('enumerateTeams (item 3b)', () => {
     for (const { team } of out) {
       const n = (team.includes('b2a') ? 1 : 0) + (team.includes('d4') ? 1 : 0);
       expect(n === 0 || n === 2).toBe(true);
-      if (n === 2) both++;
+      if (n === 2) {both++;}
     }
     expect(both).toBeGreaterThan(0); // the pair is still reachable, just atomic
   });
@@ -169,7 +171,7 @@ describe('enumerateTeams (item 3b)', () => {
     expect(out.length).toBeGreaterThan(0);
     let fielded = 0;
     for (const { team } of out) {
-      if (!team.includes('d1')) continue;
+      if (!team.includes('d1')) {continue;}
       fielded++;
       expect(team.includes('b2b') || team.includes('d5')).toBe(true);
     }
@@ -188,7 +190,7 @@ describe('enumerateTeams (item 3b)', () => {
     const all = enumerateTeams({ ...base(), topK: 10_000 });
     // the 7 kept are exactly the global best 7
     expect(out.map((c) => c.proxy)).toEqual(
-      all.slice(0, 7).map((c) => c.proxy),
+      all.slice(0, 7).map((c) => c.proxy)
     );
   });
 });

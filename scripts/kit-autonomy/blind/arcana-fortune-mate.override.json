@@ -215,9 +215,7 @@
     "skill2": [
       "Effect varies according to the number of attacks. Only one effect is triggered at a time. Resets when Making Memories is removed."
     ],
-    "burst": [
-      "Function: Enhances attack capabilities."
-    ]
+    "burst": ["Function: Enhances attack capabilities."]
   },
   "caveats": [
     "⚑ Making Memories window length (burst-cast → Full Burst end) estimated at 10s; the two burst self-buffs and the Snapshots buff are duration-proxies for the S1 'Removes Making Memories / Removes Snapshots of Youth' lines (engine has no remove-on-FB-end primitive).",

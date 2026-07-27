@@ -16,8 +16,8 @@
   "clock": {
     "method": "top-right countdown; fightClock = videoSec - 7",
     "anchors": [
-      {"videoSec": 8, "countdown": "02:59", "fightClock": 1},
-      {"videoSec": 183, "countdown": "00:00", "fightClock": 176}
+      { "videoSec": 8, "countdown": "02:59", "fightClock": 1 },
+      { "videoSec": 183, "countdown": "00:00", "fightClock": 176 }
     ],
     "offsetSec": 7
   },
@@ -60,12 +60,21 @@
       "perShotCorePelletFraction": 0.0,
       "wilson95_pooled": [0.0, 0.015],
       "confidence": "high — red items at mid are VFX blooms + UI, no red CORE-HIT numbers across all sampled shots",
-      "frames": ["coreband2/mid_nocorenum_v20.png", "coreband2/mid_blooms_are_vfx_v25.png"]
+      "frames": [
+        "coreband2/mid_nocorenum_v20.png",
+        "coreband2/mid_blooms_are_vfx_v25.png"
+      ]
     },
     {
       "band": "near",
-      "fightClockRange": [[33, 70], [144, 176]],
-      "videoWindow": [[40, 77], [151, 183]],
+      "fightClockRange": [
+        [33, 70],
+        [144, 176]
+      ],
+      "videoWindow": [
+        [40, 77],
+        [151, 183]
+      ],
       "bossDistance": "close/large (right); coincides with self-burst Full Burst (values elevated to 33374)",
       "pelletValueWhite": 33374,
       "critValueOrange": 46210,
@@ -78,7 +87,12 @@
       "shotsWithCoreFraction": 0.39,
       "wilson95_pooled": [0.047, 0.109],
       "confidence": "medium-high — cores clearly present; magnitude ~7-10% per pellet with +-3-4pp uncertainty (pellet-count estimation + 559046-vs-skill2 ambiguity). Red-on-dark visibility makes near a mild LOWER bound.",
-      "frames": ["coreband2/near1_v53.35.png", "coreband2/near2_v160.5.png", "coreband2/near2_critcore_71882_v161.6.png", "coreband2/near_R3_corehit_559046_v52.6.png"]
+      "frames": [
+        "coreband2/near1_v53.35.png",
+        "coreband2/near2_v160.5.png",
+        "coreband2/near2_critcore_71882_v161.6.png",
+        "coreband2/near_R3_corehit_559046_v52.6.png"
+      ]
     },
     {
       "band": "far",
@@ -92,15 +106,21 @@
       "redCorePopups": 0,
       "shotsWithCore": 0,
       "perShotCorePelletFraction": 0.0,
-      "wilson95_pooled": [0.0, 0.030],
+      "wilson95_pooled": [0.0, 0.03],
       "confidence": "high that ~0, BUT could not reach 40 clean shots (boss small + smoke-obscured + she reloads often at range) — 28 shot-samples. No red CORE-HIT numbers seen.",
       "caveat": "shot count < 40 due to sparse readable fire at max range",
       "frames": ["coreband2/far_nocore_v87.5.png"]
     },
     {
       "band": "midfar",
-      "fightClockRange": [[106, 144], [176, 180]],
-      "videoWindow": [[113, 151], [183, 187]],
+      "fightClockRange": [
+        [106, 144],
+        [176, 180]
+      ],
+      "videoWindow": [
+        [113, 151],
+        [183, 187]
+      ],
       "bossDistance": "medium (left)",
       "pelletValueWhite": 25672,
       "critValueOrange": 38508,
@@ -113,12 +133,25 @@
       "shotsWithCoreFraction": 0.025,
       "wilson95_pooled": [0.001, 0.025],
       "confidence": "medium — one confirmed red CORE-HIT (51345 = 25672x2) at v117; rate very low. A red-tinted (FB) midfar frame still showed no core, so the signal tracks RANGE not FB.",
-      "frames": ["coreband2/midfar_core_51345_v117.png", "coreband2/midfar_nocore_v131.png"]
+      "frames": [
+        "coreband2/midfar_core_51345_v117.png",
+        "coreband2/midfar_nocore_v131.png"
+      ]
     }
   ],
   "summary": {
-    "corePelletFractionByBand": {"mid": 0.0, "near": 0.072, "far": 0.0, "midfar": 0.0045},
-    "wilson95ByBand": {"mid": [0.0, 0.015], "near": [0.047, 0.109], "far": [0.0, 0.030], "midfar": [0.001, 0.025]},
+    "corePelletFractionByBand": {
+      "mid": 0.0,
+      "near": 0.072,
+      "far": 0.0,
+      "midfar": 0.0045
+    },
+    "wilson95ByBand": {
+      "mid": [0.0, 0.015],
+      "near": [0.047, 0.109],
+      "far": [0.0, 0.03],
+      "midfar": [0.001, 0.025]
+    },
     "headline": "SG per-SHOT core-pellet fraction is ~0 at mid/far, ~0.5% (one rare core) at midfar, and ~7% (CI 4.7-10.9%) at NEAR. Cores are strongly range-concentrated at close range (near >> mid ~ midfar ~ far ~ 0). This REPLICATES the earlier per-pellet read (coreband-drake-sg.json: near ~0.088, others ~0).",
     "mechanistic": "Boss is a multi-part spider mech whose weak point is a small central red core gem at the crosshair, flanked by large armoured arms/legs. Auto-aim spreads all 10 pellets; only at CLOSE range does the spread reliably land a pellet on the small gem. Body/armour pellets render white 25672/33374; a pellet on the exposed gem renders red 'CORE HIT' (51345 = x2 of a reduced hit, or 559046 = x2 of the FULL unreduced gem). Boss geometry caps the achievable SG core rate an order of magnitude below the hypothesised ~100%-at-optimal-range.",
     "confounds": [

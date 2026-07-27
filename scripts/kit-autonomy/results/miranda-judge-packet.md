@@ -10,6 +10,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -20,12 +21,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -51,32 +54,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
-
 ============================================================
+
 ## SECTION 2 — MECHANICS SSOT (docs/data/damage-calculation.md)
+
 ============================================================
 
 # Damage calculation — the exact math the sim computes
@@ -103,7 +135,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -141,29 +173,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -244,9 +276,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -282,7 +314,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -340,7 +372,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -483,12 +515,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -523,9 +555,10 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ============================================================
+
 ## SECTION 2b — MECHANICS SSOT (docs/data/game-mechanics.md)
+
 ============================================================
 
 # NIKKE combat mechanics — single source of truth (2026-07-13)
@@ -582,15 +615,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -933,778 +966,782 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ============================================================
+
 ## SECTION 3 — GROUND TRUTH: unit kit prose + base stats (data/characters.json -> characters.miranda)
+
 ============================================================
 
 {
-  "slug": "miranda",
-  "name": "Miranda",
-  "imageUrl": "https://sg-tools-cdn.blablalink.com/xv-66/wc-38/6202adb5b62786c389c4612cde9008ea.png",
-  "weapon": "SMG",
-  "burst": "I",
-  "burstCooldownSec": 20,
-  "class": "Supporter",
-  "element": "Fire",
-  "manufacturer": "Elysion",
-  "normalAttackMultiplier": 10.8,
-  "coreAttackMultiplier": 250,
-  "ammo": 120,
-  "reloadFrames": 107,
-  "chargeFrames": 0,
-  "chargeMultiplier": 0,
-  "hitsPerShot": 1,
-  "rl3": 5.7,
-  "burstGaugePerShot": 0.1,
-  "treasure": true,
-  "nicknames": [
-    "tmiranda"
-  ],
-  "skills": {
-    "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects self.\nATK ▲ 50.06% for 5 sec.",
-    "skill2": "■ Activates when entering Full Burst. Affects all allies.\nCritical Damage ▲ 32.99% for 10 sec.\n■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 30.1% for 10 sec.\nAttack Damage ▲ 23.7% for 10 sec.\n■ Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nCritical Rate ▲ 85.42% for 1 round(s).",
-    "burst": "■ Affects 2 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nATK ▲ 40.4% for 10 sec. \nCritical Damage ▲ 56.23% for 10 sec."
-  },
-  "skillCooldownsSec": {
-    "skill1": null,
-    "skill2": null,
-    "burst": 20
-  },
-  "role": {
-    "weapon": {
-      "shot_id": 1003201,
-      "shot_detail": {
-        "id": 1003201,
-        "damage": 1080,
-        "max_ammo": 120,
-        "shake_id": 1,
-        "ShakeType": "Fire_SMG",
-        "fire_type": "Instant",
-        "zoom_rate": 0,
-        "input_type": "DOWN",
-        "shot_count": 1,
-        "ShakeWeight": 120,
-        "attack_type": "Energy",
-        "camera_work": "camera_work_01",
-        "charge_time": 0,
-        "penetration": 0,
-        "reload_time": 143,
-        "shot_timing": "Concurrence",
-        "spot_radius": 0,
-        "weapon_type": "SMG",
-        "is_targeting": true,
-        "muzzle_count": 1,
-        "rate_of_fire": 1440,
-        "name_localkey": "Submachine Gun",
-        "prefer_target": "TargetAR",
-        "reload_bullet": 10000,
-        "counter_enermy": "Energy_Type",
-        "multi_aim_range": 0,
-        "spot_last_delay": 20,
-        "core_damage_rate": 25000,
-        "end_rate_of_fire": 1440,
-        "spot_first_delay": 20,
-        "center_shot_count": 0,
-        "reload_start_ammo": 119,
-        "full_charge_damage": 10000,
-        "multi_target_count": 0,
-        "spot_radius_object": 0,
-        "uptype_fire_timing": 0,
-        "burst_energy_pershot": 1000,
-        "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
-        "maintain_fire_stance": 0,
-        "spot_explosion_range": 0,
-        "use_function_id_list": [
-          0
-        ],
-        "accuracy_change_speed": 0,
-        "hurt_function_id_list": [
-          0
-        ],
-        "spot_projectile_speed": 0,
-        "accuracy_change_pershot": 0,
-        "prefer_target_condition": "None",
-        "rate_of_fire_reset_time": 0,
-        "full_charge_burst_energy": 0,
-        "end_accuracy_circle_scale": 110,
-        "auto_accuracy_change_speed": 0,
-        "rate_of_fire_change_pershot": 0,
-        "start_accuracy_circle_scale": 110,
-        "target_burst_energy_pershot": 2000,
-        "auto_accuracy_change_pershot": 0,
-        "auto_end_accuracy_circle_scale": 110,
-        "auto_start_accuracy_circle_scale": 110
-      },
-      "bonusrange_max": 35,
-      "bonusrange_min": 15
-    },
-    "burstMeta": {
-      "burst_duration": 1000,
-      "use_burst_skill": "Step1",
-      "burst_apply_delay": 1,
-      "change_burst_step": "Step2"
-    },
-    "skillDetails": {
-      "skill1_id": 2032101,
-      "skill2_id": 2032201,
-      "skill1_table": "StateEffect",
-      "skill2_table": "StateEffect",
-      "skill1_detail": {
-        "id": 2032101,
-        "icon": "icn_skill_stataccuracycircle_01",
-        "group_id": 20321,
-        "skill_level": 1,
-        "name_localkey": "Health Up!",
-        "next_level_id": 2032102,
-        "level_up_cost_id": 10102,
-        "description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF>Hit Rate ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates after landing {description_value_04} normal attack(s). Affects all allies with a Submachine Gun.\n<color=#00AEFF>Hit Rate ▲ {description_value_05}% for {description_value_06} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30"
-            ]
-          },
-          {
-            "description_value": [
-              "3.31",
-              "3.55",
-              "3.78",
-              "4.02",
-              "4.26",
-              "4.49",
-              "4.73",
-              "4.97",
-              "5.2",
-              "5.44"
-            ]
-          },
-          {
-            "description_value": [
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5"
-            ]
-          },
-          {
-            "description_value": [
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30",
-              "30"
-            ]
-          },
-          {
-            "description_value": [
-              "2.09",
-              "2.28",
-              "2.47",
-              "2.66",
-              "2.85",
-              "3.03",
-              "3.22",
-              "3.41",
-              "3.6",
-              "3.79"
-            ]
-          },
-          {
-            "description_value": [
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5",
-              "5"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "info_description_localkey": "Skill 1"
-      },
-      "skill2_detail": {
-        "id": 2032201,
-        "icon": "icn_skill_criticaldamage_01",
-        "group_id": 20322,
-        "skill_level": 1,
-        "name_localkey": "Wake Up!",
-        "next_level_id": 2032202,
-        "level_up_cost_id": 10202,
-        "description_localkey": "■ Activates at the beginning of Full Burst. Affects all allies. <color=#00AEFF>Critical Damage ▲ {description_value_01}% for {description_value_02} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "19.49",
-              "20.99",
-              "22.49",
-              "23.99",
-              "25.49",
-              "26.99",
-              "28.49",
-              "29.99",
-              "31.49",
-              "32.99"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "info_description_localkey": "Skill 2"
-      },
-      "ulti_skill_id": 1032301,
-      "ulti_skill_detail": {
-        "id": 1032301,
-        "icon": "icn_skill_c032_ult",
-        "group_id": 10323,
-        "shake_id": 4,
-        "skill_type": "SetBuff",
-        "attack_type": "Fire",
-        "skill_level": 1,
-        "counter_type": "Metal_Type",
-        "duration_type": "TimeSec",
-        "name_localkey": "Powering Up!",
-        "next_level_id": 1032302,
-        "prefer_target": "HighAttackLastSelf",
-        "resource_name": "c032_ulti",
-        "duration_value": 1000,
-        "skill_cooltime": 2000,
-        "level_up_cost_id": 10302,
-        "skill_value_data": [
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          },
-          {
-            "skill_value": 1,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 10000,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          }
-        ],
-        "skill_cooltime_list": [
-          2000,
-          2000,
-          2000,
-          2000,
-          2000,
-          2000,
-          2000,
-          2000,
-          2000,
-          2000
-        ],
-        "description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (includes the skill user if there are not enough allies). \n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec. \nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "1",
-              "1",
-              "1",
-              "1",
-              "1",
-              "1",
-              "1",
-              "1",
-              "1",
-              "1"
-            ]
-          },
-          {
-            "description_value": [
-              "23.87",
-              "25.71",
-              "27.55",
-              "29.38",
-              "31.22",
-              "33.06",
-              "34.89",
-              "36.73",
-              "38.57",
-              "40.4"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "33.22",
-              "35.78",
-              "38.34",
-              "40.89",
-              "43.45",
-              "46.01",
-              "48.56",
-              "51.12",
-              "53.67",
-              "56.23"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "prefer_target_condition": "None",
-        "info_description_localkey": "Burst Skill",
-        "after_use_function_id_list": [
-          0
-        ],
-        "after_hurt_function_id_list": [
-          103230101
-        ],
-        "before_use_function_id_list": [
-          0
-        ],
-        "before_hurt_function_id_list": [
-          0
-        ]
-      }
-    },
-    "statScaling": {
-      "grow_grade": 203202,
-      "grade_core_id": 1,
-      "stat_enhance_id": 5303,
-      "stat_enhance_detail": {
-        "id": 5303,
-        "core_hp": 200,
-        "grade_hp": 3000,
-        "core_attack": 200,
-        "grade_ratio": 200,
-        "core_defence": 200,
-        "grade_attack": 20,
-        "grade_defence": 100,
-        "core_bio_resist": 0,
-        "grade_bio_resist": 0,
-        "core_metal_resist": 0,
-        "core_energy_resist": 0,
-        "grade_metal_resist": 0,
-        "grade_energy_resist": 0
-      }
-    },
-    "element": {
-      "element_id": [
-        100001
-      ],
-      "element_details": [
-        {
-          "id": 100001,
-          "element": "Fire",
-          "group_id": 5000001,
-          "element_icon": "icn_element_fire",
-          "weak_element_id": 200001,
-          "element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
-          "element_name_localekey": "Fire",
-          "element_code_name_localekey": "Code: H.S.T.A."
-        }
-      ]
-    },
-    "piece": {
-      "piece_id": 5100032,
-      "piece_detail": {
-        "id": 5100032,
-        "class": "Supporter",
-        "order": 3200,
-        "use_id": 0,
-        "use_type": "None",
-        "item_rare": "SSR",
-        "item_type": "Piece",
-        "stack_max": 9999999,
-        "use_value": 0,
-        "corporation": "ELYSION",
-        "resource_id": 32,
-        "item_sub_type": "CharacterPiece",
-        "name_localkey": "Miranda's Spare Body",
-        "use_limit_count": false,
-        "inventory_filter": [
-          "etc"
-        ],
-        "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
-      }
-    },
-    "meta": {
-      "id": 203201,
-      "class": "Supporter",
-      "order": 10005,
-      "name_code": 5017,
-      "corporation": "ELYSION",
-      "resource_id": 32,
-      "name_localkey": "Miranda",
-      "original_rare": "SSR",
-      "critical_ratio": 1500,
-      "category_type_1": "None",
-      "category_type_2": "None",
-      "category_type_3": "None",
-      "critical_damage": 15000,
-      "eff_category_type": "Walk",
-      "eff_category_value": 0
-    }
-  },
-  "generatorSupported": true,
-  "simSupported": true,
-  "baseStats": {
-    "hp": 15000,
-    "atk": 500,
-    "def": 86,
-    "core": {
-      "hp": 200,
-      "atk": 200,
-      "def": 200
-    },
-    "grade": {
-      "hp": 3000,
-      "atk": 20,
-      "def": 100,
-      "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 32
-  }
+"slug": "miranda",
+"name": "Miranda",
+"imageUrl": "https://sg-tools-cdn.blablalink.com/xv-66/wc-38/6202adb5b62786c389c4612cde9008ea.png",
+"weapon": "SMG",
+"burst": "I",
+"burstCooldownSec": 20,
+"class": "Supporter",
+"element": "Fire",
+"manufacturer": "Elysion",
+"normalAttackMultiplier": 10.8,
+"coreAttackMultiplier": 250,
+"ammo": 120,
+"reloadFrames": 107,
+"chargeFrames": 0,
+"chargeMultiplier": 0,
+"hitsPerShot": 1,
+"rl3": 5.7,
+"burstGaugePerShot": 0.1,
+"treasure": true,
+"nicknames": [
+"tmiranda"
+],
+"skills": {
+"skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects self.\nATK ▲ 50.06% for 5 sec.",
+"skill2": "■ Activates when entering Full Burst. Affects all allies.\nCritical Damage ▲ 32.99% for 10 sec.\n■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 30.1% for 10 sec.\nAttack Damage ▲ 23.7% for 10 sec.\n■ Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nCritical Rate ▲ 85.42% for 1 round(s).",
+"burst": "■ Affects 2 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nATK ▲ 40.4% for 10 sec. \nCritical Damage ▲ 56.23% for 10 sec."
+},
+"skillCooldownsSec": {
+"skill1": null,
+"skill2": null,
+"burst": 20
+},
+"role": {
+"weapon": {
+"shot_id": 1003201,
+"shot_detail": {
+"id": 1003201,
+"damage": 1080,
+"max_ammo": 120,
+"shake_id": 1,
+"ShakeType": "Fire_SMG",
+"fire_type": "Instant",
+"zoom_rate": 0,
+"input_type": "DOWN",
+"shot_count": 1,
+"ShakeWeight": 120,
+"attack_type": "Energy",
+"camera_work": "camera_work_01",
+"charge_time": 0,
+"penetration": 0,
+"reload_time": 143,
+"shot_timing": "Concurrence",
+"spot_radius": 0,
+"weapon_type": "SMG",
+"is_targeting": true,
+"muzzle_count": 1,
+"rate_of_fire": 1440,
+"name_localkey": "Submachine Gun",
+"prefer_target": "TargetAR",
+"reload_bullet": 10000,
+"counter_enermy": "Energy_Type",
+"multi_aim_range": 0,
+"spot_last_delay": 20,
+"core_damage_rate": 25000,
+"end_rate_of_fire": 1440,
+"spot_first_delay": 20,
+"center_shot_count": 0,
+"reload_start_ammo": 119,
+"full_charge_damage": 10000,
+"multi_target_count": 0,
+"spot_radius_object": 0,
+"uptype_fire_timing": 0,
+"burst_energy_pershot": 1000,
+"description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+"maintain_fire_stance": 0,
+"spot_explosion_range": 0,
+"use_function_id_list": [
+0
+],
+"accuracy_change_speed": 0,
+"hurt_function_id_list": [
+0
+],
+"spot_projectile_speed": 0,
+"accuracy_change_pershot": 0,
+"prefer_target_condition": "None",
+"rate_of_fire_reset_time": 0,
+"full_charge_burst_energy": 0,
+"end_accuracy_circle_scale": 110,
+"auto_accuracy_change_speed": 0,
+"rate_of_fire_change_pershot": 0,
+"start_accuracy_circle_scale": 110,
+"target_burst_energy_pershot": 2000,
+"auto_accuracy_change_pershot": 0,
+"auto_end_accuracy_circle_scale": 110,
+"auto_start_accuracy_circle_scale": 110
+},
+"bonusrange_max": 35,
+"bonusrange_min": 15
+},
+"burstMeta": {
+"burst_duration": 1000,
+"use_burst_skill": "Step1",
+"burst_apply_delay": 1,
+"change_burst_step": "Step2"
+},
+"skillDetails": {
+"skill1_id": 2032101,
+"skill2_id": 2032201,
+"skill1_table": "StateEffect",
+"skill2_table": "StateEffect",
+"skill1_detail": {
+"id": 2032101,
+"icon": "icn_skill_stataccuracycircle_01",
+"group_id": 20321,
+"skill_level": 1,
+"name_localkey": "Health Up!",
+"next_level_id": 2032102,
+"level_up_cost_id": 10102,
+"description_localkey": "■ Activates after landing {description_value_01} normal attack(s). Affects all allies.\n<color=#00AEFF>Hit Rate ▲ {description_value_02}% for {description_value_03} sec.</color>\n■ Activates after landing {description_value_04} normal attack(s). Affects all allies with a Submachine Gun.\n<color=#00AEFF>Hit Rate ▲ {description_value_05}% for {description_value_06} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30"
+]
+},
+{
+"description_value": [
+"3.31",
+"3.55",
+"3.78",
+"4.02",
+"4.26",
+"4.49",
+"4.73",
+"4.97",
+"5.2",
+"5.44"
+]
+},
+{
+"description_value": [
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5"
+]
+},
+{
+"description_value": [
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30",
+"30"
+]
+},
+{
+"description_value": [
+"2.09",
+"2.28",
+"2.47",
+"2.66",
+"2.85",
+"3.03",
+"3.22",
+"3.41",
+"3.6",
+"3.79"
+]
+},
+{
+"description_value": [
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5",
+"5"
+]
+},
+{},
+{},
+{},
+{},
+{}
+],
+"info_description_localkey": "Skill 1"
+},
+"skill2_detail": {
+"id": 2032201,
+"icon": "icn_skill_criticaldamage_01",
+"group_id": 20322,
+"skill_level": 1,
+"name_localkey": "Wake Up!",
+"next_level_id": 2032202,
+"level_up_cost_id": 10202,
+"description_localkey": "■ Activates at the beginning of Full Burst. Affects all allies. <color=#00AEFF>Critical Damage ▲ {description_value_01}% for {description_value_02} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"19.49",
+"20.99",
+"22.49",
+"23.99",
+"25.49",
+"26.99",
+"28.49",
+"29.99",
+"31.49",
+"32.99"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{},
+{}
+],
+"info_description_localkey": "Skill 2"
+},
+"ulti_skill_id": 1032301,
+"ulti_skill_detail": {
+"id": 1032301,
+"icon": "icn_skill_c032_ult",
+"group_id": 10323,
+"shake_id": 4,
+"skill_type": "SetBuff",
+"attack_type": "Fire",
+"skill_level": 1,
+"counter_type": "Metal_Type",
+"duration_type": "TimeSec",
+"name_localkey": "Powering Up!",
+"next_level_id": 1032302,
+"prefer_target": "HighAttackLastSelf",
+"resource_name": "c032_ulti",
+"duration_value": 1000,
+"skill_cooltime": 2000,
+"level_up_cost_id": 10302,
+"skill_value_data": [
+{
+"skill_value": 0,
+"skill_value_type": "None"
+},
+{
+"skill_value": 1,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 10000,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+}
+],
+"skill_cooltime_list": [
+2000,
+2000,
+2000,
+2000,
+2000,
+2000,
+2000,
+2000,
+2000,
+2000
+],
+"description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (includes the skill user if there are not enough allies). \n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec. \nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"1",
+"1",
+"1",
+"1",
+"1",
+"1",
+"1",
+"1",
+"1",
+"1"
+]
+},
+{
+"description_value": [
+"23.87",
+"25.71",
+"27.55",
+"29.38",
+"31.22",
+"33.06",
+"34.89",
+"36.73",
+"38.57",
+"40.4"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"33.22",
+"35.78",
+"38.34",
+"40.89",
+"43.45",
+"46.01",
+"48.56",
+"51.12",
+"53.67",
+"56.23"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{},
+{},
+{},
+{},
+{},
+{}
+],
+"prefer_target_condition": "None",
+"info_description_localkey": "Burst Skill",
+"after_use_function_id_list": [
+0
+],
+"after_hurt_function_id_list": [
+103230101
+],
+"before_use_function_id_list": [
+0
+],
+"before_hurt_function_id_list": [
+0
+]
+}
+},
+"statScaling": {
+"grow_grade": 203202,
+"grade_core_id": 1,
+"stat_enhance_id": 5303,
+"stat_enhance_detail": {
+"id": 5303,
+"core_hp": 200,
+"grade_hp": 3000,
+"core_attack": 200,
+"grade_ratio": 200,
+"core_defence": 200,
+"grade_attack": 20,
+"grade_defence": 100,
+"core_bio_resist": 0,
+"grade_bio_resist": 0,
+"core_metal_resist": 0,
+"core_energy_resist": 0,
+"grade_metal_resist": 0,
+"grade_energy_resist": 0
+}
+},
+"element": {
+"element_id": [
+100001
+],
+"element_details": [
+{
+"id": 100001,
+"element": "Fire",
+"group_id": 5000001,
+"element_icon": "icn_element_fire",
+"weak_element_id": 200001,
+"element_desc_localekey": "Injects Code: H.S.T.A. to all wind-type enemies, dealing 10% additional damage.",
+"element_name_localekey": "Fire",
+"element_code_name_localekey": "Code: H.S.T.A."
+}
+]
+},
+"piece": {
+"piece_id": 5100032,
+"piece_detail": {
+"id": 5100032,
+"class": "Supporter",
+"order": 3200,
+"use_id": 0,
+"use_type": "None",
+"item_rare": "SSR",
+"item_type": "Piece",
+"stack_max": 9999999,
+"use_value": 0,
+"corporation": "ELYSION",
+"resource_id": 32,
+"item_sub_type": "CharacterPiece",
+"name_localkey": "Miranda's Spare Body",
+"use_limit_count": false,
+"inventory_filter": [
+"etc"
+],
+"description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+}
+},
+"meta": {
+"id": 203201,
+"class": "Supporter",
+"order": 10005,
+"name_code": 5017,
+"corporation": "ELYSION",
+"resource_id": 32,
+"name_localkey": "Miranda",
+"original_rare": "SSR",
+"critical_ratio": 1500,
+"category_type_1": "None",
+"category_type_2": "None",
+"category_type_3": "None",
+"critical_damage": 15000,
+"eff_category_type": "Walk",
+"eff_category_value": 0
+}
+},
+"generatorSupported": true,
+"simSupported": true,
+"baseStats": {
+"hp": 15000,
+"atk": 500,
+"def": 86,
+"core": {
+"hp": 200,
+"atk": 200,
+"def": 200
+},
+"grade": {
+"hp": 3000,
+"atk": 20,
+"def": 100,
+"ratio": 200
+},
+"critRate": 15,
+"maxLevel": 1200,
+"critDamage": 150,
+"resourceId": 32
+}
 }
 
 ============================================================
+
 ## SECTION 4 — S2b CROSS-FAMILY TEST-FAITHFULNESS REVIEW (claude-fable-5)
+
 ============================================================
 
 {
-  "slug": "miranda",
-  "leakDetected": null,
-  "spec": [
-    {
-      "slot": "skill1",
-      "kitLine": "■ after landing 30 normal attack(s) → allies",
-      "disposition": "FAITHFUL",
-      "scope": "Generic Hit Rate buff (stat hitRatePct 5.44) — not attack-category-scoped; its damage effect flows only through the engine's hit-rate→core path (hrCoreMult).",
-      "durationSemantics": "durationSec: 5 — literal seconds. Cadence math: SMG at ~20 rounds/s lands 30 hits in ~1.5s, so the 5s buff refreshes near-continuously; uptime should survive the ~1.78s reload (107f) without lapsing.",
-      "triggerIdentity": "hitCount count:30 — counts Miranda's own LANDED normal rounds (hitsPerShot 1, so rounds == pulls). No FB gate; accrues in and out of Full Burst.",
-      "targetSet": "allies (all, including self).",
-      "nearestWrongModel": "Passive/always-on or interval-based buff (or first-fire at t=0), instead of a hit-counter that only starts paying after the 30th landed round and lapses if firing stops.",
-      "distinguishingAssertion": "No buffApply with stat hitRatePct value 5.44 exists before Miranda's 30th shot event (~frame 90); the first buffApply frame follows the 30th shot, and re-applies (refresh:true) recur every ~30 shots thereafter — red under passive/interval (t=0 or fixed-clock application).",
-      "inertness": "Must not fire during Miranda's reload window faster than her actual shot count allows; zero applications if Miranda never fires.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "■ 30 normal attacks → allies with a Submachine Gun",
-      "disposition": "FAITHFUL",
-      "scope": "Second, weapon-scoped Hit Rate buff (hitRatePct 3.79) stacking on top of the 5.44 line for SMG holders only.",
-      "durationSemantics": "durationSec: 5, same near-permanent refresh cadence as the sibling line.",
-      "triggerIdentity": "Same hitCount count:30 block family; fires together with the all-allies line.",
-      "targetSet": "alliesOfWeapon weapon:'SMG' (Miranda herself is SMG, so she holds 5.44 + 3.79 = 9.23 total).",
-      "nearestWrongModel": "Unscoped all-allies target — silently granting the extra 3.79 hit rate (i.e. extra core rate) to a non-SMG carry, or collapsing both lines into one 9.23 all-allies buff.",
-      "distinguishingAssertion": "In controlComp with a non-SMG carry, buffApply events with value 3.79 have targetSlug ONLY for SMG-weapon units (Miranda; none of liter/crown/helm/carry unless SMG); the carry receives value 5.44 applications but never 3.79 — red under the unscoped/merged model.",
-      "inertness": "A non-SMG carry's core rate must not move when this line alone is zeroed; only SMG holders' hit rate changes.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "■ 30 normal attacks → self: ATK ▲ 50.06%",
-      "disposition": "FAITHFUL",
-      "scope": "Generic self ATK stat (atkPct), unscoped by attack category.",
-      "durationSemantics": "durationSec: 5, near-permanent uptime given the ~1.5s trigger cadence.",
-      "triggerIdentity": "Same hitCount count:30 trigger.",
-      "targetSet": "self only.",
-      "nearestWrongModel": "Target widened to allies (over-crediting the carry with +50% ATK — a huge board error), or stat mis-keyed as attackDamagePct.",
-      "distinguishingAssertion": "Every buffApply with stat atkPct value 50.06 from skill1 has targetIdx === Miranda's slot (casterIdx === targetIdx); the carry's totals(res)[carry] is IDENTICAL when this effect is deleted via withPatchedOverride — red if allies-targeted (carry damage would jump) or if the value leaks into attackDamagePct dilution.",
-      "inertness": "Carry and helm damage must NOT move from this line; it only scales Miranda's own (small, supporter) output.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "■ entering Full Burst → allies: Crit DMG ▲32.99%",
-      "disposition": "FAITHFUL",
-      "scope": "Generic critDamagePct, all attack categories.",
-      "durationSemantics": "durationSec: 10 — spans the full 10s FB window.",
-      "triggerIdentity": "fullBurstEnter — ANY team Full Burst, not gated on Miranda casting (she is B1 so the distinction is invisible in a comp where she is the sole B1; still must be keyed fullBurstEnter).",
-      "targetSet": "allies (all, including self).",
-      "nearestWrongModel": "Keyed to burstCast (Miranda's own cast, landing pre-FB) — same count in a sole-B1 comp but wrong timing/frame, and diverges if a second B1 exists; or self-only targeting.",
-      "distinguishingAssertion": "A buffApply with stat critDamagePct value 32.99 occurs at (same frame as) every fullBurstStart event and targets all 5 slots — red under burstCast keying (apply frame precedes fullBurstStart) or self-only targeting.",
-      "inertness": "Must apply once per FB entry, not per burst stage cast.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "■ entering Full Burst → self: Crit Rate ▲30.1%",
-      "disposition": "FAITHFUL",
-      "scope": "Generic critRatePct — self only. NOT critRateNormalPct (no 'of normal attacks' scoping in the prose).",
-      "durationSemantics": "durationSec: 10.",
-      "triggerIdentity": "fullBurstEnter, same block as the Attack Damage line below.",
-      "targetSet": "self only.",
-      "nearestWrongModel": "Target widened to allies — handing the carry +30.1 crit rate every FB is the highest-leverage possible misread of this kit.",
-      "distinguishingAssertion": "buffApply stat critRatePct value 30.1 has targetIdx === Miranda's slot exclusively; the carry's damage-event crit rates inside FB are unchanged when this effect is deleted — red under allies targeting.",
-      "inertness": "Carry/helm crit rolls must NOT move from this line.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "■ entering Full Burst → self: Attack Damage ▲23.7%",
-      "disposition": "FAITHFUL",
-      "scope": "attackDamagePct (Damage Up bucket) on self — must NOT be encoded as atkPct.",
-      "durationSemantics": "durationSec: 10.",
-      "triggerIdentity": "fullBurstEnter (same block as the 30.1 crit-rate line).",
-      "targetSet": "self only.",
-      "nearestWrongModel": "Stat mis-keyed as atkPct (wrong bucket — ATK multiplies differently than Damage-Up dilution), or target widened to allies.",
-      "distinguishingAssertion": "buffApply stat attackDamagePct value 23.7 with targetIdx === Miranda only, applied at each fullBurstStart — red if the same value appears under stat atkPct or on any other targetIdx.",
-      "inertness": "No ally receives this; Miranda's out-of-FB damage unchanged by it (10s window only).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "■ FB enter → 1 ally, highest final ATK: CR ▲85.42% 1 round",
-      "disposition": "FAITHFUL",
-      "scope": "Generic critRatePct on the recipient — but effectively a one-shot crit guarantee-ish spike.",
-      "durationSemantics": "'for 1 round(s)' = ROUND COUNT: durationShots: 1, NOT durationSec: 1. Expires right after the HOLDER fires 1 round (their next single bullet post-apply crits at +85.42, the one after does not). No time expiry unless combined.",
-      "triggerIdentity": "fullBurstEnter (any team FB).",
-      "targetSet": "alliesTopAtk count:1, excludeSelf:true, byFinalAtk:true — the prose literally says 'highest FINAL ATK', which per the A3 rule requires live effectiveAtk ranking, not staticAtk; 'including the skill user if there are not enough allies' is a fallback that never fires in a 5-unit comp.",
-      "nearestWrongModel": "durationSec: 1 (the canonical rounds-vs-seconds misread — an SMG recipient would get ~20 boosted rounds instead of 1; an SR recipient roughly the same 1, hiding the bug on slow carries); secondary: byFinalAtk omitted (static-ATK ranking picks a different recipient once ATK buffs are live), or excludeSelf dropped (Miranda self-targets).",
-      "distinguishingAssertion": "The buffApply with stat critRatePct value 85.42 carries durationShots === 1 (field present on the event) and targetIdx !== casterIdx; counting the recipient's damage events whose crit roll includes the +85.42 window yields EXACTLY 1 round per FB entry — red under durationSec:1 (a fast-firing recipient shows ~15–20 boosted rounds) and red if targetIdx === Miranda.",
-      "inertness": "Exactly one round per FB benefits; the recipient's second post-apply round must NOT carry the spike; Miranda must never be the recipient in a full comp.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "■ 2 allies, highest final ATK: ATK ▲40.4% 10s",
-      "disposition": "FAITHFUL",
-      "scope": "Generic atkPct on the two recipients.",
-      "durationSemantics": "durationSec: 10 — literal seconds (contrast with skill2's round-count line).",
-      "triggerIdentity": "burstCast — the burst block has NO 'Activates when…' clause, so it fires when MIRANDA casts her Burst I (cd 20s), pre-FB timing. NOT fullBurstEnter.",
-      "targetSet": "alliesTopAtk count:2, excludeSelf:true, byFinalAtk:true ('highest final ATK', explicit except-self with the same never-fires fallback).",
-      "nearestWrongModel": "Keyed to fullBurstEnter — over-fires on rotations where a different B1 completes the chain (invisible in a sole-B1 fixture, diverges in a two-B1 comp); secondary: static-ATK ranking (byFinalAtk omitted) picking recipients before live buffs are counted, or including Miranda in the pool.",
-      "distinguishingAssertion": "buffApply events with stat atkPct value 40.4 have casterIdx === Miranda and occur only on frames where a burstCast event for Miranda fired (never on an FB entry she didn't burst into); exactly 2 distinct targetIdx per cast, neither equal to casterIdx — red under fullBurstEnter keying in a comp with a second B1, and red if Miranda appears among the recipients.",
-      "inertness": "Fires only on Miranda's own casts; in a comp where another B1 takes a rotation, that rotation gets NO application.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "■ same 2 allies: Critical Damage ▲56.23% 10s",
-      "disposition": "FAITHFUL",
-      "scope": "Generic critDamagePct, second effect in the same burst block (same trigger/target resolution — both effects must land on the SAME two recipients).",
-      "durationSemantics": "durationSec: 10.",
-      "triggerIdentity": "burstCast (same block as the ATK line).",
-      "targetSet": "Same alliesTopAtk count:2, excludeSelf:true, byFinalAtk:true.",
-      "nearestWrongModel": "Splitting the two effects into separately-resolved blocks so the ATK line's own buff re-ranks 'final ATK' and the crit-damage line lands on a different pair; or all-allies widening.",
-      "distinguishingAssertion": "Per Miranda burstCast, the buffApply pair {atkPct 40.4, critDamagePct 56.23} shares identical targetIdx sets (exactly 2, excluding Miranda) — red if the two stats ever land on different recipients or on >2 targets.",
-      "inertness": "Non-recipient allies (the 2 lowest-final-ATK non-Miranda units) must NOT move from the burst.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    }
-  ],
-  "loadBearingSet": [
-    "skill1:hitCount30-allies-hitRate-5.44",
-    "skill1:hitCount30-SMG-allies-hitRate-3.79",
-    "skill1:hitCount30-self-atk-50.06",
-    "skill2:fbEnter-allies-critDmg-32.99",
-    "skill2:fbEnter-self-critRate-30.1",
-    "skill2:fbEnter-self-attackDamage-23.7",
-    "skill2:fbEnter-top1FinalAtk-critRate-85.42-1round",
-    "burst:cast-top2FinalAtk-atk-40.4",
-    "burst:cast-top2FinalAtk-critDmg-56.23"
-  ],
-  "unmodeledVerbatim": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "notes": "Every line is encodable in the existing schema — I expect zero UNMODELED text; any non-empty unmodeled field in the shipped override needs justification. The three shared-prior misreads I most expect the driver to have made: (1) skill2's 'for 1 round(s)' encoded as durationSec:1 instead of durationShots:1 — the single highest-risk line; a slow-firing carry masks the bug, so the distinguishing assertion must use the durationShots field on the buffApply event, not a timing observation. (2) byFinalAtk omitted on the three 'highest FINAL ATK' targets (skill2 block 3, burst) — the prose says FINAL, so live-effectiveAtk ranking is required per the owner's literal-word rule; static ranking can pick a different recipient once Miranda's own ATK/crit buffs are live, and the burst's own atkPct 40.4 must not re-rank its sibling critDamagePct effect (both effects in one block, one target resolution). (3) The SMG-scoped 3.79 Hit Rate line merged into the all-allies 5.44 line (or both left unscoped) — the test needs a non-SMG carry in the fixture so the scoping is observable. Also verify skill1's trigger is hitCount (landed rounds), not interval/passive: at ~20 rounds/s the 30-hit threshold refreshes every ~1.5s making the buffs near-permanent, which makes a passive misread almost damage-invisible — the distinguishing assertion must therefore anchor on the FIRST application frame (after shot 30, ~t≈1.5s, never t=0) and on application count tracking shot count. Hit Rate's damage consequence rides the hrCoreMult core-lift path (CALIBRATED ⚑ slope, HRCORE-gated) — the buff VALUES are kit-literal (DATAMINED) but any assertion on damage movement from the hit-rate lines is conditional on HRCORE being live; assert on buffApply events, not damage deltas, to stay gate-independent. Fixture note: Miranda is Burst I — she replaces liter in controlComp or the comp needs B2+B3 retained so FBs actually chain; a two-B1 variant comp is the discriminating fixture for burstCast-vs-fullBurstEnter on the burst block.",
-  "model": "claude-fable-5"
+"slug": "miranda",
+"leakDetected": null,
+"spec": [
+{
+"slot": "skill1",
+"kitLine": "■ after landing 30 normal attack(s) → allies",
+"disposition": "FAITHFUL",
+"scope": "Generic Hit Rate buff (stat hitRatePct 5.44) — not attack-category-scoped; its damage effect flows only through the engine's hit-rate→core path (hrCoreMult).",
+"durationSemantics": "durationSec: 5 — literal seconds. Cadence math: SMG at ~20 rounds/s lands 30 hits in ~1.5s, so the 5s buff refreshes near-continuously; uptime should survive the ~1.78s reload (107f) without lapsing.",
+"triggerIdentity": "hitCount count:30 — counts Miranda's own LANDED normal rounds (hitsPerShot 1, so rounds == pulls). No FB gate; accrues in and out of Full Burst.",
+"targetSet": "allies (all, including self).",
+"nearestWrongModel": "Passive/always-on or interval-based buff (or first-fire at t=0), instead of a hit-counter that only starts paying after the 30th landed round and lapses if firing stops.",
+"distinguishingAssertion": "No buffApply with stat hitRatePct value 5.44 exists before Miranda's 30th shot event (~frame 90); the first buffApply frame follows the 30th shot, and re-applies (refresh:true) recur every ~30 shots thereafter — red under passive/interval (t=0 or fixed-clock application).",
+"inertness": "Must not fire during Miranda's reload window faster than her actual shot count allows; zero applications if Miranda never fires.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "■ 30 normal attacks → allies with a Submachine Gun",
+"disposition": "FAITHFUL",
+"scope": "Second, weapon-scoped Hit Rate buff (hitRatePct 3.79) stacking on top of the 5.44 line for SMG holders only.",
+"durationSemantics": "durationSec: 5, same near-permanent refresh cadence as the sibling line.",
+"triggerIdentity": "Same hitCount count:30 block family; fires together with the all-allies line.",
+"targetSet": "alliesOfWeapon weapon:'SMG' (Miranda herself is SMG, so she holds 5.44 + 3.79 = 9.23 total).",
+"nearestWrongModel": "Unscoped all-allies target — silently granting the extra 3.79 hit rate (i.e. extra core rate) to a non-SMG carry, or collapsing both lines into one 9.23 all-allies buff.",
+"distinguishingAssertion": "In controlComp with a non-SMG carry, buffApply events with value 3.79 have targetSlug ONLY for SMG-weapon units (Miranda; none of liter/crown/helm/carry unless SMG); the carry receives value 5.44 applications but never 3.79 — red under the unscoped/merged model.",
+"inertness": "A non-SMG carry's core rate must not move when this line alone is zeroed; only SMG holders' hit rate changes.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "■ 30 normal attacks → self: ATK ▲ 50.06%",
+"disposition": "FAITHFUL",
+"scope": "Generic self ATK stat (atkPct), unscoped by attack category.",
+"durationSemantics": "durationSec: 5, near-permanent uptime given the ~1.5s trigger cadence.",
+"triggerIdentity": "Same hitCount count:30 trigger.",
+"targetSet": "self only.",
+"nearestWrongModel": "Target widened to allies (over-crediting the carry with +50% ATK — a huge board error), or stat mis-keyed as attackDamagePct.",
+"distinguishingAssertion": "Every buffApply with stat atkPct value 50.06 from skill1 has targetIdx === Miranda's slot (casterIdx === targetIdx); the carry's totals(res)[carry] is IDENTICAL when this effect is deleted via withPatchedOverride — red if allies-targeted (carry damage would jump) or if the value leaks into attackDamagePct dilution.",
+"inertness": "Carry and helm damage must NOT move from this line; it only scales Miranda's own (small, supporter) output.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "■ entering Full Burst → allies: Crit DMG ▲32.99%",
+"disposition": "FAITHFUL",
+"scope": "Generic critDamagePct, all attack categories.",
+"durationSemantics": "durationSec: 10 — spans the full 10s FB window.",
+"triggerIdentity": "fullBurstEnter — ANY team Full Burst, not gated on Miranda casting (she is B1 so the distinction is invisible in a comp where she is the sole B1; still must be keyed fullBurstEnter).",
+"targetSet": "allies (all, including self).",
+"nearestWrongModel": "Keyed to burstCast (Miranda's own cast, landing pre-FB) — same count in a sole-B1 comp but wrong timing/frame, and diverges if a second B1 exists; or self-only targeting.",
+"distinguishingAssertion": "A buffApply with stat critDamagePct value 32.99 occurs at (same frame as) every fullBurstStart event and targets all 5 slots — red under burstCast keying (apply frame precedes fullBurstStart) or self-only targeting.",
+"inertness": "Must apply once per FB entry, not per burst stage cast.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "■ entering Full Burst → self: Crit Rate ▲30.1%",
+"disposition": "FAITHFUL",
+"scope": "Generic critRatePct — self only. NOT critRateNormalPct (no 'of normal attacks' scoping in the prose).",
+"durationSemantics": "durationSec: 10.",
+"triggerIdentity": "fullBurstEnter, same block as the Attack Damage line below.",
+"targetSet": "self only.",
+"nearestWrongModel": "Target widened to allies — handing the carry +30.1 crit rate every FB is the highest-leverage possible misread of this kit.",
+"distinguishingAssertion": "buffApply stat critRatePct value 30.1 has targetIdx === Miranda's slot exclusively; the carry's damage-event crit rates inside FB are unchanged when this effect is deleted — red under allies targeting.",
+"inertness": "Carry/helm crit rolls must NOT move from this line.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "■ entering Full Burst → self: Attack Damage ▲23.7%",
+"disposition": "FAITHFUL",
+"scope": "attackDamagePct (Damage Up bucket) on self — must NOT be encoded as atkPct.",
+"durationSemantics": "durationSec: 10.",
+"triggerIdentity": "fullBurstEnter (same block as the 30.1 crit-rate line).",
+"targetSet": "self only.",
+"nearestWrongModel": "Stat mis-keyed as atkPct (wrong bucket — ATK multiplies differently than Damage-Up dilution), or target widened to allies.",
+"distinguishingAssertion": "buffApply stat attackDamagePct value 23.7 with targetIdx === Miranda only, applied at each fullBurstStart — red if the same value appears under stat atkPct or on any other targetIdx.",
+"inertness": "No ally receives this; Miranda's out-of-FB damage unchanged by it (10s window only).",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "■ FB enter → 1 ally, highest final ATK: CR ▲85.42% 1 round",
+"disposition": "FAITHFUL",
+"scope": "Generic critRatePct on the recipient — but effectively a one-shot crit guarantee-ish spike.",
+"durationSemantics": "'for 1 round(s)' = ROUND COUNT: durationShots: 1, NOT durationSec: 1. Expires right after the HOLDER fires 1 round (their next single bullet post-apply crits at +85.42, the one after does not). No time expiry unless combined.",
+"triggerIdentity": "fullBurstEnter (any team FB).",
+"targetSet": "alliesTopAtk count:1, excludeSelf:true, byFinalAtk:true — the prose literally says 'highest FINAL ATK', which per the A3 rule requires live effectiveAtk ranking, not staticAtk; 'including the skill user if there are not enough allies' is a fallback that never fires in a 5-unit comp.",
+"nearestWrongModel": "durationSec: 1 (the canonical rounds-vs-seconds misread — an SMG recipient would get ~20 boosted rounds instead of 1; an SR recipient roughly the same 1, hiding the bug on slow carries); secondary: byFinalAtk omitted (static-ATK ranking picks a different recipient once ATK buffs are live), or excludeSelf dropped (Miranda self-targets).",
+"distinguishingAssertion": "The buffApply with stat critRatePct value 85.42 carries durationShots === 1 (field present on the event) and targetIdx !== casterIdx; counting the recipient's damage events whose crit roll includes the +85.42 window yields EXACTLY 1 round per FB entry — red under durationSec:1 (a fast-firing recipient shows ~15–20 boosted rounds) and red if targetIdx === Miranda.",
+"inertness": "Exactly one round per FB benefits; the recipient's second post-apply round must NOT carry the spike; Miranda must never be the recipient in a full comp.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "■ 2 allies, highest final ATK: ATK ▲40.4% 10s",
+"disposition": "FAITHFUL",
+"scope": "Generic atkPct on the two recipients.",
+"durationSemantics": "durationSec: 10 — literal seconds (contrast with skill2's round-count line).",
+"triggerIdentity": "burstCast — the burst block has NO 'Activates when…' clause, so it fires when MIRANDA casts her Burst I (cd 20s), pre-FB timing. NOT fullBurstEnter.",
+"targetSet": "alliesTopAtk count:2, excludeSelf:true, byFinalAtk:true ('highest final ATK', explicit except-self with the same never-fires fallback).",
+"nearestWrongModel": "Keyed to fullBurstEnter — over-fires on rotations where a different B1 completes the chain (invisible in a sole-B1 fixture, diverges in a two-B1 comp); secondary: static-ATK ranking (byFinalAtk omitted) picking recipients before live buffs are counted, or including Miranda in the pool.",
+"distinguishingAssertion": "buffApply events with stat atkPct value 40.4 have casterIdx === Miranda and occur only on frames where a burstCast event for Miranda fired (never on an FB entry she didn't burst into); exactly 2 distinct targetIdx per cast, neither equal to casterIdx — red under fullBurstEnter keying in a comp with a second B1, and red if Miranda appears among the recipients.",
+"inertness": "Fires only on Miranda's own casts; in a comp where another B1 takes a rotation, that rotation gets NO application.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "■ same 2 allies: Critical Damage ▲56.23% 10s",
+"disposition": "FAITHFUL",
+"scope": "Generic critDamagePct, second effect in the same burst block (same trigger/target resolution — both effects must land on the SAME two recipients).",
+"durationSemantics": "durationSec: 10.",
+"triggerIdentity": "burstCast (same block as the ATK line).",
+"targetSet": "Same alliesTopAtk count:2, excludeSelf:true, byFinalAtk:true.",
+"nearestWrongModel": "Splitting the two effects into separately-resolved blocks so the ATK line's own buff re-ranks 'final ATK' and the crit-damage line lands on a different pair; or all-allies widening.",
+"distinguishingAssertion": "Per Miranda burstCast, the buffApply pair {atkPct 40.4, critDamagePct 56.23} shares identical targetIdx sets (exactly 2, excluding Miranda) — red if the two stats ever land on different recipients or on >2 targets.",
+"inertness": "Non-recipient allies (the 2 lowest-final-ATK non-Miranda units) must NOT move from the burst.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+}
+],
+"loadBearingSet": [
+"skill1:hitCount30-allies-hitRate-5.44",
+"skill1:hitCount30-SMG-allies-hitRate-3.79",
+"skill1:hitCount30-self-atk-50.06",
+"skill2:fbEnter-allies-critDmg-32.99",
+"skill2:fbEnter-self-critRate-30.1",
+"skill2:fbEnter-self-attackDamage-23.7",
+"skill2:fbEnter-top1FinalAtk-critRate-85.42-1round",
+"burst:cast-top2FinalAtk-atk-40.4",
+"burst:cast-top2FinalAtk-critDmg-56.23"
+],
+"unmodeledVerbatim": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"notes": "Every line is encodable in the existing schema — I expect zero UNMODELED text; any non-empty unmodeled field in the shipped override needs justification. The three shared-prior misreads I most expect the driver to have made: (1) skill2's 'for 1 round(s)' encoded as durationSec:1 instead of durationShots:1 — the single highest-risk line; a slow-firing carry masks the bug, so the distinguishing assertion must use the durationShots field on the buffApply event, not a timing observation. (2) byFinalAtk omitted on the three 'highest FINAL ATK' targets (skill2 block 3, burst) — the prose says FINAL, so live-effectiveAtk ranking is required per the owner's literal-word rule; static ranking can pick a different recipient once Miranda's own ATK/crit buffs are live, and the burst's own atkPct 40.4 must not re-rank its sibling critDamagePct effect (both effects in one block, one target resolution). (3) The SMG-scoped 3.79 Hit Rate line merged into the all-allies 5.44 line (or both left unscoped) — the test needs a non-SMG carry in the fixture so the scoping is observable. Also verify skill1's trigger is hitCount (landed rounds), not interval/passive: at ~20 rounds/s the 30-hit threshold refreshes every ~1.5s making the buffs near-permanent, which makes a passive misread almost damage-invisible — the distinguishing assertion must therefore anchor on the FIRST application frame (after shot 30, ~t≈1.5s, never t=0) and on application count tracking shot count. Hit Rate's damage consequence rides the hrCoreMult core-lift path (CALIBRATED ⚑ slope, HRCORE-gated) — the buff VALUES are kit-literal (DATAMINED) but any assertion on damage movement from the hit-rate lines is conditional on HRCORE being live; assert on buffApply events, not damage deltas, to stay gate-independent. Fixture note: Miranda is Burst I — she replaces liter in controlComp or the comp needs B2+B3 retained so FBs actually chain; a two-B1 variant comp is the discriminating fixture for burstCast-vs-fullBurstEnter on the burst block.",
+"model": "claude-fable-5"
 }
 
-
 ============================================================
+
 ## SECTION 5 — S5 BLIND TEST (claude-opus-5, written from kit prose alone)
 
 CONVERGENCE vs DRIVER OVERRIDE: 15 assertions PASSED / 2 skipped (blind self-declared gaps: exact 5s/10s window length needs apply-frame the buffApply payload does not expose; byFinalAtk-vs-static ranking not constructible blind) / 0 FAILED. Burst non-vacuity passed (miranda casts her Burst I in the two-B1 controlComp fixture).
 ============================================================
 
 /**
- * miranda — SMG / Fire / Supporter / Burst I. BLIND kit-spec pin (written from the kit prose
- * alone; the driver's override, tests and reasoning were NOT consulted).
- *
- * KIT (literal):
- *   S1 — three blocks, each 'Activates after landing 30 normal attack(s)':
- *        a) all allies              Hit Rate     +5.44%  for 5 sec
- *        b) all allies with an SMG  Hit Rate     +3.79%  for 5 sec
- *        c) self                    ATK         +50.06%  for 5 sec
- *   S2 — three blocks, each 'Activates when entering Full Burst':
- *        a) all allies              Crit Damage +32.99%  for 10 sec
- *        b) self                    Crit Rate    +30.1%  for 10 sec
- *                                   Attack Dmg   +23.7%  for 10 sec
- *        c) 1 ally with the highest FINAL ATK, except self:
- *                                   Crit Rate   +85.42%  for 1 ROUND
- *   BURST — no activation clause => own burst cast. 2 allies with the highest FINAL ATK,
- *           except self:            ATK          +40.4%  for 10 sec
- *                                   Crit Damage +56.23%  for 10 sec
- *
- * FIXTURE: controlComp('miranda', true) = liter (B1) / crown (B2) / miranda / helm (B3).
- *   miranda is BURST I, so she contends with liter for stage 1 — whether she ever casts is a
- *   property of the fixture, asserted explicitly (non-vacuity) rather than assumed. Full Bursts
- *   are driven by helm (B3) either way, so every skill2 assertion is exercised regardless.
- *
- * TRAPS THIS FILE PINS:
- *   - TRIGGER IDENTITY: S1 is hitCount(30) — not shotFired, not interval, not lastBullet.
- *   - TRIGGER IDENTITY: S2 is fullBurstEnter (ANY team FB) — not miranda's own burstCast.
- *   - SCOPE: S1b is weapon-scoped (SMG allies only), S1c / S2b are self-only.
- *   - DURATION SEMANTICS: S2c is 'for 1 round(s)' = durationShots 1, NEVER durationSec 1.
- *   - TARGET SET: S2c / burst exclude self and take the top-final-ATK allies.
- */
-import { describe, expect, it } from 'vitest';
-import type { SimEvent } from '../../../src/types.js';
-import {
-  controlComp,
-  runComp,
-  totals,
-  unitOf,
-  withPatchedOverride,
-} from '../lib/harness.js';
+
+- miranda — SMG / Fire / Supporter / Burst I. BLIND kit-spec pin (written from the kit prose
+- alone; the driver's override, tests and reasoning were NOT consulted).
+-
+- KIT (literal):
+- S1 — three blocks, each 'Activates after landing 30 normal attack(s)':
+-        a) all allies              Hit Rate     +5.44%  for 5 sec
+-        b) all allies with an SMG  Hit Rate     +3.79%  for 5 sec
+-        c) self                    ATK         +50.06%  for 5 sec
+- S2 — three blocks, each 'Activates when entering Full Burst':
+-        a) all allies              Crit Damage +32.99%  for 10 sec
+-        b) self                    Crit Rate    +30.1%  for 10 sec
+-                                   Attack Dmg   +23.7%  for 10 sec
+-        c) 1 ally with the highest FINAL ATK, except self:
+-                                   Crit Rate   +85.42%  for 1 ROUND
+- BURST — no activation clause => own burst cast. 2 allies with the highest FINAL ATK,
+-           except self:            ATK          +40.4%  for 10 sec
+-                                   Crit Damage +56.23%  for 10 sec
+-
+- FIXTURE: controlComp('miranda', true) = liter (B1) / crown (B2) / miranda / helm (B3).
+- miranda is BURST I, so she contends with liter for stage 1 — whether she ever casts is a
+- property of the fixture, asserted explicitly (non-vacuity) rather than assumed. Full Bursts
+- are driven by helm (B3) either way, so every skill2 assertion is exercised regardless.
+-
+- TRAPS THIS FILE PINS:
+- - TRIGGER IDENTITY: S1 is hitCount(30) — not shotFired, not interval, not lastBullet.
+- - TRIGGER IDENTITY: S2 is fullBurstEnter (ANY team FB) — not miranda's own burstCast.
+- - SCOPE: S1b is weapon-scoped (SMG allies only), S1c / S2b are self-only.
+- - DURATION SEMANTICS: S2c is 'for 1 round(s)' = durationShots 1, NEVER durationSec 1.
+- - TARGET SET: S2c / burst exclude self and take the top-final-ATK allies.
+    */
+    import { describe, expect, it } from 'vitest';
+    import type { SimEvent } from '../../../src/types.js';
+    import {
+    controlComp,
+    runComp,
+    totals,
+    unitOf,
+    withPatchedOverride,
+    } from '../lib/harness.js';
 
 const SLUG = 'miranda';
 
 type Ev = SimEvent & Record<string, any>;
 
 function run(opts: any): { res: any; events: Ev[] } {
-  const events: Ev[] = [];
-  const res = runComp({
-    ...opts,
-    cfg: {
-      ...(opts.cfg ?? {}),
-      onEvent: (ev: SimEvent) => {
-        events.push(ev as Ev);
-      },
-    },
-  } as any);
-  return { res, events };
+const events: Ev[] = [];
+const res = runComp({
+...opts,
+cfg: {
+...(opts.cfg ?? {}),
+onEvent: (ev: SimEvent) => {
+events.push(ev as Ev);
+},
+},
+} as any);
+return { res, events };
 }
 
 /** Slot accessor that tolerates both override shapes (Block[] or CharacterSkills.blocks). */
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
-  const s = ov?.[slot];
-  if (!s) return [];
-  return Array.isArray(s) ? s : (s.blocks ?? []);
+const s = ov?.[slot];
+if (!s) return [];
+return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 
 /** Locate a block STRUCTURALLY by the kit magnitude it carries (no index assumptions). */
 function blockWithBuff(ov: any, slot: 'skill1' | 'skill2' | 'burst', value: number): any {
-  const found = slotBlocks(ov, slot).find((b: any) =>
-    (b.effects ?? []).some(
-      (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
-    ),
-  );
-  if (!found) {
-    throw new Error(
-      '[' + SLUG + '] no ' + slot + ' block carries buff value ' + value + ' — the kit prose says it must',
-    );
-  }
-  return found;
+const found = slotBlocks(ov, slot).find((b: any) =>
+(b.effects ?? []).some(
+(e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
+),
+);
+if (!found) {
+throw new Error(
+'[' + SLUG + '] no ' + slot + ' block carries buff value ' + value + ' — the kit prose says it must',
+);
+}
+return found;
 }
 
 function buffOf(blk: any, value: number): any {
-  return (blk.effects ?? []).find(
-    (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
-  );
+return (blk.effects ?? []).find(
+(e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
+);
 }
 
 const applies = (evs: Ev[], stat: string, value: number) =>
-  evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && Math.abs((e.value ?? NaN) - value) < 1e-6,
-  );
+evs.filter(
+(e) => e.kind === 'buffApply' && e.stat === stat && Math.abs((e.value ?? NaN) - value) < 1e-6,
+);
 
 const targetsOf = (evs: Ev[]) => Array.from(new Set(evs.map((e) => e.targetSlug)));
 const teamTotal = (res: any) => Object.values(totals(res)).reduce((a, b) => a + b, 0);
@@ -1722,87 +1759,87 @@ const S1_ACTIVATIONS = applies(BASE.events, 'atkPct', 50.06).length;
 // Nearest-wrong for the S1 trigger: any other cadence. Doubling the hit threshold must halve
 // the activation count; a shotFired/interval keying would not respond at all.
 const CF_HITCOUNT_X2 = run({
-  ...controlComp(SLUG, true),
-  overrides: {
-    [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-      for (const b of slotBlocks(ov, 'skill1')) {
-        if (b.trigger?.kind === 'hitCount') b.trigger.count = (b.trigger.count ?? 30) * 2;
-      }
-    }),
-  },
+...controlComp(SLUG, true),
+overrides: {
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of slotBlocks(ov, 'skill1')) {
+if (b.trigger?.kind === 'hitCount') b.trigger.count = (b.trigger.count ?? 30) * 2;
+}
+}),
+},
 });
 
 // Nearest-wrong for S1c: a permanent (untimed) self ATK buff. Collapsing the window to 0.5s must
 // cost miranda damage while leaving every teammate byte-identical (self scope).
 const CF_S1_ATK_SHORT = run({
-  ...controlComp(SLUG, true),
-  overrides: {
-    [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-      buffOf(blockWithBuff(ov, 'skill1', 50.06), 50.06).durationSec = 0.5;
-    }),
-  },
+...controlComp(SLUG, true),
+overrides: {
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+buffOf(blockWithBuff(ov, 'skill1', 50.06), 50.06).durationSec = 0.5;
+}),
+},
 });
 
 // Nearest-wrong for S1a: scoping the team Hit Rate buff to self. Teammates must move.
 const CF_S1_HR_SELF = run({
-  ...controlComp(SLUG, true),
-  overrides: {
-    [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-      blockWithBuff(ov, 'skill1', 5.44).target = { kind: 'self' };
-    }),
-  },
+...controlComp(SLUG, true),
+overrides: {
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+blockWithBuff(ov, 'skill1', 5.44).target = { kind: 'self' };
+}),
+},
 });
 
 // Nearest-wrong for S2c: reading 'for 1 round(s)' as one wall-clock second.
 const CF_ROUNDS_TO_SEC = run({
-  ...controlComp(SLUG, true),
-  overrides: {
-    [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-      const e = buffOf(blockWithBuff(ov, 'skill2', 85.42), 85.42);
-      delete e.durationShots;
-      e.durationSec = 1;
-    }),
-  },
+...controlComp(SLUG, true),
+overrides: {
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+const e = buffOf(blockWithBuff(ov, 'skill2', 85.42), 85.42);
+delete e.durationShots;
+e.durationSec = 1;
+}),
+},
 });
 
 // ---------------------------------------------------------------------------
 
 describe('miranda — fixture sanity', () => {
-  it('the control comp actually fights and full-bursts', () => {
-    expect(unitOf(BASE.res, SLUG).totalDamage).toBeGreaterThan(0);
-    expect(ROSTER).toContain(SLUG);
-    expect(ROSTER.length).toBe(4);
-    // Non-vacuity for every skill2 assertion below.
-    expect(FB).toBeGreaterThan(0);
-  });
+it('the control comp actually fights and full-bursts', () => {
+expect(unitOf(BASE.res, SLUG).totalDamage).toBeGreaterThan(0);
+expect(ROSTER).toContain(SLUG);
+expect(ROSTER.length).toBe(4);
+// Non-vacuity for every skill2 assertion below.
+expect(FB).toBeGreaterThan(0);
+});
 });
 
 describe("miranda S1 — 'Activates after landing 30 normal attack(s)'", () => {
-  // Trigger identity, read literally: a hit-count gate on landed normal attacks.
-  it('all three skill1 blocks are keyed to hitCount 30', () => {
-    const triggers = slotBlocks(OV, 'skill1').map((b: any) => b.trigger);
-    expect(triggers.length).toBe(3);
-    for (const t of triggers) {
-      expect(t.kind).toBe('hitCount');
-      expect(t.count).toBe(30);
-    }
-  });
+// Trigger identity, read literally: a hit-count gate on landed normal attacks.
+it('all three skill1 blocks are keyed to hitCount 30', () => {
+const triggers = slotBlocks(OV, 'skill1').map((b: any) => b.trigger);
+expect(triggers.length).toBe(3);
+for (const t of triggers) {
+expect(t.kind).toBe('hitCount');
+expect(t.count).toBe(30);
+}
+});
 
-  // Behavioural half of the same claim: RED under shotFired (thousands of fires over 180s),
-  // RED under interval/lastBullet (no response to the threshold), GREEN only for hitCount(30).
-  it('doubling the hit threshold halves the activation count', () => {
-    const cf = applies(CF_HITCOUNT_X2.events, 'atkPct', 50.06).length;
-    expect(S1_ACTIVATIONS).toBeGreaterThan(10);
-    expect(S1_ACTIVATIONS).toBeLessThan(400); // a shotFired keying would be in the thousands
-    expect(cf).toBeGreaterThan(0);
-    expect(cf / S1_ACTIVATIONS).toBeGreaterThan(0.35);
-    expect(cf / S1_ACTIVATIONS).toBeLessThan(0.65);
-  });
+// Behavioural half of the same claim: RED under shotFired (thousands of fires over 180s),
+// RED under interval/lastBullet (no response to the threshold), GREEN only for hitCount(30).
+it('doubling the hit threshold halves the activation count', () => {
+const cf = applies(CF_HITCOUNT_X2.events, 'atkPct', 50.06).length;
+expect(S1_ACTIVATIONS).toBeGreaterThan(10);
+expect(S1_ACTIVATIONS).toBeLessThan(400); // a shotFired keying would be in the thousands
+expect(cf).toBeGreaterThan(0);
+expect(cf / S1_ACTIVATIONS).toBeGreaterThan(0.35);
+expect(cf / S1_ACTIVATIONS).toBeLessThan(0.65);
+});
 
-  // Target sets. 5.44 is unscoped (everyone); 3.79 is weapon-scoped (SMG only, self included).
-  it('Hit Rate 5.44% reaches every ally, 3.79% only the SMG allies', () => {
-    const hrAll = applies(BASE.events, 'hitRatePct', 5.44);
-    const hrSmg = applies(BASE.events, 'hitRatePct', 3.79);
+// Target sets. 5.44 is unscoped (everyone); 3.79 is weapon-scoped (SMG only, self included).
+it('Hit Rate 5.44% reaches every ally, 3.79% only the SMG allies', () => {
+const hrAll = applies(BASE.events, 'hitRatePct', 5.44);
+const hrSmg = applies(BASE.events, 'hitRatePct', 3.79);
 
     expect(targetsOf(hrAll).sort()).toEqual([...ROSTER].sort());
     expect(hrAll.length).toBe(S1_ACTIVATIONS * ROSTER.length);
@@ -1813,296 +1850,300 @@ describe("miranda S1 — 'Activates after landing 30 normal attack(s)'", () => {
     for (const s of smg) expect(targetsOf(hrAll)).toContain(s); // SMG set is a subset of the all set
     expect(hrSmg.length).toBe(S1_ACTIVATIONS * smg.length);
     expect(hrSmg.length).toBeLessThan(hrAll.length);
-  });
 
-  // The Hit Rate grant is a LIVE channel (hrCoreMult) and it really is a team grant:
-  // re-scoping it to self must move somebody else's damage while leaving miranda's untouched.
-  it('re-scoping the 5.44% Hit Rate buff to self moves teammates, not miranda', () => {
-    const base = totals(BASE.res);
-    const cf = totals(CF_S1_HR_SELF.res);
-    const moved = ROSTER.filter((s) => s !== SLUG && cf[s] !== base[s]);
-    expect(moved.length).toBeGreaterThan(0);
-    expect(cf[SLUG]).toBe(base[SLUG]); // her own Hit Rate is unchanged by the re-scope
-  });
+});
 
-  it('ATK 50.06% is self-only and time-bounded', () => {
-    const atk = applies(BASE.events, 'atkPct', 50.06);
-    expect(atk.length).toBeGreaterThan(0);
-    expect(targetsOf(atk)).toEqual([SLUG]); // inertness: no teammate ever receives it
+// The Hit Rate grant is a LIVE channel (hrCoreMult) and it really is a team grant:
+// re-scoping it to self must move somebody else's damage while leaving miranda's untouched.
+it('re-scoping the 5.44% Hit Rate buff to self moves teammates, not miranda', () => {
+const base = totals(BASE.res);
+const cf = totals(CF_S1_HR_SELF.res);
+const moved = ROSTER.filter((s) => s !== SLUG && cf[s] !== base[s]);
+expect(moved.length).toBeGreaterThan(0);
+expect(cf[SLUG]).toBe(base[SLUG]); // her own Hit Rate is unchanged by the re-scope
+});
+
+it('ATK 50.06% is self-only and time-bounded', () => {
+const atk = applies(BASE.events, 'atkPct', 50.06);
+expect(atk.length).toBeGreaterThan(0);
+expect(targetsOf(atk)).toEqual([SLUG]); // inertness: no teammate ever receives it
 
     // Shrinking the window costs miranda damage => the buff is genuinely timed, not permanent.
     const base = totals(BASE.res);
     const cf = totals(CF_S1_ATK_SHORT.res);
     expect(cf[SLUG]).toBeLessThan(base[SLUG]);
-  });
 
-  it('the self ATK window is inert for every teammate', () => {
-    const base = totals(BASE.res);
-    const cf = totals(CF_S1_ATK_SHORT.res);
-    for (const s of ROSTER) {
-      if (s === SLUG) continue;
-      expect(cf[s]).toBe(base[s]); // byte-identical
-    }
-  });
+});
+
+it('the self ATK window is inert for every teammate', () => {
+const base = totals(BASE.res);
+const cf = totals(CF_S1_ATK_SHORT.res);
+for (const s of ROSTER) {
+if (s === SLUG) continue;
+expect(cf[s]).toBe(base[s]); // byte-identical
+}
+});
 });
 
 describe("miranda S2 — 'Activates when entering Full Burst'", () => {
-  // Keyed to the TEAM Full Burst, not to miranda's own cast: the count must track fullBurstStart
-  // exactly. A burstCast keying diverges (miranda is a B1 sharing stage 1 with liter).
-  it('Crit Damage 32.99% lands on every ally once per Full Burst', () => {
-    const cd = applies(BASE.events, 'critDamagePct', 32.99);
-    expect(cd.length).toBe(FB * ROSTER.length);
-    expect(targetsOf(cd).sort()).toEqual([...ROSTER].sort());
-  });
+// Keyed to the TEAM Full Burst, not to miranda's own cast: the count must track fullBurstStart
+// exactly. A burstCast keying diverges (miranda is a B1 sharing stage 1 with liter).
+it('Crit Damage 32.99% lands on every ally once per Full Burst', () => {
+const cd = applies(BASE.events, 'critDamagePct', 32.99);
+expect(cd.length).toBe(FB * ROSTER.length);
+expect(targetsOf(cd).sort()).toEqual([...ROSTER].sort());
+});
 
-  it('Crit Rate 30.1% and Attack Damage 23.7% are self-only, once per Full Burst', () => {
-    const cr = applies(BASE.events, 'critRatePct', 30.1);
-    const ad = applies(BASE.events, 'attackDamagePct', 23.7);
-    expect(cr.length).toBe(FB);
-    expect(ad.length).toBe(FB);
-    expect(targetsOf(cr)).toEqual([SLUG]);
-    expect(targetsOf(ad)).toEqual([SLUG]);
-  });
+it('Crit Rate 30.1% and Attack Damage 23.7% are self-only, once per Full Burst', () => {
+const cr = applies(BASE.events, 'critRatePct', 30.1);
+const ad = applies(BASE.events, 'attackDamagePct', 23.7);
+expect(cr.length).toBe(FB);
+expect(ad.length).toBe(FB);
+expect(targetsOf(cr)).toEqual([SLUG]);
+expect(targetsOf(ad)).toEqual([SLUG]);
+});
 
-  // Target set: exactly ONE ally, never the caster.
-  it('Crit Rate 85.42% goes to exactly one non-self ally per Full Burst', () => {
-    const cr = applies(BASE.events, 'critRatePct', 85.42);
-    expect(cr.length).toBe(FB);
-    for (const ev of cr) expect(ev.targetSlug).not.toBe(SLUG);
-  });
+// Target set: exactly ONE ally, never the caster.
+it('Crit Rate 85.42% goes to exactly one non-self ally per Full Burst', () => {
+const cr = applies(BASE.events, 'critRatePct', 85.42);
+expect(cr.length).toBe(FB);
+for (const ev of cr) expect(ev.targetSlug).not.toBe(SLUG);
+});
 
-  // DURATION SEMANTICS: 'for 1 round(s)' is a ROUND count on the holder, not one second.
-  it("the 85.42% buff carries a ROUND duration (durationShots 1), not seconds", () => {
-    const cr = applies(BASE.events, 'critRatePct', 85.42);
-    expect(cr.length).toBeGreaterThan(0);
-    for (const ev of cr) expect(ev.durationShots).toBe(1);
-  });
+// DURATION SEMANTICS: 'for 1 round(s)' is a ROUND count on the holder, not one second.
+it("the 85.42% buff carries a ROUND duration (durationShots 1), not seconds", () => {
+const cr = applies(BASE.events, 'critRatePct', 85.42);
+expect(cr.length).toBeGreaterThan(0);
+for (const ev of cr) expect(ev.durationShots).toBe(1);
+});
 
-  it('modelling the round duration as one second changes the outcome', () => {
-    expect(teamTotal(CF_ROUNDS_TO_SEC.res)).not.toBe(teamTotal(BASE.res));
-  });
+it('modelling the round duration as one second changes the outcome', () => {
+expect(teamTotal(CF_ROUNDS_TO_SEC.res)).not.toBe(teamTotal(BASE.res));
+});
 });
 
 describe('miranda burst — 2 top-final-ATK allies, except self', () => {
-  const atk = applies(BASE.events, 'atkPct', 40.4);
-  const cdm = applies(BASE.events, 'critDamagePct', 56.23);
+const atk = applies(BASE.events, 'atkPct', 40.4);
+const cdm = applies(BASE.events, 'critDamagePct', 56.23);
 
-  // NON-VACUITY. miranda is BURST I and shares stage 1 with liter in controlComp; if this fails,
-  // the control fixture never lets her cast and the burst spec below is untested (a FIXTURE
-  // finding, not necessarily an override defect).
-  it('miranda actually casts her burst in the control comp', () => {
-    expect(cdm.length).toBeGreaterThan(0);
-  });
+// NON-VACUITY. miranda is BURST I and shares stage 1 with liter in controlComp; if this fails,
+// the control fixture never lets her cast and the burst spec below is untested (a FIXTURE
+// finding, not necessarily an override defect).
+it('miranda actually casts her burst in the control comp', () => {
+expect(cdm.length).toBeGreaterThan(0);
+});
 
-  it('each cast grants ATK 40.4% and Crit Damage 56.23% to the same two allies', () => {
-    expect(atk.length).toBe(cdm.length);
-    expect(cdm.length % 2).toBe(0);
-    for (let i = 0; i < cdm.length; i += 2) {
-      const pair = [cdm[i].targetSlug, cdm[i + 1].targetSlug];
-      expect(new Set(pair).size).toBe(2); // two DISTINCT allies, not one ally twice
-      expect(pair).not.toContain(SLUG); // except the skill user
-    }
-    expect(targetsOf(atk).sort()).toEqual(targetsOf(cdm).sort());
-  });
+it('each cast grants ATK 40.4% and Crit Damage 56.23% to the same two allies', () => {
+expect(atk.length).toBe(cdm.length);
+expect(cdm.length % 2).toBe(0);
+for (let i = 0; i < cdm.length; i += 2) {
+const pair = [cdm[i].targetSlug, cdm[i + 1].targetSlug];
+expect(new Set(pair).size).toBe(2); // two DISTINCT allies, not one ally twice
+expect(pair).not.toContain(SLUG); // except the skill user
+}
+expect(targetsOf(atk).sort()).toEqual(targetsOf(cdm).sort());
+});
 
-  it('the burst grants never land on miranda herself', () => {
-    for (const ev of atk) expect(ev.targetSlug).not.toBe(SLUG);
-    // and they are strictly a 2-of-3 slice of the roster, never the whole team
-    expect(targetsOf(cdm).length).toBeLessThanOrEqual(ROSTER.length - 1);
-  });
+it('the burst grants never land on miranda herself', () => {
+for (const ev of atk) expect(ev.targetSlug).not.toBe(SLUG);
+// and they are strictly a 2-of-3 slice of the roster, never the whole team
+expect(targetsOf(cdm).length).toBeLessThanOrEqual(ROSTER.length - 1);
+});
 });
 
 describe('miranda — gaps (not discriminable in this fixture)', () => {
-  it.skip('the exact 5 sec / 10 sec windows', () => {
-    // The S1 trigger re-fires roughly every 2s (30 rounds at SMG cadence), so a 5 sec window and
-    // a permanent buff are behaviourally identical here; only the 0.5s counterfactual above
-    // proves the window is honoured at all. Pinning the exact length needs a frame-stamped
-    // buffApply (expiresFrame minus the apply frame), which the event payload does not expose.
-  });
-
-  it.skip("byFinalAtk vs static-ATK ranking for the 'highest final ATK' target set", () => {
-    // 'highest FINAL ATK' must rank by live effectiveAtk, but in the control comp the live and
-    // static orderings of the three non-miranda allies do not demonstrably diverge, and the
-    // harness exposes no per-unit ATK accessor to build the discriminating case blind.
-  });
+it.skip('the exact 5 sec / 10 sec windows', () => {
+// The S1 trigger re-fires roughly every 2s (30 rounds at SMG cadence), so a 5 sec window and
+// a permanent buff are behaviourally identical here; only the 0.5s counterfactual above
+// proves the window is honoured at all. Pinning the exact length needs a frame-stamped
+// buffApply (expiresFrame minus the apply frame), which the event payload does not expose.
 });
 
+it.skip("byFinalAtk vs static-ATK ranking for the 'highest final ATK' target set", () => {
+// 'highest FINAL ATK' must rank by live effectiveAtk, but in the control comp the live and
+// static orderings of the three non-miranda allies do not demonstrably diverge, and the
+// harness exposes no per-unit ATK accessor to build the discriminating case blind.
+});
+});
 
 ============================================================
+
 ## SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5, written from kit prose alone)
 
 DIFF vs DRIVER OVERRIDE (note/caveats prose stripped, key-order normalized): SEMANTICALLY IDENTICAL. The blind writer independently re-derived BOTH driver fixes (the two S1 hitRatePct lines 5.44-allies/3.79-alliesOfWeapon-SMG, and the S2 85.42 durationShots:1 round-count), byFinalAtk on all three highest-final-ATK targets, burstCast-vs-fullBurstEnter, and empty unmodeled.
 ============================================================
 
 {
-  "slug": "miranda",
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 5.44,
-          "durationSec": 5
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "alliesOfWeapon",
-        "weapon": "SMG"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 3.79,
-          "durationSec": 5
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 50.06,
-          "durationSec": 5
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 32.99,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 30.1,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 23.7,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "alliesTopAtk",
-        "count": 1,
-        "excludeSelf": true,
-        "byFinalAtk": true
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 85.42,
-          "durationShots": 1
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "alliesTopAtk",
-        "count": 2,
-        "excludeSelf": true,
-        "byFinalAtk": true
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 40.4,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 56.23,
-          "durationSec": 10
-        }
-      ]
-    }
-  ],
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "caveats": [
-    "⚑ Hit Rate ▲5.44% (all allies) and ▲3.79% (SMG allies) map to hitRatePct, whose core-hit lift (sim.ts hrCoreMult) is a DERIVED magnitude, not a kit quantity — the damage consequence of both lines is unmeasured for this unit.",
-    "⚑ Cadence/reload tuple is datamine-sourced (SMG; ammo 120, reloadFrames 107) and per modeling-priors is the #1 uniform-heat cause. SMG is also the one class where nominal rate does not divide 60fps evenly, so the effective rate differs from nominal — verify against an ammo-counter read before trusting any hitCount:30 proc frequency.",
-    "⚑ hitCount:30 is keyed to LANDED normal attacks ('after landing 30'). The engine's hitCount fires on the owner's hits; if SMG landing fraction < 1 in-game, the real proc interval is longer than the sim's. Unmeasured.",
-    "skill2 block 3 'for 1 round(s)' is encoded as durationShots:1 per the ROUND-count rule (expires after the HOLDER fires 1 round, spanning reloads) — NOT wall-clock. On a fast-firing holder this window is ~1 frame-interval and contributes almost nothing; a wall-clock misread would massively over-credit. Flagged for judge scrutiny, but the text is literal.",
-    "'except the skill user; including the skill user if there are not enough allies' is encoded as excludeSelf:true. The fallback self-inclusion branch is not expressible in TargetDef and is moot on a full 5-unit team (there are always enough allies).",
-    "'highest final ATK' is literal → byFinalAtk:true (live effectiveAtk ranking) on both the skill2 single-target block and the burst 2-target block, per the A3 literal-word rule.",
-    "Every skill1/skill2 line is a stat buff with no damage rider, DoT, weapon-swap, heal/shield, gauge, ammo, or reload component — there is nothing in this kit for the FB-timing (noFb) or range rules to apply to, and no ⚑ is owed for them.",
-    "Burst is keyed to burstCast (this unit's own Burst I cast), not fullBurstEnter — a Burst I buff block fires on the rotations THIS unit casts. skill2's three blocks say 'entering Full Burst' literally, so they are fullBurstEnter (any team Full Burst), not burstCast."
-  ],
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (BLIND-STUDY, VALUES-WITHHELD): no override, tests, DECISIONS, probe data, or board output consulted. Pure support kit — 7 kit lines, all stat buffs, zero damage riders, zero weapon-state modifiers, zero heal/shield/gauge lines, so `unmodeled` is empty for all three slots (no silent drops). The three load-bearing judgment calls: (1) skill1's three lines share ONE trigger ('after landing 30 normal attacks') but THREE distinct target sets (all allies / SMG allies / self), so they are three blocks, and the SMG-scoped Hit Rate stacks additively on top of the all-ally Hit Rate for SMG holders including this unit; (2) skill2's 'for 1 round(s)' crit-rate grant is a ROUND count (durationShots:1), never 1 second — a seconds misread would be a large over-credit; (3) skill2 uses fullBurstEnter (text: 'when entering Full Burst' — fires on ANY team Full Burst) while the burst slot uses burstCast, which is the burstCast-vs-fullBurstEnter fidelity split. Damage-relevant risk is concentrated in the two hitRatePct lines (derived core-lift magnitude) and in the SMG cadence that sets the hitCount:30 proc rate."
+"slug": "miranda",
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 5.44,
+"durationSec": 5
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "alliesOfWeapon",
+"weapon": "SMG"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 3.79,
+"durationSec": 5
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 50.06,
+"durationSec": 5
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critDamagePct",
+"value": 32.99,
+"durationSec": 10
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 30.1,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "attackDamagePct",
+"value": 23.7,
+"durationSec": 10
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "alliesTopAtk",
+"count": 1,
+"excludeSelf": true,
+"byFinalAtk": true
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 85.42,
+"durationShots": 1
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "alliesTopAtk",
+"count": 2,
+"excludeSelf": true,
+"byFinalAtk": true
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 40.4,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "critDamagePct",
+"value": 56.23,
+"durationSec": 10
+}
+]
+}
+],
+"unmodeled": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"caveats": [
+"⚑ Hit Rate ▲5.44% (all allies) and ▲3.79% (SMG allies) map to hitRatePct, whose core-hit lift (sim.ts hrCoreMult) is a DERIVED magnitude, not a kit quantity — the damage consequence of both lines is unmeasured for this unit.",
+"⚑ Cadence/reload tuple is datamine-sourced (SMG; ammo 120, reloadFrames 107) and per modeling-priors is the #1 uniform-heat cause. SMG is also the one class where nominal rate does not divide 60fps evenly, so the effective rate differs from nominal — verify against an ammo-counter read before trusting any hitCount:30 proc frequency.",
+"⚑ hitCount:30 is keyed to LANDED normal attacks ('after landing 30'). The engine's hitCount fires on the owner's hits; if SMG landing fraction < 1 in-game, the real proc interval is longer than the sim's. Unmeasured.",
+"skill2 block 3 'for 1 round(s)' is encoded as durationShots:1 per the ROUND-count rule (expires after the HOLDER fires 1 round, spanning reloads) — NOT wall-clock. On a fast-firing holder this window is ~1 frame-interval and contributes almost nothing; a wall-clock misread would massively over-credit. Flagged for judge scrutiny, but the text is literal.",
+"'except the skill user; including the skill user if there are not enough allies' is encoded as excludeSelf:true. The fallback self-inclusion branch is not expressible in TargetDef and is moot on a full 5-unit team (there are always enough allies).",
+"'highest final ATK' is literal → byFinalAtk:true (live effectiveAtk ranking) on both the skill2 single-target block and the burst 2-target block, per the A3 literal-word rule.",
+"Every skill1/skill2 line is a stat buff with no damage rider, DoT, weapon-swap, heal/shield, gauge, ammo, or reload component — there is nothing in this kit for the FB-timing (noFb) or range rules to apply to, and no ⚑ is owed for them.",
+"Burst is keyed to burstCast (this unit's own Burst I cast), not fullBurstEnter — a Burst I buff block fires on the rotations THIS unit casts. skill2's three blocks say 'entering Full Burst' literally, so they are fullBurstEnter (any team Full Burst), not burstCast."
+],
+"note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (BLIND-STUDY, VALUES-WITHHELD): no override, tests, DECISIONS, probe data, or board output consulted. Pure support kit — 7 kit lines, all stat buffs, zero damage riders, zero weapon-state modifiers, zero heal/shield/gauge lines, so `unmodeled` is empty for all three slots (no silent drops). The three load-bearing judgment calls: (1) skill1's three lines share ONE trigger ('after landing 30 normal attacks') but THREE distinct target sets (all allies / SMG allies / self), so they are three blocks, and the SMG-scoped Hit Rate stacks additively on top of the all-ally Hit Rate for SMG holders including this unit; (2) skill2's 'for 1 round(s)' crit-rate grant is a ROUND count (durationShots:1), never 1 second — a seconds misread would be a large over-credit; (3) skill2 uses fullBurstEnter (text: 'when entering Full Burst' — fires on ANY team Full Burst) while the burst slot uses burstCast, which is the burstCast-vs-fullBurstEnter fidelity split. Damage-relevant risk is concentrated in the two hitRatePct lines (derived core-lift magnitude) and in the SMG cadence that sets the hitCount:30 proc rate."
 }
 
 ============================================================
+
 ## SECTION 7a — DRIVER IMPLEMENTATION: test (scripts/tests/units/miranda.test.ts)
+
 ============================================================
 
 // PER-UNIT KIT SPEC — `miranda` (Miranda (Treasure), Supporter/SMG/Fire, Burst I, cd 20s, ammo 120,
@@ -2114,55 +2155,55 @@ DIFF vs DRIVER OVERRIDE (note/caveats prose stripped, key-order normalized): SEM
 //
 // Kit (treasure prose, data/characters.json → characters.miranda.skills; DB favorite-item prose
 // matches this line-for-line since 2026-07-17):
-//   S1 ■ after 30 normal attacks → all allies: Hit Rate ▲5.44% for 5 sec                    [M2 — FIX]
-//      ■ after 30 normal attacks → all SMG-wielding allies: Hit Rate ▲3.79% for 5 sec        [M3 — FIX]
-//      ■ after 30 normal attacks → self: ATK ▲50.06% for 5 sec                               [M1]
-//   S2 ■ entering Full Burst → all allies: Critical Damage ▲32.99% for 10 sec                [M4]
-//      ■ entering Full Burst → self: Critical Rate ▲30.1% + Attack Damage ▲23.7% for 10 sec  [M5]
-//      ■ entering Full Burst → 1 highest-final-ATK ally (except self): Crit Rate ▲85.42% for 1 round [M6 — FIX]
-//   BU ■ 2 highest-final-ATK allies (except self): ATK ▲40.4% for 10 sec                     [M7]
-//      ■ 2 highest-final-ATK allies (except self): Critical Damage ▲56.23% for 10 sec        [M8]
+// S1 ■ after 30 normal attacks → all allies: Hit Rate ▲5.44% for 5 sec [M2 — FIX]
+// ■ after 30 normal attacks → all SMG-wielding allies: Hit Rate ▲3.79% for 5 sec [M3 — FIX]
+// ■ after 30 normal attacks → self: ATK ▲50.06% for 5 sec [M1]
+// S2 ■ entering Full Burst → all allies: Critical Damage ▲32.99% for 10 sec [M4]
+// ■ entering Full Burst → self: Critical Rate ▲30.1% + Attack Damage ▲23.7% for 10 sec [M5]
+// ■ entering Full Burst → 1 highest-final-ATK ally (except self): Crit Rate ▲85.42% for 1 round [M6 — FIX]
+// BU ■ 2 highest-final-ATK allies (except self): ATK ▲40.4% for 10 sec [M7]
+// ■ 2 highest-final-ATK allies (except self): Critical Damage ▲56.23% for 10 sec [M8]
 //
 // TWO FIXES this gauntlet makes to the previously-shipped (2026-07-17 reconciled) override:
-//   (a) M2/M3 — the two S1 Hit Rate lines were dropped under "hard rule 4" PENDING CONE_DELTA
-//       (override note: "re-evaluation queued (kit-audit plan 2026-07-20)"). CONE_DELTA landed
-//       2026-07-19 and hitRatePct is now live-wired for accuracy-circle weapons (AR/SMG/SG); the
-//       modernia gauntlet (2026-07-25) ships the identical stat. Hard rule 4 is "Hit Rate raises
-//       the CORE-HIT rate, magnitude measured-only" — it PERMITS modeling the stat, it does not
-//       forbid it. So both lines are now encoded (allies / alliesOfWeapon SMG, hitCount 30, 5s).
-//       They are LOAD-BEARING on miranda herself: she is the only accuracy-circle unit in the
-//       fixture (crown MG / ada RL / helm SR all keep the flat base core rate), so the +9.23%
-//       (5.44 all + 3.79 SMG) lifts her OWN core fraction. The HR→core MAGNITUDE is derived
-//       (acrForHR reticle regression; additive-in-pp composition UNVALIDATED R8) — flagged ⚑, the
-//       same caveat modernia's hitRatePct carries.
-//   (b) M6 — the "for 1 round(s)" crit snapshot was shipped as a wall-clock durationSec 1.5
-//       ("one SR carry shot"). "1 round" is round-count language, identical to helm's "10 round(s)"
-//       which is durationShots 10 (helm H9); the engine decrements shotsLeft on the HOLDER's shots
-//       (sim.ts:2955), so durationShots 1 on the buffed ally = that ally's next ONE shot, which is
-//       the literal mechanic for ANY carry cadence (1.5s is ~36 shots on an SMG — a 36× over-credit).
-//       Re-encoded to durationShots 1, no wall-clock expiry. Duration semantics for rapid-fire
-//       carries flagged ⚑ (recipe: count the buffed ally's crit-boosted shots per FB window).
+// (a) M2/M3 — the two S1 Hit Rate lines were dropped under "hard rule 4" PENDING CONE_DELTA
+// (override note: "re-evaluation queued (kit-audit plan 2026-07-20)"). CONE_DELTA landed
+// 2026-07-19 and hitRatePct is now live-wired for accuracy-circle weapons (AR/SMG/SG); the
+// modernia gauntlet (2026-07-25) ships the identical stat. Hard rule 4 is "Hit Rate raises
+// the CORE-HIT rate, magnitude measured-only" — it PERMITS modeling the stat, it does not
+// forbid it. So both lines are now encoded (allies / alliesOfWeapon SMG, hitCount 30, 5s).
+// They are LOAD-BEARING on miranda herself: she is the only accuracy-circle unit in the
+// fixture (crown MG / ada RL / helm SR all keep the flat base core rate), so the +9.23%
+// (5.44 all + 3.79 SMG) lifts her OWN core fraction. The HR→core MAGNITUDE is derived
+// (acrForHR reticle regression; additive-in-pp composition UNVALIDATED R8) — flagged ⚑, the
+// same caveat modernia's hitRatePct carries.
+// (b) M6 — the "for 1 round(s)" crit snapshot was shipped as a wall-clock durationSec 1.5
+// ("one SR carry shot"). "1 round" is round-count language, identical to helm's "10 round(s)"
+// which is durationShots 10 (helm H9); the engine decrements shotsLeft on the HOLDER's shots
+// (sim.ts:2955), so durationShots 1 on the buffed ally = that ally's next ONE shot, which is
+// the literal mechanic for ANY carry cadence (1.5s is ~36 shots on an SMG — a 36× over-credit).
+// Re-encoded to durationShots 1, no wall-clock expiry. Duration semantics for rapid-fire
+// carries flagged ⚑ (recipe: count the buffed ally's crit-boosted shots per FB window).
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
-//   M1  the self ATK line targets SELF only — counterfactual all-allies reaches 4 and moves the
-//       carry total (the buff is large, 50.06%, and near-permanent at SMG cadence).
-//   M2  hitRatePct to ALL allies reaches 4 holders; zeroing it drops miranda's own total (she is
-//       the sole accuracy-circle consumer). Counterfactual stat-swap to atkPct is a different bucket.
-//   M3  the SMG-scoped line reaches exactly ONE holder (miranda) — counterfactual all-allies reaches
-//       4. Discriminated on TARGET COUNT, not damage: HR is inert on the 3 non-SMG allies anyway, so
-//       the scoped vs unscoped damage is byte-identical here; the target set is the observable.
-//   M4  team critDmg reaches all 4 on every one of the 9 FB windows; counterfactual self-only
-//       reaches 1. fullBurstEnter (not burstCast) is the trigger — fires on EVERY team FB window.
-//   M5  self critRate 30.1 + Attack Damage 23.7, both self-scoped. The AD line is attackDamagePct
-//       (DamageUp bucket), NOT atkPct (base bucket) — counterfactual bucket-swap moves miranda damage.
-//   M6  exactly ONE ally (the top-final-ATK, never miranda) at 85.42%, durationShots 1 with NO
-//       wall-clock expiry. Counterfactual count 2 reaches 2; counterfactual durationSec 1.5 changes
-//       the buffed ally's damage (many shots vs one).
-//   M7  burst ATK 40.4% to exactly TWO allies (top-final-ATK, never miranda), per burst.
-//       Counterfactual all-allies reaches 4 + moves total; counterfactual casterAtkPct (% of
-//       miranda's LOW support ATK, not the target's own) collapses the buff and drops the carries.
-//   M8  burst critDmg 56.23% to the same two allies, per burst (shares M7's block/target).
+// M1 the self ATK line targets SELF only — counterfactual all-allies reaches 4 and moves the
+// carry total (the buff is large, 50.06%, and near-permanent at SMG cadence).
+// M2 hitRatePct to ALL allies reaches 4 holders; zeroing it drops miranda's own total (she is
+// the sole accuracy-circle consumer). Counterfactual stat-swap to atkPct is a different bucket.
+// M3 the SMG-scoped line reaches exactly ONE holder (miranda) — counterfactual all-allies reaches
+// 4. Discriminated on TARGET COUNT, not damage: HR is inert on the 3 non-SMG allies anyway, so
+// the scoped vs unscoped damage is byte-identical here; the target set is the observable.
+// M4 team critDmg reaches all 4 on every one of the 9 FB windows; counterfactual self-only
+// reaches 1. fullBurstEnter (not burstCast) is the trigger — fires on EVERY team FB window.
+// M5 self critRate 30.1 + Attack Damage 23.7, both self-scoped. The AD line is attackDamagePct
+// (DamageUp bucket), NOT atkPct (base bucket) — counterfactual bucket-swap moves miranda damage.
+// M6 exactly ONE ally (the top-final-ATK, never miranda) at 85.42%, durationShots 1 with NO
+// wall-clock expiry. Counterfactual count 2 reaches 2; counterfactual durationSec 1.5 changes
+// the buffed ally's damage (many shots vs one).
+// M7 burst ATK 40.4% to exactly TWO allies (top-final-ATK, never miranda), per burst.
+// Counterfactual all-allies reaches 4 + moves total; counterfactual casterAtkPct (% of
+// miranda's LOW support ATK, not the target's own) collapses the buff and drops the carries.
+// M8 burst critDmg 56.23% to the same two allies, per burst (shares M7's block/target).
 //
 // Fixture (deterministic — no seed): miranda B1 / crown B2 / ada B3 / helm B3, boss Fire, focus ada.
 // Miranda is the SOLE Burst I → casts every cycle (9 bursts / 9 FB windows over 180s). Top-final-ATK
@@ -2182,86 +2223,86 @@ type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(overrides: Record<string, any> = {}) {
-  const events: SimEvent[] = [];
-  const res = runComp({
-    slugs: COMP,
-    bossElement: 'Fire',
-    focusSlug: 'ada',
-    overrides,
-    cfg: { onEvent: (e) => events.push(e) },
-  });
-  return { events, t: totals(res) };
+const events: SimEvent[] = [];
+const res = runComp({
+slugs: COMP,
+bossElement: 'Fire',
+focusSlug: 'ada',
+overrides,
+cfg: { onEvent: (e) => events.push(e) },
+});
+return { events, t: totals(res) };
 }
 
 // ---- counterfactual patches -------------------------------------------------------------------
 const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
 
-/** M1 counterfactual: the self ATK line retargeted to all allies. */
+/** M1 counterfactual: the self ATK line retargeted to all allies. _/
 const mirandaSelfAtkToAllies = withPatchedOverride('miranda', (ov) => {
-  const blk = (ov as any).skill1.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk) throw new Error('miranda S1 atkPct block missing — fixture is stale');
-  blk.target = { kind: 'allies' };
+const blk = (ov as any).skill1.find((b: any) => hasStat(b, 'atkPct'));
+if (!blk) throw new Error('miranda S1 atkPct block missing — fixture is stale');
+blk.target = { kind: 'allies' };
 });
-/** M2/M3 load-bearing reference: remove BOTH Hit Rate lines (best-effort — absent pre-S3 FIX). */
+/_* M2/M3 load-bearing reference: remove BOTH Hit Rate lines (best-effort — absent pre-S3 FIX). _/
 const mirandaNoHR = withPatchedOverride('miranda', (ov) => {
-  (ov as any).skill1 = (ov as any).skill1.filter((b: any) => !hasStat(b, 'hitRatePct'));
+(ov as any).skill1 = (ov as any).skill1.filter((b: any) => !hasStat(b, 'hitRatePct'));
 });
-/** M3 counterfactual: the SMG-scoped HR line retargeted to all allies (best-effort pre-S3). */
+/_* M3 counterfactual: the SMG-scoped HR line retargeted to all allies (best-effort pre-S3). _/
 const mirandaSMGToAllAllies = withPatchedOverride('miranda', (ov) => {
-  for (const b of (ov as any).skill1)
-    if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon')
-      b.target = { kind: 'allies' };
+for (const b of (ov as any).skill1)
+if (hasStat(b, 'hitRatePct') && b.target?.kind === 'alliesOfWeapon')
+b.target = { kind: 'allies' };
 });
-/** M4 counterfactual: the team critDmg line retargeted to self only. */
+/_* M4 counterfactual: the team critDmg line retargeted to self only. _/
 const mirandaS2CritDmgSelf = withPatchedOverride('miranda', (ov) => {
-  const blk = (ov as any).skill2.find(
-    (b: any) => hasStat(b, 'critDamagePct') && b.target?.kind === 'allies',
-  );
-  if (!blk) throw new Error('miranda S2 allies critDamagePct block missing — fixture is stale');
-  blk.target = { kind: 'self' };
+const blk = (ov as any).skill2.find(
+(b: any) => hasStat(b, 'critDamagePct') && b.target?.kind === 'allies',
+);
+if (!blk) throw new Error('miranda S2 allies critDamagePct block missing — fixture is stale');
+blk.target = { kind: 'self' };
 });
-/** M5 counterfactual: the self Attack Damage line bucket-swapped to atkPct (base, not DamageUp). */
+/_* M5 counterfactual: the self Attack Damage line bucket-swapped to atkPct (base, not DamageUp). _/
 const mirandaS2ADWrongBucket = withPatchedOverride('miranda', (ov) => {
-  const e = (ov as any).skill2
-    .flatMap((b: any) => b.effects)
-    .find((x: any) => x.stat === 'attackDamagePct');
-  if (!e) throw new Error('miranda S2 attackDamagePct effect missing — fixture is stale');
-  e.stat = 'atkPct';
+const e = (ov as any).skill2
+.flatMap((b: any) => b.effects)
+.find((x: any) => x.stat === 'attackDamagePct');
+if (!e) throw new Error('miranda S2 attackDamagePct effect missing — fixture is stale');
+e.stat = 'atkPct';
 });
-/** M6 counterfactual: the 85.42 crit snapshot count bumped 1 → 2. */
+/_* M6 counterfactual: the 85.42 crit snapshot count bumped 1 → 2. _/
 const mirandaS2Crit85Count2 = withPatchedOverride('miranda', (ov) => {
-  const blk = (ov as any).skill2.find((b: any) =>
-    b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
-  );
-  if (!blk) throw new Error('miranda S2 85.42 critRate block missing — fixture is stale');
-  blk.target.count = 2;
+const blk = (ov as any).skill2.find((b: any) =>
+b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
+);
+if (!blk) throw new Error('miranda S2 85.42 critRate block missing — fixture is stale');
+blk.target.count = 2;
 });
-/** M6 counterfactual: the round-count snapshot forced back to a 1.5s wall-clock window. */
+/_* M6 counterfactual: the round-count snapshot forced back to a 1.5s wall-clock window. _/
 const mirandaS2Crit85Seconds = withPatchedOverride('miranda', (ov) => {
-  const e = (ov as any).skill2
-    .flatMap((b: any) => b.effects)
-    .find((x: any) => x.stat === 'critRatePct' && Math.abs(x.value - 85.42) < 0.01);
-  if (!e) throw new Error('miranda S2 85.42 critRate effect missing — fixture is stale');
-  delete e.durationShots;
-  e.durationSec = 1.5;
+const e = (ov as any).skill2
+.flatMap((b: any) => b.effects)
+.find((x: any) => x.stat === 'critRatePct' && Math.abs(x.value - 85.42) < 0.01);
+if (!e) throw new Error('miranda S2 85.42 critRate effect missing — fixture is stale');
+delete e.durationShots;
+e.durationSec = 1.5;
 });
-/** M7 counterfactual: the burst ATK line retargeted to all allies. */
+/_* M7 counterfactual: the burst ATK line retargeted to all allies. _/
 const mirandaBurstAtkAllAllies = withPatchedOverride('miranda', (ov) => {
-  const blk = (ov as any).burst.find((b: any) => hasStat(b, 'atkPct'));
-  if (!blk) throw new Error('miranda burst atkPct block missing — fixture is stale');
-  blk.target = { kind: 'allies' };
+const blk = (ov as any).burst.find((b: any) => hasStat(b, 'atkPct'));
+if (!blk) throw new Error('miranda burst atkPct block missing — fixture is stale');
+blk.target = { kind: 'allies' };
 });
-/** M7 counterfactual: the burst ATK line swapped to casterAtkPct (% of miranda's OWN low ATK). */
+/_* M7 counterfactual: the burst ATK line swapped to casterAtkPct (% of miranda's OWN low ATK). _/
 const mirandaBurstAtkCaster = withPatchedOverride('miranda', (ov) => {
-  const e = (ov as any).burst.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'atkPct');
-  if (!e) throw new Error('miranda burst atkPct effect missing — fixture is stale');
-  e.stat = 'casterAtkPct';
+const e = (ov as any).burst.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'atkPct');
+if (!e) throw new Error('miranda burst atkPct effect missing — fixture is stale');
+e.stat = 'casterAtkPct';
 });
-/** Load-bearing reference: miranda's whole kit zeroed. */
+/_* Load-bearing reference: miranda's whole kit zeroed. */
 const mirandaDead = withPatchedOverride('miranda', (ov) => {
-  (ov as any).skill1 = [];
-  (ov as any).skill2 = [];
-  (ov as any).burst = [];
+(ov as any).skill1 = [];
+(ov as any).skill2 = [];
+(ov as any).burst = [];
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -2279,333 +2320,334 @@ const dead = run({ miranda: mirandaDead });
 
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[]) =>
-  evs.filter((e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === MIRANDA);
+evs.filter((e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === MIRANDA);
 const byStat = (evs: SimEvent[], stat: string, value: number) =>
-  buffs(evs).filter((b) => b.stat === stat && Math.abs(b.value - value) < 0.01);
+buffs(evs).filter((b) => b.stat === stat && Math.abs(b.value - value) < 0.01);
 const mirandaBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'miranda').length;
+evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'miranda').length;
 const distinctTargets = (list: BuffApply[]) => new Set(list.map((b) => b.targetIdx));
 const durationsSec = (list: BuffApply[]) =>
-  new Set(list.map((b) => (b.expiresFrame! - b.frame) / FPS));
+new Set(list.map((b) => (b.expiresFrame! - b.frame) / FPS));
 const sum = (t: Record<string, number>) => COMP.reduce((a, s) => a + t[s], 0);
 
 describe('miranda (Treasure) — kit spec', () => {
-  describe('M1 — S1 self ATK ▲50.06% (hitCount 30 → self, 5s)', () => {
-    const list = byStat(base.events, 'atkPct', 50.06);
-    it('is self-scoped, 50.06%, for 5s, firing repeatedly at SMG cadence', () => {
-      expect(list.length, 'no self ATK 50.06 buff applied').toBeGreaterThan(0);
-      expect([...distinctTargets(list)], 'must be miranda only').toEqual([MIRANDA]);
-      expect([...durationsSec(list)]).toEqual([5]);
-      expect(list.length, 'near-permanent at ~1.5s per 30 hits').toBeGreaterThan(20);
-    });
-    it('DISCRIMINATES the target: all-allies reaches 4 and moves the carry total', () => {
-      expect(distinctTargets(byStat(selfAtkAllies.events, 'atkPct', 50.06)).size).toBe(ALLIES);
-      expect(sum(selfAtkAllies.t)).not.toBe(sum(base.t));
-    });
-  });
-
-  describe('M2 — S1 Hit Rate ▲5.44% to ALL allies (hitCount 30, 5s) [FIX]', () => {
-    const list = byStat(base.events, 'hitRatePct', 5.44);
-    it('reaches all four allies, 5.44%, for 5s', () => {
-      expect(list.length, 'no 5.44 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
-      expect(distinctTargets(list).size, 'all allies').toBe(ALLIES);
-      expect([...durationsSec(list)]).toEqual([5]);
-    });
-    it('is LOAD-BEARING: zeroing the Hit Rate lines drops miranda (the sole accuracy-circle unit)', () => {
-      expect(base.t.miranda).toBeGreaterThan(noHR.t.miranda);
-    });
-  });
-
-  describe('M3 — S1 Hit Rate ▲3.79% to SMG-wielding allies only (hitCount 30, 5s) [FIX]', () => {
-    const list = byStat(base.events, 'hitRatePct', 3.79);
-    it('reaches exactly the SMG ally (miranda), not the MG/RL/SR allies', () => {
-      expect(list.length, 'no 3.79 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
-      expect([...distinctTargets(list)], 'only miranda is SMG in this comp').toEqual([MIRANDA]);
-    });
-    it('DISCRIMINATES the weapon scope: retargeting to all allies reaches 4 holders', () => {
-      expect(distinctTargets(byStat(smgToAll.events, 'hitRatePct', 3.79)).size).toBe(ALLIES);
-    });
-  });
-
-  describe('M4 — S2 Critical Damage ▲32.99% to all allies (fullBurstEnter, 10s)', () => {
-    const list = byStat(base.events, 'critDamagePct', 32.99);
-    it('reaches all four allies on every FB window, for 10s', () => {
-      const windows = mirandaBursts(base.events);
-      expect(windows).toBeGreaterThan(0);
-      expect(distinctTargets(list).size).toBe(ALLIES);
-      expect(list.length, 'one application per ally per FB window').toBe(windows * ALLIES);
-      expect([...durationsSec(list)]).toEqual([10]);
-    });
-    it('DISCRIMINATES the target: self-only reaches 1 holder', () => {
-      expect(distinctTargets(byStat(s2CritDmgSelf.events, 'critDamagePct', 32.99)).size).toBe(1);
-    });
-  });
-
-  describe('M5 — S2 self Critical Rate ▲30.1% + Attack Damage ▲23.7% (fullBurstEnter, 10s)', () => {
-    const crit = byStat(base.events, 'critRatePct', 30.1);
-    const ad = byStat(base.events, 'attackDamagePct', 23.7);
-    it('both self-scoped, for 10s, on every FB window', () => {
-      expect([...distinctTargets(crit)]).toEqual([MIRANDA]);
-      expect([...distinctTargets(ad)]).toEqual([MIRANDA]);
-      expect([...durationsSec(crit)]).toEqual([10]);
-      expect([...durationsSec(ad)]).toEqual([10]);
-    });
-    it('DISCRIMINATES the bucket: Attack Damage is attackDamagePct, not atkPct (moves her damage)', () => {
-      expect(s2ADWrong.t.miranda).not.toBe(base.t.miranda);
-    });
-  });
-
-  describe('M6 — S2 Critical Rate ▲85.42% to 1 highest-final-ATK ally, "for 1 round" [FIX]', () => {
-    const list = byStat(base.events, 'critRatePct', 85.42);
-    it('buffs exactly ONE ally, never miranda (excludeSelf), at 85.42%', () => {
-      expect(list.length, 'no 85.42 crit snapshot applied').toBeGreaterThan(0);
-      expect(distinctTargets(list).size, 'alliesTopAtk count 1').toBe(1);
-      expect([...distinctTargets(list)]).not.toContain(MIRANDA);
-    });
-    it('is a ROUND count (durationShots 1), with NO wall-clock expiry', () => {
-      expect([...new Set(list.map((b) => b.durationShots))], '1 round → durationShots 1').toEqual([1]);
-      expect(
-        [...new Set(list.map((b) => b.expiresFrame))],
-        'a round-count buff must not also carry a timed expiry',
-      ).toEqual([null]);
-    });
-    it('is encoded alliesTopAtk/byFinalAtk/count 1/excludeSelf (structural pin)', () => {
-      const ov = withPatchedOverride('miranda', () => {}) as any;
-      const blk = ov.skill2.find((b: any) =>
-        b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
-      );
-      expect(blk.target).toEqual({
-        kind: 'alliesTopAtk',
-        byFinalAtk: true,
-        count: 1,
-        excludeSelf: true,
-      });
-      expect(blk.trigger).toEqual({ kind: 'fullBurstEnter' });
-    });
-    it('DISCRIMINATES the count: count 2 reaches two allies', () => {
-      expect(distinctTargets(byStat(s2Crit85Count2.events, 'critRatePct', 85.42)).size).toBe(2);
-    });
-    it('DISCRIMINATES the duration: a 1.5s window changes the buffed carry\'s damage vs one shot', () => {
-      expect(s2Crit85Seconds.t.ada).not.toBe(base.t.ada);
-    });
-  });
-
-  describe('M7 — burst ATK ▲40.4% to 2 highest-final-ATK allies (burstCast, 10s)', () => {
-    const list = byStat(base.events, 'atkPct', 40.4);
-    it('buffs exactly TWO allies, never miranda, once per burst, for 10s', () => {
-      const bursts = mirandaBursts(base.events);
-      expect(bursts).toBeGreaterThan(0);
-      expect(distinctTargets(list).size, 'alliesTopAtk count 2').toBe(2);
-      expect([...distinctTargets(list)]).not.toContain(MIRANDA);
-      expect(list.length, 'one application per ally per burst').toBe(bursts * 2);
-      expect([...durationsSec(list)]).toEqual([10]);
-    });
-    it('DISCRIMINATES the count: all-allies reaches 4 and moves the total', () => {
-      expect(distinctTargets(byStat(burstAtkAllies.events, 'atkPct', 40.4)).size).toBe(ALLIES);
-      expect(sum(burstAtkAllies.t)).not.toBe(sum(base.t));
-    });
-    it('DISCRIMINATES the stat: atkPct (% of target OWN) ≠ casterAtkPct (% of miranda low ATK)', () => {
-      expect(burstAtkCaster.t.ada).not.toBe(base.t.ada);
-      expect(burstAtkCaster.t.helm).not.toBe(base.t.helm);
-    });
-  });
-
-  describe('M8 — burst Critical Damage ▲56.23% to the same 2 allies (burstCast, 10s)', () => {
-    const list = byStat(base.events, 'critDamagePct', 56.23);
-    it('buffs exactly TWO allies, never miranda, once per burst, for 10s', () => {
-      const bursts = mirandaBursts(base.events);
-      expect(distinctTargets(list).size).toBe(2);
-      expect([...distinctTargets(list)]).not.toContain(MIRANDA);
-      expect(list.length).toBe(bursts * 2);
-      expect([...durationsSec(list)]).toEqual([10]);
-    });
-    it('shares the burst block/target with M7 (structural pin)', () => {
-      const ov = withPatchedOverride('miranda', () => {}) as any;
-      const blk = ov.burst.find((b: any) => hasStat(b, 'critDamagePct'));
-      expect(blk.target).toEqual({
-        kind: 'alliesTopAtk',
-        byFinalAtk: true,
-        count: 2,
-        excludeSelf: true,
-      });
-      expect(blk.trigger).toEqual({ kind: 'burstCast' });
-    });
-  });
-
-  describe('kit contribution is damage-load-bearing (not inert)', () => {
-    it("zeroing miranda's whole kit drops both carries", () => {
-      expect(base.t.ada).toBeGreaterThan(dead.t.ada);
-      expect(base.t.helm).toBeGreaterThan(dead.t.helm);
-    });
-  });
-
-  describe('unmodeled lines (structural pins)', () => {
-    it('every kit line is now modeled — all unmodeled slots empty after the FIX', () => {
-      const ov = withPatchedOverride('miranda', () => {}) as any;
-      expect(ov.unmodeled.skill1).toEqual([]);
-      expect(ov.unmodeled.skill2).toEqual([]);
-      expect(ov.unmodeled.burst).toEqual([]);
-    });
-  });
+describe('M1 — S1 self ATK ▲50.06% (hitCount 30 → self, 5s)', () => {
+const list = byStat(base.events, 'atkPct', 50.06);
+it('is self-scoped, 50.06%, for 5s, firing repeatedly at SMG cadence', () => {
+expect(list.length, 'no self ATK 50.06 buff applied').toBeGreaterThan(0);
+expect([...distinctTargets(list)], 'must be miranda only').toEqual([MIRANDA]);
+expect([...durationsSec(list)]).toEqual([5]);
+expect(list.length, 'near-permanent at ~1.5s per 30 hits').toBeGreaterThan(20);
+});
+it('DISCRIMINATES the target: all-allies reaches 4 and moves the carry total', () => {
+expect(distinctTargets(byStat(selfAtkAllies.events, 'atkPct', 50.06)).size).toBe(ALLIES);
+expect(sum(selfAtkAllies.t)).not.toBe(sum(base.t));
+});
 });
 
+describe('M2 — S1 Hit Rate ▲5.44% to ALL allies (hitCount 30, 5s) [FIX]', () => {
+const list = byStat(base.events, 'hitRatePct', 5.44);
+it('reaches all four allies, 5.44%, for 5s', () => {
+expect(list.length, 'no 5.44 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
+expect(distinctTargets(list).size, 'all allies').toBe(ALLIES);
+expect([...durationsSec(list)]).toEqual([5]);
+});
+it('is LOAD-BEARING: zeroing the Hit Rate lines drops miranda (the sole accuracy-circle unit)', () => {
+expect(base.t.miranda).toBeGreaterThan(noHR.t.miranda);
+});
+});
+
+describe('M3 — S1 Hit Rate ▲3.79% to SMG-wielding allies only (hitCount 30, 5s) [FIX]', () => {
+const list = byStat(base.events, 'hitRatePct', 3.79);
+it('reaches exactly the SMG ally (miranda), not the MG/RL/SR allies', () => {
+expect(list.length, 'no 3.79 Hit Rate buff applied — line still dropped').toBeGreaterThan(0);
+expect([...distinctTargets(list)], 'only miranda is SMG in this comp').toEqual([MIRANDA]);
+});
+it('DISCRIMINATES the weapon scope: retargeting to all allies reaches 4 holders', () => {
+expect(distinctTargets(byStat(smgToAll.events, 'hitRatePct', 3.79)).size).toBe(ALLIES);
+});
+});
+
+describe('M4 — S2 Critical Damage ▲32.99% to all allies (fullBurstEnter, 10s)', () => {
+const list = byStat(base.events, 'critDamagePct', 32.99);
+it('reaches all four allies on every FB window, for 10s', () => {
+const windows = mirandaBursts(base.events);
+expect(windows).toBeGreaterThan(0);
+expect(distinctTargets(list).size).toBe(ALLIES);
+expect(list.length, 'one application per ally per FB window').toBe(windows * ALLIES);
+expect([...durationsSec(list)]).toEqual([10]);
+});
+it('DISCRIMINATES the target: self-only reaches 1 holder', () => {
+expect(distinctTargets(byStat(s2CritDmgSelf.events, 'critDamagePct', 32.99)).size).toBe(1);
+});
+});
+
+describe('M5 — S2 self Critical Rate ▲30.1% + Attack Damage ▲23.7% (fullBurstEnter, 10s)', () => {
+const crit = byStat(base.events, 'critRatePct', 30.1);
+const ad = byStat(base.events, 'attackDamagePct', 23.7);
+it('both self-scoped, for 10s, on every FB window', () => {
+expect([...distinctTargets(crit)]).toEqual([MIRANDA]);
+expect([...distinctTargets(ad)]).toEqual([MIRANDA]);
+expect([...durationsSec(crit)]).toEqual([10]);
+expect([...durationsSec(ad)]).toEqual([10]);
+});
+it('DISCRIMINATES the bucket: Attack Damage is attackDamagePct, not atkPct (moves her damage)', () => {
+expect(s2ADWrong.t.miranda).not.toBe(base.t.miranda);
+});
+});
+
+describe('M6 — S2 Critical Rate ▲85.42% to 1 highest-final-ATK ally, "for 1 round" [FIX]', () => {
+const list = byStat(base.events, 'critRatePct', 85.42);
+it('buffs exactly ONE ally, never miranda (excludeSelf), at 85.42%', () => {
+expect(list.length, 'no 85.42 crit snapshot applied').toBeGreaterThan(0);
+expect(distinctTargets(list).size, 'alliesTopAtk count 1').toBe(1);
+expect([...distinctTargets(list)]).not.toContain(MIRANDA);
+});
+it('is a ROUND count (durationShots 1), with NO wall-clock expiry', () => {
+expect([...new Set(list.map((b) => b.durationShots))], '1 round → durationShots 1').toEqual([1]);
+expect(
+[...new Set(list.map((b) => b.expiresFrame))],
+'a round-count buff must not also carry a timed expiry',
+).toEqual([null]);
+});
+it('is encoded alliesTopAtk/byFinalAtk/count 1/excludeSelf (structural pin)', () => {
+const ov = withPatchedOverride('miranda', () => {}) as any;
+const blk = ov.skill2.find((b: any) =>
+b.effects.some((e: any) => e.stat === 'critRatePct' && Math.abs(e.value - 85.42) < 0.01),
+);
+expect(blk.target).toEqual({
+kind: 'alliesTopAtk',
+byFinalAtk: true,
+count: 1,
+excludeSelf: true,
+});
+expect(blk.trigger).toEqual({ kind: 'fullBurstEnter' });
+});
+it('DISCRIMINATES the count: count 2 reaches two allies', () => {
+expect(distinctTargets(byStat(s2Crit85Count2.events, 'critRatePct', 85.42)).size).toBe(2);
+});
+it('DISCRIMINATES the duration: a 1.5s window changes the buffed carry\'s damage vs one shot', () => {
+expect(s2Crit85Seconds.t.ada).not.toBe(base.t.ada);
+});
+});
+
+describe('M7 — burst ATK ▲40.4% to 2 highest-final-ATK allies (burstCast, 10s)', () => {
+const list = byStat(base.events, 'atkPct', 40.4);
+it('buffs exactly TWO allies, never miranda, once per burst, for 10s', () => {
+const bursts = mirandaBursts(base.events);
+expect(bursts).toBeGreaterThan(0);
+expect(distinctTargets(list).size, 'alliesTopAtk count 2').toBe(2);
+expect([...distinctTargets(list)]).not.toContain(MIRANDA);
+expect(list.length, 'one application per ally per burst').toBe(bursts * 2);
+expect([...durationsSec(list)]).toEqual([10]);
+});
+it('DISCRIMINATES the count: all-allies reaches 4 and moves the total', () => {
+expect(distinctTargets(byStat(burstAtkAllies.events, 'atkPct', 40.4)).size).toBe(ALLIES);
+expect(sum(burstAtkAllies.t)).not.toBe(sum(base.t));
+});
+it('DISCRIMINATES the stat: atkPct (% of target OWN) ≠ casterAtkPct (% of miranda low ATK)', () => {
+expect(burstAtkCaster.t.ada).not.toBe(base.t.ada);
+expect(burstAtkCaster.t.helm).not.toBe(base.t.helm);
+});
+});
+
+describe('M8 — burst Critical Damage ▲56.23% to the same 2 allies (burstCast, 10s)', () => {
+const list = byStat(base.events, 'critDamagePct', 56.23);
+it('buffs exactly TWO allies, never miranda, once per burst, for 10s', () => {
+const bursts = mirandaBursts(base.events);
+expect(distinctTargets(list).size).toBe(2);
+expect([...distinctTargets(list)]).not.toContain(MIRANDA);
+expect(list.length).toBe(bursts * 2);
+expect([...durationsSec(list)]).toEqual([10]);
+});
+it('shares the burst block/target with M7 (structural pin)', () => {
+const ov = withPatchedOverride('miranda', () => {}) as any;
+const blk = ov.burst.find((b: any) => hasStat(b, 'critDamagePct'));
+expect(blk.target).toEqual({
+kind: 'alliesTopAtk',
+byFinalAtk: true,
+count: 2,
+excludeSelf: true,
+});
+expect(blk.trigger).toEqual({ kind: 'burstCast' });
+});
+});
+
+describe('kit contribution is damage-load-bearing (not inert)', () => {
+it("zeroing miranda's whole kit drops both carries", () => {
+expect(base.t.ada).toBeGreaterThan(dead.t.ada);
+expect(base.t.helm).toBeGreaterThan(dead.t.helm);
+});
+});
+
+describe('unmodeled lines (structural pins)', () => {
+it('every kit line is now modeled — all unmodeled slots empty after the FIX', () => {
+const ov = withPatchedOverride('miranda', () => {}) as any;
+expect(ov.unmodeled.skill1).toEqual([]);
+expect(ov.unmodeled.skill2).toEqual([]);
+expect(ov.unmodeled.burst).toEqual([]);
+});
+});
+});
 
 ============================================================
+
 ## SECTION 7b — DRIVER IMPLEMENTATION: override (src/skills/overrides/miranda.json)
+
 ============================================================
 
 {
-  "note": "TREASURE KIT (user-provided screenshot 2026-07-13; base weapon row matches). CONFIRMED 2026-07-17: the DB sync now carries miranda's favorite-item prose and it MATCHES this screenshot-derived model line-for-line (self ATK 50.06; S2 ally critDmg 32.99 + self critRate 30.1/AD 23.7 + 1-topAtk critRate 85.42; burst 2-topAtk ATK 40.4/critDmg 56.23) — no change needed. [2026-07-17 EXCLUDE-SELF FIX] alliesTopAtk gained excludeSelf (was silently ignored) — both her S2 (1 top-ATK) and burst (2 top-ATK) targets now carry excludeSelf:true per kit ('except the skill user'). Board-neutral (she is a low-ATK support so top-N almost never included her anyway; not board-measured), but now faithful. Bossing S buffer. S1 (Phase 3): per 30 of her normal attacks — Hit Rate buffs unmodeled — hitRatePct is live for AR/SMG/SG via acrForHR, so the 3.79% SMG-ally line would lift SMG-ally core rate; re-evaluation queued (kit-audit plan 2026-07-20); SELF ATK 50.06%/5s at SMG cadence (~1.5s per 30 hits) = effectively permanent, modeled hitCount 30. S2 (Phase 2) on FB enter: allies Crit Damage 32.99%/10s; self Crit Rate 30.1 + Attack Damage 23.7/10s; 1 highest-ATK ally (except caster): Crit Rate 85.42% 'for 1 round' -> modeled as 1.5s (one SR carry shot; the famous Miranda crit-snapshot for RH/Alice). Burst (20s): 2 highest-ATK allies (except caster): ATK 40.4% + Crit Damage 56.23%/10s. alliesTopAtk excludeSelf:true (fixed 2026-07-17); she is a low-ATK support so top-2 rarely included her anyway. Kit-autonomy gauntlet 2026-07-25: two FIXES, both independently re-derived by the cross-family S2b reviewer (claude-fable-5, zero divergences). FIX-A: the two S1 Hit Rate lines (5.44 all allies / 3.79 SMG-wielding allies) were dropped under hard rule 4 PENDING CONE_DELTA (note 2026-07-17: 're-evaluation queued (kit-audit plan 2026-07-20)'); CONE_DELTA landed 2026-07-19 and hitRatePct is now live-wired for accuracy-circle weapons (AR/SMG/SG; modernia ships the identical stat 2026-07-25), so both are now encoded (hitCount 30, allies / alliesOfWeapon SMG, 5s) and removed from unmodeled. Hard rule 4 = 'Hit Rate raises the CORE-HIT rate, magnitude measured-only' — it PERMITS the stat, it does not forbid it. Load-bearing on miranda herself: she is the only accuracy-circle unit in the audit fixture (crown MG / ada RL / helm SR keep the flat base core rate), so +9.23% (5.44+3.79) lifts her OWN core fraction; the team value is the AR/SMG/SG consumer. ⚑ HR->core MAGNITUDE is derived (acrForHR reticle regression; additive-in-pp composition UNVALIDATED R8; HRCORE-gated) — same caveat modernia's hitRatePct carries; recipe: CORE HIT popup fraction inside vs outside the ~5s post-30-hit window in a Miranda focus video, on an AR/SMG/SG ally. FIX-B: the S2 '1 highest-final-ATK ally Crit Rate 85.42% for 1 round' line was shipped as durationSec 1.5 ('one SR carry shot'); 'for 1 round(s)' is round-count language identical to helm's '10 round(s)' (durationShots 10, helm H9), and the engine decrements shotsLeft on the HOLDER's shots (sim.ts:2955), so re-encoded durationShots 1 / no wall-clock expiry = the buffed ally's next ONE shot at +85.42 crit for ANY carry cadence (1.5s was ~36 shots on an SMG, a 36x over-credit; ~1 on an SR, which is why the fudge survived). ⚑ '1 round' durationShots semantics for rapid-fire carries is the literal model but the in-game round definition is unverified; recipe: count the buffed ally's crit-boosted shots per FB window in a focus video (expect exactly 1). Every kit line now modeled; unmodeled fully empty.",
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [],
-    "burst": []
-  },
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 5.44,
-          "durationSec": 5
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "alliesOfWeapon",
-        "weapon": "SMG"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "hitRatePct",
-          "value": 3.79,
-          "durationSec": 5
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 50.06,
-          "durationSec": 5
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 32.99,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "self"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 30.1,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 23.7,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "fullBurstEnter"
-      },
-      "target": {
-        "kind": "alliesTopAtk",
-        "byFinalAtk": true,
-        "count": 1,
-        "excludeSelf": true
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "critRatePct",
-          "value": 85.42,
-          "durationShots": 1
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "alliesTopAtk",
-        "byFinalAtk": true,
-        "count": 2,
-        "excludeSelf": true
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "atkPct",
-          "value": 40.4,
-          "durationSec": 10
-        },
-        {
-          "kind": "buff",
-          "stat": "critDamagePct",
-          "value": 56.23,
-          "durationSec": 10
-        }
-      ]
-    }
-  ]
+"note": "TREASURE KIT (user-provided screenshot 2026-07-13; base weapon row matches). CONFIRMED 2026-07-17: the DB sync now carries miranda's favorite-item prose and it MATCHES this screenshot-derived model line-for-line (self ATK 50.06; S2 ally critDmg 32.99 + self critRate 30.1/AD 23.7 + 1-topAtk critRate 85.42; burst 2-topAtk ATK 40.4/critDmg 56.23) — no change needed. [2026-07-17 EXCLUDE-SELF FIX] alliesTopAtk gained excludeSelf (was silently ignored) — both her S2 (1 top-ATK) and burst (2 top-ATK) targets now carry excludeSelf:true per kit ('except the skill user'). Board-neutral (she is a low-ATK support so top-N almost never included her anyway; not board-measured), but now faithful. Bossing S buffer. S1 (Phase 3): per 30 of her normal attacks — Hit Rate buffs unmodeled — hitRatePct is live for AR/SMG/SG via acrForHR, so the 3.79% SMG-ally line would lift SMG-ally core rate; re-evaluation queued (kit-audit plan 2026-07-20); SELF ATK 50.06%/5s at SMG cadence (~1.5s per 30 hits) = effectively permanent, modeled hitCount 30. S2 (Phase 2) on FB enter: allies Crit Damage 32.99%/10s; self Crit Rate 30.1 + Attack Damage 23.7/10s; 1 highest-ATK ally (except caster): Crit Rate 85.42% 'for 1 round' -> modeled as 1.5s (one SR carry shot; the famous Miranda crit-snapshot for RH/Alice). Burst (20s): 2 highest-ATK allies (except caster): ATK 40.4% + Crit Damage 56.23%/10s. alliesTopAtk excludeSelf:true (fixed 2026-07-17); she is a low-ATK support so top-2 rarely included her anyway. Kit-autonomy gauntlet 2026-07-25: two FIXES, both independently re-derived by the cross-family S2b reviewer (claude-fable-5, zero divergences). FIX-A: the two S1 Hit Rate lines (5.44 all allies / 3.79 SMG-wielding allies) were dropped under hard rule 4 PENDING CONE_DELTA (note 2026-07-17: 're-evaluation queued (kit-audit plan 2026-07-20)'); CONE_DELTA landed 2026-07-19 and hitRatePct is now live-wired for accuracy-circle weapons (AR/SMG/SG; modernia ships the identical stat 2026-07-25), so both are now encoded (hitCount 30, allies / alliesOfWeapon SMG, 5s) and removed from unmodeled. Hard rule 4 = 'Hit Rate raises the CORE-HIT rate, magnitude measured-only' — it PERMITS the stat, it does not forbid it. Load-bearing on miranda herself: she is the only accuracy-circle unit in the audit fixture (crown MG / ada RL / helm SR keep the flat base core rate), so +9.23% (5.44+3.79) lifts her OWN core fraction; the team value is the AR/SMG/SG consumer. ⚑ HR->core MAGNITUDE is derived (acrForHR reticle regression; additive-in-pp composition UNVALIDATED R8; HRCORE-gated) — same caveat modernia's hitRatePct carries; recipe: CORE HIT popup fraction inside vs outside the ~5s post-30-hit window in a Miranda focus video, on an AR/SMG/SG ally. FIX-B: the S2 '1 highest-final-ATK ally Crit Rate 85.42% for 1 round' line was shipped as durationSec 1.5 ('one SR carry shot'); 'for 1 round(s)' is round-count language identical to helm's '10 round(s)' (durationShots 10, helm H9), and the engine decrements shotsLeft on the HOLDER's shots (sim.ts:2955), so re-encoded durationShots 1 / no wall-clock expiry = the buffed ally's next ONE shot at +85.42 crit for ANY carry cadence (1.5s was ~36 shots on an SMG, a 36x over-credit; ~1 on an SR, which is why the fudge survived). ⚑ '1 round' durationShots semantics for rapid-fire carries is the literal model but the in-game round definition is unverified; recipe: count the buffed ally's crit-boosted shots per FB window in a focus video (expect exactly 1). Every kit line now modeled; unmodeled fully empty.",
+"unmodeled": {
+"skill1": [],
+"skill2": [],
+"burst": []
+},
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 5.44,
+"durationSec": 5
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "alliesOfWeapon",
+"weapon": "SMG"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "hitRatePct",
+"value": 3.79,
+"durationSec": 5
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 50.06,
+"durationSec": 5
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critDamagePct",
+"value": 32.99,
+"durationSec": 10
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "self"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 30.1,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "attackDamagePct",
+"value": 23.7,
+"durationSec": 10
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "fullBurstEnter"
+},
+"target": {
+"kind": "alliesTopAtk",
+"byFinalAtk": true,
+"count": 1,
+"excludeSelf": true
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "critRatePct",
+"value": 85.42,
+"durationShots": 1
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "alliesTopAtk",
+"byFinalAtk": true,
+"count": 2,
+"excludeSelf": true
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "atkPct",
+"value": 40.4,
+"durationSec": 10
+},
+{
+"kind": "buff",
+"stat": "critDamagePct",
+"value": 56.23,
+"durationSec": 10
+}
+]
+}
+]
 }

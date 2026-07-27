@@ -76,42 +76,11 @@
     "interleave": "team is B1(LM)+B2(Crown)+B3(Soda)+B3(Helm); the two Burst-III units alternate who casts B3, so FBs alternate Soda/Helm",
     "soda_bursts_confirmed": 5,
     "soda_burst_evidence": "5 Golden-Chip consume drops (see golden_chip); Soda burst splash + 'Onward, Soda!' banner verified at t=48",
-    "start_times_video_s_approx": [
-      10,
-      30,
-      48,
-      66,
-      84,
-      104,
-      124,
-      142,
-      162,
-      175
-    ],
-    "soda_burst_times_video_s_approx": [
-      10,
-      48,
-      84,
-      124,
-      162
-    ],
-    "helm_burst_times_video_s_approx": [
-      30,
-      66,
-      104,
-      142,
-      175
-    ],
+    "start_times_video_s_approx": [10, 30, 48, 66, 84, 104, 124, 142, 162, 175],
+    "soda_burst_times_video_s_approx": [10, 48, 84, 124, 162],
+    "helm_burst_times_video_s_approx": [30, 66, 104, 142, 175],
     "fb_countdown_peaks_measured_s": [
-      14.71,
-      14.46,
-      14.42,
-      14.39,
-      14.25,
-      13.72,
-      13.44,
-      13.39,
-      12.5
+      14.71, 14.46, 14.42, 14.39, 14.25, 13.72, 13.44, 13.39, 12.5
     ],
     "fb_countdown_decay_rate_per_s": 1.0,
     "fb_duration_range_s": "12.5 - 14.7",
@@ -121,10 +90,7 @@
   "golden_chip": {
     "counter_location": "gold coin icon near Soda (center-lower), number to its right",
     "start_value": 50,
-    "start_confirmed_at_video_s": [
-      6,
-      8
-    ],
+    "start_confirmed_at_video_s": [6, 8],
     "consume_per_soda_burst": 17,
     "consume_evidence_exact": "t=46 -> 44 chips; t=48 (Soda burst cast) -> 27 chips; 44-17 = 27 EXACT",
     "drops_video_s": {

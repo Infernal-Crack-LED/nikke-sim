@@ -28,9 +28,16 @@ import { controlComp, runComp, totals } from '../lib/harness.js';
 
 const CARRY = 'ada';
 
-function capture(): { events: SimEvent[]; totals: Record<string, number>; breakdown: Record<string, { normal: number; skill: number; burst: number }> } {
+function capture(): {
+  events: SimEvent[];
+  totals: Record<string, number>;
+  breakdown: Record<string, { normal: number; skill: number; burst: number }>;
+} {
   const events: SimEvent[] = [];
-  const res = runComp({ ...controlComp(CARRY), cfg: { onEvent: (ev) => events.push(ev) } });
+  const res = runComp({
+    ...controlComp(CARRY),
+    cfg: { onEvent: (ev) => events.push(ev) },
+  });
   return {
     events,
     totals: Object.fromEntries(res.units.map((u) => [u.slug, u.totalDamage])),
@@ -40,7 +47,9 @@ function capture(): { events: SimEvent[]; totals: Record<string, number>; breakd
 
 const run = capture();
 const of = <K extends SimEvent['kind']>(kind: K) =>
-  run.events.filter((e): e is Extract<SimEvent, { kind: K }> => e.kind === kind);
+  run.events.filter(
+    (e): e is Extract<SimEvent, { kind: K }> => e.kind === kind
+  );
 
 describe('cfg.onEvent structured event log', () => {
   it('is INERT — attaching a handler leaves every unit total byte-identical', () => {
@@ -54,21 +63,37 @@ describe('cfg.onEvent structured event log', () => {
     // remaining fight. Equal seeded totals prove the log is outside the random stream.
     const seeded = { ...controlComp(CARRY), cfg: { seed: 1234 } };
     const quiet = totals(runComp(seeded));
-    const loud = totals(runComp({ ...seeded, cfg: { seed: 1234, onEvent: () => {} } }));
+    const loud = totals(
+      runComp({ ...seeded, cfg: { seed: 1234, onEvent: () => {} } })
+    );
     expect(loud).toEqual(quiet);
   });
 
   it('emits every event kind the fixture exercises', () => {
     const kinds = new Set(run.events.map((e) => e.kind));
-    for (const k of ['shot', 'damage', 'buffApply', 'reload', 'burstCast', 'fullBurstStart', 'fullBurstEnd']) {
-      expect(kinds, `no '${k}' event was emitted over a 180s control-comp fight`).toContain(k);
+    for (const k of [
+      'shot',
+      'damage',
+      'buffApply',
+      'reload',
+      'burstCast',
+      'fullBurstStart',
+      'fullBurstEnd',
+    ]) {
+      expect(
+        kinds,
+        `no '${k}' event was emitted over a 180s control-comp fight`
+      ).toContain(k);
     }
   });
 
-  it('DISCRIMINATING: damage events sum EXACTLY to each unit\'s per-bucket breakdown', () => {
+  it("DISCRIMINATING: damage events sum EXACTLY to each unit's per-bucket breakdown", () => {
     // A hook wired to only the normal-fire path — missing DoT ticks, flighted hits, riders, the
     // pierce double-hit — passes every other assertion in this file and fails only here.
-    const summed: Record<string, { normal: number; skill: number; burst: number }> = {};
+    const summed: Record<
+      string,
+      { normal: number; skill: number; burst: number }
+    > = {};
     for (const e of of('damage')) {
       const b = (summed[e.slug] ??= { normal: 0, skill: 0, burst: 0 });
       b[e.bucket] += e.amount;
@@ -80,7 +105,7 @@ describe('cfg.onEvent structured event log', () => {
         const scale = Math.max(1, Math.abs(actual[bucket]));
         expect(
           Math.abs(logged - actual[bucket]) / scale,
-          `${slug}.${bucket}: events sum to ${logged.toFixed(0)} but the engine banked ${actual[bucket].toFixed(0)} — a damage source bypasses the log`,
+          `${slug}.${bucket}: events sum to ${logged.toFixed(0)} but the engine banked ${actual[bucket].toFixed(0)} — a damage source bypasses the log`
         ).toBeLessThan(1e-9);
       }
     }
@@ -90,14 +115,22 @@ describe('cfg.onEvent structured event log', () => {
     const bad = of('damage').filter((e) => {
       const m = e.mult;
       const expected =
-        e.baseAtk * (e.atkPct / 100) *
-        m.major * m.elem * m.charge * m.dmgUp * m.seqMult * m.projFactor * m.taken * m.distributed;
+        e.baseAtk *
+        (e.atkPct / 100) *
+        m.major *
+        m.elem *
+        m.charge *
+        m.dmgUp *
+        m.seqMult *
+        m.projFactor *
+        m.taken *
+        m.distributed;
       const scale = Math.max(1, Math.abs(e.amount));
       return Math.abs(expected - e.amount) / scale > 1e-9;
     });
     expect(
       bad.slice(0, 3).map((e) => `${e.slug}/${e.bucket}@${e.sec.toFixed(2)}s`),
-      'event(s) whose mult decomposition does not reproduce their own amount',
+      'event(s) whose mult decomposition does not reproduce their own amount'
     ).toEqual([]);
   });
 
@@ -105,17 +138,22 @@ describe('cfg.onEvent structured event log', () => {
     const helmShots = of('shot').filter((e) => e.slug === 'helm');
     const helmReloads = of('reload').filter((e) => e.slug === 'helm');
     expect(helmShots.length, 'helm never fired').toBeGreaterThan(0);
-    expect(helmReloads.length, 'helm never reloaded over 180s').toBeGreaterThan(0);
+    expect(helmReloads.length, 'helm never reloaded over 180s').toBeGreaterThan(
+      0
+    );
     // magIndex is monotonic across her shots...
     const mags = helmShots.map((e) => e.magIndex);
-    expect(mags.every((m, i) => i === 0 || m >= mags[i - 1]), 'magIndex went backwards').toBe(true);
+    expect(
+      mags.every((m, i) => i === 0 || m >= mags[i - 1]),
+      'magIndex went backwards'
+    ).toBe(true);
     // ...and never exceeds the reloads that have actually happened by that frame.
     const bad = helmShots.filter(
-      (s) => s.magIndex !== helmReloads.filter((r) => r.frame <= s.frame).length,
+      (s) => s.magIndex !== helmReloads.filter((r) => r.frame <= s.frame).length
     );
     expect(
       bad.slice(0, 3).map((s) => `${s.sec.toFixed(2)}s mag=${s.magIndex}`),
-      'shot magIndex disagrees with the reload events preceding it',
+      'shot magIndex disagrees with the reload events preceding it'
     ).toEqual([]);
   });
 
@@ -134,15 +172,17 @@ describe('cfg.onEvent structured event log', () => {
       const base = Math.min(...mine.map((e) => e.critRate)); // unbuffed sheet rate
       for (const e of mine) {
         if (e.bucket === 'normal') {
-          if (e.critRate > base) sawBoost = true;
+          if (e.critRate > base) {sawBoost = true;}
         } else if (e.critRate > base) {
-          leaked.push(`${slug}/${e.bucket}@${e.sec.toFixed(2)}s rate=${e.critRate.toFixed(4)} > base ${base.toFixed(4)}`);
+          leaked.push(
+            `${slug}/${e.bucket}@${e.sec.toFixed(2)}s rate=${e.critRate.toFixed(4)} > base ${base.toFixed(4)}`
+          );
         }
       }
     }
     expect(
       leaked.slice(0, 3),
-      'a normal-attack-scoped Critical Rate buff leaked onto skill/burst damage',
+      'a normal-attack-scoped Critical Rate buff leaked onto skill/burst damage'
     ).toEqual([]);
     expect(
       sawBoost,
@@ -150,7 +190,7 @@ describe('cfg.onEvent structured event log', () => {
         'broken (helm never cast, so the buff was never live and the leak arm above is vacuous), ' +
         'OR the buff is applied at 100% uptime — in which case `base` IS the boosted rate, nothing ' +
         'reads as elevated, and the leak arm went silent on a genuinely unscoped implementation. ' +
-        'Check whether the buff is live at all before assuming the first.',
+        'Check whether the buff is live at all before assuming the first.'
     ).toBe(true);
   });
 
@@ -166,25 +206,30 @@ describe('cfg.onEvent structured event log', () => {
       focusSlug: 'ada',
       cfg: { onEvent: (ev) => events.push(ev) },
     });
-    const applies = events.filter((e): e is Extract<SimEvent, { kind: 'buffApply' }> => e.kind === 'buffApply');
+    const applies = events.filter(
+      (e): e is Extract<SimEvent, { kind: 'buffApply' }> =>
+        e.kind === 'buffApply'
+    );
     expect(applies.length, 'no buff was ever applied').toBeGreaterThan(0);
 
     const allyHeld = applies.filter((e) => e.targetIdx !== null);
     expect(allyHeld.length, 'no ally-held buff was logged').toBeGreaterThan(0);
     expect(
-      allyHeld.every((e) => e.targetSlug !== null && e.targetIdx! >= 0 && e.targetIdx! < 4),
-      'an ally-held buff reported a holder outside the 4-unit comp',
+      allyHeld.every(
+        (e) => e.targetSlug !== null && e.targetIdx! >= 0 && e.targetIdx! < 4
+      ),
+      'an ally-held buff reported a holder outside the 4-unit comp'
     ).toBe(true);
 
     const bossHeld = applies.filter((e) => e.targetIdx === null);
     expect(
       bossHeld.length,
       'no boss-held debuff in this fixture — the enemy branch is untested; pick a comp with a ' +
-        'Damage Taken ▲ debuffer rather than weakening this assertion',
+        'Damage Taken ▲ debuffer rather than weakening this assertion'
     ).toBeGreaterThan(0);
     expect(
       bossHeld.every((e) => e.targetSlug === null),
-      'a boss-held debuff reported a unit slug',
+      'a boss-held debuff reported a unit slug'
     ).toBe(true);
   });
 
@@ -206,17 +251,20 @@ describe('cfg.onEvent structured event log', () => {
     let seen = 0;
     const orphans: string[] = [];
     for (const e of events) {
-      if (e.kind === 'fullBurstStart') open = true;
-      else if (e.kind === 'fullBurstEnd') open = false;
+      if (e.kind === 'fullBurstStart') {open = true;}
+      else if (e.kind === 'fullBurstEnd') {open = false;}
       else if (e.kind === 'damage' && e.inFullBurst) {
         seen++;
-        if (!open) orphans.push(`${e.slug}/${e.srcSlot}@${e.sec.toFixed(2)}s`);
+        if (!open) {orphans.push(`${e.slug}/${e.srcSlot}@${e.sec.toFixed(2)}s`);}
       }
     }
-    expect(seen, 'no in-FB damage at all — the fixture never reached a Full Burst').toBeGreaterThan(0);
+    expect(
+      seen,
+      'no in-FB damage at all — the fixture never reached a Full Burst'
+    ).toBeGreaterThan(0);
     expect(
       orphans.slice(0, 3),
-      `${orphans.length} in-FB damage instance(s) fall outside a start/end pair in stream order`,
+      `${orphans.length} in-FB damage instance(s) fall outside a start/end pair in stream order`
     ).toEqual([]);
   });
 
@@ -225,14 +273,19 @@ describe('cfg.onEvent structured event log', () => {
     // line spec asserts on. Normal fire must say 'normal' and never a skill slot, and vice versa.
     const dmg = of('damage');
     const mismatched = dmg.filter(
-      (e) => (e.bucket === 'normal') !== (e.srcSlot === 'normal'),
+      (e) => (e.bucket === 'normal') !== (e.srcSlot === 'normal')
     );
     expect(
-      mismatched.slice(0, 3).map((e) => `${e.slug} bucket=${e.bucket} srcSlot=${e.srcSlot}`),
-      'damage instance(s) whose source slot contradicts their bucket',
+      mismatched
+        .slice(0, 3)
+        .map((e) => `${e.slug} bucket=${e.bucket} srcSlot=${e.srcSlot}`),
+      'damage instance(s) whose source slot contradicts their bucket'
     ).toEqual([]);
     // null is reserved for the genuinely unattributable (the summed extraHitDamagePct rider);
     // this fixture carries none, so every instance here must name its line.
-    expect(dmg.filter((e) => e.srcSlot === null), 'unattributed damage in a fixture with no summed rider').toEqual([]);
+    expect(
+      dmg.filter((e) => e.srcSlot === null),
+      'unattributed damage in a fixture with no summed rider'
+    ).toEqual([]);
   });
 });

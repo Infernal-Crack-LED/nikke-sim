@@ -59,7 +59,7 @@ describe('flora', () => {
 
   // Inactive case: no fixed B3 means no Full Burst and no burst cast.
   const noFbEvents: SimEvent[] = [];
-  const noFbRes = runComp({
+  runComp({
     ...controlComp('flora', false),
     cfg: { onEvent: (ev: SimEvent) => noFbEvents.push(ev) },
   });
@@ -106,9 +106,9 @@ describe('flora', () => {
   });
 
   it('without a B3 chain there is no Full Burst, no burst cast, and no true-damage buff', () => {
-    expect(
-      noFbEvents.filter((ev) => ev.kind === 'fullBurstStart').length
-    ).toBe(0);
+    expect(noFbEvents.filter((ev) => ev.kind === 'fullBurstStart').length).toBe(
+      0
+    );
     expect(
       noFbEvents.filter((ev) => isBuffApply(ev, 'trueDamagePct')).length
     ).toBe(0);

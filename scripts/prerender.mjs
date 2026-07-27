@@ -139,13 +139,13 @@ function injectMeta(html, route) {
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
     .replace(
       /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${desc}$2`,
+      `$1${desc}$2`
     )
     .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
     .replace(
       /(<meta name="twitter:description" content=")[^"]*(")/,
-      `$1${desc}$2`,
+      `$1${desc}$2`
     );
 }
 
@@ -153,7 +153,7 @@ async function main() {
   const baseHtml = await readFile(join(DIST, 'index.html'), 'utf8');
 
   for (const route of ROUTES) {
-    if (route.path === '/') continue; // dist/index.html already has the base meta
+    if (route.path === '/') {continue;} // dist/index.html already has the base meta
     const html = injectMeta(baseHtml, route);
     const dir = join(DIST, route.path);
     await mkdir(dir, { recursive: true });

@@ -5,6 +5,7 @@ ALWAYS-⚑ fields. The packet-prep script strips any line naming the TARGET slug
 other units are kept — they don't leak the target). Answer-free by construction.
 
 ## Recurring failure-mode taxonomy (the traps calibration hides — applies to ANY unit)
+
 1. **SCOPE** — a buff scoped to "normal attacks" (or charge / crit-only) mis-encoded as a generic stat. A
    "Critical Rate of normal attacks" line is a scoped stat, NOT generic crit (generic over-credits skill/burst crit).
 2. **DURATION SEMANTICS** — "for N round(s)" is a ROUND count (expires after the holder fires N rounds, spanning
@@ -38,6 +39,7 @@ other units are kept — they don't leak the target). Answer-free by constructio
     the PRE-consume count; sawtooth = ~cap/2).
 
 ## The 4 questions per kit line (the errors calibration hides)
+
 1. **Scope** — normal attacks vs charge vs crit-only vs generic?
 2. **Duration semantics** — seconds vs ROUNDS vs stacks vs until-reload vs permanent?
 3. **Trigger identity** — last-bullet / shot-fired / hit-count / interval / full-burst-enter / burst-cast;
@@ -45,6 +47,7 @@ other units are kept — they don't leak the target). Answer-free by constructio
 4. **Target set** — self / allies / all-including-self / the target (enemy) / caster-slot overwrite?
 
 ## ALWAYS-⚑ fields (outside the input domain — flag with estimate + reasoning + recipe; never ship silently)
+
 A value not literally in the kit text, OR from a known-unreliable datamine field (rate_of_fire, reloadFrames),
 MUST be a ⚑. The seven: (1) cadence tuple (datamine-unreliable); (2) a damage line the text gives NO trigger for
 (invented trigger + cadence); (3) weapon-swap shot economy (kit-silent — estimate optimistically); (4) stack/

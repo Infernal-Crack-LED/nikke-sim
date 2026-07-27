@@ -19,16 +19,16 @@ elemental advantage, so her practical output here is the attack-damage, hit-rate
 
 ## Line inventory (all 8 payload lines accounted for)
 
-| Slot | Line | Disposition | Encoding |
-| --- | --- | --- | --- |
-| S1 | Damage dealt to Shield ▲601.01% continuously | DOCUMENTED_GAP (UNMODELED) | verbatim in `unmodeled.skill1` — no shield-damage StatKey; partless v1 boss never shields (inert) |
-| S1 | ATK ▲96.98% for 25s when recovery takes effect | FAITHFUL | `recovery` trigger, self, `atkPct` 96.98/25s |
-| S2 | Elem Advantage Attack Damage ▲30.02%/10s, self in Shield status, FB enter | FAITHFUL | `fullBurstEnter`, self, `elemAdvantageDamagePct` 30.02/10s, **`requiresShielded:true`** |
-| S2 | Damage vs core ▲60.07%/10s, all Fire Code allies, FB enter | FAITHFUL | `fullBurstEnter`, `alliesOfElement` Fire, `coreDamagePct` 60.07/10s |
-| BU | Gain Pierce for 25s | FAITHFUL | **`gainPierce` durationSec:25** on burstCast (pierce inert in v1) |
-| BU | Attack damage ▲150.04%/10s | FAITHFUL | `burstCast`, self, `attackDamagePct` 150.04/10s |
-| BU | Recovers 3.16% of attack damage as HP over 10s | DOCUMENTED_GAP (cadence ⚑) | single `heal` recovery event, self (self-procs S1); tick cadence measurement-gated |
-| BU | Hit Rate ▲101.37%/10s | FAITHFUL | `burstCast`, self, `hitRatePct` 101.37/10s (feeds core rate via hrCoreMult) |
+| Slot | Line                                                                      | Disposition                | Encoding                                                                                          |
+| ---- | ------------------------------------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------- |
+| S1   | Damage dealt to Shield ▲601.01% continuously                              | DOCUMENTED_GAP (UNMODELED) | verbatim in `unmodeled.skill1` — no shield-damage StatKey; partless v1 boss never shields (inert) |
+| S1   | ATK ▲96.98% for 25s when recovery takes effect                            | FAITHFUL                   | `recovery` trigger, self, `atkPct` 96.98/25s                                                      |
+| S2   | Elem Advantage Attack Damage ▲30.02%/10s, self in Shield status, FB enter | FAITHFUL                   | `fullBurstEnter`, self, `elemAdvantageDamagePct` 30.02/10s, **`requiresShielded:true`**           |
+| S2   | Damage vs core ▲60.07%/10s, all Fire Code allies, FB enter                | FAITHFUL                   | `fullBurstEnter`, `alliesOfElement` Fire, `coreDamagePct` 60.07/10s                               |
+| BU   | Gain Pierce for 25s                                                       | FAITHFUL                   | **`gainPierce` durationSec:25** on burstCast (pierce inert in v1)                                 |
+| BU   | Attack damage ▲150.04%/10s                                                | FAITHFUL                   | `burstCast`, self, `attackDamagePct` 150.04/10s                                                   |
+| BU   | Recovers 3.16% of attack damage as HP over 10s                            | DOCUMENTED_GAP (cadence ⚑) | single `heal` recovery event, self (self-procs S1); tick cadence measurement-gated                |
+| BU   | Hit Rate ▲101.37%/10s                                                     | FAITHFUL                   | `burstCast`, self, `hitRatePct` 101.37/10s (feeds core rate via hrCoreMult)                       |
 
 ## Two gauntlet FIXES (the headline output — both cross-family corroborated, damage-neutral)
 

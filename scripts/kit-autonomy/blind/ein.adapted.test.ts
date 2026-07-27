@@ -55,23 +55,30 @@ type Ev = SimEvent & Record<string, unknown>;
 
 function run(opts: ReturnType<typeof controlComp>) {
   const events: Ev[] = [];
-  const res = runComp({ ...opts, cfg: { ...opts.cfg, onEvent: (ev: SimEvent) => events.push(ev as Ev) } });
+  const res = runComp({
+    ...opts,
+    cfg: { ...opts.cfg, onEvent: (ev: SimEvent) => events.push(ev as Ev) },
+  });
   return { res, events };
 }
 
 const base = controlComp('ein', true);
 const BASE = run(base);
 
-const einDamage = () => BASE.events.filter((e) => e.kind === 'damage' && e.slug === 'ein');
+const einDamage = () =>
+  BASE.events.filter((e) => e.kind === 'damage' && e.slug === 'ein');
 const einBuffs = () =>
   BASE.events.filter(
-    (e) => e.kind === 'buffApply' && (e.targetSlug === 'ein' || e.casterIdx !== null),
+    (e) =>
+      e.kind === 'buffApply' && (e.targetSlug === 'ein' || e.casterIdx !== null)
   );
 const burstCasts = () => BASE.events.filter((e) => e.kind === 'burstCast');
 
 describe('ein — fixture sanity (non-vacuity)', () => {
   it('ein actually bursts in the control comp (B1+B2 present)', () => {
-    const einCasts = burstCasts().filter((e) => e.slug === 'ein' || e.slug === 'ein');
+    const einCasts = burstCasts().filter(
+      (e) => e.slug === 'ein' || e.slug === 'ein'
+    );
     expect(einCasts.length).toBeGreaterThan(0);
   });
 
@@ -80,7 +87,9 @@ describe('ein — fixture sanity (non-vacuity)', () => {
   });
 
   it('the fixture reaches Full Burst (so FB-exemption claims are testable)', () => {
-    expect(BASE.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      BASE.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
   });
 });
 
@@ -113,21 +122,28 @@ describe('ein skill1a + skill2a — 4 battle-start Near Feathers, 90.81% true ea
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - FEATHER_PCT) < 0.01) {
+          if (
+            eff.kind === 'flatDamage' &&
+            Math.abs(eff.atkPct - FEATHER_PCT) < 0.01
+          ) {
             eff.atkPct = FEATHER_PCT / 2;
           }
         }
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
-    expect(totals(alt.res)['ein']).toBeLessThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeLessThan(totals(BASE.res).ein);
   });
 
   it('feathers do not move teammates (Affects 1 random enemy — no ally payload)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - FEATHER_PCT) < 0.01),
+          (eff) =>
+            !(
+              eff.kind === 'flatDamage' &&
+              Math.abs(eff.atkPct - FEATHER_PCT) < 0.01
+            )
         );
       }
     });
@@ -151,7 +167,7 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
       (e) =>
         e.targetSlug === 'ein' &&
         (e.stat === 'atkPct' || e.stat === 'casterAtkPct') &&
-        Math.abs((e.value as number) - 70.12) < 0.01,
+        Math.abs((e.value as number) - 70.12) < 0.01
     );
     expect(atk.length).toBeGreaterThan(0);
     // 10 sec at 60fps = 600 frames of window on each apply.
@@ -164,7 +180,7 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01),
+          (eff) => !(eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01)
         );
       }
     });
@@ -172,20 +188,21 @@ describe('ein skill1b — self ATK +70.12% for 10s on entering Burst Stage 3', (
     for (const slug of ['liter', 'crown', 'helm']) {
       expect(totals(alt.res)[slug]).toBe(totals(BASE.res)[slug]);
     }
-    expect(totals(alt.res)['ein']).toBeLessThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeLessThan(totals(BASE.res).ein);
   });
 
   it('is a 10s window, not permanent (nearest-wrong: durationSec dropped)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01) delete eff.durationSec;
+          if (eff.kind === 'buff' && Math.abs(eff.value - 70.12) < 0.01)
+            {delete eff.durationSec;}
         }
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
     // A permanent ATK buff strictly out-damages a 10s-per-rotation one.
-    expect(totals(alt.res)['ein']).toBeGreaterThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeGreaterThan(totals(BASE.res).ein);
   });
 });
 
@@ -203,7 +220,7 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'chargeDamagePct' &&
-        Math.abs((e.value as number) - 80) < 0.01,
+        Math.abs((e.value as number) - 80) < 0.01
     );
     expect(cd.length).toBeGreaterThan(0);
     for (const e of cd) {
@@ -214,7 +231,9 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
 
   it('re-applies per full charge (non-vacuity: many charges over 180s, not one)', () => {
     const cd = einBuffs().filter(
-      (e) => e.stat === 'chargeDamagePct' && Math.abs((e.value as number) - 80) < 0.01,
+      (e) =>
+        e.stat === 'chargeDamagePct' &&
+        Math.abs((e.value as number) - 80) < 0.01
     );
     expect(cd.length).toBeGreaterThan(5);
   });
@@ -223,7 +242,11 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.skill2 ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct' && Math.abs(eff.value - 80) < 0.01) {
+          if (
+            eff.kind === 'buff' &&
+            eff.stat === 'chargeDamagePct' &&
+            Math.abs(eff.value - 80) < 0.01
+          ) {
             delete eff.durationShots;
             eff.durationSec = 10;
           }
@@ -231,7 +254,7 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
-    expect(totals(alt.res)['ein']).toBeGreaterThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeGreaterThan(totals(BASE.res).ein);
   });
 
   it('lands in the charge bucket only (removing it moves charge damage, not the true bucket)', () => {
@@ -239,7 +262,11 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
       for (const b of ov.skill2 ?? []) {
         b.effects = b.effects.filter(
           (eff) =>
-            !(eff.kind === 'buff' && eff.stat === 'chargeDamagePct' && Math.abs(eff.value - 80) < 0.01),
+            !(
+              eff.kind === 'buff' &&
+              eff.stat === 'chargeDamagePct' &&
+              Math.abs(eff.value - 80) < 0.01
+            )
         );
       }
     });
@@ -252,11 +279,12 @@ describe('ein skill2b — Charge Damage +80% for 1 shot (round-count window)', (
         (e) =>
           e.kind === 'damage' &&
           e.slug === 'ein' &&
-          ((e as Ev).bucket !== 'normal' && ((e as Ev).atkPct as number) > 0),
+          (e as Ev).bucket !== 'normal' &&
+          ((e as Ev).atkPct as number) > 0
       )
       .reduce((s, e) => s + ((e as Ev).amount as number), 0);
     // Charge-bucket-only buff: the (ATK-driven) true bucket is unchanged in shape.
-    expect(totals(alt.res)['ein']).toBeLessThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeLessThan(totals(BASE.res).ein);
     expect(trueAfter).toBeLessThanOrEqual(trueBefore);
   });
 });
@@ -276,9 +304,10 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
     for (const f of casts) {
       const near = einDamage().filter(
         (e) =>
-          (e.bucket !== 'normal' && (e.atkPct as number) > 0) &&
+          e.bucket !== 'normal' &&
+          (e.atkPct as number) > 0 &&
           (e.frame as number) >= f &&
-          (e.frame as number) <= f + 6,
+          (e.frame as number) <= f + 6
       );
       // 6 feathers + the burst's own 300.02% true hit = 7 true hits in the cast frame window.
       expect(near.length).toBeGreaterThanOrEqual(6);
@@ -290,10 +319,11 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'trueDamagePct' &&
-        Math.abs((e.value as number) - 55.3) < 0.01,
+        Math.abs((e.value as number) - 55.3) < 0.01
     );
     expect(td.length).toBeGreaterThan(0);
-    for (const e of td) expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
+    for (const e of td)
+      {expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);}
   });
 
   it('Charge Damage +140.68% is a self buff with a 10s window', () => {
@@ -301,10 +331,11 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
       (e) =>
         e.targetSlug === 'ein' &&
         e.stat === 'chargeDamagePct' &&
-        Math.abs((e.value as number) - 140.68) < 0.01,
+        Math.abs((e.value as number) - 140.68) < 0.01
     );
     expect(cd.length).toBeGreaterThan(0);
-    for (const e of cd) expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);
+    for (const e of cd)
+      {expect((e.expiresFrame as number) - (e.frame as number)).toBe(600);}
   });
 
   it('both burst buffs are self-scoped (Affects self) — teammates byte-identical without them', () => {
@@ -314,8 +345,9 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
           (eff) =>
             !(
               eff.kind === 'buff' &&
-              (Math.abs(eff.value - 55.3) < 0.01 || Math.abs(eff.value - 140.68) < 0.01)
-            ),
+              (Math.abs(eff.value - 55.3) < 0.01 ||
+                Math.abs(eff.value - 140.68) < 0.01)
+            )
         );
       }
     });
@@ -323,19 +355,20 @@ describe('ein burst a — 6 Near Feathers + self True/Charge Damage buffs (10s)'
     for (const slug of ['liter', 'crown', 'helm']) {
       expect(totals(alt.res)[slug]).toBe(totals(BASE.res)[slug]);
     }
-    expect(totals(alt.res)['ein']).toBeLessThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeLessThan(totals(BASE.res).ein);
   });
 
   it('True Damage ▲ actually feeds the feather/burst true hits (non-vacuity)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'buff' && Math.abs(eff.value - 55.3) < 0.01) eff.value = 0;
+          if (eff.kind === 'buff' && Math.abs(eff.value - 55.3) < 0.01)
+            {eff.value = 0;}
         }
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
-    expect(totals(alt.res)['ein']).toBeLessThan(totals(BASE.res)['ein']);
+    expect(totals(alt.res).ein).toBeLessThan(totals(BASE.res).ein);
   });
 });
 
@@ -350,13 +383,16 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         for (const eff of b.effects) {
-          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01) eff.atkPct = 0.02;
+          if (eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01)
+            {eff.atkPct = 0.02;}
         }
       }
     });
     const alt = run({ ...base, overrides: { ein: patched } });
-    const casts = burstCasts().filter((e) => e.slug === 'ein' || e.slug === 'ein').length;
-    const delta = totals(BASE.res)['ein'] - totals(alt.res)['ein'];
+    const casts = burstCasts().filter(
+      (e) => e.slug === 'ein' || e.slug === 'ein'
+    ).length;
+    const delta = totals(BASE.res).ein - totals(alt.res).ein;
     expect(delta).toBeGreaterThan(0);
     // Sanity: the nuke's share is per-cast, so it scales with cast count, not with 10x targets.
     expect(casts).toBeGreaterThan(0);
@@ -369,7 +405,8 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     for (const f of casts) {
       const atCast = einDamage().filter((e) => (e.frame as number) === f);
       expect(atCast.length).toBeGreaterThan(0);
-      for (const e of atCast) expect(e.bucket !== 'normal' && (e.atkPct as number) > 0).toBe(true);
+      for (const e of atCast)
+        {expect(e.bucket !== 'normal' && (e.atkPct as number) > 0).toBe(true);}
     }
   });
 
@@ -379,7 +416,7 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
       .map((e) => e.frame as number);
     for (const f of casts) {
       const atCast = einDamage().filter((e) => (e.frame as number) === f);
-      for (const e of atCast) expect(e.fbMajorApplied).toBeFalsy();
+      for (const e of atCast) {expect(e.fbMajorApplied).toBeFalsy();}
     }
   });
 
@@ -389,7 +426,7 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
       .map((e) => e.frame as number);
     for (const f of casts) {
       const atCast = einDamage().filter((e) => (e.frame as number) === f);
-      for (const e of atCast) expect(e.rangeApplied).toBeFalsy();
+      for (const e of atCast) {expect(e.rangeApplied).toBeFalsy();}
     }
   });
 
@@ -397,7 +434,8 @@ describe('ein burst b — 300.02% true damage, once per cast (not x10)', () => {
     const patched = withPatchedOverride('ein', (ov) => {
       for (const b of ov.burst ?? []) {
         b.effects = b.effects.filter(
-          (eff) => !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01),
+          (eff) =>
+            !(eff.kind === 'flatDamage' && Math.abs(eff.atkPct - 300.02) < 0.01)
         );
       }
     });

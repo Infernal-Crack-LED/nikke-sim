@@ -55,7 +55,12 @@
 // (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / ada 2 / helm 3. */
@@ -69,7 +74,11 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  const res = runComp({ ...controlComp('ada'), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  const res = runComp({
+    ...controlComp('ada'),
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return { events, totals: totals(res) };
 }
 
@@ -77,20 +86,27 @@ function run(overrides: Record<string, any> = {}) {
 /** A1 nearest-wrong: S1's burstCasters target with the stage-3 filter removed (unfiltered). */
 const adaUnfilteredS1 = withPatchedOverride('ada', (ov) => {
   let patched = 0;
-  for (const b of ov.skill1) if (b.target?.kind === 'burstCasters') { delete b.target.stage; patched++; }
-  if (!patched) throw new Error('ada S1 burstCasters block missing — fixture is stale');
+  for (const b of ov.skill1)
+    {if (b.target?.kind === 'burstCasters') {
+      delete b.target.stage;
+      patched++;
+    }}
+  if (!patched)
+    {throw new Error('ada S1 burstCasters block missing — fixture is stale');}
 });
 /** A4 nearest-wrong: the burstCast grenade rider removed (baseline FB-enter stream only). */
 const adaNoRider = withPatchedOverride('ada', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'burstCast');
-  if (ov.skill2.length === before) throw new Error('ada S2 burstCast rider missing — fixture is stale');
+  if (ov.skill2.length === before)
+    {throw new Error('ada S2 burstCast rider missing — fixture is stale');}
 });
 /** A3 reference: both S2 grenade blocks removed (no grenades at all). */
 const adaNoGrenade = withPatchedOverride('ada', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = [];
-  if (!before) throw new Error('ada S2 grenade blocks missing — fixture is stale');
+  if (!before)
+    {throw new Error('ada S2 grenade blocks missing — fixture is stale');}
 });
 /** A7 nearest-wrong: the burst weaponSwap removed (no Special Modification). */
 const adaNoSwap = withPatchedOverride('ada', (ov) => {
@@ -98,15 +114,21 @@ const adaNoSwap = withPatchedOverride('ada', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
-    if (b.effects.length !== before) patched++;
+    if (b.effects.length !== before) {patched++;}
   }
-  if (!patched) throw new Error('ada burst weaponSwap missing — fixture is stale');
+  if (!patched)
+    {throw new Error('ada burst weaponSwap missing — fixture is stale');}
 });
 /** A8 nearest-wrong: the grenade dot re-flavored true→normal (True Damage ▲ buffs no longer apply). */
 const adaNormalFlavor = withPatchedOverride('ada', (ov) => {
   let patched = 0;
-  for (const b of ov.skill2) for (const e of b.effects) if (e.kind === 'dot') { e.flavor = 'normal'; patched++; }
-  if (!patched) throw new Error('ada S2 dot block missing — fixture is stale');
+  for (const b of ov.skill2)
+    {for (const e of b.effects)
+      {if (e.kind === 'dot') {
+        e.flavor = 'normal';
+        patched++;
+      }}}
+  if (!patched) {throw new Error('ada S2 dot block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -118,45 +140,66 @@ const noSwap = run({ ada: adaNoSwap });
 const normalFlavor = run({ ada: adaNormalFlavor });
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const adaBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === ADA && b.stat === stat);
 const adaDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'ada' && d.srcSlot === srcSlot);
 const adaBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'ada');
-const targets = (list: BuffApply[]) => [...new Set(list.map((b) => b.targetIdx))].sort((a, b) => (a ?? -1) - (b ?? -1));
+const targets = (list: BuffApply[]) =>
+  [...new Set(list.map((b) => b.targetIdx))].sort(
+    (a, b) => (a ?? -1) - (b ?? -1)
+  );
 
 describe('ada — kit spec', () => {
   describe('A1 — S1 grants +60%-of-caster ATK to STAGE-3 burst casters only', () => {
     const grant = adaBuffs(base.events, 'casterAtkPct');
 
     it('lands on the Burst-3 casters (ada + helm), for 10 sec', () => {
-      expect(grant.length, 'no ada-cast casterAtkPct grant was applied').toBeGreaterThan(0);
+      expect(
+        grant.length,
+        'no ada-cast casterAtkPct grant was applied'
+      ).toBeGreaterThan(0);
       expect(targets(grant)).toEqual(STAGE3_CASTERS);
-      for (const b of grant) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('does NOT reach the B1/B2 casters (liter/crown)', () => {
-      const leaked = grant.filter((b) => NON_STAGE3.includes(b.targetIdx ?? -1));
-      expect(leaked.map((b) => b.targetIdx), 'S1 grant leaked to a non-stage-3 caster').toEqual([]);
+      const leaked = grant.filter((b) =>
+        NON_STAGE3.includes(b.targetIdx ?? -1)
+      );
+      expect(
+        leaked.map((b) => b.targetIdx),
+        'S1 grant leaked to a non-stage-3 caster'
+      ).toEqual([]);
     });
 
     it('DISCRIMINATING: an unfiltered burstCasters target would widen to the B1/B2 casters', () => {
       const widened = targets(adaBuffs(unfilteredS1.events, 'casterAtkPct'));
       expect(widened).not.toEqual(STAGE3_CASTERS);
-      expect(widened.some((t) => NON_STAGE3.includes(t ?? -1)), 'expected the unfiltered grant to reach liter/crown').toBe(true);
+      expect(
+        widened.some((t) => NON_STAGE3.includes(t ?? -1)),
+        'expected the unfiltered grant to reach liter/crown'
+      ).toBe(true);
     });
   });
 
   describe('A2 — S1 grants True Damage ▲ 50% to the same stage-3 casters', () => {
-    const grant = adaBuffs(base.events, 'trueDamagePct').filter((b) => b.value === 50);
+    const grant = adaBuffs(base.events, 'trueDamagePct').filter(
+      (b) => b.value === 50
+    );
 
     it('is 50% on the Burst-3 casters (ada + helm), for 10 sec', () => {
-      expect(grant.length, 'no ada-cast trueDamagePct 50% grant').toBeGreaterThan(0);
+      expect(
+        grant.length,
+        'no ada-cast trueDamagePct 50% grant'
+      ).toBeGreaterThan(0);
       expect(targets(grant)).toEqual(STAGE3_CASTERS);
-      for (const b of grant) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
@@ -164,15 +207,27 @@ describe('ada — kit spec', () => {
     const grenades = adaDamage(base.events, 'skill2');
 
     it('fires at the kit magnitude (420%) and is the only skill2 source', () => {
-      expect(grenades.length, 'no grenade damage in a 180s fight').toBeGreaterThan(0);
+      expect(
+        grenades.length,
+        'no grenade damage in a 180s fight'
+      ).toBeGreaterThan(0);
       expect([...new Set(grenades.map((d) => d.atkPct))]).toEqual([420]);
     });
 
     it('re-applies across the fight (one 10s stream per Full Burst enter, not a single cast)', () => {
-      const fbCount = base.events.filter((e) => e.kind === 'fullBurstStart').length;
-      const spanSec = (grenades[grenades.length - 1].frame - grenades[0].frame) / FPS;
-      expect(fbCount, 'fixture produced too few Full Bursts to exercise the re-application').toBeGreaterThanOrEqual(5);
-      expect(spanSec, 'grenades must persist across the fight, not stop after one window').toBeGreaterThan(150);
+      const fbCount = base.events.filter(
+        (e) => e.kind === 'fullBurstStart'
+      ).length;
+      const spanSec =
+        (grenades[grenades.length - 1].frame - grenades[0].frame) / FPS;
+      expect(
+        fbCount,
+        'fixture produced too few Full Bursts to exercise the re-application'
+      ).toBeGreaterThanOrEqual(5);
+      expect(
+        spanSec,
+        'grenades must persist across the fight, not stop after one window'
+      ).toBeGreaterThan(150);
     });
 
     it('INERTNESS-REF: removing both S2 blocks zeroes every grenade instance', () => {
@@ -184,12 +239,20 @@ describe('ada — kit spec', () => {
     it('is LIVE: more grenades with the rider than without it', () => {
       const withRider = adaDamage(base.events, 'skill2').length;
       const without = adaDamage(noRider.events, 'skill2').length;
-      expect(withRider, `rider inert? ${withRider} grenades with vs ${without} without`).toBeGreaterThan(without);
+      expect(
+        withRider,
+        `rider inert? ${withRider} grenades with vs ${without} without`
+      ).toBeGreaterThan(without);
     });
 
     it('the rider adds the second interleaved stream (≈30 extra grenades over the fight)', () => {
-      const delta = adaDamage(base.events, 'skill2').length - adaDamage(noRider.events, 'skill2').length;
-      expect(delta, 'a ▼1s interval reduction must roughly double the in-window rate').toBeGreaterThanOrEqual(20);
+      const delta =
+        adaDamage(base.events, 'skill2').length -
+        adaDamage(noRider.events, 'skill2').length;
+      expect(
+        delta,
+        'a ▼1s interval reduction must roughly double the in-window rate'
+      ).toBeGreaterThanOrEqual(20);
     });
   });
 
@@ -200,15 +263,20 @@ describe('ada — kit spec', () => {
       expect(grant.length, 'no ada-cast atkPct 40% grant').toBeGreaterThan(0);
       expect(targets(grant)).toEqual([ADA]);
       expect(grant.length).toBe(adaBursts(base.events).length);
-      for (const b of grant) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
   describe('A6 — burst grants True Damage ▲ 42% to SELF only (distinct from the S1 50% line)', () => {
-    const grant = adaBuffs(base.events, 'trueDamagePct').filter((b) => b.value === 42);
+    const grant = adaBuffs(base.events, 'trueDamagePct').filter(
+      (b) => b.value === 42
+    );
 
     it('is 42% on ada alone, once per burst cast', () => {
-      expect(grant.length, 'no ada-cast trueDamagePct 42% grant').toBeGreaterThan(0);
+      expect(
+        grant.length,
+        'no ada-cast trueDamagePct 42% grant'
+      ).toBeGreaterThan(0);
       expect(targets(grant)).toEqual([ADA]);
       expect(grant.length).toBe(adaBursts(base.events).length);
     });
@@ -217,11 +285,19 @@ describe('ada — kit spec', () => {
   describe('A7 — Special Modification swaps her weapon (charge mult 17.50 inside the window)', () => {
     const SWAP_CHARGE = 17.5; // chargeMultPct 1750 → ×17.5 charge multiplier
     const swappedShots = (evs: SimEvent[]) =>
-      dmg(evs).filter((d) => d.slug === 'ada' && d.bucket === 'normal' && Math.abs(d.mult.charge - SWAP_CHARGE) < 1e-6);
+      dmg(evs).filter(
+        (d) =>
+          d.slug === 'ada' &&
+          d.bucket === 'normal' &&
+          Math.abs(d.mult.charge - SWAP_CHARGE) < 1e-6
+      );
 
     it('her normal-bucket shots reach the swapped ×17.50 charge multiplier', () => {
       const shots = swappedShots(base.events);
-      expect(shots.length, 'no swapped-charge shots — Special Modification never fired').toBeGreaterThan(0);
+      expect(
+        shots.length,
+        'no swapped-charge shots — Special Modification never fired'
+      ).toBeGreaterThan(0);
     });
 
     it('DISCRIMINATING: removing the weaponSwap zeroes every ×17.50 shot and drops her total', () => {
@@ -238,22 +314,34 @@ describe('ada — kit spec', () => {
       const bursts = adaBursts(base.events);
       const shots = swappedShots(base.events);
       for (const cast of bursts) {
-        const inWindow = shots.filter((s) => s.frame >= cast.frame && s.frame <= cast.frame + 10 * FPS);
-        expect(inWindow.length, `burst at ${(cast.frame / FPS).toFixed(1)}s produced no swapped shot`).toBeGreaterThanOrEqual(1);
+        const inWindow = shots.filter(
+          (s) => s.frame >= cast.frame && s.frame <= cast.frame + 10 * FPS
+        );
+        expect(
+          inWindow.length,
+          `burst at ${(cast.frame / FPS).toFixed(1)}s produced no swapped shot`
+        ).toBeGreaterThanOrEqual(1);
       }
     });
   });
 
   describe('A8 — grenades are True-flavored, so the True Damage ▲ buffs apply only to them', () => {
-    const grenadeSum = (evs: SimEvent[]) => adaDamage(evs, 'skill2').reduce((s, d) => s + d.amount, 0);
+    const grenadeSum = (evs: SimEvent[]) =>
+      adaDamage(evs, 'skill2').reduce((s, d) => s + d.amount, 0);
 
     it('DISCRIMINATING: re-flavoring the grenades true→normal drops their damage (buffs stop applying)', () => {
-      expect(grenadeSum(normalFlavor.events)).toBeLessThan(grenadeSum(base.events) * 0.9);
+      expect(grenadeSum(normalFlavor.events)).toBeLessThan(
+        grenadeSum(base.events) * 0.9
+      );
     });
 
     it('the True Damage ▲ buffs are live on the grenades in-window (dmgUp reflects them)', () => {
-      const earlyBase = adaDamage(base.events, 'skill2').slice(0, 4).map((d) => d.mult.dmgUp);
-      const earlyNormal = adaDamage(normalFlavor.events, 'skill2').slice(0, 4).map((d) => d.mult.dmgUp);
+      const earlyBase = adaDamage(base.events, 'skill2')
+        .slice(0, 4)
+        .map((d) => d.mult.dmgUp);
+      const earlyNormal = adaDamage(normalFlavor.events, 'skill2')
+        .slice(0, 4)
+        .map((d) => d.mult.dmgUp);
       expect(Math.min(...earlyBase)).toBeGreaterThan(Math.max(...earlyNormal));
     });
   });

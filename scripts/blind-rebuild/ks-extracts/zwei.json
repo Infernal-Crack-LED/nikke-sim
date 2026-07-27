@@ -18,17 +18,9 @@
     },
     "reference": false,
     "unmodeled": {
-      "skill1": [
-        "【Phase 3】Items ×110"
-      ],
-      "skill2": [
-        "【Phase 2】Items ×50"
-      ],
-      "burst": [
-        "【Phase 1】",
-        "Cooldown: 20 s",
-        "Additional Effect: Pierce"
-      ]
+      "skill1": ["【Phase 3】Items ×110"],
+      "skill2": ["【Phase 2】Items ×50"],
+      "burst": ["【Phase 1】", "Cooldown: 20 s", "Additional Effect: Pierce"]
     },
     "caveats": [
       "burst: weapon-swap window economy is an unmeasured estimate — duration 10s (unstated in kit) and ~3 shots/window (charge 1.2s + 1-ammo reload); if footage shows reload-free cadence it is ~8 shots",

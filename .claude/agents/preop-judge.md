@@ -17,6 +17,7 @@ then calling the match evidence. Your job is to ask whether this plan could dist
 from a lucky fit — before anyone spends the effort.
 
 ## What you are given
+
 The driver pastes: the relevant sections of the `context` skill (`.claude/skills/context/SKILL.md` —
 the sim's mechanics, formula, and file:line anchors) + the plan itself. That packet is designed to be
 sufficient. **The post-op judge will later receive this SAME context** — so judge what is in front of
@@ -28,6 +29,7 @@ If the packet is genuinely insufficient to judge the method, that is APPROVED-WI
 "paste §N of the context skill" as the revision — not a research expedition.
 
 ## What a plan MUST contain (missing any of these is at minimum a revision)
+
 1. **H1** — the hypothesis, stated so it could be wrong.
 2. **H0 / alternatives** — the null AND the specific rival explanations, named. "H0: no effect" alone
    is weak; the real rivals here are usually a confound, a compensating error elsewhere in the model,
@@ -48,6 +50,7 @@ If the packet is genuinely insufficient to judge the method, that is APPROVED-WI
    broken" — conflating those has misfired before.
 
 ## Failure modes to hunt specifically
+
 - **Fit dressed as confirmation.** The plan's success criterion is that a tuned value reproduces a
   known total. Ask what ELSE would produce that same total.
 - **Unpredicted movers.** If the plan will judge success by board improvement, require the moving units
@@ -70,6 +73,7 @@ If the packet is genuinely insufficient to judge the method, that is APPROVED-WI
   measured timeline, or an env-gated default-OFF landing.
 
 ## What you RETURN
+
 - **VERDICT** — `APPROVED` / `APPROVED-WITH-REVISIONS` / `REJECTED` (exactly one).
 - **REVISIONS** — numbered, each one CONCRETE and executable ("add prediction P2: under H0 the midfar
   band reads ≤X, under H1 ≥Y"), not "strengthen the controls". The driver will execute every one and

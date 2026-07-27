@@ -89,12 +89,12 @@ const buffs = (evs: SimEvent[]) =>
 /** rosanna's sustained DoT ticks (her only damage line). */
 const rcoDot = (evs: SimEvent[]) =>
   dmg(evs).filter(
-    (d) => d.slug === 'rosanna-chic-ocean' && d.srcSlot === 'skill2',
+    (d) => d.slug === 'rosanna-chic-ocean' && d.srcSlot === 'skill2'
   );
 /** rosanna's AR normal-shot damage. */
 const rcoNormals = (evs: SimEvent[]) =>
   dmg(evs).filter(
-    (d) => d.slug === 'rosanna-chic-ocean' && d.bucket === 'normal',
+    (d) => d.slug === 'rosanna-chic-ocean' && d.bucket === 'normal'
   );
 const buffDurSec = (b: BuffApply) =>
   b.expiresFrame == null ? null : (b.expiresFrame - b.frame) / FPS;
@@ -103,7 +103,7 @@ const rcoCastFrames = (evs: SimEvent[]) =>
   evs
     .filter(
       (e): e is BurstCast =>
-        e.kind === 'burstCast' && e.slug === 'rosanna-chic-ocean',
+        e.kind === 'burstCast' && e.slug === 'rosanna-chic-ocean'
     )
     .map((b) => b.frame)
     .sort((a, b) => a - b);
@@ -119,7 +119,7 @@ const applyFrames = (evs: SimEvent[], stat: string, byCaster = true) =>
     ...new Set(
       buffs(evs)
         .filter((b) => b.stat === stat && (!byCaster || b.casterIdx === RCO))
-        .map((b) => b.frame),
+        .map((b) => b.frame)
     ),
   ].sort((a, b) => a - b);
 
@@ -128,20 +128,20 @@ const hasStat = (b: any, stat: string) =>
   b.effects.some((e: any) => e.stat === stat);
 const dotBlock = (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'dot'),
+    x.effects.some((e: any) => e.kind === 'dot')
   );
   if (!b)
-    throw new Error(
-      'rosanna-chic-ocean S2 dot block missing — fixture is stale',
-    );
+    {throw new Error(
+      'rosanna-chic-ocean S2 dot block missing — fixture is stale'
+    );}
   return b;
 };
 const dotEffect = (ov: any) => {
   const e = dotBlock(ov).effects.find((x: any) => x.kind === 'dot');
   if (!e)
-    throw new Error(
-      'rosanna-chic-ocean S2 dot effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'rosanna-chic-ocean S2 dot effect missing — fixture is stale'
+    );}
   return e;
 };
 
@@ -156,16 +156,16 @@ const cfDotLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
 });
 /** R2/R3 counterfactual: burst trigger re-keyed to fullBurstEnter (trigger-identity misread). */
 const cfFbEnter = withPatchedOverride('rosanna-chic-ocean', (ov) => {
-  for (const b of ov.burst) b.trigger = { kind: 'fullBurstEnter' };
+  for (const b of ov.burst) {b.trigger = { kind: 'fullBurstEnter' };}
 });
 /** R2 counterfactual: sustained Damage line removed (functional — collapses in-window dmgUp). */
 const cfNoSust = withPatchedOverride('rosanna-chic-ocean', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
   if (ov.burst.length === before)
-    throw new Error(
-      'rosanna-chic-ocean burst sustainedDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'rosanna-chic-ocean burst sustainedDamagePct block missing — fixture is stale'
+    );}
 });
 /** R2 counterfactual: lvl-9 value 19.4 (value pin). */
 const cfSustLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
@@ -178,9 +178,9 @@ const cfNoTaken = withPatchedOverride('rosanna-chic-ocean', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
   if (ov.burst.length === before)
-    throw new Error(
-      'rosanna-chic-ocean burst damageTakenPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'rosanna-chic-ocean burst damageTakenPct block missing — fixture is stale'
+    );}
 });
 /** R3 counterfactual: lvl-9 value 30.76 (value pin). */
 const cfTakenLvl9 = withPatchedOverride('rosanna-chic-ocean', (ov) => {
@@ -220,7 +220,7 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       const secs = ticks.map((d) => Math.round(d.sec)).sort((a, b) => a - b);
       expect(
         secs[0],
-        'first tick must be t=31 (first cast t=30 + 1s), not t=1',
+        'first tick must be t=31 (first cast t=30 + 1s), not t=1'
       ).toBe(31);
       expect(secs[secs.length - 1], 'last tick of the fifth window').toBe(165);
       // exactly five window-onsets, 30s apart
@@ -234,30 +234,30 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       expect(ct.length).not.toBe(75);
       expect(
         Math.round(ct[0].sec),
-        'continuous encoding starts at t=1, not t=31',
+        'continuous encoding starts at t=1, not t=31'
       ).toBe(1);
     });
 
     it('DISCRIMINATING: a lvl-9 magnitude keeps 75 ticks but moves atkPct to 67.2', () => {
       expect([...new Set(rcoDot(dotLvl9.events).map((d) => d.atkPct))]).toEqual(
-        [67.2],
+        [67.2]
       );
     });
   });
 
   describe('R2 — burst: all allies Sustained Damage ▲20.32% for 10s, feeds her own sustained DoT only', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === RCO && b.stat === 'sustainedDamagePct',
+      (b) => b.casterIdx === RCO && b.stat === 'sustainedDamagePct'
     );
 
     it('is 20.32% (not lvl-9 19.4), reaching all three allies incl. herself, for 10 sec', () => {
       expect(
         applied.length,
-        'no sustainedDamagePct buff was applied',
+        'no sustainedDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([20.32]);
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
-        ALL_ALLIES,
+        ALL_ALLIES
       );
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([10]);
     });
@@ -269,10 +269,10 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       expect(casts[0]).toBeLessThan(fbStartFrames(base.events)[0]);
       // fullBurstEnter would apply on the (fewer) FB-start frames, not her (more numerous) casts
       expect(applyFrames(fbEnter.events, 'sustainedDamagePct')).toEqual(
-        fbStartFrames(fbEnter.events),
+        fbStartFrames(fbEnter.events)
       );
       expect(applyFrames(fbEnter.events, 'sustainedDamagePct')).not.toEqual(
-        casts,
+        casts
       );
     });
 
@@ -280,7 +280,7 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       expect(
         [
           ...new Set(rcoDot(base.events).map((d) => d.mult.dmgUp.toFixed(4))),
-        ].sort(),
+        ].sort()
       ).toEqual(['1.0000', '1.2032']);
       // an attackDamagePct misread would lift the normals too — sustainedDamagePct must not
       expect(rcoNormals(base.events).length).toBeGreaterThan(0);
@@ -294,13 +294,13 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
         ...new Set(rcoDot(noSust.events).map((d) => d.mult.dmgUp.toFixed(4))),
       ]).toEqual(['1.0000']);
       expect(noSust.totals['rosanna-chic-ocean']).toBeLessThan(
-        base.totals['rosanna-chic-ocean'],
+        base.totals['rosanna-chic-ocean']
       );
     });
 
     it('DISCRIMINATING: lvl-9 19.4 moves the applied value', () => {
       const v = buffs(sustLvl9.events).filter(
-        (b) => b.casterIdx === RCO && b.stat === 'sustainedDamagePct',
+        (b) => b.casterIdx === RCO && b.stat === 'sustainedDamagePct'
       );
       expect([...new Set(v.map((b) => b.value))]).toEqual([19.4]);
     });
@@ -308,13 +308,13 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
 
   describe('R3 — burst: all enemies Damage Taken ▲32.23% for 10s (a taken-bucket debuff on the boss)', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.stat === 'damageTakenPct',
+      (b) => b.stat === 'damageTakenPct'
     );
 
     it('is 32.23% (not lvl-9 30.76), boss-held (casterIdx AND targetIdx null), for 10 sec', () => {
       expect(
         applied.length,
-        'no damageTakenPct debuff was applied',
+        'no damageTakenPct debuff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([32.23]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([null]);
@@ -324,10 +324,10 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
 
     it('TRIGGER IDENTITY: fires on her burstCast frames, NOT fullBurstEnter', () => {
       expect(applyFrames(base.events, 'damageTakenPct', false)).toEqual(
-        rcoCastFrames(base.events),
+        rcoCastFrames(base.events)
       );
       expect(applyFrames(fbEnter.events, 'damageTakenPct', false)).toEqual(
-        fbStartFrames(fbEnter.events),
+        fbStartFrames(fbEnter.events)
       );
     });
 
@@ -335,7 +335,7 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       expect(
         [
           ...new Set(rcoDot(base.events).map((d) => d.mult.taken.toFixed(4))),
-        ].sort(),
+        ].sort()
       ).toEqual(['1.0000', '1.3223']);
     });
 
@@ -344,13 +344,13 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
         ...new Set(rcoDot(noTaken.events).map((d) => d.mult.taken.toFixed(4))),
       ]).toEqual(['1.0000']);
       expect(noTaken.totals['rosanna-chic-ocean']).toBeLessThan(
-        base.totals['rosanna-chic-ocean'],
+        base.totals['rosanna-chic-ocean']
       );
     });
 
     it('DISCRIMINATING: lvl-9 30.76 moves the applied value', () => {
       const v = buffs(takenLvl9.events).filter(
-        (b) => b.stat === 'damageTakenPct',
+        (b) => b.stat === 'damageTakenPct'
       );
       expect([...new Set(v.map((b) => b.value))]).toEqual([30.76]);
     });
@@ -358,17 +358,17 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
 
   describe('R4 — S1/S2 Damage to Parts ▲24.26% is exactly inert vs the partless boss (kept for fidelity)', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === RCO && b.stat === 'partsDamagePct',
+      (b) => b.casterIdx === RCO && b.stat === 'partsDamagePct'
     );
 
     it('the encoding is LIVE: 24.26% reaches all three allies for 15 sec', () => {
       expect(
         applied.length,
-        'no partsDamagePct buff was applied',
+        'no partsDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([24.26]);
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
-        ALL_ALLIES,
+        ALL_ALLIES
       );
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([15]);
     });
@@ -377,12 +377,12 @@ describe('rosanna-chic-ocean (Rosanna: Chic Ocean) — kit spec', () => {
       // S1: exactly one application per ally at frame 0
       expect(
         applied.filter((b) => b.frame === 0).length,
-        'S1 battle-start apply to 3 allies',
+        'S1 battle-start apply to 3 allies'
       ).toBe(3);
       // S2: recurring applications at t=30,60,90,120,150 (the interval:30 cadence)
       const recurSec = [
         ...new Set(
-          applied.filter((b) => b.frame > 0).map((b) => b.frame / FPS),
+          applied.filter((b) => b.frame > 0).map((b) => b.frame / FPS)
         ),
       ].sort((a, b) => a - b);
       expect(recurSec).toEqual([30, 60, 90, 120, 150]);

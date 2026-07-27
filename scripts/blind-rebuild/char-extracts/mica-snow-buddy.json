@@ -19,9 +19,7 @@
     "rl3": 22.8,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "msb"
-    ],
+    "nicknames": ["msb"],
     "skills": {
       "skill1": "■ Activates when landing 120 normal attack(s). Affects all allies. \nTidying Up: Damage Taken ▼ 2%. Stacks up to 10 times and lasts for 15 sec.\n■ Activates when Tidying Up is at max stacks. Affects all allies.\nMax Ammunition Capacity ▲ 40% continuously.",
       "skill2": "■ Activates when landing 150 normal attack(s). Affects all allies.\nStack count of buffs ▲ 1.\n■ Activates at the start of battle. Affects self.\nBurst Gauge filling speed ▲ 300% continuously.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10005>Removes {description_value_01} debuff(s)</word_group>.</color>\n<color=#00AEFF>ATK ▲ {description_value_02}% of the skill user's ATK for {description_value_03} sec.</color>",
           "description_value_list": [
@@ -365,19 +350,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            106230101,
-            106230102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [106230101, 106230102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -402,9 +378,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -435,9 +409,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Mica: Snow Buddy's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

@@ -120,7 +120,7 @@ const UMAMI_URL = process.env.UMAMI_URL;
 const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID;
 
 function injectUmami(html) {
-  if (!UMAMI_URL || !UMAMI_WEBSITE_ID) return html;
+  if (!UMAMI_URL || !UMAMI_WEBSITE_ID) {return html;}
   const tag = `<script defer src="${UMAMI_URL}/script.js" data-website-id="${UMAMI_WEBSITE_ID}"></script>`;
   return html.replace('</head>', `  ${tag}\n  </head>`);
 }
@@ -134,7 +134,7 @@ const escapeAttr = (s) =>
 
 function tabFromReqUrl(u) {
   const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && TAB_META[seg]) return seg;
+  if (seg && TAB_META[seg]) {return seg;}
   return u.searchParams.has('chart') ? 'dpschart' : 'sim';
 }
 
@@ -151,19 +151,19 @@ function injectMeta(html, reqUrl) {
     .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
     .replace(
       /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${desc}$2`,
+      `$1${desc}$2`
     )
     .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
     .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
     .replace(
       /(<meta name="twitter:description" content=")[^"]*(")/,
-      `$1${desc}$2`,
+      `$1${desc}$2`
     );
 }
 
 async function sendIndex(res, reqUrl) {
   const html = injectUmami(
-    injectMeta(await readFile(join(DIST, 'index.html'), 'utf8'), reqUrl),
+    injectMeta(await readFile(join(DIST, 'index.html'), 'utf8'), reqUrl)
   );
   res.writeHead(200, {
     'content-type': MIME['.html'],
@@ -189,11 +189,11 @@ const server = createServer(async (req, res) => {
     // block path traversal, then resolve within dist/
     const rel = normalize(url).replace(/^(\.\.[/\\])+/, '');
     let file = join(DIST, rel);
-    if (!file.startsWith(DIST)) file = join(DIST, 'index.html');
+    if (!file.startsWith(DIST)) {file = join(DIST, 'index.html');}
 
     try {
       const s = await stat(file);
-      if (s.isDirectory()) file = join(file, 'index.html');
+      if (s.isDirectory()) {file = join(file, 'index.html');}
     } catch {
       file = join(DIST, 'index.html'); // SPA fallback
     }

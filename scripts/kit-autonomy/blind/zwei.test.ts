@@ -39,18 +39,15 @@ import {
   controlComp,
   runComp,
   totals,
-  unitOf,
   withPatchedOverride,
 } from '../../tests/lib/harness.js';
 
 const FPS = 60;
 const CARRY = 'zwei';
 /** controlComp slot order: liter 0 / crown 1 / zwei 2 / helm 3. */
-const LITER = 0;
 const ZWEI = 2;
 const ALL_ALLIES = new Set([0, 1, 2, 3]); // 4-unit team, slot 5 empty
 
-type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
@@ -73,24 +70,30 @@ const allSlots = (ov: any) => [
 /** Zero every Pierce Damage ▲ magnitude — kills the S1/BU pierce contribution to teammate damage. */
 const zeroPierce = withPatchedOverride('zwei', (ov) => {
   let n = 0;
-  for (const slot of allSlots(ov))
-    for (const b of slot)
-      for (const e of b.effects)
+  for (const slot of allSlots(ov)) {
+    for (const b of slot) {
+      for (const e of b.effects) {
         if (e.stat === 'pierceDamagePct') {
           e.value = 0;
           n++;
         }
-  if (n === 0)
+      }
+    }
+  }
+  if (n === 0) {
     throw new Error(
-      'zwei: no pierceDamagePct effects found — fixture is stale',
+      'zwei: no pierceDamagePct effects found — fixture is stale'
     );
+  }
 });
 /** Remove the burst's Pierce GRANT (my gainPierce read of "Pierce Attacks 101"). If the driver did
  *  NOT model a grant, this patch is a no-op and the Z7 grant-dependency assertion goes RED — payload. */
 const noGainPierce = withPatchedOverride('zwei', (ov) => {
-  for (const slot of allSlots(ov))
-    for (const b of slot)
+  for (const slot of allSlots(ov)) {
+    for (const b of slot) {
       b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
+    }
+  }
 });
 /** Remove the burst weapon swap. */
 const noSwap = withPatchedOverride('zwei', (ov) => {
@@ -100,8 +103,9 @@ const noSwap = withPatchedOverride('zwei', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
     n += before - b.effects.length;
   }
-  if (n === 0)
+  if (n === 0) {
     throw new Error('zwei: no weaponSwap effect in burst — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) ---------------------------------------------------
@@ -117,11 +121,11 @@ const zweiBuffs = (evs: SimEvent[], stat: string, value?: number) =>
       e.kind === 'buffApply' &&
       e.casterIdx === ZWEI &&
       e.stat === stat &&
-      (value === undefined || Math.abs(e.value - value) < 0.005),
+      (value === undefined || Math.abs(e.value - value) < 0.005)
   );
 const zweiBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'zwei',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'zwei'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart').length;
@@ -140,10 +144,11 @@ const inSomeFb = (frame: number, w: [number, number][]) =>
 /** allies reached per application frame — a self-scoped mis-encoding collapses this to {ZWEI}. */
 function targetsPerFrame(apps: BuffApply[]): Set<number | null>[] {
   const byFrame = new Map<number, Set<number | null>>();
-  for (const b of apps)
+  for (const b of apps) {
     (byFrame.get(b.frame) ?? byFrame.set(b.frame, new Set()).get(b.frame)!).add(
-      b.targetIdx,
+      b.targetIdx
     );
+  }
   return [...byFrame.values()];
 }
 
@@ -156,7 +161,7 @@ describe('zwei — kit spec', () => {
       expect(
         zweiBursts(base.events).length,
         'zwei never cast her B1 burst in controlComp (liter B1 collision) — the swap/grant/status ' +
-          'assertions below cannot be exercised; rebuild the comp with zwei in the B1 slot',
+          'assertions below cannot be exercised; rebuild the comp with zwei in the B1 slot'
       ).toBeGreaterThan(0);
     });
   });
@@ -190,16 +195,20 @@ describe('zwei — kit spec', () => {
     it('is applied at 15% for 5 sec (distinct from the 18.63% FB-enter buff)', () => {
       expect(apps.length).toBeGreaterThan(0);
       expect([...new Set(apps.map((b) => b.value))]).toEqual([15]);
-      for (const b of apps) expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      for (const b of apps) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
     });
     it('GATE APPROXIMATION: applications occur only AFTER zwei has cast her burst (status opens then)', () => {
       // No ally-self-status gate primitive exists in the schema; "Pierce Attacks 101" is granted by
       // zwei's burst, so a faithful approximation confines this buff to post-burst windows. A model
       // that fires it from t=0 (ungated) would apply it before the first zwei burst.
       const firstBurst = Math.min(
-        ...zweiBursts(base.events).map((c: any) => c.frame),
+        ...zweiBursts(base.events).map((c: any) => c.frame)
       );
-      for (const b of apps) expect(b.frame).toBeGreaterThanOrEqual(firstBurst);
+      for (const b of apps) {
+        expect(b.frame).toBeGreaterThanOrEqual(firstBurst);
+      }
     });
   });
 
@@ -221,8 +230,9 @@ describe('zwei — kit spec', () => {
       }
     });
     it('both reach all four allies', () => {
-      for (const holders of targetsPerFrame([...a, ...b]))
+      for (const holders of targetsPerFrame([...a, ...b])) {
         expect(holders).toEqual(ALL_ALLIES);
+      }
     });
   });
 
@@ -239,20 +249,22 @@ describe('zwei — kit spec', () => {
     });
     it('every application lands inside a Full Burst window (fbGate inFb)', () => {
       const w = fbWindows(base.events);
-      for (const x of z2) expect(inSomeFb(x.frame, w)).toBe(true);
+      for (const x of z2) {
+        expect(inSomeFb(x.frame, w)).toBe(true);
+      }
     });
   });
 
   describe('Z6 — BU weapon swap (self): 50.69% dmg / 300% full-charge / 1 ammo / +Pierce', () => {
     it("changes ZWEI's own damage vs the no-swap counterfactual", () => {
       // (couples on zwei actually bursting — guarded by fixture sanity)
-      expect(base.totals['zwei']).not.toBe(swapRemoved.totals['zwei']);
+      expect(base.totals.zwei).not.toBe(swapRemoved.totals.zwei);
     });
     it("is SELF-scoped: a teammate's total is (near-)inert to the swap", () => {
       // swap only alters zwei\'s own shots; any residual teammate delta is second-order (gauge/FB
       // timing from her changed cadence), so allow a small tolerance rather than byte-equality.
-      const a = base.totals['liter'];
-      const c = swapRemoved.totals['liter'];
+      const a = base.totals.liter;
+      const c = swapRemoved.totals.liter;
       expect(Math.abs(a - c) / c).toBeLessThan(0.02);
     });
   });
@@ -263,14 +275,10 @@ describe('zwei — kit spec', () => {
     // grant), teammates never become pierce-tagged, every Pierce Damage ▲ stays inert, and BOTH go
     // RED — surfacing the divergence.
     it('teammate damage DROPS when all Pierce Damage ▲ magnitudes are zeroed', () => {
-      expect(base.totals['liter']).toBeGreaterThan(
-        pierceZeroed.totals['liter'],
-      );
+      expect(base.totals.liter).toBeGreaterThan(pierceZeroed.totals.liter);
     });
     it('teammate damage DROPS when the pierce GRANT is removed (proves the grant, not just the ▲)', () => {
-      expect(base.totals['liter']).toBeGreaterThan(
-        grantRemoved.totals['liter'],
-      );
+      expect(base.totals.liter).toBeGreaterThan(grantRemoved.totals.liter);
     });
   });
 

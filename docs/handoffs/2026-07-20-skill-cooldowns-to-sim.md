@@ -55,6 +55,7 @@ mechanism has no consumer; leave it unbuilt (byte-identical, no dead schema).
 The new `skillCooldownsSec.skill2 = 30` on two units conflicted with deliberate prior modeling. Owner ruled
 **the datamined CD is real** for both, and set the first-fire convention: **a "force-cast" skill fires at
 t=0; a normal CD skill waits its first CD (t=CD).**
+
 - **rosanna-chic-ocean — LANDED.** S2 DoT `passive dur999` (continuous) → `{interval, sec:30}` + `dot dur15`.
   No force-cast → first fire **t=30**; windows [30-45]…[150-165] = 5×15 = 75s (was 180s). Solo
   41.763M→34.472M (−17.5%). The S2 parts buff moves to interval:30 too (inert vs partless boss). MODEL_ONLY.
@@ -67,6 +68,7 @@ t=0; a normal CD skill waits its first CD (t=CD).**
 
 `skillCooldownsSec.burst` vs `burstCooldownSec` disagree on exactly two units (both already modeled via
 `burstCooldownSec`; the `.burst` field is unconsumed, so no double-model risk — a data-quality signal):
+
 - **bready** `.burst=20` vs `burstCooldownSec=40` — **owner: 40s is correct.** `.burst=20` is the wrong
   source; `burstCooldownSec=40` (engine) already right. No change.
 - **quiry** `.burst=40` vs `burstCooldownSec=60` — **owner: 40s is correct**, `burstCooldownSec=60` is
@@ -90,6 +92,7 @@ flatDamage re-encode is only byte-safe for a MODEL_ONLY unit** (isabel qualified
 GRADED unit it is a board-moving change requiring the gated path.
 
 **Attempted "behavior-neutral" cleanups — NEITHER safe to land:**
+
 - **ein** skill2 `atk=0` dot — NOT dead code. Her note documents it as the **Orb-Gauge emitter** (560
   energy every ~2.83 s to the team, via the `skillGauge` call each dot tick fires regardless of damage).
   Removing it is byte-identical only SOLO (ein can't solo-burst); in a team it would cut her gauge
@@ -103,16 +106,17 @@ GRADED unit it is a board-moving change requiring the gated path.
   measured +3.47% on this graded unit). Both the re-encode and the crit question need the gated path
   (Fable + full-board A/B + snapshot + owner) — not a mid-sweep edit.
 
-**Event-cadence PROXY dots (an *estimated* interval standing in for a kit event — the hit count can be
+**Event-cadence PROXY dots (an _estimated_ interval standing in for a kit event — the hit count can be
 materially wrong, same failure mode as helm-aquamarine's old `hitCount:30`):**
-- **elegg-boom-and-shock** skill2 — kit "*when a ghost is captured while at max ghost capacity* → 1100%"
+
+- **elegg-boom-and-shock** skill2 — kit "_when a ghost is captured while at max ghost capacity_ → 1100%"
   modeled as `dot iv=6 dur=102`; the 6 s / 102 s are UNMEASURED cadence estimates. ⚠ **elegg is GRADED**
   (regression snapshot), so this drives a board number. Needs a recording of the ghost-capture cadence.
-- **privaty** skill2 — kit "*when the last bullet hits a Designated Target* → 1687%" modeled as
+- **privaty** skill2 — kit "_when the last bullet hits a Designated Target_ → 1687%" modeled as
   `dot iv=3 dur=10` on burst; iv=3 is an unmeasured last-bullet-cadence estimate. ⚑.
 
 **Kit-faithful periodic dots (kit explicitly says "every N sec") — no action:** `ada` skill2 and
-`milk-blooming-bunny` skill2 both say *"every 2 sec"* in-kit, so `dot iv=2` is faithful.
+`milk-blooming-bunny` skill2 both say _"every 2 sec"_ in-kit, so `dot iv=2` is faithful.
 
 ## The methodology precedent (snow-white)
 
@@ -128,13 +132,13 @@ carries it. A cooldown is the **minimum time between activations**; how it maps 
 skill's **activation shape** (from the kit text), which the CD number alone does not tell you. Read the kit
 text per unit, classify, then wire the true CD in via the matching mechanism:
 
-| Class | Kit shape | CD meaning | Encoding |
-|---|---|---|---|
-| **1. Pure timer** | no "Activates when…" clause (damage that "just happens") | the firing interval | `{kind:'interval', sec:CD}` — the snow-white template |
-| **2. Periodic DoT/hit** | a recurring self-hit modeled as a `dot` | the tick period | validate `dot.intervalSec` **==** CD; correct if they disagree |
-| **3. Event + rate-limit** | "Activates when <event>" (hitCount / fullBurstEnter / lastBullet / burstCast) | a FLOOR between fires | keep the event trigger; add a **cooldown GATE** (min frames between activations). Inert when the event is already rarer than CD; MATERIAL when the event fires faster than CD (the proxy over-fires) |
-| **4. Passive buff w/ CD** | "continuously" buff carrying a CD | re-application/refresh interval | usually inert if `durationSec ≥ CD`; else the buff can lapse between refreshes |
-| **5. CD = 0** | instant / no gate | fires freely | leave the event trigger as-is (no gate) |
+| Class                     | Kit shape                                                                     | CD meaning                      | Encoding                                                                                                                                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **1. Pure timer**         | no "Activates when…" clause (damage that "just happens")                      | the firing interval             | `{kind:'interval', sec:CD}` — the snow-white template                                                                                                                                                |
+| **2. Periodic DoT/hit**   | a recurring self-hit modeled as a `dot`                                       | the tick period                 | validate `dot.intervalSec` **==** CD; correct if they disagree                                                                                                                                       |
+| **3. Event + rate-limit** | "Activates when <event>" (hitCount / fullBurstEnter / lastBullet / burstCast) | a FLOOR between fires           | keep the event trigger; add a **cooldown GATE** (min frames between activations). Inert when the event is already rarer than CD; MATERIAL when the event fires faster than CD (the proxy over-fires) |
+| **4. Passive buff w/ CD** | "continuously" buff carrying a CD                                             | re-application/refresh interval | usually inert if `durationSec ≥ CD`; else the buff can lapse between refreshes                                                                                                                       |
+| **5. CD = 0**             | instant / no gate                                                             | fires freely                    | leave the event trigger as-is (no gate)                                                                                                                                                              |
 
 **The engine gap:** the `interval` trigger (class 1) EXISTS. A per-block **cooldown gate** (class 3 — event
 trigger + "can't re-fire for N sec") does NOT exist yet. Grep confirms no `lastFired`/`cdFrame` per-block
@@ -153,16 +157,16 @@ availability (available at t=0 vs after one CD).
 
 **Overridden units WITH a non-null skill-1/2 CD (8) — reconcile each against its current encoding:**
 
-| slug | s1 | s2 | current skill2 trigger | first read |
-|---|---|---|---|---|
-| `snow-white` | null | 15 | `interval 15` ✅ | DONE (the template) |
-| `isabel` | null | 15 | `passive` `dot` intervalSec **14.7** | **CLASS 2**: her hand-measured DoT period 14.7 sits within 2% of the true CD 15 — a nice corroboration that the field is right. Since the CD is true, **snap intervalSec 14.7 → 15** (the 14.7 was a slightly-off frame count; the CD is the ground truth it was estimating). |
-| `helm-aquamarine` | null | 4 | `hitCount 30` `flatDamage` | CLASS 3 suspect: 30 AR hits ≈ 2.5 s at ~12/s vs CD 4 s → the proxy likely OVER-fires. Read kit text: pure timer (→ interval 4) or event+gate? |
-| `liter` | null | 15 | `fullBurstEnter` `heal` | CLASS 3/4: FB recurs ~14 s ≈ CD 15 → near-inert; confirm the heal is FB-gated not free. Heal is damage-inert at scope anyway. |
-| `takina` | null | 15 | `passive` buffs (damageTaken/trueDamage) | CLASS 4: continuous buffs; CD 15 = refresh interval, likely inert if buffs persist. Verify no lapse. |
-| `rosanna-chic-ocean` | null | 30 | `passive` buff + `dot` | CLASS 2/4: is CD 30 the dot period or a buff refresh? Reconcile dot.intervalSec. |
-| `sakura-bloom-in-summer` | null | 30 | `passive` buff + `dot` | CLASS 2/4: same question as rosanna. |
-| `prika` | 0 | 0 | `fullBurstEnter`/`burstCast` buffs | CLASS 5: CD 0 = no gate, fires freely — current encoding already correct; no change. |
+| slug                     | s1   | s2  | current skill2 trigger                   | first read                                                                                                                                                                                                                                                                    |
+| ------------------------ | ---- | --- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `snow-white`             | null | 15  | `interval 15` ✅                         | DONE (the template)                                                                                                                                                                                                                                                           |
+| `isabel`                 | null | 15  | `passive` `dot` intervalSec **14.7**     | **CLASS 2**: her hand-measured DoT period 14.7 sits within 2% of the true CD 15 — a nice corroboration that the field is right. Since the CD is true, **snap intervalSec 14.7 → 15** (the 14.7 was a slightly-off frame count; the CD is the ground truth it was estimating). |
+| `helm-aquamarine`        | null | 4   | `hitCount 30` `flatDamage`               | CLASS 3 suspect: 30 AR hits ≈ 2.5 s at ~12/s vs CD 4 s → the proxy likely OVER-fires. Read kit text: pure timer (→ interval 4) or event+gate?                                                                                                                                 |
+| `liter`                  | null | 15  | `fullBurstEnter` `heal`                  | CLASS 3/4: FB recurs ~14 s ≈ CD 15 → near-inert; confirm the heal is FB-gated not free. Heal is damage-inert at scope anyway.                                                                                                                                                 |
+| `takina`                 | null | 15  | `passive` buffs (damageTaken/trueDamage) | CLASS 4: continuous buffs; CD 15 = refresh interval, likely inert if buffs persist. Verify no lapse.                                                                                                                                                                          |
+| `rosanna-chic-ocean`     | null | 30  | `passive` buff + `dot`                   | CLASS 2/4: is CD 30 the dot period or a buff refresh? Reconcile dot.intervalSec.                                                                                                                                                                                              |
+| `sakura-bloom-in-summer` | null | 30  | `passive` buff + `dot`                   | CLASS 2/4: same question as rosanna.                                                                                                                                                                                                                                          |
+| `prika`                  | 0    | 0   | `fullBurstEnter`/`burstCast` buffs       | CLASS 5: CD 0 = no gate, fires freely — current encoding already correct; no change.                                                                                                                                                                                          |
 
 **Overridden units with ABSENT (unknown) cooldowns (3):** `helm`, `laplace`, `mari` — cannot act until
 bakery-bot wiki-matches them (field stays omitted). Do NOT invent CDs; leave the current proxy encodings.
@@ -180,6 +184,7 @@ divergence while you're there. Do NOT silently pick one.
 Not "validation" — the CDs are treated as true regardless. These just show the data is internally
 consistent with prior measurements, so wiring it in should only ever CONFIRM or gently CORRECT existing
 encodings, never contradict reality:
+
 - `snow-white` S2 = 15 matches the owner-stated cooldown.
 - `isabel` hand-measured DoT period 14.7 ≈ true CD 15 (the measurement was estimating the true value).
 - `modernia {null,null,40}` — both skills passive, burst 40 = her `burstCooldownSec`. Consistent.

@@ -99,9 +99,9 @@ function patchZero(pred: (e: Eff) => boolean) {
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
       for (const e of (b.effects ?? []) as Eff[]) {
-        if (!pred(e)) continue;
-        if ('value' in e) e.value = 0;
-        if ('atkPct' in e) e.atkPct = 0;
+        if (!pred(e)) {continue;}
+        if ('value' in e) {e.value = 0;}
+        if ('atkPct' in e) {e.atkPct = 0;}
         n += 1;
       }
     }
@@ -113,8 +113,8 @@ function patchUngate(pred: (e: Eff) => boolean) {
   let n = 0;
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
-      if (!((b.effects ?? []) as Eff[]).some(pred)) continue;
-      for (const k of GATE_KEYS) delete (b as any)[k];
+      if (!((b.effects ?? []) as Eff[]).some(pred)) {continue;}
+      for (const k of GATE_KEYS) {delete (b as any)[k];}
       n += 1;
     }
   });
@@ -130,7 +130,7 @@ function run(patched?: any, helm = false) {
       evs.push(ev);
     },
   };
-  if (patched) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
   const res = runComp(opts);
   return { res, evs, t: totals(res) };
 }
@@ -139,7 +139,7 @@ const evsOf = (evs: SimEvent[], k: string) =>
   evs.filter((e: any) => e.kind === k);
 const applied = (evs: SimEvent[], stat: string, mag: number) =>
   evsOf(evs, 'buffApply').filter(
-    (e: any) => e.stat === stat && near(Math.abs(e.value), mag),
+    (e: any) => e.stat === stat && near(Math.abs(e.value), mag)
   );
 const mentions = (ev: any, slug: string) =>
   Object.values(ev).some((v) => v === slug);
@@ -249,7 +249,7 @@ describe('S1 - Intro / Highlight status and its two payloads', () => {
     }
     for (const [frame, vals] of byFrame) {
       expect(vals.size, `FB entry at frame ${frame} granted both tiers`).toBe(
-        1,
+        1
       );
     }
   });
@@ -296,12 +296,12 @@ describe('S1 - Intro / Highlight status and its two payloads', () => {
       // modeled-gated encoding: it must carry SOME gate (an ungated 235.03% would fire on every
       // FB and massively over-credit) and fire when the gate is stripped (non-vacuity).
       expect(blks.every((b) => GATE_KEYS.some((k) => b[k] !== undefined))).toBe(
-        true,
+        true
       );
       expect(uHighlight.n).toBeGreaterThan(0);
       expect(runHighlight).not.toBeNull();
       expect(
-        applied(runHighlight!.evs, 'sustainedDamagePct', 235.03).length,
+        applied(runHighlight!.evs, 'sustainedDamagePct', 235.03).length
       ).toBeGreaterThan(0);
       expect(runHighlight!.t[SLUG]).toBeGreaterThan(base.t[SLUG]);
     } else {
@@ -340,7 +340,7 @@ describe('S2 - part destruction, full charge, FB DoT', () => {
 
   it('S2d: 63.33% sustained DoT is ONE FB-enter instance, 9s at 1s ticks, on the enemy', () => {
     const blks = allBlocks(OV).filter((b) =>
-      ((b.effects ?? []) as Eff[]).some(isFbDot),
+      ((b.effects ?? []) as Eff[]).some(isFbDot)
     );
     expect(blks.length).toBe(1);
     const eff = ((blks[0].effects ?? []) as Eff[]).find(isFbDot)!;
@@ -362,7 +362,7 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
     expect(ap.length).toBeGreaterThan(0);
     // boss-held debuffs carry null caster AND null target indices
     expect(
-      ap.every((e: any) => e.casterIdx === null && e.targetIdx === null),
+      ap.every((e: any) => e.casterIdx === null && e.targetIdx === null)
     ).toBe(true);
     const effs = ((OV.burst ?? []) as Blk[])
       .flatMap((b) => (b.effects ?? []) as Eff[])
@@ -375,7 +375,7 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
     expect(runNoDmgTaken.t.crown).toBeLessThan(base.t.crown);
     expect(runNoDmgTaken.t[SLUG]).toBeLessThan(base.t[SLUG]);
     expect(unitOf(runNoDmgTaken.res, 'liter').totalDamage).toBeLessThan(
-      unitOf(base.res, 'liter').totalDamage,
+      unitOf(base.res, 'liter').totalDamage
     );
   });
 

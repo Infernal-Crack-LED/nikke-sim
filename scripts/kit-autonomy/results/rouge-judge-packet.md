@@ -2,6 +2,7 @@
 Binding cross-family judge. Grade the DRIVER's artifacts against the blind roles + ground truth per the contract below.
 
 ==================== PART 1: JUDGE CONTRACT ====================
+
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
 
 Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md` AND the mechanics
@@ -14,6 +15,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -24,12 +26,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -55,32 +59,60 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
-
 ==================== PART 2: MECHANICS SSOT ====================
 --- docs/data/damage-calculation.md (damage formula + Max-HP->ATK ruling) ---
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -105,7 +137,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -143,29 +175,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -246,9 +278,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -284,7 +316,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -342,7 +374,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -485,12 +517,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -526,6 +558,7 @@ not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-
 guillotine-WS).
 
 --- docs/data/game-mechanics.md (burst rotation / CDR / positional mechanics) ---
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -580,15 +613,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -931,7 +964,6 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ==================== PART 3: GROUND TRUTH (kit prose + base stats) ====================
 Unit: Rouge (rouge)
 Weapon/Class/Element/Burst: SR / Supporter / Electric / Burst I, cd 20s
@@ -963,216 +995,216 @@ Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 
 
 ==================== PART 4: S2b TEST-FAITHFULNESS REVIEW (claude-fable-5) ====================
 {
-  "slug": "rouge",
-  "leakDetected": null,
-  "spec": [
-    {
-      "slot": "skill1",
-      "kitLine": "Full Charge 8x → Max HP ▲5% caster, 5s",
-      "disposition": "FAITHFUL",
-      "scope": "Buff applies on a full-charge attack counter; the grant itself is a generic Max HP stat (no attack-type scope).",
-      "durationSemantics": "durationSec: 5 — wall-clock, explicitly 'lasts for 5 sec'. Repeats every 8 full charges (refreshing).",
-      "triggerIdentity": "chargeCounter count:8 (repeating every-8 full-charge attacks; SR at chargeFrames 60 full-charges every shot, so ≈ every 8 rounds, spanning reloads). NOT interval, NOT once-per-battle.",
-      "targetSet": "All allies (including self).",
-      "nearestWrongModel": "targetMaxHpPct (5% of each TARGET's own Max HP) instead of casterMaxHpPct, and/or omitting durationSec so the grant is permanent.",
-      "distinguishingAssertion": "Every buffApply for this key has stat 'maxHpFlat' with the IDENTICAL flat value = 0.05 × rouge's final Max HP on all 5 targetIdx (not per-target-scaled), with expiresFrame ≈ apply+5s; application count over the run ≈ floor(fullChargeShots/8).",
-      "inertness": "Removing only this Max-HP effect must move NO unit's totalDamage (ally-granted Max HP never feeds atkOfMaxHpPct; rouge has no HP→ATK scaler).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Cooldown of Burst Skill ▼ 7 sec",
-      "disposition": "FAITHFUL",
-      "scope": "Burst-cooldown reduction, unscoped to attack type; rides the same 8-full-charge trigger as the Max HP grant.",
-      "durationSemantics": "Instantaneous CD reduction event (burstCdr seconds:7), not a timed buff — no durationSec at all.",
-      "triggerIdentity": "Same chargeCounter count:8 block. NOT oncePerBattle, NOT a passive aura, NOT fillGauge.",
-      "targetSet": "All allies (every unit's burst cooldown, including rouge's own 20s CD).",
-      "nearestWrongModel": "Once-per-battle CDR, self-only CDR, or encoding as fillGauge (gauge %) instead of burstCdr (cooldown seconds) — each collapses her Liter-style rotation acceleration.",
-      "distinguishingAssertion": "In a long run, successive rouge burstCast timestamps are spaced < 20s (her own base CD) once she is firing — ≈ 20s minus 7s per ~12s of charging; and the effect recurs (2nd, 3rd applications observable), vs exactly-20s spacing under the nearest-wrong. Team-wide: removing this one effect via withPatchedOverride must REDUCE the fullBurstStart count over 180s.",
-      "inertness": "With the effect removed, burst spacing reverts to each unit's base CD — nothing else about her damage moves.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "back row → Sword Coin: Attack Damage ▲6.65%",
-      "disposition": "FAITHFUL",
-      "scope": "Generic Attack Damage (Damage Up bucket, attackDamagePct) — applies to all the holders' damage, not a normal-attack-scoped stat.",
-      "durationSemantics": "'continuously' = permanent passive (no durationSec), active from t=0. NOT a timed buff.",
-      "triggerIdentity": "passive, conditioned on back-row assignment — a positional condition the engine has no row primitive for. Faithful stand-in: assume the Supporter is back-row (⚑ documented assumption), so trigger {kind:'passive'}. Do NOT invent a combat trigger.",
-      "targetSet": "selfAndAdjacent sides:2 ('self and 2 allies on both sides') — POSITIONAL, up to 5 units only if rouge is centered; an edge slot reaches only 3 units.",
-      "nearestWrongModel": "target {kind:'allies'} (position-blind, always all 5), or dropping the whole block as 'unexpressable back-row condition' (MISSING).",
-      "distinguishingAssertion": "buffApply attackDamagePct value 6.65 present at t≈0 on rouge and adjacent slots; with rouge placed in an END slot, a unit ≥3 slots away receives NO such buffApply and its totalDamage is unchanged vs a no-rouge-S2 patch — red under the all-allies misread, red-in-reverse under the dropped-block misread.",
-      "inertness": "Non-adjacent units' damage must NOT move from this line when rouge is edge-slotted.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Full Charge 30x → Shield Coin: Dmg Taken ▼15.2%",
-      "disposition": "UNMODELED",
-      "scope": "Defensive: allies take 15.2% less damage — v1 boss deals no damage, so the EFFECT is inert. The Shield Coin STATUS it confers is a gate consumed by skill2 block 3 and burst rider 3, so the status transition itself must still be tracked (resource-pool encoding).",
-      "durationSemantics": "'continuously' = permanent once activated (~30 full charges ≈ 40–50s in at her ~1s charge + 6-ammo/161f reload economy).",
-      "triggerIdentity": "chargeCounter count:30, gated on targets already holding Sword Coin.",
-      "targetSet": "selfAndAdjacent sides:2, further gated 'when in Sword Coin status'.",
-      "nearestWrongModel": "Encoding Damage Taken ▼ as a boss damageTakenPct DEBUFF (sign/side flip → team deals +15.2%!) — the taxonomy-4 trap inverted: this is an ALLY defensive buff, not a boss debuff.",
-      "distinguishingAssertion": "NO damage event's Damage-Up bucket changes when this block activates; boss carries no buffApply with value 15.2 (no casterIdx:null/targetIdx:null debuff apply). The only observable is the coin-state resource crossing that later arms burst rider 3.",
-      "inertness": "Total damage of every unit identical with the ▼15.2% effect present vs absent (status tracking retained).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Burst Skill 5x → Double Sword: MaxHP ▲15.08%",
-      "disposition": "FAITHFUL",
-      "scope": "Generic Max HP grant, caster-scaled ('of the skill user's Max HP').",
-      "durationSemantics": "'continuously' = permanent once granted.",
-      "triggerIdentity": "burstCast (rouge's OWN burst uses) with everyN:5 — 'when using Burst Skill' is her own cast counter, NOT fullBurstEnter and NOT team burst count. Gated on targets in Shield Coin status.",
-      "targetSet": "All allies, 'when in Shield Coin status'.",
-      "nearestWrongModel": "Counting TEAM Full Bursts (fullBurstEnter everyN:5 — fires ~5 rotations in regardless of rouge casting) instead of rouge's own 5th burstCast; or 'for 5 time(s)' misread as durationSec:5.",
-      "distinguishingAssertion": "The maxHpFlat buffApply (value = 0.1508 × rouge Max HP, no expiresFrame) first appears at rouge's 5th burstCast event — count rouge-srcSlot burstCast events before it: exactly 5. Red if it appears at the 5th fullBurstStart when rouge skipped a cast (not possible for a lone B1, so ALSO assert: never before ~5 rotations).",
-      "inertness": "Zero totalDamage movement from the grant itself (ally Max HP feeds no scaler here).",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "ATK ▲15.07% of skill user's ATK, 10 sec",
-      "disposition": "FAITHFUL",
-      "scope": "Unconditional burst component — the only coin-ungated line in her burst.",
-      "durationSemantics": "durationSec: 10.",
-      "triggerIdentity": "burstCast (B1; she casts every rotation as the comp's Burst I). Instant on-cast buff — lands PRE-FB by cast timing.",
-      "targetSet": "All allies.",
-      "nearestWrongModel": "stat 'atkPct' value 15.07 (scaling each TARGET's own ATK — massively over-credits a high-ATK carry) instead of casterAtkPct; rouge is a low-ATK SR Supporter so caster-scaled is much smaller.",
-      "distinguishingAssertion": "buffApply carries stat 'casterAtkPct' with a FLAT value = 0.1507 × rouge.staticAtk (identical number on all 5 targets, small relative to the carry's ATK) — red if stat is 'atkPct'/value 15.07 or if the flat value tracks each target's own ATK.",
-      "inertness": "Buff must lapse at +10s (expiresFrame), not persist to the next rotation.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Sword Coin: MaxHP ▲10.15% no-restore, 10s",
-      "disposition": "FAITHFUL",
-      "scope": "Coin-state-gated burst rider, tier 1 (Sword).",
-      "durationSemantics": "durationSec: 10; 'without restoring HP' → pure Max HP, NO heal/recovery event.",
-      "triggerIdentity": "burstCast + coin-state gate (resourceGate at Sword tier).",
-      "targetSet": "All allies.",
-      "nearestWrongModel": "Emitting a heal event alongside the Max HP grant (the no-restore clause dropped) — spuriously feeding Crown's on-recovery consumers every rotation from fight start.",
-      "distinguishingAssertion": "During Sword-Coin-phase bursts: maxHpFlat buffApply (0.1015 × rouge HP) present, but NO recovery-triggered buffApply appears on crown attributable to rouge's cast — red under the heal misread.",
-      "inertness": "crown's recovery-driven buffs must NOT proc off this rider.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Shield Coin: Max HP ▲20.1%, 10s (restores)",
-      "disposition": "MISSING",
-      "scope": "Coin-state-gated burst rider, tier 2 (Shield). CRITICAL: this is the ONLY Max-HP line in the whole kit WITHOUT the 'without restoring HP' clause — by contrast with its four siblings, it RESTORES HP, i.e. it is a heal.",
-      "durationSemantics": "durationSec: 10 on the Max HP stat; the restore is an instant heal event at cast.",
-      "triggerIdentity": "burstCast + Shield-tier coin gate (active ≈ after 30 full charges, mid-fight onward).",
-      "targetSet": "All allies.",
-      "nearestWrongModel": "Modeling it identically to the tier-1/tier-3 riders (maxHpFlat only, no heal) — the shared-prior copy-paste misread. That silently deletes a TANDEM channel: a heal to all allies fires every on-recovery trigger (crown's 'when recovery takes effect' engine) on every rouge burst once Shield Coin is up.",
-      "distinguishingAssertion": "In Shield-Coin-phase rotations, rouge's burstCast is followed by heal→recovery events on all allies and crown's recovery-triggered buffApply fires; in Sword-Coin-phase rotations it does not. Red under the no-heal misread (crown's recovery consumers stay silent all fight from rouge).",
-      "inertness": "Before Shield Coin activates (< ~30 full charges), this rider must contribute nothing.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Double Sword: MaxHP ▲30.02% no-restore, 10s",
-      "disposition": "FAITHFUL",
-      "scope": "Coin-state-gated burst rider, tier 3 (Double Sword).",
-      "durationSemantics": "durationSec: 10; explicitly no-restore → no heal event.",
-      "triggerIdentity": "burstCast + Double-Sword-tier coin gate (active only after rouge's 5th burst cast AND the Shield tier was reached).",
-      "targetSet": "All allies.",
-      "nearestWrongModel": "Firing this rider CUMULATIVELY with tiers 1–2 every late-fight burst (if coins are modeled as coexisting) vs exclusively (highest tier only) — and/or adding a heal it doesn't have.",
-      "distinguishingAssertion": "After Double Sword is armed, a single rouge burstCast emits the 0.3002 × rouge-HP maxHpFlat apply; assert the per-cast rider multiplicity matches the chosen coin-exclusivity model and that NO recovery event accompanies this tier. (Which multiplicity is correct is measurement-gated — see notes.)",
-      "inertness": "Zero damage movement; no crown recovery proc from this tier.",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    }
-  ],
-  "loadBearingSet": [
-    "skill1:MaxHP-5%-5s (caster-scaled flat, expiry semantics)",
-    "skill1:burstCdr-7s-per-8-full-charges (rotation engine — the kit's biggest damage lever)",
-    "skill2:SwordCoin-attackDamagePct-6.65-positional-passive",
-    "skill2:DoubleSword-grant-on-own-5th-burstCast",
-    "burst:casterAtkPct-15.07-10s",
-    "burst:SwordCoin-rider-no-heal",
-    "burst:ShieldCoin-rider-WITH-heal (crown recovery tandem)",
-    "burst:DoubleSword-rider-no-heal"
-  ],
-  "unmodeledVerbatim": {
-    "skill1": [],
-    "skill2": [
-      "Shield Coin: Damage Taken ▼15.2% continuously (defensive — v1 boss deals no damage; the Shield Coin STATUS itself must still be tracked as the gate for skill2 block 3 and burst rider 3)"
-    ],
-    "burst": []
-  },
-  "notes": "Three reconciliation points the driver must answer. (1) COIN EXCLUSIVITY (⚑ MEASUREMENT-GATED): the prose is silent on whether upgrading Sword→Shield→Double Sword REPLACES the prior coin or COEXISTS. This is load-bearing through the only offensive coin effect: if Shield Coin replaces Sword Coin at ~30 full charges, the team LOSES the 6.65% Attack Damage mid-fight; the lazy model (permanent passive from t=0 forever) is exactly the shared-prior misread I expect both families to make. It also decides burst-rider multiplicity (one rider per cast vs stacking tiers). Tests must pin whichever model is chosen and ⚑ it. (2) THE HEAL ASYMMETRY: four of five Max-HP lines say 'without restoring HP'; the Shield-Coin burst rider alone omits the clause — read literally (per the literal-word rule) it restores HP and must emit a heal, arming on-recovery consumers (crown is in the control comp), turning an 'inert Max HP kit' partially live. Expect the drivers to copy-paste the no-restore encoding across all four riders. (3) TRIGGER ARITHMETIC: 'attacking with Full Charge for N time(s)' is a repeating per-N full-charge counter (chargeCounter), and 'when using Burst Skill for 5 time(s)' counts ROUGE'S OWN casts (burstCast everyN:5), never team Full Bursts. Secondary: skill1's CDR must be burstCdr seconds:7 to ALL allies, recurring — not fillGauge, not self-only, not once-per-battle; her S2 aura target is POSITIONAL (selfAndAdjacent sides:2), distinguishable by edge-slotting her; the back-row condition has no engine primitive — passive with a documented ⚑ back-row assumption is the faithful stand-in, and dropping the block entirely (MISSING) is the other failure branch. All magnitudes are kit-literal (DATAMINED); no CALIBRATED values are needed anywhere in this kit. I could not write scripts/kit-autonomy/reviews/rouge.test-review.json (no tools in this environment) — the JSON above is the complete artifact.",
-  "model": "claude-fable-5"
+"slug": "rouge",
+"leakDetected": null,
+"spec": [
+{
+"slot": "skill1",
+"kitLine": "Full Charge 8x → Max HP ▲5% caster, 5s",
+"disposition": "FAITHFUL",
+"scope": "Buff applies on a full-charge attack counter; the grant itself is a generic Max HP stat (no attack-type scope).",
+"durationSemantics": "durationSec: 5 — wall-clock, explicitly 'lasts for 5 sec'. Repeats every 8 full charges (refreshing).",
+"triggerIdentity": "chargeCounter count:8 (repeating every-8 full-charge attacks; SR at chargeFrames 60 full-charges every shot, so ≈ every 8 rounds, spanning reloads). NOT interval, NOT once-per-battle.",
+"targetSet": "All allies (including self).",
+"nearestWrongModel": "targetMaxHpPct (5% of each TARGET's own Max HP) instead of casterMaxHpPct, and/or omitting durationSec so the grant is permanent.",
+"distinguishingAssertion": "Every buffApply for this key has stat 'maxHpFlat' with the IDENTICAL flat value = 0.05 × rouge's final Max HP on all 5 targetIdx (not per-target-scaled), with expiresFrame ≈ apply+5s; application count over the run ≈ floor(fullChargeShots/8).",
+"inertness": "Removing only this Max-HP effect must move NO unit's totalDamage (ally-granted Max HP never feeds atkOfMaxHpPct; rouge has no HP→ATK scaler).",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "Cooldown of Burst Skill ▼ 7 sec",
+"disposition": "FAITHFUL",
+"scope": "Burst-cooldown reduction, unscoped to attack type; rides the same 8-full-charge trigger as the Max HP grant.",
+"durationSemantics": "Instantaneous CD reduction event (burstCdr seconds:7), not a timed buff — no durationSec at all.",
+"triggerIdentity": "Same chargeCounter count:8 block. NOT oncePerBattle, NOT a passive aura, NOT fillGauge.",
+"targetSet": "All allies (every unit's burst cooldown, including rouge's own 20s CD).",
+"nearestWrongModel": "Once-per-battle CDR, self-only CDR, or encoding as fillGauge (gauge %) instead of burstCdr (cooldown seconds) — each collapses her Liter-style rotation acceleration.",
+"distinguishingAssertion": "In a long run, successive rouge burstCast timestamps are spaced < 20s (her own base CD) once she is firing — ≈ 20s minus 7s per ~12s of charging; and the effect recurs (2nd, 3rd applications observable), vs exactly-20s spacing under the nearest-wrong. Team-wide: removing this one effect via withPatchedOverride must REDUCE the fullBurstStart count over 180s.",
+"inertness": "With the effect removed, burst spacing reverts to each unit's base CD — nothing else about her damage moves.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "back row → Sword Coin: Attack Damage ▲6.65%",
+"disposition": "FAITHFUL",
+"scope": "Generic Attack Damage (Damage Up bucket, attackDamagePct) — applies to all the holders' damage, not a normal-attack-scoped stat.",
+"durationSemantics": "'continuously' = permanent passive (no durationSec), active from t=0. NOT a timed buff.",
+"triggerIdentity": "passive, conditioned on back-row assignment — a positional condition the engine has no row primitive for. Faithful stand-in: assume the Supporter is back-row (⚑ documented assumption), so trigger {kind:'passive'}. Do NOT invent a combat trigger.",
+"targetSet": "selfAndAdjacent sides:2 ('self and 2 allies on both sides') — POSITIONAL, up to 5 units only if rouge is centered; an edge slot reaches only 3 units.",
+"nearestWrongModel": "target {kind:'allies'} (position-blind, always all 5), or dropping the whole block as 'unexpressable back-row condition' (MISSING).",
+"distinguishingAssertion": "buffApply attackDamagePct value 6.65 present at t≈0 on rouge and adjacent slots; with rouge placed in an END slot, a unit ≥3 slots away receives NO such buffApply and its totalDamage is unchanged vs a no-rouge-S2 patch — red under the all-allies misread, red-in-reverse under the dropped-block misread.",
+"inertness": "Non-adjacent units' damage must NOT move from this line when rouge is edge-slotted.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Full Charge 30x → Shield Coin: Dmg Taken ▼15.2%",
+"disposition": "UNMODELED",
+"scope": "Defensive: allies take 15.2% less damage — v1 boss deals no damage, so the EFFECT is inert. The Shield Coin STATUS it confers is a gate consumed by skill2 block 3 and burst rider 3, so the status transition itself must still be tracked (resource-pool encoding).",
+"durationSemantics": "'continuously' = permanent once activated (~30 full charges ≈ 40–50s in at her ~1s charge + 6-ammo/161f reload economy).",
+"triggerIdentity": "chargeCounter count:30, gated on targets already holding Sword Coin.",
+"targetSet": "selfAndAdjacent sides:2, further gated 'when in Sword Coin status'.",
+"nearestWrongModel": "Encoding Damage Taken ▼ as a boss damageTakenPct DEBUFF (sign/side flip → team deals +15.2%!) — the taxonomy-4 trap inverted: this is an ALLY defensive buff, not a boss debuff.",
+"distinguishingAssertion": "NO damage event's Damage-Up bucket changes when this block activates; boss carries no buffApply with value 15.2 (no casterIdx:null/targetIdx:null debuff apply). The only observable is the coin-state resource crossing that later arms burst rider 3.",
+"inertness": "Total damage of every unit identical with the ▼15.2% effect present vs absent (status tracking retained).",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill2",
+"kitLine": "Burst Skill 5x → Double Sword: MaxHP ▲15.08%",
+"disposition": "FAITHFUL",
+"scope": "Generic Max HP grant, caster-scaled ('of the skill user's Max HP').",
+"durationSemantics": "'continuously' = permanent once granted.",
+"triggerIdentity": "burstCast (rouge's OWN burst uses) with everyN:5 — 'when using Burst Skill' is her own cast counter, NOT fullBurstEnter and NOT team burst count. Gated on targets in Shield Coin status.",
+"targetSet": "All allies, 'when in Shield Coin status'.",
+"nearestWrongModel": "Counting TEAM Full Bursts (fullBurstEnter everyN:5 — fires ~5 rotations in regardless of rouge casting) instead of rouge's own 5th burstCast; or 'for 5 time(s)' misread as durationSec:5.",
+"distinguishingAssertion": "The maxHpFlat buffApply (value = 0.1508 × rouge Max HP, no expiresFrame) first appears at rouge's 5th burstCast event — count rouge-srcSlot burstCast events before it: exactly 5. Red if it appears at the 5th fullBurstStart when rouge skipped a cast (not possible for a lone B1, so ALSO assert: never before ~5 rotations).",
+"inertness": "Zero totalDamage movement from the grant itself (ally Max HP feeds no scaler here).",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "ATK ▲15.07% of skill user's ATK, 10 sec",
+"disposition": "FAITHFUL",
+"scope": "Unconditional burst component — the only coin-ungated line in her burst.",
+"durationSemantics": "durationSec: 10.",
+"triggerIdentity": "burstCast (B1; she casts every rotation as the comp's Burst I). Instant on-cast buff — lands PRE-FB by cast timing.",
+"targetSet": "All allies.",
+"nearestWrongModel": "stat 'atkPct' value 15.07 (scaling each TARGET's own ATK — massively over-credits a high-ATK carry) instead of casterAtkPct; rouge is a low-ATK SR Supporter so caster-scaled is much smaller.",
+"distinguishingAssertion": "buffApply carries stat 'casterAtkPct' with a FLAT value = 0.1507 × rouge.staticAtk (identical number on all 5 targets, small relative to the carry's ATK) — red if stat is 'atkPct'/value 15.07 or if the flat value tracks each target's own ATK.",
+"inertness": "Buff must lapse at +10s (expiresFrame), not persist to the next rotation.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Sword Coin: MaxHP ▲10.15% no-restore, 10s",
+"disposition": "FAITHFUL",
+"scope": "Coin-state-gated burst rider, tier 1 (Sword).",
+"durationSemantics": "durationSec: 10; 'without restoring HP' → pure Max HP, NO heal/recovery event.",
+"triggerIdentity": "burstCast + coin-state gate (resourceGate at Sword tier).",
+"targetSet": "All allies.",
+"nearestWrongModel": "Emitting a heal event alongside the Max HP grant (the no-restore clause dropped) — spuriously feeding Crown's on-recovery consumers every rotation from fight start.",
+"distinguishingAssertion": "During Sword-Coin-phase bursts: maxHpFlat buffApply (0.1015 × rouge HP) present, but NO recovery-triggered buffApply appears on crown attributable to rouge's cast — red under the heal misread.",
+"inertness": "crown's recovery-driven buffs must NOT proc off this rider.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Shield Coin: Max HP ▲20.1%, 10s (restores)",
+"disposition": "MISSING",
+"scope": "Coin-state-gated burst rider, tier 2 (Shield). CRITICAL: this is the ONLY Max-HP line in the whole kit WITHOUT the 'without restoring HP' clause — by contrast with its four siblings, it RESTORES HP, i.e. it is a heal.",
+"durationSemantics": "durationSec: 10 on the Max HP stat; the restore is an instant heal event at cast.",
+"triggerIdentity": "burstCast + Shield-tier coin gate (active ≈ after 30 full charges, mid-fight onward).",
+"targetSet": "All allies.",
+"nearestWrongModel": "Modeling it identically to the tier-1/tier-3 riders (maxHpFlat only, no heal) — the shared-prior copy-paste misread. That silently deletes a TANDEM channel: a heal to all allies fires every on-recovery trigger (crown's 'when recovery takes effect' engine) on every rouge burst once Shield Coin is up.",
+"distinguishingAssertion": "In Shield-Coin-phase rotations, rouge's burstCast is followed by heal→recovery events on all allies and crown's recovery-triggered buffApply fires; in Sword-Coin-phase rotations it does not. Red under the no-heal misread (crown's recovery consumers stay silent all fight from rouge).",
+"inertness": "Before Shield Coin activates (< ~30 full charges), this rider must contribute nothing.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Double Sword: MaxHP ▲30.02% no-restore, 10s",
+"disposition": "FAITHFUL",
+"scope": "Coin-state-gated burst rider, tier 3 (Double Sword).",
+"durationSemantics": "durationSec: 10; explicitly no-restore → no heal event.",
+"triggerIdentity": "burstCast + Double-Sword-tier coin gate (active only after rouge's 5th burst cast AND the Shield tier was reached).",
+"targetSet": "All allies.",
+"nearestWrongModel": "Firing this rider CUMULATIVELY with tiers 1–2 every late-fight burst (if coins are modeled as coexisting) vs exclusively (highest tier only) — and/or adding a heal it doesn't have.",
+"distinguishingAssertion": "After Double Sword is armed, a single rouge burstCast emits the 0.3002 × rouge-HP maxHpFlat apply; assert the per-cast rider multiplicity matches the chosen coin-exclusivity model and that NO recovery event accompanies this tier. (Which multiplicity is correct is measurement-gated — see notes.)",
+"inertness": "Zero damage movement; no crown recovery proc from this tier.",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
 }
-
+],
+"loadBearingSet": [
+"skill1:MaxHP-5%-5s (caster-scaled flat, expiry semantics)",
+"skill1:burstCdr-7s-per-8-full-charges (rotation engine — the kit's biggest damage lever)",
+"skill2:SwordCoin-attackDamagePct-6.65-positional-passive",
+"skill2:DoubleSword-grant-on-own-5th-burstCast",
+"burst:casterAtkPct-15.07-10s",
+"burst:SwordCoin-rider-no-heal",
+"burst:ShieldCoin-rider-WITH-heal (crown recovery tandem)",
+"burst:DoubleSword-rider-no-heal"
+],
+"unmodeledVerbatim": {
+"skill1": [],
+"skill2": [
+"Shield Coin: Damage Taken ▼15.2% continuously (defensive — v1 boss deals no damage; the Shield Coin STATUS itself must still be tracked as the gate for skill2 block 3 and burst rider 3)"
+],
+"burst": []
+},
+"notes": "Three reconciliation points the driver must answer. (1) COIN EXCLUSIVITY (⚑ MEASUREMENT-GATED): the prose is silent on whether upgrading Sword→Shield→Double Sword REPLACES the prior coin or COEXISTS. This is load-bearing through the only offensive coin effect: if Shield Coin replaces Sword Coin at ~30 full charges, the team LOSES the 6.65% Attack Damage mid-fight; the lazy model (permanent passive from t=0 forever) is exactly the shared-prior misread I expect both families to make. It also decides burst-rider multiplicity (one rider per cast vs stacking tiers). Tests must pin whichever model is chosen and ⚑ it. (2) THE HEAL ASYMMETRY: four of five Max-HP lines say 'without restoring HP'; the Shield-Coin burst rider alone omits the clause — read literally (per the literal-word rule) it restores HP and must emit a heal, arming on-recovery consumers (crown is in the control comp), turning an 'inert Max HP kit' partially live. Expect the drivers to copy-paste the no-restore encoding across all four riders. (3) TRIGGER ARITHMETIC: 'attacking with Full Charge for N time(s)' is a repeating per-N full-charge counter (chargeCounter), and 'when using Burst Skill for 5 time(s)' counts ROUGE'S OWN casts (burstCast everyN:5), never team Full Bursts. Secondary: skill1's CDR must be burstCdr seconds:7 to ALL allies, recurring — not fillGauge, not self-only, not once-per-battle; her S2 aura target is POSITIONAL (selfAndAdjacent sides:2), distinguishable by edge-slotting her; the back-row condition has no engine primitive — passive with a documented ⚑ back-row assumption is the faithful stand-in, and dropping the block entirely (MISSING) is the other failure branch. All magnitudes are kit-literal (DATAMINED); no CALIBRATED values are needed anywhere in this kit. I could not write scripts/kit-autonomy/reviews/rouge.test-review.json (no tools in this environment) — the JSON above is the complete artifact.",
+"model": "claude-fable-5"
+}
 
 ==================== PART 5: S5 BLIND TEST (claude-opus-5) + result vs driver override ====================
 // blind/rouge.test.ts (pristine). ADAPTED copy (3 structural fixes, intent unchanged) is GREEN vs driver override: 23 passed, 3 skipped GAPs.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import {
-  controlComp,
-  runComp,
-  totals,
-  unitOf,
-  withPatchedOverride,
+controlComp,
+runComp,
+totals,
+unitOf,
+withPatchedOverride,
 } from '../lib/harness.js';
 
 /**
- * rouge (Rouge) — SR/Electric/Supporter/Burst I. Blind per-unit kit spec test.
- *
- * KIT (structural read, from prose):
- *  skill1: [full-charge x8, all allies] Max HP +5% of CASTER Max HP (no heal), 5 sec
- *                                       Burst Skill cooldown -7 sec
- *  skill2: [back-row formation, self + 2 adjacent] Sword Coin: Attack Damage +6.65% continuously
- *          [full-charge x30, self + 2 adjacent, requires Sword Coin] Shield Coin: Damage Taken -15.2% cont.
- *          [burst cast x5, all allies, requires Shield Coin] Double Sword Coin: Max HP +15.08% of caster cont.
- *  burst:  [all allies] ATK +15.07% of the SKILL USER's ATK, 10 sec
- *          [in Sword Coin] Max HP +10.15% of caster (no heal), 10 sec
- *          [in Shield Coin] Max HP +20.1% of caster, 10 sec
- *          [in Double Sword Coin] Max HP +30.02% of caster (no heal), 10 sec
- *
- * FIXTURE: controlComp('rouge', true) — liter B1 / crown B2 / rouge / helm B3.
- *   rouge is Burst I, so she casts in the B1 slot every rotation and the chain still
- *   completes (crown B2 + helm B3) — bursts genuinely fire, which every burst-keyed
- *   assertion below depends on. helm=true is kept because helm is the B3 that closes
- *   the chain; her buffs are read-around by filtering events on casterIdx/stat.
- *
- * WHY EACH ASSERTION DISCRIMINATES:
- *  - The burst ATK line says "of the skill user's ATK" => casterAtkPct, which the
- *    harness FLAT-RESOLVES at apply time. Asserting the emitted flat value equals
- *    0.1507 x rouge.staticAtk fails under the nearest-wrong model (plain atkPct 15.07,
- *    which would emit the raw percentage and scale each TARGET's own ATK).
- *  - Sword Coin is "Attack Damage" => attackDamagePct (Damage Up bucket), NOT atkPct.
- *    The counterfactual swaps the stat and the run diverges.
- *  - Sword Coin targets "self and 2 allies on both sides" => selfAndAdjacent, NOT all
- *    allies. In a 4-slot comp with rouge at index 2 that still leaves one ally outside
- *    the window; the counterfactual widening to allies changes that ally's total.
- *  - Sword Coin is formation-gated on the BACK ROW. v1 has no row axis, so this is
- *    flagged (see gaps) — the test pins that the block is authored as an always-on
- *    passive and documents the assumption rather than silently asserting a row.
- *  - The 8-full-charge / 30-full-charge triggers are chargeCounter, NOT hitCount:
- *    the text says "attacking with Full Charge for N time(s)", i.e. N FULL CHARGES,
- *    and rouge is a charge SR (chargeFrames 60). Counting trigger pulls instead
- *    would over-fire; the cadence assertion below bounds the observed count.
- *  - Every Max HP line grants a % of the CASTER's Max HP to ALLIES. Per the schema's
- *    e3 rule, ally-granted Max HP does NOT feed a teammate's atkOfMaxHpPct, and no
- *    unit in this comp carries atkOfMaxHpPct — so these lines are OFFENSIVELY INERT.
- *    They are asserted present in the event log (encoded, not dropped) AND asserted
- *    damage-inert by a counterfactual that deletes them.
- *  - Damage Taken -15.2% is a DEFENSIVE self/ally buff, not a boss "Damage Taken +"
- *    debuff. The test asserts it never lands on the boss (casterIdx===null path) and
- *    never carries a positive damageTakenPct that would inflate team damage.
- */
+
+- rouge (Rouge) — SR/Electric/Supporter/Burst I. Blind per-unit kit spec test.
+-
+- KIT (structural read, from prose):
+- skill1: [full-charge x8, all allies] Max HP +5% of CASTER Max HP (no heal), 5 sec
+-                                       Burst Skill cooldown -7 sec
+- skill2: [back-row formation, self + 2 adjacent] Sword Coin: Attack Damage +6.65% continuously
+-          [full-charge x30, self + 2 adjacent, requires Sword Coin] Shield Coin: Damage Taken -15.2% cont.
+-          [burst cast x5, all allies, requires Shield Coin] Double Sword Coin: Max HP +15.08% of caster cont.
+- burst: [all allies] ATK +15.07% of the SKILL USER's ATK, 10 sec
+-          [in Sword Coin] Max HP +10.15% of caster (no heal), 10 sec
+-          [in Shield Coin] Max HP +20.1% of caster, 10 sec
+-          [in Double Sword Coin] Max HP +30.02% of caster (no heal), 10 sec
+-
+- FIXTURE: controlComp('rouge', true) — liter B1 / crown B2 / rouge / helm B3.
+- rouge is Burst I, so she casts in the B1 slot every rotation and the chain still
+- completes (crown B2 + helm B3) — bursts genuinely fire, which every burst-keyed
+- assertion below depends on. helm=true is kept because helm is the B3 that closes
+- the chain; her buffs are read-around by filtering events on casterIdx/stat.
+-
+- WHY EACH ASSERTION DISCRIMINATES:
+- - The burst ATK line says "of the skill user's ATK" => casterAtkPct, which the
+- harness FLAT-RESOLVES at apply time. Asserting the emitted flat value equals
+- 0.1507 x rouge.staticAtk fails under the nearest-wrong model (plain atkPct 15.07,
+- which would emit the raw percentage and scale each TARGET's own ATK).
+- - Sword Coin is "Attack Damage" => attackDamagePct (Damage Up bucket), NOT atkPct.
+- The counterfactual swaps the stat and the run diverges.
+- - Sword Coin targets "self and 2 allies on both sides" => selfAndAdjacent, NOT all
+- allies. In a 4-slot comp with rouge at index 2 that still leaves one ally outside
+- the window; the counterfactual widening to allies changes that ally's total.
+- - Sword Coin is formation-gated on the BACK ROW. v1 has no row axis, so this is
+- flagged (see gaps) — the test pins that the block is authored as an always-on
+- passive and documents the assumption rather than silently asserting a row.
+- - The 8-full-charge / 30-full-charge triggers are chargeCounter, NOT hitCount:
+- the text says "attacking with Full Charge for N time(s)", i.e. N FULL CHARGES,
+- and rouge is a charge SR (chargeFrames 60). Counting trigger pulls instead
+- would over-fire; the cadence assertion below bounds the observed count.
+- - Every Max HP line grants a % of the CASTER's Max HP to ALLIES. Per the schema's
+- e3 rule, ally-granted Max HP does NOT feed a teammate's atkOfMaxHpPct, and no
+- unit in this comp carries atkOfMaxHpPct — so these lines are OFFENSIVELY INERT.
+- They are asserted present in the event log (encoded, not dropped) AND asserted
+- damage-inert by a counterfactual that deletes them.
+- - Damage Taken -15.2% is a DEFENSIVE self/ally buff, not a boss "Damage Taken +"
+- debuff. The test asserts it never lands on the boss (casterIdx===null path) and
+- never carries a positive damageTakenPct that would inflate team damage.
+  */
 
 const SLUG = 'rouge';
 const FIGHT_SEC = 180;
@@ -1180,16 +1212,16 @@ const FIGHT_SEC = 180;
 type Ev = SimEvent & Record<string, any>;
 
 function run(overrides?: Record<string, any>) {
-  const events: Ev[] = [];
-  const opts: any = controlComp(SLUG, true);
-  opts.onEvent = (ev: Ev) => events.push(ev);
-  if (overrides) opts.overrides = overrides;
-  const res = runComp(opts);
-  return { res, events };
+const events: Ev[] = [];
+const opts: any = controlComp(SLUG, true);
+opts.onEvent = (ev: Ev) => events.push(ev);
+if (overrides) opts.overrides = overrides;
+const res = runComp(opts);
+return { res, events };
 }
 
 function buffs(events: Ev[], stat: string) {
-  return events.filter((e) => e.kind === 'buffApply' && e.stat === stat);
+return events.filter((e) => e.kind === 'buffApply' && e.stat === stat);
 }
 
 // ---------------------------------------------------------------- hoisted runs
@@ -1200,592 +1232,593 @@ const rouge = unitOf(base.res, SLUG);
 // Counterfactual A: burst ATK line re-keyed to plain atkPct (nearest-wrong reading of
 // "ATK \u25b2 15.07% of the skill user's ATK").
 const cfAtkPct = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of ov.burst ?? []) {
-      for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
-      }
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of ov.burst ?? []) {
+for (const e of b.effects ?? []) {
+if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
+}
+}
+}),
 });
 
 // Counterfactual B: Sword Coin re-keyed to atkPct (wrong bucket for "Attack Damage").
 const cfSwordBucket = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of ov.skill2 ?? []) {
-      for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'attackDamagePct') e.stat = 'atkPct';
-      }
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of ov.skill2 ?? []) {
+for (const e of b.effects ?? []) {
+if (e.kind === 'buff' && e.stat === 'attackDamagePct') e.stat = 'atkPct';
+}
+}
+}),
 });
 
 // Counterfactual C: Sword Coin widened from selfAndAdjacent to all allies.
 const cfSwordTargets = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of ov.skill2 ?? []) {
-      const hasSword = (b.effects ?? []).some(
-        (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct',
-      );
-      if (hasSword) b.target = { kind: 'allies' };
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of ov.skill2 ?? []) {
+const hasSword = (b.effects ?? []).some(
+(e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct',
+);
+if (hasSword) b.target = { kind: 'allies' };
+}
+}),
 });
 
 // Counterfactual D: burst ATK buff deleted entirely (proves the line is load-bearing).
 const cfNoBurstAtk = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of ov.burst ?? []) {
-      b.effects = (b.effects ?? []).filter(
-        (e: any) => !(e.kind === 'buff' && e.stat === 'casterAtkPct'),
-      );
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of ov.burst ?? []) {
+b.effects = (b.effects ?? []).filter(
+(e: any) => !(e.kind === 'buff' && e.stat === 'casterAtkPct'),
+);
+}
+}),
 });
 
 // Counterfactual E: every Max-HP grant stripped from all three slots (inertness probe).
 const cfNoMaxHp = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      for (const b of ov[slot] ?? []) {
-        b.effects = (b.effects ?? []).filter(
-          (e: any) =>
-            !(
-              e.kind === 'buff' &&
-              (e.stat === 'casterMaxHpPct' ||
-                e.stat === 'maxHpFlat' ||
-                e.stat === 'targetMaxHpPct')
-            ),
-        );
-      }
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+for (const b of ov[slot] ?? []) {
+b.effects = (b.effects ?? []).filter(
+(e: any) =>
+!(
+e.kind === 'buff' &&
+(e.stat === 'casterMaxHpPct' ||
+e.stat === 'maxHpFlat' ||
+e.stat === 'targetMaxHpPct')
+),
+);
+}
+}
+}),
 });
 
 // Counterfactual F: burst CDR removed (skill1's "Cooldown of Burst Skill \u25bc 7 sec").
 const cfNoCdr = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      for (const b of ov[slot] ?? []) {
-        b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');
-      }
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const slot of ['skill1', 'skill2', 'burst'] as const) {
+for (const b of ov[slot] ?? []) {
+b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');
+}
+}
+}),
 });
 
 // Counterfactual G: Damage Taken \u25bc re-signed as a positive boss debuff (the classic
 // "Damage Taken \u25b2 is a boss debuff" confusion applied to a \u25bc defensive line).
 const cfDamageTakenSign = run({
-  [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of ov.skill2 ?? []) {
-      for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value < 0) {
-          e.value = Math.abs(e.value);
-          b.target = { kind: 'enemy' };
-        }
-      }
-    }
-  }),
+[SLUG]: withPatchedOverride(SLUG, (ov: any) => {
+for (const b of ov.skill2 ?? []) {
+for (const e of b.effects ?? []) {
+if (e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value < 0) {
+e.value = Math.abs(e.value);
+b.target = { kind: 'enemy' };
+}
+}
+}
+}),
 });
 
 describe('rouge — fixture sanity (non-vacuity)', () => {
-  it('rouge is in the comp and the comp actually deals damage', () => {
-    expect(rouge.totalDamage).toBeGreaterThan(0);
-    expect(Object.keys(baseTotals).length).toBeGreaterThanOrEqual(4);
-    for (const slug of Object.keys(baseTotals)) {
-      expect(baseTotals[slug]).toBeGreaterThan(0);
-    }
-  });
+it('rouge is in the comp and the comp actually deals damage', () => {
+expect(rouge.totalDamage).toBeGreaterThan(0);
+expect(Object.keys(baseTotals).length).toBeGreaterThanOrEqual(4);
+for (const slug of Object.keys(baseTotals)) {
+expect(baseTotals[slug]).toBeGreaterThan(0);
+}
+});
 
-  it('bursts genuinely cast and full bursts genuinely occur', () => {
-    // Non-vacuity for every burst-keyed and full-burst-keyed assertion below.
-    const casts = base.events.filter((e) => e.kind === 'burstCast');
-    const fbs = base.events.filter((e) => e.kind === 'fullBurstStart');
-    expect(casts.length).toBeGreaterThan(0);
-    expect(fbs.length).toBeGreaterThan(0);
-    // rouge is Burst I: she must be among the casters, or her burst block never fires.
-    expect(casts.some((e) => e.targetSlug === SLUG || e.slug === SLUG)).toBe(true);
-  });
+it('bursts genuinely cast and full bursts genuinely occur', () => {
+// Non-vacuity for every burst-keyed and full-burst-keyed assertion below.
+const casts = base.events.filter((e) => e.kind === 'burstCast');
+const fbs = base.events.filter((e) => e.kind === 'fullBurstStart');
+expect(casts.length).toBeGreaterThan(0);
+expect(fbs.length).toBeGreaterThan(0);
+// rouge is Burst I: she must be among the casters, or her burst block never fires.
+expect(casts.some((e) => e.targetSlug === SLUG || e.slug === SLUG)).toBe(true);
+});
 
-  it('rouge fires charge shots, so the full-charge counters are reachable', () => {
-    const shots = base.events.filter(
-      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
-    );
-    // 180s at SR cadence with chargeFrames 60 and ammo 6 => tens of charges.
-    // The 8-charge tier must be reachable many times; the 30-charge tier at least once.
-    expect(shots.length).toBeGreaterThanOrEqual(30);
-  });
+it('rouge fires charge shots, so the full-charge counters are reachable', () => {
+const shots = base.events.filter(
+(e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
+);
+// 180s at SR cadence with chargeFrames 60 and ammo 6 => tens of charges.
+// The 8-charge tier must be reachable many times; the 30-charge tier at least once.
+expect(shots.length).toBeGreaterThanOrEqual(30);
+});
 });
 
 describe('rouge burst — ATK \u25b2 15.07% of the skill user\u2019s ATK, 10 sec, all allies', () => {
-  it('emits a caster-scaled (FLAT-resolved) ATK buff, not a raw 15.07 percentage', () => {
-    const evs = buffs(base.events, 'casterAtkPct');
-    expect(evs.length).toBeGreaterThan(0);
-    // FLAT-resolved: value = 0.1507 x rouge.staticAtk. The nearest-wrong model (atkPct)
-    // would emit the literal 15.07 instead, so this bound discriminates directly.
-    for (const e of evs) {
-      expect(e.value).toBeGreaterThan(15.07);
-    }
-  });
+it('emits a caster-scaled (FLAT-resolved) ATK buff, not a raw 15.07 percentage', () => {
+const evs = buffs(base.events, 'casterAtkPct');
+expect(evs.length).toBeGreaterThan(0);
+// FLAT-resolved: value = 0.1507 x rouge.staticAtk. The nearest-wrong model (atkPct)
+// would emit the literal 15.07 instead, so this bound discriminates directly.
+for (const e of evs) {
+expect(e.value).toBeGreaterThan(15.07);
+}
+});
 
-  it('lasts 10 sec (expiresFrame is ~600 frames past apply), not permanent', () => {
-    const e = buffs(base.events, 'casterAtkPct')[0];
-    expect(e.expiresFrame).toBeDefined();
-    expect(e.expiresFrame).toBeLessThan(FIGHT_SEC * 60);
-    expect(e.durationShots).toBeUndefined(); // seconds, not ROUNDS
-  });
+it('lasts 10 sec (expiresFrame is ~600 frames past apply), not permanent', () => {
+const e = buffs(base.events, 'casterAtkPct')[0];
+expect(e.expiresFrame).toBeDefined();
+expect(e.expiresFrame).toBeLessThan(FIGHT_SEC * 60);
+expect(e.durationShots).toBeUndefined(); // seconds, not ROUNDS
+});
 
-  it('reaches ALL allies (every comp member receives it)', () => {
-    const hit = new Set(
-      buffs(base.events, 'casterAtkPct')
-        .map((e) => e.targetSlug)
-        .filter(Boolean),
-    );
-    for (const slug of Object.keys(baseTotals)) {
-      expect(hit.has(slug)).toBe(true);
-    }
-  });
+it('reaches ALL allies (every comp member receives it)', () => {
+const hit = new Set(
+buffs(base.events, 'casterAtkPct')
+.map((e) => e.targetSlug)
+.filter(Boolean),
+);
+for (const slug of Object.keys(baseTotals)) {
+expect(hit.has(slug)).toBe(true);
+}
+});
 
-  it('is load-bearing: removing it lowers team damage', () => {
-    const off = totals(cfNoBurstAtk.res);
-    const sum = (t: Record<string, number>) =>
-      Object.values(t).reduce((a, b) => a + b, 0);
-    expect(sum(off)).toBeLessThan(sum(baseTotals));
-  });
+it('is load-bearing: removing it lowers team damage', () => {
+const off = totals(cfNoBurstAtk.res);
+const sum = (t: Record<string, number>) =>
+Object.values(t).reduce((a, b) => a + b, 0);
+expect(sum(off)).toBeLessThan(sum(baseTotals));
+});
 
-  it('RED under the nearest-wrong reading (plain atkPct instead of casterAtkPct)', () => {
-    const wrong = totals(cfAtkPct.res);
-    const sum = (t: Record<string, number>) =>
-      Object.values(t).reduce((a, b) => a + b, 0);
-    expect(sum(wrong)).not.toBeCloseTo(sum(baseTotals), 0);
-  });
+it('RED under the nearest-wrong reading (plain atkPct instead of casterAtkPct)', () => {
+const wrong = totals(cfAtkPct.res);
+const sum = (t: Record<string, number>) =>
+Object.values(t).reduce((a, b) => a + b, 0);
+expect(sum(wrong)).not.toBeCloseTo(sum(baseTotals), 0);
+});
 });
 
 describe('rouge skill2 — Sword Coin: Attack Damage \u25b2 6.65% continuously', () => {
-  it('is encoded in the Damage Up bucket (attackDamagePct), value 6.65', () => {
-    const evs = buffs(base.events, 'attackDamagePct').filter(
-      (e) => Math.abs(e.value - 6.65) < 1e-6,
-    );
-    expect(evs.length).toBeGreaterThan(0);
-  });
+it('is encoded in the Damage Up bucket (attackDamagePct), value 6.65', () => {
+const evs = buffs(base.events, 'attackDamagePct').filter(
+(e) => Math.abs(e.value - 6.65) < 1e-6,
+);
+expect(evs.length).toBeGreaterThan(0);
+});
 
-  it('is CONTINUOUS: no time expiry and no round count', () => {
-    const e = buffs(base.events, 'attackDamagePct').find(
-      (x) => Math.abs(x.value - 6.65) < 1e-6,
-    )!;
-    expect(e.durationShots).toBeUndefined();
-    // "continuously" => either no expiry, or one past the end of the fight.
-    if (e.expiresFrame != null) {
-      expect(e.expiresFrame).toBeGreaterThanOrEqual(FIGHT_SEC * 60);
-    }
-  });
+it('is CONTINUOUS: no time expiry and no round count', () => {
+const e = buffs(base.events, 'attackDamagePct').find(
+(x) => Math.abs(x.value - 6.65) < 1e-6,
+)!;
+expect(e.durationShots).toBeUndefined();
+// "continuously" => either no expiry, or one past the end of the fight.
+if (e.expiresFrame != null) {
+expect(e.expiresFrame).toBeGreaterThanOrEqual(FIGHT_SEC * 60);
+}
+});
 
-  it('targets self + 2 adjacent, NOT all allies (widening changes the board)', () => {
-    const wide = totals(cfSwordTargets.res);
-    const sum = (t: Record<string, number>) =>
-      Object.values(t).reduce((a, b) => a + b, 0);
-    // In a 4-unit comp, selfAndAdjacent leaves exactly one ally uncovered, so widening
-    // to `allies` must raise the team total. If this ever goes GREEN-equal the target
-    // encoding is indistinguishable and the assertion is vacuous.
-    expect(sum(wide)).toBeGreaterThan(sum(baseTotals));
-  });
+it('targets self + 2 adjacent, NOT all allies (widening changes the board)', () => {
+const wide = totals(cfSwordTargets.res);
+const sum = (t: Record<string, number>) =>
+Object.values(t).reduce((a, b) => a + b, 0);
+// In a 4-unit comp, selfAndAdjacent leaves exactly one ally uncovered, so widening
+// to `allies` must raise the team total. If this ever goes GREEN-equal the target
+// encoding is indistinguishable and the assertion is vacuous.
+expect(sum(wide)).toBeGreaterThan(sum(baseTotals));
+});
 
-  it('RED under the wrong bucket (atkPct instead of attackDamagePct)', () => {
-    const wrong = totals(cfSwordBucket.res);
-    const sum = (t: Record<string, number>) =>
-      Object.values(t).reduce((a, b) => a + b, 0);
-    expect(sum(wrong)).not.toBeCloseTo(sum(baseTotals), 0);
-  });
+it('RED under the wrong bucket (atkPct instead of attackDamagePct)', () => {
+const wrong = totals(cfSwordBucket.res);
+const sum = (t: Record<string, number>) =>
+Object.values(t).reduce((a, b) => a + b, 0);
+expect(sum(wrong)).not.toBeCloseTo(sum(baseTotals), 0);
+});
 });
 
 describe('rouge skill1 — Cooldown of Burst Skill \u25bc 7 sec', () => {
-  it('is encoded as a burstCdr effect worth 7 seconds', () => {
-    const ov = withPatchedOverride(SLUG, () => {}) as any;
-    const all = [...(ov.skill1 ?? []), ...(ov.skill2 ?? []), ...(ov.burst ?? [])];
-    const cdr = all
-      .flatMap((b: any) => b.effects ?? [])
-      .filter((e: any) => e.kind === 'burstCdr');
-    expect(cdr.length).toBeGreaterThan(0);
-    expect(cdr.some((e: any) => Math.abs(e.seconds - 7) < 1e-6)).toBe(true);
-  });
+it('is encoded as a burstCdr effect worth 7 seconds', () => {
+const ov = withPatchedOverride(SLUG, () => {}) as any;
+const all = [...(ov.skill1 ?? []), ...(ov.skill2 ?? []), ...(ov.burst ?? [])];
+const cdr = all
+.flatMap((b: any) => b.effects ?? [])
+.filter((e: any) => e.kind === 'burstCdr');
+expect(cdr.length).toBeGreaterThan(0);
+expect(cdr.some((e: any) => Math.abs(e.seconds - 7) < 1e-6)).toBe(true);
+});
 
-  it('is load-bearing: removing it changes the rotation (burst-cast count)', () => {
-    const withCdr = base.events.filter((e) => e.kind === 'burstCast').length;
-    const without = cfNoCdr.events.filter((e) => e.kind === 'burstCast').length;
-    // CDR compresses the rotation => at least as many casts with it as without,
-    // and over a 180s fight the 7s cut must produce strictly more.
-    expect(withCdr).toBeGreaterThan(without);
-  });
+it('is load-bearing: removing it changes the rotation (burst-cast count)', () => {
+const withCdr = base.events.filter((e) => e.kind === 'burstCast').length;
+const without = cfNoCdr.events.filter((e) => e.kind === 'burstCast').length;
+// CDR compresses the rotation => at least as many casts with it as without,
+// and over a 180s fight the 7s cut must produce strictly more.
+expect(withCdr).toBeGreaterThan(without);
+});
 });
 
 describe('rouge — full-charge counters (8 / 30) are charge-keyed, not pull-keyed', () => {
-  it('the 8-charge tier fires repeatedly but far fewer times than rouge fires shots', () => {
-    const shots = base.events.filter(
-      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
-    ).length;
-    // The skill1 Max-HP grant is the observable of the 8-charge trigger.
-    const fires = buffs(base.events, 'maxHpFlat').filter(
-      (e) => e.expiresFrame != null,
-    ).length;
-    expect(fires).toBeGreaterThan(0);
-    // A hitCount:8 misread on trigger PULLS would fire ~shots/8 times; a chargeCounter
-    // on FULL CHARGES fires strictly less often. Bound it well under shots/8 x allies.
-    expect(fires).toBeLessThan(shots);
-  });
+it('the 8-charge tier fires repeatedly but far fewer times than rouge fires shots', () => {
+const shots = base.events.filter(
+(e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
+).length;
+// The skill1 Max-HP grant is the observable of the 8-charge trigger.
+const fires = buffs(base.events, 'maxHpFlat').filter(
+(e) => e.expiresFrame != null,
+).length;
+expect(fires).toBeGreaterThan(0);
+// A hitCount:8 misread on trigger PULLS would fire ~shots/8 times; a chargeCounter
+// on FULL CHARGES fires strictly less often. Bound it well under shots/8 x allies.
+expect(fires).toBeLessThan(shots);
+});
 
-  it('the 30-charge tier (Shield Coin) is reachable at least once in 180s', () => {
-    const shield = buffs(base.events, 'damageTakenPct');
-    // Non-vacuity for the Shield-Coin-gated burst branch: if this is 0, the
-    // Double-Sword-Coin chain can never open either and those assertions test nothing.
-    expect(shield.length).toBeGreaterThan(0);
-  });
+it('the 30-charge tier (Shield Coin) is reachable at least once in 180s', () => {
+const shield = buffs(base.events, 'damageTakenPct');
+// Non-vacuity for the Shield-Coin-gated burst branch: if this is 0, the
+// Double-Sword-Coin chain can never open either and those assertions test nothing.
+expect(shield.length).toBeGreaterThan(0);
+});
 });
 
 describe('rouge skill2 — Shield Coin: Damage Taken \u25bc15.2% (defensive, ally-scoped)', () => {
-  it('is a NEGATIVE damageTakenPct on ALLIES, never a positive boss debuff', () => {
-    const evs = buffs(base.events, 'damageTakenPct');
-    expect(evs.length).toBeGreaterThan(0);
-    for (const e of evs) {
-      // \u25bc on allies => negative value; a boss debuff would be positive AND land with
-      // casterIdx===null && targetIdx===null.
-      expect(e.value).toBeLessThan(0);
-      expect(e.casterIdx === null && e.targetIdx === null).toBe(false);
-    }
-  });
+it('is a NEGATIVE damageTakenPct on ALLIES, never a positive boss debuff', () => {
+const evs = buffs(base.events, 'damageTakenPct');
+expect(evs.length).toBeGreaterThan(0);
+for (const e of evs) {
+// \u25bc on allies => negative value; a boss debuff would be positive AND land with
+// casterIdx===null && targetIdx===null.
+expect(e.value).toBeLessThan(0);
+expect(e.casterIdx === null && e.targetIdx === null).toBe(false);
+}
+});
 
-  it('is damage-INERT (the v1 boss deals no damage to allies)', () => {
-    // Encoded for completeness, but must move nothing.
-    const off = totals(cfDamageTakenSign.res);
-    // Flipping the sign AND re-pointing at the enemy turns a defensive line into a
-    // team-wide damage amp — if this were equal, the sign/target encoding would be
-    // untested. It must differ, proving the faithful (negative, ally) encoding is
-    // the one being exercised.
-    const sum = (t: Record<string, number>) =>
-      Object.values(t).reduce((a, b) => a + b, 0);
-    expect(sum(off)).toBeGreaterThan(sum(baseTotals));
-  });
+it('is damage-INERT (the v1 boss deals no damage to allies)', () => {
+// Encoded for completeness, but must move nothing.
+const off = totals(cfDamageTakenSign.res);
+// Flipping the sign AND re-pointing at the enemy turns a defensive line into a
+// team-wide damage amp — if this were equal, the sign/target encoding would be
+// untested. It must differ, proving the faithful (negative, ally) encoding is
+// the one being exercised.
+const sum = (t: Record<string, number>) =>
+Object.values(t).reduce((a, b) => a + b, 0);
+expect(sum(off)).toBeGreaterThan(sum(baseTotals));
+});
 });
 
 describe('rouge — every Max HP grant (skill1 5%, S2 15.08%, burst 10.15/20.1/30.02%)', () => {
-  it('all four burst/skill Max-HP lines are ENCODED (flat-resolved maxHpFlat events)', () => {
-    const evs = buffs(base.events, 'maxHpFlat');
-    expect(evs.length).toBeGreaterThan(0);
-    // Caster-scaled => FLAT HP numbers, not the raw kit percentages.
-    for (const e of evs) {
-      expect(e.value).toBeGreaterThan(30.02);
-    }
-  });
+it('all four burst/skill Max-HP lines are ENCODED (flat-resolved maxHpFlat events)', () => {
+const evs = buffs(base.events, 'maxHpFlat');
+expect(evs.length).toBeGreaterThan(0);
+// Caster-scaled => FLAT HP numbers, not the raw kit percentages.
+for (const e of evs) {
+expect(e.value).toBeGreaterThan(30.02);
+}
+});
 
-  it('they reach allies (caster-scaled ally grants, not self-only)', () => {
-    const hit = new Set(
-      buffs(base.events, 'maxHpFlat')
-        .map((e) => e.targetSlug)
-        .filter(Boolean),
-    );
-    expect(hit.size).toBeGreaterThan(1);
-  });
+it('they reach allies (caster-scaled ally grants, not self-only)', () => {
+const hit = new Set(
+buffs(base.events, 'maxHpFlat')
+.map((e) => e.targetSlug)
+.filter(Boolean),
+);
+expect(hit.size).toBeGreaterThan(1);
+});
 
-  it('are OFFENSIVELY INERT: deleting every one of them moves ZERO damage', () => {
-    // e3 rule: ally-granted Max HP never feeds a teammate\u2019s atkOfMaxHpPct, and no
-    // unit in this comp carries that conversion. Byte-identical totals required.
-    const off = totals(cfNoMaxHp.res);
-    for (const slug of Object.keys(baseTotals)) {
-      expect(off[slug]).toBe(baseTotals[slug]);
-    }
-  });
+it('are OFFENSIVELY INERT: deleting every one of them moves ZERO damage', () => {
+// e3 rule: ally-granted Max HP never feeds a teammate\u2019s atkOfMaxHpPct, and no
+// unit in this comp carries that conversion. Byte-identical totals required.
+const off = totals(cfNoMaxHp.res);
+for (const slug of Object.keys(baseTotals)) {
+expect(off[slug]).toBe(baseTotals[slug]);
+}
+});
 });
 
 describe('rouge — teammate inertness / no over-reach', () => {
-  it('rouge\u2019s own damage is unaffected by the Max-HP lines', () => {
-    expect(unitOf(cfNoMaxHp.res, SLUG).totalDamage).toBe(rouge.totalDamage);
-  });
+it('rouge\u2019s own damage is unaffected by the Max-HP lines', () => {
+expect(unitOf(cfNoMaxHp.res, SLUG).totalDamage).toBe(rouge.totalDamage);
+});
 
-  it('no unexpected stat channels are opened by this kit', () => {
-    // Rouge grants exactly: casterAtkPct, attackDamagePct, maxHpFlat, damageTakenPct.
-    // Anything else from rouge would be an invented mechanic.
-    const rougeStats = new Set(
-      base.events
-        .filter((e) => e.kind === 'buffApply' && e.casterSlug === SLUG)
-        .map((e) => e.stat),
-    );
-    for (const s of rougeStats) {
-      expect([
-        'casterAtkPct',
-        'attackDamagePct',
-        'maxHpFlat',
-        'damageTakenPct',
-      ]).toContain(s);
-    }
-  });
+it('no unexpected stat channels are opened by this kit', () => {
+// Rouge grants exactly: casterAtkPct, attackDamagePct, maxHpFlat, damageTakenPct.
+// Anything else from rouge would be an invented mechanic.
+const rougeStats = new Set(
+base.events
+.filter((e) => e.kind === 'buffApply' && e.casterSlug === SLUG)
+.map((e) => e.stat),
+);
+for (const s of rougeStats) {
+expect([
+'casterAtkPct',
+'attackDamagePct',
+'maxHpFlat',
+'damageTakenPct',
+]).toContain(s);
+}
+});
 });
 
 describe('rouge — GAPs (no engine primitive)', () => {
-  it.skip('skill2 Sword Coin is gated on BACK-ROW assignment — v1 has no row axis', () => {
-    // "Activates when assigned to the back row in battle." The engine has a `formation`
-    // gate for noB1/hasB1 only; there is no row/position axis, so the block is authored
-    // as an unconditional passive. Assumption: the unit IS back row (the standard
-    // supporter placement). No assertion can discriminate until a row axis exists.
-  });
-
-  it.skip('coin TIER progression (Sword -> Shield -> Double Sword) is a status ladder', () => {
-    // Shield Coin requires Sword Coin status; Double Sword Coin requires Shield Coin.
-    // There is no self-status primitive (targetStatus is enemy-only), so the ladder is
-    // approximated by the ordering of the trigger thresholds (passive / 30 charges /
-    // 5 burst casts). A faithful model would need a self-status gate; the burst\u2019s
-    // three coin-gated branches inherit the same approximation. All four affected
-    // payloads are Max HP, which is offensively inert, so the approximation moves
-    // ZERO damage \u2014 the gap is completeness-only.
-  });
-
-  it.skip('\u201cwithout restoring HP\u201d distinguishes skill1/burst-b/burst-d from burst-c', () => {
-    // The 20.1% Shield-Coin branch omits the "without restoring HP" qualifier, implying
-    // it DOES heal \u2014 which would emit a `recovery` event and drive an on-recovery
-    // consumer (crown\u2019s "when recovery takes effect"). The kit text is ambiguous about
-    // whether that is a real heal or prose variance. \u26d1 FLAGGED: not modeled as a heal.
-    // Recipe: record a rouge+crown comp and check whether crown\u2019s on-recovery buff
-    // refreshes on rouge\u2019s burst. If it does, add a `heal` effect to that branch \u2014 it
-    // would be a TANDEM (cross-unit) damage source, not an inert defensive line.
-  });
+it.skip('skill2 Sword Coin is gated on BACK-ROW assignment — v1 has no row axis', () => {
+// "Activates when assigned to the back row in battle." The engine has a `formation`
+// gate for noB1/hasB1 only; there is no row/position axis, so the block is authored
+// as an unconditional passive. Assumption: the unit IS back row (the standard
+// supporter placement). No assertion can discriminate until a row axis exists.
 });
 
+it.skip('coin TIER progression (Sword -> Shield -> Double Sword) is a status ladder', () => {
+// Shield Coin requires Sword Coin status; Double Sword Coin requires Shield Coin.
+// There is no self-status primitive (targetStatus is enemy-only), so the ladder is
+// approximated by the ordering of the trigger thresholds (passive / 30 charges /
+// 5 burst casts). A faithful model would need a self-status gate; the burst\u2019s
+// three coin-gated branches inherit the same approximation. All four affected
+// payloads are Max HP, which is offensively inert, so the approximation moves
+// ZERO damage \u2014 the gap is completeness-only.
+});
+
+it.skip('\u201cwithout restoring HP\u201d distinguishes skill1/burst-b/burst-d from burst-c', () => {
+// The 20.1% Shield-Coin branch omits the "without restoring HP" qualifier, implying
+// it DOES heal \u2014 which would emit a `recovery` event and drive an on-recovery
+// consumer (crown\u2019s "when recovery takes effect"). The kit text is ambiguous about
+// whether that is a real heal or prose variance. \u26d1 FLAGGED: not modeled as a heal.
+// Recipe: record a rouge+crown comp and check whether crown\u2019s on-recovery buff
+// refreshes on rouge\u2019s burst. If it does, add a `heal` effect to that branch \u2014 it
+// would be a TANDEM (cross-unit) damage source, not an inert defensive line.
+});
+});
 
 ==================== PART 6: S6 BLIND OVERRIDE (claude-opus-5) + diff vs driver ====================
 DRIVER vs S6 BLIND OVERRIDE — short diff:
 CONVERGED (load-bearing offensive lines, byte-identical intent):
-  - S1 burstCdr 7s to all allies every 8 Full Charges (both; the kit's dominant rotation lever).
-  - S2 Sword Coin attackDamagePct 6.65, passive, continuous (both).
-  - Burst casterAtkPct 15.07, all allies, 10s, burstCast (both; flat-resolved off rouge ATK).
-  - HP-scaling determination: every Max-HP grant is an INERT casterMaxHpPct ally grant (both agree; ally-granted Max HP does NOT feed atkOfMaxHpPct — SSOT damage-calculation.md:106).
-  - Both flag coin-exclusivity (measurement-gated) and the Shield-Coin burst-rider heal asymmetry.
-DIVERGENCES (all inert / structural / driver-favored):
-  1. selfAndAdjacent WIDTH: driver sides:2 (literal '2 allies on both sides' = 2 per side = up to 5) vs opus sides:1 (opus itself flags this as a ⚑ with sides:2 as the alternative). Driver reading is the literal one.
-  2. Full-charge trigger: driver hitCount{count:8/30} (a valid engine TriggerDef) vs opus chargeCounter (NOT in the engine TriggerDef union — opus flags 'if not, re-key to hitCount'). Driver uses the real primitive.
-  3. Burst coin-tier Max-HP riders (10.15/20.1/30.02): driver UNMODELED (coin-state-gated, engine tracks no coin state; documenting avoids fabricating per-tier cadence) vs opus MODELED via a top-level resources/coinStage resourceGate proxy (opus notes the proxy may be rejected by validate-overrides and is damage-neutral either way). Both inert.
-  4. Shield Coin 'Damage Taken ▼15.2%': driver models as inert negative ally damageTakenPct (engine supports ally-side damageTakenPct, inert — cf. moran.json) vs opus UNMODELED ('no ally damage-reduction stat'). Both inert; driver keeps it for kit-completeness with an inertness assertion.
-  5. S2 Double Sword Max HP 15.08: BOTH model (burstCast everyN:5, inert).
-  6. Shield-Coin burst-rider heal: driver documents as ⚑ (coin-state-gated, marginal) vs opus models a heal{ticks:1} (tandem read). Both flag it unmeasured; driver is conservative given the coin gate the engine cannot express.
-S5 BLIND TEST vs DRIVER OVERRIDE: pristine blind test (blind/rouge.test.ts) had 3 structural API guesses wrong (opts.onEvent vs cfg.onEvent; durationShots null-vs-undefined; controlComp slots rouge mid-comp masking the positional scope). The ADAPTED copy (blind/rouge.adapted.test.ts, assertion INTENT unchanged) is GREEN vs the driver override: 23 passed, 3 skipped (the 3 documented GAP it.skip blocks).
---- blind/rouge.override.json ---
-{
-  "slug": "rouge",
-  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rouge (rouge, SR/Electric/Supporter/Burst I) carries ZERO damage lines — no flatDamage/dot/weaponSwap anywhere in the kit — so her whole contribution is (a) skill2 Sword Coin Attack Damage +6.65% to self+adjacent, (b) burst ATK +15.07% of HER ATK to all allies for 10s, and (c) the skill1 team burst-CDR 7s every 8 full charges, which is the single largest lever in the kit (it accelerates the whole team's rotation). Everything else is Max-HP / damage-taken bookkeeping that is offensively inert in v1 (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; the boss deals no damage). The three 'Coin' statuses are modeled as a monotonic resource pool `coinStage` (1=Sword from t=0, 2=Shield after 30 full charges, 3=Double Sword after her 5th burst while at Shield), read by resourceGate on the burst tiers — that is a STATE PROXY, not a kit-stated mechanic. ⚑ Coin exclusivity is the load-bearing unknown: this baseline assumes each 'continuously' status PERSISTS once granted (cumulative), so the 6.65% Attack Damage runs the whole fight; if the coins instead REPLACE each other, that buff dies at ~30 full charges and this override over-credits. ⚑ The burst's Shield-Coin tier is the ONLY Max-HP line that omits 'without restoring HP', so it is modeled as also emitting a recovery event (heal) — that is what wires it into an on-recovery consumer such as crown, and it is unmeasured. ⚑ The back-row activation condition has no representation in the engine (no row axis) and is assumed SATISFIED. See caveats.",
-  "resources": [
-    {
-      "name": "coinStage",
-      "initial": 1,
-      "min": 0,
-      "max": 3
-    }
-  ],
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "chargeCounter",
-        "count": 8
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 5,
-          "durationSec": 5
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "chargeCounter",
-        "count": 8
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "burstCdr",
-          "seconds": 7
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "selfAndAdjacent",
-        "sides": 1
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 6.65
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "chargeCounter",
-        "count": 30
-      },
-      "target": {
-        "kind": "self"
-      },
-      "resourceGate": {
-        "name": "coinStage",
-        "min": 1,
-        "max": 1
-      },
-      "effects": [
-        {
-          "kind": "resource",
-          "name": "coinStage",
-          "delta": 1
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "everyN": 5,
-      "target": {
-        "kind": "allies"
-      },
-      "resourceGate": {
-        "name": "coinStage",
-        "min": 2,
-        "max": 2
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 15.08
-        },
-        {
-          "kind": "resource",
-          "name": "coinStage",
-          "delta": 1
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterAtkPct",
-          "value": 15.07,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "resourceGate": {
-        "name": "coinStage",
-        "min": 1
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 10.15,
-          "durationSec": 10
-        }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "resourceGate": {
-        "name": "coinStage",
-        "min": 2
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 20.1,
-          "durationSec": 10
-        },
-        {
-          "kind": "heal",
-          "ticks": 1
-        }
-      ]
-    },
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "resourceGate": {
-        "name": "coinStage",
-        "min": 3
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 30.02,
-          "durationSec": 10
-        }
-      ]
-    }
-  ],
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [
-      "Shield Coin: Damage Taken ▼15.2% continuously."
-    ],
-    "burst": []
-  },
-  "caveats": [
-    "⚑ COIN EXCLUSIVITY (only damage-relevant unknown): modeled CUMULATIVE — each 'continuously' status persists once granted, so Sword Coin's Attack Damage ▲6.65% runs the whole fight and the burst Max-HP tiers stack once coinStage=3 (min-gates). If the coins instead REPLACE one another (Sword→Shield→Double Sword ladder), the 6.65% ends at ~30 full charges (~45-50s) and the burst tiers become mutually exclusive (change the burst resourceGates to exact min/max pairs). Kit text carries no removal/upgrade clause, hence the cumulative default.",
-    "⚑ BACK-ROW GATE DROPPED: 'Activates when assigned to the back row in battle' has no engine representation (no row/position axis, and no Block gate expresses it — `formation` only encodes noB1/hasB1). Assumed SATISFIED, so the Sword Coin block is a plain passive from t=0 and coinStage.initial=1. If the sim ever models placement, gate this block and set initial=0.",
-    "⚑ TARGET WIDTH: 'self and 2 allies on both sides' read as selfAndAdjacent sides:1 (self + 1 ally each side = 3 units). Alternative reading is 2 per side (sides:2, 5 units). Only affects who receives the 6.65% Attack Damage (and the inert Shield/Double-Sword HP lines).",
-    "⚑ FULL-CHARGE COUNTER ENCODING: 'attacking with Full Charge for N time(s)' modeled as `chargeCounter` with ONE effect per block — the two skill1 riders (Max HP, burst-CDR) are SPLIT into two single-effect blocks on purpose, because chargeCounter treats effects[P] as per-PHASE (a 2-effect block would fire them on alternating 8-charge cycles, not together). Verify the engine cycles a single-phase counter as 'every N charges'; if not, re-key to hitCount:{count:8} / {count:30} (an SR full-charges every shot, so hits ≈ full charges).",
-    "⚑ RECOVERY EVENT ON THE SHIELD-COIN BURST TIER: three of the four Max-HP lines say 'without restoring HP'; the Shield-Coin burst tier (20.1%) does NOT, so it is modeled with a `heal` effect (ticks:1) to fire allies' `recovery` triggers (crown-style on-recovery consumers). This is a deliberate tandem read of a kit-text distinction, NOT a measured mechanic — it is the only place this override can add damage through a teammate.",
-    "COIN STATE IS A PROXY: coinStage is not a kit-named currency; it exists solely so the burst tiers can be gated on Sword/Shield/Double-Sword status. On the 5th burst, slot ordering (skill2 blocks before burst blocks) may let the Double-Sword tier fire on the same cast that creates the status; in-game it more likely starts the FOLLOWING burst. Offensively inert either way.",
-    "Shield Coin's 'Damage Taken ▼15.2%' on ALLIES is unmodeled: the schema's damageTakenPct is a BOSS debuff (positive = boss takes more), so there is no ally damage-reduction stat to hold it, and the v1 boss deals no damage. The status itself is still tracked (coinStage=2) so the downstream gates stay faithful.",
-    "ALWAYS-⚑ items 5-7 are N/A here: the kit has no damage lines at all, so there is no noFb decision, no multi-projectile split/merge, no Hit-Rate→core magnitude, and no weapon-swap economy. noFb is not set anywhere; noRange is left to the engine.",
-    "Top-level `resources` on an override file is assumed supported (soda-twinkling-bunny precedent). If validate-overrides rejects it, drop the resourceGates and apply all three burst Max-HP tiers ungated — damage-neutral, since every Max-HP grant here is offensively inert."
-  ]
-}
+
+- S1 burstCdr 7s to all allies every 8 Full Charges (both; the kit's dominant rotation lever).
+- S2 Sword Coin attackDamagePct 6.65, passive, continuous (both).
+- Burst casterAtkPct 15.07, all allies, 10s, burstCast (both; flat-resolved off rouge ATK).
+- HP-scaling determination: every Max-HP grant is an INERT casterMaxHpPct ally grant (both agree; ally-granted Max HP does NOT feed atkOfMaxHpPct — SSOT damage-calculation.md:106).
+- Both flag coin-exclusivity (measurement-gated) and the Shield-Coin burst-rider heal asymmetry.
+  DIVERGENCES (all inert / structural / driver-favored):
+
+1. selfAndAdjacent WIDTH: driver sides:2 (literal '2 allies on both sides' = 2 per side = up to 5) vs opus sides:1 (opus itself flags this as a ⚑ with sides:2 as the alternative). Driver reading is the literal one.
+2. Full-charge trigger: driver hitCount{count:8/30} (a valid engine TriggerDef) vs opus chargeCounter (NOT in the engine TriggerDef union — opus flags 'if not, re-key to hitCount'). Driver uses the real primitive.
+3. Burst coin-tier Max-HP riders (10.15/20.1/30.02): driver UNMODELED (coin-state-gated, engine tracks no coin state; documenting avoids fabricating per-tier cadence) vs opus MODELED via a top-level resources/coinStage resourceGate proxy (opus notes the proxy may be rejected by validate-overrides and is damage-neutral either way). Both inert.
+4. Shield Coin 'Damage Taken ▼15.2%': driver models as inert negative ally damageTakenPct (engine supports ally-side damageTakenPct, inert — cf. moran.json) vs opus UNMODELED ('no ally damage-reduction stat'). Both inert; driver keeps it for kit-completeness with an inertness assertion.
+5. S2 Double Sword Max HP 15.08: BOTH model (burstCast everyN:5, inert).
+6. Shield-Coin burst-rider heal: driver documents as ⚑ (coin-state-gated, marginal) vs opus models a heal{ticks:1} (tandem read). Both flag it unmeasured; driver is conservative given the coin gate the engine cannot express.
+   S5 BLIND TEST vs DRIVER OVERRIDE: pristine blind test (blind/rouge.test.ts) had 3 structural API guesses wrong (opts.onEvent vs cfg.onEvent; durationShots null-vs-undefined; controlComp slots rouge mid-comp masking the positional scope). The ADAPTED copy (blind/rouge.adapted.test.ts, assertion INTENT unchanged) is GREEN vs the driver override: 23 passed, 3 skipped (the 3 documented GAP it.skip blocks).
+   --- blind/rouge.override.json ---
+   {
+   "slug": "rouge",
+   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rouge (rouge, SR/Electric/Supporter/Burst I) carries ZERO damage lines — no flatDamage/dot/weaponSwap anywhere in the kit — so her whole contribution is (a) skill2 Sword Coin Attack Damage +6.65% to self+adjacent, (b) burst ATK +15.07% of HER ATK to all allies for 10s, and (c) the skill1 team burst-CDR 7s every 8 full charges, which is the single largest lever in the kit (it accelerates the whole team's rotation). Everything else is Max-HP / damage-taken bookkeeping that is offensively inert in v1 (ally-granted Max HP does not feed a teammate's atkOfMaxHpPct; the boss deals no damage). The three 'Coin' statuses are modeled as a monotonic resource pool `coinStage` (1=Sword from t=0, 2=Shield after 30 full charges, 3=Double Sword after her 5th burst while at Shield), read by resourceGate on the burst tiers — that is a STATE PROXY, not a kit-stated mechanic. ⚑ Coin exclusivity is the load-bearing unknown: this baseline assumes each 'continuously' status PERSISTS once granted (cumulative), so the 6.65% Attack Damage runs the whole fight; if the coins instead REPLACE each other, that buff dies at ~30 full charges and this override over-credits. ⚑ The burst's Shield-Coin tier is the ONLY Max-HP line that omits 'without restoring HP', so it is modeled as also emitting a recovery event (heal) — that is what wires it into an on-recovery consumer such as crown, and it is unmeasured. ⚑ The back-row activation condition has no representation in the engine (no row axis) and is assumed SATISFIED. See caveats.",
+   "resources": [
+   {
+   "name": "coinStage",
+   "initial": 1,
+   "min": 0,
+   "max": 3
+   }
+   ],
+   "skill1": [
+   {
+   "slot": "skill1",
+   "trigger": {
+   "kind": "chargeCounter",
+   "count": 8
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterMaxHpPct",
+   "value": 5,
+   "durationSec": 5
+   }
+   ]
+   },
+   {
+   "slot": "skill1",
+   "trigger": {
+   "kind": "chargeCounter",
+   "count": 8
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "effects": [
+   {
+   "kind": "burstCdr",
+   "seconds": 7
+   }
+   ]
+   }
+   ],
+   "skill2": [
+   {
+   "slot": "skill2",
+   "trigger": {
+   "kind": "passive"
+   },
+   "target": {
+   "kind": "selfAndAdjacent",
+   "sides": 1
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "attackDamagePct",
+   "value": 6.65
+   }
+   ]
+   },
+   {
+   "slot": "skill2",
+   "trigger": {
+   "kind": "chargeCounter",
+   "count": 30
+   },
+   "target": {
+   "kind": "self"
+   },
+   "resourceGate": {
+   "name": "coinStage",
+   "min": 1,
+   "max": 1
+   },
+   "effects": [
+   {
+   "kind": "resource",
+   "name": "coinStage",
+   "delta": 1
+   }
+   ]
+   },
+   {
+   "slot": "skill2",
+   "trigger": {
+   "kind": "burstCast"
+   },
+   "everyN": 5,
+   "target": {
+   "kind": "allies"
+   },
+   "resourceGate": {
+   "name": "coinStage",
+   "min": 2,
+   "max": 2
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterMaxHpPct",
+   "value": 15.08
+   },
+   {
+   "kind": "resource",
+   "name": "coinStage",
+   "delta": 1
+   }
+   ]
+   }
+   ],
+   "burst": [
+   {
+   "slot": "burst",
+   "trigger": {
+   "kind": "burstCast"
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterAtkPct",
+   "value": 15.07,
+   "durationSec": 10
+   }
+   ]
+   },
+   {
+   "slot": "burst",
+   "trigger": {
+   "kind": "burstCast"
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "resourceGate": {
+   "name": "coinStage",
+   "min": 1
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterMaxHpPct",
+   "value": 10.15,
+   "durationSec": 10
+   }
+   ]
+   },
+   {
+   "slot": "burst",
+   "trigger": {
+   "kind": "burstCast"
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "resourceGate": {
+   "name": "coinStage",
+   "min": 2
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterMaxHpPct",
+   "value": 20.1,
+   "durationSec": 10
+   },
+   {
+   "kind": "heal",
+   "ticks": 1
+   }
+   ]
+   },
+   {
+   "slot": "burst",
+   "trigger": {
+   "kind": "burstCast"
+   },
+   "target": {
+   "kind": "allies"
+   },
+   "resourceGate": {
+   "name": "coinStage",
+   "min": 3
+   },
+   "effects": [
+   {
+   "kind": "buff",
+   "stat": "casterMaxHpPct",
+   "value": 30.02,
+   "durationSec": 10
+   }
+   ]
+   }
+   ],
+   "unmodeled": {
+   "skill1": [],
+   "skill2": [
+   "Shield Coin: Damage Taken ▼15.2% continuously."
+   ],
+   "burst": []
+   },
+   "caveats": [
+   "⚑ COIN EXCLUSIVITY (only damage-relevant unknown): modeled CUMULATIVE — each 'continuously' status persists once granted, so Sword Coin's Attack Damage ▲6.65% runs the whole fight and the burst Max-HP tiers stack once coinStage=3 (min-gates). If the coins instead REPLACE one another (Sword→Shield→Double Sword ladder), the 6.65% ends at ~30 full charges (~45-50s) and the burst tiers become mutually exclusive (change the burst resourceGates to exact min/max pairs). Kit text carries no removal/upgrade clause, hence the cumulative default.",
+   "⚑ BACK-ROW GATE DROPPED: 'Activates when assigned to the back row in battle' has no engine representation (no row/position axis, and no Block gate expresses it — `formation` only encodes noB1/hasB1). Assumed SATISFIED, so the Sword Coin block is a plain passive from t=0 and coinStage.initial=1. If the sim ever models placement, gate this block and set initial=0.",
+   "⚑ TARGET WIDTH: 'self and 2 allies on both sides' read as selfAndAdjacent sides:1 (self + 1 ally each side = 3 units). Alternative reading is 2 per side (sides:2, 5 units). Only affects who receives the 6.65% Attack Damage (and the inert Shield/Double-Sword HP lines).",
+   "⚑ FULL-CHARGE COUNTER ENCODING: 'attacking with Full Charge for N time(s)' modeled as `chargeCounter` with ONE effect per block — the two skill1 riders (Max HP, burst-CDR) are SPLIT into two single-effect blocks on purpose, because chargeCounter treats effects[P] as per-PHASE (a 2-effect block would fire them on alternating 8-charge cycles, not together). Verify the engine cycles a single-phase counter as 'every N charges'; if not, re-key to hitCount:{count:8} / {count:30} (an SR full-charges every shot, so hits ≈ full charges).",
+   "⚑ RECOVERY EVENT ON THE SHIELD-COIN BURST TIER: three of the four Max-HP lines say 'without restoring HP'; the Shield-Coin burst tier (20.1%) does NOT, so it is modeled with a `heal` effect (ticks:1) to fire allies' `recovery` triggers (crown-style on-recovery consumers). This is a deliberate tandem read of a kit-text distinction, NOT a measured mechanic — it is the only place this override can add damage through a teammate.",
+   "COIN STATE IS A PROXY: coinStage is not a kit-named currency; it exists solely so the burst tiers can be gated on Sword/Shield/Double-Sword status. On the 5th burst, slot ordering (skill2 blocks before burst blocks) may let the Double-Sword tier fire on the same cast that creates the status; in-game it more likely starts the FOLLOWING burst. Offensively inert either way.",
+   "Shield Coin's 'Damage Taken ▼15.2%' on ALLIES is unmodeled: the schema's damageTakenPct is a BOSS debuff (positive = boss takes more), so there is no ally damage-reduction stat to hold it, and the v1 boss deals no damage. The status itself is still tracked (coinStage=2) so the downstream gates stay faithful.",
+   "ALWAYS-⚑ items 5-7 are N/A here: the kit has no damage lines at all, so there is no noFb decision, no multi-projectile split/merge, no Hit-Rate→core magnitude, and no weapon-swap economy. noFb is not set anywhere; noRange is left to the engine.",
+   "Top-level `resources` on an override file is assumed supported (soda-twinkling-bunny precedent). If validate-overrides rejects it, drop the resourceGates and apply all three burst Max-HP tiers ungated — damage-neutral, since every Max-HP grant here is offensively inert."
+   ]
+   }
 
 ==================== PART 7: DRIVER IMPLEMENTATION ====================
 --- scripts/tests/units/rouge.test.ts (driver kit spec, 13 tests green) ---
@@ -1794,7 +1827,7 @@ S5 BLIND TEST vs DRIVER OVERRIDE: pristine blind test (blind/rouge.test.ts) had 
 // team ATK + coin-state status gates (absorbed — see UNMODELED).
 //
 // ⚠ EXACT SLUG `rouge` — the SR/Supporter/Electric/Burst-I coin support. There is no other "rouge"
-//   variant; never conflate with a similarly-named unit.
+// variant; never conflate with a similarly-named unit.
 //
 // Her kit is a COIN-STATE support: Sword Coin → Shield Coin (30 Full Charges) → Double Sword Coin
 // (5 bursts in Shield Coin). The state machine is NOT tracked as engine state; its OFFENSIVE payload
@@ -1811,27 +1844,27 @@ S5 BLIND TEST vs DRIVER OVERRIDE: pristine blind test (blind/rouge.test.ts) had 
 // 2026-07-13 "Max-HP grants are OFFENSIVE for Cinderella" reading was REFUTED 2026-07-17 (e3 video).
 //
 // Kit (blablalink prose, data/characters.json → characters.rouge.skills, level 10):
-//   S1 ■ attacking with Full Charge ×8 → all allies: Cooldown of Burst Skill ▼7 sec            [R3]
-//      ■ (same trigger) all allies: Max HP ▲5% of caster Max HP, no restore, 5 sec   (INERT)   [—]
-//   S2 ■ back row, self + 2 allies each side: Sword Coin Attack Damage ▲6.65% continuously     [R1]
-//      ■ Full Charge ×30 in Sword Coin: Shield Coin Damage Taken ▼15.2% continuously (defensive)[—]
-//      ■ Burst ×5 in Shield Coin: Double Sword Coin Max HP ▲15.08% continuously (INERT)        [—]
-//   BU ■ all allies: ATK ▲15.07% of caster ATK for 10 sec                                      [R2]
-//      ■ Sword/Shield/Double Sword Coin: Max HP ▲10.15/20.1/30.02% of caster, 10s (INERT)      [—]
+// S1 ■ attacking with Full Charge ×8 → all allies: Cooldown of Burst Skill ▼7 sec [R3]
+// ■ (same trigger) all allies: Max HP ▲5% of caster Max HP, no restore, 5 sec (INERT) [—]
+// S2 ■ back row, self + 2 allies each side: Sword Coin Attack Damage ▲6.65% continuously [R1]
+// ■ Full Charge ×30 in Sword Coin: Shield Coin Damage Taken ▼15.2% continuously (defensive)[—]
+// ■ Burst ×5 in Shield Coin: Double Sword Coin Max HP ▲15.08% continuously (INERT) [—]
+// BU ■ all allies: ATK ▲15.07% of caster ATK for 10 sec [R2]
+// ■ Sword/Shield/Double Sword Coin: Max HP ▲10.15/20.1/30.02% of caster, 10s (INERT) [—]
 //
 // Why each assertion discriminates (a test that cannot fail under the nearest wrong model gates
 // nothing):
-//   R1  the Sword Coin Attack Damage buff is POSITIONAL ("self and 2 allies on both sides" =
-//       selfAndAdjacent sides:2), NOT all allies. With rouge in slot 0 of a 4-slot comp the buff
-//       reaches slots {0,1,2} and must NOT reach slot 3 — a generic all-allies encoding reaches all
-//       4, so the held-target count is the discriminator. PIN value 6.65 (level-10), continuous.
-//   R2  casterAtkPct surfaces as a FLAT ATK grant (15.07% × caster staticAtk), NOT the raw 15.07 —
-//       discriminated by LINEAR SCALING: doubling the override magnitude (15.07→30.14) exactly
-//       doubles the applied value, proving 15.07 is operative. burstCast-triggered, all 4 allies,
-//       10s window.
-//   R3  burstCdr emits no per-buff number to read directly, so it is pinned by its EFFECT on
-//       cadence: with the line removed, rouge (and the team) fit FEWER casts into 180s (the 20s CD
-//       is no longer shaved by 7s every 8 full charges).
+// R1 the Sword Coin Attack Damage buff is POSITIONAL ("self and 2 allies on both sides" =
+// selfAndAdjacent sides:2), NOT all allies. With rouge in slot 0 of a 4-slot comp the buff
+// reaches slots {0,1,2} and must NOT reach slot 3 — a generic all-allies encoding reaches all
+// 4, so the held-target count is the discriminator. PIN value 6.65 (level-10), continuous.
+// R2 casterAtkPct surfaces as a FLAT ATK grant (15.07% × caster staticAtk), NOT the raw 15.07 —
+// discriminated by LINEAR SCALING: doubling the override magnitude (15.07→30.14) exactly
+// doubles the applied value, proving 15.07 is operative. burstCast-triggered, all 4 allies,
+// 10s window.
+// R3 burstCdr emits no per-buff number to read directly, so it is pinned by its EFFECT on
+// cadence: with the line removed, rouge (and the team) fit FEWER casts into 180s (the 20s CD
+// is no longer shaved by 7s every 8 full charges).
 //
 // Fixture: rouge as the SOLE Burst I (rouge B1 / crown B2 / ada B3 / helm B3, boss Fire, focus ada)
 // so the B1→B2→B3 chain runs and rouge casts. Deterministic (no seed); event-log over totals.
@@ -1852,78 +1885,79 @@ type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(overrides: Record<string, any> = {}) {
-  const events: SimEvent[] = [];
-  const res = runComp({
-    slugs: [...COMP],
-    bossElement: 'Fire',
-    focusSlug: CARRY,
-    overrides,
-    cfg: { onEvent: (e) => events.push(e) },
-  });
-  return { events, totals: totals(res) };
+const events: SimEvent[] = [];
+const res = runComp({
+slugs: [...COMP],
+bossElement: 'Fire',
+focusSlug: CARRY,
+overrides,
+cfg: { onEvent: (e) => events.push(e) },
+});
+return { events, totals: totals(res) };
 }
 
 // ---- counterfactual patches (nearest-wrong model each PIN must discriminate against) ----------
 const hasStat = (b: any, stat: string) =>
-  b.effects.some((e: any) => e.stat === stat);
+b.effects.some((e: any) => e.stat === stat);
 
-/** R1 reference: the Sword Coin Attack Damage block removed entirely. */
+/** R1 reference: the Sword Coin Attack Damage block removed entirely. _/
 const noSwordCoin = withPatchedOverride('rouge', (ov) => {
-  const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'attackDamagePct'));
-  if (ov.skill2.length === before)
-    throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
+const before = ov.skill2.length;
+ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'attackDamagePct'));
+if (ov.skill2.length === before)
+throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
 });
-/** R1 counterfactual: the same buff as a GENERIC all-allies buff (loses the positional scope). */
+/_* R1 counterfactual: the same buff as a GENERIC all-allies buff (loses the positional scope). _/
 const allAlliesSword = withPatchedOverride('rouge', (ov) => {
-  const b = ov.skill2.find((x: any) => hasStat(x, 'attackDamagePct'));
-  if (!b)
-    throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
-  b.target = { kind: 'allies' };
+const b = ov.skill2.find((x: any) => hasStat(x, 'attackDamagePct'));
+if (!b)
+throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
+b.target = { kind: 'allies' };
 });
-/** R2 reference: the burst caster-ATK block removed entirely. */
+/_* R2 reference: the burst caster-ATK block removed entirely. _/
 const noBurstAtk = withPatchedOverride('rouge', (ov) => {
-  const before = ov.burst.length;
-  ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'casterAtkPct'));
-  if (ov.burst.length === before)
-    throw new Error('rouge burst casterAtkPct block missing — fixture stale');
+const before = ov.burst.length;
+ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'casterAtkPct'));
+if (ov.burst.length === before)
+throw new Error('rouge burst casterAtkPct block missing — fixture stale');
 });
-/** R2 counterfactual: double the burst caster-ATK magnitude (15.07 → 30.14). */
+/_* R2 counterfactual: double the burst caster-ATK magnitude (15.07 → 30.14). _/
 const doubleBurstAtk = withPatchedOverride('rouge', (ov) => {
-  const e = ov.burst
-    .flatMap((b: any) => b.effects)
-    .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e || e.value !== 15.07)
-    throw new Error('rouge burst casterAtkPct 15.07 missing — fixture stale');
-  e.value = 30.14;
+const e = ov.burst
+.flatMap((b: any) => b.effects)
+.find((x: any) => x.stat === 'casterAtkPct');
+if (!e || e.value !== 15.07)
+throw new Error('rouge burst casterAtkPct 15.07 missing — fixture stale');
+e.value = 30.14;
 });
-/** R3 reference: the S1 team burst-CDR block removed entirely. */
+/_* R3 reference: the S1 team burst-CDR block removed entirely. _/
 const noCdr = withPatchedOverride('rouge', (ov) => {
-  const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
-  );
-  if (ov.skill1.length === before)
-    throw new Error('rouge S1 burstCdr block missing — fixture stale');
+const before = ov.skill1.length;
+ov.skill1 = ov.skill1.filter(
+(b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+);
+if (ov.skill1.length === before)
+throw new Error('rouge S1 burstCdr block missing — fixture stale');
 });
-/** INERT proof: strip EVERY inert stat (casterMaxHpPct grants + the Shield Coin Damage-Taken
- *  reduction) from all three slots. These are the ally-granted Max HP lines + the defensive
- *  Damage-Taken ▼ — all offensively inert (ally Max HP feeds no atkOfMaxHpPct; v1 boss deals no
- *  damage). Removing them must move NO unit's total by a single point. */
-const noInert = withPatchedOverride('rouge', (ov) => {
+/_* INERT proof: strip EVERY inert stat (casterMaxHpPct grants + the Shield Coin Damage-Taken
+
+- reduction) from all three slots. These are the ally-granted Max HP lines + the defensive
+- Damage-Taken ▼ — all offensively inert (ally Max HP feeds no atkOfMaxHpPct; v1 boss deals no
+- damage). Removing them must move NO unit's total by a single point. */
+  const noInert = withPatchedOverride('rouge', (ov) => {
   const inert = new Set(['casterMaxHpPct', 'damageTakenPct']);
   let stripped = 0;
   for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-    for (const b of ov[slot] ?? []) {
-      const before = b.effects.length;
-      b.effects = b.effects.filter((e: any) => !inert.has(e.stat));
-      stripped += before - b.effects.length;
-    }
-    ov[slot] = (ov[slot] ?? []).filter((b: any) => b.effects.length > 0);
+  for (const b of ov[slot] ?? []) {
+  const before = b.effects.length;
+  b.effects = b.effects.filter((e: any) => !inert.has(e.stat));
+  stripped += before - b.effects.length;
+  }
+  ov[slot] = (ov[slot] ?? []).filter((b: any) => b.effects.length > 0);
   }
   if (stripped === 0)
-    throw new Error('rouge inert grants missing — fixture stale');
-});
+  throw new Error('rouge inert grants missing — fixture stale');
+  });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
 const base = run();
@@ -1936,24 +1970,24 @@ const inertRun = run({ rouge: noInert });
 
 // ---- readers ----------------------------------------------------------------------------------
 const dmg = (evs: SimEvent[]) =>
-  evs.filter((e): e is Damage => e.kind === 'damage');
+evs.filter((e): e is Damage => e.kind === 'damage');
 const buffs = (evs: SimEvent[]) =>
-  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const rougeBursts = (evs: SimEvent[]) =>
-  evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rouge',
-  );
+evs.filter(
+(e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rouge',
+);
 /** rouge-caster buffApply events for a given stat. */
 const rougeBuff = (evs: SimEvent[], stat: string) =>
-  buffs(evs).filter((b) => b.casterIdx === ROUGE && b.stat === stat);
+buffs(evs).filter((b) => b.casterIdx === ROUGE && b.stat === stat);
 
 describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
-  it('fixture sanity: rouge casts her burst in the control rotation', () => {
-    expect(rougeBursts(base.events).length).toBeGreaterThan(0);
-  });
+it('fixture sanity: rouge casts her burst in the control rotation', () => {
+expect(rougeBursts(base.events).length).toBeGreaterThan(0);
+});
 
-  describe('R1 — S2 Sword Coin: Attack Damage ▲6.65%, POSITIONAL (self + 2 each side), continuous', () => {
-    const applied = rougeBuff(base.events, 'attackDamagePct');
+describe('R1 — S2 Sword Coin: Attack Damage ▲6.65%, POSITIONAL (self + 2 each side), continuous', () => {
+const applied = rougeBuff(base.events, 'attackDamagePct');
 
     it('is exactly 6.65% with no wall-clock expiry (continuous)', () => {
       expect(
@@ -1991,10 +2025,11 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
     it('DISCRIMINATING: the buff is absent when the block is removed', () => {
       expect(rougeBuff(noSword.events, 'attackDamagePct').length).toBe(0);
     });
-  });
 
-  describe('R2 — Burst: ATK ▲15.07% of caster ATK, all allies, 10s (burstCast)', () => {
-    const applied = rougeBuff(base.events, 'casterAtkPct');
+});
+
+describe('R2 — Burst: ATK ▲15.07% of caster ATK, all allies, 10s (burstCast)', () => {
+const applied = rougeBuff(base.events, 'casterAtkPct');
 
     it('surfaces as a FLAT ATK grant from rouge, on all 4 allies, for 10 sec, once per cast', () => {
       expect(applied.length, 'no burst casterAtkPct applied').toBeGreaterThan(
@@ -2025,176 +2060,178 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
     it('DISCRIMINATING: the buff is absent when the block is removed', () => {
       expect(rougeBuff(noBurst.events, 'casterAtkPct').length).toBe(0);
     });
-  });
 
-  describe('R3 — S1: team Burst CDR ▼7s every 8 Full Charges (all allies)', () => {
-    // burstCdr shortens allies' burst cooldowns; it emits no per-buff number to read directly, so it
-    // is pinned by its EFFECT on cadence: with the line removed, rouge fits FEWER casts into 180s
-    // (her 20s CD is no longer shaved by 7s every 8 full charges).
-    it('removing the CDR strictly reduces her cast count over the fight', () => {
-      const baseBursts = rougeBursts(base.events).length;
-      const noCdrBursts = rougeBursts(noCdrRun.events).length;
-      expect(baseBursts).toBeGreaterThan(0);
-      expect(
-        noCdrBursts,
-        'CDR must let her cast more often than the raw 20s CD',
-      ).toBeLessThan(baseBursts);
-    });
-  });
+});
 
-  describe('INERT — Max-HP grants (casterMaxHpPct) + Shield Coin Damage-Taken ▼ move no damage', () => {
-    // S1 "Max HP ▲5% / 5s", S2 Double Sword "Max HP ▲15.08%", the burst coin-tier Max-HP grants
-    // (10.15/20.1/30.02%) and the Shield Coin "Damage Taken ▼15.2%" are encoded for kit-completeness
-    // (cross-family consensus) but are OFFENSIVELY INERT: ally-granted Max HP does NOT feed a
-    // consumer's atkOfMaxHpPct conversion (SSOT damage-calculation.md:106; engine casterIdx===self),
-    // the engine has no HP pool, and the v1 boss deals no damage. The proof is byte-identical totals
-    // with every inert stat stripped.
-    it('the inert grants ARE encoded (rouge emits maxHpFlat + a negative ally damageTakenPct)', () => {
-      const maxHp = buffs(base.events).filter(
-        (b) => b.casterIdx === ROUGE && b.stat === 'maxHpFlat',
-      );
-      expect(
-        maxHp.length,
-        'no casterMaxHpPct grant resolved to maxHpFlat',
-      ).toBeGreaterThan(0);
-      expect(
-        new Set(maxHp.map((b) => b.targetIdx)).size,
-        'reaches allies',
-      ).toBeGreaterThan(1);
-      const taken = buffs(base.events).filter(
-        (b) => b.casterIdx === ROUGE && b.stat === 'damageTakenPct',
-      );
-      expect(taken.length, 'no Shield Coin damageTakenPct').toBeGreaterThan(0);
-      for (const b of taken) expect(b.value).toBe(-15.2); // a reduction, never a positive boss amp
-    });
+describe('R3 — S1: team Burst CDR ▼7s every 8 Full Charges (all allies)', () => {
+// burstCdr shortens allies' burst cooldowns; it emits no per-buff number to read directly, so it
+// is pinned by its EFFECT on cadence: with the line removed, rouge fits FEWER casts into 180s
+// (her 20s CD is no longer shaved by 7s every 8 full charges).
+it('removing the CDR strictly reduces her cast count over the fight', () => {
+const baseBursts = rougeBursts(base.events).length;
+const noCdrBursts = rougeBursts(noCdrRun.events).length;
+expect(baseBursts).toBeGreaterThan(0);
+expect(
+noCdrBursts,
+'CDR must let her cast more often than the raw 20s CD',
+).toBeLessThan(baseBursts);
+});
+});
+
+describe('INERT — Max-HP grants (casterMaxHpPct) + Shield Coin Damage-Taken ▼ move no damage', () => {
+// S1 "Max HP ▲5% / 5s", S2 Double Sword "Max HP ▲15.08%", the burst coin-tier Max-HP grants
+// (10.15/20.1/30.02%) and the Shield Coin "Damage Taken ▼15.2%" are encoded for kit-completeness
+// (cross-family consensus) but are OFFENSIVELY INERT: ally-granted Max HP does NOT feed a
+// consumer's atkOfMaxHpPct conversion (SSOT damage-calculation.md:106; engine casterIdx===self),
+// the engine has no HP pool, and the v1 boss deals no damage. The proof is byte-identical totals
+// with every inert stat stripped.
+it('the inert grants ARE encoded (rouge emits maxHpFlat + a negative ally damageTakenPct)', () => {
+const maxHp = buffs(base.events).filter(
+(b) => b.casterIdx === ROUGE && b.stat === 'maxHpFlat',
+);
+expect(
+maxHp.length,
+'no casterMaxHpPct grant resolved to maxHpFlat',
+).toBeGreaterThan(0);
+expect(
+new Set(maxHp.map((b) => b.targetIdx)).size,
+'reaches allies',
+).toBeGreaterThan(1);
+const taken = buffs(base.events).filter(
+(b) => b.casterIdx === ROUGE && b.stat === 'damageTakenPct',
+);
+expect(taken.length, 'no Shield Coin damageTakenPct').toBeGreaterThan(0);
+for (const b of taken) expect(b.value).toBe(-15.2); // a reduction, never a positive boss amp
+});
 
     it("PROOF: stripping every inert stat moves NO unit's total by a single point", () => {
       expect(inertRun.totals).toEqual(base.totals);
     });
-  });
+
+});
 });
 
 --- src/skills/overrides/rouge.json (driver override) ---
 {
-  "note": "Rouge — SR/Supporter/Electric/Burst I coin-state support (cd 20s). Kit-autonomy gauntlet 2026-07-25 (GO cross-family; fable S2b + opus S5/S6/S7 converged). HP-SCALING DETERMINATION = OFFENSIVELY INERT: every 'Max HP ▲ X% of the skill user's Max HP' line is a casterMaxHpPct ALLY grant. Ally-granted Max HP does NOT feed a consumer's ATK=%-of-Max-HP conversion — the conversion counts the consumer's OWN Max HP only (MEASURED cinderella e3 focus video; SSOT docs/data/damage-calculation.md:106-107; engine enforces via effectiveAtk casterIdx===self, src/engine/sim.ts:377). Rouge has no atkOfMaxHpPct line of her own, so even her self-grants feed nothing, and the engine has no HP pool — so the grants move no damage. They are MODELED as casterMaxHpPct effects for kit-completeness (cross-family consensus: fable S2b + opus S5 both encode them) and the unit test ASSERTS their inertness (deleting every one moves zero damage). The 2026-07-13 'Max-HP grants are OFFENSIVE for Cinderella' reading was REFUTED 2026-07-17 (e3 video: FB proc popups fit own-HP-only within 2%, would be ~28% higher if rouge's grants fed); the prior casterMaxHpPct timeline-average values (2.3/7.5/22/22.5/8.7) were artifacts of that refuted hypothesis and are replaced by the EXACT kit magnitudes. OFFENSIVE (3 load-bearing lines): (S1) burstCdr 7s to all allies every 8 Full Charges (hitCount 8; SR = 1 hit/charged pull) — the kit's biggest damage lever, accelerates the whole team rotation; (S2) Sword Coin Attack Damage ▲6.65% as a permanent passive selfAndAdjacent sides:2 ('self and 2 allies on both sides'; positional — an edge-slotted rouge reaches only 3 of 5); (Burst) ATK ▲15.07% of caster ATK to all allies for 10s on burstCast (casterAtkPct, flat-resolved). COIN-STATE MACHINE (Sword → Shield @30FC → Double Sword @5 own bursts in Shield) is NOT tracked as engine state; the coin-gated Max-HP grants + the Shield Coin Damage-Taken reduction are encoded on their nearest trigger (hitCount / burstCast / burstCast everyN:5) with the coin gate ⚑-documented — all are inert so the gate approximation moves no damage. ⚑ FLAGS (UNMEASURED): (1) COIN EXCLUSIVITY [measurement-gated, tier 2] — the prose is silent on whether upgrading Sword→Shield→Double Sword REPLACES the prior coin or COEXISTS. If Shield Coin REPLACES Sword Coin at ~30 Full Charges (~40-50s in), the team LOSES the 6.65% Attack Damage mid-fight (partial uptime ≈ first quarter); the shipped model is the 'continuously' = permanent-passive reading (full uptime). Estimate = permanent (full uptime); recipe = focus video, does the 6.65% Attack Damage buff persist on rouge's adjacent allies after Shield Coin activates? (2) SHIELD-COIN BURST RIDER HEAL ASYMMETRY [coin-state-gated + measurement-gated, tier 2] — four of five Max-HP lines say 'without restoring HP'; the Shield-Coin burst rider (Max HP ▲20.1%) ALONE omits that clause, so read literally it RESTORES HP and would emit a heal event arming on-recovery consumers (e.g. crown's 'when recovery takes effect' team ATK buff). It is gated on Shield Coin status (after ~30FC) which the engine cannot track, and the marginal impact is small (crown's recovery consumer is typically already saturated by her own heals); not modeled as a heal. Estimate = inert/no-heal; recipe = focus video with a recovery consumer, does rouge's burst proc crown's recovery buff once Shield Coin is up? (3) COIN-TIER GATING — the three per-tier burst Max-HP riders (10.15 Sword / 20.1 Shield / 30.02 Double Sword) are coin-state-gated and the engine tracks no coin state, so they are documented in unmodeled.burst rather than fired every cast (which would over-credit the cadence); the cleanly-triggerable inert grants that ARE encoded — S2 Double Sword 15.08 (burstCast everyN:5) and Shield Coin Damage-Taken ▼15.2% (hitCount 30) — carry an approximated coin gate (⚑); all are inert, so the gate approximation moves no damage. (4) back-row condition on S2 has no engine primitive — modeled as passive (rouge is an SR, always back row); documented assumption. All magnitudes are kit-literal (DATAMINED level-10); no calibrated values.",
-  "unmodeled": {
-    "skill1": [],
-    "skill2": [
-      "Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
-    ],
-    "burst": [
-      "Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
-      "Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
-      "Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
-    ]
-  },
-  "skill1": [
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 8
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "burstCdr",
-          "seconds": 7
-        }
-      ]
-    },
-    {
-      "slot": "skill1",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 8
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 5,
-          "durationSec": 5
-        }
-      ]
-    }
-  ],
-  "skill2": [
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "passive"
-      },
-      "target": {
-        "kind": "selfAndAdjacent",
-        "sides": 2
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "attackDamagePct",
-          "value": 6.65
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "hitCount",
-        "count": 30
-      },
-      "target": {
-        "kind": "selfAndAdjacent",
-        "sides": 2
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "damageTakenPct",
-          "value": -15.2
-        }
-      ]
-    },
-    {
-      "slot": "skill2",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "everyN": 5,
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterMaxHpPct",
-          "value": 15.08
-        }
-      ]
-    }
-  ],
-  "burst": [
-    {
-      "slot": "burst",
-      "trigger": {
-        "kind": "burstCast"
-      },
-      "target": {
-        "kind": "allies"
-      },
-      "effects": [
-        {
-          "kind": "buff",
-          "stat": "casterAtkPct",
-          "value": 15.07,
-          "durationSec": 10
-        }
-      ]
-    }
-  ]
+"note": "Rouge — SR/Supporter/Electric/Burst I coin-state support (cd 20s). Kit-autonomy gauntlet 2026-07-25 (GO cross-family; fable S2b + opus S5/S6/S7 converged). HP-SCALING DETERMINATION = OFFENSIVELY INERT: every 'Max HP ▲ X% of the skill user's Max HP' line is a casterMaxHpPct ALLY grant. Ally-granted Max HP does NOT feed a consumer's ATK=%-of-Max-HP conversion — the conversion counts the consumer's OWN Max HP only (MEASURED cinderella e3 focus video; SSOT docs/data/damage-calculation.md:106-107; engine enforces via effectiveAtk casterIdx===self, src/engine/sim.ts:377). Rouge has no atkOfMaxHpPct line of her own, so even her self-grants feed nothing, and the engine has no HP pool — so the grants move no damage. They are MODELED as casterMaxHpPct effects for kit-completeness (cross-family consensus: fable S2b + opus S5 both encode them) and the unit test ASSERTS their inertness (deleting every one moves zero damage). The 2026-07-13 'Max-HP grants are OFFENSIVE for Cinderella' reading was REFUTED 2026-07-17 (e3 video: FB proc popups fit own-HP-only within 2%, would be ~28% higher if rouge's grants fed); the prior casterMaxHpPct timeline-average values (2.3/7.5/22/22.5/8.7) were artifacts of that refuted hypothesis and are replaced by the EXACT kit magnitudes. OFFENSIVE (3 load-bearing lines): (S1) burstCdr 7s to all allies every 8 Full Charges (hitCount 8; SR = 1 hit/charged pull) — the kit's biggest damage lever, accelerates the whole team rotation; (S2) Sword Coin Attack Damage ▲6.65% as a permanent passive selfAndAdjacent sides:2 ('self and 2 allies on both sides'; positional — an edge-slotted rouge reaches only 3 of 5); (Burst) ATK ▲15.07% of caster ATK to all allies for 10s on burstCast (casterAtkPct, flat-resolved). COIN-STATE MACHINE (Sword → Shield @30FC → Double Sword @5 own bursts in Shield) is NOT tracked as engine state; the coin-gated Max-HP grants + the Shield Coin Damage-Taken reduction are encoded on their nearest trigger (hitCount / burstCast / burstCast everyN:5) with the coin gate ⚑-documented — all are inert so the gate approximation moves no damage. ⚑ FLAGS (UNMEASURED): (1) COIN EXCLUSIVITY [measurement-gated, tier 2] — the prose is silent on whether upgrading Sword→Shield→Double Sword REPLACES the prior coin or COEXISTS. If Shield Coin REPLACES Sword Coin at ~30 Full Charges (~40-50s in), the team LOSES the 6.65% Attack Damage mid-fight (partial uptime ≈ first quarter); the shipped model is the 'continuously' = permanent-passive reading (full uptime). Estimate = permanent (full uptime); recipe = focus video, does the 6.65% Attack Damage buff persist on rouge's adjacent allies after Shield Coin activates? (2) SHIELD-COIN BURST RIDER HEAL ASYMMETRY [coin-state-gated + measurement-gated, tier 2] — four of five Max-HP lines say 'without restoring HP'; the Shield-Coin burst rider (Max HP ▲20.1%) ALONE omits that clause, so read literally it RESTORES HP and would emit a heal event arming on-recovery consumers (e.g. crown's 'when recovery takes effect' team ATK buff). It is gated on Shield Coin status (after ~30FC) which the engine cannot track, and the marginal impact is small (crown's recovery consumer is typically already saturated by her own heals); not modeled as a heal. Estimate = inert/no-heal; recipe = focus video with a recovery consumer, does rouge's burst proc crown's recovery buff once Shield Coin is up? (3) COIN-TIER GATING — the three per-tier burst Max-HP riders (10.15 Sword / 20.1 Shield / 30.02 Double Sword) are coin-state-gated and the engine tracks no coin state, so they are documented in unmodeled.burst rather than fired every cast (which would over-credit the cadence); the cleanly-triggerable inert grants that ARE encoded — S2 Double Sword 15.08 (burstCast everyN:5) and Shield Coin Damage-Taken ▼15.2% (hitCount 30) — carry an approximated coin gate (⚑); all are inert, so the gate approximation moves no damage. (4) back-row condition on S2 has no engine primitive — modeled as passive (rouge is an SR, always back row); documented assumption. All magnitudes are kit-literal (DATAMINED level-10); no calibrated values.",
+"unmodeled": {
+"skill1": [],
+"skill2": [
+"Coin-state progression itself (Sword Coin → Shield Coin at 30 Full Charges → Double Sword Coin at 5 own bursts in Shield Coin) is not tracked as engine state; the coin-gated lines are encoded on their nearest trigger with the gate approximated (all inert — see note flag 3)"
+],
+"burst": [
+"Activates when in Sword Coin status. Affects all allies. Max HP ▲ 10.15% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert AND coin-state-gated — the engine tracks no coin state, so the per-tier burst rider cannot be gated precisely; documented rather than fired every cast, which would over-credit the cadence)",
+"Activates when in Shield Coin status. Affects all allies. Max HP ▲ 20.1% of the skill user's Max HP for 10 sec (casterMaxHpPct ALLY grant, offensively inert, coin-state-gated; HEAL ASYMMETRY ⚑ — this rider ALONE omits 'without restoring HP', so literally it also restores HP and could arm on-recovery consumers, but it is Shield-Coin-gated which the engine cannot track and the marginal recovery-consumer impact is small — see note flag 2)",
+"Activates when in Double Sword Coin status. Affects all allies. Max HP ▲ 30.02% of the skill user's Max HP without restoring HP, lasts for 10 sec (casterMaxHpPct ALLY grant; offensively inert, coin-state-gated)"
+]
+},
+"skill1": [
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 8
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "burstCdr",
+"seconds": 7
+}
+]
+},
+{
+"slot": "skill1",
+"trigger": {
+"kind": "hitCount",
+"count": 8
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "casterMaxHpPct",
+"value": 5,
+"durationSec": 5
+}
+]
+}
+],
+"skill2": [
+{
+"slot": "skill2",
+"trigger": {
+"kind": "passive"
+},
+"target": {
+"kind": "selfAndAdjacent",
+"sides": 2
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "attackDamagePct",
+"value": 6.65
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "hitCount",
+"count": 30
+},
+"target": {
+"kind": "selfAndAdjacent",
+"sides": 2
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "damageTakenPct",
+"value": -15.2
+}
+]
+},
+{
+"slot": "skill2",
+"trigger": {
+"kind": "burstCast"
+},
+"everyN": 5,
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "casterMaxHpPct",
+"value": 15.08
+}
+]
+}
+],
+"burst": [
+{
+"slot": "burst",
+"trigger": {
+"kind": "burstCast"
+},
+"target": {
+"kind": "allies"
+},
+"effects": [
+{
+"kind": "buff",
+"stat": "casterAtkPct",
+"value": 15.07,
+"durationSec": 10
+}
+]
+}
+]
 }

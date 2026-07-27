@@ -18,7 +18,13 @@ import type { CharacterData, Element } from './types.js';
 import type { OverrideFile } from './skills/index.js';
 import type { Block } from './skills/types.js';
 
-export const ELEMENTS: Element[] = ['Fire', 'Water', 'Wind', 'Electric', 'Iron'];
+export const ELEMENTS: Element[] = [
+  'Fire',
+  'Water',
+  'Wind',
+  'Electric',
+  'Iron',
+];
 
 // element → the boss code it is advantaged against (the engine keeps its own copy as BEATS in
 // src/engine/sim.ts; both encode the same fixed game wheel, which has never changed)
@@ -33,26 +39,38 @@ export const BEATS: Record<Element, Element> = {
 // inverse wheel: boss code → the element that is natively advantaged against it. An `advantageVs`
 // effect names the BOSS code, so this maps it back to the element the unit is behaving as.
 export const ADVANTAGED_BY: Record<Element, Element> = Object.fromEntries(
-  (Object.entries(BEATS) as [Element, Element][]).map(([ele, boss]) => [boss, ele])
+  (Object.entries(BEATS) as [Element, Element][]).map(([ele, boss]) => [
+    boss,
+    ele,
+  ])
 ) as Record<Element, Element>;
 
 // every element this unit counts as: its own code first, then one per `advantageVs` effect in the
 // override. Order is stable (native, then kit order) and duplicates are dropped.
-export function countsAsElements(element: Element, override?: OverrideFile): Element[] {
+export function countsAsElements(
+  element: Element,
+  override?: OverrideFile
+): Element[] {
   const out: Element[] = [element];
-  const slots: (Block[] | undefined)[] = [override?.skill1, override?.skill2, override?.burst];
+  const slots: (Block[] | undefined)[] = [
+    override?.skill1,
+    override?.skill2,
+    override?.burst,
+  ];
   for (const blocks of slots)
-    for (const b of blocks ?? [])
-      for (const e of b.effects)
-        if (e.kind === 'advantageVs') {
+    {for (const b of blocks ?? [])
+      {for (const e of b.effects)
+        {if (e.kind === 'advantageVs') {
           const as = ADVANTAGED_BY[e.element as Element];
-          if (as && !out.includes(as)) out.push(as);
-        }
+          if (as && !out.includes(as)) {out.push(as);}
+        }}}}
   return out;
 }
 
 // read helper for consumers of characters.json: the tag when present, else the single native code.
-export function unitElements(c: Pick<CharacterData, 'element' | 'countsAsElements'>): Element[] {
+export function unitElements(
+  c: Pick<CharacterData, 'element' | 'countsAsElements'>
+): Element[] {
   return c.countsAsElements?.length ? c.countsAsElements : [c.element];
 }
 

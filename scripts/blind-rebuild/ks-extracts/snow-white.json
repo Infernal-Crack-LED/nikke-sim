@@ -26,9 +26,7 @@
     "unmodeled": {
       "skill1": [],
       "skill2": [],
-      "burst": [
-        "Additional Effect: Pierce"
-      ]
+      "burst": ["Additional Effect: Pierce"]
     },
     "caveats": [
       "skill2: the 144.73% line's trigger is INVENTED (kit text has no 'Activates when…' clause) — modeled as one proc per full-charge shot of the burst weapon swap; unmeasured ⚑",

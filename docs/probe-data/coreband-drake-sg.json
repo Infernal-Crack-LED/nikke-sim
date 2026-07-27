@@ -11,8 +11,8 @@
   "clock": {
     "method": "top-right 03:00 countdown; fight-clock t = 180 - countdown",
     "anchors": [
-      {"videoSec": 8, "countdown": "02:59", "fightClock": 1},
-      {"videoSec": 107, "countdown": "01:18", "fightClock": 102}
+      { "videoSec": 8, "countdown": "02:59", "fightClock": 1 },
+      { "videoSec": 107, "countdown": "01:18", "fightClock": 102 }
     ],
     "offsetSec": 7,
     "note": "videoSec ~= fightClock + 7 (accurate to ~1s); windows chosen >=3s inside each band"
@@ -35,8 +35,14 @@
     },
     {
       "band": "near",
-      "fightClockRange": [[33, 70], [144, 176]],
-      "windowVideoSec": [[55, 69], [157, 179]],
+      "fightClockRange": [
+        [33, 70],
+        [144, 176]
+      ],
+      "windowVideoSec": [
+        [55, 69],
+        [157, 179]
+      ],
       "bossDistance": "close (near1) to very close/point-blank (near2), boss on right",
       "pelletValueWhite": 33374,
       "corePellets": 5,
@@ -46,7 +52,15 @@
       "coreRate": 0.088,
       "coreRateNote": "LOWER BOUND — red 'CORE HIT' numbers pop against the dark/red-glowing boss body at near, hard to see; true rate may be somewhat higher. Cores confirmed on NON-burst shots (v161.2, near1 a_032), so not an artifact of the burst.",
       "confidence": "medium (visibility bias + popup overlap on large near boss)",
-      "frames": ["near1/a_024.png", "near1/a_032.png", "near1/a_040.png", "near2z/z_164.png", "n2spread/t_161.2.png", "near2/n_(v169).png", "n2spread/t_174.8.png"]
+      "frames": [
+        "near1/a_024.png",
+        "near1/a_032.png",
+        "near1/a_040.png",
+        "near2z/z_164.png",
+        "n2spread/t_161.2.png",
+        "near2/n_(v169).png",
+        "n2spread/t_174.8.png"
+      ]
     },
     {
       "band": "far",
@@ -60,11 +74,19 @@
       "totalPellets": 27,
       "coreRate": 0.0,
       "confidence": "high (small distant boss, numbers pop against grey sky; any red would be obvious — none seen)",
-      "frames": ["far/f_004.png", "far/f_028.png", "far/f_036.png", "far/f_044.png"]
+      "frames": [
+        "far/f_004.png",
+        "far/f_028.png",
+        "far/f_036.png",
+        "far/f_044.png"
+      ]
     },
     {
       "band": "midfar",
-      "fightClockRange": [[106, 144], [176, 180]],
+      "fightClockRange": [
+        [106, 144],
+        [176, 180]
+      ],
       "windowVideoSec": [125, 145],
       "bossDistance": "medium-far (boss on left)",
       "pelletValueWhite": 25672,
@@ -78,7 +100,7 @@
     }
   ],
   "summary": {
-    "coreRateByBand": {"mid": 0.0, "near": 0.088, "far": 0.0, "midfar": 0.0},
+    "coreRateByBand": { "mid": 0.0, "near": 0.088, "far": 0.0, "midfar": 0.0 },
     "headline": "SG per-pellet core rate is ~0% at mid/far/midfar and ~9% (lower bound) at near. There IS a near-range core signal (directionally consistent with core=f(range): near > far), but its MAGNITUDE is an order of magnitude below the hypothesised ~100%-at-optimal-range.",
     "mechanistic": "This boss (spider mech) has a small central core (red gem at the crosshair). Auto-aim spreads all 10 pellets across the large body; even point-blank only ~1 pellet/shot lands on the core. Boss geometry likely caps achievable SG core rate far below the theoretical optimum.",
     "confounds": [

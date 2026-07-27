@@ -43,16 +43,16 @@ mcp__claude_ai_Google_Drive__read_file_content(fileId="1fDdy-…_HR8")
 
 Columns, in order:
 
-| # | Column | Maps to |
-|---|--------|---------|
-| 1 | Timestamp | submission key + folder date |
-| 2 | Which request number are you fulfilling? | `requestNumber` (→ `web/src/testing-requests.json`) |
-| 3 | Your team (5 units, in slot order) | `teamRaw` → normalize to slugs (see step 3) |
-| 4 | Boss + element you were advantaged against | `boss`, `element` |
-| 5 | Camera-focused unit | `focusRaw` → focus slug |
-| 6 | End-of-fight team damage breakdown screenshot | Drive link → `screenshotId` |
-| 7 | Full-fight video (landscape) … | Drive link → `videoId` |
-| 8 | Discord handle (…credit you) | `discord` (credit + follow-up only) |
+| #   | Column                                        | Maps to                                             |
+| --- | --------------------------------------------- | --------------------------------------------------- |
+| 1   | Timestamp                                     | submission key + folder date                        |
+| 2   | Which request number are you fulfilling?      | `requestNumber` (→ `web/src/testing-requests.json`) |
+| 3   | Your team (5 units, in slot order)            | `teamRaw` → normalize to slugs (see step 3)         |
+| 4   | Boss + element you were advantaged against    | `boss`, `element`                                   |
+| 5   | Camera-focused unit                           | `focusRaw` → focus slug                             |
+| 6   | End-of-fight team damage breakdown screenshot | Drive link → `screenshotId`                         |
+| 7   | Full-fight video (landscape) …                | Drive link → `videoId`                              |
+| 8   | Discord handle (…credit you)                  | `discord` (credit + follow-up only)                 |
 
 The link cells are `https://drive.google.com/open?id=<FILE_ID>` — the file ID is
 everything after `id=`.
@@ -107,7 +107,13 @@ hang. If disk pressure is a concern, you may DEFER the video pull (queue it with
   "timestamp": "7/16/2026 12:11:55",
   "requestNumber": "2",
   "teamRaw": "Tove, Nayuta, Drake, BSoda, SDoro",
-  "teamSlugs": ["tove", "nayuta", "drake", "soda-twinkling", "dorothy-serendipity"],
+  "teamSlugs": [
+    "tove",
+    "nayuta",
+    "drake",
+    "soda-twinkling",
+    "dorothy-serendipity"
+  ],
   "boss": "Armstrong",
   "element": "iron",
   "focusRaw": "Drake",

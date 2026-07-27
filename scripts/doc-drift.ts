@@ -37,7 +37,8 @@ const STATE_MD = new URL('docs/STATE.md', ROOT);
 const GAPS_MD = new URL('docs/engine-modeling-gaps.md', ROOT);
 const QUESTIONS_MD = new URL('docs/open-questions.md', ROOT);
 
-const BEGIN = '<!-- BEGIN GENERATED: primitive-census (npx tsx scripts/doc-drift.ts --update) -->';
+const BEGIN =
+  '<!-- BEGIN GENERATED: primitive-census (npx tsx scripts/doc-drift.ts --update) -->';
 const END = '<!-- END GENERATED: primitive-census -->';
 
 // Prose fields are current-state narration, never structural — see CONVENTIONS "Doc hygiene".
@@ -54,9 +55,11 @@ const slugs = readdirSync(OVERRIDES)
 
 const structural = new Map<string, string>();
 for (const slug of slugs) {
-  const doc = JSON.parse(readFileSync(new URL(`${slug}.json`, OVERRIDES), 'utf8'));
+  const doc = JSON.parse(
+    readFileSync(new URL(`${slug}.json`, OVERRIDES), 'utf8')
+  );
   const stripped = Object.fromEntries(
-    Object.entries(doc).filter(([k]) => !PROSE_FIELDS.has(k)),
+    Object.entries(doc).filter(([k]) => !PROSE_FIELDS.has(k))
   );
   structural.set(slug, JSON.stringify(stripped));
 }
@@ -73,11 +76,15 @@ const usersOf = (name: string): string[] => {
 // only the overrides under-reports those to 0, which reads as "nothing uses this". A unit counts as
 // a user when its value differs from the field's MODAL value (= the datamine default), which is the
 // only non-arbitrary "is this set meaningfully" rule available.
-const charsRaw = JSON.parse(readFileSync(new URL('data/characters.json', ROOT), 'utf8'));
+const charsRaw = JSON.parse(
+  readFileSync(new URL('data/characters.json', ROOT), 'utf8')
+);
 const chars: Record<string, any> = charsRaw.characters ?? charsRaw;
 const charDataUsers = (name: string): string[] => {
-  const present = Object.entries(chars).filter(([, c]) => (c as any)?.[name] !== undefined);
-  if (!present.length) return [];
+  const present = Object.entries(chars).filter(
+    ([, c]) => (c as any)?.[name] !== undefined
+  );
+  if (!present.length) {return [];}
   const counts = new Map<string, number>();
   for (const [, c] of present) {
     const k = JSON.stringify((c as any)[name]);
@@ -93,20 +100,26 @@ const charDataUsers = (name: string): string[] => {
 // ── parse STATE.md §5 primitive tables ───────────────────────────────────────────────────────
 // Row shape: | `prim` (+`opt`) | meaning | users |   — cell 1 may name several primitives.
 const stateText = readFileSync(STATE_MD, 'utf8');
-const sec5 = stateText.split('## 5. Opt-in kit primitives inventory')[1]?.split('\n## ')[0] ?? '';
-if (!sec5) problems.push('STATE.md: could not locate "## 5. Opt-in kit primitives inventory"');
+const sec5 =
+  stateText
+    .split('## 5. Opt-in kit primitives inventory')[1]
+    ?.split('\n## ')[0] ?? '';
+if (!sec5)
+  {problems.push(
+    'STATE.md: could not locate "## 5. Opt-in kit primitives inventory"'
+  );}
 
 type Row = { prims: string[]; users: string; line: string; rawLine: string };
 const rows: Row[] = [];
 for (const line of sec5.split('\n')) {
-  if (!line.startsWith('|')) continue;
+  if (!line.startsWith('|')) {continue;}
   const cells = line.split('|').map((c) => c.trim());
   // cells[0] is '' (leading pipe). Need at least prim | meaning | users.
-  if (cells.length < 5) continue;
+  if (cells.length < 5) {continue;}
   const [, c1, , c3] = cells;
-  if (/^-+$/.test(c1) || c1 === 'Primitive') continue;
+  if (/^-+$/.test(c1) || c1 === 'Primitive') {continue;}
   const prims = [...c1.matchAll(/`([A-Za-z][A-Za-z0-9.]*)`/g)].map((m) => m[1]);
-  if (!prims.length) continue;
+  if (!prims.length) {continue;}
   rows.push({ prims, users: c3, line: line.slice(0, 90), rawLine: line });
 }
 
@@ -123,8 +136,11 @@ for (const row of rows) {
     .filter((t) => slugSet.has(t));
   // union BOTH sources — a char-data-backed listing (e.g. under `hitsPerShot`) is a real user and
   // must never be pruned just because no override opts in.
-  const anyUser = new Set(row.prims.flatMap((p) => [...usersOf(p), ...charDataUsers(p)]));
-  for (const slug of new Set(named)) if (!anyUser.has(slug)) falseMembers.push({ slug, row });
+  const anyUser = new Set(
+    row.prims.flatMap((p) => [...usersOf(p), ...charDataUsers(p)])
+  );
+  for (const slug of new Set(named))
+    {if (!anyUser.has(slug)) {falseMembers.push({ slug, row });}}
 
   // EXACT prose counts ("8 units (…)") must match reality — this is the U14 class, where a stated
   // count outlived its landing and mis-set a priority. "~14 units" is approximate BY DESIGN
@@ -143,7 +159,7 @@ for (const row of rows) {
         `STATE.md §5: cell claims "${claimed} units" for ` +
           `${row.prims.map((p) => `\`${p}\``).join(' / ')} but the tree has ${anyUser.size}` +
           `\n      row: ${row.line}…\n      fix by hand (counts are prose), or write "~${anyUser.size} units"` +
-          ` / link the generated census in engine-modeling-gaps.md`,
+          ` / link the generated census in engine-modeling-gaps.md`
       );
     }
   }
@@ -180,16 +196,20 @@ if (falseMembers.length && update) {
     out = out.replace(row.rawLine, cells.join('|'));
   }
   writeFileSync(STATE_MD, out);
-  console.log(`doc-drift: pruned ${falseMembers.length} false member(s) from STATE.md §5`);
+  console.log(
+    `doc-drift: pruned ${falseMembers.length} false member(s) from STATE.md §5`
+  );
   for (const { slug, row } of falseMembers) {
-    console.log(`    - ${slug} from ${row.prims.map((p) => `\`${p}\``).join('/')}`);
+    console.log(
+      `    - ${slug} from ${row.prims.map((p) => `\`${p}\``).join('/')}`
+    );
   }
 } else {
   for (const { slug, row } of falseMembers) {
     problems.push(
       `STATE.md §5: "${slug}" is listed under ${row.prims.map((p) => `\`${p}\``).join(' / ')} ` +
         `but its override does not structurally reference any of them (prose mentions do not count)` +
-        `\n      row: ${row.line}…\n      fix: npx tsx scripts/doc-drift.ts --update`,
+        `\n      row: ${row.line}…\n      fix: npx tsx scripts/doc-drift.ts --update`
     );
   }
 }
@@ -208,12 +228,14 @@ if (falseMembers.length && update) {
 const STAMP_BLOCKQUOTE = /^\s*>\s*\*\*(?:~~)?(CLOSED|RESOLVED|SUPERSEDED)\b/;
 const STUB_HEADER = /~~U\d+~~|\(SUPERSEDED\b|MOVED TO ANSWERED/i;
 const qText = readFileSync(QUESTIONS_MD, 'utf8');
-const unanswered = qText.split('## UNANSWERED')[1]?.split('\n## ANSWERED')[0] ?? '';
-if (!unanswered) problems.push('open-questions.md: could not locate "## UNANSWERED"');
+const unanswered =
+  qText.split('## UNANSWERED')[1]?.split('\n## ANSWERED')[0] ?? '';
+if (!unanswered)
+  {problems.push('open-questions.md: could not locate "## UNANSWERED"');}
 for (const chunk of unanswered.split(/\n(?=### )/)) {
   const lines = chunk.split('\n');
   const header = lines[0] ?? '';
-  if (!header.startsWith('### ')) continue;
+  if (!header.startsWith('### ')) {continue;}
   const body = lines.slice(1).filter((l) => l.trim() !== '');
   const stamped = STUB_HEADER.test(header)
     ? 'a superseded-stub header'
@@ -223,7 +245,7 @@ for (const chunk of unanswered.split(/\n(?=### )/)) {
   if (stamped) {
     problems.push(
       `open-questions.md: "${header.slice(4, 80)}…" is filed under UNANSWERED but carries ${stamped}` +
-        ` — move the settled record to docs/answered-questions.md (append-only, single U-numbering) and leave only what is genuinely open.`,
+        ` — move the settled record to docs/answered-questions.md (append-only, single U-numbering) and leave only what is genuinely open.`
     );
   }
 }
@@ -241,10 +263,18 @@ const censusLines = [
     const cd = charDataUsers(p);
     // char-data-sourced rows (e.g. hitsPerShot) have no override opt-in; report their real source
     if (!u.length && cd.length) {
-      const shown = cd.length > ABBREV_OVER ? `${cd.slice(0, ABBREV_OVER).join(', ')}, …` : cd.join(', ');
+      const shown =
+        cd.length > ABBREV_OVER
+          ? `${cd.slice(0, ABBREV_OVER).join(', ')}, …`
+          : cd.join(', ');
       return `| \`${p}\` | ${cd.length} _(char-data)_ | ${shown} |`;
     }
-    const shown = u.length === 0 ? '_none_' : u.length > ABBREV_OVER ? `${u.slice(0, ABBREV_OVER).join(', ')}, …` : u.join(', ');
+    const shown =
+      u.length === 0
+        ? '_none_'
+        : u.length > ABBREV_OVER
+          ? `${u.slice(0, ABBREV_OVER).join(', ')}, …`
+          : u.join(', ');
     return `| \`${p}\` | ${u.length} | ${shown} |`;
   }),
   '',
@@ -256,19 +286,23 @@ const gapsText = readFileSync(GAPS_MD, 'utf8');
 const hasMarkers = gapsText.includes(BEGIN) && gapsText.includes(END);
 if (!hasMarkers) {
   problems.push(
-    `engine-modeling-gaps.md: missing the generated census markers. Add\n      ${BEGIN}\n      ${END}\n      then run: npx tsx scripts/doc-drift.ts --update`,
+    `engine-modeling-gaps.md: missing the generated census markers. Add\n      ${BEGIN}\n      ${END}\n      then run: npx tsx scripts/doc-drift.ts --update`
   );
 } else {
-  const re = new RegExp(`${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`);
+  const re = new RegExp(
+    `${BEGIN.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\s\\S]*?${END.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`
+  );
   const current = gapsText.match(re)![0];
   if (update) {
     if (current !== census) {
       writeFileSync(GAPS_MD, gapsText.replace(re, census));
-      console.log(`doc-drift: census updated (${censusPrims.length} primitives)`);
-    } else console.log('doc-drift: census already fresh');
+      console.log(
+        `doc-drift: census updated (${censusPrims.length} primitives)`
+      );
+    } else {console.log('doc-drift: census already fresh');}
   } else if (current !== census) {
     problems.push(
-      'engine-modeling-gaps.md: the generated primitive census is STALE — run `npx tsx scripts/doc-drift.ts --update`',
+      'engine-modeling-gaps.md: the generated primitive census is STALE — run `npx tsx scripts/doc-drift.ts --update`'
     );
   }
 }
@@ -276,11 +310,11 @@ if (!hasMarkers) {
 // ── report ───────────────────────────────────────────────────────────────────────────────────
 if (problems.length) {
   console.error(`\ndoc-drift: ${problems.length} problem(s)\n`);
-  for (const p of problems) console.error(`  ✗ ${p}`);
+  for (const p of problems) {console.error(`  ✗ ${p}`);}
   console.error('');
   process.exit(1);
 }
 console.log(
   `doc-drift: ok (${censusPrims.length} primitives censused across ${slugs.length} overrides; ` +
-    `${rows.length} STATE.md §5 rows checked)`,
+    `${rows.length} STATE.md §5 rows checked)`
 );

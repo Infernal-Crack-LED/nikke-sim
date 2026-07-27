@@ -50,23 +50,24 @@ const CARRY = 'rapi-red-hood';
 
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
-const near = (a: number, b: number) => typeof a === 'number' && Math.abs(a - b) < 0.005;
+const near = (a: number, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 0.005;
 
 const blocksOf = (ov: any, slot: string): any[] => {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
-  if (Array.isArray(s.blocks)) return s.blocks;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
+  if (Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 };
 
 const eachBlock = (ov: any, fn: (b: any) => void) => {
-  for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b);
+  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b);}}
 };
 
 const eachEffect = (ov: any, fn: (eff: any, block: any) => void) => {
   eachBlock(ov, (b) => {
-    for (const e of b?.effects ?? []) fn(e, b);
+    for (const e of b?.effects ?? []) {fn(e, b);}
   });
 };
 
@@ -86,7 +87,8 @@ function run(patch?: Record<string, any>): Run {
   return { res, events: viaCfg.length ? viaCfg : viaTop };
 }
 
-const evOf = (r: Run, kind: string) => r.events.filter((e: any) => e.kind === kind);
+const evOf = (r: Run, kind: string) =>
+  r.events.filter((e: any) => e.kind === kind);
 const buffsOf = (r: Run) => evOf(r, 'buffApply');
 const fbStarts = (r: Run) => evOf(r, 'fullBurstStart');
 
@@ -98,28 +100,32 @@ const literOv: any = withPatchedOverride(LITER, () => {});
 // s1-A: strip every burst-cooldown reduction.
 const ovNoCdr = withPatchedOverride(LITER, (ov: any) => {
   eachBlock(ov, (b) => {
-    if (Array.isArray(b?.effects)) b.effects = b.effects.filter((e: any) => e.kind !== 'burstCdr');
+    if (Array.isArray(b?.effects))
+      {b.effects = b.effects.filter((e: any) => e.kind !== 'burstCdr');}
   });
 });
 
 // s1-A nearest-wrong: 'Affects all allies' narrowed to the caster.
 const ovCdrSelfOnly = withPatchedOverride(LITER, (ov: any) => {
   eachBlock(ov, (b) => {
-    if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr')) b.target = { kind: 'self' };
+    if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr'))
+      {b.target = { kind: 'self' };}
   });
 });
 
 // burst: neutralise the 66% ATK.
 const ovBurstAtkZero = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66)) e.value = 0;
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66))
+      {e.value = 0;}
   });
 });
 
 // burst nearest-wrong: 'all allies' narrowed to self.
 const ovBurstAtkSelfOnly = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any, b: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66)) b.target = { kind: 'self' };
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66))
+      {b.target = { kind: 'self' };}
   });
 });
 
@@ -136,14 +142,15 @@ const ovBurstAtkPermanent = withPatchedOverride(LITER, (ov: any) => {
 // s1-B tier 3: neutralise the 14.42% ATK.
 const ovTierAtkZero = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 14.42)) e.value = 0;
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 14.42))
+      {e.value = 0;}
   });
 });
 
 // s2: remove the cover-HP restore entirely.
 const ovNoSkill2 = withPatchedOverride(LITER, (ov: any) => {
-  if (Array.isArray(ov.skill2)) ov.skill2 = [];
-  else if (ov.skill2 && Array.isArray(ov.skill2.blocks)) ov.skill2.blocks = [];
+  if (Array.isArray(ov.skill2)) {ov.skill2 = [];}
+  else if (ov.skill2 && Array.isArray(ov.skill2.blocks)) {ov.skill2.blocks = [];}
 });
 
 // ---------------------------------------------------------------- hoisted runs (8 sims)
@@ -159,12 +166,20 @@ const rNoS2 = run({ [LITER]: ovNoSkill2 });
 
 const teamSize = Object.keys(totals(base.res)).length;
 const baseBuffs = buffsOf(base);
-const ammoEvents = baseBuffs.filter((e: any) => e.stat === 'maxAmmoPct' && near(e.value, 45.17));
+const ammoEvents = baseBuffs.filter(
+  (e: any) => e.stat === 'maxAmmoPct' && near(e.value, 45.17)
+);
 const literIdx = ammoEvents[0]?.casterIdx;
 const literBuffs = baseBuffs.filter((e: any) => e.casterIdx === literIdx);
-const critEvents = literBuffs.filter((e: any) => e.stat === 'critDamagePct' && near(e.value, 12.46));
-const tierAtkEvents = literBuffs.filter((e: any) => e.stat === 'atkPct' && near(e.value, 14.42));
-const burstAtkEvents = literBuffs.filter((e: any) => e.stat === 'atkPct' && near(e.value, 66));
+const critEvents = literBuffs.filter(
+  (e: any) => e.stat === 'critDamagePct' && near(e.value, 12.46)
+);
+const tierAtkEvents = literBuffs.filter(
+  (e: any) => e.stat === 'atkPct' && near(e.value, 14.42)
+);
+const burstAtkEvents = literBuffs.filter(
+  (e: any) => e.stat === 'atkPct' && near(e.value, 66)
+);
 const literCasts = teamSize > 0 ? ammoEvents.length / teamSize : 0;
 
 describe('liter - fixture sanity (non-vacuity guards)', () => {
@@ -196,7 +211,8 @@ describe("liter s1-A - 'Activates when entering Full Burst' burst-cooldown reduc
     // therefore asserted structurally: 'entering Full Burst' has exactly one right trigger.
     const carriers: any[] = [];
     eachBlock(literOv, (b) => {
-      if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr')) carriers.push(b);
+      if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr'))
+        {carriers.push(b);}
     });
     expect(carriers.length).toBeGreaterThan(0);
     for (const b of carriers) {
@@ -220,7 +236,7 @@ describe("liter s1-A - 'Activates when entering Full Burst' burst-cooldown reduc
     });
     expect(secs.length).toBeGreaterThan(0);
     const ladder = [2.34, 2.7, 3.17, 5.04, 8.21];
-    for (const s of secs) expect(ladder.some((l) => near(s, l))).toBe(true);
+    for (const s of secs) {expect(ladder.some((l) => near(s, l))).toBe(true);}
     expect(secs.some((s) => s >= 3.17 - 0.005)).toBe(true);
   });
 
@@ -256,9 +272,9 @@ describe("liter s1-B - 'Activates when using Burst Skill' cumulative 5s buffs, a
           e.kind === 'buff' &&
           ((e.stat === 'maxAmmoPct' && near(e.value, 45.17)) ||
             (e.stat === 'critDamagePct' && near(e.value, 12.46)) ||
-            (e.stat === 'atkPct' && near(e.value, 14.42))),
+            (e.stat === 'atkPct' && near(e.value, 14.42)))
       );
-      if (hit) carriers.push(b);
+      if (hit) {carriers.push(b);}
     });
     expect(carriers.length).toBeGreaterThan(0);
     for (const b of carriers) {
@@ -275,7 +291,7 @@ describe("liter s1-B - 'Activates when using Burst Skill' cumulative 5s buffs, a
     const targets = new Set(ammoEvents.map((e: any) => e.targetIdx));
     expect(targets.size).toBe(teamSize);
     expect(targets.has(literIdx)).toBe(true);
-    for (const e of ammoEvents) expect(e.stat).toBe('maxAmmoPct'); // %, not maxAmmoFlat rounds
+    for (const e of ammoEvents) {expect(e.stat).toBe('maxAmmoPct');} // %, not maxAmmoFlat rounds
   });
 
   it('tier 2 Critical Damage 12.46% starts one cast LATER and then never stops', () => {
@@ -300,12 +316,14 @@ describe("liter s1-B - 'Activates when using Burst Skill' cumulative 5s buffs, a
   it('tier 3 ATK is a plain percentage buff that moves teammate damage', () => {
     // Nearest-wrong 1: casterAtkPct/highestAllyAtkPct, which would re-emit as a FLAT ATK number
     // (thousands), not 14.42. Nearest-wrong 2: authored but inert.
-    for (const e of tierAtkEvents) expect(e.value).toBeCloseTo(14.42, 3);
-    expect(literBuffs.filter((e: any) => e.stat === 'casterAtkPct')).toHaveLength(0);
+    for (const e of tierAtkEvents) {expect(e.value).toBeCloseTo(14.42, 3);}
+    expect(
+      literBuffs.filter((e: any) => e.stat === 'casterAtkPct')
+    ).toHaveLength(0);
     expect(totals(rTierZero.res)[CARRY]).toBeLessThan(totals(base.res)[CARRY]);
   });
 
-  it("all three tiers are second-based windows, not round-count windows", () => {
+  it('all three tiers are second-based windows, not round-count windows', () => {
     // Taxonomy trap 2: 'for 5 sec' is wall-clock. durationShots must be absent, and a finite
     // expiry must exist (a permanent encoding would carry no finite expiresFrame).
     for (const e of [...ammoEvents, ...critEvents, ...tierAtkEvents]) {
@@ -325,7 +343,7 @@ describe("liter s2 - 'Restores 52.5% of Cover HP' to the 2 lowest-cover-HP allie
     // not emit recovery events. If the owner rules the opposite, this is the line to revisit.
     const b = totals(base.res);
     const n = totals(rNoS2.res);
-    for (const slug of Object.keys(b)) expect(n[slug]).toBe(b[slug]);
+    for (const slug of Object.keys(b)) {expect(n[slug]).toBe(b[slug]);}
   });
 
   it.skip('cover-HP restore amount (52.5%) and the 2-lowest-cover-HP target set - GAP', () => {
@@ -369,8 +387,10 @@ describe("liter burst - 'ATK 66% for 5 sec' to all allies", () => {
     expect(totals(rBurstSelf.res)[LITER]).toBe(totals(base.res)[LITER]);
   });
 
-  it("the 5s window is real - a permanent encoding over-credits", () => {
+  it('the 5s window is real - a permanent encoding over-credits', () => {
     // Duration semantics. RED if 'for 5 sec' were dropped (buff already permanent => no delta).
-    expect(totals(rBurstPerm.res)[CARRY]).toBeGreaterThan(totals(base.res)[CARRY]);
+    expect(totals(rBurstPerm.res)[CARRY]).toBeGreaterThan(
+      totals(base.res)[CARRY]
+    );
   });
 });

@@ -7,8 +7,18 @@
 //
 // Pure engine (runSim + prepareTeam only) so the web tab and any node script share it.
 import { runSim } from './engine/sim.js';
-import { prepareTeam, type PrepareDeps, type UnitOptions, type LineSelection } from './prepare.js';
-import type { CharacterData, LevelMultiplier, SimConfig, Weapon } from './types.js';
+import {
+  prepareTeam,
+  type PrepareDeps,
+  type UnitOptions,
+  type LineSelection,
+} from './prepare.js';
+import type {
+  CharacterData,
+  LevelMultiplier,
+  SimConfig,
+  Weapon,
+} from './types.js';
 
 // the 8/12 floor: 4× Elemental DMG + 4× ATK, present on every loadout tested
 export const OL_FLOOR: LineSelection[] = [
@@ -28,7 +38,12 @@ const CAND_LABEL: Record<string, string> = {
 // dead for damage; charge lines only matter on RL/SR).
 export function freeLineCandidates(weapon: Weapon): string[] {
   const charge = weapon === 'RL' || weapon === 'SR';
-  return ['ammo', 'critrate', 'critdmg', ...(charge ? ['chargespd', 'chargedmg'] : [])];
+  return [
+    'ammo',
+    'critrate',
+    'critdmg',
+    ...(charge ? ['chargespd', 'chargedmg'] : []),
+  ];
 }
 
 // every size-k multiset over `pool` (order-independent, repeats allowed)
@@ -39,7 +54,7 @@ function multisets(pool: string[], k: number): string[][] {
       out.push([...cur]);
       return;
     }
-    for (let i = start; i < pool.length; i++) rec(i, [...cur, pool[i]]);
+    for (let i = start; i < pool.length; i++) {rec(i, [...cur, pool[i]]);}
   };
   rec(0, []);
   return out;
@@ -47,11 +62,14 @@ function multisets(pool: string[], k: number): string[][] {
 
 function counts(combo: string[]): Record<string, number> {
   const c: Record<string, number> = {};
-  for (const k of combo) c[k] = (c[k] ?? 0) + 1;
+  for (const k of combo) {c[k] = (c[k] ?? 0) + 1;}
   return c;
 }
 function comboToLines(combo: string[]): LineSelection[] {
-  return Object.entries(counts(combo)).map(([type, count]) => ({ type, count }));
+  return Object.entries(counts(combo)).map(([type, count]) => ({
+    type,
+    count,
+  }));
 }
 function comboLabel(combo: string[]): string {
   return Object.entries(counts(combo))
@@ -84,16 +102,29 @@ export function rankFreeLineConfigs(args: {
   // omitted every line defaults to its max roll (T15) via prepareUnit.
   tierValues?: Record<string, number>;
 }): { baselineDamage: number; results: OlConfigResult[] } {
-  const { chars, mult, cfg, deps, baseOpts, carryIdx, topN = 10, tierValues } = args;
+  const {
+    chars,
+    mult,
+    cfg,
+    deps,
+    baseOpts,
+    carryIdx,
+    topN = 10,
+    tierValues,
+  } = args;
   const pool = freeLineCandidates(chars[carryIdx].weapon);
 
   // stamp each line with the chosen tier's per-line value (no-op when tierValues
   // is undefined, leaving prepareUnit to use the line's max roll).
   const atTier = (lines: LineSelection[]): LineSelection[] =>
-    tierValues ? lines.map((l) => ({ ...l, value: tierValues[l.type] })) : lines;
+    tierValues
+      ? lines.map((l) => ({ ...l, value: tierValues[l.type] }))
+      : lines;
 
   const carryDamage = (carryLines: LineSelection[]): number => {
-    const opts = baseOpts.map((o, i) => (i === carryIdx ? { ...o, lines: atTier(carryLines) } : o));
+    const opts = baseOpts.map((o, i) =>
+      i === carryIdx ? { ...o, lines: atTier(carryLines) } : o
+    );
     const prepared = prepareTeam(chars, opts, deps);
     return runSim(chars, mult, cfg, prepared).units[carryIdx].totalDamage;
   };
@@ -106,7 +137,9 @@ export function rankFreeLineConfigs(args: {
       label: comboLabel(combo),
       lines: free,
       damage,
-      gainPct: baselineDamage ? ((damage - baselineDamage) / baselineDamage) * 100 : 0,
+      gainPct: baselineDamage
+        ? ((damage - baselineDamage) / baselineDamage) * 100
+        : 0,
     };
   });
   results.sort((a, b) => b.damage - a.damage);

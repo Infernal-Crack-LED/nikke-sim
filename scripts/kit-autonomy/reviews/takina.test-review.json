@@ -125,9 +125,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Stuns for 2 sec."
-    ],
+    "skill2": ["Stuns for 2 sec."],
     "burst": [
       "Affects self: Normal attacks deal true damage for 10 sec. — ONLY if the driver cannot flavor-tag swap shots; if dropped, it must be recorded here, never silently"
     ]

@@ -42,8 +42,8 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
 function slotBlocks(ov: AnyRec, slot: string): AnyRec[] {
   const s = ov[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s as AnyRec[];
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s as AnyRec[];}
   return Array.isArray(s.blocks) ? (s.blocks as AnyRec[]) : [];
 }
 
@@ -52,21 +52,24 @@ function allBlocks(ov: AnyRec): AnyRec[] {
 }
 
 function allEffects(ov: AnyRec): AnyRec[] {
-  return allBlocks(ov).flatMap((b) => (Array.isArray(b.effects) ? (b.effects as AnyRec[]) : []));
+  return allBlocks(ov).flatMap((b) =>
+    Array.isArray(b.effects) ? (b.effects as AnyRec[]) : []
+  );
 }
 
 /** note + unmodeled text, whichever layout carries it - the 'no silent drop' audit trail. */
 function auditText(ov: AnyRec): string {
   const parts: string[] = [];
-  if (typeof ov.note === 'string') parts.push(ov.note);
+  if (typeof ov.note === 'string') {parts.push(ov.note);}
   const collect = (u: AnyRec | undefined) => {
-    if (!u) return;
-    for (const slot of SLOTS) if (Array.isArray(u[slot])) parts.push(...(u[slot] as string[]));
+    if (!u) {return;}
+    for (const slot of SLOTS)
+      {if (Array.isArray(u[slot])) {parts.push(...(u[slot] as string[]));}}
   };
   collect(ov.unmodeled as AnyRec | undefined);
   for (const slot of SLOTS) {
     const s = ov[slot];
-    if (s && !Array.isArray(s)) collect(s.unmodeled as AnyRec | undefined);
+    if (s && !Array.isArray(s)) {collect(s.unmodeled as AnyRec | undefined);}
   }
   return parts.join(' | ');
 }
@@ -76,7 +79,10 @@ const patch = (slug: string, mutate: (ov: AnyRec) => void) =>
     mutate(ov as unknown as AnyRec);
   });
 
-function run(opts: AnyRec): { res: ReturnType<typeof runComp>; events: SimEvent[] } {
+function run(opts: AnyRec): {
+  res: ReturnType<typeof runComp>;
+  events: SimEvent[];
+} {
   const events: SimEvent[] = [];
   const withCfg = {
     ...opts,
@@ -92,11 +98,16 @@ function run(opts: AnyRec): { res: ReturnType<typeof runComp>; events: SimEvent[
 
 function comp(overrides: Record<string, unknown> = {}): AnyRec {
   const opts = controlComp(NAGA, true) as unknown as AnyRec;
-  return { ...opts, overrides: { ...((opts.overrides ?? {}) as AnyRec), ...overrides } };
+  return {
+    ...opts,
+    overrides: { ...((opts.overrides ?? {}) as AnyRec), ...overrides },
+  };
 }
 
 const buffApplies = (events: SimEvent[]): AnyRec[] =>
-  events.filter((e) => (e as unknown as AnyRec).kind === 'buffApply') as unknown as AnyRec[];
+  events.filter(
+    (e) => (e as unknown as AnyRec).kind === 'buffApply'
+  ) as unknown as AnyRec[];
 
 const near = (a: number, b: number, tol = 0.5) => Math.abs(a - b) <= tol;
 
@@ -110,21 +121,26 @@ const OV = patch(NAGA, () => {}) as unknown as AnyRec;
 
 /** nearest-wrong for both shield lines: the gate does not exist (block always fires). */
 const OV_UNGATE_SHIELD = patch(NAGA, (ov) => {
-  for (const b of allBlocks(ov)) delete b.requiresShielded;
+  for (const b of allBlocks(ov)) {delete b.requiresShielded;}
 });
 
 /** the shield lines removed outright - proves they leak nothing while unshielded. */
 const OV_NO_SHIELD_BLOCKS = patch(NAGA, (ov) => {
   for (const slot of SLOTS) {
     const blocks = slotBlocks(ov, slot);
-    for (let i = blocks.length - 1; i >= 0; i -= 1) if (blocks[i].requiresShielded) blocks.splice(i, 1);
+    for (let i = blocks.length - 1; i >= 0; i -= 1)
+      {if (blocks[i].requiresShielded) {blocks.splice(i, 1);}}
   }
 });
 
 /** nearest-wrong for 'for 10 sec' on the burst ATK line: a window long enough to be permanent. */
 const OV_LONG_BURST_ATK = patch(NAGA, (ov) => {
   for (const e of allEffects(ov)) {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct' && typeof e.durationSec === 'number') {
+    if (
+      e.kind === 'buff' &&
+      e.stat === 'casterAtkPct' &&
+      typeof e.durationSec === 'number'
+    ) {
       e.durationSec = 60;
     }
   }
@@ -133,17 +149,20 @@ const OV_LONG_BURST_ATK = patch(NAGA, (ov) => {
 /** nearest-wrong for 'after 5 normal attacks': a threshold that essentially never accrues. */
 const OV_RARE_CORE_PROC = patch(NAGA, (ov) => {
   for (const b of allBlocks(ov)) {
-    const carriesCore = ((b.effects ?? []) as AnyRec[]).some((e) => e.stat === 'coreDamagePct');
-    if (carriesCore && b.trigger?.kind === 'hitCount' && b.trigger.count === 5) b.trigger.count = 200;
+    const carriesCore = ((b.effects ?? []) as AnyRec[]).some(
+      (e) => e.stat === 'coreDamagePct'
+    );
+    if (carriesCore && b.trigger?.kind === 'hitCount' && b.trigger.count === 5)
+      {b.trigger.count = 200;}
   }
 });
 
 /** nearest-wrong for 'for 5 sec': the window collapsed - proves the duration is load-bearing seconds. */
 const OV_SHORT_CORE = patch(NAGA, (ov) => {
   for (const b of allBlocks(ov)) {
-    if (b.requiresShielded) continue;
+    if (b.requiresShielded) {continue;}
     for (const e of (b.effects ?? []) as AnyRec[]) {
-      if (e.kind === 'buff' && e.stat === 'coreDamagePct') e.durationSec = 0.2;
+      if (e.kind === 'buff' && e.stat === 'coreDamagePct') {e.durationSec = 0.2;}
     }
   }
 });
@@ -151,14 +170,18 @@ const OV_SHORT_CORE = patch(NAGA, (ov) => {
 /** nearest-wrong for the s2b heal: dropped as 'defensive, no damage'. */
 const OV_NAGA_NO_HEAL = patch(NAGA, (ov) => {
   for (const b of allBlocks(ov)) {
-    b.effects = ((b.effects ?? []) as AnyRec[]).filter((e) => e.kind !== 'heal');
+    b.effects = ((b.effects ?? []) as AnyRec[]).filter(
+      (e) => e.kind !== 'heal'
+    );
   }
 });
 
 /** isolation: strip helm's heals so crown's on-recovery consumer has ONLY naga as a source. */
 const OV_HELM_NO_HEAL = patch('helm', (ov) => {
   for (const b of allBlocks(ov)) {
-    b.effects = ((b.effects ?? []) as AnyRec[]).filter((e) => e.kind !== 'heal');
+    b.effects = ((b.effects ?? []) as AnyRec[]).filter(
+      (e) => e.kind !== 'heal'
+    );
   }
 });
 
@@ -197,7 +220,9 @@ describe('naga - fixture sanity', () => {
 
 describe('naga s1a - Cover HP restore every 12 normal attacks', () => {
   it('is either modeled or explicitly recorded - no silent drop', () => {
-    const modeled = allBlocks(OV).some((b) => b.trigger?.kind === 'hitCount' && b.trigger.count === 12);
+    const modeled = allBlocks(OV).some(
+      (b) => b.trigger?.kind === 'hitCount' && b.trigger.count === 12
+    );
     const recorded = /cover/i.test(auditText(OV));
     expect(modeled || recorded).toBe(true);
   });
@@ -279,11 +304,17 @@ describe('naga burst - ATK 16.18% of the skill user ATK for 10s (all allies)', (
   it('the shield-gated 31.02% branch is absent unshielded and appears at 1.917x when ungated', () => {
     const v = atkBuffs(base)[0].value as number;
     const expectedShielded = (v * 31.02) / 16.18;
-    expect(atkBuffs(base).some((b) => near(b.value, expectedShielded, Math.max(1, v * 0.02)))).toBe(false);
+    expect(
+      atkBuffs(base).some((b) =>
+        near(b.value, expectedShielded, Math.max(1, v * 0.02))
+      )
+    ).toBe(false);
 
     // Ungated, BOTH branches apply: two distinct flat magnitudes in the kit ratio 31.02/16.18.
     // This pins the two magnitudes relative to each other without needing naga's sheet ATK.
-    const uv = [...new Set(atkBuffs(ungated).map((b) => b.value as number))].sort((a, b) => a - b);
+    const uv = [
+      ...new Set(atkBuffs(ungated).map((b) => b.value as number)),
+    ].sort((a, b) => a - b);
     expect(uv.length).toBe(2);
     expect(uv[1] / uv[0]).toBeCloseTo(31.02 / 16.18, 1);
   });
@@ -301,7 +332,12 @@ describe('naga burst - Gains Pierce for 10 sec (self)', () => {
     // 'for 10 sec' - an absent durationSec means continuous/permanent pierce, the nearest-wrong.
     expect(pierceEffects.some((e) => near(e.durationSec, 10, 0.01))).toBe(true);
     // The other nearest-wrong: encoding a 10s window as the whole-fight boolean.
-    const staticFlags = [OV.hasPierce, ...SLOTS.map((s) => (Array.isArray(OV[s]) ? undefined : OV[s]?.hasPierce))];
+    const staticFlags = [
+      OV.hasPierce,
+      ...SLOTS.map((s) =>
+        Array.isArray(OV[s]) ? undefined : OV[s]?.hasPierce
+      ),
+    ];
     expect(staticFlags.some((f) => f === true)).toBe(false);
   });
 

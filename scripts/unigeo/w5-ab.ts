@@ -20,20 +20,38 @@ import {
 import { scopeLockCfg } from '../lib/scope-lock.js';
 import { COMPS } from '../experiment.js';
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8'));
-const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../../data/level-multiplier.json', import.meta.url), 'utf8'));
-const cubes: CubesFile = JSON.parse(readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8'));
-const olLines: OlLinesFile = JSON.parse(readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
+);
+const mult: LevelMultiplier = JSON.parse(
+  readFileSync(
+    new URL('../../data/level-multiplier.json', import.meta.url),
+    'utf8'
+  )
+);
+const cubes: CubesFile = JSON.parse(
+  readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8')
+);
+const olLines: OlLinesFile = JSON.parse(
+  readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8')
+);
 let skillLevels: SkillLevelData = {};
 try {
-  skillLevels = JSON.parse(readFileSync(new URL('../../data/skill-levels.json', import.meta.url), 'utf8'));
-} catch { /* optional */ }
+  skillLevels = JSON.parse(
+    readFileSync(
+      new URL('../../data/skill-levels.json', import.meta.url),
+      'utf8'
+    )
+  );
+} catch {
+  /* optional */
+}
 
 function runComp(comp: (typeof COMPS)[number], mode: string) {
   process.env.UNIGEO = mode === 'off' ? '' : mode;
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) overrides[s] = loadOverride(s);
+  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -41,7 +59,12 @@ function runComp(comp: (typeof COMPS)[number], mode: string) {
     lambdaStage: comp.lambda?.[slug],
   }));
   const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus });
-  const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
+  const prepared = prepareTeam(chars, unitOpts, {
+    overrides,
+    skillLevels,
+    cubes,
+    olLines,
+  });
   return runSim(chars, mult, cfg, prepared);
 }
 
@@ -65,10 +88,17 @@ for (const comp of COMPS) {
   const rSg = runComp(comp, 'sg');
   const rAll = runComp(comp, 'all');
   const fb = `${comp.name}: FB off=${rOff.fullBursts} sg=${rSg.fullBursts} all=${rAll.fullBursts}`;
-  fbInfo.push(fb + (rOff.fullBursts === rSg.fullBursts && rOff.fullBursts === rAll.fullBursts ? '' : '  << FB COUNT CHANGED'));
+  fbInfo.push(
+    fb +
+      (rOff.fullBursts === rSg.fullBursts && rOff.fullBursts === rAll.fullBursts
+        ? ''
+        : '  << FB COUNT CHANGED')
+  );
   const logOff = rOff.rotationLog.join('\n');
-  if (logOff !== rSg.rotationLog.join('\n')) rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs sg`);
-  if (logOff !== rAll.rotationLog.join('\n')) rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs all`);
+  if (logOff !== rSg.rotationLog.join('\n'))
+    {rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs sg`);}
+  if (logOff !== rAll.rotationLog.join('\n'))
+    {rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs all`);}
   for (const u of rOff.units) {
     const real = comp.real[u.slug];
     const uSg = rSg.units.find((x) => x.slug === u.slug)!;
@@ -93,20 +123,44 @@ for (const r of rows) {
   const dSg = r.sg - r.off;
   const dAll = r.all - r.off;
   console.log(
-    `${r.comp} | ${r.slug} | ${r.weapon} | ${r.off.toFixed(4)} | ${r.sg.toFixed(4)} | ${dSg >= 0 ? '+' : ''}${dSg.toFixed(4)} | ${r.all.toFixed(4)} | ${dAll >= 0 ? '+' : ''}${dAll.toFixed(4)}`,
+    `${r.comp} | ${r.slug} | ${r.weapon} | ${r.off.toFixed(4)} | ${r.sg.toFixed(4)} | ${dSg >= 0 ? '+' : ''}${dSg.toFixed(4)} | ${r.all.toFixed(4)} | ${dAll >= 0 ? '+' : ''}${dAll.toFixed(4)}`
   );
 }
 
 console.log('\n=== FB counts ===');
-for (const l of fbInfo) console.log(l);
-console.log(rotDiffs.length ? '\nrotation-log diffs:\n' + rotDiffs.join('\n') : '\nrotation logs byte-identical across modes for every comp');
+for (const l of fbInfo) {console.log(l);}
+console.log(
+  rotDiffs.length
+    ? '\nrotation-log diffs:\n' + rotDiffs.join('\n')
+    : '\nrotation logs byte-identical across modes for every comp'
+);
 
 console.log('\n=== controls / triggers ===');
-const nonSgMoved = rows.filter((r) => r.weapon !== 'SG' && Math.abs(r.sg / r.off - 1) > 0.001);
-console.log(`non-SG units moving >0.1% at UNIGEO=sg: ${nonSgMoved.length ? nonSgMoved.map((r) => `${r.comp}/${r.slug} ${(100 * (r.sg / r.off - 1)).toFixed(2)}%`).join('; ') : 'NONE'}`);
-const heavyBit = rows.filter((r) => ['MG', 'SR', 'RL'].includes(r.weapon) && (r.sgTot !== r.offTot || r.allTot !== r.offTot));
-console.log(`MG/SR/RL units NOT bit-identical: ${heavyBit.length ? heavyBit.map((r) => `${r.comp}/${r.slug}`).join('; ') : 'NONE (bit-identical in both modes)'}`);
-const worsenedSg = rows.filter((r) => r.weapon === 'SG' && Math.abs(r.sg - 1) - Math.abs(r.off - 1) > 0.03);
-console.log(`revert trigger - graded SG unit |ratio-1| worsens >0.03 at sg: ${worsenedSg.length ? worsenedSg.map((r) => `${r.comp}/${r.slug} ${Math.abs(r.off - 1).toFixed(3)}->${Math.abs(r.sg - 1).toFixed(3)}`).join('; ') : 'NONE'}`);
-const worsenedAll = rows.filter((r) => (r.weapon === 'AR' || r.weapon === 'SMG') && Math.abs(r.all - 1) - Math.abs(r.sg - 1) > 0.03);
-console.log(`revert trigger - graded AR/SMG unit |ratio-1| worsens >0.03 at all (vs sg): ${worsenedAll.length ? worsenedAll.map((r) => `${r.comp}/${r.slug} ${Math.abs(r.sg - 1).toFixed(3)}->${Math.abs(r.all - 1).toFixed(3)}`).join('; ') : 'NONE'}`);
+const nonSgMoved = rows.filter(
+  (r) => r.weapon !== 'SG' && Math.abs(r.sg / r.off - 1) > 0.001
+);
+console.log(
+  `non-SG units moving >0.1% at UNIGEO=sg: ${nonSgMoved.length ? nonSgMoved.map((r) => `${r.comp}/${r.slug} ${(100 * (r.sg / r.off - 1)).toFixed(2)}%`).join('; ') : 'NONE'}`
+);
+const heavyBit = rows.filter(
+  (r) =>
+    ['MG', 'SR', 'RL'].includes(r.weapon) &&
+    (r.sgTot !== r.offTot || r.allTot !== r.offTot)
+);
+console.log(
+  `MG/SR/RL units NOT bit-identical: ${heavyBit.length ? heavyBit.map((r) => `${r.comp}/${r.slug}`).join('; ') : 'NONE (bit-identical in both modes)'}`
+);
+const worsenedSg = rows.filter(
+  (r) => r.weapon === 'SG' && Math.abs(r.sg - 1) - Math.abs(r.off - 1) > 0.03
+);
+console.log(
+  `revert trigger - graded SG unit |ratio-1| worsens >0.03 at sg: ${worsenedSg.length ? worsenedSg.map((r) => `${r.comp}/${r.slug} ${Math.abs(r.off - 1).toFixed(3)}->${Math.abs(r.sg - 1).toFixed(3)}`).join('; ') : 'NONE'}`
+);
+const worsenedAll = rows.filter(
+  (r) =>
+    (r.weapon === 'AR' || r.weapon === 'SMG') &&
+    Math.abs(r.all - 1) - Math.abs(r.sg - 1) > 0.03
+);
+console.log(
+  `revert trigger - graded AR/SMG unit |ratio-1| worsens >0.03 at all (vs sg): ${worsenedAll.length ? worsenedAll.map((r) => `${r.comp}/${r.slug} ${Math.abs(r.sg - 1).toFixed(3)}->${Math.abs(r.all - 1).toFixed(3)}`).join('; ') : 'NONE'}`
+);

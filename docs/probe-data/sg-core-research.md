@@ -17,7 +17,7 @@ DATAMINED — all are COMMUNITY measurements.
 - The strongest source (ore-game verify-memo) reports shotgun core-hit rate of **~6% at the
   front row** (the shotgun's proper/effective distance), ~1.6% mid row, ~0% back row — measured
   in auto mode on the practice-range boss at base accuracy.
-- Our own video measurement of **~0.072 (7.2%) near** sits *at or slightly above* that number.
+- Our own video measurement of **~0.072 (7.2%) near** sits _at or slightly above_ that number.
   Two independent auto-mode base-accuracy measurements therefore converge at roughly **6–8%**
   for the front-row / near regime.
 - **No source supports a point-blank value of 15–30% at base accuracy.** The high core-hit
@@ -38,9 +38,11 @@ front row. See "Implication for the cold-SG problem" below for where to look ins
 ## Sources
 
 ### 1. ore-game.com — verify-memo (JP) — STRONGEST LEAD, tier COMMUNITY
+
 URL: https://ore-game.com/nikke/post/verify-memo/
 
 Shotgun core-hit rate by enemy row, measured on the practice-range boss in auto mode:
+
 - Front row (前列, the shotgun's 適性 / effective distance): **"約6％くらい"** — approximately **6%**
 - Middle row (中列): **"約1.6％くらい"** — approximately **1.6%**
 - Back row (後列): **"約0％くらい"** — approximately **0%**
@@ -55,10 +57,12 @@ This is the exact source our notes meant to cite. Its real front-row number is ~
 ~100% currently written in our docs.
 
 ### 2. note.com — _TricK_ "命中率の検証をちゃんとやる話" (JP) — tier COMMUNITY
+
 URL: https://note.com/_trick_/n/n6efe08af53e8
 
 Auto-aim reticle / accuracy study on shotguns:
-- **Auto mode enlarges the reticle** vs manual. Linear fits of reticle *diameter* (px) vs
+
+- **Auto mode enlarges the reticle** vs manual. Linear fits of reticle _diameter_ (px) vs
   accuracy %: manual `y = -1.40x + 140`, auto `y = -1.45x + 170`.
 - **Reticle floor:** "命中率を100%にしても半径12.5ピクセル程度のレティクルになってしまう" — even at
   100% accuracy the auto reticle bottoms out at ~**12.5 px radius**, which is why "命中率100%
@@ -68,28 +72,31 @@ Auto-aim reticle / accuracy study on shotguns:
 
 Relevance: we play in auto/scope-lock. The 12.5 px auto reticle floor structurally caps
 shotgun core rate below what a manual player (or a raw single-shot weapon) would achieve, and it
-does so *regardless of distance*. This is the mechanism behind a low SG core ceiling.
+does so _regardless of distance_. This is the mechanism behind a low SG core ceiling.
 
 ### 3. note.com — tt00771 "武器別考察 ショットガン編" (JP) — tier COMMUNITY
+
 URL: https://note.com/tt00771/n/n7b6204613ade
 
 Shotgun accuracy thresholds (how many of 10 pellets connect):
+
 - **52% accuracy:** "大型の敵やボスの部位にはほぼ全段命中" — nearly all pellets hit large enemies /
-  boss *parts*.
+  boss _parts_.
 - **74% accuracy:** "雑魚にも大体全段命中" — nearly all pellets hit even small enemies.
 - **88% accuracy:** "ボスのコアにも8発くらいは命中" — about **8 of 10 pellets hit the boss core**.
 - Shotgun = 10 pellets/shot at 1.5 shots/s.
 
-Relevance: the *only* way to get shotgun cores near saturation (8/10) is **88% accuracy** — a
+Relevance: the _only_ way to get shotgun cores near saturation (8/10) is **88% accuracy** — a
 heavily-buffed condition. At base accuracy (our validation), you are far down this curve, which
 is consistent with the ~6% front-row figure.
 
 ### 4. arca.live — "명중의 모든 것을 알려주겠다" (KR) — tier COMMUNITY
+
 URL: https://arca.live/b/nikketgv/96243965 (post 96243965)
 (Page returns HTTP 403 to the fetcher; numbers below are from the indexed summary and the
 task's prior notes, cross-checked against source 3.)
 
-- Shotgun spread *diameter* vs accuracy: `y = -2.18x + 240` px (2.18 px narrower per +1% acc).
+- Shotgun spread _diameter_ vs accuracy: `y = -2.18x + 240` px (2.18 px narrower per +1% acc).
   At 85% accuracy → ~55 px spread.
 - **Core-hit rate vs accuracy stat** (measured mid-range, on a large part / arm, Blacksmith
   dungeon): **~40% core at 75.6% accuracy**, **~90% core at ~85% accuracy**.
@@ -99,13 +106,14 @@ task's prior notes, cross-checked against source 3.)
 
 Relevance: confirms core-hit rate is driven primarily by the **accuracy stat**, and that the
 40–90% figures are high-accuracy points, not base-accuracy. Also note these were measured on a
-*large* arm/part, not a small core (see source 5 and the small-core caveat).
+_large_ arm/part, not a small core (see source 5 and the small-core caveat).
 
 ### 5. nikke.gg — Weapon guide / FAQ / Damage formula (EN) — tier COMMUNITY
+
 URLs: https://nikke.gg/nikke-goddess-of-victory-weapon-guide/,
 https://nikke.gg/frequently-asked-questions/, https://nikke.gg/damage-formula/
 
-- Shotgun **effective range is 0–25**. Even at range 0, against a *regular* enemy a shotgun hits
+- Shotgun **effective range is 0–25**. Even at range 0, against a _regular_ enemy a shotgun hits
   only **7–10 pellets (≈8.5 avg)**; this drops sharply outside 0–25 and can fall below 1
   pellet/shot beyond range ~35 against small targets. Against **large bosses they hit all 10
   pellets consistently.**
@@ -124,21 +132,21 @@ boss body, but only a small fraction on the core — the two are different quant
 All values assume **auto mode, base accuracy, no accuracy buffs** (our scope-lock validation
 condition), against a large boss.
 
-| Range band | Proposed core-pellet fraction | Basis | Tier | Confidence |
-|---|---|---|---|---|
-| Extreme-near / point-blank (0–~10) | ~0.06–0.09 (**not distinctly higher** than near) | ore-game front-row 6%; our video 7.2% | COMMUNITY | Medium |
-| Near / front-row (~10–25, effective range) | ~0.06–0.08 | ore-game 6%; our video 7.2% | COMMUNITY | Medium-high (two independent measurements converge) |
-| Mid | ~0.016 | ore-game 1.6%; our video ~0.0045 | COMMUNITY | Medium |
-| Mid-far / far | ~0 | ore-game ~0%; our video ~0–0.0045 | COMMUNITY | High |
+| Range band                                 | Proposed core-pellet fraction                    | Basis                                 | Tier      | Confidence                                          |
+| ------------------------------------------ | ------------------------------------------------ | ------------------------------------- | --------- | --------------------------------------------------- |
+| Extreme-near / point-blank (0–~10)         | ~0.06–0.09 (**not distinctly higher** than near) | ore-game front-row 6%; our video 7.2% | COMMUNITY | Medium                                              |
+| Near / front-row (~10–25, effective range) | ~0.06–0.08                                       | ore-game 6%; our video 7.2%           | COMMUNITY | Medium-high (two independent measurements converge) |
+| Mid                                        | ~0.016                                           | ore-game 1.6%; our video ~0.0045      | COMMUNITY | Medium                                              |
+| Mid-far / far                              | ~0                                               | ore-game ~0%; our video ~0–0.0045     | COMMUNITY | High                                                |
 
 **Shape:** steep, effectively a near-only step. ore-game's 6% → 1.6% → 0% across front/mid/back
 is a sharp decay tied to the 0–25 effective-range window, not a gentle continuous falloff.
 Modeling it as a near-heavy step (as our band table does) is well-supported; a smooth
 distance→core curve is not needed and is not what the sources describe.
 
-**Is point-blank distinct from our "near"?** For shotguns, *no* meaningful distinct
+**Is point-blank distinct from our "near"?** For shotguns, _no_ meaningful distinct
 higher-core regime is evidenced. The shotgun's effective range is 0–25; the practice-range
-"front row" *is* that point-blank regime, and it measures ~6%. There is no source showing a
+"front row" _is_ that point-blank regime, and it measures ~6%. There is no source showing a
 separate 0–10 px window with materially higher core rate at base accuracy. The auto-aim 12.5 px
 reticle floor (source 2) is the structural reason: even at perfect accuracy the auto reticle
 never collapses to a point, so a 10-pellet spread cannot concentrate on a small core.
@@ -164,7 +172,7 @@ never collapses to a point, so a 10-pellet spread cannot concentrate on a small 
 
 4. **Small central core (spider-mech boss)?** No source addresses our specific raid boss. But
    the relevant community core measurements (arca 40–90%, tt00771 8/10) were taken on **large
-   parts / arms / big cores**. A *smaller* core is *harder* to hit, so it pushes core rate
+   parts / arms / big cores**. A _smaller_ core is _harder_ to hit, so it pushes core rate
    **down**, not up. This argues our small-core boss should sit at or below the community
    large-boss front-row figure — i.e. against raising 0.072.
 
@@ -172,11 +180,11 @@ never collapses to a point, so a 10-pellet spread cannot concentrate on a small 
 
 ## Recommendation on the 0.072 lower bound
 
-**Do not raise it on this evidence.** The best independent source (ore-game 6%) sits *below*
+**Do not raise it on this evidence.** The best independent source (ore-game 6%) sits _below_
 our 7.2%, the accuracy needed for higher core rates is absent under scope lock, the auto reticle
 floor structurally caps SG cores, and our small central core should if anything be lower than
 the large-boss community numbers. The "lower bound" flag is real (red-core legibility), but the
-external evidence bounds the true value from *above* near ~6–8%, not toward 15–30%. Raising
+external evidence bounds the true value from _above_ near ~6–8%, not toward 15–30%. Raising
 0.072 would likely over-credit SG cores.
 
 ## Implication for the cold-SG problem (hypothesis, not a fix)
@@ -184,20 +192,22 @@ external evidence bounds the true value from *above* near ~6–8%, not toward 15
 If applying 0.072 made SG run cold (per-weapon mean 1.106→0.755), the near core rate is probably
 **not** the culprit, since 0.072 already matches the community front-row figure. More likely
 candidates, for the engine owner to investigate (out of scope here):
+
 - **Non-core pellet (body) hit-rate at near range.** nikke.gg: at range 0–25 a shotgun lands
-  ~all 10 pellets on a large boss *body*. If the model under-credits full-pellet body hits in
+  ~all 10 pellets on a large boss _body_. If the model under-credits full-pellet body hits in
   the near band, SG goes cold independently of core rate.
 - **Band time allocation** — how much of the fight the boss actually spends inside 0–25 vs the
   bands the model assigns.
 - **Mid/far bands** possibly too low relative to ore-game's 1.6% mid.
 
 ## Caveats
+
 - Everything here is COMMUNITY tier; nothing is DATAMINED. No extracted core-rate-vs-distance
   table was found.
 - ore-game's front-row 6% is self-flagged as rough and was measured on the practice-range boss,
   not a raid boss.
 - arca (source 4) could not be fetched directly (403); its formula and 40/90% points are from
   the search index and prior notes, but they are internally consistent with sources 2 and 3.
-- Accuracy-stat effects dominate core rate; all proposed values are pinned to *base accuracy*.
+- Accuracy-stat effects dominate core rate; all proposed values are pinned to _base accuracy_.
   Any in-team accuracy buff (e.g. a Maid Privaty / accuracy-buffer) would raise these materially
   and would need separate handling.

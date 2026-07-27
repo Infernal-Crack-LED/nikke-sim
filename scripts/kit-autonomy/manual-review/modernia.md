@@ -18,17 +18,17 @@ rider all overlap.
 
 ## Disposition of every kit line (judge-confirmed)
 
-| Line | Disposition | Encoding |
-| --- | --- | --- |
-| S1 per-hit 3.05% final ATK rider | FAITHFUL | `hitCount:1` enemy `flatDamage 3.05` — fires 2×/pull (hitsPerShot 2), crit-ON, skill bucket |
-| S1 200-hit Crit Damage ▲14.25% ×5 / 10s | FAITHFUL | `hitCount:200` self `critDamagePct 14.25`, maxStacks 5 |
-| S1 200-hit Max Ammo ▼5.04% ×5 / 10s | FAITHFUL | same block, `maxAmmoPct -5.04` (negative — weapon-state damage, NOT skipped) |
-| S2 FB-enter Hit Rate ▲8.56% / 15s, all allies | FAITHFUL | `fullBurstEnter` allies `hitRatePct 8.56` (NOT burstCast) |
-| S2 200-hit-in-status ATK ▲29.38% / 10s, self | DOCUMENTED-GAP (⚑3) | `hitCount:200` self `atkPct 29.38` + `fbGate:'inFb'` proxy |
-| Burst FB Duration ▲5s, all allies | FAITHFUL | `burstCast` allies `fullBurstExtend 5` (her casts only → 15s vs 10s) |
-| Burst unlimited ammunition 15s, self | FAITHFUL | `burstCast` self `unlimitedAmmo 15` |
-| Burst Destroy Mode 2.24% / 15s, self | DOCUMENTED-GAP (⚑5) | `burstCast` self `extraHitDamagePct 2.24` (per-hit rider → 4.48%/shot, crit-ON) |
-| Burst auto-aim / line-of-sight / parts clause | DOCUMENTED-GAP (unmodeled) | verbatim in `unmodeled.burst` — inert vs partless scope-lock boss |
+| Line                                          | Disposition                | Encoding                                                                                    |
+| --------------------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| S1 per-hit 3.05% final ATK rider              | FAITHFUL                   | `hitCount:1` enemy `flatDamage 3.05` — fires 2×/pull (hitsPerShot 2), crit-ON, skill bucket |
+| S1 200-hit Crit Damage ▲14.25% ×5 / 10s       | FAITHFUL                   | `hitCount:200` self `critDamagePct 14.25`, maxStacks 5                                      |
+| S1 200-hit Max Ammo ▼5.04% ×5 / 10s           | FAITHFUL                   | same block, `maxAmmoPct -5.04` (negative — weapon-state damage, NOT skipped)                |
+| S2 FB-enter Hit Rate ▲8.56% / 15s, all allies | FAITHFUL                   | `fullBurstEnter` allies `hitRatePct 8.56` (NOT burstCast)                                   |
+| S2 200-hit-in-status ATK ▲29.38% / 10s, self  | DOCUMENTED-GAP (⚑3)        | `hitCount:200` self `atkPct 29.38` + `fbGate:'inFb'` proxy                                  |
+| Burst FB Duration ▲5s, all allies             | FAITHFUL                   | `burstCast` allies `fullBurstExtend 5` (her casts only → 15s vs 10s)                        |
+| Burst unlimited ammunition 15s, self          | FAITHFUL                   | `burstCast` self `unlimitedAmmo 15`                                                         |
+| Burst Destroy Mode 2.24% / 15s, self          | DOCUMENTED-GAP (⚑5)        | `burstCast` self `extraHitDamagePct 2.24` (per-hit rider → 4.48%/shot, crit-ON)             |
+| Burst auto-aim / line-of-sight / parts clause | DOCUMENTED-GAP (unmodeled) | verbatim in `unmodeled.burst` — inert vs partless scope-lock boss                           |
 
 ## Cross-family convergence
 

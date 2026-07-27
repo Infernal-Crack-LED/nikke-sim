@@ -68,7 +68,12 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const DS = 'dorothy-serendipity';
@@ -96,7 +101,10 @@ function run(overrides: Record<string, any> = {}) {
 const consol = (evs: SimEvent[]): Damage[] =>
   evs.filter(
     (e): e is Damage =>
-      e.kind === 'damage' && e.slug === DS && e.bucket === 'normal' && Math.abs(e.coreRate - 0.9) < 1e-6,
+      e.kind === 'damage' &&
+      e.slug === DS &&
+      e.bucket === 'normal' &&
+      Math.abs(e.coreRate - 0.9) < 1e-6
   );
 /** dorothy-serendipity's OWN self-buffs (caster = holder = her slot), one stat/value. */
 const selfBuff = (evs: SimEvent[], stat: string, value: number): BuffApply[] =>
@@ -106,7 +114,7 @@ const selfBuff = (evs: SimEvent[], stat: string, value: number): BuffApply[] =>
       e.casterIdx === DS_SLOT &&
       e.targetIdx === DS_SLOT &&
       e.stat === stat &&
-      e.value === value,
+      e.value === value
   );
 const fbStartFrames = (evs: SimEvent[]): number[] =>
   evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
@@ -120,7 +128,7 @@ function consolDmgUpDelta(base: SimEvent[], other: SimEvent[]): number[] {
   const out: number[] = [];
   for (const d of consol(base)) {
     const m = byFrame.get(d.frame);
-    if (m) out.push(Math.round((d.mult.dmgUp - m.mult.dmgUp) * 1e4) / 1e4);
+    if (m) {out.push(Math.round((d.mult.dmgUp - m.mult.dmgUp) * 1e4) / 1e4);}
   }
   return out;
 }
@@ -128,7 +136,10 @@ function consolDmgUpDelta(base: SimEvent[], other: SimEvent[]): number[] {
 // ---- counterfactual / isolation patches -------------------------------------------------------
 /** D1: the whole consolidation mechanic removed. */
 const dsNoConsol = withPatchedOverride(DS, (ov) => {
-  if (!ov.consolidation) throw new Error('dorothy-serendipity consolidation block missing — fixture is stale');
+  if (!ov.consolidation)
+    {throw new Error(
+      'dorothy-serendipity consolidation block missing — fixture is stale'
+    );}
   delete ov.consolidation;
 });
 /** D2: the nearest wrong model — the consolidated bullet carries ONE pellet (1/10 shot), not the
@@ -143,26 +154,42 @@ const dsNoAtkDmg = withPatchedOverride(DS, (ov) => {
 /** D4: the S2 passive Pierce damage removed. */
 const dsNoPierce = withPatchedOverride(DS, (ov) => {
   const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !b.effects.some((e: any) => e.stat === 'pierceDamagePct'));
-  if (ov.skill2.length === before) throw new Error('dorothy-serendipity S2 pierceDamagePct block missing — fixture is stale');
+  ov.skill2 = ov.skill2.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'pierceDamagePct')
+  );
+  if (ov.skill2.length === before)
+    {throw new Error(
+      'dorothy-serendipity S2 pierceDamagePct block missing — fixture is stale'
+    );}
 });
 /** D5: the S2 FB block re-triggered on burstCast (the nearest wrong gate). */
 const dsFbToCast = withPatchedOverride(DS, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
-  if (!b) throw new Error('dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale');
+  if (!b)
+    {throw new Error(
+      'dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale'
+    );}
   b.trigger.kind = 'burstCast';
 });
 /** D6: the S2 FB Hit Rate removed. */
 const dsNoHitRate = withPatchedOverride(DS, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
-  if (!b) throw new Error('dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale');
+  if (!b)
+    {throw new Error(
+      'dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale'
+    );}
   b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
 });
 /** Remove ONE effect from the burst block (D7/D8/D9 isolation). */
 const rmBurstEffect = (stat: string) =>
   withPatchedOverride(DS, (ov) => {
-    const b = ov.burst.find((x: any) => x.effects.some((e: any) => e.stat === stat));
-    if (!b) throw new Error(`dorothy-serendipity burst ${stat} effect missing — fixture is stale`);
+    const b = ov.burst.find((x: any) =>
+      x.effects.some((e: any) => e.stat === stat)
+    );
+    if (!b)
+      {throw new Error(
+        `dorothy-serendipity burst ${stat} effect missing — fixture is stale`
+      );}
     b.effects = b.effects.filter((e: any) => e.stat !== stat);
   });
 const dsNoAtkSpd = rmBurstEffect('attackSpeedPct');
@@ -199,7 +226,9 @@ describe('dorothy-serendipity — kit spec', () => {
       });
     });
     it('carries the two inert S1 lines verbatim in unmodeled (not dropped, not ignored)', () => {
-      expect(shipped.unmodeled.skill1).toContain('Hit 160 pellets: Expands Pierce range 200% 3 rounds');
+      expect(shipped.unmodeled.skill1).toContain(
+        'Hit 160 pellets: Expands Pierce range 200% 3 rounds'
+      );
       expect(shipped.unmodeled.skill1).toContain('Hit Rate ▲ 98.18% 3 rounds');
     });
   });
@@ -221,7 +250,10 @@ describe('dorothy-serendipity — kit spec', () => {
     });
     it('DISCRIMINATING: a 1-of-10-pellet model (pelletFraction 0.1) collapses the bullet to ~20.15', () => {
       for (const d of consol(pelletTenth.events)) {
-        expect(d.atkPct, 'a per-pellet bullet would be ~20.15, far below the full shot').toBeLessThan(100);
+        expect(
+          d.atkPct,
+          'a per-pellet bullet would be ~20.15, far below the full shot'
+        ).toBeLessThan(100);
       }
       expect(consol(pelletTenth.events).length).toBeGreaterThan(0);
     });
@@ -230,7 +262,9 @@ describe('dorothy-serendipity — kit spec', () => {
   describe('D3 — S1 Attack damage ▲72% is live on the consolidated bullet', () => {
     it('every consolidated bullet carries exactly +0.72 dmgUp vs an attackDamagePct=0 run', () => {
       const deltas = consolDmgUpDelta(base.events, noAtkDmg.events);
-      expect(deltas.length, 'no frame-matched consolidated bullets').toBe(consol(base.events).length);
+      expect(deltas.length, 'no frame-matched consolidated bullets').toBe(
+        consol(base.events).length
+      );
       expect([...new Set(deltas)]).toEqual([0.72]);
     });
     it('DISCRIMINATING: zeroing the 72% drops the total', () => {
@@ -244,7 +278,7 @@ describe('dorothy-serendipity — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
-    it('DISCRIMINATING: it feeds the consolidated bullet — removing it drops every bullet\'s dmgUp by 0.5508', () => {
+    it("DISCRIMINATING: it feeds the consolidated bullet — removing it drops every bullet's dmgUp by 0.5508", () => {
       const deltas = consolDmgUpDelta(base.events, noPierce.events);
       expect(deltas.length).toBe(consol(base.events).length);
       expect([...new Set(deltas)]).toEqual([0.5508]);
@@ -261,12 +295,16 @@ describe('dorothy-serendipity — kit spec', () => {
     });
     it('its apply frames are exactly the fullBurstStart frames, for a 10s window', () => {
       expect(applied.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        [...fbStartFrames(base.events)].sort((a, b) => a - b),
+        [...fbStartFrames(base.events)].sort((a, b) => a - b)
       );
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([10 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([10 * FPS]);
     });
     it('DISCRIMINATING: a burstCast trigger would apply only on her own casts', () => {
-      expect(selfBuff(fbToCast.events, 'atkPct', 75.24).length).toBe(dsBurstCount(fbToCast.events));
+      expect(selfBuff(fbToCast.events, 'atkPct', 75.24).length).toBe(
+        dsBurstCount(fbToCast.events)
+      );
     });
   });
 
@@ -274,7 +312,9 @@ describe('dorothy-serendipity — kit spec', () => {
     const applied = selfBuff(base.events, 'hitRatePct', 40.68);
     it('is FB-gated (== fullBurstStart count) for a 10s window', () => {
       expect(applied.length).toBe(fbStartFrames(base.events).length);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([10 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([10 * FPS]);
     });
     it('DISCRIMINATING: removing it drops the total (it lifts the SG core fraction in the FB window)', () => {
       expect(noHitRate.total).toBeLessThan(base.total);
@@ -286,7 +326,9 @@ describe('dorothy-serendipity — kit spec', () => {
     it('applies once per burst cast (6×) for 15s (900f)', () => {
       expect(applied.length).toBe(dsBurstCount(base.events));
       expect(applied.length).toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([15 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([15 * FPS]);
     });
     it('DISCRIMINATING: removing it drops the total', () => {
       expect(selfBuff(noAtkSpd.events, 'attackSpeedPct', 65).length).toBe(0);
@@ -299,7 +341,9 @@ describe('dorothy-serendipity — kit spec', () => {
     it('applies once per burst cast (6×) for 15s (900f)', () => {
       expect(applied.length).toBe(dsBurstCount(base.events));
       expect(applied.length).toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([15 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([15 * FPS]);
     });
     it('DISCRIMINATING: removing it drops the total', () => {
       expect(selfBuff(noBurstAtk.events, 'atkPct', 88.12).length).toBe(0);
@@ -312,7 +356,9 @@ describe('dorothy-serendipity — kit spec', () => {
     it('applies once per burst cast (6×) for 15s (900f)', () => {
       expect(applied.length).toBe(dsBurstCount(base.events));
       expect(applied.length).toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([15 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([15 * FPS]);
     });
     it('DISCRIMINATING: removing it drops the total', () => {
       expect(selfBuff(noPellets.events, 'pelletCountFlat', 5).length).toBe(0);

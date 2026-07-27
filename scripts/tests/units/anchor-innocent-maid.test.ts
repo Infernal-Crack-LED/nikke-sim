@@ -74,8 +74,6 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) =>
-  b.effects.some((e: any) => e.stat === stat);
 const hasHeal = (b: any) => b.effects.some((e: any) => e.kind === 'heal');
 
 /** L2 counterfactual: distributedDamagePct → attackDamagePct (wrong stat). */
@@ -85,12 +83,13 @@ const aimDistributedAsAtkDmg = withPatchedOverride(
     const e = ov.skill1
       .flatMap((b: any) => b.effects.flatMap((x: any) => x.steps ?? [x]))
       .find((x: any) => x.stat === 'distributedDamagePct');
-    if (!e)
+    if (!e) {
       throw new Error(
-        'anchor-innocent-maid S1 distributedDamagePct missing — fixture stale',
+        'anchor-innocent-maid S1 distributedDamagePct missing — fixture stale'
       );
+    }
     e.stat = 'attackDamagePct';
-  },
+  }
 );
 
 /** L4 counterfactual: heal ticks:8 → ticks:1 (single instant heal). */
@@ -98,8 +97,9 @@ const aimHealSingleTick = withPatchedOverride('anchor-innocent-maid', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'heal');
-  if (!e)
+  if (!e) {
     throw new Error('anchor-innocent-maid S1 heal missing — fixture stale');
+  }
   e.ticks = 1;
   delete e.intervalSec;
 });
@@ -109,10 +109,11 @@ const aimS2AtkAsAtkPct = withPatchedOverride('anchor-innocent-maid', (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects.flatMap((x: any) => x.steps ?? [x]))
     .find((x: any) => x.stat === 'casterAtkPct' && x.value === 35.02);
-  if (!e)
+  if (!e) {
     throw new Error(
-      'anchor-innocent-maid S2 casterAtkPct 35.02 missing — fixture stale',
+      'anchor-innocent-maid S2 casterAtkPct 35.02 missing — fixture stale'
     );
+  }
   e.stat = 'atkPct';
 });
 
@@ -123,20 +124,22 @@ const aimBurstAtkAsAtkPct = withPatchedOverride(
     const e = ov.burst
       .flatMap((b: any) => b.effects)
       .find((x: any) => x.stat === 'casterAtkPct' && x.value === 30.09);
-    if (!e)
+    if (!e) {
       throw new Error(
-        'anchor-innocent-maid burst casterAtkPct 30.09 missing — fixture stale',
+        'anchor-innocent-maid burst casterAtkPct 30.09 missing — fixture stale'
       );
+    }
     e.stat = 'atkPct';
-  },
+  }
 );
 
 /** Crown S2 heal removed — isolates anchor-innocent-maid as the only recovery source. */
 const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error('crown S2 heal block missing — fixture stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -174,7 +177,7 @@ const aimBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === AIM &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 
 /** Crown's recovery consumer firings (attackDamagePct 20.99, casterIdx === CROWN).
@@ -187,9 +190,9 @@ const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
           (b) =>
             b.casterIdx === CROWN &&
             b.stat === 'attackDamagePct' &&
-            b.value === 20.99,
+            b.value === 20.99
         )
-        .map((b) => b.frame),
+        .map((b) => b.frame)
     ),
   ].sort((a, b) => a - b);
 
@@ -210,7 +213,7 @@ describe('anchor-innocent-maid — kit spec', () => {
     it('is applied with value 30.4 and 10s duration', () => {
       expect(
         applied.length,
-        'no distributedDamagePct buff was applied',
+        'no distributedDamagePct buff was applied'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -219,21 +222,21 @@ describe('anchor-innocent-maid — kit spec', () => {
 
     it('does NOT appear on FB1 (escalating tier 2 — fires from the 2nd activation)', () => {
       const onFb1 = applied.filter(
-        (b) => fbOrdinal(base.events, b.frame) === 1,
+        (b) => fbOrdinal(base.events, b.frame) === 1
       );
       expect(
         onFb1.map((b) => b.frame),
-        'distributedDamagePct must not fire on FB1',
+        'distributedDamagePct must not fire on FB1'
       ).toEqual([]);
     });
 
     it('DOES appear from FB2 onward', () => {
       const fromFb2 = applied.filter(
-        (b) => fbOrdinal(base.events, b.frame) >= 2,
+        (b) => fbOrdinal(base.events, b.frame) >= 2
       );
       expect(
         fromFb2.length,
-        'distributedDamagePct must fire from FB2 onward',
+        'distributedDamagePct must fire from FB2 onward'
       ).toBeGreaterThan(0);
     });
 
@@ -256,11 +259,11 @@ describe('anchor-innocent-maid — kit spec', () => {
         // The burst heal also fires near this time (at burstCast, just before FB start),
         // so we look at the window [fbFrame, fbFrame + 8*FPS] for the S1 tick train.
         const inWindow = recoveryFrames.filter(
-          (f) => f >= fbFrame && f <= fbFrame + 8 * FPS,
+          (f) => f >= fbFrame && f <= fbFrame + 8 * FPS
         );
         expect(
           inWindow.length,
-          `FB at frame ${fbFrame}: expected 8 S1 heal ticks in the 8s window, got ${inWindow.length}`,
+          `FB at frame ${fbFrame}: expected 8 S1 heal ticks in the 8s window, got ${inWindow.length}`
         ).toBeGreaterThanOrEqual(8);
       }
     });
@@ -272,7 +275,7 @@ describe('anchor-innocent-maid — kit spec', () => {
       // Total over the fight: singleTick should be much less than base.
       expect(
         singleTickFrames.length,
-        `ticks:1 produced ${singleTickFrames.length} firings vs ticks:8 ${recoveryFrames.length}`,
+        `ticks:1 produced ${singleTickFrames.length} firings vs ticks:8 ${recoveryFrames.length}`
       ).toBeLessThan(recoveryFrames.length);
     });
   });
@@ -282,7 +285,7 @@ describe('anchor-innocent-maid — kit spec', () => {
 
     it('is applied with value 10.13 and 10s duration on every FB-end', () => {
       expect(applied.length, 'no hitRatePct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -291,11 +294,11 @@ describe('anchor-innocent-maid — kit spec', () => {
 
     it('appears on FB1-end (escalating tier 1 — fires from the 1st activation)', () => {
       const onFb1End = applied.filter(
-        (b) => fbEndOrdinal(base.events, b.frame) === 1,
+        (b) => fbEndOrdinal(base.events, b.frame) === 1
       );
       expect(
         onFb1End.length,
-        'hitRatePct must fire on FB1-end',
+        'hitRatePct must fire on FB1-end'
       ).toBeGreaterThan(0);
     });
   });
@@ -311,7 +314,7 @@ describe('anchor-innocent-maid — kit spec', () => {
     it('is applied as casterAtkPct (not atkPct) with 10s duration', () => {
       expect(
         applied.length,
-        'no S2 casterAtkPct buff was applied',
+        'no S2 casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -320,21 +323,21 @@ describe('anchor-innocent-maid — kit spec', () => {
 
     it('does NOT appear on FB1-end (escalating tier 2 — fires from the 2nd activation)', () => {
       const onFb1End = applied.filter(
-        (b) => fbEndOrdinal(base.events, b.frame) === 1,
+        (b) => fbEndOrdinal(base.events, b.frame) === 1
       );
       expect(
         onFb1End.map((b) => b.frame),
-        'S2 casterAtkPct must not fire on FB1-end',
+        'S2 casterAtkPct must not fire on FB1-end'
       ).toEqual([]);
     });
 
     it('DOES appear from FB2-end onward', () => {
       const fromFb2End = applied.filter(
-        (b) => fbEndOrdinal(base.events, b.frame) >= 2,
+        (b) => fbEndOrdinal(base.events, b.frame) >= 2
       );
       expect(
         fromFb2End.length,
-        'S2 casterAtkPct must fire from FB2-end onward',
+        'S2 casterAtkPct must fire from FB2-end onward'
       ).toBeGreaterThan(0);
     });
 
@@ -349,7 +352,7 @@ describe('anchor-innocent-maid — kit spec', () => {
     it('is applied with value 40.04 and 15s duration', () => {
       expect(
         applied.length,
-        'no reloadSpeedPct buff was applied',
+        'no reloadSpeedPct buff was applied'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
@@ -358,35 +361,35 @@ describe('anchor-innocent-maid — kit spec', () => {
 
     it('does NOT appear on FB1-end or FB2-end (escalating tier 3)', () => {
       const early = applied.filter(
-        (b) => fbEndOrdinal(base.events, b.frame) <= 2,
+        (b) => fbEndOrdinal(base.events, b.frame) <= 2
       );
       expect(
         early.map((b) => b.frame),
-        'reloadSpeedPct must not fire on FB1-end or FB2-end',
+        'reloadSpeedPct must not fire on FB1-end or FB2-end'
       ).toEqual([]);
     });
 
     it('DOES appear from FB3-end onward', () => {
       const fromFb3End = applied.filter(
-        (b) => fbEndOrdinal(base.events, b.frame) >= 3,
+        (b) => fbEndOrdinal(base.events, b.frame) >= 3
       );
       expect(
         fromFb3End.length,
-        'reloadSpeedPct must fire from FB3-end onward',
+        'reloadSpeedPct must fire from FB3-end onward'
       ).toBeGreaterThan(0);
     });
   });
 
   describe('L9 — burst heal fires a recovery event at the burstCast frame (before FB opens)', () => {
     const aimBursts = bursts(base.events).filter(
-      (b) => b.slug === 'anchor-innocent-maid',
+      (b) => b.slug === 'anchor-innocent-maid'
     );
     const recoveryFrames = crownRecoveryFrames(base.events);
 
     it('anchor-innocent-maid casts her burst', () => {
       expect(
         aimBursts.length,
-        'no burst casts from anchor-innocent-maid',
+        'no burst casts from anchor-innocent-maid'
       ).toBeGreaterThan(0);
     });
 
@@ -395,11 +398,11 @@ describe('anchor-innocent-maid — kit spec', () => {
         // The burst heal fires at the burstCast frame. Crown's recovery consumer should
         // fire at or very near that frame (same frame or within a few frames).
         const nearCast = recoveryFrames.filter(
-          (f) => f >= cast.frame - 2 && f <= cast.frame + 2,
+          (f) => f >= cast.frame - 2 && f <= cast.frame + 2
         );
         expect(
           nearCast.length,
-          `burst at frame ${cast.frame}: no recovery firing near the burstCast frame`,
+          `burst at frame ${cast.frame}: no recovery firing near the burstCast frame`
         ).toBeGreaterThan(0);
       }
     });
@@ -412,13 +415,13 @@ describe('anchor-innocent-maid — kit spec', () => {
     const burstValue = Math.min(...allCasterAtk.map((b) => b.value));
     const applied = allCasterAtk.filter((b) => b.value === burstValue);
     const aimBursts = bursts(base.events).filter(
-      (b) => b.slug === 'anchor-innocent-maid',
+      (b) => b.slug === 'anchor-innocent-maid'
     );
 
     it('is applied as casterAtkPct (not atkPct) with 10s duration', () => {
       expect(
         applied.length,
-        'no burst casterAtkPct buff was applied',
+        'no burst casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);

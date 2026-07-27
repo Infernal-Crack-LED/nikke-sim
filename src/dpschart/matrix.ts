@@ -29,7 +29,11 @@ import { NOOP_B1, NOOP_B2, NOOP_B3 } from './noop.js';
 // unit.element beats … (mirror of BEATS in engine/sim.ts). For "ele weak" the boss
 // is set to the element the TESTED unit beats, so only the tested unit is advantaged.
 const BEATS: Record<Element, Element> = {
-  Electric: 'Water', Iron: 'Electric', Wind: 'Iron', Fire: 'Wind', Water: 'Fire',
+  Electric: 'Water',
+  Iron: 'Electric',
+  Wind: 'Iron',
+  Fire: 'Wind',
+  Water: 'Fire',
 };
 
 // Fixed control-unit slugs.
@@ -44,7 +48,8 @@ const FILLER_B3 = 'snow-white';
 
 // ---- axes -----------------------------------------------------------------
 
-export type FrameworkId = 'standard' | 'standard-hc' | 'anis' | 'anis-hc' | 'solo';
+export type FrameworkId =
+  'standard' | 'standard-hc' | 'anis' | 'anis-hc' | 'solo';
 export type EleAdvId = 'neutral' | 'eleweak';
 export type CoreId = 'c0' | 'c50' | 'c100';
 export type InvestId = 'scope' | '8of12' | '12of12';
@@ -52,31 +57,52 @@ export type InvestId = 'scope' | '8of12' | '12of12';
 export interface Framework {
   id: FrameworkId;
   label: string;
-  b1: string;         // burst-1 anchor (a no-op synthetic in the Solo framework)
-  mast: boolean;      // include Mast:Romantic Maid as a sync-bursting B2
-  solo?: boolean;     // synthetic no-op controls instead of named supports
-  blurb: string;      // one-line explainer for the UI / bot
+  b1: string; // burst-1 anchor (a no-op synthetic in the Solo framework)
+  mast: boolean; // include Mast:Romantic Maid as a sync-bursting B2
+  solo?: boolean; // synthetic no-op controls instead of named supports
+  blurb: string; // one-line explainer for the UI / bot
 }
 export const FRAMEWORKS: Record<FrameworkId, Framework> = {
   standard: {
-    id: 'standard', label: 'Standard', b1: 'little-mermaid', mast: false,
-    blurb: 'Little Mermaid (B1) + Crown (B2) + Helm (B3) supporting the tested carry — a lean four-unit control, no Mast. The carry and Helm alternate the Burst-3 cast.',
+    id: 'standard',
+    label: 'Standard',
+    b1: 'little-mermaid',
+    mast: false,
+    blurb:
+      'Little Mermaid (B1) + Crown (B2) + Helm (B3) supporting the tested carry — a lean four-unit control, no Mast. The carry and Helm alternate the Burst-3 cast.',
   },
   'standard-hc': {
-    id: 'standard-hc', label: 'Standard Hyper Carry', b1: 'little-mermaid', mast: true,
-    blurb: 'Standard, plus Mast: Romantic Maid (B2) bursting alongside the carry to hyper-buff it — she skips ~1 in 4 of the carry’s bursts to her Hangover stun.',
+    id: 'standard-hc',
+    label: 'Standard Hyper Carry',
+    b1: 'little-mermaid',
+    mast: true,
+    blurb:
+      'Standard, plus Mast: Romantic Maid (B2) bursting alongside the carry to hyper-buff it — she skips ~1 in 4 of the carry’s bursts to her Hangover stun.',
   },
   anis: {
-    id: 'anis', label: 'Anis Standard', b1: 'anis-star', mast: false,
-    blurb: 'Standard with Anis: Star (B1) anchoring in place of Little Mermaid — no Mast.',
+    id: 'anis',
+    label: 'Anis Standard',
+    b1: 'anis-star',
+    mast: false,
+    blurb:
+      'Standard with Anis: Star (B1) anchoring in place of Little Mermaid — no Mast.',
   },
   'anis-hc': {
-    id: 'anis-hc', label: 'Anis Standard Hyper Carry', b1: 'anis-star', mast: true,
-    blurb: 'Anis: Star anchor plus Mast: Romantic Maid hyper-carry support (same Hangover skip as Standard Hyper Carry).',
+    id: 'anis-hc',
+    label: 'Anis Standard Hyper Carry',
+    b1: 'anis-star',
+    mast: true,
+    blurb:
+      'Anis: Star anchor plus Mast: Romantic Maid hyper-carry support (same Hangover skip as Standard Hyper Carry).',
   },
   solo: {
-    id: 'solo', label: 'Solo', b1: NOOP_B1, mast: false, solo: true,
-    blurb: 'The tested carry in total isolation: three synthetic no-op units (AR B1, SR B2, RL B3) that deal zero damage and give zero buffs — they only generate weapon-default burst gauge and fill chain stages. With the framework’s 7-second burst CDR the carry bursts every other Full Burst, alternating with the no-op B3.',
+    id: 'solo',
+    label: 'Solo',
+    b1: NOOP_B1,
+    mast: false,
+    solo: true,
+    blurb:
+      'The tested carry in total isolation: three synthetic no-op units (AR B1, SR B2, RL B3) that deal zero damage and give zero buffs — they only generate weapon-default burst gauge and fill chain stages. With the framework’s 7-second burst CDR the carry bursts every other Full Burst, alternating with the no-op B3.',
   },
 };
 
@@ -85,7 +111,10 @@ export const ELEADVS: Record<EleAdvId, { id: EleAdvId; label: string }> = {
   eleweak: { id: 'eleweak', label: 'Ele Weak' },
 };
 
-export const CORES: Record<CoreId, { id: CoreId; label: string; rate: number }> = {
+export const CORES: Record<
+  CoreId,
+  { id: CoreId; label: string; rate: number }
+> = {
   c0: { id: 'c0', label: 'No Core', rate: 0 },
   c50: { id: 'c50', label: 'Core 50', rate: 0.5 },
   c100: { id: 'c100', label: 'Core 100', rate: 1 },
@@ -98,7 +127,13 @@ export const INVESTS: Record<InvestId, { id: InvestId; label: string }> = {
 };
 
 // Solo leads (owner 2026-07-16: the isolation control is the primary B3 ranking basis).
-export const FRAMEWORK_IDS: FrameworkId[] = ['solo', 'standard', 'standard-hc', 'anis', 'anis-hc'];
+export const FRAMEWORK_IDS: FrameworkId[] = [
+  'solo',
+  'standard',
+  'standard-hc',
+  'anis',
+  'anis-hc',
+];
 export const ELEADV_IDS: EleAdvId[] = ['neutral', 'eleweak'];
 export const CORE_IDS: CoreId[] = ['c0', 'c50', 'c100'];
 export const INVEST_IDS: InvestId[] = ['scope', '8of12', '12of12'];
@@ -110,13 +145,19 @@ export interface Cell {
   invest: InvestId;
 }
 
-export const cellId = (c: Cell): string => `${c.framework}.${c.eleadv}.${c.core}.${c.invest}`;
+export const cellId = (c: Cell): string =>
+  `${c.framework}.${c.eleadv}.${c.core}.${c.invest}`;
 export const cellLabel = (c: Cell): string =>
   `${FRAMEWORKS[c.framework].label} · ${ELEADVS[c.eleadv].label} · ${CORES[c.core].label} · ${INVESTS[c.invest].label}`;
 
 export function parseCellId(id: string): Cell | null {
   const [framework, eleadv, core, invest] = id.split('.');
-  if (!(framework in FRAMEWORKS) || !(eleadv in ELEADVS) || !(core in CORES) || !(invest in INVESTS)) {
+  if (
+    !(framework in FRAMEWORKS) ||
+    !(eleadv in ELEADVS) ||
+    !(core in CORES) ||
+    !(invest in INVESTS)
+  ) {
     return null;
   }
   return { framework, eleadv, core, invest } as Cell;
@@ -125,39 +166,85 @@ export function parseCellId(id: string): Cell | null {
 // all cells (frameworks × eleadv × core × invest), deterministic order
 export const CELLS: Cell[] = FRAMEWORK_IDS.flatMap((framework) =>
   ELEADV_IDS.flatMap((eleadv) =>
-    CORE_IDS.flatMap((core) => INVEST_IDS.map((invest) => ({ framework, eleadv, core, invest }))),
-  ),
+    CORE_IDS.flatMap((core) =>
+      INVEST_IDS.map((invest) => ({ framework, eleadv, core, invest }))
+    )
+  )
 );
 
 // ---- headliners (named groups the bot can pull) ---------------------------
 
 export interface Headliner {
-  slug: string;           // stable bot handle
-  name: string;           // display title
+  slug: string; // stable bot handle
+  name: string; // display title
   framework: FrameworkId;
   eleadv: EleAdvId;
   invest: InvestId;
-  cells: Cell[];          // the 3 core variants, in {0,50,100} order
+  cells: Cell[]; // the 3 core variants, in {0,50,100} order
 }
 const headliner = (
-  slug: string, name: string, framework: FrameworkId, eleadv: EleAdvId, invest: InvestId,
+  slug: string,
+  name: string,
+  framework: FrameworkId,
+  eleadv: EleAdvId,
+  invest: InvestId
 ): Headliner => ({
-  slug, name, framework, eleadv, invest,
+  slug,
+  name,
+  framework,
+  eleadv,
+  invest,
   cells: CORE_IDS.map((core) => ({ framework, eleadv, core, invest })),
 });
 // Team-framework headliners (named-support control comps, Prydwen-style).
 export const HEADLINERS: Headliner[] = [
-  headliner('standard-scope-lock', 'Standard Scope Lock', 'standard', 'neutral', 'scope'),
-  headliner('hyper-carry-8-12-ele-adv', 'Hyper Carry 8/12 Elemental Advantage', 'standard-hc', 'eleweak', '8of12'),
-  headliner('anis-hyper-carry-8-12-ele-adv', 'Anis Hyper Carry 8/12 Elemental Advantage', 'anis-hc', 'eleweak', '8of12'),
+  headliner(
+    'standard-scope-lock',
+    'Standard Scope Lock',
+    'standard',
+    'neutral',
+    'scope'
+  ),
+  headliner(
+    'hyper-carry-8-12-ele-adv',
+    'Hyper Carry 8/12 Elemental Advantage',
+    'standard-hc',
+    'eleweak',
+    '8of12'
+  ),
+  headliner(
+    'anis-hyper-carry-8-12-ele-adv',
+    'Anis Hyper Carry 8/12 Elemental Advantage',
+    'anis-hc',
+    'eleweak',
+    '8of12'
+  ),
 ];
 // Solo-framework headliners (the isolation control across the three investment tiers;
 // owner 2026-07-16). Scope Lock is neutral (its measured validation basis); the invested
 // tiers assume elemental advantage. Each group is the 3 core-exposure variants (0/50/100).
 export const SOLO_HEADLINERS: Headliner[] = [
-  headliner('solo-scope-lock-neutral', 'Scope Lock Neutral', 'solo', 'neutral', 'scope'),
-  headliner('solo-8-12-ele-adv', '8/12 Elemental Advantage', 'solo', 'eleweak', '8of12'),
-  headliner('solo-12-12-ele-adv', '12/12 Elemental Advantage', 'solo', 'eleweak', '12of12'),
+  headliner(
+    'solo-scope-lock-neutral',
+    'Scope Lock Neutral',
+    'solo',
+    'neutral',
+    'scope'
+  ),
+  headliner(
+    'solo-8-12-ele-adv',
+    '8/12 Elemental Advantage',
+    'solo',
+    'eleweak',
+    '8of12'
+  ),
+  headliner(
+    'solo-12-12-ele-adv',
+    '12/12 Elemental Advantage',
+    'solo',
+    'eleweak',
+    '12of12'
+  ),
 ];
 // Bot/artifact handle: every named group, both modes.
 export const ALL_HEADLINERS: Headliner[] = [...SOLO_HEADLINERS, ...HEADLINERS];
@@ -195,11 +282,12 @@ interface TierOpts {
 function tierLoadout(
   invest: InvestId,
   role: 'tested' | 'control',
-  optimizedTestedLines?: LineSelection[],
+  optimizedTestedLines?: LineSelection[]
 ): TierOpts {
   const cube = TIER_CUBE[invest];
-  if (invest === 'scope') return { cube, ol: 'base5', doll: false, lines: [] };
-  if (invest === '8of12') return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };
+  if (invest === 'scope') {return { cube, ol: 'base5', doll: false, lines: [] };}
+  if (invest === '8of12')
+    {return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };}
   // 12of12
   const extra =
     role === 'tested'
@@ -246,7 +334,7 @@ export const CHART_PROFILES: Record<string, Partial<UnitOptions>> = {
 export function assembleTeam(
   cell: Cell,
   tested: TestedUnit,
-  optimizedTestedLines?: LineSelection[],
+  optimizedTestedLines?: LineSelection[]
 ): AssembledTeam {
   const fw = FRAMEWORKS[cell.framework];
   const controlB3 = tested.slug === HELM ? FILLER_B3 : HELM;
@@ -263,8 +351,12 @@ export function assembleTeam(
     const isTested = i === testedIndex;
     // no-op controls: zero damage / zero skills — loadout is inert, only the
     // framework CDR matters. Skip cubes/lines/gear entirely.
-    if (fw.solo && !isTested) return { burstCdrSec: SOLO_BURST_CDR_SEC };
-    const t = tierLoadout(cell.invest, isTested ? 'tested' : 'control', optimizedTestedLines);
+    if (fw.solo && !isTested) {return { burstCdrSec: SOLO_BURST_CDR_SEC };}
+    const t = tierLoadout(
+      cell.invest,
+      isTested ? 'tested' : 'control',
+      optimizedTestedLines
+    );
     const opt: UnitOptions = {
       cube: t.cube,
       ol: t.ol,
@@ -282,8 +374,8 @@ export function assembleTeam(
       // consecutive stage-3 casts with an 8s rotation stall).
       opt.burstGate = 'everyOther';
     }
-    if (slug === MAST) opt.burstGate = 'syncWithFocus';
-    if (isTested) Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});
+    if (slug === MAST) {opt.burstGate = 'syncWithFocus';}
+    if (isTested) {Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});}
     return opt;
   });
 

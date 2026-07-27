@@ -6,9 +6,20 @@
   "method": "ffmpeg native-res crops (60fps source, 2622x1206). Classified each Jill popup by NIKKE colour convention: red 'CORE HIT' text = core; orange = crit non-core; white = normal non-core. Shots counted via the on-screen AMMO counter (center '00X' box, decrements once per shot) and the in-frame Full Burst countdown timer to locate bursts precisely. Boss band from the engine BOSS_RANGE_SCRIPT (video_s = fight_s + 7): mid 7-40s, near 40-77s, far 77-113s, midfar 113-151s, near 151-183s.",
   "popup_value_decode_control_comp": {
     "note": "Persistent LM/Crown/Helm team buffs inflate Jill's non-burst values above solo, but the multiplier structure is exact.",
-    "non_burst_near": {"white_normal_noncore": 182869, "orange_crit_noncore": 274303, "red_CORE_HIT": 365738, "check": "274303 = 182869 x1.5 (crit); 365738 = 182869 x2.0 (core) -> classification confirmed"},
-    "dot_tick": {"note": "bottom-center recurring popup (~379905 / 404381 near-band, 340764 mid-band, 1011368 in Helm-FB, 1822868 in Jill-burst) = Acid S2 DoT tick, NOT a bullet. Excluded from bullet counts.", "position": "bottom-center, ~1/s cadence"},
-    "jill_own_burst_near": {"red_CORE_HIT": [1649753, 1979704], "note": "her burst converts normals to True Damage + adds +75% AD, so burst bullet values ~9x the non-burst white; both red values carry a crit arrow (crit-core). No white/orange BULLET popups seen in her burst window."}
+    "non_burst_near": {
+      "white_normal_noncore": 182869,
+      "orange_crit_noncore": 274303,
+      "red_CORE_HIT": 365738,
+      "check": "274303 = 182869 x1.5 (crit); 365738 = 182869 x2.0 (core) -> classification confirmed"
+    },
+    "dot_tick": {
+      "note": "bottom-center recurring popup (~379905 / 404381 near-band, 340764 mid-band, 1011368 in Helm-FB, 1822868 in Jill-burst) = Acid S2 DoT tick, NOT a bullet. Excluded from bullet counts.",
+      "position": "bottom-center, ~1/s cadence"
+    },
+    "jill_own_burst_near": {
+      "red_CORE_HIT": [1649753, 1979704],
+      "note": "her burst converts normals to True Damage + adds +75% AD, so burst bullet values ~9x the non-burst white; both red values carry a crit arrow (crit-core). No white/orange BULLET popups seen in her burst window."
+    }
   },
   "burst_ownership": {
     "note": "Two Burst-III units (Jill + Helm) alternate the Full Burst cast. Jill's OWN burst is identifiable by (a) force-reload (000 ammo + RELOADING at cast) and (b) popup magnitude ~1.6-2.0M cores. Helm-burst FBs show Jill firing at ~0.5-1.0M (only team +FB, no Jill +75%AD/True-Dmg/Hit-Rate).",
@@ -24,7 +35,7 @@
         "shots_sampled": 15,
         "shot_count_basis": "ammo ticks: 002->001->[reload]009..001->[reload]009..006",
         "core_red_CORE_HIT": "~14-15 of 15 (red CORE HIT present in essentially every frame; NO white/orange BULLET popups observed)",
-        "core_fraction_estimate": 0.90,
+        "core_fraction_estimate": 0.9,
         "core_fraction_range": [0.85, 1.0]
       },
       "out_burst": {
@@ -33,7 +44,7 @@
         "boss_position": "centered, near band, popups readable; ends exactly as FB5 banner appears",
         "shots_sampled": 10,
         "core_red_CORE_HIT": "~2 of ~10 (365738 clearly at 70.4s; one possible ~389301 near 72s). Dominant popup = white 182869; crits = orange 274303.",
-        "core_fraction_estimate": 0.20,
+        "core_fraction_estimate": 0.2,
         "core_fraction_range": [0.15, 0.25]
       },
       "delta_fraction": "+0.70 (approx 0.20 -> 0.90; ~4-5x)",
@@ -47,7 +58,7 @@
         "shots_sampled": 11,
         "core_red_CORE_HIT": "mixed: red cores (811377 / 973653) AND white non-core 486826 both frequent -> ~4-5 of ~11",
         "core_fraction_estimate": 0.42,
-        "core_fraction_range": [0.35, 0.50],
+        "core_fraction_range": [0.35, 0.5],
         "significance": "Full Burst is ON here just like FB3, but Jill's own burst (incl. Hit Rate) is OFF. Core fraction is only ~0.4 -- FAR below Jill's own-burst ~0.9. This ISOLATES the lift to Jill's burst, NOT generic Full Burst. (Its being a bit above the plain non-burst ~0.20 may be residual range difference within 'near' or Helm-buff/FB, not cleanly resolved.)"
       }
     },

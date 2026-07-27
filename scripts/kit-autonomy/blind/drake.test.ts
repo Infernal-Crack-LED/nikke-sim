@@ -54,16 +54,17 @@ const near = (a: number, b: number) => Math.abs(a - b) < 0.005;
 // blocks[]. Both shapes are handled so a counterfactual can never silently become a no-op.
 const slotBlocks = (ov: any, slot: string): any[] => {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 
 const setSlotBlocks = (ov: any, slot: string, blocks: any[]): void => {
-  if (Array.isArray(ov?.[slot])) ov[slot] = blocks;
-  else if (ov?.[slot]) ov[slot].blocks = blocks;
+  if (Array.isArray(ov?.[slot])) {ov[slot] = blocks;}
+  else if (ov?.[slot]) {ov[slot].blocks = blocks;}
 };
 
-const hasEffect = (b: any, pred: (e: any) => boolean) => (b.effects ?? []).some(pred);
+const hasEffect = (b: any, pred: (e: any) => boolean) =>
+  (b.effects ?? []).some(pred);
 
 const isBuff = (stat: string, value: number) => (e: any) =>
   e.kind === 'buff' && e.stat === stat && near(e.value, value);
@@ -75,7 +76,8 @@ const isFlat = (value: number) => (e: any) =>
 
 const retarget = (slot: string, pred: (e: any) => boolean, target: any) =>
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of slotBlocks(ov, slot)) if (hasEffect(b, pred)) b.target = target;
+    for (const b of slotBlocks(ov, slot))
+      {if (hasEffect(b, pred)) {b.target = target;}}
   });
 
 const dropEffects = (specs: { slot: string; pred: (e: any) => boolean }[]) =>
@@ -87,12 +89,15 @@ const dropEffects = (specs: { slot: string; pred: (e: any) => boolean }[]) =>
       setSlotBlocks(
         ov,
         s.slot,
-        slotBlocks(ov, s.slot).filter((b: any) => (b.effects ?? []).length > 0),
+        slotBlocks(ov, s.slot).filter((b: any) => (b.effects ?? []).length > 0)
       );
     }
   });
 
-const withOv = (ov: any) => ({ ...controlComp(SLUG, true), overrides: { [SLUG]: ov } });
+const withOv = (ov: any) => ({
+  ...controlComp(SLUG, true),
+  overrides: { [SLUG]: ov },
+});
 
 // --- event readers ---
 
@@ -100,7 +105,7 @@ const T = (r: Run) => totals(r.res);
 
 const buffApplies = (r: Run, stat: string, value: number) =>
   (r.events as any[]).filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value),
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value)
   );
 
 const recipients = (evs: any[]) => new Set(evs.map((e) => e.targetSlug));
@@ -110,40 +115,55 @@ const dmgFrom = (r: Run, slot: string) =>
 
 const shots = (r: Run) => (r.events as any[]).filter((e) => e.kind === 'shot');
 
-const fbStarts = (r: Run) => (r.events as any[]).filter((e) => e.kind === 'fullBurstStart');
+const fbStarts = (r: Run) =>
+  (r.events as any[]).filter((e) => e.kind === 'fullBurstStart');
 
 // --- hoisted runs (each is a full 180 s sim) ---
 
 const base = run(controlComp(SLUG, true));
-const s1SelfScope = run(withOv(retarget('skill1', isBuff('atkPct', 11.85), { kind: 'self' })));
-const s1SgToAll = run(withOv(retarget('skill1', isBuff('atkPct', 63.88), { kind: 'allies' })));
-const s1NoTeamAtk = run(withOv(dropEffects([{ slot: 'skill1', pred: isBuff('atkPct', 11.85) }])));
+const s1SelfScope = run(
+  withOv(retarget('skill1', isBuff('atkPct', 11.85), { kind: 'self' }))
+);
+const s1SgToAll = run(
+  withOv(retarget('skill1', isBuff('atkPct', 63.88), { kind: 'allies' }))
+);
+const s1NoTeamAtk = run(
+  withOv(dropEffects([{ slot: 'skill1', pred: isBuff('atkPct', 11.85) }]))
+);
 const s1NoHitRate = run(
-  withOv(dropEffects([{ slot: 'skill1', pred: isBuff('hitRatePct', 20.09) }])),
+  withOv(dropEffects([{ slot: 'skill1', pred: isBuff('hitRatePct', 20.09) }]))
 );
 const noAmmoBuffs = run(
   withOv(
     dropEffects([
       { slot: 'skill1', pred: isBuff('maxAmmoPct', 50.14) },
       { slot: 'burst', pred: isBuff('maxAmmoPct', 72.18) },
-    ]),
-  ),
+    ])
+  )
 );
-const s2OnlyTen = run(withOv(dropEffects([{ slot: 'skill2', pred: isFlat(201.6) }])));
+const s2OnlyTen = run(
+  withOv(dropEffects([{ slot: 'skill2', pred: isFlat(201.6) }]))
+);
 const s2None = run(
   withOv(
     dropEffects([
       { slot: 'skill2', pred: isFlat(201.6) },
       { slot: 'skill2', pred: isFlat(98.55) },
-    ]),
-  ),
+    ])
+  )
 );
-const noNuke = run(withOv(dropEffects([{ slot: 'burst', pred: isFlat(3009.6) }])));
+const noNuke = run(
+  withOv(dropEffects([{ slot: 'burst', pred: isFlat(3009.6) }]))
+);
 const burstSelfToAllies = run(
-  withOv(retarget('burst', isBuff('attackDamagePct', 31.68), { kind: 'allies' })),
+  withOv(
+    retarget('burst', isBuff('attackDamagePct', 31.68), { kind: 'allies' })
+  )
 );
 const noAtkDmg = run(
-  withOv(dropEffects([{ slot: 'burst', pred: isBuff('attackDamagePct', 31.68) }])),
+  withOv(
+    dropEffects([{ slot: 'burst', pred: isBuff('attackDamagePct', 31.68) }])
+  )
 );
 
 const roster = Object.keys(T(base));
@@ -153,7 +173,9 @@ describe('drake -- fixture non-vacuity', () => {
   it('actually reaches Full Burst and drake actually casts her own burst', () => {
     // Without this, every fullBurstEnter / burstCast assertion below would pass vacuously.
     expect(fbStarts(base).length).toBeGreaterThanOrEqual(2);
-    expect(buffApplies(base, 'attackDamagePct', 31.68).length).toBeGreaterThanOrEqual(2);
+    expect(
+      buffApplies(base, 'attackDamagePct', 31.68).length
+    ).toBeGreaterThanOrEqual(2);
     expect(unitOf(base.res, SLUG).totalDamage).toBe(T(base)[SLUG]);
     expect(teammates.length).toBe(3);
   });
@@ -188,7 +210,9 @@ describe('drake skill1 -- Full Burst team branch (all allies)', () => {
       expect(T(base)[s]).toBeGreaterThan(T(s1NoTeamAtk)[s]);
       expect(T(base)[s]).toBeGreaterThan(T(s1SelfScope)[s]);
     }
-    expect(recipients(buffApplies(s1SelfScope, 'atkPct', 11.85))).toEqual(new Set([SLUG]));
+    expect(recipients(buffApplies(s1SelfScope, 'atkPct', 11.85))).toEqual(
+      new Set([SLUG])
+    );
   });
 
   it('Hit Rate 20.09% lifts damage through the core-hit path', () => {
@@ -208,13 +232,15 @@ describe('drake skill1 -- Shotgun-only branch', () => {
     // as plain allies) makes these two sets equal.
     expect(sgAtk.size).toBeLessThan(all.size);
     expect(sgAmmo.size).toBeLessThan(all.size);
-    for (const s of sgAtk) expect(all.has(s as string)).toBe(true);
+    for (const s of sgAtk) {expect(all.has(s as string)).toBe(true);}
   });
 
   it('the Shotgun restriction is real, not an engine no-op', () => {
     // Non-vacuity: retargeted to plain allies the SAME effect DOES reach everyone, so the base
     // run withholding it from liter/crown/helm is an authored scope decision.
-    expect(recipients(buffApplies(s1SgToAll, 'atkPct', 63.88))).toEqual(new Set(roster));
+    expect(recipients(buffApplies(s1SgToAll, 'atkPct', 63.88))).toEqual(
+      new Set(roster)
+    );
   });
 
   it('Max Ammunition is damage: the ammo buffs buy drake more shots', () => {
@@ -265,7 +291,8 @@ describe('drake skill2 -- normal-attack counters', () => {
 
 describe('drake burst', () => {
   const nBursts = buffApplies(base, 'attackDamagePct', 31.68).length;
-  const burstDmgDelta = dmgFrom(base, 'burst').length - dmgFrom(noNuke, 'burst').length;
+  const burstDmgDelta =
+    dmgFrom(base, 'burst').length - dmgFrom(noNuke, 'burst').length;
 
   it('the 3009.6% hit lands exactly once per drake burst cast', () => {
     expect(nBursts).toBeGreaterThanOrEqual(2);
@@ -275,7 +302,8 @@ describe('drake burst', () => {
   });
 
   it('the burst hit resolves OUTSIDE the Full Burst window', () => {
-    const outFb = (r: Run) => dmgFrom(r, 'burst').filter((e: any) => e.inFullBurst === false).length;
+    const outFb = (r: Run) =>
+      dmgFrom(r, 'burst').filter((e: any) => e.inFullBurst === false).length;
     // A burst cast lands before the FB window opens, so every added hit must be FB-exempt by
     // timing. Nearest-wrong: a hit re-keyed into the FB window collects the +50% major.
     expect(outFb(base) - outFb(noNuke)).toBe(burstDmgDelta);
@@ -293,13 +321,15 @@ describe('drake burst', () => {
     }
     // Non-vacuity: retargeted to allies the same buff DOES reach the team, so the base run
     // keeping it on drake is an authored scope decision, not an inert stat.
-    expect(recipients(buffApplies(burstSelfToAllies, 'attackDamagePct', 31.68)).size).toBeGreaterThan(1);
+    expect(
+      recipients(buffApplies(burstSelfToAllies, 'attackDamagePct', 31.68)).size
+    ).toBeGreaterThan(1);
   });
 
   it('Attack Damage 31.68% moves drake and NOTHING else', () => {
     expect(T(base)[SLUG]).toBeGreaterThan(T(noAtkDmg)[SLUG]);
     // Inertness: a self buff must leave every teammate byte-identical.
-    for (const s of teammates) expect(T(noAtkDmg)[s]).toBe(T(base)[s]);
+    for (const s of teammates) {expect(T(noAtkDmg)[s]).toBe(T(base)[s]);}
   });
 
   it.skip('hits all enemies within attack range -- AoE spread unobservable on a single boss', () => {

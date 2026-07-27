@@ -63,7 +63,9 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {
+    return [];
+  }
   // tolerate both authored shapes: slot -> Block[] and slot -> { blocks: Block[] }
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 }
@@ -79,8 +81,11 @@ function effs(b: any): any[] {
 }
 function pairs(ov: any): Array<{ block: any; effect: any }> {
   const out: Array<{ block: any; effect: any }> = [];
-  for (const b of allBlocks(ov))
-    for (const e of effs(b)) out.push({ block: b, effect: e });
+  for (const b of allBlocks(ov)) {
+    for (const e of effs(b)) {
+      out.push({ block: b, effect: e });
+    }
+  }
   return out;
 }
 function unmodeledText(ov: any): string {
@@ -104,7 +109,9 @@ function runWith(patch?: any) {
       onEvent: (ev: SimEvent) => events.push(ev as Ev),
     },
   };
-  if (patch) opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
+  if (patch) {
+    opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
+  }
   const res = runComp(opts);
   const tot = totals(res);
   return { res, events, tot, self: tot[SLUG] };
@@ -112,14 +119,14 @@ function runWith(patch?: any) {
 const applies = (events: Ev[]) => events.filter((e) => e.kind === 'buffApply');
 function rhIdxOf(events: Ev[]): number {
   const e = applies(events).find(
-    (b) => b.targetSlug === SLUG && typeof b.targetIdx === 'number',
+    (b) => b.targetSlug === SLUG && typeof b.targetIdx === 'number'
   );
   return e ? (e.targetIdx as number) : -1;
 }
 function selfApplies(events: Ev[]) {
   const i = rhIdxOf(events);
   return applies(events).filter(
-    (b) => b.targetSlug === SLUG && b.casterIdx === i,
+    (b) => b.targetSlug === SLUG && b.casterIdx === i
   );
 }
 
@@ -128,7 +135,7 @@ const BASE = runWith();
 const RH = rhIdxOf(BASE.events);
 const SELF = selfApplies(BASE.events);
 const RED_WOLF_CASTS = SELF.filter(
-  (b) => b.stat === 'atkPct' && near(b.value, 71.42),
+  (b) => b.stat === 'atkPct' && near(b.value, 71.42)
 ).length;
 const FB_STARTS = BASE.events.filter((e) => e.kind === 'fullBurstStart').length;
 const MATES = Object.keys(BASE.tot).filter((s) => s !== SLUG);
@@ -140,10 +147,11 @@ const NO_STACK_SPEED = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 3.81)
-      )
+      ) {
         effect.value = 0;
+      }
     }
-  }),
+  })
 );
 const NO_STACKING = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
@@ -152,10 +160,11 @@ const NO_STACKING = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 3.81)
-      )
+      ) {
         effect.maxStacks = 1;
+      }
     }
-  }),
+  })
 );
 const NO_CHARGE_DMG = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
@@ -165,7 +174,7 @@ const NO_CHARGE_DMG = runWith(
         delete effect.perResource;
       }
     }
-  }),
+  })
 );
 const NO_RED_WOLF_ATK = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
@@ -174,28 +183,33 @@ const NO_RED_WOLF_ATK = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'atkPct' &&
         near(effect.value, 71.42)
-      )
+      ) {
         effect.value = 0;
+      }
     }
-  }),
+  })
 );
 const NO_SWAP_DMG = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const { effect } of pairs(ov))
-      if (effect.kind === 'weaponSwap') effect.damagePct = 0;
-  }),
+    for (const { effect } of pairs(ov)) {
+      if (effect.kind === 'weaponSwap') {
+        effect.damagePct = 0;
+      }
+    }
+  })
 );
-const NO_BURST_SPEED = runWith(
+runWith(
   withPatchedOverride(SLUG, (ov: any) => {
     for (const { effect } of pairs(ov)) {
       if (
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 100.8)
-      )
+      ) {
         effect.value = 0;
+      }
     }
-  }),
+  })
 );
 
 // ================================================================= tests
@@ -203,7 +217,7 @@ describe('red-hood — fixture sanity / non-vacuity', () => {
   it('the control comp resolves her and she deals damage', () => {
     expect(
       RH,
-      'no buffApply targeted red-hood; her slot index is unresolvable',
+      'no buffApply targeted red-hood; her slot index is unresolvable'
     ).toBeGreaterThanOrEqual(0);
     expect(Object.keys(BASE.tot)).toContain(SLUG);
     expect(unitOf(BASE.res, SLUG).totalDamage).toBeGreaterThan(0);
@@ -215,7 +229,7 @@ describe('red-hood — fixture sanity / non-vacuity', () => {
     // (fires on every team full burst, incl. the ones helm closes).
     expect(
       RED_WOLF_CASTS,
-      'Red Wolf branch never fired — every step-3 assertion would be vacuous',
+      'Red Wolf branch never fired — every step-3 assertion would be vacuous'
     ).toBeGreaterThanOrEqual(1);
     expect(FB_STARTS).toBeGreaterThan(RED_WOLF_CASTS);
   });
@@ -224,26 +238,28 @@ describe('red-hood — fixture sanity / non-vacuity', () => {
     expect(
       slotBlocks(OV, 'skill1').length +
         slotBlocks(OV, 'skill2').length +
-        slotBlocks(OV, 'burst').length,
+        slotBlocks(OV, 'burst').length
     ).toBeGreaterThan(0);
     expect(pairs(OV).filter((p) => p.effect.kind === 'ignored')).toHaveLength(
-      0,
+      0
     );
   });
 });
 
 describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)', () => {
   const hits = SELF.filter(
-    (b) => b.stat === 'chargeSpeedPct' && near(b.value, 3.81),
+    (b) => b.stat === 'chargeSpeedPct' && near(b.value, 3.81)
   );
 
   it('is a chargeSpeedPct stack buff, not charge DAMAGE', () => {
     // Nearest-wrong: 3.81 authored as chargeDamagePct (a damage bucket) instead of a
     // cadence stat — it would never change her shot count.
     expect(hits.length, 'no self chargeSpeedPct 3.81 applies').toBeGreaterThan(
-      0,
+      0
     );
-    for (const h of hits) expect(h.stat).toBe('chargeSpeedPct');
+    for (const h of hits) {
+      expect(h.stat).toBe('chargeSpeedPct');
+    }
   });
 
   it('re-applies per normal attack rather than sitting at max as a passive', () => {
@@ -253,7 +269,9 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
   });
 
   it('caps at 10 stacks and actually reaches the cap', () => {
-    for (const h of hits) expect(h.maxStacks).toBe(10);
+    for (const h of hits) {
+      expect(h.maxStacks).toBe(10);
+    }
     const peak = Math.max(...hits.map((h) => Number(h.stacks ?? 0)));
     expect(peak).toBe(10);
   });
@@ -264,11 +282,11 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
       (p) =>
         p.effect.kind === 'buff' &&
         p.effect.stat === 'chargeSpeedPct' &&
-        near(p.effect.value, 3.81),
+        near(p.effect.value, 3.81)
     );
     expect(
       e,
-      'the 3.81 charge-speed stack buff is not in the override',
+      'the 3.81 charge-speed stack buff is not in the override'
     ).toBeTruthy();
     expect(e!.effect.durationSec).toBeCloseTo(5, 3);
     expect(e!.effect.durationShots).toBeUndefined();
@@ -279,7 +297,7 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
       (b) =>
         near(b.value, 3.81) &&
         b.stat === 'chargeSpeedPct' &&
-        b.targetSlug !== SLUG,
+        b.targetSlug !== SLUG
     );
     expect(leaked).toHaveLength(0);
   });
@@ -296,7 +314,7 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
 
 describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240%', () => {
   const cd = pairs(OV).filter(
-    (p) => p.effect.kind === 'buff' && CHARGE_DMG_STATS.includes(p.effect.stat),
+    (p) => p.effect.kind === 'buff' && CHARGE_DMG_STATS.includes(p.effect.stat)
   );
   const dynamic = cd.some((p) => p.effect.perResource);
   const effective = cd
@@ -306,12 +324,12 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
   it('the conversion is modeled at all (self charge-damage buff present and live)', () => {
     expect(
       cd.length,
-      'no chargeDamagePct/chargeDamageMultPct buff — the 240% conversion is dropped',
+      'no chargeDamagePct/chargeDamageMultPct buff — the 240% conversion is dropped'
     ).toBeGreaterThan(0);
     const live = SELF.filter((b) => CHARGE_DMG_STATS.includes(b.stat));
     expect(
       live.length,
-      'the conversion block never fires in the fixture',
+      'the conversion block never fires in the fixture'
     ).toBeGreaterThan(0);
   });
 
@@ -325,7 +343,7 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
     }
     expect(
       effective.some((v) => v >= 40 && v <= 110),
-      `charge-damage tiers seen: ${effective.join(', ')} — expected one near 91.44 (240% of 38.1)`,
+      `charge-damage tiers seen: ${effective.join(', ')} — expected one near 91.44 (240% of 38.1)`
     ).toBe(true);
   });
 
@@ -343,13 +361,15 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
     }
     expect(
       effective.some((v) => v >= 80 && v <= 110),
-      `charge-damage tiers seen: ${effective.join(', ')} — expected the warm excess-over-100 value near 93.36 (driver models 90)`,
+      `charge-damage tiers seen: ${effective.join(', ')} — expected the warm excess-over-100 value near 93.36 (driver models 90)`
     ).toBe(true);
   });
 
   it('is load-bearing, and moves NO teammate (pure damage bucket, no gauge effect)', () => {
     expect(NO_CHARGE_DMG.self).toBeLessThan(BASE.self);
-    for (const m of MATES) expect(NO_CHARGE_DMG.tot[m]).toBe(BASE.tot[m]);
+    for (const m of MATES) {
+      expect(NO_CHARGE_DMG.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 
@@ -361,17 +381,17 @@ describe('S2a — Gain Pierce continuously (self, start of battle)', () => {
     const flagged = OV?.hasPierce === true;
     expect(
       flagged || gp.length > 0,
-      'continuous Pierce is not modeled (no hasPierce flag, no gainPierce effect)',
+      'continuous Pierce is not modeled (no hasPierce flag, no gainPierce effect)'
     ).toBe(true);
     if (!flagged) {
       const continuous = gp.filter(
         (p) =>
           p.effect.durationSec === undefined &&
-          p.block?.trigger?.kind === 'passive',
+          p.block?.trigger?.kind === 'passive'
       );
       expect(
         continuous.length,
-        'gainPierce is present but time-boxed / non-passive; the kit says continuously',
+        'gainPierce is present but time-boxed / non-passive; the kit says continuously'
       ).toBeGreaterThan(0);
     }
   });
@@ -383,18 +403,18 @@ describe('S2b — Beast Cage: DEF +50.68% of the user DEF, all allies, 10s (step
       (p) =>
         p.effect.kind === 'buff' &&
         p.effect.stat === 'defPct' &&
-        near(p.effect.value, 50.68, 0.5),
+        near(p.effect.value, 50.68, 0.5)
     );
     const ledger = /def/i.test(unmodeledText(OV));
     expect(
       Boolean(def) || ledger,
-      'the Beast Cage DEF line is neither modeled nor listed in unmodeled',
+      'the Beast Cage DEF line is neither modeled nor listed in unmodeled'
     ).toBe(true);
     if (def) {
       expect(def.block?.trigger?.kind).toBe('burstCast');
       expect(
         stageOf(def.block),
-        'the DEF grant must be gated to burst step 1 (Beast Cage)',
+        'the DEF grant must be gated to burst step 1 (Beast Cage)'
       ).toBe(1);
       expect(def.effect.durationSec).toBeCloseTo(10, 3);
     }
@@ -403,13 +423,17 @@ describe('S2b — Beast Cage: DEF +50.68% of the user DEF, all allies, 10s (step
   it('is offensively inert in v1 (self DEF does not feed damage)', () => {
     const zeroDef = runWith(
       withPatchedOverride(SLUG, (ov: any) => {
-        for (const { effect } of pairs(ov))
-          if (effect.kind === 'buff' && effect.stat === 'defPct')
+        for (const { effect } of pairs(ov)) {
+          if (effect.kind === 'buff' && effect.stat === 'defPct') {
             effect.value = 0;
-      }),
+          }
+        }
+      })
     );
     expect(zeroDef.self).toBe(BASE.self);
-    for (const m of MATES) expect(zeroDef.tot[m]).toBe(BASE.tot[m]);
+    for (const m of MATES) {
+      expect(zeroDef.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 
@@ -422,7 +446,7 @@ describe('S2c — The Last Howl: recovers 23.04% of attack damage as HP over 10s
     const ledger = /recover/i.test(unmodeledText(OV));
     expect(
       Boolean(heal) || ledger,
-      'the Last Howl recovery line is neither modeled nor listed in unmodeled',
+      'the Last Howl recovery line is neither modeled nor listed in unmodeled'
     ).toBe(true);
     if (heal) {
       expect(heal.block?.target?.kind).toBe('self');
@@ -435,17 +459,17 @@ describe('S2c — The Last Howl: recovers 23.04% of attack damage as HP over 10s
 describe('S2d — Red Wolf: ATK +71.42% self for 10s (step 3)', () => {
   it('applies to HER only, at her own burst cast', () => {
     const hits = SELF.filter(
-      (b) => b.stat === 'atkPct' && near(b.value, 71.42),
+      (b) => b.stat === 'atkPct' && near(b.value, 71.42)
     );
     expect(hits.length).toBe(RED_WOLF_CASTS);
     expect(RED_WOLF_CASTS).toBeGreaterThanOrEqual(1);
     const leaked = applies(BASE.events).filter(
       (b) =>
-        b.stat === 'atkPct' && near(b.value, 71.42) && b.targetSlug !== SLUG,
+        b.stat === 'atkPct' && near(b.value, 71.42) && b.targetSlug !== SLUG
     );
     expect(
       leaked,
-      'ATK +71.42% leaked to an ally; the kit scopes it to self',
+      'ATK +71.42% leaked to an ally; the kit scopes it to self'
     ).toHaveLength(0);
   });
 
@@ -456,7 +480,7 @@ describe('S2d — Red Wolf: ATK +71.42% self for 10s (step 3)', () => {
       (p) =>
         p.effect.kind === 'buff' &&
         p.effect.stat === 'atkPct' &&
-        near(p.effect.value, 71.42),
+        near(p.effect.value, 71.42)
     );
     expect(e, 'the Red Wolf ATK buff is not in the override').toBeTruthy();
     expect(e!.block?.trigger?.kind).toBe('burstCast');
@@ -467,7 +491,9 @@ describe('S2d — Red Wolf: ATK +71.42% self for 10s (step 3)', () => {
 
   it('is load-bearing and moves no teammate', () => {
     expect(NO_RED_WOLF_ATK.self).toBeLessThan(BASE.self);
-    for (const m of MATES) expect(NO_RED_WOLF_ATK.tot[m]).toBe(BASE.tot[m]);
+    for (const m of MATES) {
+      expect(NO_RED_WOLF_ATK.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 
@@ -479,11 +505,11 @@ describe('Burst step 1 — ATK +77.55% of the skill user ATK, all allies, 10s', 
       (p) =>
         p.effect.kind === 'buff' &&
         p.effect.stat === 'casterAtkPct' &&
-        near(p.effect.value, 77.55),
+        near(p.effect.value, 77.55)
     );
     expect(
       e,
-      'no casterAtkPct 77.55 ally grant found for Beast Cage',
+      'no casterAtkPct 77.55 ally grant found for Beast Cage'
     ).toBeTruthy();
     expect(e!.block?.target?.kind).toBe('allies');
     expect(e!.block?.trigger?.kind).toBe('burstCast');
@@ -495,11 +521,11 @@ describe('Burst step 1 — ATK +77.55% of the skill user ATK, all allies, 10s', 
     // The stage gate is what is under test: an ungated model would buff the team here.
     const crossGrants = applies(BASE.events).filter(
       (b) =>
-        b.casterIdx === RH && b.targetIdx !== RH && b.stat === 'casterAtkPct',
+        b.casterIdx === RH && b.targetIdx !== RH && b.stat === 'casterAtkPct'
     );
     expect(
       crossGrants,
-      'red-hood granted ally ATK despite only ever casting Red Wolf',
+      'red-hood granted ally ATK despite only ever casting Red Wolf'
     ).toHaveLength(0);
   });
 });
@@ -509,17 +535,17 @@ describe('Burst steps 1 and 2 — Cooldown of Burst Skill -40s, once per battle'
     const cdrs = pairs(OV).filter((p) => p.effect.kind === 'burstCdr');
     expect(
       cdrs.length,
-      'no burstCdr effect — both step-1 and step-2 CDR lines are dropped',
+      'no burstCdr effect — both step-1 and step-2 CDR lines are dropped'
     ).toBeGreaterThanOrEqual(1);
     for (const c of cdrs) {
       expect(Math.abs(Number(c.effect.seconds))).toBeCloseTo(40, 3);
       expect(
         c.effect.oncePerBattle,
-        'the kit says Activates once per battle',
+        'the kit says Activates once per battle'
       ).toBe(true);
       expect(
         [1, 2],
-        `burstCdr found on stage ${String(stageOf(c.block))}; step 3 (Red Wolf) grants NO cooldown reduction`,
+        `burstCdr found on stage ${String(stageOf(c.block))}; step 3 (Red Wolf) grants NO cooldown reduction`
       ).toContain(stageOf(c.block));
     }
   });
@@ -558,12 +584,12 @@ describe('Burst step 3 — Red Wolf weapon swap (51.46% of final ATK, full charg
     // load-bearing EFFECT (instant charge + conversion armed); the swap's load-bearing damage drop is
     // asserted by NO_SWAP_DMG above. Intent unchanged: the +100.8% CS is modeled in the stage-3 window.
     const swap = pairs(OV).find(
-      (p) => p.effect.kind === 'weaponSwap' && stageOf(p.block) === 3,
+      (p) => p.effect.kind === 'weaponSwap' && stageOf(p.block) === 3
     );
     expect(swap, 'the stage-3 weaponSwap is missing').toBeTruthy();
     expect(
       swap!.effect.chargeTimeSec,
-      'the +100.8% CS must make the swap charge instant (0.3s, fire-rate-gated cadence)',
+      'the +100.8% CS must make the swap charge instant (0.3s, fire-rate-gated cadence)'
     ).toBeCloseTo(0.3, 3);
     // the +100.8% CS arms the conversion: chargeDamagePct fires once per Red Wolf cast, self-scoped
     const conv = SELF.filter((b) => CHARGE_DMG_STATS.includes(b.stat));
@@ -576,11 +602,11 @@ describe('no-silent-drops ledger (lines with no engine primitive)', () => {
     const led = unmodeledText(OV);
     expect(
       /attract|taunt/i.test(led),
-      'the step-2 Attract/taunt line is not in unmodeled',
+      'the step-2 Attract/taunt line is not in unmodeled'
     ).toBe(true);
     expect(
       /incoming healing/i.test(led),
-      'the step-2 Incoming healing line is not in unmodeled',
+      'the step-2 Incoming healing line is not in unmodeled'
     ).toBe(true);
   });
 
@@ -589,7 +615,7 @@ describe('no-silent-drops ledger (lines with no engine primitive)', () => {
     const swap = pairs(OV).find((p) => p.effect.kind === 'weaponSwap');
     expect(
       /pierce range/i.test(led) || swap?.effect?.hasPierce === true,
-      'the +100% Pierce range line is unaccounted for',
+      'the +100% Pierce range line is unaccounted for'
     ).toBe(true);
   });
 

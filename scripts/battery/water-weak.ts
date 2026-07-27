@@ -18,7 +18,13 @@ import { loadWorld, runRealisticBattery, type BatteryTeam } from './lib.js';
 const ANCHORS: BatteryTeam[] = [
   {
     name: 'enikk 37-1 crown water core',
-    slugs: ['miranda', 'crown', 'snow-white-heavy-arms', 'privaty', 'little-mermaid'],
+    slugs: [
+      'miranda',
+      'crown',
+      'snow-white-heavy-arms',
+      'privaty',
+      'little-mermaid',
+    ],
     source: 'enikk raid 37, 215 players',
   },
   {
@@ -28,10 +34,20 @@ const ANCHORS: BatteryTeam[] = [
   },
   {
     name: 'enikk 37-3 electric splash',
-    slugs: ['moran', 'nayuta', 'helm', 'ludmilla-winter-owner', 'elegg-boom-and-shock'],
+    slugs: [
+      'moran',
+      'nayuta',
+      'helm',
+      'ludmilla-winter-owner',
+      'elegg-boom-and-shock',
+    ],
     source: 'enikk raid 37, 41 players',
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, 'Fire',
-  'REALISTIC water-weak battery (boss Fire) — enikk raid 37 anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  'Fire',
+  'REALISTIC water-weak battery (boss Fire) — enikk raid 37 anchors + roster fill, core exposure 0/50/100'
+);

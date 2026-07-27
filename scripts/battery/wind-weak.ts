@@ -18,15 +18,31 @@ const ANCHORS: BatteryTeam[] = [
   },
   {
     name: 'enikk 31-2 crown ludmilla',
-    slugs: ['crown', 'rapi-red-hood', 'little-mermaid', 'ludmilla-winter-owner', 'naga'],
+    slugs: [
+      'crown',
+      'rapi-red-hood',
+      'little-mermaid',
+      'ludmilla-winter-owner',
+      'naga',
+    ],
     source: 'enikk raid 31, 225 players',
   },
   {
     name: 'enikk 31-3 cinderella sakura',
-    slugs: ['cinderella', 'rouge', 'sakura-bloom-in-summer', 'ade-agent-bunny', 'mihara-bonding-chain'],
+    slugs: [
+      'cinderella',
+      'rouge',
+      'sakura-bloom-in-summer',
+      'ade-agent-bunny',
+      'mihara-bonding-chain',
+    ],
     source: 'enikk raid 31, 96 players',
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, 'Iron',
-  'REALISTIC wind-weak battery (boss Iron) — enikk raid 31 anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  'Iron',
+  'REALISTIC wind-weak battery (boss Iron) — enikk raid 31 anchors + roster fill, core exposure 0/50/100'
+);

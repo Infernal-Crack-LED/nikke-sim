@@ -27,14 +27,16 @@ if (!slug) {
   console.error('usage: npx tsx scripts/kit.ts <slug> [--raw]');
   process.exit(1);
 }
-const data = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
+const data = JSON.parse(
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
+);
 const c = data.characters[slug];
 if (!c) {
   console.error(`unknown slug "${slug}"`);
   process.exit(1);
 }
 
-const { skills, baseStats, ...meta } = c;
+const { skills, baseStats: _baseStats, ...meta } = c;
 const { role, ...flat } = meta as Record<string, unknown> & { role?: any };
 console.log('=== character ===');
 console.log(JSON.stringify(flat, null, 1));
@@ -43,7 +45,9 @@ console.log(JSON.stringify(flat, null, 1));
 // BASE-KIT prose templates inside it) is `--raw` only — see the header warning.
 const shot = role?.weapon?.shot_detail;
 if (shot) {
-  const chunks = !shot.reload_bullet ? 1 : Math.round(10000 / shot.reload_bullet);
+  const chunks = !shot.reload_bullet
+    ? 1
+    : Math.round(10000 / shot.reload_bullet);
   console.log('\n=== weapon spec (datamined) ===');
   console.log(
     [
@@ -56,15 +60,21 @@ if (shot) {
       `charge_time      ${shot.charge_time}${shot.charge_time ? ' cs' : ''}`,
       `core_damage_rate ${shot.core_damage_rate}`,
       `input_type       ${shot.input_type}`,
-    ].join('\n'),
+    ].join('\n')
   );
-  console.log(`\nengine-facing: reloadFrames ${flat.reloadFrames} · hitsPerShot ${flat.hitsPerShot} · ammo ${flat.ammo}`);
+  console.log(
+    `\nengine-facing: reloadFrames ${flat.reloadFrames} · hitsPerShot ${flat.hitsPerShot} · ammo ${flat.ammo}`
+  );
 }
 
 if (RAW) {
   console.log('\n=== raw characters.json role blob (--raw) ===');
-  console.log('⚠ `description_localkey` fields below are BASE-KIT templates. For a Treasure unit they are');
-  console.log('  NOT what the override is synced from — cite the `=== skillN text ===` sections instead.');
+  console.log(
+    '⚠ `description_localkey` fields below are BASE-KIT templates. For a Treasure unit they are'
+  );
+  console.log(
+    '  NOT what the override is synced from — cite the `=== skillN text ===` sections instead.'
+  );
   console.log(JSON.stringify(role, null, 1));
 }
 for (const slot of ['skill1', 'skill2', 'burst'] as const) {
@@ -82,16 +92,26 @@ if (un && (un.skill1.length || un.skill2.length || un.burst.length)) {
   for (const slot of ['skill1', 'skill2', 'burst'] as const) {
     un[slot].forEach((l) => console.log(`- ${slot}: ${l}`));
   }
-} else console.log('(none recorded)');
+} else {
+  console.log('(none recorded)');
+}
 console.log('\n=== caveats / warnings ===');
 resolved.warnings.forEach((w) => console.log('- ' + w));
-if (!resolved.warnings.length) console.log('(none)');
+if (!resolved.warnings.length) {
+  console.log('(none)');
+}
 
-console.log('\n=== offline parser draft (authoring reference only — NOT what runs) ===');
+console.log(
+  '\n=== offline parser draft (authoring reference only — NOT what runs) ==='
+);
 for (const slot of ['skill1', 'skill2', 'burst'] as const) {
   const p = parseSkill(skills[slot], slot);
-  console.log(`--- ${slot}: ${p.blocks.length} block(s), ${p.warnings.length} warning(s), ${p.unmodeled.length} unmodeled line(s)`);
-  if (p.blocks.length) console.log(JSON.stringify(p.blocks, null, 1));
+  console.log(
+    `--- ${slot}: ${p.blocks.length} block(s), ${p.warnings.length} warning(s), ${p.unmodeled.length} unmodeled line(s)`
+  );
+  if (p.blocks.length) {
+    console.log(JSON.stringify(p.blocks, null, 1));
+  }
   p.warnings.forEach((w) => console.log(`  ⚠ ${w}`));
   p.unmodeled.forEach((l) => console.log(`  ∅ ${l}`));
 }

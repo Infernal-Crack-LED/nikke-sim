@@ -19,10 +19,7 @@
     "rl3": 27.3,
     "burstGaugePerShot": 1.82,
     "treasure": false,
-    "nicknames": [
-      "mir",
-      "xmaiden"
-    ],
+    "nicknames": ["mir", "xmaiden"],
     "skills": {
       "skill1": "■ Activates when entering Burst Stage 1. Affects self when MP is 0.\nMP recovers by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when entering Full Burst. Affects self when MP is above 1.\nMP replenishes by 1. MP can be accumulated up to a maximum of 12. All accumulated MP is consumed when using Burst Skill.\n■ Activates when attacking with Full Charge for 6 time(s). Affects self.\nMax HP ▲ 6.34% without restoring HP for 15 sec, stacks up to 10 time(s).",
       "skill2": "■ Activates when MP is replenished. Affects all Electric Code allies except for self.\nElemental Advantage Attack Damage ▲ 40.9% for 10 sec.\nATK ▲ 20.9% of the skill user's ATK for 10 sec.\n■ Activates when MP is used. Affects self.\nElemental Advantage Attack Damage ▲ 31.68% for 10 sec.\nATK ▲ 3.2% of the skill user's final Max HP for 10 sec.\n■ Activates when attacking with Full Charge for 1 time(s). Affects 1 enemy unit(s) nearest to the crosshair. \nDeals 547.62% of final ATK as damage.",
@@ -73,13 +70,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 500,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 100,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -418,16 +411,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects the {description_value_01} enemy unit(s) nearest to the crosshair.\n<color=#00AEFF>Deals damage equal to {description_value_03}% of the sum of {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP and the skill user's ATK. <word_group=10060>Attacks repeatedly</word_group> based on current MP.</color>",
           "description_value_list": [
@@ -484,18 +468,10 @@
           ],
           "prefer_target_condition": "IncludeNoneTargetLast",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            218330101
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            118330101
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [218330101],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [118330101],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -520,9 +496,7 @@
         }
       },
       "element": {
-        "element_id": [
-          400001
-        ],
+        "element_id": [400001],
         "element_details": [
           {
             "id": 400001,
@@ -553,9 +527,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Maiden: Ice Rose's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

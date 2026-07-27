@@ -48,11 +48,12 @@ in the hasB1 fixture (liter present) and `attackDamagePct 8.02` + a STAGE-1 cast
 `projectileAttachmentPct 150.72` / `projectileExplosionPct 100.6`. The engine routes these as their OWN multiplicative
 bucket (`projFactor = 1 + (projExpl+projAttach)/100`) on flavored hits ONLY — normals stay `projFactor 1.0`. A `hitCount`
 block (`count 120`, `countInFb 60`) fires the rocket: `flatDamage 88.11 flavor projectileAttachment` (immediate, no core)
-+ `storedHit 88.11 flavor projectileExplosion, core 0.33, crit, instantInFb` (accumulates out-of-burst, releases at FB
-entry as a batch; in-burst attaches detonate immediately). **This is exactly where the S6 blind diverged**: it authored
-the passives as generic `attackDamagePct` and flagged its OWN encoding as a ⚑ SCOPE defect ("over-credits every
-non-projectile hit by ~251pp … almost certainly WRONG"). The driver's flavor-scoped StatKeys are the faithful encoding;
-test RRH3 pins `projFactor` 2.5072 (attach) / 2.0060 (explode) on rocket hits and 1.0 on normals.
+
+- `storedHit 88.11 flavor projectileExplosion, core 0.33, crit, instantInFb` (accumulates out-of-burst, releases at FB
+  entry as a batch; in-burst attaches detonate immediately). **This is exactly where the S6 blind diverged**: it authored
+  the passives as generic `attackDamagePct` and flagged its OWN encoding as a ⚑ SCOPE defect ("over-credits every
+  non-projectile hit by ~251pp … almost certainly WRONG"). The driver's flavor-scoped StatKeys are the faithful encoding;
+  test RRH3 pins `projFactor` 2.5072 (attach) / 2.0060 (explode) on rocket hits and 1.0 on normals.
 
 **burst — stage split.** Stage 1 (`burstCast stage:1`): self `burstCdr 20` + all allies `casterAtkPct 18.01` (flat
 `(18.01/100)×staticAtk`, 10s) — reachable only in noB1/Combat-Assist comps. Stage 3 (`burstCast stage:3`): enemy
@@ -71,23 +72,23 @@ S6 opus) produced. They are precisely the highest-value spot-check; each is back
 
 1. **Nuke FB timing (delaySec 0.4, fbMajor true).** Every blind assumed the 2808% nuke is a standard pre-FB burst-cast
    (FB-exempt). The shipped model has it flighted ~0.4s into the window. Backed by 3 focus recordings + recipe fit.
-   *Spot-check: confirm the nuke popup lands inside the FB banner and carries the +50%.*
+   _Spot-check: confirm the nuke popup lands inside the FB banner and carries the +50%._
 2. **+421.2% Projectile Attachment buff — REMOVED as measured-inert.** All three prose readings include it; the shipped
    model omits it (dead datamine entry 101631006; 0.13% precision across 3 comps, 2026-07-14). Now recorded verbatim in
-   `unmodeled.burst` (judge's registry fix). *Spot-check: confirm an in-window attachment shows no +421% uplift.*
+   `unmodeled.burst` (judge's registry fix). _Spot-check: confirm an in-window attachment shows no +421% uplift._
 3. **Batch accumulation vs prose "Max Ammo: 1".** The prose reads as a capacity-1 cap (≤1 explosion/FB); the shipped
    model follows the owner's measurement of batch accumulation (meter fills 0→100%, rockets bank out-of-burst, first
    explosion of each FB is a BATCH — probe shows batches of 2/4/9/8). The binding judge's read is the conflict is
    illusory (capacity 1 = the launcher magazine, not projectiles attached to the boss), which would make the model
-   prose-consistent and the `unmodeled` entry unnecessary. *Spot-check: confirm multi-rocket batches detonate per FB.*
+   prose-consistent and the `unmodeled` entry unnecessary. _Spot-check: confirm multi-rocket batches detonate per FB._
 4. **Explosion core ×0.33 + crit-on.** Measurement-gated (docs/probe-data/rrh-explosion-core.json, N=9, range 0.30–0.45;
-   crit by the 2026-07-16 consistency ruling — every other RRH hit crits, removing the stored-hit exemption). *Spot-check:
-   red CORE HIT popups are the minority (~1/3) on explosion bodies; orange crit bodies appear.*
+   crit by the 2026-07-16 consistency ruling — every other RRH hit crits, removing the stored-hit exemption). _Spot-check:
+   red CORE HIT popups are the minority (~1/3) on explosion bodies; orange crit bodies appear._
 5. **▼60 in-FB cadence modeled as a FB-state threshold (`countInFb 60`), not her Stage-3 cast + 10s.** The judge notes
    this over-generates rockets in FBs she does NOT cast and in noB1 rotations (the kit scopes ▼60 to her Stage-3 cast +
    10s). A faithful timed-threshold primitive does not exist; the engine has no dynamic-trigger-count primitive (both
-   blinds skipped the line entirely). Documented approximation. *Spot-check: in a two-B3 comp, do rockets over-generate
-   on the co-B3's rotations?*
+   blinds skipped the line entirely). Documented approximation. _Spot-check: in a two-B3 comp, do rockets over-generate
+   on the co-B3's rotations?_
 6. **`requiresPulls 120` on the nuke is unprosed** (its constant equals S2's threshold; the banner-1 no-nuke evidence is
    equally consistent with a missing rocket explosion). Inert in the graded fixture, therefore untested.
 

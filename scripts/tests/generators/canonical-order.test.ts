@@ -14,7 +14,8 @@ import { scopeLockCfg } from '../../lib/scope-lock.js';
 import { deps, generatorPool, mult } from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
-const byBurst = (b: string) => genChars.filter((c) => c.burst === b).map((c) => c.slug);
+const byBurst = (b: string) =>
+  genChars.filter((c) => c.burst === b).map((c) => c.slug);
 const B1 = byBurst('I');
 const B2 = byBurst('II');
 const B3 = byBurst('III');
@@ -29,7 +30,7 @@ describe('canonicalTeamOrder (pure)', () => {
       [SET[2], SET[0], SET[4], SET[1], SET[3]],
     ];
     const canon = perms.map((p) => canonicalTeamOrder(p, chars as any, SET[2]));
-    for (const c of canon) expect(c).toEqual(canon[0]);
+    for (const c of canon) {expect(c).toEqual(canon[0]);}
   });
 
   it('places the focus unit at the camera-focus slot (index 2)', () => {
@@ -42,20 +43,23 @@ describe('canonicalTeamOrder (pure)', () => {
 
   it('orders by burst class then slug-alpha when no focus is given', () => {
     const ord = canonicalTeamOrder(SET, chars as any);
-    const rank = (s: string) => ({ I: 0, II: 1, III: 2, Λ: 3 })[
-      s === 'red-hood' ? 'III' : (chars as any)[s].burst as 'I' | 'II' | 'III' | 'Λ'
-    ]!;
+    const rank = (s: string) =>
+      ({ I: 0, II: 1, III: 2, Λ: 3 })[
+        s === 'red-hood'
+          ? 'III'
+          : ((chars as any)[s].burst as 'I' | 'II' | 'III' | 'Λ')
+      ]!;
     for (let i = 1; i < ord.length; i++)
-      expect(rank(ord[i]) >= rank(ord[i - 1]), 'not burst-ordered').toBe(true);
+      {expect(rank(ord[i]) >= rank(ord[i - 1]), 'not burst-ordered').toBe(true);}
   });
 });
 
 describe('isChargeWeapon', () => {
   it('is true exactly for SR/RL', () => {
     for (const c of genChars)
-      expect(isChargeWeapon(chars as any, c.slug)).toBe(
-        c.weapon === 'SR' || c.weapon === 'RL',
-      );
+      {expect(isChargeWeapon(chars as any, c.slug)).toBe(
+        c.weapon === 'SR' || c.weapon === 'RL'
+      );}
   });
 });
 
@@ -93,8 +97,13 @@ describe('set-keyed sim (permutations collapse, focus post-pass ≥ pre-pass)', 
     // post-pass may re-focus to a higher-damage camera slot, never a lower one
     expect(best!.teamDamage).toBeGreaterThanOrEqual(canon!.teamDamage - 1);
     // the winner's focus (index 2) is a charge unit when the team has one
-    const hasCharge = best!.units.some((u) => isChargeWeapon(chars as any, u.slug));
+    const hasCharge = best!.units.some((u) =>
+      isChargeWeapon(chars as any, u.slug)
+    );
     if (hasCharge)
-      expect(isChargeWeapon(chars as any, best!.slugs[2]), 'focus slot is not a charge unit').toBe(true);
+      {expect(
+        isChargeWeapon(chars as any, best!.slugs[2]),
+        'focus slot is not a charge unit'
+      ).toBe(true);}
   });
 });

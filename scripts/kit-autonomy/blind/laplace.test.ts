@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 /**
  * laplace - Laplace (Treasure) - RL / Iron / Attacker / Burst III (cd 40s, ammo 6, charge 60f)
@@ -47,7 +52,8 @@ const BURST_TRUE_PCT = 11.9;
 
 type AnyRec = Record<string, any>;
 
-const approx = (a: unknown, b: number) => typeof a === 'number' && Math.abs(a - b) < 1e-6;
+const approx = (a: unknown, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 1e-6;
 
 const GATE_KEYS = [
   'requiresCore',
@@ -67,13 +73,19 @@ const isGated = (b: AnyRec) => GATE_KEYS.some((k) => b[k] !== undefined);
 
 function slotBlocks(ov: AnyRec, slot: 'skill1' | 'skill2' | 'burst'): AnyRec[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? (s as AnyRec[]) : ((s.blocks as AnyRec[]) ?? []);
 }
-function slotEffects(ov: AnyRec, slot: 'skill1' | 'skill2' | 'burst'): AnyRec[] {
+function slotEffects(
+  ov: AnyRec,
+  slot: 'skill1' | 'skill2' | 'burst'
+): AnyRec[] {
   return slotBlocks(ov, slot).flatMap((b) => (b.effects as AnyRec[]) ?? []);
 }
-function unmodeledText(ov: AnyRec, slot: 'skill1' | 'skill2' | 'burst'): string {
+function unmodeledText(
+  ov: AnyRec,
+  slot: 'skill1' | 'skill2' | 'burst'
+): string {
   const um = ov?.unmodeled?.[slot] ?? [];
   return (Array.isArray(um) ? um.join(' ') : String(um)).toLowerCase();
 }
@@ -88,26 +100,28 @@ const OV = withPatchedOverride(LAPLACE, () => {}) as unknown as AnyRec;
 // ---------------------------------------------------------------------------
 const ZERO_CHARGE_RIDER = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'skill2')) {
-    if (approx(e.atkPct, CHARGE_RIDER_PCT)) e.atkPct = 0;
+    if (approx(e.atkPct, CHARGE_RIDER_PCT)) {e.atkPct = 0;}
   }
 });
 
 const RIDER_ON_FB_ENTER = withPatchedOverride(LAPLACE, (ov) => {
   for (const b of slotBlocks(ov as unknown as AnyRec, 'skill2')) {
-    const carries = ((b.effects as AnyRec[]) ?? []).some((e) => approx(e.atkPct, CHARGE_RIDER_PCT));
-    if (carries) b.trigger = { kind: 'fullBurstEnter' };
+    const carries = ((b.effects as AnyRec[]) ?? []).some((e) =>
+      approx(e.atkPct, CHARGE_RIDER_PCT)
+    );
+    if (carries) {b.trigger = { kind: 'fullBurstEnter' };}
   }
 });
 
 const SHORT_SWAP = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'burst')) {
-    if (e.kind === 'weaponSwap') e.durationSec = 0.1;
+    if (e.kind === 'weaponSwap') {e.durationSec = 0.1;}
   }
 });
 
 const NO_HERO_VISION = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'skill1')) {
-    if (e.kind === 'buff') e.value = 0;
+    if (e.kind === 'buff') {e.value = 0;}
   }
 });
 
@@ -118,10 +132,16 @@ function runWith(patched?: unknown) {
   const opts = controlComp(LAPLACE, false) as unknown as AnyRec;
   const events: SimEvent[] = [];
   const cfg: AnyRec = { ...opts, onEvent: (ev: SimEvent) => events.push(ev) };
-  if (patched) cfg.overrides = { ...((opts.overrides as AnyRec) ?? {}), [LAPLACE]: patched };
+  if (patched)
+    {cfg.overrides = {
+      ...((opts.overrides as AnyRec) ?? {}),
+      [LAPLACE]: patched,
+    };}
   const res = runComp(cfg as Parameters<typeof runComp>[0]);
   const map = totals(res) as Record<string, number>;
-  const team = Object.fromEntries(Object.entries(map).filter(([k]) => k !== LAPLACE));
+  const team = Object.fromEntries(
+    Object.entries(map).filter(([k]) => k !== LAPLACE)
+  );
   return { res, events, total: map[LAPLACE] ?? 0, team };
 }
 
@@ -131,7 +151,8 @@ const RIDER_FB = runWith(RIDER_ON_FB_ENTER);
 const SWAP_CUT = runWith(SHORT_SWAP);
 const HV_OFF = runWith(NO_HERO_VISION);
 
-const ev = (kind: string, run = BASE) => run.events.filter((e) => (e as AnyRec).kind === kind) as AnyRec[];
+const ev = (kind: string, run = BASE) =>
+  run.events.filter((e) => (e as AnyRec).kind === kind) as AnyRec[];
 
 describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   // -------------------------------------------------------------------------
@@ -151,13 +172,19 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
     // The burst gates on max stacks, so the stack COUNTER is load-bearing whatever the radius
     // proxy is. Nearest-wrong: a single unstacked buff authored at the capped magnitude, which
     // has no notion of a max-stack state for the burst to read.
-    const hvBuffs = slotEffects(OV, 'skill1').filter((e) => e.kind === 'buff' && e.maxStacks === HV_STACKS);
-    const hvRes = ((OV.resources as AnyRec[]) ?? []).filter((r) => r.max === HV_STACKS);
+    const hvBuffs = slotEffects(OV, 'skill1').filter(
+      (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
+    );
+    const hvRes = ((OV.resources as AnyRec[]) ?? []).filter(
+      (r) => r.max === HV_STACKS
+    );
     expect(hvBuffs.length + hvRes.length).toBeGreaterThan(0);
   });
 
   it('s1: the buff magnitude is PER STACK (3.57), not the pre-multiplied 5-stack total', () => {
-    const hvBuffs = slotEffects(OV, 'skill1').filter((e) => e.kind === 'buff' && e.maxStacks === HV_STACKS);
+    const hvBuffs = slotEffects(OV, 'skill1').filter(
+      (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
+    );
     if (hvBuffs.length === 0) {
       // resource-encoded: the per-stack magnitude must live on a perResource mult instead
       const perRes = [
@@ -177,12 +204,14 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   it('s1: Hero Vision is self-scoped and accrues per full charge, not on burst/FB entry', () => {
     const perShot = ['shotFired', 'hitCount', 'chargeCounter'];
     const hvBlocks = slotBlocks(OV, 'skill1').filter((b) =>
-      ((b.effects as AnyRec[]) ?? []).some((e) => e.kind === 'buff' && e.maxStacks === HV_STACKS),
+      ((b.effects as AnyRec[]) ?? []).some(
+        (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
+      )
     );
     const stackBlocks = hvBlocks.length
       ? hvBlocks
       : slotBlocks(OV, 'skill1').filter((b) =>
-          ((b.effects as AnyRec[]) ?? []).some((e) => e.kind === 'resource'),
+          ((b.effects as AnyRec[]) ?? []).some((e) => e.kind === 'resource')
         );
     expect(stackBlocks.length).toBeGreaterThan(0);
     for (const b of stackBlocks) {
@@ -194,9 +223,17 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   it('s1: the radius proxy is not a generic damage stat', () => {
     // Explosion Radius is a projectile-geometry line. Proxying it onto a generic damage stat
     // over-credits every bucket (skills, burst, riders) - the SCOPE failure mode.
-    const banned = ['atkPct', 'attackDamagePct', 'critRatePct', 'critDamagePct', 'elementDamagePct'];
-    const hvBuffs = slotEffects(OV, 'skill1').filter((e) => e.kind === 'buff' && e.maxStacks === HV_STACKS);
-    for (const b of hvBuffs) expect(banned).not.toContain(b.stat);
+    const banned = [
+      'atkPct',
+      'attackDamagePct',
+      'critRatePct',
+      'critDamagePct',
+      'elementDamagePct',
+    ];
+    const hvBuffs = slotEffects(OV, 'skill1').filter(
+      (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
+    );
+    for (const b of hvBuffs) {expect(banned).not.toContain(b.stat);}
   });
 
   it('s1: Hero Vision moves NO teammate damage (inertness)', () => {
@@ -206,16 +243,24 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   });
 
   it('s1: the Hero Vision channel is actually exercised in the fixture (non-vacuity)', () => {
-    const hvBuffs = slotEffects(OV, 'skill1').filter((e) => e.kind === 'buff' && e.maxStacks === HV_STACKS);
+    const hvBuffs = slotEffects(OV, 'skill1').filter(
+      (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
+    );
     if (hvBuffs.length > 0) {
       const applies = ev('buffApply').filter(
-        (e) => e.targetSlug === LAPLACE && e.maxStacks === HV_STACKS,
+        (e) => e.targetSlug === LAPLACE && e.maxStacks === HV_STACKS
       );
       expect(applies.length).toBeGreaterThanOrEqual(HV_STACKS); // ramps to cap at least once
       // never granted to anyone else
-      expect(ev('buffApply').filter((e) => e.maxStacks === HV_STACKS && e.targetSlug !== LAPLACE).length).toBe(0);
+      expect(
+        ev('buffApply').filter(
+          (e) => e.maxStacks === HV_STACKS && e.targetSlug !== LAPLACE
+        ).length
+      ).toBe(0);
     } else {
-      expect(((OV.resources as AnyRec[]) ?? []).some((r) => r.max === HV_STACKS)).toBe(true);
+      expect(
+        ((OV.resources as AnyRec[]) ?? []).some((r) => r.max === HV_STACKS)
+      ).toBe(true);
     }
   });
 
@@ -223,7 +268,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   // skill2a - 132.45% full-charge rider
   // -------------------------------------------------------------------------
   it('s2a: the 132.45% rider exists as instant damage, not a stat buff', () => {
-    const riders = slotEffects(OV, 'skill2').filter((e) => approx(e.atkPct, CHARGE_RIDER_PCT));
+    const riders = slotEffects(OV, 'skill2').filter((e) =>
+      approx(e.atkPct, CHARGE_RIDER_PCT)
+    );
     expect(riders.length).toBe(1);
     expect(riders[0].kind).toBe('flatDamage');
     expect(riders[0].core).not.toBe(true); // the text says additional damage, not a core strike
@@ -248,7 +295,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   // -------------------------------------------------------------------------
   it('s2b: the parts-hit 14.78% line never fires ungated on a partless boss', () => {
     const partsBlocks = slotBlocks(OV, 'skill2').filter((b) =>
-      ((b.effects as AnyRec[]) ?? []).some((e) => approx(e.atkPct, PARTS_RIDER_PCT)),
+      ((b.effects as AnyRec[]) ?? []).some((e) =>
+        approx(e.atkPct, PARTS_RIDER_PCT)
+      )
     );
     if (partsBlocks.length === 0) {
       // absent is correct - but it must be recorded, no silent drops
@@ -257,14 +306,16 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
       return;
     }
     // present is only acceptable behind a gate that cannot open on this boss
-    for (const b of partsBlocks) expect(isGated(b)).toBe(true);
+    for (const b of partsBlocks) {expect(isGated(b)).toBe(true);}
   });
 
   // -------------------------------------------------------------------------
   // burst - weapon swap
   // -------------------------------------------------------------------------
   it('b1: the burst is a 10s weapon swap at 22.2% per shot', () => {
-    const swaps = slotEffects(OV, 'burst').filter((e) => e.kind === 'weaponSwap');
+    const swaps = slotEffects(OV, 'burst').filter(
+      (e) => e.kind === 'weaponSwap'
+    );
     expect(swaps.length).toBe(1);
     expect(swaps[0].durationSec).toBe(BURST_SEC);
     expect(approx(swaps[0].damagePct, BURST_NORMAL_PCT)).toBe(true);
@@ -277,7 +328,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   });
 
   it('b1: First Damage 1455.72% is modeled exactly once', () => {
-    const first = slotEffects(OV, 'burst').filter((e) => approx(e.atkPct, BURST_FIRST_PCT));
+    const first = slotEffects(OV, 'burst').filter((e) =>
+      approx(e.atkPct, BURST_FIRST_PCT)
+    );
     expect(first.length).toBe(1); // RED if missing, and RED if double-counted per swap shot
   });
 
@@ -287,9 +340,11 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
     expect(OV.hasPierce).not.toBe(true);
     const burstEffects = slotEffects(OV, 'burst');
     const gp = burstEffects.filter((e) => e.kind === 'gainPierce');
-    const swapPierce = burstEffects.some((e) => e.kind === 'weaponSwap' && e.hasPierce === true);
+    const swapPierce = burstEffects.some(
+      (e) => e.kind === 'weaponSwap' && e.hasPierce === true
+    );
     expect(gp.length > 0 || swapPierce).toBe(true);
-    for (const g of gp) expect(g.durationSec).toBe(BURST_SEC); // absent durationSec = permanent
+    for (const g of gp) {expect(g.durationSec).toBe(BURST_SEC);} // absent durationSec = permanent
   });
 
   it('b1: the true-damage conversion of swap normals is represented (no silent drop)', () => {
@@ -302,7 +357,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
   // burst block 2 - 11.9% true damage at max stacks
   // -------------------------------------------------------------------------
   it('b2: the 11.9% true-damage rider is modeled or explicitly recorded', () => {
-    const riders = slotEffects(OV, 'burst').filter((e) => approx(e.atkPct, BURST_TRUE_PCT));
+    const riders = slotEffects(OV, 'burst').filter((e) =>
+      approx(e.atkPct, BURST_TRUE_PCT)
+    );
     if (riders.length === 0) {
       const um = unmodeledText(OV, 'burst');
       expect(um.includes('11.9')).toBe(true);

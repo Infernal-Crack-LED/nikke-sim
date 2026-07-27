@@ -19,9 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "dkw"
-    ],
+    "nicknames": ["dkw"],
     "skills": {
       "skill1": "■ Activates when attacking with Full Charge for 3 time(s). Affects self.\nGain Pierce for 1 shot.\n■ Activates when entering Full Burst. Affects all allies with a Sniper Rifle.\nPierce Damage ▲13.55% for 10 sec.",
       "skill2": "■ Activates when attacking with Full Charge for 8 time(s). Affects all allies.\nCooldown of Burst Skill ▼ 7 sec.\n■ Activates when attacking with Full Charge for 5 time(s). Affects all allies.\nAttack damage ▲ 5.06% for 10 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects the enemy nearest to the crosshair.\n<color=#00AEFF>Deals {description_value_01}% of <word_group=10025>final</word_group> ATK as additional damage.\nInflicts Wipe Out on the target for {description_value_03} sec.</color>\n■ Activates when allies' normal attack hits a certain area of the target afflicted with Wipe Out. Affects allies.\n<color=#00AEFF>Buff takes effect depending on the area hit.\nAllies that hit parts: Damage dealt when attacking core ▲ {description_value_02}% for {description_value_03} sec.\nAllies that hit the body: ATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -391,18 +376,10 @@
           ],
           "prefer_target_condition": "IncludeNoneTargetLast",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            104330101
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [104330101],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -427,9 +404,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,
@@ -460,9 +435,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "D: Killer Wife's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

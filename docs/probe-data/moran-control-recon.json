@@ -16,11 +16,42 @@
     "team_total_damage": 1382184221,
     "team_total_check": "sum of 4 unit totals == 1382184221 (exact)",
     "units": [
-      {"slot": 1, "name": "Helm",       "burst": "III", "atk_shown": 90315, "damage": 482322739, "weapon_guess": "RL (ammo 6)", "element_icon": "Water(blue)"},
-      {"slot": 2, "name": "Crown",      "burst": "II",  "atk_shown": 88898, "damage": 212278134, "weapon_guess": "SMG (ammo 300)"},
-      {"slot": 3, "name": "Moran",      "burst": "I",   "atk_shown": 92177, "damage": 287972631, "weapon": "AR (ammo 60)", "element": "Electric(purple)", "is_focus": true},
-      {"slot": 4, "name": "Snow White", "burst": "III", "atk_shown": 94055, "damage": 399610717, "weapon_guess": "AR-type (ammo 60)"},
-      {"slot": 5, "name": "EMPTY (NO SIGNAL)"}
+      {
+        "slot": 1,
+        "name": "Helm",
+        "burst": "III",
+        "atk_shown": 90315,
+        "damage": 482322739,
+        "weapon_guess": "RL (ammo 6)",
+        "element_icon": "Water(blue)"
+      },
+      {
+        "slot": 2,
+        "name": "Crown",
+        "burst": "II",
+        "atk_shown": 88898,
+        "damage": 212278134,
+        "weapon_guess": "SMG (ammo 300)"
+      },
+      {
+        "slot": 3,
+        "name": "Moran",
+        "burst": "I",
+        "atk_shown": 92177,
+        "damage": 287972631,
+        "weapon": "AR (ammo 60)",
+        "element": "Electric(purple)",
+        "is_focus": true
+      },
+      {
+        "slot": 4,
+        "name": "Snow White",
+        "burst": "III",
+        "atk_shown": 94055,
+        "damage": 399610717,
+        "weapon_guess": "AR-type (ammo 60)"
+      },
+      { "slot": 5, "name": "EMPTY (NO SIGNAL)" }
     ],
     "note": "atk_shown is the battle-records ATK on the result screen; formula uses combat ATK (Defender scope-lock ~78707), not this value."
   },
@@ -29,25 +60,35 @@
     "boss_element_displayed": false,
     "moran_element": "Electric",
     "elemental_advantage": "none observed (no weakness/advantage marker on Moran's hits; boss element not shown) -> treated NEUTRAL",
-    "control_team": ["Helm(B3)", "Crown(B2)", "Moran(B1,focus)", "Snow White(B3)"]
+    "control_team": [
+      "Helm(B3)",
+      "Crown(B2)",
+      "Moran(B1,focus)",
+      "Snow White(B3)"
+    ]
   },
   "full_burst": {
     "detection_method": "caution-tape splash detector (full-width yellow AND black-stripe co-occurrence) @30fps, validated visually (splash peak t=125.17)",
     "cycle_s": 15.5,
     "note": "Each window ~10s (Full Burst duration) with ~5s normal gaps -> Moran is inside Full Burst ~65% of the fight. B3 alternates Helm / Snow White (Snow White's big yellow barrage fires every OTHER FB: ~34,65,96,127,159s).",
     "windows_s": [
-      {"n": 1,  "start": 13.05, "end": 23.20},
-      {"n": 2,  "start": 28.60, "end": 38.75},
-      {"n": 3,  "start": 44.05, "end": 54.30},
-      {"n": 4,  "start": 59.90, "end": 70.15},
-      {"n": 5,  "start": 75.95, "end": 86.25},
-      {"n": 6,  "start": 91.10, "end": 101.35},
-      {"n": 7,  "start": 107.25, "end": 117.45},
-      {"n": 8,  "start": 121.75, "end": 132.05},
-      {"n": 9,  "start": 137.80, "end": 148.00},
-      {"n": 10, "start": 153.60, "end": 163.90},
-      {"n": 11, "start": 168.65, "end": 175.95},
-      {"n": 12, "start": 187.85, "end": 191.00, "note": "at/after fight end; likely victory transition - low confidence"}
+      { "n": 1, "start": 13.05, "end": 23.2 },
+      { "n": 2, "start": 28.6, "end": 38.75 },
+      { "n": 3, "start": 44.05, "end": 54.3 },
+      { "n": 4, "start": 59.9, "end": 70.15 },
+      { "n": 5, "start": 75.95, "end": 86.25 },
+      { "n": 6, "start": 91.1, "end": 101.35 },
+      { "n": 7, "start": 107.25, "end": 117.45 },
+      { "n": 8, "start": 121.75, "end": 132.05 },
+      { "n": 9, "start": 137.8, "end": 148.0 },
+      { "n": 10, "start": 153.6, "end": 163.9 },
+      { "n": 11, "start": 168.65, "end": 175.95 },
+      {
+        "n": 12,
+        "start": 187.85,
+        "end": 191.0,
+        "note": "at/after fight end; likely victory transition - low confidence"
+      }
     ],
     "count_within_fight": 11,
     "confidence": "high for cycle/count (11-12), medium for exact boundaries"
@@ -67,10 +108,10 @@
     "moran_isolated_running_counter": false,
     "reason": "the on-screen running counter (top-center 'DAMAGE') is TEAM-TOTAL (all 4 units), not Moran-only. In a comp all units fire simultaneously, so per-magazine Moran deltas cannot be isolated from it.",
     "team_counter_samples": [
-      {"t": 25.5, "team_damage": 123257597},
-      {"t": 40.0, "team_damage": 237655497},
-      {"t": 120.0, "team_damage": 626094338},
-      {"end": true, "team_damage": 1382184221}
+      { "t": 25.5, "team_damage": 123257597 },
+      { "t": 40.0, "team_damage": 237655497 },
+      { "t": 120.0, "team_damage": 626094338 },
+      { "end": true, "team_damage": 1382184221 }
     ],
     "moran_ground_truth_total": 287972631,
     "reconciliation_inference": {

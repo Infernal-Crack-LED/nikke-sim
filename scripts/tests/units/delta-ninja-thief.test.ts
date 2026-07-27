@@ -84,47 +84,73 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual patches (nearest wrong model each group must discriminate) -----------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
-const hasKind = (b: any, kind: string) => b.effects.some((e: any) => e.kind === kind);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
+const hasKind = (b: any, kind: string) =>
+  b.effects.some((e: any) => e.kind === kind);
 
 /** H1 reference: the 12% FB-entry Acid Bomb removed entirely. */
 const dntNoAcidFB = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct')),
+    (b: any) =>
+      !(b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct'))
   );
-  if (ov.skill1.length === before) throw new Error('dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
+    );}
 });
 /** H1 counterfactual: the same 12% line re-triggered on burstCast (the nearest wrong trigger). */
 const dntAcidFBAsBurstCast = withPatchedOverride('delta-ninja-thief', (ov) => {
-  const b = ov.skill1.find((b: any) => b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct'));
-  if (!b) throw new Error('dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale');
+  const b = ov.skill1.find(
+    (b: any) =>
+      b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct')
+  );
+  if (!b)
+    {throw new Error(
+      'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
+    );}
   b.trigger.kind = 'burstCast';
 });
 /** H2 reference: her self ATK buff removed. */
 const dntNoSelfAtk = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !(b.target.kind === 'self' && hasStat(b, 'atkPct')));
-  if (ov.skill1.length === before) throw new Error('dnt S1 self atkPct missing — fixture is stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !(b.target.kind === 'self' && hasStat(b, 'atkPct'))
+  );
+  if (ov.skill1.length === before)
+    {throw new Error('dnt S1 self atkPct missing — fixture is stale');}
 });
 /** H3 reference: the 8% burst-cast Acid Bomb removed. */
 const dntNoAcidCast = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.trigger.kind === 'burstCast' && b.target.kind === 'enemy' && hasStat(b, 'damageTakenPct')),
+    (b: any) =>
+      !(
+        b.trigger.kind === 'burstCast' &&
+        b.target.kind === 'enemy' &&
+        hasStat(b, 'damageTakenPct')
+      )
   );
-  if (ov.skill1.length === before) throw new Error('dnt S1 burstCast damageTakenPct missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'dnt S1 burstCast damageTakenPct missing — fixture is stale'
+    );}
 });
 /** H4 reference: the +20% distributed-damage team buff removed. */
 const dntNoDistBuff = withPatchedOverride('delta-ninja-thief', (ov) => {
   const b = ov.burst.find((b: any) => hasStat(b, 'distributedDamagePct'));
-  if (!b) throw new Error('dnt burst distributedDamagePct missing — fixture is stale');
+  if (!b)
+    {throw new Error(
+      'dnt burst distributedDamagePct missing — fixture is stale'
+    );}
   b.effects = b.effects.filter((e: any) => e.stat !== 'distributedDamagePct');
 });
 /** H5 counterfactual: the nuke's distributed flavor stripped (nearest wrong flavor). */
 const dntNukeNotDist = withPatchedOverride('delta-ninja-thief', (ov) => {
   const b = ov.burst.find((b: any) => hasKind(b, 'flatDamage'));
-  if (!b) throw new Error('dnt burst flatDamage missing — fixture is stale');
+  if (!b) {throw new Error('dnt burst flatDamage missing — fixture is stale');}
   const e = b.effects.find((e: any) => e.kind === 'flatDamage');
   delete e.flavor;
 });
@@ -139,17 +165,29 @@ const noDistBuff = run({ 'delta-ninja-thief': dntNoDistBuff });
 const nukeNotDist = run({ 'delta-ninja-thief': dntNukeNotDist });
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const dntBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'delta-ninja-thief');
+  evs.filter(
+    (e): e is BurstCast =>
+      e.kind === 'burstCast' && e.slug === 'delta-ninja-thief'
+  );
 const fbStartFrames = (evs: SimEvent[]) =>
   new Set(evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame));
-const castFrames = (evs: SimEvent[]) => new Set(dntBursts(evs).map((c) => c.frame));
+const castFrames = (evs: SimEvent[]) =>
+  new Set(dntBursts(evs).map((c) => c.frame));
 /** Boss debuffs (targetIdx null = the boss) of a given damageTakenPct value. */
 const bossTaken = (evs: SimEvent[], value: number) =>
-  buffs(evs).filter((b) => b.stat === 'damageTakenPct' && b.targetIdx === null && b.value === value);
-const dntNuke = (evs: SimEvent[]) => dmg(evs).filter((d) => d.slug === 'delta-ninja-thief' && d.srcSlot === 'burst');
+  buffs(evs).filter(
+    (b) =>
+      b.stat === 'damageTakenPct' && b.targetIdx === null && b.value === value
+  );
+const dntNuke = (evs: SimEvent[]) =>
+  dmg(evs).filter(
+    (d) => d.slug === 'delta-ninja-thief' && d.srcSlot === 'burst'
+  );
 
 describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
   describe('H1 — S1 Ninjutsu Acid Bomb: boss Damage Taken ▲12% for 15s on FULL BURST ENTRY', () => {
@@ -158,15 +196,21 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     it('applies a 12% damage-taken debuff to the boss for exactly 15s, once per FB', () => {
       expect(taken12.length).toBe(fbStartFrames(base.events).size);
       expect(taken12.length).toBeGreaterThan(0);
-      for (const b of taken12) expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      for (const b of taken12) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
     });
 
     it('fires on Full Burst ENTRY (its frame is a fullBurstStart frame, not her cast frame)', () => {
       const fb = fbStartFrames(base.events);
       const casts = castFrames(base.events);
       for (const b of taken12) {
-        expect(fb.has(b.frame), `12% debuff at frame ${b.frame} is not a FB-start frame`).toBe(true);
-        expect(casts.has(b.frame), `12% debuff at frame ${b.frame} sits on her cast — that is burstCast, not fullBurstEnter`).toBe(false);
+        expect(
+          fb.has(b.frame),
+          `12% debuff at frame ${b.frame} is not a FB-start frame`
+        ).toBe(true);
+        expect(
+          casts.has(b.frame),
+          `12% debuff at frame ${b.frame} sits on her cast — that is burstCast, not fullBurstEnter`
+        ).toBe(false);
       }
     });
 
@@ -175,32 +219,42 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       const moved = bossTaken(acidFBAsBurstCast.events, 12);
       expect(moved.length).toBeGreaterThan(0);
       for (const b of moved) {
-        expect(casts.has(b.frame), `counterfactual 12% debuff at ${b.frame} should sit on a cast frame`).toBe(true);
-        expect(fbStartFrames(acidFBAsBurstCast.events).has(b.frame)).toBe(false);
+        expect(
+          casts.has(b.frame),
+          `counterfactual 12% debuff at ${b.frame} should sit on a cast frame`
+        ).toBe(true);
+        expect(fbStartFrames(acidFBAsBurstCast.events).has(b.frame)).toBe(
+          false
+        );
       }
     });
 
     it('is load-bearing for the WHOLE team (boss takes 12% more during every FB window)', () => {
       for (const s of SLUGS) {
-        expect(base.totals[s], `${s} total must drop without the 12% FB debuff`).toBeGreaterThan(noAcidFB.totals[s]);
+        expect(
+          base.totals[s],
+          `${s} total must drop without the 12% FB debuff`
+        ).toBeGreaterThan(noAcidFB.totals[s]);
       }
     });
   });
 
   describe('H2 — S1 self ATK ▲15.04% for 10s on BURST CAST (self-scoped)', () => {
     const selfAtk = buffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && b.casterIdx === DNT && b.targetIdx === DNT,
+      (b) => b.stat === 'atkPct' && b.casterIdx === DNT && b.targetIdx === DNT
     );
 
     it('is 15.04% to herself for 10s, once per burst cast', () => {
       expect(selfAtk.length).toBe(dntBursts(base.events).length);
       expect(selfAtk.length).toBeGreaterThan(0);
       expect([...new Set(selfAtk.map((b) => b.value))]).toEqual([15.04]);
-      for (const b of selfAtk) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of selfAtk) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: removing it lowers ONLY her own total (liter/helm byte-identical)', () => {
-      expect(base.totals['delta-ninja-thief']).toBeGreaterThan(noSelfAtk.totals['delta-ninja-thief']);
+      expect(base.totals['delta-ninja-thief']).toBeGreaterThan(
+        noSelfAtk.totals['delta-ninja-thief']
+      );
       expect(base.totals.liter).toBe(noSelfAtk.totals.liter);
       expect(base.totals.helm).toBe(noSelfAtk.totals.helm);
     });
@@ -212,44 +266,73 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     it('applies an 8% damage-taken debuff to the boss for exactly 10s', () => {
       expect(taken8.length).toBe(dntBursts(base.events).length);
       expect(taken8.length).toBeGreaterThan(0);
-      for (const b of taken8) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of taken8) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('fires on her BURST CAST (its frame is a cast frame), distinct from the 12% FB-entry debuff', () => {
       const casts = castFrames(base.events);
-      for (const b of taken8) expect(casts.has(b.frame), `8% debuff at ${b.frame} is not a cast frame`).toBe(true);
+      for (const b of taken8)
+        {expect(
+          casts.has(b.frame),
+          `8% debuff at ${b.frame} is not a cast frame`
+        ).toBe(true);}
     });
 
-    it('DISCRIMINATING: removing it collapses the burst nuke\'s taken multiplier 1.08 → 1.0', () => {
-      expect([...new Set(dntNuke(base.events).map((d) => d.mult.taken.toFixed(4)))]).toEqual(['1.0800']);
-      expect([...new Set(dntNuke(noAcidCast.events).map((d) => d.mult.taken.toFixed(4)))]).toEqual(['1.0000']);
+    it("DISCRIMINATING: removing it collapses the burst nuke's taken multiplier 1.08 → 1.0", () => {
+      expect([
+        ...new Set(dntNuke(base.events).map((d) => d.mult.taken.toFixed(4))),
+      ]).toEqual(['1.0800']);
+      expect([
+        ...new Set(
+          dntNuke(noAcidCast.events).map((d) => d.mult.taken.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 
   describe('H4 — Burst: all allies Distributed Damage ▲20% + ATK ▲15% of caster ATK for 10s', () => {
-    const dist = buffs(base.events).filter((b) => b.stat === 'distributedDamagePct' && b.casterIdx === DNT);
-    const casterAtk = buffs(base.events).filter((b) => b.stat === 'casterAtkPct' && b.casterIdx === DNT);
+    const dist = buffs(base.events).filter(
+      (b) => b.stat === 'distributedDamagePct' && b.casterIdx === DNT
+    );
+    const casterAtk = buffs(base.events).filter(
+      (b) => b.stat === 'casterAtkPct' && b.casterIdx === DNT
+    );
     const perCast = dntBursts(base.events).length * SLUGS.length;
 
     it('grants +20% distributed damage to ALL allies for 10s, once per cast', () => {
       expect(dist.length).toBe(perCast);
       expect([...new Set(dist.map((b) => b.value))]).toEqual([20]);
       expect(new Set(dist.map((b) => b.targetIdx))).toEqual(ALLIES);
-      for (const b of dist) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of dist) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('grants a FLAT caster-ATK add (casterAtkPct, not a % atkPct) to all allies for 10s', () => {
       expect(casterAtk.length).toBe(perCast);
       expect(new Set(casterAtk.map((b) => b.targetIdx))).toEqual(ALLIES);
       const vals = [...new Set(casterAtk.map((b) => b.value))];
-      expect(vals.length, 'every ally receives the same flat caster-ATK amount').toBe(1);
-      expect(vals[0], 'a flat ATK magnitude (15% of her ATK), not the 15 percentage').toBeGreaterThan(1000);
-      for (const b of casterAtk) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        vals.length,
+        'every ally receives the same flat caster-ATK amount'
+      ).toBe(1);
+      expect(
+        vals[0],
+        'a flat ATK magnitude (15% of her ATK), not the 15 percentage'
+      ).toBeGreaterThan(1000);
+      for (const b of casterAtk)
+        {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: the +20% is live — her distributed nuke picks it up same cast (1.2 → 1.0 without)', () => {
-      expect([...new Set(dntNuke(base.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.2000']);
-      expect([...new Set(dntNuke(noDistBuff.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(
+          dntNuke(base.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.2000']);
+      expect([
+        ...new Set(
+          dntNuke(noDistBuff.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 
@@ -264,15 +347,23 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     });
 
     it('is FB-exempt (the cast lands before the Full Burst window opens)', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
 
     it('is DISTRIBUTED-flavored (picks up her own +20% distributed buff on the same cast)', () => {
-      expect([...new Set(nukes.map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.2000']);
+      expect([
+        ...new Set(nukes.map((d) => d.mult.distributed.toFixed(4))),
+      ]).toEqual(['1.2000']);
     });
 
     it('DISCRIMINATING: stripping the distributed flavor collapses the multiplier to 1.0', () => {
-      expect([...new Set(dntNuke(nukeNotDist.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(
+          dntNuke(nukeNotDist.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 });

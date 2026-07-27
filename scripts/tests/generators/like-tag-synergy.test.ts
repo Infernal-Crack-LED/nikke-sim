@@ -37,26 +37,38 @@ describe('countSynergyPairs — pure pair counting (synthetic tags)', () => {
   const n = (slugs: string[]) => countSynergyPairs(slugs, tags, SYNERGY_PAIRS);
 
   it('counts a dealer + its matching buffer', () => {
-    expect(n(['pierce-dealer', 'pierce-buffer']), 'dealer + matching buffer').toBe(1);
+    expect(
+      n(['pierce-dealer', 'pierce-buffer']),
+      'dealer + matching buffer'
+    ).toBe(1);
     expect(n(['pierce-dealer']), 'dealer alone must NOT satisfy').toBe(0);
     expect(n(['pierce-buffer']), 'buffer alone must NOT satisfy').toBe(0);
   });
 
   it('counts both pairs at once, and a unit carrying both halves on its own', () => {
-    expect(n(['pierce-dealer', 'pierce-buffer', 'proj-dealer', 'proj-buffer'])).toBe(2);
-    expect(n(['proj-both']), 'one unit carrying BOTH halves satisfies the pair alone').toBe(1);
+    expect(
+      n(['pierce-dealer', 'pierce-buffer', 'proj-dealer', 'proj-buffer'])
+    ).toBe(2);
+    expect(
+      n(['proj-both']),
+      'one unit carrying BOTH halves satisfies the pair alone'
+    ).toBe(1);
   });
 
   it('counts nothing for unrelated, empty, or cross-wired teams', () => {
     expect(n(['plain']), 'unrelated tags satisfy nothing').toBe(0);
     expect(n([]), 'empty team satisfies nothing').toBe(0);
     // cross-wiring must NOT count: a pierce dealer + a projectile buffer is no pair.
-    expect(n(['pierce-dealer', 'proj-buffer']), 'mismatched dealer/buffer counted').toBe(0);
+    expect(
+      n(['pierce-dealer', 'proj-buffer']),
+      'mismatched dealer/buffer counted'
+    ).toBe(0);
   });
 });
 
 describe('countSynergyPairs — real archetype tags', () => {
-  const n = (slugs: string[]) => countSynergyPairs(slugs, archetypeTags, SYNERGY_PAIRS);
+  const n = (slugs: string[]) =>
+    countSynergyPairs(slugs, archetypeTags, SYNERGY_PAIRS);
 
   it('rapi-red-hood alone satisfies the projectile pair (dealer + self-buffer)', () => {
     expect(n(['rapi-red-hood'])).toBe(1);
@@ -68,17 +80,32 @@ describe('countSynergyPairs — real archetype tags', () => {
 });
 
 describe('projectile dealer tag — generated output', () => {
-  const has = (slug: string, tag: string) => (archetypeTags[slug] ?? []).includes(tag);
+  const has = (slug: string, tag: string) =>
+    (archetypeTags[slug] ?? []).includes(tag);
 
   it('rapi-red-hood carries both the dealer and the self-buffer tag', () => {
-    expect(has('rapi-red-hood', 'projectile'), 'missing the projectile dealer tag').toBe(true);
-    expect(has('rapi-red-hood', 'projectile-buffer'), 'missing projectile-buffer (self-buff)').toBe(true);
+    expect(
+      has('rapi-red-hood', 'projectile'),
+      'missing the projectile dealer tag'
+    ).toBe(true);
+    expect(
+      has('rapi-red-hood', 'projectile-buffer'),
+      'missing projectile-buffer (self-buff)'
+    ).toBe(true);
   });
 
-  it.each(['prika', 'mint', 'anis-star'])('%s is a pure projectile buffer', (s) => {
-    expect(has(s, 'projectile-buffer'), `${s} lost projectile-buffer`).toBe(true);
-    expect(has(s, 'projectile'), `${s} wrongly carries the projectile DEALER tag`).toBe(false);
-  });
+  it.each(['prika', 'mint', 'anis-star'])(
+    '%s is a pure projectile buffer',
+    (s) => {
+      expect(has(s, 'projectile-buffer'), `${s} lost projectile-buffer`).toBe(
+        true
+      );
+      expect(
+        has(s, 'projectile'),
+        `${s} wrongly carries the projectile DEALER tag`
+      ).toBe(false);
+    }
+  );
 });
 
 describe('generation still completes with the synergy bias active', () => {
@@ -91,7 +118,11 @@ describe('generation still completes with the synergy bias active', () => {
     loadout: {},
     poolB3: 16,
     rounds: 1,
-    synergy: { tags: archetypeTags, pairs: SYNERGY_PAIRS, weight: SYNERGY_WEIGHT },
+    synergy: {
+      tags: archetypeTags,
+      pairs: SYNERGY_PAIRS,
+      weight: SYNERGY_WEIGHT,
+    },
   });
 
   it('bestTeam builds with synergy', async () => {
@@ -107,12 +138,29 @@ describe('generation still completes with the synergy bias active', () => {
         ['mast-romantic-maid', 'anchor-innocent-maid'],
       ],
       oneOf: [{ anchor: 'crown', choices: ['helm', 'naga'] }],
-      singles: ['moran', 'anis-star', 'liter', 'little-mermaid', 'nayuta', 'privaty'],
+      singles: [
+        'moran',
+        'anis-star',
+        'liter',
+        'little-mermaid',
+        'nayuta',
+        'privaty',
+      ],
     };
-    const ac = assignAlwaysCombos(SOLO_ALWAYS_COMBOS, [[], [], [], [], []], chars as any, 5);
-    const top = await calc.topTeams(5, { pinnedByTeam: ac.pinnedByTeam, mustUse: ac.singles });
+    const ac = assignAlwaysCombos(
+      SOLO_ALWAYS_COMBOS,
+      [[], [], [], [], []],
+      chars as any,
+      5
+    );
+    const top = await calc.topTeams(5, {
+      pinnedByTeam: ac.pinnedByTeam,
+      mustUse: ac.singles,
+    });
     const slugs = top.flatMap((r) => r.slugs);
     expect(top).toHaveLength(5);
-    expect(new Set(slugs).size, 'a unit was reused across teams').toBe(slugs.length);
+    expect(new Set(slugs).size, 'a unit was reused across teams').toBe(
+      slugs.length
+    );
   });
 });

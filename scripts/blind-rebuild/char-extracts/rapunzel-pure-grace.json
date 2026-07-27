@@ -19,9 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "rpg"
-    ],
+    "nicknames": ["rpg"],
     "skills": {
       "skill1": "■ Activates at the start of battle. Affects self.\nCreates a shared Shield equal to 20.59% of the skill user's final Max HP that protects all allies from damage. This effect is continuous.\n■ Activates when using Burst Skill. Affects self.\nCreates a shared Shield equal to 20.59% of the skill user's final Max HP that protects all allies from damage. This effect is continuous.\n■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects all allies.\nAttack Damage ▲ 10.41% continuously.",
       "skill2": "■ Activates when attacking with Full Charge. Affects self.\nRecovers 2% of the skill user's final Max HP.\n■ Activates only when Full Charge is maintained for more than 1 sec while a Shield is set in front of this unit. Affects self.\nCurrent HP ▼ 2% every 1 sec continuously.\nRestores Shield HP equal to 3.16% of the skill user's final Max HP every 1 sec continuously.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Max HP ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_03}% for {description_value_04} sec.</color>",
           "description_value_list": [
@@ -378,19 +363,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            122630101,
-            122630102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [122630101, 122630102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -415,9 +391,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -448,9 +422,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Rapunzel: Pure Grace's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

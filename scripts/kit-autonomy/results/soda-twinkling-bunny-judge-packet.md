@@ -1,4 +1,5 @@
 # S7 JUDGE PACKET — `soda-twinkling-bunny` (compact, answer-faithful compilation of the gauntlet artifacts)
+
 Unit: Soda: Twinkling Bunny (slug `soda-twinkling-bunny`) — SG / Iron / Attacker / Burst III, cd 40s. Driver model family: Qwen.
 Cross-family reviewers: S2b claude-fable-5 (pre-op), S5/S6/S7 claude-opus-4-8 (post-op). Gauntlet date 2026-07-24.
 NOTE: this unit is a VARIANT — refer to it by full slug; never conflate with base `soda` (MG/Fire).
@@ -15,6 +16,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -25,12 +27,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -56,44 +60,72 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## 1. Ground truth — kit prose (data/characters.json → characters['soda-twinkling-bunny'].skills, structural; levels 10/10/10)
+
 Base: SG/Iron/Attacker/Burst III, cd 40s, ammo 9, reloadFrames 142 (charFixes 182 measured padded), chargeFrames 0,
 hitsPerShot 10, normalAttackMultiplier 231.6, coreAttackMultiplier 200, burstGaugePerShot 4.5. baseStats hp 13500 /
 atk 600 / def 86, critRate 15 / critDamage 150. Manufacturer Tetra. Approved nicknames: stb, bsoda. (NOTE: this is a
 VARIANT — distinct from base `soda` MG/Fire.) The normalized `skills` prose below is the SSOT the sim reads.
 
 skill1 (Lucky Golden Chip):
-■ Activates at the start of battle. Affects self. 
+■ Activates at the start of battle. Affects self.
 Golden Chip stacks ▲ 50.
 ■ Activates after performing 3 normal attack(s) during Full Burst. Affects self.
 Golden Chip: Critical Damage ▲ 1.32% continuously, stacks up to 50 time(s).
-■ Activates after performing 3 normal attack(s) during Full Burst. Affects self and the 1 ally unit(s) with the highest final ATK (except the skill user). 
+■ Activates after performing 3 normal attack(s) during Full Burst. Affects self and the 1 ally unit(s) with the highest final ATK (except the skill user).
 Attack Damage ▲ 10.51% for 2 sec.
 
 skill2 (Beginner's Rewards):
@@ -103,7 +135,7 @@ Stage 1: With 10 or more stacks of Golden Chip,
 Time Extension I: Full Burst Duration▲ 2 sec. Lasts until Full Burst ends.
 Stage 2: With 20 or more stacks of Golden Chip,
 Time Extension II: Full Burst Duration▲ 3 sec. Lasts until Full Burst ends.
-■ Activates when performing a normal attack during Full Burst. Affects the 1 enemy unit(s) nearest to the crosshair. 
+■ Activates when performing a normal attack during Full Burst. Affects the 1 enemy unit(s) nearest to the crosshair.
 Effects vary according to the state of Time Extension. Each subsequent effect triggers all effects before it:
 Stage 1: When in Time Extension I state,
 deals 52.04% of final ATK as damage.
@@ -121,6 +153,7 @@ Stage 3: Activates when Golden Chip is at 30 or more stacks. Affects self.
 ATK ▲ 65.25% for 15 sec.
 
 ## 2. Damage-formula + mechanics SSOT (the facts the verdict turns on)
+
 Damage = ATK × major (FB +50% by timing; ×1.10 element if advantaged; +30% range) × charge × damageUp-bucket ×
 taken × distributed. Soda is Iron vs the Fire boss in the fixture; her kit damage is burst-bucket nuke + an in-FB
 rider + ordinary SG spray. The Golden Chip POOL is an engine resource-counter primitive; the four engine FACTS
@@ -177,6 +210,7 @@ none). Magnitudes (1.32, 10.51, 52.04/85.02, 628.7, 38.91, 65.25, 17, 50) are li
 values and OUT OF SCOPE except where they contradict the prose's own number.
 
 ## 3. Driver's override (src/skills/overrides/soda-twinkling-bunny.json — the encoding under test, post-S3)
+
 ```json
 {
   "note": "Kit-autonomy gauntlet 2026-07-24 (cross-family: S2b claude-fable-5, S5/S6/S7 claude-opus-4-8). || RE-TUNED 2026-07-16 against the soda tb control.mov recording (Fable-approved; overturns the 2026-07-15 'GOLDEN CHIP self-buffs MODELED' entry with higher-tier evidence — a focused recording + exact popup arithmetic). The kit-parse blind parser out-predicted the prior hand-tune (0.667 vs real) by reading three mechanics correctly; this re-tune adopts them. THREE MEASURED BUG FIXES: (1) CRIT-DAMAGE is chip-tied, NOT a ramp-from-0. The prior model built critDamagePct via shotFired+everyN 3 in-FB casts, reaching only ~4 stacks (+5%) because Soda fires few in-FB normals. PROOF it's wrong: a t=8 pre-burst popup (chips=50, ZERO in-FB casts) showed crit ×2.160 = (150+50×1.32)/100 EXACTLY — crit-damage tracks the Golden-Chip POOL (starts 50), not a from-0 ramp. Modeled as a passive critDamagePct 42 (measured trace time-average ~31.6 chips × 1.32; ⚑ chip time-average). (2) The burst ATK ▲65.25% (@≥30 chips) fires on EVERY burst, not first-burst-only. Chips are consumed AFTER the effect ('▼17 after applied') so the gate checks PRE-consume counts (50/44/40/38/31) — all 5 bursts clear ≥30. The prior everyN 99 offset 1 (first-burst-only) traced the POST-consume pool, the classic isolated-shard error. (3) The per-FB-normal rider is Time-Ext-II-dominant (~130%, was averaged to 100) and the Full-Burst extension is the datamined chip-gated ladder. Golden Chip economy: start 50, −17/burst, +~6 rebuild/FB → drains 50→27→...→14 (post-consume); pre-consume stays ≥30 all 5 bursts. Reload: charFixes.reloadFrames 182 (measured padded animation, KEPT). Hit Rate ▲38.91%/15s (>=20 chips) and the chip-gated Full-Burst-extension ladder (+2 at >=10, +5 at >=20) are both modelled - see caveats. Residual: SG spray magnitude (the shared SG under-model was RESOLVED 2026-07-15 per commit 85ef60e, so this is now a cleaner read). Grade (soda tb control, Fable-verified): prior 0.667 → re-tuned **0.887** vs real — a MISS vs the pre-registered [0.90,1.05], recorded honestly, NOT fit to 1.0. Residual attribution: SG spray magnitude + the sim over-generating Soda's bursts (6 sim vs 5 real → the 0.887 is FLATTERED; true ~0.82). Rejected the datamine-max fit (crit 50 / rider 137 → ~0.955) as trace-CONTRADICTED (the chip pool demonstrably drains; inflating FB-ext to fit distorts the whole team's rotation — faithful>fit). ⚑ crit 42 = the CONTROL-comp chip time-average; a NO-burst comp (N3, chips never drain) reads effective ~50 and grades 0.96 — so the flat passive is comp-dependent-approximate; the correct fix is dynamic chip-state tracking (engine work, DEFERRED). ⚑ rider (130) recording-derived, refine on a soda-focus recording.",
@@ -407,10 +441,10 @@ values and OUT OF SCOPE except where they contradict the prose's own number.
     "kit-autonomy 2026-07-24: skill2 in-FB rider is modeled as a FLAT 130% on every in-FB normal (⚑ recording-derived, Time-Ext-II-dominant), NOT gated on the Time-Extension state. The datamine reads 52.04% in TE-I / +85.02% in TE-II (cumulative 137.06%); the faithful encoding would latch the TE tier at Burst-Stage-3 entry and hold it for the whole FB (a state-snapshot primitive the engine lacks — a live resourceGate proxy is WRONG, it drops the rider post-consume when the pool dips below threshold). The flat 130 sidesteps the live-pool trap and approximates the TE-II-dominant case; refine the magnitude + TE gating on a soda-focus recording. Trigger/target/cadence (in-FB normal → 1 enemy, per pull not per pellet) are faithful; only the magnitude/state-gating is ⚑."
   ]
 }
-
 ```
 
 ## 4. S2b pre-op adversarial review (claude-fable-5, cross-family; leakDetected null)
+
 ```json
 {
   "slug": "soda-twinkling-bunny",
@@ -562,11 +596,12 @@ values and OUT OF SCOPE except where they contradict the prose's own number.
   "notes": "Expected shared-prior misreads to force apart: (1) skill2's 'entering Burst Stage 3' is stageEnter (ANY stage-3 cast — helm's rotations count in the control comp) vs the burst block's 'when using Onward, Soda!' which is burstCast (soda only, and the only consume path) — a driver collapsing both to one trigger is wrong in one direction or the other, and the helm co-B3 control comp is exactly where they diverge. (2) 'Each subsequent effect triggers all effects before it' appears THREE times and is cumulative every time: ≥20 stacks = +5s extension (2+3) not +3s; TE-II rider = 137.06%/pull (52.04+85.02) not 85.02; ≥30-stack burst = nuke+HitRate+ATK all together. (3) SG pellet trap: hitsPerShot 10 but '3 normal attacks' counts trigger pulls/rounds — a pellet-counting encoding rebuilds stacks and re-procs the 10.51% buff 10× too fast. (4) Time Extension is a state SNAPSHOTTED at stage-3 entry from the PRE-consume pool, lasting until FB end — live post-consume resourceGate diverges hard near thresholds (pre 21 / post 4). (5) The stack pool is a derivable sawtooth (start 50, −17/cast, +1 per 3 FB pulls, FB-only rebuild, cap 50/floor 0) — a static max-stacks model over-credits crit damage, extension, and both burst self-buffs in the mid/late fight; derive the trajectory, don't assume steady max. (6) Hit Rate ▲ on an SG is a core-rate lift (hitRatePct → hrCoreMult), damage-relevant — not a skippable accuracy stat; the HR→core magnitude mapping is the one ALWAYS-⚑ here (measured-only), everything else is kit-literal. ⚑ also the SG cadence tuple (pulls/s) that sets rebuild rate and rider counts. No line qualifies as UNMODELED — the schema covers every mechanic (resources, perResource, fullBurstExtend, stageEnter, hitCount+fbGate, burstCast stages).",
   "model": "claude-fable-5"
 }
-
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-4-8, cross-family; leakDetected null)
+
 ### 5a. Spec table + fixtures + gaps
+
 ```json
 {
   "slug": "soda-twinkling-bunny",
@@ -634,9 +669,17 @@ values and OUT OF SCOPE except where they contradict the prose's own number.
   ]
 }
 ```
+
 ### 5b. Blind test source (harness-API drift documented in §8 — does NOT run unmodified)
+
 ```typescript
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 /**
  * soda-twinkling-bunny — SG / Iron / Attacker / Burst III (cd 40s, ammo 9, hitsPerShot 10)
@@ -675,65 +718,143 @@ import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../li
 
 const SLUG = 'soda-twinkling-bunny';
 const near = (a: number, b: number, eps = 0.6) => Math.abs(a - b) <= eps;
-const tOf = (e: any) => (e.t ?? e.time ?? e.sec ?? 0);
+const tOf = (e: any) => e.t ?? e.time ?? e.sec ?? 0;
 
 function collect(opts: any) {
   const evs: any[] = [];
-  const o = { ...opts, cfg: { ...(opts.cfg ?? {}), onEvent: (e: any) => evs.push(e) } };
+  const o = {
+    ...opts,
+    cfg: { ...(opts.cfg ?? {}), onEvent: (e: any) => evs.push(e) },
+  };
   const res = runComp(o);
   return { res, evs };
 }
 const dmg = (res: any, slug: string) => unitOf(res, slug)?.total ?? 0;
-function sodaIdxOf(res: any) { return unitOf(res, SLUG)?.idx; }
-function allySlugs(res: any) { return (res.units ?? []).map((u: any) => u.slug).filter((s: string) => s !== SLUG); }
+function sodaIdxOf(res: any) {
+  return unitOf(res, SLUG)?.idx;
+}
+function allySlugs(res: any) {
+  return (res.units ?? [])
+    .map((u: any) => u.slug)
+    .filter((s: string) => s !== SLUG);
+}
 
 // ---- hoisted runs (each is a full 180s deterministic sim) ------------------
 const base = collect(controlComp(SLUG, true));
 const sodaIdx = sodaIdxOf(base.res);
 
 // counterfactual overrides located by SEMANTIC content (blind to block order)
-const noStartChip = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  const gc = (o.resources ?? []).find((r: any) => /chip/i.test(r.name));
-  if (gc) gc.initial = 0;
-}) as any, true));
+const noStartChip = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      const gc = (o.resources ?? []).find((r: any) => /chip/i.test(r.name));
+      if (gc) gc.initial = 0;
+    }) as any,
+    true
+  )
+);
 
-const flatCrit = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) for (const e of b.effects ?? [])
-    if (e.kind === 'buff' && e.stat === 'critDamagePct') { delete e.perResource; e.value = 1.32; e.maxStacks = 1; }
-}) as any, true));
+const flatCrit = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks)
+        for (const e of b.effects ?? [])
+          if (e.kind === 'buff' && e.stat === 'critDamagePct') {
+            delete e.perResource;
+            e.value = 1.32;
+            e.maxStacks = 1;
+          }
+    }) as any,
+    true
+  )
+);
 
-const noAtkDmg = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) => !(e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 10.51)));
-}) as any, true));
+const noAtkDmg = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks)
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'buff' &&
+              e.stat === 'attackDamagePct' &&
+              near(e.value, 10.51)
+            )
+        );
+    }) as any,
+    true
+  )
+);
 
-const noFbExtend = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'fullBurstExtend');
-}) as any, true));
+const noFbExtend = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks)
+        b.effects = (b.effects ?? []).filter(
+          (e: any) => e.kind !== 'fullBurstExtend'
+        );
+    }) as any,
+    true
+  )
+);
 
-const noRider = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) =>
-    !(e.kind === 'flatDamage' && (near(e.atkPct, 52.04) || near(e.atkPct, 85.02))));
-}) as any, true));
+const noRider = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks)
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'flatDamage' &&
+              (near(e.atkPct, 52.04) || near(e.atkPct, 85.02))
+            )
+        );
+    }) as any,
+    true
+  )
+);
 
-const noBurstBuffs = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) =>
-    !(e.kind === 'buff' && ((e.stat === 'hitRatePct' && near(e.value, 38.91)) || (e.stat === 'atkPct' && near(e.value, 65.25)))));
-}) as any, true));
+const noBurstBuffs = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks)
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'buff' &&
+              ((e.stat === 'hitRatePct' && near(e.value, 38.91)) ||
+                (e.stat === 'atkPct' && near(e.value, 65.25)))
+            )
+        );
+    }) as any,
+    true
+  )
+);
 
 // helper extractors on base
-const sodaDmg = (evs: any[]) => evs.filter(e => e.kind === 'damage' && (e.srcSlot === sodaIdx || e.casterIdx === sodaIdx));
-const buffApplies = (evs: any[], stat: string, val: number) => evs.filter(e => e.kind === 'buffApply' && e.stat === stat && near(e.value, val));
+const sodaDmg = (evs: any[]) =>
+  evs.filter(
+    (e) =>
+      e.kind === 'damage' && (e.srcSlot === sodaIdx || e.casterIdx === sodaIdx)
+  );
+const buffApplies = (evs: any[], stat: string, val: number) =>
+  evs.filter(
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, val)
+  );
 const fbWindows = (evs: any[]) => {
-  const out: number[] = []; let start: number | null = null;
+  const out: number[] = [];
+  let start: number | null = null;
   for (const e of evs) {
     if (e.kind === 'fullBurstStart') start = tOf(e);
-    else if (e.kind === 'fullBurstEnd' && start != null) { out.push(tOf(e) - start); start = null; }
+    else if (e.kind === 'fullBurstEnd' && start != null) {
+      out.push(tOf(e) - start);
+      start = null;
+    }
   }
   return out;
 };
 
 describe('soda-twinkling-bunny — blind kit spec', () => {
-
   // S1a — start-of-battle Golden Chip 50 -> crit-dmg live from t=0 AND burst gates open.
   it('S1a: battle-start Golden Chip 50 raises soda total (removing the grant strictly lowers it)', () => {
     expect(dmg(base.res, SLUG)).toBeGreaterThan(dmg(noStartChip.res, SLUG));
@@ -750,31 +871,32 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
   it('S1c: attackDamagePct 10.51 hits self + exactly one other ally (NOT all allies)', () => {
     const applies = buffApplies(base.evs, 'attackDamagePct', 10.51);
     expect(applies.length).toBeGreaterThan(0);
-    const targets = new Set(applies.map(e => e.targetIdx));
-    expect(targets.has(sodaIdx)).toBe(true);                 // self is a target
-    const others = [...targets].filter(t => t !== sodaIdx);
-    expect(others.length).toBe(1);                            // exactly ONE ally besides self
+    const targets = new Set(applies.map((e) => e.targetIdx));
+    expect(targets.has(sodaIdx)).toBe(true); // self is a target
+    const others = [...targets].filter((t) => t !== sodaIdx);
+    expect(others.length).toBe(1); // exactly ONE ally besides self
     expect(others.length).toBeLessThan(allySlugs(base.res).length); // discriminates "all allies"
     const dur = applies[0].durationSec;
-    if (dur != null) expect(near(dur, 2, 0.05)).toBe(true);   // 2s, not rounds/permanent
+    if (dur != null) expect(near(dur, 2, 0.05)).toBe(true); // 2s, not rounds/permanent
   });
 
   it('S1c inertness: removing it leaves the NON-buffed teammates byte-identical', () => {
     const applies = buffApplies(base.evs, 'attackDamagePct', 10.51);
-    const buffed = new Set(applies.map(e => e.targetIdx));
+    const buffed = new Set(applies.map((e) => e.targetIdx));
     for (const s of allySlugs(base.res)) {
       const idx = unitOf(base.res, s)?.idx;
-      if (idx === sodaIdx || buffed.has(idx)) continue;       // soda + the top-ATK ally legitimately move
+      if (idx === sodaIdx || buffed.has(idx)) continue; // soda + the top-ATK ally legitimately move
       expect(dmg(noAtkDmg.res, s)).toEqual(dmg(base.res, s)); // everyone else unchanged
     }
   });
 
   // S2a — FB duration extension gated by Golden Chip (Time Extension I/II).
   it('S2a: soda extends Full Burst beyond the 10s default (removing the extend shortens it)', () => {
-    const w = fbWindows(base.evs), wn = fbWindows(noFbExtend.evs);
+    const w = fbWindows(base.evs),
+      wn = fbWindows(noFbExtend.evs);
     expect(w.length).toBeGreaterThan(0);
     expect(Math.max(...w)).toBeGreaterThan(Math.max(...wn) + 0.5); // strictly longer than un-extended
-    expect(Math.max(...w)).toBeGreaterThan(11);                    // >=10 stacks -> +2s at minimum
+    expect(Math.max(...w)).toBeGreaterThan(11); // >=10 stacks -> +2s at minimum
   });
 
   // S2b — per-normal-attack enemy rider during FB (TE-gated). Behavioral discriminator.
@@ -789,11 +911,11 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
 
   // BURST S1 — 628.7% burst-skill damage, FB-exempt (lands pre-FB).
   it('BURST S1: soda emits a ~628.7% burst-bucket hit', () => {
-    const burstHits = sodaDmg(base.evs).filter(e => e.bucket === 'burst');
+    const burstHits = sodaDmg(base.evs).filter((e) => e.bucket === 'burst');
     expect(burstHits.length).toBeGreaterThan(0);
-    expect(burstHits.some(e => near(e.mult, 628.7, 5))).toBe(true);
+    expect(burstHits.some((e) => near(e.mult, 628.7, 5))).toBe(true);
     // burst cast lands before the FB window opens
-    expect(burstHits.some(e => e.inFullBurst === false)).toBe(true);
+    expect(burstHits.some((e) => e.inFullBurst === false)).toBe(true);
   });
 
   // BURST S2/S3 — self Hit Rate 38.91% + ATK 65.25%, each 15s, stack-gated (>=20 / >=30).
@@ -803,21 +925,27 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
     expect(hr.length).toBeGreaterThan(0);
     expect(atk.length).toBeGreaterThan(0);
     for (const e of [...hr, ...atk]) {
-      expect(e.targetIdx).toBe(sodaIdx);                       // self only
-      if (e.durationSec != null) expect(near(e.durationSec, 15, 0.1)).toBe(true);
+      expect(e.targetIdx).toBe(sodaIdx); // self only
+      if (e.durationSec != null)
+        expect(near(e.durationSec, 15, 0.1)).toBe(true);
     }
   });
 
   it('BURST S3 inertness+lever: removing the two self burst-buffs lowers soda total, teammates identical', () => {
     expect(dmg(base.res, SLUG)).toBeGreaterThan(dmg(noBurstBuffs.res, SLUG));
-    for (const s of allySlugs(base.res)) expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));
+    for (const s of allySlugs(base.res))
+      expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));
   });
 
   // NON-VACUITY for the >=20 / >=30 stack GATES: because burst consumes 17 and rebuild is slow,
   // later bursts should FALL BELOW the ATK gate — so the 65.25 ATK buff must NOT apply on every
   // burst. If the driver never lets the pool decay, this goes RED (the intended divergence payload).
   it('BURST gating bites: ATK 65.25 applies on FEWER bursts than the number of soda burst casts (⛑ stack trajectory)', () => {
-    const casts = base.evs.filter(e => e.kind === 'burstCast' && (e.casterIdx === sodaIdx || e.srcSlot === sodaIdx));
+    const casts = base.evs.filter(
+      (e) =>
+        e.kind === 'burstCast' &&
+        (e.casterIdx === sodaIdx || e.srcSlot === sodaIdx)
+    );
     const atk = buffApplies(base.evs, 'atkPct', 65.25);
     if (casts.length < 3) return; // guard: need enough rotations for the pool to draw down
     expect(atk.length).toBeLessThan(casts.length); // the >=30 gate must exclude at least one late burst
@@ -825,11 +953,12 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
 
   it.skip('S1b rebuild rate: +1 Golden Chip per 3 FB normal attacks (GAP: "3 normal attacks" = 3 PULLS; engine hitCount counts pellet-HITS — encoding ⛑, verify by inspection)', () => {});
 });
-
 ```
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, cross-family; leakDetected null)
+
 ### 6a. Blind override JSON
+
 ```json
 {
   "slug": "soda-twinkling-bunny",
@@ -1075,7 +1204,9 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. SG/Iron/Attacker B3. Golden Chip resource (init 50, cap 50, ▼17/burst) gates skill2 FB-extend (+2/+3s) and burst self-buffs (Hit Rate ≥20, ATK 65.25% ≥30); pre-consume gate order preserved by placing the ▼17 in a trailing burst block. skill1: per-3-normal-attack-in-FB crit-damage stack (cap 66%) + a 10.51% Attack-Damage 2s refresh to self and the single highest-final-ATK ally (excl. self). skill2: per-normal-attack-in-FB flat riders (52.04% Time-Ext-I, +85.02% Time-Ext-II cumulative). Burst 628.7% instant nuke (noFb). Cadence/rebuild/gate-timing are the load-bearing unknowns."
 }
 ```
+
 ### 6b. Audit table + ⚑ flags
+
 ```json
 {
   "audit": [
@@ -1182,6 +1313,7 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
 ```
 
 ## 7. Driver's test (scripts/tests/units/soda-twinkling-bunny.test.ts — harness-correct, 22/22 GREEN vs shipped)
+
 ```typescript
 // PER-UNIT KIT SPEC — `soda-twinkling-bunny` (Soda: Twinkling Bunny, Attacker/SG/Iron, Burst III,
 // cd 40s, ammo 9, hitsPerShot 10, normalMult 231.6). Kit-autonomy gauntlet 2026-07-24 (driver tests).
@@ -1243,7 +1375,12 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
 // ZERO Full Bursts). Deterministic (no seed). Slot order: liter 0 / crown 1 / soda 2 / helm 3.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SODA = 'soda-twinkling-bunny';
@@ -1256,14 +1393,21 @@ type FbStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  const res = runComp({ ...controlComp(SODA), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  const res = runComp({
+    ...controlComp(SODA),
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return { events, totals: totals(res) };
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const sodaBuffs = (evs: SimEvent[], stat: string, value: number) =>
-  buffs(evs).filter((b) => b.casterIdx === SODA_SLOT && b.stat === stat && b.value === value);
+  buffs(evs).filter(
+    (b) => b.casterIdx === SODA_SLOT && b.stat === stat && b.value === value
+  );
 const sodaDmg = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage' && e.slug === SODA);
 const sodaBursts = (evs: SimEvent[]) =>
@@ -1271,72 +1415,112 @@ const sodaBursts = (evs: SimEvent[]) =>
 const fbWindows = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 const fbDurations = (evs: SimEvent[]) =>
-  [...new Set(fbWindows(evs).map((f) => +((f.endFrame - f.frame) / FPS).toFixed(2)))].sort((a, b) => a - b);
-const firstBurstFrame = (evs: SimEvent[]) => sodaBursts(evs)[0]?.frame ?? Infinity;
+  [
+    ...new Set(
+      fbWindows(evs).map((f) => +((f.endFrame - f.frame) / FPS).toFixed(2))
+    ),
+  ].sort((a, b) => a - b);
+const firstBurstFrame = (evs: SimEvent[]) =>
+  sodaBursts(evs)[0]?.frame ?? Infinity;
 
 // ---- counterfactual patches (nearest-wrong models; all measured RED vs shipped) ---------------
 /** STB2 reference: her live perResource crit line removed entirely. */
 const noCrit = withPatchedOverride(SODA, (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !b.effects.some((e: any) => e.stat === 'critDamagePct'));
-  if (ov.skill1.length === before) throw new Error('stb S1 critDamagePct block missing — fixture is stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'critDamagePct')
+  );
+  if (ov.skill1.length === before)
+    throw new Error('stb S1 critDamagePct block missing — fixture is stale');
 });
 /** STB3 reference: the +1 chip generation removed (pool never rebuilds). */
 const noGen = withPatchedOverride(SODA, (ov) => {
   let removed = 0;
   for (const blk of ov.skill1) {
     const before = blk.effects.length;
-    blk.effects = blk.effects.filter((e: any) => !(e.kind === 'resource' && e.delta > 0));
+    blk.effects = blk.effects.filter(
+      (e: any) => !(e.kind === 'resource' && e.delta > 0)
+    );
     removed += before - blk.effects.length;
   }
-  if (!removed) throw new Error('stb S1 +chip generation effect missing — fixture is stale');
+  if (!removed)
+    throw new Error(
+      'stb S1 +chip generation effect missing — fixture is stale'
+    );
 });
 /** STB4 reference: her AD self+ally blocks removed. */
 const noAd = withPatchedOverride(SODA, (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !b.effects.some((e: any) => e.stat === 'attackDamagePct'));
-  if (ov.skill1.length === before) throw new Error('stb S1 attackDamagePct block missing — fixture is stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.stat === 'attackDamagePct')
+  );
+  if (ov.skill1.length === before)
+    throw new Error('stb S1 attackDamagePct block missing — fixture is stale');
 });
 /** STB4 counterfactual: the ally block WITHOUT excludeSelf (double-targets Soda if she is top ATK). */
 const noExclude = withPatchedOverride(SODA, (ov) => {
   let hit = 0;
-  for (const blk of ov.skill1) if (blk.target?.kind === 'alliesTopAtk') { delete blk.target.excludeSelf; hit++; }
-  if (!hit) throw new Error('stb S1 alliesTopAtk block missing — fixture is stale');
+  for (const blk of ov.skill1)
+    if (blk.target?.kind === 'alliesTopAtk') {
+      delete blk.target.excludeSelf;
+      hit++;
+    }
+  if (!hit)
+    throw new Error('stb S1 alliesTopAtk block missing — fixture is stale');
 });
 /** STB5 reference: the Full-Burst-extension ladder removed. */
 const noFbExt = withPatchedOverride(SODA, (ov) => {
   const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend'));
-  if (ov.skill2.length === before) throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
+  ov.skill2 = ov.skill2.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend')
+  );
+  if (ov.skill2.length === before)
+    throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
 });
 /** STB5 counterfactual: a FLAT +2 ladder (wrong shape — the kit is cumulative +2/+3 = +5 at ≥20). */
 const flatLadder = withPatchedOverride(SODA, (ov) => {
   let hit = 0;
-  for (const blk of ov.skill2) for (const e of blk.effects) if (e.kind === 'fullBurstExtend') { e.seconds = 2; hit++; }
-  if (!hit) throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
+  for (const blk of ov.skill2)
+    for (const e of blk.effects)
+      if (e.kind === 'fullBurstExtend') {
+        e.seconds = 2;
+        hit++;
+      }
+  if (!hit)
+    throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
 });
 /** STB6 reference: the in-FB rider removed. */
 const noRider = withPatchedOverride(SODA, (ov) => {
   const before = ov.skill2.length;
-  ov.skill2 = ov.skill2.filter((b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage'));
-  if (ov.skill2.length === before) throw new Error('stb S2 flatDamage rider missing — fixture is stale');
+  ov.skill2 = ov.skill2.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
+  );
+  if (ov.skill2.length === before)
+    throw new Error('stb S2 flatDamage rider missing — fixture is stale');
 });
 /** STB7 reference: the burst nuke removed. */
 const noBurstDmg = withPatchedOverride(SODA, (ov) => {
   const before = ov.burst.length;
-  ov.burst = ov.burst.filter((b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage'));
-  if (ov.burst.length === before) throw new Error('stb burst flatDamage missing — fixture is stale');
+  ov.burst = ov.burst.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
+  );
+  if (ov.burst.length === before)
+    throw new Error('stb burst flatDamage missing — fixture is stale');
 });
 /** STB7 counterfactual: the −17 chip spend moved BEFORE the gates (violates "▼17 after applied"). */
 const spendFirst = withPatchedOverride(SODA, (ov) => {
-  const i = ov.burst.findIndex((b: any) => b.effects.some((e: any) => e.kind === 'resource'));
-  if (i < 0) throw new Error('stb burst chip-spend block missing — fixture is stale');
+  const i = ov.burst.findIndex((b: any) =>
+    b.effects.some((e: any) => e.kind === 'resource')
+  );
+  if (i < 0)
+    throw new Error('stb burst chip-spend block missing — fixture is stale');
   const [spend] = ov.burst.splice(i, 1);
   ov.burst.unshift(spend);
 });
 /** STB1/STB8 counterfactual: the pool opens at 0 instead of 50. */
 const pool0 = withPatchedOverride(SODA, (ov) => {
-  if (!ov.resources?.[0]) throw new Error('stb goldenChip resource missing — fixture is stale');
+  if (!ov.resources?.[0])
+    throw new Error('stb goldenChip resource missing — fixture is stale');
   ov.resources[0].initial = 0;
 });
 
@@ -1354,23 +1538,43 @@ const rSpendFirst = run({ [SODA]: spendFirst });
 const rPool0 = run({ [SODA]: pool0 });
 
 const sodaTotal = (r: { totals: Record<string, number> }) => r.totals[SODA];
-const atkGateFires = (evs: SimEvent[]) => sodaBuffs(evs, 'atkPct', 65.25).length;
-const hrGateFires = (evs: SimEvent[]) => sodaBuffs(evs, 'hitRatePct', 38.91).length;
+const atkGateFires = (evs: SimEvent[]) =>
+  sodaBuffs(evs, 'atkPct', 65.25).length;
+const hrGateFires = (evs: SimEvent[]) =>
+  sodaBuffs(evs, 'hitRatePct', 38.91).length;
 
 describe('soda-twinkling-bunny — kit spec', () => {
   describe('STB1 — S1 Golden Chip pool opens at 50 (resource initial)', () => {
     it('the ≥30 ATK gate and ≥20 HR gate BOTH clear on her first burst (pool ≥30 at t≈5s)', () => {
       const f0 = firstBurstFrame(base.events);
-      expect(f0, 'no burst cast — fixture must rotate her').toBeLessThan(Infinity);
-      const atkOnFirst = sodaBuffs(base.events, 'atkPct', 65.25).some((b) => b.frame === f0);
-      const hrOnFirst = sodaBuffs(base.events, 'hitRatePct', 38.91).some((b) => b.frame === f0);
-      expect(atkOnFirst, 'ATK ▲65.25 (≥30 chips) did not fire on burst 1 — pool did not open at 50').toBe(true);
-      expect(hrOnFirst, 'Hit Rate ▲38.91 (≥20 chips) did not fire on burst 1 — pool did not open at 50').toBe(true);
+      expect(f0, 'no burst cast — fixture must rotate her').toBeLessThan(
+        Infinity
+      );
+      const atkOnFirst = sodaBuffs(base.events, 'atkPct', 65.25).some(
+        (b) => b.frame === f0
+      );
+      const hrOnFirst = sodaBuffs(base.events, 'hitRatePct', 38.91).some(
+        (b) => b.frame === f0
+      );
+      expect(
+        atkOnFirst,
+        'ATK ▲65.25 (≥30 chips) did not fire on burst 1 — pool did not open at 50'
+      ).toBe(true);
+      expect(
+        hrOnFirst,
+        'Hit Rate ▲38.91 (≥20 chips) did not fire on burst 1 — pool did not open at 50'
+      ).toBe(true);
     });
 
     it('the first Full Burst is already extended to 15s (pool ≥20 at the first stage-3 entry)', () => {
-      expect(fbDurations(base.events)[0] === 15 || fbDurations(base.events).includes(15)).toBe(true);
-      expect(fbDurations(base.events).some((d) => d > 10), 'no FB extension on a 50-chip open').toBe(true);
+      expect(
+        fbDurations(base.events)[0] === 15 ||
+          fbDurations(base.events).includes(15)
+      ).toBe(true);
+      expect(
+        fbDurations(base.events).some((d) => d > 10),
+        'no FB extension on a 50-chip open'
+      ).toBe(true);
     });
 
     it('DISCRIMINATING: a pool opening at 0 fires NEITHER gate and leaves the FB at 10s', () => {
@@ -1382,18 +1586,34 @@ describe('soda-twinkling-bunny — kit spec', () => {
 
   describe('STB2 — S1 Critical Damage is LIVE off the pool (perResource ×1.32), not a from-0 ramp', () => {
     it('is a passive self buff applied once at frame 0 with base value 0 (perResource reads the live pool)', () => {
-      const crit = buffs(base.events).filter((b) => b.casterIdx === SODA_SLOT && b.stat === 'critDamagePct');
-      expect(crit.length, 'no passive critDamagePct buff applied').toBeGreaterThan(0);
+      const crit = buffs(base.events).filter(
+        (b) => b.casterIdx === SODA_SLOT && b.stat === 'critDamagePct'
+      );
+      expect(
+        crit.length,
+        'no passive critDamagePct buff applied'
+      ).toBeGreaterThan(0);
       for (const b of crit) {
-        expect(b.value, 'perResource base must be 0 (a flat encoding emits its number here)').toBe(0);
+        expect(
+          b.value,
+          'perResource base must be 0 (a flat encoding emits its number here)'
+        ).toBe(0);
         expect(b.targetIdx, 'crit buff is self-scoped').toBe(SODA_SLOT);
-        expect(b.expiresFrame, 'passive crit buff has no wall-clock expiry').toBeNull();
+        expect(
+          b.expiresFrame,
+          'passive crit buff has no wall-clock expiry'
+        ).toBeNull();
       }
-      expect(crit[0].frame, 'passive crit buff is up from battle start').toBe(0);
+      expect(crit[0].frame, 'passive crit buff is up from battle start').toBe(
+        0
+      );
     });
 
     it('DISCRIMINATING: removing the live crit line drops her total (the pool×1.32 is damage-bearing)', () => {
-      expect(sodaTotal(base), 'crit line is inert — not damage-bearing').toBeGreaterThan(sodaTotal(rNoCrit));
+      expect(
+        sodaTotal(base),
+        'crit line is inert — not damage-bearing'
+      ).toBeGreaterThan(sodaTotal(rNoCrit));
     });
   });
 
@@ -1405,8 +1625,14 @@ describe('soda-twinkling-bunny — kit spec', () => {
     });
 
     it('DISCRIMINATING: removing the generation drains the pool — gates stop firing late', () => {
-      expect(atkGateFires(rNoGen.events), 'ATK gate count unchanged without rebuild').toBeLessThan(atkGateFires(base.events));
-      expect(hrGateFires(rNoGen.events), 'HR gate count unchanged without rebuild').toBeLessThan(hrGateFires(base.events));
+      expect(
+        atkGateFires(rNoGen.events),
+        'ATK gate count unchanged without rebuild'
+      ).toBeLessThan(atkGateFires(base.events));
+      expect(
+        hrGateFires(rNoGen.events),
+        'HR gate count unchanged without rebuild'
+      ).toBeLessThan(hrGateFires(base.events));
       expect(sodaTotal(rNoGen)).toBeLessThan(sodaTotal(base));
     });
   });
@@ -1415,7 +1641,8 @@ describe('soda-twinkling-bunny — kit spec', () => {
     const ad = (evs: SimEvent[]) => sodaBuffs(evs, 'attackDamagePct', 10.51);
     const byTarget = (evs: SimEvent[]) => {
       const m = new Map<number, number>();
-      for (const b of ad(evs)) m.set(b.targetIdx ?? -1, (m.get(b.targetIdx ?? -1) ?? 0) + 1);
+      for (const b of ad(evs))
+        m.set(b.targetIdx ?? -1, (m.get(b.targetIdx ?? -1) ?? 0) + 1);
       return m;
     };
 
@@ -1423,22 +1650,32 @@ describe('soda-twinkling-bunny — kit spec', () => {
       const m = byTarget(base.events);
       expect(m.get(SODA_SLOT) ?? 0, 'self AD buff missing').toBeGreaterThan(0);
       const allyHits = [...m.entries()].filter(([tgt]) => tgt !== SODA_SLOT);
-      expect(allyHits.length, 'no ally received the AD buff').toBeGreaterThan(0);
+      expect(allyHits.length, 'no ally received the AD buff').toBeGreaterThan(
+        0
+      );
     });
 
     it('the ally block NEVER targets Soda (excludeSelf honored) — slot 2 holds exactly her self-block count', () => {
       const m = byTarget(base.events);
       const selfCount = m.get(SODA_SLOT) ?? 0;
-      const allyTotal = [...m.entries()].filter(([tgt]) => tgt !== SODA_SLOT).reduce((s, [, n]) => s + n, 0);
+      const allyTotal = [...m.entries()]
+        .filter(([tgt]) => tgt !== SODA_SLOT)
+        .reduce((s, [, n]) => s + n, 0);
       // self-block and ally-block share the same every-3-in-FB trigger, so they fire equally often;
       // if the ally block double-targeted Soda, slot 2 would carry self+ally (> allyTotal).
-      expect(selfCount, 'slot 2 carries more than the self block — ally block is leaking onto Soda').toBe(allyTotal);
+      expect(
+        selfCount,
+        'slot 2 carries more than the self block — ally block is leaking onto Soda'
+      ).toBe(allyTotal);
     });
 
     it('DISCRIMINATING: dropping excludeSelf double-targets Soda and starves the true carry', () => {
       const mBase = byTarget(base.events);
       const mNoEx = byTarget(rNoExclude.events);
-      expect(mNoEx.get(SODA_SLOT) ?? 0, 'excludeSelf removal did not redirect the ally buff onto Soda').toBeGreaterThan(mBase.get(SODA_SLOT) ?? 0);
+      expect(
+        mNoEx.get(SODA_SLOT) ?? 0,
+        'excludeSelf removal did not redirect the ally buff onto Soda'
+      ).toBeGreaterThan(mBase.get(SODA_SLOT) ?? 0);
     });
 
     it('DISCRIMINATING: removing the AD line drops her total', () => {
@@ -1451,7 +1688,9 @@ describe('soda-twinkling-bunny — kit spec', () => {
     it('every Full Burst window is 15s (10s base + 5s extension) while the pool sits ≥20', () => {
       const durs = fbDurations(base.events);
       expect(durs.length, 'no Full Burst windows').toBeGreaterThan(0);
-      expect(durs, 'a window not extended to 15s — ladder mis-shaped').toEqual([15]);
+      expect(durs, 'a window not extended to 15s — ladder mis-shaped').toEqual([
+        15,
+      ]);
     });
 
     it('DISCRIMINATING: removing the ladder leaves 10s windows', () => {
@@ -1460,28 +1699,41 @@ describe('soda-twinkling-bunny — kit spec', () => {
 
     it('DISCRIMINATING: a flat +2 (wrong shape) never reaches the 15s the cumulative +5 produces', () => {
       const durs = fbDurations(rFlatLadder.events);
-      expect(Math.max(...durs), 'flat +2 reached 15s — not discriminating').toBeLessThan(15);
+      expect(
+        Math.max(...durs),
+        'flat +2 reached 15s — not discriminating'
+      ).toBeLessThan(15);
     });
   });
 
   describe('STB6 — S2 in-FB rider deals 130% (⚑ recording-derived) to 1 enemy, inside Full Burst only', () => {
-    const riders = () => sodaDmg(base.events).filter((d) => d.srcSlot === 'skill2');
+    const riders = () =>
+      sodaDmg(base.events).filter((d) => d.srcSlot === 'skill2');
 
     it('fires on in-FB normals at the kit slot, all inside Full Burst', () => {
       const r = riders();
       expect(r.length, 'no skill2 rider damage').toBeGreaterThan(0);
-      expect([...new Set(r.map((d) => d.atkPct))], 'rider magnitude drifted from the shipped 130').toEqual([130]);
-      expect([...new Set(r.map((d) => d.inFullBurst))], 'rider fired outside Full Burst').toEqual([true]);
+      expect(
+        [...new Set(r.map((d) => d.atkPct))],
+        'rider magnitude drifted from the shipped 130'
+      ).toEqual([130]);
+      expect(
+        [...new Set(r.map((d) => d.inFullBurst))],
+        'rider fired outside Full Burst'
+      ).toEqual([true]);
     });
 
     it('DISCRIMINATING: removing the rider zeroes skill2 damage and drops her total ~35%', () => {
-      expect(sodaDmg(rNoRider.events).filter((d) => d.srcSlot === 'skill2').length).toBe(0);
+      expect(
+        sodaDmg(rNoRider.events).filter((d) => d.srcSlot === 'skill2').length
+      ).toBe(0);
       expect(sodaTotal(rNoRider)).toBeLessThan(sodaTotal(base));
     });
   });
 
   describe('STB7 — burst nuke 628.7% once per cast; the −17 chip spend lands AFTER the gates', () => {
-    const nukes = (evs: SimEvent[]) => sodaDmg(evs).filter((d) => d.srcSlot === 'burst');
+    const nukes = (evs: SimEvent[]) =>
+      sodaDmg(evs).filter((d) => d.srcSlot === 'burst');
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       const n = nukes(base.events);
@@ -1498,26 +1750,42 @@ describe('soda-twinkling-bunny — kit spec', () => {
     it('DISCRIMINATING: spending the chips BEFORE the gates collapses the late gates (pre-consume ordering)', () => {
       // burst-5 pre-consume is in [20,30): the ≥30 ATK gate and ≥20 HR gate must read it BEFORE the
       // −17 spend. Spend-first drops the pool below the gates first, so fewer gates clear.
-      expect(atkGateFires(rSpendFirst.events), 'spend-first did not reduce ATK gate fires').toBeLessThan(atkGateFires(base.events));
-      expect(hrGateFires(rSpendFirst.events), 'spend-first did not reduce HR gate fires').toBeLessThan(hrGateFires(base.events));
+      expect(
+        atkGateFires(rSpendFirst.events),
+        'spend-first did not reduce ATK gate fires'
+      ).toBeLessThan(atkGateFires(base.events));
+      expect(
+        hrGateFires(rSpendFirst.events),
+        'spend-first did not reduce HR gate fires'
+      ).toBeLessThan(hrGateFires(base.events));
     });
   });
 
   describe('STB8 — burst self-buffs: Hit Rate ▲38.91%/15s (≥20) on all 5, ATK ▲65.25%/15s (≥30) on the first 4', () => {
     it('HR (≥20) fires on every burst; ATK (≥30) stops once the pool drains below 30 (burst 5)', () => {
       const bursts = sodaBursts(base.events).length;
-      expect(hrGateFires(base.events), 'HR gate did not fire on every burst (pool ≥20 throughout)').toBe(bursts);
-      expect(atkGateFires(base.events), 'ATK gate should drain below 30 by the last burst').toBe(bursts - 1);
+      expect(
+        hrGateFires(base.events),
+        'HR gate did not fire on every burst (pool ≥20 throughout)'
+      ).toBe(bursts);
+      expect(
+        atkGateFires(base.events),
+        'ATK gate should drain below 30 by the last burst'
+      ).toBe(bursts - 1);
     });
 
     it('both are self-targeted 15s buffs', () => {
       for (const stat of ['atkPct', 'hitRatePct'] as const) {
         const val = stat === 'atkPct' ? 65.25 : 38.91;
         const applied = sodaBuffs(base.events, stat, val);
-        expect(applied.length, `${stat} ${val} never applied`).toBeGreaterThan(0);
+        expect(applied.length, `${stat} ${val} never applied`).toBeGreaterThan(
+          0
+        );
         for (const b of applied) {
           expect(b.targetIdx, `${stat} buff is self-scoped`).toBe(SODA_SLOT);
-          expect(b.expiresFrame! - b.frame, `${stat} buff duration`).toBe(15 * FPS);
+          expect(b.expiresFrame! - b.frame, `${stat} buff duration`).toBe(
+            15 * FPS
+          );
         }
       }
     });
@@ -1528,10 +1796,10 @@ describe('soda-twinkling-bunny — kit spec', () => {
     });
   });
 });
-
 ```
 
 ## 8. S2d independent verification matrix + S5 harness-artifact note
+
 ```
 S2d INDEPENDENT VERIFICATION GATE — soda-twinkling-bunny (2026-07-24)
 Method: `npx vitest run scripts/tests/units/soda-twinkling-bunny.test.ts` against (i) the unmodified SHIPPED

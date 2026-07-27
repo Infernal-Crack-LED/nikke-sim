@@ -48,14 +48,29 @@ import {
   type UnitOptions,
 } from '../src/prepare.js';
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
-const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
-const cubes: CubesFile = JSON.parse(readFileSync(new URL('../data/cubes.json', import.meta.url), 'utf8'));
-const olLines: OlLinesFile = JSON.parse(readFileSync(new URL('../data/ol-lines.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
+);
+const mult: LevelMultiplier = JSON.parse(
+  readFileSync(
+    new URL('../data/level-multiplier.json', import.meta.url),
+    'utf8'
+  )
+);
+const cubes: CubesFile = JSON.parse(
+  readFileSync(new URL('../data/cubes.json', import.meta.url), 'utf8')
+);
+const olLines: OlLinesFile = JSON.parse(
+  readFileSync(new URL('../data/ol-lines.json', import.meta.url), 'utf8')
+);
 let skillLevels: SkillLevelData = {};
 try {
-  skillLevels = JSON.parse(readFileSync(new URL('../data/skill-levels.json', import.meta.url), 'utf8'));
-} catch { /* optional */ }
+  skillLevels = JSON.parse(
+    readFileSync(new URL('../data/skill-levels.json', import.meta.url), 'utf8')
+  );
+} catch {
+  /* optional */
+}
 
 export interface ControlComp {
   name: string;
@@ -76,51 +91,90 @@ export const CONTROL_COMPS: ControlComp[] = [
     slugs: ['liter', 'crown', 'ada', 'helm'],
     boss: 'Fire',
     focus: 'ada',
-    real: { liter: 124_543_305, crown: 211_302_032, ada: 628_376_078, helm: 589_548_661 },
+    real: {
+      liter: 124_543_305,
+      crown: 211_302_032,
+      ada: 628_376_078,
+      helm: 589_548_661,
+    },
   },
   {
     name: 'CTRL maiden-ice-rose (boss Fire, focus maiden-ice-rose)',
     slugs: ['liter', 'crown', 'maiden-ice-rose', 'helm'],
     boss: 'Fire',
     focus: 'maiden-ice-rose',
-    real: { liter: 130_042_870, crown: 211_463_202, 'maiden-ice-rose': 558_995_823, helm: 573_101_464 },
+    real: {
+      liter: 130_042_870,
+      crown: 211_463_202,
+      'maiden-ice-rose': 558_995_823,
+      helm: 573_101_464,
+    },
   },
   {
     name: 'CTRL scarlet-black-shadow (boss Fire, focus scarlet-black-shadow)',
     slugs: ['liter', 'crown', 'scarlet-black-shadow', 'helm'],
     boss: 'Fire',
     focus: 'scarlet-black-shadow',
-    real: { liter: 123_481_156, crown: 205_769_902, 'scarlet-black-shadow': 849_221_912, helm: 535_159_064 },
+    real: {
+      liter: 123_481_156,
+      crown: 205_769_902,
+      'scarlet-black-shadow': 849_221_912,
+      helm: 535_159_064,
+    },
   },
   {
     name: 'CTRL soda-twinkling-bunny (boss Fire, focus soda-twinkling-bunny)',
     slugs: ['liter', 'crown', 'soda-twinkling-bunny', 'helm'],
     boss: 'Fire',
     focus: 'soda-twinkling-bunny',
-    real: { liter: 118_663_892, crown: 174_602_181, 'soda-twinkling-bunny': 400_444_564, helm: 483_033_946 },
+    real: {
+      liter: 118_663_892,
+      crown: 174_602_181,
+      'soda-twinkling-bunny': 400_444_564,
+      helm: 483_033_946,
+    },
   },
 ];
 
 function run(comp: ControlComp, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
-    doll: false, ol: 'base5', mode: comp.modes?.[slug], lambdaStage: comp.lambda?.[slug],
+    doll: false,
+    ol: 'base5',
+    mode: comp.modes?.[slug],
+    lambdaStage: comp.lambda?.[slug],
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) overrides[s] = loadOverride(s);
-  const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus, seed });
-  const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
+  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  const cfg = scopeLockCfg(comp.slugs, comp.boss, {
+    focusSlug: comp.focus,
+    seed,
+  });
+  const prepared = prepareTeam(chars, unitOpts, {
+    overrides,
+    skillLevels,
+    cubes,
+    olLines,
+  });
   return runSim(chars, mult, cfg, prepared);
 }
 
-const SNAPSHOT_PATH = new URL('./control-regression-snapshot.json', import.meta.url);
+const SNAPSHOT_PATH = new URL(
+  './control-regression-snapshot.json',
+  import.meta.url
+);
 const update = process.argv.includes('--update');
-const snapshot: Record<string, Record<string, number>> = existsSync(SNAPSHOT_PATH)
+const snapshot: Record<string, Record<string, number>> = existsSync(
+  SNAPSHOT_PATH
+)
   ? JSON.parse(readFileSync(SNAPSHOT_PATH, 'utf8'))
   : {};
 
 let failures = 0;
-const fail = (msg: string) => { failures++; console.error(`  ✗ ${msg}`); };
+const fail = (msg: string) => {
+  failures++;
+  console.error(`  ✗ ${msg}`);
+};
 const ok = (msg: string) => console.log(`  ✓ ${msg}`);
 
 // ratio = sim/real (>1 HOT ▲ = sim over-models), the board convention — docs/CONVENTIONS.md.
@@ -149,28 +203,33 @@ for (const comp of CONTROL_COMPS) {
   for (const slug of comp.slugs) {
     const arr = totalsBySeed.get(slug)!;
     const mean = arr.reduce((a, b) => a + b, 0) / arr.length;
-    const sd = Math.sqrt(arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length);
+    const sd = Math.sqrt(
+      arr.reduce((a, b) => a + (b - mean) ** 2, 0) / arr.length
+    );
     const real = comp.real[slug];
     const ratio = mean / real;
     perUnit.set(slug, [...(perUnit.get(slug) ?? []), ratio]);
     console.log(
       `  ${slug.padEnd(24)} sim ${(mean / 1e6).toFixed(0).padStart(5)}M  real ${(real / 1e6).toFixed(0).padStart(5)}M` +
-      `  ratio ${ratio.toFixed(3)} ± ${(sd / real).toFixed(3)}  ${tag(ratio)}`
+        `  ratio ${ratio.toFixed(3)} ± ${(sd / real).toFixed(3)}  ${tag(ratio)}`
     );
   }
 
   // snapshot — per-unit EV totals, byte-stable
   const totals: Record<string, number> = {};
-  for (const u of ev.units) totals[u.slug] = Math.round(u.totalDamage);
+  for (const u of ev.units) {totals[u.slug] = Math.round(u.totalDamage);}
   if (update) {
     snapshot[comp.name] = totals;
   } else if (snapshot[comp.name]) {
     for (const [slug, val] of Object.entries(totals)) {
       const prev = snapshot[comp.name][slug];
-      if (prev === undefined) continue;
+      if (prev === undefined) {continue;}
       const drift = Math.abs(val - prev) / prev;
-      if (drift > 0.001) fail(`${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`);
-      else ok(`${slug} snapshot stable`);
+      if (drift > 0.001)
+        {fail(
+          `${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`
+        );}
+      else {ok(`${slug} snapshot stable`);}
     }
   } else {
     console.log('  (no snapshot yet — run with --update)');
@@ -180,19 +239,23 @@ for (const comp of CONTROL_COMPS) {
 // Cross-comp summary: the actual tuning readout. The three CONSTANT supports carry four
 // readings each; a spread across them means the residual tracks the carry, a tight cluster
 // off 1.0 means the support's own kit.
-console.log('\nper-unit across the control suite (n = comps the unit appears in)');
+console.log(
+  '\nper-unit across the control suite (n = comps the unit appears in)'
+);
 for (const [slug, rs] of perUnit) {
   const mean = rs.reduce((a, b) => a + b, 0) / rs.length;
   const mad = rs.reduce((a, b) => a + Math.abs(b - 1), 0) / rs.length;
   console.log(
     `  ${slug.padEnd(24)} n=${rs.length}  mean ${mean.toFixed(3)}  |ratio−1| ${mad.toFixed(3)}` +
-    `  [${rs.map((r) => r.toFixed(3)).join(' ')}]  ${tag(mean)}`
+      `  [${rs.map((r) => r.toFixed(3)).join(' ')}]  ${tag(mean)}`
   );
 }
 
 if (update) {
   writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 1));
-  console.log('\ncontrol snapshot regenerated — commit it together with the change it reflects');
+  console.log(
+    '\ncontrol snapshot regenerated — commit it together with the change it reflects'
+  );
 } else if (failures) {
   console.error(`\ncontrol regression: ${failures} failure(s)`);
   process.exit(1);

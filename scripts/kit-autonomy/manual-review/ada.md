@@ -45,6 +45,7 @@ lifesteal is UNMODELED (no HP pool; offensively inert; crown the B2 on-recovery 
 Cross-family: S2b fable + S6 opus both re-derived casterAtkPct/stage-3/trueDamagePct exactly.
 
 **skill2** — two interleaved every-2s streams of `dot atkPct 420, flavor true, 10s`:
+
 - block 1 keyed `fullBurstEnter` → enemy (the baseline grenade, re-applied every FB enter);
 - block 2 keyed `burstCast` → enemy (the "▼1s activation" rider). The schema has no interval-modifier primitive,
   so the rider is encoded as a SECOND identical every-2s stream on Ada's own burstCast → combined rate exactly 1/s

@@ -18,15 +18,19 @@ const SRC = toDataUrl(`${ICONS}/code_fire.svg`);
 
 function decodePng(buf) {
   let pos = 8;
-  let w = 0, h = 0, colorType = 0;
+  let w = 0,
+    h = 0,
+    colorType = 0;
   const idat = [];
   while (pos < buf.length) {
     const len = buf.readUInt32BE(pos);
     const type = buf.toString('ascii', pos + 4, pos + 8);
     const data = buf.subarray(pos + 8, pos + 8 + len);
     if (type === 'IHDR') {
-      w = data.readUInt32BE(0); h = data.readUInt32BE(4); colorType = data[9];
-    } else if (type === 'IDAT') idat.push(data);
+      w = data.readUInt32BE(0);
+      h = data.readUInt32BE(4);
+      colorType = data[9];
+    } else if (type === 'IDAT') {idat.push(data);}
     pos += 12 + len;
   }
   const channels = colorType === 6 ? 4 : 3;
@@ -43,20 +47,32 @@ function decodePng(buf) {
       const b = prev[x];
       const c = x >= channels ? prev[x - channels] : 0;
       switch (filter) {
-        case 1: cur[x] = (cur[x] + a) & 255; break;
-        case 2: cur[x] = (cur[x] + b) & 255; break;
-        case 3: cur[x] = (cur[x] + ((a + b) >> 1)) & 255; break;
+        case 1:
+          cur[x] = (cur[x] + a) & 255;
+          break;
+        case 2:
+          cur[x] = (cur[x] + b) & 255;
+          break;
+        case 3:
+          cur[x] = (cur[x] + ((a + b) >> 1)) & 255;
+          break;
         case 4: {
           const p = a + b - c;
-          const pa = Math.abs(p - a), pb = Math.abs(p - b), pc = Math.abs(p - c);
-          cur[x] = (cur[x] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 255;
+          const pa = Math.abs(p - a),
+            pb = Math.abs(p - b),
+            pc = Math.abs(p - c);
+          cur[x] =
+            (cur[x] + (pa <= pb && pa <= pc ? a : pb <= pc ? b : c)) & 255;
           break;
         }
       }
     }
     for (let x = 0; x < w; x++) {
-      const si = x * channels, di = (y * w + x) * 4;
-      px[di] = cur[si]; px[di + 1] = cur[si + 1]; px[di + 2] = cur[si + 2];
+      const si = x * channels,
+        di = (y * w + x) * 4;
+      px[di] = cur[si];
+      px[di + 1] = cur[si + 1];
+      px[di + 2] = cur[si + 2];
       px[di + 3] = channels === 4 ? cur[si + 3] : 255;
     }
     prev = cur;
@@ -65,10 +81,10 @@ function decodePng(buf) {
 }
 
 function deviation(a, b) {
-  if (a.w !== b.w || a.h !== b.h) return NaN;
+  if (a.w !== b.w || a.h !== b.h) {return NaN;}
   let sum = 0;
   const n = a.w * a.h * 4;
-  for (let i = 0; i < n; i++) sum += Math.abs(a.px[i] - b.px[i]);
+  for (let i = 0; i < n; i++) {sum += Math.abs(a.px[i] - b.px[i]);}
   return sum / n;
 }
 
@@ -79,7 +95,13 @@ function ascii(img) {
   for (let y = 0; y < img.h; y++) {
     let line = '';
     for (let x = 0; x < img.w; x++)
-      line += RAMP[Math.min(RAMP.length - 1, Math.floor((lum(img.px, (y * img.w + x) * 4) / 255) * RAMP.length))];
+      {line +=
+        RAMP[
+          Math.min(
+            RAMP.length - 1,
+            Math.floor((lum(img.px, (y * img.w + x) * 4) / 255) * RAMP.length)
+          )
+        ];}
     lines.push(line);
   }
   return lines.join('\n');
@@ -94,7 +116,7 @@ async function idealRef(page, dev) {
       let size = 1024;
       let cv = document.createElement('canvas');
       cv.width = cv.height = size;
-      let cx = cv.getContext('2d');
+      const cx = cv.getContext('2d');
       cx.imageSmoothingEnabled = true;
       cx.imageSmoothingQuality = 'high';
       cx.drawImage(img, 0, 0, size, size);
@@ -111,7 +133,7 @@ async function idealRef(page, dev) {
       }
       return cv.toDataURL('image/png');
     },
-    { src: SRC, dev },
+    { src: SRC, dev }
   );
   return decodePng(Buffer.from(dataUrl.split(',')[1], 'base64'));
 }
@@ -135,7 +157,7 @@ async function test(name, launch, dpr) {
   for (const order of ['small-first', 'large-first']) {
     const sizes = order === 'small-first' ? [16, 40] : [40, 16];
     await page.setContent(
-      `<!doctype html><style>html,body{margin:0;background:#14161b}img{position:absolute;display:block;object-fit:contain}</style><body></body>`,
+      `<!doctype html><style>html,body{margin:0;background:#14161b}img{position:absolute;display:block;object-fit:contain}</style><body></body>`
     );
     for (let i = 0; i < sizes.length; i++) {
       const s = sizes[i];
@@ -148,15 +170,17 @@ async function test(name, launch, dpr) {
           document.body.appendChild(img);
           await img.decode();
         },
-        { src: SRC, s, i },
+        { src: SRC, s, i }
       );
     }
     await page.waitForTimeout(200);
     const big = decodePng(await page.locator('#s40').screenshot());
     const ref = await idealRef(page, Math.round(40 * dpr));
     const d = deviation(big, ref);
-    console.log(`\n=== ${name} dpr ${dpr}, ${order}: 40px render devFromIdeal=${d.toFixed(2)} (${big.w}x${big.h}) ===`);
-    if (d > 15) console.log(ascii(big));
+    console.log(
+      `\n=== ${name} dpr ${dpr}, ${order}: 40px render devFromIdeal=${d.toFixed(2)} (${big.w}x${big.h}) ===`
+    );
+    if (d > 15) {console.log(ascii(big));}
   }
   await ctx.close();
   await browser.close();

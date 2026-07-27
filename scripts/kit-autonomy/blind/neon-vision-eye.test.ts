@@ -61,9 +61,16 @@ const F = (e: Ev): number => (typeof e?.frame === 'number' ? e.frame : -1);
 // srcSlot is the documented field; fall back defensively rather than silently matching nothing.
 const SRC = (e: Ev): string | undefined => e?.srcSlot ?? e?.slot ?? e?.source;
 
-function run(opts: ReturnType<typeof controlComp>, extra: Record<string, unknown> = {}) {
+function run(
+  opts: ReturnType<typeof controlComp>,
+  extra: Record<string, unknown> = {}
+) {
   const events: Ev[] = [];
-  const res = runComp({ ...opts, ...extra, onEvent: (ev: SimEvent) => events.push(ev) } as any);
+  const res = runComp({
+    ...opts,
+    ...extra,
+    onEvent: (ev: SimEvent) => events.push(ev),
+  } as any);
   return { res, events };
 }
 
@@ -81,20 +88,27 @@ const BASE = run(controlComp(SLUG, true));
 // Nearest-wrong for S1b: the Firepower Explosion rider does not exist at all.
 const noRider = withPatchedOverride(SLUG, (ov: Ev) => {
   for (const b of slotBlocks(ov, 'skill1')) {
-    for (const e of (b.effects ?? [])) {
-      if (e.kind === 'flatDamage' || e.kind === 'dot' || e.kind === 'storedHit') e.atkPct = 0;
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage' || e.kind === 'dot' || e.kind === 'storedHit')
+        {e.atkPct = 0;}
     }
   }
 });
-const NO_RIDER = run(controlComp(SLUG, true), { overrides: { [SLUG]: noRider } });
+const NO_RIDER = run(controlComp(SLUG, true), {
+  overrides: { [SLUG]: noRider },
+});
 
 // ---------------------------------------------------------------- derived event views
 const EV: Ev[] = BASE.events;
 const FB_START = EV.filter((e) => e.kind === 'fullBurstStart').map(F);
 const FB_END = EV.filter((e) => e.kind === 'fullBurstEnd').map(F);
-const SELF_BUFFS = EV.filter((e) => e.kind === 'buffApply' && e.targetSlug === SLUG);
+const SELF_BUFFS = EV.filter(
+  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG
+);
 const pick = (stat: string, value?: number) =>
-  SELF_BUFFS.filter((e) => e.stat === stat && (value === undefined || near(e.value, value)));
+  SELF_BUFFS.filter(
+    (e) => e.stat === stat && (value === undefined || near(e.value, value))
+  );
 
 const B110 = pick('attackDamagePct', 110.21); // Bc, unconditional, once per own cast
 const B45 = pick('attackDamagePct', 45.03); // Bb, Super Firepower branch only
@@ -159,7 +173,7 @@ describe('neon-vision-eye — burst: Super Firepower branch is CONDITIONAL on a 
     }
     // every Super apply coincides with one of this unit's own casts
     const castFrames = new Set(B110.map(F));
-    for (const e of B45) expect(castFrames.has(F(e))).toBe(true);
+    for (const e of B45) {expect(castFrames.has(F(e))).toBe(true);}
   });
 });
 
@@ -169,7 +183,7 @@ describe('neon-vision-eye — skill2: Maximum Firepower ATK 80.04% / 10 s on FUL
     const starts = new Set(FB_START);
     // Nearest-wrong: keying "when entering Full Burst" to burstCast. A burst cast resolves
     // BEFORE the Full Burst window opens, so its apply frame would not be in this set.
-    for (const e of A80) expect(starts.has(F(e))).toBe(true);
+    for (const e of A80) {expect(starts.has(F(e))).toBe(true);}
     for (const e of A80) {
       expect(e.expiresFrame - F(e)).toBeGreaterThanOrEqual(10 * FPS - 6);
       expect(e.expiresFrame - F(e)).toBeLessThanOrEqual(10 * FPS + 6);
@@ -190,7 +204,7 @@ describe('neon-vision-eye — skill2: Maximum Firepower ATK 80.04% / 10 s on FUL
     expect(A35.length).toBeLessThan(A80.length);
     expect(pick('atkPct', 115.09)).toHaveLength(0);
     const starts = new Set(FB_START);
-    for (const e of A35) expect(starts.has(F(e))).toBe(true);
+    for (const e of A35) {expect(starts.has(F(e))).toBe(true);}
   });
 });
 
@@ -233,7 +247,7 @@ describe('neon-vision-eye — skill1: Firepower Explosion 437.98% per full charg
     // guard: real, distinct frames (so "two hits on one frame" is meaningful)
     expect(new Set(frames).size).toBeGreaterThan(1);
     const counts = new Map<number, number>();
-    for (const f of frames) counts.set(f, (counts.get(f) ?? 0) + 1);
+    for (const f of frames) {counts.set(f, (counts.get(f) ?? 0) + 1);}
     const doubled = [...counts.values()].filter((n) => n >= 2).length;
     // Nearest-wrong A: the 262.79 rider dropped -> doubled === 0.
     // Nearest-wrong B: the rider made unconditional (status gate lost) -> every charge doubles.
@@ -248,7 +262,7 @@ describe('neon-vision-eye — inertness (every kit line says "Affects self" or t
       (e) =>
         e.kind === 'buffApply' &&
         e.targetSlug !== SLUG &&
-        [110.21, 45.03, 80.04, 35.05].some((v) => near(e.value, v)),
+        [110.21, 45.03, 80.04, 35.05].some((v) => near(e.value, v))
     );
     expect(leaked).toEqual([]);
   });

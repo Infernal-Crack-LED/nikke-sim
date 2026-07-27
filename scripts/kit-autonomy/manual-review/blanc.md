@@ -14,15 +14,15 @@ giving near-permanent debuff uptime.
 
 ## Line dispositions
 
-| Line | Slot | Disposition | Notes |
-|------|------|-------------|-------|
-| B1 | skill1 | FAITHFUL | hitCount:120 → allies → shield{maxHpPct:11.8, durationSec:5} |
-| B2 | skill2 | FAITHFUL | fullBurstEnd → allies → heal{ticks:5, intervalSec:1} |
-| B3 | skill2 | FAITHFUL | fullBurstEnd → self → burstCdr 40.76 |
-| B4 | burst | FAITHFUL | burstCast → allies → heal{ticks:8, intervalSec:1} |
-| B5 | burst | FAITHFUL | burstCast → alliesLowestHp → targetMaxHpPct 31.68 (offensively inert, e3 rule) |
-| B6 | burst | UNMODELED | Indomitability 10s — death immunity, out of scope for v1 |
-| B7 | burst | FAITHFUL | burstCast → enemy → damageTakenPct 39.26, 10s |
+| Line | Slot   | Disposition | Notes                                                                          |
+| ---- | ------ | ----------- | ------------------------------------------------------------------------------ |
+| B1   | skill1 | FAITHFUL    | hitCount:120 → allies → shield{maxHpPct:11.8, durationSec:5}                   |
+| B2   | skill2 | FAITHFUL    | fullBurstEnd → allies → heal{ticks:5, intervalSec:1}                           |
+| B3   | skill2 | FAITHFUL    | fullBurstEnd → self → burstCdr 40.76                                           |
+| B4   | burst  | FAITHFUL    | burstCast → allies → heal{ticks:8, intervalSec:1}                              |
+| B5   | burst  | FAITHFUL    | burstCast → alliesLowestHp → targetMaxHpPct 31.68 (offensively inert, e3 rule) |
+| B6   | burst  | UNMODELED   | Indomitability 10s — death immunity, out of scope for v1                       |
+| B7   | burst  | FAITHFUL    | burstCast → enemy → damageTakenPct 39.26, 10s                                  |
 
 ## Cross-family convergence
 

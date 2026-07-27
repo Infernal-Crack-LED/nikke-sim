@@ -171,7 +171,7 @@ confidences, why the decision landed where it did, owner action items, and the H
   **STEP 0 EARNED ITS KEEP — one premise CONFIRMED with a scope correction, one REFUTED, and the
   REFUTE is what shaped the deliverable.** Premise A (no general named-status vocabulary exists) came
   back CONFIRM but narrower than believed: two apply-then-gate channels DO exist (`wipeOut`,
-  `shield`), each a single hardcoded-name boolean, so the honest claim is "no *general* way", not "no
+  `shield`), each a single hardcoded-name boolean, so the honest claim is "no _general_ way", not "no
   way" — a hack onto `wipeOut` was available at the cost of colliding with `d-killer-wife`. Premise B
   (the four 5e units share one shape) came back **REFUTE**: read from kit text, the registry is
   NECESSARY for all four but SUFFICIENT only for `privaty`; `mint` needs a memoryful timerless XOR
@@ -181,8 +181,8 @@ confidences, why the decision landed where it did, owner action items, and the H
   it would have shipped a speculative-general mechanism justified by three units it cannot serve.
   **PRE-OP CAUGHT A NON-DISCRIMINATING PREDICTION.** The plan's name-keying test was "gate on a name
   that is never applied → baseline", which the single-boolean rival ALSO passes (the boolean stays
-  false all run). Revised to: apply status A and gate on B *in the same run with a status genuinely
-  live*. That revision is the only reason the test can distinguish the two designs at all.
+  false all run). Revised to: apply status A and gate on B _in the same run with a status genuinely
+  live_. That revision is the only reason the test can distinguish the two designs at all.
   **HARNESS LESSONS.** (1) A "same shape of problem" grouping in a plan doc is a LOAD-BEARING premise
   and should be premise-gated like an anchor identity — it silently sets scope, and this one was
   wrong in the direction of building more, which no board diff would ever have caught (an inert
@@ -195,9 +195,9 @@ confidences, why the decision landed where it did, owner action items, and the H
   5/27 = 0.1852 observed. An unexplained residual that turns out to be integer-exact is the
   difference between a test you trust and a test that happens to pass.
 - **2026-07-23 (later) — `wipeOut` DELETED, `d-killer-wife` migrated to the named registry: OWNER
-  ENACTMENT, no pipeline.** Direct owner ruling (*"just delete the old wipeout and set the new one live,
+  ENACTMENT, no pipeline.** Direct owner ruling (_"just delete the old wipeout and set the new one live,
   faithful > fit… leaving an incorrect implementation just because it passes a regression test is always
-  wrong"*), so no premise gate / pre-op / post-op was run — recorded here because the harness log is the
+  wrong"_), so no premise gate / pre-op / post-op was run — recorded here because the harness log is the
   provenance trail for engine changes regardless of which path authorized them. Isolated worktree,
   `verify.sh full` green, regression byte-identical WITHOUT `--update` (the migration is
   semantics-preserving), primitive count 92 → 90. DECISIONS 2026-07-23 (second entry).
@@ -205,8 +205,8 @@ confidences, why the decision landed where it did, owner action items, and the H
   That run deliberately left `wipeOut` in place because unifying "would move `d-killer-wife`, the one
   graded carrier, and so cannot ride an inert landing." Two errors in that reasoning: (1) it was never
   checked whether the migration actually moves her — it does not, the semantics are identical, so the
-  entire stated cost was hypothetical; and (2) *board-movement risk* was allowed to outrank *known
-  incorrectness*. The old pair could hold one status name roster-wide; leaving it live meant the next
+  entire stated cost was hypothetical; and (2) _board-movement risk_ was allowed to outrank _known
+  incorrectness_. The old pair could hold one status name roster-wide; leaving it live meant the next
   enemy-status carrier would silently collide. **Generalize: "it passes the regression" is not a reason
   to keep a model you have just demonstrated is wrong — and before deferring a fix on predicted board
   movement, MEASURE the movement.** A deferral justified by an unmeasured cost is a guess wearing a
@@ -222,7 +222,7 @@ confidences, why the decision landed where it did, owner action items, and the H
   clean/scope-correct/zero-leakage; blockers were doc-authority only — DECISIONS entry + STATE/
   game-mechanics current-state — all landed). DECISIONS 2026-07-23 (supersedes 2026-07-17 D.2).
   **HARNESS LESSONS:** (1) the pre-op judge's "make the mutation checks REAL, one per mechanism" caught
-  the difference between a discrimination that *passes* and one *proven to fail on a broken mechanic* —
+  the difference between a discrimination that _passes_ and one _proven to fail on a broken mechanic_ —
   a green test is not evidence it discriminates until you break the thing it guards. (2) The
   runtime-env trap: `PULLS_PER_SEC` is a module-const evaluated at import, so a probe that sets
   `process.env.SMGQUANT` in a loop reads ONE arm for every "arm" — always vary an engine-const flag by

@@ -1,16 +1,23 @@
 // Copy a DPS-chart infographic to the clipboard as a PNG, rendered via the shared
 // isomorphic drawDpsChart. Falls back to a download when the clipboard image API is
 // unavailable. Mirrors App.tsx's team-card image share.
-import { CHART_W, chartHeight, drawDpsChart, type DpsChartData } from '../../src/share/dpsChart';
+import {
+  CHART_W,
+  chartHeight,
+  drawDpsChart,
+  type DpsChartData,
+} from '../../src/share/dpsChart';
 import type { Canvas2DLike } from '../../src/share/teamCard';
 import { loadPortrait } from './teamShare';
 
-export async function copyDpsChartImage(data: DpsChartData): Promise<'copied' | 'downloaded' | 'unsupported'> {
+export async function copyDpsChartImage(
+  data: DpsChartData
+): Promise<'copied' | 'downloaded' | 'unsupported'> {
   // preload each bar's portrait into `img` so the isomorphic renderer can draw it
   await Promise.all(
     data.bars.map(async (b) => {
-      if (b.imageUrl) b.img = (await loadPortrait(b.imageUrl)) ?? undefined;
-    }),
+      if (b.imageUrl) {b.img = (await loadPortrait(b.imageUrl)) ?? undefined;}
+    })
   );
 
   const dpr = 2;
@@ -18,13 +25,15 @@ export async function copyDpsChartImage(data: DpsChartData): Promise<'copied' | 
   cv.width = CHART_W * dpr;
   cv.height = chartHeight(data.bars.length, !!data.compare) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) return 'unsupported';
+  if (!ctx) {return 'unsupported';}
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
   drawDpsChart(ctx as unknown as Canvas2DLike, data);
-  const blob = await new Promise<Blob | null>((res) => cv.toBlob((b) => res(b), 'image/png'));
-  if (!blob) return 'unsupported';
+  const blob = await new Promise<Blob | null>((res) =>
+    cv.toBlob((b) => res(b), 'image/png')
+  );
+  if (!blob) {return 'unsupported';}
   try {
     await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
     return 'copied';

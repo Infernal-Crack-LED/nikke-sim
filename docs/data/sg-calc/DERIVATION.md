@@ -13,22 +13,22 @@ All pixel measurements are at the scope-lock recording resolution **2622×1206**
 
 For each recording we locate the boss core (red weak-point) and measure three concentric rings:
 
-| Ring | How measured |
-|---|---|
-| core (red) | color extent of the red core (vertical, to dodge the horizontal red status-text) |
-| crosshair (white) | radial histogram of white-arc pixels → peak radius |
-| spread / accuracy circle | owner-drawn ground truth (cyan); the gray translucent disc |
+| Ring                     | How measured                                                                     |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| core (red)               | color extent of the red core (vertical, to dodge the horizontal red status-text) |
+| crosshair (white)        | radial histogram of white-arc pixels → peak radius                               |
+| spread / accuracy circle | owner-drawn ground truth (cyan); the gray translucent disc                       |
 
 ## 2. `accuracy_circle_scale` → pixel diameter
 
 Three independent (scale, pixel-diameter) **bloom-peak** points, each from a different weapon class /
 recording (the reticle pulses on the fire cadence — measure the fully-bloomed peak, not a snapshot):
 
-| Element | Unit | Scale | Measured px (peak) |
-|---|---|---|---|
-| AR accuracy circle | scarlet | 75 | 48 |
-| SMG accuracy circle | little-mermaid (lm, 0:10) | 110 | 71.5 |
-| SG spread circle | noir (mid, 0:13.9) | 250 | 162 |
+| Element             | Unit                      | Scale | Measured px (peak) |
+| ------------------- | ------------------------- | ----- | ------------------ |
+| AR accuracy circle  | scarlet                   | 75    | 48                 |
+| SMG accuracy circle | little-mermaid (lm, 0:10) | 110   | 71.5               |
+| SG spread circle    | noir (mid, 0:13.9)        | 250   | 162                |
 
 Least-squares fit (through the origin):
 
@@ -56,12 +56,12 @@ AR (29px) and SMG (60px) points and produced the spurious −25.2 offset. Hit Ra
 
 Core diameters measured per Noir band (near→far, boss shrinks with distance):
 
-| Band | Core D (px) | Range bounds (owner) |
-|---|---|---|
-| near | 31 | 15–25 |
-| mid | 28 | 25–45 |
-| mid-far | 21 | 35–55 |
-| far | 17 | 56–100 |
+| Band    | Core D (px) | Range bounds (owner) |
+| ------- | ----------- | -------------------- |
+| near    | 31          | 15–25                |
+| mid     | 28          | 25–45                |
+| mid-far | 21          | 35–55                |
+| far     | 17          | 56–100               |
 
 Model selection (both numbers treated as fuzzy; the range **bounds** are the hard constraint):
 
@@ -70,7 +70,7 @@ Model selection (both numbers treated as fuzzy; the range **bounds** are the har
 - **Linear `d = a − b·r`** — RULED OUT. Best fit puts mid-far at range 57.7, past its 35–55 cap.
 - **Inverse-with-offset `d = k/(r + c)`** — SELECTED. All four implied ranges land in-bounds; R²=0.93.
 
-> **core_D_px ≈ 2100 / (range + 47)**   →   inverted:  **range ≈ 2100 / core_D_px − 47**
+> **core_D_px ≈ 2100 / (range + 47)** → inverted: **range ≈ 2100 / core_D_px − 47**
 
 Implied ranges: near 20.7, mid 28.0, mid-far 52.9, far 76.4 — all inside the owner bounds. This is
 the physically expected form: apparent size ∝ 1/(distance + camera-offset); the **~47 offset** is
@@ -82,12 +82,12 @@ range midpoints (±~10%); the **form** is what the bounds robustly select.
 Within the spread circle, we hand-outline (owner ground truth) the **miss** patches — background
 gaps where pellets whiff — and take **hit = spread − miss** (boss body, pellets connect):
 
-| Band | Core D | **Hit** | **Miss** |
-|---|---|---|---|
-| near | 31 | 79.7% | 20.3% |
-| mid | 28 | 71.0% | 29.0% |
-| mid-far | 21 | 63.4% | 36.6% |
-| far | 17 | 46.5% | 53.5% |
+| Band    | Core D | **Hit** | **Miss** |
+| ------- | ------ | ------- | -------- |
+| near    | 31     | 79.7%   | 20.3%    |
+| mid     | 28     | 71.0%   | 29.0%    |
+| mid-far | 21     | 63.4%   | 36.6%    |
+| far     | 17     | 46.5%   | 53.5%    |
 
 Hit% declines cleanly with range (near 79.7 → far 46.5): the boss shrinks inside the fixed
 D=162 spread circle, so more pellets land on background. Annotations: `noir-sg-*-missred.png`,
@@ -99,10 +99,10 @@ The AR reticle's **contracted floor / inner bound** reads **~29px**, and the mid
 **28px**, measured completely separately. They match to 1px. But 29px is **not** the AR accuracy
 circle — fully bloomed that circle is **48px** (§2). So the correct reading is: **29px is the AR
 reticle's HR-shrink floor**, and it happens to equal the core. That makes the "optimal range =
-all-core" mechanism a *saturation* effect: fully bloomed the AR core fraction is only
+all-core" mechanism a _saturation_ effect: fully bloomed the AR core fraction is only
 `coreFracGeo(28, 48) ≈ 0.34`; as Hit Rate squeezes the bloom down toward the 29px floor (≈ core),
 `coreFracGeo → ~1`. The old "AR circle 29 ≈ core 28 ⇒ ~100% core at optimal" reading conflated a
-mid-bloom *snapshot* of the accuracy circle with the floor. The core still never entered the §2
+mid-bloom _snapshot_ of the accuracy circle with the floor. The core still never entered the §2
 regression, so its ≈ the floor is an independent check on the shrink model.
 
 ## Reproduce

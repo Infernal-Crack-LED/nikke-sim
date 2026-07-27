@@ -62,14 +62,18 @@ import {
 function runWithEvents(
   slugs: readonly string[],
   bossElement: Element | null = CLEAN_WEAPON_BOSS_ELEMENT,
-  bursting = false,
+  bursting = false
 ) {
   const events: SimEvent[] = [];
   const base = bareWeaponComp(slugs);
   const res = runComp({
     ...base,
     bossElement,
-    cfg: { ...base.cfg, disableBursts: !bursting, onEvent: (ev: SimEvent) => events.push(ev) },
+    cfg: {
+      ...base.cfg,
+      disableBursts: !bursting,
+      onEvent: (ev: SimEvent) => events.push(ev),
+    },
   });
   return { res, events };
 }
@@ -83,55 +87,170 @@ const countKind = (events: SimEvent[], kind: SimEvent['kind']) =>
 // Pinned characteristics + a digest of the three skill-prose slots. A kit rebalance, a weapon
 // stat change, or an element/burst-stage change all break this group FIRST, before any of the
 // numbers below can quietly become wrong.
-const PINNED = new Map<string, {
-  weapon: string; element: Element; burst: string; ammo: number; reloadFrames: number;
-  chargeFrames: number; hitsPerShot: number; normalMult: number; kit: string;
-}>([
-  ['folkwang',    { weapon: 'AR',  element: 'Water',    burst: 'II', ammo: 60,  reloadFrames: 99,  chargeFrames: 0,  hitsPerShot: 1,  normalMult: 14.29, kit: 'e74522234a347284' }],
-  ['marciana',    { weapon: 'SG',  element: 'Iron',     burst: 'II', ammo: 9,   reloadFrames: 111, chargeFrames: 0,  hitsPerShot: 10, normalMult: 201.5, kit: '1bb965943677d6fa' }],
-  ['snow-crane',  { weapon: 'SR',  element: 'Water',    burst: 'II', ammo: 6,   reloadFrames: 141, chargeFrames: 60, hitsPerShot: 1,  normalMult: 69.04, kit: '3fe703f611a2cb19' }],
-  ['emma',        { weapon: 'MG',  element: 'Fire',     burst: 'I',  ammo: 300, reloadFrames: 171, chargeFrames: 0,  hitsPerShot: 1,  normalMult: 5.57,  kit: '338872f98c6bef00' }],
-  ['claire',      { weapon: 'RL',  element: 'Electric', burst: 'I',  ammo: 6,   reloadFrames: 141, chargeFrames: 60, hitsPerShot: 1,  normalMult: 61.3,  kit: '6f885e890535da0b' }],
-  ['idoll-ocean', { weapon: 'SMG', element: 'Water',    burst: 'I',  ammo: 120, reloadFrames: 111, chargeFrames: 0,  hitsPerShot: 1,  normalMult: 8.73,  kit: '514fd89e76a5ccd6' }],
+const PINNED = new Map<
+  string,
+  {
+    weapon: string;
+    element: Element;
+    burst: string;
+    ammo: number;
+    reloadFrames: number;
+    chargeFrames: number;
+    hitsPerShot: number;
+    normalMult: number;
+    kit: string;
+  }
+>([
+  [
+    'folkwang',
+    {
+      weapon: 'AR',
+      element: 'Water',
+      burst: 'II',
+      ammo: 60,
+      reloadFrames: 99,
+      chargeFrames: 0,
+      hitsPerShot: 1,
+      normalMult: 14.29,
+      kit: 'e74522234a347284',
+    },
+  ],
+  [
+    'marciana',
+    {
+      weapon: 'SG',
+      element: 'Iron',
+      burst: 'II',
+      ammo: 9,
+      reloadFrames: 111,
+      chargeFrames: 0,
+      hitsPerShot: 10,
+      normalMult: 201.5,
+      kit: '1bb965943677d6fa',
+    },
+  ],
+  [
+    'snow-crane',
+    {
+      weapon: 'SR',
+      element: 'Water',
+      burst: 'II',
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      hitsPerShot: 1,
+      normalMult: 69.04,
+      kit: '3fe703f611a2cb19',
+    },
+  ],
+  [
+    'emma',
+    {
+      weapon: 'MG',
+      element: 'Fire',
+      burst: 'I',
+      ammo: 300,
+      reloadFrames: 171,
+      chargeFrames: 0,
+      hitsPerShot: 1,
+      normalMult: 5.57,
+      kit: '338872f98c6bef00',
+    },
+  ],
+  [
+    'claire',
+    {
+      weapon: 'RL',
+      element: 'Electric',
+      burst: 'I',
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      hitsPerShot: 1,
+      normalMult: 61.3,
+      kit: '6f885e890535da0b',
+    },
+  ],
+  [
+    'idoll-ocean',
+    {
+      weapon: 'SMG',
+      element: 'Water',
+      burst: 'I',
+      ammo: 120,
+      reloadFrames: 111,
+      chargeFrames: 0,
+      hitsPerShot: 1,
+      normalMult: 8.73,
+      kit: '514fd89e76a5ccd6',
+    },
+  ],
 ]);
 
 const kitDigest = (slug: string) =>
   createHash('sha256')
-    .update([
-      data.characters[slug].skills.skill1,
-      data.characters[slug].skills.skill2,
-      data.characters[slug].skills.burst,
-    ].join(' '))
+    .update(
+      [
+        data.characters[slug].skills.skill1,
+        data.characters[slug].skills.skill2,
+        data.characters[slug].skills.burst,
+      ].join(' ')
+    )
     .digest('hex')
     .slice(0, 16);
 
 describe('CW1 — the clean-weapon six are damage-inert (premise pinned)', () => {
   it('covers all six weapon classes exactly once, three per team', () => {
     expect(CLEAN_WEAPON_SLUGS).toHaveLength(6);
-    expect(CLEAN_WEAPON_TEAMS.a.map((s) => data.characters[s].weapon)).toEqual(['AR', 'SG', 'SR']);
-    expect(CLEAN_WEAPON_TEAMS.b.map((s) => data.characters[s].weapon)).toEqual(['MG', 'RL', 'SMG']);
+    expect(CLEAN_WEAPON_TEAMS.a.map((s) => data.characters[s].weapon)).toEqual([
+      'AR',
+      'SG',
+      'SR',
+    ]);
+    expect(CLEAN_WEAPON_TEAMS.b.map((s) => data.characters[s].weapon)).toEqual([
+      'MG',
+      'RL',
+      'SMG',
+    ]);
   });
 
-  it.each([...PINNED])('%s — weapon stats and kit prose are unchanged', (slug, want) => {
-    const c = data.characters[slug];
-    expect({
-      weapon: c.weapon, element: c.element, burst: c.burst, ammo: c.ammo,
-      reloadFrames: c.reloadFrames, chargeFrames: c.chargeFrames,
-      hitsPerShot: c.hitsPerShot, normalMult: c.normalAttackMultiplier,
-    }).toEqual({
-      weapon: want.weapon, element: want.element, burst: want.burst, ammo: want.ammo,
-      reloadFrames: want.reloadFrames, chargeFrames: want.chargeFrames,
-      hitsPerShot: want.hitsPerShot, normalMult: want.normalMult,
-    });
-    // If THIS fails, the kit text moved: re-read all three slots for damage-touching lines
-    // before re-pinning. The whole suite's meaning depends on the answer still being "none".
-    expect(kitDigest(slug)).toBe(want.kit);
-  });
+  it.each([...PINNED])(
+    '%s — weapon stats and kit prose are unchanged',
+    (slug, want) => {
+      const c = data.characters[slug];
+      expect({
+        weapon: c.weapon,
+        element: c.element,
+        burst: c.burst,
+        ammo: c.ammo,
+        reloadFrames: c.reloadFrames,
+        chargeFrames: c.chargeFrames,
+        hitsPerShot: c.hitsPerShot,
+        normalMult: c.normalAttackMultiplier,
+      }).toEqual({
+        weapon: want.weapon,
+        element: want.element,
+        burst: want.burst,
+        ammo: want.ammo,
+        reloadFrames: want.reloadFrames,
+        chargeFrames: want.chargeFrames,
+        hitsPerShot: want.hitsPerShot,
+        normalMult: want.normalMult,
+      });
+      // If THIS fails, the kit text moved: re-read all three slots for damage-touching lines
+      // before re-pinning. The whole suite's meaning depends on the answer still being "none".
+      expect(kitDigest(slug)).toBe(want.kit);
+    }
+  );
 
   it('none of the six has a committed override — the fixture kit is empty by construction', async () => {
-    const { loadOverride } = await import('../../../src/skills/overrides-node.js');
+    const { loadOverride } =
+      await import('../../../src/skills/overrides-node.js');
     for (const slug of CLEAN_WEAPON_SLUGS) {
-      expect(loadOverride(slug), `${slug} gained an override — the bare-weapon basis now has a kit`).toBeUndefined();
+      expect(
+        loadOverride(slug),
+        `${slug} gained an override — the bare-weapon basis now has a kit`
+      ).toBeUndefined();
     }
   });
 });
@@ -146,22 +265,30 @@ describe('CW2 — bursts are disabled', () => {
       const { events, res } = runWithEvents(slugs);
       expect(countKind(events, 'burstCast')).toBe(0);
       expect(countKind(events, 'fullBurstStart')).toBe(0);
-      for (const u of res.units) expect(u.burstCasts, u.slug).toBe(0);
-    },
+      for (const u of res.units) {expect(u.burstCasts, u.slug).toBe(0);}
+    }
   );
 
   it('team B WOULD cast with bursting on — so the flag is what suppresses it', () => {
     // Discrimination, and the reason team B is the real test of the flag: it is all Burst I,
     // so its chain opens unaided. Without this, CW2 could pass on a comp that never had a
     // castable burst in the first place — which is exactly team A's situation.
-    const { events } = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, true);
+    const { events } = runWithEvents(
+      CLEAN_WEAPON_TEAMS.b,
+      CLEAN_WEAPON_BOSS_ELEMENT,
+      true
+    );
     expect(countKind(events, 'burstCast')).toBeGreaterThan(0);
   });
 
   it('team A could not open a chain even with bursting on — a second, independent guarantee', () => {
     // Not made redundant by the flag: team A's baselines are bare-weapon under EITHER
     // mechanism, so a future regression in `disableBursts` cannot silently corrupt them.
-    const { events } = runWithEvents(CLEAN_WEAPON_TEAMS.a, CLEAN_WEAPON_BOSS_ELEMENT, true);
+    const { events } = runWithEvents(
+      CLEAN_WEAPON_TEAMS.a,
+      CLEAN_WEAPON_BOSS_ELEMENT,
+      true
+    );
     expect(countKind(events, 'burstCast')).toBe(0);
   });
 });
@@ -175,8 +302,16 @@ describe('CW2 — bursts are disabled', () => {
 // both at once: team B casts 15 bursts with the flag off and 0 with it on, for identical damage.
 describe('CW3 — disabling bursts suppresses casts and nothing else', () => {
   it('team B is byte-identical with bursting on and off', () => {
-    const off = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, false);
-    const on = runWithEvents(CLEAN_WEAPON_TEAMS.b, CLEAN_WEAPON_BOSS_ELEMENT, true);
+    const off = runWithEvents(
+      CLEAN_WEAPON_TEAMS.b,
+      CLEAN_WEAPON_BOSS_ELEMENT,
+      false
+    );
+    const on = runWithEvents(
+      CLEAN_WEAPON_TEAMS.b,
+      CLEAN_WEAPON_BOSS_ELEMENT,
+      true
+    );
 
     // The runs really do differ in burst behaviour — otherwise the equality below is vacuous.
     expect(countKind(off.events, 'burstCast')).toBe(0);
@@ -206,33 +341,50 @@ describe('CW3 — disabling bursts suppresses casts and nothing else', () => {
 const ALL_ELEMENTS: Element[] = ['Fire', 'Water', 'Wind', 'Electric', 'Iron'];
 
 describe('CW4 — boss element Iron is neutral for all six', () => {
-  it.each(Object.entries(CLEAN_WEAPON_TEAMS))('team %s: Iron is identical to a forced-neutral boss', (_label, slugs) => {
-    const iron = totals(runComp(bareWeaponComp(slugs)));
-    const none = totals(runComp({ ...bareWeaponComp(slugs), bossElement: null }));
-    expect(iron).toEqual(none);
-  });
+  it.each(Object.entries(CLEAN_WEAPON_TEAMS))(
+    'team %s: Iron is identical to a forced-neutral boss',
+    (_label, slugs) => {
+      const iron = totals(runComp(bareWeaponComp(slugs)));
+      const none = totals(
+        runComp({ ...bareWeaponComp(slugs), bossElement: null })
+      );
+      expect(iron).toEqual(none);
+    }
+  );
 
   it('Iron is the ONLY such element — every other one advantages at least one unit', () => {
     const neutralFor = (el: Element) =>
       CLEAN_WEAPON_SLUGS.every((slug) => {
         const solo = bareWeaponComp([slug]);
-        return unitOf(runComp({ ...solo, bossElement: el }), slug).totalDamage
-          === unitOf(runComp({ ...solo, bossElement: null }), slug).totalDamage;
+        return (
+          unitOf(runComp({ ...solo, bossElement: el }), slug).totalDamage ===
+          unitOf(runComp({ ...solo, bossElement: null }), slug).totalDamage
+        );
       });
     expect(ALL_ELEMENTS.filter(neutralFor)).toEqual(['Iron']);
   });
 
   it.each([
-    ['folkwang', 'Fire'], ['marciana', 'Electric'], ['snow-crane', 'Fire'],
-    ['emma', 'Wind'], ['claire', 'Water'], ['idoll-ocean', 'Fire'],
-  ] as const)('%s takes exactly ×1.1 against the %s boss she counters', (slug, advElement) => {
-    // Discrimination for the two assertions above: the elemental major is LIVE and worth
-    // 10%, so "Iron === null" is a real result and not an inert code path.
-    const solo = bareWeaponComp([slug]);
-    const neutral = unitOf(runComp(solo), slug).totalDamage;
-    const advantaged = unitOf(runComp({ ...solo, bossElement: advElement }), slug).totalDamage;
-    expect(advantaged / neutral).toBeCloseTo(1.1, 10);
-  });
+    ['folkwang', 'Fire'],
+    ['marciana', 'Electric'],
+    ['snow-crane', 'Fire'],
+    ['emma', 'Wind'],
+    ['claire', 'Water'],
+    ['idoll-ocean', 'Fire'],
+  ] as const)(
+    '%s takes exactly ×1.1 against the %s boss she counters',
+    (slug, advElement) => {
+      // Discrimination for the two assertions above: the elemental major is LIVE and worth
+      // 10%, so "Iron === null" is a real result and not an inert code path.
+      const solo = bareWeaponComp([slug]);
+      const neutral = unitOf(runComp(solo), slug).totalDamage;
+      const advantaged = unitOf(
+        runComp({ ...solo, bossElement: advElement }),
+        slug
+      ).totalDamage;
+      expect(advantaged / neutral).toBeCloseTo(1.1, 10);
+    }
+  );
 });
 
 // ---------------------------------------------------------------------------------------
@@ -247,11 +399,11 @@ describe('CW4 — boss element Iron is neutral for all six', () => {
 // 180-second output with no kit whatsoever, so a recorded fight scores the weapon model
 // directly. A diff here is a change to the shared weapon math — read it, don't just re-pin it.
 const BASELINE: Record<string, number> = {
-  folkwang:      23911667.2326,
-  marciana:      35163154.4909,
-  'snow-crane':  29018295.6903,
-  emma:          58117326.0183,
-  claire:        24044092.8525,
+  folkwang: 23911667.2326,
+  marciana: 35163154.4909,
+  'snow-crane': 29018295.6903,
+  emma: 58117326.0183,
+  claire: 24044092.8525,
   // SMG frame-quantization landed 2026-07-23 (24→20.0 rounds/s, DECISIONS): idoll-ocean is the only
   // SMG in this fixture, so she is the only baseline that moved (23577817.0691 → below); the five
   // non-SMG rows are byte-identical. Recomputed under the shipped cadence, not fitted.
@@ -259,12 +411,15 @@ const BASELINE: Record<string, number> = {
 };
 
 describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bursts)', () => {
-  it.each(Object.entries(CLEAN_WEAPON_TEAMS))('team %s baselines', (_label, slugs) => {
-    const got = totals(runComp(bareWeaponComp(slugs)));
-    for (const slug of slugs) {
-      expect(got[slug], slug).toBeCloseTo(BASELINE[slug], 4);
+  it.each(Object.entries(CLEAN_WEAPON_TEAMS))(
+    'team %s baselines',
+    (_label, slugs) => {
+      const got = totals(runComp(bareWeaponComp(slugs)));
+      for (const slug of slugs) {
+        expect(got[slug], slug).toBeCloseTo(BASELINE[slug], 4);
+      }
     }
-  });
+  );
 
   it('the rarity ceilings are actually applied — not silently ignored', () => {
     // Discrimination: without this, a fixture that dropped `unitLimits` would still pass CW5
@@ -272,13 +427,18 @@ describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bur
     // with nothing to catch them. Asserted on staticAtk, which is where the ceiling acts.
     const EXPECTED_ATK: Record<string, { capped: number; ssr: number }> = {
       'idoll-ocean': { capped: 68928, ssr: 81530 }, // 0★/core 0 — plain scope lock over-credits 18.3%
-      claire: { capped: 79200, ssr: 90632 },        // 2★/core 0 — plain scope lock over-credits 14.4%
+      claire: { capped: 79200, ssr: 90632 }, // 2★/core 0 — plain scope lock over-credits 14.4%
     };
     for (const slug of Object.keys(CLEAN_WEAPON_LIMITS)) {
       const capped = unitOf(runComp(bareWeaponComp([slug])), slug);
-      const ssr = unitOf(runComp(bareWeaponComp([slug], { unitLimits: {} })), slug);
+      const ssr = unitOf(
+        runComp(bareWeaponComp([slug], { unitLimits: {} })),
+        slug
+      );
       expect(capped.staticAtk, slug).toBe(EXPECTED_ATK[slug].capped);
-      expect(ssr.staticAtk, `${slug} without the ceiling`).toBe(EXPECTED_ATK[slug].ssr);
+      expect(ssr.staticAtk, `${slug} without the ceiling`).toBe(
+        EXPECTED_ATK[slug].ssr
+      );
     }
   });
 
@@ -290,8 +450,10 @@ describe('CW5 — bare-weapon baselines (scope lock, boss Iron, core 100, no bur
     for (const u of res.units) {
       const c = data.characters[u.slug];
       const key = `${c.class}|${c.manufacturer ?? '—'}`;
-      (byGroup.get(key) ?? byGroup.set(key, new Set()).get(key)!).add(u.staticAtk);
+      (byGroup.get(key) ?? byGroup.set(key, new Set()).get(key)!).add(
+        u.staticAtk
+      );
     }
-    for (const [key, atks] of byGroup) expect(atks.size, key).toBe(1);
+    for (const [key, atks] of byGroup) {expect(atks.size, key).toBe(1);}
   });
 });

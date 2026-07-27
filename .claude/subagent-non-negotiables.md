@@ -5,6 +5,7 @@ prepends this (or points to it) in every spawn; the parent verifies its own PREM
 (a wrong premise poisons every downstream agent).
 
 ## NON-NEGOTIABLES
+
 1. **EXACT SLUG.** Refer to every unit by its exact slug + full name. NEVER conflate a base with a
    variant (Snow White `snow-white` AR/Iron ≠ Snow White: Heavy Arms `snow-white-heavy-arms` SR/Water) —
    they are entirely different units; conflating is a P0 failure. Reason from the slug, not the base name.

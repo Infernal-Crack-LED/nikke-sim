@@ -59,33 +59,33 @@ function run(overrides: Record<string, any> = {}) {
 /** G1 reference: S1 removed entirely (no ATK stacks). */
 const guiltyNoS1 = withPatchedOverride('guilty', (ov) => {
   if (!ov.skill1.length)
-    throw new Error('guilty S1 missing — fixture is stale');
+    {throw new Error('guilty S1 missing — fixture is stale');}
   ov.skill1 = [];
 });
 /** G3 reference: S2 removed entirely (no Wind-ally ATK buff). */
 const guiltyNoS2 = withPatchedOverride('guilty', (ov) => {
   if (!ov.skill2.length)
-    throw new Error('guilty S2 missing — fixture is stale');
+    {throw new Error('guilty S2 missing — fixture is stale');}
   ov.skill2 = [];
 });
 /** G5 isolation: remove ONLY the defPct effect from the burst block, keeping the 277.71% rider. */
 const guiltyNoDefDebuff = withPatchedOverride('guilty', (ov) => {
   const block = ov.burst.find((b: any) =>
-    b.effects.some((e: any) => e.stat === 'defPct'),
+    b.effects.some((e: any) => e.stat === 'defPct')
   );
   if (!block)
-    throw new Error('guilty burst defPct block missing — fixture is stale');
+    {throw new Error('guilty burst defPct block missing — fixture is stale');}
   block.effects = block.effects.filter((e: any) => e.stat !== 'defPct');
 });
 /** G6 isolation: remove ONLY the 277.71% additional damage, keeping the defPct debuff. */
 const guiltyNoAdditional = withPatchedOverride('guilty', (ov) => {
   const block = ov.burst.find((b: any) =>
-    b.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 277.71),
+    b.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 277.71)
   );
   if (!block)
-    throw new Error('guilty burst 277.71% block missing — fixture is stale');
+    {throw new Error('guilty burst 277.71% block missing — fixture is stale');}
   block.effects = block.effects.filter(
-    (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 277.71),
+    (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 277.71)
   );
 });
 
@@ -103,7 +103,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const guiltyBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'guilty',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'guilty'
   );
 const guiltyDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'guilty' && d.srcSlot === srcSlot);
@@ -116,7 +116,7 @@ describe('guilty — kit spec', () => {
       (b) =>
         b.casterIdx === GUILTY &&
         b.stat === 'casterAtkPct' &&
-        b.key.includes('8.81'),
+        b.key.includes('8.81')
     );
 
     it('fires with the kit percentage embedded in the key', () => {
@@ -147,7 +147,7 @@ describe('guilty — kit spec', () => {
 
   describe('G3 — S2: atkPct 4.13% for 10s, all Wind allies, every 12 shots', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === GUILTY && b.stat === 'atkPct',
+      (b) => b.casterIdx === GUILTY && b.stat === 'atkPct'
     );
 
     it('fires with the kit magnitude', () => {
@@ -173,14 +173,14 @@ describe('guilty — kit spec', () => {
 
   describe('G4 — burst: 284.32% of final ATK as Burst Skill damage', () => {
     const nukes = guiltyDamage(base.events, 'burst').filter(
-      (d) => d.atkPct === 284.32,
+      (d) => d.atkPct === 284.32
     );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       const casts = guiltyBursts(base.events);
       expect(
         casts.length,
-        'guilty never cast a burst — fixture is stale',
+        'guilty never cast a burst — fixture is stale'
       ).toBeGreaterThan(0);
       expect(nukes.length).toBe(casts.length);
       expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
@@ -203,14 +203,14 @@ describe('guilty — kit spec', () => {
       const pctDiff = Math.abs(baseDmg - noDefDmg) / baseDmg;
       expect(
         pctDiff,
-        `DEF debuff shifted guilty damage by ${(pctDiff * 100).toFixed(4)}%`,
+        `DEF debuff shifted guilty damage by ${(pctDiff * 100).toFixed(4)}%`
       ).toBeLessThan(0.001);
     });
   });
 
   describe('G6 — burst rider: 277.71% of final ATK as additional damage', () => {
     const riders = guiltyDamage(base.events, 'burst').filter(
-      (d) => d.atkPct === 277.71,
+      (d) => d.atkPct === 277.71
     );
 
     it('fires once per burst cast at the kit magnitude', () => {

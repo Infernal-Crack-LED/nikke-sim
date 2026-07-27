@@ -63,7 +63,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 function run(
   slugs: string[],
   overrides: Record<string, any> = {},
-  focusIdx = 2,
+  focusIdx = 2
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -86,61 +86,61 @@ const NAGA_NS = 1; // slot in NO_SHIELD_COMP
 const blancLongShield = withPatchedOverride('blanc', (ov) => {
   let hit = 0;
   for (const block of (ov as any).skill1)
-    for (const eff of block.effects)
-      if (eff.kind === 'shield') {
+    {for (const eff of block.effects)
+      {if (eff.kind === 'shield') {
         eff.durationSec = 120;
         hit++;
-      }
-  if (!hit) throw new Error('blanc S1 shield block missing — fixture is stale');
+      }}}
+  if (!hit) {throw new Error('blanc S1 shield block missing — fixture is stale');}
 });
 /** N4 counterfactual: delete the requiresShielded gate (the 31.02 line becomes unconditional). */
 const nagaUngated = withPatchedOverride('naga', (ov) => {
   let had = false;
   for (const block of (ov as any).burst)
-    if (block.requiresShielded) {
+    {if (block.requiresShielded) {
       delete block.requiresShielded;
       had = true;
-    }
+    }}
   if (!had)
-    throw new Error(
-      'naga burst requiresShielded block missing — fixture is stale',
-    );
+    {throw new Error(
+      'naga burst requiresShielded block missing — fixture is stale'
+    );}
 });
 /** N1 counterfactual: the shield-gated core-dmg line re-triggered off naga's OWN burstCast. */
 const nagaS1BurstCast = withPatchedOverride('naga', (ov) => {
   let hit = 0;
   for (const block of (ov as any).skill1)
-    if (block.trigger?.kind === 'shielded') {
+    {if (block.trigger?.kind === 'shielded') {
       block.trigger = { kind: 'burstCast' };
       hit++;
-    }
+    }}
   if (!hit)
-    throw new Error('naga S1 shielded block missing — fixture is stale');
+    {throw new Error('naga S1 shielded block missing — fixture is stale');}
 });
 /** N2 counterfactual: the top-2-ATK core-dmg line retargeted to ALL allies. */
 const nagaS2AllAllies = withPatchedOverride('naga', (ov) => {
   let hit = 0;
   for (const block of (ov as any).skill2)
-    if (block.target?.kind === 'alliesTopAtk') {
+    {if (block.target?.kind === 'alliesTopAtk') {
       block.target = { kind: 'allies' };
       hit++;
-    }
+    }}
   if (!hit)
-    throw new Error('naga S2 alliesTopAtk block missing — fixture is stale');
+    {throw new Error('naga S2 alliesTopAtk block missing — fixture is stale');}
 });
 /** N3 counterfactual: casterAtkPct (% of NAGA's ATK) swapped for generic atkPct (% of target's OWN). */
 const nagaGenericAtk = withPatchedOverride('naga', (ov) => {
   let hit = 0;
   for (const block of (ov as any).burst)
-    for (const eff of block.effects)
-      if (eff.stat === 'casterAtkPct') {
+    {for (const eff of block.effects)
+      {if (eff.stat === 'casterAtkPct') {
         eff.stat = 'atkPct';
         hit++;
-      }
+      }}}
   if (!hit)
-    throw new Error(
-      'naga burst casterAtkPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'naga burst casterAtkPct effect missing — fixture is stale'
+    );}
 });
 /** Damage reference: every naga block removed (her whole kit contribution zeroed). */
 const nagaDead = withPatchedOverride('naga', (ov) => {
@@ -152,19 +152,19 @@ const nagaDead = withPatchedOverride('naga', (ov) => {
 const nagaNoS2Heal = withPatchedOverride('naga', (ov) => {
   const before = (ov as any).skill2.length;
   (ov as any).skill2 = (ov as any).skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'heal'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
   if ((ov as any).skill2.length === before)
-    throw new Error('naga S2 heal block missing — fixture is stale');
+    {throw new Error('naga S2 heal block missing — fixture is stale');}
 });
 /** N6 inertness reference: naga's self-Pierce block removed. */
 const nagaNoPierce = withPatchedOverride('naga', (ov) => {
   const before = (ov as any).burst.length;
   (ov as any).burst = (ov as any).burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce')
   );
   if ((ov as any).burst.length === before)
-    throw new Error('naga burst gainPierce block missing — fixture is stale');
+    {throw new Error('naga burst gainPierce block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -187,7 +187,7 @@ const crownNoHeal = run(CROWN_COMP, { naga: nagaNoS2Heal });
 // ---- readers ----------------------------------------------------------------------------------
 const buffs = (evs: SimEvent[], casterIdx: number) =>
   evs.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === casterIdx,
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === casterIdx
   );
 const nagaBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'naga')
@@ -195,7 +195,7 @@ const nagaBursts = (evs: SimEvent[]) =>
 
 const coreDmg = (evs: SimEvent[], casterIdx: number, value: number) =>
   buffs(evs, casterIdx).filter(
-    (b) => b.stat === 'coreDamagePct' && Math.abs(b.value - value) < 0.01,
+    (b) => b.stat === 'coreDamagePct' && Math.abs(b.value - value) < 0.01
   );
 const casterAtk = (evs: SimEvent[], casterIdx: number) =>
   buffs(evs, casterIdx).filter((b) => b.stat === 'casterAtkPct');
@@ -218,10 +218,10 @@ describe('naga — kit spec', () => {
     it('fires off ally shield events, reaching all four allies for 10s', () => {
       const list = coreDmg(base.events, NAGA, 85.17);
       expect(list.length, 'no 85.17 core-dmg buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect(distinctTargets(list).size, 'must reach all 4 allies').toBe(
-        ALLIES,
+        ALLIES
       );
       expect([...durations(list)], 'duration must be 10s').toEqual([10]);
     });
@@ -233,7 +233,7 @@ describe('naga — kit spec', () => {
     it("DISCRIMINATES the trigger: re-triggering off naga's own burstCast changes the fire count", () => {
       // blanc's shields land far more often than naga's own 4 casts → shielded fires more.
       expect(coreDmg(s1BurstCast.events, NAGA, 85.17).length).not.toBe(
-        coreDmg(base.events, NAGA, 85.17).length,
+        coreDmg(base.events, NAGA, 85.17).length
       );
     });
   });
@@ -242,11 +242,11 @@ describe('naga — kit spec', () => {
     it('buffs exactly TWO distinct allies (not all four), for 5s', () => {
       const list = coreDmg(base.events, NAGA, 40.07);
       expect(list.length, 'no 40.07 core-dmg buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect(
         distinctTargets(list).size,
-        'alliesTopAtk count 2 must reach exactly 2 allies',
+        'alliesTopAtk count 2 must reach exactly 2 allies'
       ).toBe(2);
       expect([...durations(list)], 'duration must be 5s').toEqual([5]);
     });
@@ -254,7 +254,7 @@ describe('naga — kit spec', () => {
     it('is encoded as alliesTopAtk count 2 off hitCount 5 (structural pin)', () => {
       const ov = withPatchedOverride('naga', () => {}) as any;
       const block = ov.skill2.find((b: any) =>
-        b.effects.some((e: any) => e.stat === 'coreDamagePct'),
+        b.effects.some((e: any) => e.stat === 'coreDamagePct')
       );
       expect(block.trigger).toEqual({ kind: 'hitCount', count: 5 });
       expect(block.target).toEqual({ kind: 'alliesTopAtk', count: 2 });
@@ -262,7 +262,7 @@ describe('naga — kit spec', () => {
 
     it('DISCRIMINATES the count: retargeting to all allies reaches 4 and moves damage', () => {
       expect(
-        distinctTargets(coreDmg(s2AllAllies.events, NAGA, 40.07)).size,
+        distinctTargets(coreDmg(s2AllAllies.events, NAGA, 40.07)).size
       ).toBe(ALLIES);
       // The two EXTRA targets (blanc, naga — not in the top-2 ATK) gain the core-dmg buff, so the
       // comp total moves even though ada/liter (the real top-2) are unchanged.
@@ -278,7 +278,7 @@ describe('naga — kit spec', () => {
       const list = line16(base.events, NAGA);
       expect(bursts).toBeGreaterThan(0);
       expect(list.length, 'one 16.18 application per ally per burst').toBe(
-        bursts * ALLIES,
+        bursts * ALLIES
       );
       expect(distinctTargets(list).size).toBe(ALLIES);
       expect([...durations(list)], 'duration must be 10s').toEqual([10]);
@@ -299,11 +299,11 @@ describe('naga — kit spec', () => {
     it('GATE CLOSED: suppressed entirely with no shielder, though naga still casts every cycle', () => {
       expect(
         nagaBursts(noShield.events),
-        'naga must still cast in the no-shielder comp',
+        'naga must still cast in the no-shielder comp'
       ).toBeGreaterThan(0);
       expect(
         line31(noShield.events, NAGA_NS).length,
-        'the gate, not the cast cadence, holds it off',
+        'the gate, not the cast cadence, holds it off'
       ).toBe(0);
     });
 
@@ -312,7 +312,7 @@ describe('naga — kit spec', () => {
       expect(bursts).toBeGreaterThan(0);
       expect(line31(longShield.events, NAGA).length).toBe(bursts * ALLIES);
       expect(distinctTargets(line31(longShield.events, NAGA)).size).toBe(
-        ALLIES,
+        ALLIES
       );
     });
 
@@ -320,7 +320,7 @@ describe('naga — kit spec', () => {
       const bursts = nagaBursts(ungated.events);
       expect(
         line31(ungated.events, NAGA_NS).length,
-        'ungated 31.02 must fire on every burst',
+        'ungated 31.02 must fire on every burst'
       ).toBe(bursts * ALLIES);
     });
 
@@ -349,13 +349,13 @@ describe('naga — kit spec', () => {
           e.kind === 'buffApply' &&
           e.casterIdx === CROWN &&
           e.stat === 'attackDamagePct' &&
-          Math.abs(e.value - 20.99) < 0.01,
+          Math.abs(e.value - 20.99) < 0.01
       );
 
     it('is encoded as a heal off hitCount 5 to the 2 lowest-HP allies (structural pin)', () => {
       const ov = withPatchedOverride('naga', () => {}) as any;
       const heal = ov.skill2.find((b: any) =>
-        b.effects.some((e: any) => e.kind === 'heal'),
+        b.effects.some((e: any) => e.kind === 'heal')
       );
       expect(heal, 'naga S2 heal block missing').toBeDefined();
       expect(heal.trigger).toEqual({ kind: 'hitCount', count: 5 });
@@ -367,17 +367,17 @@ describe('naga — kit spec', () => {
       const withoutHeal = crownRecovery(crownNoHeal.events).length;
       expect(
         withHeal,
-        "naga's S2 heal must drive crown's recovery buff",
+        "naga's S2 heal must drive crown's recovery buff"
       ).toBeGreaterThan(100);
       expect(
         withHeal,
-        `removing naga's heal leaves only crown's own ${withoutHeal} self-heal procs`,
+        `removing naga's heal leaves only crown's own ${withoutHeal} self-heal procs`
       ).toBeGreaterThan(withoutHeal * 5);
     });
 
     it("the recovery feed reaches all four allies (crown's buff is team-wide)", () => {
       const targets = new Set(
-        crownRecovery(crownBase.events).map((b) => b.targetIdx),
+        crownRecovery(crownBase.events).map((b) => b.targetIdx)
       );
       expect(targets.size).toBe(ALLIES);
     });
@@ -387,13 +387,13 @@ describe('naga — kit spec', () => {
     it('is encoded as gainPierce durationSec 10 on burstCast/self (structural pin)', () => {
       const ov = withPatchedOverride('naga', () => {}) as any;
       const pierce = ov.burst.find((b: any) =>
-        b.effects.some((e: any) => e.kind === 'gainPierce'),
+        b.effects.some((e: any) => e.kind === 'gainPierce')
       );
       expect(pierce, 'naga burst gainPierce block missing').toBeDefined();
       expect(pierce.trigger).toEqual({ kind: 'burstCast' });
       expect(pierce.target).toEqual({ kind: 'self' });
       expect(
-        pierce.effects.find((e: any) => e.kind === 'gainPierce').durationSec,
+        pierce.effects.find((e: any) => e.kind === 'gainPierce').durationSec
       ).toBe(10);
       // a TIMED window, not a whole-fight top-level flag
       expect(ov.hasPierce ?? false).toBe(false);
@@ -401,7 +401,7 @@ describe('naga — kit spec', () => {
 
     it('is damage-INERT at scope lock (no pierceDamagePct source lands on SG naga)', () => {
       // SHIELD_COMP has no Pierce Damage ▲ buffer reaching naga → removing the tag moves nothing.
-      for (const s of SHIELD_COMP) expect(noPierce.t[s]).toBe(base.t[s]);
+      for (const s of SHIELD_COMP) {expect(noPierce.t[s]).toBe(base.t[s]);}
     });
   });
 

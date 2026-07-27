@@ -69,19 +69,14 @@ const allBlocks = (o: any): any[] => [
   ...(o.burst ?? []),
 ];
 function eachEffect(o: any, fn: (e: any, b: any) => void) {
-  for (const b of allBlocks(o)) for (const e of b.effects ?? []) fn(e, b);
+  for (const b of allBlocks(o)) {
+    for (const e of b.effects ?? []) {
+      fn(e, b);
+    }
+  }
 }
 const near = (a: number, b: number, eps = 0.5) =>
   Math.abs((a ?? NaN) - b) <= eps;
-const compose =
-  (...ms: Mut[]): Mut =>
-  (o) => {
-    for (const m of ms) m(o);
-  };
-
-const ungateNoB1: Mut = (o) => {
-  for (const b of allBlocks(o)) if (b.formation === 'noB1') delete b.formation;
-};
 const zeroBuff =
   (stat: string, value?: number): Mut =>
   (o) =>
@@ -90,24 +85,33 @@ const zeroBuff =
         e.kind === 'buff' &&
         e.stat === stat &&
         (value === undefined || near(e.value, value))
-      )
+      ) {
         e.value = 0;
+      }
     });
 const zeroRider: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) e.atkPct = 0;
+    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) {
+      e.atkPct = 0;
+    }
   });
 const zeroStars: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'dot') e.atkPct = 0;
+    if (e.kind === 'dot') {
+      e.atkPct = 0;
+    }
   });
 const zeroCdr: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'burstCdr') e.seconds = 0;
+    if (e.kind === 'burstCdr') {
+      e.seconds = 0;
+    }
   });
 const doubleCaster: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.value = 70.02;
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+      e.value = 70.02;
+    }
   });
 
 // the committed (driver) override, captured through the patch clone (never mutated)
@@ -125,7 +129,9 @@ function go(slugs: string[], mutate?: Mut) {
     focusSlug: 'ada',
     cfg: { onEvent: (e: Ev) => evs.push(e) },
   };
-  if (mutate) opts.overrides = { [SLUG]: withPatchedOverride(SLUG, mutate) };
+  if (mutate) {
+    opts.overrides = { [SLUG]: withPatchedOverride(SLUG, mutate) };
+  }
   return { res: runComp(opts), evs };
 }
 
@@ -150,7 +156,7 @@ const applies = (evs: Ev[], stat: string, value?: number) =>
     (e) =>
       e.stat === stat &&
       e.targetIdx != null &&
-      (value === undefined || near(e.value, value)),
+      (value === undefined || near(e.value, value))
   );
 // ADAPTED [P7+/P11]: isolate Anis's OWN buff by casterIdx (teammates grant same-stat buffs — e.g.
 // ada's burst atkPct 40 sits within ε of 40.01, and crown/helm grant their own casterAtkPct — so an
@@ -160,14 +166,14 @@ const appliesFrom = (
   casterIdx: number,
   stat: string,
   value?: number,
-  eps = 0.5,
+  eps = 0.5
 ) =>
   of_(evs, 'buffApply').filter(
     (e) =>
       e.casterIdx === casterIdx &&
       e.stat === stat &&
       e.targetIdx != null &&
-      (value === undefined || Math.abs(e.value - value) <= eps),
+      (value === undefined || Math.abs(e.value - value) <= eps)
   );
 const targetsOf = (evs: Ev[], stat: string, value?: number) =>
   new Set(applies(evs, stat, value).map((e) => e.targetIdx));
@@ -192,7 +198,7 @@ describe('anis-star :: harness + patch-channel contract', () => {
     expect(fbCount(BASE.evs)).toBeGreaterThan(0);
     // zeroing the S1-c rider MUST move Anis (channel live; no vacuous counterfactual)
     expect(sumAnis(NO_RIDER.evs, ANIS_NOB1)).toBeLessThan(
-      sumAnis(BASE.evs, ANIS_NOB1),
+      sumAnis(BASE.evs, ANIS_NOB1)
     );
   });
 });
@@ -213,12 +219,12 @@ describe("anis-star :: S1-b formation branch (My Own Star noB1 vs Everyone's Sta
   });
   it('...carries real damage (magnitude non-vacuous)', () => {
     expect(sumAnis(BASE.evs, ANIS_NOB1)).toBeGreaterThan(
-      sumAnis(NO_MOS.evs, ANIS_NOB1),
+      sumAnis(NO_MOS.evs, ANIS_NOB1)
     );
   });
   it('...and is ABSENT when another B1 (liter) is present (formation gate)', () => {
     expect(
-      appliesFrom(HASB1_RUN.evs, ANIS_HASB1, 'atkPct', 40.01, 0.01).length,
+      appliesFrom(HASB1_RUN.evs, ANIS_HASB1, 'atkPct', 40.01, 0.01).length
     ).toBe(0);
   });
   it('the -7.48s Burst CDR is the recurring fullBurstEnd trigger and buys her casts', () => {
@@ -226,7 +232,7 @@ describe("anis-star :: S1-b formation branch (My Own Star noB1 vs Everyone's Sta
     // recurrence is discriminated at Anis's OWN cast cadence — removing the CDR strictly reduces her
     // casts. The override trigger is fullBurstEnd (recurring), not a once-per-battle flag.
     const cdrBlock = allBlocks(OVR).find((b: any) =>
-      b.effects.some((e: any) => e.kind === 'burstCdr'),
+      b.effects.some((e: any) => e.kind === 'burstCdr')
     );
     expect(cdrBlock?.trigger?.kind).toBe('fullBurstEnd');
     expect(anisCasts(BASE.evs)).toBeGreaterThan(anisCasts(NO_CDR.evs));
@@ -235,7 +241,7 @@ describe("anis-star :: S1-b formation branch (My Own Star noB1 vs Everyone's Sta
 
 describe('anis-star :: S1-c Full Charge rider, 120.13% of final ATK', () => {
   const riders = anisDamage(BASE.evs, ANIS_NOB1).filter(
-    (e) => e.srcSlot === 'skill1',
+    (e) => e.srcSlot === 'skill1'
   );
   const shots = of_(BASE.evs, 'shot').filter((e) => e.slug === SLUG).length;
   it('fires once per full-charge SHOT (not per hit; hitsPerShot 2 would double it)', () => {
@@ -251,8 +257,8 @@ describe('anis-star :: S1-c Full Charge rider, 120.13% of final ATK', () => {
     expect(
       relDiff(
         sumOthers(BASE.evs, ANIS_NOB1),
-        sumOthers(NO_RIDER.evs, ANIS_NOB1),
-      ),
+        sumOthers(NO_RIDER.evs, ANIS_NOB1)
+      )
     ).toBeLessThan(1e-9);
   });
 });
@@ -263,7 +269,9 @@ describe('anis-star :: S2-a FB-enter ATK +35.01% OF CASTER ATK (noB1)', () => {
     const a = appliesFrom(BASE.evs, ANIS_NOB1, 'casterAtkPct');
     expect(a.length).toBeGreaterThan(0);
     expect(new Set(a.map((e) => e.targetIdx)).size).toBe(4);
-    for (const e of a) expect(e.expiresFrame - e.frame).toBe(600);
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   // ADAPTED [P7]: value is the flat ATK add (pct/100 × caster ATK); discriminate by linear scaling.
   it('scales off the CASTER ATK (doubling the pct doubles the applied value)', () => {
@@ -274,7 +282,7 @@ describe('anis-star :: S2-a FB-enter ATK +35.01% OF CASTER ATK (noB1)', () => {
   });
   it('is ABSENT in the hasB1 comp (formation gate)', () => {
     expect(appliesFrom(HASB1_RUN.evs, ANIS_HASB1, 'casterAtkPct').length).toBe(
-      0,
+      0
     );
   });
 });
@@ -285,7 +293,9 @@ describe("anis-star :: S2-b Everyone's-Star full-charge heal (DRIVER: documented
   it('the override carries no heal block and lists the line in unmodeled', () => {
     let hasHeal = false;
     eachEffect(OVR, (e) => {
-      if (e.kind === 'heal') hasHeal = true;
+      if (e.kind === 'heal') {
+        hasHeal = true;
+      }
     });
     expect(hasHeal).toBe(false);
     expect(JSON.stringify(OVR.unmodeled?.skill2 ?? [])).toContain('1.26%');
@@ -297,9 +307,11 @@ describe('anis-star :: S2-c Projectile Explosion Damage +92.03% on FB enter, 10s
     const a = applies(BASE.evs, 'projectileExplosionPct', 92.03);
     expect(a.length).toBeGreaterThanOrEqual(fbCount(BASE.evs));
     expect(
-      targetsOf(BASE.evs, 'projectileExplosionPct', 92.03).has(ANIS_NOB1),
+      targetsOf(BASE.evs, 'projectileExplosionPct', 92.03).has(ANIS_NOB1)
     ).toBe(true);
-    for (const e of a) expect(e.expiresFrame - e.frame).toBe(600);
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   it('feeds RL consumers (Anis) and is inert on the genuinely non-RL teammates', () => {
     // ADAPTED [P13]: the blind assumed non-RL teammates (its controlComp was liter/crown/helm), but
@@ -311,10 +323,10 @@ describe('anis-star :: S2-c Projectile Explosion Damage +92.03% on FB enter, 10s
         .filter((e) => e.unitIdx === 1 || e.unitIdx === 3)
         .reduce((a, e) => a + e.amount, 0);
     expect(sumAnis(BASE.evs, ANIS_NOB1)).toBeGreaterThan(
-      sumAnis(NO_EXPL.evs, ANIS_NOB1),
+      sumAnis(NO_EXPL.evs, ANIS_NOB1)
     );
     expect(relDiff(sumNonRL(BASE.evs), sumNonRL(NO_EXPL.evs))).toBeLessThan(
-      1e-9,
+      1e-9
     );
   });
 });
@@ -335,14 +347,14 @@ describe('anis-star :: burst Shooting Stars 40.01% every 0.25s for 10s', () => {
   it('emits ~40 star hits per cast (not one lump, not a 1s cadence)', () => {
     const casts = anisCasts(BASE.evs);
     const ticks = anisDamage(BASE.evs, ANIS_NOB1).filter(
-      (e) => e.srcSlot === 'burst',
+      (e) => e.srcSlot === 'burst'
     ).length;
     expect(ticks).toBeGreaterThanOrEqual(39 * Math.max(1, casts - 1));
     expect(ticks).toBeLessThanOrEqual(41 * casts);
   });
   it('the stars carry damage', () => {
     expect(sumAnis(BASE.evs, ANIS_NOB1)).toBeGreaterThan(
-      sumAnis(NO_STARS.evs, ANIS_NOB1),
+      sumAnis(NO_STARS.evs, ANIS_NOB1)
     );
   });
 });
@@ -353,7 +365,9 @@ describe('anis-star :: burst charge time fixed at 0.7s for 10s', () => {
     const a = applies(BASE.evs, 'chargeSpeedPct', 30);
     expect(a.length).toBe(anisCasts(BASE.evs));
     expect(new Set(a.map((e) => e.targetIdx))).toEqual(new Set([ANIS_NOB1]));
-    for (const e of a) expect(e.expiresFrame - e.frame).toBe(600);
+    for (const e of a) {
+      expect(e.expiresFrame - e.frame).toBe(600);
+    }
   });
   it('raises Anis shot count inside the burst window', () => {
     const shots = (r: any) =>
@@ -373,14 +387,14 @@ describe("anis-star :: burst Everyone's-Star Max HP +15.02% of caster Max HP (ha
   it('reaches all allies in the hasB1 comp and is offensively inert', () => {
     // casterMaxHpPct resolves to a flat maxHpFlat grant; assert it fires from Anis in hasB1.
     const a = of_(HASB1_RUN.evs, 'buffApply').filter(
-      (e) => e.casterIdx === ANIS_HASB1 && e.stat === 'maxHpFlat',
+      (e) => e.casterIdx === ANIS_HASB1 && e.stat === 'maxHpFlat'
     );
     expect(a.length).toBeGreaterThan(0);
     // and is ABSENT in the sole-B1 comp (formation gate)
     expect(
       of_(BASE.evs, 'buffApply').filter(
-        (e) => e.casterIdx === ANIS_NOB1 && e.stat === 'maxHpFlat',
-      ).length,
+        (e) => e.casterIdx === ANIS_NOB1 && e.stat === 'maxHpFlat'
+      ).length
     ).toBe(0);
   });
 });
@@ -392,7 +406,7 @@ describe('anis-star :: burst My Own Star Attack Damage +35.2% (self, noB1)', () 
     expect(new Set(a.map((e) => e.targetIdx))).toEqual(new Set([ANIS_NOB1]));
     expect(
       new Set(applies(BASE.evs, 'attackDamagePct', 34).map((e) => e.targetIdx))
-        .size,
+        .size
     ).toBe(4);
   });
   it('is ABSENT in the hasB1 comp (formation gate)', () => {

@@ -19,11 +19,7 @@
     "rl3": 16.8,
     "burstGaugePerShot": 1.4,
     "treasure": false,
-    "nicknames": [
-      "aim",
-      "manchor",
-      "maids (with mast)"
-    ],
+    "nicknames": ["aim", "manchor", "maids (with mast)"],
     "skills": {
       "skill1": "■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Potency of HP ▲ 30.96% for 5 sec.\nTwice: Distributed Damage ▲ 30.4% for 10 sec.\nThree times: Stack count of debuffs ▼ 1.\n■ Activates when entering Full Burst while an ally from the same squad is on the battlefield. Affects all allies.\nRecovers 3.04% of the skill user's Max HP every 1 sec for 8 sec.",
       "skill2": "■ Activates when Full Burst ends. Affects all allies.\nEffects vary according to the number of times used. Each subsequent effect triggers all effects before it:\nOnce: Hit Rate ▲ 10.13% for 10 sec.\nTwice: ATK ▲ 35.02% of the skill user's ATK for 10 sec.\nThree times: Reload Speed ▲ 40.04% for 15 sec.",
@@ -74,13 +70,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 500,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 100,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -367,16 +359,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Storage: Stores excess healing received by the skill user, up to {description_value_01}% of their Max HP. Lasts for {description_value_02} sec.\nRecovers {description_value_03}% of the skill user's Max HP as HP.\nATK ▲ {description_value_04}% of the skill user's ATK for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -459,20 +442,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            135530101,
-            135530102,
-            135530103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [135530101, 135530102, 135530103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -497,9 +470,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -530,9 +501,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Anchor: Innocent Maid's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

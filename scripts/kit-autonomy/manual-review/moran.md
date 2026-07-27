@@ -25,15 +25,16 @@
 All three independent agents (driver + fable S2b + opus S6) derived the **identical load-bearing encoding**,
 including the `swapGate:"swapped"` fix:
 
-| Line | Encoding | Convergence |
-| --- | --- | --- |
-| S1 47.18% / 5 hits rider | `hitCount:5` + `swapGate:"swapped"` + `flatDamage 47.18` | driver = S2b = S6 (triple) |
-| Burst weapon swap | `weaponSwap 14.7% / 10s` (REPLACIVE) + `unlimitedAmmo 10s` | driver = S6 |
-| Burst team ATK | `casterAtkPct 42.57% / 10s` (flat caster add, all allies) | driver = S2b = S6 |
-| S2 team burst-CDR | `fullBurstEnter` → allies `burstCdr 7.48` | driver = S2b = S6 |
-| S1 Fervor | `burstCdr 20` per cycle (effective ~15s CD; 12 casts/180s) | driver (measured) |
+| Line                     | Encoding                                                   | Convergence                |
+| ------------------------ | ---------------------------------------------------------- | -------------------------- |
+| S1 47.18% / 5 hits rider | `hitCount:5` + `swapGate:"swapped"` + `flatDamage 47.18`   | driver = S2b = S6 (triple) |
+| Burst weapon swap        | `weaponSwap 14.7% / 10s` (REPLACIVE) + `unlimitedAmmo 10s` | driver = S6                |
+| Burst team ATK           | `casterAtkPct 42.57% / 10s` (flat caster add, all allies)  | driver = S2b = S6          |
+| S2 team burst-CDR        | `fullBurstEnter` → allies `burstCdr 7.48`                  | driver = S2b = S6          |
+| S1 Fervor                | `burstCdr 20` per cycle (effective ~15s CD; 12 casts/180s) | driver (measured)          |
 
 **Both catastrophic traps on this kit were avoided AND proven avoided:**
+
 - `Damage Taken ▼35.14%` is encoded as a **negative ally-held** buff (48 applies across the 4 ally slots, never
   the boss); removing it leaves every unit's total **byte-identical** under two independently written tests.
   The trap (mapping it to a positive boss debuff → ×1.35 team multiplier) did not happen.
@@ -54,6 +55,7 @@ burst lifesteal 36.14% (self-only, no recovery consumer, doesn't reach allies) �
 ## Blind-test reconciliation (S5: 17 GREEN / 3 RED / 6 SKIP vs driver override)
 
 The 3 REDs are **non-findings**, adjudicated by the judge:
+
 - **(2 cadence reds) fixture-induced.** The blind test used `controlComp('moran')` = liter/crown/moran/helm, which
   fields liter AND moran as **two Burst-I casters**. Proven (`.moran-probe3.ts`): moran is the secondary B1 there —
   she casts only 5× **whether Fervor is present or not** (liter wins the slot at 10×), so the cadence-delta
@@ -61,9 +63,9 @@ The 3 REDs are **non-findings**, adjudicated by the judge:
   Fervor 12→6 casts, team CDR crown 12→9.
 - **(1 structural red) encoding-style.** The blind test asserts Fervor is a battle-start passive; the driver models
   it as `burstCdr`-20 on her own `burstCast` (re-applied every cycle). The driver encoding is the **measured-correct**
-  reading (override note: Run-B video, "she bursts every rotation"); a continuous cooldown *floor* has no engine
-  primitive — which the blind writer itself conceded in its skip note. (The blind *override* even fell into the
-  exact nearest-wrong S2b named — a `oncePerBattle` passive — while the blind *test* asserts against it.)
+  reading (override note: Run-B video, "she bursts every rotation"); a continuous cooldown _floor_ has no engine
+  primitive — which the blind writer itself conceded in its skip note. (The blind _override_ even fell into the
+  exact nearest-wrong S2b named — a `oncePerBattle` passive — while the blind _test_ asserts against it.)
 
 ## Residual ⚑ (owner spot-check cluster)
 

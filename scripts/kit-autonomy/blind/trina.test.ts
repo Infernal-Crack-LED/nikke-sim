@@ -37,11 +37,17 @@
  * therefore hoisted FIRST, before any patch, so it reads committed behaviour regardless of install scope.
  */
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness';
 
 type Ev = any;
 const near = (a: number, b: number, eps = 0.2) => Math.abs((a ?? 0) - b) < eps;
-const num = (t: any): number => (typeof t === 'number' ? t : (t?.total ?? t?.totalDamage ?? 0));
+const num = (t: any): number =>
+  typeof t === 'number' ? t : (t?.total ?? t?.totalDamage ?? 0);
 
 function go(): { events: Ev[]; tot: number } {
   const events: Ev[] = [];
@@ -58,28 +64,50 @@ function goPatched(mutate: (o: any) => void): { events: Ev[]; tot: number } {
 // Locate trina's all-ally burst Attack-Damage effect by VALUE (index-agnostic; blind to authoring).
 function findBurstAtk(o: any): { block: any; eff: any } | null {
   for (const b of o.blocks ?? []) {
-    if (b.slot !== 'burst') continue;
+    if (b.slot !== 'burst') {continue;}
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 20.9)) return { block: b, eff: e };
+      if (
+        e.kind === 'buff' &&
+        e.stat === 'attackDamagePct' &&
+        near(e.value, 20.9)
+      )
+        {return { block: b, eff: e };}
     }
   }
   return null;
 }
 
 // ---- hoisted runs (each runComp is a full 180s sim; keep the count small) --------------------
-const base = go();                                          // committed behaviour, FIRST
-const zeroed = goPatched((o) => { const f = findBurstAtk(o); if (f) f.eff.value = 0; });          // value-off counterfactual
-const scoped = goPatched((o) => { const f = findBurstAtk(o); if (f) f.block.target = { kind: 'alliesOfElementWeapon', element: 'Electric', weapon: 'AR' }; }); // wrong-scope counterfactual
+const base = go(); // committed behaviour, FIRST
+const zeroed = goPatched((o) => {
+  const f = findBurstAtk(o);
+  if (f) {f.eff.value = 0;}
+}); // value-off counterfactual
+const scoped = goPatched((o) => {
+  const f = findBurstAtk(o);
+  if (f)
+    {f.block.target = {
+      kind: 'alliesOfElementWeapon',
+      element: 'Electric',
+      weapon: 'AR',
+    };}
+}); // wrong-scope counterfactual
 
 const atkHits = (evs: Ev[], v: number) =>
-  evs.filter((e) => e.kind === 'buffApply' && e.stat === 'attackDamagePct' && near(e.value, v) && e.targetIdx != null);
+  evs.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === 'attackDamagePct' &&
+      near(e.value, v) &&
+      e.targetIdx != null
+  );
 
 describe('trina — burst: all-ally Attack Damage ▲20.9% for 10s (MAIN discriminator)', () => {
   it('applies attackDamagePct≈20.9 to ALL allies (=> trina actually bursts)', () => {
     const hits = atkHits(base.events, 20.9);
-    expect(hits.length).toBeGreaterThan(0);                 // non-vacuity: trina bursts & the buff fires
+    expect(hits.length).toBeGreaterThan(0); // non-vacuity: trina bursts & the buff fires
     const targets = new Set(hits.map((h) => h.targetIdx));
-    expect(targets.size).toBe(4);                           // "Affects all allies" — all 4 team slots incl. self
+    expect(targets.size).toBe(4); // "Affects all allies" — all 4 team slots incl. self
   });
 
   it('moves damage: zeroing the buff value drops team total (RED if the buff is inert/mis-bucketed)', () => {
@@ -95,12 +123,23 @@ describe('trina — burst: all-ally Attack Damage ▲20.9% for 10s (MAIN discrim
 
 describe('trina — Electric-AR-scoped lines are INERT on non-qualifying allies (inertness)', () => {
   it('skill2 burst-cast Atk Dmg ▲94.15% never lands on liter/crown/helm (they are not Electric+AR)', () => {
-    const leak = base.events.filter((e) => e.kind === 'buffApply' && e.stat === 'attackDamagePct' && near(e.value, 94.15));
-    expect(leak.length).toBe(0);                            // RED if the driver widened target to all-allies / all-AR
+    const leak = base.events.filter(
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'attackDamagePct' &&
+        near(e.value, 94.15)
+    );
+    expect(leak.length).toBe(0); // RED if the driver widened target to all-allies / all-AR
   });
   it('burst Hit Rate ▲45.3% + Max Ammo ▲20 rounds never land on the non-Electric-AR allies', () => {
-    const hr = base.events.filter((e) => e.kind === 'buffApply' && e.stat === 'hitRatePct' && near(e.value, 45.3));
-    const ammo = base.events.filter((e) => e.kind === 'buffApply' && e.stat === 'maxAmmoFlat' && near(e.value, 20));
+    const hr = base.events.filter(
+      (e) =>
+        e.kind === 'buffApply' && e.stat === 'hitRatePct' && near(e.value, 45.3)
+    );
+    const ammo = base.events.filter(
+      (e) =>
+        e.kind === 'buffApply' && e.stat === 'maxAmmoFlat' && near(e.value, 20)
+    );
     expect(hr.length).toBe(0);
     expect(ammo.length).toBe(0);
   });

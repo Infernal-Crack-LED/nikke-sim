@@ -40,10 +40,19 @@ const E = [...ELEMENTS].sort((a, b) => countEl(b) - countEl(a))[0];
 describe(`boss weakness gate (most-populated element = the test element)`, () => {
   it('solo topTeams(5): every team fields ≥1 advantaged unit and stays rotation-legal', async () => {
     const top = await calcWith(E).topTeams(5);
-    expect(top.length, `topTeams(5) built nothing with weakness ${E}`).toBeGreaterThanOrEqual(1);
+    expect(
+      top.length,
+      `topTeams(5) built nothing with weakness ${E}`
+    ).toBeGreaterThanOrEqual(1);
     const bad = top.filter((t) => !hasEl(t.slugs, E));
-    expect(bad.map((t) => t.slugs.join(',')), `team(s) missing ${E}`).toEqual([]);
-    expect(top.every((t) => legal(t.slugs)), 'a team no longer sustains the B1/B2 rotation').toBe(true);
+    expect(
+      bad.map((t) => t.slugs.join(',')),
+      `team(s) missing ${E}`
+    ).toEqual([]);
+    expect(
+      top.every((t) => legal(t.slugs)),
+      'a team no longer sustains the B1/B2 rotation'
+    ).toBe(true);
   });
 
   it('union-style per-team bestTeam respects each team’s own weakness, disjointly', async () => {
@@ -52,9 +61,9 @@ describe(`boss weakness gate (most-populated element = the test element)`, () =>
     let built = 0;
     for (const weak of [E, ELEMENTS.find((x) => x !== E)!]) {
       const t = await calcWith(weak).bestTeam({ exclude: used });
-      if (!t) break;
+      if (!t) {break;}
       built++;
-      if (!hasEl(t.slugs, weak)) allHave = false;
+      if (!hasEl(t.slugs, weak)) {allHave = false;}
       t.slugs.forEach((s) => used.add(s));
     }
     expect(built, 'fewer than 2 union teams built').toBeGreaterThanOrEqual(2);
@@ -63,7 +72,10 @@ describe(`boss weakness gate (most-populated element = the test element)`, () =>
 
   it('a pool with NO unit of the required element is unbuildable', async () => {
     const keep = new Set(Object.keys(chars).filter((s) => elOf(s) !== E));
-    expect(await calcWith(E, keep).bestTeam(), `no ${E} unit in pool but a team was built`).toBeNull();
+    expect(
+      await calcWith(E, keep).bestTeam(),
+      `no ${E} unit in pool but a team was built`
+    ).toBeNull();
   });
 
   it('requireElement null → no element gate (baseline still builds)', async () => {

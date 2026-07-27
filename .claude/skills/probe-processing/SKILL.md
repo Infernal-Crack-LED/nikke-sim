@@ -43,6 +43,7 @@ pellet events, popup candidates). They do not end the job:
 > being reported/logged does not need it; say which tier it is and move on.
 >
 > **Confirmation routes, cheapest first — always take the cheapest one that works:**
+>
 > 1. **Arithmetic closure (free, strongest).** The pellet lattice's integer residues, rider
 >    count-closure, monotonicity, cadence consistency across bands. A genuine read lands on the grid;
 >    a digit misread does not. This confirms without looking at anything.
@@ -66,12 +67,13 @@ Three phases:
 
 **Pick readers by the QUESTION, not by inventory.** Most are minutes-long (the pellet counter is
 ~4.5 min per 60 s of video) and mostly independent:
+
 - a rotation / FULL-BURST question → **`scan.ts`** (~12 s, no model, three built-in cross-checks)
 - a CADENCE question → **`read-ammo.ts`** (shots/second, every weapon class) + `read-pellets.ts` for SG landing
 - a magnitude / lattice question → `read-total-damage.ts`, then **`read-battle-records.ts`** for the per-unit split
 - a per-hit question → `read-popups-vlm.ts` on a SHORT `--at/--dur` clip
-Running them all on a whole video by default is wasted wall-clock. NOTE the asymmetry: `scan.ts` and
-`read-ammo.ts` are deterministic CV and cheap; the VLM readers are the slow ones.
+  Running them all on a whole video by default is wasted wall-clock. NOTE the asymmetry: `scan.ts` and
+  `read-ammo.ts` are deterministic CV and cheap; the VLM readers are the slow ones.
 
 > **Server:** the VLM readers call a local OpenAI-compatible vision server (llama.cpp serving
 > Qwen2.5-VL-7B) kept alive by launchd on `:8090`
@@ -88,6 +90,7 @@ Running them all on a whole video by default is wasted wall-clock. NOTE the asym
 > two videos processed in one session silently overwrite each other's JSON.
 
 ## Ground rules (violating these has burned us)
+
 - Popups belong ONLY to the camera-focused unit — including damage RECEIVED by that unit's own
   summons (boss hits on cinderella's Decoy show in her stream). Never attribute a popup to a unit
   by value coincidence.
@@ -110,7 +113,7 @@ Running them all on a whole video by default is wasted wall-clock. NOTE the asym
   misread it as a boss HP-segment counter and lost its best denominator; on non-scope-lock footage
   the displayed magazine can exceed the datamined base — overload-gear Max-Ammo lines — so an
   unexpected count like 17 on a mag-9 unit is still the ammo box, not something else.)
-  *Script note:* `read-pellets.ts` template-matches this box (`ammo-box-template.png`) purely to
+  _Script note:_ `read-pellets.ts` template-matches this box (`ammo-box-template.png`) purely to
   LOCATE the crosshair (it applies a fixed offset); it does not read the digits. The match can lock
   onto an HP-bar-like element — a `--max-template-disp` gate rejects >150 px jumps and carries the
   last good position forward, so a shot read during a jump-run is suspect.
@@ -119,7 +122,7 @@ Running them all on a whole video by default is wasted wall-clock. NOTE the asym
   popup-value change over time is a BUFF change, never distance; identical values at mid and far
   are expected, not a finding.
 - **IDENTIFY hits by the value table, never by eye.** Before reading, run `scripts/probe/hit-values.ts
-  <focus> <team…> --boss <E>` to get every hit type's value band for the focus unit; map each popup
+<focus> <team…> --boss <E>` to get every hit type's value band for the focus unit; map each popup
   value to a band. Skipping this burned us: LM's 64733 is her SMG NORMAL (14-68k), NOT her DoT
   (~156-220k in-game); liberalio's proc (1.13-7.73M) fully overlaps her normal charge — value bands
   that overlap CANNOT be attributed, so pick a unit/hit with a clean band (or a low-buff window).
@@ -155,7 +158,7 @@ Running them all on a whole video by default is wasted wall-clock. NOTE the asym
   ⚠ **Find t0 with ONE coarse timer sheet, NOT a frame-by-frame hunt** (that hunt is what burned a
   multi-hour session): `frames.ts <video> --at 3 --dur 10 --fps 2 --region timer --sheet 5 --zoom 3`
   puts the whole load→02:59 transition on one sheet. **t0 to ±0.5 s is plenty for band-level reads**
-  (bands are ~37 s apart); only for FB *timing* to ±0.1 s do ONE refine sheet on that single second
+  (bands are ~37 s apart); only for FB _timing_ to ±0.1 s do ONE refine sheet on that single second
   (`--dur 1 --fps 10`). Never sub-refine below ~3 frames. The sim's FB times are from fight t0, so
   compare footage FB times **re-anchored to the 3:00-start**. Do NOT explain away a sim-vs-footage
   first-FB offset as "human startup lag / recorder slop" — re-anchor precisely first; a residual that
@@ -170,21 +173,22 @@ Flags below are what the CODE parses; where a default is noted the script's own 
 disagree (`read-pellets.ts`'s header claims `--fps 30 --zoom 4` and a stale pellet crop — the code
 defaults are 60 / 3 / `crop=1303:396:672:268`). Pass the validated values explicitly.
 
-| Reader | Actually reads | Output | Maturity |
-|---|---|---|---|
-| `read-pellets.ts <video> --at S --dur S --fps 30 --zoom 2 --out D` | per-shot **pellet counts** from the damage area (CV) + a VLM **timer spine** @1fps + crosshair tracking. **SG-only**, and it does NOT read the ammo digits | `D/pellets.json` — `reads[]`, `shots[]` `{fightT, white, red, total, core, frames, backendAgreement}`, `summary {totalShots, validShots, expectedShots, avgTotal, avgRed}` | ⚑ CANDIDATE — tuned 2026-07-24 on `marciana-solo.MP4` ONLY. Best run detected **70 of ~90** expected shots, 58 in the 5–10 valid bound, avgTotal **7.6** vs the lattice-measured ≈**8.45**, avgRed 0.19 vs ~0.5 expected. **Do not use its landing average as a landing measurement** (see U35) |
-| `read-total-damage.ts <video> [--fps 1] --out D` | cumulative **team total** + timer @1 fps (the SG-lattice source / damage curve) | `D/total-damage.json` — `{video, fps, at, dur, reads[{videoT,timerSec,totalDamage}], warnings[]}`; warns on any DECREASE (physically impossible ⇒ misread) | usable as a survey; individual totals need confirmation before any lattice fit rests on them |
-| `scan.ts <video> [--fps 5] [--t0 S] [--expect N] --out D` | **deterministic CV, NO VLM.** Full-Burst counts + timings from three detectors (gauge drain window / whole-frame golden splash / stage-3 hexagon), burst chain anatomy, nuke signatures. ~12 s per whole video, one ffmpeg decode | `D/scan.json` — `fbCandidates[{videoT,fightT,sources[],confidence,durationSec}]`, `fullWindows[]`, `burstChains[]`, `gaugeStates[]`, `orphanEvents[]`, `nukeEvents[]`, `summary` | ✅ **VALIDATED 2026-07-24 — EXACT on 8 recordings** with independently measured FB counts (11/12/13/13/13/13/14 + the soda-twinkling-bunny control's 10), every burst corroborated by a 2nd detector. **This is the FB-count instrument** |
-| `read-battle-records.ts <shot> [--comp a,b,c] [--total-damage D/total-damage.json] --out D` | per-unit **totals + slot order** off the end-of-fight Battle Records screen (VLM), with an arithmetic checksum + the ⚔=Combat-Power field map hard-coded | `D/battle-records.json` — `units[{slot,slug,totalDamage,damageTaken,healing,combatPower}]`, `checksum{sum,cumulativeTotal,deltaPct,pass}`, `warnings[]` | ✅ 37/37 numbers exact on two screenshots (2026-07-24). Trust it only when the **checksum closes** — without `--total-damage`/`--expect-total` it is an unconfirmed VLM read |
-| `read-ammo.ts <video> [--fps 10] [--at S --dur S] [--expect-rate N] --out D` | **ammo-counter digits** per frame → firing runs → **rounds/second** (deterministic digit-atlas template match; abstains rather than guessing) | `D/ammo.json` — `reads[]`, `reloads[]`, `runs[{startT,endT,from,to,roundsPerSec,r2}]`, `cadence{overall,median}` | ✅ SMG validated in TWO range bands (20.31 / 20.32 per s, r²=1.00), reproducing the hand read that settled the SMG cadence. ⚠ **small-magazine SG not yet readable** (~29% of frames, no usable run) |
-| `read-burst-gauge.ts <video> [--classifier cv\|vlm] [--fps 5] [--t0 S] [--sim <slug,…>] --out D` | burst-gauge **state** per frame → debounced **state CHANGES** + FB count, optional sim compare. `--classifier cv` (DEFAULT) delegates to `scan.ts`; `vlm` is the old per-frame model read, kept for A/B | `D/burst-gauge.json` — `reads[]`, `transitions[{videoT,timerSec,fightT,from,to}]`, `fullBursts`, `cv{detectors,summary,fbCandidates,fullWindows}`, `simTransitions[]?` | **cv**: validated as above. **vlm**: ⚠ do NOT count full bursts off it — on a 30 s LM window it reported SIX transitions into `full` (the CV reads 2) |
-| `read-popups-vlm.ts <video> --focus <slug> [--boss E --comp a,b,c --fps 5 --at --dur --crop --min-looks 3 --min-agreement 0.75 --save <slug>] --out D` | damage **popups** (value, crit/core, position) + timer, deduped across frames, each scored for **confidence** (agreeing looks / total looks) and **band membership** | `D/popup-reads.json` — per-frame raw + deduped popups with `confidence`/`inBand`/`bands`/`autoAccept`, split into `autoAccepted[]` + `needsConfirmation[]` (with a ready-made batched `frames.ts --times` command) | **PROVISIONAL.** The confidence split is live, but the AUTO-ACCEPT path is **unexercised** (see below) — in practice treat every popup as needing confirmation and use `needsConfirmation[]` as the batched worklist. `--save` now persists ONLY auto-accepted popups |
+| Reader                                                                                                                                                 | Actually reads                                                                                                                                                                                                                    | Output                                                                                                                                                                                                             | Maturity                                                                                                                                                                                                                                                                                        |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `read-pellets.ts <video> --at S --dur S --fps 30 --zoom 2 --out D`                                                                                     | per-shot **pellet counts** from the damage area (CV) + a VLM **timer spine** @1fps + crosshair tracking. **SG-only**, and it does NOT read the ammo digits                                                                        | `D/pellets.json` — `reads[]`, `shots[]` `{fightT, white, red, total, core, frames, backendAgreement}`, `summary {totalShots, validShots, expectedShots, avgTotal, avgRed}`                                         | ⚑ CANDIDATE — tuned 2026-07-24 on `marciana-solo.MP4` ONLY. Best run detected **70 of ~90** expected shots, 58 in the 5–10 valid bound, avgTotal **7.6** vs the lattice-measured ≈**8.45**, avgRed 0.19 vs ~0.5 expected. **Do not use its landing average as a landing measurement** (see U35) |
+| `read-total-damage.ts <video> [--fps 1] --out D`                                                                                                       | cumulative **team total** + timer @1 fps (the SG-lattice source / damage curve)                                                                                                                                                   | `D/total-damage.json` — `{video, fps, at, dur, reads[{videoT,timerSec,totalDamage}], warnings[]}`; warns on any DECREASE (physically impossible ⇒ misread)                                                         | usable as a survey; individual totals need confirmation before any lattice fit rests on them                                                                                                                                                                                                    |
+| `scan.ts <video> [--fps 5] [--t0 S] [--expect N] --out D`                                                                                              | **deterministic CV, NO VLM.** Full-Burst counts + timings from three detectors (gauge drain window / whole-frame golden splash / stage-3 hexagon), burst chain anatomy, nuke signatures. ~12 s per whole video, one ffmpeg decode | `D/scan.json` — `fbCandidates[{videoT,fightT,sources[],confidence,durationSec}]`, `fullWindows[]`, `burstChains[]`, `gaugeStates[]`, `orphanEvents[]`, `nukeEvents[]`, `summary`                                   | ✅ **VALIDATED 2026-07-24 — EXACT on 8 recordings** with independently measured FB counts (11/12/13/13/13/13/14 + the soda-twinkling-bunny control's 10), every burst corroborated by a 2nd detector. **This is the FB-count instrument**                                                       |
+| `read-battle-records.ts <shot> [--comp a,b,c] [--total-damage D/total-damage.json] --out D`                                                            | per-unit **totals + slot order** off the end-of-fight Battle Records screen (VLM), with an arithmetic checksum + the ⚔=Combat-Power field map hard-coded                                                                          | `D/battle-records.json` — `units[{slot,slug,totalDamage,damageTaken,healing,combatPower}]`, `checksum{sum,cumulativeTotal,deltaPct,pass}`, `warnings[]`                                                            | ✅ 37/37 numbers exact on two screenshots (2026-07-24). Trust it only when the **checksum closes** — without `--total-damage`/`--expect-total` it is an unconfirmed VLM read                                                                                                                    |
+| `read-ammo.ts <video> [--fps 10] [--at S --dur S] [--expect-rate N] --out D`                                                                           | **ammo-counter digits** per frame → firing runs → **rounds/second** (deterministic digit-atlas template match; abstains rather than guessing)                                                                                     | `D/ammo.json` — `reads[]`, `reloads[]`, `runs[{startT,endT,from,to,roundsPerSec,r2}]`, `cadence{overall,median}`                                                                                                   | ✅ SMG validated in TWO range bands (20.31 / 20.32 per s, r²=1.00), reproducing the hand read that settled the SMG cadence. ⚠ **small-magazine SG not yet readable** (~29% of frames, no usable run)                                                                                            |
+| `read-burst-gauge.ts <video> [--classifier cv\|vlm] [--fps 5] [--t0 S] [--sim <slug,…>] --out D`                                                       | burst-gauge **state** per frame → debounced **state CHANGES** + FB count, optional sim compare. `--classifier cv` (DEFAULT) delegates to `scan.ts`; `vlm` is the old per-frame model read, kept for A/B                           | `D/burst-gauge.json` — `reads[]`, `transitions[{videoT,timerSec,fightT,from,to}]`, `fullBursts`, `cv{detectors,summary,fbCandidates,fullWindows}`, `simTransitions[]?`                                             | **cv**: validated as above. **vlm**: ⚠ do NOT count full bursts off it — on a 30 s LM window it reported SIX transitions into `full` (the CV reads 2)                                                                                                                                           |
+| `read-popups-vlm.ts <video> --focus <slug> [--boss E --comp a,b,c --fps 5 --at --dur --crop --min-looks 3 --min-agreement 0.75 --save <slug>] --out D` | damage **popups** (value, crit/core, position) + timer, deduped across frames, each scored for **confidence** (agreeing looks / total looks) and **band membership**                                                              | `D/popup-reads.json` — per-frame raw + deduped popups with `confidence`/`inBand`/`bands`/`autoAccept`, split into `autoAccepted[]` + `needsConfirmation[]` (with a ready-made batched `frames.ts --times` command) | **PROVISIONAL.** The confidence split is live, but the AUTO-ACCEPT path is **unexercised** (see below) — in practice treat every popup as needing confirmation and use `needsConfirmation[]` as the batched worklist. `--save` now persists ONLY auto-accepted popups                           |
 
 Deterministic helpers (no VLM): `hit-values.ts <focus> <team…> --boss <E>` (the value-band table —
 ALWAYS run first; the attribution key), `classify.py` (popup colour classifier), `catalog.ts`
 (recording index). `frames.ts` for ad-hoc extraction (below).
 
 ### Trust gates — run these in Phase 2 before a reader number is used
+
 - **Timer spine / `fightT` (all readers).** `read-burst-gauge.ts` computes
   `fightStartVideoT = videoT + timerSec − 180` from **the FIRST read that has a timer** — a SINGLE
   anchor, exactly what the counter-reconciliation rules forbid. One VLM timer misread shifts every
@@ -216,7 +220,7 @@ ALWAYS run first; the attribution key), `classify.py` (popup colour classifier),
   missed shots, so the per-shot histogram is truncated, not merely noisy. `backendAgreement` and the
   5–10 valid bound flag individual bad shots.
 - **`popup-reads.json`.** Every load-bearing value gets a full-res frame confirmation (value + colour
-  + position) before use. Bands that overlap can't be attributed at all (see Phase 3).
+  - position) before use. Bands that overlap can't be attributed at all (see Phase 3).
 
 ## Fire cadence — ONE call, four numbers (2026-07-23)
 
@@ -344,7 +348,7 @@ the script would. When one of these bites, propose building it rather than doing
   not a frame read. Fall back to the colour convention on a frame only when the ratio is ambiguous,
   and batch every such instant into ONE `--times` call.
 - **Sim predictions to compare against:** `ONLY=<comp> DBG_UNIT=<slug> DBG_N=<n> npx tsx
-  scripts/experiment.ts` dumps per-instance bucket decompositions; `DBG_BUFFS=1` adds live buffs;
+scripts/experiment.ts` dumps per-instance bucket decompositions; `DBG_BUFFS=1` adds live buffs;
   `ROT=1` dumps the rotation log; `SEEDS=N` gives Monte Carlo distributions.
 - **Popup comparison arithmetic:** popups are single instances — recompute the sim's expected value
   **without the crit/core expectation folded in** (the dbg line's `major` is the expectation form).
@@ -356,8 +360,9 @@ the script would. When one of these bites, propose building it rather than doing
 For inspection the readers don't cover. The recordings are ~350 MB / 60 fps; cost is process-boots and
 re-decodes, not per-seek work — **never loop a single-frame command** (one run spent ~3 h frame-stepping
 the 03:00 countdown).
+
 - **Many scattered timestamps → ONE call:** `frames.ts <video> --times "12,49,86,123,160" --region
-  total --zoom 3` fast-seeks each inside a single process.
+total --zoom 3` fast-seeks each inside a single process.
 - **A dense window → ONE burst:** `--at <t> --dur <w> --fps <n> [--sheet <cols>]` is a single decode.
 - **Region presets** crop in-pass: `timer` (countdown), `total` (top-centre cumulative DMG),
   `ammoband` (full-width crosshair-height strip — the ammo box slides with the crosshair, so crop the
@@ -392,6 +397,7 @@ The raw recordings under `docs/probes/` are gitignored (private media); reading 
 is the expensive step. So every parsed probe video gets a **tracked** record under
 `docs/probe-data/<slug>.json` (schema + helpers: `scripts/probe/parsed.ts`; docs:
 `docs/probe-data/README.md`) capturing:
+
 - **the file paths** — `video`, `screenshot` (damage screen), `probeDir` — so we can return to the
   exact evidence;
 - **the testing parameters** — `params` (basis, sync, skillLevels, gear, cube, coreLevel, treasure,
@@ -405,6 +411,7 @@ in the analyzer. Never promote an unconfirmed VLM read into this record (that is
 `read-popups-vlm.ts --save` would do).
 
 **Video-reading toolchain (`scripts/probe/`):**
+
 - `hit-values.ts <focus> <team…> --boss <E>` — per-unit hit-value table (ALWAYS run first; the
   attribution key).
 - `frames.ts <video> --at <s> [--dur --fps --region … --sheet --zoom]` OR `--times "t1,t2,…"` —
@@ -431,9 +438,11 @@ in the analyzer. Never promote an unconfirmed VLM read into this record (that is
   skill/DoT popup IN-FB vs OUT-FB to pin whether that instance gets the +50% Full Burst.
 
 ## Scope-lock test harness — SSOT (2026-07-15)
+
 Every sim-vs-recording comparison runs on the SAME fixed basis; the ONLY per-test variable is the
 boss ELEMENT. Do NOT hand-roll a `SimConfig` (that is how a core-0 drift caused a phantom ATK
 confound).
+
 - **Build configs via `scopeLockCfg(slugs, bossElement)`** (`scripts/lib/scope-lock.ts`) — it bakes
   the basis: DEF 140, core exposure 100%, core 7 (copies 10), Base-5, sync 400, range on, 180 s.
 - **Per-element runners:** `npx tsx scripts/sim/{fire,water,wind,electric,iron,neutral}.ts <slug…>`
@@ -444,6 +453,7 @@ confound).
 - **VARIANT/TREASURE pre-check before any RECONCILIATION** (2026-07-15): confirm the sim unit's variant + `treasure` state (characters.json) matches what was recorded. `treasure:true` = the sim models the unit WITH its Treasure/favorite item (stat/skill boost); if the owner recorded WITHOUT it (doesn't own it), totals aren't comparable and the reconciliation is confounded (e.g. sim `drake` is treasure=true vs a base-Drake recording). Direct core-RATE popup counts are treasure-INDEPENDENT (aim geometry); only TOTALS are affected.
 
 ## After measuring
+
 - Results go in `docs/probe-runs.md` (human-facing, no invented codes); resolved open-questions
   move to `docs/answered-questions.md` with the measurement (single U-numbering); settled rulings go
   to `docs/DECISIONS.md`.
@@ -463,13 +473,16 @@ confound).
   a new trick (fold it into THIS skill's steps).
 
 ## Verify
+
 ```sh
 bash scripts/verify.sh
 ```
 
 ## Counter-reconciliation reads (SG gold standard) — hardened rules (2026-07-16)
+
 Now driven by `read-total-damage.ts`'s cumulative-total series (`total-damage.json`), from the
 isabel/guilty/brid-silent-track solo band-read campaign (docs/probe-data/*-sg-band.json):
+
 - **Pin the ATK basis from the DATA, not a fixed control value:** the per-pellet quantization step
   (integer-lattice fit over all deltas) + popup values + any deterministic rider fixed-value pin the
   in-fight ATK term to ~0.01%. A fixed "near band must read M=1.281" gate encodes the FALSE premise

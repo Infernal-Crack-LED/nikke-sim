@@ -45,9 +45,7 @@
         "kind": "self"
       },
       "teamHas": {
-        "slugs": [
-          "noir"
-        ]
+        "slugs": ["noir"]
       },
       "effects": [
         {
@@ -114,9 +112,7 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Gain Indomitability for 10 sec."
-    ]
+    "burst": ["Gain Indomitability for 10 sec."]
   },
   "caveats": [
     "\u2691 CADENCE: skill1's 120-normal-attack threshold is kit-stated, but the wall-clock cadence it produces depends on the datamine-unreliable AR pull rate + reloadFrames 81 / ammo 60. With hitsPerShot 1 a 120-round cycle \u2248 two full magazines incl. one reload; if the sim's AR cadence is wrong the shield (and any teammate's `shielded` consumer) fires at the wrong rate. UNMEASURED.",

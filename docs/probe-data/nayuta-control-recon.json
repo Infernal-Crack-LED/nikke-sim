@@ -8,11 +8,16 @@
   "comp": ["little-mermaid", "helm", "nayuta", "snow-white"],
   "compNote": "4-unit team (5th slot EMPTY, confirmed in Battle Records). This is the control frame with Nayuta swapped in for Crown as the Burst II carry. Burst chain B1(LM)->B2(Nayuta)->B3(Helm/Snow White) COMPLETES => Nayuta bursts every cycle.",
   "slots": {
-    "1": {"unit": "little-mermaid", "burst": "I"},
-    "2": {"unit": "helm", "burst": "III"},
-    "3": {"unit": "nayuta", "burst": "II", "focus": true, "note": "center/middle slot, matches focus-defaults-to-middle"},
-    "4": {"unit": "snow-white", "burst": "III"},
-    "5": {"unit": "EMPTY"}
+    "1": { "unit": "little-mermaid", "burst": "I" },
+    "2": { "unit": "helm", "burst": "III" },
+    "3": {
+      "unit": "nayuta",
+      "burst": "II",
+      "focus": true,
+      "note": "center/middle slot, matches focus-defaults-to-middle"
+    },
+    "4": { "unit": "snow-white", "burst": "III" },
+    "5": { "unit": "EMPTY" }
   },
   "params": {
     "basis": "scope-lock base5",
@@ -39,10 +44,34 @@
     "source": "end-of-fight Battle Records per-unit panel (full-res, t~196.1)",
     "teamTotal": 1612414983,
     "perUnit": {
-      "little-mermaid": {"burst": "I", "damage": 283576237, "atkBattleRecords": 90415, "hitStat": 11, "greenStat": 50621},
-      "helm": {"burst": "III", "damage": 435678970, "atkBattleRecords": 90315, "hitStat": 12, "greenStat": 23952},
-      "nayuta": {"burst": "II", "damage": 544176905, "atkBattleRecords": 90415, "hitStat": 30, "greenStat": 2058805},
-      "snow-white": {"burst": "III", "damage": 348982871, "atkBattleRecords": 94055, "hitStat": 22, "greenStat": 50349}
+      "little-mermaid": {
+        "burst": "I",
+        "damage": 283576237,
+        "atkBattleRecords": 90415,
+        "hitStat": 11,
+        "greenStat": 50621
+      },
+      "helm": {
+        "burst": "III",
+        "damage": 435678970,
+        "atkBattleRecords": 90315,
+        "hitStat": 12,
+        "greenStat": 23952
+      },
+      "nayuta": {
+        "burst": "II",
+        "damage": 544176905,
+        "atkBattleRecords": 90415,
+        "hitStat": 30,
+        "greenStat": 2058805
+      },
+      "snow-white": {
+        "burst": "III",
+        "damage": 348982871,
+        "atkBattleRecords": 94055,
+        "hitStat": 22,
+        "greenStat": 50349
+      }
     },
     "reconciles": "sum(perUnit)=1,612,414,983 == teamTotal EXACTLY",
     "atkNote": "ATK shown here is battle-records ATK (~90,415 for Nayuta); use combat ATK ~98,367 for the sim per project note.",
@@ -55,7 +84,10 @@
   "fullBursts": {
     "count": 12,
     "cadenceSec": 15.0,
-    "timestampsSec": [13.8, 28.8, 44.8, 59.8, 77.2, 91.0, 106.0, 120.5, 135.0, 148.2, 163.0, 178.8],
+    "timestampsSec": [
+      13.8, 28.8, 44.8, 59.8, 77.2, 91.0, 106.0, 120.5, 135.0, 148.2, 163.0,
+      178.8
+    ],
     "confidence": "HIGH - all 12 verified as 'FULL BURST!' banner text; t=68 (widest gap) and t=5 (pre-fight) negative-checked (no banner).",
     "nayutaParticipation": "all 12 (sole Burst II, casts on every Full Burst)"
   },
@@ -92,14 +124,19 @@
   "counterReconciliation": {
     "window": "t=120.5 Full Burst",
     "readings": [
-      {"t": 118.0, "damage": 948257276},
-      {"t": 119.5, "damage": 953792880},
-      {"t": 120.5, "damage": 958190000, "approx": true, "note": "partial read ~958.19M"},
-      {"t": 121.1, "damage": 958848991},
-      {"t": 122.0, "damage": 966735993},
-      {"t": 131.0, "damage": 1090502546},
-      {"t": 132.5, "damage": 1095760386},
-      {"t": 134.0, "damage": 1098931548}
+      { "t": 118.0, "damage": 948257276 },
+      { "t": 119.5, "damage": 953792880 },
+      {
+        "t": 120.5,
+        "damage": 958190000,
+        "approx": true,
+        "note": "partial read ~958.19M"
+      },
+      { "t": 121.1, "damage": 958848991 },
+      { "t": 122.0, "damage": 966735993 },
+      { "t": 131.0, "damage": 1090502546 },
+      { "t": 132.5, "damage": 1095760386 },
+      { "t": 134.0, "damage": 1098931548 }
     ],
     "burstWindowDelta": 136709666,
     "burstWindowDeltaSpan": "t=119.5 -> t=131.0 (~11.5s)",

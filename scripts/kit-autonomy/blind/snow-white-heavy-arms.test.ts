@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 // ============================================================================
 // snow-white-heavy-arms.test.ts — BLIND kit spec (S5). Written from kit prose
@@ -60,14 +65,18 @@ function run(opts: any): { res: any; evs: Ev[] } {
 
 const near = (a: number, b: number, tol = 0.05) => Math.abs(a - b) <= tol;
 const buffAt = (evs: Ev[], stat: string, value: number) =>
-  evs.filter((e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value));
+  evs.filter(
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value)
+  );
 const dmgOf = (res: any, slug: string) => unitOf(res, slug).total;
 
 // Scan-by-value patcher (blind to block layout): zero the first buff matching stat+value.
 function zeroBuff(ov: any, stat: string, value: number) {
   for (const b of ov.blocks ?? []) {
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === stat && near(e.value, value)) e.value = 0;
+      if (e.kind === 'buff' && e.stat === stat && near(e.value, value)) {
+        e.value = 0;
+      }
     }
   }
 }
@@ -79,7 +88,11 @@ const baseHer = dmgOf(baseRes, SLUG);
 const baseMate = dmgOf(baseRes, TEAMMATE);
 
 function counterfactual(stat: string, value: number) {
-  return withPatchedOverride(SLUG, (ov: any) => zeroBuff(ov, stat, value), () => run(comp));
+  return withPatchedOverride(
+    SLUG,
+    (ov: any) => zeroBuff(ov, stat, value),
+    () => run(comp)
+  );
 }
 const cfAtk5s = counterfactual('atkPct', 46.84);
 const cfAtkBs3 = counterfactual('atkPct', 73.92);
@@ -126,7 +139,10 @@ describe('snow-white-heavy-arms — blind kit spec', () => {
   it('S2: Charge Damage ▲528% is Fully-Active-gated, not active before the first burst', () => {
     const firstBurst = baseEvs.findIndex((e) => e.kind === 'burstCast');
     const firstCharge = baseEvs.findIndex(
-      (e) => e.kind === 'buffApply' && e.stat === 'chargeDamagePct' && near(e.value, 528),
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'chargeDamagePct' &&
+        near(e.value, 528)
     );
     expect(firstBurst).toBeGreaterThanOrEqual(0); // active case IS exercised (she bursts)
     expect(firstCharge).toBeGreaterThan(firstBurst); // inactive case: absent before burst
@@ -136,7 +152,9 @@ describe('snow-white-heavy-arms — blind kit spec', () => {
   it('S2: Sequential ▲158.4% is emitted as sequentialMultPct (own multiplicative bucket)', () => {
     // nearest-wrong: additive sequentialDamagePct instead of the true multiplier —
     // this asserts the multiplicative stat key is the one emitted at 158.4.
-    expect(buffAt(baseEvs, 'sequentialMultPct', 158.4).length).toBeGreaterThan(0);
+    expect(buffAt(baseEvs, 'sequentialMultPct', 158.4).length).toBeGreaterThan(
+      0
+    );
   });
 
   // ---- GAP / measurement-gated / v1-inert lines (skipped, documented) ------

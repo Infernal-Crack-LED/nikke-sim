@@ -498,12 +498,12 @@ All pages follow the same structure:
 ```tsx
 export function SomePage() {
   return (
-    <div className='app page-class'>
+    <div className="app page-class">
       <header>
         <h1>Page title</h1>
-        <p className='muted'>Introductory text...</p>
+        <p className="muted">Introductory text...</p>
       </header>
-      <section className='page-grid'>{/* content cards */}</section>
+      <section className="page-grid">{/* content cards */}</section>
     </div>
   );
 }

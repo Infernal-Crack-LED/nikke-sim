@@ -93,47 +93,47 @@ const noS1Nuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasFlat(b, 636));
   if (ov.skill1.length === before)
-    throw new Error('brid S1 636% block missing — fixture is stale');
+    {throw new Error('brid S1 636% block missing — fixture is stale');}
 });
 /** B4 reference: her S2 675% rider removed entirely. */
 const noS2Nuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasFlat(b, 675));
   if (ov.skill2.length === before)
-    throw new Error('brid S2 675% block missing — fixture is stale');
+    {throw new Error('brid S2 675% block missing — fixture is stale');}
 });
 /** B1 counterfactual: the S1 Wind debuff with its element gate DROPPED (fires vs any boss). */
 const ungateS1 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'damageTakenPct'));
   if (!b || !b.bossElementGate)
-    throw new Error(
-      'brid S1 gated damageTakenPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'brid S1 gated damageTakenPct block missing — fixture is stale'
+    );}
   delete b.bossElementGate;
 });
 /** B3 counterfactual: the S2 Wind debuff with its element gate DROPPED. */
 const ungateS2 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'damageTakenPct'));
   if (!b || !b.bossElementGate)
-    throw new Error(
-      'brid S2 gated damageTakenPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'brid S2 gated damageTakenPct block missing — fixture is stale'
+    );}
   delete b.bossElementGate;
 });
 /** B4 counterfactual: the SHOT-vs-PELLET misreading — hitCount 5 instead of 50 (≈10× the riders). */
 const s2PelletMisread = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasFlat(x, 675));
   if (!b || b.trigger.count !== 50)
-    throw new Error('brid S2 hitCount-50 rider missing — fixture is stale');
+    {throw new Error('brid S2 hitCount-50 rider missing — fixture is stale');}
   b.trigger.count = 5;
 });
 /** B5 counterfactual: the burst buff INCLUDES self (excludeSelf dropped). */
 const burstInclSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'casterAtkPct'));
   if (!b || b.target.excludeSelf !== true)
-    throw new Error(
-      'brid burst excludeSelf casterAtkPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'brid burst excludeSelf casterAtkPct block missing — fixture is stale'
+    );}
   delete b.target.excludeSelf;
 });
 /** B5 magnitude reference: 100% of caster ATK → the flat grant equals the caster's static ATK. */
@@ -142,9 +142,9 @@ const burst100 = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error(
-      'brid burst casterAtkPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'brid burst casterAtkPct effect missing — fixture is stale'
+    );}
   e.value = 100;
 });
 
@@ -196,12 +196,12 @@ describe('brid-silent-track — kit spec', () => {
       const applied = takenDebuff(wind.events, 15.12);
       expect(
         applied.length,
-        'no 15.12% debuff vs a Wind boss — the gate never opened',
+        'no 15.12% debuff vs a Wind boss — the gate never opened'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(
           b.targetIdx,
-          'the debuff must land on the boss (targetIdx null)',
+          'the debuff must land on the boss (targetIdx null)'
         ).toBeNull();
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       }
@@ -221,7 +221,7 @@ describe('brid-silent-track — kit spec', () => {
     it('takes the +50% Full Burst major (FB by TIMING — no noFb on this rider)', () => {
       expect(
         nukes.every((d) => d.fbMajorApplied),
-        'a noFb model would drop the FB major',
+        'a noFb model would drop the FB major'
       ).toBe(true);
     });
 
@@ -244,7 +244,7 @@ describe('brid-silent-track — kit spec', () => {
       const applied = takenDebuff(wind.events, 12.12);
       expect(
         applied.length,
-        'no 12.12% debuff vs a Wind boss — the gate never opened',
+        'no 12.12% debuff vs a Wind boss — the gate never opened'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(b.targetIdx).toBeNull();
@@ -291,14 +291,14 @@ describe('brid-silent-track — kit spec', () => {
       const targets = new Set(grants.map((b) => b.targetIdx));
       expect(
         targets.has(BRID),
-        'excludeSelf violated — brid is among her own targets',
+        'excludeSelf violated — brid is among her own targets'
       ).toBe(false);
       expect(targets.size, 'must reach the other 3 allies').toBe(COMP_SIZE - 1);
     });
 
     it('DISCRIMINATING: dropping excludeSelf adds brid to her own targets', () => {
       const targets = new Set(
-        casterAtkGrants(inclSelf.events).map((b) => b.targetIdx),
+        casterAtkGrants(inclSelf.events).map((b) => b.targetIdx)
       );
       expect(targets.has(BRID)).toBe(true);
       expect(targets.size).toBe(COMP_SIZE);
@@ -311,7 +311,7 @@ describe('brid-silent-track — kit spec', () => {
       ];
       expect(
         shipped.length,
-        'the flat grant must be a single constant value',
+        'the flat grant must be a single constant value'
       ).toBe(1);
       expect(ref.length).toBe(1);
       // 100% counterfactual grant == caster static ATK; shipped == 0.6652 × that.
@@ -319,7 +319,7 @@ describe('brid-silent-track — kit spec', () => {
     });
 
     it('lasts 10 sec', () => {
-      for (const b of grants) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of grants) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 });

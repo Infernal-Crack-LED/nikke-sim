@@ -170,9 +170,7 @@
   "unmodeledVerbatim": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Stuns for 3 sec."
-    ]
+    "burst": ["Stuns for 3 sec."]
   },
   "notes": "LEAK: types.ts targetStatus comment names 'privaty' and 'Designated Target' explicitly — declared in leakDetected. HIGHEST-RISK SHARED MISREAD: (1) Max Ammunition ▼ 50.66% dropped as 'defensive penalty' — it is the single most damage-relevant skill1 line for privaty (doubles lastBullet freq during FB, gating all skill2 procs). (2) skill1 trigger misread as burstCast instead of fullBurstEnter — halves buff uptime in multi-B3 comps. (3) Burst damage noFb omitted — inflates burst nuke by 50%. (4) Designated Target status gate dropped from skill2 1687% rider — would over-credit by ~1687% per magazine instead of only post-burst. The Designated Target mechanism (targetStatus application on burst + requiresTargetStatus gate on skill2 1687%) is MEASUREMENT-GATED per the types.ts comment ('NOT enacted, still measurement-gated') — the driver must reconcile whether to encode it now or flag it. The ATK ▼ 5.02% boss debuff and the 3s stun are both inert in the sim (boss deals no damage, boss ATK irrelevant)."
 }

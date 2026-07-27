@@ -17,6 +17,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -27,12 +28,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -58,33 +61,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ## 1. Ground truth — kit prose (data/characters.json → characters.ada.skills, level-10 values)
 
 Base: RL / Electric / Attacker / Burst III, cd 40s, ammo 6, reloadFrames 141, chargeFrames 60, hitsPerShot 1, normalAttackMultiplier 61.3, chargeMultiplier 250, coreAttackMultiplier 200, burstGaugePerShot 1.4.
+
 - S1 (Covert Support): ■ Activates when entering Full Burst. Affects all Burst 3 allies who previously used their Burst Skill. | ATK ▲ 60% of the skill user's ATK for 10 sec. | True Damage ▲ 50% for 10 sec. | Recovers 10% of damage as HP for 10 sec.
 - S2 (Flash Grenade): ■ Activates during Full Burst. Affects enemies within attack range nearest to the crosshair every 2 sec. | Flash Grenade Toss: Deals 420% of final ATK as True Damage. | ■ Activates when using Burst Skill. Affects self. | Flash Grenade Toss activation time condition ▼ 1 sec for 10 sec.
 - Burst (Secret Agent): ■ Affects self. | ATK ▲ 40% for 10 sec. | True Damage ▲ 42% for 10 sec. | Special Modification | Function: Decreases Charge Speed but increases Charge Damage for 1 round(s). | Effect 1: Charge Speed ▼ 300%. | Effect 2: Charge Damage ▲ 1500%.
@@ -94,6 +125,7 @@ Base: RL / Electric / Attacker / Burst III, cd 40s, ammo 6, reloadFrames 141, ch
 Damage = ATK × major (×1.10 element if advantaged; +50% FB major ONLY by timing — a burst CAST lands BEFORE
 the FB window opens so it never takes the +50%) × charge × damageUp-bucket (attackDamagePct / trueDamagePct /
 elemAdvantageDamagePct etc., ADDITIVE within the bucket) × taken (damageTakenPct on the boss) × distributed.
+
 - casterAtkPct = a FLAT add of % of the CASTER's ATK (not the target's own ATK; that would be atkPct).
 - trueDamagePct feeds ONLY true-flavored damage (the engine gates it by flavor); on a unit with no true source it is inert.
 - A DoT/rider's damage instance carries bucket 'skill' and srcSlot 'skill2'; its mult is a DECOMPOSITION OBJECT
@@ -107,10 +139,10 @@ elemAdvantageDamagePct etc., ADDITIVE within the bucket) × taken (damageTakenPc
 
 - S1 block: fullBurstEnter → burstCasters {stage:3} → casterAtkPct 60 (10s) + trueDamagePct 50 (10s)
 - S2 block 1: fullBurstEnter → enemy → dot atkPct 420, intervalSec 2, durationSec 10, flavor true
-- S2 block 2: burstCast → enemy → dot atkPct 420, intervalSec 2, durationSec 10, flavor true   (the ▼1s rider
+- S2 block 2: burstCast → enemy → dot atkPct 420, intervalSec 2, durationSec 10, flavor true (the ▼1s rider
   encoded as a SECOND identical every-2s stream → combined 1/s during her burst windows)
 - Burst block: burstCast → self → atkPct 40 (10s) + trueDamagePct 42 (10s) + weaponSwap {damagePct 61.3,
-  chargeTimeSec 4, chargeMultPct 1750, durationSec 10}   (Special Modification: Charge Speed ▼300%→4s charge,
+  chargeTimeSec 4, chargeMultPct 1750, durationSec 10} (Special Modification: Charge Speed ▼300%→4s charge,
   Charge Damage ▲1500%→1750%)
 - unmodeled.skill1: "Recovers 10% of the damage dealt as HP for 10 sec." (lifesteal — no HP pool)
 - caveats: ⚑ burst Special Modification "for 1 round(s)" — MEASUREMENT-GATED fidelity flag (kit-status F3):
@@ -127,6 +159,7 @@ elemAdvantageDamagePct etc., ADDITIVE within the bucket) × taken (damageTakenPc
 
 NOTE FOR THE JUDGE: this test was authored with NO tools, so several field/API names are best-guesses the model
 flagged inline. The driver measured the REAL engine event semantics (authoritative for classification):
+
 - casterAtkPct buffApply.value is the RESOLVED FLAT ATK grant (≈71800 = 60% of Ada's ATK), NOT 60 — so the
   blind's `applies(evs,'casterAtkPct',60)` finds zero matches. This is a RECON_ERROR (event-semantics mis-guess),
   NOT a kit divergence; the blind's INTENT (casterAtkPct, not atkPct) is correct and converges with the driver.
@@ -143,9 +176,16 @@ spec + fixtures + gaps:
 {"leakDetected":null,"spec":[{"slot":"skill1","kitLine":"ATK +60% of skill user's ATK 10s","disposition":"FAITHFUL","assertion":"buffApply stat==='casterAtkPct' value 60 present; fails under nearest-wrong atkPct 60 (self-scaled) which would emit stat 'atkPct'. Solo comp nets same ATK, so event-stat is the discriminator."},{"slot":"skill1","kitLine":"True Damage +50% 10s","disposition":"FAITHFUL","assertion":"buffApply trueDamagePct 50 present; no attackDamagePct 50 (fails if mis-bucketed to generic Damage-Up as attackDamagePct)."},{"slot":"skill1","kitLine":"trigger = entering Full Burst","disposition":"FAITHFUL","assertion":"casterAtkPct-60 apply count == fullBurstStart count. Discriminates fullBurstEnter vs fullBurstEnd; solo-comp cannot separate fullBurstEnter from burstCast (1:1) — flagged."},{"slot":"skill1","kitLine":"target = B3 allies who used burst","disposition":"FAITHFUL","assertion":"target burstCasters{stage:3}; in solo the set is Ada herself. Non-carrier B3 (helm, no burst cast) must NOT receive it — checked indirectly via teammate byte-identity in the grenade-removal test (helm total unchanged)."},{"slot":"skill1","kitLine":"Recovers 10% of damage as HP","disposition":"GAP","assertion":"it.skip — lifesteal with no HP pool in v1; offensively inert. Only relevance is emitting recovery events for a teammate on-recovery consumer (tandem)."},{"slot":"skill2","kitLine":"Flash Grenade 420% true dmg","disposition":"FAITHFUL","assertion":"big true-flavored hits (mult>3, bucket~true) all have inFullBurst===true; fails under nearest-wrong ungated interval (hits with inFullBurst=false). Non-vacuity: out-of-FB normal shots proven present."},{"slot":"skill2","kitLine":"target = enemy nearest crosshair","disposition":"FAITHFUL","assertion":"removing the flatDamage-420 block drops Ada's total but leaves liter/crown/helm totals byte-identical — grenade hits only the enemy, never teammates."},{"slot":"skill2","kitLine":"grenade activation-time -1s 10s","disposition":"GAP","assertion":"it.skip — no primitive to dynamically shorten an interval trigger. Trigger identity is burstCast (self, on own burst). In practice it halves grenade cadence 2s->1s across Ada's FB; ⚑ the base skill2 interval should stay 2s and this is unmodeled."},{"slot":"burst","kitLine":"ATK +40% 10s (self)","disposition":"FAITHFUL","assertion":"buffApply atkPct 40 present (self-scaled, correct here since it's the caster's own ATK)."},{"slot":"burst","kitLine":"True Damage +42% 10s (self)","disposition":"FAITHFUL","assertion":"buffApply trueDamagePct 42 present."},{"slot":"burst","kitLine":"Charge Speed -300% 1 round","disposition":"FAITHFUL","assertion":"buffApply chargeSpeedPct -300 present; paired with durationShots:1 (round-count). Slows the single post-burst charge shot."},{"slot":"burst","kitLine":"Charge Damage +1500% 1 round","disposition":"FAITHFUL","assertion":"buffApply chargeDamagePct 1500 present; DURATION SEMANTICS discriminated by counterfactual: patching durationShots:1 -> durationSec:10 strictly increases total (many charged shots boosted vs only the next one). Green under round-count, red (total too high) under seconds."}],"fixtures":"controlComp('ada', true) throughout — liter B1 / crown B2 / ada B3 carry / helm B3, boss Fire, focus ada. helm=true kept (its crit buffs live in separate buckets and cannot touch the trueDamagePct/casterAtkPct buffApply-stat assertions or the true-flavored grenade filter). The comp is required so a B3 chain completes and Ada actually enters Full Burst and self-bursts each rotation, which is what makes skill1's 'B3 burst-caster' target set include her and gates skill2's grenade window. Deterministic, no seed. Three hoisted runs: base + two withPatchedOverride counterfactuals (charge-window, grenade-removal).","gaps":["skill1 line 3 'Recovers 10% of damage as HP' — it.skip: lifesteal, v1 has no HP pool; offensively inert (only a potential on-recovery tandem feed).","skill2 line 2 'Flash Grenade activation-time condition -1 sec for 10 sec' — it.skip: no primitive to mutate an interval trigger's period; the burstCast-scoped reduction effectively halves grenade cadence 2s->1s during Ada's own FB but cannot be encoded, so the base interval stays 2s and this is ⚑ unmodeled.","SOLO-COMP LIMITATIONS (not skips, flagged): (a) casterAtkPct vs atkPct nets identical total ATK when caster===sole target, so only the event-stat name discriminates the encoding; (b) fullBurstEnter vs burstCast trigger identity is 1:1 in a solo self-burst comp and cannot be separated by count — a multi-B3 comp would be needed to prove skill1 keys to FB entry (and gains the +50% FB major) rather than pre-FB burst cast.","⚑ Flash Grenade rider crit/core/noFb: modeled noRange (riders off-range) and no core (text says no 'core strike'); crit-eligibility at caster rate is a RIDERCRIT judgment left unset/conservative — measurement-gated, not asserted.","⚑ 'Charge Damage +1500%' read as chargeDamagePct (additive charge-bucket points) rather than chargeDamageMultPct (scales base charge damage); the two diverge and the choice is not provable from prose alone."]}
 
 blind test source (as authored; plumbing best-guesses noted above):
+
 ```ts
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 // ada — RL/Electric/Attacker/Burst III. BLIND spec test authored from kit prose ALONE.
 // (event/API field names mirror the harness contract described in the packet; where a field is a
@@ -184,9 +224,15 @@ function run(opts: any) {
 
 const ADA = 'ada';
 const applies = (evs: Ev[], stat: string, value: number) =>
-  evs.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - value) < 1e-6);
+  evs.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(e.value - value) < 1e-6
+  );
 // grenade / charge-nuke hits stand far above a normal RL shot (base mult 0.613, core 2.0)
-const bigTrue = (e: Ev) => e.kind === 'damage' && e.mult > 3 && /true/i.test(String(e.bucket));
+const bigTrue = (e: Ev) =>
+  e.kind === 'damage' && e.mult > 3 && /true/i.test(String(e.bucket));
 const normalHit = (e: Ev) => e.kind === 'damage' && e.mult < 3;
 
 // ---- hoisted runs (each is a full 180s sim) ----
@@ -210,14 +256,19 @@ const noGrenade = run({
   ...controlComp(ADA, true),
   overridesPatch: withPatchedOverride(ADA, (ov: any) => {
     ov.blocks = ov.blocks.filter(
-      (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 420) < 1e-6),
+      (b: any) =>
+        !b.effects.some(
+          (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 420) < 1e-6
+        )
     );
   }),
 });
 
 describe('ada — skill1 (FB-enter, B3 burst-casters)', () => {
   it('fixture actually enters Full Burst (non-vacuity)', () => {
-    expect(base.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      base.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
   });
 
   it('ATK buff is casterAtkPct 60 (flat % of CASTER ATK), NOT self-scaled atkPct 60', () => {
@@ -236,7 +287,9 @@ describe('ada — skill1 (FB-enter, B3 burst-casters)', () => {
   it('skill1 buffs land AT Full Burst entry, not at burst cast', () => {
     // in a solo comp burstCast and fullBurstEnter are 1:1, so this checks COUNT parity with FB starts
     // (a burstCast mis-key would still count 1:1 here — flagged as a solo-comp limitation in the spec).
-    const fbCount = base.events.filter((e) => e.kind === 'fullBurstStart').length;
+    const fbCount = base.events.filter(
+      (e) => e.kind === 'fullBurstStart'
+    ).length;
     expect(applies(base.events, 'casterAtkPct', 60).length).toBe(fbCount);
   });
 
@@ -252,13 +305,19 @@ describe('ada — skill2 (Flash Grenade, during Full Burst)', () => {
   });
 
   it('non-vacuity: the fixture also produces plenty of out-of-FB normal shots', () => {
-    expect(base.events.some((e) => normalHit(e) && e.inFullBurst === false)).toBe(true);
+    expect(
+      base.events.some((e) => normalHit(e) && e.inFullBurst === false)
+    ).toBe(true);
   });
 
   it('grenade is enemy-targeted — removing it drops Ada but leaves teammates byte-identical', () => {
-    expect(unitOf(noGrenade.res, ADA).total).toBeLessThan(unitOf(base.res, ADA).total);
+    expect(unitOf(noGrenade.res, ADA).total).toBeLessThan(
+      unitOf(base.res, ADA).total
+    );
     for (const mate of ['liter', 'crown', 'helm']) {
-      expect(unitOf(noGrenade.res, mate).total).toBe(unitOf(base.res, mate).total);
+      expect(unitOf(noGrenade.res, mate).total).toBe(
+        unitOf(base.res, mate).total
+      );
     }
   });
 
@@ -272,18 +331,22 @@ describe('ada — burst (self)', () => {
   });
 
   it('Special Modification: chargeDamage +1500 & chargeSpeed -300 present', () => {
-    expect(applies(base.events, 'chargeDamagePct', 1500).length).toBeGreaterThan(0);
-    expect(applies(base.events, 'chargeSpeedPct', -300).length).toBeGreaterThan(0);
+    expect(
+      applies(base.events, 'chargeDamagePct', 1500).length
+    ).toBeGreaterThan(0);
+    expect(applies(base.events, 'chargeSpeedPct', -300).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('Special Modification lasts ONE ROUND, not a 10s window', () => {
     // FAITHFUL: durationShots:1 -> only the next charged shot is boosted.
     // NEAREST-WRONG: durationSec:10 -> every charged shot for 10s is boosted -> strictly more total damage.
-    expect(totals(longCharge.res).total).toBeGreaterThan(totals(base.res).total);
+    expect(totals(longCharge.res).total).toBeGreaterThan(
+      totals(base.res).total
+    );
   });
 });
-
-
 ```
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, CROSS-FAMILY)
@@ -293,6 +356,7 @@ describe('ada — burst (self)', () => {
 ## 7. Driver's tests (scripts/tests/units/ada.test.ts — 16 tests, ALL GREEN vs shipped override)
 
 Counterfactuals discriminate (each is GREEN-under-shipped AND RED-under-nearest-wrong):
+
 - A1: S1 casterAtkPct scope — targets {ada,helm} (stage-3) NOT {liter,crown}; unfiltered burstCasters widens to {0,1,2,3}.
 - A2: S1 trueDamagePct 50 → stage-3 casters {ada,helm}, 10s.
 - A3: S2 grenade 420% true dot, re-applied per FB enter (span >150s); removing both S2 blocks zeroes grenades.
@@ -313,16 +377,16 @@ on: S1 = fullBurstEnter → stage-3 burstCasters → casterAtkPct 60 + trueDamag
 S2 = 420% true grenade, in-FB, interval 2s; burst = self atkPct 40 + trueDamagePct 42 (10s, burstCast).
 TWO documented divergences, both surfaced by the blind models (the payload cross-family review exists to catch):
 (1) S2 ▼1s rider — fable: GAP (no interval-modifier primitive); opus S6: SKIPPED+unmodeled+⚑; driver: a faithful
-    SECOND every-2s stream on burstCast (combined 1/s in-window), pinned live (A4: 85 vs 55). Same mechanic, faithful
-    workaround for the missing primitive — NOT a kit divergence.
+SECOND every-2s stream on burstCast (combined 1/s in-window), pinned live (A4: 85 vs 55). Same mechanic, faithful
+workaround for the missing primitive — NOT a kit divergence.
 (2) Special Modification "for 1 round(s)" — fable: FIX (durationShots:1, kit-literal 1 boosted round); opus S6:
-    chargeSpeedPct -300 + chargeDamagePct 1500, durationShots:1; driver: weaponSwap durationSec:10 no maxShots
-    (~2 specials/window). BOTH blind models independently re-derive the kit-literal "1 round" reading and so
-    independently flag the shipped over-fire = kit-status F3. The driver documents this as a ⚑ caveat
-    (DOCUMENTED-GAP, MEASUREMENT-GATED): the STRUCTURE (weaponSwap, burstCast self, charge ×17.50, charge time ×4)
-    is faithful + pinned; the COUNT/duration (1 kit-literal vs 2 shipped) needs popup footage to resolve, and the
-    board (0.99) leans on the 2nd shot (kit-literal cap → ~0.95). This is a fidelity flag for the owner, not a
-    silent drop and not a fudge.
+chargeSpeedPct -300 + chargeDamagePct 1500, durationShots:1; driver: weaponSwap durationSec:10 no maxShots
+(~2 specials/window). BOTH blind models independently re-derive the kit-literal "1 round" reading and so
+independently flag the shipped over-fire = kit-status F3. The driver documents this as a ⚑ caveat
+(DOCUMENTED-GAP, MEASUREMENT-GATED): the STRUCTURE (weaponSwap, burstCast self, charge ×17.50, charge time ×4)
+is faithful + pinned; the COUNT/duration (1 kit-literal vs 2 shipped) needs popup footage to resolve, and the
+board (0.99) leans on the 2nd shot (kit-literal cap → ~0.95). This is a fidelity flag for the owner, not a
+silent drop and not a fudge.
 
 ## 9. Board reading (non-gating context)
 

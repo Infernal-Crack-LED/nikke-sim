@@ -155,12 +155,8 @@
     "burst:burstCast self casterAtkPct 17.28 (10s)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Focuses fire continuously."
-    ],
-    "skill2": [
-      "Stuns for 3 sec."
-    ],
+    "skill1": ["Focuses fire continuously."],
+    "skill2": ["Stuns for 3 sec."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads to check hardest: (1) BOTH team-ammo triggers read as owner-only hitCount — the kit says 'total ammo expended by allies' twice, with DIFFERENT thresholds (400 gauge / 500 barrage); they need two independent teamAmmo counters, and unlimitedAmmo shots must not feed either. (2) Bubble/Explosive-Bubble stacked to 10.1% or re-proc'd every 50 rounds — 'Removes Bubble' caps the boss DT at a single 5.05% instance for the whole fight and closes the status gate permanently; the schema has no removeStatus effect kind (hence GAP), so the driver must express one-time-swap semantics some other way (e.g. permanent 5.05% + a gate that can only fire once) and the test must pin the 5.05-not-10.1 invariant plus no re-fire at 100/150 rounds. (3) The FB-only 1s interval left ungated (≈2× over-credit plus wrongly-earned non-FB landings). (4) Burst reload 33.26% treated as a full instantReload — this shifts every ally's lastBullet/reload cadence, a team-wide shot-economy error. (5) The fullBurstEnd 7.48s CDR mis-keyed to fullBurstEnter or made once-per-battle — as a B1 rotation engine this plus the 400-ammo 37% gauge fill IS the unit's identity; judge it by measured FB-count arithmetic on a fixed comp. (6) 'Attacks sequentially N times' collapsed into one hit — hit COUNT matters both for totals and because sequential flavor makes these hits eligible for teammates' sequentialDamagePct/sequentialMultPct buffs. Fixture note: she is Burst I — controlComp fixes liter in the B1 slot, so tests must place little-mermaid AS the B1 (analog of the lone-B3 zero-FB trap: a comp with her wedged into a non-castable slot never exercises her burst blocks). The boss stun is inert in v1 (boss deals no damage, movement script is measured) but must be listed in unmodeled, not silently dropped.",

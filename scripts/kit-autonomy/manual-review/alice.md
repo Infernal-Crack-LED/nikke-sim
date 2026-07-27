@@ -103,7 +103,7 @@ not magnitudes):
 1. **Caster-relative charge speed (S1)** — "11.67% of the skill user's Charge Speed" is modeled as a flat
    +11.67% (no caster-relative charge-speed StatKey exists). At scope lock the caster is at base charge speed
    unless she ranks top-2 AND has her own +80.15% burst buff live at FB entry, in which case the flat grant
-   understates by up to ~80% of 11.67 (~+9pp) on those rotations only — a low-single-digit-% cadence effect on
+   understates by up to ~~80% of 11.67 (~~+9pp) on those rotations only — a low-single-digit-% cadence effect on
    the 2 targeted allies. Recipe: read the targeted allies' charged-shot cadence in a focus video vs sim.
 2. **Effective charge cadence (burst)** — the 80.15% Charge Speed against datamined chargeFrames 90 /
    reloadFrames 141 / ammo 6 produces the shot count that drives her damage; datamine cadence fields are

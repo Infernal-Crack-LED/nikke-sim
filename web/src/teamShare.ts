@@ -38,7 +38,7 @@ export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
   const load = (src: string, crossOrigin: boolean) =>
     new Promise<HTMLImageElement | null>((resolve) => {
       const img = new Image();
-      if (crossOrigin) img.crossOrigin = 'anonymous';
+      if (crossOrigin) {img.crossOrigin = 'anonymous';}
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
       img.src = src;
@@ -47,7 +47,7 @@ export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
     const local = manifestThumbUrl(url, 120); // crisp square, comfortably above draw size
     if (local) {
       const img = await load(local, false);
-      if (img) return img;
+      if (img) {return img;}
     }
     const thumb = await portraitThumb(url, 120);
     return load(thumb ?? url, true);
@@ -60,13 +60,13 @@ export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
 export async function buildTeamCardBlob(
   data: ShareTeamData,
   meta: TeamCardMeta,
-  imageUrlFor: (slug: string) => string | undefined,
+  imageUrlFor: (slug: string) => string | undefined
 ): Promise<Blob | null> {
   const imgs = await Promise.all(
     data.units.map(async (u) => {
       const url = imageUrlFor(u.slug);
       return url ? await loadPortrait(url) : null;
-    }),
+    })
   );
   const units: TeamCardUnit[] = data.units.map((u, i) => ({
     name: u.name,
@@ -84,7 +84,7 @@ export async function buildTeamCardBlob(
   cv.width = CARD_W * dpr;
   cv.height = cardHeight(units.length) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) return null; // jsdom / no canvas support
+  if (!ctx) {return null;} // jsdom / no canvas support
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
@@ -97,7 +97,7 @@ export async function buildTeamCardBlob(
       fullBurstUptime: data.fullBurstUptime,
       units,
     },
-    meta,
+    meta
   );
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
 }
@@ -106,7 +106,7 @@ export async function buildTeamCardBlob(
 // clipboard image API isn't available (e.g. Firefox).
 export async function copyOrDownloadPng(
   blob: Blob,
-  filename: string,
+  filename: string
 ): Promise<'copied' | 'downloaded'> {
   const nav = navigator as any;
   try {
@@ -133,10 +133,10 @@ export async function shareTeamCard(
   data: ShareTeamData,
   meta: TeamCardMeta,
   imageUrlFor: (slug: string) => string | undefined,
-  filename = 'nikke-team.png',
+  filename = 'nikke-team.png'
 ): Promise<'copied' | 'downloaded' | 'unsupported'> {
   const blob = await buildTeamCardBlob(data, meta, imageUrlFor);
-  if (!blob) return 'unsupported';
+  if (!blob) {return 'unsupported';}
   return copyOrDownloadPng(blob, filename);
 }
 
@@ -158,15 +158,15 @@ export interface ShareRosterData {
 export async function buildRosterCardBlob(
   data: ShareRosterData,
   meta: TeamCardMeta,
-  imageUrlFor: (slug: string) => string | undefined,
+  imageUrlFor: (slug: string) => string | undefined
 ): Promise<Blob | null> {
   // dedupe portrait loads across teams (roster teams share no units, but this is
   // cheap and future-proofs a mode that does)
   const cache = new Map<string, Promise<HTMLImageElement | null>>();
   const load = (slug: string) => {
     const url = imageUrlFor(slug);
-    if (!url) return Promise.resolve(null);
-    if (!cache.has(slug)) cache.set(slug, loadPortrait(url));
+    if (!url) {return Promise.resolve(null);}
+    if (!cache.has(slug)) {cache.set(slug, loadPortrait(url));}
     return cache.get(slug)!;
   };
   const teams = await Promise.all(
@@ -178,9 +178,9 @@ export async function buildRosterCardBlob(
           name: u.name,
           element: u.element,
           img: (await load(u.slug)) ?? undefined,
-        })),
+        }))
       ),
-    })),
+    }))
   );
 
   const dpr = 2;
@@ -188,14 +188,14 @@ export async function buildRosterCardBlob(
   cv.width = CARD_W * dpr;
   cv.height = rosterCardHeight(teams.length) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) return null;
+  if (!ctx) {return null;}
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   drawRosterCard(
     ctx as unknown as Canvas2DLike,
     { totalDamage: data.totalDamage, teams, title: data.title },
-    meta,
+    meta
   );
   return new Promise((resolve) => cv.toBlob((b) => resolve(b), 'image/png'));
 }
@@ -204,9 +204,9 @@ export async function shareRosterCard(
   data: ShareRosterData,
   meta: TeamCardMeta,
   imageUrlFor: (slug: string) => string | undefined,
-  filename = 'nikke-roster.png',
+  filename = 'nikke-roster.png'
 ): Promise<'copied' | 'downloaded' | 'unsupported'> {
   const blob = await buildRosterCardBlob(data, meta, imageUrlFor);
-  if (!blob) return 'unsupported';
+  if (!blob) {return 'unsupported';}
   return copyOrDownloadPng(blob, filename);
 }

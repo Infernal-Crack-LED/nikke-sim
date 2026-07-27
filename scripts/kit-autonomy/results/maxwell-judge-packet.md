@@ -18,6 +18,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -28,12 +29,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -59,29 +62,56 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
@@ -111,7 +141,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -149,29 +179,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -252,9 +282,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -290,7 +320,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -348,7 +378,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -492,12 +522,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -531,7 +561,6 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
-
 
 ---
 
@@ -591,15 +620,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -944,7 +973,6 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ---
 
 # GROUND TRUTH + PROBE EVIDENCE
@@ -1008,13 +1036,13 @@ mag, 300% full-charge ⇒ ~2-3 full-charge shots per window at 2440.26% each) **
 (sim over-credited her damage by ~93%). Collapsing the burst to a single uncharged 813.42% flatDamage
 shot brought the sim to **0.81** of real (run G). That is the evidence that selects the single-shot
 model over the kit-literal weaponSwap. The N6 read (1.17) is an honest residual — the magnitude is
-measurement-gated and the unit is flagged "audit candidate" — but the *single-shot topology* (one
+measurement-gated and the unit is flagged "audit candidate" — but the _single-shot topology_ (one
 shot per cast, not a multi-shot swap) is what the probe established and what the sim ships.
 
 Project principle that governs this reconciliation: **measured > fudge** and **faithful > fit**.
-"Faithful" means faithful to *what actually happens in game* (the probe is the ground truth), not
+"Faithful" means faithful to _what actually happens in game_ (the probe is the ground truth), not
 faithful to a literal reading of the kit text that the measurement falsified. A blind kit-text-only
-re-derivation is *expected* to produce the weaponSwap (that is the unfalsified text hypothesis); it
+re-derivation is _expected_ to produce the weaponSwap (that is the unfalsified text hypothesis); it
 corroborates the driver everywhere the text is not measurement-overridden, and the single burst
 divergence is resolved by the probe, not by majority vote of blind readers.
 
@@ -1025,6 +1053,7 @@ divergence is resolved by the probe, not by majority vote of blind readers.
 ## DRIVER RECONCILIATION (S2c) — what converged, and the ONE open axis
 
 **CONVERGED (driver == S2b fable == S5 opus test == S6 opus override), all four independent:**
+
 - skill1: `fullBurstEnter` trigger (NOT burstCast) → `alliesTopAtk { count: 2, byFinalAtk: true }`,
   self-eligible (no "except self" clause) → buff chargeSpeedPct 4.48 + buff atkPct 43.1, durationSec 10.
   The blind roles independently derived `byFinalAtk:true` from the literal "highest FINAL ATK" wording
@@ -1035,6 +1064,7 @@ divergence is resolved by the probe, not by majority vote of blind readers.
   discriminated by both the driver and blind tests.
 
 **THE ONE OPEN AXIS — burst topology (MEASUREMENT-GATED):**
+
 - Driver (shipped + probe-calibrated): `burstCast → enemy → flatDamage atkPct 813.42` — ONE shot per
   cast, critEligible (flatDamage default), coreEligible false (F2), FB-exempt (burstCast lands before
   the window). The weapon-swap scaffolding (charge 2s / full-charge 300% / maxAmmo 1 / Pierce) is
@@ -1045,16 +1075,17 @@ divergence is resolved by the probe, not by majority vote of blind readers.
   model. This is exactly the OLD model the probe falsified at 1.93 hot.
 
 **S5 blind test vs the DRIVER override: 9 passed / 5 failed / 2 skipped.**
+
 - The 9 passes are EVERY non-burst assertion: skill1 6/6 (fullBurstEnter, alliesTopAtk:2, byFinalAtk:true,
   self-eligible, 43.1+4.48, 10s wall-clock, fires every team FB reaching exactly 2 allies, top-2 slice
   load-bearing, moves damage, ≠ burstCast keying) + skill2 2/2 (crit buffs never apply in solo; the
   inertness is non-vacuous) + fixture sanity 1/1.
-- The 5 failures are ALL the burst block, and each fails *because* the blind test asserts the kit-literal
+- The 5 failures are ALL the burst block, and each fails _because_ the blind test asserts the kit-literal
   weaponSwap that the driver's measured single-shot model deliberately does not ship. Most diagnostic:
   the blind test asserts "the swap is the bulk of her damage" (removing the burst should drop her total
-  >90%); under the driver's single-shot model removing the burst moves her total 169.2M → 168.3M (~0.5%),
-  because one 813.42% railgun shot is minor next to her charged SR normals — which is precisely the
-  probe's one-shot reality, and the negation of the weaponSwap model's sustained-fire premise.
+  > 90%); under the driver's single-shot model removing the burst moves her total 169.2M → 168.3M (~0.5%),
+  > because one 813.42% railgun shot is minor next to her charged SR normals — which is precisely the
+  > probe's one-shot reality, and the negation of the weaponSwap model's sustained-fire premise.
 
 **Question for the judge:** is the driver's probe-measured single-shot burst a FAITHFUL encoding (GO,
 with the magnitude correctly flagged measurement-gated / audit-candidate), or should the kit-literal
@@ -1161,7 +1192,6 @@ kit-status, not a topology error.
   "notes": "Expected shared-prior misreads to reconcile against the driver: (1) 'Max Ammunition Capacity: 1 round(s)' is the swap MAGAZINE size (reload-and-refire cycling), not maxShots:1 — the single-big-shot reading roughly halves-to-thirds her burst-window output; (2) skill1 says 'highest FINAL ATK' → byFinalAtk:true live ranking, and self IS in the pool (no except-self clause) — static ranking or excludeSelf both mis-target; (3) skill1 is fullBurstEnter (every team FB, including helm-cast rotations in the control fixture) while the burst swap is burstCast (Maxwell's rotations only) — collapsing the two either over-credits the swap or under-credits the team buff; (4) skill2's >5-enemy gate is permanently false vs the partless solo boss — the only wrong move is shipping it as an ungated crit passive; it must be verbatim-unmodeled and provably inert; (5) the swap durationSec is kit-silent — a ⚑ CALIBRATED 10 s FB-window estimate with the shot-economy (charge 2 s + 141-frame reload per 1-round mag, accelerated by her own S1 Charge Speed when she self-selects) stated as the recipe, never a silent constant; (6) Pierce must be swap-scoped (weaponSwap.hasPierce), not the whole-fight top-level flag. Interaction worth one composed assertion: her S1 lands at FB entry AFTER her burstCast swap begins, so swap shots fired inside the window should snapshot the +43.1% ATK and the faster charge — a model that resolves swap shots pre-FB (burstSnapshotsPreFb-style) would miss both.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ---
@@ -1236,27 +1266,39 @@ function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   if (s && Array.isArray(s.blocks)) return s.blocks;
   return [];
 }
-function setSlotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst', blocks: any[]): void {
+function setSlotBlocks(
+  ov: any,
+  slot: 'skill1' | 'skill2' | 'burst',
+  blocks: any[]
+): void {
   const s = ov?.[slot];
   if (s && !Array.isArray(s) && Array.isArray(s.blocks)) s.blocks = blocks;
   else ov[slot] = blocks;
 }
 function findSwap(ov: any): { block: any; eff: any } | null {
   for (const b of slotBlocks(ov, 'burst')) {
-    for (const e of b.effects ?? []) if (e.kind === 'weaponSwap') return { block: b, eff: e };
+    for (const e of b.effects ?? [])
+      if (e.kind === 'weaponSwap') return { block: b, eff: e };
   }
   return null;
 }
 function findS1Block(ov: any): any {
   for (const b of slotBlocks(ov, 'skill1')) {
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'atkPct' && Math.abs(e.value - 43.1) < 1e-6) return b;
+      if (
+        e.kind === 'buff' &&
+        e.stat === 'atkPct' &&
+        Math.abs(e.value - 43.1) < 1e-6
+      )
+        return b;
     }
   }
   return null;
 }
 function effOf(block: any, stat: string): any {
-  return (block?.effects ?? []).find((e: any) => e.kind === 'buff' && e.stat === stat);
+  return (block?.effects ?? []).find(
+    (e: any) => e.kind === 'buff' && e.stat === stat
+  );
 }
 
 // ---- run helpers -------------------------------------------------------------------
@@ -1275,11 +1317,20 @@ function compWith(patched: any): any {
   return o;
 }
 const applies = (ev: Ev[], stat: string, value: number) =>
-  ev.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - value) < 1e-6);
-const fbStarts = (ev: Ev[]) => ev.filter((e) => e.kind === 'fullBurstStart').length;
+  ev.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(e.value - value) < 1e-6
+  );
+const fbStarts = (ev: Ev[]) =>
+  ev.filter((e) => e.kind === 'fullBurstStart').length;
 const mx = (r: { res: any }) => totals(r.res)[SLUG];
 const team = (r: { res: any }) =>
-  Object.values(totals(r.res)).reduce((a: number, b: any) => a + (b as number), 0);
+  Object.values(totals(r.res)).reduce(
+    (a: number, b: any) => a + (b as number),
+    0
+  );
 
 // ---- hoisted runs (10 full 180s sims) ----------------------------------------------
 const OV: any = withPatchedOverride(SLUG, () => {});
@@ -1287,31 +1338,34 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 const BASE = run(controlComp(SLUG, true));
 
 const S1_OFF = run(
-  compWith(withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'skill1', []))),
+  compWith(
+    withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'skill1', []))
+  )
 );
 const S1_LONG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      for (const e of b?.effects ?? []) if (e.kind === 'buff') e.durationSec = 30;
-    }),
-  ),
+      for (const e of b?.effects ?? [])
+        if (e.kind === 'buff') e.durationSec = 30;
+    })
+  )
 );
 const S1_ALL = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
       if (b) b.target = { kind: 'allies' };
-    }),
-  ),
+    })
+  )
 );
 const S1_ONCAST = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
       if (b) b.trigger = { kind: 'burstCast' };
-    }),
-  ),
+    })
+  )
 );
 
 const S2_PASSIVE = run(
@@ -1328,36 +1382,38 @@ const S2_PASSIVE = run(
           ],
         },
       ]);
-    }),
-  ),
+    })
+  )
 );
 
 const B_OFF = run(
-  compWith(withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'burst', []))),
+  compWith(
+    withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'burst', []))
+  )
 );
 const B_AMMO6 = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
       if (s) s.eff.maxAmmo = 6;
-    }),
-  ),
+    })
+  )
 );
 const B_FASTCHG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
       if (s) s.eff.chargeTimeSec = 0.5;
-    }),
-  ),
+    })
+  )
 );
 const B_NOFC = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
       if (s) s.eff.chargeMultPct = 100;
-    }),
-  ),
+    })
+  )
 );
 
 // ------------------------------------------------------------------------------------
@@ -1405,7 +1461,9 @@ describe('maxwell skill1 — FB entry, 2 highest-final-ATK allies, 10s', () => {
   });
 
   it('does NOT reach the whole team — the top-2 slice is load-bearing', () => {
-    const recips = new Set(applies(BASE.ev, 'atkPct', 43.1).map((e) => e.targetSlug));
+    const recips = new Set(
+      applies(BASE.ev, 'atkPct', 43.1).map((e) => e.targetSlug)
+    );
     expect(recips.size).toBeLessThan(4); // 4-unit comp: two allies stay untouched each FB
     expect(recips.has(SLUG)).toBe(true); // no except-self clause; maxwell is an Attacker, so top-2
     const all = applies(S1_ALL.ev, 'atkPct', 43.1);
@@ -1430,7 +1488,9 @@ describe('maxwell skill2 — "above 5 enemy unit(s)" (unreachable in a solo raid
   });
 
   it('the inertness assertion is not vacuous — the same buffs, if always-on, DO move damage', () => {
-    expect(applies(S2_PASSIVE.ev, 'critRatePct', 4.83).length).toBeGreaterThan(0);
+    expect(applies(S2_PASSIVE.ev, 'critRatePct', 4.83).length).toBeGreaterThan(
+      0
+    );
     expect(mx(S2_PASSIVE)).toBeGreaterThan(mx(BASE));
   });
 
@@ -1473,7 +1533,6 @@ describe('maxwell burst — swapped charge weapon (813.42% / x3 / 1 round / Pier
 
   it.skip('Pierce PAYLOAD is unobservable in this fixture — the control comp has no Pierce Damage ▲ source', () => {});
 });
-
 ```
 
 ---
@@ -1628,7 +1687,12 @@ describe('maxwell burst — swapped charge weapon (813.42% / x3 / 1 round / Pier
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
 import { loadOverride } from '../../../src/skills/overrides-node.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 /** controlComp('maxwell') slot order: liter 0 / crown 1 / maxwell 2 / helm 3. */
@@ -1652,32 +1716,41 @@ function run(overrides: Record<string, any> = {}) {
 /** M1 counterfactual: her S1 keyed to her OWN burst casts, not Full Burst entry. */
 const maxwellBurstCastTrigger = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
-  if (!b || b.trigger?.kind !== 'fullBurstEnter') throw new Error('maxwell S1 fullBurstEnter block missing — fixture is stale');
+  if (!b || b.trigger?.kind !== 'fullBurstEnter')
+    throw new Error(
+      'maxwell S1 fullBurstEnter block missing — fixture is stale'
+    );
   b.trigger.kind = 'burstCast';
 });
 /** M2 counterfactual: the same buffs to ALL allies instead of the top-2. */
 const maxwellAllAllies = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
-  if (!b || b.target?.kind !== 'alliesTopAtk') throw new Error('maxwell S1 alliesTopAtk target missing — fixture is stale');
+  if (!b || b.target?.kind !== 'alliesTopAtk')
+    throw new Error(
+      'maxwell S1 alliesTopAtk target missing — fixture is stale'
+    );
   b.target = { kind: 'allies' };
 });
 /** M7 counterfactual: the kit-literal FULL-CHARGE magnitude (813.42 × 3 = 2440.26). */
 const maxwellFullCharge = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e) throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  if (!e)
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
   e.atkPct = 2440.26;
 });
 /** M6 counterfactual: a second shot in the burst window (the old multi-shot weaponSwap shape). */
 const maxwellMultiShot = withPatchedOverride('maxwell', (ov) => {
   const b = ov.burst[0];
   const e = b?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e) throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  if (!e)
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
   b.effects.push({ kind: 'flatDamage', atkPct: 813.42 });
 });
 /** M8 counterfactual: flip the eligibility — strip crit, add core. */
 const maxwellCritCoreFlip = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e) throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  if (!e)
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
   e.crit = false;
   e.core = true;
 });
@@ -1691,10 +1764,14 @@ const multiShot = run({ maxwell: maxwellMultiShot });
 const critCoreFlip = run({ maxwell: maxwellCritCoreFlip });
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const maxwellBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'maxwell');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'maxwell'
+  );
 /** maxwell's burst-bucket damage (her single railgun shot per cast). */
 const maxwellNukes = (evs: SimEvent[]) =>
   dmg(evs).filter((d) => d.slug === 'maxwell' && d.srcSlot === 'burst');
@@ -1702,13 +1779,20 @@ const maxwellNukes = (evs: SimEvent[]) =>
 const s1Atk = (evs: SimEvent[]) =>
   buffs(evs).filter((b) => b.casterIdx === MAXWELL && b.stat === 'atkPct');
 const s1Charge = (evs: SimEvent[]) =>
-  buffs(evs).filter((b) => b.casterIdx === MAXWELL && b.stat === 'chargeSpeedPct');
+  buffs(evs).filter(
+    (b) => b.casterIdx === MAXWELL && b.stat === 'chargeSpeedPct'
+  );
 /** Distinct frames on which maxwell's S1 ATK buff applied. */
-const s1Frames = (evs: SimEvent[]) => [...new Set(s1Atk(evs).map((b) => b.frame))];
+const s1Frames = (evs: SimEvent[]) => [
+  ...new Set(s1Atk(evs).map((b) => b.frame)),
+];
 /** Distinct holder slots reached, per apply-frame. */
 const holdersPerFrame = (evs: SimEvent[]): Set<number | null>[] => {
   const m = new Map<number, Set<number | null>>();
-  for (const b of s1Atk(evs)) (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+  for (const b of s1Atk(evs))
+    (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+      b.targetIdx
+    );
   return [...m.values()];
 };
 
@@ -1721,12 +1805,14 @@ describe('maxwell — kit spec', () => {
       expect(
         buffFrames,
         `${buffFrames} S1 apply-frames vs ${casts} maxwell casts — fullBurstEnter fires every FB ` +
-          'window (incl. ones helm casts); a burstCast trigger would tie the two together',
+          'window (incl. ones helm casts); a burstCast trigger would tie the two together'
       ).toBeGreaterThan(casts);
     });
 
     it('DISCRIMINATING: a burstCast trigger collapses the buff onto her casts only', () => {
-      expect(s1Frames(burstCastTrigger.events).length).toBe(maxwellBursts(burstCastTrigger.events).length);
+      expect(s1Frames(burstCastTrigger.events).length).toBe(
+        maxwellBursts(burstCastTrigger.events).length
+      );
     });
   });
 
@@ -1735,7 +1821,10 @@ describe('maxwell — kit spec', () => {
       const perFrame = holdersPerFrame(base.events);
       expect(perFrame.length).toBeGreaterThan(0);
       for (const holders of perFrame) {
-        expect(holders.size, `an apply-frame reached ${holders.size} holders, expected 2`).toBe(2);
+        expect(
+          holders.size,
+          `an apply-frame reached ${holders.size} holders, expected 2`
+        ).toBe(2);
       }
     });
 
@@ -1749,14 +1838,22 @@ describe('maxwell — kit spec', () => {
       // Structural pin: in this fixture the top-2 by static and by final ATK coincide (maxwell+helm),
       // so the ranking BASIS is behaviorally inert here and locked on the loaded encoding instead.
       const ov = loadOverride('maxwell') as any;
-      expect(ov.skill1[0].target).toMatchObject({ kind: 'alliesTopAtk', count: 2, byFinalAtk: true });
+      expect(ov.skill1[0].target).toMatchObject({
+        kind: 'alliesTopAtk',
+        count: 2,
+        byFinalAtk: true,
+      });
     });
   });
 
   describe('M3/M4 — S1 magnitudes and duration', () => {
     it('is Charge Speed 4.48% and ATK 43.1% (max level), not a lower level-table value', () => {
-      expect([...new Set(s1Charge(base.events).map((b) => b.value))]).toEqual([4.48]);
-      expect([...new Set(s1Atk(base.events).map((b) => b.value))]).toEqual([43.1]);
+      expect([...new Set(s1Charge(base.events).map((b) => b.value))]).toEqual([
+        4.48,
+      ]);
+      expect([...new Set(s1Atk(base.events).map((b) => b.value))]).toEqual([
+        43.1,
+      ]);
     });
 
     it('both last exactly 10 sec', () => {
@@ -1770,14 +1867,26 @@ describe('maxwell — kit spec', () => {
     it('skill2 is empty: it contributes no damage and no buff', () => {
       const ov = loadOverride('maxwell') as any;
       expect(ov.skill2).toEqual([]);
-      expect(dmg(base.events).filter((d) => d.slug === 'maxwell' && d.srcSlot === 'skill2')).toEqual([]);
-      expect(buffs(base.events).filter((b) => b.casterIdx === MAXWELL && (b.stat === 'critRatePct' || b.stat === 'critDamagePct'))).toEqual([]);
+      expect(
+        dmg(base.events).filter(
+          (d) => d.slug === 'maxwell' && d.srcSlot === 'skill2'
+        )
+      ).toEqual([]);
+      expect(
+        buffs(base.events).filter(
+          (b) =>
+            b.casterIdx === MAXWELL &&
+            (b.stat === 'critRatePct' || b.stat === 'critDamagePct')
+        )
+      ).toEqual([]);
     });
 
     it('the gated line is preserved VERBATIM in unmodeled (not silently dropped)', () => {
       const ov = loadOverride('maxwell') as any;
       expect(ov.unmodeled.skill2.join(' ')).toContain('above 5 enemy units');
-      expect(ov.unmodeled.skill2.join(' ')).toContain('Critical Damage ▲ 13.91%');
+      expect(ov.unmodeled.skill2.join(' ')).toContain(
+        'Critical Damage ▲ 13.91%'
+      );
     });
   });
 
@@ -1786,11 +1895,16 @@ describe('maxwell — kit spec', () => {
       const nukes = maxwellNukes(base.events).length;
       const casts = maxwellBursts(base.events).length;
       expect(casts).toBeGreaterThan(0);
-      expect(nukes, `${nukes} burst hits vs ${casts} casts — a multi-shot model multiplies this`).toBe(casts);
+      expect(
+        nukes,
+        `${nukes} burst hits vs ${casts} casts — a multi-shot model multiplies this`
+      ).toBe(casts);
     });
 
     it('DISCRIMINATING: a second shot in the window doubles the hit count', () => {
-      expect(maxwellNukes(multiShot.events).length).toBe(maxwellBursts(multiShot.events).length * 2);
+      expect(maxwellNukes(multiShot.events).length).toBe(
+        maxwellBursts(multiShot.events).length * 2
+      );
     });
   });
 
@@ -1803,7 +1917,9 @@ describe('maxwell — kit spec', () => {
     });
 
     it('DISCRIMINATING: the full-charge counterfactual lands at 2440.26%', () => {
-      expect([...new Set(maxwellNukes(fullCharge.events).map((d) => d.atkPct))]).toEqual([2440.26]);
+      expect([
+        ...new Set(maxwellNukes(fullCharge.events).map((d) => d.atkPct)),
+      ]).toEqual([2440.26]);
     });
   });
 
@@ -1826,11 +1942,12 @@ describe('maxwell — kit spec', () => {
     it('never takes the +50% Full Burst major', () => {
       const nukes = maxwellNukes(base.events);
       expect(nukes.length).toBeGreaterThan(0);
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
   });
 });
-
 ```
 
 ## Driver override — src/skills/overrides/maxwell.json (shipped + the byFinalAtk FIX)
@@ -1896,5 +2013,4 @@ describe('maxwell — kit spec', () => {
     }
   ]
 }
-
 ```

@@ -17,15 +17,31 @@ const ANCHORS: BatteryTeam[] = [
   },
   {
     name: 'enikk 36-2 rapi flex',
-    slugs: ['rapi-red-hood', 'nayuta', 'snow-white-heavy-arms', 'jill', 'mihara-bonding-chain'],
+    slugs: [
+      'rapi-red-hood',
+      'nayuta',
+      'snow-white-heavy-arms',
+      'jill',
+      'mihara-bonding-chain',
+    ],
     source: 'enikk raid 36, 108 players',
   },
   {
     name: 'enikk 36-3 neon-liberalio',
-    slugs: ['neon-vision-eye', 'crown', 'moran', 'liberalio', 'mast-romantic-maid'],
+    slugs: [
+      'neon-vision-eye',
+      'crown',
+      'moran',
+      'liberalio',
+      'mast-romantic-maid',
+    ],
     source: 'enikk raid 36, 13 players',
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, 'Water',
-  'REALISTIC elec-weak battery (boss Water) — enikk raid 36 anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  'Water',
+  'REALISTIC elec-weak battery (boss Water) — enikk raid 36 anchors + roster fill, core exposure 0/50/100'
+);

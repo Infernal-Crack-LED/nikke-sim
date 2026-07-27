@@ -95,7 +95,7 @@ const jillNoNormal = withPatchedOverride('jill', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'normalAttackPct'));
   if (ov.skill1.length === before)
-    throw new Error('jill S1 normalAttackPct block missing — fixture is stale');
+    {throw new Error('jill S1 normalAttackPct block missing — fixture is stale');}
 });
 /** J1 counterfactual: the same +30 as a GENERIC Damage-Up buff (would lift the dot too). */
 const jillGenericDmgUp = withPatchedOverride('jill', (ov) => {
@@ -103,9 +103,9 @@ const jillGenericDmgUp = withPatchedOverride('jill', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'normalAttackPct');
   if (!e)
-    throw new Error(
-      'jill S1 normalAttackPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'jill S1 normalAttackPct effect missing — fixture is stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 /** J2 reference: her S1 true-damage line removed. */
@@ -113,37 +113,37 @@ const jillNoTrueDmg = withPatchedOverride('jill', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'trueDamagePct'));
   if (ov.skill1.length === before)
-    throw new Error('jill S1 trueDamagePct block missing — fixture is stale');
+    {throw new Error('jill S1 trueDamagePct block missing — fixture is stale');}
 });
 /** J3 reference: her Acid Ammo dot removed. */
 const jillNoDot = withPatchedOverride('jill', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'dot'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'dot')
   );
   if (ov.skill2.length === before)
-    throw new Error('jill S2 dot block missing — fixture is stale');
+    {throw new Error('jill S2 dot block missing — fixture is stale');}
 });
 /** J4 counterfactual: the ATK buff on the WRONG trigger (burstCast instead of fullBurstEnter). */
 const jillAtkOnCast = withPatchedOverride('jill', (ov) => {
   let hit = false;
   for (const b of ov.skill2)
-    if (b.trigger.kind === 'fullBurstEnter') {
+    {if (b.trigger.kind === 'fullBurstEnter') {
       b.trigger.kind = 'burstCast';
       hit = true;
-    }
+    }}
   if (!hit)
-    throw new Error('jill S2 fullBurstEnter block missing — fixture is stale');
+    {throw new Error('jill S2 fullBurstEnter block missing — fixture is stale');}
 });
 /** J5 reference: her burst Attack Damage line removed. */
 const jillNoAtkDmg = withPatchedOverride('jill', (ov) => {
   for (const b of ov.burst)
-    b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');
+    {b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');}
 });
 /** J6 reference: her burst Hit Rate line removed. */
 const jillNoHitRate = withPatchedOverride('jill', (ov) => {
   for (const b of ov.burst)
-    b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
+    {b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');}
 });
 /** J7 reference: her burst ammo-dump (forced reload) removed. */
 const jillNoConsume = withPatchedOverride('jill', (ov) => {
@@ -151,10 +151,10 @@ const jillNoConsume = withPatchedOverride('jill', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'consumeAmmo');
-    if (b.effects.length !== before) hit = true;
+    if (b.effects.length !== before) {hit = true;}
   }
   if (!hit)
-    throw new Error('jill burst consumeAmmo effect missing — fixture is stale');
+    {throw new Error('jill burst consumeAmmo effect missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -182,11 +182,11 @@ const round3 = (n: number) => Math.round(n * 1000) / 1000;
 const jillBuffs = (evs: SimEvent[], stat: string) =>
   evs.filter(
     (e): e is BuffApply =>
-      e.kind === 'buffApply' && e.casterIdx === JILL && e.stat === stat,
+      e.kind === 'buffApply' && e.casterIdx === JILL && e.stat === stat
   );
 const jillBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'jill',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'jill'
   );
 const jillReloads = (evs: SimEvent[]) =>
   evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === 'jill');
@@ -210,14 +210,14 @@ describe('jill — kit spec', () => {
     it('is scoped to NORMALS: removing it leaves the Acid dot total byte-identical', () => {
       expect(sum(jillDot(base.events))).toBe(sum(jillDot(noNormal.events)));
       expect(sum(jillNormals(base.events))).not.toBe(
-        sum(jillNormals(noNormal.events)),
+        sum(jillNormals(noNormal.events))
       );
     });
 
     it('DISCRIMINATING: a generic Damage-Up +30 would lift the dot too', () => {
       // Proves the scoping assertion is one the generic (attackDamagePct) model provably fails.
       expect(sum(jillDot(genericDmgUp.events))).not.toBe(
-        sum(jillDot(noNormal.events)),
+        sum(jillDot(noNormal.events))
       );
     });
   });
@@ -227,7 +227,7 @@ describe('jill — kit spec', () => {
 
     it('is declared: 34.99% for 10 sec, self-scoped, once per burst cast', () => {
       expect(applied.length, 'no trueDamagePct buff was applied').toBe(
-        jillBursts(base.events).length,
+        jillBursts(base.events).length
       );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([34.99]);
       expect([
@@ -286,7 +286,7 @@ describe('jill — kit spec', () => {
     it('DISCRIMINATING: on the wrong trigger (burstCast) it collapses to the cast count', () => {
       const wrong = jillBuffs(atkOnCast.events, 'atkPct');
       expect(wrong.map((b) => b.frame)).toEqual(
-        jillBursts(atkOnCast.events).map((c) => c.frame),
+        jillBursts(atkOnCast.events).map((c) => c.frame)
       );
       expect(wrong.length).toBe(jillBursts(atkOnCast.events).length);
     });
@@ -333,7 +333,7 @@ describe('jill — kit spec', () => {
         outN = 0;
       for (const d of normals) {
         const inside = applied.some(
-          (w) => d.frame >= w.frame && d.frame <= w.expiresFrame!,
+          (w) => d.frame >= w.frame && d.frame <= w.expiresFrame!
         );
         if (inside) {
           inSum += d.coreRate;
@@ -345,11 +345,11 @@ describe('jill — kit spec', () => {
       }
       expect(
         inN,
-        'no normal shots landed inside a hit-rate window',
+        'no normal shots landed inside a hit-rate window'
       ).toBeGreaterThan(0);
       expect(
         outN,
-        'no normal shots landed outside the hit-rate windows',
+        'no normal shots landed outside the hit-rate windows'
       ).toBeGreaterThan(0);
       expect(inSum / inN).toBeGreaterThan(outSum / outN);
     });
@@ -366,12 +366,12 @@ describe('jill — kit spec', () => {
       expect(bursts.length).toBeGreaterThan(0);
       const forced = bursts.filter((c) =>
         reloads.some(
-          (r) => r.frame >= c.frame && r.frame <= c.frame + RELOAD_WINDOW_F,
-        ),
+          (r) => r.frame >= c.frame && r.frame <= c.frame + RELOAD_WINDOW_F
+        )
       );
       expect(
         forced.length,
-        'a cast without a forced reload means the ammo dump is missing',
+        'a cast without a forced reload means the ammo dump is missing'
       ).toBe(bursts.length);
     });
 
@@ -380,8 +380,8 @@ describe('jill — kit spec', () => {
       const reloads = jillReloads(noConsume.events);
       const forced = bursts.filter((c) =>
         reloads.some(
-          (r) => r.frame >= c.frame && r.frame <= c.frame + RELOAD_WINDOW_F,
-        ),
+          (r) => r.frame >= c.frame && r.frame <= c.frame + RELOAD_WINDOW_F
+        )
       );
       expect(forced.length).toBeLessThan(bursts.length);
     });

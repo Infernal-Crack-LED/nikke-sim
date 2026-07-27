@@ -91,7 +91,7 @@ import {
   type CompOptions,
 } from '../lib/harness.js';
 
-const HA = 1; // slot order: liter 0 / helm-aquamarine 1 / helm 2
+// slot order: liter 0 / helm-aquamarine 1 / helm 2
 
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
@@ -106,7 +106,7 @@ const haComp = (bossElement: Element | null): CompOptions => ({
 
 function run(
   overrides: Record<string, any> = {},
-  bossElement: Element | null = 'Iron',
+  bossElement: Element | null = 'Iron'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -127,11 +127,11 @@ const buffs = (evs: SimEvent[]) =>
 const haBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'helm-aquamarine',
+      e.kind === 'burstCast' && e.slug === 'helm-aquamarine'
   );
 const haShots = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'helm-aquamarine',
+    (e): e is Shot => e.kind === 'shot' && e.slug === 'helm-aquamarine'
   );
 
 /** Dedup precision-sensitive floats (kit magnitudes / mult decomposition). */
@@ -145,20 +145,22 @@ const distinct = <T>(xs: T[]): T[] => [...new Set(xs)];
 const cfS1aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'hitCount');
-  if (ov.skill1.length === before)
+  if (ov.skill1.length === before) {
     throw new Error(
-      'helm-aquamarine S1 hitCount rider missing — fixture is stale',
+      'helm-aquamarine S1 hitCount rider missing — fixture is stale'
     );
+  }
 });
 /** HA1 nearest-wrong (magnitude): the rider at the level-9 value 121.05 instead of 131.34. */
 const cfS1aMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e || e.atkPct !== 131.34)
+  if (!e || e.atkPct !== 131.34) {
     throw new Error(
-      'helm-aquamarine S1 131.34% flatDamage missing — fixture is stale',
+      'helm-aquamarine S1 131.34% flatDamage missing — fixture is stale'
     );
+  }
   e.atkPct = 121.05;
 });
 const isCdrBlock = (b: any) =>
@@ -166,90 +168,112 @@ const isCdrBlock = (b: any) =>
   b.effects?.some(
     (e: any) =>
       e.kind === 'escalating' &&
-      e.steps?.some((s: any) => s.kind === 'burstCdr'),
+      e.steps?.some((s: any) => s.kind === 'burstCdr')
   );
 /** HA2 nearest-wrong (trigger): the CDR ladder re-keyed fullBurstEnter → burstCast (over-applies). */
 const cfS1bBurstCast = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill1)
-    if (isCdrBlock(b)) ((b.trigger = { kind: 'burstCast' }), hit++);
-  if (!hit)
+  for (const b of ov.skill1) {
+    if (isCdrBlock(b)) {
+      b.trigger = { kind: 'burstCast' };
+      hit++;
+    }
+  }
+  if (!hit) {
     throw new Error(
-      'helm-aquamarine S1 burstCdr block missing — fixture is stale',
+      'helm-aquamarine S1 burstCdr block missing — fixture is stale'
     );
+  }
 });
 /** HA2 nearest-wrong (escalating): the ladder collapsed to a flat "always 2.6" burstCdr. */
 const cfS1bFlat = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.skill1.find((x: any) => isCdrBlock(x));
-  if (!b)
+  if (!b) {
     throw new Error(
-      'helm-aquamarine S1 burstCdr block missing — fixture is stale',
+      'helm-aquamarine S1 burstCdr block missing — fixture is stale'
     );
+  }
   b.effects = [{ kind: 'burstCdr', seconds: 2.6 }];
 });
 /** HA3 nearest-wrong (presence): the random-enemy hit removed entirely. */
 const cfS2aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'interval');
-  if (ov.skill2.length === before)
+  if (ov.skill2.length === before) {
     throw new Error(
-      'helm-aquamarine S2 interval hit missing — fixture is stale',
+      'helm-aquamarine S2 interval hit missing — fixture is stale'
     );
+  }
 });
 /** HA3 nearest-wrong (cadence): the pre-2026-07-20 invented hitCount:30 proxy (ties to shot count). */
 const cfS2aHitCount = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
-    if (b.trigger?.kind === 'interval')
-      ((b.trigger = { kind: 'hitCount', count: 30 }), hit++);
-  if (!hit)
+  for (const b of ov.skill2) {
+    if (b.trigger?.kind === 'interval') {
+      b.trigger = { kind: 'hitCount', count: 30 };
+      hit++;
+    }
+  }
+  if (!hit) {
     throw new Error(
-      'helm-aquamarine S2 interval hit missing — fixture is stale',
+      'helm-aquamarine S2 interval hit missing — fixture is stale'
     );
+  }
 });
 /** HA4 nearest-wrong (gate): the Electric gate stripped → the stacking debuff fires vs every boss (fudge). */
 const cfS2bUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2)
+  for (const b of ov.skill2) {
     if (
       b.bossElementGate &&
       b.effects?.some((e: any) => e.stat === 'damageTakenPct')
-    )
-      (delete b.bossElementGate, hit++);
-  if (!hit)
+    ) {
+      delete b.bossElementGate;
+      hit++;
+    }
+  }
+  if (!hit) {
     throw new Error(
-      'helm-aquamarine S2 Electric-gated debuff missing — fixture is stale',
+      'helm-aquamarine S2 Electric-gated debuff missing — fixture is stale'
     );
+  }
 });
 /** HA5 nearest-wrong (magnitude): the burst nuke at the level-9 value 157.33 instead of 164.83. */
 const cfBaMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger?.kind === 'burstCast' && !x.bossElementGate,
+    (x: any) => x.trigger?.kind === 'burstCast' && !x.bossElementGate
   );
-  if (!b || b.effects[0]?.atkPct !== 164.83)
+  if (!b || b.effects[0]?.atkPct !== 164.83) {
     throw new Error(
-      'helm-aquamarine burst 164.83% nuke missing — fixture is stale',
+      'helm-aquamarine burst 164.83% nuke missing — fixture is stale'
     );
+  }
   b.effects[0].atkPct = 157.33;
 });
 /** HA6 nearest-wrong (presence): the Electric extra-hit block removed. */
 const cfBbRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !b.bossElementGate);
-  if (ov.burst.length === before)
+  if (ov.burst.length === before) {
     throw new Error(
-      'helm-aquamarine burst bossElementGate block missing — fixture is stale',
+      'helm-aquamarine burst bossElementGate block missing — fixture is stale'
     );
+  }
 });
 /** HA6 nearest-wrong (gate): the bossElementGate dropped → the extra hit fires vs every boss (fudge). */
 const cfBbUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
   let hit = 0;
-  for (const b of ov.burst)
-    if (b.bossElementGate) (delete b.bossElementGate, hit++);
-  if (!hit)
+  for (const b of ov.burst) {
+    if (b.bossElementGate) {
+      delete b.bossElementGate;
+      hit++;
+    }
+  }
+  if (!hit) {
     throw new Error(
-      'helm-aquamarine burst bossElementGate block missing — fixture is stale',
+      'helm-aquamarine burst bossElementGate block missing — fixture is stale'
     );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -284,8 +308,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           procs.map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([131.34]);
       expect(distinct(procs.map((d) => d.bucket))).toEqual(['skill']);
     });
@@ -295,7 +319,7 @@ describe('helm-aquamarine — kit spec', () => {
       const ratio = shots / procs;
       expect(
         ratio,
-        `${shots} shots / ${procs} procs = ${ratio.toFixed(2)} shots/proc — expected ≈30`,
+        `${shots} shots / ${procs} procs = ${ratio.toFixed(2)} shots/proc — expected ≈30`
       ).toBeGreaterThanOrEqual(29);
       expect(ratio).toBeLessThanOrEqual(31);
     });
@@ -306,8 +330,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           haDamage(s1aMag.events, 'skill1').map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([121.05]);
     });
   });
@@ -318,7 +342,7 @@ describe('helm-aquamarine — kit spec', () => {
       const block = shipped.skill1.find((b: any) => isCdrBlock(b));
       expect(
         block,
-        'no fullBurstEnter escalating-burstCdr block on skill1',
+        'no fullBurstEnter escalating-burstCdr block on skill1'
       ).toBeDefined();
       expect(block.trigger).toEqual({ kind: 'fullBurstEnter' });
       expect(block.target.kind).toBe('allies');
@@ -340,7 +364,7 @@ describe('helm-aquamarine — kit spec', () => {
       // the ramping ladder reaches 1.82+2.2+2.6 = 6.62s/FB from the 3rd entry, far more total refund than
       // a flat 2.6s/FB → the faithful escalating model rotates faster and out-damages the flat counterfactual.
       expect(base.totals['helm-aquamarine']).toBeGreaterThan(
-        s1bFlat.totals['helm-aquamarine'],
+        s1bFlat.totals['helm-aquamarine']
       );
     });
   });
@@ -352,8 +376,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           procs.map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([105.58]);
       expect(distinct(procs.map((d) => d.bucket))).toEqual(['skill']);
     });
@@ -369,7 +393,7 @@ describe('helm-aquamarine — kit spec', () => {
       // the pre-2026-07-20 proxy ties proc count to shot count (~55) and over-fires the true ~44 interval;
       // the two cadences are provably distinct, pinning the interval:4 resolution.
       expect(haDamage(s2aHitCount.events, 'skill2').length).toBeGreaterThan(
-        haDamage(base.events, 'skill2').length,
+        haDamage(base.events, 'skill2').length
       );
     });
   });
@@ -377,11 +401,11 @@ describe('helm-aquamarine — kit spec', () => {
   describe('HA4 — S2 Damage Taken ▲5.64%×5 stacks/5s (28.2 effective) is gated on an Electric boss', () => {
     it('vs Electric: the boss carries a stacking damageTakenPct 5.64 debuff (maxStacks 5, targetIdx null)', () => {
       const debuff = buffs(elec.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(
         debuff.length,
-        'no boss damageTakenPct debuff vs Electric',
+        'no boss damageTakenPct debuff vs Electric'
       ).toBeGreaterThan(0);
       // granular stacking encoding (shotFired + bossElementGate): each apply is one 5.64% stack,
       // capped at 5 stacks (= 28.2 effective) — matches the kit's "▲5.64%, stacks up to 5 times".
@@ -393,36 +417,36 @@ describe('helm-aquamarine — kit spec', () => {
         dmg(elec.events)
           .filter((d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal')
           .map((d) => d.mult.taken),
-        4,
+        4
       );
       expect(
         taken.some((t) => Math.abs(t - 1.282) < 1e-3),
-        `mult.taken values ${taken} never reach 1.282`,
+        `mult.taken values ${taken} never reach 1.282`
       ).toBe(true);
     });
     it('DISCRIMINATING gate: vs an Iron boss the debuff is absent and mult.taken stays 1.0', () => {
       const debuff = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(debuff).toEqual([]);
       expect(
         distinctNum(
           dmg(base.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.taken),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
     });
     it('DISCRIMINATING (gate vs fudge): stripping the Electric gate fires the stacking debuff vs the Iron boss', () => {
       const debuff = buffs(s2bUngated.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(
         debuff.length,
-        'ungating the debuff did not apply it vs Iron — gate is inert anyway',
+        'ungating the debuff did not apply it vs Iron — gate is inert anyway'
       ).toBeGreaterThan(0);
       expect(distinctNum(debuff.map((b) => b.value))).toEqual([5.64]);
       // …and her Iron-boss damage actually takes the stacked +28.2% (mult.taken reaches 1.282),
@@ -431,11 +455,11 @@ describe('helm-aquamarine — kit spec', () => {
         dmg(s2bUngated.events)
           .filter((d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal')
           .map((d) => d.mult.taken),
-        4,
+        4
       );
       expect(
         taken.some((t) => Math.abs(t - 1.282) < 1e-3),
-        `ungated mult.taken values ${taken} never reach 1.282`,
+        `ungated mult.taken values ${taken} never reach 1.282`
       ).toBe(true);
     });
     it('Iron is element-neutral for her (Iron major 1.0; Electric is the ×1.10 advantage)', () => {
@@ -443,21 +467,21 @@ describe('helm-aquamarine — kit spec', () => {
         distinctNum(
           dmg(base.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
       expect(
         distinctNum(
           dmg(elec.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1.1]);
     });
   });
@@ -470,8 +494,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           nukes(base.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([164.83]);
       expect(distinct(nukes(base.events).map((d) => d.bucket))).toEqual([
         'burst',
@@ -481,15 +505,15 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         nukes(base.events)
           .filter((d) => d.fbMajorApplied)
-          .map((d) => d.sec),
+          .map((d) => d.sec)
       ).toEqual([]);
     });
     it('DISCRIMINATING (magnitude): the level-9 reading lands at 157.33, not 164.83', () => {
       expect(
         distinctNum(
           nukes(baMag.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([157.33]);
     });
   });
@@ -504,8 +528,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           nukes(elec.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([164.83]);
     });
     it('DISCRIMINATING (presence): removing the HA6 block leaves only 1 hit/cast vs Electric', () => {

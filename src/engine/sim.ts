@@ -32,12 +32,24 @@ import {
   pelletLandFrac,
   pelletSigma,
 } from './sg-geometry.js';
-import { unigeoSgLanding, unigeoSgCorePerLanded, unigeoSingleCoreProb } from './unigeo.js';
+import {
+  unigeoSgLanding,
+  unigeoSgCorePerLanded,
+  unigeoSingleCoreProb,
+} from './unigeo.js';
 
 // Debug taps read env vars only under Node; in the browser bundle this is an empty object.
 const ENV: Record<string, string | undefined> =
-  (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
-import type { Block, ConsolidationConfig, EffectDef, SkillSlot, StatKey, TargetDef } from '../skills/types.js';
+  (globalThis as { process?: { env: Record<string, string | undefined> } })
+    .process?.env ?? {};
+import type {
+  Block,
+  ConsolidationConfig,
+  EffectDef,
+  SkillSlot,
+  StatKey,
+  TargetDef,
+} from '../skills/types.js';
 
 const FPS = 60;
 // FIGHTDELAY (measured 2026-07-21): a fight-start deploy delay in SECONDS during which no unit fires,
@@ -52,7 +64,8 @@ const FIGHT_DELAY_FRAMES = Math.round(Number(ENV.FIGHTDELAY ?? 0.133) * FPS); //
 // XCORE=<slug,...>  same paths roll core (subject to AUTO_CORE_RATE);
 // XINSTEXPL=<slug>  stored hits release each frame DURING full burst instead of
 //                   waiting for the next full-burst entry.
-const envSlugSet = (v?: string) => new Set((v ?? '').split(',').filter(Boolean));
+const envSlugSet = (v?: string) =>
+  new Set((v ?? '').split(',').filter(Boolean));
 const XCRIT = envSlugSet(ENV.XCRIT);
 const XCORE = envSlugSet(ENV.XCORE);
 const XINSTEXPL = envSlugSet(ENV.XINSTEXPL);
@@ -103,17 +116,26 @@ const RIDER_CRIT = ENV.RIDERCRIT !== 'off';
 //   perkit    : legacy per-kit relic flags (revert arm; identical to 'timing' with zero carriers)
 //   dotfb / seqoff / noskillfb : experiment arms (see fb-range-lab.ts)
 // Burst-cast (instant) damage is ALWAYS FB-exempt (snapshots at use-time, before FB flips on).
-function skillNoFb(perKitNoFb: boolean, isBurstCast: boolean, flavor: string | undefined): boolean {
-  if (isBurstCast) return true; // burst-cast/instant damage lands before FB begins → never +50%
+function skillNoFb(
+  perKitNoFb: boolean,
+  isBurstCast: boolean,
+  flavor: string | undefined
+): boolean {
+  if (isBurstCast) {return true;} // burst-cast/instant damage lands before FB begins → never +50%
   switch (ENV.FBRULE) {
-    case 'perkit': return perKitNoFb; // legacy calibrated relics — no carrier remains (revert arm)
-    case 'dotfb': return flavor === 'dot' || flavor === 'sustained' ? false : perKitNoFb;
-    case 'seqoff': return flavor === 'sequential';
-    case 'noskillfb': return true;
-    default: return false; // 'timing' — FB by landing time. DEFAULT since 2026-07-23.
+    case 'perkit':
+      return perKitNoFb; // legacy calibrated relics — no carrier remains (revert arm)
+    case 'dotfb':
+      return flavor === 'dot' || flavor === 'sustained' ? false : perKitNoFb;
+    case 'seqoff':
+      return flavor === 'sequential';
+    case 'noskillfb':
+      return true;
+    default:
+      return false; // 'timing' — FB by landing time. DEFAULT since 2026-07-23.
   }
 }
-const STAGE_CAST_GAP_FRAMES = 30;      // in-game lag between stage casts
+const STAGE_CAST_GAP_FRAMES = 30; // in-game lag between stage casts
 // PREB1GAP (frame-measured 2026-07-21, chisato.mov): the burst chain has a 30f delay BETWEEN
 // gauge-full and the B1 cast (gauge full → 30f → B1 → 30f → B2 → 30f → B3 → 22f → FB), same as the
 // inter-stage gap — the sim currently fires B1 the instant the gauge fills. Default OFF (inert): this
@@ -148,7 +170,9 @@ const SR_BOLT_RECOVERY_FRAMES = 22;
 // this shifts the first full burst later. DEFAULT ON (LANDED 2026-07-21 — owner-directed; full-board
 // A/B: measured-exact FB counts PRESERVED, board-neutral on its own). `BOLTSTART=off` disables (A/B
 // revert). Global (all SR/RL charge units).
-const SR_BOLT_START_FRAMES = ENV.BOLTSTART ? Math.round(SR_BOLT_RECOVERY_FRAMES / 2) : 0; // default OFF — frame data fits 22f-at-END + the 8f startup, not an 11f pre-charge
+const SR_BOLT_START_FRAMES = ENV.BOLTSTART
+  ? Math.round(SR_BOLT_RECOVERY_FRAMES / 2)
+  : 0; // default OFF — frame data fits 22f-at-END + the 8f startup, not an 11f pre-charge
 // Datamined autofire tell: new-style charge weapons fire on press (DOWN_Charge), skipping the
 // release latency; old-style release-fired weapons are 'UP'. undefined role → treated as
 // release-fired (the safe SR/RL default).
@@ -163,7 +187,11 @@ const isAutofireCharge = (char: CharacterData): boolean =>
 // only via a weapon-swap INTO MG. Per-unit measured cadences override via charFixes.pullsPerSec
 // (jill 2.5). These are NOMINAL; the effective cadence is frame-quantized just below.
 const NOMINAL_PULLS_PER_SEC: Record<string, number> = {
-  AR: 12, SMG: 24, SG: 1.5, MG: 60, Pistol: 4,
+  AR: 12,
+  SMG: 24,
+  SG: 1.5,
+  MG: 60,
+  Pistol: 4,
 };
 // FRAME QUANTIZATION (MEASURED 2026-07-23, DEFAULT-ON — DECISIONS 2026-07-23) — the gun fires on
 // FRAME BOUNDARIES, so the real interval is ceil(FPS / nominal) whole frames and the effective
@@ -193,19 +221,18 @@ const NOMINAL_PULLS_PER_SEC: Record<string, number> = {
 const quantizeToFrames = (pps: number) => FPS / Math.ceil(FPS / pps - 1e-9);
 const PULLS_PER_SEC: Record<string, number> = Object.fromEntries(
   Object.entries(NOMINAL_PULLS_PER_SEC).map(([w, pps]) => {
-    if (w !== 'SMG') return [w, pps]; // quantization is provably a no-op for every other weapon
-    if (Number(ENV.SMGRATE)) return [w, Number(ENV.SMGRATE)]; // documented revert / A-B pin
+    if (w !== 'SMG') {return [w, pps];} // quantization is provably a no-op for every other weapon
+    if (Number(ENV.SMGRATE)) {return [w, Number(ENV.SMGRATE)];} // documented revert / A-B pin
     return [w, quantizeToFrames(pps)]; // DEFAULT: SMG frame-quantized 24 → 20.0 rounds/s
-  }),
+  })
 );
 // Frame intervals between MG rounds 1→35 (measured, 60fps; identical across units).
 // 142 frames of ramp, then 1 round/frame. Wind-up restarts from the top of the
 // ladder on every reload/stun (no partial retention) unless reload-speed buffs
 // exceed 100% (user-confirmed skip).
 const MG_RAMP_INTERVALS = [
-  23, 14, 10, 8, 7, 6, 5, 5, 4, 4, 4,
-  3, 3, 3, 3, 3, 3,
-  2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
+  23, 14, 10, 8, 7, 6, 5, 5, 4, 4, 4, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2, 2, 2,
+  2, 2, 2, 2, 2, 2, 2, 2, 2,
 ];
 // Q11 calibration (user estimate, flagged for review): rounds fired before the ladder
 // reaches its 2-frame portion (the first 18 rounds of each wind-up) don't land on the
@@ -225,7 +252,8 @@ const MG_NO_CORE_RAMP_ROUNDS = 18;
 const MG_WINDDOWN_GRACE_FRAMES = 16;
 const MG_WINDDOWN_DECAY = 2.78; // ladder-frames lost per idle frame past the grace
 const MG_LADDER_CUM: number[] = [0];
-for (const iv of MG_RAMP_INTERVALS) MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);
+for (const iv of MG_RAMP_INTERVALS)
+  {MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_CUM.length - 1] + iv);}
 // RELOAD (2026-07-13): actual reload = displayed x 0.975 x (1 - buff) + 0.21s — SUBTRACTIVE,
 // like charge speed, with a fixed 0.21s tail; buffs past 100% only remove the scaled part
 // (https://ore-game.com/nikke/post/reload-limit/). Replaces the old divisive
@@ -233,13 +261,17 @@ for (const iv of MG_RAMP_INTERVALS) MG_LADDER_CUM.push(MG_LADDER_CUM[MG_LADDER_C
 // divergent above ~80%.
 const RELOAD_TAIL_FRAMES = 13; // 0.21s
 const reloadFramesNeeded = (base: number, buffPct: number) =>
-  Math.round(base * 0.975 * Math.max(0, 1 - buffPct / 100)) + RELOAD_TAIL_FRAMES;
+  Math.round(base * 0.975 * Math.max(0, 1 - buffPct / 100)) +
+  RELOAD_TAIL_FRAMES;
 
 // Test-boss range script (user-measured, 2026-07-13; fight timer 3:00 counts down):
 // mid 0-33s, near 33-70, far 70-106, mid-far 106-144, near 144-176, mid-far 176-180.
 // At each transition the boss is unhittable for 1s; during that window units whose
 // EFFECTIVE reload time is <=1s get a free full reload (longer reloads keep their mag).
-const BOSS_RANGE_SCRIPT: Array<{ fromSec: number; band: 'near' | 'mid' | 'midfar' | 'far' }> = [
+const BOSS_RANGE_SCRIPT: Array<{
+  fromSec: number;
+  band: 'near' | 'mid' | 'midfar' | 'far';
+}> = [
   { fromSec: 0, band: 'mid' },
   { fromSec: 33, band: 'near' },
   { fromSec: 70, band: 'far' },
@@ -261,8 +293,9 @@ const RANGE_ELIGIBLE: Record<string, Set<string>> = {
   far: new Set(['SR', 'MG']),
 };
 // ENV.MGRANGE: experiment-only A/B override ('always' | 'never'; unset = the measured table).
-const MG_RANGE_MODE = (globalThis as { process?: { env: Record<string, string | undefined> } })
-  .process?.env?.MGRANGE as 'always' | 'never' | undefined;
+const MG_RANGE_MODE = (
+  globalThis as { process?: { env: Record<string, string | undefined> } }
+).process?.env?.MGRANGE as 'always' | 'never' | undefined;
 const UNHITTABLE_FRAMES = 60;
 // SG pellet-landing fraction per range band ⚑ (2026-07-15 refit, was a flat near=1.0 / else=0.3 step).
 // MEASURED (drake solo, damage-arithmetic + global-total reconciliation, popup-dropout≈1.0 verified:
@@ -315,13 +348,13 @@ const SG_LANDING_JITTER: Record<string, { min: number; max: number }> =
         Object.entries(BAND_SG_HIT_FRAC).map(([b, f]) => [
           b,
           { min: Math.max(0, f - 0.1), max: Math.min(1, f + 0.1) },
-        ]),
+        ])
       )
     : {
-        near:   { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
-        mid:    { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+        near: { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
+        mid: { min: 0.8, max: 1.0 }, // 10 pellets → {8,9,10}, mean 0.90
         midfar: { min: 0.7, max: 0.9 }, // 10 pellets → {7,8,9},  mean 0.80
-        far:    { min: 0.6, max: 0.8 }, // 10 pellets → {6,7,8},  mean 0.70
+        far: { min: 0.6, max: 0.8 }, // 10 pellets → {6,7,8},  mean 0.70
       };
 // Standard-normal sample (Box-Muller) from the uniform PRNG; the second normal is discarded.
 function gaussian(rng: () => number): number {
@@ -338,9 +371,9 @@ function sgLandedPellets(
   band: string,
   pellets: number,
   rng: () => number,
-  profile: 'small' | 'medium' | 'large' = 'small',
+  profile: 'small' | 'medium' | 'large' = 'small'
 ): number {
-  if (profile === 'large') return pellets; // big boss — the whole spray lands, every band
+  if (profile === 'large') {return pellets;} // big boss — the whole spray lands, every band
   const j = SG_LANDING_JITTER[band] ?? { min: 1, max: 1 };
   const lo = Math.round(j.min * pellets);
   const hi = Math.round(j.max * pellets);
@@ -353,13 +386,17 @@ function sgLandedPellets(
 
 // element → the element it beats
 const BEATS: Record<Element, Element> = {
-  Electric: 'Water', Iron: 'Electric', Wind: 'Iron', Fire: 'Wind', Water: 'Fire',
+  Electric: 'Water',
+  Iron: 'Electric',
+  Wind: 'Iron',
+  Fire: 'Wind',
+  Water: 'Fire',
 };
 
 interface BuffInstance {
   key: string;
   stat: StatKey | 'unlimitedAmmo' | 'maxHpFlat';
-  value: number;          // per stack; for casterAtkPct this is flat ATK
+  value: number; // per stack; for casterAtkPct this is flat ATK
   stacks: number;
   maxStacks: number;
   expiresFrame: number | null;
@@ -413,11 +450,11 @@ interface WeaponSwap {
   chargeFrames?: number;
   chargeMultPct?: number;
   maxAmmo?: number;
-  pullsPerSec?: number;  // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
-  weapon?: string;       // swap weapon's class override (nayuta: SR mode) → range/core banding
+  pullsPerSec?: number; // swap weapon's own fire cadence (moran: 24/s vs base AR 12/s)
+  weapon?: string; // swap weapon's class override (nayuta: SR mode) → range/core banding
   trueNormals?: boolean;
-  hasPierce?: boolean;   // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
-                         // snow-white's cannon) — feeds the per-shot pierceActive tag only
+  hasPierce?: boolean; // swap shots are Pierce-tagged (swap-scoped "Additional Effect: Pierce",
+  // snow-white's cannon) — feeds the per-shot pierceActive tag only
   // uses-based termination (MEASURED 2026-07-14, SWHA-focus recording: the swap ends right
   // after the Nth swapped shot fires, at variable time — NOT at a fixed duration; untilFrame
   // remains the hard bound, e.g. the 10s burst window)
@@ -430,27 +467,27 @@ interface UnitState {
   char: CharacterData;
   staticAtk: number;
   maxHp: number; // final Max HP (for HP-scaled ATK buffs)
-  critRate: number;       // %
-  critDamage: number;     // % multiplier (150 = crit ×1.5)
+  critRate: number; // %
+  critDamage: number; // % multiplier (150 = crit ×1.5)
   doll: DollBonus;
   blocks: Block[];
   warnings: string[];
-  hasPierce: boolean;     // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
+  hasPierce: boolean; // kit's attacks are Pierce-tagged (Q10) — STATIC (whole-fight or mode-gated)
   pierceUntilFrame: number; // timed "Gain Pierce for N sec" window end (0 = none); pierce active when > frame
   shieldedUntilFrame: number; // shield-state window end (0 = none): set when a 'shield' effect targets this
-                              // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
-                              // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
+  // unit (durationSec; none = permanent at scope — boss damage unmodeled, nothing
+  // breaks shields). Read by the requiresShielded block gate (naga's burst 31.02%)
   consolidation?: ConsolidationConfig; // pellet-consolidation mode config (dorothy-S)
-  landedAcc: number;      // landed pellets accrued toward the consolidation trigger (near-gated)
+  landedAcc: number; // landed pellets accrued toward the consolidation trigger (near-gated)
   consolShotsLeft: number; // remaining single-bullet consolidation shots in the current episode
   burstSnapshotsPreFb: boolean; // burst damage resolves pre-FB/pre-stage (per-unit timing)
-  ammoRefundPer10: number;  // Bastion cube: bullets refunded per 10 fired
+  ammoRefundPer10: number; // Bastion cube: bullets refunded per 10 fired
   bulletsSinceRefund: number;
   burstGenMult: number;
-  swap: WeaponSwap | null;  // "Changes the weapon in use" state
+  swap: WeaponSwap | null; // "Changes the weapon in use" state
   stunnedUntilFrame: number; // self-stun (Mast's Hangover): no firing/charging/reloading
   fbMissedSinceBurst: number; // full bursts this unit sat out since it last burst (Maiden:IR MP)
-  mpPriority: boolean;       // jump the burst queue once fbMissedSinceBurst hits mpThreshold
+  mpPriority: boolean; // jump the burst queue once fbMissedSinceBurst hits mpThreshold
   // syncWithFocus: only cast in a chain where the focus (tested) unit also bursts.
   // everyOther: never cast the stage-3 slot in two consecutive full bursts (the Solo
   // control framework's contract — the tested unit alternates with the no-op B3, even
@@ -477,9 +514,9 @@ interface UnitState {
   primed: boolean; // in the dump phase (charged once, now autofiring the mag)
   reloadProgress: number;
   reloading: boolean;
-  mgRampRound: number;  // rounds fired since wind-up start (indexes the ramp ladder)
+  mgRampRound: number; // rounds fired since wind-up start (indexes the ramp ladder)
   mgIdleFrames: number; // consecutive non-firing frames (reload/stun/unhittable) for wind-down
-  mgCooldown: number;   // fractional frames until the next round
+  mgCooldown: number; // fractional frames until the next round
   // skills runtime
   buffs: BuffInstance[];
   storedHits: Map<
@@ -493,11 +530,11 @@ interface UnitState {
       sequential?: boolean;
       trueFlavor?: boolean;
       projFlavor?: 'attachment' | 'explosion';
-      coreRate?: number;      // per-release core rate (coreOverride path) — RRH explosions ~1/3
-      critRoll?: boolean;     // release rolls crit at the caster's sheet rate (removes the stored-hit crit-OFF exemption)
-      instantInFb?: boolean;  // release each FB frame (in-burst attach detonates instantly), not only at FB start
+      coreRate?: number; // per-release core rate (coreOverride path) — RRH explosions ~1/3
+      critRoll?: boolean; // release rolls crit at the caster's sheet rate (removes the stored-hit crit-OFF exemption)
+      instantInFb?: boolean; // release each FB frame (in-burst attach detonates instantly), not only at FB start
       releasable: number;
-      fresh: number;      // charges added this frame — not releasable until next frame
+      fresh: number; // charges added this frame — not releasable until next frame
       freshFrame: number;
     }
   >;
@@ -548,7 +585,7 @@ export interface SimResult {
   teamDamage: number;
   teamDps: number;
   fullBursts: number;
-  fullBurstUptime: number;  // 0..1
+  fullBurstUptime: number; // 0..1
   rotationStallSec: number; // time spent gauge-full waiting on cooldowns
   rotationLog: string[];
 }
@@ -566,10 +603,11 @@ export const MC_SEED_BASE = 1000;
 // non-numeric/timeline fields (names, warnings, loadout, rotationLog) are taken from the first run as a
 // representative sample. Units are matched by index (same team across runs). Empty array is invalid.
 export function meanSimResults(runs: SimResult[]): SimResult {
-  if (runs.length === 1) return runs[0];
+  if (runs.length === 1) {return runs[0];}
   const n = runs.length;
   const base = runs[0];
-  const mean = (pick: (r: SimResult) => number) => runs.reduce((a, r) => a + pick(r), 0) / n;
+  const mean = (pick: (r: SimResult) => number) =>
+    runs.reduce((a, r) => a + pick(r), 0) / n;
   const units: UnitResult[] = base.units.map((u0, idx) => ({
     ...u0,
     totalDamage: mean((r) => r.units[idx].totalDamage),
@@ -603,12 +641,15 @@ export function runSimMean(
   mult: LevelMultiplier,
   cfg: SimConfig,
   prepared?: PreparedUnit[],
-  nSeeds: number = DEFAULT_MC_SEEDS,
+  nSeeds: number = DEFAULT_MC_SEEDS
 ): SimResult {
-  if (cfg.seed !== undefined || nSeeds <= 1) return runSim(chars, mult, cfg, prepared);
+  if (cfg.seed !== undefined || nSeeds <= 1)
+    {return runSim(chars, mult, cfg, prepared);}
   const runs: SimResult[] = [];
   for (let i = 0; i < nSeeds; i++) {
-    runs.push(runSim(chars, mult, { ...cfg, seed: MC_SEED_BASE + i }, prepared));
+    runs.push(
+      runSim(chars, mult, { ...cfg, seed: MC_SEED_BASE + i }, prepared)
+    );
   }
   return meanSimResults(runs);
 }
@@ -639,12 +680,15 @@ export function runSim(
             ...(cdFix ? { burstCooldownSec: cdFix } : {}),
           }
         : rawChar;
-    if (!char.baseStats) throw new Error(`${char.slug} has no base stats in the DB`);
+    if (!char.baseStats)
+      {throw new Error(`${char.slug} has no base stats in the DB`);}
     const skills = prepared?.[idx]?.skills;
     if (!skills) {
       // the engine never parses skill prose — callers must prepareTeam/prepareUnit
       // (which resolves the unit's override) before running the sim
-      throw new Error(`runSim: "${char.slug}" has no prepared skills — call prepareTeam/prepareUnit first`);
+      throw new Error(
+        `runSim: "${char.slug}" has no prepared skills — call prepareTeam/prepareUnit first`
+      );
     }
     // "no OTHER Burst 1 allies" — the unit itself never counts, and Λ units count
     // as NO burst type for formation calculations (user-confirmed: Red Hood as B3
@@ -674,8 +718,14 @@ export function runSim(
     const unitOl = prepared?.[idx]?.ol ?? cfg.ol;
     // Limit-Break stars (grade 0-3) and Core enhancement (0-7) are per-unit;
     // fall back to the global copies count when a unit doesn't specify them.
-    const grade = Math.min(3, Math.max(0, prepared?.[idx]?.stars ?? fallback.grade));
-    const core = Math.min(7, Math.max(0, prepared?.[idx]?.core ?? fallback.core));
+    const grade = Math.min(
+      3,
+      Math.max(0, prepared?.[idx]?.stars ?? fallback.grade)
+    );
+    const core = Math.min(
+      7,
+      Math.max(0, prepared?.[idx]?.core ?? fallback.core)
+    );
     const pu = prepared?.[idx];
     // Gear: explicit synced gear-piece stats override the per-class OL-level table.
     const gAtk = pu?.gearAtk ?? gearAtk(char.class, unitOl);
@@ -686,18 +736,22 @@ export function runSim(
     const dHp = pu?.dollHp ?? (cfg.doll ? DOLL_HP : 0);
     const dWeapon = pu?.dollWeapon ?? (cfg.doll ? dollBonus(char.weapon) : {});
     const atk =
-      characterStat(char.baseStats, mult, 'atk', cfg.level, grade, core) + gAtk + dAtk;
+      characterStat(char.baseStats, mult, 'atk', cfg.level, grade, core) +
+      gAtk +
+      dAtk;
     const extra = pu?.extraStats ?? [];
-    const flatAtk = extra.filter((e) => e.stat === 'flatAtk').reduce((s, e) => s + e.value, 0);
+    const flatAtk = extra
+      .filter((e) => e.stat === 'flatAtk')
+      .reduce((s, e) => s + e.value, 0);
     // Relationship (bond) bonus — a flat class×manufacturer stat present in every recording
     // (open-questions U18). Level: per-unit override → cfg default → the manufacturer's max
     // (undefined everywhere = max, which is the scope-lock basis + the web default).
     const rel = relationshipBonus(
       char.class,
       char.manufacturer,
-      prepared?.[idx]?.relationshipLevel ?? cfg.relationshipLevel,
+      prepared?.[idx]?.relationshipLevel ?? cfg.relationshipLevel
     );
-      const state: UnitState = {
+    const state: UnitState = {
       idx,
       char,
       staticAtk: atk + flatAtk + rel.atk,
@@ -720,10 +774,16 @@ export function runSim(
       landedAcc: 0,
       consolShotsLeft: 0,
       burstSnapshotsPreFb: skills.burstSnapshotsPreFb === true,
-      ammoRefundPer10: extra.filter((e) => e.stat === 'ammoRefundPer10').reduce((s, e) => s + e.value, 0),
+      ammoRefundPer10: extra
+        .filter((e) => e.stat === 'ammoRefundPer10')
+        .reduce((s, e) => s + e.value, 0),
       bulletsSinceRefund: 0,
       burstGenMult:
-        1 + extra.filter((e) => e.stat === 'burstGenPct').reduce((s, e) => s + e.value, 0) / 100,
+        1 +
+        extra
+          .filter((e) => e.stat === 'burstGenPct')
+          .reduce((s, e) => s + e.value, 0) /
+          100,
       swap: null,
       stunnedUntilFrame: -1,
       fbMissedSinceBurst: 0,
@@ -739,7 +799,8 @@ export function runSim(
         12
       ),
       extraStages: new Set(),
-      lambdaStage: char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
+      lambdaStage:
+        char.burst === 'Λ' ? (prepared?.[idx]?.lambdaStage ?? null) : null,
       advantageVs: new Set(),
       ammo: char.ammo,
       fireAcc: 0,
@@ -757,7 +818,8 @@ export function runSim(
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
       magDumpRofFrames: (() => {
         const rof = (
-          char.role?.weapon as { shot_detail?: { rate_of_fire?: number } } | undefined
+          char.role?.weapon as
+            { shot_detail?: { rate_of_fire?: number } } | undefined
         )?.shot_detail?.rate_of_fire;
         return rof && rof > 0 ? Math.round((FPS * 60) / rof) : 20;
       })(),
@@ -772,7 +834,9 @@ export function runSim(
       storedHits: new Map(),
       hitCounters: new Map(),
       blockActivations: new Map(),
-      resources: new Map((skills.resources ?? []).map((r) => [r.name, r.initial])),
+      resources: new Map(
+        (skills.resources ?? []).map((r) => [r.name, r.initial])
+      ),
       resourceCfg: skills.resources ?? [],
       burstCdFrames: 0,
       lastBurstCastFrame: -1,
@@ -784,7 +848,12 @@ export function runSim(
     };
     // cube / OL-line stats become permanent buffs
     for (const e of extra) {
-      if (e.stat === 'ammoRefundPer10' || e.stat === 'burstGenPct' || e.stat === 'flatAtk') continue;
+      if (
+        e.stat === 'ammoRefundPer10' ||
+        e.stat === 'burstGenPct' ||
+        e.stat === 'flatAtk'
+      )
+        {continue;}
       // "Max HP ▲ x%" extras (Vigor cube): convert the percentage into a flat Max-HP
       // SELF-grant (casterIdx === own idx) so it raises the unit's live Max HP and feeds
       // HP-scaling ATK (atkOfMaxHpPct) exactly like an own-kit maxHpFlat buff — see effectiveAtk.
@@ -852,7 +921,12 @@ export function runSim(
   }> = [];
   // teamAmmo triggers: fire whenever TOTAL ally ammo consumed crosses each block's count
   // (infinite-ammo shots never consume, matching the in-game rule)
-  const teamAmmoBlocks: Array<{ unitIdx: number; block: Block; bi: number; residual: number }> = [];
+  const teamAmmoBlocks: Array<{
+    unitIdx: number;
+    block: Block;
+    bi: number;
+    residual: number;
+  }> = [];
   const usedOncePerBattle = new Set<string>();
   const totalFrames = cfg.durationSec * FPS;
   const rotationLog: string[] = [];
@@ -871,7 +945,8 @@ export function runSim(
       : (() => {
           let a = (cfg.seed as number) >>> 0;
           return () => {
-            a |= 0; a = (a + 0x6d2b79f5) | 0;
+            a |= 0;
+            a = (a + 0x6d2b79f5) | 0;
             let t = Math.imul(a ^ (a >>> 15), 1 | a);
             t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
             return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
@@ -921,9 +996,9 @@ export function runSim(
   const LO = ENV.CORERATELO !== undefined ? Number(ENV.CORERATELO) : 0.85;
   const CORE_BY_WEAPON_BAND: Record<string, Record<string, number>> = {
     // near      mid       midfar    far
-    AR:  { near: 0.40, mid: 0.30,  midfar: 0.03,   far: 0.0 },   // scarlet (near ⚑ 0.34–0.44 reads)
-    SMG: { near: 0.28, mid: 0.244, midfar: 0.076,  far: 0.059 }, // chisato hardened (n≈45–95/band)
-    SG:  { near: 0.048, mid: 0.0,  midfar: 0.003, far: 0.0 },   // noir counter-rederived (near 0.072 was ~1.5x inflated by the popup-ratio white under-count; true = cores/true-pellets ~0.045-0.05)
+    AR: { near: 0.4, mid: 0.3, midfar: 0.03, far: 0.0 }, // scarlet (near ⚑ 0.34–0.44 reads)
+    SMG: { near: 0.28, mid: 0.244, midfar: 0.076, far: 0.059 }, // chisato hardened (n≈45–95/band)
+    SG: { near: 0.048, mid: 0.0, midfar: 0.003, far: 0.0 }, // noir counter-rederived (near 0.072 was ~1.5x inflated by the popup-ratio white under-count; true = cores/true-pellets ~0.045-0.05)
   };
   const coreByWeaponBand = (weapon: string, band: string): number => {
     const row = CORE_BY_WEAPON_BAND[weapon];
@@ -946,28 +1021,35 @@ export function runSim(
   const geoCoreFrac = (weapon: string, band: string): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     const coreD = BAND_CORE_PX[band];
-    if (scale === undefined || coreD === undefined) return null;
+    if (scale === undefined || coreD === undefined) {return null;}
     return coreFracGeo(coreD, circleDpx(scale));
   };
-  const acrForGeo = (weapon: string, band: string, mode: string): number | null => {
+  const acrForGeo = (
+    weapon: string,
+    band: string,
+    mode: string
+  ): number | null => {
     const geo = geoCoreFrac(weapon, band);
-    if (geo === null) return null; // no circle model → let acrFor use the base table
+    if (geo === null) {return null;} // no circle model → let acrFor use the base table
     if (mode === 'shape' || mode === 'fill') {
       const geoNear = geoCoreFrac(weapon, 'near');
       const measuredNear = CORE_BY_WEAPON_BAND[weapon]?.near;
-      if (!geoNear || measuredNear === undefined) return null;
+      if (!geoNear || measuredNear === undefined) {return null;}
       return Math.min(1, (measuredNear / geoNear) * geo);
     }
     return geo; // raw
   };
-  const acrFor = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far'): number => {
-    if (ENV.ACR !== undefined) return Number(ENV.ACR);
-    if (ENV.CORERATE === 'flat') return 0.85;
+  const acrFor = (
+    weapon: string,
+    band: 'near' | 'mid' | 'midfar' | 'far'
+  ): number => {
+    if (ENV.ACR !== undefined) {return Number(ENV.ACR);}
+    if (ENV.CORERATE === 'flat') {return 0.85;}
     if (ENV.CORERATEBAND === 'off')
-      return (weapon === 'MG' || weapon === 'SR' || weapon === 'RL') ? HI : LO;
+      {return weapon === 'MG' || weapon === 'SR' || weapon === 'RL' ? HI : LO;}
     if (ENV.ACR_GEO) {
       const g = acrForGeo(weapon, band, ENV.ACR_GEO);
-      if (g !== null) return g;
+      if (g !== null) {return g;}
     }
     return coreByWeaponBand(weapon, band);
   };
@@ -996,20 +1078,20 @@ export function runSim(
   // ⚑ UNVALIDATED (R8): stat() sums multiple HR buffs additive-in-percentage-points — the composition rule is
   //   an untested hypothesis this phase; a board-MAE gain must NOT be cited as confirming it.
   const HRCORE = ENV.HRCORE !== '0' && ENV.HRCORE !== 'off'; // LIVE by default (owner 2026-07-17); HRCORE=0 disables for A/B
-  const HR_RETICLE_SLOPE = 1.4285 / 168.3931;            // 0.008483 /pt
+  const HR_RETICLE_SLOPE = 1.4285 / 168.3931; // 0.008483 /pt
   const HR_RETICLE_FLOOR_FRAC = 1 - HR_RETICLE_SLOPE * 100;
   const HR_CORE_CIRCLE: Record<string, number> = { AR: 75, SMG: 110, SG: 250 };
-  const HR_CORE_SAT = ENV.HR_CORE_SAT === '1' ? 1 : 10;  // default circle10 (steep, data-leaning)
+  const HR_CORE_SAT = ENV.HR_CORE_SAT === '1' ? 1 : 10; // default circle10 (steep, data-leaning)
   const hrCoreExp = (weapon: string): number => {
     const c0 = HR_CORE_CIRCLE[weapon];
     const base = CORE_BY_WEAPON_BAND[weapon]?.near;
-    if (c0 === undefined || base === undefined || base <= 0) return 0; // MG/SR/RL or zero-base → no lift
+    if (c0 === undefined || base === undefined || base <= 0) {return 0;} // MG/SR/RL or zero-base → no lift
     return Math.log(base) / Math.log(HR_CORE_SAT / c0);
   };
   const hrCoreMult = (weapon: string, hr: number): number => {
-    if (!HRCORE || hr <= 0) return 1;
+    if (!HRCORE || hr <= 0) {return 1;}
     const p = hrCoreExp(weapon);
-    if (p === 0) return 1;
+    if (p === 0) {return 1;}
     const frac = Math.max(HR_RETICLE_FLOOR_FRAC, 1 - HR_RETICLE_SLOPE * hr);
     return Math.pow(1 / frac, p);
   };
@@ -1027,10 +1109,13 @@ export function runSim(
   const hrCoreMultGeo = (weapon: string, band: string, hr: number): number => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
     const coreD = BAND_CORE_PX[band];
-    if (scale === undefined || coreD === undefined) return 1; // MG/SR/RL → no lift
+    if (scale === undefined || coreD === undefined) {return 1;} // MG/SR/RL → no lift
     const base0 = coreFracGeo(coreD, circleDpx(scale));
-    if (base0 <= 0) return 1;
-    const atHr = coreFracGeo(coreD, circleDpxAtHr(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC));
+    if (base0 <= 0) {return 1;}
+    const atHr = coreFracGeo(
+      coreD,
+      circleDpxAtHr(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC)
+    );
     return atHr / base0; // ≥1, monotone in hr, capped where the circle reaches the core
   };
   // ── Center-weighted pellet model (ENV.PELLET_GAUSS; LIVE by default 2026-07-17, PELLET_GAUSS=0 off for A/B) ──
@@ -1043,7 +1128,7 @@ export function runSim(
   const PELLET_GAUSS = ENV.PELLET_GAUSS !== '0' && ENV.PELLET_GAUSS !== 'off';
   const pelletSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
-    if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
+    if (scale === undefined) {return null;} // MG/SR/RL: no accuracy-circle model
     return pelletSigma(scale, hr, HR_RETICLE_SLOPE, HR_RETICLE_FLOOR_FRAC);
   };
   // ── δ-offset cone (ENV.CONE_DELTA; LIVE by default 2026-07-19, CONE_DELTA=0 disables for A/B) ──
@@ -1069,32 +1154,42 @@ export function runSim(
     ENV.UNIGEO === 'off' || ENV.UNIGEO === 'sg' ? ENV.UNIGEO : 'all';
   const coneSigmaFor = (weapon: string, hr: number): number | null => {
     const scale = ACCURACY_CIRCLE_SCALE[weapon];
-    if (scale === undefined) return null; // MG/SR/RL: no accuracy-circle model
+    if (scale === undefined) {return null;} // MG/SR/RL: no accuracy-circle model
     return coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon] ?? 0.009);
   };
-  const acrForHR = (weapon: string, band: 'near' | 'mid' | 'midfar' | 'far', hr: number): number => {
+  const acrForHR = (
+    weapon: string,
+    band: 'near' | 'mid' | 'midfar' | 'far',
+    hr: number
+  ): number => {
     if (UNIGEO !== 'off' && (cfg.bossPelletProfile ?? 'small') === 'small') {
       // UNIGEO core paths: SG in both modes; AR/SMG only in 'all'. MG/SR/RL return null → fall
       // through to the live chain unchanged.
-      if (weapon === 'SG') return unigeoSgCorePerLanded(band, hr);
+      if (weapon === 'SG') {return unigeoSgCorePerLanded(band, hr);}
       if (UNIGEO === 'all') {
         const p = unigeoSingleCoreProb(weapon, band, hr);
-        if (p !== null) return p;
+        if (p !== null) {return p;}
       }
     }
     if (CONE_DELTA) {
       const sig = coneSigmaFor(weapon, hr);
       if (sig !== null)
-        return Math.min(1, offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr)));
+        {return Math.min(
+          1,
+          offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr))
+        );}
       // MG/SR/RL fall through to the base table below
     } else if (PELLET_GAUSS) {
       const sig = pelletSigmaFor(weapon, hr);
-      if (sig !== null) return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig)); // unified geometric core
+      if (sig !== null)
+        {return Math.min(1, pelletCoreFrac(BAND_CORE_PX[band], sig));} // unified geometric core
       // MG/SR/RL fall through to the base table below
     }
     const base = acrFor(weapon, band);
-    if (!HRCORE || hr <= 0) return base;                 // OFF ⇒ acrFor unchanged (regression byte-stable)
-    const mult = ENV.HRCORE_GEO ? hrCoreMultGeo(weapon, band, hr) : hrCoreMult(weapon, hr);
+    if (!HRCORE || hr <= 0) {return base;} // OFF ⇒ acrFor unchanged (regression byte-stable)
+    const mult = ENV.HRCORE_GEO
+      ? hrCoreMultGeo(weapon, band, hr)
+      : hrCoreMult(weapon, hr);
     return Math.min(1, base * mult);
   };
   // Pierce core+body double-hit: community evidence is for MULTI-PART bosses; on the
@@ -1119,20 +1214,30 @@ export function runSim(
   const UNFOCUSED_CHARGE_GEN = 1.0;
   const focusIdx =
     cfg.focusSlug !== undefined
-      ? Math.max(0, chars.findIndex((c) => c.slug === cfg.focusSlug))
+      ? Math.max(
+          0,
+          chars.findIndex((c) => c.slug === cfg.focusSlug)
+        )
       : Math.min(2, chars.length - 1);
   // per-trigger gen vs the stage target, in gauge-percent units (JSON is energy/100).
   // flatPerTrigger = per-unit kit generation per shot (helm's S2 +14.31: synergy
   // fixed_add + rl3 arithmetic, twice-confirmed) — flat, no boss doubling, no focus.
   const gaugePerShot = (u: UnitState) => {
-    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number; flatPerTrigger?: number }>)[
-      u.char.slug
-    ];
+    const entry = (
+      gaugeTable as Record<
+        string,
+        { targetPerTrigger?: number; flatPerTrigger?: number }
+      >
+    )[u.char.slug];
     const per = (entry?.targetPerTrigger ?? 40) / 100;
     const flat = (entry?.flatPerTrigger ?? 0) / 100;
-    const isCharge = (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
-    if (!isCharge) return per + flat;
-    return per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN) + flat;
+    const isCharge =
+      (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
+    if (!isCharge) {return per + flat;}
+    return (
+      per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN) +
+      flat
+    );
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
     // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an
@@ -1141,17 +1246,21 @@ export function runSim(
     // measured ~3s post-FB chain-open delay, high-generation comps finish refilling
     // before the chain can open anyway, so rotations stay cooldown/chain-bound).
     // Also no generation during the chain itself (stages 1-3, einkk).
-    if (fbEndFrame > frame || stage !== 0) return;
+    if (fbEndFrame > frame || stage !== 0) {return;}
     if (ENV.DBG_GAUGE && frame < 30 * FPS) {
-      console.log(`[g] t=${(frame / FPS).toFixed(2)} ${u.char.slug} +${(energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)).toFixed(2)} gauge=${gauge.toFixed(1)}`);
+      console.log(
+        `[g] t=${(frame / FPS).toFixed(2)} ${u.char.slug} +${(energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)).toFixed(2)} gauge=${gauge.toFixed(1)}`
+      );
     }
     // Uncapped per-unit generation counter (ranking boards): everything this unit feeds the
     // bar, BEFORE the 100 clamp eats the over-cap amount. Still post-early-return above, so
     // in-game gating (FB/chain lockout) applies.
-    u.gaugeGenerated += energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100);
+    u.gaugeGenerated +=
+      energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100);
     gauge = Math.min(
       100,
-      gauge + energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)
+      gauge +
+        energyPct * u.burstGenMult * (1 + stat(u, 'burstGenPct', frame) / 100)
     );
   };
   const shotGauge = (u: UnitState, frame: number, hitFraction = 1) => {
@@ -1171,15 +1280,23 @@ export function runSim(
   // one skill-damage impact (flatDamage proc, dot tick) = one target-base hit of gen
   // (maiden's rider measured exactly her target per-shot value, 364, no focus bonus)
   const skillGauge = (u: UnitState, frame: number) => {
-    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[u.char.slug];
+    const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
+      u.char.slug
+    ];
     const per = (entry?.targetPerTrigger ?? 40) / 100;
-    addGauge(u, frame, per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1));
+    addGauge(
+      u,
+      frame,
+      per / (u.char.weapon === 'SG' ? 10 : u.char.hitsPerShot || 1)
+    );
   };
 
-  const transitionFrames = rangeScript.slice(1).map((r) => Math.round(r.fromSec * FPS));
+  const transitionFrames = rangeScript
+    .slice(1)
+    .map((r) => Math.round(r.fromSec * FPS));
   const bandAt = (frame: number): 'near' | 'mid' | 'midfar' | 'far' => {
     let band = rangeScript[0].band;
-    for (const r of rangeScript) if (frame >= r.fromSec * FPS) band = r.band;
+    for (const r of rangeScript) {if (frame >= r.fromSec * FPS) {band = r.band;}}
     return band;
   };
   const bossUnhittable = (frame: number) =>
@@ -1241,9 +1358,10 @@ export function runSim(
         b.stat !== stat ||
         (b.expiresFrame !== null && b.expiresFrame <= frame) ||
         (b.shotsLeft !== undefined && b.shotsLeft <= 0) ||
-        (b.whileSwappedIdx !== undefined && units[b.whileSwappedIdx].swap == null)
+        (b.whileSwappedIdx !== undefined &&
+          units[b.whileSwappedIdx].swap == null)
       )
-        return s;
+        {return s;}
       // live resource-scaled buff (soda's Golden-Chip crit): value = caster.resources[name]×mult,
       // re-read each frame from the caster's pool (ignores the static `value`).
       let contrib: number;
@@ -1256,16 +1374,21 @@ export function runSim(
       // stack-ramp (theme 3): scale 0 → full linearly over rampFrames from first application,
       // then hold at cap. Absent (undefined/0) → instant-to-max, identical to the prior sum.
       if (b.rampFrames && b.startFrame !== undefined) {
-        contrib *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
+        contrib *= Math.min(
+          1,
+          Math.max(0, (frame - b.startFrame) / b.rampFrames)
+        );
       }
       return s + contrib;
     }, 0);
 
-  const stat = (u: UnitState, key: StatKey, frame: number) => sum(u.buffs, key, frame);
+  const stat = (u: UnitState, key: StatKey, frame: number) =>
+    sum(u.buffs, key, frame);
 
   const advantaged = (u: UnitState) =>
     cfg.bossElement !== null &&
-    (BEATS[u.char.element] === cfg.bossElement || u.advantageVs.has(cfg.bossElement));
+    (BEATS[u.char.element] === cfg.bossElement ||
+      u.advantageVs.has(cfg.bossElement));
 
   function effectiveAtk(u: UnitState, frame: number): number {
     // casterMaxHpPct buffs arrive as flat Max HP (converted at apply time)
@@ -1278,8 +1401,8 @@ export function runSim(
     // measured early/late FB-proc growth 633.7k→667.0k).
     let ownMaxHpFlat = 0;
     for (const b of u.buffs) {
-      if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) continue;
-      if (b.expiresFrame !== null && b.expiresFrame <= frame) continue;
+      if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {continue;}
+      if (b.expiresFrame !== null && b.expiresFrame <= frame) {continue;}
       let c = b.value * b.stacks;
       if (b.rampFrames && b.startFrame !== undefined) {
         c *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
@@ -1310,13 +1433,13 @@ export function runSim(
       noRange?: boolean;
       noFb?: boolean;
       projFlavor?: 'attachment' | 'explosion';
-      coreOverride?: number;   // per-shot core rate override (pellet-consolidation single bullet) — bypasses acrFor
-      extraDmgUpPct?: number;  // per-shot Damage-Up addition (consolidation's window-only Attack Damage ▲%)
-      pierceActive?: boolean;  // per-shot Pierce-tag (consolidation bullet) → pierceDamagePct goes live (dmg only, no double-hit)
+      coreOverride?: number; // per-shot core rate override (pellet-consolidation single bullet) — bypasses acrFor
+      extraDmgUpPct?: number; // per-shot Damage-Up addition (consolidation's window-only Attack Damage ▲%)
+      pierceActive?: boolean; // per-shot Pierce-tag (consolidation bullet) → pierceDamagePct goes live (dmg only, no double-hit)
       // Owning kit line, for the cfg.onEvent 'damage' log ONLY — never read by any engine path.
       // Omitted where the engine has no single source (the summed extraHitDamagePct rider).
       srcSlot?: SkillSlot | 'normal';
-      chargeMultPct?: number;  // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
+      chargeMultPct?: number; // full-charge multiplier override when there is no swap to source it (delayed charge hit — snow-white's cannon); only read when charge:true
     }
   ) {
     const fb = fbEndFrame > frame;
@@ -1348,11 +1471,15 @@ export function runSim(
           0,
           (u.critRate +
             stat(u, 'critRatePct', frame) +
-            (opts.category === 'normal' ? stat(u, 'critRateNormalPct', frame) : 0)) / 100
+            (opts.category === 'normal'
+              ? stat(u, 'critRateNormalPct', frame)
+              : 0)) /
+            100
         )
       );
       critRateUsed = critRate;
-      const critBonus = (u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100;
+      const critBonus =
+        (u.critDamage - 100) / 100 + stat(u, 'critDamagePct', frame) / 100;
       // seeded: Bernoulli roll, full bonus or nothing (mean is identical; the roll
       // reproduces real-run variance and any future on-crit trigger coupling)
       major += rng ? (rng() < critRate ? critBonus : 0) : critRate * critBonus;
@@ -1374,7 +1501,9 @@ export function runSim(
       const acr = opts.coreOverride ?? acrForHR(effWeapon, bandAt(frame), hr);
       coreRateUsed = cfg.coreHitRate * acr;
       major += rng
-        ? (rng() < cfg.coreHitRate * acr ? coreBonus : 0)
+        ? rng() < cfg.coreHitRate * acr
+          ? coreBonus
+          : 0
         : cfg.coreHitRate * acr * coreBonus;
     }
     // elemAdvantageDamagePct lives in the ELEMENT bucket (MEASURED 2026-07-14, battery 5:
@@ -1388,7 +1517,8 @@ export function runSim(
           (elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0)) /
           100
       : 1;
-    const chargeMult = opts.chargeMultPct ?? u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
+    const chargeMult =
+      opts.chargeMultPct ?? u.swap?.chargeMultPct ?? u.char.chargeMultiplier;
     // Collection items and Helm-style burst buffs scale by BASE charge damage
     // (chargeMult × pct); ordinary charge-damage buffs add flat percentage points.
     const baseCharge = chargeMult / 100;
@@ -1396,7 +1526,8 @@ export function runSim(
       opts.charge && chargeMult > 0
         ? baseCharge +
           (baseCharge *
-            ((u.doll.chargeDamagePct ?? 0) + stat(u, 'chargeDamageMultPct', frame))) /
+            ((u.doll.chargeDamagePct ?? 0) +
+              stat(u, 'chargeDamageMultPct', frame))) /
             100 +
           stat(u, 'chargeDamagePct', frame) / 100
         : 1;
@@ -1405,21 +1536,28 @@ export function runSim(
     // It applies ONLY to explosion/attachment-flavored hits (RRH's projectiles,
     // Anis: Star's stars) — normal attacks, RL included, never benefit.
     const projExplosion =
-      opts.projFlavor === 'explosion' ? stat(u, 'projectileExplosionPct', frame) : 0;
+      opts.projFlavor === 'explosion'
+        ? stat(u, 'projectileExplosionPct', frame)
+        : 0;
     const projAttachment =
-      opts.projFlavor === 'attachment' ? stat(u, 'projectileAttachmentPct', frame) : 0;
+      opts.projFlavor === 'attachment'
+        ? stat(u, 'projectileAttachmentPct', frame)
+        : 0;
     const projFactor = 1 + (projExplosion + projAttachment) / 100;
     // Q10: Pierce Damage ▲ empowers Pierce-tagged units' attacks — a Damage Up
     // bucket addition, only while the unit's attacks are Pierce-tagged: static kit
     // pierce (hasPierce), a live timed "Gain Pierce for N sec" window
     // (pierceUntilFrame), or the per-shot consolidation-bullet tag (opts.pierceActive).
-    const pierceTagged = u.hasPierce || u.pierceUntilFrame > frame || opts.pierceActive;
+    const pierceTagged =
+      u.hasPierce || u.pierceUntilFrame > frame || opts.pierceActive;
     const pierce = pierceTagged ? stat(u, 'pierceDamagePct', frame) : 0;
     // Q9 A/B: Prydwen says projExpl also hits regular RL normal attacks
     // "as ATK DMG on the base multiplier". Off by default (our validated rule is
     // flavored-hits-only); on → RL normals get projExpl in the Damage Up bucket.
     const rlNormalProjExpl =
-      (cfg.projExplOnRlNormals ?? true) && u.char.weapon === 'RL' && opts.category === 'normal'
+      (cfg.projExplOnRlNormals ?? true) &&
+      u.char.weapon === 'RL' &&
+      opts.category === 'normal'
         ? stat(u, 'projectileExplosionPct', frame)
         : 0;
     const dmgUp =
@@ -1428,7 +1566,9 @@ export function runSim(
         (opts.sustained ? stat(u, 'sustainedDamagePct', frame) : 0) +
         (opts.sequential ? stat(u, 'sequentialDamagePct', frame) : 0) +
         (opts.trueFlavor ? stat(u, 'trueDamagePct', frame) : 0) +
-        (advantaged(u) && !elemAdvInElement ? stat(u, 'elemAdvantageDamagePct', frame) : 0) +
+        (advantaged(u) && !elemAdvInElement
+          ? stat(u, 'elemAdvantageDamagePct', frame)
+          : 0) +
         pierce +
         (opts.extraDmgUpPct ?? 0) +
         rlNormalProjExpl) /
@@ -1439,18 +1579,33 @@ export function runSim(
     // it must not dilute against other Damage-Up buffs (which the additive `sequentialDamagePct` does
     // — that stat is a DIFFERENT mechanic: swha's "Sequential Attack Damage ▲158.4%", kept diluting).
     // Applies only to sequential-flavored hits; defaults to 1 for everyone with no such buff.
-    const seqMult = opts.sequential ? 1 + stat(u, 'sequentialMultPct', frame) / 100 : 1;
+    const seqMult = opts.sequential
+      ? 1 + stat(u, 'sequentialMultPct', frame) / 100
+      : 1;
     // Distributed Damage debuffs share the taken bucket, but only affect
     // distributed sources and only while a Damage Taken ▲ is active on the boss
     const dmgTakenSum = sum(enemyBuffs, 'damageTakenPct', frame);
     const distDebuff =
-      opts.distributed && dmgTakenSum > 0 ? sum(enemyBuffs, 'distributedDamagePct', frame) : 0;
+      opts.distributed && dmgTakenSum > 0
+        ? sum(enemyBuffs, 'distributedDamagePct', frame)
+        : 0;
     const taken = 1 + (dmgTakenSum + distDebuff) / 100;
-    const distributed = opts.distributed ? 1 + stat(u, 'distributedDamagePct', frame) / 100 : 1;
+    const distributed = opts.distributed
+      ? 1 + stat(u, 'distributedDamagePct', frame) / 100
+      : 1;
 
     const baseAtk = Math.max(0, effectiveAtk(u, frame) - cfg.bossDef);
     const dmg =
-      baseAtk * (atkPct / 100) * major * elem * charge * dmgUp * seqMult * projFactor * taken * distributed;
+      baseAtk *
+      (atkPct / 100) *
+      major *
+      elem *
+      charge *
+      dmgUp *
+      seqMult *
+      projFactor *
+      taken *
+      distributed;
     // DBG_UNIT=<slug> [DBG_N=<count>]: log per-instance bucket decomposition (video
     // popup reconciliation — popups show single non-crit/crit instances, so compare
     // against major recomputed without the crit expectation)
@@ -1460,8 +1615,8 @@ export function runSim(
       if ((u as any).__dbgN <= lim) {
         console.log(
           `[dbg ${u.char.slug}] t=${(frame / FPS).toFixed(2)} ${opts.category} atkPct=${atkPct.toFixed(1)} ` +
-          `baseAtk=${baseAtk.toFixed(0)} major=${major.toFixed(3)} elem=${elem.toFixed(3)} charge=${charge.toFixed(3)} ` +
-          `dmgUp=${dmgUp.toFixed(4)} seqMult=${seqMult.toFixed(3)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
+            `baseAtk=${baseAtk.toFixed(0)} major=${major.toFixed(3)} elem=${elem.toFixed(3)} charge=${charge.toFixed(3)} ` +
+            `dmgUp=${dmgUp.toFixed(4)} seqMult=${seqMult.toFixed(3)} taken=${taken.toFixed(3)} dmg=${dmg.toFixed(0)}`
         );
         // DBG_BUFFS=1: dump the unit's live buff entries with each logged instance
         if (ENV.DBG_BUFFS) {
@@ -1469,12 +1624,12 @@ export function runSim(
             if (b.expiresFrame === null || b.expiresFrame > frame) {
               console.log(
                 `    [buff] ${b.key} stat=${b.stat} val=${b.value} stacks=${b.stacks} ` +
-                `ends=${b.expiresFrame === null ? 'inf' : (b.expiresFrame / FPS).toFixed(2)}`
+                  `ends=${b.expiresFrame === null ? 'inf' : (b.expiresFrame / FPS).toFixed(2)}`
               );
             }
           }
         }
-      } else (u as any).__dbgN = -1;
+      } else {(u as any).__dbgN = -1;}
     }
     u.damage[opts.category] += dmg;
     if (onEvent) {
@@ -1499,12 +1654,25 @@ export function runSim(
         inFullBurst: fb,
         fbMajorApplied: fb && !opts.noFb,
         rangeApplied: inRange,
-        mult: { major, elem, charge, dmgUp, seqMult, projFactor, taken, distributed },
+        mult: {
+          major,
+          elem,
+          charge,
+          dmgUp,
+          seqMult,
+          projFactor,
+          taken,
+          distributed,
+        },
       });
     }
   }
 
-  function resolveTargets(t: TargetDef, ownerIdx: number, frame: number): UnitState[] {
+  function resolveTargets(
+    t: TargetDef,
+    ownerIdx: number,
+    frame: number
+  ): UnitState[] {
     // A3 (2026-07-20): "highest/lowest FINAL ATK" selectors rank by LIVE effectiveAtk; plain
     // "highest ATK" (byFinalAtk absent) keeps base staticAtk. Ranking is evaluated ONCE here, at the
     // apply frame, and returns BEFORE the buff is placed — so the buff being granted never feeds its
@@ -1512,51 +1680,72 @@ export function runSim(
     const atkRank = (u: UnitState, byFinalAtk?: boolean) =>
       byFinalAtk ? effectiveAtk(u, frame) : u.staticAtk;
     switch (t.kind) {
-      case 'self': return [units[ownerIdx]];
+      case 'self':
+        return [units[ownerIdx]];
       case 'allies':
         return t.excludeSelf ? units.filter((u) => u.idx !== ownerIdx) : units;
       case 'burstCasters': {
         const casters = rotationCasters.map((i) => units[i]);
         // optional stage filter (Ada S1: "all BURST 3 allies who previously used their
         // Burst Skill" — B1/B2 casters excluded)
-        const byElement = t.element ? casters.filter((u) => u.char.element === t.element) : casters;
-        if (t.stage === undefined) return byElement;
+        const byElement = t.element
+          ? casters.filter((u) => u.char.element === t.element)
+          : casters;
+        if (t.stage === undefined) {return byElement;}
         return byElement.filter(
           (u) =>
-            (t.stage === 3 && (u.char.burst === 'III' || u.lambdaStage === 3)) ||
+            (t.stage === 3 &&
+              (u.char.burst === 'III' || u.lambdaStage === 3)) ||
             (t.stage === 2 && u.char.burst === 'II') ||
             (t.stage === 1 && u.char.burst === 'I')
         );
       }
-      case 'nonBurstCasters': return units.filter((u) => !rotationCasters.includes(u.idx));
+      case 'nonBurstCasters':
+        return units.filter((u) => !rotationCasters.includes(u.idx));
       case 'alliesTopAtk':
         // excludeSelf filters the candidate pool BEFORE the top-N slice ("N highest-ATK
         // ally except the skill user"); a 5-unit team always leaves ≥4 others ≥ count.
         return [...units]
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
-          .sort((a, b) => atkRank(b, t.byFinalAtk) - atkRank(a, t.byFinalAtk) || a.idx - b.idx)
+          .sort(
+            (a, b) =>
+              atkRank(b, t.byFinalAtk) - atkRank(a, t.byFinalAtk) ||
+              a.idx - b.idx
+          )
           .slice(0, t.count);
       case 'alliesLowestAtk':
         return units
-          .filter((u) => !t.burst || u.char.burst === t.burst || u.char.burst === 'Λ')
+          .filter(
+            (u) => !t.burst || u.char.burst === t.burst || u.char.burst === 'Λ'
+          )
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
-          .sort((a, b) => atkRank(a, t.byFinalAtk) - atkRank(b, t.byFinalAtk) || a.idx - b.idx)
+          .sort(
+            (a, b) =>
+              atkRank(a, t.byFinalAtk) - atkRank(b, t.byFinalAtk) ||
+              a.idx - b.idx
+          )
           .slice(0, t.count);
       case 'alliesOfElement':
         return units.filter(
-          (u) => u.char.element === t.element && (!t.excludeSelf || u.idx !== ownerIdx)
+          (u) =>
+            u.char.element === t.element &&
+            (!t.excludeSelf || u.idx !== ownerIdx)
         );
       case 'alliesOfClass':
         return units.filter(
-          (u) => u.char.class === t.cls && (!t.excludeSelf || u.idx !== ownerIdx)
+          (u) =>
+            u.char.class === t.cls && (!t.excludeSelf || u.idx !== ownerIdx)
         );
       case 'alliesOfWeapon': // weapon-typed, class-blind ("all shotgun-wielding allies")
         return units.filter(
-          (u) => u.char.weapon === t.weapon && (!t.excludeSelf || u.idx !== ownerIdx)
+          (u) =>
+            u.char.weapon === t.weapon && (!t.excludeSelf || u.idx !== ownerIdx)
         );
       case 'alliesOfElementWeapon':
         return units
-          .filter((u) => u.char.element === t.element && u.char.weapon === t.weapon)
+          .filter(
+            (u) => u.char.element === t.element && u.char.weapon === t.weapon
+          )
           .slice(0, t.count ?? 1); // units[] is slot order: leftmost first
       case 'selfAndAdjacent':
         return units.filter((u) => Math.abs(u.idx - ownerIdx) <= t.sides);
@@ -1568,7 +1757,8 @@ export function runSim(
         return units
           .filter((u) => !t.excludeSelf || u.idx !== ownerIdx)
           .slice(0, t.count); // units[] is slot order: leftmost first
-      case 'enemy': return [];
+      case 'enemy':
+        return [];
     }
   }
 
@@ -1587,7 +1777,8 @@ export function runSim(
     removeOnReload?: boolean,
     durationShots?: number
   ) {
-    const expiresFrame = durationSec != null ? frame + Math.round(durationSec * FPS) : null;
+    const expiresFrame =
+      durationSec != null ? frame + Math.round(durationSec * FPS) : null;
     const existing = list.find((b) => b.key === key);
     const refresh = existing !== undefined;
     if (existing) {
@@ -1615,8 +1806,18 @@ export function runSim(
       existing.shotsLeft = durationShots;
     } else {
       list.push({
-        key, stat, value, stacks: 1, maxStacks, expiresFrame, whileSwappedIdx,
-        rampFrames, startFrame: frame, casterIdx, perResource, removeOnReload,
+        key,
+        stat,
+        value,
+        stacks: 1,
+        maxStacks,
+        expiresFrame,
+        whileSwappedIdx,
+        rampFrames,
+        startFrame: frame,
+        casterIdx,
+        perResource,
+        removeOnReload,
         shotsLeft: durationShots,
       });
     }
@@ -1650,7 +1851,7 @@ export function runSim(
   // "reload to max" the kit line ("…Removed upon reloading to max ammunition") refers to. INERT for
   // every unit: no override sets removeOnReload today, so the filter is a no-op (regression-proven).
   function stripReloadBuffs(u: UnitState, frame: number) {
-    if (u.buffs.length === 0) return;
+    if (u.buffs.length === 0) {return;}
     for (let i = u.buffs.length - 1; i >= 0; i--) {
       if (u.buffs[i].removeOnReload) {
         const [gone] = u.buffs.splice(i, 1);
@@ -1674,11 +1875,16 @@ export function runSim(
   // scheduled heal-over-time emitter ticks)
   function fireRecovery(targetIdx: number, frame: number) {
     units[targetIdx].blocks.forEach((rb, ri) => {
-      if (rb.trigger.kind === 'recovery') applyBlock(targetIdx, rb, ri, frame);
+      if (rb.trigger.kind === 'recovery') {applyBlock(targetIdx, rb, ri, frame);}
     });
   }
 
-  function applyBlock(ownerIdx: number, block: Block, blockIdx: number, frame: number) {
+  function applyBlock(
+    ownerIdx: number,
+    block: Block,
+    blockIdx: number,
+    frame: number
+  ) {
     const owner = units[ownerIdx];
     const bKey = `${ownerIdx}:${block.slot}:${blockIdx}`;
     // Abort-gates are evaluated BEFORE the everyN activation counter, so `everyN`
@@ -1687,11 +1893,11 @@ export function runSim(
     // (No override combines everyN with these gates today — verified — so this is
     // behavior-neutral for every existing unit; the regression snapshot is the control.)
     // core-gated blocks never fire in zero-core fights
-    if (block.requiresCore && cfg.coreHitRate <= 0) return;
+    if (block.requiresCore && cfg.coreHitRate <= 0) {return;}
     // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
     if (block.fbGate) {
       const fbActive = fbEndFrame > frame;
-      if ((block.fbGate === 'inFb') !== fbActive) return;
+      if ((block.fbGate === 'inFb') !== fbActive) {return;}
     }
     // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
     // is (or is not) active — e.g. SWHA's Fully Active extra volley rides only
@@ -1699,13 +1905,13 @@ export function runSim(
     // shot, 1発間維持)
     if (block.swapGate) {
       const swapped = owner.swap != null && owner.swap.untilFrame > frame;
-      if ((block.swapGate === 'swapped') !== swapped) return;
+      if ((block.swapGate === 'swapped') !== swapped) {return;}
     }
     // shield-state gate: "if a Shield is set in front of this unit" evaluated at trigger
     // time — active only while a 'shield' effect's window covers the owner (naga's burst
     // 31.02%; owner-ruled default-off/requires-a-shielder 2026-07-20). No shielder in the
     // comp → no shield events → the block never fires.
-    if (block.requiresShielded && owner.shieldedUntilFrame <= frame) return;
+    if (block.requiresShielded && owner.shieldedUntilFrame <= frame) {return;}
     // named target-status gate: "Activates when … hits a target in <Name> status" — the block only
     // activates while the boss currently carries THAT named status (a 'targetStatus' effect's
     // window). Name-keyed, so an unrelated kit's status never opens it. Composes with requiresCore.
@@ -1715,11 +1921,12 @@ export function runSim(
       block.requiresTargetStatus &&
       (targetStatuses.get(block.requiresTargetStatus) ?? -1) <= frame
     )
-      return;
+      {return;}
     // boss-element gate: an element-coded line ("when attacking an Electric Code
     // target", "all Wind Code enemies") fires only when the boss element matches.
     // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
-    if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) return;
+    if (block.bossElementGate && cfg.bossElement !== block.bossElementGate)
+      {return;}
     // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
     // cast their own burst in the rotation leading into this Full Burst. Composes with a
     // `fullBurstEnter` trigger so "Entering Full Burst AFTER this unit uses her own Burst"
@@ -1730,15 +1937,18 @@ export function runSim(
     // unit is the sole/actual burster (owner is in the set → 'cast' always passes).
     if (block.ownBurstGate) {
       const cast = rotationCasters.includes(ownerIdx);
-      if ((block.ownBurstGate === 'cast') !== cast) return;
+      if ((block.ownBurstGate === 'cast') !== cast) {return;}
     }
     // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
     // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
     // gates (before the activation counter), so a gated-out activation does not advance everyN.
     if (block.resourceGate) {
       const rv = owner.resources.get(block.resourceGate.name) ?? 0;
-      if (rv < (block.resourceGate.min ?? -Infinity) || rv > (block.resourceGate.max ?? Infinity))
-        return;
+      if (
+        rv < (block.resourceGate.min ?? -Infinity) ||
+        rv > (block.resourceGate.max ?? Infinity)
+      )
+        {return;}
     }
     const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
     owner.blockActivations.set(bKey, activations);
@@ -1746,7 +1956,11 @@ export function runSim(
     // (everyNOffset shifts the phase: fire when activations ≡ offset mod N)
     if (block.everyN) {
       const off = block.everyNOffset ?? 0;
-      if (activations < Math.max(off, 1) || (activations - off) % block.everyN !== 0) return;
+      if (
+        activations < Math.max(off, 1) ||
+        (activations - off) % block.everyN !== 0
+      )
+        {return;}
     }
     block.effects.forEach((e: EffectDef, ei) =>
       applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)
@@ -1768,7 +1982,8 @@ export function runSim(
         case 'buff': {
           if (block.target.kind === 'enemy') {
             if (
-              (e.stat === 'damageTakenPct' || e.stat === 'distributedDamagePct') &&
+              (e.stat === 'damageTakenPct' ||
+                e.stat === 'distributedDamagePct') &&
               e.value > 0
             ) {
               // KR stacking rule: same buff (stat+value) from the same skill slot of the
@@ -1776,17 +1991,24 @@ export function runSim(
               applyBuff(
                 enemyBuffs,
                 `${ownerIdx}:${block.slot}:${e.stat}:${e.value}`,
-                e.stat, e.value, e.durationSec, e.maxStacks ?? 1, frame
+                e.stat,
+                e.value,
+                e.durationSec,
+                e.maxStacks ?? 1,
+                frame
               );
             }
             // other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0
             break;
           }
           const value =
-            e.stat === 'casterAtkPct' ? (e.value / 100) * owner.staticAtk
-            : e.stat === 'highestAllyAtkPct' ? (e.value / 100) * Math.max(...units.map((x) => x.staticAtk))
-            : e.stat === 'casterMaxHpPct' ? (e.value / 100) * owner.maxHp
-            : e.value;
+            e.stat === 'casterAtkPct'
+              ? (e.value / 100) * owner.staticAtk
+              : e.stat === 'highestAllyAtkPct'
+                ? (e.value / 100) * Math.max(...units.map((x) => x.staticAtk))
+                : e.stat === 'casterMaxHpPct'
+                  ? (e.value / 100) * owner.maxHp
+                  : e.value;
           // casterMaxHpPct ("% of the skill user's Max HP") and targetMaxHpPct ("Max HP ▲ X%",
           // the target's OWN %) both grant flat Max HP; targetMaxHpPct's value is per-target
           // (computed inside the loop). effectiveAtk's e3 rule (casterIdx === self only) then
@@ -1804,7 +2026,8 @@ export function runSim(
           // (chisato's Extrasensory gates: on at t=0, off at 60/90/150s unless her own burst
           // re-applies them). Duration-less passives stay always-on exactly as before.
           const alwaysOn =
-            (block.trigger.kind === 'passive' || block.trigger.kind === 'bossElement') &&
+            (block.trigger.kind === 'passive' ||
+              block.trigger.kind === 'bossElement') &&
             e.durationSec == null;
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             // targetMaxHpPct is "% of the TARGET's own Max HP" → value differs per target.
@@ -1815,9 +2038,13 @@ export function runSim(
             // blocks instead of co-stacking (e.g. Crown's two S1 "Reloading Speed ▲
             // 44.35%" lines). Different skills / different casters still stack.
             applyBuff(
-              t.buffs, `${ownerIdx}:${block.slot}:${statKey}:${e.value}`, statKey, appliedValue,
+              t.buffs,
+              `${ownerIdx}:${block.slot}:${statKey}:${e.value}`,
+              statKey,
+              appliedValue,
               alwaysOn ? undefined : e.durationSec,
-              e.maxStacks ?? 1, frame,
+              e.maxStacks ?? 1,
+              frame,
               e.whileSwapped ? ownerIdx : undefined,
               e.rampSec != null ? Math.round(e.rampSec * FPS) : undefined,
               ownerIdx,
@@ -1837,24 +2064,29 @@ export function runSim(
           // adjust the OWNER's named pool by delta, clamped to its declared [min,max]
           const cfg = owner.resourceCfg.find((r) => r.name === e.name);
           const cur = owner.resources.get(e.name) ?? cfg?.initial ?? 0;
-          const next = Math.min(cfg?.max ?? Infinity, Math.max(cfg?.min ?? 0, cur + e.delta));
+          const next = Math.min(
+            cfg?.max ?? Infinity,
+            Math.max(cfg?.min ?? 0, cur + e.delta)
+          );
           owner.resources.set(e.name, next);
           if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0)
-            console.log(
+            {console.log(
               `[res ${owner.char.slug}] t=${(frame / FPS).toFixed(2)} ${e.name} ` +
-              `${cur}${e.delta > 0 ? '+' : ''}${e.delta} → ${next}`
-            );
+                `${cur}${e.delta > 0 ? '+' : ''}${e.delta} → ${next}`
+            );}
           break;
         }
         case 'flatDamage': {
           // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
           // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at
           // ~68 shots had NO nuke; all >=120 banners did)
-          if (e.requiresPulls != null && owner.pulls < e.requiresPulls) break;
+          if (e.requiresPulls != null && owner.pulls < e.requiresPulls) {break;}
           // per-battle-elapsed ramp: a burst component that scales with a stack resource
           // accruing from battle start (cinderella's Beautiful-mirror). Snapshotted at cast.
           const fdRampMul =
-            e.rampSec != null ? Math.min(1, frame / Math.round(e.rampSec * FPS)) : 1;
+            e.rampSec != null
+              ? Math.min(1, frame / Math.round(e.rampSec * FPS))
+              : 1;
           const fdAtkPct = e.atkPct * fdRampMul;
           const flavorOpts = {
             crit: e.crit !== false,
@@ -1904,7 +2136,11 @@ export function runSim(
             srcSlot: block.slot,
             charge: false,
             noRange: true, // riders never get the +30% range bonus (user rule, 2026-07-13)
-            noFb: skillNoFb(e.noFb === true, block.slot === 'burst' && block.trigger.kind === 'burstCast', e.flavor),
+            noFb: skillNoFb(
+              e.noFb === true,
+              block.slot === 'burst' && block.trigger.kind === 'burstCast',
+              e.flavor
+            ),
           });
           break;
         }
@@ -1941,7 +2177,9 @@ export function runSim(
           owner.swap = {
             untilFrame: frame + Math.round(e.durationSec * FPS),
             damagePct: e.damagePct,
-            chargeFrames: e.chargeTimeSec ? Math.round(e.chargeTimeSec * FPS) : undefined,
+            chargeFrames: e.chargeTimeSec
+              ? Math.round(e.chargeTimeSec * FPS)
+              : undefined,
             chargeMultPct: e.chargeMultPct,
             maxAmmo: e.maxAmmo,
             pullsPerSec: e.pullsPerSec,
@@ -1957,7 +2195,7 @@ export function runSim(
           // A same-weapon flavor swap (trueNormals — the gun never changes, only normals become true
           // damage: chisato/takina/laplace) does NOT reload the mag; only a real weapon swap picks up a
           // fresh magazine. (kit-audit chisato #2 — the kit grants no reload here.)
-          if (!e.trueNormals) owner.ammo = maxAmmo(owner, frame);
+          if (!e.trueNormals) {owner.ammo = maxAmmo(owner, frame);}
           break;
         case 'fillGauge':
           // gauge is locked during full burst — fills landing then are wasted
@@ -1971,13 +2209,16 @@ export function runSim(
           // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
           // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
           const healTargets = resolveTargets(block.target, ownerIdx, frame);
-          for (const t of healTargets) fireRecovery(t.idx, frame);
+          for (const t of healTargets) {fireRecovery(t.idx, frame);}
           // heal-over-time: "Recovers X% every 1 sec for N sec" = N ticks. The first tick fired
           // above; schedule the remaining N-1 so on-recovery consumers stay refreshed across the
           // whole window (default ticks 1 → no scheduling, back-compatible with instant heals).
           const ticks = e.ticks ?? 1;
           if (ticks > 1) {
-            const intervalFrames = Math.max(1, Math.round((e.intervalSec ?? 1) * FPS));
+            const intervalFrames = Math.max(
+              1,
+              Math.round((e.intervalSec ?? 1) * FPS)
+            );
             recoveryEmitters.push({
               targetIdxs: healTargets.map((t) => t.idx),
               nextTickFrame: frame + intervalFrames,
@@ -1997,10 +2238,13 @@ export function runSim(
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.shieldedUntilFrame = Math.max(
               t.shieldedUntilFrame,
-              e.durationSec != null ? frame + Math.round(e.durationSec * FPS) : Number.MAX_SAFE_INTEGER
+              e.durationSec != null
+                ? frame + Math.round(e.durationSec * FPS)
+                : Number.MAX_SAFE_INTEGER
             );
             t.blocks.forEach((rb, ri) => {
-              if (rb.trigger.kind === 'shielded') applyBlock(t.idx, rb, ri, frame);
+              if (rb.trigger.kind === 'shielded')
+                {applyBlock(t.idx, rb, ri, frame);}
             });
           }
           break;
@@ -2018,7 +2262,10 @@ export function runSim(
           // destructible parts exist).
           targetStatuses.set(
             e.name,
-            Math.max(targetStatuses.get(e.name) ?? -1, frame + Math.round(e.durationSec * FPS))
+            Math.max(
+              targetStatuses.get(e.name) ?? -1,
+              frame + Math.round(e.durationSec * FPS)
+            )
           );
           break;
         case 'storedHit': {
@@ -2053,39 +2300,62 @@ export function runSim(
           break;
         }
         case 'burstEligibility':
-          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.extraStages.add(e.stage);
+          for (const t of resolveTargets(block.target, ownerIdx, frame))
+            {t.extraStages.add(e.stage);}
           break;
         case 'burstFirst':
-          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.burstFirstPending = true;
+          for (const t of resolveTargets(block.target, ownerIdx, frame))
+            {t.burstFirstPending = true;}
           break;
         case 'reenterStage':
           break; // handled by the rotation (stage hold) after the cast resolves
         case 'advantageVs':
-          for (const t of resolveTargets(block.target, ownerIdx, frame)) t.advantageVs.add(e.element);
+          for (const t of resolveTargets(block.target, ownerIdx, frame))
+            {t.advantageVs.add(e.element);}
           break;
         case 'burstCdr':
           if (e.oncePerBattle) {
-            if (usedOncePerBattle.has(key)) break;
+            if (usedOncePerBattle.has(key)) {break;}
             usedOncePerBattle.add(key);
           }
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
-            t.burstCdFrames = Math.max(0, t.burstCdFrames - Math.round(e.seconds * FPS));
+            t.burstCdFrames = Math.max(
+              0,
+              t.burstCdFrames - Math.round(e.seconds * FPS)
+            );
           }
           break;
         case 'escalating': {
           const n = Math.min(activations, e.steps.length);
           e.steps
             .slice(0, n)
-            .forEach((step, si) => applyEffect(ownerIdx, block, step, `${key}:s${si}`, activations, frame));
+            .forEach((step, si) =>
+              applyEffect(
+                ownerIdx,
+                block,
+                step,
+                `${key}:s${si}`,
+                activations,
+                frame
+              )
+            );
           break;
         }
         case 'fullBurstExtend':
-          if (fbEndFrame > frame) fbEndFrame += Math.round(e.seconds * FPS);
-          else pendingFbExtendSec += e.seconds;
+          if (fbEndFrame > frame) {fbEndFrame += Math.round(e.seconds * FPS);}
+          else {pendingFbExtendSec += e.seconds;}
           break;
         case 'unlimitedAmmo':
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
-            applyBuff(t.buffs, key, 'unlimitedAmmo', 1, e.durationSec, 1, frame);
+            applyBuff(
+              t.buffs,
+              key,
+              'unlimitedAmmo',
+              1,
+              e.durationSec,
+              1,
+              frame
+            );
           }
           break;
         case 'gainPierce':
@@ -2096,7 +2366,9 @@ export function runSim(
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             t.pierceUntilFrame = Math.max(
               t.pierceUntilFrame,
-              e.durationSec != null ? frame + Math.round(e.durationSec * FPS) : Number.MAX_SAFE_INTEGER
+              e.durationSec != null
+                ? frame + Math.round(e.durationSec * FPS)
+                : Number.MAX_SAFE_INTEGER
             );
           }
           break;
@@ -2104,11 +2376,16 @@ export function runSim(
           const stacks = Math.min(owner.fbMissedSinceBurst, e.maxStacks ?? 12);
           if (stacks > 0) {
             const eff = Math.max(1, effectiveAtk(owner, frame));
-            const hpEquivPct = e.hpPct ? ((e.hpPct / 100) * owner.maxHp * 100) / eff : 0;
+            const hpEquivPct = e.hpPct
+              ? ((e.hpPct / 100) * owner.maxHp * 100) / eff
+              : 0;
             dealDamage(owner, (e.atkPct + hpEquivPct) * stacks, frame, {
-              crit: false, core: false, charge: false, category,
-            noRange: true,
-            srcSlot: block.slot,
+              crit: false,
+              core: false,
+              charge: false,
+              category,
+              noRange: true,
+              srcSlot: block.slot,
             });
           }
           break;
@@ -2124,7 +2401,10 @@ export function runSim(
         case 'instantReload':
           for (const t of resolveTargets(block.target, ownerIdx, frame)) {
             const max = maxAmmo(t, frame);
-            t.ammo = Math.min(max, t.ammo + Math.round(max * (e.fraction ?? 1)));
+            t.ammo = Math.min(
+              max,
+              t.ammo + Math.round(max * (e.fraction ?? 1))
+            );
             if (t.ammo > 0) {
               t.reloading = false;
               t.reloadProgress = 0;
@@ -2149,15 +2429,19 @@ export function runSim(
     }
   }
 
-  function fireTriggered(u: UnitState, kind: 'fullBurstEnter' | 'fullBurstEnd' | 'lastBullet', frame: number) {
+  function fireTriggered(
+    u: UnitState,
+    kind: 'fullBurstEnter' | 'fullBurstEnd' | 'lastBullet',
+    frame: number
+  ) {
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === kind) applyBlock(u.idx, b, bi, frame);
+      if (b.trigger.kind === kind) {applyBlock(u.idx, b, bi, frame);}
     });
   }
 
   function maxAmmo(u: UnitState, frame: number): number {
     const base = u.swap?.maxAmmo ?? u.char.ammo;
-    if (u.swap?.maxAmmo !== undefined) return u.swap.maxAmmo; // swapped weapons use their spec directly
+    if (u.swap?.maxAmmo !== undefined) {return u.swap.maxAmmo;} // swapped weapons use their spec directly
     const pct = (u.doll.maxAmmoPct ?? 0) + stat(u, 'maxAmmoPct', frame);
     // flat "▲ N round(s)" grants add on top of the percent scaling (theme 14)
     const flat = stat(u, 'maxAmmoFlat', frame);
@@ -2166,18 +2450,31 @@ export function runSim(
 
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === 'teamAmmo') teamAmmoBlocks.push({ unitIdx: u.idx, block: b, bi, residual: 0 });
+      if (b.trigger.kind === 'teamAmmo')
+        {teamAmmoBlocks.push({ unitIdx: u.idx, block: b, bi, residual: 0 });}
     })
   );
 
   // internal-cooldown skills ({kind:'interval', sec}): fire every sec seconds of battle,
   // first at t=sec (⚑ phase convention — see types.ts; snow-white S2a 144.73%, 15s CD)
-  const intervalBlocks: Array<{ unitIdx: number; block: Block; bi: number; period: number; next: number }> = [];
+  const intervalBlocks: Array<{
+    unitIdx: number;
+    block: Block;
+    bi: number;
+    period: number;
+    next: number;
+  }> = [];
   units.forEach((u) =>
     u.blocks.forEach((b, bi) => {
       if (b.trigger.kind === 'interval') {
         const period = Math.max(1, Math.round(b.trigger.sec * FPS));
-        intervalBlocks.push({ unitIdx: u.idx, block: b, bi, period, next: period });
+        intervalBlocks.push({
+          unitIdx: u.idx,
+          block: b,
+          bi,
+          period,
+          next: period,
+        });
       }
     })
   );
@@ -2187,7 +2484,8 @@ export function runSim(
     u.blocks.forEach((b, bi) => {
       if (
         b.trigger.kind === 'passive' ||
-        (b.trigger.kind === 'bossElement' && b.trigger.element === cfg.bossElement)
+        (b.trigger.kind === 'bossElement' &&
+          b.trigger.element === cfg.bossElement)
       ) {
         applyBlock(u.idx, b, bi, 0);
       }
@@ -2205,7 +2503,12 @@ export function runSim(
     // the FB-entry damage (stored projectile releases) that belongs to this window. fbEndFrame is
     // already set by both callers (see the note above).
     if (onEvent) {
-      onEvent({ kind: 'fullBurstStart', frame: atFrame, sec: atFrame / FPS, endFrame: fbEndFrame });
+      onEvent({
+        kind: 'fullBurstStart',
+        frame: atFrame,
+        sec: atFrame / FPS,
+        endFrame: fbEndFrame,
+      });
     }
     units.forEach((u) => fireTriggered(u, 'fullBurstEnter', atFrame));
     // release stored hits (e.g. Rapi:RH's attached projectiles exploding) AFTER enter-buffs so FB
@@ -2236,21 +2539,24 @@ export function runSim(
         }
       }
     }
-    rotationLog.push(`${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`);
+    rotationLog.push(
+      `${(atFrame / FPS).toFixed(1)}s  FULL BURST (until ${(fbEndFrame / FPS).toFixed(1)}s)`
+    );
   };
 
   for (let frame = 0; frame < totalFrames; frame++) {
     // PREFB: a deferred full-burst start fires here, FB_PRE_DELAY_FRAMES after the B3 cast (default
     // off → pendingFbStartFrame stays -1, so this is inert/byte-identical).
     if (pendingFbStartFrame >= 0 && frame >= pendingFbStartFrame) {
-      fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);
+      fbEndFrame =
+        frame + FULL_BURST_FRAMES + Math.round(pendingFbStartExtendSec * FPS);
       pendingFbStartExtendSec = 0;
       fullBursts++;
       emitFbEnter(frame);
       pendingFbStartFrame = -1;
     }
     const fbActive = fbEndFrame > frame;
-    if (fbActive) fbFrames++;
+    if (fbActive) {fbFrames++;}
 
     // ---- internal-cooldown ('interval') skills ----
     for (const ib of intervalBlocks) {
@@ -2262,11 +2568,11 @@ export function runSim(
 
     // ---- full burst end ----
     if (fbEndFrame === frame) {
-      if (onEvent) onEvent({ kind: 'fullBurstEnd', frame, sec: frame / FPS });
+      if (onEvent) {onEvent({ kind: 'fullBurstEnd', frame, sec: frame / FPS });}
       units.forEach((u) => fireTriggered(u, 'fullBurstEnd', frame));
       // units that sat this rotation out accrue a missed-burst stack (MP)
       units.forEach((u) => {
-        if (!rotationCasters.includes(u.idx)) u.fbMissedSinceBurst++;
+        if (!rotationCasters.includes(u.idx)) {u.fbMissedSinceBurst++;}
       });
       rotationCasters = [];
       stage = 0;
@@ -2285,20 +2591,33 @@ export function runSim(
     // ---- burst rotation ----
     // the gauge only builds OUTSIDE full burst; during FB it is locked
     // gauge accrues via shotGauge() on each pull (see firePull)
-    if (stageGapFrames > 0) stageGapFrames--;
+    if (stageGapFrames > 0) {stageGapFrames--;}
     // cfg.disableBursts — the fight is played with bursting turned OFF. Guarding the CHAIN
     // OPENER (rather than the cast site) is what keeps this to a single condition: stage never
     // leaves 0, so every downstream burst path — cast selection, stage advance, Full Burst — is
     // unreachable by construction. The gauge keeps filling and clamps at 100 (addGauge), sitting
     // pinned exactly as it does in a real fight where the player never presses.
-    if (!fbActive && stage === 0 && gauge >= 100 && frame >= chainBlockedUntil && !cfg.disableBursts) {
+    if (
+      !fbActive &&
+      stage === 0 &&
+      gauge >= 100 &&
+      frame >= chainBlockedUntil &&
+      !cfg.disableBursts
+    ) {
       gauge = 0; // the chain consumes the gauge (refill required if it collapses)
       stage = 1;
       stageExpireFrame = Infinity;
       stageGapFrames = PRE_B1_GAP_FRAMES; // measured 30f between gauge-full and B1 (default 0 = fire immediately)
     }
-    if (!fbActive && pendingFbStartFrame < 0 && stage >= 2 && frame >= stageExpireFrame) {
-      rotationLog.push(`${(frame / FPS).toFixed(1)}s  CHAIN EXPIRED at stage ${stage} (refill)`);
+    if (
+      !fbActive &&
+      pendingFbStartFrame < 0 &&
+      stage >= 2 &&
+      frame >= stageExpireFrame
+    ) {
+      rotationLog.push(
+        `${(frame / FPS).toFixed(1)}s  CHAIN EXPIRED at stage ${stage} (refill)`
+      );
       stage = 0;
       stageExpireFrame = Infinity;
     }
@@ -2307,7 +2626,13 @@ export function runSim(
     // ~1s unhittable window. This is the real source of knife-edge full-burst-count
     // variance between otherwise identical runs — a chain-vs-transition collision
     // depends on the boss's timing jitter. The stage window keeps ticking while blocked.
-    if (!fbActive && pendingFbStartFrame < 0 && stage >= 1 && stageGapFrames === 0 && !bossUnhittable(frame)) {
+    if (
+      !fbActive &&
+      pendingFbStartFrame < 0 &&
+      stage >= 1 &&
+      stageGapFrames === 0 &&
+      !bossUnhittable(frame)
+    ) {
       const want = romanStage[stage];
       const fillsStage = (u: UnitState) => {
         if (u.char.burst === 'Λ') {
@@ -2324,12 +2649,16 @@ export function runSim(
       // this stage's focus burst would be the 4th/8th/… she skips it (Crown fills in).
       const gatePasses = (u: UnitState) => {
         if (u.burstGate === 'syncWithFocus') {
-          return units[focusIdx].burstCdFrames === 0 && (focusBurstCount + 1) % 4 !== 0;
+          return (
+            units[focusIdx].burstCdFrames === 0 &&
+            (focusBurstCount + 1) % 4 !== 0
+          );
         }
         // everyOther (Solo framework): a gated unit never takes stage 3 twice in a
         // row — it sits out the full burst right after one it cast, letting the
         // next stage-filling unit (the no-op B3) alternate in.
-        if (u.burstGate === 'everyOther' && stage === 3) return lastStage3Caster !== u.idx;
+        if (u.burstGate === 'everyOther' && stage === 3)
+          {return lastStage3Caster !== u.idx;}
         return true;
       };
       const eligible = (u: UnitState) =>
@@ -2353,31 +2682,49 @@ export function runSim(
       // B3 that never becomes earliest-ready-and-in-window never casts).
       const inWindow = stage >= 2 && stageExpireFrame !== Infinity;
       const windowFits = (u: UnitState) =>
-        fillsStage(u) && gatePasses(u) && frame + u.burstCdFrames < stageExpireFrame;
+        fillsStage(u) &&
+        gatePasses(u) &&
+        frame + u.burstCdFrames < stageExpireFrame;
       const next = inWindow
         ? ENV.B3_LEFTMOST
           ? units.find(windowFits)
-          : units.filter(windowFits).reduce<UnitState | undefined>(
-              (best, u) => (!best || u.burstCdFrames < best.burstCdFrames ? u : best), undefined)
+          : units
+              .filter(windowFits)
+              .reduce<UnitState | undefined>(
+                (best, u) =>
+                  !best || u.burstCdFrames < best.burstCdFrames ? u : best,
+                undefined
+              )
         : units.find(eligible);
       const cand =
         units.find((u) => u.burstFirstPending && eligible(u)) ??
-        units.find((u) => u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)) ??
+        units.find(
+          (u) =>
+            u.mpPriority && u.fbMissedSinceBurst >= u.mpThreshold && eligible(u)
+        ) ??
         (next && next.burstCdFrames === 0 ? next : undefined);
       if (cand) {
         if (ENV.DBG_CD) {
-          console.log(`[cd] t=${(frame / FPS).toFixed(2)} stage=${stage} cast=${cand.char.slug} cdWas=${cand.burstCdFrames} cdSec=${cand.char.burstCooldownSec}`);
+          console.log(
+            `[cd] t=${(frame / FPS).toFixed(2)} stage=${stage} cast=${cand.char.slug} cdWas=${cand.burstCdFrames} cdSec=${cand.char.burstCooldownSec}`
+          );
         }
         cand.burstFirstPending = false;
         cand.burstCasts++;
         cand.lastBurstCastFrame = frame;
         cand.burstCdFrames = Math.round(cand.char.burstCooldownSec * FPS);
         rotationCasters.push(cand.idx);
-        rotationLog.push(`${(frame / FPS).toFixed(1)}s  B${want} ${cand.char.name}`);
+        rotationLog.push(
+          `${(frame / FPS).toFixed(1)}s  B${want} ${cand.char.name}`
+        );
         if (onEvent) {
           onEvent({
-            kind: 'burstCast', frame, sec: frame / FPS,
-            unitIdx: cand.idx, slug: cand.char.slug, stage,
+            kind: 'burstCast',
+            frame,
+            sec: frame / FPS,
+            unitIdx: cand.idx,
+            slug: cand.char.slug,
+            stage,
           });
         }
         const castStage = stage;
@@ -2388,7 +2735,10 @@ export function runSim(
         // burst and same-frame stage buffs register — the JP/einkk use-time snapshot.
         if (cand.burstSnapshotsPreFb) {
           cand.blocks.forEach((b, bi) => {
-            if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
+            if (
+              b.trigger.kind === 'burstCast' &&
+              (b.trigger.stage ?? castStage) === castStage
+            ) {
               applyBlock(cand.idx, b, bi, frame);
             }
           });
@@ -2396,20 +2746,24 @@ export function runSim(
         if (stage === 3) {
           gauge = 0;
           lastStage3Caster = cand.idx;
-          if (cand.idx === focusIdx) focusBurstCount++;
+          if (cand.idx === focusIdx) {focusBurstCount++;}
           if (FB_PRE_DELAY_FRAMES > 0) {
             // defer FB start by 22f (PREFB): schedule; fbEndFrame/fullBursts/enter fire later.
             // The extension snapshot is taken BELOW, after this cast's own blocks have run.
             pendingFbStartFrame = frame + FB_PRE_DELAY_FRAMES;
           } else {
-            fbEndFrame = frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
+            fbEndFrame =
+              frame + FULL_BURST_FRAMES + Math.round(pendingFbExtendSec * FPS);
             pendingFbExtendSec = 0;
             fullBursts++;
           }
         }
         units.forEach((u) =>
           u.blocks.forEach((b, bi) => {
-            if (b.trigger.kind === 'stageEnter' && b.trigger.stage === castStage) {
+            if (
+              b.trigger.kind === 'stageEnter' &&
+              b.trigger.stage === castStage
+            ) {
               applyBlock(u.idx, b, bi, frame);
             }
           })
@@ -2423,11 +2777,15 @@ export function runSim(
         // has not begun, so the +50% major and every "during Full Burst" buff are
         // equally absent from cast-instant burst damage. Stored-hit releases stay
         // AFTER the entry triggers (they detonate inside the window and keep auras).
-        if (!cand.burstSnapshotsPreFb) cand.blocks.forEach((b, bi) => {
-          if (b.trigger.kind === 'burstCast' && (b.trigger.stage ?? castStage) === castStage) {
-            applyBlock(cand.idx, b, bi, frame);
-          }
-        });
+        if (!cand.burstSnapshotsPreFb)
+          {cand.blocks.forEach((b, bi) => {
+            if (
+              b.trigger.kind === 'burstCast' &&
+              (b.trigger.stage ?? castStage) === castStage
+            ) {
+              applyBlock(cand.idx, b, bi, frame);
+            }
+          });}
         // PREFB only — snapshot the Full-Burst extension AFTER this cast's stageEnter/burstCast
         // blocks have contributed (2026-07-22). A "Full Burst Duration ▲ N sec" granted by the very
         // cast that opens the window belongs to THAT window; taking the snapshot before the blocks
@@ -2455,12 +2813,17 @@ export function runSim(
             (b) =>
               b.trigger.kind === 'burstCast' &&
               (b.trigger.stage ?? castStage) === castStage &&
-              b.effects.some((e) => e.kind === 'reenterStage' && e.stage === castStage)
+              b.effects.some(
+                (e) => e.kind === 'reenterStage' && e.stage === castStage
+              )
           );
           const chainGap = rng
             ? STAGE_CAST_GAP_FRAMES + Math.round((rng() - 0.5) * 18)
             : STAGE_CAST_GAP_FRAMES;
-          if (reenters && units.some((u) => u.idx !== cand.idx && eligible(u))) {
+          if (
+            reenters &&
+            units.some((u) => u.idx !== cand.idx && eligible(u))
+          ) {
             stageGapFrames = chainGap; // stage stays; next pick is another unit
           } else {
             stage = (stage + 1) as 1 | 2 | 3;
@@ -2478,14 +2841,22 @@ export function runSim(
     if (unhittable && transitionFrames.includes(frame)) {
       // window start: fast reloaders (effective reload <= 1s) snap-refill their mag
       for (const u of units) {
-        const effReload = reloadFramesNeeded(u.char.reloadFrames ?? 0, stat(u, 'reloadSpeedPct', frame));
+        const effReload = reloadFramesNeeded(
+          u.char.reloadFrames ?? 0,
+          stat(u, 'reloadSpeedPct', frame)
+        );
         if (effReload <= FPS && !u.reloading) {
           u.ammo = maxAmmo(u, frame);
           u.magIndex++;
           if (onEvent) {
             onEvent({
-              kind: 'reload', frame, sec: frame / FPS, unitIdx: u.idx, slug: u.char.slug,
-              cause: 'transitionSnap', magIndex: u.magIndex,
+              kind: 'reload',
+              frame,
+              sec: frame / FPS,
+              unitIdx: u.idx,
+              slug: u.char.slug,
+              cause: 'transitionSnap',
+              magIndex: u.magIndex,
             });
           }
           stripReloadBuffs(u, frame); // transition snap-refill is a reload-to-max (downtime reload fiction)
@@ -2499,13 +2870,16 @@ export function runSim(
       // Fight-start deploy delay: no firing/charging/reloading/gauge for the first FIGHT_DELAY_FRAMES
       // (measured — first bullet lands ~1s after the 3:00 timer). MG spin stays at rest (idle). Default
       // 0 → this never triggers. burstCd/gauge are 0 at fight start, so gating the whole body is safe.
-      if (frame < FIGHT_DELAY_FRAMES) { u.mgIdleFrames++; continue; }
-      if (u.burstCdFrames > 0) u.burstCdFrames--;
+      if (frame < FIGHT_DELAY_FRAMES) {
+        u.mgIdleFrames++;
+        continue;
+      }
+      if (u.burstCdFrames > 0) {u.burstCdFrames--;}
 
       if (u.swap && frame >= u.swap.untilFrame) {
         const wasFlavorSwap = u.swap.trueNormals; // same-weapon flavor swap → no free reload on exit either
         u.swap = null;
-        if (!wasFlavorSwap) u.ammo = maxAmmo(u, frame);
+        if (!wasFlavorSwap) {u.ammo = maxAmmo(u, frame);}
         u.chargeProgress = 0;
         u.primed = false; // leaving a weapon-swap re-arms the once-per-mag prime (magDumpRof)
       }
@@ -2518,15 +2892,26 @@ export function runSim(
       if (u.reloading) {
         u.mgIdleFrames++; // spin winds down during the reload (decay applied on resume)
         u.reloadProgress += 1;
-        if (u.reloadProgress >= reloadFramesNeeded(u.char.reloadFrames, stat(u, 'reloadSpeedPct', frame))) {
+        if (
+          u.reloadProgress >=
+          reloadFramesNeeded(
+            u.char.reloadFrames,
+            stat(u, 'reloadSpeedPct', frame)
+          )
+        ) {
           u.reloading = false;
           u.reloadProgress = 0;
           u.ammo = maxAmmo(u, frame);
           u.magIndex++;
           if (onEvent) {
             onEvent({
-              kind: 'reload', frame, sec: frame / FPS, unitIdx: u.idx, slug: u.char.slug,
-              cause: 'magazine', magIndex: u.magIndex,
+              kind: 'reload',
+              frame,
+              sec: frame / FPS,
+              unitIdx: u.idx,
+              slug: u.char.slug,
+              cause: 'magazine',
+              magIndex: u.magIndex,
             });
           }
           stripReloadBuffs(u, frame); // reload-to-max: drop removeOnReload buffs (cinderella's CS toggle)
@@ -2603,11 +2988,21 @@ export function runSim(
       } else if (u.char.weapon === 'MG') {
         if (u.mgIdleFrames > 0) {
           // wind-down: retrace the ladder at MG_WINDDOWN_DECAY x after the grace period
-          const lost = MG_WINDDOWN_DECAY * Math.max(0, u.mgIdleFrames - MG_WINDDOWN_GRACE_FRAMES);
+          const lost =
+            MG_WINDDOWN_DECAY *
+            Math.max(0, u.mgIdleFrames - MG_WINDDOWN_GRACE_FRAMES);
           if (lost > 0) {
-            const pos = Math.max(0, MG_LADDER_CUM[Math.min(u.mgRampRound, MG_RAMP_INTERVALS.length)] - lost);
+            const pos = Math.max(
+              0,
+              MG_LADDER_CUM[Math.min(u.mgRampRound, MG_RAMP_INTERVALS.length)] -
+                lost
+            );
             let round = 0;
-            while (round < MG_RAMP_INTERVALS.length && MG_LADDER_CUM[round + 1] <= pos) round++;
+            while (
+              round < MG_RAMP_INTERVALS.length &&
+              MG_LADDER_CUM[round + 1] <= pos
+            )
+              {round++;}
             u.mgRampRound = round;
             u.mgCooldown = 0;
           }
@@ -2616,7 +3011,9 @@ export function runSim(
         // Measured wind-up ladder: round n+1 lands MG_RAMP_INTERVALS[n] frames after
         // round n (then 1/frame at steady state). Attack-speed compresses the ladder.
         const speedMult =
-          1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
+          1 +
+          (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) /
+            100;
         u.mgCooldown -= speedMult;
         while (u.mgCooldown <= 0 && !u.reloading) {
           // one belt round; a "pull" (damage event) lands every hitsPerShot rounds
@@ -2626,17 +3023,22 @@ export function runSim(
             firePull(u, frame, false, unlimited);
           }
           const iv =
-            u.mgRampRound < MG_RAMP_INTERVALS.length ? MG_RAMP_INTERVALS[u.mgRampRound] : 1;
+            u.mgRampRound < MG_RAMP_INTERVALS.length
+              ? MG_RAMP_INTERVALS[u.mgRampRound]
+              : 1;
           u.mgRampRound++;
           u.mgCooldown += iv;
         }
       } else {
         const speedMult =
-          1 + (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) / 100;
+          1 +
+          (stat(u, 'attackSpeedPct', frame) + stat(u, 'fireRatePct', frame)) /
+            100;
         // During a weapon swap the swap's OWN cadence governs (moran: 24/s vs base AR 12/s):
         // explicit swap pullsPerSec wins, else the swap weapon-class default, else base behavior.
         const basePps = u.swap
-          ? (u.swap.pullsPerSec ?? PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon])
+          ? (u.swap.pullsPerSec ??
+            PULLS_PER_SEC[u.swap.weapon ?? u.char.weapon])
           : (u.pullsPerSec ?? PULLS_PER_SEC[u.char.weapon]);
         const rate = (basePps ?? 4) / FPS;
         u.fireAcc += rate * speedMult;
@@ -2655,7 +3057,7 @@ export function runSim(
       for (const u of units) {
         const envForce = XINSTEXPL.has(u.char.slug);
         for (const entry of u.storedHits.values()) {
-          if (!envForce && !entry.instantInFb) continue;
+          if (!envForce && !entry.instantInFb) {continue;}
           if (entry.freshFrame < frame) {
             entry.releasable += entry.fresh;
             entry.fresh = 0;
@@ -2714,14 +3116,21 @@ export function runSim(
         skillGauge(units[d.ownerIdx], frame); // dot ticks generate (wiki3: Haran 290/tick)
         // live resource-scaled DoT: this tick's atkPct tracks the owner's pool (mihara Ensnaring)
         const tickAtkPct = d.perResource
-          ? (units[d.ownerIdx].resources.get(d.perResource.name) ?? 0) * d.perResource.mult
+          ? (units[d.ownerIdx].resources.get(d.perResource.name) ?? 0) *
+            d.perResource.mult
           : d.atkPct;
         dealDamage(units[d.ownerIdx], tickAtkPct, frame, {
           crit: d.crit ?? (DOT_CRIT || XCRIT.has(units[d.ownerIdx].char.slug)),
           core: XCORE.has(units[d.ownerIdx].char.slug),
-          charge: false, category: d.category, srcSlot: d.srcSlot,
-          distributed: d.distributed, sustained: d.sustained, sequential: d.sequential,
-          trueFlavor: d.trueFlavor, noRange: true, noFb: d.noFb,
+          charge: false,
+          category: d.category,
+          srcSlot: d.srcSlot,
+          distributed: d.distributed,
+          sustained: d.sustained,
+          sequential: d.sequential,
+          trueFlavor: d.trueFlavor,
+          noRange: true,
+          noFb: d.noFb,
           projFlavor: d.projFlavor,
         });
         d.nextTickFrame += d.intervalFrames;
@@ -2732,15 +3141,20 @@ export function runSim(
     for (let i = recoveryEmitters.length - 1; i >= 0; i--) {
       const em = recoveryEmitters[i];
       if (frame === em.nextTickFrame) {
-        for (const idx of em.targetIdxs) fireRecovery(idx, frame);
+        for (const idx of em.targetIdxs) {fireRecovery(idx, frame);}
         em.ticksRemaining--;
         em.nextTickFrame += em.intervalFrames;
-        if (em.ticksRemaining <= 0) recoveryEmitters.splice(i, 1);
+        if (em.ticksRemaining <= 0) {recoveryEmitters.splice(i, 1);}
       }
     }
   }
 
-  function firePull(u: UnitState, frame: number, charged: boolean, unlimited: boolean) {
+  function firePull(
+    u: UnitState,
+    frame: number,
+    charged: boolean,
+    unlimited: boolean
+  ) {
     const band = bandAt(frame);
     // Effective SG pellet count (base `hitsPerShot` + any live `pelletCountFlat` buff). Extra pellets
     // take the SAME per-pellet landing cone as the base; each pellet carries 1/base of the shot, so the
@@ -2754,18 +3168,18 @@ export function runSim(
     // For sgEff===sgBase this draws exactly `sgBase` Bernoulli(mean) — identical rng sequence & return
     // to the pre-primitive `k / hitsPerShot`.
     const sgLandFromMean = (mean: number): { dmg: number; gauge: number } => {
-      if (!rng) return { dmg: (mean * sgEff) / sgBase, gauge: mean };
+      if (!rng) {return { dmg: (mean * sgEff) / sgBase, gauge: mean };}
       let k = 0;
       let kBase = 0;
       const full = Math.floor(sgEff);
       for (let i = 0; i < full; i++) {
         if (rng() < mean) {
           k++;
-          if (i < sgBase) kBase++;
+          if (i < sgBase) {kBase++;}
         }
       }
       const frac = sgEff - full;
-      if (frac > 0 && rng() < frac * mean) k++; // fractional extra pellet (ramp); never counts toward gauge
+      if (frac > 0 && rng() < frac * mean) {k++;} // fractional extra pellet (ramp); never counts toward gauge
       return { dmg: k / sgBase, gauge: Math.min(kBase, sgBase) / sgBase };
     };
     const bandSg: { dmg: number; gauge: number } =
@@ -2785,7 +3199,11 @@ export function runSim(
               if (ENV.UNIGEO_GAUGE === 'legacy') {
                 const sig = coneSigmaFor('SG', hr);
                 const prof =
-                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
+                  cfg.bossPelletProfile === 'large'
+                    ? 8
+                    : cfg.bossPelletProfile === 'medium'
+                      ? 1.3
+                      : 1;
                 const liveMean =
                   CONE_DELTA && sig !== null
                     ? pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
@@ -2795,31 +3213,57 @@ export function runSim(
               return r;
             })()
           : CONE_DELTA
-          ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
-            // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
-            // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
-            (() => {
-              const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
-              const prof =
-                cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
-              return sgLandFromMean(pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof));
-            })()
-          : PELLET_GAUSS
-            ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
-              // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
+            ? // δ-cone landing (implementation-plan §1.5): the SAME σ(hr) as the core path drives SG
+              // landing — a centred Rayleigh overlap of the σ-cone with the boss body (δ negligible vs
+              // the body radius, so landing stays centre-aimed). Bernoulli per pellet under a seed.
               (() => {
-                const sig = pelletSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
+                const sig = coneSigmaFor('SG', stat(u, 'hitRatePct', frame))!;
                 const prof =
-                  cfg.bossPelletProfile === 'large' ? 8 : cfg.bossPelletProfile === 'medium' ? 1.3 : 1;
-                return sgLandFromMean(pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof));
+                  cfg.bossPelletProfile === 'large'
+                    ? 8
+                    : cfg.bossPelletProfile === 'medium'
+                      ? 1.3
+                      : 1;
+                return sgLandFromMean(
+                  pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                );
               })()
-            : rng
-              ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
+            : PELLET_GAUSS
+              ? // ⚑ center-weighted Gaussian cone (spec §2): landing = Rayleigh overlap of the σ-cone with
+                // the boss body; each pellet lands ~Bernoulli(mean) under a seed, else the expected mean.
                 (() => {
-                  const landed = sgLandedPellets(band, Math.round(sgEff), rng, cfg.bossPelletProfile);
-                  return { dmg: landed / sgBase, gauge: Math.min(landed, sgBase) / sgBase };
+                  const sig = pelletSigmaFor(
+                    'SG',
+                    stat(u, 'hitRatePct', frame)
+                  )!;
+                  const prof =
+                    cfg.bossPelletProfile === 'large'
+                      ? 8
+                      : cfg.bossPelletProfile === 'medium'
+                        ? 1.3
+                        : 1;
+                  return sgLandFromMean(
+                    pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, prof)
+                  );
                 })()
-              : { dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase, gauge: SG_LANDING_BY_BAND[band] }
+              : rng
+                ? // legacy jitter fallback (non-cone A/B): scale the drawn landed count by eff, gauge base-capped
+                  (() => {
+                    const landed = sgLandedPellets(
+                      band,
+                      Math.round(sgEff),
+                      rng,
+                      cfg.bossPelletProfile
+                    );
+                    return {
+                      dmg: landed / sgBase,
+                      gauge: Math.min(landed, sgBase) / sgBase,
+                    };
+                  })()
+                : {
+                    dmg: (SG_LANDING_BY_BAND[band] * sgEff) / sgBase,
+                    gauge: SG_LANDING_BY_BAND[band],
+                  }
         : { dmg: 1, gauge: 1 };
     // Pellet-consolidation mode (dorothy-S, open-questions A26): "after hitting the target with 80
     // pellets, for 3 rounds pellet count is fixed at 1" + Pierce + 98% hit + Attack-dmg. MEASURED
@@ -2832,7 +3276,7 @@ export function runSim(
     const consol = u.consolidation;
     let consolidating = false;
     if (consol) {
-      if (u.consolShotsLeft > 0) consolidating = true;
+      if (u.consolShotsLeft > 0) {consolidating = true;}
       else {
         // accrue LANDED pellets toward the 80-pellet trigger — the kit reads "after hitting the target
         // with 80 pellets", so this consumes the cone remodel's actual per-shot landed count
@@ -2853,11 +3297,15 @@ export function runSim(
     }
     const normalScale = consolidating
       ? 1
-      : 1 + ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) / 100;
+      : 1 +
+        ((u.doll.normalAttackPct ?? 0) + stat(u, 'normalAttackPct', frame)) /
+          100;
     const baseMult = u.swap?.damagePct ?? u.char.normalAttackMultiplier;
     const isMg = u.char.weapon === 'MG' && !u.swap;
-    const sgFalloff = consolidating && consol ? consol.pelletFraction : bandSg.dmg;
-    const sgGaugeFrac = consolidating && consol ? consol.pelletFraction : bandSg.gauge;
+    const sgFalloff =
+      consolidating && consol ? consol.pelletFraction : bandSg.dmg;
+    const sgGaugeFrac =
+      consolidating && consol ? consol.pelletFraction : bandSg.gauge;
     dealDamage(u, baseMult * normalScale * sgFalloff, frame, {
       crit: true,
       core: !(isMg && u.mgRampRound < MG_NO_CORE_RAMP_ROUNDS),
@@ -2870,15 +3318,19 @@ export function runSim(
       // single bullet rather than routed through the SG pellet-spray cone (owner ruling 2026-07-19;
       // supersedes implementation-plan §1.5's fold-in). Only dorothy's ordinary spray shots take the cone.
       coreOverride: consolidating && consol ? consol.coreRate : undefined,
-      extraDmgUpPct: consolidating && consol ? consol.attackDamagePct : undefined,
+      extraDmgUpPct:
+        consolidating && consol ? consol.attackDamagePct : undefined,
       // per-shot pierce tag: consolidation-bullet pierce, or a swap-scoped Pierce weapon
       // (weaponSwap.hasPierce — the shot is a swap shot whenever u.swap is live here)
-      pierceActive: (consolidating && consol ? consol.pierce : undefined) || u.swap?.hasPierce || undefined,
+      pierceActive:
+        (consolidating && consol ? consol.pierce : undefined) ||
+        u.swap?.hasPierce ||
+        undefined,
       // the consolidated single bullet takes NO effective-range bonus (MEASURED: its non-core
       // value = full-shot base × dmgUp with major ≈ 1.0, not 1.3 — dorothy-solo-reanalysis.json)
       noRange: consolidating || undefined,
     });
-    if (consolidating) u.consolShotsLeft--;
+    if (consolidating) {u.consolShotsLeft--;}
     // Pierce double-hit (2026-07-13 research): a Pierce-tagged shot passes through the
     // core and hits the body behind it — two hits per shot on a core-exposed boss
     // (community-verified; the reason Alice/Red Hood overperform). Second hit: same
@@ -2906,20 +3358,26 @@ export function runSim(
       // reverses the 2026-07-21 §2c "cannot crit" ruling), so a true-flavored rider critting at the
       // caster rate via RIDER_CRIT is CORRECT and needs no per-source flavor exemption.
       dealDamage(u, extraPerHit * u.char.hitsPerShot, frame, {
-        crit: RIDER_CRIT, core: false, charge: false, category: 'burst', noRange: true,
+        crit: RIDER_CRIT,
+        core: false,
+        charge: false,
+        category: 'burst',
+        noRange: true,
       });
     }
 
     // hit-count and per-shot skill triggers
     u.blocks.forEach((b, bi) => {
-      if (b.trigger.kind === 'shotFired') applyBlock(u.idx, b, bi, frame);
+      if (b.trigger.kind === 'shotFired') {applyBlock(u.idx, b, bi, frame);}
       else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
         // RRH rocket meter fills 2× faster in her Full Burst: threshold 120 → countInFb (60)
         // while in FB. The counter carries over across the boundary (no reset) — the faster
         // threshold just consumes the accrued fill, so a near-full meter fires on FB entry.
         const threshold =
-          fbEndFrame > frame && b.trigger.countInFb != null ? b.trigger.countInFb : b.trigger.count;
+          fbEndFrame > frame && b.trigger.countInFb != null
+            ? b.trigger.countInFb
+            : b.trigger.count;
         let c = (u.hitCounters.get(key) ?? 0) + u.char.hitsPerShot;
         while (c >= threshold) {
           c -= threshold;
@@ -2932,23 +3390,34 @@ export function runSim(
       // charges/phase outside Full Burst, `countInFb` (default 1) inside — so procs cluster into
       // the FB window (SBS 3/6/9 → 1/2/3). The +50% FB is applied per-proc by dealDamage's timing.
       else if (b.trigger.kind === 'chargeCounter' && charged) {
-        const pk = `cc${bi}p`, ck = `cc${bi}c`;
+        const pk = `cc${bi}p`,
+          ck = `cc${bi}c`;
         let phase = u.hitCounters.get(pk) ?? 0;
         let charges = (u.hitCounters.get(ck) ?? 0) + 1;
         // the lowered thresholds are a 10s SELF-buff from the owner's OWN burst cast
         // (SBS burst: "Changes Full Charge attack count required for Skill 1 to 1/2/3 for 10s"),
         // NOT the team Full Burst window — she doesn't burst every full burst.
-        const inBurst = u.lastBurstCastFrame >= 0 && frame - u.lastBurstCastFrame < 10 * FPS;
+        const inBurst =
+          u.lastBurstCastFrame >= 0 && frame - u.lastBurstCastFrame < 10 * FPS;
         // per-phase thresholds (datamined "attack count required to N times" is per-phase); a scalar
         // means the same threshold every phase (back-compat). phase P uses reqs[P].
         const reqs = inBurst ? (b.trigger.countInFb ?? 1) : b.trigger.count;
-        const thr = Array.isArray(reqs) ? (reqs[phase] ?? reqs[reqs.length - 1]) : reqs;
+        const thr = Array.isArray(reqs)
+          ? (reqs[phase] ?? reqs[reqs.length - 1])
+          : reqs;
         if (charges >= thr) {
           charges = 0;
           const bKey = `${u.idx}:${b.slot}:${bi}`;
           const activations = (u.blockActivations.get(bKey) ?? 0) + 1;
           u.blockActivations.set(bKey, activations);
-          applyEffect(u.idx, b, b.effects[phase], `${bKey}:${phase}`, activations, frame);
+          applyEffect(
+            u.idx,
+            b,
+            b.effects[phase],
+            `${bKey}:${phase}`,
+            activations,
+            frame
+          );
           phase = (phase + 1) % b.effects.length;
         }
         u.hitCounters.set(pk, phase);
@@ -2960,7 +3429,7 @@ export function runSim(
     // its Nth shot fires — checked AFTER block dispatch so swapGate effects ride this shot
     if (u.swap?.maxShots != null) {
       u.swap.shotsFired = (u.swap.shotsFired ?? 0) + 1;
-      if (u.swap.shotsFired >= u.swap.maxShots) u.swap = null;
+      if (u.swap.shotsFired >= u.swap.maxShots) {u.swap = null;}
     }
 
     // ROUND-COUNT buff expiry ("for N round(s)"): spend this shot's rounds from every round-scoped
@@ -2984,7 +3453,8 @@ export function runSim(
       u.ammo -= consumed;
       for (const t of teamAmmoBlocks) {
         t.residual += consumed;
-        const need = (t.block.trigger as { kind: 'teamAmmo'; count: number }).count;
+        const need = (t.block.trigger as { kind: 'teamAmmo'; count: number })
+          .count;
         while (t.residual >= need) {
           t.residual -= need;
           applyBlock(t.unitIdx, t.block, t.bi, frame);
@@ -3022,7 +3492,9 @@ export function runSim(
   }
 
   // ---- results ----
-  const totals = units.map((u) => u.damage.normal + u.damage.skill + u.damage.burst);
+  const totals = units.map(
+    (u) => u.damage.normal + u.damage.skill + u.damage.burst
+  );
   const teamDamage = totals.reduce((a, b) => a + b, 0);
   const results: UnitResult[] = units.map((u, i) => ({
     slug: u.char.slug,
@@ -3039,12 +3511,16 @@ export function runSim(
     breakdown: u.damage,
     pulls: u.pulls,
     burstCasts: u.burstCasts,
-      maxHp: u.maxHp,
+    maxHp: u.maxHp,
     gaugeGenerated: u.gaugeGenerated,
     warnings: [
       ...u.warnings,
-      ...(u.char.rl3 == null ? ['no rl3 burst-gen stat — team gauge estimate uses a default'] : []),
-      ...(u.char.weapon === 'Pistol' ? ['Pistol cadence is a 4/s estimate; no doll data'] : []),
+      ...(u.char.rl3 == null
+        ? ['no rl3 burst-gen stat — team gauge estimate uses a default']
+        : []),
+      ...(u.char.weapon === 'Pistol'
+        ? ['Pistol cadence is a 4/s estimate; no doll data']
+        : []),
     ],
     loadout: prepared?.[i]?.loadout ?? [],
   }));

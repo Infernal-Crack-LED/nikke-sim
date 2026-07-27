@@ -10,11 +10,11 @@ The override was previously "reconciled / hand-authored" (2026-07-17) with two S
 dropped to `unmodeled` and the S2 "1 round" crit snapshot shipped as a wall-clock `durationSec 1.5`.
 This gauntlet made two minimum-faithful edits:
 
-- **FIX-A — un-dropped the two S1 Hit Rate lines.** They were dropped under "hard rule 4" *pending
-  CONE_DELTA* (the 2026-07-17 note literally says "re-evaluation queued (kit-audit plan 2026-07-20)").
+- **FIX-A — un-dropped the two S1 Hit Rate lines.** They were dropped under "hard rule 4" _pending
+  CONE_DELTA_ (the 2026-07-17 note literally says "re-evaluation queued (kit-audit plan 2026-07-20)").
   CONE_DELTA landed 2026-07-19 and `hitRatePct` is now live-wired for accuracy-circle weapons
   (AR/SMG/SG); the modernia gauntlet (2026-07-25) ships the identical stat. Hard rule 4 gates the
-  *magnitude* of the HR→core lift (measured-only), not the existence of the stat. Now encoded:
+  _magnitude_ of the HR→core lift (measured-only), not the existence of the stat. Now encoded:
   `hitCount 30 → allies hitRatePct 5.44 / 5s` and `hitCount 30 → alliesOfWeapon SMG hitRatePct 3.79 / 5s`.
   Load-bearing on miranda herself (the only accuracy-circle unit in the audit fixture — crown MG /
   ada RL / helm SR keep the flat base core rate), so +9.23% lifts her own core fraction.
@@ -31,17 +31,17 @@ riders, DoTs, weapon swaps, heals, shields, gauge or ammo lines, so nothing is s
 
 ## Line-by-line (all 9 FAITHFUL)
 
-| Line | Encoding | Disposition |
-| --- | --- | --- |
-| S1 30 hits → allies HR 5.44% / 5s | `hitCount 30 / allies / hitRatePct 5.44` | FAITHFUL (FIX-A) |
-| S1 30 hits → SMG allies HR 3.79% / 5s | `hitCount 30 / alliesOfWeapon SMG / hitRatePct 3.79` | FAITHFUL (FIX-A) |
-| S1 30 hits → self ATK 50.06% / 5s | `hitCount 30 / self / atkPct 50.06` | FAITHFUL |
-| S2 FB enter → allies Crit Dmg 32.99% / 10s | `fullBurstEnter / allies / critDamagePct 32.99` | FAITHFUL |
-| S2 FB enter → self Crit Rate 30.1% / 10s | `fullBurstEnter / self / critRatePct 30.1` | FAITHFUL |
-| S2 FB enter → self Attack Dmg 23.7% / 10s | `fullBurstEnter / self / attackDamagePct 23.7` | FAITHFUL |
+| Line                                                   | Encoding                                                                                             | Disposition      |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- | ---------------- |
+| S1 30 hits → allies HR 5.44% / 5s                      | `hitCount 30 / allies / hitRatePct 5.44`                                                             | FAITHFUL (FIX-A) |
+| S1 30 hits → SMG allies HR 3.79% / 5s                  | `hitCount 30 / alliesOfWeapon SMG / hitRatePct 3.79`                                                 | FAITHFUL (FIX-A) |
+| S1 30 hits → self ATK 50.06% / 5s                      | `hitCount 30 / self / atkPct 50.06`                                                                  | FAITHFUL         |
+| S2 FB enter → allies Crit Dmg 32.99% / 10s             | `fullBurstEnter / allies / critDamagePct 32.99`                                                      | FAITHFUL         |
+| S2 FB enter → self Crit Rate 30.1% / 10s               | `fullBurstEnter / self / critRatePct 30.1`                                                           | FAITHFUL         |
+| S2 FB enter → self Attack Dmg 23.7% / 10s              | `fullBurstEnter / self / attackDamagePct 23.7`                                                       | FAITHFUL         |
 | S2 FB enter → top-1 final-ATK ally CR 85.42% / 1 round | `fullBurstEnter / alliesTopAtk count 1 excludeSelf byFinalAtk / critRatePct 85.42 / durationShots 1` | FAITHFUL (FIX-B) |
-| Burst → top-2 final-ATK allies ATK 40.4% / 10s | `burstCast / alliesTopAtk count 2 excludeSelf byFinalAtk / atkPct 40.4` | FAITHFUL |
-| Burst → top-2 final-ATK allies Crit Dmg 56.23% / 10s | same block / `critDamagePct 56.23` | FAITHFUL |
+| Burst → top-2 final-ATK allies ATK 40.4% / 10s         | `burstCast / alliesTopAtk count 2 excludeSelf byFinalAtk / atkPct 40.4`                              | FAITHFUL         |
+| Burst → top-2 final-ATK allies Crit Dmg 56.23% / 10s   | same block / `critDamagePct 56.23`                                                                   | FAITHFUL         |
 
 ## Cross-family convergence
 

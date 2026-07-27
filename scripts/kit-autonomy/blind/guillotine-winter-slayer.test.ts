@@ -57,7 +57,7 @@ import {
 } from '../../tests/lib/harness.js';
 
 const SLUG = 'guillotine-winter-slayer';
-const HELM = 'helm';   // Water Code Burst III - IN scope for all Water Code allies
+const HELM = 'helm'; // Water Code Burst III - IN scope for all Water Code allies
 const LITER = 'liter'; // Fire Burst I  - OUT of scope
 const CROWN = 'crown'; // Iron Burst II - OUT of scope
 
@@ -73,7 +73,12 @@ const RELOAD_FRAC = 0.1026;
 const EPS = 1e-6;
 
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
-const ATK_STATS = new Set(['atkPct', 'casterAtkPct', 'highestAllyAtkPct', 'atkOfMaxHpPct']);
+const ATK_STATS = new Set([
+  'atkPct',
+  'casterAtkPct',
+  'highestAllyAtkPct',
+  'atkOfMaxHpPct',
+]);
 const DMG_KINDS = new Set(['dot', 'flatDamage', 'storedHit', 'stackedNuke']);
 
 // ---------------------------------------------------------------- shape helpers
@@ -82,7 +87,7 @@ const DMG_KINDS = new Set(['dot', 'flatDamage', 'storedHit', 'stackedNuke']);
 // never masquerade as a unit-level divergence.
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
@@ -94,45 +99,56 @@ function allEffects(ov: any): any[] {
 function auditText(ov: any): string {
   const parts: string[] = [String(ov?.note ?? '')];
   const push = (u: any) => {
-    if (!u) return;
-    for (const k of Object.keys(u)) parts.push(...((u as any)[k] ?? []));
+    if (!u) {return;}
+    for (const k of Object.keys(u)) {parts.push(...((u as any)[k] ?? []));}
   };
   push(ov?.unmodeled);
   for (const s of SLOTS) {
     const v = ov?.[s];
-    if (v && !Array.isArray(v)) push(v.unmodeled);
+    if (v && !Array.isArray(v)) {push(v.unmodeled);}
   }
   return parts.join(' | ').toLowerCase();
 }
 function resourcePools(ov: any): any[] {
   const out: any[] = [];
-  if (Array.isArray(ov?.resources)) out.push(...ov.resources);
+  if (Array.isArray(ov?.resources)) {out.push(...ov.resources);}
   for (const s of SLOTS) {
     const v = ov?.[s];
-    if (v && !Array.isArray(v) && Array.isArray(v.resources)) out.push(...v.resources);
+    if (v && !Array.isArray(v) && Array.isArray(v.resources))
+      {out.push(...v.resources);}
   }
   return out;
 }
 // a buff's PER-UNIT magnitude: perResource buffs carry it as mult, plain buffs as value
-const perValue = (e: any): number => (e?.perResource ? e.perResource.mult : e?.value);
+const perValue = (e: any): number =>
+  e?.perResource ? e.perResource.mult : e?.value;
 const near = (a: number, b: number) => Math.abs(a - b) < EPS;
 
 // ---------------------------------------------------------------- run helpers
-interface Run { res: any; events: SimEvent[] }
+interface Run {
+  res: any;
+  events: SimEvent[];
+}
 
 function run(overrides?: Record<string, unknown>): Run {
   const events: SimEvent[] = [];
   const opts = controlComp(SLUG, true) as any;
-  opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev) };
-  if (overrides) opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  opts.cfg = {
+    ...(opts.cfg ?? {}),
+    onEvent: (ev: SimEvent) => events.push(ev),
+  };
+  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
   return { res: runComp(opts), events };
 }
 
 const applies = (evs: SimEvent[], stat: string, value: number): any[] =>
-  (evs as any[]).filter((e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value));
+  (evs as any[]).filter(
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value)
+  );
 const kindCount = (evs: SimEvent[], kind: string): number =>
   (evs as any[]).filter((e) => e.kind === kind).length;
-const targetsOf = (evs: any[]): Set<string> => new Set(evs.map((e) => e.targetSlug));
+const targetsOf = (evs: any[]): Set<string> =>
+  new Set(evs.map((e) => e.targetSlug));
 
 // The committed override, read-only (withPatchedOverride returns a clone; the
 // no-op mutator leaves the on-disk JSON untouched).
@@ -145,7 +161,8 @@ const base = run();
 // i.e. exactly the Water-Code-ally level-up grants.
 const noTeamS1 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of slotBlocks(ov, 'skill1')) if (b?.target?.kind !== 'self') b.effects = [];
+    for (const b of slotBlocks(ov, 'skill1'))
+      {if (b?.target?.kind !== 'self') {b.effects = [];}}
   }),
 });
 
@@ -154,10 +171,10 @@ const noTeamS1 = run({
 const noExpAtk = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const s of SLOTS)
-      for (const b of slotBlocks(ov, s))
-        b.effects = (b.effects ?? []).filter(
-          (e: any) => !(e.kind === 'buff' && near(perValue(e), EXP_ATK)),
-        );
+      {for (const b of slotBlocks(ov, s))
+        {b.effects = (b.effects ?? []).filter(
+          (e: any) => !(e.kind === 'buff' && near(perValue(e), EXP_ATK))
+        );}}
   }),
 });
 
@@ -166,7 +183,7 @@ const noExpAtk = run({
 const noBurstDmg = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of slotBlocks(ov, 'burst'))
-      b.effects = (b.effects ?? []).filter((e: any) => !DMG_KINDS.has(e.kind));
+      {b.effects = (b.effects ?? []).filter((e: any) => !DMG_KINDS.has(e.kind));}
   }),
 });
 
@@ -186,7 +203,7 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
 
   // ---- 2. override shape / validator hygiene --------------------------------
   it('override carries all three slots and no ignored-effect blocks', () => {
-    for (const s of SLOTS) expect(slotBlocks(OV, s).length).toBeGreaterThan(0);
+    for (const s of SLOTS) {expect(slotBlocks(OV, s).length).toBeGreaterThan(0);}
     expect(allEffects(OV).some((e: any) => e.kind === 'ignored')).toBe(false);
   });
 
@@ -196,8 +213,8 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     expect(evs.length).toBeGreaterThanOrEqual(2); // non-vacuity: fires on repeat bursts
 
     const tg = targetsOf(evs);
-    expect(tg.has(SLUG)).toBe(true);   // the caster is Water Code - self is included
-    expect(tg.has(HELM)).toBe(true);   // RED if scoped {kind:'self'}
+    expect(tg.has(SLUG)).toBe(true); // the caster is Water Code - self is included
+    expect(tg.has(HELM)).toBe(true); // RED if scoped {kind:'self'}
     expect(tg.has(LITER)).toBe(false); // RED if scoped {kind:'allies'}
     expect(tg.has(CROWN)).toBe(false);
 
@@ -207,7 +224,9 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     expect(evs.every((e) => e.durationShots == null)).toBe(true);
 
     // cannot fire more often than the team full-bursts
-    expect(evs.length / tg.size).toBeLessThanOrEqual(kindCount(base.events, 'fullBurstStart'));
+    expect(evs.length / tg.size).toBeLessThanOrEqual(
+      kindCount(base.events, 'fullBurstStart')
+    );
   });
 
   // ---- 4. BURST: Elemental Advantage Attack Damage +18.75% for 10 sec --------
@@ -227,7 +246,10 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     // an attackDamagePct of 18.75 (or a merged 28.89) would be live against a
     // non-advantaged boss, over-crediting the whole comp.
     expect(applies(base.events, 'attackDamagePct', BURST_ELEM).length).toBe(0);
-    expect(applies(base.events, 'attackDamagePct', BURST_ATTACK_DMG + BURST_ELEM).length).toBe(0);
+    expect(
+      applies(base.events, 'attackDamagePct', BURST_ATTACK_DMG + BURST_ELEM)
+        .length
+    ).toBe(0);
   });
 
   // ---- 5. BURST trigger identity: own burst cast, not team full-burst entry ---
@@ -272,7 +294,9 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
 
   // ---- 7. S1-b scope: Water Code allies, two-sided counterfactual ------------
   it('skill1 level-up grants are scoped to Water Code allies (not self, not all)', () => {
-    const team = slotBlocks(OV, 'skill1').filter((b: any) => b?.target?.kind !== 'self');
+    const team = slotBlocks(OV, 'skill1').filter(
+      (b: any) => b?.target?.kind !== 'self'
+    );
     expect(team.length).toBeGreaterThan(0); // RED if the grants were scoped self-only
     for (const b of team) {
       expect(b.target.kind).toBe('alliesOfElement');
@@ -295,18 +319,23 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     // require some group whose target set is exactly {carry, helm}. crown also emits
     // casterAtkPct to the whole team, so this grouping is what isolates this unit.
     const cs = (base.events as any[]).filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'casterAtkPct',
+      (e) => e.kind === 'buffApply' && e.stat === 'casterAtkPct'
     );
     expect(cs.length).toBeGreaterThan(0);
 
     const groups = new Map<string, Set<string>>();
     for (const e of cs) {
       const k = String(Math.round(e.value * 1e4));
-      if (!groups.has(k)) groups.set(k, new Set());
+      if (!groups.has(k)) {groups.set(k, new Set());}
       groups.get(k)!.add(e.targetSlug);
     }
     const waterOnly = [...groups.values()].filter(
-      (tg) => tg.has(SLUG) && tg.has(HELM) && !tg.has(LITER) && !tg.has(CROWN) && tg.size === 2,
+      (tg) =>
+        tg.has(SLUG) &&
+        tg.has(HELM) &&
+        !tg.has(LITER) &&
+        !tg.has(CROWN) &&
+        tg.size === 2
     );
     // RED under {kind:'allies'} (liter/crown appear), under {kind:'self'} (helm never
     // appears), and under a plain atkPct encoding (wrong stat key entirely).
@@ -316,7 +345,7 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
   // ---- 9. S1: Hero Level actually scales (not collapsed to a constant) -------
   it('Hero Level scaling is live: magnitudes grow, or a level/EXP pool is declared', () => {
     const elem = (base.events as any[]).filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'elemAdvantageDamagePct',
+      (e) => e.kind === 'buffApply' && e.stat === 'elemAdvantageDamagePct'
     );
     const levelScaled = elem
       .map((e) => e.value)
@@ -325,15 +354,21 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
         return Math.abs(n - Math.round(n)) < 1e-4 && Math.round(n) >= 1;
       });
 
-    const pooled = resourcePools(OV).length > 0 || JSON.stringify(OV).includes('perResource');
+    const pooled =
+      resourcePools(OV).length > 0 ||
+      JSON.stringify(OV).includes('perResource');
     // either the emitted magnitudes step up with the level, or the value is driven
     // live off a declared pool. A single fixed magnitude with no pool = the level was
     // frozen to a constant (the nearest-wrong this catches).
-    expect(new Set(levelScaled.map((v) => Math.round(v * 1e4))).size > 1 || pooled).toBe(true);
+    expect(
+      new Set(levelScaled.map((v) => Math.round(v * 1e4))).size > 1 || pooled
+    ).toBe(true);
 
     // Lv 11 cap: no per-level elemental magnitude may exceed 1.16 x 11.
     if (levelScaled.length) {
-      expect(Math.max(...levelScaled)).toBeLessThanOrEqual(PER_LEVEL_ELEM * MAX_LEVEL + EPS);
+      expect(Math.max(...levelScaled)).toBeLessThanOrEqual(
+        PER_LEVEL_ELEM * MAX_LEVEL + EPS
+      );
     }
   });
 
@@ -354,7 +389,8 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
   // ---- 11. S2: EXP stack magnitude + cap ------------------------------------
   it('EXP grants ATK 1.81% per stack, capped at 100 stacks', () => {
     const expBuffs = allEffects(OV).filter(
-      (e: any) => e.kind === 'buff' && ATK_STATS.has(e.stat) && near(perValue(e), EXP_ATK),
+      (e: any) =>
+        e.kind === 'buff' && ATK_STATS.has(e.stat) && near(perValue(e), EXP_ATK)
     );
     // RED if the stack line was authored at its max-stack magnitude (1.81 x 100)
     // as a single flat buff.
@@ -365,7 +401,9 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     expect(capped).toBe(true);
     // self-scoped: the EXP ATK is an Affects-self line
     const holders = allBlocks(OV).filter((b: any) =>
-      (b.effects ?? []).some((e: any) => e.kind === 'buff' && near(perValue(e), EXP_ATK)),
+      (b.effects ?? []).some(
+        (e: any) => e.kind === 'buff' && near(perValue(e), EXP_ATK)
+      )
     );
     expect(holders.every((b: any) => b.target?.kind === 'self')).toBe(true);
   });
@@ -393,12 +431,17 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     // the opening seconds.
     const holders = allBlocks(OV).filter((b: any) =>
       (b.effects ?? []).some(
-        (e: any) => e.kind === 'buff' && e.stat === 'elemAdvantageDamagePct' && near(e.value, S2_ELEM),
-      ),
+        (e: any) =>
+          e.kind === 'buff' &&
+          e.stat === 'elemAdvantageDamagePct' &&
+          near(e.value, S2_ELEM)
+      )
     );
     expect(holders.length).toBeGreaterThan(0);
     expect(
-      holders.every((b: any) => b.trigger?.kind !== 'passive' || b.resourceGate != null),
+      holders.every(
+        (b: any) => b.trigger?.kind !== 'passive' || b.resourceGate != null
+      )
     ).toBe(true);
   });
 
@@ -409,14 +452,18 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
 
     // Reloads 10.26% is weapon-state = shot economy = damage.
     const reloadModelled = eff.some(
-      (e: any) => e.kind === 'instantReload' && Math.abs((e.fraction ?? 1) - RELOAD_FRAC) < 5e-3,
+      (e: any) =>
+        e.kind === 'instantReload' &&
+        Math.abs((e.fraction ?? 1) - RELOAD_FRAC) < 5e-3
     );
     expect(reloadModelled || txt.includes('reload')).toBe(true);
 
     // Recovers 2.44% of final Max HP: inert alone, but it is the on-recovery channel
     // a teammate can consume - it must not vanish silently.
     const healModelled = eff.some((e: any) => e.kind === 'heal');
-    expect(healModelled || txt.includes('recover') || txt.includes('max hp')).toBe(true);
+    expect(
+      healModelled || txt.includes('recover') || txt.includes('max hp')
+    ).toBe(true);
   });
 
   // ---- 14. global inertness -------------------------------------------------

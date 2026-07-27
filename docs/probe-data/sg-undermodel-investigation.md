@@ -19,15 +19,15 @@ note localizes where else the gap lives.
 `scripts/solo-recon.ts` runs drake as a 1-unit forced-neutral scope-lock fight — zero team/FB/
 element confounds — against her real damage-screen total (docs/probes/ar-sg-smg/drake sg.jpg).
 
-| quantity | value | source |
-|---|---|---|
-| sim total | **36.77M** (normal 34.39M + skill 2.37M + burst 0) | runSim |
-| real total | **53.97M** | reference-stats.json `recordingSoloTotals["drake-sg"]` |
-| **ratio** | **0.681** → sim short by **1.47×** | — |
-| sim pulls (shots) | 198 | u.pulls |
-| sim normal / pull | 173,698 | 34.39M / 198 |
-| ATK (static) | 118,027 | scope-lock |
-| char normalAttackMultiplier | 214.3% (per pull, all 10 pellets) | characters.json |
+| quantity                    | value                                              | source                                                 |
+| --------------------------- | -------------------------------------------------- | ------------------------------------------------------ |
+| sim total                   | **36.77M** (normal 34.39M + skill 2.37M + burst 0) | runSim                                                 |
+| real total                  | **53.97M**                                         | reference-stats.json `recordingSoloTotals["drake-sg"]` |
+| **ratio**                   | **0.681** → sim short by **1.47×**                 | —                                                      |
+| sim pulls (shots)           | 198                                                | u.pulls                                                |
+| sim normal / pull           | 173,698                                            | 34.39M / 198                                           |
+| ATK (static)                | 118,027                                            | scope-lock                                             |
+| char normalAttackMultiplier | 214.3% (per pull, all 10 pellets)                  | characters.json                                        |
 
 ### Where the 1.47× is NOT (confirmed not the cause)
 
@@ -36,7 +36,7 @@ element confounds — against her real damage-screen total (docs/probes/ar-sg-sm
    at the sim's per-pull damage would need **~297 pulls** — impossible for a 1.5/s weapon over
    180s. The deficit therefore CANNOT be shots. (Note: the post-reload attack-lock, SG 0.47s, is
    known-but-unmodelled per game-mechanics.md §2; implementing it would REDUCE sim shots → make
-   SG *colder*, not warmer. So cadence is the wrong direction entirely.)
+   SG _colder_, not warmer. So cadence is the wrong direction entirely.)
 2. **Per-pellet base value — NOT the cause (right).** Sim per-LANDED-pellet ≈ 173,698 / (0.558
    fight-avg landing × ~1.26 crit+core+range blend) ≈ **25,057**, essentially equal to the
    measured white pellet value **25,672** (docs/probe-data/sg-pellet-landing.json). The
@@ -62,6 +62,7 @@ between the visible-popup reconstruction (≈ the sim, ≈37M) and the real dama
 that land and deal damage but render NO popup (or an off-cluster popup the analyst didn't count).
 
 This matches two independent external facts:
+
 - **nikke.gg** (weapon guide + burst-gauge-generation page): against **large bosses shotguns hit
   all 10 pellets consistently** at near range; a clip SG generates up to **450 energy/shot =
   45 × 10 pellets** near — i.e. all 10 pellets connect (and each deals damage).
@@ -86,10 +87,10 @@ credits only the visible pellets.
   own "near 0.60 is a LOWER BOUND ≤0.7–0.8" flag. Only variable with the right magnitude and
   sign. Explains ALL cold SG units at once (shared spray path — noir/naga mult ≈205%, ammo 9,
   10 pellets, same landing model).
-- **AGAINST / tension:** This lives in the *landing slot* — the very place Fable said not to
+- **AGAINST / tension:** This lives in the _landing slot_ — the very place Fable said not to
   re-absorb into. BUT it is a physically distinct quantity: **render-dropout** (pellets that
   damage but don't render a number), NOT a cosmetic bump of the landing constant. The honest
-  resolution is to correct the dropout=1.0 assumption *by measurement* (see next test), not to
+  resolution is to correct the dropout=1.0 assumption _by measurement_ (see next test), not to
   hand-tune the fraction to fit — otherwise it does become the old near=1.0 fudge again. The
   fight-averaged 0.82 also implies mid/far bands land more than the counted 0.45–0.55, which
   nikke.gg's "drops off outside 0–25" would push back on — so the dropout may be near-concentrated
@@ -108,19 +109,22 @@ not into the central popup cluster).
 - **AGAINST:** No datamined SG-specific multiplier is known (nikke.gg damage formula has none).
   Requires a coincidental ~1.47× that matches the exact pellet-count shortfall — Occam disfavors
   a second mechanism when landed-count already fully explains it. Note H2's "off-center part
-  popups" is really a *variant of H1* (more pellets deal damage than were counted) — both reduce
+  popups" is really a _variant of H1_ (more pellets deal damage than were counted) — both reduce
   to "counted popups < pellets that damage."
 
 ### H3 — Cadence / shot-count under-model. **REJECTED** (see reconciliation): sim 198 ≈ physical
+
 max 206; real needs ~297 shots (impossible). Attack-lock, if added, worsens the cold.
 
 ### H4 — Range-band time allocation wrong. **Weak / unlikely primary.** The BOSS_RANGE_SCRIPT gives
+
 near only ~38% of the fight. If near were under-allocated (real fight more near-heavy), SG (which
 peaks near) would run cold. But the range script is a MEASURED constant (do-not-refit) validated
 across all comps; and even 100%-near at the current 0.60 landing gives only 0.60/0.558 = 1.08×,
 far short of 1.47×. Can be a minor contributor, not the driver.
 
 ### H5 — Core/landing mis-measured upward again. **REJECTED by construction** — core 0.072 and
+
 landing ~0.55 are the CONFIRMED pieces; the whole point is the residual is elsewhere.
 
 ---
@@ -156,7 +160,7 @@ dropout is near-concentrated (H1 near-only) or uniform. (A/B only — do not com
   0.558). Confirmed NOT the cause: shot count (198 ≈ physical max 206; real needs impossible
   ~297), per-pellet base (sim ≈25,057 ≈ measured 25,672), core rate (0.072).
 - **Tension to flag to Fable:** the mechanism physically occupies the landing slot. It is NOT a
-  re-fudge only if the dropout is *measured* (impact-flash count / solo-total re-derivation),
+  re-fudge only if the dropout is _measured_ (impact-flash count / solo-total re-derivation),
   correcting the dropout=1.0 assumption — not if the landing constant is hand-tuned to fit.
 - **Next test:** count pellet impact-flashes vs rendered numbers per shot on drake footage —
   cleanly separates render-dropout (H1) from a hidden multiplier (H2).

@@ -10,6 +10,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -20,12 +21,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -51,39 +54,68 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ---
 
 ## MECHANICS SSOT (pointers + load-bearing excerpts)
+
 Full docs: docs/data/damage-calculation.md, docs/data/game-mechanics.md (authoritative; excerpts below).
 
 ### Damage formula bracket (docs/data/damage-calculation.md:44-56)
-  against the OL0 numbers are flagged for re-check at the Base 5 basis. See DECISIONS.)
+
+against the OL0 numbers are flagged for re-check at the Base 5 basis. See DECISIONS.)
 
 ### Damage formula — buckets & per-type applicability (sourced 2026-07-14)
 
@@ -92,7 +124,7 @@ source list in `docs/handoffs/2026-07-14-damage-buckets-and-ginmy.md`. Damage is
 independent multiplicative buckets**; same-type buffs **add within** a bucket, different buckets
 **multiply**. THE ENGINE (`dealDamage`) ALREADY MATCHES THIS:
 
-```
+````
 finalATK = staticAtk × (1 + Σ ATK%)  +  Σ("% of caster's ATK" flat)  +  Σ(HP→ATK flat)
 dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts INSIDE the base, pre-coef
     × major   [1 + crit + core + fullBurst(0.5) + range(0.3)]  ← ADDITIVE within (core does NOT ×crit)
@@ -1489,9 +1521,10 @@ describe('liberalio — kit spec', () => {
   });
 });
 
-```
+````
 
 ### src/skills/overrides/liberalio.json
+
 ```json
 {
   "note": "Raging/Gentle Current mode: Raging Current (Attack Damage +231% continuously) triggers on a full charge against the STAGE TARGET; Gentle Current (fixes charge at 1s) triggers on a full charge against a non-stage-target Rapture. In a solo raid there is a single boss = the stage target, so every full charge maintains Raging Current and Gentle Current never fires — S2 is modeled as a no-expiry self Attack Damage 231% buff on shotFired (earned on her first landed full charge, then refreshed permanent; 2026-07-26 gauntlet moved it off the t=0 passive shortcut, which over-credited the first charge by ~0.2%) and the Gentle Current branch is dropped. The charge-speed increase/decrease immunity is inert/defensive and skipped. S1: ATK 160%/3s on Full Burst entry (self); Attack Damage 20.83%/60s from core full-charges, modeled as always-up via shotFired (assumes she lands core hits, an SR steady-state); charge-speed 12.74% to the lowest-ATK B3 ally, approximated by the engine as top-3-ATK allies; and 40.5% additional damage per full charge that 'Activates 5 times' = 5 hits per full charge -> 202.5% flatDamage per shot (user-confirmed reading; validated vs a real scope-lock run, single-hit read left her 0.70 cold). Burst (self Attack Damage 50%/10s + 925% nuke) is faithful in the parser, so the burst slot is omitted. FIXED (review): the S1 charge-speed buff targets the 1 Burst-3 ally with the LOWEST final ATK (was mis-parsed as top-3-ATK allies); excludeSelf reflects her S2 immunity to charge-speed effects. Remaining known gaps: her charge-speed immunity vs OTHER sources is not enforced (rarely relevant), the S1 20.83% Attack Damage rider is core-hit-gated via requiresCore (inert at core-rate 0; at any core exposure its 60s duration keeps it up, matching in-game). Q8: autofire (no 22f release latency) — her chargeFrames already reflect the full validated cycle (kit-fixed 1.2s / DB 90f). 2026-07-17: this now resolves from the datamined input_type='DOWN_Charge' (engine + web); the redundant charFixes.noBoltRecovery flag was removed. Q1 CALIBRATED (flag for manual review): her 202.5% core-hit procs are exempt from the +30% range and +50% full-burst majors — calibrated vs two real scope-lock runs (T1 1.16->1.00, T5 1.25->1.10); mechanism unconfirmed (user researching). | 2026-07-14 noFb REMOVED from the 202.5 proc (panel-accepted): the flag was a Q1 calibration-era relic contradicting the DATAMINED U1 rule (function damage takes FB by actual landing timing; the cast-instant rule is burst-slot-scoped). noRange stays (datamine-confirmed). Post-landing MEASURED verification queued: liberalio-focus recording, proc popup in-FB vs out-FB. [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] || Kit-autonomy gauntlet 2026-07-26: re-validated test-first — scripts/tests/units/liberalio.test.ts (20 assertions GREEN vs this override; every line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: skill-level-9 magnitudes, the single-hit 40.5 rider misread, the top-3-ATK charge-speed misparse, the requiresCore gate, cast-before-FB nuke). Cross-family S2b (claude-fable-5) independently re-derived all nine lines with matching dispositions, no REAL-GOTCHA; two reviewer nuances reconciled in the test header (L7 charge-speed-immunity GAP is real but DORMANT — no charge-speed source in the control comp, no schema primitive — carried as the caveat below, not a failing test). ONE ENCODING FIX, driven by the S5 blind test (claude-opus-5) and independently flagged by S2b: Raging Current's trigger moved passive -> shotFired, so the 231% is EARNED on her first landed full charge instead of live from t=0 (the kit says 'Activates when landing a Full Charge attack against the stage target'); the passive shortcut over-credited exactly one charge (~0.2% of her total, allies byte-identical). TIER 2 (scoped lowest-final-ATK Burst-3 selector + fullBurstEnter-vs-burstCast split + Q1-calibrated range/FB exemptions).",
@@ -1634,17 +1667,15 @@ describe('liberalio — kit spec', () => {
     "skill2: her charge-speed immunity is only enforced against her OWN Skill 1 buff (excludeSelf); an EXTERNAL Charge Speed buff from a teammate (e.g. Maxwell, Alice) would wrongly speed her up in the sim."
   ]
 }
-
 ```
 
 ### S2d independent verification
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-26[39m
 
- [32m✓[39m scripts/tests/units/liberalio.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+[32m✓[39m scripts/tests/units/liberalio.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 10[2mms[22m[39m
 
 [2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
-[2m      Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
-[2m   Start at [22m 05:50:54
-[2m   Duration [22m 324ms[2m (transform 84ms, setup 0ms, import 225ms, tests 10ms, environment 0ms)[22m
-
+[2m Tests [22m [1m[32m20 passed[39m[22m[90m (20)[39m
+[2m Start at [22m 05:50:54
+[2m Duration [22m 324ms[2m (transform 84ms, setup 0ms, import 225ms, tests 10ms, environment 0ms)[22m

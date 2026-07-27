@@ -50,13 +50,13 @@ unlock her own crit buffs.
   land — **H3** also asserts `scarletDamage(base,'skill2').length === 0` (no smuggled interval channel). ⚑3 recipe:
   focus-video popup count → measured proc cadence.
 - **S2 HP<60% → Crit Dmg ▲6.61% continuous (H4, DOCUMENTED-GAP)** `passive → self → buff critDamagePct 6.61,
-  rampSec 56`. The buff itself (stat, magnitude, self scope, permanence) is faithful; only the HP<60% ACTIVATION is
+rampSec 56`. The buff itself (stat, magnitude, self scope, permanence) is faithful; only the HP<60% ACTIVATION is
   a ⚑ proxy — the engine has no HP trigger, so `rampSec:56` is the equal-integral proxy for a step-on at ~28s (a
   linear 0→full ramp over 2T integrates to a step at T). Unscoped (the prose says "continuously", no normal-attack
   qualifier), so it correctly lifts her burst nuke's crit too. **H4** pins value 6.61, permanent (no expiry), self,
   frame-0, rampSec 56; level-1 4.13 and critRatePct-miskey counterfactuals — RED.
 - **Burst HP<50% → Crit Rate ▲19.57%/10s (H5, DOCUMENTED-GAP)** `burstCast → self → buff critRatePct 19.57,
-  durationSec 10`, deliberately **UNGATED**: rampSec is unusable on a per-cast 10s window (its clock would ramp
+durationSec 10`, deliberately **UNGATED**: rampSec is unusable on a per-cast 10s window (its clock would ramp
   inside the window), so the buff is full-value on every cast and pre-~37s casts are an over-credit ⚑ (caveat 4).
   `burstCast` (her OWN cast), NOT `fullBurstEnter` — controlComp carries helm as co-B3, so team FBs (11) ≠ her
   casts (6). Unscoped (generic critRatePct, not critRateNormalPct), so it lifts the 849% nuke. **H5** pins value
@@ -144,7 +144,7 @@ preserved).
 - **S5** (opus, blind test): SPEC converges fully (all lines FAITHFUL/GAP with the same fixture and the same
   shared-prior traps). The test FILE runs against the driver override at **19 passed / 1 failed / 2 skipped**; the
   1 failure is the S1_LONG RECON_ERROR (§3), the 2 skips are the two correctly-unmodeled GAP lines. `leakDetected:
-  null`.
+null`.
 - **S6** (opus, blind override): **independently reproduced the driver's encoding line-for-line** from prose alone —
   S1 hitCount:10 atkPct 23.15/5/5; S2 passive critDamagePct 6.61 **rampSec:56** (the same equal-integral derivation,
   T≈28s); burst burstCast critRatePct 19.57/10s ungated (rampSec unusable on a per-cast window); burst 849.15

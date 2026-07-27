@@ -21,9 +21,9 @@
       "coresPerShot": 0.435,
       "coresPerShot_basis": "drake coreband2: 20 distinct red cores / 46 sampled shots",
       "visualPelletsPerShot_old": 6.0,
-      "truePelletsPerShot": {"windowAvg": 8.9, "peakMag": 9.7, "used": 8.9},
+      "truePelletsPerShot": { "windowAvg": 8.9, "peakMag": 9.7, "used": 8.9 },
       "rederivedCoreRate": 0.049,
-      "rederivedCoreRate_range": [0.044, 0.050],
+      "rederivedCoreRate_range": [0.044, 0.05],
       "currentEngineValue": 0.072,
       "verdict": "INFLATED",
       "inflationFactor": 1.48,
@@ -73,10 +73,25 @@
   },
 
   "summary": {
-    "rederivedCoreRateByBand": {"near": 0.048, "mid": 0.0, "midfar": 0.003, "far": 0.0},
-    "currentEngineByBand": {"near": 0.072, "mid": 0.0, "midfar": 0.0045, "far": 0.0},
+    "rederivedCoreRateByBand": {
+      "near": 0.048,
+      "mid": 0.0,
+      "midfar": 0.003,
+      "far": 0.0
+    },
+    "currentEngineByBand": {
+      "near": 0.072,
+      "mid": 0.0,
+      "midfar": 0.0045,
+      "far": 0.0
+    },
     "headline": "The SG near core rate is INFLATED by the visual-denominator artifact: true ~0.048 vs current 0.072 (factor ~1.5x). mid and far are unchanged at 0 (zero numerator, denominator fix does not apply). midfar drops from 0.0045 to ~0.003 (both negligible). The direction is a uniform DEFLATION of every nonzero SG core value, driven entirely by the corrected (larger, true) pellet denominator.",
-    "recommendedEngineValues_FableGated": {"near": 0.048, "mid": 0.0, "midfar": 0.003, "far": 0.0},
+    "recommendedEngineValues_FableGated": {
+      "near": 0.048,
+      "mid": 0.0,
+      "midfar": 0.003,
+      "far": 0.0
+    },
     "recommendationNote": "Only near meaningfully moves (0.072 -> ~0.048). midfar 0.0045 -> ~0.003 is optional (immaterial). Do NOT change mid/far (already 0). This is a MEASURED correction (popup-count-free denominator), not a board-fit fudge."
   },
 

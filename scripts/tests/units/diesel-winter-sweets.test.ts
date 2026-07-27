@@ -97,7 +97,7 @@ const dwsStackingCrit = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'critDamagePct');
   if (!e)
-    throw new Error('dws S1 critDamagePct effect missing — fixture is stale');
+    {throw new Error('dws S1 critDamagePct effect missing — fixture is stale');}
   e.maxStacks = 99;
 });
 /** D1 reference: her S1 Crit Damage line removed entirely (proves the buff is live + self-scoped). */
@@ -105,7 +105,7 @@ const dwsNoCrit = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critDamagePct'));
   if (ov.skill1.length === before)
-    throw new Error('dws S1 critDamagePct block missing — fixture is stale');
+    {throw new Error('dws S1 critDamagePct block missing — fixture is stale');}
 });
 /** D2 counterfactual: the Intro sustained value swapped for the Highlight branch (235.03%). */
 const dwsHighlightSustained = withPatchedOverride(SLUG, (ov) => {
@@ -113,9 +113,9 @@ const dwsHighlightSustained = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 60.19);
   if (!e)
-    throw new Error(
-      'dws S1 Intro sustainedDamagePct 60.19 missing — fixture is stale',
-    );
+    {throw new Error(
+      'dws S1 Intro sustainedDamagePct 60.19 missing — fixture is stale'
+    );}
   e.value = 235.03;
 });
 /** D3 counterfactual: the Full-Charge sustained buff capped at 1 stack (nearest wrong: no stacking). */
@@ -124,9 +124,9 @@ const dwsNoStackSustained = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 318.14);
   if (!e)
-    throw new Error(
-      'dws S2 sustainedDamagePct 318.14 missing — fixture is stale',
-    );
+    {throw new Error(
+      'dws S2 sustainedDamagePct 318.14 missing — fixture is stale'
+    );}
   e.maxStacks = 1;
 });
 /** D4 reference: her FB-entry 63.33%/s DoT removed. */
@@ -134,30 +134,30 @@ const dwsNoS2Dot = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !dotAtk(b, 63.33));
   if (ov.skill2.length === before)
-    throw new Error('dws S2 63.33 DoT block missing — fixture is stale');
+    {throw new Error('dws S2 63.33 DoT block missing — fixture is stale');}
 });
 /** D5 reference: her burst Damage Taken debuff removed. */
 const dwsNoDamageTaken = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
   if (ov.burst.length === before)
-    throw new Error(
-      'dws burst damageTakenPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'dws burst damageTakenPct block missing — fixture is stale'
+    );}
 });
 /** D6 reference: her burst 18.43%/s all-enemy DoT removed. */
 const dwsNoBurstDot18 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !dotAtk(b, 18.43));
   if (ov.burst.length === before)
-    throw new Error('dws burst 18.43 DoT block missing — fixture is stale');
+    {throw new Error('dws burst 18.43 DoT block missing — fixture is stale');}
 });
 /** D7 reference: her burst 181.2%/s stage-target DoT removed. */
 const dwsNoBurstDot181 = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !dotAtk(b, 181.2));
   if (ov.burst.length === before)
-    throw new Error('dws burst 181.2 DoT block missing — fixture is stale');
+    {throw new Error('dws burst 181.2 DoT block missing — fixture is stale');}
 });
 /** D-scope reference: BOTH sustainedDamagePct buffs removed (S1 60.19 + S2 318.14). Proves the
  *  stat feeds ONLY sustained-flavored damage (her DoTs), never her RL normal/charge bucket — the
@@ -165,7 +165,7 @@ const dwsNoBurstDot181 = withPatchedOverride(SLUG, (ov) => {
 const dwsNoSustained = withPatchedOverride(SLUG, (ov) => {
   for (const slot of ['skill1', 'skill2'] as const) {
     for (const b of ov[slot])
-      b.effects = b.effects.filter((e: any) => e.stat !== 'sustainedDamagePct');
+      {b.effects = b.effects.filter((e: any) => e.stat !== 'sustainedDamagePct');}
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
   ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
@@ -194,11 +194,11 @@ const dwsBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === DWS &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const dwsDots = (evs: SimEvent[], srcSlot: Damage['srcSlot'], atkPct: number) =>
   dmg(evs).filter(
-    (d) => d.slug === SLUG && d.srcSlot === srcSlot && d.atkPct === atkPct,
+    (d) => d.slug === SLUG && d.srcSlot === srcSlot && d.atkPct === atkPct
   );
 const dwsBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
@@ -214,7 +214,7 @@ const dwsNormalSum = (evs: SimEvent[]) =>
 const dwsSustainedSum = (evs: SimEvent[]) =>
   dmg(evs)
     .filter(
-      (d) => d.slug === SLUG && (d.bucket === 'skill' || d.bucket === 'burst'),
+      (d) => d.slug === SLUG && (d.bucket === 'skill' || d.bucket === 'burst')
     )
     .reduce((s, d) => s + d.amount, 0);
 
@@ -229,12 +229,12 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('is exactly 20.28%, held by her alone, re-applied each Full Burst entry', () => {
       expect(
         applied.length,
-        'no FB-entry critDamagePct buff was applied',
+        'no FB-entry critDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([20.28]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([DWS]);
     });
 
@@ -242,17 +242,17 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect([...new Set(applied.map((b) => b.stacks))]).toEqual([1]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'a "continuously" buff must have no wall-clock expiry',
+        'a "continuously" buff must have no wall-clock expiry'
       ).toEqual([null]);
     });
 
     it('DISCRIMINATING: a stackable crit buff would grow per Full Burst', () => {
       const grown = dwsBuffs(stackingCrit.events, 'critDamagePct').map(
-        (b) => b.stacks,
+        (b) => b.stacks
       );
       expect(
         Math.max(...grown),
-        'counterfactual must exceed 1 stack or this gates nothing',
+        'counterfactual must exceed 1 stack or this gates nothing'
       ).toBeGreaterThan(1);
     });
 
@@ -270,7 +270,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('is 60.19% for a 10-second window, self-scoped, once per Full Burst entry', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DWS]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('the Highlight value 235.03% is ABSENT here (sole-B3: she always casts -> Intro tier)', () => {
@@ -279,7 +279,7 @@ describe('diesel-winter-sweets — kit spec', () => {
 
     it('DISCRIMINATING: the Highlight branch would deal materially more', () => {
       expect(highlightSustained.totals[SLUG]).toBeGreaterThan(
-        base.totals[SLUG],
+        base.totals[SLUG]
       );
     });
   });
@@ -292,7 +292,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     // chain (dws does NOT cast) -> ownBurstGate 'notCast' passes -> the Highlight 235.03 tier fires.
     it('sole-B3: Intro 60.19 on every FB she casts, Highlight 235.03 never', () => {
       expect(
-        dwsBuffs(base.events, 'sustainedDamagePct', 60.19).length,
+        dwsBuffs(base.events, 'sustainedDamagePct', 60.19).length
       ).toBeGreaterThan(0);
       expect(dwsBuffs(base.events, 'sustainedDamagePct', 235.03)).toEqual([]);
     });
@@ -300,11 +300,11 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('two-B3: the Highlight 235.03 tier fires on the Full Bursts she does NOT cast', () => {
       // helm completes some chains (dws sits out) -> those FB entries grant 235.03, not 60.19.
       expect(
-        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 235.03).length,
+        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 235.03).length
       ).toBeGreaterThan(0);
       // and the Intro tier still fires on the FBs she DOES cast — the two partition the FB entries.
       expect(
-        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 60.19).length,
+        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 60.19).length
       ).toBeGreaterThan(0);
     });
   });
@@ -315,11 +315,11 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('fires on her shot cadence (RL: every pull is a full charge), self-scoped, 3s window', () => {
       expect(
         applied.length,
-        'no Full-Charge sustained buff applied',
+        'no Full-Charge sustained buff applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DWS]);
       expect([...new Set(applied.map((b) => b.maxStacks))]).toEqual([2]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
     });
 
     it('reaches 2 stacks (value×stacks = 636.28% sustained while both live)', () => {
@@ -334,7 +334,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       const ones = applied.filter((b) => b.stacks === 1).length;
       expect(
         ones,
-        'a permanent 2-stack model yields stacks==1 exactly once',
+        'a permanent 2-stack model yields stacks==1 exactly once'
       ).toBeGreaterThanOrEqual(Math.ceil(dwsReloads(base.events).length / 2));
       expect(ones).toBeGreaterThan(1);
     });
@@ -342,8 +342,8 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('DISCRIMINATING: capping at 1 stack under-counts her sustained damage', () => {
       const maxStack = Math.max(
         ...dwsBuffs(noStackSustained.events, 'sustainedDamagePct', 318.14).map(
-          (b) => b.stacks,
-        ),
+          (b) => b.stacks
+        )
       );
       expect(maxStack).toBe(1);
       expect(noStackSustained.totals[SLUG]).toBeLessThan(base.totals[SLUG]);
@@ -362,7 +362,7 @@ describe('diesel-winter-sweets — kit spec', () => {
 
     it('…but drops her sustained DoT damage (the buffs feed the DoTs, not the normals)', () => {
       expect(dwsSustainedSum(noSustained.events)).toBeLessThan(
-        dwsSustainedSum(base.events),
+        dwsSustainedSum(base.events)
       );
     });
   });
@@ -374,7 +374,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect(ticks.length).toBeGreaterThan(0);
       expect([...new Set(ticks.map((d) => d.bucket))]).toEqual(['skill']);
       expect(ticks.length).toBeGreaterThanOrEqual(
-        dwsBursts(base.events).length,
+        dwsBursts(base.events).length
       );
     });
 
@@ -388,9 +388,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     // targetIdx null (the boss) — so key on her specific value + the boss target, not casterIdx.
     const applied = buffs(base.events).filter(
       (b) =>
-        b.stat === 'damageTakenPct' &&
-        b.value === 25.09 &&
-        b.targetIdx === null,
+        b.stat === 'damageTakenPct' && b.value === 25.09 && b.targetIdx === null
     );
 
     it('is 25.09% on the boss (targetIdx null) for a 10-second window', () => {
@@ -398,16 +396,16 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([25.09]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'a debuff on the boss',
+        'a debuff on the boss'
       ).toEqual([null]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it("DISCRIMINATING: removing it drops the WHOLE team's damage (the amp is live)", () => {
       for (const slug of Object.keys(base.totals)) {
         expect(
           noDamageTaken.totals[slug],
-          `${slug} loses the Damage Taken amp`,
+          `${slug} loses the Damage Taken amp`
         ).toBeLessThan(base.totals[slug]);
       }
     });
@@ -421,7 +419,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect(dot18.length, '18.43%/s all-enemy DoT missing').toBeGreaterThan(0);
       expect(
         dot181.length,
-        '181.2%/s stage-target DoT missing',
+        '181.2%/s stage-target DoT missing'
       ).toBeGreaterThan(0);
       expect([...new Set([...dot18, ...dot181].map((d) => d.bucket))]).toEqual([
         'burst',
@@ -431,11 +429,11 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('DISCRIMINATING: each is independently removable', () => {
       expect(dwsDots(noBurstDot18.events, 'burst', 18.43)).toEqual([]);
       expect(
-        dwsDots(noBurstDot18.events, 'burst', 181.2).length,
+        dwsDots(noBurstDot18.events, 'burst', 181.2).length
       ).toBeGreaterThan(0);
       expect(dwsDots(noBurstDot181.events, 'burst', 181.2)).toEqual([]);
       expect(
-        dwsDots(noBurstDot181.events, 'burst', 18.43).length,
+        dwsDots(noBurstDot181.events, 'burst', 18.43).length
       ).toBeGreaterThan(0);
     });
   });
@@ -448,41 +446,41 @@ describe('diesel-winter-sweets — kit spec', () => {
     const OV: any = withPatchedOverride(SLUG, () => {});
     const blockWith = (
       slot: 'skill1' | 'skill2' | 'burst',
-      pred: (e: any) => boolean,
+      pred: (e: any) => boolean
     ) => (OV[slot] as any[]).find((b) => b.effects.some(pred));
 
     it('the burst debuff + both burst DoTs key on burstCast (NOT fullBurstEnter)', () => {
       expect(
-        blockWith('burst', (e) => e.stat === 'damageTakenPct')?.trigger.kind,
+        blockWith('burst', (e) => e.stat === 'damageTakenPct')?.trigger.kind
       ).toBe('burstCast');
       expect(
         blockWith('burst', (e) => e.kind === 'dot' && e.atkPct === 18.43)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('burstCast');
       expect(
         blockWith('burst', (e) => e.kind === 'dot' && e.atkPct === 181.2)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('burstCast');
     });
 
     it('the FB-entry 63.33%/s DoT and the S1 Intro buffs key on fullBurstEnter', () => {
       expect(
         blockWith('skill2', (e) => e.kind === 'dot' && e.atkPct === 63.33)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('fullBurstEnter');
       expect(
-        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.trigger.kind,
+        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.trigger.kind
       ).toBe('fullBurstEnter');
       expect(
         blockWith('skill1', (e) => e.stat === 'sustainedDamagePct')?.trigger
-          .kind,
+          .kind
       ).toBe('fullBurstEnter');
     });
 
     it('the Full-Charge 318.14% sustained buff keys on shotFired (every RL pull is a full charge)', () => {
       expect(
         blockWith('skill2', (e) => e.stat === 'sustainedDamagePct')?.trigger
-          .kind,
+          .kind
       ).toBe('shotFired');
     });
 
@@ -491,19 +489,19 @@ describe('diesel-winter-sweets — kit spec', () => {
       // tier COMP-DEPENDENT (sole burster -> Intro; never-bursts -> Highlight), fixing the prior
       // Intro-only hard-coding that under-counted graded comp N5 (2026-07-16 finding).
       const sus = (OV.skill1 as any[]).filter((b) =>
-        b.effects.some((e: any) => e.stat === 'sustainedDamagePct'),
+        b.effects.some((e: any) => e.stat === 'sustainedDamagePct')
       );
       const intro = sus.find((b) =>
-        b.effects.some((e: any) => e.value === 60.19),
+        b.effects.some((e: any) => e.value === 60.19)
       );
       const highlight = sus.find((b) =>
-        b.effects.some((e: any) => e.value === 235.03),
+        b.effects.some((e: any) => e.value === 235.03)
       );
       expect(intro?.ownBurstGate).toBe('cast');
       expect(highlight?.ownBurstGate).toBe('notCast');
       // the permanent Crit Damage is shared by both statuses -> a single ungated block.
       expect(
-        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.ownBurstGate,
+        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.ownBurstGate
       ).toBeUndefined();
     });
   });

@@ -35,35 +35,51 @@
 //
 // Runs are hoisted (each runComp is a full 180s sim); 5 runs total.
 
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness';
 
 const SLUG = 'soline-frost-ticket';
 
 // ---- helpers ----------------------------------------------------------------
 function eachEff(ov: any, fn: (e: any, b: any) => void) {
-  for (const b of ov.blocks || []) for (const e of b.effects || []) fn(e, b);
+  for (const b of ov.blocks || []) {for (const e of b.effects || []) {fn(e, b);}}
 }
 const setCdr = (s: number) => (ov: any) =>
-  eachEff(ov, (e) => { if (e.kind === 'burstCdr') e.seconds = s; });
+  eachEff(ov, (e) => {
+    if (e.kind === 'burstCdr') {e.seconds = s;}
+  });
 const zeroMaxHp = (ov: any) =>
   eachEff(ov, (e) => {
-    if (e.kind === 'buff' && ['casterMaxHpPct', 'targetMaxHpPct', 'maxHpPct'].includes(e.stat)) e.value = 0;
+    if (
+      e.kind === 'buff' &&
+      ['casterMaxHpPct', 'targetMaxHpPct', 'maxHpPct'].includes(e.stat)
+    )
+      {e.value = 0;}
   });
 const stripHeals = (ov: any) => {
-  for (const b of ov.blocks || []) b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');
+  for (const b of ov.blocks || [])
+    {b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');}
 };
 
 // runWith(null) = committed faithful override; else an in-memory patched clone for SLUG.
 function runWith(clone: any | null) {
   const opts: any = controlComp(SLUG, true);
-  if (clone) opts.overrides = { ...(opts.overrides || {}), [SLUG]: clone };
+  if (clone) {opts.overrides = { ...(opts.overrides || {}), [SLUG]: clone };}
   const events: any[] = [];
   opts.cfg = { ...(opts.cfg || {}), onEvent: (e: any) => events.push(e) };
   const res = runComp(opts);
   return { res, events };
 }
-const teamTotal = (r: any) => { const x: any = totals(r.res); return typeof x === 'number' ? x : x.total; };
-const fbCount = (r: any) => r.events.filter((e: any) => e.kind === 'fullBurstStart').length;
+const teamTotal = (r: any) => {
+  const x: any = totals(r.res);
+  return typeof x === 'number' ? x : x.total;
+};
+const fbCount = (r: any) =>
+  r.events.filter((e: any) => e.kind === 'fullBurstStart').length;
 
 // ---- hoisted runs -----------------------------------------------------------
 const base = runWith(null);
@@ -81,11 +97,13 @@ describe('soline-frost-ticket — blind kit spec', () => {
   // (A) ticket: Max HP up (tickets x10% of caster Max HP), all allies, battle-start + own-burst
   it('A: grants casterMaxHpPct to allies (battle-start ticket = 10%)', () => {
     const grants = base.events.filter(
-      (e: any) => e.kind === 'buffApply' && e.stat === 'casterMaxHpPct',
+      (e: any) => e.kind === 'buffApply' && e.stat === 'casterMaxHpPct'
     );
     expect(grants.length).toBeGreaterThanOrEqual(1);
     // battle-start = 1 ticket = 10%; a 2nd ticket (20%) only if Soline casts her own burst.
-    expect(grants.some((g: any) => g.value === 10 || g.value === 20)).toBe(true);
+    expect(grants.some((g: any) => g.value === 10 || g.value === 20)).toBe(
+      true
+    );
   });
 
   it('A: ticket Max HP is OFFENSIVELY INERT (zeroing it moves no damage)', () => {
@@ -96,10 +114,12 @@ describe('soline-frost-ticket — blind kit spec', () => {
 
   // (B) Burst Skill CD down 7.48s on Full-Burst enter, all allies
   it('B: burstCdr is live — Full-Burst count monotone in CDR seconds', () => {
-    const n0 = fbCount(cdr0), nf = fbCount(base), nBig = fbCount(cdrBig);
-    expect(nf).toBeGreaterThanOrEqual(n0);      // faithful CDR never yields FEWER FBs than none
-    expect(nBig).toBeGreaterThanOrEqual(nf);    // a larger CDR never yields fewer
-    expect(nBig).toBeGreaterThan(n0);           // discriminates: an omitted/inert burstCdr collapses these
+    const n0 = fbCount(cdr0),
+      nf = fbCount(base),
+      nBig = fbCount(cdrBig);
+    expect(nf).toBeGreaterThanOrEqual(n0); // faithful CDR never yields FEWER FBs than none
+    expect(nBig).toBeGreaterThanOrEqual(nf); // a larger CDR never yields fewer
+    expect(nBig).toBeGreaterThan(n0); // discriminates: an omitted/inert burstCdr collapses these
   });
 
   // (F) burst heal 32.26% caster Max HP, all allies — tandem via Crown's recovery trigger

@@ -8,7 +8,13 @@
 import { describe, expect, it } from 'vitest';
 import { makeCalc, type TeamCalcInput } from '../../../src/teamcalc.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
-import { archetypeTags, deps, distinct5, generatorPool, mult } from '../lib/harness.js';
+import {
+  archetypeTags,
+  deps,
+  distinct5,
+  generatorPool,
+  mult,
+} from '../lib/harness.js';
 
 const { chars, overrides } = generatorPool();
 
@@ -36,7 +42,8 @@ const calcWith = (blocked: string[] = []) =>
 // the real rules only bite when the units exist in the pool — fail loudly if a
 // fixture unit ever drops out of the generator pool
 for (const s of ['mint', 'prika', 'naga'])
-  if (!(chars as any)[s]) throw new Error(`${s}: not in generator pool — fixture stale`);
+  {if (!(chars as any)[s])
+    {throw new Error(`${s}: not in generator pool — fixture stale`);}}
 
 describe('team constraints (owner ruling 2026-07-24)', () => {
   it('locking mint pulls prika onto the same team (together rule)', async () => {
@@ -53,13 +60,16 @@ describe('team constraints (owner ruling 2026-07-24)', () => {
     expect(t!.slugs).toContain('naga');
     expect(
       t!.slugs.some((s) => SHIELDERS.includes(s)),
-      `no shielder beside naga in ${t!.slugs.join(',')}`,
+      `no shielder beside naga in ${t!.slugs.join(',')}`
     ).toBe(true);
   });
 
   it('the together rule relaxes when a member is unavailable to the search', async () => {
     const t = await calcWith(['prika']).bestTeam({ mustInclude: ['mint'] });
-    expect(t, 'mint should be fieldable when prika is blocked (relax)').not.toBeNull();
+    expect(
+      t,
+      'mint should be fieldable when prika is blocked (relax)'
+    ).not.toBeNull();
     expect(t!.slugs).toContain('mint');
     expect(t!.slugs).not.toContain('prika');
   });
@@ -68,8 +78,12 @@ describe('team constraints (owner ruling 2026-07-24)', () => {
     const top = await calcWith().topTeams(3);
     for (const t of top) {
       const n =
-        (t.slugs.includes('mint') ? 1 : 0) + (t.slugs.includes('prika') ? 1 : 0);
-      expect(n === 0 || n === 2, `mint/prika split on ${t.slugs.join(',')}`).toBe(true);
+        (t.slugs.includes('mint') ? 1 : 0) +
+        (t.slugs.includes('prika') ? 1 : 0);
+      expect(
+        n === 0 || n === 2,
+        `mint/prika split on ${t.slugs.join(',')}`
+      ).toBe(true);
     }
   });
 });

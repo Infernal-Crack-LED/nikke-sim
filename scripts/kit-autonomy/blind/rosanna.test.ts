@@ -10,7 +10,6 @@ import type { SimEvent } from '../../../src/types.js';
 import {
   controlComp,
   runComp,
-  totals,
   unitOf,
   withPatchedOverride,
 } from '../lib/harness.js';
@@ -18,7 +17,10 @@ import {
 describe('rosanna kit', () => {
   const run = (opts: Parameters<typeof runComp>[0]) => {
     const events: SimEvent[] = [];
-    const res = runComp({ ...opts, onEvent: (ev: SimEvent) => events.push(ev) });
+    const res = runComp({
+      ...opts,
+      onEvent: (ev: SimEvent) => events.push(ev),
+    });
     return { res, events };
   };
 
@@ -39,7 +41,9 @@ describe('rosanna kit', () => {
         Math.abs((e.value as number) - 19.34) < 0.001
     );
     expect(crits.length).toBeGreaterThan(0);
-    expect((crits[0] as any).frame).toBeGreaterThanOrEqual(shotFrames[119] ?? 0);
+    expect((crits[0] as any).frame).toBeGreaterThanOrEqual(
+      shotFrames[119] ?? 0
+    );
     const early = crits.filter(
       (e: any) => (e.frame as number) < (shotFrames[119] ?? Infinity)
     );
@@ -59,7 +63,9 @@ describe('rosanna kit', () => {
       const b = ov.skill1!.blocks.find(
         (x: any) => x.trigger.kind === 'hitCount' && x.trigger.count === 120
       );
-      if (b) b.trigger = { kind: 'hitCount', count: 999999 };
+      if (b) {
+        b.trigger = { kind: 'hitCount', count: 999999 };
+      }
     });
     const { res } = run({
       ...controlComp('rosanna', true),

@@ -65,7 +65,7 @@ function dropEffects(ov: Ov, pred: (e: any) => boolean): any[] {
   const dropped: any[] = [];
   for (const b of blocksOf(ov)) {
     const keep: any[] = [];
-    for (const e of b.effects ?? []) (pred(e) ? dropped : keep).push(e);
+    for (const e of b.effects ?? []) {(pred(e) ? dropped : keep).push(e);}
     b.effects = keep;
   }
   return dropped;
@@ -83,14 +83,19 @@ function retrigger(ov: Ov, pred: (e: any) => boolean, trigger: any): number {
 }
 
 const reverseModes = (ov: Ov) => {
-  if (Array.isArray(ov.modes) && ov.modes.length > 1) ov.modes = [...ov.modes].reverse();
+  if (Array.isArray(ov.modes) && ov.modes.length > 1)
+    {ov.modes = [...ov.modes].reverse();}
 };
 
 // --- effect predicates (magnitudes straight off the prose) ---
-const pFbAtk = (e: any) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 70.01);
-const pBurstAtk = (e: any) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 70.09);
-const pChargeSpeed = (e: any) => e.kind === 'buff' && e.stat === 'chargeSpeedPct';
-const pDamageTaken = (e: any) => e.kind === 'buff' && e.stat === 'damageTakenPct';
+const pFbAtk = (e: any) =>
+  e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 70.01);
+const pBurstAtk = (e: any) =>
+  e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 70.09);
+const pChargeSpeed = (e: any) =>
+  e.kind === 'buff' && e.stat === 'chargeSpeedPct';
+const pDamageTaken = (e: any) =>
+  e.kind === 'buff' && e.stat === 'damageTakenPct';
 const pDot = (e: any) => e.kind === 'dot';
 const pFlat = (e: any) => e.kind === 'flatDamage';
 const pRecAtkDmg = (e: any) =>
@@ -105,19 +110,22 @@ const evBuff = (evs: Ev[], stat: string, value?: number) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || near(e.value, value, 0.05)),
+      (value === undefined || near(e.value, value, 0.05))
   );
 const evSelfBuff = (evs: Ev[], stat: string, value?: number) =>
   evBuff(evs, stat, value).filter((e) => e.targetSlug === SLUG);
 const evSelfByValue = (evs: Ev[], value: number) =>
   evs.filter(
-    (e) => e.kind === 'buffApply' && e.targetSlug === SLUG && near(e.value, value, 0.5),
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.targetSlug === SLUG &&
+      near(e.value, value, 0.5)
   );
 const nFb = (r: Run) => r.evs.filter((e) => e.kind === 'fullBurstStart').length;
 const teamOf = (r: Run) => {
   const t = totals(r.res) as Record<string, number>;
   const out: Record<string, number> = {};
-  for (const k of Object.keys(t)) if (k !== SLUG) out[k] = t[k];
+  for (const k of Object.keys(t)) {if (k !== SLUG) {out[k] = t[k];}}
   return out;
 };
 const teamSum = (r: Run) => Object.values(teamOf(r)).reduce((a, b) => a + b, 0);
@@ -129,7 +137,10 @@ function exec(mutate?: (ov: Ov) => void): Run {
   };
   const opts: any = controlComp(SLUG, true);
   if (mutate) {
-    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, mutate) };
+    opts.overrides = {
+      ...(opts.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, mutate),
+    };
   }
   // the sim callback is documented as cfg.onEvent; set both spellings so the collector cannot
   // silently no-op. The instrumentation test below fails loudly if no events ever arrive.
@@ -141,13 +152,14 @@ function exec(mutate?: (ov: Ov) => void): Run {
 
 // ---------- structural read (no sim) ----------
 let modes: string[] | undefined;
-let slotCounts: Record<string, number> = {};
+const slotCounts: Record<string, number> = {};
 let inv: { slot: string; block: any; effect: any }[] = [];
 withPatchedOverride(SLUG, (ov: Ov) => {
   modes = ov.modes;
-  for (const s of SLOTS) slotCounts[s] = Array.isArray(ov[s]) ? ov[s].length : -1;
+  for (const s of SLOTS)
+    {slotCounts[s] = Array.isArray(ov[s]) ? ov[s].length : -1;}
   inv = blocksOf(ov).flatMap((b) =>
-    (b.effects ?? []).map((e: any) => ({ slot: b.slot, block: b, effect: e })),
+    (b.effects ?? []).map((e: any) => ({ slot: b.slot, block: b, effect: e }))
   );
 });
 const findE = (pred: (e: any) => boolean) => inv.filter((r) => pred(r.effect));
@@ -167,10 +179,10 @@ const flipped = exec(reverseModes);
 
 const lingeringInBase = evBuff(base.evs, 'damageTakenPct', 10.2).length > 0;
 const asLingering = (ov: Ov) => {
-  if (!lingeringInBase) reverseModes(ov);
+  if (!lingeringInBase) {reverseModes(ov);}
 };
 const asRecommended = (ov: Ov) => {
-  if (lingeringInBase) reverseModes(ov);
+  if (lingeringInBase) {reverseModes(ov);}
 };
 const ling = lingeringInBase ? base : flipped;
 const rec = lingeringInBase ? flipped : base;
@@ -255,7 +267,7 @@ describe('bready - instrumentation and fixture sanity', () => {
   });
 
   it('the override carries all three slots and no parser-only effect kinds', () => {
-    for (const s of SLOTS) expect(slotCounts[s]).toBeGreaterThanOrEqual(1);
+    for (const s of SLOTS) {expect(slotCounts[s]).toBeGreaterThanOrEqual(1);}
     expect(inv.length).toBeGreaterThan(0);
     expect(inv.some((r) => r.effect.kind === 'ignored')).toBe(false);
     expect(inv.some((r) => r.effect.kind === 'unsupported')).toBe(false);
@@ -323,7 +335,9 @@ describe('bready S2a - Lingering: 3 Full Charges -> Damage Taken +10.2% + Aftert
     expect(dt[0].block.target.kind).toBe('enemy');
     const evs = evBuff(ling.evs, 'damageTakenPct', 10.2);
     expect(evs.length).toBeGreaterThan(3);
-    expect(evs.every((e) => e.casterIdx === null && e.targetIdx === null)).toBe(true);
+    expect(evs.every((e) => e.casterIdx === null && e.targetIdx === null)).toBe(
+      true
+    );
     // nearest-wrong: encoded as a self buff -> teammates would not move when it is removed.
     expect(nDropDmgTaken).toBe(1);
     expect(teamSum(cfNoDmgTaken)).toBeLessThan(teamSum(ling));
@@ -399,7 +413,11 @@ describe('bready burst - 60.19% / 349.8% / 70.09%', () => {
     // nearest-wrong: re-keyed to fullBurstEnter -> it applies on helm rotations too and
     // over-credits her damage.
     expect(nReBurstAtkDmg).toBe(1);
-    const cf = evSelfBuff(cfBurstAtkDmgAsFb.evs, 'attackDamagePct', 60.19).length;
+    const cf = evSelfBuff(
+      cfBurstAtkDmgAsFb.evs,
+      'attackDamagePct',
+      60.19
+    ).length;
     expect(cf).toBe(nFb(cfBurstAtkDmgAsFb));
     expect(cf).toBeGreaterThan(c);
     expect(cfBurstAtkDmgAsFb.total).toBeGreaterThan(base.total);
@@ -417,9 +435,12 @@ describe('bready burst - 60.19% / 349.8% / 70.09%', () => {
     expect(b[0].effect.durationSec).toBe(10);
     expect(b[0].block.target.kind).toBe('self');
     // a generic bucket would also inflate her normal attacks and the distributed rider.
-    expect(['atkPct', 'attackDamagePct', 'critDamagePct', 'elementDamagePct']).not.toContain(
-      b[0].effect.stat,
-    );
+    expect([
+      'atkPct',
+      'attackDamagePct',
+      'critDamagePct',
+      'elementDamagePct',
+    ]).not.toContain(b[0].effect.stat);
     expect(evSelfByValue(ling.evs, 349.8).length).toBeGreaterThan(0);
     // inertness: with the Aftertaste DoT deleted the boost must move NOTHING.
     expect(nDropDot2).toBe(1);
@@ -449,7 +470,9 @@ describe('bready - Taste exclusivity', () => {
     expect(evBuff(ling.evs, 'damageTakenPct', 10.2).length).toBeGreaterThan(0);
     expect(evSelfBuff(ling.evs, 'attackDamagePct', 60.01).length).toBe(0);
     // Recommended run: the mirror image.
-    expect(evSelfBuff(rec.evs, 'attackDamagePct', 60.01).length).toBeGreaterThan(0);
+    expect(
+      evSelfBuff(rec.evs, 'attackDamagePct', 60.01).length
+    ).toBeGreaterThan(0);
     expect(evBuff(rec.evs, 'damageTakenPct', 10.2).length).toBe(0);
     // the burst branches follow their Taste.
     expect(evSelfByValue(ling.evs, 349.8).length).toBeGreaterThan(0);

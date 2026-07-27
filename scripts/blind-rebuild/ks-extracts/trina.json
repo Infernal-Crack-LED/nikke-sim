@@ -28,9 +28,7 @@
         "Recovers 2.03% of the skill user's final Max HP as HP.",
         "Recovers 1.57% of the skill user's final Max HP as HP."
       ],
-      "skill2": [
-        "Invulnerable for 2 sec."
-      ],
+      "skill2": ["Invulnerable for 2 sec."],
       "burst": [
         " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
         "Changes Spread Roots to Wilted Roots.",

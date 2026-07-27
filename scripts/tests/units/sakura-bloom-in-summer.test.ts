@@ -60,7 +60,6 @@ import {
   withPatchedOverride,
 } from '../lib/harness.js';
 
-const FPS = 60;
 const SLUG = 'sakura-bloom-in-summer';
 /** controlComp slot order: liter 0 / crown 1 / sbis 2 / helm 3. */
 const SBIS = 2;
@@ -80,10 +79,6 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- block selectors (the shipped skill2/burst shapes) ---------------------------------------
-const isS2PassiveBuff = (b: any) =>
-  b.trigger?.kind === 'passive' &&
-  b.target?.kind === 'self' &&
-  b.effects.some((e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct');
 const isS2PassiveDot = (b: any) =>
   b.trigger?.kind === 'passive' &&
   b.target?.kind === 'enemy' &&
@@ -103,16 +98,18 @@ const isBurstDot = (b: any) =>
 const noForceCast = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isS2PassiveDot(b));
-  if (ov.skill2.length !== before - 1)
+  if (ov.skill2.length !== before - 1) {
     throw new Error('sbis S2 passive dot block missing — fixture is stale');
+  }
 });
 /** SB2: the naive "passive ignores duration → full 15.64" over-count. */
 const naiveFullBuff = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'buff' && x.stat === 'attackDamagePct');
-  if (!e)
+  if (!e) {
     throw new Error('sbis Dancing Flower buff missing — fixture is stale');
+  }
   e.value = 15.64;
 });
 /** SB2: the old single-window under-count 1.30 (= 15.64 × 15/180). */
@@ -120,28 +117,34 @@ const singleWindowBuff = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'buff' && x.stat === 'attackDamagePct');
-  if (!e)
+  if (!e) {
     throw new Error('sbis Dancing Flower buff missing — fixture is stale');
+  }
   e.value = 1.3;
 });
 /** SB3: drop the 30s re-cast (keep only the t=0 force window). */
 const noRecast = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isS2IntervalDot(b));
-  if (ov.skill2.length !== before - 1)
+  if (ov.skill2.length !== before - 1) {
     throw new Error('sbis S2 interval dot block missing — fixture is stale');
+  }
 });
 /** SB4: the crown misparse — collapse the 10 sequential hits to ONE 457.14 hit. */
 const singleHitNuke = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find(isBurstNuke);
-  if (!b) throw new Error('sbis burst nuke block missing — fixture is stale');
+  if (!b) {
+    throw new Error('sbis burst nuke block missing — fixture is stale');
+  }
   const first = b.effects.find((e: any) => e.kind === 'flatDamage');
   b.effects = [first];
 });
 /** SB5: a single stack (35.16%/s) instead of the full 10-stack 351.6%/s. */
 const singleStackDot = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find(isBurstDot);
-  if (!b) throw new Error('sbis burst dot block missing — fixture is stale');
+  if (!b) {
+    throw new Error('sbis burst dot block missing — fixture is stale');
+  }
   b.effects.find((e: any) => e.kind === 'dot').atkPct = 35.16;
 });
 
@@ -167,7 +170,7 @@ const nukeHits = (evs: SimEvent[]) =>
   sbisDmg(evs).filter((d) => d.srcSlot === 'burst' && d.atkPct === 457.14);
 const burstDotTicks = (evs: SimEvent[]) =>
   sbisDmg(evs).filter(
-    (d) => d.srcSlot === 'burst' && d.bucket === 'burst' && d.atkPct !== 457.14,
+    (d) => d.srcSlot === 'burst' && d.bucket === 'burst' && d.atkPct !== 457.14
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -183,11 +186,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const early = petalsTicks(base.events).filter((d) => d.sec < 20);
       expect(
         early.length,
-        'no Sakura Petals ticks before 20s — the t=0 force-cast is missing',
+        'no Sakura Petals ticks before 20s — the t=0 force-cast is missing'
       ).toBe(15);
       expect(
         early[0].sec,
-        'first tick must land at 1s off a t=0 cast',
+        'first tick must land at 1s off a t=0 cast'
       ).toBeCloseTo(1, 5);
     });
 
@@ -196,7 +199,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       expect(early.length).toBe(0);
       // …and the fight loses exactly one 15-tick window overall.
       expect(
-        petalsTicks(base.events).length - petalsTicks(noForce.events).length,
+        petalsTicks(base.events).length - petalsTicks(noForce.events).length
       ).toBe(15);
     });
 
@@ -207,7 +210,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
 
   describe('SB2 — S2 Dancing Flower is the 50%-duty time-average 7.82%, self-scoped always-on', () => {
     const df = buffs(base.events).filter(
-      (b) => b.casterIdx === SBIS && b.stat === 'attackDamagePct',
+      (b) => b.casterIdx === SBIS && b.stat === 'attackDamagePct'
     );
 
     it('is 7.82% (= 15.64 × 90/180), not the naive 15.64 nor the single-window 1.30', () => {
@@ -230,11 +233,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const nSingle = normalTotal(singleWin.events);
       expect(
         nNaive,
-        'naive full 15.64 must out-damage shipped',
+        'naive full 15.64 must out-damage shipped'
       ).toBeGreaterThan(nBase);
       expect(
         nBase,
-        'shipped must out-damage the single-window 1.30',
+        'shipped must out-damage the single-window 1.30'
       ).toBeGreaterThan(nSingle);
     });
   });
@@ -251,7 +254,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       expect(petalsTicks(base.events).length).toBe(90);
       // six distinct 30s bands: [1-15],[31-45],[61-75],[91-105],[121-135],[151-165]
       const bands = new Set(
-        petalsTicks(base.events).map((d) => Math.floor(d.sec / 30)),
+        petalsTicks(base.events).map((d) => Math.floor(d.sec / 30))
       );
       expect([...bands].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5]);
     });
@@ -279,7 +282,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const casts = sbisBursts(oneHit.events).length;
       expect(nukeHits(oneHit.events).length).toBe(casts); // 1 per cast, not 10
       expect(nukeHits(base.events).length).toBe(
-        nukeHits(oneHit.events).length * 10,
+        nukeHits(oneHit.events).length * 10
       );
     });
   });
@@ -322,11 +325,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
 
     it('INERT: no Sustained Damage ▲5.1% buff ever applies (the partless boss never triggers it)', () => {
       const sustained = buffs(base.events).filter(
-        (b) => b.stat === 'sustainedDamagePct' && b.casterIdx === SBIS,
+        (b) => b.stat === 'sustainedDamagePct' && b.casterIdx === SBIS
       );
       expect(
         sustained,
-        'a part-destroy sustained-damage buff fired on a partless boss',
+        'a part-destroy sustained-damage buff fired on a partless boss'
       ).toEqual([]);
     });
 
@@ -337,8 +340,9 @@ describe('sakura-bloom-in-summer — kit spec', () => {
         const band = Math.floor(t.sec / 30);
         perBand.set(band, (perBand.get(band) ?? 0) + 1);
       }
-      for (const [band, n] of perBand)
+      for (const [band, n] of perBand) {
         expect(n, `band ${band} has ${n} ticks`).toBe(15);
+      }
     });
   });
 });

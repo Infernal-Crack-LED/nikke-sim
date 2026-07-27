@@ -9,11 +9,7 @@
 // Output is byte-identical to a single-thread run (the pool only executes sims;
 // scoring/selection is coordinator-side) — parity gate:
 // scripts/tests/generators/loadouts-parity.test.ts.
-import {
-  buildGenCalc,
-  type GenCalcParams,
-  type TeamResult,
-} from './genCalc';
+import { buildGenCalc, type GenCalcParams, type TeamResult } from './genCalc';
 import { simPool } from './simPool';
 
 export interface BestTeamOpts {
@@ -40,7 +36,7 @@ function coordinator(params: GenCalcParams, onProgress?: ProgressFn) {
   if (simPool.init(params)) {
     let total = 0;
     const evaluator = async (
-      teams: string[][],
+      teams: string[][]
     ): Promise<(TeamResult | null)[]> => {
       const r = await simPool.simMany(teams);
       total += teams.length;
@@ -57,7 +53,7 @@ function coordinator(params: GenCalcParams, onProgress?: ProgressFn) {
 export function genBestTeam(
   params: GenCalcParams,
   opts?: BestTeamOpts,
-  onProgress?: ProgressFn,
+  onProgress?: ProgressFn
 ): Promise<TeamResult | null> {
   return coordinator(params, onProgress).bestTeam({
     exclude: asSet(opts?.exclude),
@@ -70,7 +66,7 @@ export function genTopTeams(
   params: GenCalcParams,
   n: number,
   opts?: TopTeamsOpts,
-  onProgress?: ProgressFn,
+  onProgress?: ProgressFn
 ): Promise<TeamResult[]> {
   return coordinator(params, onProgress).topTeams(n, opts);
 }

@@ -19,11 +19,7 @@
     "rl3": 16.8,
     "burstGaugePerShot": 1.4,
     "treasure": false,
-    "nicknames": [
-      "dws",
-      "xdiesel",
-      "dieselws"
-    ],
+    "nicknames": ["dws", "xdiesel", "dieselws"],
     "skills": {
       "skill1": "■ Activates when entering Full Burst for the first time after using Burst Skill. Affects self.\nIntro: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.\n■ Activates when entering Full Burst for the first time without using own Burst Skill. Affects self.\nHighlight: Critical damage ▲ 20.28% continuously. This effect cannot be removed. Effect persists after revival.\n■ Activates when entering Full Burst. Affects self if in Intro status.\nSustained damage ▲ 60.19% for 10 sec.\n■ Activates when entering Full Burst. Affects self if in Highlight status.\nSustained damage ▲ 235.03% for 10 sec.",
       "skill2": "■ Activates when an ally or self destroys an enemy's part. Affects all allies (except self).\nMute: Gains immunity to Noise Pollution continuously. Stacks up to 3 times.\n■ Activates when an ally or self destroys an enemy's part. Affects self.\nSustained Damage ▲ 68.04% for 15 sec.\n■ Activates when performing a Full Charge attack. Affects self.\nSustained Damage ▲ 318.14% for 3 sec. Stacks up to 2 times.\n■ Activates when entering Full Burst. Affects the stage target.\nDeals 63.33% of final ATK as sustained damage every 1 sec for 9 sec.",
@@ -74,13 +70,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 500,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 100,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -380,16 +372,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects all enemies.\n<color=#00AEFF>Damage Taken ▲ {description_value_08}% for {description_value_09} sec.\nDeals {description_value_01}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_02} sec.</color>\n■ Affects the enemy if the enemy is the <word_group=10105>stage target</word_group>.\n<color=#00AEFF>Deals {description_value_06}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec for {description_value_07} sec.</color>\n■ Activates while the skill user is in Highlight status. Affects all allies (except self).\n<color=#00AEFF>Noise Pollution: Hit Rate ▼ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all allies if the skill user is in Highlight status.\n<color=#00AEFF>Mute stacks ▼ {description_value_05}.</color>",
           "description_value_list": [
@@ -524,19 +507,10 @@
           ],
           "prefer_target_condition": "ExcludeSelf",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            107530108
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            107530107,
-            107530101
-          ],
-          "before_hurt_function_id_list": [
-            107530102
-          ]
+          "after_use_function_id_list": [107530108],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [107530107, 107530101],
+          "before_hurt_function_id_list": [107530102]
         }
       },
       "statScaling": {
@@ -561,9 +535,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,
@@ -594,9 +566,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Diesel: Winter Sweets' Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

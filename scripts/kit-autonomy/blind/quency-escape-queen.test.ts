@@ -64,18 +64,18 @@ type Rec = Record<string, any>;
 // slot: { blocks: Block[] }. Accept both so the counterfactuals cannot silently no-op.
 function blocksOf(ov: Rec, slot: string): Rec[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s as Rec[];
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s as Rec[];}
   return Array.isArray(s.blocks) ? (s.blocks as Rec[]) : [];
 }
 
 function eachBlock(ov: Rec, fn: (b: Rec, slot: string) => void): void {
-  for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b, slot);
+  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
 }
 
 function eachEffect(ov: Rec, fn: (e: Rec, b: Rec, slot: string) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of (b.effects ?? []) as Rec[]) fn(e, b, slot);
+    for (const e of (b.effects ?? []) as Rec[]) {fn(e, b, slot);}
   });
 }
 
@@ -112,10 +112,10 @@ const setDuration =
 const dropBurstDamage: Mutator = (ov) => {
   let n = 0;
   eachBlock(ov, (b, slot) => {
-    if (slot !== 'burst') return;
+    if (slot !== 'burst') {return;}
     const before = ((b.effects ?? []) as Rec[]).length;
     b.effects = ((b.effects ?? []) as Rec[]).filter(
-      (e) => !DAMAGE_KINDS.has(e.kind),
+      (e) => !DAMAGE_KINDS.has(e.kind)
     );
     n += before - (b.effects as Rec[]).length;
   });
@@ -142,7 +142,7 @@ const touched: Record<string, number> = {};
 function patched(key: string, ...ms: Mutator[]): unknown {
   return withPatchedOverride(SLUG, (ov: any) => {
     let n = 0;
-    for (const m of ms) n += m(ov as Rec);
+    for (const m of ms) {n += m(ov as Rec);}
     touched[key] = n;
   });
 }
@@ -157,7 +157,7 @@ function run(override?: unknown): Run {
   const events: SimEvent[] = [];
   const opts: any = controlComp(SLUG, true);
   if (override)
-    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };
+    {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };}
   opts.cfg = {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => events.push(ev),
@@ -181,8 +181,8 @@ const PLAIN_NUKE_NO_DIST = run(
   patched(
     'flavorDist',
     stripBurstDamageFlavor,
-    zeroStat('distributedDamagePct'),
-  ),
+    zeroStat('distributedDamagePct')
+  )
 );
 const AD_1S = run(patched('ad1', setDuration('attackDamagePct', 1)));
 const AD_30S = run(patched('ad30', setDuration('attackDamagePct', 30)));
@@ -208,7 +208,7 @@ const buffApplies = (r: Run, stat: string, value: number): Rec[] =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      Math.abs(Number(e.value) - value) < 1e-6,
+      Math.abs(Number(e.value) - value) < 1e-6
   );
 
 const selfBuffApplies = (r: Run, stat: string, value: number): Rec[] =>
@@ -216,7 +216,7 @@ const selfBuffApplies = (r: Run, stat: string, value: number): Rec[] =>
 
 const burstDamageEvents = (r: Run): number =>
   (r.events as unknown as Rec[]).filter(
-    (e) => e.kind === 'damage' && e.srcSlot === 'burst',
+    (e) => e.kind === 'damage' && e.srcSlot === 'burst'
   ).length;
 
 const others = (r: Run): Record<string, number> => {
@@ -249,7 +249,7 @@ describe('quency-escape-queen -- harness wiring and non-vacuity', () => {
       // 0 = the kit line is absent from the override, not merely inert.
       expect(
         v,
-        `patch ${k} matched no authored effect -- kit line MISSING`,
+        `patch ${k} matched no authored effect -- kit line MISSING`
       ).toBeGreaterThan(0);
     }
   });
@@ -261,8 +261,8 @@ describe('skill1 -- three continuous self gates', () => {
     expect(evs.length).toBeGreaterThan(0);
     expect(
       buffApplies(BASE, 'distributedDamagePct', 49.58).every(
-        (e) => e.targetSlug === SLUG,
-      ),
+        (e) => e.targetSlug === SLUG
+      )
     ).toBe(true);
     // Nearest-wrong: authored but never reaching a consumer (inert stat) -> equal totals.
     expect(NO_DIST.total).toBeLessThan(BASE.total);
@@ -282,8 +282,8 @@ describe('skill1 -- three continuous self gates', () => {
     expect(evs.length).toBeGreaterThan(0);
     expect(
       buffApplies(BASE, 'coreDamagePct', 25.25).every(
-        (e) => e.targetSlug === SLUG,
-      ),
+        (e) => e.targetSlug === SLUG
+      )
     ).toBe(true);
     expect(NO_CORE.total).toBeLessThan(BASE.total);
     expect(others(NO_CORE)).toEqual(others(BASE));
@@ -309,7 +309,7 @@ describe('skill1 -- three continuous self gates', () => {
         expect(e.targetSlug, `${stat} ${value} applied off-self`).toBe(SLUG);
         expect(
           e.casterIdx,
-          `${stat} ${value} looks like a boss debuff`,
+          `${stat} ${value} looks like a boss debuff`
         ).not.toBeNull();
       }
     }
@@ -338,17 +338,17 @@ describe('skill2 -- after 2 normal attacks, three cumulative self stages', () =>
       const evs = selfBuffApplies(BASE, L.stat, L.value);
       expect(
         evs.length,
-        `${L.tier} ${L.stat} ${L.value} never applied to self`,
+        `${L.tier} ${L.stat} ${L.value} never applied to self`
       ).toBeGreaterThan(0);
       expect(evs[0].maxStacks, `${L.tier} ${L.stat} stack cap`).toBe(
-        L.maxStacks,
+        L.maxStacks
       );
       const peak = Math.max(...evs.map((e) => Number(e.stacks ?? 0)));
       // At SMG cadence a tier refreshes far faster than its 2s/1s/0.5s window, so it must
       // saturate; allow 1 stack of slack for the 0.5s tier landing on its own expiry frame.
       expect(
         peak,
-        `${L.tier} ${L.stat} never approaches its cap`,
+        `${L.tier} ${L.stat} never approaches its cap`
       ).toBeGreaterThanOrEqual(L.maxStacks - 1);
     }
   });
@@ -356,9 +356,7 @@ describe('skill2 -- after 2 normal attacks, three cumulative self stages', () =>
   it('the ATK ladder is load-bearing and self-only', () => {
     for (const L of LADDER.filter((x) => x.stat === 'atkPct')) {
       expect(
-        buffApplies(BASE, 'atkPct', L.value).every(
-          (e) => e.targetSlug === SLUG,
-        ),
+        buffApplies(BASE, 'atkPct', L.value).every((e) => e.targetSlug === SLUG)
       ).toBe(true);
     }
     expect(NO_ATK.total).toBeLessThan(BASE.total);
@@ -369,8 +367,8 @@ describe('skill2 -- after 2 normal attacks, three cumulative self stages', () =>
     for (const L of LADDER.filter((x) => x.stat === 'hitRatePct')) {
       expect(
         buffApplies(BASE, 'hitRatePct', L.value).every(
-          (e) => e.targetSlug === SLUG,
-        ),
+          (e) => e.targetSlug === SLUG
+        )
       ).toBe(true);
     }
     // Nearest-wrong: dropping Hit Rate as defensive/inert -> zeroing it changes nothing.
@@ -398,13 +396,13 @@ describe('burst -- self window plus the distributed nuke', () => {
     expect(rs.length).toBe(ad.length);
     expect(
       buffApplies(BASE, 'attackDamagePct', 57.08).every(
-        (e) => e.targetSlug === SLUG,
-      ),
+        (e) => e.targetSlug === SLUG
+      )
     ).toBe(true);
     expect(
       buffApplies(BASE, 'reloadSpeedPct', 25.87).every(
-        (e) => e.targetSlug === SLUG,
-      ),
+        (e) => e.targetSlug === SLUG
+      )
     ).toBe(true);
   });
 

@@ -64,7 +64,7 @@ focus sw): 1743 sw shots / 6 sw burstCast / 11 fullBurstStart over 180s.
   600-frame; fires **11× == fullBurstStart count, at the FB-entry frames EXACTLY** (critFrames==fbFrames). **SW4**
   discriminates trigger (burstCast → 6 ≠ 11; inFb-gated interval cast → S2-cast frames ≠ FB-entry frames — the S2b nearest-wrong).
 - **SW5 — Burst charge cannon** `burstCast → enemy → flatDamage 499.5, charge:true, chargeMultPct:1000 (→×10), core:true,
-  pierce:true, rangeOk:true, delaySec:5.5`. **OWNER-RULED delayed full-charge hit, NOT a weaponSwap** — she KEEPS FIRING her
+pierce:true, rangeOk:true, delaySec:5.5`. **OWNER-RULED delayed full-charge hit, NOT a weaponSwap** — she KEEPS FIRING her
   AR through the ~5s charge (footage gap #4; the swap dropped for a delaySec 5.5 charge-bucket hit). **6 instances ==
   burstCast**; bucket 'burst'; **mult.charge = 10** (full-charge coefficient **4995% = 499.5 × 10**, footage-confirmed — the
   six nuke popups sit ~3-4× above any 1499.5% additive class); fbMajorApplied + inFullBurst true (delayed landing inside FB);

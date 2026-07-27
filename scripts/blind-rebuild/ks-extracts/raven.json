@@ -26,10 +26,7 @@
         "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
         "Removes Vital Attack."
       ],
-      "burst": [
-        "A.N. Mode:",
-        "Effect 1: Removes Single Point Attack."
-      ]
+      "burst": ["A.N. Mode:", "Effect 1: Removes Single Point Attack."]
     },
     "caveats": [
       "skill1: full-charge DoT cadence (60f charge + 22f bolt gap + 141f reload, autofire unverified) is an unmeasured ⚑ estimate — the DoT is her dominant damage bucket and scales linearly with shot rate",

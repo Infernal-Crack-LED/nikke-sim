@@ -19,13 +19,18 @@
 // Deterministic EV runs (no seed) on the control comp.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  data,
+  runComp,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 type DamageEvent = Extract<SimEvent, { kind: 'damage' }>;
 type ShotEvent = Extract<SimEvent, { kind: 'shot' }>;
 type BuffApplyEvent = Extract<SimEvent, { kind: 'buffApply' }>;
 
-const MG_CARRY = 'modernia';            // MG, hitsPerShot 2
+const MG_CARRY = 'modernia'; // MG, hitsPerShot 2
 const SMG_CARRY = 'quency-escape-queen'; // SMG, hitsPerShot 2 — same number, other branch
 const SG_CARRY = 'soda-twinkling-bunny'; // SG, hitsPerShot 10
 
@@ -33,13 +38,22 @@ const charOf = (slug: string) => data.characters[slug];
 
 function capture(carry: string, patch?: (ov: any) => void) {
   const events: SimEvent[] = [];
-  const overrides = patch ? { [carry]: withPatchedOverride(carry, patch) } : undefined;
-  runComp({ ...controlComp(carry), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  const overrides = patch
+    ? { [carry]: withPatchedOverride(carry, patch) }
+    : undefined;
+  runComp({
+    ...controlComp(carry),
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return {
     events,
-    shots: events.filter((e): e is ShotEvent => e.kind === 'shot' && e.slug === carry),
+    shots: events.filter(
+      (e): e is ShotEvent => e.kind === 'shot' && e.slug === carry
+    ),
     normals: events.filter(
-      (e): e is DamageEvent => e.kind === 'damage' && e.slug === carry && e.srcSlot === 'normal',
+      (e): e is DamageEvent =>
+        e.kind === 'damage' && e.slug === carry && e.srcSlot === 'normal'
     ),
     // Frames on which a Max-Ammunition ▼ (maxAmmoPct<0) LANDS on `carry`. The engine clips the
     // current belt to the new (smaller) cap when such a buff lands (sim.ts, "Max Ammo ▼ clips the
@@ -51,9 +65,12 @@ function capture(carry: string, patch?: (ov: any) => void) {
       events
         .filter(
           (e): e is BuffApplyEvent =>
-            e.kind === 'buffApply' && e.targetSlug === carry && e.stat === 'maxAmmoPct' && e.value < 0,
+            e.kind === 'buffApply' &&
+            e.targetSlug === carry &&
+            e.stat === 'maxAmmoPct' &&
+            e.value < 0
         )
-        .map((e) => e.frame),
+        .map((e) => e.frame)
     ),
   };
 }
@@ -62,10 +79,11 @@ describe('hitsPerShot (multi-round weapons)', () => {
   it('fixture check — the two 2-round carriers differ only in weapon class', () => {
     expect(charOf(MG_CARRY).weapon).toBe('MG');
     expect(charOf(SMG_CARRY).weapon).toBe('SMG');
-    expect(charOf(MG_CARRY).hitsPerShot, 'the MG/SMG pair must share hitsPerShot for the ' +
-      'weapon-branch assertions below to isolate the WEAPON rather than the number').toBe(
-      charOf(SMG_CARRY).hitsPerShot,
-    );
+    expect(
+      charOf(MG_CARRY).hitsPerShot,
+      'the MG/SMG pair must share hitsPerShot for the ' +
+        'weapon-branch assertions below to isolate the WEAPON rather than the number'
+    ).toBe(charOf(SMG_CARRY).hitsPerShot);
     expect(charOf(SG_CARRY).hitsPerShot).toBeGreaterThan(1);
   });
 
@@ -78,9 +96,10 @@ describe('hitsPerShot (multi-round weapons)', () => {
     for (const carry of [MG_CARRY, SG_CARRY]) {
       const { shots, normals } = capture(carry);
       expect(shots.length, `${carry} never fired`).toBeGreaterThan(0);
-      expect(normals.length, `${carry}: ${normals.length} normal instances for ${shots.length} pulls`).toBe(
-        shots.length,
-      );
+      expect(
+        normals.length,
+        `${carry}: ${normals.length} normal instances for ${shots.length} pulls`
+      ).toBe(shots.length);
       expect(normals.map((n) => n.frame)).toEqual(shots.map((s) => s.frame));
     }
   });
@@ -106,13 +125,16 @@ describe('hitsPerShot (multi-round weapons)', () => {
             s.magIndex === prev.magIndex &&
             // a pull sharing its frame with a Max-Ammunition ▼ landing carries a belt clip folded
             // into its ammo delta (see `ammoClipFrames`) — exclude by CAUSE, not by magnitude
-            !ammoClipFrames.has(s.frame),
+            !ammoClipFrames.has(s.frame)
         )
         .map(({ s, prev }) => prev!.ammoAfter - s.ammoAfter);
-      expect(spends.length, `${carry}: no ammo-spending pull pairs to measure`).toBeGreaterThan(20);
+      expect(
+        spends.length,
+        `${carry}: no ammo-spending pull pairs to measure`
+      ).toBeGreaterThan(20);
       expect(
         [...new Set(spends)],
-        `${carry} (${charOf(carry).weapon}, hitsPerShot ${charOf(carry).hitsPerShot}) should spend ${want} round(s) per pull`,
+        `${carry} (${charOf(carry).weapon}, hitsPerShot ${charOf(carry).hitsPerShot}) should spend ${want} round(s) per pull`
       ).toEqual([want]);
     }
   });
@@ -136,18 +158,22 @@ describe('hitsPerShot (multi-round weapons)', () => {
           !s.unlimitedAmmo &&
           !prev.unlimitedAmmo &&
           s.magIndex === prev.magIndex &&
-          ammoClipFrames.has(s.frame),
+          ammoClipFrames.has(s.frame)
       )
-      .map(({ s, prev }) => ({ frame: s.frame, d: prev!.ammoAfter - s.ammoAfter }));
+      .map(({ s, prev }) => ({
+        frame: s.frame,
+        d: prev!.ammoAfter - s.ammoAfter,
+      }));
     // A ▼ landing clips only when the belt is OVER the new cap; when it is already under cap the
     // pull spends normally (clipAmount 0). Either way the delta decomposes as clipAmount + spend
     // with clipAmount >= 0 — it can never drop BELOW a normal spend, which is the guarantee that
     // proves the exclusion swallows clip contamination and nothing else.
     for (const { frame, d } of clipped) {
       const clipAmount = d - hps;
-      expect(clipAmount, `modernia clip-frame pair @f${frame}: delta ${d} = clip + spend ${hps}`).toBeGreaterThanOrEqual(
-        0,
-      );
+      expect(
+        clipAmount,
+        `modernia clip-frame pair @f${frame}: delta ${d} = clip + spend ${hps}`
+      ).toBeGreaterThanOrEqual(0);
     }
     // …and at the shipped (frame-quantized) SMG cadence the genuine overhang clip actually occurs —
     // a pull frame carrying MORE than a normal spend (the 10 = 8-round clip + 2-round spend that the
@@ -157,7 +183,7 @@ describe('hitsPerShot (multi-round weapons)', () => {
       const genuineClip = clipped.filter((c) => c.d > hps);
       expect(
         genuineClip.length,
-        'shipped SMG cadence: expected at least one over-cap belt clip folded into a pull delta',
+        'shipped SMG cadence: expected at least one over-cap belt clip folded into a pull delta'
       ).toBeGreaterThan(0);
     }
   });
@@ -176,23 +202,35 @@ describe('hitsPerShot (multi-round weapons)', () => {
             target: { kind: 'self' },
             // absurd magnitude so a buffed pull is unmistakable in the multiplier decomposition —
             // no teammate buff can push dmgUp anywhere near this
-            effects: [{ kind: 'buff', stat: 'attackDamagePct', value: 100_000, durationShots: ROUNDS }],
+            effects: [
+              {
+                kind: 'buff',
+                stat: 'attackDamagePct',
+                value: 100_000,
+                durationShots: ROUNDS,
+              },
+            ],
           },
         ];
       });
-      const casts = events.filter((e) => e.kind === 'burstCast' && e.slug === carry).length;
-      expect(casts, `${carry} never cast her burst — the window never opened`).toBeGreaterThan(0);
+      const casts = events.filter(
+        (e) => e.kind === 'burstCast' && e.slug === carry
+      ).length;
+      expect(
+        casts,
+        `${carry} never cast her burst — the window never opened`
+      ).toBeGreaterThan(0);
       return { casts, pulls: normals.filter((n) => n.mult.dmgUp > 100).length };
     };
     const mg = buffed(MG_CARRY);
     const smg = buffed(SMG_CARRY);
     expect(
       mg.pulls / mg.casts,
-      `${MG_CARRY} (MG, hitsPerShot ${charOf(MG_CARRY).hitsPerShot}): a ${ROUNDS}-round window should cover ${ROUNDS / charOf(MG_CARRY).hitsPerShot} pulls`,
+      `${MG_CARRY} (MG, hitsPerShot ${charOf(MG_CARRY).hitsPerShot}): a ${ROUNDS}-round window should cover ${ROUNDS / charOf(MG_CARRY).hitsPerShot} pulls`
     ).toBe(ROUNDS / charOf(MG_CARRY).hitsPerShot);
     expect(
       smg.pulls / smg.casts,
-      `${SMG_CARRY} (SMG, same hitsPerShot): a ${ROUNDS}-round window should cover ${ROUNDS} pulls`,
+      `${SMG_CARRY} (SMG, same hitsPerShot): a ${ROUNDS}-round window should cover ${ROUNDS} pulls`
     ).toBe(ROUNDS);
   });
 });

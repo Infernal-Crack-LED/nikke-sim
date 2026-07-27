@@ -19,14 +19,16 @@ import crypto from 'node:crypto';
 
 const CDN = 'https://sg-tools-cdn.blablalink.com';
 const LOCALE = 'en'; // en | jp | kr | tw | cn (affects only localized text, not stats)
-const LARGE_PRIMES = [224737, 1000639, 2654435761, 2654435769, 1000621, 4294967291];
+const LARGE_PRIMES = [
+  224737, 1000639, 2654435761, 2654435769, 1000621, 4294967291,
+];
 
 const md5 = (s) => crypto.createHash('md5').update(String(s)).digest('hex');
 
 // djb2-ish rolling hash, truncated to signed int32 exactly like the site does.
 function djb2Mod(str, prime) {
   let acc = prime;
-  for (let i = 0; i < str.length; i++) acc = (acc * 33 + str.charCodeAt(i)) | 0;
+  for (let i = 0; i < str.length; i++) {acc = (acc * 33 + str.charCodeAt(i)) | 0;}
   return acc;
 }
 function twoLetterHash(str, prime) {
@@ -60,12 +62,14 @@ const resourceUrl = (path) => `${CDN}/${obfuscatedPath(path)}`;
 async function getJson(path) {
   const url = resourceUrl(path);
   const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-  if (!res.ok) throw new Error(`GET ${path} -> ${res.status} (${url})`);
+  if (!res.ok) {throw new Error(`GET ${path} -> ${res.status} (${url})`);}
   return res.json();
 }
 
-const getRoleData = (resourceId) => getJson(`/roledata/${resourceId}-v2-${LOCALE}.json`);
-const getNikkeList = () => getJson(`/character/${LOCALE}/nikke_list_${LOCALE}_v2.json`);
+const getRoleData = (resourceId) =>
+  getJson(`/roledata/${resourceId}-v2-${LOCALE}.json`);
+const getNikkeList = () =>
+  getJson(`/character/${LOCALE}/nikke_list_${LOCALE}_v2.json`);
 
 // The exact stat formula from ShiftyPad's nikke-detail chunk.
 //   level_stat = character_level_<type>_list[level - 1]            (synchro level curve)
@@ -76,7 +80,10 @@ const getNikkeList = () => getJson(`/character/${LOCALE}/nikke_list_${LOCALE}_v2
 function computeStat(role, type /* attack|hp|defence */, level, grade, core) {
   const se = role.stat_enhance_detail;
   const levelStat = role[`character_level_${type}_list`][level - 1];
-  const base = Math.floor(levelStat * (1 + grade * se.grade_ratio * 1e-4) + grade * se[`grade_${type}`]);
+  const base = Math.floor(
+    levelStat * (1 + grade * se.grade_ratio * 1e-4) +
+      grade * se[`grade_${type}`]
+  );
   return Math.round(base * (1 + core * se[`core_${type}`] * 1e-4));
 }
 
@@ -96,7 +103,9 @@ if (cmd === 'list') {
   const arr = Array.isArray(list) ? list : list.records || list.list;
   for (const n of arr.sort((a, b) => a.resource_id - b.resource_id)) {
     const name = n.name_localkey?.name ?? n.name_localkey ?? n.name_code;
-    console.log(`${String(n.resource_id).padStart(4)}  ${n.original_rare}  ${n.class.padEnd(11)}  ${name}`);
+    console.log(
+      `${String(n.resource_id).padStart(4)}  ${n.original_rare}  ${n.class.padEnd(11)}  ${name}`
+    );
   }
 } else if (cmd === 'raw') {
   console.log(JSON.stringify(await getRoleData(Number(arg)), null, 2));
@@ -104,16 +113,30 @@ if (cmd === 'list') {
   const role = await getRoleData(Number(arg));
   const name = role.name_localkey ?? arg;
   const maxLv = role.character_level_attack_list.length;
-  console.log(`${name} (resource_id ${arg}) — ${role.original_rare} ${role.class}, ${role.element_details?.[0]?.element ?? ''}`);
-  console.log(`crit_rate=${role.critical_ratio / 100}%  crit_dmg=${role.critical_damage / 100}%  max synchro lv=${maxLv}`);
+  console.log(
+    `${name} (resource_id ${arg}) — ${role.original_rare} ${role.class}, ${role.element_details?.[0]?.element ?? ''}`
+  );
+  console.log(
+    `crit_rate=${role.critical_ratio / 100}%  crit_dmg=${role.critical_damage / 100}%  max synchro lv=${maxLv}`
+  );
   console.log('\n  level  LB  core        ATK           HP         DEF');
-  const rows = [[1, 0, 0], [200, 0, 0], [200, 3, 0], [200, 3, 7], [maxLv, 3, 7]];
+  const rows = [
+    [1, 0, 0],
+    [200, 0, 0],
+    [200, 3, 0],
+    [200, 3, 7],
+    [maxLv, 3, 7],
+  ];
   for (const [lv, g, c] of rows) {
     const s = baseStats(role, lv, g, c);
-    console.log(`  ${String(lv).padStart(5)}  ${g}   ${c}   ${String(s.atk).padStart(10)}  ${String(s.hp).padStart(11)}  ${String(s.def).padStart(10)}`);
+    console.log(
+      `  ${String(lv).padStart(5)}  ${g}   ${c}   ${String(s.atk).padStart(10)}  ${String(s.hp).padStart(11)}  ${String(s.def).padStart(10)}`
+    );
   }
 } else {
-  console.log('usage: node scripts/blablalink-stats.mjs <list | stats <id> | raw <id>>');
+  console.log(
+    'usage: node scripts/blablalink-stats.mjs <list | stats <id> | raw <id>>'
+  );
 }
 
 export { getRoleData, getNikkeList, baseStats, computeStat, resourceUrl };

@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 /*
  * snow-white (Snow White) — AR/Iron/Attacker/Burst III. BLIND S5 kit spec test.
@@ -45,37 +50,67 @@ function runPatched(mutate) {
 }
 
 const swTotal = (res) => unitOf(res, SLUG).total;
-const teammates = (res) => ['liter', 'crown', 'helm'].map((s) => unitOf(res, s).total);
-const eachEffect = (ov, fn) => ov.blocks.forEach((b) => b.effects.forEach((e) => fn(e, b)));
+const teammates = (res) =>
+  ['liter', 'crown', 'helm'].map((s) => unitOf(res, s).total);
+const eachEffect = (ov, fn) =>
+  ov.blocks.forEach((b) => b.effects.forEach((e) => fn(e, b)));
 const buffApplies = (events, stat, val) =>
-  events.filter((e) => e.kind === 'buffApply' && e.stat === stat && approx(e.value, val));
+  events.filter(
+    (e) => e.kind === 'buffApply' && e.stat === stat && approx(e.value, val)
+  );
 
 // ---- hoisted runs (each is a full 180s sim; file stays < 20 runs) ----
 const base = runCollecting(controlComp(SLUG, true));
 
 const riderOff = runPatched((ov) =>
-  eachEffect(ov, (e) => { if (e.kind === 'flatDamage' && approx(e.atkPct, 82.8)) e.atkPct = 0; }),
+  eachEffect(ov, (e) => {
+    if (e.kind === 'flatDamage' && approx(e.atkPct, 82.8)) {
+      e.atkPct = 0;
+    }
+  })
 );
 const riderHalfThreshold = runPatched((ov) =>
   ov.blocks.forEach((b) => {
-    if (b.trigger.kind === 'hitCount' && b.effects.some((e) => e.kind === 'flatDamage' && approx(e.atkPct, 82.8))) {
+    if (
+      b.trigger.kind === 'hitCount' &&
+      b.effects.some((e) => e.kind === 'flatDamage' && approx(e.atkPct, 82.8))
+    ) {
       b.trigger.count = 15;
     }
-  }),
+  })
 );
 const atkBuffOff = runPatched((ov) =>
-  eachEffect(ov, (e) => { if (e.kind === 'buff' && e.stat === 'atkPct' && approx(e.value, 8.28)) e.value = 0; }),
+  eachEffect(ov, (e) => {
+    if (e.kind === 'buff' && e.stat === 'atkPct' && approx(e.value, 8.28)) {
+      e.value = 0;
+    }
+  })
 );
 const skill2DmgOff = runPatched((ov) =>
-  eachEffect(ov, (e) => { if (e.kind === 'flatDamage' && approx(e.atkPct, 144.73)) e.atkPct = 0; }),
+  eachEffect(ov, (e) => {
+    if (e.kind === 'flatDamage' && approx(e.atkPct, 144.73)) {
+      e.atkPct = 0;
+    }
+  })
 );
 const critGateOff = runPatched((ov) =>
   ov.blocks.forEach((b) => {
-    if (b.effects.some((e) => e.kind === 'buff' && e.stat === 'critRatePct' && approx(e.value, 26.1))) delete b.fbGate;
-  }),
+    if (
+      b.effects.some(
+        (e) =>
+          e.kind === 'buff' && e.stat === 'critRatePct' && approx(e.value, 26.1)
+      )
+    ) {
+      delete b.fbGate;
+    }
+  })
 );
 const swapOff = runPatched((ov) =>
-  eachEffect(ov, (e) => { if (e.kind === 'weaponSwap') e.damagePct = 0; }),
+  eachEffect(ov, (e) => {
+    if (e.kind === 'weaponSwap') {
+      e.damagePct = 0;
+    }
+  })
 );
 
 // SW's slot, derived (not hardcoded): SW is the caster of her own 8.28% self buff.
@@ -101,7 +136,9 @@ describe('snow-white skill1 — every-30-HITS self ATK \u25b2 8.28% / 5s', () =>
   it('applies to SELF only (targetIdx === casterIdx on every application)', () => {
     const applies = buffApplies(base.events, 'atkPct', 8.28);
     expect(applies.length).toBeGreaterThan(0);
-    for (const e of applies) expect(e.targetIdx).toBe(e.casterIdx);
+    for (const e of applies) {
+      expect(e.targetIdx).toBe(e.casterIdx);
+    }
   });
   it('raises SW damage (non-vacuous) but leaves teammates identical (self-scoped, not allies)', () => {
     expect(swTotal(base.res)).toBeGreaterThan(swTotal(atkBuffOff.res));
@@ -121,24 +158,31 @@ describe('snow-white skill2 — Critical Rate \u25b2 26.1% / 10s, ONLY when used
   it('is GENERIC crit rate applied to SELF (not critRateNormalPct, not allies)', () => {
     const applies = buffApplies(base.events, 'critRatePct', 26.1);
     expect(applies.length).toBeGreaterThan(0);
-    for (const e of applies) expect(e.targetIdx).toBe(e.casterIdx);
+    for (const e of applies) {
+      expect(e.targetIdx).toBe(e.casterIdx);
+    }
     // guard the scope: must NOT be encoded as the normal-attack-scoped crit stat
     expect(buffApplies(base.events, 'critRateNormalPct', 26.1).length).toBe(0);
   });
   it('is FB-gated: removing the inFb gate makes it fire strictly MORE often (also out of FB)', () => {
     const gated = buffApplies(base.events, 'critRatePct', 26.1).length;
     const ungated = buffApplies(critGateOff.events, 'critRatePct', 26.1).length;
-    expect(gated).toBeGreaterThan(0);        // active case: skill2 comes up during FB
-    expect(ungated).toBeGreaterThan(gated);  // inactive case exists: skill2 also comes up out of FB
+    expect(gated).toBeGreaterThan(0); // active case: skill2 comes up during FB
+    expect(ungated).toBeGreaterThan(gated); // inactive case exists: skill2 also comes up out of FB
   });
 });
 
 describe('snow-white burst — weapon swap cannon 499.5% / 1000%-full-charge, 1 ammo, Pierce (\u26a1 duration)', () => {
   it('SW casts her burst', () => {
-    expect(base.events.filter((e) => e.kind === 'burstCast').length).toBeGreaterThan(0);
+    expect(
+      base.events.filter((e) => e.kind === 'burstCast').length
+    ).toBeGreaterThan(0);
   });
   it('produces charge-bucket cannon damage from SW (weapon actually swaps)', () => {
-    const chargeHits = base.events.filter((e) => e.kind === 'damage' && e.srcSlot === swSlot && e.bucket === 'charge');
+    const chargeHits = base.events.filter(
+      (e) =>
+        e.kind === 'damage' && e.srcSlot === swSlot && e.bucket === 'charge'
+    );
     expect(chargeHits.length).toBeGreaterThan(0);
   });
   it('non-vacuous: nulling swap damage lowers SW total, teammates unchanged', () => {
@@ -148,4 +192,3 @@ describe('snow-white burst — weapon swap cannon 499.5% / 1000%-full-charge, 1 
   it.skip('exact cannon shot count / swap duration — \u26a1 kit-silent (no durationSec/maxShots in prose); measurement-gated', () => {});
   it.skip('Max Ammo 1 + Pierce Damage \u25b2 interaction — inert with no pierce-buff carrier on this control comp; GAP', () => {});
 });
-

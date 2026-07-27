@@ -8,18 +8,18 @@ Isabel is an Electric shotgun Attacker on Burst III who builds a personal "Marke
 
 ## Line-by-line (all FAITHFUL / one DOCUMENTED-GAP)
 
-| Line | Disposition | Encoding | Discriminator |
-| --- | --- | --- | --- |
-| S1 MT1 critRate 6.26/45s self | FAITHFUL | burstCast → self → escalating step 1 | generic critRatePct (lifts skill bucket) vs critRateNormalPct; burstCast (7 casts) vs fullBurstEnter (13 FBs) |
-| S1 MT2 critDmg 18.03/45s self | FAITHFUL | escalating step 2 | ladder count casts-1; cfS1NoEscalate drops it |
-| S1 MT3 ATK 17.28/45s self | FAITHFUL | escalating step 3 (caps, no wrap) | ladder count casts-2; atkPct not casterAtkPct |
-| S2 170.58% periodic single hit | FAITHFUL | passive(t=0) + interval:15 flatDamage crit:true | 12 hits/180s; cfS2NoT0 → 11; one hit not ×5; never cores/range |
-| Burst 149.85% nuke | FAITHFUL | burstCast → enemy flatDamage | fbMajorApplied false (cast precedes FB); critEligible true (engine default) |
-| Burst MT1 damageTakenPct 39.96/5s | FAITHFUL | escalating step 1, boss debuff (targetIdx null) | count == casts (post-increment); CF-C lifts teammates |
-| Burst MT2 299.7% additional | FAITHFUL | escalating step 2 | casts-1; cfBurstNoEscalate → casts |
-| Burst MT3 349.65% additional | FAITHFUL | escalating step 3 | casts-2; cfBurstNoEscalate → casts |
-| Burst Full Burst Duration ▼5s (allies) | FAITHFUL | fullBurstExtend seconds:-5 | sub-10s (5s) windows; cfNoExt → none; cfExtSignFlip → 15s |
-| S2 "5 highest-DEF enemies" targeting | DOCUMENTED-GAP | collapses to the lone partless boss | unobservable by construction; "12 not 60" guards the ×5 misread |
+| Line                                   | Disposition    | Encoding                                        | Discriminator                                                                                                 |
+| -------------------------------------- | -------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| S1 MT1 critRate 6.26/45s self          | FAITHFUL       | burstCast → self → escalating step 1            | generic critRatePct (lifts skill bucket) vs critRateNormalPct; burstCast (7 casts) vs fullBurstEnter (13 FBs) |
+| S1 MT2 critDmg 18.03/45s self          | FAITHFUL       | escalating step 2                               | ladder count casts-1; cfS1NoEscalate drops it                                                                 |
+| S1 MT3 ATK 17.28/45s self              | FAITHFUL       | escalating step 3 (caps, no wrap)               | ladder count casts-2; atkPct not casterAtkPct                                                                 |
+| S2 170.58% periodic single hit         | FAITHFUL       | passive(t=0) + interval:15 flatDamage crit:true | 12 hits/180s; cfS2NoT0 → 11; one hit not ×5; never cores/range                                                |
+| Burst 149.85% nuke                     | FAITHFUL       | burstCast → enemy flatDamage                    | fbMajorApplied false (cast precedes FB); critEligible true (engine default)                                   |
+| Burst MT1 damageTakenPct 39.96/5s      | FAITHFUL       | escalating step 1, boss debuff (targetIdx null) | count == casts (post-increment); CF-C lifts teammates                                                         |
+| Burst MT2 299.7% additional            | FAITHFUL       | escalating step 2                               | casts-1; cfBurstNoEscalate → casts                                                                            |
+| Burst MT3 349.65% additional           | FAITHFUL       | escalating step 3                               | casts-2; cfBurstNoEscalate → casts                                                                            |
+| Burst Full Burst Duration ▼5s (allies) | FAITHFUL       | fullBurstExtend seconds:-5                      | sub-10s (5s) windows; cfNoExt → none; cfExtSignFlip → 15s                                                     |
+| S2 "5 highest-DEF enemies" targeting   | DOCUMENTED-GAP | collapses to the lone partless boss             | unobservable by construction; "12 not 60" guards the ×5 misread                                               |
 
 ## Cross-family evidence
 

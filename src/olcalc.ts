@@ -65,7 +65,7 @@ export function bestOlAtTier(
   prepared: PreparedUnit[],
   unitIdx: number,
   tiers: OlTier[],
-  tier: number,
+  tier: number
 ): BestOlAtTierResult {
   const tv = tiers.find((t) => t.tier === tier) ?? tiers[tiers.length - 1];
   const weapon = chars[unitIdx].weapon;
@@ -91,7 +91,7 @@ export function bestOlAtTier(
 
   const simUnit = (extra: { stat: string; value: number }[]): number => {
     const p = prepared.map((u, i) =>
-      i === unitIdx ? { ...u, extraStats: [...u.extraStats, ...extra] } : u,
+      i === unitIdx ? { ...u, extraStats: [...u.extraStats, ...extra] } : u
     );
     return runSim(chars, mult, cfg, p).units[unitIdx].totalDamage;
   };
@@ -110,9 +110,9 @@ export function bestOlAtTier(
         ...freeExtra,
         { stat: STAT_BY_KEY[key], value: tv[key] },
       ]);
-      if (!best || dmg > best.dmg) best = { key, dmg };
+      if (!best || dmg > best.dmg) {best = { key, dmg };}
     }
-    if (!best) break;
+    if (!best) {break;}
     freeCounts[best.key] = (freeCounts[best.key] ?? 0) + 1;
     freeExtra.push({ stat: STAT_BY_KEY[best.key], value: tv[best.key] });
     prev = best.dmg;
@@ -131,6 +131,8 @@ export function bestOlAtTier(
     free,
     baselineDamage,
     finalDamage: prev,
-    gainPct: baselineDamage ? ((prev - baselineDamage) / baselineDamage) * 100 : 0,
+    gainPct: baselineDamage
+      ? ((prev - baselineDamage) / baselineDamage) * 100
+      : 0,
   };
 }

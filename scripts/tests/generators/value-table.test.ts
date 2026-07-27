@@ -58,8 +58,8 @@ const BONUS: Record<string, number> = {
 const worth = (s: string): number => SOLO[s] + (BONUS[s] ?? 0);
 const teamDamage = (set: string[]): number =>
   set.reduce((sum, s) => sum + worth(s), 0);
-const evalSets = async (sets: string[][]) =>
-  sets.map((set) => ({ teamDamage: teamDamage(set) }));
+const evalSets = (sets: string[][]) =>
+  Promise.resolve(sets.map((set) => ({ teamDamage: teamDamage(set) })));
 
 const input = () => ({
   pool: Object.keys(BURST),
@@ -83,8 +83,9 @@ describe('buildValueTable (item 3a)', () => {
     // marginals rank by in-team worth, not by solo score
     expect(vt.values.get('b2long')!).toBeGreaterThan(vt.values.get('b2short')!);
     // B3s: leave-one-out add-in delta — in the additive model, exactly `worth`
-    for (const s of ['dpsTop', 'dpsMid', 'dpsLow', 'dpsBuff'])
+    for (const s of ['dpsTop', 'dpsMid', 'dpsLow', 'dpsBuff']) {
       expect(vt.values.get(s)).toBe(worth(s));
+    }
     // the support-B3 case the leave-one-out pricing exists for: dpsBuff's team
     // value (600) beats its solo value (100) — solo pricing would bury it
     expect(vt.values.get('dpsBuff')!).toBeGreaterThan(SOLO.dpsBuff);
@@ -112,9 +113,11 @@ describe('buildValueTable (item 3a)', () => {
     try {
       const vt = await buildValueTable({
         ...input(),
-        evalSets: async (sets: string[][]) =>
-          sets.map((set) =>
-            set.includes('b2long') ? null : { teamDamage: teamDamage(set) },
+        evalSets: (sets: string[][]) =>
+          Promise.resolve(
+            sets.map((set) =>
+              set.includes('b2long') ? null : { teamDamage: teamDamage(set) }
+            )
           ),
       });
       expect(vt.values.get('b2long')).toBe(0);
@@ -131,7 +134,9 @@ describe('buildValueTable (item 3a)', () => {
     const pool = ['dpsTop', 'dpsMid', 'dpsLow', 'dpsBuff'];
     const vt = await buildValueTable({ ...input(), pool });
     expect([...vt.values.keys()].sort()).toEqual([...pool].sort());
-    for (const s of pool) expect(vt.values.get(s)).toBe(worth(s));
+    for (const s of pool) {
+      expect(vt.values.get(s)).toBe(worth(s));
+    }
     expect(vt.referenceCore).toEqual(['dpsTop', 'dpsMid']);
   });
 });

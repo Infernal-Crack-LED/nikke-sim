@@ -132,7 +132,7 @@ function stripHeals(slug: string): any {
     for (const s of SLOTS) {
       const blocks: any[] = o[s] ?? [];
       for (const b of blocks)
-        b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
+        {b.effects = b.effects.filter((e: any) => e.kind !== 'heal');}
       o[s] = blocks.filter((b: any) => b.effects.length > 0);
     }
   });
@@ -164,7 +164,7 @@ const mintBuffs = (evs: SimEvent[], stat: string) =>
 
 const castsBy = (evs: SimEvent[], slug: string) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && (e as any).slug === slug,
+    (e): e is BurstCast => e.kind === 'burstCast' && (e as any).slug === slug
   );
 
 const shotFramesOf = (evs: SimEvent[], slug: string) =>
@@ -187,8 +187,8 @@ const mintCastFrames = castsBy(base.events, 'mint').map(frameOf);
 const stage3Frames = [
   ...new Set(
     [...castsBy(base.events, 'ada'), ...castsBy(base.events, 'helm')].map(
-      frameOf,
-    ),
+      frameOf
+    )
   ),
 ].sort((a, b) => a - b);
 
@@ -200,9 +200,9 @@ const recoveryFrames = [
         (b) =>
           b.casterIdx === CROWN &&
           b.stat === 'attackDamagePct' &&
-          b.value === CROWN_RECOVERY_VALUE,
+          b.value === CROWN_RECOVERY_VALUE
       )
-      .map(frameOf),
+      .map(frameOf)
   ),
 ].sort((a, b) => a - b);
 
@@ -212,7 +212,7 @@ describe('mint — kit spec (blind)', () => {
       expect(
         mintCastFrames.length,
         'mint never bursts in fixture A — she gains no Assigned Part and every gated ' +
-          'assertion in this file would be vacuous',
+          'assertion in this file would be vacuous'
       ).toBeGreaterThanOrEqual(3);
     });
 
@@ -222,7 +222,7 @@ describe('mint — kit spec (blind)', () => {
         expect(
           near(f, mintCastFrames),
           `stage-3 entry at frame ${f} coincides with mint's own stage-2 cast — the ` +
-            'burstCast-vs-stageEnter discrimination in M4/M5/M6 would be void',
+            'burstCast-vs-stageEnter discrimination in M4/M5/M6 would be void'
         ).toBe(false);
       }
     });
@@ -231,21 +231,21 @@ describe('mint — kit spec (blind)', () => {
       expect(
         castsBy(healRun.events, 'mint').length,
         'crown took every stage-2 cast in fixture B, so mint never gained Dancing — ' +
-          'M2/M7 are measuring nothing',
+          'M2/M7 are measuring nothing'
       ).toBeGreaterThanOrEqual(3);
     });
 
     it("B: crown's recovery consumer is still identifiable at the pinned magnitude", () => {
       const anyCrownAtk = buffs(healRun.events).filter(
-        (b) => b.casterIdx === CROWN && b.stat === 'attackDamagePct',
+        (b) => b.casterIdx === CROWN && b.stat === 'attackDamagePct'
       );
       expect(
         anyCrownAtk.length,
-        'crown emits no attackDamagePct at all — fixture is stale',
+        'crown emits no attackDamagePct at all — fixture is stale'
       ).toBeGreaterThan(0);
       expect(
         anyCrownAtk.some((b) => b.value === CROWN_RECOVERY_VALUE),
-        `crown's recovery buff is no longer ${CROWN_RECOVERY_VALUE}% — re-pin the reader`,
+        `crown's recovery buff is no longer ${CROWN_RECOVERY_VALUE}% — re-pin the reader`
       ).toBe(true);
     });
   });
@@ -259,36 +259,36 @@ describe('mint — kit spec (blind)', () => {
       // scaled grant resolves to ONE flat number (mint's staticAtk x 0.4502) shared by everyone.
       expect(
         applied.length,
-        'mint emits no casterAtkPct — the Singing branch is missing',
+        'mint emits no casterAtkPct — the Singing branch is missing'
       ).toBeGreaterThan(0);
       expect(
         mintBuffs(base.events, 'atkPct').length,
-        '"ATK ▲x% of the skill user\'s ATK" must never be encoded as atkPct',
+        '"ATK ▲x% of the skill user\'s ATK" must never be encoded as atkPct'
       ).toBe(0);
       const values = [...new Set(applied.map((b) => b.value))];
       expect(
         values,
-        'a caster-scaled grant resolves to a single flat ATK figure',
+        'a caster-scaled grant resolves to a single flat ATK figure'
       ).toHaveLength(1);
       expect(values[0]).not.toBe(45.02);
       expect(
         values[0],
-        'a flat ATK add is tens of thousands, not a percentage',
+        'a flat ATK add is tens of thousands, not a percentage'
       ).toBeGreaterThan(1000);
     });
 
     it('reaches all 4 allies (including mint) for exactly 3 sec', () => {
       for (const f of framesOf(applied)) {
         const holders = new Set(
-          applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx),
+          applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx)
         );
         expect(
           holders.size,
-          `frame ${f} reached ${holders.size} allies, expected 4`,
+          `frame ${f} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       }
       for (const b of applied)
-        expect(b.expiresFrame! - frameOf(b)).toBe(3 * FPS);
+        {expect(b.expiresFrame! - frameOf(b)).toBe(3 * FPS);}
     });
 
     it('fires at her FULL-CHARGE cadence, not once per burst', () => {
@@ -296,12 +296,12 @@ describe('mint — kit spec (blind)', () => {
       // cooldown is 20s, so a burst-keyed trigger can NEVER put two firings inside 3 seconds.
       const frames = framesOf(applied);
       const dense = frames.some(
-        (f, i) => i > 0 && f - frames[i - 1] <= 3 * FPS,
+        (f, i) => i > 0 && f - frames[i - 1] <= 3 * FPS
       );
       expect(
         dense,
         'no two Singing applications within 3s — this is a burst-cadence trigger, not a ' +
-          'per-full-charge one',
+          'per-full-charge one'
       ).toBe(true);
     });
 
@@ -311,12 +311,12 @@ describe('mint — kit spec (blind)', () => {
       // them and roughly doubles the team ATK uptime this line is worth.
       const shots = shotFramesOf(base.events, 'mint').length;
       expect(shots, 'mint fired no shots — fixture is broken').toBeGreaterThan(
-        0,
+        0
       );
       expect(
         framesOf(applied).length,
         "the Singing ATK buff fired on every one of mint's charged shots — the Assigned " +
-          'Part gate is missing (the burst toggles Singing on only every OTHER cast)',
+          'Part gate is missing (the burst toggles Singing on only every OTHER cast)'
       ).toBeLessThan(shots);
     });
   });
@@ -329,7 +329,7 @@ describe('mint — kit spec (blind)', () => {
       expect(
         recoveryFrames.length,
         "no recovery reached crown — mint's Dancing heal is missing, or the whole Dancing " +
-          'branch never activates',
+          'branch never activates'
       ).toBeGreaterThan(0);
     });
 
@@ -343,13 +343,13 @@ describe('mint — kit spec (blind)', () => {
       let maxLag = 0;
       for (const f of recoveryFrames) {
         const prev = shots.filter((s) => s <= f).pop();
-        if (prev === undefined) continue;
+        if (prev === undefined) {continue;}
         maxLag = Math.max(maxLag, f - prev);
       }
       expect(
         maxLag,
         `every recovery landed within ${maxLag} frames of a mint shot — a one-shot heal ` +
-          '(ticks:1), not "every 1 sec for 3 sec"',
+          '(ticks:1), not "every 1 sec for 3 sec"'
       ).toBeGreaterThanOrEqual(90);
     });
   });
@@ -384,15 +384,15 @@ describe('mint — kit spec (blind)', () => {
         expect([...new Set(applied.map((b) => b.value))]).toEqual([value]);
         for (const f of framesOf(applied)) {
           const holders = new Set(
-            applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx),
+            applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx)
           );
           expect(
             holders.size,
-            `frame ${f} reached ${holders.size} allies, expected 4`,
+            `frame ${f} reached ${holders.size} allies, expected 4`
           ).toBe(4);
         }
         for (const b of applied)
-          expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);
+          {expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);}
       });
     }
 
@@ -407,11 +407,11 @@ describe('mint — kit spec (blind)', () => {
         expect(
           near(f, mintCastFrames),
           `Singing trio applied at frame ${f}, which is mint's OWN burst cast — the trigger is ` +
-            'burstCast, not stage-3 entry',
+            'burstCast, not stage-3 entry'
         ).toBe(false);
         expect(
           near(f, stage3Frames),
-          `Singing trio applied at frame ${f}, which is no Burst Stage 3 entry`,
+          `Singing trio applied at frame ${f}, which is no Burst Stage 3 entry`
         ).toBe(true);
       }
     });
@@ -423,19 +423,19 @@ describe('mint — kit spec (blind)', () => {
       // uptime of 19.94% team crit rate.
       const frames = framesOf(mintBuffs(base.events, 'critRatePct'));
       expect(frames.length, 'the Singing branch never fired').toBeGreaterThan(
-        0,
+        0
       );
       expect(
         frames.length,
         'the Singing trio fired on EVERY Burst Stage 3 entry — the Assigned Part gate is ' +
-          'missing (the burst toggles Singing on only every OTHER cast)',
+          'missing (the burst toggles Singing on only every OTHER cast)'
       ).toBeLessThan(stage3Frames.length);
     });
 
     it('M4 — the 19.94% Critical Rate is a live damage lever, not an inert stat', () => {
       expect(
         noCrit.removed,
-        'mint carries no critRatePct effect at all',
+        'mint carries no critRatePct effect at all'
       ).toBeGreaterThan(0);
       expect(sum(base.totals)).toBeGreaterThan(sum(baseNoCrit.totals));
     });
@@ -451,21 +451,21 @@ describe('mint — kit spec (blind)', () => {
       const singFrames = framesOf(mintBuffs(healRun.events, 'casterAtkPct'));
       expect(
         singFrames.length,
-        'the Singing branch never fired in fixture B',
+        'the Singing branch never fired in fixture B'
       ).toBeGreaterThan(0);
       expect(
         recoveryFrames.length,
-        'the Dancing branch never fired in fixture B',
+        'the Dancing branch never fired in fixture B'
       ).toBeGreaterThan(0);
       expect(
         singFrames.some((f) => farFrom(f, recoveryFrames, 5 * FPS)),
         'no Singing application is isolated from the Dancing heal — both Assigned Parts are ' +
-          'active simultaneously',
+          'active simultaneously'
       ).toBe(true);
       expect(
         recoveryFrames.some((f) => farFrom(f, singFrames, 5 * FPS)),
         'no Dancing heal is isolated from the Singing buff — both Assigned Parts are active ' +
-          'simultaneously',
+          'simultaneously'
       ).toBe(true);
     });
   });
@@ -485,19 +485,19 @@ describe('mint — kit spec (blind)', () => {
         const frames = framesOf(applied);
         expect(
           frames.length,
-          `${frames.length} applications vs ${mintCastFrames.length} mint burst casts`,
+          `${frames.length} applications vs ${mintCastFrames.length} mint burst casts`
         ).toBe(mintCastFrames.length);
         for (const f of frames) {
           const holders = new Set(
-            applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx),
+            applied.filter((b) => frameOf(b) === f).map((b) => b.targetIdx)
           );
           expect(
             holders.size,
-            `frame ${f} reached ${holders.size} allies, expected 4`,
+            `frame ${f} reached ${holders.size} allies, expected 4`
           ).toBe(4);
         }
         for (const b of applied)
-          expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);
+          {expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);}
       });
     }
 
@@ -509,7 +509,7 @@ describe('mint — kit spec (blind)', () => {
         for (const f of framesOf(mintBuffs(base.events, stat))) {
           expect(
             near(f, mintCastFrames),
-            `${stat} applied at frame ${f}, no mint cast there`,
+            `${stat} applied at frame ${f}, no mint cast there`
           ).toBe(true);
         }
       }
@@ -521,7 +521,7 @@ describe('mint — kit spec (blind)', () => {
       // which is what an "ammo is defensive/cosmetic" reading would predict.
       expect(
         noAmmo.removed,
-        'mint carries no maxAmmoPct effect at all',
+        'mint carries no maxAmmoPct effect at all'
       ).toBeGreaterThan(0);
       expect(sum(base.totals)).toBeGreaterThan(sum(baseNoAmmo.totals));
     });
@@ -529,7 +529,7 @@ describe('mint — kit spec (blind)', () => {
     it('M9 — it is a PERCENTAGE capacity buff, not a flat round count', () => {
       expect(
         mintBuffs(base.events, 'maxAmmoFlat').length,
-        '"Capacity ▲40%" is maxAmmoPct',
+        '"Capacity ▲40%" is maxAmmoPct'
       ).toBe(0);
     });
   });
@@ -539,14 +539,14 @@ describe('mint — kit spec (blind)', () => {
       // Her kit text carries no "% of final ATK" line anywhere. Every point she deals must come
       // from her own weapon.
       const mintDmg = base.events.filter(
-        (e): e is Damage => e.kind === 'damage' && (e as any).slug === 'mint',
+        (e): e is Damage => e.kind === 'damage' && (e as any).slug === 'mint'
       );
       const skillSourced = mintDmg.filter((d) =>
-        ['skill1', 'skill2', 'burst'].includes((d as any).srcSlot),
+        ['skill1', 'skill2', 'burst'].includes((d as any).srcSlot)
       );
       expect(
         skillSourced.length,
-        'mint dealt skill/burst-sourced damage — her kit has no damage line',
+        'mint dealt skill/burst-sourced damage — her kit has no damage line'
       ).toBe(0);
     });
 
@@ -561,7 +561,7 @@ describe('mint — kit spec (blind)', () => {
       ]) {
         expect(
           mintBuffs(base.events, stat).length,
-          `mint emits ${stat}, which is not in her kit`,
+          `mint emits ${stat}, which is not in her kit`
         ).toBe(0);
       }
     });

@@ -10,6 +10,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -20,12 +21,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -51,36 +54,63 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## MECHANICS SSOT
 
-
 MECHANICS SSOT (full docs: docs/data/damage-calculation.md + docs/data/game-mechanics.md — read these on disk for the complete spec; the relevant rules for this unit are summarized here):
+
 - Damage formula: multiplicative buckets — amount = baseAtk × atkPct/100 × (major × elem × charge × dmgUp × seqMult × projFactor × taken × distributed). baseAtk = effectiveAtk − bossDef (flat 140 under scope lock).
 - effectiveAtk = staticAtk×(1+atkPct/100) + casterAtkPct + (atkOfMaxHpPct/100)×liveMaxHp. atkOfMaxHpPct is an ATK-from-own-MaxHP conversion: liveMaxHp = static base + OWN-kit maxHpFlat grants only (casterIdx===self); ally-granted Max HP is EXCLUDED (cindy e3 video rule).
 - casterMaxHpPct ("% of caster Max HP") and targetMaxHpPct ("Max HP ▲ %", target's own %) both convert to a flat maxHpFlat grant at apply time; for a SELF target caster===target so both feed atkOfMaxHpPct.
@@ -90,10 +120,7 @@ MECHANICS SSOT (full docs: docs/data/damage-calculation.md + docs/data/game-mech
 - shotFired trigger fires the block on every trigger pull; flatDamage riders crit by default (critEligible) and take FB by landing timing.
 - Scope lock: skill levels 10/10/10, Base5 gear, core 7, partless boss, bossDef 140, auto-play, deterministic (no seed).
 
-
 ---
-
-
 
 ---
 
@@ -183,7 +210,6 @@ MECHANICS SSOT (full docs: docs/data/damage-calculation.md + docs/data/game-mech
 }
 ```
 
-
 ---
 
 ## DRIVER RECONCILIATION AFTER YOUR FIRST VERDICT (NO-GO, faithfulness 0.875)
@@ -197,7 +223,6 @@ G3 (Beautiful smooth-ramp slot, low, documentedByDriver:true) — DOCUMENTED fur
 G1 (burstSnapshotsPreFb same-cast snapshot, REAL-GOTCHA high) — NOT measurement-resolvable by the driver (the gauntlet driver CANNOT view the docs/probes/u8 e3 footage; resolving which reading is correct requires a human to re-read one nuke popup). The driver did NOT pick a value to fit the board. Instead it: (a) kept the shipped flag (false) — the most recent EXPLICIT value, set by the 2026-07-21 MAG-DUMP REBUILD; (b) added a driver test that PINS the shipped behavior (removing the stage-3 atkOfMaxHpPct conversion entirely drops the nuke baseAtk by >1.3x, proving the nuke snapshots the live same-cast conversion under flag=false); (c) added a prominent override caveat marked "⚑ OWNER RESOLUTION REQUIRED" that states the contradiction with the [HISTORICAL] BURST TIMING sentence verbatim, notes that sentence's reasoning is explicitly coupled to the now-removed TWIN-INSTANCE model, gives your one-popup resolution recipe, and bounds the board impact (~20-25% nuke over-credit IF the historical reading is correct). The faithfulness of the nuke's same-cast-snapshot behavior remains UNVERIFIED pending that owner measurement.
 
 QUESTION FOR THE JUDGE: with G2 fixed+pinned, G3 documented, and G1 pinned+documented as an owner-resolution-required ⚑ (but not measurement-resolved by the driver), is this a GO (G1 carried as a documented measurement-gated residual with estimate+recipe+tier) or still NO-GO (G1 must be measurement-resolved before landing)? Rule per your contract; the driver will NOT fabricate a measurement to reach GO.
-
 
 ---
 
@@ -340,9 +365,7 @@ QUESTION FOR THE JUDGE: with G2 fixed+pinned, G3 documented, and G1 pinned+docum
   "notes": "Expected shared-prior misreads, in the order they hurt: (1) 'ATK ▲ 2.71% of final Max HP' encoded as atkPct of ATK — the kit's central engine is HP→ATK on a Defender chassis, and it compounds with Beautiful (12×1.6% = +19.2% Max HP → proportionally more converted ATK); a test suite that never asserts the buffApply value scales with Max HP (and GROWS between rotation 1 and rotation 2) will pass under the wrong stat. (2) Per-hit vs total on the 1365.92%×10 volley — a 10× swing; assert the per-event mult, not just a nonzero burst total. (3) The Beautiful mirror credited at 12 stacks from t=0 — the first burst lands before the 36s cap; assert burst-1 rider < burst-2 rider. (4) The decoy chain: skipping the avatar as 'defensive' while ALSO leaving the interval gated on decoy presence silently zeroes all stacking; the v1 always-present resolution must be explicit and tested (Beautiful ticks from t≈3s). (5) Charge Speed as permanent instead of removeOnReload — buffRemove(cause:'reload') is the discriminating event, and shots/magazine feeds the 136.6% rider count, so the two skill1 lines must be tested jointly (whole-picture: ammo 24, chargeFrames 60, reloadFrames 141 bound the per-magazine shot count). (6) Trigger timing on the stage-3 ATK buff: fullBurstEnter applies it AFTER her nuke resolves — assert the nuke's mult includes it. Also confirm the volley is FB-exempt (burst-cast timing, fbMajorApplied:false) and sequential-flavored (teammate sequentialMultPct must multiply it, sequentialDamagePct dilute-add). Leak note: the schema's rampSec example names the Beautiful mirror with its exact magnitudes; my ramp encoding was re-derived from the prose's own 3s×12 statement, so no answer was imported.",
   "model": "claude-fable-5"
 }
-
 ```
-
 
 ---
 
@@ -420,7 +443,7 @@ function slotBlocks(ov: any, slot: string): any[] {
 }
 function slotEffects(ov: any, slot: string): any[] {
   return slotBlocks(ov, slot).flatMap((b: any) =>
-    Array.isArray(b.effects) ? b.effects : [],
+    Array.isArray(b.effects) ? b.effects : []
   );
 }
 function blockFor(ov: any, slot: string, pred: (e: any) => boolean): any {
@@ -430,7 +453,7 @@ function editEffects(
   ov: any,
   slot: string,
   pred: (e: any) => boolean,
-  fn: (e: any) => void,
+  fn: (e: any) => void
 ): number {
   let n = 0;
   for (const b of slotBlocks(ov, slot)) {
@@ -478,7 +501,7 @@ function run(ov?: any, helm = true) {
 const CF_ATK_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isAtkBuff, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_ATK_BURSTCAST = patch((ov) => {
   const b = blockFor(ov, 'skill1', isAtkBuff);
@@ -489,38 +512,38 @@ const CF_ATK_BURSTCAST = patch((ov) => {
 const CF_CS_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_CS_TIMED = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     delete e.removeOnReload;
     e.durationSec = 10;
-  }),
+  })
 );
 const CF_RIDER_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_RIDER_NOFB = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.noFb = true;
-  }),
+  })
 );
 const CF_BEAUTIFUL_ZERO = patch((ov) =>
   editEffects(ov, 'skill2', isHpBuff, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_MIRROR_ZERO = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_MIRROR_NORAMP = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     delete e.rampSec;
-  }),
+  })
 );
 
 const BASE = run();
@@ -545,7 +568,7 @@ const selfBuffs = (evs: Ev[]) =>
       e.kind === 'buffApply' &&
       e.targetSlug === SLUG &&
       e.casterIdx != null &&
-      e.casterIdx === e.targetIdx,
+      e.casterIdx === e.targetIdx
   );
 
 const IDX: number = (() => {
@@ -634,20 +657,20 @@ describe('S1a — enter Burst Stage 3, self: ATK +2.71% of final Max HP for 10s'
 
   it('fires once per rotation, and the own-cast model fires no more often', () => {
     const grants = selfBuffs(BASE.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     const fbs = kind(BASE.evs, 'fullBurstStart').length;
     expect(grants.length).toBe(fbs); // one stage-3 entry per rotation
     expect(grants.every((e) => Number(e.value) > 0)).toBe(true);
     expect(grants.every((e) => Number.isFinite(Number(e.expiresFrame)))).toBe(
-      true,
+      true
     );
     // Discriminator vs the burstCast reading: re-keyed to her OWN cast, the
     // grant can only fire on rotations she bursts — never more often. (Strictly
     // fewer only when helm actually takes a stage-3 slot in this fixture; the
     // count equality above is the primary claim.)
     const cfGrants = selfBuffs(R_ATK_BURSTCAST.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     expect(CF_ATK_BURSTCAST.n).toBe(1);
     expect(cfGrants.length).toBeLessThanOrEqual(grants.length);
@@ -683,7 +706,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
       (e) =>
         e.kind === 'buffApply' &&
         e.stat === 'chargeSpeedPct' &&
-        e.targetSlug === SLUG,
+        e.targetSlug === SLUG
     );
     expect(applies.length).toBeGreaterThan(10);
     expect(applies.every((e) => Number(e.value) === 100)).toBe(true);
@@ -692,7 +715,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     const removes = BASE.evs.filter(
       (e) =>
         e.kind === 'buffRemove' &&
-        (e.stat === undefined || e.stat === 'chargeSpeedPct'),
+        (e.stat === undefined || e.stat === 'chargeSpeedPct')
     );
     expect(removes.length).toBeGreaterThan(0);
     // Nearest-wrong (timed window, no reload strip): zero reload-cause removals.
@@ -700,7 +723,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     const cfRemoves = R_CS_TIMED.evs.filter(
       (e) =>
         e.kind === 'buffRemove' &&
-        (e.stat === undefined || e.stat === 'chargeSpeedPct'),
+        (e.stat === undefined || e.stat === 'chargeSpeedPct')
     );
     expect(cfRemoves.length).toBe(0);
   });
@@ -802,7 +825,7 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
     const big = slotEffects(OV, 'burst').filter(isBigBurst);
     expect(big.length).toBe(10);
     expect(big.every((e: any) => near(Number(e.atkPct), 1365.92, 1e-6))).toBe(
-      true,
+      true
     );
     // Nearest-wrong: a single 13659.2% hit — same total, but wrong crit/core
     // granularity and wrong interaction with per-hit riders.
@@ -820,7 +843,7 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
 
   it('burst-cast damage is Full-Burst exempt and lands 10x per cast', () => {
     const casts = BASE.evs.filter(
-      (e) => e.kind === 'burstCast' && fromHer(e),
+      (e) => e.kind === 'burstCast' && fromHer(e)
     ).length;
     expect(casts).toBeGreaterThan(0);
     const hits = herDamage(BASE.evs).filter((e) => e.srcSlot === 'burst');
@@ -873,9 +896,7 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
 
   it.skip('GAP (measurement-gated): whether the mirror rider fires ONCE per burst or once per sequential hit, and whether it crits, needs popup counting on a recorded burst — the prose ("Affects the same target(s)") does not settle it', () => {});
 });
-
 ```
-
 
 ---
 
@@ -1069,7 +1090,6 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider', () =>
 }
 ```
 
-
 ---
 
 ## DRIVER IMPLEMENTATION (UPDATED — test + override under judgment)
@@ -1178,7 +1198,7 @@ const cindyNoS1Buff = withPatchedOverride('cinderella', (ov) => {
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkOfMaxHpPct'));
   if (ov.skill1.length === before)
     throw new Error(
-      'cinderella S1 atkOfMaxHpPct block missing — fixture is stale',
+      'cinderella S1 atkOfMaxHpPct block missing — fixture is stale'
     );
 });
 /** C1 nearest-wrong: her S1 ATK conversion as a GENERIC ATK% buff (ATK-scaling, not HP-scaling). */
@@ -1188,7 +1208,7 @@ const cindyAtkNotHp = withPatchedOverride('cinderella', (ov) => {
     .find((x: any) => x.stat === 'atkOfMaxHpPct');
   if (!e)
     throw new Error(
-      'cinderella S1 atkOfMaxHpPct effect missing — fixture is stale',
+      'cinderella S1 atkOfMaxHpPct effect missing — fixture is stale'
     );
   e.stat = 'atkPct';
 });
@@ -1196,7 +1216,7 @@ const cindyAtkNotHp = withPatchedOverride('cinderella', (ov) => {
 const cindyNoMagDump = withPatchedOverride('cinderella', (ov) => {
   if (!ov.charFixes?.magDumpRof)
     throw new Error(
-      'cinderella charFixes.magDumpRof missing — fixture is stale',
+      'cinderella charFixes.magDumpRof missing — fixture is stale'
     );
   ov.charFixes.magDumpRof = false;
 });
@@ -1208,7 +1228,7 @@ const cindyNoRider = withPatchedOverride('cinderella', (ov) => {
       !(
         b.trigger?.kind === 'shotFired' &&
         b.effects.some((e: any) => e.kind === 'flatDamage')
-      ),
+      )
   );
   if (ov.skill1.length === before)
     throw new Error('cinderella S1 rider block missing — fixture is stale');
@@ -1219,7 +1239,7 @@ const cindyNoBeautiful = withPatchedOverride('cinderella', (ov) => {
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'casterMaxHpPct'));
   if (ov.skill1.length === before)
     throw new Error(
-      'cinderella Beautiful (casterMaxHpPct) block missing — fixture is stale',
+      'cinderella Beautiful (casterMaxHpPct) block missing — fixture is stale'
     );
 });
 /** C5 nearest-wrong: Beautiful present but INSTANT (ramp removed → full from t=0). */
@@ -1238,7 +1258,7 @@ const cindyInstantMirror = withPatchedOverride('cinderella', (ov) => {
     .find((x: any) => x.kind === 'flatDamage' && x.rampSec != null);
   if (!e)
     throw new Error(
-      'cinderella burst mirror rampSec missing — fixture is stale',
+      'cinderella burst mirror rampSec missing — fixture is stale'
     );
   delete e.rampSec;
 });
@@ -1262,7 +1282,7 @@ const cindyShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'cinderella');
 const cindyBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'cinderella',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'cinderella'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -1286,18 +1306,18 @@ const maxBaseAtk = (ds: Damage[]) => Math.max(...ds.map((d) => d.baseAtk));
 describe('cinderella — kit spec', () => {
   describe('C1 — S1 ATK = 2.71% of final Max HP on B3 entry (HP-scaling, self, 10s)', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct',
+      (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct'
     );
 
     it('is emitted as atkOfMaxHpPct 2.71, self-scoped, for 10 sec', () => {
       expect(
         applied.length,
-        'no atkOfMaxHpPct buff was applied',
+        'no atkOfMaxHpPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([2.71]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CINDY]);
       expect([
         ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
@@ -1308,7 +1328,7 @@ describe('cinderella — kit spec', () => {
       // atkOfMaxHpPct adds 2.71% of ~3.3M Max HP (~90k ATK); a generic atkPct would add 2.71% of
       // ~80k static ATK (~2.2k). The shipped nuke must sit far above the ATK-scaling model.
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(atkNotHp.events)) * 1.5,
+        maxBaseAtk(nukes(atkNotHp.events)) * 1.5
       );
     });
 
@@ -1316,8 +1336,8 @@ describe('cinderella — kit spec', () => {
       // Proves the first assertion is one the generic atkPct model provably fails.
       expect(
         buffs(atkNotHp.events).filter(
-          (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct',
-        ),
+          (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct'
+        )
       ).toEqual([]);
     });
   });
@@ -1328,12 +1348,12 @@ describe('cinderella — kit spec', () => {
       const perRocket = cindyShots(noMagDump.events).length;
       expect(
         dumped,
-        'mag-dump should fire well over 300 pulls/180s',
+        'mag-dump should fire well over 300 pulls/180s'
       ).toBeGreaterThan(300);
       expect(
         dumped,
         `${dumped} dumped vs ${perRocket} per-rocket — the dump must fire the mag at the autofire ` +
-          'rate after one prime, not charge before every rocket',
+          'rate after one prime, not charge before every rocket'
       ).toBeGreaterThan(perRocket * 2);
     });
 
@@ -1346,7 +1366,7 @@ describe('cinderella — kit spec', () => {
         .sort((a, b) => a.frame - b.frame);
       expect(
         firstMag.length,
-        'first magazine should hold a full 24-rocket dump',
+        'first magazine should hold a full 24-rocket dump'
       ).toBeGreaterThanOrEqual(20);
       const gaps = firstMag.slice(1).map((s, i) => s.frame - firstMag[i].frame);
       const median = [...gaps].sort((a, b) => a - b)[
@@ -1354,7 +1374,7 @@ describe('cinderella — kit spec', () => {
       ];
       expect(
         median,
-        'intra-mag gap must be the ~20f autofire rate, not a charge cycle',
+        'intra-mag gap must be the ~20f autofire rate, not a charge cycle'
       ).toBeLessThanOrEqual(25);
     });
   });
@@ -1380,28 +1400,28 @@ describe('cinderella — kit spec', () => {
 
   describe('C5 — S2 Beautiful is a 36s Max-HP RAMP that feeds her HP-scaling ATK', () => {
     const maxHpFlat = buffs(base.events).filter(
-      (b) => b.casterIdx === CINDY && b.stat === 'maxHpFlat',
+      (b) => b.casterIdx === CINDY && b.stat === 'maxHpFlat'
     );
 
     it('is a self-scoped, always-on Max-HP grant (converted from casterMaxHpPct 19.2)', () => {
       expect(
         maxHpFlat.length,
-        'no Beautiful maxHpFlat buff was applied',
+        'no Beautiful maxHpFlat buff was applied'
       ).toBeGreaterThan(0);
       expect(
         [...new Set(maxHpFlat.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CINDY]);
       expect(
         [...new Set(maxHpFlat.map((b) => b.expiresFrame))],
-        'Beautiful is continuous — no wall-clock expiry',
+        'Beautiful is continuous — no wall-clock expiry'
       ).toEqual([null]);
       for (const b of maxHpFlat) expect(b.value).toBeGreaterThan(0);
     });
 
     it('FEEDS her ATK: the shipped nuke baseAtk exceeds the no-Beautiful counterfactual', () => {
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(noBeautiful.events)),
+        maxBaseAtk(nukes(noBeautiful.events))
       );
     });
 
@@ -1442,7 +1462,7 @@ describe('cinderella — kit spec', () => {
       const took = nukes(base.events).filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
 
@@ -1455,7 +1475,7 @@ describe('cinderella — kit spec', () => {
       // file DOES — not which reading is correct (the driver cannot view the e3 footage; see the
       // override caveat for the one-popup resolution recipe).
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(noS1Buff.events)) * 1.3,
+        maxBaseAtk(nukes(noS1Buff.events)) * 1.3
       );
     });
 
@@ -1478,18 +1498,18 @@ describe('cinderella — kit spec', () => {
     it('fires one mirror per cast, ramping up to the full 346.8', () => {
       const mr = mirrors(base.events);
       expect(mr.length, 'one mirror per burst cast').toBe(
-        cindyBursts(base.events).length,
+        cindyBursts(base.events).length
       );
       const values = [...new Set(mr.map((d) => +d.atkPct.toFixed(3)))].sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
       expect(
         values[values.length - 1],
-        'late casts reach full 28.9% × 12',
+        'late casts reach full 28.9% × 12'
       ).toBe(346.8);
       expect(
         values[0],
-        'the first cast is still ramping (partial Beautiful)',
+        'the first cast is still ramping (partial Beautiful)'
       ).toBeLessThan(346.8);
     });
 
@@ -1497,20 +1517,19 @@ describe('cinderella — kit spec', () => {
       // The gradual model produces a sub-346.8 mirror (the partial first cast) that the instant
       // model cannot — proving the ramp is a property of the encoding, not coincidence.
       const shippedValues = new Set(
-        mirrors(base.events).map((d) => +d.atkPct.toFixed(3)),
+        mirrors(base.events).map((d) => +d.atkPct.toFixed(3))
       );
       const instantValues = new Set(
-        mirrors(instantMirror.events).map((d) => +d.atkPct.toFixed(3)),
+        mirrors(instantMirror.events).map((d) => +d.atkPct.toFixed(3))
       );
       expect([...instantValues]).toEqual([346.8]);
       expect(
         [...shippedValues].some((v) => v < 346.8),
-        'shipped must have a partial mirror',
+        'shipped must have a partial mirror'
       ).toBe(true);
     });
   });
 });
-
 ```
 
 ### src/skills/overrides/cinderella.json
@@ -1617,5 +1636,4 @@ describe('cinderella — kit spec', () => {
     "skill2 BEAUTIFUL SLOT (2026-07-25, kit-autonomy gauntlet G3, low/documented): Beautiful is filed as a smooth self casterMaxHpPct 19.2 rampSec 36 in the skill1 array (skill2 is []), not as 12 discrete 1.6% interval-3s stacks in skill2. Linear and discrete coincide at every 3s boundary; inside a window the linear form over-credits by ≤1 stack (≤1.6% Max HP, sub-1% of damage; at the t≈5.4s first cast it credits 2.88% where discrete gives 1.6%). Self-granted ⇒ caster===target, so it feeds atkOfMaxHpPct exactly as the discrete form would. The empty skill2 array is deliberate (the block lives at skill1[1]); the discrete form (interval 3s / value 1.6 / maxStacks 12) is available if step-vs-line ever matters."
   ]
 }
-
 ```

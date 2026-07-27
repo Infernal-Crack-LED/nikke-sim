@@ -1,9 +1,6 @@
 {
   "slug": "mint",
-  "modes": [
-    "singing",
-    "dancing"
-  ],
+  "modes": ["singing", "dancing"],
   "skill1": [
     {
       "slot": "skill1",

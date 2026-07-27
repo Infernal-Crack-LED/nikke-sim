@@ -54,7 +54,7 @@ Damage-Up" trap both blind agents warned about.
   outlasts the 10s FB window by 5s. Both blind agents land `fullBurstEnter` NOT `burstCast`. **T3** discriminates
   trigger (`burstCast` lands on takina's cast frames, before FB-start) and duration (5s vs 15s).
 - **S2 enemy Damage Taken ▲10.09%/5s ⇒ damageTakenPct 3.36 (boss, permanent ⚑)** `passive → enemy → damageTakenPct
-  3.36` (frame 0, no expiry). The prose gives no trigger/cooldown; Prydwen (COMMUNITY ⚑) lists a 15s pulse. The
+3.36` (frame 0, no expiry). The prose gives no trigger/cooldown; Prydwen (COMMUNITY ⚑) lists a 15s pulse. The
   engine cannot pulse a passive trigger (passive ignores durationSec → a passive+5s encoding would be a 100%-uptime
   permanent, over-crediting), so the faithful steady-state is the UPTIME-AVERAGE: 10.09 × 5/15 = 3.36 (33% uptime).
   Boss debuff (casterIdx/targetIdx null), team-wide benefit. **T4** discriminates value (raw 10.09, no uptime-average)
@@ -64,7 +64,7 @@ Damage-Up" trap both blind agents warned about.
   damage). **T6 PINS** that takina's skill2-keyed buffs emit EXACTLY `{damageTakenPct, trueDamagePct}` and no stun/CC
   stat (distinguishing a documented skip from a silent drop). Both blind agents agree.
 - **S2 ally True Damage ▲140.49%/10s ⇒ trueDamagePct 93.66 (all allies incl. self, permanent ⚑)** `passive → allies →
-  trueDamagePct 93.66` (frame 0, no expiry). Same uptime-average mechanism: 140.49 × 10/15 = 93.66 (67% uptime).
+trueDamagePct 93.66` (frame 0, no expiry). Same uptime-average mechanism: 140.49 × 10/15 = 93.66 (67% uptime).
   Flavor-gated → inert on non-true allies, live on takina's swap shots. **T5** discriminates value (raw 140.49) and
   target (`enemy` → strips the ally buff).
 - **Burst weaponSwap 200.64%/10s (self)** `burstCast → self → weaponSwap damagePct 200.64 (10s, trueNormals:true)`.
@@ -80,7 +80,7 @@ Damage-Up" trap both blind agents warned about.
   stripped it from their packets. The primitive EXISTS (types.ts:225; sim.ts:2848/2874); the driver's encoding resolves
   it. opus S6's override drops the flavor and consequently UNDER-models takina.
 - **Burst "targets hit: Damage Taken ▲6.04%/5s" = shotFired boss debuff, `swapGate:'swapped'` (THE FIX)** `shotFired →
-  enemy → swapGate:'swapped' → damageTakenPct 6.04 (5s)`. This Additional Effect is carried by the SWAP weapon's hits,
+enemy → swapGate:'swapped' → damageTakenPct 6.04 (5s)`. This Additional Effect is carried by the SWAP weapon's hits,
   so it fires only while the swap is live — `swapGate:'swapped'` (sim.ts:1684-1686), NOT `fbGate:'inFb'` (the shipped
   encoding, which conflated the swap window with the FB window). For a bursting B2 the two windows overlap but are NOT
   identical. **Independently derived by BOTH fable S2b and opus S6** — cross-family corroborated. **T8** discriminates

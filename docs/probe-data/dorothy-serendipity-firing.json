@@ -21,14 +21,14 @@
   "clock": {
     "method": "top-right MM:SS countdown; fightClock t = 180 - countdown; anchor at several points (countdown drifts slow)",
     "anchors": [
-      {"videoSec": 8,   "countdown": "02:57", "fightClock": 3,   "offset": 5},
-      {"videoSec": 30,  "countdown": "02:35", "fightClock": 25,  "offset": 5},
-      {"videoSec": 60,  "countdown": "02:04", "fightClock": 56,  "offset": 4},
-      {"videoSec": 90,  "countdown": "01:34", "fightClock": 86,  "offset": 4},
-      {"videoSec": 120, "countdown": "01:03", "fightClock": 117, "offset": 3},
-      {"videoSec": 150, "countdown": "00:33", "fightClock": 147, "offset": 3},
-      {"videoSec": 170, "countdown": "00:12", "fightClock": 168, "offset": 2},
-      {"videoSec": 178, "countdown": "00:04", "fightClock": 176, "offset": 2}
+      { "videoSec": 8, "countdown": "02:57", "fightClock": 3, "offset": 5 },
+      { "videoSec": 30, "countdown": "02:35", "fightClock": 25, "offset": 5 },
+      { "videoSec": 60, "countdown": "02:04", "fightClock": 56, "offset": 4 },
+      { "videoSec": 90, "countdown": "01:34", "fightClock": 86, "offset": 4 },
+      { "videoSec": 120, "countdown": "01:03", "fightClock": 117, "offset": 3 },
+      { "videoSec": 150, "countdown": "00:33", "fightClock": 147, "offset": 3 },
+      { "videoSec": 170, "countdown": "00:12", "fightClock": 168, "offset": 2 },
+      { "videoSec": 178, "countdown": "00:04", "fightClock": 176, "offset": 2 }
     ],
     "note": "offset (videoSec - fightClock) drifts from ~5s early to ~2s late. Firing starts ~v7 (t3). Fight ends ~v182.",
     "videoMeta": "portrait 1206x2622 rot=90 -> ffmpeg auto-rotates to landscape 2622x1206, 60fps, 189.9s"
@@ -40,9 +40,19 @@
     "spray": {
       "pelletsPerShot": 10,
       "signature": "cluster of ~5-8 simultaneous popups per shot on the boss",
-      "pelletValueWhite": {"base": 24300, "buffedLate": 31590, "note": "31590 = 24300 x1.30, appears from ~t37 on; likely Skill-2 / accumulated attack buffs"},
-      "critValue": {"base": 36450, "note": "36450 = 24300 x1.5; buffed variant ~43739"},
-      "coreValue": {"observed": [48599, 55889], "note": "red 'CORE HIT' in spray ~1.77-2.0x the white pellet (core roughly doubles)"}
+      "pelletValueWhite": {
+        "base": 24300,
+        "buffedLate": 31590,
+        "note": "31590 = 24300 x1.30, appears from ~t37 on; likely Skill-2 / accumulated attack buffs"
+      },
+      "critValue": {
+        "base": 36450,
+        "note": "36450 = 24300 x1.5; buffed variant ~43739"
+      },
+      "coreValue": {
+        "observed": [48599, 55889],
+        "note": "red 'CORE HIT' in spray ~1.77-2.0x the white pellet (core roughly doubles)"
+      }
     },
     "consolidation": {
       "pelletsPerShot": 1,

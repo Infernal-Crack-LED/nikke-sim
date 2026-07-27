@@ -85,7 +85,7 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  cfgExtra: Record<string, any> = {},
+  cfgExtra: Record<string, any> = {}
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -112,7 +112,7 @@ const mariShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'mari');
 const mariCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'mari',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'mari'
   );
 const mariCastFrames = (evs: SimEvent[]) =>
   mariCasts(evs)
@@ -126,7 +126,7 @@ const fbStartFrames = (evs: SimEvent[]) =>
 /** Mari's burst-bucket damage is ONLY the cast nuke (her other burst line is a buff). */
 const mariNuke = (evs: SimEvent[]) =>
   dmg(evs).filter(
-    (d) => d.slug === 'mari' && d.bucket === 'burst' && d.srcSlot === 'burst',
+    (d) => d.slug === 'mari' && d.bucket === 'burst' && d.srcSlot === 'burst'
   );
 /** Buffs mari applied with the given stat key. */
 const mariBuffs = (evs: SimEvent[], stat: string) =>
@@ -138,7 +138,7 @@ const mariNoPierceBuff = withPatchedOverride('mari', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'pierceDamagePct'));
   if (ov.skill1.length === before)
-    throw new Error('mari S1 pierceDamagePct block missing — fixture is stale');
+    {throw new Error('mari S1 pierceDamagePct block missing — fixture is stale');}
 });
 /** MR1 counterfactual: the same line at the lvl-9 magnitude (keeps cadence, moves the value). */
 const mariPierceLvl9 = withPatchedOverride('mari', (ov) => {
@@ -146,19 +146,19 @@ const mariPierceLvl9 = withPatchedOverride('mari', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'pierceDamagePct');
   if (!e)
-    throw new Error(
-      'mari S1 pierceDamagePct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'mari S1 pierceDamagePct effect missing — fixture is stale'
+    );}
   e.value = 24.25;
 });
 /** MR3 reference: S2 self ATK block removed. */
 const mariNoSelfAtk = withPatchedOverride('mari', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !(b.target?.kind === 'self' && hasStat(b, 'atkPct')),
+    (b: any) => !(b.target?.kind === 'self' && hasStat(b, 'atkPct'))
   );
   if (ov.skill2.length === before)
-    throw new Error('mari S2 self atkPct block missing — fixture is stale');
+    {throw new Error('mari S2 self atkPct block missing — fixture is stale');}
 });
 /** MR4 counterfactual: the ally ATK buff re-keyed to atkPct (a % of each TARGET's own ATK). */
 const mariAllyAtkWrong = withPatchedOverride('mari', (ov) => {
@@ -167,9 +167,9 @@ const mariAllyAtkWrong = withPatchedOverride('mari', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error(
-      'mari S2 ally casterAtkPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'mari S2 ally casterAtkPct effect missing — fixture is stale'
+    );}
   e.stat = 'atkPct';
 });
 /** MR5 counterfactual: the timed Pierce grant removed — un-tags mari's attacks. Tolerant of the
@@ -177,7 +177,7 @@ const mariAllyAtkWrong = withPatchedOverride('mari', (ov) => {
  *  assertion below fails RED on its own (X > X is false), which IS the "block missing" signal. */
 const mariNoGainPierce = withPatchedOverride('mari', (ov) => {
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce')
   );
 });
 /** MR6 counterfactual: burst nuke at the lvl-9 magnitude. */
@@ -186,16 +186,16 @@ const mariBurstLvl9 = withPatchedOverride('mari', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
   if (!e)
-    throw new Error('mari burst flatDamage effect missing — fixture is stale');
+    {throw new Error('mari burst flatDamage effect missing — fixture is stale');}
   e.atkPct = 363.63;
 });
 /** MR7 counterfactual: the burst AD buff re-keyed to fullBurstEnter (procs on FB-start frames). */
 const mariBurstAdFbEnter = withPatchedOverride('mari', (ov) => {
   const blk = ov.burst.find((b: any) => hasStat(b, 'attackDamagePct'));
   if (!blk)
-    throw new Error(
-      'mari burst attackDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'mari burst attackDamagePct block missing — fixture is stale'
+    );}
   blk.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -221,7 +221,7 @@ describe('mari — kit spec', () => {
     it('is 40.99% for 10 sec, reaching all four allies (herself included)', () => {
       expect(
         applied.length,
-        'no pierceDamagePct buff was applied',
+        'no pierceDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([40.99]);
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([10]);
@@ -234,7 +234,7 @@ describe('mari — kit spec', () => {
       const shots = mariShots(base.events).length;
       expect(
         applied.length,
-        `${applied.length} applies vs ${shots} shots × ${N_ALLIES} allies`,
+        `${applied.length} applies vs ${shots} shots × ${N_ALLIES} allies`
       ).toBe(shots * N_ALLIES);
     });
 
@@ -251,7 +251,7 @@ describe('mari — kit spec', () => {
     it('DISCRIMINATING: a lvl-9 magnitude moves the value to 24.25', () => {
       expect([
         ...new Set(
-          mariBuffs(pierceLvl9.events, 'pierceDamagePct').map((b) => b.value),
+          mariBuffs(pierceLvl9.events, 'pierceDamagePct').map((b) => b.value)
         ),
       ]).toEqual([24.25]);
     });
@@ -269,12 +269,12 @@ describe('mari — kit spec', () => {
 
   describe('MR3 — S2 self: ATK ▲30.78% / 5s (shotFired trigger ⚑)', () => {
     const applied = mariBuffs(base.events, 'atkPct').filter(
-      (b) => b.targetIdx === MARI,
+      (b) => b.targetIdx === MARI
     );
 
     it('is 30.78% for 5 sec, scoped to mari alone', () => {
       expect(applied.length, 'no self atkPct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([30.78]);
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([5]);
@@ -297,7 +297,7 @@ describe('mari — kit spec', () => {
     it('reaches all four allies for 5 sec, under the casterAtkPct stat key (not atkPct)', () => {
       expect(
         applied.length,
-        'no casterAtkPct buff was applied',
+        'no casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([5]);
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([
@@ -306,7 +306,7 @@ describe('mari — kit spec', () => {
       // the same line as atkPct would be a per-target percentage — the encoding under test must NOT be that
       expect(
         mariBuffs(base.events, 'atkPct').filter((b) => b.targetIdx !== MARI),
-        'the ally ATK buff must be casterAtkPct, never an all-allies atkPct',
+        'the ally ATK buff must be casterAtkPct, never an all-allies atkPct'
       ).toEqual([]);
     });
 
@@ -314,7 +314,7 @@ describe('mari — kit spec', () => {
       const values = [...new Set(applied.map((b) => b.value))];
       expect(
         values.length,
-        'casterAtkPct must grant one constant flat value to all allies',
+        'casterAtkPct must grant one constant flat value to all allies'
       ).toBe(1);
       expect(values[0]).toBeGreaterThan(1000); // a flat ATK amount, not a percentage
       expect(Math.abs(values[0] - expectedFlat)).toBeLessThan(0.01);
@@ -322,11 +322,11 @@ describe('mari — kit spec', () => {
 
     it('DISCRIMINATING: re-keyed to atkPct it would record 30.78 (a percentage), not the flat constant', () => {
       const wrong = mariBuffs(allyAtkWrong.events, 'atkPct').filter(
-        (b) => b.targetIdx !== MARI,
+        (b) => b.targetIdx !== MARI
       );
       expect(
         wrong.length,
-        'the atkPct counterfactual should apply to the allies',
+        'the atkPct counterfactual should apply to the allies'
       ).toBeGreaterThan(0);
       expect([...new Set(wrong.map((b) => b.value))]).toEqual([30.78]);
       expect(mariBuffs(allyAtkWrong.events, 'casterAtkPct')).toEqual([]);
@@ -337,17 +337,17 @@ describe('mari — kit spec', () => {
     it('is a self-targeted gainPierce block with a 5 sec window; unmodeled.skill2 is now empty', () => {
       const ov = withPatchedOverride('mari', () => {}) as any;
       const blk = ov.skill2.find((b: any) =>
-        b.effects.some((e: any) => e.kind === 'gainPierce'),
+        b.effects.some((e: any) => e.kind === 'gainPierce')
       );
       expect(
         blk,
-        'no gainPierce block in skill2 — still the stale static hasPierce flag?',
+        'no gainPierce block in skill2 — still the stale static hasPierce flag?'
       ).toBeDefined();
       expect(blk.target.kind).toBe('self');
       const eff = blk.effects.find((e: any) => e.kind === 'gainPierce');
       expect(
         eff.durationSec,
-        'the kit says "for 5 sec" — the window must be timed, not permanent',
+        'the kit says "for 5 sec" — the window must be timed, not permanent'
       ).toBe(5);
       // the line is now MODELED, so it must no longer sit in unmodeled
       expect(ov.unmodeled.skill2).toEqual([]);
@@ -376,7 +376,7 @@ describe('mari — kit spec', () => {
       const took = nukes.filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
 
@@ -390,13 +390,13 @@ describe('mari — kit spec', () => {
   describe('MR7 — burst ally Attack damage ▲40.99% / 10s keys to burstCast, NOT fullBurstEnter', () => {
     const applied = mariBuffs(base.events, 'attackDamagePct');
     const applyFrames = [...new Set(applied.map((b) => b.frame))].sort(
-      (a, b) => a - b,
+      (a, b) => a - b
     );
 
     it('is 40.99% for 10 sec, reaching all four allies', () => {
       expect(
         applied.length,
-        'no burst attackDamagePct buff was applied',
+        'no burst attackDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([40.99]);
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([10]);
@@ -415,8 +415,8 @@ describe('mari — kit spec', () => {
       const cfFrames = [
         ...new Set(
           mariBuffs(burstAdFbEnter.events, 'attackDamagePct').map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ].sort((a, b) => a - b);
       expect(cfFrames).toEqual(fbStartFrames(burstAdFbEnter.events));

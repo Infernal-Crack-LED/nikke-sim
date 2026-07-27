@@ -40,12 +40,13 @@ own MEASURED work) is registered in [`data/sources.json`](../../data/sources.jso
 harvestable sink for the planned web credits page. **Wiring rule: whenever a harness consumes a new
 outside source, APPEND it there** (stable `id`, `name`, `url`, `category`, `usedFor`, `tier`) — the
 harnesses that must do this:
+
 - **probe-processing** — a recording/tool that pulls an external value or method → add/extend its source.
 - **mechanics-doc-upkeep** — any doc claim that cites an outside URL/author → its source belongs here.
 - **research subagents / `/scientific-method`** — a research pass (like the SG-core sweep) that
   cites JP/KR/EN sources → register each before landing the finding.
-If a DECISIONS/open-questions/probe-data claim cites an outside link, that link must resolve to an entry
-here. Accreditation is CUMULATIVE — never delete an entry when its claim is superseded (we still used it).
+  If a DECISIONS/open-questions/probe-data claim cites an outside link, that link must resolve to an entry
+  here. Accreditation is CUMULATIVE — never delete an entry when its claim is superseded (we still used it).
 
 ## Validation methodology
 
@@ -155,7 +156,7 @@ to establish they were already correct.)
 
 **Current-state index:** `docs/STATE.md` is the landed-state registry — the default first read for
 "what does the sim do right now" (flags, constants, rotation, geometry, kit primitives). It is a
-*derived* index: on conflict, live engine code and the latest DECISIONS entry win, and STATE.md is the
+_derived_ index: on conflict, live engine code and the latest DECISIONS entry win, and STATE.md is the
 bug. Update it whenever a ruling lands (skill-maintenance / mechanics-doc-upkeep drive this). Full
 authority order: CLAUDE.md → "Docs authority order".
 

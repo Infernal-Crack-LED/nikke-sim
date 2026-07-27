@@ -152,14 +152,14 @@
 
 ### ❌ C. Unwired / inherent-v1 limitation / measurement-only — no discrete primitive to build
 
-| Theme                                      | Why it's here                                                               |
-| ------------------------------------------ | --------------------------------------------------------------------------- |
+| Theme                                      | Why it's here                                                                            |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
 | 1. Cadence tuple (~22 units)               | **SOLVED 2026-07-25** — datamine frame data reliable; SMG frame-data confound understood |
-| 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                          |
-| 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                        |
-| 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                               |
-| 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27 |
-| 12-tail. eve Mk2 sequential-doubling       | open sub-caveat, no primitive yet                                           |
+| 2. Defensive/heal/shield (~25 units)       | no HP pool in v1 (immortal boss) → inert by design                                       |
+| 17. User-selected modes (8 units)          | config/owner-review, not a primitive                                                     |
+| 18. Kill-gated effects (~4 units)          | inherent (immortal solo boss)                                                            |
+| 19. SG pull-vs-pellet `hitCount` 10× lever | measurement/calibration; per-unit landing CLOSED (A31/U17), open tail = U27              |
+| 12-tail. eve Mk2 sequential-doubling       | open sub-caveat, no primitive yet                                                        |
 
 ---
 

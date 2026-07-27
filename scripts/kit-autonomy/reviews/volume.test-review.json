@@ -65,9 +65,7 @@
     "burst:critRatePct 31.9 allies 5s"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "■ Affects self when killing an enemy. ATK ▲ 12.6% for 5 sec."
-    ],
+    "skill1": ["■ Affects self when killing an enemy. ATK ▲ 12.6% for 5 sec."],
     "skill2": [],
     "burst": []
   },

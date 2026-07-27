@@ -57,7 +57,10 @@ export interface DerivedWeaponFields {
 //   • anis-star — LOAD-BEARING gauge-calibration hack (halves her 40-tick burst dot's over-emitted
 //     skillGauge); at 1 comp "PA MiKa" makes 12 FBs vs measured 11. Remove ONLY after her dot gauge
 //     is properly re-modeled (deferred owner action item, C.1).
-const HITS_PER_SHOT_CARVEOUTS: Record<string, number> = { modernia: 2, 'anis-star': 2 };
+const HITS_PER_SHOT_CARVEOUTS: Record<string, number> = {
+  modernia: 2,
+  'anis-star': 2,
+};
 
 // Kill float dust from the /100 and /10000 divisions so the JSON serialises identically to the
 // clean synergy numbers it replaces (21430/100 must print "214.3", not "214.29999999999998").
@@ -73,13 +76,15 @@ export function deriveWeaponFields(
   const shotCount = shot.shot_count ?? 1;
   const isCharge = (shot.charge_time ?? 0) > 0;
 
-  const roleReload = Math.round((shot.reload_time ?? 0) / 100 * 60) + 21;
+  const roleReload = Math.round(((shot.reload_time ?? 0) / 100) * 60) + 21;
   const reloadFrames =
-    api?.reload_time != null && api.reload_time !== roleReload ? api.reload_time : roleReload;
+    api?.reload_time != null && api.reload_time !== roleReload
+      ? api.reload_time
+      : roleReload;
 
   // Role is authoritative for charge frames (owner ruling 2026-07-17): the only synergy
   // disagreement was SWHA's 71-vs-72 off-by-one, a synergy artefact the datamine supersedes.
-  const chargeFrames = isCharge ? Math.round(shot.charge_time / 100 * 60) : 0;
+  const chargeFrames = isCharge ? Math.round((shot.charge_time / 100) * 60) : 0;
 
   // Multi-muzzle weapons (muzzle_count > 1) fire that many projectiles per trigger, and the
   // datamined `damage` is PER-MUZZLE-shot — so per-trigger normal damage = damage × muzzle_count.
@@ -89,13 +94,18 @@ export function deriveWeaponFields(
   // gauge-per-shot.json where these two are already hand-curated quirks. Do NOT double those.)
   const muzzle = shot.muzzle_count ?? 1;
   return {
-    normalAttackMultiplier: round6((shot.damage ?? 0) / 100 * muzzle),
+    normalAttackMultiplier: round6(((shot.damage ?? 0) / 100) * muzzle),
     coreAttackMultiplier: round6((shot.core_damage_rate ?? 0) / 100),
     ammo: shot.max_ammo,
     reloadFrames,
     chargeFrames,
-    chargeMultiplier: isCharge && slug !== 'raven' ? round6((shot.full_charge_damage ?? 0) / 100) : 0,
-    burstGaugePerShot: round6((shot.burst_energy_pershot ?? 0) / 10000 * shotCount),
-    hitsPerShot: HITS_PER_SHOT_CARVEOUTS[slug] ?? (shotCount * muzzle),
+    chargeMultiplier:
+      isCharge && slug !== 'raven'
+        ? round6((shot.full_charge_damage ?? 0) / 100)
+        : 0,
+    burstGaugePerShot: round6(
+      ((shot.burst_energy_pershot ?? 0) / 10000) * shotCount
+    ),
+    hitsPerShot: HITS_PER_SHOT_CARVEOUTS[slug] ?? shotCount * muzzle,
   };
 }

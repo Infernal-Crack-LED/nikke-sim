@@ -23,14 +23,21 @@ function cindyPulls(strip: boolean): number {
     // committed magDumpRof (whole-mag dump, DECISIONS 2026-07-21): under mag-dump CS only shortens the
     // ONE prime charge per magazine, not each rocket, so the toggle would have no observable cadence
     // effect. Removing it here restores the per-rocket-charge model the mechanism test needs.
-    if (ov.charFixes) delete ov.charFixes.magDumpRof;
+    if (ov.charFixes) {delete ov.charFixes.magDumpRof;}
     // Replace her passive chargeSpeedPct-45 block with the faithful full-charge → CS 100 toggle.
     ov.skill1 = [
       {
         slot: 'skill1',
         trigger: { kind: 'shotFired' }, // every full-charge rocket (RL: every pull is a full charge)
         target: { kind: 'self' },
-        effects: [{ kind: 'buff', stat: 'chargeSpeedPct', value: 100, removeOnReload: strip }],
+        effects: [
+          {
+            kind: 'buff',
+            stat: 'chargeSpeedPct',
+            value: 100,
+            removeOnReload: strip,
+          },
+        ],
       },
     ];
   });
@@ -51,14 +58,14 @@ describe('reload-triggered buff removal (removeOnReload)', () => {
     // Without the strip, CS sticks at 100 after the first full charge for the whole fight.
     expect(
       pullsStrip,
-      `strip-on ${pullsStrip} should be < strip-off ${pullsNoStrip}`,
+      `strip-on ${pullsStrip} should be < strip-off ${pullsNoStrip}`
     ).toBeLessThan(pullsNoStrip);
   });
 
   it('has a substantial effect (many reloads over 180s), not a rounding artifact', () => {
     expect(
       pullsNoStrip - pullsStrip,
-      `strip effect too small to be the mechanism (Δ=${pullsNoStrip - pullsStrip})`,
+      `strip effect too small to be the mechanism (Δ=${pullsNoStrip - pullsStrip})`
     ).toBeGreaterThanOrEqual(100);
   });
 

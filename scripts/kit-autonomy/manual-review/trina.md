@@ -42,12 +42,12 @@ and deliberately leaves `tier: CALIBRATED` / `tuned: true` untouched. **The gaun
 - **S1 three heal lines** **UNMODELED** (documented verbatim in `unmodeled.skill1` + caveats). v1 has NO HP pool
   and NO heal/recovery-event primitive (immortal boss, nobody takes damage), so healing is unmodelable;
   recovery-trigger consumers (e.g. Crown's "when recovery takes effect") get no events from Trina. The two
-  Full-Charge heals are *doubly* inert — additionally gated on an ally-HP-percentage threshold (<30% / <50%) that
+  Full-Charge heals are _doubly_ inert — additionally gated on an ally-HP-percentage threshold (<30% / <50%) that
   v1 cannot evaluate (all allies pinned at 100%). **T1 actively PINS the absence** (Trina emits ZERO skill1-keyed
   buff events and ZERO skill1-sourced damage) and discriminates the empty slot from a harness blind spot via a
   fabricated-skill1 counterfactual (which WOULD emit skill1 events). NOT a silent drop, NOT a bare `it.skip`.
 - **S2 start-of-battle Max HP grant** `passive → alliesOfElementWeapon(Electric, AR, count 99) → casterMaxHpPct
-  44.98 (no duration)` — "Max HP ▲44.98% of the skill USER'S Max HP … constantly". `casterMaxHpPct` resolves to a
+44.98 (no duration)` — "Max HP ▲44.98% of the skill USER'S Max HP … constantly". `casterMaxHpPct` resolves to a
   FLAT add of (44.98/100)×Trina.maxHp (≈1.35M), re-keyed to `maxHpFlat`, CONSTANT across all targets (caster-keyed),
   applied at frame 0, no expiry ("constantly"). Correctly `casterMaxHpPct` (NOT `targetMaxHpPct`, which would be a
   per-target % of each ally's OWN Max HP — the blind S6 used targetMaxHpPct and itself flagged the mismatch).
@@ -59,7 +59,7 @@ and deliberately leaves `tier: CALIBRATED` / `tuned: true` untouched. **The gaun
   damage-to-allies model in v1; defensive and inert. **T3 PINS** that S2 emits exactly its two modeled effect
   families (`attackDamagePct`, `maxHpFlat`, `reloadSpeedPct`) and NO invulnerability effect.
 - **S2 burst-cast ally buff** `burstCast → alliesOfElementWeapon(Electric, AR, count 1) → attackDamagePct 94.15 +
-  reloadSpeedPct 50.82 (10s)` — "when using Burst Skill → 1 leftmost Electric Code ally with assault rifles".
+reloadSpeedPct 50.82 (10s)` — "when using Burst Skill → 1 leftmost Electric Code ally with assault rifles".
   `count 1` selects the LEFTMOST Electric-AR ally (slot order). "Attack Damage ▲94.15%" = `attackDamagePct`
   (Damage-Up bucket, NOT `atkPct`); "Reload Speed ▲50.82%" = `reloadSpeedPct` (a weapon-state modifier that IS
   damage — shortens AR reload dead-time → more shots, NOT dropped as defensive). Keyed to Trina's OWN `burstCast`
@@ -135,22 +135,22 @@ The judge found **0 gotchas**. The three blind divergences all resolved toward t
 ## 4. Owner spot-check cluster (the residual — systematic-prior-prone lines)
 
 1. **Burst Hit Rate ▲45.3% (§2, measurement-gated ⚑)** — the load-bearing magnitude question: measure the HR→core
-  lift on a graded Electric-AR comp (e.g. moran or scarlet carry) with Trina bursting. Toggle HRCORE on/off;
-  compare the AR carrier's core-hit popup fraction vs the kit's 45.3% hit-rate delta. If material, enact
-  `hitRatePct 45.3` on the burst Electric-AR block (it WOULD move the board — re-grade after). (magnitude ⚑)
+   lift on a graded Electric-AR comp (e.g. moran or scarlet carry) with Trina bursting. Toggle HRCORE on/off;
+   compare the AR carrier's core-hit popup fraction vs the kit's 45.3% hit-rate delta. If material, enact
+   `hitRatePct 45.3` on the burst Electric-AR block (it WOULD move the board — re-grade after). (magnitude ⚑)
 2. **S1 heal / recovery-event primitive (§2 GAP)** — if a recovery-event primitive lands, the fullBurstEnd
-  4.06%/s×5s HoT becomes a recovery emitter that drives Crown-style "when recovery takes effect" consumers; the
-  two Full-Charge HP-threshold heals additionally need an ally-HP-percentage gate (unevaluable in v1). Inert on
-  Trina's own damage either way. (engine primitive gap)
+   4.06%/s×5s HoT becomes a recovery emitter that drives Crown-style "when recovery takes effect" consumers; the
+   two Full-Charge HP-threshold heals additionally need an ally-HP-percentage gate (unevaluable in v1). Inert on
+   Trina's own damage either way. (engine primitive gap)
 3. **Spread Roots / Wilted Roots burst-skill-damage amp (§2 GAP)** — the dominant trap. If a scoped
-  AoE-burst-skill-damage bucket lands, the 435.6% (enemy count==1, fires on the solo boss) amps teammates'
-  all-enemies B3 nukes cast within 5s of Trina's burst — a teammate-COLD lever (Trina comps read COLD today).
-  Needs measurement of which teammates' burst damage qualifies. Candidate for `docs/engine-modeling-gaps.md`.
-  (engine primitive gap)
+   AoE-burst-skill-damage bucket lands, the 435.6% (enemy count==1, fires on the solo boss) amps teammates'
+   all-enemies B3 nukes cast within 5s of Trina's burst — a teammate-COLD lever (Trina comps read COLD today).
+   Needs measurement of which teammates' burst damage qualifies. Candidate for `docs/engine-modeling-gaps.md`.
+   (engine primitive gap)
 4. **burstCast-vs-fullBurstEnter trigger identity (§2 S2/burst)** — discriminated by FRAME in the sole-B2 fixture
-  (Trina's cast frame precedes the FB-start frame); becomes a COUNT divergence in a multi-B2 comp. Confirm on a
-  multi-B2 recording that the 94.15%/50.82% ally buff applies only on Trina's OWN casts (not every team FB).
-  (trigger-identity)
+   (Trina's cast frame precedes the FB-start frame); becomes a COUNT divergence in a multi-B2 comp. Confirm on a
+   multi-B2 recording that the 94.15%/50.82% ally buff applies only on Trina's OWN casts (not every team FB).
+   (trigger-identity)
 
 Magnitudes (44.98 / 94.15 / 50.82 / 20.14 / 20.9 / 435.6 / 64.46 / 45.3 / 4.06 / 2.03 / 1.57 / 20) are all
 kit-literal (DATAMINED); the gauntlet certified the STRUCTURE around them, not the numbers. Trina's board is HOT

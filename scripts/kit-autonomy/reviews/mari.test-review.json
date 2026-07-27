@@ -110,9 +110,7 @@
     "burst:Attack damage ▲ 40.99% (burstCast)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Damage dealt to Shield ▲ 100.09% for 3 sec."
-    ],
+    "skill1": ["Damage dealt to Shield ▲ 100.09% for 3 sec."],
     "skill2": [],
     "burst": []
   },

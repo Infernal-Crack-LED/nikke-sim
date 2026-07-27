@@ -62,15 +62,15 @@ const SLOTS: Slot[] = ['skill1', 'skill2', 'burst'];
 // ---------------------------------------------------------------- override walkers (shape-agnostic)
 const blocksOf = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 };
 
 const walk = (effects: any[], out: any[]): any[] => {
   for (const e of effects ?? []) {
     out.push(e);
-    if (e?.kind === 'escalating' && Array.isArray(e.steps)) walk(e.steps, out);
+    if (e?.kind === 'escalating' && Array.isArray(e.steps)) {walk(e.steps, out);}
   }
   return out;
 };
@@ -78,7 +78,8 @@ const walk = (effects: any[], out: any[]): any[] => {
 const effectsOf = (ov: any, slot: Slot | 'all'): any[] => {
   const slots = slot === 'all' ? SLOTS : [slot];
   const out: any[] = [];
-  for (const s of slots) for (const b of blocksOf(ov, s)) walk(b.effects ?? [], out);
+  for (const s of slots)
+    {for (const b of blocksOf(ov, s)) {walk(b.effects ?? [], out);}}
   return out;
 };
 
@@ -95,9 +96,17 @@ interface Run {
 function run(mutate?: (ov: any) => void): Run {
   const events: Ev[] = [];
   const opts: any = controlComp(SLUG, true);
-  opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => { events.push(ev as Ev); } };
+  opts.cfg = {
+    ...(opts.cfg ?? {}),
+    onEvent: (ev: SimEvent) => {
+      events.push(ev as Ev);
+    },
+  };
   if (mutate) {
-    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, mutate) };
+    opts.overrides = {
+      ...(opts.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, mutate),
+    };
   }
   const res = runComp(opts);
   return { total: totals(res)[SLUG], events, res };
@@ -105,19 +114,26 @@ function run(mutate?: (ov: any) => void): Run {
 
 // ---------------------------------------------------------------- mutators
 const zeroRank = (rank: number) => (ov: any) => {
-  const sorted = chargePayloads(ov).slice().sort((a, b) => (a.atkPct ?? 0) - (b.atkPct ?? 0));
-  if (sorted[rank]) sorted[rank].atkPct = 0;
+  const sorted = chargePayloads(ov)
+    .slice()
+    .sort((a, b) => (a.atkPct ?? 0) - (b.atkPct ?? 0));
+  if (sorted[rank]) {sorted[rank].atkPct = 0;}
 };
-const zeroAllPayloads = (ov: any) => { for (const e of chargePayloads(ov)) e.atkPct = 0; };
+const zeroAllPayloads = (ov: any) => {
+  for (const e of chargePayloads(ov)) {e.atkPct = 0;}
+};
 const setBuffValue = (stat: string, value: number) => (ov: any) => {
-  for (const e of effectsOf(ov, 'all')) if (e.kind === 'buff' && e.stat === stat) e.value = value;
+  for (const e of effectsOf(ov, 'all'))
+    {if (e.kind === 'buff' && e.stat === stat) {e.value = value;}}
 };
 const restatBuff = (from: string, to: string) => (ov: any) => {
-  for (const e of effectsOf(ov, 'all')) if (e.kind === 'buff' && e.stat === from) e.stat = to;
+  for (const e of effectsOf(ov, 'all'))
+    {if (e.kind === 'buff' && e.stat === from) {e.stat = to;}}
 };
 const dropKind = (kind: string) => (ov: any) => {
   for (const s of SLOTS) {
-    for (const b of blocksOf(ov, s)) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== kind);
+    for (const b of blocksOf(ov, s))
+      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== kind);}
   }
 };
 
@@ -128,19 +144,29 @@ const applies = (r: Run, stat: string, value: number): Ev[] =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
       e.targetSlug === SLUG &&
-      Math.abs((e.value ?? 0) - value) < 0.005,
+      Math.abs((e.value ?? 0) - value) < 0.005
   );
 
-const fbStarts = (r: Run): number => r.events.filter((e) => e.kind === 'fullBurstStart').length;
+const fbStarts = (r: Run): number =>
+  r.events.filter((e) => e.kind === 'fullBurstStart').length;
 
 /** scarlet's own damage events: prefer the per-unit result row, fall back to the global log. */
 const myDamage = (r: Run): any[] => {
   const row: any = unitOf(r.res, SLUG);
   const rowEv: any[] = Array.isArray(row?.events) ? row.events : [];
   const fromRow = rowEv.filter((e) => e?.kind === 'damage');
-  if (fromRow.length) return fromRow;
-  const keys = ['slug', 'unit', 'unitSlug', 'srcSlug', 'casterSlug', 'sourceSlug'];
-  return r.events.filter((e) => e.kind === 'damage' && keys.some((k) => (e as any)[k] === SLUG));
+  if (fromRow.length) {return fromRow;}
+  const keys = [
+    'slug',
+    'unit',
+    'unitSlug',
+    'srcSlug',
+    'casterSlug',
+    'sourceSlug',
+  ];
+  return r.events.filter(
+    (e) => e.kind === 'damage' && keys.some((k) => (e as any)[k] === SLUG)
+  );
 };
 
 // ---------------------------------------------------------------- hoisted runs (10 x 180s sims)
@@ -173,7 +199,9 @@ describe('scarlet-black-shadow / skill1 — Full Charge phase ladder (structure)
     // "Only one effect is triggered at a time" + three named tiers => three payloads, one per phase.
     // RED under: a merged single payload, a 2-tier reading, or Distributed Damage silently divided
     // by an enemy count (565 -> 282.5 would collide with the 3-times tier).
-    const tiers = chargePayloads(OV).map((e) => e.atkPct).sort((a, b) => a - b);
+    const tiers = chargePayloads(OV)
+      .map((e) => e.atkPct)
+      .sort((a, b) => a - b);
     expect(tiers).toHaveLength(3);
     expect(tiers[0]).toBeCloseTo(T3, 2);
     expect(tiers[1]).toBeCloseTo(T6, 2);
@@ -185,7 +213,7 @@ describe('scarlet-black-shadow / skill1 — Full Charge phase ladder (structure)
     // RED under core:true (which would multiply by the 200% core multiplier) or a dot encoding.
     const eff = chargePayloads(OV);
     expect(eff.length).toBe(3);
-    for (const e of eff) expect(e.core ?? false).toBe(false);
+    for (const e of eff) {expect(e.core ?? false).toBe(false);}
     expect(effectsOf(OV, 'skill1').some((e) => e.kind === 'dot')).toBe(false);
   });
 });
@@ -278,7 +306,7 @@ describe('scarlet-black-shadow / burst — self ATK +115.12% and Charge Damage +
   it('both buffs land on herself, at the kit magnitudes, on the same activations', () => {
     expect(atk.length).toBeGreaterThanOrEqual(3);
     expect(chg.length).toBe(atk.length);
-    for (const e of [...atk, ...chg]) expect(e.targetSlug).toBe(SLUG);
+    for (const e of [...atk, ...chg]) {expect(e.targetSlug).toBe(SLUG);}
   });
 
   it('they are 10-second windows, not round-counted and not permanent', () => {
@@ -324,7 +352,9 @@ describe('scarlet-black-shadow / skill2 — entering Full Burst: Max Ammo +60% f
     // the full-burst count exactly, and must therefore exceed her own burst-cast count (asserted
     // above). RED under a burst-cast keying, which would under-fire on helm's rotations.
     expect(ammo.length).toBe(fbStarts(BASE));
-    expect(ammo.length).toBeGreaterThan(applies(BASE, 'atkPct', BURST_ATK).length);
+    expect(ammo.length).toBeGreaterThan(
+      applies(BASE, 'atkPct', BURST_ATK).length
+    );
   });
 
   it('is a percentage capacity buff on herself for a 10-second window', () => {
@@ -348,7 +378,9 @@ describe('scarlet-black-shadow / skill2 — entering Full Burst: Max Ammo +60% f
   it('"Reload 100% of the magazine" is modelled and is worth damage on its own', () => {
     // A free full magazine at every FB entry buys shots inside the +50% window; over ~8 entries she
     // is essentially never already full. RED if the reload line was dropped as cosmetic.
-    expect(effectsOf(OV, 'all').some((e) => e.kind === 'instantReload')).toBe(true);
+    expect(effectsOf(OV, 'all').some((e) => e.kind === 'instantReload')).toBe(
+      true
+    );
     expect(NO_INSTANT_RELOAD.total).toBeLessThan(BASE.total);
   });
 });
@@ -359,11 +391,14 @@ describe('scarlet-black-shadow / inertness — nothing in this kit touches an al
     // Every buff line in the kit says "Affects self". RED under any allies-scoped mis-encoding.
     const signature = (e: Ev) =>
       (e.stat === 'atkPct' && Math.abs((e.value ?? 0) - BURST_ATK) < 0.005) ||
-      (e.stat === 'chargeDamagePct' && Math.abs((e.value ?? 0) - BURST_CHARGE) < 0.005) ||
+      (e.stat === 'chargeDamagePct' &&
+        Math.abs((e.value ?? 0) - BURST_CHARGE) < 0.005) ||
       (e.stat === 'maxAmmoPct' && Math.abs((e.value ?? 0) - AMMO_PCT) < 0.005);
     for (const slug of TEAM) {
       expect(
-        BASE.events.filter((e) => e.kind === 'buffApply' && e.targetSlug === slug && signature(e)).length,
+        BASE.events.filter(
+          (e) => e.kind === 'buffApply' && e.targetSlug === slug && signature(e)
+        ).length
       ).toBe(0);
     }
   });
@@ -372,10 +407,22 @@ describe('scarlet-black-shadow / inertness — nothing in this kit touches an al
     // The prose has no Damage Taken, no heal, no shield, no gauge fill and no weapon change; an
     // override carrying any of those invented a mechanic.
     const kinds = new Set(effectsOf(OV, 'all').map((e) => e.kind));
-    for (const forbidden of ['heal', 'shield', 'fillGauge', 'weaponSwap', 'targetStatus', 'stun', 'gainPierce']) {
+    for (const forbidden of [
+      'heal',
+      'shield',
+      'fillGauge',
+      'weaponSwap',
+      'targetStatus',
+      'stun',
+      'gainPierce',
+    ]) {
       expect(kinds.has(forbidden)).toBe(false);
     }
-    expect(effectsOf(OV, 'all').some((e) => e.kind === 'buff' && e.stat === 'damageTakenPct')).toBe(false);
+    expect(
+      effectsOf(OV, 'all').some(
+        (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
+      )
+    ).toBe(false);
   });
 });
 

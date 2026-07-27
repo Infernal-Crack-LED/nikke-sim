@@ -19,9 +19,7 @@
     "rl3": 7.6,
     "burstGaugePerShot": 0.2,
     "treasure": false,
-    "nicknames": [
-      "rws"
-    ],
+    "nicknames": ["rws"],
     "skills": {
       "skill1": "■ Activates when the last bullet hits the target. Affects all allies. \nDEF ▲ 19.02% for 5 sec.",
       "skill2": "■ Activates when an ally uses a Burst Skill. Affects all allies.\nShopping: DEF ▲ 1.33%. Stacks up to 4 times and lasts for 20 sec.\n■ Activates if Shopping is at max stacks when Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 7.9% for 5 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -286,16 +280,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_01} sec.\nRecovers {description_value_02}% of attack damage as HP over {description_value_03} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Reload Speed ▲ {description_value_04}% for {description_value_05} sec.\n<word_group=10002>Re-enters Burst</word_group> Stage 1</color>.",
           "description_value_list": [
@@ -378,19 +363,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            120330101,
-            120330103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [120330101, 120330103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -415,9 +391,7 @@
         }
       },
       "element": {
-        "element_id": [
-          400001
-        ],
+        "element_id": [400001],
         "element_details": [
           {
             "id": 400001,
@@ -448,9 +422,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Rupee: Winter Shopper's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

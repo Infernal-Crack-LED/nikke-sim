@@ -40,7 +40,7 @@ export interface RanksCtx {
 export interface BurstGenProfile {
   id: string;
   partners: string[]; // partner synthetic slugs appended to the solo team
-  note: string;       // player-facing, surfaced in the artifact's profiles map
+  note: string; // player-facing, surfaced in the artifact's profiles map
 }
 export const BURSTGEN_PROFILES: Record<string, BurstGenProfile> = {
   'little-mermaid': {
@@ -57,21 +57,29 @@ export const BURSTGEN_PROFILES: Record<string, BurstGenProfile> = {
 
 export interface BurstGenEntry {
   slug: string;
-  gaugeTotal: number;   // uncapped gauge-percent over 180s (100 = one bar)
+  gaugeTotal: number; // uncapped gauge-percent over 180s (100 = one bar)
   barsPerFight: number; // gaugeTotal / 100
   profile: string | null; // profile id, null = plain solo run
-  rank: number;         // 1-based, by descending gaugeTotal
+  rank: number; // 1-based, by descending gaugeTotal
 }
 
 // One unit's uncapped gauge total with an explicit partner list. The tested unit
 // is always slot 0.
-export function burstGenWithPartners(slug: string, partners: string[], ctx: RanksCtx): number {
+export function burstGenWithPartners(
+  slug: string,
+  partners: string[],
+  ctx: RanksCtx
+): number {
   const slugs = [slug, ...partners];
   const chars = slugs.map((s) => ctx.characters[s] ?? syntheticFor(s));
   // Scope-lock loadout (Base-5, no cube/doll, 3★/core 7 — the DPS chart's scope
   // tier). Investment barely moves this board (gauge is cadence/kit-driven, not
   // ATK-driven), but the convention keeps the boards comparable.
-  const unitOpts: UnitOptions[] = slugs.map(() => ({ ol: 'base5', stars: 3, core: 7 }));
+  const unitOpts: UnitOptions[] = slugs.map(() => ({
+    ol: 'base5',
+    stars: 3,
+    core: 7,
+  }));
   const cfg: SimConfig = {
     slugs,
     bossElement: null,
@@ -93,7 +101,11 @@ export function burstGenWithPartners(slug: string, partners: string[], ctx: Rank
 
 // One unit's uncapped gauge total. withProfile=false forces the plain solo run
 // even for a profiled unit (the board emits both variants).
-export function burstGenFor(slug: string, ctx: RanksCtx, withProfile = true): number {
+export function burstGenFor(
+  slug: string,
+  ctx: RanksCtx,
+  withProfile = true
+): number {
   const profile = withProfile ? BURSTGEN_PROFILES[slug] : undefined;
   return burstGenWithPartners(slug, profile?.partners ?? [], ctx);
 }
@@ -101,11 +113,25 @@ export function burstGenFor(slug: string, ctx: RanksCtx, withProfile = true): nu
 // Rank the whole population (every sim-supported slug). Profiled units appear
 // TWICE — plain (profile: null) and profiled (profile: id) — so the two
 // standings compare at a glance (owner ruling 2026-07-26).
-export function rankBurstGen(population: string[], ctx: RanksCtx): BurstGenEntry[] {
+export function rankBurstGen(
+  population: string[],
+  ctx: RanksCtx
+): BurstGenEntry[] {
   const scored = population.flatMap((slug) => {
-    const rows = [{ slug, gaugeTotal: burstGenFor(slug, ctx, false), profile: null as string | null }];
+    const rows = [
+      {
+        slug,
+        gaugeTotal: burstGenFor(slug, ctx, false),
+        profile: null as string | null,
+      },
+    ];
     const profile = BURSTGEN_PROFILES[slug];
-    if (profile) rows.push({ slug, gaugeTotal: burstGenFor(slug, ctx, true), profile: profile.id });
+    if (profile)
+      {rows.push({
+        slug,
+        gaugeTotal: burstGenFor(slug, ctx, true),
+        profile: profile.id,
+      });}
     return rows;
   });
   scored.sort((a, b) => b.gaugeTotal - a.gaugeTotal);

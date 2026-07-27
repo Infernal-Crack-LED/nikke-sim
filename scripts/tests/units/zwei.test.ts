@@ -62,7 +62,6 @@ const ZWEI = 0;
 type Damage = Extract<SimEvent, { kind: 'damage' }>;
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
-type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 const FIXTURE = {
   slugs: ['zwei', 'crown', 'helm'] as string[],
@@ -81,15 +80,13 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const zweiBuffs = (evs: SimEvent[], stat: string, value: number) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === ZWEI && b.stat === stat && b.value === value,
+    (b) => b.casterIdx === ZWEI && b.stat === stat && b.value === value
   );
 const perTarget = (bs: BuffApply[], tgt: number) =>
   bs.filter((b) => b.targetIdx === tgt);
-const zweiShots = (evs: SimEvent[]) =>
-  evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'zwei');
 const zweiBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'zwei',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'zwei'
   );
 const zweiDamage = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage' && e.slug === 'zwei');
@@ -110,15 +107,17 @@ const inWindow = (frame: number, wins: [number, number][]) =>
 /** Distinct crit rates seen per unit on the given buckets — the Z5 scope discriminator. */
 function critRatesByUnit(
   evs: SimEvent[],
-  buckets: Damage['bucket'][],
+  buckets: Damage['bucket'][]
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of evs.filter((e): e is Damage => e.kind === 'damage')) {
-    if (!buckets.includes(d.bucket)) continue;
+    if (!buckets.includes(d.bucket)) {
+      continue;
+    }
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
-    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')]),
+    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')])
   );
 }
 
@@ -128,7 +127,7 @@ const eff = (b: any, stat: string, value: number) =>
 
 /** Z1/Z3 nearest-wrong: the "for 1 round(s)" lines as wall-clock durationSec 5 (stale baseline). */
 const cfRoundSec = withPatchedOverride('zwei', (ov: any) => {
-  for (const b of ov.skill1)
+  for (const b of ov.skill1) {
     for (const e of b.effects) {
       if (
         e.stat === 'pierceDamagePct' &&
@@ -138,64 +137,73 @@ const cfRoundSec = withPatchedOverride('zwei', (ov: any) => {
         e.durationSec = 5;
       }
     }
+  }
 });
 /** Z2 nearest-wrong: the 10.06% FB-enter buff keyed to burstCast (9×/target) instead of fullBurstEnter (5×). */
 const cfS2Trigger = withPatchedOverride('zwei', (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some(
-      (e: any) => e.stat === 'pierceDamagePct' && e.value === 10.06,
-    ),
+      (e: any) => e.stat === 'pierceDamagePct' && e.value === 10.06
+    )
   );
-  if (!b) throw new Error('zwei S1 10.06 block missing — fixture is stale');
+  if (!b) {
+    throw new Error('zwei S1 10.06 block missing — fixture is stale');
+  }
   b.trigger = { kind: 'burstCast' };
 });
 /** Z5 nearest-wrong: the 18.63% crit as scoped critRateNormalPct (normal attacks only). */
 const cfCritScoped = withPatchedOverride('zwei', (ov: any) => {
   const e = eff(
     ov.skill2.find((x: any) =>
-      x.effects.some((y: any) => y.stat === 'critRatePct' && y.value === 18.63),
+      x.effects.some((y: any) => y.stat === 'critRatePct' && y.value === 18.63)
     ),
     'critRatePct',
-    18.63,
+    18.63
   );
-  if (!e)
+  if (!e) {
     throw new Error('zwei S2 18.63 crit effect missing — fixture is stale');
+  }
   e.stat = 'critRateNormalPct';
 });
 /** Z3/Z6 nearest-wrong: strip the gate from BOTH normal-attack lines — skill1 24.99% (fbGate inFb) and
  *  skill2 15% (swapGate swapped) — so they fire on every Zwei shot, in and out of FB / the swap window. */
 const cfNoGate = withPatchedOverride('zwei', (ov: any) => {
   let stripped = 0;
-  for (const slot of ['skill1', 'skill2'] as const)
-    for (const b of ov[slot])
+  for (const slot of ['skill1', 'skill2'] as const) {
+    for (const b of ov[slot]) {
       if (b.trigger?.kind === 'shotFired' && (b.fbGate || b.swapGate)) {
         delete b.fbGate;
         delete b.swapGate;
         stripped++;
       }
-  if (stripped < 2)
+    }
+  }
+  if (stripped < 2) {
     throw new Error(
-      'zwei expected 2 gated shotFired blocks — fixture is stale',
+      'zwei expected 2 gated shotFired blocks — fixture is stale'
     );
+  }
 });
 /** Z7 nearest-wrong: the burst weaponSwap removed. */
 const cfNoSwap = withPatchedOverride('zwei', (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (ov.burst.length === before)
+  if (ov.burst.length === before) {
     throw new Error('zwei burst weaponSwap block missing — fixture is stale');
+  }
 });
 /** Z8 nearest-wrong: the 25.03% pierce team-buff keyed to fullBurstEnter (5×/target) not burstCast (9×). */
 const cfBurstPierceFbEnter = withPatchedOverride('zwei', (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some(
-      (e: any) => e.stat === 'pierceDamagePct' && e.value === 25.03,
-    ),
+      (e: any) => e.stat === 'pierceDamagePct' && e.value === 25.03
+    )
   );
-  if (!b)
+  if (!b) {
     throw new Error('zwei burst 25.03 pierce block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -219,12 +227,13 @@ describe('zwei — kit spec', () => {
       expect([...new Set(applied.map((b) => b.durationShots))]).toEqual([1]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'a round-count buff carries no timed expiry',
+        'a round-count buff carries no timed expiry'
       ).toEqual([null]);
     });
     it('reaches all three allies once per Full Burst', () => {
-      for (const tgt of [0, 1, 2])
+      for (const tgt of [0, 1, 2]) {
         expect(perTarget(applied, tgt).length).toBe(wins.length);
+      }
     });
     it('DISCRIMINATING: the stale durationSec 5 encoding carries a timed expiry, not a round budget', () => {
       const cf = zweiBuffs(roundSec.events, 'pierceDamagePct', 20.13);
@@ -232,8 +241,8 @@ describe('zwei — kit spec', () => {
       expect([
         ...new Set(
           cf.map((b) =>
-            b.expiresFrame != null ? b.expiresFrame - b.frame : null,
-          ),
+            b.expiresFrame != null ? b.expiresFrame - b.frame : null
+          )
         ),
       ]).toEqual([5 * FPS]);
     });
@@ -253,7 +262,7 @@ describe('zwei — kit spec', () => {
       const cf = zweiBuffs(s2Trigger.events, 'pierceDamagePct', 10.06);
       expect(perTarget(cf, ZWEI).length).toBe(zweiBursts(base.events).length); // 9 (per cast)
       expect(perTarget(cf, ZWEI).length).not.toBe(
-        perTarget(applied, ZWEI).length,
+        perTarget(applied, ZWEI).length
       );
     });
   });
@@ -280,7 +289,7 @@ describe('zwei — kit spec', () => {
       const cf = zweiBuffs(noGate.events, 'pierceDamagePct', 24.99);
       expect(
         cf.some((b) => !inWindow(b.frame, wins)),
-        'ungated applications must appear outside FB',
+        'ungated applications must appear outside FB'
       ).toBe(true);
       expect(cf.length).toBeGreaterThan(applied.length);
     });
@@ -293,7 +302,7 @@ describe('zwei — kit spec', () => {
         'on-recovery tandem (+20.99% AD) every 5 Zwei shots off an unmeasured mechanic (measured>fudge). ' +
         'Blind S2b independently converged on UNMODELED. The line is recorded verbatim in unmodeled.skill2 + ' +
         'caveats, not silently dropped.',
-      () => {},
+      () => {}
     );
   });
 
@@ -309,7 +318,7 @@ describe('zwei — kit spec', () => {
     });
     it('DISCRIMINATING: a scoped critRateNormalPct would leave skill/burst bucket crit UNCHANGED', () => {
       expect(critRatesByUnit(base.events, ['skill', 'burst'])).not.toEqual(
-        critRatesByUnit(critScoped.events, ['skill', 'burst']),
+        critRatesByUnit(critScoped.events, ['skill', 'burst'])
       );
       expect(zweiBuffs(critScoped.events, 'critRatePct', 18.63).length).toBe(0);
     });
@@ -334,7 +343,7 @@ describe('zwei — kit spec', () => {
       const cf = zweiBuffs(noGate.events, 'critRatePct', 15);
       expect(
         cf.some((b) => !inWindow(b.frame, castWins)),
-        'ungated applications must appear outside the window',
+        'ungated applications must appear outside the window'
       ).toBe(true);
       expect(cf.length).toBeGreaterThan(applied.length);
     });
@@ -360,17 +369,18 @@ describe('zwei — kit spec', () => {
       expect([
         ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
       ]).toEqual([10 * FPS]);
-      for (const tgt of [0, 1, 2])
+      for (const tgt of [0, 1, 2]) {
         expect(perTarget(applied, tgt).length).toBeGreaterThan(0);
+      }
     });
     it('DISCRIMINATING: keyed to burstCast (9×/target), NOT fullBurstEnter (5×/target)', () => {
       expect(perTarget(applied, ZWEI).length).toBe(
-        zweiBursts(base.events).length,
+        zweiBursts(base.events).length
       ); // 9 (per cast)
       const cf = zweiBuffs(burstPierceFb.events, 'pierceDamagePct', 25.03);
       expect(perTarget(cf, ZWEI).length).toBe(wins.length); // 5 (per FB)
       expect(perTarget(cf, ZWEI).length).not.toBe(
-        perTarget(applied, ZWEI).length,
+        perTarget(applied, ZWEI).length
       );
     });
   });

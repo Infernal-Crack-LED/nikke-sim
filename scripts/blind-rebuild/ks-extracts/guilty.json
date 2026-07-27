@@ -22,9 +22,7 @@
     "reference": false,
     "unmodeled": {
       "skill1": [],
-      "skill2": [
-        "Increases stack count of stackable buffs by 1."
-      ],
+      "skill2": ["Increases stack count of stackable buffs by 1."],
       "burst": []
     },
     "caveats": [

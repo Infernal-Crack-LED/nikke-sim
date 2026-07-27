@@ -65,7 +65,7 @@ type Reload = Extract<SimEvent, { kind: 'reload' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  cfg: Record<string, any> = {},
+  cfg: Record<string, any> = {}
 ) {
   const events: SimEvent[] = [];
   runComp({
@@ -81,27 +81,27 @@ function run(
 const noInstantReload = withPatchedOverride(CARRY, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'instantReload'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'instantReload')
   );
   if (ov.skill1.length === before)
-    throw new Error('lwo S1 instantReload block missing — fixture is stale');
+    {throw new Error('lwo S1 instantReload block missing — fixture is stale');}
 });
 /** L3 counterfactual: the NAIVE reading "60 core hits = hitCount 60" (drops the ÷0.95 proxy). */
 const naiveS2Count = withPatchedOverride(CARRY, (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b) throw new Error('lwo S2 flatDamage block missing — fixture is stale');
+  if (!b) {throw new Error('lwo S2 flatDamage block missing — fixture is stale');}
   b.trigger.count = 60;
 });
 /** L4 reference: her FB-entry crit-rate line removed. */
 const noCrit = withPatchedOverride(CARRY, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct')
   );
   if (ov.skill2.length === before)
-    throw new Error('lwo S2 critRatePct block missing — fixture is stale');
+    {throw new Error('lwo S2 critRatePct block missing — fixture is stale');}
 });
 /** L5 reference: her burst Reload Speed half removed (ATK half kept). */
 const noReloadSpeed = withPatchedOverride(CARRY, (ov) => {
@@ -112,9 +112,9 @@ const noReloadSpeed = withPatchedOverride(CARRY, (ov) => {
     removed += before - b.effects.length;
   }
   if (removed === 0)
-    throw new Error(
-      'lwo burst reloadSpeedPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'lwo burst reloadSpeedPct effect missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -131,7 +131,7 @@ const lwoDamage = (evs: SimEvent[], srcSlot?: Damage['srcSlot']) =>
     (e): e is Damage =>
       e.kind === 'damage' &&
       e.slug === CARRY &&
-      (srcSlot === undefined || e.srcSlot === srcSlot),
+      (srcSlot === undefined || e.srcSlot === srcSlot)
   );
 const lwoShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === CARRY);
@@ -146,7 +146,7 @@ const buffs = (evs: SimEvent[]) =>
 /** buffApply events caster-OR-debuff attributed to LWO's line for a stat (enemy debuffs carry casterIdx null). */
 const lwoBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && (b.casterIdx === LWO || b.targetIdx === null),
+    (b) => b.stat === stat && (b.casterIdx === LWO || b.targetIdx === null)
   );
 
 const SHOTS_BASE = lwoShots(base).length;
@@ -158,19 +158,19 @@ describe('ludmilla-winter-owner — kit spec', () => {
     it('is a BOSS debuff at the kit magnitude and 3s duration, on the 60-hit cadence', () => {
       expect(
         applied.length,
-        'no damageTakenPct debuff applied',
+        'no damageTakenPct debuff applied'
       ).toBeGreaterThan(0);
       expect(applied.length, 'cadence = floor(shots/60)').toBe(
-        Math.floor(SHOTS_BASE / 60),
+        Math.floor(SHOTS_BASE / 60)
       );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([12.56]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must target the boss (null)',
+        'must target the boss (null)'
       ).toEqual([null]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame! - b.frame))],
-        '3 sec',
+        '3 sec'
       ).toEqual([3 * FPS]);
     });
 
@@ -180,7 +180,7 @@ describe('ludmilla-winter-owner — kit spec', () => {
       ];
       expect(taken).toContain('1.1256');
       expect(
-        lwoDamage(base).filter((d) => d.mult.taken > 1.001).length,
+        lwoDamage(base).filter((d) => d.mult.taken > 1.001).length
       ).toBeGreaterThan(0);
     });
   });
@@ -199,7 +199,7 @@ describe('ludmilla-winter-owner — kit spec', () => {
     it('is a plain additional-damage rider: crit-eligible but NOT a core strike, no range bonus', () => {
       // Nearest-wrong (reviewer): core:true — the kit says "additional damage", not core strike.
       expect(riders.every((d) => !d.coreEligible && d.coreRate === 0)).toBe(
-        true,
+        true
       );
       expect(riders.every((d) => !d.rangeApplied)).toBe(true);
     });
@@ -212,11 +212,11 @@ describe('ludmilla-winter-owner — kit spec', () => {
       const irShots = lwoShots(noIR).length;
       expect(
         baseReloads,
-        `base ${baseReloads} reloads vs no-top-up ${irReloads}`,
+        `base ${baseReloads} reloads vs no-top-up ${irReloads}`
       ).toBeLessThan(irReloads);
       expect(
         SHOTS_BASE,
-        `base ${SHOTS_BASE} shots vs no-top-up ${irShots}`,
+        `base ${SHOTS_BASE} shots vs no-top-up ${irShots}`
       ).toBeGreaterThan(irShots);
     });
   });
@@ -231,8 +231,8 @@ describe('ludmilla-winter-owner — kit spec', () => {
       // Triggered BY core hits but itself a plain additional-damage rider (no core strike, no range).
       expect(
         riders.every(
-          (d) => !d.coreEligible && d.coreRate === 0 && !d.rangeApplied,
-        ),
+          (d) => !d.coreEligible && d.coreRate === 0 && !d.rangeApplied
+        )
       ).toBe(true);
     });
 
@@ -250,22 +250,22 @@ describe('ludmilla-winter-owner — kit spec', () => {
 
   describe('L4 — S2 self Critical Rate ▲14.6% for 10s at the beginning of Full Burst', () => {
     const applied = lwoBuffs(base, 'critRatePct').filter(
-      (b) => b.casterIdx === LWO,
+      (b) => b.casterIdx === LWO
     );
 
     it('fires on EVERY team Full Burst entry (not only her own casts), self-scoped, 14.6 / 10s', () => {
       expect(applied.length, 'count must equal team FB entries').toBe(
-        fbStarts(base).length,
+        fbStarts(base).length
       );
       expect(applied.length).not.toBe(lwoBursts(base).length); // 11 FB entries ≠ 6 of her casts
       expect([...new Set(applied.map((b) => b.value))]).toEqual([14.6]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([LWO]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame! - b.frame))],
-        '10 sec',
+        '10 sec'
       ).toEqual([10 * FPS]);
     });
 
@@ -275,7 +275,7 @@ describe('ludmilla-winter-owner — kit spec', () => {
           ...new Set(
             lwoDamage(evs)
               .filter((d) => d.bucket === 'normal')
-              .map((d) => d.critRate.toFixed(4)),
+              .map((d) => d.critRate.toFixed(4))
           ),
         ].sort();
       expect(critRates(base)).toContain((0.15 + 0.146).toFixed(4)); // 0.2960 = base 15% + 14.6%
@@ -286,7 +286,7 @@ describe('ludmilla-winter-owner — kit spec', () => {
   describe('L5 — burst self ATK ▲62.54% / 10s + Reload Speed ▲67.2% / 20s', () => {
     const atk = lwoBuffs(base, 'atkPct').filter((b) => b.casterIdx === LWO);
     const rs = lwoBuffs(base, 'reloadSpeedPct').filter(
-      (b) => b.casterIdx === LWO,
+      (b) => b.casterIdx === LWO
     );
 
     it('both fire once per burst cast, self-scoped, at the kit magnitudes', () => {
@@ -312,7 +312,7 @@ describe('ludmilla-winter-owner — kit spec', () => {
     it('DISCRIMINATING: the Reload Speed half is load-bearing for her shot economy', () => {
       expect(
         SHOTS_BASE,
-        `base ${SHOTS_BASE} shots vs no-reload-speed ${lwoShots(noRS).length}`,
+        `base ${SHOTS_BASE} shots vs no-reload-speed ${lwoShots(noRS).length}`
       ).toBeGreaterThan(lwoShots(noRS).length);
     });
   });

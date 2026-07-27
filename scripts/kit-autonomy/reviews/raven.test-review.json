@@ -114,9 +114,7 @@
     "skill2": [
       "Activates when an ally or self destroys an enemy's part. Affects self if self is not in A.N. Mode status. Single Point Attack: Sustained damage ▲ 47.32% for 15 sec. Removes Vital Attack."
     ],
-    "burst": [
-      "A.N. Mode Effect 1: Removes Single Point Attack."
-    ]
+    "burst": ["A.N. Mode Effect 1: Removes Single Point Attack."]
   },
   "notes": "Expected shared-prior misreads, in order of damage: (1) rescuing the unreachable part-destruction Single Point line (47.32% sustained) as some always-on/FB trigger — it must stay unmodeled on the partless boss; assert its magnitude never appears in buffApply. (2) Keying the A.N. Mode 89.44% sustained buff to fullBurstEnter instead of burstCast — controlComp includes helm as co-B3, so the two triggers measurably diverge there; the packet's own skill1/skill2 lines show this kit DOES distinguish the phrasings ('when entering Full Burst' vs a mode inside the burst block). (3) Flavor threading: both 47.32 and 89.44 are 'Sustained damage ▲', which must feed ONLY the sustained-flavored skill1 DoT ticks, not her RL shots or the 492.3% nuke — a generic damage-up encoding is the quiet over-credit. (4) skill1 DoT must be per-shot independent instances (engine no-dedup), not one refreshed instance; the 10-stack cap never binds at her base cadence (~0.7 shots/s × 5 s ≈ 3.5 concurrent) so no cap primitive is needed — ⚡ re-check if any fire-rate/charge-speed buff enters the comp. (5) The 47.52% is 'of the skill user's ATK' → casterAtkPct flat-resolved at apply (assert the emitted value is ≈ 0.4752×staticAtk, not the raw 47.52). ⚑ Cadence tuple (charge 60f, ammo 6, reloadFrames 141) is the standard ALWAYS-⚑ datamine-unreliable field — the DoT-stack concurrency argument above inherits that flag. All magnitudes are DATAMINED (kit-literal); no CALIBRATED values are needed anywhere in this kit.",
   "model": "claude-fable-5"

@@ -12,10 +12,10 @@ Citations are to doc `§` and skill names. Adversarial brief; flattery omitted.
 1. **"Tests are the gate; triangulation is the sampler" (§2, §5.5b, D2).** SOUND. The unit test is the
    only stat-/footage-independent instrument; subordinating prose→JSON triangulation to it is the correct
    response to the TDD plan's same-altitude finding. (Confidence: high.)
-2. **Test-derivation forces operational precision that prose→JSON can fudge (§2, §12.1).** SOUND *as far as
-   it goes* — `expect(gone on round 11)` forces a rounds-vs-seconds commitment that `durationSec 13` hides.
+2. **Test-derivation forces operational precision that prose→JSON can fudge (§2, §12.1).** SOUND _as far as
+   it goes_ — `expect(gone on round 11)` forces a rounds-vs-seconds commitment that `durationSec 13` hides.
    Writing the assertion is a real forcing function. (Confidence: high — but see Risk R1 for the limit.)
-3. **Blindness-by-construction = "what each role is handed" (§10, §12.6).** SOUND as a *mechanism* and
+3. **Blindness-by-construction = "what each role is handed" (§10, §12.6).** SOUND as a _mechanism_ and
    faithful to audit-kit's "YOU guard what you hand the subagent." Removing the driver's
    implementation/reasoning from blind roles genuinely prevents anchoring/rubber-stamping. (Confidence:
    high on the mechanism; see R2 for contamination that voids it on the live target.)
@@ -35,62 +35,67 @@ Citations are to doc `§` and skill names. Adversarial brief; flattery omitted.
 ## (b) RISKS / GAPS — ranked by severity
 
 ### R1 (CRITICAL) — The load-bearing claim is overclaimed: same-model convergence ≠ correctness.
-**Risk.** §2/§12 claim that if two independent agents, given only the kit text, *converge* on
+
+**Risk.** §2/§12 claim that if two independent agents, given only the kit text, _converge_ on
 `expect(gone on round 11)`, the reading is "forced by the text — not a plausible misread." But every
 reviewing agent is the **same underlying model** with the same priors and the same reading-comprehension
 biases. Blindness removes **anchoring/contamination** bias (real, valuable) but does **NOT** remove
-**shared-prior** bias. A plausible-but-wrong reading the model's prior *favors* will be produced identically
+**shared-prior** bias. A plausible-but-wrong reading the model's prior _favors_ will be produced identically
 by the driver and the blind agent — they converge, and the convergence is **false confidence**, strictly
 worse than no signal because it manufactures certainty.
 **Why it matters.** The repo's OWN taxonomy says the dominant errors are **systematic**, not idiosyncratic:
 helm scope-collapse ("crit of normal attacks"→generic crit, §5.2#2), duration-semantics ("N rounds"→seconds,
 #3), trigger-identity (`burstCast`↔`fullBurstEnter`, #4). These are exactly the misreads two same-model
 agents BOTH make and converge on. The design's value-claim ("a clean GO is real evidence, not the author
-agreeing with themselves," §4) is therefore only half-true: it decorrelates *random* error but certifies
-*systematic* error.
+agreeing with themselves," §4) is therefore only half-true: it decorrelates _random_ error but certifies
+_systematic_ error.
 **Where the substitution HOLDS:** idiosyncratic-error decorrelation (independent arithmetic), and prose that
 genuinely forces a single reading (low ambiguity). **Where it SILENTLY FAILS:** ambiguous prose + a wrong
-shared prior; and shared *blind spots* (a subtlety neither agent registers as a decision point — convergence
-on the *absence* of a discriminating assertion, which is invisible).
-**Fix.** (i) State the limit explicitly in §2/§12: convergence proves *stability across same-model
-reasoners*, not correctness. (ii) **Add model diversity** — pin the blind roles (S2b/S5/S6/S7) to a model
-*different from the driver* (audit-kit pins Opus for exactly this reason; the design drops it — see R6).
-(iii) Make the blind agents **adversarial**: instruct them to *generate the nearest-wrong reading and the
-assertion that distinguishes it*, not merely re-derive — this surfaces the shared prior instead of echoing it.
+shared prior; and shared _blind spots_ (a subtlety neither agent registers as a decision point — convergence
+on the _absence_ of a discriminating assertion, which is invisible).
+**Fix.** (i) State the limit explicitly in §2/§12: convergence proves _stability across same-model
+reasoners_, not correctness. (ii) **Add model diversity** — pin the blind roles (S2b/S5/S6/S7) to a model
+_different from the driver_ (audit-kit pins Opus for exactly this reason; the design drops it — see R6).
+(iii) Make the blind agents **adversarial**: instruct them to _generate the nearest-wrong reading and the
+assertion that distinguishes it_, not merely re-derive — this surfaces the shared prior instead of echoing it.
 
 ### R2 (CRITICAL) — Blindness is contaminated for the live target (`privaty`).
+
 **Risk.** The material handed to the blind roles names privaty's answer:
-- §5.2 failure-mode #4 (handed to S2b/S5): *"…privaty = `lastBullet` + `targetStatus` gate."*
-- §5.6 (handed via §5): *"lastBullet / targetStatus interaction gets its first pin from privaty in this run."*
-- kit-parse **hard-rule #5** (handed to S6): *"EXACT wording… Privaty S2 'Activates when the last bullet
-  hits… Deals 256.17% … additional damage'."* — names the mechanic **and the magnitude**.
-A blind agent handed these does not *derive* anything; the cheat-sheet has the answer. This **voids the
-independent re-derivation for exactly the unit being validated.**
-**Why it matters.** The live run's "independent convergence" signal becomes meaningless — the blind agents
-are sighted for privaty. The whole §12.1 value-claim collapses on its own demonstration unit.
-**Fix.** Build a **redacted blind packet** for S2b/S5/S6: strip every unit-specific answer (privaty's name,
-its trigger/gate/magnitudes) from the §5 excerpt and the kit-parse hard-rules excerpt before dispatch, OR
-choose a live target NOT named in §5/hard-rules. Add an **automated leak assertion** (grep the blind prompt
-for the slug's key magnitudes `256.17/1687/1407.64` and mechanic tokens) mirroring `build-packet.ts` — the
-new test-writer roles (S2b/S5) currently have **no** automated guard, contrary to the "mirrors
-build-packet.ts's leak assertion" claim (§10). (Also resolves the soft leaks: the full `types.ts` schema
-hands the blind agent `requiresTargetStatus`/`lastBullet`, priming it to "find" a targetStatus gate.)
+
+- §5.2 failure-mode #4 (handed to S2b/S5): _"…privaty = `lastBullet` + `targetStatus` gate."_
+- §5.6 (handed via §5): _"lastBullet / targetStatus interaction gets its first pin from privaty in this run."_
+- kit-parse **hard-rule #5** (handed to S6): _"EXACT wording… Privaty S2 'Activates when the last bullet
+  hits… Deals 256.17% … additional damage'."_ — names the mechanic **and the magnitude**.
+  A blind agent handed these does not _derive_ anything; the cheat-sheet has the answer. This **voids the
+  independent re-derivation for exactly the unit being validated.**
+  **Why it matters.** The live run's "independent convergence" signal becomes meaningless — the blind agents
+  are sighted for privaty. The whole §12.1 value-claim collapses on its own demonstration unit.
+  **Fix.** Build a **redacted blind packet** for S2b/S5/S6: strip every unit-specific answer (privaty's name,
+  its trigger/gate/magnitudes) from the §5 excerpt and the kit-parse hard-rules excerpt before dispatch, OR
+  choose a live target NOT named in §5/hard-rules. Add an **automated leak assertion** (grep the blind prompt
+  for the slug's key magnitudes `256.17/1687/1407.64` and mechanic tokens) mirroring `build-packet.ts` — the
+  new test-writer roles (S2b/S5) currently have **no** automated guard, contrary to the "mirrors
+  build-packet.ts's leak assertion" claim (§10). (Also resolves the soft leaks: the full `types.ts` schema
+  hands the blind agent `requiresTargetStatus`/`lastBullet`, priming it to "find" a targetStatus gate.)
 
 ### R3 (CRITICAL) — S2a "RED vs the shipped override" is mis-specified for an already-faithful override.
-**Risk.** S2a gate: *"tests confirmed RED vs the shipped override."* But privaty's shipped override is
+
+**Risk.** S2a gate: _"tests confirmed RED vs the shipped override."_ But privaty's shipped override is
 **already faithful** (§6: MEASURED+tuned, every line FAITHFUL in §6a; the HOT residual is calibration, not
-encoding). A *correct* discriminating test for a faithful override is **GREEN vs shipped** and **RED vs the
+encoding). A _correct_ discriminating test for a faithful override is **GREEN vs shipped** and **RED vs the
 nearest-wrong counterfactual** (`withPatchedOverride` noFb/ungated). The design's own **D4** confirms this:
 it "certifies the faithful model against the fit-fudge" — i.e. GREEN vs the faithful shipped override, RED
 vs the removed-`noFb` counterfactual. So S2a's "RED vs shipped" directly contradicts D4 for the chosen target.
 **Why it matters.** Taken literally, "RED vs shipped" either (a) is impossible for a correct test on a
-faithful override, or (b) forces the driver to write a *wrong* test that fails against the correct encoding.
+faithful override, or (b) forces the driver to write a _wrong_ test that fails against the correct encoding.
 This is kit-tdd's #1 warning ("a test from a wrong reading certifies the misread forever") re-entering.
 **Fix.** Disambiguate the already-faithful case in S2a: **discrimination = GREEN-vs-shipped-faithful AND
 RED-vs-each-named-counterfactual.** "RED vs shipped" applies only to FIX/MISSING lines on an unfaithful
 override; FAITHFUL lines on a faithful override must be GREEN-vs-shipped.
 
 ### R4 (HIGH) — No independent verification that tests were ever RED / discriminate.
+
 **Risk.** kit-tdd: "Confirm RED before implementing. A test that was green before the fix asserted nothing."
 In the autonomous pipeline the **driver self-reports** discrimination. Nothing stops the driver from writing
 a test that passes against BOTH the shipped override and the counterfactual (asserts nothing) and reporting
@@ -103,8 +108,9 @@ named counterfactual via `withPatchedOverride` — expect RED — and records bo
 Self-reported RED is not acceptable.
 
 ### R5 (HIGH) — "Nearest-wrong model" and "load-bearing line" are driver-defined with no independent check.
+
 **Risk.** §11#5 requires each test to "fail under the nearest-wrong model," but the **driver** picks the
-nearest-wrong model. The driver can pick a **straw-man** the assertion trivially beats, while the *actual*
+nearest-wrong model. The driver can pick a **straw-man** the assertion trivially beats, while the _actual_
 nearest neighbor (a subtler misread) passes. Likewise §11#3's "load-bearing lines" is undefined — if the
 driver decides load-bearing-ness, they can declare a divergent line non-load-bearing to reach GO.
 **Why it matters.** Turns the discrimination and convergence gates into honor-system self-assessment.
@@ -114,6 +120,7 @@ driver↔blind divergence on either is itself a divergence the judge reconciles.
 independent re-derivation cleanly.
 
 ### R6 (HIGH) — audit-kit's model-pinning dropped without replacement (fidelity + independence).
+
 **Risk.** audit-kit pins all three reviewers to `model: "opus"`; part of its independence guarantee comes
 from a deliberate model choice. The design specifies **no** model pinning for S2b/S5/S6/S7. If driver and
 all reviewers are the same model, R1's shared-prior problem is maximal.
@@ -121,15 +128,17 @@ all reviewers are the same model, R1's shared-prior problem is maximal.
 convergence is weak evidence and downgrade the GO-claim accordingly.
 
 ### R7 (HIGH) — Convergence (GO #3) is not mechanically operational.
+
 **Risk.** §11#3: "the blind re-derivations agree with the driver's implementation on the load-bearing
 lines." S5 produces a **test file**, not a spec table — "agree" is undefined. How does the judge compare a
 blind test file to an override?
 **Fix.** Operationalize: **run the S5 blind tests, unmodified, against the driver's shipped override; GREEN
 = convergence, any RED = a divergence the judge classifies.** This is mechanical, strong, and uses the
-test-as-gate principle consistently. (Note the asymmetry the rubric already half-gets right: a *divergence*
-the blind caught is the real signal; mere *agreement* among same-model agents is weak — see R1.)
+test-as-gate principle consistently. (Note the asymmetry the rubric already half-gets right: a _divergence_
+the blind caught is the real signal; mere _agreement_ among same-model agents is weak — see R1.)
 
 ### R8 (MEDIUM) — D3 (noRange) is a tautology, not a discriminating assertion.
+
 **Risk.** D3 asserts "no +0.3 range term." But the design's OWN sources say the engine **force-sets
 `noRange`** on all flatDamage (§5.2#12: "noRange is auto-set, redundant to write"; kit-parse prior 2: "the
 engine force-sets noRange, so never set or flag it"). Therefore the assertion holds for **any** override the
@@ -140,17 +149,19 @@ privaty's faithfulness. Inflates the apparent discrimination coverage.
 **Fix.** Drop D3 or reclassify it as an engine-invariant sanity check, not a kit-faithfulness discriminator.
 
 ### R9 (MEDIUM) — Magnitude faithfulness is out of scope but not declared so.
+
 **Risk.** The discriminating assertions are **structural** (fires/doesn't, in/out-window, FB/no-FB). The
-magnitudes (256.17 / 1687 / 1407.64) are MEASURED-tier, taken as given. Tests are stat-independent *by
-design*, so a wrong-but-plausible magnitude would pass every assertion. The gauntlet gates
+magnitudes (256.17 / 1687 / 1407.64) are MEASURED-tier, taken as given. Tests are stat-independent _by
+design_, so a wrong-but-plausible magnitude would pass every assertion. The gauntlet gates
 structure/trigger/scope/duration faithfulness, **not** magnitude faithfulness.
-**Why it matters.** For privaty this is fine (fresh owner-signed measurements). As a *general* pipeline it
+**Why it matters.** For privaty this is fine (fresh owner-signed measurements). As a _general_ pipeline it
 silently under-covers; a future unit with a plausible-wrong magnitude would GO cleanly.
 **Fix.** State explicitly in §11 that magnitude faithfulness is **owner/measurement-gated and out of scope**
 for the autonomous gate; the pipeline certifies structure, not numbers.
 
 ### R10 (MEDIUM) — Offsetting-error / "modeled≠working" not checked by the rubric.
-**Risk.** §5.5a warns a unit graded ~1.0 can still be wrong (a value calibrated to *absorb* a missing shared
+
+**Risk.** §5.5a warns a unit graded ~1.0 can still be wrong (a value calibrated to _absorb_ a missing shared
 buff). The rubric checks encoding-vs-prose per line but has **no** "does each block actually FIRE at the
 prose-implied rate over 180s" check. kit-parse Step 5 has this (DBG side-effect check); the gauntlet's §11
 does not.
@@ -158,14 +169,16 @@ does not.
 cadence (the DBG side-effect confirmation), not just structural presence.
 
 ### R11 (MEDIUM) — ⚑ estimates can be back-fit by the driver (honesty of estimates).
+
 **Risk.** The driver (S1) **sees the board reading** (§10 S1). kit-parse's VALUES-WITHHELD protects the
-*blind parser* from the board, but the driver commits ⚑ estimates with the board in view — nothing stops a
+_blind parser_ from the board, but the driver commits ⚑ estimates with the board in view — nothing stops a
 back-fit estimate. The anti-fudge invariant (§12.3) forbids it but no check enforces it.
 **Why it matters.** Moot for privaty (no ⚑ — all MEASURED), real for the general pipeline.
 **Fix.** Commit ⚑ estimates **before** consulting the board reading, or have a blind agent re-derive each
 estimate and compare.
 
 ### R12 (LOW–MEDIUM) — D2/D4 fixture & observability caveats.
+
 - **D2** depends on reconstructing the Designated-Target window from `burstCast` timestamps, because §5.4
   documents **no `targetStatus` event**. Likely requires an **S4 event-payload extension** (which §5.4
   anticipates) — flag as a probable S4 dependency, not a blocker. Also add a **non-vacuity precondition**:
@@ -180,6 +193,7 @@ estimate and compare.
   / 1407.64 are distinct) but is fragile — state the reliance.
 
 ### R13 (LOW) — No board A/B stage in S1–S7; judge "blind to reasoning" is overstated.
+
 - kit-tdd Step 4 (board A/B, "run both, report both") has **no** stage in S1–S7. §6 mentions board readings
   "for the outer A/B loop" but the protocol never runs/reports it. Add an explicit (non-gating) board A/B
   report stage.
@@ -192,7 +206,8 @@ estimate and compare.
 ## (c) Fidelity verdict on the three source skills
 
 **kit-tdd — represented ACCURATELY; substitutions declared honestly; residual risk understated.**
-- "Owner drives the spec / never auto-generate the spec table" — correctly quoted; the design *explicitly*
+
+- "Owner drives the spec / never auto-generate the spec table" — correctly quoted; the design _explicitly_
   declares the substitution (§12). ✓ Honest. But it **understates** the residual risk: kit-tdd's warning
   ("a test from a wrong reading certifies the misread forever") is not fully neutralized by same-model
   re-derivation (R1/R3).
@@ -204,6 +219,7 @@ estimate and compare.
   authorization for the worktree branch (§1, D4). ✓ Declared.
 
 **audit-kit — represented ACCURATELY; one invariant violated in practice for the live target; one dropped.**
+
 - "Blindness is load-bearing; separate subagent with only packet + code" — stated correctly (§10, §12.6) but
   **violated in practice** by handing §5/hard-rules that name privaty's answer (R2).
 - "build-packet.ts leak assertion" — claimed as the model, but the **new test-writer roles have no automated
@@ -213,16 +229,17 @@ estimate and compare.
   edits. ✓
 
 **kit-parse — represented ACCURATELY; VALUES-WITHHELD honored; blind-study contaminated for the target.**
+
 - VALUES-WITHHELD (no grade.ts/experiment/board/other-units'-probe-data) — S6 correctly withholds all of
   these. ✓
 - BLIND-STUDY (no own override / DECISIONS / handoffs / probe-* / git history) — S6 matches exactly. ✓
 - Hard rules + ALWAYS-⚑ + faithful>fit + measured>fudge — inherited intact. ✓
 - **But** hard-rule #5 names "Privaty S2 … 256.17% … lastBullet" as the canonical example, and S6 is handed
-  "kit-parse hard rules" — so the blind override-writer sees privaty's answer (R2). Violates the *spirit* of
+  "kit-parse hard rules" — so the blind override-writer sees privaty's answer (R2). Violates the _spirit_ of
   BLIND-STUDY for the live target.
 
-**Net:** no *misstatement* of what the skills say; the substitutions are declared. The problems are
-*practical violations* (R2 contamination, R6 dropped pinning) and an *understated residual risk* (R1).
+**Net:** no _misstatement_ of what the skills say; the substitutions are declared. The problems are
+_practical violations_ (R2 contamination, R6 dropped pinning) and an _understated residual risk_ (R1).
 
 ---
 

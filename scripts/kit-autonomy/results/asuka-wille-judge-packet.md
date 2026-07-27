@@ -5,6 +5,7 @@
 Unit: Asuka: WILLE (`asuka-wille`, MG/Attacker/Wind/Burst III, ammo 300 / reloadFrames 161). DISTINCT from base `asuka` (AR/Fire). Tier 2 (scoped self-buffs, burstCast/fullBurstEnter trigger nuance, Annihilation-State status gate, Anti A.T. Field stack mirror).
 
 GAUNTLET FIXES (all engine-supported; the S6 blind opus rebuild independently converged on the trigger/timing encodings, which the driver ADOPTED):
+
 1. Anti A.T. Field CONSUMPTION (S2b fable + driver find): the burst finisher prose says 'Anti A.T. Field status is removed after the effect is triggered' — the debuff is consumed at Annihilation-State end (~cast+9s), so its real life is the ~9s build window, NOT the near-permanent 30-stack boss debuff the parser-baseline shipped (which over-credited the WHOLE team ~3-4x avg amp; team sum 1979M->1837M after the fix). Modeled: burst inflicts targetStatus 'Annihilation State' 9s (no SELF-status gate exists, so the mode is proxied as a boss status per the marciana/privaty requiresTargetStatus pattern); S1 proc gated requiresTargetStatus 'Annihilation State' at hitCount 10 (every 10 in-window shots, replacing the ungated hitCount-44 time-average); debuff durationSec 9 (effective=consumed, not the nominal 30s). RESIDUAL flag6: instant stack-removal is unmodelable (no remove-target-buff primitive) -> gradual 9s expiry leaves a short post-window tail.
 2. S2 FB-entry Attack Damage 30.97%: fullBurstEnter + ownBurstGate:'cast' (was burstCast) — purpose-built primitive for 'entering FB after own burst'; keeps the block AT FB entry (burstCast fires pre-FB). Converged with S6.
 3. Emergency Repair (heal/reload/ammo-dump): fullBurstEnd + ownBurstGate:'cast' (was burstCast) — FB end ≈ Annihilation-State end (~cast+9s, ~1s late vs the prior 9s-early). Converged with S6.
@@ -28,6 +29,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -38,12 +40,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -69,33 +73,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## GROUND TRUTH — real kit prose + base stats (data/characters.json → characters['asuka-wille'])
+
 ```json
 {
   "slug": "asuka-wille",
@@ -142,6 +174,7 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
 ```
 
 ## S2b PRE-OP REVIEW (claude-fable-5, independent test-faithfulness spec)
+
 ```json
 {
   "slug": "asuka-wille",
@@ -346,19 +379,18 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Effect 1: MG heating up speed ▼ 100% for 3 sec."
-    ],
+    "skill2": ["Effect 1: MG heating up speed ▼ 100% for 3 sec."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads, in descending danger: (1) skill2's 30.97 keyed to plain fullBurstEnter — the control comp runs helm as co-B3, so an ungated encoding roughly doubles its uptime; the Annihilation-State gate makes it fire only on her own rotations. (2) Anti A.T. Field treated as a 30s boss debuff — the burst's Annihilation explicitly consumes it, so its effective life is only the ~9s build window; a 30s persistence over-credits the WHOLE TEAM between rotations (assert teammates' inter-window damage against a baseline). (3) 'for 1 rounds' on the reload-speed fix encoded as durationSec:1 — the buff must survive the whole 161-frame forced reload and die after the first post-reload round. (4) The ammo dump + heal skipped as 'defensive': the dump forces a reload (shot economy + lastBullet) and the heal drives crown's on-recovery triggers. (5) Normal Attack Damage Multiplier ▼40% encoded as generic damage-down, wrongly hitting riders/nuke. (6) The nuke modeled at a fixed 30 stacks instead of mirroring live accrued stacks — whether 30 is even reachable depends on rounds fired in 9s (300 rounds needed at 10 shots/stack), which is cadence-dependent; the assertion must read the live stack count, not assume cap. (7) The 15.62% proc doubled on the single boss because the prose says 2 enemy units. Timing subtlety to reconcile: the nuke lands ~9s after cast — near the FB-window boundary — so fbMajorApplied must be asserted by observed landing timing, not assumed either way. All magnitudes are kit-literal (DATAMINED); the only ALWAYS-⚑ field in play is MG cadence (pulls/sec), which this spec deliberately never numerically assumes.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ## S5 BLIND POST-OP TEST (claude-opus-5, written from prose alone) — materialized to blind/asuka-wille.test.ts
+
 S5 spec (per-line):
+
 ```json
 {
   "spec": [
@@ -484,7 +516,9 @@ S5 spec (per-line):
   "fixtures": "controlComp('asuka-wille', true) only — liter B1 / crown B2 / asuka-wille B3 / helm B3, boss Fire, deterministic (no seed). helm is kept ON on purpose: a SECOND Burst III is the only thing that makes fullBurstStart count exceed her own burst-cast count, which is what turns every own-burst gate (S1b Annihilation-State gating, S2a's 'while in Annihilation State', burst-b's timing) into a discriminating test instead of a vacuous one; a fixture non-vacuity `it` asserts that precondition explicitly. Crown (B2) is the on-recovery consumer that makes S2b's heal cross-unit rather than inert. Wind vs the Fire boss carries no elemental advantage, so there is no x1.10 confound. 11 hoisted runs (1 base + 10 counterfactuals), all built with withPatchedOverride so the committed JSON is untouched; nothing is written to src/skills/overrides/ and validate-overrides is not run."
 }
 ```
+
 S5 test source (shim-fixed by driver per blind author invitation; runs 19 pass / 8 fail / 4 skip vs the driver override):
+
 ```typescript
 /**
  * asuka-wille — Asuka: WILLE. MG / Wind / Attacker / Burst III. cd 40s, ammo 300,
@@ -525,436 +559,614 @@ S5 test source (shim-fixed by driver per blind author invitation; runs 19 pass /
  * differently, fix the shim — not the assertions. Test runner assumed to be vitest, matching the
  * exemplar's `describe/it/expect` shape.
  */
-import { describe, it, expect } from 'vitest'
-import { controlComp, runComp, unitOf, withPatchedOverride } from '../lib/harness'
+import { describe, it, expect } from 'vitest';
+import {
+  controlComp,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
-const SLUG = 'asuka-wille'
+const SLUG = 'asuka-wille';
 
 // ---------------------------------------------------------------- shims
-type Ev = any
+type Ev = any;
 const tOf = (ev: Ev): number =>
-  ev.t ?? ev.timeSec ?? ev.time ?? (ev.frame != null ? ev.frame / 60 : NaN)
-const srcOf = (ev: Ev): number => ev.srcSlot ?? ev.casterIdx ?? ev.slot ?? ev.unitIdx
-const dmgOf = (ev: Ev): number => ev.amount ?? ev.damage ?? 0
-const r3 = (x: number) => Math.round(x * 1000) / 1000
-const near = (a: number, b: number, tol = 0.02) => Math.abs(a - b) <= tol
+  ev.t ?? ev.timeSec ?? ev.time ?? (ev.frame != null ? ev.frame / 60 : NaN);
+const srcOf = (ev: Ev): number =>
+  ev.srcSlot ?? ev.casterIdx ?? ev.slot ?? ev.unitIdx;
+const dmgOf = (ev: Ev): number => ev.amount ?? ev.damage ?? 0;
+const r3 = (x: number) => Math.round(x * 1000) / 1000;
+const near = (a: number, b: number, tol = 0.02) => Math.abs(a - b) <= tol;
 
 // ------------------------------------------------- override introspection
-const OV: any = withPatchedOverride(SLUG, () => {})
+const OV: any = withPatchedOverride(SLUG, () => {});
 
 function allEffects(ov: any): Array<{ e: any; b: any }> {
-  const out: Array<{ e: any; b: any }> = []
+  const out: Array<{ e: any; b: any }> = [];
   for (const b of ov.blocks ?? []) {
     for (const e of b.effects ?? []) {
-      out.push({ e, b })
-      if (e.kind === 'escalating') for (const s of e.steps ?? []) out.push({ e: s, b })
+      out.push({ e, b });
+      if (e.kind === 'escalating')
+        for (const s of e.steps ?? []) out.push({ e: s, b });
     }
   }
-  return out
+  return out;
 }
 
 function findEffects(ov: any, pred: (e: any, b: any) => boolean) {
-  return allEffects(ov).filter(({ e, b }) => pred(e, b))
+  return allEffects(ov).filter(({ e, b }) => pred(e, b));
 }
 
 /** Delete every effect matching `pred`; throws a MISSING error naming the kit line if none. */
-function dropEffects(ov: any, label: string, pred: (e: any, b: any) => boolean): number {
-  let n = 0
+function dropEffects(
+  ov: any,
+  label: string,
+  pred: (e: any, b: any) => boolean
+): number {
+  let n = 0;
   for (const b of ov.blocks ?? []) {
-    const before = (b.effects ?? []).length
-    b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b))
-    n += before - b.effects.length
+    const before = (b.effects ?? []).length;
+    b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b));
+    n += before - b.effects.length;
   }
-  if (!n) throw new Error(`MISSING kit line in override: ${label}`)
-  ov.blocks = (ov.blocks ?? []).filter((b: any) => (b.effects?.length ?? 0) > 0)
-  return n
+  if (!n) throw new Error(`MISSING kit line in override: ${label}`);
+  ov.blocks = (ov.blocks ?? []).filter(
+    (b: any) => (b.effects?.length ?? 0) > 0
+  );
+  return n;
 }
 
 const isDamageEffect = (e: any) =>
-  e.kind === 'flatDamage' || e.kind === 'dot' || e.kind === 'storedHit'
+  e.kind === 'flatDamage' || e.kind === 'dot' || e.kind === 'storedHit';
 
 // 6.62% x N stacks — the driver can only ship a DERIVED constant (no stack-mirroring primitive),
 // so match any near-integer multiple of 6.62 in [1,30] that is not one of the other two riders.
 const isAnnihilationHit = (e: any) => {
-  if (!isDamageEffect(e)) return false
-  const k = e.atkPct / 6.62
-  return k >= 0.9 && k <= 30.5 && Math.abs(k - Math.round(k)) < 0.06 &&
-    !near(e.atkPct, 471.86, 0.5) && !near(e.atkPct, 15.62, 0.05) && !near(e.atkPct, 31.24, 0.05)
-}
+  if (!isDamageEffect(e)) return false;
+  const k = e.atkPct / 6.62;
+  return (
+    k >= 0.9 &&
+    k <= 30.5 &&
+    Math.abs(k - Math.round(k)) < 0.06 &&
+    !near(e.atkPct, 471.86, 0.5) &&
+    !near(e.atkPct, 15.62, 0.05) &&
+    !near(e.atkPct, 31.24, 0.05)
+  );
+};
 
 // ---------------------------------------------------------------- runner
 function runWith(patch?: (o: any) => void, helm = true) {
-  const events: Ev[] = []
-  const base: any = controlComp(SLUG, helm)
-  const opts: any = { ...base, cfg: { ...(base.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) } }
-  if (patch) opts.overrides = { ...(base.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, patch) }
-  const res: any = runComp(opts)
-  return { res, events }
+  const events: Ev[] = [];
+  const base: any = controlComp(SLUG, helm);
+  const opts: any = {
+    ...base,
+    cfg: { ...(base.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) },
+  };
+  if (patch)
+    opts.overrides = {
+      ...(base.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, patch),
+    };
+  const res: any = runComp(opts);
+  return { res, events };
 }
 
 // ------------------------------------------------- HOISTED RUNS (11 sims)
-const BASE = runWith()
-const NO_R471 = runWith(o => dropEffects(o, 'S1a 471.86% 50-hit rider',
-  e => isDamageEffect(e) && near(e.atkPct, 471.86, 0.5)))
-const HITCOUNT_100 = runWith(o => {
-  const b = (o.blocks ?? []).find((b: any) => b.trigger?.kind === 'hitCount' && b.trigger.count === 50)
-  if (!b) throw new Error('MISSING: skill1 hitCount(50) trigger for the 471.86% rider')
-  b.trigger.count = 100
-})
-const NO_R1562 = runWith(o => dropEffects(o, 'S1b 15.62% every-10-shots rider',
-  e => isDamageEffect(e) && (near(e.atkPct, 15.62, 0.05) || near(e.atkPct, 31.24, 0.05))))
-const NO_DEBUFF = runWith(o => dropEffects(o, 'S1b Anti A.T. Field Damage Taken +0.83%',
-  e => e.kind === 'buff' && e.stat === 'damageTakenPct'))
-const S2A_UNGATED = runWith(o => {
-  const bs = (o.blocks ?? []).filter((b: any) => (b.effects ?? []).some((e: any) =>
-    e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 30.97, 0.1)))
-  if (!bs.length) throw new Error('MISSING: skill2 Attack Damage +30.97% block')
-  for (const b of bs) { delete b.ownBurstGate; b.trigger = { kind: 'fullBurstEnter' } } // nearest-wrong
-})
-const NO_AMMO_DUMP = runWith(o => dropEffects(o, 'S2b removes 100% of ammo',
-  e => e.kind === 'consumeAmmo'))
-const NO_RELOAD_BUFF = runWith(o => dropEffects(o, 'S2b reload speed fixed +60% for 1 round',
-  e => e.kind === 'buff' && e.stat === 'reloadSpeedPct'))
-const NO_NERF = runWith(o => dropEffects(o, 'burst normal-attack multiplier -40%',
-  e => e.kind === 'buff' && e.stat === 'normalAttackPct'))
-const NO_ANNIHILATION = runWith(o => dropEffects(o, 'burst Annihilation 6.62% x stacks',
-  isAnnihilationHit))
-const NO_HEAL = runWith(o => dropEffects(o, 'S2b 3.77% max HP heal x3', e => e.kind === 'heal'))
+const BASE = runWith();
+const NO_R471 = runWith((o) =>
+  dropEffects(
+    o,
+    'S1a 471.86% 50-hit rider',
+    (e) => isDamageEffect(e) && near(e.atkPct, 471.86, 0.5)
+  )
+);
+const HITCOUNT_100 = runWith((o) => {
+  const b = (o.blocks ?? []).find(
+    (b: any) => b.trigger?.kind === 'hitCount' && b.trigger.count === 50
+  );
+  if (!b)
+    throw new Error(
+      'MISSING: skill1 hitCount(50) trigger for the 471.86% rider'
+    );
+  b.trigger.count = 100;
+});
+const NO_R1562 = runWith((o) =>
+  dropEffects(
+    o,
+    'S1b 15.62% every-10-shots rider',
+    (e) =>
+      isDamageEffect(e) &&
+      (near(e.atkPct, 15.62, 0.05) || near(e.atkPct, 31.24, 0.05))
+  )
+);
+const NO_DEBUFF = runWith((o) =>
+  dropEffects(
+    o,
+    'S1b Anti A.T. Field Damage Taken +0.83%',
+    (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
+  )
+);
+const S2A_UNGATED = runWith((o) => {
+  const bs = (o.blocks ?? []).filter((b: any) =>
+    (b.effects ?? []).some(
+      (e: any) =>
+        e.kind === 'buff' &&
+        e.stat === 'attackDamagePct' &&
+        near(e.value, 30.97, 0.1)
+    )
+  );
+  if (!bs.length)
+    throw new Error('MISSING: skill2 Attack Damage +30.97% block');
+  for (const b of bs) {
+    delete b.ownBurstGate;
+    b.trigger = { kind: 'fullBurstEnter' };
+  } // nearest-wrong
+});
+const NO_AMMO_DUMP = runWith((o) =>
+  dropEffects(o, 'S2b removes 100% of ammo', (e) => e.kind === 'consumeAmmo')
+);
+const NO_RELOAD_BUFF = runWith((o) =>
+  dropEffects(
+    o,
+    'S2b reload speed fixed +60% for 1 round',
+    (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct'
+  )
+);
+const NO_NERF = runWith((o) =>
+  dropEffects(
+    o,
+    'burst normal-attack multiplier -40%',
+    (e) => e.kind === 'buff' && e.stat === 'normalAttackPct'
+  )
+);
+const NO_ANNIHILATION = runWith((o) =>
+  dropEffects(o, 'burst Annihilation 6.62% x stacks', isAnnihilationHit)
+);
+const NO_HEAL = runWith((o) =>
+  dropEffects(o, 'S2b 3.77% max HP heal x3', (e) => e.kind === 'heal')
+);
 
 // ---------------------------------------------------------------- derived
 function slotOfUnit(res: any): number {
-  const u: any = unitOf(res, SLUG)
-  const idx = u?.idx ?? u?.slot ?? u?.index ?? u?.slotIdx
-  if (idx == null) throw new Error(`cannot resolve slot index for ${SLUG}`)
-  return idx
+  const u: any = unitOf(res, SLUG);
+  const idx = u?.idx ?? u?.slot ?? u?.index ?? u?.slotIdx;
+  if (idx == null) throw new Error(`cannot resolve slot index for ${SLUG}`);
+  return idx;
 }
-const SLOT = slotOfUnit(BASE.res)
+const SLOT = slotOfUnit(BASE.res);
 
-const herDamage = (evts: Ev[]) => evts.filter(e => e.kind === 'damage' && srcOf(e) === SLOT)
-const herDamageTimes = (evts: Ev[]) => herDamage(evts).map(e => r3(tOf(e)))
-const herShots = (evts: Ev[]) => evts.filter(e => e.kind === 'shot' && srcOf(e) === SLOT)
-const herTotal = (evts: Ev[]) => herDamage(evts).reduce((s, e) => s + dmgOf(e), 0)
+const herDamage = (evts: Ev[]) =>
+  evts.filter((e) => e.kind === 'damage' && srcOf(e) === SLOT);
+const herDamageTimes = (evts: Ev[]) => herDamage(evts).map((e) => r3(tOf(e)));
+const herShots = (evts: Ev[]) =>
+  evts.filter((e) => e.kind === 'shot' && srcOf(e) === SLOT);
+const herTotal = (evts: Ev[]) =>
+  herDamage(evts).reduce((s, e) => s + dmgOf(e), 0);
 const teamTotal = (evts: Ev[]) =>
-  evts.filter(e => e.kind === 'damage').reduce((s, e) => s + dmgOf(e), 0)
+  evts.filter((e) => e.kind === 'damage').reduce((s, e) => s + dmgOf(e), 0);
 const allyTotal = (evts: Ev[]) =>
-  evts.filter(e => e.kind === 'damage' && srcOf(e) !== SLOT).reduce((s, e) => s + dmgOf(e), 0)
+  evts
+    .filter((e) => e.kind === 'damage' && srcOf(e) !== SLOT)
+    .reduce((s, e) => s + dmgOf(e), 0);
 
 /** multiset difference a \\ b — the timestamps present in the base run and absent once dropped. */
 function removedTimes(a: number[], b: number[]): number[] {
-  const bag = new Map<number, number>()
-  for (const t of b) bag.set(t, (bag.get(t) ?? 0) + 1)
-  const out: number[] = []
+  const bag = new Map<number, number>();
+  for (const t of b) bag.set(t, (bag.get(t) ?? 0) + 1);
+  const out: number[] = [];
   for (const t of a) {
-    const c = bag.get(t) ?? 0
-    if (c > 0) bag.set(t, c - 1)
-    else out.push(t)
+    const c = bag.get(t) ?? 0;
+    if (c > 0) bag.set(t, c - 1);
+    else out.push(t);
   }
-  return out
+  return out;
 }
 
-const HER_CASTS = BASE.events.filter(e => e.kind === 'burstCast' && srcOf(e) === SLOT).map(tOf)
-const FB_STARTS = BASE.events.filter(e => e.kind === 'fullBurstStart').map(tOf)
+const HER_CASTS = BASE.events
+  .filter((e) => e.kind === 'burstCast' && srcOf(e) === SLOT)
+  .map(tOf);
+const FB_STARTS = BASE.events
+  .filter((e) => e.kind === 'fullBurstStart')
+  .map(tOf);
 /** Annihilation State = 9 s from HER burst cast (quarter-second slack for cast/frame alignment). */
-const inAnnihState = (t: number) => HER_CASTS.some(c => t >= c - 0.25 && t <= c + 9.25)
+const inAnnihState = (t: number) =>
+  HER_CASTS.some((c) => t >= c - 0.25 && t <= c + 9.25);
 
-const RIDER471_TIMES = removedTimes(herDamageTimes(BASE.events), herDamageTimes(NO_R471.events))
-const RIDER1562_TIMES = removedTimes(herDamageTimes(BASE.events), herDamageTimes(NO_R1562.events))
-const ANNIH_TIMES = removedTimes(herDamageTimes(BASE.events), herDamageTimes(NO_ANNIHILATION.events))
+const RIDER471_TIMES = removedTimes(
+  herDamageTimes(BASE.events),
+  herDamageTimes(NO_R471.events)
+);
+const RIDER1562_TIMES = removedTimes(
+  herDamageTimes(BASE.events),
+  herDamageTimes(NO_R1562.events)
+);
+const ANNIH_TIMES = removedTimes(
+  herDamageTimes(BASE.events),
+  herDamageTimes(NO_ANNIHILATION.events)
+);
 
 // buffApply/buffRemove selectors. Boss-held debuffs come through with casterIdx===null AND
 // targetIdx===null, so they are filtered by stat+value, never by slot.
 const buffApplies = (evts: Ev[], stat: string, value?: number, tol = 0.05) =>
-  evts.filter(e => e.kind === 'buffApply' && e.stat === stat &&
-    (value == null || near(e.value, value, tol)))
+  evts.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      (value == null || near(e.value, value, tol))
+  );
 const buffRemoves = (evts: Ev[], stat: string, value?: number, tol = 0.05) =>
-  evts.filter(e => e.kind === 'buffRemove' && e.stat === stat &&
-    (value == null || near(e.value, value, tol)))
+  evts.filter(
+    (e) =>
+      e.kind === 'buffRemove' &&
+      e.stat === stat &&
+      (value == null || near(e.value, value, tol))
+  );
 
 // =============================================================== FIXTURE
 describe('asuka-wille — fixture is non-vacuous', () => {
   it('she bursts at least twice and fires', () => {
-    expect(HER_CASTS.length).toBeGreaterThanOrEqual(2)
-    expect(herShots(BASE.events).length).toBeGreaterThan(100)
-  })
+    expect(HER_CASTS.length).toBeGreaterThanOrEqual(2);
+    expect(herShots(BASE.events).length).toBeGreaterThan(100);
+  });
 
   it('the team enters Full Burst on rotations she does NOT cast (own-burst gates are testable)', () => {
     // helm is the second Burst III. If this fails, every own-burst-gate assertion below is
     // vacuous and the fixture — not the override — is what needs fixing.
-    expect(FB_STARTS.length).toBeGreaterThan(HER_CASTS.length)
-  })
-})
+    expect(FB_STARTS.length).toBeGreaterThan(HER_CASTS.length);
+  });
+});
 
 // =============================================================== SKILL 1a
 describe('S1a — "after landing 50 normal attack(s)": 471.86% of final ATK at the target', () => {
   it('fires on a 50-HIT counter, not on a clock or every shot', () => {
-    const shots = herShots(BASE.events).length
-    expect(RIDER471_TIMES.length).toBeGreaterThan(0)
+    const shots = herShots(BASE.events).length;
+    expect(RIDER471_TIMES.length).toBeGreaterThan(0);
     // hitCount counts ROUNDS; MG hitsPerShot = 1, so procs ~= landedShots/50.
-    expect(RIDER471_TIMES.length).toBeLessThanOrEqual(Math.ceil(shots / 50) + 2)
-    expect(RIDER471_TIMES.length).toBeGreaterThanOrEqual(Math.floor(shots / 50) * 0.7)
-  })
+    expect(RIDER471_TIMES.length).toBeLessThanOrEqual(
+      Math.ceil(shots / 50) + 2
+    );
+    expect(RIDER471_TIMES.length).toBeGreaterThanOrEqual(
+      Math.floor(shots / 50) * 0.7
+    );
+  });
 
   it('doubling the threshold halves the proc count (RED under an interval / shotFired key)', () => {
-    const at100 = removedTimes(herDamageTimes(HITCOUNT_100.events),
-      herDamageTimes(NO_R471.events)).length
+    const at100 = removedTimes(
+      herDamageTimes(HITCOUNT_100.events),
+      herDamageTimes(NO_R471.events)
+    ).length;
     // An `interval` or `shotFired` trigger ignores `count` entirely -> ratio 1.0 -> RED.
-    const ratio = at100 / RIDER471_TIMES.length
-    expect(ratio).toBeGreaterThan(0.35)
-    expect(ratio).toBeLessThan(0.72)
-  })
+    const ratio = at100 / RIDER471_TIMES.length;
+    expect(ratio).toBeGreaterThan(0.35);
+    expect(ratio).toBeLessThan(0.72);
+  });
 
   it('is ungated: it also procs OUTSIDE Annihilation State', () => {
     // The kit puts no status clause on this line; gating it to her burst window under-credits.
-    expect(RIDER471_TIMES.some(t => !inAnnihState(t))).toBe(true)
-  })
+    expect(RIDER471_TIMES.some((t) => !inAnnihState(t))).toBe(true);
+  });
 
   it('inertness — it is her own damage only; allies unmoved', () => {
-    expect(Math.abs(allyTotal(NO_R471.events) / allyTotal(BASE.events) - 1)).toBeLessThan(0.001)
-    expect(herTotal(BASE.events)).toBeGreaterThan(herTotal(NO_R471.events))
-  })
-})
+    expect(
+      Math.abs(allyTotal(NO_R471.events) / allyTotal(BASE.events) - 1)
+    ).toBeLessThan(0.001);
+    expect(herTotal(BASE.events)).toBeGreaterThan(herTotal(NO_R471.events));
+  });
+});
 
 // =============================================================== SKILL 1b
 describe('S1b — Annihilation-State-only: every 10 shots, 15.62% + Anti A.T. Field stack', () => {
   it('the 15.62% rider ONLY procs inside her own Annihilation State window', () => {
-    expect(RIDER1562_TIMES.length).toBeGreaterThan(0)
-    const leaked = RIDER1562_TIMES.filter(t => !inAnnihState(t))
+    expect(RIDER1562_TIMES.length).toBeGreaterThan(0);
+    const leaked = RIDER1562_TIMES.filter((t) => !inAnnihState(t));
     // Nearest-wrong: an ungated passive every-10-shots block (procs all fight), or a plain
     // fbGate:'inFb' proxy (also procs during helm's Full Bursts, which she did not open).
-    expect(leaked).toEqual([])
-  })
+    expect(leaked).toEqual([]);
+  });
 
   it('cadence is every 10 SHOTS inside the window, not per-shot and not per-second', () => {
-    const w = HER_CASTS[0]
-    const shotsInWin = herShots(BASE.events).filter(e => inAnnihState(tOf(e)) && tOf(e) >= w - 0.25 &&
-      tOf(e) <= w + 9.25).length
-    const procsInWin = RIDER1562_TIMES.filter(t => t >= w - 0.25 && t <= w + 9.25).length
-    expect(shotsInWin).toBeGreaterThan(20)
-    expect(procsInWin).toBeGreaterThan(0)
-    const perProc = shotsInWin / procsInWin
-    expect(perProc).toBeGreaterThan(7)
-    expect(perProc).toBeLessThan(14)
-  })
+    const w = HER_CASTS[0];
+    const shotsInWin = herShots(BASE.events).filter(
+      (e) => inAnnihState(tOf(e)) && tOf(e) >= w - 0.25 && tOf(e) <= w + 9.25
+    ).length;
+    const procsInWin = RIDER1562_TIMES.filter(
+      (t) => t >= w - 0.25 && t <= w + 9.25
+    ).length;
+    expect(shotsInWin).toBeGreaterThan(20);
+    expect(procsInWin).toBeGreaterThan(0);
+    const perProc = shotsInWin / procsInWin;
+    expect(perProc).toBeGreaterThan(7);
+    expect(perProc).toBeLessThan(14);
+  });
 
   it('Anti A.T. Field is a BOSS debuff (whole-team benefit), not a self buff', () => {
-    const applies = buffApplies(BASE.events, 'damageTakenPct', 0.83, 0.01)
-    expect(applies.length).toBeGreaterThan(0)
+    const applies = buffApplies(BASE.events, 'damageTakenPct', 0.83, 0.01);
+    expect(applies.length).toBeGreaterThan(0);
     // Boss-held: emitted with casterIdx===null AND targetIdx===null.
-    expect(applies.every(e => e.targetIdx == null || e.targetIdx !== SLOT)).toBe(true)
+    expect(
+      applies.every((e) => e.targetIdx == null || e.targetIdx !== SLOT)
+    ).toBe(true);
     // Nearest-wrong: encoding it as a self attackDamagePct leaves allies untouched -> RED.
-    const drop = 1 - allyTotal(NO_DEBUFF.events) / allyTotal(BASE.events)
-    expect(drop).toBeGreaterThan(0.005)
-  })
+    const drop = 1 - allyTotal(NO_DEBUFF.events) / allyTotal(BASE.events);
+    expect(drop).toBeGreaterThan(0.005);
+  });
 
   it('the debuff is applied only while she is in Annihilation State', () => {
-    const applies = buffApplies(BASE.events, 'damageTakenPct', 0.83, 0.01)
-    expect(applies.filter(e => !inAnnihState(tOf(e)))).toEqual([])
-  })
+    const applies = buffApplies(BASE.events, 'damageTakenPct', 0.83, 0.01);
+    expect(applies.filter((e) => !inAnnihState(tOf(e)))).toEqual([]);
+  });
 
   it('debuff shape: 0.83 per stack, 30 s, capped at 30 stacks (structural)', () => {
-    const hits = findEffects(OV, e => e.kind === 'buff' && e.stat === 'damageTakenPct')
-    expect(hits.length).toBeGreaterThan(0)
-    const e = hits[0].e
-    expect(near(e.value, 0.83, 0.01)).toBe(true)   // per-stack magnitude, NOT 0.83*30 folded flat
-    expect(e.durationSec).toBe(30)
-    expect(e.maxStacks).toBe(30)
-  })
+    const hits = findEffects(
+      OV,
+      (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
+    );
+    expect(hits.length).toBeGreaterThan(0);
+    const e = hits[0].e;
+    expect(near(e.value, 0.83, 0.01)).toBe(true); // per-stack magnitude, NOT 0.83*30 folded flat
+    expect(e.durationSec).toBe(30);
+    expect(e.maxStacks).toBe(30);
+  });
 
   it('inertness — the 15.62% rider is her damage only; allies unmoved', () => {
-    expect(Math.abs(allyTotal(NO_R1562.events) / allyTotal(BASE.events) - 1)).toBeLessThan(0.001)
-  })
+    expect(
+      Math.abs(allyTotal(NO_R1562.events) / allyTotal(BASE.events) - 1)
+    ).toBeLessThan(0.001);
+  });
 
-  it.skip('two-target split ("Affects 2 enemy unit(s) nearest the crosshair") — GAP: the v1 boss is a single enemy, so the 2-target clause has no observable; whether the driver folded it as 15.62 x1 or 31.24 x1 is a modelling choice this fixture cannot discriminate', () => {})
-})
+  it.skip('two-target split ("Affects 2 enemy unit(s) nearest the crosshair") — GAP: the v1 boss is a single enemy, so the 2-target clause has no observable; whether the driver folded it as 15.62 x1 or 31.24 x1 is a modelling choice this fixture cannot discriminate', () => {});
+});
 
 // =============================================================== SKILL 2a
 describe('S2a — entering Full Burst WHILE in Annihilation State: self Attack Damage +30.97% / 10 s', () => {
-  const applies = () => buffApplies(BASE.events, 'attackDamagePct', 30.97, 0.05)
+  const applies = () =>
+    buffApplies(BASE.events, 'attackDamagePct', 30.97, 0.05);
 
   it('fires once per Full Burst SHE opened, never on a teammate-led Full Burst', () => {
-    const a = applies()
-    expect(a.length).toBeGreaterThan(0)
-    expect(a.length).toBeLessThanOrEqual(HER_CASTS.length)
+    const a = applies();
+    expect(a.length).toBeGreaterThan(0);
+    expect(a.length).toBeLessThanOrEqual(HER_CASTS.length);
     // Every application must sit at an FB start that follows one of HER casts.
-    expect(a.every(e => inAnnihState(tOf(e)))).toBe(true)
-  })
+    expect(a.every((e) => inAnnihState(tOf(e)))).toBe(true);
+  });
 
   it('RED under the nearest-wrong plain fullBurstEnter key (over-credits helm-led Full Bursts)', () => {
-    const wrong = buffApplies(S2A_UNGATED.events, 'attackDamagePct', 30.97, 0.05).length
-    expect(wrong).toBeGreaterThan(applies().length)
-    expect(herTotal(S2A_UNGATED.events)).toBeGreaterThan(herTotal(BASE.events))
-  })
+    const wrong = buffApplies(
+      S2A_UNGATED.events,
+      'attackDamagePct',
+      30.97,
+      0.05
+    ).length;
+    expect(wrong).toBeGreaterThan(applies().length);
+    expect(herTotal(S2A_UNGATED.events)).toBeGreaterThan(herTotal(BASE.events));
+  });
 
   it('self-only, 10 s, Damage-Up bucket (structural + inertness)', () => {
-    const hits = findEffects(OV, e =>
-      e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 30.97, 0.05))
-    expect(hits.length).toBe(1)
-    expect(hits[0].e.durationSec).toBe(10)                 // 10 s, NOT the burst's 9 s
-    expect(hits[0].b.target.kind).toBe('self')
-    expect(applies().every(e => e.targetIdx === SLOT)).toBe(true)
-    const removes = buffRemoves(BASE.events, 'attackDamagePct', 30.97, 0.05)
+    const hits = findEffects(
+      OV,
+      (e) =>
+        e.kind === 'buff' &&
+        e.stat === 'attackDamagePct' &&
+        near(e.value, 30.97, 0.05)
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0].e.durationSec).toBe(10); // 10 s, NOT the burst's 9 s
+    expect(hits[0].b.target.kind).toBe('self');
+    expect(applies().every((e) => e.targetIdx === SLOT)).toBe(true);
+    const removes = buffRemoves(BASE.events, 'attackDamagePct', 30.97, 0.05);
     for (const rm of removes) {
-      const opened = applies().map(tOf).filter(t => t <= tOf(rm))
-      if (opened.length) expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5)
+      const opened = applies()
+        .map(tOf)
+        .filter((t) => t <= tOf(rm));
+      if (opened.length)
+        expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5);
     }
-  })
-})
+  });
+});
 
 // =============================================================== SKILL 2b
 describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, NOT at cast)', () => {
   const herReloads = (evts: Ev[]) =>
-    evts.filter(e => e.kind === 'reload' && srcOf(e) === SLOT).map(tOf)
+    evts.filter((e) => e.kind === 'reload' && srcOf(e) === SLOT).map(tOf);
 
   it('the 100%-ammo dump lands at Annihilation time, one per burst', () => {
     const removedReloads = removedTimes(
-      herReloads(BASE.events).map(r3), herReloads(NO_AMMO_DUMP.events).map(r3))
-    expect(removedReloads.length).toBeGreaterThan(0)
+      herReloads(BASE.events).map(r3),
+      herReloads(NO_AMMO_DUMP.events).map(r3)
+    );
+    expect(removedReloads.length).toBeGreaterThan(0);
     // Trigger identity is load-bearing: keyed to burstCast instead, the dump would empty a
     // 300-round belt at the START of her damage window and force an immediate reload.
     for (const t of removedReloads) {
-      const c = HER_CASTS.filter(x => x <= t).pop()
-      expect(c).toBeDefined()
-      expect(t - (c as number)).toBeGreaterThan(6)
-      expect(t - (c as number)).toBeLessThan(12)
+      const c = HER_CASTS.filter((x) => x <= t).pop();
+      expect(c).toBeDefined();
+      expect(t - (c as number)).toBeGreaterThan(6);
+      expect(t - (c as number)).toBeLessThan(12);
     }
-  })
+  });
 
   it('she does NOT reload in the first second of her own burst window', () => {
     for (const c of HER_CASTS) {
-      expect(herReloads(BASE.events).filter(t => t > c + 0.05 && t < c + 1.0)).toEqual([])
+      expect(
+        herReloads(BASE.events).filter((t) => t > c + 0.05 && t < c + 1.0)
+      ).toEqual([]);
     }
-  })
+  });
 
   it('reload speed is fixed +60% for 1 ROUND, not for 1 second (duration semantics)', () => {
-    const hits = findEffects(OV, e => e.kind === 'buff' && e.stat === 'reloadSpeedPct')
-    expect(hits.length).toBeGreaterThan(0)
-    const e = hits[0].e
-    expect(near(e.value, 60, 0.01)).toBe(true)
-    expect(e.durationShots).toBe(1)      // "for 1 round(s)" — round count, spans the reload
-    expect(e.durationSec).toBeUndefined()
+    const hits = findEffects(
+      OV,
+      (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct'
+    );
+    expect(hits.length).toBeGreaterThan(0);
+    const e = hits[0].e;
+    expect(near(e.value, 60, 0.01)).toBe(true);
+    expect(e.durationShots).toBe(1); // "for 1 round(s)" — round count, spans the reload
+    expect(e.durationSec).toBeUndefined();
     // Behaviourally it buys back firing time on each post-Annihilation reload.
-    expect(herShots(BASE.events).length).toBeGreaterThan(herShots(NO_RELOAD_BUFF.events).length)
-  })
+    expect(herShots(BASE.events).length).toBeGreaterThan(
+      herShots(NO_RELOAD_BUFF.events).length
+    );
+  });
 
   it('the heal is a 3-tick HoT that can only help the team (crown reads recovery)', () => {
-    const hits = findEffects(OV, e => e.kind === 'heal')
-    expect(hits.length).toBeGreaterThan(0)
-    expect(hits[0].e.ticks).toBe(3)                          // 3.77% every 1 s over 3 s
-    expect((hits[0].e.intervalSec ?? 1)).toBe(1)
-    expect(hits[0].b.target.kind).toBe('self')
+    const hits = findEffects(OV, (e) => e.kind === 'heal');
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits[0].e.ticks).toBe(3); // 3.77% every 1 s over 3 s
+    expect(hits[0].e.intervalSec ?? 1).toBe(1);
+    expect(hits[0].b.target.kind).toBe('self');
     // Tandem, not inert: removing it can never RAISE team damage.
-    expect(teamTotal(NO_HEAL.events)).toBeLessThanOrEqual(teamTotal(BASE.events) * 1.0001)
+    expect(teamTotal(NO_HEAL.events)).toBeLessThanOrEqual(
+      teamTotal(BASE.events) * 1.0001
+    );
     // ...and it must not move her own damage directly.
-    expect(Math.abs(herTotal(NO_HEAL.events) / herTotal(BASE.events) - 1)).toBeLessThan(0.02)
-  })
+    expect(
+      Math.abs(herTotal(NO_HEAL.events) / herTotal(BASE.events) - 1)
+    ).toBeLessThan(0.02);
+  });
 
-  it.skip('Effect 1 "MG heating up speed -100% for 3 sec" — GAP: the engine has no MG heat model (no heat/overheat primitive in the effect schema), so the line has no representable payload; it belongs in `unmodeled`', () => {})
-})
+  it.skip('Effect 1 "MG heating up speed -100% for 3 sec" — GAP: the engine has no MG heat model (no heat/overheat primitive in the effect schema), so the line has no representable payload; it belongs in `unmodeled`', () => {});
+});
 
 // =============================================================== BURST a
 describe('burst a — Annihilation State self package (9 s)', () => {
   it('the -40% is scoped to the NORMAL-attack multiplier, not a generic damage cut', () => {
-    const hits = findEffects(OV, e => e.kind === 'buff' && e.stat === 'normalAttackPct')
-    expect(hits.length).toBe(1)
-    expect(hits[0].e.value).toBeLessThan(0)      // a downward line; a sign flip is the classic error
-    expect(near(Math.abs(hits[0].e.value), 40, 0.01)).toBe(true)
-    expect(hits[0].e.durationSec).toBe(9)
+    const hits = findEffects(
+      OV,
+      (e) => e.kind === 'buff' && e.stat === 'normalAttackPct'
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0].e.value).toBeLessThan(0); // a downward line; a sign flip is the classic error
+    expect(near(Math.abs(hits[0].e.value), 40, 0.01)).toBe(true);
+    expect(hits[0].e.durationSec).toBe(9);
 
     // Discriminator: dropping it must lift her NORMAL hits inside the window while leaving the
     // 471.86% riders byte-equal. Under the nearest-wrong `attackDamagePct: -40`, the riders move too.
-    const riderSet = new Set(RIDER471_TIMES.filter(inAnnihState))
-    expect(riderSet.size).toBeGreaterThan(0)
+    const riderSet = new Set(RIDER471_TIMES.filter(inAnnihState));
+    expect(riderSet.size).toBeGreaterThan(0);
     const maxAt = (evts: Ev[], t: number) =>
-      Math.max(0, ...herDamage(evts).filter(e => r3(tOf(e)) === t).map(dmgOf))
-    const riderBase = [...riderSet].reduce((s, t) => s + maxAt(BASE.events, t), 0)
-    const riderFree = [...riderSet].reduce((s, t) => s + maxAt(NO_NERF.events, t), 0)
-    expect(riderFree / riderBase).toBeGreaterThan(0.98)
-    expect(riderFree / riderBase).toBeLessThan(1.02)
+      Math.max(
+        0,
+        ...herDamage(evts)
+          .filter((e) => r3(tOf(e)) === t)
+          .map(dmgOf)
+      );
+    const riderBase = [...riderSet].reduce(
+      (s, t) => s + maxAt(BASE.events, t),
+      0
+    );
+    const riderFree = [...riderSet].reduce(
+      (s, t) => s + maxAt(NO_NERF.events, t),
+      0
+    );
+    expect(riderFree / riderBase).toBeGreaterThan(0.98);
+    expect(riderFree / riderBase).toBeLessThan(1.02);
 
-    const normSum = (evts: Ev[]) => herDamage(evts)
-      .filter(e => inAnnihState(tOf(e)) && !riderSet.has(r3(tOf(e))))
-      .reduce((s, e) => s + dmgOf(e), 0)
-    const normRatio = normSum(BASE.events) / normSum(NO_NERF.events)
-    expect(normRatio).toBeLessThan(0.92)     // non-vacuity: the nerf really bites normals
-    expect(normRatio).toBeGreaterThan(0.40)
-  })
+    const normSum = (evts: Ev[]) =>
+      herDamage(evts)
+        .filter((e) => inAnnihState(tOf(e)) && !riderSet.has(r3(tOf(e))))
+        .reduce((s, e) => s + dmgOf(e), 0);
+    const normRatio = normSum(BASE.events) / normSum(NO_NERF.events);
+    expect(normRatio).toBeLessThan(0.92); // non-vacuity: the nerf really bites normals
+    expect(normRatio).toBeGreaterThan(0.4);
+  });
 
   it('ATK +46.8% is a CASTER-ATK flat add for 9 s, self only', () => {
-    const hits = findEffects(OV, e =>
-      e.kind === 'buff' && (e.stat === 'casterAtkPct' || e.stat === 'atkPct') && near(e.value, 46.8, 0.05))
-    expect(hits.length).toBe(1)
-    expect(hits[0].e.stat).toBe('casterAtkPct')   // "of the skill user's ATK"
-    expect(hits[0].e.durationSec).toBe(9)
-    expect(hits[0].b.target.kind).toBe('self')
-    const applies = buffApplies(BASE.events, 'casterAtkPct', 46.8, 0.05)
-    expect(applies.length).toBe(HER_CASTS.length)
-    expect(applies.every(e => e.targetIdx === SLOT)).toBe(true)   // allies get nothing
-  })
+    const hits = findEffects(
+      OV,
+      (e) =>
+        e.kind === 'buff' &&
+        (e.stat === 'casterAtkPct' || e.stat === 'atkPct') &&
+        near(e.value, 46.8, 0.05)
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0].e.stat).toBe('casterAtkPct'); // "of the skill user's ATK"
+    expect(hits[0].e.durationSec).toBe(9);
+    expect(hits[0].b.target.kind).toBe('self');
+    const applies = buffApplies(BASE.events, 'casterAtkPct', 46.8, 0.05);
+    expect(applies.length).toBe(HER_CASTS.length);
+    expect(applies.every((e) => e.targetIdx === SLOT)).toBe(true); // allies get nothing
+  });
 
   it('Attack Damage +36% is self, 9 s (not the 10 s of the S2a buff, not team-wide)', () => {
-    const hits = findEffects(OV, e =>
-      e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 36, 0.05))
-    expect(hits.length).toBe(1)
-    expect(hits[0].e.durationSec).toBe(9)
-    expect(hits[0].b.target.kind).toBe('self')
-    const applies = buffApplies(BASE.events, 'attackDamagePct', 36, 0.05)
-    expect(applies.length).toBe(HER_CASTS.length)
-    expect(applies.every(e => e.targetIdx === SLOT)).toBe(true)
-  })
+    const hits = findEffects(
+      OV,
+      (e) =>
+        e.kind === 'buff' &&
+        e.stat === 'attackDamagePct' &&
+        near(e.value, 36, 0.05)
+    );
+    expect(hits.length).toBe(1);
+    expect(hits[0].e.durationSec).toBe(9);
+    expect(hits[0].b.target.kind).toBe('self');
+    const applies = buffApplies(BASE.events, 'attackDamagePct', 36, 0.05);
+    expect(applies.length).toBe(HER_CASTS.length);
+    expect(applies.every((e) => e.targetIdx === SLOT)).toBe(true);
+  });
 
   it('all three self buffs are keyed to HER burst cast, not to team Full Burst entry', () => {
-    for (const [stat, val] of [['casterAtkPct', 46.8], ['attackDamagePct', 36], ['normalAttackPct', -40]] as const) {
-      const a = buffApplies(BASE.events, stat as string, val as number, 0.05)
-      expect(a.length).toBe(HER_CASTS.length)
-      expect(a.length).toBeLessThan(FB_STARTS.length)
-      for (const e of a) expect(HER_CASTS.some(c => Math.abs(tOf(e) - c) < 0.5)).toBe(true)
+    for (const [stat, val] of [
+      ['casterAtkPct', 46.8],
+      ['attackDamagePct', 36],
+      ['normalAttackPct', -40],
+    ] as const) {
+      const a = buffApplies(BASE.events, stat as string, val as number, 0.05);
+      expect(a.length).toBe(HER_CASTS.length);
+      expect(a.length).toBeLessThan(FB_STARTS.length);
+      for (const e of a)
+        expect(HER_CASTS.some((c) => Math.abs(tOf(e) - c) < 0.5)).toBe(true);
     }
-  })
+  });
 
   it('"Reloads 21% magazine(s)" is an instant partial refill (structural)', () => {
-    const hits = findEffects(OV, e => e.kind === 'instantReload')
-    expect(hits.length).toBeGreaterThan(0)
-    expect(near(hits[0].e.fraction ?? 1, 0.21, 0.005)).toBe(true)   // 21% of 300, not a full belt
-  })
-})
+    const hits = findEffects(OV, (e) => e.kind === 'instantReload');
+    expect(hits.length).toBeGreaterThan(0);
+    expect(near(hits[0].e.fraction ?? 1, 0.21, 0.005)).toBe(true); // 21% of 300, not a full belt
+  });
+});
 
 // =============================================================== BURST b
 describe('burst b — Annihilation: fires AFTER Annihilation State ends, mirroring Anti A.T. Field stacks', () => {
   it('lands ~9 s after her cast, once per burst — not at cast time', () => {
-    expect(ANNIH_TIMES.length).toBeGreaterThan(0)
-    expect(ANNIH_TIMES.length).toBeLessThanOrEqual(HER_CASTS.length)
+    expect(ANNIH_TIMES.length).toBeGreaterThan(0);
+    expect(ANNIH_TIMES.length).toBeLessThanOrEqual(HER_CASTS.length);
     for (const t of ANNIH_TIMES) {
-      const c = HER_CASTS.filter(x => x <= t).pop()
-      expect(c).toBeDefined()
+      const c = HER_CASTS.filter((x) => x <= t).pop();
+      expect(c).toBeDefined();
       // Nearest-wrong: an instant burst-cast hit (delaySec 0) lands at c, inside the window.
-      expect(t - (c as number)).toBeGreaterThan(7.5)
-      expect(t - (c as number)).toBeLessThan(11)
+      expect(t - (c as number)).toBeGreaterThan(7.5);
+      expect(t - (c as number)).toBeLessThan(11);
     }
-  })
+  });
 
   it('the payload is 6.62% MIRRORED by a stack count, not a bare 6.62% (structural, flagged)', () => {
-    const hits = findEffects(OV, isAnnihilationHit)
-    expect(hits.length).toBeGreaterThan(0)
-    const k = hits[0].e.atkPct / 6.62
+    const hits = findEffects(OV, isAnnihilationHit);
+    expect(hits.length).toBeGreaterThan(0);
+    const k = hits[0].e.atkPct / 6.62;
     // The engine has no stack-mirroring primitive for flatDamage, so a DERIVED multiple is the
     // only faithful option; a bare 6.62% (k===1) under-credits by ~1-2 orders of magnitude.
-    expect(k).toBeGreaterThan(1.5)
-    expect(k).toBeLessThanOrEqual(30.5)
-  })
+    expect(k).toBeGreaterThan(1.5);
+    expect(k).toBeLessThanOrEqual(30.5);
+  });
 
   it('inertness — it is her damage; allies unmoved', () => {
-    expect(Math.abs(allyTotal(NO_ANNIHILATION.events) / allyTotal(BASE.events) - 1)).toBeLessThan(0.001)
-    expect(herTotal(BASE.events)).toBeGreaterThan(herTotal(NO_ANNIHILATION.events))
-  })
+    expect(
+      Math.abs(allyTotal(NO_ANNIHILATION.events) / allyTotal(BASE.events) - 1)
+    ).toBeLessThan(0.001);
+    expect(herTotal(BASE.events)).toBeGreaterThan(
+      herTotal(NO_ANNIHILATION.events)
+    );
+  });
 
-  it.skip('"Anti A.T. Field status is removed after the effect is triggered" — GAP: no consume-stacks primitive exists (a damageTakenPct buff can only expire on its own 30 s clock), so stacks survive Annihilation and carry into the next window. This OVER-credits both the team debuff and any stack-derived Annihilation constant; needs a stack-consume effect or a measured steady-state haircut', () => {})
+  it.skip('"Anti A.T. Field status is removed after the effect is triggered" — GAP: no consume-stacks primitive exists (a damageTakenPct buff can only expire on its own 30 s clock), so stacks survive Annihilation and carry into the next window. This OVER-credits both the team debuff and any stack-derived Annihilation constant; needs a stack-consume effect or a measured steady-state haircut', () => {});
 
-  it.skip('stack count at the moment Annihilation fires — MEASUREMENT-GATED: the mirrored multiple depends on her real in-window shot cadence (the datamined MG rate_of_fire is an unreliable field) and on whether stacks persist across rotations; pin from footage before trusting any specific k', () => {})
-})
-
+  it.skip('stack count at the moment Annihilation fires — MEASUREMENT-GATED: the mirrored multiple depends on her real in-window shot cadence (the datamined MG rate_of_fire is an unreliable field) and on whether stacks persist across rotations; pin from footage before trusting any specific k', () => {});
+});
 ```
 
 ## S6 BLIND POST-OP OVERRIDE (claude-opus-5, written from prose alone)
+
 ```json
 {
   "override": {
@@ -1331,7 +1543,9 @@ describe('burst b — Annihilation: fires AFTER Annihilation State ends, mirrori
 ```
 
 ## DRIVER IMPLEMENTATION UNDER REVIEW
+
 ### src/skills/overrides/asuka-wille.json
+
 ```json
 {
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — Asuka: WILLE (`asuka-wille`, MG B3 Attacker Wind Abnormal, ammo 300 / reloadFrames 161; NOT base `asuka` AR/Fire). Kit-autonomy gauntlet 2026-07-24 (cross-family S2b fable / S5-S7 opus; converged with the blind opus rebuild on the trigger/timing encodings below). S1 blk1 kept verbatim (471.86% every 50 hits). S1 blk2 is the Annihilation-State-gated every-10-shots proc: 15.62% to the nearest 2 enemies (single boss -> 1 target) + Anti A.T. Field (Damage Taken +0.83%, stacks to 30). GAUNTLET FIX (consumption): the burst's Annihilation finisher prose says 'Anti A.T. Field status is removed after the effect is triggered' — the debuff is CONSUMED at Annihilation-State end (~cast+9s), so its real life is the ~9s build window each 40s cycle, NOT a near-permanent 30-stack boss debuff (the prior encoding over-credited the WHOLE team's damage by ~3-4x average). Modeled faithfully: the burst inflicts targetStatus 'Annihilation State' for 9s (the mode window; the engine has no SELF-status gate, so the mode is proxied as a boss status per the marciana/privaty requiresTargetStatus pattern), the S1 proc is gated on requiresTargetStatus 'Annihilation State' at hitCount 10 (every 10 in-window shots, replacing the old ungated hitCount-44 time-average that spread the debuff across the whole fight), and the debuff durationSec is 9 (its EFFECTIVE life — consumed at state-end — not the nominal 30s the prose states, which is moot because the status is removed at ~9s). RESIDUAL ⚑6: the consumption is INSTANT (all stacks removed at once at state-end); the engine has no remove-target-buff / consume-status primitive, so the debuff instead expires gradually 9s after each stack is applied, leaving a short post-window tail (~34% vs the true ~22.5% uptime). Estimate: team amp over-credited by up to ~1.5x in the ~8s tail; recipe: add a 'consumeTargetStatus'/removeTargetBuff effect keyed to the finisher; Tier 2. S2 blk1 'Activates when entering Full Burst while in Annihilation State' = trigger `fullBurstEnter` + ownBurstGate:'cast' (the purpose-built primitive for 'entering FB after her OWN burst' — Annihilation State is opened only by her own burst, so this fires exactly on rotations she bursts and keeps the block AT FB entry; a bare fullBurstEnter over-fires in the dual-B3 control comp, and re-keying to burstCast would fire pre-FB — cinderella-crystal-wave class finding, verified by test). S2 blk2 Emergency Repair 'Activates when using Annihilation' = the burst finisher at Annihilation-State END (~cast+9s); encoded as trigger `fullBurstEnd` + ownBurstGate:'cast' (FB end ≈ state-end, ~1s late — far closer than the prior burstCast proxy which fired 9s early). Effect 2 'Removes 100% of ammo' is NOW MODELED as consumeAmmo fraction:1 at fullBurstEnd (the engine HAS consumeAmmo — the prior 'no ammo-dump vocabulary' claim was WRONG; at fullBurstEnd it lands ~10s after the burst's own instantReload 0.21 at burstCast, so the two no longer collide). Effect 3 'recovers 3.77% Max HP every 1s over 3s' = `heal` ticks:3/intervalSec:1 (the prose 3-tick HoT). The heal is SELF-targeted and asuka-wille has no recovery-triggered block, so it is damage-INERT in the sim (verified: removing it moves no unit's total); encoded for kit completeness / future recovery synergy. Effect 4 'Reload speed fixed at a 60% increase for 1 rounds' = reloadSpeedPct 60 for a 10.5s window ⚑3 — 'for 1 rounds' on a reload-speed FIX is a stat CLAMP, a primitive the engine does not have (types.ts: explicitly NOT durationShots, which the blind rebuild used; the window proxies 'one fast reload per burst cycle' covering the consumeAmmo-forced reload). Effect 1 'MG heating up speed ▼ 100% for 3 sec' UNMODELED (no MG wind-up/heat primitive ⚑2 — ambiguous localization: frozen ramp vs instant full spin; measure first). Burst self-buffs kept at burstCast (normal-atk -40%, 21% reload, ATK +46.8% of caster ATK, Attack Damage +36%, all 9s). Annihilation finisher: 6.62% x Anti A.T. Field stack count, modeled as one 198.6% hit (6.62 x 30 cap) with delaySec:9 so it LANDS at Annihilation-State end (~cast+9s, inside the FB window → FB-boosted, the hand-slot F2 finding) rather than at cast; the 30-cap assumes the window builds 30 stacks (cadence-dependent ⚑4/⚑5; no dynamic-stack-scale primitive exists to mirror live stacks; the blind rebuild assumed 10 stacks = 66.2% — both are unmeasured). ⚑1 cadence tuple: MG class profile (measured wind-up ladder, 60/s at full spin) + datamined ammo 300 / reloadFrames 161 are unverified for this unit — read rounds/min + reload gap from any focus video.",
@@ -1508,9 +1722,10 @@ describe('burst b — Annihilation: fires AFTER Annihilation State ends, mirrori
     }
   ]
 }
-
 ```
+
 ### scripts/tests/units/asuka-wille.test.ts (driver unit test, 27 assertions, all green)
+
 ```typescript
 // PER-UNIT KIT SPEC — `asuka-wille` (Asuka: WILLE, MG/Attacker/Wind, Burst III, cd 40s, ammo 300 /
 // reloadFrames 161). Kit-autonomy gauntlet 2026-07-24, test-first (S2a).
@@ -1618,13 +1833,13 @@ const awNoAtfDebuff = withPatchedOverride(SLUG, (ov) => {
     (x) =>
       x.trigger?.kind === 'hitCount' &&
       x.requiresTargetStatus === 'Annihilation State',
-    'S1 ATF',
+    'S1 ATF'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'damageTakenPct');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille S1 damageTakenPct effect missing — fixture is stale',
+      'asuka-wille S1 damageTakenPct effect missing — fixture is stale'
     );
 });
 /** W2 counterfactual: drop the Annihilation-State gate — the nearest wrong model (the prior ungated
@@ -1635,7 +1850,7 @@ const awUngated = withPatchedOverride(SLUG, (ov) => {
     (x) =>
       x.trigger?.kind === 'hitCount' &&
       x.requiresTargetStatus === 'Annihilation State',
-    'S1 ATF',
+    'S1 ATF'
   );
   delete b.requiresTargetStatus;
 });
@@ -1643,7 +1858,7 @@ const awUngated = withPatchedOverride(SLUG, (ov) => {
 const awNoS1Nuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (x: any) => !(x.trigger?.kind === 'hitCount' && x.trigger?.count === 50),
+    (x: any) => !(x.trigger?.kind === 'hitCount' && x.trigger?.count === 50)
   );
   if (ov.skill1.length === before)
     throw new Error('asuka-wille S1 50-hit block missing — fixture is stale');
@@ -1656,7 +1871,7 @@ const awFbEnter = withPatchedOverride(SLUG, (ov) => {
     (x) =>
       hasStat(x, 'attackDamagePct') &&
       x.effects.some((e: any) => e.value === 30.97),
-    'S2 30.97',
+    'S2 30.97'
   );
   delete b.ownBurstGate;
 });
@@ -1665,13 +1880,13 @@ const awNoAmmoDump = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.skill2,
     (x) => hasKind(x, 'consumeAmmo'),
-    'S2 consumeAmmo',
+    'S2 consumeAmmo'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.kind !== 'consumeAmmo');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille S2 consumeAmmo effect missing — fixture is stale',
+      'asuka-wille S2 consumeAmmo effect missing — fixture is stale'
     );
 });
 /** W5 reference: strip the reloadSpeedPct 60 window from Emergency Repair. */
@@ -1679,13 +1894,13 @@ const awNoReloadSpeed = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.skill2,
     (x) => hasStat(x, 'reloadSpeedPct'),
-    'S2 reloadSpeed',
+    'S2 reloadSpeed'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille S2 reloadSpeedPct effect missing — fixture is stale',
+      'asuka-wille S2 reloadSpeedPct effect missing — fixture is stale'
     );
 });
 /** W6 reference: strip the burst normalAttackPct -40 self-nerf. */
@@ -1693,13 +1908,13 @@ const awNoNormalDebuff = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.burst,
     (x) => hasStat(x, 'normalAttackPct'),
-    'BU normalAttackPct',
+    'BU normalAttackPct'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'normalAttackPct');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille burst normalAttackPct effect missing — fixture is stale',
+      'asuka-wille burst normalAttackPct effect missing — fixture is stale'
     );
 });
 /** W7 reference: strip the burst instantReload 0.21. */
@@ -1707,13 +1922,13 @@ const awNoInstantReload = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.burst,
     (x) => hasKind(x, 'instantReload'),
-    'BU instantReload',
+    'BU instantReload'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille burst instantReload effect missing — fixture is stale',
+      'asuka-wille burst instantReload effect missing — fixture is stale'
     );
 });
 /** W8 reference: strip the burst casterAtkPct 46.8 (the big ATK line). */
@@ -1721,13 +1936,13 @@ const awNoCasterAtk = withPatchedOverride(SLUG, (ov) => {
   const b = findBlock(
     ov.burst,
     (x) => hasStat(x, 'casterAtkPct'),
-    'BU casterAtkPct',
+    'BU casterAtkPct'
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'casterAtkPct');
   if (b.effects.length === before)
     throw new Error(
-      'asuka-wille burst casterAtkPct effect missing — fixture is stale',
+      'asuka-wille burst casterAtkPct effect missing — fixture is stale'
     );
 });
 /** W9 reference: strip the burst attackDamagePct 36. */
@@ -1736,12 +1951,12 @@ const awNoBurstAtkDmg = withPatchedOverride(SLUG, (ov) => {
     ov.burst,
     (x) =>
       x.effects.some(
-        (e: any) => e.stat === 'attackDamagePct' && e.value === 36,
+        (e: any) => e.stat === 'attackDamagePct' && e.value === 36
       ),
-    'BU attackDamagePct36',
+    'BU attackDamagePct36'
   );
   b.effects = b.effects.filter(
-    (e: any) => !(e.stat === 'attackDamagePct' && e.value === 36),
+    (e: any) => !(e.stat === 'attackDamagePct' && e.value === 36)
   );
 });
 /** W10 reference: remove the Annihilation finisher block. */
@@ -1749,13 +1964,11 @@ const awNoFinisher = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
     (x: any) =>
-      !x.effects.some(
-        (e: any) => e.kind === 'flatDamage' && e.atkPct === 198.6,
-      ),
+      !x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 198.6)
   );
   if (ov.burst.length === before)
     throw new Error(
-      'asuka-wille burst finisher block missing — fixture is stale',
+      'asuka-wille burst finisher block missing — fixture is stale'
     );
 });
 /** W10 magnitude counterfactual: finisher at a SINGLE Anti A.T. Field stack (6.62%), not the 30-cap. */
@@ -1764,7 +1977,7 @@ const awSingleStack = withPatchedOverride(SLUG, (ov) => {
     ov.burst,
     (x) =>
       x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 198.6),
-    'BU finisher',
+    'BU finisher'
   );
   b.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 6.62;
 });
@@ -1808,20 +2021,20 @@ const awSelfBuff = (evs: SimEvent[], stat: string, value: number) =>
       b.casterIdx === AW &&
       b.targetIdx === AW &&
       b.stat === stat &&
-      b.value === value,
+      b.value === value
   );
 
 describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
   it('fixture sanity: she casts bursts, but NOT every Full Burst (two B3 in the comp)', () => {
     expect(awBursts(base.events).length).toBeGreaterThan(0);
     expect(fbStarts(base.events).length).toBeGreaterThan(
-      awBursts(base.events).length,
+      awBursts(base.events).length
     );
   });
 
   describe('W1 — S1 50-hit rider: 471.86% final ATK additional damage', () => {
     const riders = awDmg(base.events, 'skill1').filter(
-      (d) => d.atkPct === 471.86,
+      (d) => d.atkPct === 471.86
     );
     it('lands at the kit magnitude on the skill1 slot', () => {
       expect(riders.length).toBeGreaterThan(0);
@@ -1830,24 +2043,24 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('DISCRIMINATING: removing the 50-hit block eliminates every 471.86% hit', () => {
       expect(
         awDmg(noS1Nuke.events, 'skill1').filter((d) => d.atkPct === 471.86)
-          .length,
+          .length
       ).toBe(0);
     });
   });
 
   describe('W2 — S1 Anti A.T. Field: 15.62% rider + boss Damage-Taken debuff, GATED to the 9s Annihilation State window (consumed at state-end)', () => {
     const debuff = buffs(base.events).filter(
-      (b) => b.stat === 'damageTakenPct',
+      (b) => b.stat === 'damageTakenPct'
     );
     // Annihilation State windows: [her burstCast, +9s]. The burst inflicts targetStatus
     // 'Annihilation State' (9s) which gates the S1 proc; the finisher consumes the status at
     // state-end, so the proc + debuff live ONLY inside these windows.
     const windows = awBursts(base.events).map(
-      (c) => [c.frame, c.frame + 9 * FPS] as const,
+      (c) => [c.frame, c.frame + 9 * FPS] as const
     );
     const inWindow = (f: number) => windows.some(([a, b]) => f >= a && f <= b);
     const rider = awDmg(base.events, 'skill1').filter(
-      (d) => d.atkPct === 15.62,
+      (d) => d.atkPct === 15.62
     );
 
     it('applies the debuff to the BOSS (targetIdx null) at 0.83% per stack, capping at 30', () => {
@@ -1865,12 +2078,12 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('the 15.62% rider fires ONLY inside the Annihilation State windows (state-gated)', () => {
       expect(rider.length).toBeGreaterThan(0);
       expect(rider.filter((d) => !inWindow(d.frame)).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
     it('DISCRIMINATING: dropping the gate spreads the rider across the whole fight (the prior wrong model)', () => {
       const ungatedRider = awDmg(ungated.events, 'skill1').filter(
-        (d) => d.atkPct === 15.62,
+        (d) => d.atkPct === 15.62
       );
       expect(ungatedRider.length).toBeGreaterThan(rider.length);
       expect(ungatedRider.some((d) => !inWindow(d.frame))).toBe(true);
@@ -1918,7 +2131,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     });
     it('DISCRIMINATING: stripping the window removes every reloadSpeedPct application', () => {
       expect(
-        awSelfBuff(noReloadSpeed.events, 'reloadSpeedPct', 60).length,
+        awSelfBuff(noReloadSpeed.events, 'reloadSpeedPct', 60).length
       ).toBe(0);
     });
   });
@@ -1932,11 +2145,11 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('DISCRIMINATING: removing the nerf INCREASES her normal-bucket damage', () => {
       const baseNormal = awNormalDmg(base.events).reduce(
         (a, d) => a + d.amount,
-        0,
+        0
       );
       const freedNormal = awNormalDmg(noNormalDebuff.events).reduce(
         (a, d) => a + d.amount,
-        0,
+        0
       );
       expect(freedNormal).toBeGreaterThan(baseNormal);
     });
@@ -1948,14 +2161,14 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
       const blk = ov.burst.find((x: any) => hasKind(x, 'instantReload'));
       expect(blk, 'burst instantReload block missing').toBeTruthy();
       expect(
-        blk.effects.find((e: any) => e.kind === 'instantReload').fraction,
+        blk.effects.find((e: any) => e.kind === 'instantReload').fraction
       ).toBe(0.21);
     });
     it('perturbs her reload cadence vs stripping it (not byte-identical)', () => {
       // The 21% top-up delays her next magazine reload; observable as a shift in reload timing.
       const baseReloads = awReloads(base.events).map((r) => r.frame);
       const strippedReloads = awReloads(noInstantReload.events).map(
-        (r) => r.frame,
+        (r) => r.frame
       );
       expect(baseReloads).not.toEqual(strippedReloads);
     });
@@ -1969,7 +2182,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
         b.casterIdx === AW &&
         b.targetIdx === AW &&
         b.stat === 'casterAtkPct' &&
-        b.key.endsWith(':46.8'),
+        b.key.endsWith(':46.8')
     );
     it('applies 46.8% caster-ATK to herself for 9s, once per cast', () => {
       expect(applied.length).toBe(awBursts(base.events).length);
@@ -1994,7 +2207,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
 
   describe('W10 — burst Annihilation finisher: 6.62% × 30-stack cap = 198.6%, delayed to state-end (lands in FB)', () => {
     const finishers = awDmg(base.events, 'burst').filter(
-      (d) => d.atkPct === 198.6,
+      (d) => d.atkPct === 198.6
     );
     it('fires once per burst cast at 198.6% in the burst bucket', () => {
       expect(finishers.length).toBe(awBursts(base.events).length);
@@ -2005,13 +2218,13 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
       // delaySec:9 flighted hit: it lands ~9s after cast, inside the Full Burst window, so it is
       // FB-boosted — the prose "after Annihilation State ends" timing, not a cast-frame hit.
       expect(finishers.every((d) => d.inFullBurst && d.fbMajorApplied)).toBe(
-        true,
+        true
       );
     });
     it('DISCRIMINATING (presence): removing the finisher eliminates the 198.6% hit', () => {
       expect(
         awDmg(noFinisher.events, 'burst').filter((d) => d.atkPct === 198.6)
-          .length,
+          .length
       ).toBe(0);
     });
     it('DISCRIMINATING (magnitude): a single-stack finisher is 6.62%, NOT 198.6%', () => {
@@ -2028,7 +2241,7 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
       expect(blk, 'Emergency Repair consumeAmmo block missing').toBeTruthy();
       expect(blk.trigger.kind).toBe('fullBurstEnd');
       expect(
-        blk.effects.find((e: any) => e.kind === 'consumeAmmo').fraction,
+        blk.effects.find((e: any) => e.kind === 'consumeAmmo').fraction
       ).toBe(1);
     });
     it('DISCRIMINATING: stripping the dump perturbs her reload cadence (forced reloads gone)', () => {
@@ -2038,10 +2251,10 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     });
   });
 });
-
 ```
 
 ## S2d INDEPENDENT VERIFICATION
+
 ```
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-24[39m

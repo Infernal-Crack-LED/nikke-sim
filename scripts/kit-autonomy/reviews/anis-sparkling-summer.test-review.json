@@ -111,9 +111,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Damage to Interruption Parts ▲ 6.91% for 10 sec."
-    ],
+    "skill2": ["Damage to Interruption Parts ▲ 6.91% for 10 sec."],
     "burst": []
   },
   "notes": "This kit is one coupled machine: burst Max Ammo ▼ (5→~1 round) is the multiplier on skill2's lastBullet nuke and on both reload-speed buffs — the single highest-risk shared-prior misread is treating the ammo cut as a skippable self-downside or keying the burst self-block to fullBurstEnter (controlComp has helm co-B3, so burstCast-vs-FB-enter diverges every other rotation; assert Anis-burst rotations differ from helm-burst rotations). Second expected misread: '2 enemy units with highest final ATK' doubled against the single sim boss — must be exactly 1 instance. Third: skill1's 'of the skill user's ATK' modeled as target-own atkPct — invisible on controlComp (caster==sole Electric target) so the distinguishing test needs a second Electric ally; also no element-typed ally TargetDef exists in the redacted schema, so the driver must show how 'all Electric Code allies' is expressed rather than silently widening to all allies. Fourth: elemental-advantage buff must be inert vs the Fire control boss (a generic Damage-Up encoding is red there). ⚑ open conventions the driver must state: ammo rounding at 1.304 (floor/round, min 1), reload-speed stacking (additive pool vs multiplicative) and its formula direction (time÷(1+x) vs time×(1−x)), and rider FB/crit defaults (FB-by-timing ON, noRange, no core per methodology rule 9). lastBullet counts ROUNDS (5), never the SG's 10 pellets.",

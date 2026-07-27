@@ -20,9 +20,7 @@
     "unmodeled": {
       "skill1": [],
       "skill2": [],
-      "burst": [
-        "Gain Indomitability for 10 sec."
-      ]
+      "burst": ["Gain Indomitability for 10 sec."]
     },
     "caveats": [
       "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",

@@ -23,13 +23,13 @@ const QUALITY = 0.85; // webp quality
 const BATCH = 8; // concurrent image loads inside the page
 
 const outDir = fileURLToPath(
-  new URL('../web/public/img/portraits/', import.meta.url),
+  new URL('../web/public/img/portraits/', import.meta.url)
 );
 const manifestPath = fileURLToPath(
-  new URL('../web/src/portrait-manifest.json', import.meta.url),
+  new URL('../web/src/portrait-manifest.json', import.meta.url)
 );
 const dataPath = fileURLToPath(
-  new URL('../data/characters.json', import.meta.url),
+  new URL('../data/characters.json', import.meta.url)
 );
 const force = process.argv.includes('--force');
 
@@ -45,13 +45,13 @@ const exists = async (p: string) => {
 async function main() {
   const data = JSON.parse(await readFile(dataPath, 'utf8'));
   const units: { slug: string; url: string }[] = Object.entries(
-    data.characters as Record<string, { imageUrl?: string }>,
+    data.characters as Record<string, { imageUrl?: string }>
   )
     .filter(([, c]) => c.imageUrl)
     .map(([slug, c]) => ({ slug, url: c.imageUrl! }))
     .sort((a, b) => a.slug.localeCompare(b.slug));
   console.log(
-    `gen-portrait-thumbs: ${units.length} units, tiers ${TIERS.join('/')}`,
+    `gen-portrait-thumbs: ${units.length} units, tiers ${TIERS.join('/')}`
   );
 
   await mkdir(outDir, { recursive: true });
@@ -144,7 +144,7 @@ async function main() {
             const b64 = result[t].replace(/^data:image\/webp;base64,/, '');
             await writeFile(
               `${outDir}${u.slug}-${t}.webp`,
-              Buffer.from(b64, 'base64'),
+              Buffer.from(b64, 'base64')
             );
           }
           manifest[u.url] = u.slug;
@@ -153,19 +153,19 @@ async function main() {
           failed++;
           console.warn(`  ! ${u.slug}: ${(e as Error).message}`);
         }
-      }),
+      })
     );
     console.log(
-      `  ${Math.min(i + BATCH, units.length)}/${units.length} (generated ${generated}, reused ${skipped}, failed ${failed})`,
+      `  ${Math.min(i + BATCH, units.length)}/${units.length} (generated ${generated}, reused ${skipped}, failed ${failed})`
     );
   }
 
   await browser.close();
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2) + '\n');
   console.log(
-    `done: ${generated} generated, ${skipped} reused, ${failed} failed; manifest → web/src/portrait-manifest.json (${Object.keys(manifest).length} entries)`,
+    `done: ${generated} generated, ${skipped} reused, ${failed} failed; manifest → web/src/portrait-manifest.json (${Object.keys(manifest).length} entries)`
   );
-  if (failed > 0) process.exitCode = 1;
+  if (failed > 0) {process.exitCode = 1;}
 }
 
 main().catch((e) => {

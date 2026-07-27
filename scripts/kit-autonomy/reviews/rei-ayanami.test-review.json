@@ -111,9 +111,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Damage dealt to Shield ▲ 700.5% continuously."
-    ],
+    "skill2": ["Damage dealt to Shield ▲ 700.5% continuously."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads to force-test: (1) skill2's 700.5% shield-damage line is the kit's dominant number and MUST be inert/unmodeled — any generic-damage encoding is an ~8× over-credit; assert no buff with value 700.5 exists. (2) skill1's elemAdvantageDamagePct is inert vs the Fire control boss (Fire has no advantage vs Fire) — a strip-the-block totals-unchanged assertion cleanly separates it from a generic attackDamagePct misread; if the test never varies boss element, that inertness check IS the discriminator. (3) Trigger-identity triangle: skill2-b is stageEnter:3 (any B3 cast — must fire on helm's rotations), while ALL three burst-slot lines are burstCast (Rei-only — must NOT fire on helm's rotations); controlComp's helm co-B3 makes both directions observable, so tests should assert both the presence (skill2-b on helm rotations) and the absence (burst lines on helm rotations). (4) The 990.2% nuke needs noFb:true (burst-cast pre-FB) — check fbMajorApplied===false explicitly. (5) casterAtkPct buffApply values are FLAT-resolved (0.2503×staticAtk), so an assertion expecting 25.03 raw would be wrong for skill2-b but right for the plain-percentage 48.02 attackDamagePct. (6) All magnitudes are literal kit text (DATAMINED); the only ALWAYS-⚑ field in play is the MG cadence tuple, which lives in base stats, not these lines.",

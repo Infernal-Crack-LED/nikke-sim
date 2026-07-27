@@ -51,7 +51,12 @@
 //            blanc present ⇒ N5 gate fires. noir is slot 2 in BOTH comps.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const NOIR = 2; // noir's slot in both comps
@@ -79,48 +84,80 @@ function run(slugs: string[], overrides: Record<string, any> = {}) {
 // ---- counterfactual / reference patches -------------------------------------------------------
 /** N1 encoding reference: S1 casterAtkPct → atkPct (% of each ally's OWN ATK, not noir's flat). */
 const noirAtkPct = withPatchedOverride('noir', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'casterAtkPct');
+  if (!e)
+    {throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');}
   e.stat = 'atkPct';
 });
 /** N2 trigger reference: S2 fullBurstEnter → burstCast (the prior-10 model). */
 const noirBurstCastTrig = withPatchedOverride('noir', (ov) => {
   let n = 0;
-  for (const b of ov.skill2) if (b.trigger.kind === 'fullBurstEnter') { b.trigger.kind = 'burstCast'; n++; }
-  if (n < 2) throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');
+  for (const b of ov.skill2)
+    {if (b.trigger.kind === 'fullBurstEnter') {
+      b.trigger.kind = 'burstCast';
+      n++;
+    }}
+  if (n < 2)
+    {throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');}
 });
 /** N2 target reference: S2 maxAmmoFlat block all allies → self only. */
 const noirSelfAmmo = withPatchedOverride('noir', (ov) => {
-  const b = ov.skill2.find((x: any) => x.effects.some((e: any) => e.stat === 'maxAmmoFlat'));
-  if (!b) throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');
+  const b = ov.skill2.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'maxAmmoFlat')
+  );
+  if (!b)
+    {throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 /** N2b reference: strip the S2 instantReload effect (leaves the maxAmmoFlat block intact). */
 const noirNoInstantReload = withPatchedOverride('noir', (ov) => {
-  const before = ov.skill2.flatMap((b: any) => b.effects).filter((e: any) => e.kind === 'instantReload').length;
-  for (const b of ov.skill2) b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
+  const before = ov.skill2
+    .flatMap((b: any) => b.effects)
+    .filter((e: any) => e.kind === 'instantReload').length;
+  for (const b of ov.skill2)
+    {b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');}
   ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
-  if (before < 1) throw new Error('noir S2 instantReload effect missing — fixture is stale');
+  if (before < 1)
+    {throw new Error('noir S2 instantReload effect missing — fixture is stale');}
 });
 /** N3 scoping reference: burst SG block (hitRatePct 13.93) alliesOfWeapon SG → all allies. */
 const noirAlliesAll = withPatchedOverride('noir', (ov) => {
-  const b = ov.burst.find((x: any) => x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 13.93));
-  if (!b) throw new Error('noir burst hitRatePct 13.93 block missing — fixture is stale');
+  const b = ov.burst.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 13.93)
+  );
+  if (!b)
+    {throw new Error(
+      'noir burst hitRatePct 13.93 block missing — fixture is stale'
+    );}
   b.target = { kind: 'allies' };
 });
 /** N5 gate reference: remove the teamHas gate from the 11.61 block (makes it always-active). */
 const noirNoGate = withPatchedOverride('noir', (ov) => {
-  const b = ov.burst.find((x: any) => x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 11.61));
-  if (!b) throw new Error('noir burst hitRatePct 11.61 block missing — fixture is stale');
-  if (!b.teamHas) throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');
+  const b = ov.burst.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 11.61)
+  );
+  if (!b)
+    {throw new Error(
+      'noir burst hitRatePct 11.61 block missing — fixture is stale'
+    );}
+  if (!b.teamHas)
+    {throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');}
   delete b.teamHas;
 });
 /** N6 reference: strip every burst partsDamagePct effect (both the SG and the gated block). */
 const noirNoParts = withPatchedOverride('noir', (ov) => {
-  const before = ov.burst.flatMap((b: any) => b.effects).filter((e: any) => e.stat === 'partsDamagePct').length;
-  for (const b of ov.burst) b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
+  const before = ov.burst
+    .flatMap((b: any) => b.effects)
+    .filter((e: any) => e.stat === 'partsDamagePct').length;
+  for (const b of ov.burst)
+    {b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');}
   ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
-  if (before < 2) throw new Error('noir burst partsDamagePct blocks missing — fixture is stale');
+  if (before < 2)
+    {throw new Error(
+      'noir burst partsDamagePct blocks missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -135,14 +172,21 @@ const noParts = run(COMP_A, { noir: noirNoParts });
 const compB = run(COMP_B);
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const noirCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'noir');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'noir'
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FullBurstStart => e.kind === 'fullBurstStart');
 const reloadFrames = (evs: SimEvent[]) =>
-  evs.filter((e): e is Reload => e.kind === 'reload').map((r) => `${r.slug}@${r.frame}`).sort();
+  evs
+    .filter((e): e is Reload => e.kind === 'reload')
+    .map((r) => `${r.slug}@${r.frame}`)
+    .sort();
 /** noir-cast buffApply by exact key (key carries the raw kit magnitude; value is the resolved stat). */
 const noirBuff = (evs: SimEvent[], key: string) =>
   buffs(evs).filter((b) => b.casterIdx === NOIR && b.key === key);
@@ -154,22 +198,36 @@ const HR_SG_KEY = `${NOIR}:burst:hitRatePct:13.93`;
 const HR_GATE_KEY = `${NOIR}:burst:hitRatePct:11.61`;
 
 describe('noir — kit spec', () => {
-  describe('N1 — S1 ATK ▲14.08% of NOIR\'s ATK to all allies, constantly (casterAtkPct)', () => {
+  describe("N1 — S1 ATK ▲14.08% of NOIR's ATK to all allies, constantly (casterAtkPct)", () => {
     const applied = noirBuff(base.events, S1_KEY);
     const expectedFlat = 0.1408 * unitOf(base.res, 'noir').staticAtk;
 
-    it('is a FLAT add of noir\'s ATK (value ≈ 0.1408×staticAtk, >> a percentage)', () => {
-      expect(applied.length, 'no S1 casterAtkPct buff was applied').toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.stat))]).toEqual(['casterAtkPct']);
+    it("is a FLAT add of noir's ATK (value ≈ 0.1408×staticAtk, >> a percentage)", () => {
+      expect(
+        applied.length,
+        'no S1 casterAtkPct buff was applied'
+      ).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.stat))]).toEqual([
+        'casterAtkPct',
+      ]);
       for (const b of applied) {
-        expect(b.value, 'casterAtkPct must record a flat ATK grant, not the raw 14.08').toBeGreaterThan(1000);
+        expect(
+          b.value,
+          'casterAtkPct must record a flat ATK grant, not the raw 14.08'
+        ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
       }
     });
 
     it('reaches all four allies with the SAME flat value (caster-flat signature), no expiry', () => {
-      expect(holders(applied).size, `reached ${holders(applied).size} allies, expected 4`).toBe(4);
-      expect([...new Set(applied.map((b) => b.value))].length, 'value must be identical for every ally').toBe(1);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size} allies, expected 4`
+      ).toBe(4);
+      expect(
+        [...new Set(applied.map((b) => b.value))].length,
+        'value must be identical for every ally'
+      ).toBe(1);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
 
@@ -177,10 +235,19 @@ describe('noir — kit spec', () => {
       expect(noirBuff(base.events, S1_KEY).length).toBeGreaterThan(0);
       // The counterfactual moved the line off casterAtkPct entirely.
       expect(
-        buffs(atkPct.events).filter((b) => b.casterIdx === NOIR && b.key.startsWith(`${NOIR}:skill1:casterAtkPct`)).length,
+        buffs(atkPct.events).filter(
+          (b) =>
+            b.casterIdx === NOIR &&
+            b.key.startsWith(`${NOIR}:skill1:casterAtkPct`)
+        ).length
       ).toBe(0);
       expect(
-        buffs(atkPct.events).filter((b) => b.casterIdx === NOIR && b.stat === 'atkPct' && b.key.startsWith(`${NOIR}:skill1:`)).length,
+        buffs(atkPct.events).filter(
+          (b) =>
+            b.casterIdx === NOIR &&
+            b.stat === 'atkPct' &&
+            b.key.startsWith(`${NOIR}:skill1:`)
+        ).length
       ).toBeGreaterThan(0);
     });
 
@@ -193,31 +260,57 @@ describe('noir — kit spec', () => {
 
   describe('N2 — S2 Max Ammunition Capacity ▲5 rounds / 10s to all allies on Full Burst entry', () => {
     const applied = noirBuff(base.events, AMMO_KEY);
-    const ammoFrames = [...new Set(applied.map((b) => b.frame))].sort((a, b) => a - b);
+    const ammoFrames = [...new Set(applied.map((b) => b.frame))].sort(
+      (a, b) => a - b
+    );
     const fbFrames = fbStarts(base.events).map((f) => f.frame);
     const castFrames = noirCasts(base.events).map((c) => c.frame);
 
     it('grants +5 max ammo to all four allies for 10 sec', () => {
-      expect(applied.length, 'no S2 maxAmmoFlat buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no S2 maxAmmoFlat buff was applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([5]);
-      expect(holders(applied).size, `reached ${holders(applied).size} allies, expected 4`).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size} allies, expected 4`
+      ).toBe(4);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('trigger is fullBurstEnter: every grant lands on a Full-Burst-ENTRY frame, not the cast frame', () => {
       expect(ammoFrames.length).toBeGreaterThan(0);
-      for (const f of ammoFrames) expect(fbFrames, `maxAmmoFlat at frame ${f} is not an FB-entry frame`).toContain(f);
-      expect(ammoFrames[0], 'first grant must coincide with the first FB entry').toBe(fbFrames[0]);
-      expect(ammoFrames[0], 'first grant must NOT be the burstCast frame').not.toBe(castFrames[0]);
+      for (const f of ammoFrames)
+        {expect(
+          fbFrames,
+          `maxAmmoFlat at frame ${f} is not an FB-entry frame`
+        ).toContain(f);}
+      expect(
+        ammoFrames[0],
+        'first grant must coincide with the first FB entry'
+      ).toBe(fbFrames[0]);
+      expect(
+        ammoFrames[0],
+        'first grant must NOT be the burstCast frame'
+      ).not.toBe(castFrames[0]);
     });
 
     it('DISCRIMINATING (trigger): a burstCast trigger lands the grant on the cast frame, before FB opens', () => {
       const cf = noirBuff(burstCastTrig.events, AMMO_KEY);
-      const cfFrames = [...new Set(cf.map((b) => b.frame))].sort((a, b) => a - b);
+      const cfFrames = [...new Set(cf.map((b) => b.frame))].sort(
+        (a, b) => a - b
+      );
       const cfCast = noirCasts(burstCastTrig.events).map((c) => c.frame);
       const cfFb = fbStarts(burstCastTrig.events).map((f) => f.frame);
-      expect(cfFrames[0], 'counterfactual grant must land on the cast frame').toBe(cfCast[0]);
-      expect(cfFrames[0], 'counterfactual grant must precede FB entry').not.toBe(cfFb[0]);
+      expect(
+        cfFrames[0],
+        'counterfactual grant must land on the cast frame'
+      ).toBe(cfCast[0]);
+      expect(
+        cfFrames[0],
+        'counterfactual grant must precede FB entry'
+      ).not.toBe(cfFb[0]);
     });
 
     it('DISCRIMINATING (target): "all allies" reaches 4; a self-only model reaches only noir', () => {
@@ -229,17 +322,23 @@ describe('noir — kit spec', () => {
   describe('N2b — S2 Reload 39.88% magazine(s) to all allies on Full Burst entry (instantReload)', () => {
     it('encodes instantReload fraction 0.3988 on the fullBurstEnter S2 block, targeting all allies', () => {
       const ov: any = withPatchedOverride('noir', () => {});
-      const blk = ov.skill2.find((b: any) => b.effects.some((e: any) => e.kind === 'instantReload'));
+      const blk = ov.skill2.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'instantReload')
+      );
       expect(blk, 'no S2 instantReload block').toBeTruthy();
       expect(blk.trigger.kind).toBe('fullBurstEnter');
       expect(blk.target.kind).toBe('allies');
-      expect(blk.effects.find((e: any) => e.kind === 'instantReload').fraction).toBe(0.3988);
+      expect(
+        blk.effects.find((e: any) => e.kind === 'instantReload').fraction
+      ).toBe(0.3988);
     });
 
-    it('is live: stripping it perturbs the team\'s realized reload cadence (not byte-identical)', () => {
+    it("is live: stripping it perturbs the team's realized reload cadence (not byte-identical)", () => {
       // The 39.88% top-up at FB entry delays the allies' next magazine reload; the engine snaps ammo
       // silently (no reload event for the refill itself), so the observable is the shifted cadence.
-      expect(reloadFrames(base.events)).not.toEqual(reloadFrames(noInstantReload.events));
+      expect(reloadFrames(base.events)).not.toEqual(
+        reloadFrames(noInstantReload.events)
+      );
     });
   });
 
@@ -247,21 +346,34 @@ describe('noir — kit spec', () => {
     const applied = noirBuff(base.events, HR_SG_KEY);
 
     it('reaches ONLY the shotgun allies (noir+guilty), never the SMG/MG allies', () => {
-      expect(applied.length, 'no burst hitRatePct 13.93 buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no burst hitRatePct 13.93 buff was applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([13.93]);
       expect([...holders(applied)].sort()).toEqual(['guilty', 'noir']);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: an "all allies" model would also buff the non-SG allies (liter+crown)', () => {
       const cf = noirBuff(alliesAll.events, HR_SG_KEY);
-      expect(holders(cf).size, 'all-allies counterfactual must reach all 4').toBe(4);
-      expect([...holders(cf)].sort()).toEqual(['crown', 'guilty', 'liter', 'noir']);
+      expect(
+        holders(cf).size,
+        'all-allies counterfactual must reach all 4'
+      ).toBe(4);
+      expect([...holders(cf)].sort()).toEqual([
+        'crown',
+        'guilty',
+        'liter',
+        'noir',
+      ]);
     });
   });
 
   describe('N4 — burst nuke: 351.64% of final ATK to all enemies, cast BEFORE the FB window', () => {
-    const nukes = dmg(base.events).filter((d) => d.slug === 'noir' && d.srcSlot === 'burst');
+    const nukes = dmg(base.events).filter(
+      (d) => d.slug === 'noir' && d.srcSlot === 'burst'
+    );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       expect(nukes.length).toBe(noirCasts(base.events).length);
@@ -271,7 +383,9 @@ describe('noir — kit spec', () => {
     });
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
   });
 
@@ -282,22 +396,30 @@ describe('noir — kit spec', () => {
 
     it('DISCRIMINATING (gate is real): removing teamHas makes it fire in comp A', () => {
       const cf = noirBuff(noGate.events, HR_GATE_KEY);
-      expect(cf.length, 'ungated counterfactual must apply the 11.61 buff').toBeGreaterThan(0);
+      expect(
+        cf.length,
+        'ungated counterfactual must apply the 11.61 buff'
+      ).toBeGreaterThan(0);
       expect([...new Set(cf.map((b) => b.value))]).toEqual([11.61]);
       expect(holders(cf).size).toBe(4);
     });
 
     it('FIRES with blanc present (comp B): 11.61% to all four allies for 30 sec', () => {
       const applied = noirBuff(compB.events, HR_GATE_KEY);
-      expect(applied.length, 'no gated 11.61 buff with blanc present').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no gated 11.61 buff with blanc present'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([11.61]);
-      expect(holders(applied).size, 'gated block must reach all 4 allies').toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      expect(holders(applied).size, 'gated block must reach all 4 allies').toBe(
+        4
+      );
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
     });
   });
 
   describe('N6 — burst partsDamagePct is exactly inert vs the partless scope-lock boss', () => {
-    it('removing every partsDamagePct line changes NO unit\'s total by a single point', () => {
+    it("removing every partsDamagePct line changes NO unit's total by a single point", () => {
       expect(base.totals).toEqual(noParts.totals);
     });
   });

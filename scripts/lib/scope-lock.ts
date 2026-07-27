@@ -11,16 +11,22 @@
 import { readFileSync } from 'node:fs';
 import { characterStat, gearAtk, copiesToGradeCore } from '../../src/stats.js';
 import { relationshipBonus } from '../../src/relationship.js';
-import type { DataFile, LevelMultiplier, NikkeClass, SimConfig, Element } from '../../src/types.js';
+import type {
+  DataFile,
+  LevelMultiplier,
+  NikkeClass,
+  SimConfig,
+  Element,
+} from '../../src/types.js';
 
 /** The fixed scope-lock args — everything except the boss element and the units. */
 export const SCOPE_LOCK = {
-  bossDef: 140,        // measured; effect ~0.1%/hit but always on (owner 2026-07-15)
-  level: 400,          // sync 400
-  copies: 10,          // grade 3 + core 7 (scope-lock core level)
-  doll: false,         // no cube
+  bossDef: 140, // measured; effect ~0.1%/hit but always on (owner 2026-07-15)
+  level: 400, // sync 400
+  copies: 10, // grade 3 + core 7 (scope-lock core level)
+  doll: false, // no cube
   ol: 'base5' as const, // Base-5 gear
-  coreHitRate: 1,      // boss core 100% exposed
+  coreHitRate: 1, // boss core 100% exposed
   rangeBonus: true,
   durationSec: 180,
 } as const;
@@ -29,7 +35,7 @@ export const SCOPE_LOCK = {
 export function scopeLockCfg(
   slugs: string[],
   bossElement: Element | null,
-  extra: Partial<SimConfig> = {},
+  extra: Partial<SimConfig> = {}
 ): SimConfig {
   return { slugs, bossElement, ...SCOPE_LOCK, ...extra } as SimConfig;
 }
@@ -67,27 +73,46 @@ export function sanityCheck(chars: any[], result: any): string[] {
     const ref = REFERENCE_ATK[cls] + relAtk;
     const atk = u.staticAtk;
     if (ref && Math.abs(atk - ref) / ref > 0.02) {
-      issues.push(`${chars[i].slug} (${cls}): staticAtk ${atk} vs scope-lock reference ${ref} (=base ${REFERENCE_ATK[cls]} + bond ${relAtk}) (${((atk / ref - 1) * 100).toFixed(1)}%) — CONFIG DRIFT? (check core level / gear)`);
+      issues.push(
+        `${chars[i].slug} (${cls}): staticAtk ${atk} vs scope-lock reference ${ref} (=base ${REFERENCE_ATK[cls]} + bond ${relAtk}) (${((atk / ref - 1) * 100).toFixed(1)}%) — CONFIG DRIFT? (check core level / gear)`
+      );
     }
     // group by class AND manufacturer: relationship makes same-class units of DIFFERENT
     // manufacturers legitimately differ, but same-class-same-manufacturer must still be identical.
     (byGroup[`${cls}|${chars[i].manufacturer ?? '—'}`] ??= []).push(atk);
   });
   for (const [group, atks] of Object.entries(byGroup)) {
-    if (new Set(atks).size > 1) issues.push(`${group}: same class+manufacturer units have DIFFERENT staticAtk ${[...new Set(atks)]} — base stats + bond are class×manufacturer, this should be impossible`);
+    if (new Set(atks).size > 1)
+      {issues.push(
+        `${group}: same class+manufacturer units have DIFFERENT staticAtk ${[...new Set(atks)]} — base stats + bond are class×manufacturer, this should be impossible`
+      );}
   }
   return issues;
 }
 
 /** Load the character/level-multiplier data once (harness convenience). */
 export function loadData(): { data: DataFile; mult: LevelMultiplier } {
-  const data: DataFile = JSON.parse(readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8'));
-  const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../../data/level-multiplier.json', import.meta.url), 'utf8'));
+  const data: DataFile = JSON.parse(
+    readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
+  );
+  const mult: LevelMultiplier = JSON.parse(
+    readFileSync(
+      new URL('../../data/level-multiplier.json', import.meta.url),
+      'utf8'
+    )
+  );
   return { data, mult };
 }
 
 /** Recompute a class's scope-lock ATK from data (to refresh REFERENCE_ATK if the curve changes). */
-export function computeClassAtk(baseStats: any, mult: LevelMultiplier, cls: NikkeClass): number {
+export function computeClassAtk(
+  baseStats: any,
+  mult: LevelMultiplier,
+  cls: NikkeClass
+): number {
   const { grade, core } = copiesToGradeCore(SCOPE_LOCK.copies);
-  return characterStat(baseStats, mult, 'atk', SCOPE_LOCK.level, grade, core) + gearAtk(cls, SCOPE_LOCK.ol);
+  return (
+    characterStat(baseStats, mult, 'atk', SCOPE_LOCK.level, grade, core) +
+    gearAtk(cls, SCOPE_LOCK.ol)
+  );
 }

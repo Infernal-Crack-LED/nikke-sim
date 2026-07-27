@@ -6,6 +6,7 @@ description: The memory→skills/tests maintenance loop. Use after completing an
 # Skill maintenance — fold what you just learned into a durable home
 
 ## When to use
+
 After ANY non-trivial change, and especially after a surprise: a video measurement that overturned
 an assumption, a multi-step extraction procedure you had to reconstruct, an engine mechanic change,
 or a data-source discovery.
@@ -34,6 +35,7 @@ or a data-source discovery.
    skill catalogs the existing video/gauge tooling) and fold it into the relevant skill.
 
 ## Verify
+
 ```sh
 bash scripts/verify.sh
 ```

@@ -23,9 +23,9 @@ const pct = (p: number) => `${(p * 100).toFixed(2)}%`;
 export function ResourcesPage() {
   const [tab, setTab] = useState<ResTab>('modules');
   return (
-    <section className='calc-tab'>
-      <p className='muted'>Expected daily income calculators.</p>
-      <div className='pills' style={{ gap: 8 }}>
+    <section className="calc-tab">
+      <p className="muted">Expected daily income calculators.</p>
+      <div className="pills" style={{ gap: 8 }}>
         {RES_TABS.map((t) => (
           <button
             key={t.key}
@@ -77,8 +77,8 @@ function CustomModulesTab() {
           {modulesPerDay.toFixed(2)}
           {krakenTotal !== null && (
             <span
-              className='res-stat-total'
-              title='including module fragments converted at 100:1'
+              className="res-stat-total"
+              title="including module fragments converted at 100:1"
             >
               {' '}
               ({krakenTotal.toFixed(2)})
@@ -112,19 +112,19 @@ function CustomModulesTab() {
       label: 'XP fodder',
       value: String(stage.xpFodder * RUNS_PER_DAY),
       sub: `${stage.xpFodder} per run`,
-    },
+    }
   );
 
   return (
-    <section className='calc-tab'>
+    <section className="calc-tab">
       <h2>Custom Modules + T10 Gear</h2>
-      <p className='muted'>
+      <p className="muted">
         Calculate your custom module and T10 gear expected daily incomes by boss
         tier.
       </p>
 
-      <div className='res-controls'>
-        <div className='pills'>
+      <div className="res-controls">
+        <div className="pills">
           {BOSS_TABLES.map((b) => (
             <button
               key={b.key}
@@ -135,7 +135,7 @@ function CustomModulesTab() {
             </button>
           ))}
         </div>
-        <label className='res-tier'>
+        <label className="res-tier">
           Stage
           <select value={tier} onChange={(e) => setTier(+e.target.value)}>
             {table.stages.map((s) => (
@@ -147,23 +147,23 @@ function CustomModulesTab() {
         </label>
       </div>
 
-      <h3 className='res-heading'>
+      <h3 className="res-heading">
         Daily income — {table.fullName}, Tier {stage.stage}
-        <span className='muted'> · {RUNS_PER_DAY} runs</span>
+        <span className="muted"> · {RUNS_PER_DAY} runs</span>
       </h3>
       {/* keyed on boss+tier so the tiles replay their entrance on every
           change — perceptible feedback that the numbers re-rolled */}
-      <div className='res-stats' key={`${boss}-${stage.stage}`}>
+      <div className="res-stats" key={`${boss}-${stage.stage}`}>
         {tiles.map((t) => (
           <div key={t.label} className={'res-stat' + (t.main ? ' main' : '')}>
-            <div className='res-stat-label'>{t.label}</div>
-            <div className='res-stat-value'>{t.value}</div>
-            <div className='res-stat-sub'>{t.sub}</div>
+            <div className="res-stat-label">{t.label}</div>
+            <div className="res-stat-value">{t.value}</div>
+            <div className="res-stat-sub">{t.sub}</div>
           </div>
         ))}
       </div>
 
-      <p className='res-detail'>
+      <p className="res-detail">
         Per run: <b>{pct(stage.moduleDropRate)}</b> chance a module drops — then{' '}
         {stage.moduleBreakdown.map((b, i) => (
           <Fragment key={b.qty}>
@@ -183,8 +183,8 @@ function CustomModulesTab() {
       {/* 9 rows fit comfortably — no scroll wrapper, the ladder stands at
           full height. tbody is keyed on boss so the rows re-deal (staggered)
           whenever the drop pool changes */}
-      <div className='res-ladder'>
-        <table className='breakpoint-table'>
+      <div className="res-ladder">
+        <table className="breakpoint-table">
           <thead>
             <tr>
               <th>Tier</th>
@@ -203,25 +203,25 @@ function CustomModulesTab() {
                 <tr
                   key={s.stage}
                   className={s.stage === tier ? 'on' : ''}
-                  title='select this tier'
+                  title="select this tier"
                   style={{ ['--row' as string]: i }}
                   onClick={() => setTier(s.stage)}
                 >
                   <td>
                     <b>T{s.stage}</b>
                   </td>
-                  <td className='r'>{pct(s.moduleDropRate)}</td>
-                  <td className='r'>{e.toFixed(2)}</td>
-                  <td className='r share'>{(e * RUNS_PER_DAY).toFixed(2)}</td>
+                  <td className="r">{pct(s.moduleDropRate)}</td>
+                  <td className="r">{e.toFixed(2)}</td>
+                  <td className="r share">{(e * RUNS_PER_DAY).toFixed(2)}</td>
                   {hasGear && (
-                    <td className='r'>
+                    <td className="r">
                       {s.gearRate === null
                         ? '—'
                         : (s.gearRate * RUNS_PER_DAY).toFixed(2)}
                     </td>
                   )}
-                  <td className='r'>{s.fragments * RUNS_PER_DAY}</td>
-                  <td className='r'>{s.locks * RUNS_PER_DAY}</td>
+                  <td className="r">{s.fragments * RUNS_PER_DAY}</td>
+                  <td className="r">{s.locks * RUNS_PER_DAY}</td>
                 </tr>
               );
             })}
@@ -229,7 +229,7 @@ function CustomModulesTab() {
         </table>
       </div>
 
-      <div className='notes'>
+      <div className="notes">
         <b>How to read this</b>
         <ul>
           <li>

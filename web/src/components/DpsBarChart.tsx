@@ -37,21 +37,21 @@ export function DpsBarChart({
   const max = Math.max(...bars.map((b) => b.dps), 1);
   const thumbs = usePortraitThumbs(
     bars.map((b) => b.imageUrl),
-    PORTRAIT_CSS,
+    PORTRAIT_CSS
   );
   return (
-    <div className='dpschart-card'>
-      <div className='dpschart-head'>
+    <div className="dpschart-card">
+      <div className="dpschart-head">
         <div>
-          <div className='dpschart-title'>{title}</div>
-          {subtitle && <div className='dpschart-sub'>{subtitle}</div>}
+          <div className="dpschart-title">{title}</div>
+          {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
         {(onShareLink || onShareImage) && (
-          <div className='dpschart-share'>
+          <div className="dpschart-share">
             {onShareLink && (
               <button
-                className='chip'
-                title='copy link to this chart'
+                className="chip"
+                title="copy link to this chart"
                 onClick={onShareLink}
               >
                 🔗
@@ -59,8 +59,8 @@ export function DpsBarChart({
             )}
             {onShareImage && (
               <button
-                className='chip'
-                title='copy chart image'
+                className="chip"
+                title="copy chart image"
                 onClick={onShareImage}
               >
                 🖼
@@ -71,40 +71,40 @@ export function DpsBarChart({
       </div>
 
       {bars.length === 0 ? (
-        <div className='dpschart-empty'>no data</div>
+        <div className="dpschart-empty">no data</div>
       ) : (
-        <div className='dpschart-bars'>
+        <div className="dpschart-bars">
           {bars.map((b, i) => (
-            <div className='dpschart-row' key={b.slug}>
-              <span className='dpschart-rank'>{i + 1}</span>
+            <div className="dpschart-row" key={b.slug}>
+              <span className="dpschart-rank">{i + 1}</span>
               {b.imageUrl ? (
                 <img
-                  className='dpschart-portrait'
+                  className="dpschart-portrait"
                   src={thumbs[b.imageUrl] ?? b.imageUrl}
                   alt={b.name}
-                  loading='lazy'
+                  loading="lazy"
                   title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}
                 />
               ) : (
                 <span
-                  className='dpschart-name'
+                  className="dpschart-name"
                   title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}
                 >
                   {b.name}
                 </span>
               )}
-              <span className='dpschart-track'>
+              <span className="dpschart-track">
                 <span
-                  className='dpschart-fill'
+                  className="dpschart-fill"
                   style={{
                     width: `${Math.max(2, (b.dps / max) * 100)}%`,
                     background: ELEMENT_COLORS[b.element] ?? '#9aa3b2',
                   }}
                 />
               </span>
-              <span className='dpschart-val' title={`${fmt(b.dps)} DPS`}>
+              <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
                 {relScore(b.dps, max)}
-                <span className='dpschart-val-raw'>{fmt(b.dps)}</span>
+                <span className="dpschart-val-raw">{fmt(b.dps)}</span>
               </span>
             </div>
           ))}
@@ -112,14 +112,14 @@ export function DpsBarChart({
       )}
 
       {compare && (
-        <div className='dpschart-compare'>
-          <span className='dpschart-name'>{compare.name}</span>
-          <span className='dpschart-rankinfo'>
+        <div className="dpschart-compare">
+          <span className="dpschart-name">{compare.name}</span>
+          <span className="dpschart-rankinfo">
             rank {compare.rank} / {compare.total}
           </span>
-          <span className='dpschart-val' title={`${fmt(compare.dps)} DPS`}>
+          <span className="dpschart-val" title={`${fmt(compare.dps)} DPS`}>
             {relScore(compare.dps, max)}
-            <span className='dpschart-val-raw'>{fmt(compare.dps)}</span>
+            <span className="dpschart-val-raw">{fmt(compare.dps)}</span>
           </span>
         </div>
       )}

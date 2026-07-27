@@ -64,35 +64,35 @@ function loadSupportPolicy() {
       JSON.parse(
         readFileSync(
           new URL('../../data/enikk-supported.json', import.meta.url),
-          'utf8',
-        ),
+          'utf8'
+        )
       ).names as string[]
-    ).map(normalizeName),
+    ).map(normalizeName)
   );
   const overrideSlugs = new Set(
     readdirSync(new URL('../skills/overrides/', import.meta.url))
       .filter((f) => f.endsWith('.json'))
-      .map((f) => f.replace(/\.json$/, '')),
+      .map((f) => f.replace(/\.json$/, ''))
   );
   // slug → parsed override, so the second stage can DERIVE the counts-as elements from the kit
   // (an `advantageVs` effect) rather than carrying a hand-tag that this rebuild would clobber.
   const overrides = new Map<string, OverrideFile>();
   for (const slug of overrideSlugs)
-    overrides.set(
+    {overrides.set(
       slug,
       JSON.parse(
         readFileSync(
           new URL(`../skills/overrides/${slug}.json`, import.meta.url),
-          'utf8',
-        ),
-      ) as OverrideFile,
-    );
+          'utf8'
+        )
+      ) as OverrideFile
+    );}
   return { proven, overrideSlugs, overrides };
 }
 
 async function main() {
   const url = process.env.DATABASE_PUBLIC_URL;
-  if (!url) throw new Error('DATABASE_PUBLIC_URL not set (add it to .env)');
+  if (!url) {throw new Error('DATABASE_PUBLIC_URL not set (add it to .env)');}
   const client = new pg.Client({ connectionString: url });
   await client.connect();
 
@@ -108,20 +108,20 @@ async function main() {
     `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases,
             skill_descriptions, favorite_item_id,
             role_weapon, role_burst_meta, role_skill_details, role_stat_scaling, role_element, role_piece, role_meta
-       from nikke_characters order by id`,
+       from nikke_characters order by id`
   );
   const metaRow = await client.query(
-    `select value from bot_meta where key = 'nikke_level_multiplier'`,
+    `select value from bot_meta where key = 'nikke_level_multiplier'`
   );
   await client.end();
   if (!metaRow.rows.length)
-    throw new Error('bot_meta.nikke_level_multiplier missing');
+    {throw new Error('bot_meta.nikke_level_multiplier missing');}
   const levelMultiplier = JSON.parse(metaRow.rows[0].value);
 
   const apiRes = await fetch(`${SYNERGY_API}?limit=500`, {
     headers: SYNERGY_HEADERS,
   });
-  if (!apiRes.ok) throw new Error(`synergy API ${apiRes.status}`);
+  if (!apiRes.ok) {throw new Error(`synergy API ${apiRes.status}`);}
   const apiRows: any[] = await apiRes.json();
   const bySynergyId = new Map(apiRows.map((r) => [r.id, r]));
 
@@ -150,7 +150,7 @@ async function main() {
       a.skill1En = api.skill_1_en;
       a.skill2En = api.skill_2_en;
       a.burstSkillEn = api.burst_skill_en;
-      if (api.burst_cooltime) a.burstCooldown = api.burst_cooltime / 60;
+      if (api.burst_cooltime) {a.burstCooldown = api.burst_cooltime / 60;}
     }
     if (!a.weapon || !a.burst) {
       skipped.push(`${row.id} (missing weapon/burst)`);
@@ -295,17 +295,17 @@ async function main() {
     if (counts.length > 1) {
       c.countsAsElements = counts;
       multiElement.push(`${slug} (${counts.join('+')})`);
-    } else delete c.countsAsElements;
-    if (c.generatorSupported) generatorCount++;
-    if (c.simSupported) simCount++;
-    if (!c.generatorSupported && !c.simSupported) unsupported.push(slug);
+    } else {delete c.countsAsElements;}
+    if (c.generatorSupported) {generatorCount++;}
+    if (c.simSupported) {simCount++;}
+    if (!c.generatorSupported && !c.simSupported) {unsupported.push(slug);}
   }
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
   writeFileSync(
     new URL('../../data/characters.json', import.meta.url),
-    JSON.stringify(out, null, 1),
+    JSON.stringify(out, null, 1)
   );
   writeFileSync(
     new URL('../../data/bossing-tiers.json', import.meta.url),
@@ -316,37 +316,37 @@ async function main() {
         tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
       },
       null,
-      1,
-    ),
+      1
+    )
   );
   writeFileSync(
     new URL('../../data/level-multiplier.json', import.meta.url),
-    JSON.stringify(levelMultiplier),
+    JSON.stringify(levelMultiplier)
   );
 
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
   const noApi = rows.filter(
-    (r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id),
+    (r) => r.synergy_id == null || !bySynergyId.has(r.synergy_id)
   ).length;
   console.log(
-    `synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`,
+    `synced ${total} characters (${skipped.length} skipped, ${noStats} missing base_stats, ${noApi} unmatched to synergy API)`
   );
   console.log(
-    `support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`,
+    `support tags: ${generatorCount} generatorSupported, ${simCount} simSupported, ${unsupported.length} unsupported (Team Builder only)`
   );
   console.log(
-    `counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`,
+    `counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`
   );
   const nickKept = Object.values(characters).filter(
-    (c) => c.nicknames?.length,
+    (c) => c.nicknames?.length
   ).length;
   console.log(
-    `nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`,
+    `nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`
   );
   for (const d of nick.dropped)
-    console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
-  if (skipped.length) console.log('skipped:', skipped.join(', '));
+    {console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);}
+  if (skipped.length) {console.log('skipped:', skipped.join(', '));}
 }
 
 main().catch((e) => {

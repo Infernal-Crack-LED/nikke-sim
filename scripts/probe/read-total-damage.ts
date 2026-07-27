@@ -47,14 +47,14 @@ const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
 for (let i = 1; i < argv.length; i++)
-  if (argv[i].startsWith('--'))
-    flags[argv[i].slice(2)] =
+  {if (argv[i].startsWith('--'))
+    {flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];
+        : argv[++i];}}
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-total-damage.ts <video> [--fps 1] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--total-crop "..."] [--timer-crop "..."] [--total-zoom 4] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]',
+    'usage: read-total-damage.ts <video> [--fps 1] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--total-crop "..."] [--timer-crop "..."] [--total-zoom 4] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]'
   );
   process.exit(1);
 }
@@ -64,7 +64,7 @@ const at = Number(flags.at ?? 0);
 const dur = flags.dur ? Number(flags.dur) : 0;
 const endpoint = (flags.endpoint ?? 'http://localhost:8090/v1').replace(
   /\/$/,
-  '',
+  ''
 );
 const model = flags.model ?? 'qwen2.5-vl';
 const apikey = flags.apikey ?? 'no-key';
@@ -88,10 +88,10 @@ mkdirSync(timerFramesDir, { recursive: true });
 // ---- extract frames (two passes — one per crop) ----
 function extract(crop: string, zoom: number, dir: string, label: string) {
   const vf = [`fps=${fps}`, crop];
-  if (zoom !== 1) vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+  if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
   const args = ['-y', '-loglevel', 'error'];
-  if (at) args.push('-ss', String(at));
-  if (dur) args.push('-t', String(dur));
+  if (at) {args.push('-ss', String(at));}
+  if (dur) {args.push('-t', String(dur));}
   args.push('-i', video, '-vf', vf.join(','), '-q:v', '3', `${dir}/f_%05d.jpg`);
   execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });
   const files = readdirSync(dir)
@@ -101,13 +101,13 @@ function extract(crop: string, zoom: number, dir: string, label: string) {
   return files;
 }
 console.log(
-  `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`,
+  `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`
 );
 const totalFiles = extract(totalCrop, totalZoom, totalFramesDir, 'total');
 const timerFiles = extract(timerCrop, timerZoom, timerFramesDir, 'timer');
 if (!totalFiles.length || !timerFiles.length) {
   console.error(
-    'no frames extracted — check --at/--dur/--total-crop/--timer-crop',
+    'no frames extracted — check --at/--dur/--total-crop/--timer-crop'
   );
   process.exit(1);
 }
@@ -131,7 +131,7 @@ Respond with ONLY this JSON (no markdown, no commentary):
 
 async function vlmRead(
   b64: string,
-  prompt: string,
+  prompt: string
 ): Promise<Record<string, unknown>> {
   const body: Record<string, unknown> = {
     model,
@@ -150,7 +150,7 @@ async function vlmRead(
     temperature: 0,
     max_tokens: maxTokens,
   };
-  if (jsonMode) body.response_format = { type: 'json_object' };
+  if (jsonMode) {body.response_format = { type: 'json_object' };}
   const res = await fetch(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -160,21 +160,21 @@ async function vlmRead(
     body: JSON.stringify(body),
   });
   if (!res.ok)
-    throw new Error(
-      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`,
-    );
+    {throw new Error(
+      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
+    );}
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
   if (Array.isArray(content))
-    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
   let s = String(content).trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) s = fence[1].trim();
+  if (fence) {s = fence[1].trim();}
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) s = s.slice(a, b + 1);
+  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
   try {
     return (JSON.parse(s) ?? {}) as Record<string, unknown>;
   } catch {
@@ -220,10 +220,10 @@ for (let i = 0; i < frameCount; i++) {
     timerSec = mockTimer(idx);
   } else {
     const totalB64 = readFileSync(
-      `${totalFramesDir}/${totalFiles[i]}`,
+      `${totalFramesDir}/${totalFiles[i]}`
     ).toString('base64');
     const timerB64 = readFileSync(
-      `${timerFramesDir}/${timerFiles[i]}`,
+      `${timerFramesDir}/${timerFiles[i]}`
     ).toString('base64');
     totalDamage = null;
     timerSec = null;
@@ -236,19 +236,19 @@ for (let i = 0; i < frameCount; i++) {
         break;
       } catch (e) {
         if (attempt === 2)
-          console.error(
-            `  frame ${totalFiles[i]}: FAILED — ${(e as Error).message}`,
-          );
-        else await new Promise((r) => setTimeout(r, 1000));
+          {console.error(
+            `  frame ${totalFiles[i]}: FAILED — ${(e as Error).message}`
+          );}
+        else {await new Promise((r) => setTimeout(r, 1000));}
       }
     }
   }
   totalMs += Date.now() - t0;
   reads.push({ videoT, timerSec, totalDamage });
   if (++n % 10 === 0 || n === frameCount)
-    console.log(
-      `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  total=${totalDamage}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`,
-    );
+    {console.log(
+      `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  total=${totalDamage}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`
+    );}
 }
 
 // ---- timer correction: the countdown is perfectly linear (-1/frame at 1fps). The VLM
@@ -257,7 +257,7 @@ for (let i = 0; i < frameCount; i++) {
 // the full sequence from that spine at exactly -1/fps per frame. ----
 function correctTimer(
   reads: { videoT: number; timerSec: number | null }[],
-  fps: number,
+  fps: number
 ): number {
   const step = 1 / fps;
   // Find the longest run of consecutive reads with consistent delta.
@@ -283,7 +283,7 @@ function correctTimer(
     bestStart = runStart;
     bestLen = runLen;
   }
-  if (bestLen < 3) return 0; // no reliable spine — don't guess
+  if (bestLen < 3) {return 0;} // no reliable spine — don't guess
 
   // Extrapolate from the spine: timer[i] = spineTimer - (i - spineIndex) * step
   const spineIdx = bestStart + Math.floor(bestLen / 2); // use the middle of the spine
@@ -304,19 +304,19 @@ function correctTimer(
 }
 const timerCorrections = correctTimer(reads, fps);
 if (timerCorrections)
-  console.log(
-    `  timer: corrected ${timerCorrections} read(s) from linear spine`,
-  );
+  {console.log(
+    `  timer: corrected ${timerCorrections} read(s) from linear spine`
+  );}
 
 // ---- sanity: total damage must be monotonically non-decreasing ----
 const warnings: string[] = [];
 let prev: number | null = null;
 for (const r of reads) {
-  if (r.totalDamage == null) continue;
+  if (r.totalDamage == null) {continue;}
   if (prev != null && r.totalDamage < prev)
-    warnings.push(
-      `t=${r.videoT.toFixed(1)}s: total ${r.totalDamage} < previous ${prev} (misread?)`,
-    );
+    {warnings.push(
+      `t=${r.videoT.toFixed(1)}s: total ${r.totalDamage} < previous ${prev} (misread?)`
+    );}
   prev = r.totalDamage;
 }
 
@@ -340,11 +340,11 @@ const rawOut = `${outDir}/total-damage.json`;
 writeFileSync(rawOut, JSON.stringify(result, null, 2) + '\n');
 console.log(`\nwrote ${rawOut}`);
 console.log(
-  `  ${reads.filter((r) => r.totalDamage != null).length}/${frameCount} totals, ${reads.filter((r) => r.timerSec != null).length}/${frameCount} timers`,
+  `  ${reads.filter((r) => r.totalDamage != null).length}/${frameCount} totals, ${reads.filter((r) => r.timerSec != null).length}/${frameCount} timers`
 );
 if (warnings.length) {
   console.log(`  ⚠ ${warnings.length} monotonicity warning(s):`);
-  for (const w of warnings.slice(0, 5)) console.log(`    ${w}`);
+  for (const w of warnings.slice(0, 5)) {console.log(`    ${w}`);}
   if (warnings.length > 5)
-    console.log(`    ... and ${warnings.length - 5} more`);
+    {console.log(`    ... and ${warnings.length - 5} more`);}
 }

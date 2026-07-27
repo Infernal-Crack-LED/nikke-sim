@@ -47,7 +47,13 @@
 //     runs[{startT, endT, from, to, reads, roundsPerSec, r2}], cadence{overall, median, runs} }
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -59,14 +65,20 @@ const TEMPLATE = join(HERE, 'ammo-box-template.png');
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  if (argv[i].startsWith('--'))
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
     flags[argv[i].slice(2)] =
-      argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined ? 'true' : argv[++i];
+      argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
+        ? 'true'
+        : argv[++i];
+  }
+}
 
 if (!video || !existsSync(video)) {
-  console.error('usage: read-ammo.ts <video> [--fps 10] [--at S] [--dur S] [--zoom 2] [--crop "..."]\n' +
-    '                        [--atlas DIR] [--t0 S] [--expect-rate N] [--out DIR] [--keep-frames]');
+  console.error(
+    'usage: read-ammo.ts <video> [--fps 10] [--at S] [--dur S] [--zoom 2] [--crop "..."]\n' +
+      '                        [--atlas DIR] [--t0 S] [--expect-rate N] [--out DIR] [--keep-frames]'
+  );
   process.exit(1);
 }
 
@@ -81,14 +93,19 @@ const t0 = flags.t0 && flags.t0 !== 'true' ? Number(flags.t0) : null;
 // (SG ~10 rounds at ~1.5/s) needs --min-run 4 --min-rounds 3, or every run is filtered away.
 const minRun = Number(flags['min-run'] ?? 6);
 const minRounds = Number(flags['min-rounds'] ?? 5);
-const expectRate = flags['expect-rate'] && flags['expect-rate'] !== 'true' ? Number(flags['expect-rate']) : null;
+const expectRate =
+  flags['expect-rate'] && flags['expect-rate'] !== 'true'
+    ? Number(flags['expect-rate'])
+    : null;
 const outDir = flags.out ?? `${process.env.CLAUDE_SCRATCH ?? '/tmp'}/ammo`;
 
 if (!existsSync(atlas)) {
-  console.error(`no digit atlas at ${atlas}. Build one:\n` +
-    `  <extract frames>\n` +
-    `  ${PY} ${WORKER} <frames> --ammo-digits --build-atlas --max-template-disp 0 \\\n` +
-    `    --ammo-template ${TEMPLATE} --ammo-atlas ${atlas} --labels "076,120,..."`);
+  console.error(
+    `no digit atlas at ${atlas}. Build one:\n` +
+      `  <extract frames>\n` +
+      `  ${PY} ${WORKER} <frames> --ammo-digits --build-atlas --max-template-disp 0 \\\n` +
+      `    --ammo-template ${TEMPLATE} --ammo-atlas ${atlas} --labels "076,120,..."`
+  );
   process.exit(1);
 }
 
@@ -98,28 +115,61 @@ rmSync(framesDir, { recursive: true, force: true });
 mkdirSync(framesDir, { recursive: true });
 
 const vf = [`fps=${fps}`, crop];
-if (zoom !== 1) vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+if (zoom !== 1) {
+  vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+}
 const a = ['-y', '-loglevel', 'error'];
-if (at) a.push('-ss', String(at));
-if (dur) a.push('-t', String(dur));
+if (at) {
+  a.push('-ss', String(at));
+}
+if (dur) {
+  a.push('-t', String(dur));
+}
 a.push('-i', video, '-vf', vf.join(','), `${framesDir}/f_%05d.png`);
-console.log(`extracting @ ${fps}fps zoom ${zoom}${dur ? ` (${at}s +${dur}s)` : ' (whole video)'} ...`);
+console.log(
+  `extracting @ ${fps}fps zoom ${zoom}${dur ? ` (${at}s +${dur}s)` : ' (whole video)'} ...`
+);
 execFileSync('ffmpeg', a, { stdio: ['ignore', 'ignore', 'inherit'] });
 const nFrames = readdirSync(framesDir).filter((f) => f.endsWith('.png')).length;
-if (!nFrames) { console.error('no frames extracted — check --at/--dur/--crop'); process.exit(1); }
+if (!nFrames) {
+  console.error('no frames extracted — check --at/--dur/--crop');
+  process.exit(1);
+}
 console.log(`  ${nFrames} frames`);
 
 console.log('reading digits (deterministic template match, no VLM) ...');
 const rawJson = execFileSync(
   PY,
-  [WORKER, framesDir, '--ammo-digits', '--ammo-template', TEMPLATE, '--ammo-atlas', atlas,
-   '--digit-score-min', String(flags['digit-score-min'] ?? 0.6)],
-  { encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'inherit'] },
+  [
+    WORKER,
+    framesDir,
+    '--ammo-digits',
+    '--ammo-template',
+    TEMPLATE,
+    '--ammo-atlas',
+    atlas,
+    '--digit-score-min',
+    String(flags['digit-score-min'] ?? 0.6),
+  ],
+  { encoding: 'utf8', maxBuffer: 1 << 28, stdio: ['ignore', 'pipe', 'inherit'] }
 );
-interface WorkerRead { file: string; ammo: number | null; scores?: number[]; boxConf?: number; reason?: string }
+interface WorkerRead {
+  file: string;
+  ammo: number | null;
+  scores?: number[];
+  boxConf?: number;
+  reason?: string;
+}
 const worker = JSON.parse(rawJson) as WorkerRead[];
 
-interface Read { videoT: number; fightT: number | null; ammo: number | null; minScore: number | null; boxConf: number | null; rejected?: string }
+interface Read {
+  videoT: number;
+  fightT: number | null;
+  ammo: number | null;
+  minScore: number | null;
+  boxConf: number | null;
+  rejected?: string;
+}
 const reads: Read[] = worker.map((w) => {
   const idx = parseInt(w.file.replace(/\D/g, ''), 10);
   const videoT = Math.round((at + (idx - 1) / fps) * 1000) / 1000;
@@ -137,8 +187,13 @@ const RELOAD_JUMP = 5; // a reload restores a whole magazine; a misread rises by
 const reloads: { videoT: number; from: number; to: number }[] = [];
 let prev: Read | null = null;
 for (const r of reads) {
-  if (r.ammo == null) continue;
-  if (prev == null) { prev = r; continue; }
+  if (r.ammo == null) {
+    continue;
+  }
+  if (prev == null) {
+    prev = r;
+    continue;
+  }
   const pa = prev.ammo as number;
   const d = r.ammo - pa;
   if (d > 0 && d < RELOAD_JUMP) {
@@ -147,12 +202,22 @@ for (const r of reads) {
     r.ammo = null;
     continue;
   }
-  if (d >= RELOAD_JUMP) reloads.push({ videoT: r.videoT, from: pa, to: r.ammo });
+  if (d >= RELOAD_JUMP) {
+    reloads.push({ videoT: r.videoT, from: pa, to: r.ammo });
+  }
   prev = r;
 }
 
 // ---- firing runs: maximal strictly-decreasing stretches; slope = rounds/second ----
-interface Run { startT: number; endT: number; from: number; to: number; reads: number; roundsPerSec: number; r2: number }
+interface Run {
+  startT: number;
+  endT: number;
+  from: number;
+  to: number;
+  reads: number;
+  roundsPerSec: number;
+  r2: number;
+}
 const runs: Run[] = [];
 let cur: Read[] = [];
 const flush = () => {
@@ -162,24 +227,41 @@ const flush = () => {
     const n = xs.length;
     const mx = xs.reduce((s, v) => s + v, 0) / n;
     const my = ys.reduce((s, v) => s + v, 0) / n;
-    let sxy = 0, sxx = 0, syy = 0;
-    for (let i = 0; i < n; i++) { sxy += (xs[i] - mx) * (ys[i] - my); sxx += (xs[i] - mx) ** 2; syy += (ys[i] - my) ** 2; }
+    let sxy = 0,
+      sxx = 0,
+      syy = 0;
+    for (let i = 0; i < n; i++) {
+      sxy += (xs[i] - mx) * (ys[i] - my);
+      sxx += (xs[i] - mx) ** 2;
+      syy += (ys[i] - my) ** 2;
+    }
     const slope = sxx ? sxy / sxx : 0;
     if (slope < 0) {
       runs.push({
-        startT: xs[0], endT: xs[n - 1], from: ys[0], to: ys[n - 1], reads: n,
+        startT: xs[0],
+        endT: xs[n - 1],
+        from: ys[0],
+        to: ys[n - 1],
+        reads: n,
         roundsPerSec: Math.round(-slope * 100) / 100,
-        r2: syy ? Math.round((sxy * sxy) / (sxx * syy) * 1000) / 1000 : 1,
+        r2: syy ? Math.round(((sxy * sxy) / (sxx * syy)) * 1000) / 1000 : 1,
       });
     }
   }
   cur = [];
 };
 for (const r of reads) {
-  if (r.ammo == null) continue;
+  if (r.ammo == null) {
+    continue;
+  }
   const last = cur[cur.length - 1];
   // a run ends at a reload, at a gap in readable frames, or if the value stops falling
-  if (last && (r.ammo > (last.ammo as number) || r.videoT - last.videoT > 3 / fps)) flush();
+  if (
+    last &&
+    (r.ammo > (last.ammo as number) || r.videoT - last.videoT > 3 / fps)
+  ) {
+    flush();
+  }
   cur.push(r);
 }
 flush();
@@ -187,31 +269,67 @@ flush();
 // A run where the counter barely moved carries almost no rate information; weight by rounds spent.
 const firing = runs.filter((r) => r.from - r.to >= minRounds && r.r2 >= 0.9);
 const weight = firing.reduce((s, r) => s + (r.from - r.to), 0);
-const overall = weight ? Math.round((firing.reduce((s, r) => s + r.roundsPerSec * (r.from - r.to), 0) / weight) * 100) / 100 : null;
+const overall = weight
+  ? Math.round(
+      (firing.reduce((s, r) => s + r.roundsPerSec * (r.from - r.to), 0) /
+        weight) *
+        100
+    ) / 100
+  : null;
 const sorted = firing.map((r) => r.roundsPerSec).sort((x, y) => x - y);
 const median = sorted.length ? sorted[Math.floor(sorted.length / 2)] : null;
 
 const okReads = reads.filter((r) => r.ammo != null).length;
 const result = {
-  video, fps, at, dur: dur || null, zoom, crop, atlas, t0,
+  video,
+  fps,
+  at,
+  dur: dur || null,
+  zoom,
+  crop,
+  atlas,
+  t0,
   framesProcessed: reads.length,
   readOk: okReads,
   readRate: Math.round((okReads / Math.max(1, reads.length)) * 1000) / 1000,
   rejected: reads.filter((r) => r.rejected).length,
-  reads, reloads, runs,
-  cadence: { overall, median, firingRuns: firing.length, roundsCounted: weight },
+  reads,
+  reloads,
+  runs,
+  cadence: {
+    overall,
+    median,
+    firingRuns: firing.length,
+    roundsCounted: weight,
+  },
 };
 writeFileSync(`${outDir}/ammo.json`, JSON.stringify(result, null, 2) + '\n');
 
 console.log(`\nwrote ${outDir}/ammo.json`);
-console.log(`  ${okReads}/${reads.length} frames read (${(result.readRate * 100).toFixed(1)}%), ` +
-  `${result.rejected} rejected by monotonicity, ${reloads.length} reloads`);
-console.log(`  firing runs: ${firing.length} (>=${minRounds} rounds, r2>=0.9), ${weight} rounds counted`);
-for (const r of firing.slice(0, 12))
-  console.log(`    ${r.startT.toFixed(1)}-${r.endT.toFixed(1)}s  ${r.from}->${r.to}  ${r.roundsPerSec.toFixed(2)}/s  (r2 ${r.r2})`);
-if (firing.length > 12) console.log(`    ... and ${firing.length - 12} more`);
-console.log(`  CADENCE: overall ${overall ?? '?'} rounds/s   median ${median ?? '?'} rounds/s`);
-if (expectRate != null && overall != null)
-  console.log(`  ${Math.abs(overall - expectRate) <= 0.5 ? 'PASS' : 'FAIL'} — expected ~${expectRate}/s, measured ${overall}/s`);
+console.log(
+  `  ${okReads}/${reads.length} frames read (${(result.readRate * 100).toFixed(1)}%), ` +
+    `${result.rejected} rejected by monotonicity, ${reloads.length} reloads`
+);
+console.log(
+  `  firing runs: ${firing.length} (>=${minRounds} rounds, r2>=0.9), ${weight} rounds counted`
+);
+for (const r of firing.slice(0, 12)) {
+  console.log(
+    `    ${r.startT.toFixed(1)}-${r.endT.toFixed(1)}s  ${r.from}->${r.to}  ${r.roundsPerSec.toFixed(2)}/s  (r2 ${r.r2})`
+  );
+}
+if (firing.length > 12) {
+  console.log(`    ... and ${firing.length - 12} more`);
+}
+console.log(
+  `  CADENCE: overall ${overall ?? '?'} rounds/s   median ${median ?? '?'} rounds/s`
+);
+if (expectRate != null && overall != null) {
+  console.log(
+    `  ${Math.abs(overall - expectRate) <= 0.5 ? 'PASS' : 'FAIL'} — expected ~${expectRate}/s, measured ${overall}/s`
+  );
+}
 
-if (flags['keep-frames'] !== 'true') rmSync(framesDir, { recursive: true, force: true });
+if (flags['keep-frames'] !== 'true') {
+  rmSync(framesDir, { recursive: true, force: true });
+}

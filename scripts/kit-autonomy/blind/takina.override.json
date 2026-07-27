@@ -129,12 +129,8 @@
   ],
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Stuns for 2 sec."
-    ],
-    "burst": [
-      "Affects self: Normal attacks deal true damage for 10 sec."
-    ]
+    "skill2": ["Stuns for 2 sec."],
+    "burst": ["Affects self: Normal attacks deal true damage for 10 sec."]
   },
   "caveats": [
     "⚑ skill2 cadence: kit prose gives NO activation clause for either skill2 group → modeled as interval sec=20 (UNMEASURED estimate; datamine-unreliable). The 140.49% ally True-Damage uptime is highly sensitive to this — pin the skill cooldown + first-fire phase from footage.",

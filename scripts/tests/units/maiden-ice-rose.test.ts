@@ -89,7 +89,7 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  bossElement: 'Water' | null = 'Water',
+  bossElement: 'Water' | null = 'Water'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -108,19 +108,19 @@ function run(
 const mirNoS1Hp = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'targetMaxHpPct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'targetMaxHpPct')
   );
   if (ov.skill1.length === before)
-    throw new Error('MIR S1 targetMaxHpPct block missing — fixture is stale');
+    {throw new Error('MIR S1 targetMaxHpPct block missing — fixture is stale');}
 });
 
 /** M2 counterfactual: the PRE-2026-07-17 bug — her FB-entry grant reaches herself too. */
 const mirSelfishBuff = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
   if (!b || b.target.excludeSelf !== true)
-    throw new Error(
-      'MIR S2 fullBurstEnter/excludeSelf block missing — fixture is stale',
-    );
+    {throw new Error(
+      'MIR S2 fullBurstEnter/excludeSelf block missing — fixture is stale'
+    );}
   b.target.excludeSelf = false;
 });
 
@@ -128,10 +128,10 @@ const mirSelfishBuff = withPatchedOverride(SLUG, (ov) => {
 const mirNoSelfBuff = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !(b.trigger.kind === 'burstCast' && b.target.kind === 'self'),
+    (b: any) => !(b.trigger.kind === 'burstCast' && b.target.kind === 'self')
   );
   if (ov.skill2.length !== before - 2)
-    throw new Error('MIR S2 burstCast-self blocks missing — fixture is stale');
+    {throw new Error('MIR S2 burstCast-self blocks missing — fixture is stale');}
 });
 
 /** M4 counterfactual: the rider at skill LEVEL 1 (323.58%) instead of level 10 (547.62%). */
@@ -139,7 +139,7 @@ const mirRiderL1 = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 547.62);
-  if (!e) throw new Error('MIR S2 547.62 rider missing — fixture is stale');
+  if (!e) {throw new Error('MIR S2 547.62 rider missing — fixture is stale');}
   e.atkPct = 323.58;
 });
 
@@ -149,7 +149,7 @@ const mirAtkOnlyBurst = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'stackedNuke');
   if (!e || e.hpPct !== 137.28)
-    throw new Error('MIR burst stackedNuke/hpPct missing — fixture is stale');
+    {throw new Error('MIR burst stackedNuke/hpPct missing — fixture is stale');}
   delete e.hpPct;
 });
 
@@ -169,9 +169,9 @@ const mirNoElemAdv = withPatchedOverride(SLUG, (ov) => {
     })
     .filter((b: any) => b.effects.length > 0);
   if (removed !== 2)
-    throw new Error(
-      'MIR S2 elemAdvantageDamagePct effects missing — fixture is stale',
-    );
+    {throw new Error(
+      'MIR S2 elemAdvantageDamagePct effects missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -206,29 +206,29 @@ describe('maiden-ice-rose — kit spec', () => {
     // Max HP" → maxHpFlat), self-cast so the e3 rule lets it feed her own M3 atkOfMaxHpPct.
     const grants = buffs(base.events).filter(
       (b) =>
-        b.casterIdx === MIR && b.targetIdx === MIR && b.stat === 'maxHpFlat',
+        b.casterIdx === MIR && b.targetIdx === MIR && b.stat === 'maxHpFlat'
     );
 
     it('grants once per 6 shots, ×10 stacks, 15 sec, self only', () => {
       const shots = mirShots(base.events).length;
       expect(grants.length, `${grants.length} grants vs ${shots} shots`).toBe(
-        Math.floor(shots / 6),
+        Math.floor(shots / 6)
       );
       expect(grants.length).toBeGreaterThan(0);
       expect([...new Set(grants.map((b) => b.maxStacks))]).toEqual([10]);
-      for (const b of grants) expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      for (const b of grants) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
       // a constant flat value = 6.34% of her (constant) base Max HP
       expect(new Set(grants.map((b) => b.value)).size).toBe(1);
       expect(grants[0].value).toBeGreaterThan(0);
       // stacks actually accrue (she holds >1 inside the 15s window at her ~1.4s/pull cadence)
       expect(Math.max(...grants.map((b) => b.stacks))).toBeGreaterThanOrEqual(
-        2,
+        2
       );
     });
 
     it('DISCRIMINATING: removing it drops her total (it feeds her own 3.2%-of-Max-HP ATK)', () => {
       const hpEvents = buffs(noS1Hp.events).filter(
-        (b) => b.casterIdx === MIR && b.stat === 'maxHpFlat',
+        (b) => b.casterIdx === MIR && b.stat === 'maxHpFlat'
       );
       expect(hpEvents).toEqual([]);
       expect(base.totals[SLUG]).toBeGreaterThan(noS1Hp.totals[SLUG]);
@@ -240,10 +240,10 @@ describe('maiden-ice-rose — kit spec', () => {
       (b) =>
         b.casterIdx === MIR &&
         b.stat === 'elemAdvantageDamagePct' &&
-        b.value === 40.9,
+        b.value === 40.9
     );
     const atk = buffs(base.events).filter(
-      (b) => b.casterIdx === MIR && b.stat === 'casterAtkPct',
+      (b) => b.casterIdx === MIR && b.stat === 'casterAtkPct'
     );
 
     it('fires once per Full Burst, for 10 sec, at the level-10 value', () => {
@@ -251,7 +251,7 @@ describe('maiden-ice-rose — kit spec', () => {
       expect(elem.length).toBe(fbCount(base.events));
       expect(atk.length).toBe(elem.length);
       for (const b of [...elem, ...atk])
-        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+        {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('reaches the Electric ally (zwei) and NEVER herself — excludeSelf is live', () => {
@@ -264,10 +264,10 @@ describe('maiden-ice-rose — kit spec', () => {
         (b) =>
           b.casterIdx === MIR &&
           b.stat === 'elemAdvantageDamagePct' &&
-          b.value === 40.9,
+          b.value === 40.9
       );
       expect([...new Set(selfishElem.map((b) => b.targetIdx))].sort()).toEqual(
-        [MIR, ZWEI].sort(),
+        [MIR, ZWEI].sort()
       );
     });
   });
@@ -277,13 +277,11 @@ describe('maiden-ice-rose — kit spec', () => {
       (b) =>
         b.casterIdx === MIR &&
         b.targetIdx === MIR &&
-        b.stat === 'elemAdvantageDamagePct',
+        b.stat === 'elemAdvantageDamagePct'
     );
     const hpAtk = buffs(base.events).filter(
       (b) =>
-        b.casterIdx === MIR &&
-        b.targetIdx === MIR &&
-        b.stat === 'atkOfMaxHpPct',
+        b.casterIdx === MIR && b.targetIdx === MIR && b.stat === 'atkOfMaxHpPct'
     );
     const casts = mirBursts(base.events).length;
 
@@ -305,8 +303,8 @@ describe('maiden-ice-rose — kit spec', () => {
           (b) =>
             b.casterIdx === MIR &&
             b.targetIdx === MIR &&
-            (b.stat === 'atkOfMaxHpPct' || b.stat === 'elemAdvantageDamagePct'),
-        ),
+            (b.stat === 'atkOfMaxHpPct' || b.stat === 'elemAdvantageDamagePct')
+        )
       ).toEqual([]);
       expect(base.totals[SLUG]).toBeGreaterThan(noSelfBuff.totals[SLUG]);
     });
@@ -387,7 +385,7 @@ describe('maiden-ice-rose — kit spec', () => {
       const noElem = run({ [SLUG]: mirNoElemAdv });
       // blk2's 31.68 is MIR's own → her total drops; blk1's 40.9 reaches zwei → zwei's drops
       expect(base.totals[SLUG]).toBeGreaterThan(noElem.totals[SLUG]);
-      expect(base.totals['zwei']).toBeGreaterThan(noElem.totals['zwei']);
+      expect(base.totals.zwei).toBeGreaterThan(noElem.totals.zwei);
     });
   });
 });

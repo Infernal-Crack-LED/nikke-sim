@@ -58,7 +58,7 @@ so they read the pre-consume pool)**. Sawtooth: pre-consume 50/43/38… (recordi
   **STB1** pins it: the ≥30 ATK gate AND the ≥20 HR gate both clear on burst 1 and the first FB is already 15s —
   only possible if the pool opens at 50 (pool-0 counterfactual fires neither gate, FB stays 10s — RED).
 - **S1 Critical Damage ▲1.32% (live off the pool)** `passive → self → critDamagePct value 0, perResource
-  {goldenChip, mult 1.32}`. The buff's base value is IGNORED; the contribution is `pool × 1.32 × stacks`, re-read
+{goldenChip, mult 1.32}`. The buff's base value is IGNORED; the contribution is `pool × 1.32 × stacks`, re-read
   live each frame (a sawtooth: 66% at 50 chips, stepping down 22.44 per −17 spend, climbing +1.32 per 3 in-FB
   pulls). The buffApply carries base value 0 (NOT the realized crit). PROOF it tracks the pool from 50 (not a
   from-0 ramp): the t=8 pre-burst popup (chips=50, ZERO in-FB casts) read crit ×2.160 = (150+50×1.32)/100 exactly.
@@ -67,12 +67,12 @@ so they read the pre-consume pool)**. Sawtooth: pre-consume 50/43/38… (recordi
   pool rebuild that sustains the gates late-fight. **STB3** pins it: removing the generation drops the ATK gate
   4→2 and the HR gate 5→2 (the pool drains to 0 without rebuild) — RED.
 - **S1 Attack Damage ▲10.51%/2s (self + top-final-ATK ally)** two blocks on `shotFired+inFb+everyN:3`: `self →
-  attackDamagePct 10.51 (2s)` and `alliesTopAtk {count 1, excludeSelf, byFinalAtk} → attackDamagePct 10.51 (2s)`.
+attackDamagePct 10.51 (2s)` and `alliesTopAtk {count 1, excludeSelf, byFinalAtk} → attackDamagePct 10.51 (2s)`.
   `excludeSelf` is load-bearing — Soda IS top final ATK on the fixture, so without it the ally block double-targets
   her. **STB4** pins self + ≥1 ally buffed, the ally block never targets Soda (slot 2 holds exactly its self-block
   count), and the excludeSelf counterfactual (Soda 51→78, liter 27→0) — RED.
 - **S2 FB-extension cumulative ladder** two `stageEnter:3 → allies` blocks: `resourceGate {min 20} →
-  fullBurstExtend 5` and `resourceGate {min 10, max 19} → fullBurstExtend 2` (the collapsed cumulative ladder:
+fullBurstExtend 5` and `resourceGate {min 10, max 19} → fullBurstExtend 2` (the collapsed cumulative ladder:
   +5 at ≥20, +2 at 10-19). Fires on EVERY Burst-Stage-3 cast — hers OR an ally's (the helm co-B3 in the fixture)
   — reading her chip count, so it is `stageEnter` (team entry), NOT `burstCast`. **STB5** pins all 9 FB windows at
   15s (the 4 helm-led FBs are ALSO 15s → confirms stageEnter keying); no-ext → 10s and flat-+2 → ≤12s — RED.
@@ -87,7 +87,7 @@ so they read the pre-consume pool)**. Sawtooth: pre-consume 50/43/38… (recordi
   Onward, Soda!"); burst-cast damage lands pre-FB-window so it is FB-exempt (fbMajorApplied=false) by timing — no
   explicit `noFb` flag (gotcha 3, behaviorally inert). **STB7** pins one nuke per cast in the burst bucket.
 - **Burst Hit Rate ▲38.91%/15s (≥20)** `burstCast → self → resourceGate {goldenChip min 20} → hitRatePct 38.91
-  (15s)`, ordered BEFORE the −17 spend (pre-consume read). On an SG this is a core-hit-rate lift (damage-relevant),
+(15s)`, ordered BEFORE the −17 spend (pre-consume read). On an SG this is a core-hit-rate lift (damage-relevant),
   not a skippable accuracy stat. **STB8** pins HR on all 5 bursts (burst-5 pre-consume ∈ [20,30)), self 15s. The
   two DOWNSTREAM channels (core rate via acrForHR, pellet landing via coneSigmaFor) are over-credited vs the owner
   hand-count — a coupled SG measurement residual (gotcha 2, residual ⚑, §4).

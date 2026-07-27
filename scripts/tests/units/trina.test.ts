@@ -127,11 +127,11 @@ function run(overrides: Record<string, any> = {}) {
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 const buffs = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TRINA,
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TRINA
   );
 const byStat = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && (value === undefined || b.value === value),
+    (b) => b.stat === stat && (value === undefined || b.value === value)
   );
 /** buffApply events whose key carries the original (pre-conversion) effect value, e.g. 44.98 / 20.14. */
 const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
@@ -139,18 +139,18 @@ const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
 const targetsOf = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((t): t is number => t != null),
+      bs.map((b) => b.targetIdx).filter((t): t is number => t != null)
     ),
   ].sort((a, b) => a - b);
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const trinaBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is Extract<SimEvent, { kind: 'burstCast' }> =>
-      e.kind === 'burstCast' && e.slug === 'trina',
+      e.kind === 'burstCast' && e.slug === 'trina'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -179,48 +179,48 @@ const isS2Passive = (b: any) =>
 // T2 nearest-wrong (scope): alliesOfElementWeapon → allies (hit all 5 slots, not just Electric AR).
 const cfS2ScopeAllies = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) throw new Error('trina S2 passive block missing — fixture is stale');
+  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 // T2 nearest-wrong (stat): casterMaxHpPct → targetMaxHpPct (per-target value, not caster-sourced constant).
 const cfS2TargetMaxHp = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) throw new Error('trina S2 passive block missing — fixture is stale');
+  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterMaxHpPct').stat =
     'targetMaxHpPct';
 });
 // T2 nearest-wrong (duration): add a 10s expiry to the "constantly" passive.
 const cfS2PassiveDur = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2Passive);
-  if (!b) throw new Error('trina S2 passive block missing — fixture is stale');
+  if (!b) {throw new Error('trina S2 passive block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterMaxHpPct').durationSec = 10;
 });
 // The S2 burstCast 94.15/50.82 block (T4 under test).
 const isS2BurstBuff = (b: any) =>
   b.trigger?.kind === 'burstCast' &&
   b.effects?.some(
-    (e: any) => e.stat === 'attackDamagePct' && e.value === 94.15,
+    (e: any) => e.stat === 'attackDamagePct' && e.value === 94.15
   );
 // T4 nearest-wrong (count): count 1 → 99 (buff BOTH Electric AR allies, not just the leftmost).
 const cfS2Count99 = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
   if (!b)
-    throw new Error('trina S2 burstCast block missing — fixture is stale');
+    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
   b.target.count = 99;
 });
 // T4 nearest-wrong (trigger): burstCast → fullBurstEnter (every team FB, not every trina cast).
 const cfS2FbEnter = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
   if (!b)
-    throw new Error('trina S2 burstCast block missing — fixture is stale');
+    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T4 nearest-wrong (duration): the 10s window shortened to 3s.
 const cfS2Dur3 = withPatchedOverride('trina', (ov: any) => {
   const b = ov.skill2.find(isS2BurstBuff);
   if (!b)
-    throw new Error('trina S2 burstCast block missing — fixture is stale');
-  for (const e of b.effects) e.durationSec = 3;
+    {throw new Error('trina S2 burstCast block missing — fixture is stale');}
+  for (const e of b.effects) {e.durationSec = 3;}
 });
 // The burst all-allies 20.9/20.14 block (T5 under test).
 const isBurstAllAllies = (b: any) =>
@@ -230,14 +230,14 @@ const isBurstAllAllies = (b: any) =>
 const cfBurstFbEnter = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstAllAllies);
   if (!b)
-    throw new Error('trina burst all-allies block missing — fixture is stale');
+    {throw new Error('trina burst all-allies block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T5 nearest-wrong (scope): allies → alliesOfElementWeapon (Electric AR only, not all 5).
 const cfBurstScopeElecAR = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstAllAllies);
   if (!b)
-    throw new Error('trina burst all-allies block missing — fixture is stale');
+    {throw new Error('trina burst all-allies block missing — fixture is stale');}
   b.target = {
     kind: 'alliesOfElementWeapon',
     element: 'Electric',
@@ -248,15 +248,15 @@ const cfBurstScopeElecAR = withPatchedOverride('trina', (ov: any) => {
 // The burst Max Ammo block (T8 under test — faithful encoding is maxAmmoFlat 20).
 const isBurstMaxAmmo = (b: any) =>
   b.effects?.some(
-    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct',
+    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct'
   );
 // T8 nearest-wrong (the shipped encoding): flat 20 rounds → maxAmmoPct 33.3 (a percentage approximation).
 const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstMaxAmmo);
   if (!b)
-    throw new Error('trina burst maxAmmo block missing — fixture is stale');
+    {throw new Error('trina burst maxAmmo block missing — fixture is stale');}
   const eff = b.effects.find(
-    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct',
+    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct'
   );
   eff.stat = 'maxAmmoPct';
   eff.value = 33.3;
@@ -265,7 +265,7 @@ const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
 const cfMaxAmmoScopeAllies = withPatchedOverride('trina', (ov: any) => {
   const b = ov.burst.find(isBurstMaxAmmo);
   if (!b)
-    throw new Error('trina burst maxAmmo block missing — fixture is stale');
+    {throw new Error('trina burst maxAmmo block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 
@@ -303,7 +303,7 @@ describe('trina — kit spec', () => {
     it('the fixture fields exactly two Electric AR allies (moran slot 0, scarlet slot 3) for scope discrimination', () => {
       // the S2 passive (count 99, all Electric AR) reaches exactly moran + scarlet
       expect(targetsOf(byKeyVal(base.events, 'maxHpFlat', 44.98))).toEqual(
-        ELEC_AR,
+        ELEC_AR
       );
     });
   });
@@ -311,20 +311,20 @@ describe('trina — kit spec', () => {
   describe("T1 — S1 Nature's Grace (three heal lines) is UNMODELED and inert (no HP pool in v1)", () => {
     it('PIN: Trina emits ZERO skill1-keyed buff events (skill1 is an empty, documented skip)', () => {
       expect(
-        buffs(base.events).filter((b) => b.key.includes(':skill1:')).length,
+        buffs(base.events).filter((b) => b.key.includes(':skill1:')).length
       ).toBe(0);
     });
     it('PIN: Trina deals ZERO skill1-sourced damage', () => {
       const skill1Dmg = base.events.filter(
         (e) =>
-          e.kind === 'damage' && e.slug === 'trina' && e.srcSlot === 'skill1',
+          e.kind === 'damage' && e.slug === 'trina' && e.srcSlot === 'skill1'
       );
       expect(skill1Dmg.length).toBe(0);
     });
     it('DISCRIMINATING: a FABRICATED skill1 buff (nearest-wrong) WOULD emit skill1-keyed events — the empty slot is a deliberate skip, not a harness blind spot', () => {
       expect(
         buffs(fabricateSkill1.events).filter((b) => b.key.includes(':skill1:'))
-          .length,
+          .length
       ).toBeGreaterThan(0);
     });
   });
@@ -346,7 +346,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 Electric AR allies', () => {
       expect(
-        targetsOf(byKeyVal(s2ScopeAllies.events, 'maxHpFlat', 44.98)),
+        targetsOf(byKeyVal(s2ScopeAllies.events, 'maxHpFlat', 44.98))
       ).toEqual(ALL_SLOTS);
     });
     it('DISCRIMINATING (stat): targetMaxHpPct (nearest-wrong) yields a PER-TARGET value, not a caster-sourced constant', () => {
@@ -357,7 +357,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (duration): a 10s expiry (nearest-wrong) is NOT the faithful constant (no-expiry) passive', () => {
       expect(dursOf(byKeyVal(s2PassiveDur.events, 'maxHpFlat', 44.98))).toEqual(
-        [10 * FPS],
+        [10 * FPS]
       );
     });
   });
@@ -367,7 +367,7 @@ describe('trina — kit spec', () => {
       const s2Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':skill2:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s2Stats].sort()).toEqual([
         'attackDamagePct',
@@ -392,7 +392,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (count): count 99 (nearest-wrong) buffs BOTH Electric AR allies, not just the leftmost', () => {
       expect(
-        targetsOf(byStat(s2Count99.events, 'attackDamagePct', 94.15)),
+        targetsOf(byStat(s2Count99.events, 'attackDamagePct', 94.15))
       ).toEqual(ELEC_AR);
     });
     it("DISCRIMINATING (trigger): the faithful burstCast lands on Trina's cast frames; fullBurstEnter (nearest-wrong) lands on the later Full-Burst-start frames", () => {
@@ -401,16 +401,14 @@ describe('trina — kit spec', () => {
       // faithful burstCast: the 94.15 buff applies exactly on Trina's burstCast frames
       const baseFrames = [
         ...new Set(
-          byStat(base.events, 'attackDamagePct', 94.15).map((b) => b.frame),
+          byStat(base.events, 'attackDamagePct', 94.15).map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
       expect(baseFrames).toEqual([...cast].sort((a, b) => a - b));
       // nearest-wrong fullBurstEnter: applies on the FB-start frames, which never coincide with cast frames
       const cfFrames = [
         ...new Set(
-          byStat(s2FbEnter.events, 'attackDamagePct', 94.15).map(
-            (b) => b.frame,
-          ),
+          byStat(s2FbEnter.events, 'attackDamagePct', 94.15).map((b) => b.frame)
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -443,15 +441,15 @@ describe('trina — kit spec', () => {
       const fb = fbStartFrames(base.events);
       const baseFrames = [
         ...new Set(
-          byStat(base.events, 'attackDamagePct', 20.9).map((b) => b.frame),
+          byStat(base.events, 'attackDamagePct', 20.9).map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
       expect(baseFrames).toEqual([...cast].sort((a, b) => a - b));
       const cfFrames = [
         ...new Set(
           byStat(burstFbEnter.events, 'attackDamagePct', 20.9).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -460,7 +458,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfElementWeapon (nearest-wrong) hits only the 2 Electric AR allies, not all 5', () => {
       expect(
-        targetsOf(byStat(burstScopeElecAR.events, 'attackDamagePct', 20.9)),
+        targetsOf(byStat(burstScopeElecAR.events, 'attackDamagePct', 20.9))
       ).toEqual(ELEC_AR);
     });
   });
@@ -470,7 +468,7 @@ describe('trina — kit spec', () => {
       const burstStats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':burst:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       // exactly three modeled families; the Max-Ammo family may be flat (faithful) or pct (the
       // shipped proxy) — either way NO burst-skill-damage-amp stat is present.
@@ -480,7 +478,7 @@ describe('trina — kit spec', () => {
         'maxAmmoFlat',
         'maxAmmoPct',
       ]);
-      for (const s of burstStats) expect(modeled.has(s)).toBe(true);
+      for (const s of burstStats) {expect(modeled.has(s)).toBe(true);}
       expect(burstStats.has('attackDamagePct')).toBe(true);
       expect(burstStats.has('maxHpFlat')).toBe(true);
       expect(burstStats.size).toBe(3);
@@ -510,16 +508,16 @@ describe('trina — kit spec', () => {
       expect(byStat(maxAmmoPct.events, 'maxAmmoFlat', 20).length).toBe(0);
       // … instead a maxAmmoPct 33.3 appears (a percentage approximation, exact only for a 60-round mag)
       expect(
-        byStat(maxAmmoPct.events, 'maxAmmoPct', 33.3).length,
+        byStat(maxAmmoPct.events, 'maxAmmoPct', 33.3).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 Electric AR allies', () => {
       expect(
         targetsOf(
           buffs(maxAmmoScopeAllies.events).filter(
-            (b) => b.stat === 'maxAmmoFlat' || b.stat === 'maxAmmoPct',
-          ),
-        ),
+            (b) => b.stat === 'maxAmmoFlat' || b.stat === 'maxAmmoPct'
+          )
+        )
       ).toEqual(ALL_SLOTS);
     });
   });

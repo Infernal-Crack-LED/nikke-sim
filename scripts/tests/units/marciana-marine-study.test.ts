@@ -50,7 +50,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  bossElement: Element = 'Electric',
+  bossElement: Element = 'Electric'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -69,13 +69,13 @@ const marcianaBurstCastTrigger = withPatchedOverride(
   'marciana-marine-study',
   (ov) => {
     const blk = ov.skill1.find(
-      (b: any) => b.trigger?.kind === 'fullBurstEnter',
+      (b: any) => b.trigger?.kind === 'fullBurstEnter'
     );
     if (!blk)
-      throw new Error('S1 fullBurstEnter block missing — fixture is stale');
+      {throw new Error('S1 fullBurstEnter block missing — fixture is stale');}
     blk.trigger = { kind: 'burstCast' };
     delete blk.ownBurstGate;
-  },
+  }
 );
 
 /** M2 counterfactual: S1 20-hit rider with requiresTargetStatus removed (fires from t=0). */
@@ -83,12 +83,12 @@ const marcianaNoStatusGate = withPatchedOverride(
   'marciana-marine-study',
   (ov) => {
     const blk = ov.skill1.find(
-      (b: any) => b.requiresTargetStatus === 'High-Risk Target',
+      (b: any) => b.requiresTargetStatus === 'High-Risk Target'
     );
     if (!blk)
-      throw new Error('S1 High-Risk Target rider missing — fixture is stale');
+      {throw new Error('S1 High-Risk Target rider missing — fixture is stale');}
     delete blk.requiresTargetStatus;
-  },
+  }
 );
 
 /** M3 counterfactual: Whistle perResource replaced with flat atkPct:163.65 (5 stacks from t=0). */
@@ -96,14 +96,14 @@ const marcianaFlatWhistle = withPatchedOverride(
   'marciana-marine-study',
   (ov) => {
     const blk = ov.skill2.find((b: any) =>
-      b.effects?.some((e: any) => e.perResource?.name === 'whistle'),
+      b.effects?.some((e: any) => e.perResource?.name === 'whistle')
     );
     if (!blk)
-      throw new Error(
-        'S2 whistle perResource block missing — fixture is stale',
-      );
+      {throw new Error(
+        'S2 whistle perResource block missing — fixture is stale'
+      );}
     blk.effects = [{ kind: 'buff', stat: 'atkPct', value: 163.65 }];
-  },
+  }
 );
 
 /** M1 counterfactual 2: ownBurstGate removed — nuke fires on EVERY team FB (incl. helm's rotations). */
@@ -111,12 +111,12 @@ const marcianaNoOwnBurstGate = withPatchedOverride(
   'marciana-marine-study',
   (ov) => {
     const blk = ov.skill1.find(
-      (b: any) => b.trigger?.kind === 'fullBurstEnter',
+      (b: any) => b.trigger?.kind === 'fullBurstEnter'
     );
     if (!blk)
-      throw new Error('S1 fullBurstEnter block missing — fixture is stale');
+      {throw new Error('S1 fullBurstEnter block missing — fixture is stale');}
     delete blk.ownBurstGate;
-  },
+  }
 );
 
 /** M4 counterfactual: S2 elemAdvantageDamagePct 20.41 changed from passive to interval:5. */
@@ -125,15 +125,15 @@ const marcianaIntervalElemAdv = withPatchedOverride(
   (ov) => {
     const blk = ov.skill2.find((b: any) =>
       b.effects?.some(
-        (e: any) => e.stat === 'elemAdvantageDamagePct' && e.value === 20.41,
-      ),
+        (e: any) => e.stat === 'elemAdvantageDamagePct' && e.value === 20.41
+      )
     );
     if (!blk)
-      throw new Error(
-        'S2 elemAdvantageDamagePct 20.41 block missing — fixture is stale',
-      );
+      {throw new Error(
+        'S2 elemAdvantageDamagePct 20.41 block missing — fixture is stale'
+      );}
     blk.trigger = { kind: 'interval', sec: 5 };
-  },
+  }
 );
 
 // ---- runs (hoisted: each is a full 180s sim) ---------------------------------------------------
@@ -161,12 +161,12 @@ const mmsDmg = (evs: SimEvent[], srcSlot: Damage['srcSlot'], atkPct: number) =>
     (d) =>
       d.slug === 'marciana-marine-study' &&
       d.srcSlot === srcSlot &&
-      d.atkPct === atkPct,
+      d.atkPct === atkPct
   );
 const mmsBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'marciana-marine-study',
+      e.kind === 'burstCast' && e.slug === 'marciana-marine-study'
   );
 
 describe('marciana-marine-study — kit spec', () => {
@@ -187,7 +187,7 @@ describe('marciana-marine-study — kit spec', () => {
       const nukeCount = mmsDmg(base.events, 'skill1', 3789.25).length;
       const marcianaBurstCount = mmsBursts(base.events).length;
       const totalFBCount = base.events.filter(
-        (e) => e.kind === 'fullBurstStart',
+        (e) => e.kind === 'fullBurstStart'
       ).length;
       expect(nukeCount).toBe(marcianaBurstCount);
       // two-B3 comp: marciana bursts on ~half the FBs
@@ -197,7 +197,7 @@ describe('marciana-marine-study — kit spec', () => {
     it('DISCRIMINATING: without ownBurstGate, nuke fires on EVERY FB (count === totalFBCount)', () => {
       const nukeCount = mmsDmg(noOwnBurstGate.events, 'skill1', 3789.25).length;
       const totalFBCount = noOwnBurstGate.events.filter(
-        (e) => e.kind === 'fullBurstStart',
+        (e) => e.kind === 'fullBurstStart'
       ).length;
       expect(nukeCount).toBe(totalFBCount);
     });
@@ -217,7 +217,7 @@ describe('marciana-marine-study — kit spec', () => {
       const hits = mmsDmg(noStatusGate.events, 'skill1', 152.68);
       expect(hits.length).toBeGreaterThan(0);
       expect(hits.some((h) => !firstBurst || h.frame < firstBurst.frame)).toBe(
-        true,
+        true
       );
     });
   });
@@ -228,13 +228,13 @@ describe('marciana-marine-study — kit spec', () => {
         (d) =>
           d.slug === 'marciana-marine-study' &&
           d.bucket === 'normal' &&
-          d.sec < 5,
+          d.sec < 5
       );
       const flatBefore = dmg(flatWhistle.events).filter(
         (d) =>
           d.slug === 'marciana-marine-study' &&
           d.bucket === 'normal' &&
-          d.sec < 5,
+          d.sec < 5
       );
       expect(shippedBefore.length).toBeGreaterThan(0);
       expect(flatBefore.length).toBeGreaterThan(0);
@@ -249,14 +249,14 @@ describe('marciana-marine-study — kit spec', () => {
           d.slug === 'marciana-marine-study' &&
           d.bucket === 'normal' &&
           d.sec >= 6 &&
-          d.sec < 10,
+          d.sec < 10
       );
       const flatAfter = dmg(flatWhistle.events).filter(
         (d) =>
           d.slug === 'marciana-marine-study' &&
           d.bucket === 'normal' &&
           d.sec >= 6 &&
-          d.sec < 10,
+          d.sec < 10
       );
       expect(shippedAfter.length).toBeGreaterThan(0);
       expect(flatAfter.length).toBeGreaterThan(0);
@@ -264,7 +264,7 @@ describe('marciana-marine-study — kit spec', () => {
         ds.reduce((s, d) => s + d.baseAtk, 0) / ds.length;
       // Both at 5 stacks after t=5s — within 1% (other buffs may differ slightly by frame)
       expect(
-        Math.abs(avg(shippedAfter) - avg(flatAfter)) / avg(flatAfter),
+        Math.abs(avg(shippedAfter) - avg(flatAfter)) / avg(flatAfter)
       ).toBeLessThan(0.01);
     });
   });
@@ -275,7 +275,7 @@ describe('marciana-marine-study — kit spec', () => {
         (b) =>
           b.stat === 'elemAdvantageDamagePct' &&
           b.value === 20.41 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       expect(buff).toBeDefined();
       expect(buff!.frame).toBeLessThan(300);
@@ -286,7 +286,7 @@ describe('marciana-marine-study — kit spec', () => {
         (b) =>
           b.stat === 'elemAdvantageDamagePct' &&
           b.value === 20.41 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       expect(buff).toBeDefined();
       expect(buff!.frame).toBeGreaterThanOrEqual(300);
@@ -301,13 +301,13 @@ describe('marciana-marine-study — kit spec', () => {
         (b) =>
           b.stat === 'elemAdvantageDamagePct' &&
           b.value === 30.97 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       const atkBuff = buffs(base.events).find(
         (b) =>
           b.stat === 'attackDamagePct' &&
           b.value === 27.45 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       expect(elemBuff).toBeDefined();
       expect(atkBuff).toBeDefined();
@@ -321,13 +321,13 @@ describe('marciana-marine-study — kit spec', () => {
         (b) =>
           b.stat === 'elemAdvantageDamagePct' &&
           b.value === 30.97 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       const atkBuff = buffs(base.events).find(
         (b) =>
           b.stat === 'attackDamagePct' &&
           b.value === 27.45 &&
-          b.casterIdx === MARCIANA,
+          b.casterIdx === MARCIANA
       );
       expect(elemBuff!.expiresFrame).toBe(burstFrame! + 600);
       expect(atkBuff!.expiresFrame).toBe(burstFrame! + 600);

@@ -1,4 +1,5 @@
 # S7 JUDGE PACKET — `soline-frost-ticket` (compact, answer-faithful compilation of the gauntlet artifacts)
+
 Unit: Soline: Frost Ticket (slug `soline-frost-ticket`) — SG / Water / Supporter / Burst I, cd 40s. Driver model family: Qwen.
 Cross-family reviewers: S2b claude-fable-5 (pre-op), S5/S6/S7 claude-opus-4-8 (post-op). Gauntlet date 2026-07-24.
 
@@ -14,6 +15,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -24,12 +26,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -55,33 +59,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## 1. Ground truth — kit prose (data/characters.json → characters['soline-frost-ticket'].skills, structural; levels 10/10/10)
+
 Base: SG/Water/Supporter/Burst I, cd 40s, ammo 9, reloadFrames 111, chargeFrames 0, chargeMultiplier 0, hitsPerShot 10,
 normalAttackMultiplier 201.5, coreAttackMultiplier 200, burstGaugePerShot 2. baseStats hp 15000 / atk 500 / def 96,
 critRate 15 / critDamage 150. Manufacturer Elysion. The normalized `skills` prose below is the SSOT the sim reads.
@@ -111,6 +143,7 @@ NOTE: This is a ZERO direct-damage kit — no %ATK damage / DoT / rider anywhere
 the engine's per-unit SG landing model. The ticket is a stack/currency the engine has no primitive for.
 
 ## 2. Damage-formula + mechanics SSOT (the facts the verdict turns on)
+
 Damage = ATK × major (FB +50% by timing; ×1.10 element if advantaged; +30% range) × charge × damageUp-bucket ×
 taken × distributed. Soline is Water vs the Fire boss in the fixture (Water is weak to Fire — but she has ZERO
 kit damage lines, so the element major is irrelevant to every kit-line assertion; her only damage is base SG spray).
@@ -167,13 +200,12 @@ everyN, hitCount, resourceGate, formation/teamHas. There is NO battleStart trigg
 ticket/stack-currency primitive in v1.
 
 ## 3. Driver's override (src/skills/overrides/soline-frost-ticket.json — the encoding under test)
+
 ```json
 {
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || soline-frost-ticket (Soline: Frost Ticket) — Burst-I Water Supporter SG healer/enabler with ZERO direct-damage kit lines (no %ATK damage / DoT / rider anywhere in the kit). Her only damage is base SG spray (normalMult 201.5 / coreMult 200 / hitsPerShot 10 / ammo 9 / reloadFrames 111) under the engine's per-unit SG landing model (class SG_LANDING_BY_BAND table is the shipped default until her landing is measured — ⚑2). MODELED: (S1 blk1) ticket Max-HP grant — 'Issues 1 ticket, up to a maximum of 2 … Ticket effect: Max HP ▲ tickets×10% of the skill user's Max HP', continuous, to ALL allies → passive `casterMaxHpPct 20` = derived steady-state (prior 4 derivable-currency: starts at 1 ticket [10%] at battle start, +1 per HER burst cast → cap 2 after her first burst [B1 opener → within rotation 1]; the only consume is the S2 HP<15% emergency heal, which never fires under scope-lock [no incoming boss damage], so the pool sits at cap for ~97% of the fight — ramp haircut negligible, ⚑3). KEPT per hard rule 3 even though ally-granted Max HP is currently inert for HP-scaling consumers (atkOfMaxHpPct counts a unit's OWN Max HP only, prior 6) — deleting it would destroy a future consumer/scaler; NOT an HP-scaling kit herself (no atkOfMaxHpPct line). (S1 blk2) 'Activates when entering Full Burst … Cooldown of Burst Skill ▼ 7.48 sec' to all allies → `burstCdr seconds 7.48` on `fullBurstEnter` (trigger read literally per prior 10 — team-FB entry, regardless of who bursted). A real rotation lever the engine supports (40s burst CD → ~32.5s effective team cadence). (BURST) 'Recovers 32.26% of the skill user's final Max HP as HP' to all allies → `heal` event on `burstCast`/allies (hard rule 2 / prior 8): fires every rotation she bursts (B1 opener) and drives any teammate 'when recovery takes effect' consumer (Crown-style); HP amount is event-only by engine design. SKIPPED → `unmodeled` (verbatim; reasons here): (S1 blk3) 'Removes First Train Discount' — pure ticket-economy bookkeeping (toggles whether the S2 emergency heal consumes a ticket); no damage, no stat, no modeled consumer; inert under scope-lock because the consuming heal never fires anyway. (S2 blk1, whole block) squad-HP<15% emergency heal (12.27% caster Max HP, ticket ▼1) — a HEAL (hard-rule-2 class) parked in unmodeled DELIBERATELY: the schema has no HP-threshold TriggerDef and the sim models no incoming boss damage, so the trigger condition never exists in-sim; wiring it to any available trigger would FABRICATE recovery events (measured > fudge). The hard-rule-2 intent (recovery synergy works when a consumer is present) is served by the BURST heal, which fires reliably every rotation. (S2 blk2) 'First Train Discount for 6 sec' + Function text — the same ticket-consumption bookkeeping, gating a heal that never fires; no damage path. ⚑ FLAGS (all UNMEASURED): (⚑1) CADENCE TUPLE (mandatory): pullsPerSec (SG class rate) + reloadFrames 111 + rolling/partial-reload behavior — shipped datamine as-is (no charFixes); mag-empty sanity: 9 rounds at ~1 pull/s ≈ 9s, no fire-mode-flavor tell → no escalation; recipe = read rounds/min + the reload gap from any focus video. (⚑2) SG per-unit pellet landing — class SG_LANDING_BY_BAND is the shipped default (SG landing is per-unit; her own landing unmeasured); recipe = focused solo, per-magazine damage-counter deltas by range band. (⚑3) ticket steady-state = 2 (casterMaxHpPct 20) — DERIVED trajectory, not cap-tier guess; caveat: in a team that never Full Bursts she never casts Burst and stays at 1 ticket (10%); recipe = confirm 2 tickets held in a real fight (no HP<15% consumes expected under scope-lock). No noFb/noRange decisions (no rider damage exists); not a charge weapon (no autofire ⚑). BURST-ELIGIBILITY note: as a lone/enabler-less unit she makes ZERO full bursts — then S1 blk2 (burstCdr), the burst heal, and the 2nd ticket all never happen; solo damage is unchanged (no FB-gated damage lines).",
   "unmodeled": {
-    "skill1": [
-      "Removes First Train Discount."
-    ],
+    "skill1": ["Removes First Train Discount."],
     "skill2": [
       "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
       "Recovers 12.27% of the skill user's final Max HP as HP.",
@@ -195,17 +227,13 @@ ticket/stack-currency primitive in v1.
       "slot": "skill1",
       "trigger": { "kind": "passive" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "casterMaxHpPct", "value": 20 }]
     },
     {
       "slot": "skill1",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "burstCdr", "seconds": 7.48 }
-      ]
+      "effects": [{ "kind": "burstCdr", "seconds": 7.48 }]
     }
   ],
   "skill2": [],
@@ -214,16 +242,14 @@ ticket/stack-currency primitive in v1.
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     }
   ]
 }
-
 ```
 
 ## 4. S2b pre-op adversarial review (claude-fable-5, cross-family)
+
 ```json
 {
   "slug": "soline-frost-ticket",
@@ -349,9 +375,7 @@ ticket/stack-currency primitive in v1.
     "burst:heal 32.26% caster Max HP on burstCast → recovery events to all allies"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Removes First Train Discount."
-    ],
+    "skill1": ["Removes First Train Discount."],
     "skill2": [
       "Recovers 12.27% of the skill user's final Max HP as HP.",
       "Ticket count ▼ 1.",
@@ -362,10 +386,10 @@ ticket/stack-currency primitive in v1.
   "notes": "Expected shared-prior misreads to check the driver against: (1) the burst heal dropped as 'defensive' — it is the kit's main live tandem channel (recovery events → Crown's on-recovery consumers); its absence is a MISSING, not an UNMODELED. (2) Max HP grant encoded as targetMaxHpPct — prose says '10% of the SKILL USER's Max HP' → casterMaxHpPct family, identical flat HP to every ally; must also verify board inertness (ally Max HP grants never feed a teammate's atkOfMaxHpPct). (3) skill2's HP<15% heal resurrected as an interval/passive heal — the worst over-credit path on this kit, silently pumping Crown's recovery uptime; correct v1 disposition is unmodeled-with-verbatim because the sim has no HP intake, so the trigger is structurally unreachable (this is NOT measurement-gated). (4) burstCdr mis-encoded as oncePerBattle or as a percent — assert it lands on the 3rd+ FB and that only cadence (event counts/timing), never per-event damage values, moves. (5) Ticket issuance keyed to fullBurstEnter — diverges from burstCast exactly on rotations her 40s CD forces her to skip; the cap-at-2 assertion plus second-increment-coincides-with-her-cast distinguishes. Whole-picture: as an SG Burst-I Supporter her own fire contributes little; the two board-moving lines are the FB-enter burstCdr (rotation cadence for the whole team) and the burst heal (recovery tandem). All magnitudes (10%, 2-cap, 7.48s, 12.27%, 6s, 32.26%) are literal kit text → DATAMINED; no ALWAYS-⚑ field is exercised except her SG cadence tuple, which belongs to the base-stat layer, not these blocks.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-4-8, cross-family) — test source + spec
+
 ```typescript
 // scripts/tests/units/soline-frost-ticket.test.ts
 // BLIND S5 kit-spec test — Soline: Frost Ticket (soline-frost-ticket). Authored from kit prose ALONE.
@@ -404,7 +428,12 @@ ticket/stack-currency primitive in v1.
 //
 // Runs are hoisted (each runComp is a full 180s sim); 5 runs total.
 
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness';
 
 const SLUG = 'soline-frost-ticket';
 
@@ -413,13 +442,20 @@ function eachEff(ov: any, fn: (e: any, b: any) => void) {
   for (const b of ov.blocks || []) for (const e of b.effects || []) fn(e, b);
 }
 const setCdr = (s: number) => (ov: any) =>
-  eachEff(ov, (e) => { if (e.kind === 'burstCdr') e.seconds = s; });
+  eachEff(ov, (e) => {
+    if (e.kind === 'burstCdr') e.seconds = s;
+  });
 const zeroMaxHp = (ov: any) =>
   eachEff(ov, (e) => {
-    if (e.kind === 'buff' && ['casterMaxHpPct', 'targetMaxHpPct', 'maxHpPct'].includes(e.stat)) e.value = 0;
+    if (
+      e.kind === 'buff' &&
+      ['casterMaxHpPct', 'targetMaxHpPct', 'maxHpPct'].includes(e.stat)
+    )
+      e.value = 0;
   });
 const stripHeals = (ov: any) => {
-  for (const b of ov.blocks || []) b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');
+  for (const b of ov.blocks || [])
+    b.effects = (b.effects || []).filter((e: any) => e.kind !== 'heal');
 };
 
 // runWith(null) = committed faithful override; else an in-memory patched clone for SLUG.
@@ -431,8 +467,12 @@ function runWith(clone: any | null) {
   const res = runComp(opts);
   return { res, events };
 }
-const teamTotal = (r: any) => { const x: any = totals(r.res); return typeof x === 'number' ? x : x.total; };
-const fbCount = (r: any) => r.events.filter((e: any) => e.kind === 'fullBurstStart').length;
+const teamTotal = (r: any) => {
+  const x: any = totals(r.res);
+  return typeof x === 'number' ? x : x.total;
+};
+const fbCount = (r: any) =>
+  r.events.filter((e: any) => e.kind === 'fullBurstStart').length;
 
 // ---- hoisted runs -----------------------------------------------------------
 const base = runWith(null);
@@ -450,11 +490,13 @@ describe('soline-frost-ticket — blind kit spec', () => {
   // (A) ticket: Max HP up (tickets x10% of caster Max HP), all allies, battle-start + own-burst
   it('A: grants casterMaxHpPct to allies (battle-start ticket = 10%)', () => {
     const grants = base.events.filter(
-      (e: any) => e.kind === 'buffApply' && e.stat === 'casterMaxHpPct',
+      (e: any) => e.kind === 'buffApply' && e.stat === 'casterMaxHpPct'
     );
     expect(grants.length).toBeGreaterThanOrEqual(1);
     // battle-start = 1 ticket = 10%; a 2nd ticket (20%) only if Soline casts her own burst.
-    expect(grants.some((g: any) => g.value === 10 || g.value === 20)).toBe(true);
+    expect(grants.some((g: any) => g.value === 10 || g.value === 20)).toBe(
+      true
+    );
   });
 
   it('A: ticket Max HP is OFFENSIVELY INERT (zeroing it moves no damage)', () => {
@@ -465,10 +507,12 @@ describe('soline-frost-ticket — blind kit spec', () => {
 
   // (B) Burst Skill CD down 7.48s on Full-Burst enter, all allies
   it('B: burstCdr is live — Full-Burst count monotone in CDR seconds', () => {
-    const n0 = fbCount(cdr0), nf = fbCount(base), nBig = fbCount(cdrBig);
-    expect(nf).toBeGreaterThanOrEqual(n0);      // faithful CDR never yields FEWER FBs than none
-    expect(nBig).toBeGreaterThanOrEqual(nf);    // a larger CDR never yields fewer
-    expect(nBig).toBeGreaterThan(n0);           // discriminates: an omitted/inert burstCdr collapses these
+    const n0 = fbCount(cdr0),
+      nf = fbCount(base),
+      nBig = fbCount(cdrBig);
+    expect(nf).toBeGreaterThanOrEqual(n0); // faithful CDR never yields FEWER FBs than none
+    expect(nBig).toBeGreaterThanOrEqual(nf); // a larger CDR never yields fewer
+    expect(nBig).toBeGreaterThan(n0); // discriminates: an omitted/inert burstCdr collapses these
   });
 
   // (F) burst heal 32.26% caster Max HP, all allies — tandem via Crown's recovery trigger
@@ -493,9 +537,10 @@ describe('soline-frost-ticket — blind kit spec', () => {
   // (E) skill2: First Train Discount 6s (ticket effects don't consume tickets)
   it.skip('E: First Train Discount status — internal ticket-consumption bookkeeping, no damage / GAP', () => {});
 });
-
 ```
+
 S5 spec + fixtures + gaps:
+
 ```json
 {
   "spec": [
@@ -552,6 +597,7 @@ S5 spec + fixtures + gaps:
 ```
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, cross-family) — override + audit
+
 ```json
 {
   "slug": "soline-frost-ticket",
@@ -624,7 +670,9 @@ S5 spec + fixtures + gaps:
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Support/heal kit: no damage lines, no DoT, no weapon-swap, no Hit-Rate. skill1 = ticket-based casterMaxHpPct grant (all allies, cap 2 tickets = 20% of caster Max HP, offensively inert) + FB-enter team burst-CDR 7.48s + FB-enter removal of the internal 'First Train Discount' status. skill2 = a <15%-HP emergency heal (12.27% Max HP, consumes 1 ticket — inert v1) + the First Train Discount setup status. Burst = flat 32.26% Max-HP heal to all allies (modeled as a recovery-event emitter for heal-synergy tandems; no HP amount modeled). The ticket 'First Train Discount' consume-suppression machinery is internal bookkeeping with no damage consequence in v1 and is left in unmodeled verbatim."
 }
 ```
+
 S6 audit + flags:
+
 ```json
 {
   "audit": [
@@ -695,6 +743,7 @@ S6 audit + flags:
 ```
 
 ## 7. Driver's test (scripts/tests/units/soline-frost-ticket.test.ts)
+
 ```typescript
 // PER-UNIT KIT SPEC — `soline-frost-ticket` (Soline: Frost Ticket, Supporter/SG/Water, Burst I, cd 40s, ammo 9,
 // reloadFrames 111, chargeFrames 0, hitsPerShot 10, normalMult 201.5 / coreMult 200). Kit-autonomy gauntlet
@@ -810,7 +859,7 @@ const sftBuff = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === SOLINE && b.stat === stat);
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 /** soline's skill1-keyed buffApply events (key prefix `<SOLINE>:skill1:`). */
 const s1Keyed = (evs: SimEvent[]) =>
@@ -825,16 +874,18 @@ const fbStartFrames = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
 /** crown's recovery consumer firings (team Attack Damage ▲20.99%), deduped to distinct frames. */
 const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
-  [...new Set(
-    buffs(evs)
-      .filter(
-        (b) =>
-          b.casterIdx === CROWN &&
-          b.stat === 'attackDamagePct' &&
-          b.value === 20.99,
-      )
-      .map((b) => b.frame),
-  )].sort((a, b) => a - b);
+  [
+    ...new Set(
+      buffs(evs)
+        .filter(
+          (b) =>
+            b.casterIdx === CROWN &&
+            b.stat === 'attackDamagePct' &&
+            b.value === 20.99
+        )
+        .map((b) => b.frame)
+    ),
+  ].sort((a, b) => a - b);
 
 // ---- counterfactual patches (nearest-wrong readings) -----------------------------------------
 // F1 nearest-wrong (value): the ticket grant at 1 ticket (10%) instead of the steady-state 2 tickets (20%).
@@ -843,23 +894,27 @@ const cfMaxHp10 = withPatchedOverride(SFT, (ov: any) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterMaxHpPct');
   if (!e)
-    throw new Error('soline S1 casterMaxHpPct effect missing — fixture is stale');
+    throw new Error(
+      'soline S1 casterMaxHpPct effect missing — fixture is stale'
+    );
   e.value = 10;
 });
 // F1 nearest-wrong (target): all allies → self only.
 const cfMaxHpSelf = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'casterMaxHpPct'),
+    x.effects.some((e: any) => e.stat === 'casterMaxHpPct')
   );
   if (!b)
-    throw new Error('soline S1 casterMaxHpPct block missing — fixture is stale');
+    throw new Error(
+      'soline S1 casterMaxHpPct block missing — fixture is stale'
+    );
   b.target = { kind: 'self' };
 });
 // F2 nearest-wrong (presence): the burstCdr block removed → no team CDR → fewer Full Bursts.
 const cfNoCdr = withPatchedOverride(SFT, (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill1.length === before)
     throw new Error('soline S1 burstCdr block missing — fixture is stale');
@@ -867,7 +922,7 @@ const cfNoCdr = withPatchedOverride(SFT, (ov: any) => {
 // F6 nearest-wrong (trigger): the burst heal keyed to fullBurstEnter (FB-start frames) instead of burstCast.
 const cfHealFbEnter = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'heal'),
+    x.effects.some((e: any) => e.kind === 'heal')
   );
   if (!b) throw new Error('soline burst heal block missing — fixture is stale');
   b.trigger = { kind: 'fullBurstEnter' };
@@ -876,7 +931,7 @@ const cfHealFbEnter = withPatchedOverride(SFT, (ov: any) => {
 const cfNoHeal = withPatchedOverride(SFT, (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'heal'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
   if (ov.burst.length === before)
     throw new Error('soline burst heal block missing — fixture is stale');
@@ -885,7 +940,7 @@ const cfNoHeal = withPatchedOverride(SFT, (ov: any) => {
 const crownNoHeal = withPatchedOverride('crown', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'heal'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
   if (ov.skill2.length === before)
     throw new Error('crown S2 heal block missing — fixture is stale');
@@ -929,13 +984,13 @@ describe('soline-frost-ticket — kit spec', () => {
     it('DISCRIMINATING (value): 1 ticket (10%, nearest-wrong) keys the buff :10, not :20', () => {
       expect(
         sftBuff(maxHp10.events, 'maxHpFlat').filter((b) =>
-          b.key.endsWith(':maxHpFlat:20'),
-        ).length,
+          b.key.endsWith(':maxHpFlat:20')
+        ).length
       ).toBe(0);
       expect(
         sftBuff(maxHp10.events, 'maxHpFlat').filter((b) =>
-          b.key.endsWith(':maxHpFlat:10'),
-        ).length,
+          b.key.endsWith(':maxHpFlat:10')
+        ).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): self (nearest-wrong) reaches only soline, not all 3 allies', () => {
@@ -952,7 +1007,7 @@ describe('soline-frost-ticket — kit spec', () => {
       expect(withCdr).toBeGreaterThan(without);
       // soline's own cast count tracks the team cadence
       expect(castFrames(base.events).length).toBeGreaterThanOrEqual(
-        castFrames(noCdr.events).length,
+        castFrames(noCdr.events).length
       );
     });
     // RESIDUAL (documented): fullBurstEnter vs burstCast trigger identity is NOT behaviorally discriminable for a
@@ -996,10 +1051,10 @@ describe('soline-frost-ticket — kit spec', () => {
     });
   });
 });
-
 ```
 
 ## 7b. S2d independent verification matrix
+
 ```
 S2d INDEPENDENT VERIFICATION GATE — soline-frost-ticket (2026-07-24)
 Method: `npx vitest run scripts/tests/units/soline-frost-ticket.test.ts` against (i) the unmodified SHIPPED
@@ -1046,6 +1101,7 @@ vs shipped; every named counterfactual is RED. The shipped override is faithful 
 ```
 
 ## 8. Driver's convergence summary (Qwen driver; cross-family S2b fable / S5-S7 opus)
+
 **S2b (claude-fable-5, pre-op adversarial):** converges with the driver on ALL FOUR load-bearing lines —
 casterMaxHpPct (all allies, permanent, 10%/ticket → 20% at cap; fable explicitly rules out targetMaxHpPct and notes
 the grant is offensively inert), burstCdr 7.48 on fullBurstEnter (NOT oncePerBattle, NOT burstCast), burst heal 32.26

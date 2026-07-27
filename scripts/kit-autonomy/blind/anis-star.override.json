@@ -239,9 +239,7 @@
       "If there are any other Burst 1 allies: Effect 1: Affects self. Cancels My Own Star."
     ],
     "skill2": [],
-    "burst": [
-      "Explosion Radius ▲ 100% for 10 sec."
-    ]
+    "burst": ["Explosion Radius ▲ 100% for 10 sec."]
   },
   "caveats": [
     "⚑ CADENCE TUPLE (RL, datamine-unreliable): pullsPerSec / reloadFrames 141 / chargeFrames 60 / hitsPerShot 2 are shipped as datamined. Engine default 22f bolt-recovery is LEFT ON — autofire is not text-derivable. If she autofires, charFixes.noBoltRecovery:true is a ~15-20% shot-count swing.",

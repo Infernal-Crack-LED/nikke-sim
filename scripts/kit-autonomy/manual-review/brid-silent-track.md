@@ -34,6 +34,7 @@ favour** by two independent routes and ruled all pristine-blind-test REDs as sca
 
 **skill1** — two independent `fullBurstEnter` blocks (the kit deliberately pairs a Wind-scoped debuff with an
 ungated "all enemies" damage line inside the same skill):
+
 - `fullBurstEnter` + `bossElementGate:'Wind'` → `enemy` → `damageTakenPct 15.12` (10s). Boss-side Taken bucket,
   team-wide amp; element scope composed WITH the event trigger, not replacing it. INERT vs the non-Wind scope-lock
   boss; live vs a Wind boss.
@@ -41,6 +42,7 @@ ungated "all enemies" damage line inside the same skill):
   "core strike" text), noRange, takes the +50% FB major BY LANDING TIME (lands at FB enter ⇒ `fbMajorApplied` true).
 
 **skill2** — two independent `hitCount` blocks at DIFFERENT thresholds (deliberately NOT merged):
+
 - `hitCount` count 100 + `bossElementGate:'Wind'` → `enemy` → `damageTakenPct 12.12` (10s). "10 normal attacks" =
   10 pulls; the engine increments the hit counter by `hitsPerShot` (10) per shot (sim.ts ~2898), so the threshold
   is 100, firing every 10 shots.

@@ -6,7 +6,11 @@
 // map — and passes them through; everything else is rebuilt here identically on
 // either side, so a worker-run search is byte-identical to a main-thread one
 // (parity gate: scripts/tests/generators/loadouts-parity.test.ts).
-import { makeCalc, type MetaScoring, type TeamResult } from '../../src/teamcalc';
+import {
+  makeCalc,
+  type MetaScoring,
+  type TeamResult,
+} from '../../src/teamcalc';
 import type { UnitOptions } from '../../src/prepare';
 import type {
   DataFile,
@@ -56,19 +60,19 @@ export const generatorCharacters: Record<
 > = Object.fromEntries(
   Object.values(data.characters)
     .filter((c) => c.generatorSupported && c.simSupported)
-    .map((c) => [c.slug, c]),
+    .map((c) => [c.slug, c])
 );
 
 // Meta-popularity scoring for one boss weakness (enikk + prydwen fallback).
 export function metaScoringFor(
-  weakness: Element | null,
+  weakness: Element | null
 ): MetaScoring | undefined {
-  if (!weakness) return undefined;
+  if (!weakness) {return undefined;}
   const entry = META_WEIGHTS.byWeakness[weakness];
-  if (!entry) return undefined;
+  if (!entry) {return undefined;}
   const fallback = new Set(META_WEIGHTS.fallbackSlugs);
   const compPop: Record<string, number> = {};
-  for (const c of entry.comps) compPop[[...c.slugs].sort().join('|')] = c.pop;
+  for (const c of entry.comps) {compPop[[...c.slugs].sort().join('|')] = c.pop;}
   return {
     unitScore: (slug: string) =>
       fallback.has(slug)
@@ -152,7 +156,7 @@ export interface GenCalcParams {
 export function buildGenCalc(
   params: GenCalcParams,
   evaluator?: (teams: string[][]) => Promise<(TeamResult | null)[]>,
-  cache: 'shared' | 'none' = 'none',
+  cache: 'shared' | 'none' = 'none'
 ) {
   return makeCalc({
     cache,

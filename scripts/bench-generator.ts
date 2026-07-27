@@ -65,16 +65,23 @@ const mk = () =>
   });
 
 // A bare-engine sim (no memoization) for the --focus / solo-rank hypothesis probes.
-const cfgFor = (slugs: string[]) => ({ ...(scopeLockCfg([], null) as any), slugs });
+const cfgFor = (slugs: string[]) => ({
+  ...(scopeLockCfg([], null) as any),
+  slugs,
+});
 const rawSim = (slugs: string[]) => {
   const cs = slugs.map((s) => (chars as any)[s]);
-  const prepared = prepareTeam(cs, slugs.map(() => ({})), D);
+  const prepared = prepareTeam(
+    cs,
+    slugs.map(() => ({})),
+    D
+  );
   return runSim(cs, mult, cfgFor(slugs), prepared);
 };
 
 function poolInfo(): void {
   const byBurst: Record<string, number> = {};
-  for (const c of genChars) byBurst[c.burst] = (byBurst[c.burst] ?? 0) + 1;
+  for (const c of genChars) {byBurst[c.burst] = (byBurst[c.burst] ?? 0) + 1;}
   console.log(`pool: ${genChars.length} generator-supported chars`, byBurst);
 }
 
@@ -89,7 +96,7 @@ function benchSingle(): void {
   calc.simTeam(team2);
   const t3 = performance.now();
   console.log(
-    `single sim: cold ${(t1 - t0).toFixed(1)}ms, warm ${(t3 - t2).toFixed(1)}ms`,
+    `single sim: cold ${(t1 - t0).toFixed(1)}ms, warm ${(t3 - t2).toFixed(1)}ms`
   );
   let n = 0;
   const t4 = performance.now();
@@ -108,27 +115,40 @@ async function benchBest(): Promise<void> {
   const r = await calc.bestTeam();
   const t1 = performance.now();
   console.log(
-    `bestTeam: ${((t1 - t0) / 1000).toFixed(1)}s, sims=${loadoutCalls / 5}, team=${r?.slugs.join(',')}`,
+    `bestTeam: ${((t1 - t0) / 1000).toFixed(1)}s, sims=${loadoutCalls / 5}, team=${r?.slugs.join(',')}`
   );
 }
 
 type Roster = Awaited<ReturnType<ReturnType<typeof mk>['topTeams']>>;
 
-function reportRoster(label: string, teams: Roster, secs: number, sims: number): void {
+function reportRoster(
+  label: string,
+  teams: Roster,
+  secs: number,
+  sims: number
+): void {
   const total = teams.reduce((a, t) => a + t.teamDamage, 0);
-  const inv = teams.filter((t, i) => i > 0 && t.teamDamage > teams[i - 1].teamDamage).length;
+  const inv = teams.filter(
+    (t, i) => i > 0 && t.teamDamage > teams[i - 1].teamDamage
+  ).length;
   console.log(
-    `${label}: ${secs.toFixed(1)}s, sims=${sims}, teams=${teams.length}, total=${(total / 1e9).toFixed(3)}B, inversions=${inv}`,
+    `${label}: ${secs.toFixed(1)}s, sims=${sims}, teams=${teams.length}, total=${(total / 1e9).toFixed(3)}B, inversions=${inv}`
   );
   for (const t of teams)
-    console.log('  ', t.slugs.join(','), Math.round(t.teamDamage / 1e6) + 'M');
+    {console.log('  ', t.slugs.join(','), Math.round(t.teamDamage / 1e6) + 'M');}
 }
 
-async function runTop(n: number, polishPasses?: number): Promise<[Roster, number, number]> {
+async function runTop(
+  n: number,
+  polishPasses?: number
+): Promise<[Roster, number, number]> {
   loadoutCalls = 0;
   const calc = mk();
   const t0 = performance.now();
-  const teams = await calc.topTeams(n, polishPasses === undefined ? undefined : { polishPasses });
+  const teams = await calc.topTeams(
+    n,
+    polishPasses === undefined ? undefined : { polishPasses }
+  );
   const t1 = performance.now();
   return [teams, (t1 - t0) / 1000, loadoutCalls / 5];
 }
@@ -147,9 +167,9 @@ async function benchPolish(n: number): Promise<void> {
   reportRoster(`polish ON`, trt, trtS, trtSims);
   const tot = (r: Roster) => r.reduce((a, t) => a + t.teamDamage, 0);
   console.log(
-    `Δ roster damage: ${(((tot(trt) / tot(ctl)) - 1) * 100).toFixed(2)}%, ` +
+    `Δ roster damage: ${((tot(trt) / tot(ctl) - 1) * 100).toFixed(2)}%, ` +
       `Δ sims: ${trtSims - ctlSims} (${((trtSims / ctlSims - 1) * 100).toFixed(0)}%), ` +
-      `Δ wall: ${(trtS - ctlS).toFixed(1)}s`,
+      `Δ wall: ${(trtS - ctlS).toFixed(1)}s`
   );
 }
 
@@ -158,13 +178,13 @@ function benchFocus(): void {
   const B3 = genChars.filter((c) => c.burst === 'III').map((c) => c.slug);
   const t0 = performance.now();
   const five = new Map(
-    B3.map((s) => [s, rawSim([s, s, s, s, s]).units[0].totalDamage]),
+    B3.map((s) => [s, rawSim([s, s, s, s, s]).units[0].totalDamage])
   );
   const t1 = performance.now();
   const one = new Map(B3.map((s) => [s, rawSim([s]).units[0].totalDamage]));
   const t2 = performance.now();
   console.log(
-    `5-copy solo pass: ${((t1 - t0) / 1000).toFixed(1)}s; 1-unit pass: ${((t2 - t1) / 1000).toFixed(1)}s`,
+    `5-copy solo pass: ${((t1 - t0) / 1000).toFixed(1)}s; 1-unit pass: ${((t2 - t1) / 1000).toFixed(1)}s`
   );
   const rank = (m: Map<string, number>) =>
     [...m.entries()].sort((a, b) => b[1] - a[1]).map(([s]) => s);
@@ -174,9 +194,13 @@ function benchFocus(): void {
   console.log(`top-24 overlap (1-unit vs 5-copy): ${overlap}/24`);
 
   // (2) slot-order (focus = middle slot) sensitivity on a real top team.
-  const team = ['rapi-red-hood', 'asuka-wille', 'anis-star', 'crown', 'privaty'].filter(
-    (s) => (chars as any)[s],
-  );
+  const team = [
+    'rapi-red-hood',
+    'asuka-wille',
+    'anis-star',
+    'crown',
+    'privaty',
+  ].filter((s) => (chars as any)[s]);
   if (team.length === 5) {
     const results: [string, number][] = [];
     for (let f = 0; f < 5; f++) {
@@ -188,7 +212,7 @@ function benchFocus(): void {
     const spread = (Math.max(...vals) / Math.min(...vals) - 1) * 100;
     console.log(`focus-slot spread (same 5 units): ${spread.toFixed(1)}%`);
     for (const [focus, v] of results)
-      console.log(`  focus=${focus}: ${(v / 1e6).toFixed(0)}M`);
+      {console.log(`  focus=${focus}: ${(v / 1e6).toFixed(0)}M`);}
   } else {
     console.log('focus-slot: reference team not fully in pool, skipped');
   }
@@ -200,14 +224,14 @@ const all = has('--all') || args.length === 0;
 
 async function main(): Promise<void> {
   poolInfo();
-  if (all || has('--single')) benchSingle();
-  if (all || has('--best')) await benchBest();
+  if (all || has('--single')) {benchSingle();}
+  if (all || has('--best')) {await benchBest();}
   if (all || has('--top')) {
     const i = args.indexOf('--top');
     const n = Number(args[i + 1]);
     await benchTop(Number.isFinite(n) && n > 0 ? n : 5);
   }
-  if (all || has('--focus')) benchFocus();
+  if (all || has('--focus')) {benchFocus();}
   if (has('--polish')) {
     const i = args.indexOf('--polish');
     const n = Number(args[i + 1]);

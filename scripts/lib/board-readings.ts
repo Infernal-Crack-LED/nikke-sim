@@ -9,7 +9,11 @@
 // Consumers: scripts/board-read.ts (the human dashboard) and scripts/kit-status.ts
 // (the per-unit SSOT tracker's board records).
 import { loadWorld, runOnce } from '../battery/lib.js';
-import { DEFAULT_MC_SEEDS, MC_SEED_BASE, meanSimResults } from '../../src/engine/sim.js';
+import {
+  DEFAULT_MC_SEEDS,
+  MC_SEED_BASE,
+  meanSimResults,
+} from '../../src/engine/sim.js';
 import { COMPS } from '../experiment.js';
 
 export interface BoardReading {
@@ -32,7 +36,15 @@ export interface BoardStats {
 }
 
 export const bandLabel = (mad: number) =>
-  mad <= 0.03 ? '±3% ✓' : mad <= 0.05 ? '±5%' : mad <= 0.08 ? '±8%' : mad <= 0.15 ? '±15%' : '>15%';
+  mad <= 0.03
+    ? '±3% ✓'
+    : mad <= 0.05
+      ? '±5%'
+      : mad <= 0.08
+        ? '±8%'
+        : mad <= 0.15
+          ? '±15%'
+          : '>15%';
 export const tempLabel = (mean: number): BoardStats['temp'] =>
   mean > 1.03 ? 'HOT ▲' : mean < 0.97 ? 'COLD ▼' : 'OK  ·';
 
@@ -55,20 +67,36 @@ export function collectBoardReadings(): Record<string, BoardReading[]> {
     const runs = Array.from({ length: DEFAULT_MC_SEEDS }, (_, i) =>
       runOnce(
         w,
-        { name: c.name, slugs: c.slugs, focus: c.focus, modes: c.modes, lambda: c.lambda },
-        c.boss, 1, MC_SEED_BASE + i
+        {
+          name: c.name,
+          slugs: c.slugs,
+          focus: c.focus,
+          modes: c.modes,
+          lambda: c.lambda,
+        },
+        c.boss,
+        1,
+        MC_SEED_BASE + i
       )
     );
     const r = meanSimResults(runs);
     for (const u of r.units) {
       const real = c.real[u.slug];
-      if (real === undefined || real <= 0) continue;
+      if (real === undefined || real <= 0) {continue;}
       // seed spread for THIS unit in THIS comp: sd/mean of its per-seed totalDamage (population sd,
       // matching experiment.ts). u.totalDamage is already that mean, so ratio = mean/real is consistent.
-      const dmgs = runs.map((run) => run.units.find((x) => x.slug === u.slug)!.totalDamage);
+      const dmgs = runs.map(
+        (run) => run.units.find((x) => x.slug === u.slug)!.totalDamage
+      );
       const m = dmgs.reduce((a, b) => a + b, 0) / dmgs.length;
-      const sd = Math.sqrt(dmgs.reduce((a, b) => a + (b - m) ** 2, 0) / dmgs.length);
-      (perUnit[u.slug] ??= []).push({ comp: c.name, ratio: u.totalDamage / real, seedCv: m > 0 ? sd / m : 0 });
+      const sd = Math.sqrt(
+        dmgs.reduce((a, b) => a + (b - m) ** 2, 0) / dmgs.length
+      );
+      (perUnit[u.slug] ??= []).push({
+        comp: c.name,
+        ratio: u.totalDamage / real,
+        seedCv: m > 0 ? sd / m : 0,
+      });
     }
   }
   return perUnit;
@@ -78,7 +106,8 @@ export function boardStats(records: BoardReading[]): BoardStats {
   const rs = records.map((r) => r.ratio);
   const mean = rs.reduce((a, b) => a + b, 0) / rs.length;
   const mad = rs.reduce((a, b) => a + Math.abs(b - 1), 0) / rs.length;
-  const meanCv = records.reduce((a, r) => a + (r.seedCv ?? 0), 0) / records.length;
+  const meanCv =
+    records.reduce((a, r) => a + (r.seedCv ?? 0), 0) / records.length;
   return {
     records,
     n: rs.length,

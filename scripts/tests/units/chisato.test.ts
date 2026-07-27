@@ -115,15 +115,15 @@ const chiBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === CHI &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const chiDamage = (evs: SimEvent[]) =>
@@ -134,7 +134,7 @@ const chiRiders = (evs: SimEvent[]) =>
   chiDamage(evs).filter((d) => d.srcSlot === 'skill2');
 const chiCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'chisato',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'chisato'
   );
 const castFrames = (evs: SimEvent[]) =>
   chiCasts(evs)
@@ -154,22 +154,22 @@ const inWindow = (frame: number, wins: [number, number][]) =>
 const cfPermanent = withPatchedOverride('chisato', (ov: any) => {
   let n = 0;
   for (const b of ov.skill1)
-    for (const e of b.effects)
-      if (e.stat && e.durationSec != null) {
+    {for (const e of b.effects)
+      {if (e.stat && e.durationSec != null) {
         delete e.durationSec;
         n++;
-      }
+      }}}
   if (n === 0)
-    throw new Error('chisato S1 durationSec missing — fixture is stale');
+    {throw new Error('chisato S1 durationSec missing — fixture is stale');}
 });
 /** C1 nearest-wrong (refresh): drop the S1 burstCast refresh block → gates fire once at frame 0 only. */
 const cfNoRefresh = withPatchedOverride('chisato', (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'burstCast');
   if (ov.skill1.length === before)
-    throw new Error(
-      'chisato S1 burstCast refresh block missing — fixture is stale',
-    );
+    {throw new Error(
+      'chisato S1 burstCast refresh block missing — fixture is stale'
+    );}
 });
 /** C3 isolation (flavor gate): strip the self trueDamagePct buff entirely (timing-stable — a stat, not the swap). */
 const cfNoTrueDmg = withPatchedOverride('chisato', (ov: any) => {
@@ -181,40 +181,40 @@ const cfNoTrueDmg = withPatchedOverride('chisato', (ov: any) => {
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
   if (removed === 0)
-    throw new Error('chisato S1 trueDamagePct missing — fixture is stale');
+    {throw new Error('chisato S1 trueDamagePct missing — fixture is stale');}
 });
 /** C3 nearest-wrong (mechanism): trueNormals:true → false (window normals lose the true flavor). */
 const cfNoTrueNormals = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'weaponSwap'),
+    x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
   if (!b)
-    throw new Error('chisato S2 weaponSwap block missing — fixture is stale');
+    {throw new Error('chisato S2 weaponSwap block missing — fixture is stale');}
   b.effects.find((e: any) => e.kind === 'weaponSwap').trueNormals = false;
 });
 /** C4 nearest-wrong (count): hitCount 48 → 24 (~2× riders). */
 const cfCount24 = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) => x.trigger?.kind === 'hitCount');
   if (!b)
-    throw new Error('chisato S2 hitCount block missing — fixture is stale');
+    {throw new Error('chisato S2 hitCount block missing — fixture is stale');}
   b.trigger.count = 24;
 });
 /** C4 nearest-wrong (flavor): the rider's flavor:'true' removed → loses trueDamagePct. */
 const cfPlainRider = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
   if (!b)
-    throw new Error('chisato S2 flatDamage block missing — fixture is stale');
+    {throw new Error('chisato S2 flatDamage block missing — fixture is stale');}
   delete b.effects.find((e: any) => e.kind === 'flatDamage').flavor;
 });
 /** C5 nearest-wrong (trigger): the burst ATK line keyed to fullBurstEnter (FB-START frames). */
 const cfBurstFbEnter = withPatchedOverride('chisato', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'atkPct'),
+    x.effects.some((e: any) => e.stat === 'atkPct')
   );
   if (!b)
-    throw new Error('chisato burst atkPct block missing — fixture is stale');
+    {throw new Error('chisato burst atkPct block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -238,10 +238,10 @@ const baseNormalFrames = chiNormals(base.events).map((d) => d.frame);
 const noTdNormalFrames = chiNormals(noTrueDmg.events).map((d) => d.frame);
 const baseDuByFrame = new Map<number, number>();
 for (const d of chiNormals(base.events))
-  baseDuByFrame.set(d.frame, d.mult.dmgUp);
+  {baseDuByFrame.set(d.frame, d.mult.dmgUp);}
 const noTdDuByFrame = new Map<number, number>();
 for (const d of chiNormals(noTrueDmg.events))
-  noTdDuByFrame.set(d.frame, d.mult.dmgUp);
+  {noTdDuByFrame.set(d.frame, d.mult.dmgUp);}
 
 describe('chisato — kit spec', () => {
   describe('fixture sanity — chisato casts her burst and the team reaches Full Burst', () => {
@@ -283,7 +283,7 @@ describe('chisato — kit spec', () => {
           bs
             .filter((b) => b.frame !== 0)
             .map((b) => b.frame)
-            .sort((a, b) => a - b),
+            .sort((a, b) => a - b)
         ).toEqual(cf);
       }
     });
@@ -306,7 +306,7 @@ describe('chisato — kit spec', () => {
       const stats = new Set(
         buffs(base.events)
           .filter((b) => b.casterIdx === CHI)
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...stats].sort()).toEqual([
         'atkPct',
@@ -319,7 +319,7 @@ describe('chisato — kit spec', () => {
   describe('C3 — S2 "Normal attacks deal true damage for 10 sec" = burstCast same-weapon swap (trueNormals)', () => {
     it('swap-window normals exist, keep her normal multiplier (same-weapon swap, atkPct 10.12)', () => {
       const windowNormals = chiNormals(base.events).filter((d) =>
-        inWindow(d.frame, wins),
+        inWindow(d.frame, wins)
       );
       expect(windowNormals.length).toBeGreaterThan(0);
       expect([...new Set(windowNormals.map((d) => d.atkPct))]).toEqual([10.12]);
@@ -338,14 +338,14 @@ describe('chisato — kit spec', () => {
       }
       expect(
         elevated.length,
-        'no window normal carried the trueDamagePct contribution',
+        'no window normal carried the trueDamagePct contribution'
       ).toBeGreaterThan(0);
       // leak-proof: every elevated normal is inside a swap window; every window normal is elevated
       expect(elevated.every((f) => inWindow(f, wins))).toBe(true);
       expect(notElevated.every((f) => !inWindow(f, wins))).toBe(true);
       // positive coverage: every cast opens a true-damage window
       for (const [s, e] of wins)
-        expect(elevated.some((f) => f >= s && f < e)).toBe(true);
+        {expect(elevated.some((f) => f >= s && f < e)).toBe(true);}
       // cleanest proof of flavor-scoping: OUTSIDE-window normals are byte-identical with the
       // trueDamagePct buff removed (never true-flavored, so the buff never touched them)
       const outside = (m: Map<number, number>) =>
@@ -357,7 +357,7 @@ describe('chisato — kit spec', () => {
     });
     it('ENGINE ⚑ PIN: true swap normals remain crit+core-eligible (no true-damage-crit guard in the engine)', () => {
       const windowNormals = chiNormals(base.events).filter((d) =>
-        inWindow(d.frame, wins),
+        inWindow(d.frame, wins)
       );
       expect([...new Set(windowNormals.map((d) => d.critEligible))]).toEqual([
         true,
@@ -388,13 +388,13 @@ describe('chisato — kit spec', () => {
       // each shipped rider outruns its no-trueDamage counterpart by the +0.4862 trueDamagePct term
       const noTdRiders = chiRiders(noTrueDmg.events);
       expect(noTdRiders.map((d) => d.frame)).toEqual(
-        riders.map((d) => d.frame),
+        riders.map((d) => d.frame)
       );
       const noTdByFrame = new Map(
-        noTdRiders.map((d) => [d.frame, d.mult.dmgUp]),
+        noTdRiders.map((d) => [d.frame, d.mult.dmgUp])
       );
       for (const d of riders)
-        expect(d.mult.dmgUp).toBeGreaterThan(noTdByFrame.get(d.frame)! + 0.01);
+        {expect(d.mult.dmgUp).toBeGreaterThan(noTdByFrame.get(d.frame)! + 0.01);}
     });
     it('DISCRIMINATING (count): hitCount 24 (nearest-wrong) produces ~2× riders', () => {
       expect(chiRiders(count24.events).length).toBeGreaterThan(riders.length);
@@ -404,7 +404,7 @@ describe('chisato — kit spec', () => {
       expect(plain.map((d) => d.frame)).toEqual(riders.map((d) => d.frame));
       const plainByFrame = new Map(plain.map((d) => [d.frame, d.mult.dmgUp]));
       for (const d of riders)
-        expect(d.mult.dmgUp).toBeGreaterThan(plainByFrame.get(d.frame)! + 0.01);
+        {expect(d.mult.dmgUp).toBeGreaterThan(plainByFrame.get(d.frame)! + 0.01);}
     });
   });
 
@@ -417,7 +417,7 @@ describe('chisato — kit spec', () => {
       expect(dursOf(atk)).toEqual([10 * FPS]);
       expect(atk.every((b) => b.frame !== 0)).toBe(true);
       expect(atk.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        castFrames(base.events),
+        castFrames(base.events)
       );
     });
     it('DISCRIMINATING (trigger): fullBurstEnter (nearest-wrong) fires on FB-start frames, ≠ her cast count', () => {
@@ -434,7 +434,7 @@ describe('chisato — kit spec', () => {
       const burstStats = new Set(
         buffs(base.events)
           .filter((b) => b.key.startsWith(`${CHI}:burst:`))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...burstStats].sort()).toEqual(['atkPct']);
     });

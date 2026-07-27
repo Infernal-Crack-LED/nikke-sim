@@ -56,23 +56,28 @@ type AnyEv = SimEvent & Record<string, any>;
 // ---------- override-shape helpers ----------
 function blocksOf(ov: any, slot: (typeof SLOTS)[number]): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function eachBlock(ov: any, fn: (b: any, slot: string) => void): void {
-  for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b, slot);
+  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
 }
 function eachEffect(ov: any, fn: (e: any, b: any, slot: string) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of b.effects ?? []) fn(e, b, slot);
+    for (const e of b.effects ?? []) {fn(e, b, slot);}
   });
 }
 
 // ---------- counterfactual builders (nearest-wrong models) ----------
 const zeroBuff = (stat: string, value: number) => (ov: any) =>
   eachEffect(ov, (e) => {
-    if (e.kind === 'buff' && e.stat === stat && Math.abs(Number(e.value) - value) < 0.5) e.value = 0;
+    if (
+      e.kind === 'buff' &&
+      e.stat === stat &&
+      Math.abs(Number(e.value) - value) < 0.5
+    )
+      {e.value = 0;}
   });
 const dropKind = (kind: string) => (ov: any) =>
   eachBlock(ov, (b) => {
@@ -81,7 +86,7 @@ const dropKind = (kind: string) => (ov: any) =>
 const compose =
   (...fns: ((ov: any) => void)[]) =>
   (ov: any) => {
-    for (const f of fns) f(ov);
+    for (const f of fns) {f(ov);}
   };
 // Nearest-wrong for Acid Ammo: a per-magazine re-application holding a 30s window, which STACKS
 // (~14 concurrent instances at a ~2s magazine cycle) instead of one maintained instance.
@@ -94,10 +99,12 @@ const stackDot = (ov: any) =>
         hit = true;
       }
     }
-    if (hit) b.trigger = { kind: 'lastBullet' };
+    if (hit) {b.trigger = { kind: 'lastBullet' };}
   });
 
-const patch = (mutate: (ov: any) => void) => ({ [SLUG]: withPatchedOverride(SLUG, mutate as any) });
+const patch = (mutate: (ov: any) => void) => ({
+  [SLUG]: withPatchedOverride(SLUG, mutate as any),
+});
 
 // ---------- run helper ----------
 function run(mutate?: (ov: any) => void) {
@@ -107,27 +114,35 @@ function run(mutate?: (ov: any) => void) {
     events.push(ev as AnyEv);
   };
   const opts: any = { ...base, onEvent, cfg: { ...(base.cfg ?? {}), onEvent } };
-  if (mutate) opts.overrides = { ...(base.overrides ?? {}), ...patch(mutate) };
+  if (mutate) {opts.overrides = { ...(base.overrides ?? {}), ...patch(mutate) };}
   const res = runComp(opts as Opts);
   const all = totals(res);
   return { res, events, all, total: all[SLUG] };
 }
 
 // ---------- event helpers ----------
-const slotOf = (e: AnyEv): unknown => e.srcSlot ?? e.slot ?? e.unitIdx ?? e.casterIdx ?? e.idx;
+const slotOf = (e: AnyEv): unknown =>
+  e.srcSlot ?? e.slot ?? e.unitIdx ?? e.casterIdx ?? e.idx;
 const isJill = (e: AnyEv, idx: number): boolean =>
   e.slug === SLUG || e.unitSlug === SLUG || slotOf(e) === idx;
 const jillIndex = (evs: AnyEv[]): number => {
-  const e = evs.find((x) => x.kind === 'buffApply' && x.targetSlug === SLUG && x.targetIdx != null);
+  const e = evs.find(
+    (x) =>
+      x.kind === 'buffApply' && x.targetSlug === SLUG && x.targetIdx != null
+  );
   return e ? Number(e.targetIdx) : -1;
 };
 const evsOfKind = (evs: AnyEv[], kind: string, idx: number) =>
   evs.filter((e) => e.kind === kind && isJill(e, idx));
 const buffApplies = (evs: AnyEv[], stat: string, value: number) =>
   evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(Number(e.value) - value) < 0.02,
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(Number(e.value) - value) < 0.02
   );
-const jillShots = (r: { events: AnyEv[] }) => evsOfKind(r.events, 'shot', jillIndex(r.events)).length;
+const jillShots = (r: { events: AnyEv[] }) =>
+  evsOfKind(r.events, 'shot', jillIndex(r.events)).length;
 const jillReloads = (r: { events: AnyEv[] }) =>
   evsOfKind(r.events, 'reload', jillIndex(r.events)).length;
 const others = (t: Record<string, number>) =>
@@ -255,13 +270,17 @@ describe('S2a Acid Ammo — ONE maintained 192%/s sustained DoT', () => {
 
 describe('S2b ATK +40.03% — on entering ANY team Full Burst', () => {
   it('applies on every Full Burst entry, not only on jill own bursts', () => {
-    const a = buffApplies(EV, 'atkPct', 40.03).filter((e) => e.targetSlug === SLUG);
+    const a = buffApplies(EV, 'atkPct', 40.03).filter(
+      (e) => e.targetSlug === SLUG
+    );
     expect(a.length).toBe(FB_COUNT);
     expect(a.length).toBeGreaterThan(JILL_CASTS);
   });
 
   it('is a plain percentage stat, not a caster-scaled flat ATK grant', () => {
-    const a = buffApplies(EV, 'atkPct', 40.03).filter((e) => e.targetSlug === SLUG);
+    const a = buffApplies(EV, 'atkPct', 40.03).filter(
+      (e) => e.targetSlug === SLUG
+    );
     expect(Number(a[0].value)).toBeCloseTo(40.03, 2);
   });
 });
@@ -287,7 +306,7 @@ describe('Burst — reload speed fixed at +99.96% / Removes 100% of ammo / Force
 
   it('the forced reload RE-ARMS Magnum Ammo (reload-to-max) — the kit combo', () => {
     expect(buffApplies(EV, 'normalAttackPct', 30).length).toBeGreaterThan(
-      buffApplies(R.noConsume.events, 'normalAttackPct', 30).length,
+      buffApplies(R.noConsume.events, 'normalAttackPct', 30).length
     );
   });
 });
@@ -306,7 +325,9 @@ describe('Burst — Hit Rate +80.78% / Attack Damage +75% / true normals', () =>
   it.skip('⚑ measured-only: the Hit-Rate -> core-rate magnitude is a derived constant, not assertable from kit text', () => {});
 
   it('grants attackDamagePct 75 to jill only', () => {
-    const a = buffApplies(EV, 'attackDamagePct', 75).filter((e) => e.targetSlug === SLUG);
+    const a = buffApplies(EV, 'attackDamagePct', 75).filter(
+      (e) => e.targetSlug === SLUG
+    );
     expect(a.length).toBeGreaterThan(0);
   });
 
@@ -330,7 +351,7 @@ describe('Burst — Hit Rate +80.78% / Attack Damage +75% / true normals', () =>
 describe('no-invention / inertness guards (measured > fudge)', () => {
   it('the burst slot invents no damage — the kit gives the burst no damage number', () => {
     const kinds = blocksOf(SHAPE, 'burst').flatMap((b: any) =>
-      (b.effects ?? []).map((e: any) => e.kind),
+      (b.effects ?? []).map((e: any) => e.kind)
     );
     expect(kinds).not.toContain('flatDamage');
     expect(kinds).not.toContain('dot');
@@ -340,7 +361,7 @@ describe('no-invention / inertness guards (measured > fudge)', () => {
   it('the kit carries no Pierce, heal, shield, gauge or rotation effect', () => {
     expect(SHAPE?.hasPierce ?? false).toBeFalsy();
     const kinds = SLOTS.flatMap((s) => blocksOf(SHAPE, s)).flatMap((b: any) =>
-      (b.effects ?? []).map((e: any) => e.kind),
+      (b.effects ?? []).map((e: any) => e.kind)
     );
     for (const k of [
       'heal',
@@ -358,8 +379,12 @@ describe('no-invention / inertness guards (measured > fudge)', () => {
   });
 
   it('every kit line reads "Affects self": no block targets allies', () => {
-    const targets = SLOTS.flatMap((s) => blocksOf(SHAPE, s)).map((b: any) => b.target?.kind);
+    const targets = SLOTS.flatMap((s) => blocksOf(SHAPE, s)).map(
+      (b: any) => b.target?.kind
+    );
     expect(targets.length).toBeGreaterThan(0);
-    expect(targets.every((t: string) => t === 'self' || t === 'enemy')).toBe(true);
+    expect(targets.every((t: string) => t === 'self' || t === 'enemy')).toBe(
+      true
+    );
   });
 });

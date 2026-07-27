@@ -201,9 +201,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Effect 1: MG heating up speed ▼ 100% for 3 sec."
-    ],
+    "skill2": ["Effect 1: MG heating up speed ▼ 100% for 3 sec."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads, in descending danger: (1) skill2's 30.97 keyed to plain fullBurstEnter — the control comp runs helm as co-B3, so an ungated encoding roughly doubles its uptime; the Annihilation-State gate makes it fire only on her own rotations. (2) Anti A.T. Field treated as a 30s boss debuff — the burst's Annihilation explicitly consumes it, so its effective life is only the ~9s build window; a 30s persistence over-credits the WHOLE TEAM between rotations (assert teammates' inter-window damage against a baseline). (3) 'for 1 rounds' on the reload-speed fix encoded as durationSec:1 — the buff must survive the whole 161-frame forced reload and die after the first post-reload round. (4) The ammo dump + heal skipped as 'defensive': the dump forces a reload (shot economy + lastBullet) and the heal drives crown's on-recovery triggers. (5) Normal Attack Damage Multiplier ▼40% encoded as generic damage-down, wrongly hitting riders/nuke. (6) The nuke modeled at a fixed 30 stacks instead of mirroring live accrued stacks — whether 30 is even reachable depends on rounds fired in 9s (300 rounds needed at 10 shots/stack), which is cadence-dependent; the assertion must read the live stack count, not assume cap. (7) The 15.62% proc doubled on the single boss because the prose says 2 enemy units. Timing subtlety to reconcile: the nuke lands ~9s after cast — near the FB-window boundary — so fbMajorApplied must be asserted by observed landing timing, not assumed either way. All magnitudes are kit-literal (DATAMINED); the only ALWAYS-⚑ field in play is MG cadence (pulls/sec), which this spec deliberately never numerically assumes.",

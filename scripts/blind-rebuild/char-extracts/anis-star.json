@@ -19,12 +19,7 @@
     "rl3": 53.424,
     "burstGaugePerShot": 1.4,
     "treasure": false,
-    "nicknames": [
-      "as",
-      "aniss",
-      "star",
-      "ttanis"
-    ],
+    "nicknames": ["as", "aniss", "star", "ttanis"],
     "skills": {
       "skill1": "■ Activates at the start of battle only if self is alive. Affects all allies.\nBurst Gauge filling speed ▲ 6% continuously.\n■ Activates at the start of battle and when Full Burst ends.\nEffects vary according to squad formation. Only one set of effects is applied.\nIf there are no other Burst 1 allies:\nEffect 1: Affects self. Cancels Everyone's Star.\nEffect 2: Affects self. My Own Star: ATK ▲ 40.01%. This effect is continuous and cannot be removed.\nEffect 3: Affects all allies. Cooldown of Burst Skill ▼ 7.48 sec.\nIf there are any other Burst 1 allies:\nEffect 1: Affects self. Cancels My Own Star.\nEffect 2: Affects self. Everyone's Star: Re-enters Burst and changes to Stage 1. This effect is continuous and cannot be removed.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 120.13% of final ATK as additional damage.",
       "skill2": "■ Activates when entering Full Burst while in My Own Star status. Affects all allies.\nATK ▲ 35.01% of the skill user's ATK for 10 sec.\n■ Activates when performing a Full Charge attack while in Everyone's Star status. Affects all allies.\nRestores 1.26% of the skill user's final Max HP as HP.\n■ Activates when entering Full Burst. Affects self and all allies with lower final DEF than self.\nProjectile Explosion Damage ▲ 92.03% for 10 sec.\n■ Activates when entering Full Burst. Affects all allies.\nAttack Damage ▲ 34% for 10 sec.",
@@ -76,13 +71,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 750,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 100,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -356,16 +347,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Shooting Stars\nFunction: Generates stars around Anis that attack random targets automatically.\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nAttack Interval: 0.25 sec\nDuration: {description_value_02} sec\nAdditional Effects\nCharge time is fixed at {description_value_10} sec for {description_value_02} sec.\nExplosion Radius ▲ {description_value_03}% for {description_value_02} sec.\nDEF ▲ {description_value_05}% for {description_value_02} sec.</color>\n■ Activates while in My Own Star status. Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_06}% for {description_value_07} sec.</color>\n■ Activates while in Everyone's Star status. Affects all allies.\n<color=#00AEFF>Max HP ▲ {description_value_08}% of the skill user's max HP for {description_value_09} sec.</color>",
           "description_value_list": [
@@ -500,22 +482,12 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [0],
           "before_use_function_id_list": [
-            101730106,
-            101730101,
-            101730103,
-            101730104,
-            101730105
+            101730106, 101730101, 101730103, 101730104, 101730105
           ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -540,9 +512,7 @@
         }
       },
       "element": {
-        "element_id": [
-          400001
-        ],
+        "element_id": [400001],
         "element_details": [
           {
             "id": 400001,
@@ -573,9 +543,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Anis: Star's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

@@ -10,9 +10,7 @@
   "reference_grade": {
     "definition": "tuned=true AND final-total ratio within 0.97-1.03 on >=5 distinct teams (dedup by unit set; focus not required). Recompute with scripts/refgrade.ts when graded comps change.",
     "count": 1,
-    "units": [
-      "anis-star"
-    ]
+    "units": ["anis-star"]
   },
   "counts": {
     "status": {
@@ -116,9 +114,7 @@
           "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
         ],
         "skill2": [],
-        "burst": [
-          "Minimum Effective Range ▲ 55.56% for 10 sec."
-        ]
+        "burst": ["Minimum Effective Range ▲ 55.56% for 10 sec."]
       },
       "caveats": [
         "skill1: team ATK (15.2% of caster ATK) is keyed to a shotFired proxy for 'landing Full Charge attacks within effective range' — assumes every trigger pull is a landed full charge (⚑ unmeasured)",
@@ -394,9 +390,7 @@
       "reference": false,
       "residual": "WoF window timing unmeasured; Death 6s burstCdr gauge-limited-inert in fixture (cadence unproven, CD-limited comp only); 180/180 grants team-conditional (need B3 Electric caster); cadence tuple datamined",
       "unmodeled": {
-        "skill1": [
-          "The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."
-        ],
+        "skill1": ["The Magician: Cooldown of Skill 2 ▼ 75% for 15 sec."],
         "skill2": [],
         "burst": []
       },
@@ -442,9 +436,7 @@
         "skill2": [
           "Normal attacks in Making Memories (one at a time, resets on MM removal): 2 time(s): Reload 6 rounds."
         ],
-        "burst": [
-          "Making Memories: Reload 2 rounds."
-        ]
+        "burst": ["Making Memories: Reload 2 rounds."]
       },
       "caveats": [
         "skill1/skill2: Making Memories stack buffs (Snapshots +30 normal, Happy Memories +3 pellets via pelletCountFlat 3 — 2026-07-21 A4, was +30 normal, Precious Moments +7.47 ATK) now carry rampSec 11 (theme 3, 2026-07-17) — the real 2/4/6-shot phase counter reaches cap at ~16-18 shots (~10.7-12s at ⚑1.5 pulls/s) ≥ the 11s window, so each buff ramps 0→full across the window (time-avg ~half of cap) and RESETS per window via the engine lapse-reset (the ~9s inter-burst gap fully lapses the buff). Replaces the prior BAKED-to-max encoding. ⚑ rampSec 11 rests on the 1.5 pulls/s SG cadence estimate; a focus recording refines it.",
@@ -525,9 +517,7 @@
       "reference": false,
       "residual": "lifesteal cadence: single recovery event vs 10-tick HoT (measurement-gated, material to S1 ATK uptime); spot-check whether in-game lifesteal procs 'when recovery takes effect' at all; 'all Fire Code allies' read as including self (unanimous, untested); shield-gate timing rule (inert in this fixture)",
       "unmodeled": {
-        "skill1": [
-          "Damage dealt to Shield ▲ 601.01% continuously."
-        ],
+        "skill1": ["Damage dealt to Shield ▲ 601.01% continuously."],
         "skill2": [],
         "burst": []
       },
@@ -570,9 +560,7 @@
       "residual": "finisher 6.62x30 cap vs S6 10-stack (measurement-gated, ammo-counter read off footage); heal damage-inert/self-targeted (S2b crown-tandem not borne out in sim); MG cadence tuple unverified datamine; instant-consumption residual (no remove-target-buff primitive)",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Effect 1: MG heating up speed ▼ 100% for 3 sec."
-        ],
+        "skill2": ["Effect 1: MG heating up speed ▼ 100% for 3 sec."],
         "burst": []
       },
       "caveats": [
@@ -618,9 +606,7 @@
       "unmodeled": {
         "skill1": [],
         "skill2": [],
-        "burst": [
-          "Gain Indomitability for 10 sec."
-        ]
+        "burst": ["Gain Indomitability for 10 sec."]
       },
       "caveats": [
         "skill2/burst: heals now emit their real per-second ticks (heal ticks:5 for the 5s S2 HoT, ticks:8 for the 8s burst HoT) — on-recovery consumers (Crown-type) stay refreshed across each window (engine gap #1 fix, 2026-07-17)",
@@ -744,9 +730,7 @@
           "Affects self every 2 sec. Extrasensory ▼ 1%."
         ],
         "skill2": [],
-        "burst": [
-          "Charges Extrasensory to 100%."
-        ]
+        "burst": ["Charges Extrasensory to 100%."]
       },
       "caveats": [
         "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).",
@@ -1376,10 +1360,7 @@
           "Required hit count: 100 time(s) in total, cumulative across all allies."
         ],
         "skill2": [],
-        "burst": [
-          "Affects random enemy units",
-          "Maintains at least 1 ghost."
-        ]
+        "burst": ["Affects random enemy units", "Maintains at least 1 ghost."]
       },
       "caveats": [
         "skill1: ghost accrual is interval:6 (the 'Recurring interval: 6 sec' capture CAP; <=1 ghost/6s, pool peaks ~7 while bursting); the 100-cumulative-team-hit gate is folded as clearing inside 6s for a full team (⚑1). The ALTERNATIVE teamAmmo:100 accrual (no cap) over-credits ~1.7x HOT and is rejected here",
@@ -1520,9 +1501,7 @@
           "Removes Heat Emission under certain conditions.",
           "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
         ],
-        "skill2": [
-          "Removed upon reloading to max ammunition."
-        ],
+        "skill2": ["Removed upon reloading to max ammunition."],
         "burst": [
           "Prediction:",
           "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
@@ -1633,9 +1612,7 @@
       "residual": "max-stack gate over-credits first ~2 casts (~1% of 180s total); DEF▼ verification gap (no enemy debuff events); stale note prose (casterAtkPct→highestAllyAtkPct)",
       "unmodeled": {
         "skill1": [],
-        "skill2": [
-          "Increases stack count of stackable buffs by 1."
-        ],
+        "skill2": ["Increases stack count of stackable buffs by 1."],
         "burst": []
       },
       "caveats": [
@@ -1894,9 +1871,7 @@
         "skill2": [
           "Activates when hitting the target's Parts. Affects the target's body. Deals 14.78% of final ATK as additional damage."
         ],
-        "burst": [
-          "(Note: Unable to take cover.)"
-        ]
+        "burst": ["(Note: Unable to take cover.)"]
       },
       "caveats": [
         "burst: bazooka beam economy is UNMEASURED — 0.25s/tick + reload-free are ⚑ estimates over the 10s window; count beam popups in any focus video",
@@ -3260,9 +3235,7 @@
         "skill1": [
           "Damage to Interruption Parts ▲48% for 10 sec (self; activates when entering Full Burst while NOT in Combat Assist, i.e. team has a Burst I ally)"
         ],
-        "skill2": [
-          "Attachable Projectile — Max Ammo: 1"
-        ],
+        "skill2": ["Attachable Projectile — Max Ammo: 1"],
         "burst": [
           "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 1)",
           "Explosion Radius ▲100.62% for 10 sec (self; Burst Stage 3 — a second, separate kit line from the Stage 1 instance; inert on the partless boss)",
@@ -3332,10 +3305,7 @@
           "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
           "Removes Vital Attack."
         ],
-        "burst": [
-          "A.N. Mode:",
-          "Effect 1: Removes Single Point Attack."
-        ]
+        "burst": ["A.N. Mode:", "Effect 1: Removes Single Point Attack."]
       },
       "caveats": [
         "skill1: full-charge DoT cadence (60f charge + 22f bolt gap + 141f reload, autofire unverified) is an unmeasured ⚑ estimate — the DoT is her dominant damage bucket and scales linearly with shot rate",
@@ -3653,9 +3623,7 @@
       "reference": false,
       "residual": "burst HP<50% gate ungated (med: does burst #1 crit boosted? resourceGate prototyped); S2 rampSec time-vs-damage integral (low); cadence tuple 27.08/shot non-standard; compounding-vs-flat HP drain reading; same-model footage check",
       "unmodeled": {
-        "skill1": [
-          "Current HP ▼ 4.01%."
-        ],
+        "skill1": ["Current HP ▼ 4.01%."],
         "skill2": [
           "There is a 30% chance of activating when attacked.",
           "Deals 138.24% of final ATK as additional damage."
@@ -3940,9 +3908,7 @@
       "reference": false,
       "residual": "owner spot-check: (a) burstCdr trigger identity fullBurstEnter-vs-burstCast not behaviorally discriminable for a B1 opener (prose-faithful, fable-corroborated); (b) ticket steady-state casterMaxHpPct 20 collapses the 10%->20% ramp (damage-inert flag3); (c) SG cadence tuple flag1 + per-unit pellet landing flag2 unmeasured; (d) S2 HP<15% emergency heal unmodeled (structurally unreachable — no HP-threshold trigger / no incoming damage)",
       "unmodeled": {
-        "skill1": [
-          "Removes First Train Discount."
-        ],
+        "skill1": ["Removes First Train Discount."],
         "skill2": [
           "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
           "Recovers 12.27% of the skill user's final Max HP as HP.",
@@ -4121,9 +4087,7 @@
           "Recovers 2.03% of the skill user's final Max HP as HP.",
           "Recovers 1.57% of the skill user's final Max HP as HP."
         ],
-        "skill2": [
-          "Invulnerable for 2 sec."
-        ],
+        "skill2": ["Invulnerable for 2 sec."],
         "burst": [
           " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
           "Changes Spread Roots to Wilted Roots.",
@@ -4286,17 +4250,9 @@
       "reference": false,
       "residual": "owner spot-check (manual-review/zwei.md S4): (1) gainPierce - footage-confirm whether allies pierce after Zwei burst; (2) burst swap duration/shot-economy footage-gated (datamine duration_value 1 Shot ambiguous); (3) cover-HP->recovery hypothesis (re-model S2a as heal if confirmed); (4) S2c swapGate proxy exact only when swap window == 10s PA101 status; (5) swap range-band/core SR-like guess + base SG cadence datamine-unreliable",
       "unmodeled": {
-        "skill1": [
-          "【Phase 3】Items ×110"
-        ],
-        "skill2": [
-          "【Phase 2】Items ×50",
-          "Restores 7.52% of Cover HP."
-        ],
-        "burst": [
-          "【Phase 1】",
-          "Cooldown: 20 s"
-        ]
+        "skill1": ["【Phase 3】Items ×110"],
+        "skill2": ["【Phase 2】Items ×50", "Restores 7.52% of Cover HP."],
+        "burst": ["【Phase 1】", "Cooldown: 20 s"]
       },
       "caveats": [
         "burst: weapon-swap duration is kit-silent — authored 10s to match the Pierce Attacks 101 window; shot economy ~3 full-charge shots/window (1.2s charge + 1-ammo reload). Datamine duration_value '1 Shot' is ambiguous; footage-gated ⚑",

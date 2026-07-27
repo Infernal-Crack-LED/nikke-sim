@@ -14,6 +14,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -24,12 +25,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -55,29 +58,56 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
@@ -109,7 +139,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -147,29 +177,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -250,9 +280,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -288,7 +318,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -346,7 +376,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -489,12 +519,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -528,7 +558,6 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
-
 
 ### docs/data/game-mechanics.md
 
@@ -586,15 +615,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -937,7 +966,6 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ---
 
 ## SECTION 3 — GROUND TRUTH (kit prose + base stats)
@@ -948,12 +976,12 @@ ammo: 9 | reloadFrames: 62 | hitsPerShot: 10 | normalAttackMultiplier: 204.6 | c
 baseStats: {"hp":13500,"atk":600,"def":86,"core":{"hp":200,"atk":200,"def":200},"grade":{"hp":3000,"atk":20,"def":100,"ratio":200},"critRate":15,"maxLevel":1200,"critDamage":150,"resourceId":271}
 
 KIT PROSE:
-  skill1: ■ Activates when above 70% HP. Affects all allies.
+skill1: ■ Activates when above 70% HP. Affects all allies.
 ATK ▲ 14.08% of the skill user's ATK constantly.
-  skill2: ■ Activates when entering Full Burst. Affects all allies.
+skill2: ■ Activates when entering Full Burst. Affects all allies.
 Max Ammunition Capacity ▲ 5 round(s) for 10 sec.
 Reload 39.88% magazine(s).
-  burst: ■ Affects all enemies.
+burst: ■ Affects all enemies.
 Deals 351.64% of final ATK as Burst Skill damage.
 ■ Affects all allies with a Shotgun.
 Hit Rate ▲ 13.93% for 10 sec.
@@ -1222,15 +1250,15 @@ const buffs = (evs: Ev[], stat: string, value?: number): Ev[] =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6),
+      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6)
   );
 
 // ---- counterfactual overrides (in-memory clones; committed JSON untouched) -----------------
 const pNoS1 = withPatchedOverride('noir', (ov: any) =>
-  setSlotBlocks(ov, 'skill1', []),
+  setSlotBlocks(ov, 'skill1', [])
 );
 const pNoS2 = withPatchedOverride('noir', (ov: any) =>
-  setSlotBlocks(ov, 'skill2', []),
+  setSlotBlocks(ov, 'skill2', [])
 );
 const pNoReload = withPatchedOverride('noir', (ov: any) => {
   for (const b of slotBlocks(ov, 'skill2'))
@@ -1250,14 +1278,14 @@ const pNoSgHitRate = withPatchedOverride('noir', (ov: any) => {
           e.kind === 'buff' &&
           e.stat === 'hitRatePct' &&
           Math.abs(Number(e.value) - 13.93) < 1e-6
-        ),
+        )
     );
 });
 const pNoParts = withPatchedOverride('noir', (ov: any) => {
   for (const slot of ['skill1', 'skill2', 'burst'] as Slot[])
     for (const b of slotBlocks(ov, slot))
       b.effects = effectsOf(b).filter(
-        (e) => !(e.kind === 'buff' && e.stat === 'partsDamagePct'),
+        (e) => !(e.kind === 'buff' && e.stat === 'partsDamagePct')
       );
 });
 const pNoNuke = withPatchedOverride('noir', (ov: any) => {
@@ -1332,7 +1360,7 @@ describe('noir S1 — all allies, ATK ▲ 14.08% of the skill user\u2019s ATK, c
         Math.abs(Number(e.value) - noirVals[0]) < 1e-3
           ? i
           : acc,
-      -1,
+      -1
     );
     const firstShot = base.events.findIndex((e) => e.kind === 'shot');
     expect(lastApply).toBeGreaterThan(-1);
@@ -1444,7 +1472,7 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
     expect(first13).toBeTruthy();
     // Both blocks fire on the same burst cast, so the expiry gap is exactly (30−10)s × 60fps.
     expect(
-      Math.round(Number(first11.expiresFrame) - Number(first13.expiresFrame)),
+      Math.round(Number(first11.expiresFrame) - Number(first13.expiresFrame))
     ).toBe(1200);
   });
 
@@ -1453,7 +1481,6 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
     // packet documents, so noir\u2019s burst-slot hits cannot be isolated from teammate damage here.
   });
 });
-
 ```
 
 ---
@@ -1655,7 +1682,12 @@ DIFF 2 (flagged blind data gap, NOT a modeling disagreement): blind teamHas.slug
 //            blanc present ⇒ N5 gate fires. noir is slot 2 in BOTH comps.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const NOIR = 2; // noir's slot in both comps
@@ -1683,48 +1715,80 @@ function run(slugs: string[], overrides: Record<string, any> = {}) {
 // ---- counterfactual / reference patches -------------------------------------------------------
 /** N1 encoding reference: S1 casterAtkPct → atkPct (% of each ally's OWN ATK, not noir's flat). */
 const noirAtkPct = withPatchedOverride('noir', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'casterAtkPct');
+  if (!e)
+    throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');
   e.stat = 'atkPct';
 });
 /** N2 trigger reference: S2 fullBurstEnter → burstCast (the prior-10 model). */
 const noirBurstCastTrig = withPatchedOverride('noir', (ov) => {
   let n = 0;
-  for (const b of ov.skill2) if (b.trigger.kind === 'fullBurstEnter') { b.trigger.kind = 'burstCast'; n++; }
-  if (n < 2) throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');
+  for (const b of ov.skill2)
+    if (b.trigger.kind === 'fullBurstEnter') {
+      b.trigger.kind = 'burstCast';
+      n++;
+    }
+  if (n < 2)
+    throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');
 });
 /** N2 target reference: S2 maxAmmoFlat block all allies → self only. */
 const noirSelfAmmo = withPatchedOverride('noir', (ov) => {
-  const b = ov.skill2.find((x: any) => x.effects.some((e: any) => e.stat === 'maxAmmoFlat'));
-  if (!b) throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');
+  const b = ov.skill2.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'maxAmmoFlat')
+  );
+  if (!b)
+    throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');
   b.target = { kind: 'self' };
 });
 /** N2b reference: strip the S2 instantReload effect (leaves the maxAmmoFlat block intact). */
 const noirNoInstantReload = withPatchedOverride('noir', (ov) => {
-  const before = ov.skill2.flatMap((b: any) => b.effects).filter((e: any) => e.kind === 'instantReload').length;
-  for (const b of ov.skill2) b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
+  const before = ov.skill2
+    .flatMap((b: any) => b.effects)
+    .filter((e: any) => e.kind === 'instantReload').length;
+  for (const b of ov.skill2)
+    b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
   ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
-  if (before < 1) throw new Error('noir S2 instantReload effect missing — fixture is stale');
+  if (before < 1)
+    throw new Error('noir S2 instantReload effect missing — fixture is stale');
 });
 /** N3 scoping reference: burst SG block (hitRatePct 13.93) alliesOfWeapon SG → all allies. */
 const noirAlliesAll = withPatchedOverride('noir', (ov) => {
-  const b = ov.burst.find((x: any) => x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 13.93));
-  if (!b) throw new Error('noir burst hitRatePct 13.93 block missing — fixture is stale');
+  const b = ov.burst.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 13.93)
+  );
+  if (!b)
+    throw new Error(
+      'noir burst hitRatePct 13.93 block missing — fixture is stale'
+    );
   b.target = { kind: 'allies' };
 });
 /** N5 gate reference: remove the teamHas gate from the 11.61 block (makes it always-active). */
 const noirNoGate = withPatchedOverride('noir', (ov) => {
-  const b = ov.burst.find((x: any) => x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 11.61));
-  if (!b) throw new Error('noir burst hitRatePct 11.61 block missing — fixture is stale');
-  if (!b.teamHas) throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');
+  const b = ov.burst.find((x: any) =>
+    x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 11.61)
+  );
+  if (!b)
+    throw new Error(
+      'noir burst hitRatePct 11.61 block missing — fixture is stale'
+    );
+  if (!b.teamHas)
+    throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');
   delete b.teamHas;
 });
 /** N6 reference: strip every burst partsDamagePct effect (both the SG and the gated block). */
 const noirNoParts = withPatchedOverride('noir', (ov) => {
-  const before = ov.burst.flatMap((b: any) => b.effects).filter((e: any) => e.stat === 'partsDamagePct').length;
-  for (const b of ov.burst) b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
+  const before = ov.burst
+    .flatMap((b: any) => b.effects)
+    .filter((e: any) => e.stat === 'partsDamagePct').length;
+  for (const b of ov.burst)
+    b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
   ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
-  if (before < 2) throw new Error('noir burst partsDamagePct blocks missing — fixture is stale');
+  if (before < 2)
+    throw new Error(
+      'noir burst partsDamagePct blocks missing — fixture is stale'
+    );
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -1739,14 +1803,21 @@ const noParts = run(COMP_A, { noir: noirNoParts });
 const compB = run(COMP_B);
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const noirCasts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'noir');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'noir'
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FullBurstStart => e.kind === 'fullBurstStart');
 const reloadFrames = (evs: SimEvent[]) =>
-  evs.filter((e): e is Reload => e.kind === 'reload').map((r) => `${r.slug}@${r.frame}`).sort();
+  evs
+    .filter((e): e is Reload => e.kind === 'reload')
+    .map((r) => `${r.slug}@${r.frame}`)
+    .sort();
 /** noir-cast buffApply by exact key (key carries the raw kit magnitude; value is the resolved stat). */
 const noirBuff = (evs: SimEvent[], key: string) =>
   buffs(evs).filter((b) => b.casterIdx === NOIR && b.key === key);
@@ -1758,22 +1829,36 @@ const HR_SG_KEY = `${NOIR}:burst:hitRatePct:13.93`;
 const HR_GATE_KEY = `${NOIR}:burst:hitRatePct:11.61`;
 
 describe('noir — kit spec', () => {
-  describe('N1 — S1 ATK ▲14.08% of NOIR\'s ATK to all allies, constantly (casterAtkPct)', () => {
+  describe("N1 — S1 ATK ▲14.08% of NOIR's ATK to all allies, constantly (casterAtkPct)", () => {
     const applied = noirBuff(base.events, S1_KEY);
     const expectedFlat = 0.1408 * unitOf(base.res, 'noir').staticAtk;
 
-    it('is a FLAT add of noir\'s ATK (value ≈ 0.1408×staticAtk, >> a percentage)', () => {
-      expect(applied.length, 'no S1 casterAtkPct buff was applied').toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.stat))]).toEqual(['casterAtkPct']);
+    it("is a FLAT add of noir's ATK (value ≈ 0.1408×staticAtk, >> a percentage)", () => {
+      expect(
+        applied.length,
+        'no S1 casterAtkPct buff was applied'
+      ).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.stat))]).toEqual([
+        'casterAtkPct',
+      ]);
       for (const b of applied) {
-        expect(b.value, 'casterAtkPct must record a flat ATK grant, not the raw 14.08').toBeGreaterThan(1000);
+        expect(
+          b.value,
+          'casterAtkPct must record a flat ATK grant, not the raw 14.08'
+        ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
       }
     });
 
     it('reaches all four allies with the SAME flat value (caster-flat signature), no expiry', () => {
-      expect(holders(applied).size, `reached ${holders(applied).size} allies, expected 4`).toBe(4);
-      expect([...new Set(applied.map((b) => b.value))].length, 'value must be identical for every ally').toBe(1);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size} allies, expected 4`
+      ).toBe(4);
+      expect(
+        [...new Set(applied.map((b) => b.value))].length,
+        'value must be identical for every ally'
+      ).toBe(1);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
 
@@ -1781,10 +1866,19 @@ describe('noir — kit spec', () => {
       expect(noirBuff(base.events, S1_KEY).length).toBeGreaterThan(0);
       // The counterfactual moved the line off casterAtkPct entirely.
       expect(
-        buffs(atkPct.events).filter((b) => b.casterIdx === NOIR && b.key.startsWith(`${NOIR}:skill1:casterAtkPct`)).length,
+        buffs(atkPct.events).filter(
+          (b) =>
+            b.casterIdx === NOIR &&
+            b.key.startsWith(`${NOIR}:skill1:casterAtkPct`)
+        ).length
       ).toBe(0);
       expect(
-        buffs(atkPct.events).filter((b) => b.casterIdx === NOIR && b.stat === 'atkPct' && b.key.startsWith(`${NOIR}:skill1:`)).length,
+        buffs(atkPct.events).filter(
+          (b) =>
+            b.casterIdx === NOIR &&
+            b.stat === 'atkPct' &&
+            b.key.startsWith(`${NOIR}:skill1:`)
+        ).length
       ).toBeGreaterThan(0);
     });
 
@@ -1797,31 +1891,57 @@ describe('noir — kit spec', () => {
 
   describe('N2 — S2 Max Ammunition Capacity ▲5 rounds / 10s to all allies on Full Burst entry', () => {
     const applied = noirBuff(base.events, AMMO_KEY);
-    const ammoFrames = [...new Set(applied.map((b) => b.frame))].sort((a, b) => a - b);
+    const ammoFrames = [...new Set(applied.map((b) => b.frame))].sort(
+      (a, b) => a - b
+    );
     const fbFrames = fbStarts(base.events).map((f) => f.frame);
     const castFrames = noirCasts(base.events).map((c) => c.frame);
 
     it('grants +5 max ammo to all four allies for 10 sec', () => {
-      expect(applied.length, 'no S2 maxAmmoFlat buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no S2 maxAmmoFlat buff was applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([5]);
-      expect(holders(applied).size, `reached ${holders(applied).size} allies, expected 4`).toBe(4);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size} allies, expected 4`
+      ).toBe(4);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     });
 
     it('trigger is fullBurstEnter: every grant lands on a Full-Burst-ENTRY frame, not the cast frame', () => {
       expect(ammoFrames.length).toBeGreaterThan(0);
-      for (const f of ammoFrames) expect(fbFrames, `maxAmmoFlat at frame ${f} is not an FB-entry frame`).toContain(f);
-      expect(ammoFrames[0], 'first grant must coincide with the first FB entry').toBe(fbFrames[0]);
-      expect(ammoFrames[0], 'first grant must NOT be the burstCast frame').not.toBe(castFrames[0]);
+      for (const f of ammoFrames)
+        expect(
+          fbFrames,
+          `maxAmmoFlat at frame ${f} is not an FB-entry frame`
+        ).toContain(f);
+      expect(
+        ammoFrames[0],
+        'first grant must coincide with the first FB entry'
+      ).toBe(fbFrames[0]);
+      expect(
+        ammoFrames[0],
+        'first grant must NOT be the burstCast frame'
+      ).not.toBe(castFrames[0]);
     });
 
     it('DISCRIMINATING (trigger): a burstCast trigger lands the grant on the cast frame, before FB opens', () => {
       const cf = noirBuff(burstCastTrig.events, AMMO_KEY);
-      const cfFrames = [...new Set(cf.map((b) => b.frame))].sort((a, b) => a - b);
+      const cfFrames = [...new Set(cf.map((b) => b.frame))].sort(
+        (a, b) => a - b
+      );
       const cfCast = noirCasts(burstCastTrig.events).map((c) => c.frame);
       const cfFb = fbStarts(burstCastTrig.events).map((f) => f.frame);
-      expect(cfFrames[0], 'counterfactual grant must land on the cast frame').toBe(cfCast[0]);
-      expect(cfFrames[0], 'counterfactual grant must precede FB entry').not.toBe(cfFb[0]);
+      expect(
+        cfFrames[0],
+        'counterfactual grant must land on the cast frame'
+      ).toBe(cfCast[0]);
+      expect(
+        cfFrames[0],
+        'counterfactual grant must precede FB entry'
+      ).not.toBe(cfFb[0]);
     });
 
     it('DISCRIMINATING (target): "all allies" reaches 4; a self-only model reaches only noir', () => {
@@ -1833,17 +1953,23 @@ describe('noir — kit spec', () => {
   describe('N2b — S2 Reload 39.88% magazine(s) to all allies on Full Burst entry (instantReload)', () => {
     it('encodes instantReload fraction 0.3988 on the fullBurstEnter S2 block, targeting all allies', () => {
       const ov: any = withPatchedOverride('noir', () => {});
-      const blk = ov.skill2.find((b: any) => b.effects.some((e: any) => e.kind === 'instantReload'));
+      const blk = ov.skill2.find((b: any) =>
+        b.effects.some((e: any) => e.kind === 'instantReload')
+      );
       expect(blk, 'no S2 instantReload block').toBeTruthy();
       expect(blk.trigger.kind).toBe('fullBurstEnter');
       expect(blk.target.kind).toBe('allies');
-      expect(blk.effects.find((e: any) => e.kind === 'instantReload').fraction).toBe(0.3988);
+      expect(
+        blk.effects.find((e: any) => e.kind === 'instantReload').fraction
+      ).toBe(0.3988);
     });
 
-    it('is live: stripping it perturbs the team\'s realized reload cadence (not byte-identical)', () => {
+    it("is live: stripping it perturbs the team's realized reload cadence (not byte-identical)", () => {
       // The 39.88% top-up at FB entry delays the allies' next magazine reload; the engine snaps ammo
       // silently (no reload event for the refill itself), so the observable is the shifted cadence.
-      expect(reloadFrames(base.events)).not.toEqual(reloadFrames(noInstantReload.events));
+      expect(reloadFrames(base.events)).not.toEqual(
+        reloadFrames(noInstantReload.events)
+      );
     });
   });
 
@@ -1851,7 +1977,10 @@ describe('noir — kit spec', () => {
     const applied = noirBuff(base.events, HR_SG_KEY);
 
     it('reaches ONLY the shotgun allies (noir+guilty), never the SMG/MG allies', () => {
-      expect(applied.length, 'no burst hitRatePct 13.93 buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no burst hitRatePct 13.93 buff was applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([13.93]);
       expect([...holders(applied)].sort()).toEqual(['guilty', 'noir']);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -1859,13 +1988,23 @@ describe('noir — kit spec', () => {
 
     it('DISCRIMINATING: an "all allies" model would also buff the non-SG allies (liter+crown)', () => {
       const cf = noirBuff(alliesAll.events, HR_SG_KEY);
-      expect(holders(cf).size, 'all-allies counterfactual must reach all 4').toBe(4);
-      expect([...holders(cf)].sort()).toEqual(['crown', 'guilty', 'liter', 'noir']);
+      expect(
+        holders(cf).size,
+        'all-allies counterfactual must reach all 4'
+      ).toBe(4);
+      expect([...holders(cf)].sort()).toEqual([
+        'crown',
+        'guilty',
+        'liter',
+        'noir',
+      ]);
     });
   });
 
   describe('N4 — burst nuke: 351.64% of final ATK to all enemies, cast BEFORE the FB window', () => {
-    const nukes = dmg(base.events).filter((d) => d.slug === 'noir' && d.srcSlot === 'burst');
+    const nukes = dmg(base.events).filter(
+      (d) => d.slug === 'noir' && d.srcSlot === 'burst'
+    );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       expect(nukes.length).toBe(noirCasts(base.events).length);
@@ -1875,7 +2014,9 @@ describe('noir — kit spec', () => {
     });
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
   });
 
@@ -1886,27 +2027,34 @@ describe('noir — kit spec', () => {
 
     it('DISCRIMINATING (gate is real): removing teamHas makes it fire in comp A', () => {
       const cf = noirBuff(noGate.events, HR_GATE_KEY);
-      expect(cf.length, 'ungated counterfactual must apply the 11.61 buff').toBeGreaterThan(0);
+      expect(
+        cf.length,
+        'ungated counterfactual must apply the 11.61 buff'
+      ).toBeGreaterThan(0);
       expect([...new Set(cf.map((b) => b.value))]).toEqual([11.61]);
       expect(holders(cf).size).toBe(4);
     });
 
     it('FIRES with blanc present (comp B): 11.61% to all four allies for 30 sec', () => {
       const applied = noirBuff(compB.events, HR_GATE_KEY);
-      expect(applied.length, 'no gated 11.61 buff with blanc present').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no gated 11.61 buff with blanc present'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([11.61]);
-      expect(holders(applied).size, 'gated block must reach all 4 allies').toBe(4);
+      expect(holders(applied).size, 'gated block must reach all 4 allies').toBe(
+        4
+      );
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
     });
   });
 
   describe('N6 — burst partsDamagePct is exactly inert vs the partless scope-lock boss', () => {
-    it('removing every partsDamagePct line changes NO unit\'s total by a single point', () => {
+    it("removing every partsDamagePct line changes NO unit's total by a single point", () => {
       expect(base.totals).toEqual(noParts.totals);
     });
   });
 });
-
 ```
 
 ### src/skills/overrides/noir.json
@@ -1996,5 +2144,4 @@ describe('noir — kit spec', () => {
     }
   ]
 }
-
 ```

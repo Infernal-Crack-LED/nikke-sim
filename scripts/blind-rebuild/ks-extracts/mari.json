@@ -22,9 +22,7 @@
         "Activates when landing a Full Charge attack. Affects all allies.",
         "Damage dealt to Shield ▲ 100.09% for 3 sec."
       ],
-      "skill2": [
-        "Gain Pierce for 5 sec."
-      ],
+      "skill2": ["Gain Pierce for 5 sec."],
       "burst": []
     },
     "caveats": [

@@ -65,7 +65,7 @@ const SLUG = 'mast-romantic-maid';
 function run(overrides?: Record<string, unknown>) {
   const events: Ev[] = [];
   const opts = controlComp(SLUG, true) as Record<string, unknown>;
-  if (overrides) opts.overrides = overrides;
+  if (overrides) {opts.overrides = overrides;}
   const cfg = (opts.cfg ?? {}) as Record<string, unknown>;
   cfg.onEvent = (ev: SimEvent) => {
     events.push(ev as Ev);
@@ -76,10 +76,14 @@ function run(overrides?: Record<string, unknown>) {
 }
 
 const buffApplies = (events: Ev[], stat: string) =>
-  events.filter((e) => e.kind === 'buffApply' && (e as { stat?: string }).stat === stat);
+  events.filter(
+    (e) => e.kind === 'buffApply' && (e as { stat?: string }).stat === stat
+  );
 
 const selfShots = (events: Ev[], slot: number) =>
-  events.filter((e) => e.kind === 'shot' && (e as { srcSlot?: number }).srcSlot === slot);
+  events.filter(
+    (e) => e.kind === 'shot' && (e as { srcSlot?: number }).srcSlot === slot
+  );
 
 // ---------------------------------------------------------------- hoisted runs
 const base = run();
@@ -89,7 +93,7 @@ const mastSlot = (unitOf(base.res, SLUG) as { slot?: number }).slot ?? 2;
 describe('mast-romantic-maid — skill1a: Drunken (Hit Rate ▼20%, up to 3 stacks, on Burst stage 1 entry)', () => {
   it('applies a NEGATIVE hitRatePct self-buff, capped at 3 stacks, with no time expiry', () => {
     const hr = buffApplies(base.events, 'hitRatePct').filter(
-      (e) => (e as { targetSlug?: string }).targetSlug === SLUG,
+      (e) => (e as { targetSlug?: string }).targetSlug === SLUG
     );
     expect(hr.length).toBeGreaterThan(0);
     for (const e of hr) {
@@ -100,13 +104,15 @@ describe('mast-romantic-maid — skill1a: Drunken (Hit Rate ▼20%, up to 3 stac
       expect(Math.abs((e as { value: number }).value)).toBeCloseTo(20, 5);
       expect((e as { maxStacks?: number }).maxStacks).toBe(3);
       // "continuously" — no wall-clock window.
-      expect((e as { expiresFrame?: number | null }).expiresFrame ?? null).toBeFalsy();
+      expect(
+        (e as { expiresFrame?: number | null }).expiresFrame ?? null
+      ).toBeFalsy();
     }
   });
 
   it('is SELF-scoped — no teammate ever receives a hitRatePct application from her', () => {
     const foreign = buffApplies(base.events, 'hitRatePct').filter(
-      (e) => (e as { targetSlug?: string }).targetSlug !== SLUG,
+      (e) => (e as { targetSlug?: string }).targetSlug !== SLUG
     );
     // Nearest-wrong: target 'allies' (the kit's OTHER skill1 branch is allies-scoped, so the
     // easy mis-read is to inherit that scope). That would debuff the whole team's core rate.
@@ -115,9 +121,11 @@ describe('mast-romantic-maid — skill1a: Drunken (Hit Rate ▼20%, up to 3 stac
 
   it('non-vacuity: the fixture actually accrues stacks (>=1 stage-1 burst occurs)', () => {
     const stacked = buffApplies(base.events, 'hitRatePct').filter(
-      (e) => (e as { targetSlug?: string }).targetSlug === SLUG,
+      (e) => (e as { targetSlug?: string }).targetSlug === SLUG
     );
-    const maxSeen = Math.max(...stacked.map((e) => (e as { stacks?: number }).stacks ?? 1));
+    const maxSeen = Math.max(
+      ...stacked.map((e) => (e as { stacks?: number }).stacks ?? 1)
+    );
     expect(maxSeen).toBeGreaterThanOrEqual(2);
   });
 
@@ -125,7 +133,8 @@ describe('mast-romantic-maid — skill1a: Drunken (Hit Rate ▼20%, up to 3 stac
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1 ?? []) {
         for (const e of b.effects ?? []) {
-          if ((e as { stat?: string }).stat === 'hitRatePct') (e as { value: number }).value = 0;
+          if ((e as { stat?: string }).stat === 'hitRatePct')
+            {(e as { value: number }).value = 0;}
         }
       }
     });
@@ -142,7 +151,7 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
       (e) =>
         e.kind === 'buffApply' &&
         (e as { stat?: string }).stat === 'hitRatePct' &&
-        (e as { targetSlug?: string }).targetSlug === SLUG,
+        (e as { targetSlug?: string }).targetSlug === SLUG
     );
     expect(firstDrunken).toBeGreaterThan(0);
     const early = base.events
@@ -152,7 +161,7 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
           e.kind === 'buffApply' &&
           (e as { casterIdx?: number | null }).casterIdx === mastSlot &&
           ((e as { stat?: string }).stat === 'critRatePct' ||
-            (e as { stat?: string }).stat === 'casterAtkPct'),
+            (e as { stat?: string }).stat === 'casterAtkPct')
       );
     // Nearest-wrong: encode the branch as a plain {kind:'passive'} with no Drunken gate.
     // That grants the team +20.05% crit and a large flat ATK from frame 0, over-crediting
@@ -162,7 +171,7 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
 
   it('grants BOTH stats to every ally once Drunken is up, crit at a flat 20.05 (not per-stack)', () => {
     const crit = buffApplies(base.events, 'critRatePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     expect(crit.length).toBeGreaterThan(0);
     for (const e of crit) {
@@ -171,19 +180,23 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
       // stack-scaled encoding is the nearest-wrong model and this pins it out.
       expect((e as { value: number }).value).toBeCloseTo(20.05, 4);
     }
-    const targets = new Set(crit.map((e) => (e as { targetSlug?: string }).targetSlug));
+    const targets = new Set(
+      crit.map((e) => (e as { targetSlug?: string }).targetSlug)
+    );
     expect(targets.size).toBeGreaterThanOrEqual(4);
   });
 
   it('the ATK line is caster-scaled: buffApply carries a FLAT ATK number, not 35.02', () => {
     const atk = buffApplies(base.events, 'casterAtkPct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     expect(atk.length).toBeGreaterThan(0);
-    const staticAtk = (unitOf(base.res, SLUG) as { staticAtk?: number }).staticAtk ?? 98367;
+    const staticAtk =
+      (unitOf(base.res, SLUG) as { staticAtk?: number }).staticAtk ?? 98367;
     const expected = (35.02 / 100) * staticAtk;
     const skill1Atk = atk.filter(
-      (e) => Math.abs((e as { value: number }).value - expected) < expected * 0.02,
+      (e) =>
+        Math.abs((e as { value: number }).value - expected) < expected * 0.02
     );
     // Nearest-wrong #1: encode as 'atkPct' (scales each TARGET's own ATK) — an Attacker
     // teammate would then gain far more than the Supporter caster's 35.02%.
@@ -197,7 +210,7 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
         const hasAllyStat = (b.effects ?? []).some(
           (e) =>
             (e as { stat?: string }).stat === 'critRatePct' ||
-            (e as { stat?: string }).stat === 'casterAtkPct',
+            (e as { stat?: string }).stat === 'casterAtkPct'
         );
         if (hasAllyStat) {
           b.trigger = { kind: 'passive' };
@@ -219,10 +232,10 @@ describe('mast-romantic-maid — skill1b: Drunken-gated ally Crit Rate ▲20.05%
 describe('mast-romantic-maid — skill2a: on Burst Stage 3 entry while Drunken → allies Distributed Dmg + Reload Speed, 15% x stacks, 10s', () => {
   it('emits both stats to all allies, scaled by the live Drunken stack count', () => {
     const dist = buffApplies(base.events, 'distributedDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     const reload = buffApplies(base.events, 'reloadSpeedPct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     expect(dist.length).toBeGreaterThan(0);
     expect(reload.length).toBeGreaterThan(0);
@@ -236,14 +249,14 @@ describe('mast-romantic-maid — skill2a: on Burst Stage 3 entry while Drunken �
       expect(k).toBeLessThanOrEqual(3);
       expect((e as { value: number }).value).toBeCloseTo(15.03 * k, 3);
     }
-    expect(
-      dist.some((e) => (e as { value: number }).value > 15.03 * 1.5),
-    ).toBe(true);
+    expect(dist.some((e) => (e as { value: number }).value > 15.03 * 1.5)).toBe(
+      true
+    );
   });
 
   it('the window is 10 s, not permanent', () => {
     const dist = buffApplies(base.events, 'distributedDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     for (const e of dist) {
       // 10s @ 60fps = 600 frames past the apply frame. A missing durationSec (permanent) is
@@ -259,7 +272,7 @@ describe('mast-romantic-maid — skill2a: on Burst Stage 3 entry while Drunken �
       for (const b of ov.skill2 ?? []) {
         for (const e of b.effects ?? []) {
           if ((e as { stat?: string }).stat === 'reloadSpeedPct')
-            (e as { value: number }).value = 0;
+            {(e as { value: number }).value = 0;}
         }
       }
     });
@@ -273,12 +286,13 @@ describe('mast-romantic-maid — skill2a: on Burst Stage 3 entry while Drunken �
 
   it('is keyed to STAGE-3 entry, not to her own Burst II cast', () => {
     const dist = buffApplies(base.events, 'distributedDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     const castFrames = base.events
       .filter(
         (e) =>
-          e.kind === 'burstCast' && (e as { srcSlot?: number }).srcSlot === mastSlot,
+          e.kind === 'burstCast' &&
+          (e as { srcSlot?: number }).srcSlot === mastSlot
       )
       .map((e) => (e as { frame?: number }).frame ?? -1);
     // Nearest-wrong: trigger burstCast (her OWN stage-2 cast). Stage-3 entry lands strictly
@@ -296,7 +310,7 @@ describe('mast-romantic-maid — skill2b: Hangover (max stacks at end of Full Bu
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2 ?? []) {
         b.effects = (b.effects ?? []).filter(
-          (e) => (e as { kind?: string }).kind !== 'stun',
+          (e) => (e as { kind?: string }).kind !== 'stun'
         );
       }
     });
@@ -308,11 +322,12 @@ describe('mast-romantic-maid — skill2b: Hangover (max stacks at end of Full Bu
 
   it('the stun window is present in her shot log as a >= ~9 s gap', () => {
     const shots = selfShots(base.events, mastSlot).map(
-      (e) => (e as { frame?: number }).frame ?? 0,
+      (e) => (e as { frame?: number }).frame ?? 0
     );
     expect(shots.length).toBeGreaterThan(0);
     let maxGap = 0;
-    for (let i = 1; i < shots.length; i++) maxGap = Math.max(maxGap, shots[i] - shots[i - 1]);
+    for (let i = 1; i < shots.length; i++)
+      {maxGap = Math.max(maxGap, shots[i] - shots[i - 1]);}
     // Her reload is 171 frames (~2.85 s); a 10 s stun is ~600 frames and cannot be confused
     // with a reload. Non-vacuity for the stun claim.
     expect(maxGap).toBeGreaterThan(400);
@@ -332,33 +347,41 @@ describe('mast-romantic-maid — skill2b: Hangover (max stacks at end of Full Bu
 
   it('non-vacuity: the fight actually reaches max stacks (otherwise Hangover never fires)', () => {
     const hr = buffApplies(base.events, 'hitRatePct').filter(
-      (e) => (e as { targetSlug?: string }).targetSlug === SLUG,
+      (e) => (e as { targetSlug?: string }).targetSlug === SLUG
     );
-    expect(hr.some((e) => ((e as { stacks?: number }).stacks ?? 1) === 3)).toBe(true);
+    expect(hr.some((e) => ((e as { stacks?: number }).stacks ?? 1) === 3)).toBe(
+      true
+    );
   });
 });
 
 describe('mast-romantic-maid — burst: allies Crit DMG ▲40.04% + Attack DMG ▲15.04% (10 s), ungated', () => {
   it('grants both to every ally on her burst cast, at the literal magnitudes', () => {
     const cd = buffApplies(base.events, 'critDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     const ad = buffApplies(base.events, 'attackDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     expect(cd.length).toBeGreaterThan(0);
     expect(ad.length).toBeGreaterThan(0);
-    for (const e of cd) expect((e as { value: number }).value).toBeCloseTo(40.04, 4);
-    for (const e of ad) expect((e as { value: number }).value).toBeCloseTo(15.04, 4);
-    expect(new Set(cd.map((e) => (e as { targetSlug?: string }).targetSlug)).size).toBeGreaterThanOrEqual(4);
+    for (const e of cd)
+      {expect((e as { value: number }).value).toBeCloseTo(40.04, 4);}
+    for (const e of ad)
+      {expect((e as { value: number }).value).toBeCloseTo(15.04, 4);}
+    expect(
+      new Set(cd.map((e) => (e as { targetSlug?: string }).targetSlug)).size
+    ).toBeGreaterThanOrEqual(4);
   });
 
   it('is NOT Drunken-gated — the first burst grants it regardless of the stack branch', () => {
     const casts = base.events.filter(
-      (e) => e.kind === 'burstCast' && (e as { srcSlot?: number }).srcSlot === mastSlot,
+      (e) =>
+        e.kind === 'burstCast' &&
+        (e as { srcSlot?: number }).srcSlot === mastSlot
     );
     const cd = buffApplies(base.events, 'critDamagePct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     // The kit puts "if in Drunken status" ONLY on the second burst branch. Applying the gate
     // to the whole burst (the nearest-wrong model) would drop grants on any rotation where
@@ -369,20 +392,25 @@ describe('mast-romantic-maid — burst: allies Crit DMG ▲40.04% + Attack DMG �
 
 describe('mast-romantic-maid — burst branch 2: ATK ▲ (20.06% x stacks) of user ATK, allies, 10 s, Drunken-gated', () => {
   it('emits a per-stack flat-resolved caster ATK grant distinct from the skill1 35.02% grant', () => {
-    const staticAtk = (unitOf(base.res, SLUG) as { staticAtk?: number }).staticAtk ?? 98367;
+    const staticAtk =
+      (unitOf(base.res, SLUG) as { staticAtk?: number }).staticAtk ?? 98367;
     const atk = buffApplies(base.events, 'casterAtkPct').filter(
-      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot,
+      (e) => (e as { casterIdx?: number | null }).casterIdx === mastSlot
     );
     const perStack = (20.06 / 100) * staticAtk;
     const burstGrants = atk.filter((e) => {
       const k = (e as { value: number }).value / perStack;
-      return Math.abs(k - Math.round(k)) < 0.03 && Math.round(k) >= 1 && Math.round(k) <= 3;
+      return (
+        Math.abs(k - Math.round(k)) < 0.03 &&
+        Math.round(k) >= 1 &&
+        Math.round(k) <= 3
+      );
     });
     // Nearest-wrong models this pins out: (a) a flat 20.06% ignoring the stack multiplier,
     // (b) an atkPct (target-scaled) encoding, (c) folding it into the skill1 grant.
     expect(burstGrants.length).toBeGreaterThan(0);
     expect(
-      burstGrants.some((e) => (e as { value: number }).value > perStack * 1.5),
+      burstGrants.some((e) => (e as { value: number }).value > perStack * 1.5)
     ).toBe(true);
   });
 
@@ -391,9 +419,14 @@ describe('mast-romantic-maid — burst branch 2: ATK ▲ (20.06% x stacks) of us
       (e) =>
         e.kind === 'buffApply' &&
         (e as { casterIdx?: number | null }).casterIdx === mastSlot &&
-        ['coreDamagePct', 'chargeDamagePct', 'maxAmmoPct', 'maxAmmoFlat', 'fireRatePct', 'elementDamagePct'].includes(
-          (e as { stat?: string }).stat ?? '',
-        ),
+        [
+          'coreDamagePct',
+          'chargeDamagePct',
+          'maxAmmoPct',
+          'maxAmmoFlat',
+          'fireRatePct',
+          'elementDamagePct',
+        ].includes((e as { stat?: string }).stat ?? '')
     );
     expect(stray.length).toBe(0);
   });
@@ -402,7 +435,7 @@ describe('mast-romantic-maid — burst branch 2: ATK ▲ (20.06% x stacks) of us
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst ?? []) {
         b.effects = (b.effects ?? []).filter(
-          (e) => (e as { stat?: string }).stat !== 'casterAtkPct',
+          (e) => (e as { stat?: string }).stat !== 'casterAtkPct'
         );
       }
     });
@@ -419,7 +452,7 @@ describe('mast-romantic-maid — cross-cutting inertness', () => {
   it('with her entire override neutralised, teammates lose damage (she is a real support, not inert)', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-        for (const b of ov[slot] ?? []) b.effects = [];
+        for (const b of ov[slot] ?? []) {b.effects = [];}
       }
     });
     const alt = run({ [SLUG]: patched });

@@ -12,11 +12,11 @@ of the spread circle) changes with distance.
 
 ## The three concentric rings (all centered on the core/crosshair center — the "pink dot")
 
-| Ring | What it is | How measured |
-|---|---|---|
-| **core** | boss red weak-point sphere | color extent of the red core (vertical, to dodge the red status-text band) |
-| **crosshair** | white broken 4-arc ring | radial histogram of white-arc pixels → peak radius |
-| **spread** | large translucent gray circle (drawn cyan in annotations) | owner-drawn ground truth; auto-estimate = crosshair × mid-ratio |
+| Ring          | What it is                                                | How measured                                                               |
+| ------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
+| **core**      | boss red weak-point sphere                                | color extent of the red core (vertical, to dodge the red status-text band) |
+| **crosshair** | white broken 4-arc ring                                   | radial histogram of white-arc pixels → peak radius                         |
+| **spread**    | large translucent gray circle (drawn cyan in annotations) | owner-drawn ground truth; auto-estimate = crosshair × mid-ratio            |
 
 Mid-band reference: core **D=28**, crosshair **D=66**, spread **D=162** (spread/crosshair ≈ 2.454).
 
@@ -54,7 +54,7 @@ artifact (the earlier AR 29px / SMG 60px were mid-bloom snapshots). Full data + 
 and the peak (see DERIVATION §2b).
 
 **Cross-check / optimal range (reframed):** the AR reticle's contracted **floor** (~29px) ≈ the
-mid-band boss core (28px), measured independently — but the AR *accuracy circle* is 48px, not 29px.
+mid-band boss core (28px), measured independently — but the AR _accuracy circle_ is 48px, not 29px.
 So fully bloomed the AR core fraction is only ~0.34; high Hit Rate squeezes the bloom toward the 29px
 floor (≈ core), where core saturates to ~1. That is the real "optimal range = all-core" mechanism.
 

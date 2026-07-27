@@ -6,6 +6,7 @@ independent cross-family blind re-derivations (S5 blind test, S6 blind override)
 verdict JSON described in section 1.
 
 ## DRIVER SUMMARY (Qwen)
+
 - Unit: Brid: Silent Track — SG / Supporter / Fire / Burst II, cd 20s, ammo 9, hitsPerShot 10 pellets.
 - 5 kit lines, ALL dispositioned FAITHFUL. Tier 2 (bossElementGate status-gate + hitCount round-count
   cadence + fullBurstEnter-vs-burstCast + meta-defining casterAtk party buff).
@@ -15,6 +16,7 @@ verdict JSON described in section 1.
 - S2b (claude-fable-5) independently re-derived all 5 lines FAITHFUL, no REAL-GOTCHA, dispositions converge.
 
 ## THE ONE CROSS-FAMILY DIVERGENCE (adjudicate this)
+
 The S6 blind override matches the driver on ALL 5 lines (structure, magnitudes 636/675/15.12/12.12/66.52,
 triggers fullBurstEnter/hitCount/burstCast, Wind gating, excludeSelf, casterAtkPct) EXCEPT the skill2
 hitCount granularity: blind wrote count 5/10 (reading "normal attack" = ROUNDS); driver wrote count 50/100.
@@ -23,6 +25,7 @@ The blind author EXPLICITLY FLAGGED this: "If the engine counts PELLET hits, bot
 
 DECISIVE ENGINE FACT (sim.ts hitCount trigger, ~line 2898): the hit counter increments by `hitsPerShot`
 PER SHOT, not by 1:
+
 ```ts
       else if (b.trigger.kind === 'hitCount') {
         const key = `hc:${bi}`;
@@ -48,16 +51,17 @@ in-engine AND independently MEASURED (every 5th pull). The blind's 5/10 would fi
 the blind's flagged uncertainty resolves to the driver's value via the engine semantics + the measurement.
 
 ## S5 BLIND TEST — green/red vs the DRIVER override
+
 The opus blind test (section 5) was authored from kit prose alone. Run literally it had 3 failures, ALL
 traced to blind-test scaffolding/fragility (NOT driver faithfulness):
-  (a) harness import path (blind guessed ../lib; harness is at scripts/tests/lib) — mechanical fix;
-  (b) hitCount engine-convention: its "double the threshold" counterfactual set an ABSOLUTE count=10
-      assuming a count-5 baseline; vs the driver's measured count-50 that fires 5× MORE not half.
-      Adapted to DOUBLE the driver's actual count (50→100), preserving the stated intent;
-  (c) fixture: controlComp(SLUG,true)=liter/crown/SLUG/helm — crown (also B2) wins the cast slot so Brid
-      never bursts and the burst-buff assertions fail vacuously. Adapted to a sole-B2 comp (liter/SLUG/ada/helm);
-  (d) the 636:675 max-AMOUNT ratio assumed buff state cancels; the S2 rider's peak in-FB instance carries
-      more dmgUp than the S1 FB-enter nuke (read ~0.80). Adapted to compare the buff-state-free atkPct field.
+(a) harness import path (blind guessed ../lib; harness is at scripts/tests/lib) — mechanical fix;
+(b) hitCount engine-convention: its "double the threshold" counterfactual set an ABSOLUTE count=10
+assuming a count-5 baseline; vs the driver's measured count-50 that fires 5× MORE not half.
+Adapted to DOUBLE the driver's actual count (50→100), preserving the stated intent;
+(c) fixture: controlComp(SLUG,true)=liter/crown/SLUG/helm — crown (also B2) wins the cast slot so Brid
+never bursts and the burst-buff assertions fail vacuously. Adapted to a sole-B2 comp (liter/SLUG/ada/helm);
+(d) the 636:675 max-AMOUNT ratio assumed buff state cancels; the S2 rider's peak in-FB instance carries
+more dmgUp than the S1 FB-enter nuke (read ~0.80). Adapted to compare the buff-state-free atkPct field.
 ADAPTED blind test (scripts/kit-autonomy/blind/brid-silent-track.adapted.test.ts) vs driver override:
 **13 passed, 1 skipped** (the skip is the Wind-boss ACTIVE case the blind author marked it.skip because
 controlComp exposes no boss-element parameter; the DRIVER test covers it: B1/B3 "OPENS vs Wind boss").
@@ -65,6 +69,7 @@ Every kit-level discrimination the blind author wrote (magnitudes via halving, g
 identities, excludeSelf via totals, caster-scaled flat ATK) PASSES against the driver override.
 
 ## S6 BLIND OVERRIDE — diff vs DRIVER override
+
 - skill1: IDENTICAL (Wind-gated damageTakenPct 15.12 on fullBurstEnter + 636% flatDamage on fullBurstEnter);
   block order swapped only (semantically identical).
 - skill2: SAME structure/magnitudes/gating; ONLY hitCount count differs — blind 10/5 vs driver 100/50
@@ -76,7 +81,8 @@ identities, excludeSelf via totals, caster-scaled flat ATK) PASSES against the d
 ---
 
 ## 1. RECONCILING-JUDGE CONTRACT
-```
+
+````
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
 
 Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md` AND the mechanics
@@ -149,13 +155,16 @@ not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, 
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
-```
+````
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
+
 ```
 
 ## 2. MECHANICS SSOT — docs/data/damage-calculation.md
 ```
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -180,7 +189,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -218,29 +227,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -321,9 +330,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -359,7 +368,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -417,7 +426,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -560,12 +569,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -599,10 +608,12 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
+
 ```
 
 ## 2b. MECHANICS SSOT — docs/data/game-mechanics.md
 ```
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -657,15 +668,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -1007,7 +1018,8 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   element) — never calibrate against them
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
-```
+
+````
 
 ## 3. GROUND TRUTH — kit prose + base stats (data/characters.json extract)
 ```json
@@ -1632,9 +1644,10 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   "notes": "Expected shared-prior misreads, in order of damage-at-stake: (1) SG PELLET vs ROUND counting on both hitCount triggers — hitsPerShot 10 makes the wrong reading fire skill2's procs ~10× too often; the 675% rider misread alone would dwarf her weapon damage. The distinguishing assertions are count-based (floor(shots/5), first-proc-after-reload) precisely to catch this. (2) Element-gate bleed: the kit deliberately pairs a Wind-gated debuff with an UNGATED damage line inside each skill — a lazy per-slot gate either kills the riders on the Fire boss or lets the debuffs leak onto it; assert both directions (riders fire, debuffs silent). (3) casterAtkPct vs atkPct on burst — 'of the skill user's ATK' is the flat caster-scaled add; harness flat-resolves the buffApply value, so asserting the emitted value ≈ 0.6652×staticAtk (not the raw 66.52) distinguishes structurally. (4) Both Damage Taken lines are BOSS debuffs (buffApply casterIdx/targetIdx null) — a reviewer expecting ally-targeted applies will write a filter that matches nothing. (5) All 'for 10 sec' durations here are genuine seconds — no round-count trap on this unit. (6) Both damage riders should be crit-eligible/no-core/noRange per rider defaults; the 636% takes FB major at FB-entry timing (fullBurstEnter ≠ the burstCast pre-FB exemption). Fixture note: Brid is Burst II — she replaces the B2 slot beside a B1+B3, and burstCast vs fullBurstEnter on her burst only diverges with a second B2 present; a divergence test needs that comp if the driver claims the distinction matters.",
   "model": "claude-fable-5"
 }
-```
+````
 
 ## 5. S5 BLIND TEST (claude-opus-5, authored from kit prose alone)
+
 ```ts
 /**
  * brid-silent-track - Brid: Silent Track (SG / Fire / Supporter / Burst II).
@@ -1706,18 +1719,32 @@ function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
 }
 const eff = (b: any): any[] => b?.effects ?? [];
 const isFlat = (e: any) => e?.kind === 'flatDamage';
-const isDamageTaken = (e: any) => e?.kind === 'buff' && e?.stat === 'damageTakenPct';
+const isDamageTaken = (e: any) =>
+  e?.kind === 'buff' && e?.stat === 'damageTakenPct';
 const isAtkGrant = (e: any) =>
   e?.kind === 'buff' &&
-  (e?.stat === 'casterAtkPct' || e?.stat === 'atkPct' || e?.stat === 'highestAllyAtkPct');
+  (e?.stat === 'casterAtkPct' ||
+    e?.stat === 'atkPct' ||
+    e?.stat === 'highestAllyAtkPct');
 
-function pickBlock(ov: any, slot: any, pred: (b: any) => boolean, label: string): any {
+function pickBlock(
+  ov: any,
+  slot: any,
+  pred: (b: any) => boolean,
+  label: string
+): any {
   const b = slotBlocks(ov, slot).find(pred);
-  if (!b) throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);
+  if (!b)
+    throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);
   return b;
 }
 
-function removeEffect(ov: any, slot: any, pred: (e: any) => boolean, label: string): void {
+function removeEffect(
+  ov: any,
+  slot: any,
+  pred: (e: any) => boolean,
+  label: string
+): void {
   const arr = slotBlocks(ov, slot);
   let hit = false;
   for (let i = arr.length - 1; i >= 0; i--) {
@@ -1728,10 +1755,16 @@ function removeEffect(ov: any, slot: any, pred: (e: any) => boolean, label: stri
     if (rest.length === 0) arr.splice(i, 1);
     else b.effects = rest;
   }
-  if (!hit) throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);
+  if (!hit)
+    throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);
 }
 
-function ungateElement(ov: any, slot: any, pred: (b: any) => boolean, fallback: any): void {
+function ungateElement(
+  ov: any,
+  slot: any,
+  pred: (b: any) => boolean,
+  fallback: any
+): void {
   const b = pickBlock(ov, slot, pred, 'element-gated Damage Taken block');
   delete b.bossElementGate;
   if (b.trigger?.kind === 'bossElement') b.trigger = fallback;
@@ -1739,9 +1772,27 @@ function ungateElement(ov: any, slot: any, pred: (b: any) => boolean, fallback: 
 
 // ---- event helpers ----------------------------------------------------------
 const KEY_FIELDS = [
-  'kind', 'srcSlot', 'bucket', 'mult', 'inFullBurst', 'fbMajorApplied', 'rangeApplied',
-  'crit', 'core', 'critRate', 'coreRate', 'amount', 'damage', 'dmg', 'total',
-  'stat', 'key', 'value', 'targetSlug', 'casterIdx', 'targetIdx',
+  'kind',
+  'srcSlot',
+  'bucket',
+  'mult',
+  'inFullBurst',
+  'fbMajorApplied',
+  'rangeApplied',
+  'crit',
+  'core',
+  'critRate',
+  'coreRate',
+  'amount',
+  'damage',
+  'dmg',
+  'total',
+  'stat',
+  'key',
+  'value',
+  'targetSlug',
+  'casterIdx',
+  'targetIdx',
 ];
 const sigOf = (e: Ev): string => KEY_FIELDS.map((f) => String(e[f])).join('|');
 
@@ -1770,9 +1821,13 @@ function amountOf(e: Ev): number | undefined {
   }
   return undefined;
 }
-const near = (a: any, b: number) => typeof a === 'number' && Math.abs(a - b) < 0.005;
+const near = (a: any, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 0.005;
 const teamTotal = (res: any) =>
-  Object.values(totals(res) as Record<string, number>).reduce((s, v) => s + v, 0);
+  Object.values(totals(res) as Record<string, number>).reduce(
+    (s, v) => s + v,
+    0
+  );
 
 // ---- runs (hoisted; each is a full 180s sim) --------------------------------
 const OPTS: any = controlComp(SLUG, true);
@@ -1786,55 +1841,77 @@ const base = run(OPTS);
 const s1RiderOff = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      removeEffect(ov, 'skill1', isFlat, 'skill1 flatDamage 636%'),
-    ),
-  ),
+      removeEffect(ov, 'skill1', isFlat, 'skill1 flatDamage 636%')
+    )
+  )
 );
 const s1RiderHalf = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) => {
-      const b = pickBlock(ov, 'skill1', (bl: any) => eff(bl).some(isFlat), 'skill1 flatDamage');
+      const b = pickBlock(
+        ov,
+        'skill1',
+        (bl: any) => eff(bl).some(isFlat),
+        'skill1 flatDamage'
+      );
       for (const e of eff(b)) if (isFlat(e)) e.atkPct = e.atkPct / 2;
-    }),
-  ),
+    })
+  )
 );
 const s1RiderBurstCast = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) => {
-      const b = pickBlock(ov, 'skill1', (bl: any) => eff(bl).some(isFlat), 'skill1 flatDamage');
+      const b = pickBlock(
+        ov,
+        'skill1',
+        (bl: any) => eff(bl).some(isFlat),
+        'skill1 flatDamage'
+      );
       b.trigger = { kind: 'burstCast' };
-    }),
-  ),
+    })
+  )
 );
 const s2RiderOff = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      removeEffect(ov, 'skill2', isFlat, 'skill2 flatDamage 675%'),
-    ),
-  ),
+      removeEffect(ov, 'skill2', isFlat, 'skill2 flatDamage 675%')
+    )
+  )
 );
 const s2RiderHalf = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) => {
-      const b = pickBlock(ov, 'skill2', (bl: any) => eff(bl).some(isFlat), 'skill2 flatDamage');
+      const b = pickBlock(
+        ov,
+        'skill2',
+        (bl: any) => eff(bl).some(isFlat),
+        'skill2 flatDamage'
+      );
       for (const e of eff(b)) if (isFlat(e)) e.atkPct = e.atkPct / 2;
-    }),
-  ),
+    })
+  )
 );
 const s2Count10 = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) => {
-      const b = pickBlock(ov, 'skill2', (bl: any) => eff(bl).some(isFlat), 'skill2 flatDamage');
+      const b = pickBlock(
+        ov,
+        'skill2',
+        (bl: any) => eff(bl).some(isFlat),
+        'skill2 flatDamage'
+      );
       b.trigger = { kind: 'hitCount', count: 10 };
-    }),
-  ),
+    })
+  )
 );
 const s1DebuffUngated = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      ungateElement(ov, 'skill1', (b: any) => eff(b).some(isDamageTaken), { kind: 'fullBurstEnter' }),
-    ),
-  ),
+      ungateElement(ov, 'skill1', (b: any) => eff(b).some(isDamageTaken), {
+        kind: 'fullBurstEnter',
+      })
+    )
+  )
 );
 const s2DebuffUngated = run(
   withOv(
@@ -1842,16 +1919,21 @@ const s2DebuffUngated = run(
       ungateElement(ov, 'skill2', (b: any) => eff(b).some(isDamageTaken), {
         kind: 'hitCount',
         count: 10,
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 const burstBuffOff = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      removeEffect(ov, 'burst', isAtkGrant, 'burst ATK grant 66.52% of caster ATK'),
-    ),
-  ),
+      removeEffect(
+        ov,
+        'burst',
+        isAtkGrant,
+        'burst ATK grant 66.52% of caster ATK'
+      )
+    )
+  )
 );
 
 // ---- derived event sets -----------------------------------------------------
@@ -1883,7 +1965,7 @@ describe(SLUG + ' - blind kit spec', () => {
 
   it('skill1 Damage Taken block is otherwise correct: ungating it applies 15.12% once per FB', () => {
     const dt = buffs(s1DebuffUngated).filter(
-      (e) => e.stat === 'damageTakenPct' && near(e.value, 15.12),
+      (e) => e.stat === 'damageTakenPct' && near(e.value, 15.12)
     );
     expect(dt.length).toBe(fbStarts); // fullBurstEnter trigger, one application per FB entry
     for (const e of dt) {
@@ -1925,11 +2007,13 @@ describe(SLUG + ' - blind kit spec', () => {
   // --- skill2 a) Damage Taken UP 12.12% / 10s after 10 normal attacks ---------
   it('skill2 Damage Taken 12.12% is element-gated (inert on Fire) but otherwise live at a 10-attack counter', () => {
     expect(
-      buffs(base).filter((e) => e.stat === 'damageTakenPct' && near(e.value, 12.12)),
+      buffs(base).filter(
+        (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12)
+      )
     ).toHaveLength(0);
 
     const dt = buffs(s2DebuffUngated).filter(
-      (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12),
+      (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12)
     );
     expect(dt.length).toBeGreaterThan(0);
     for (const e of dt) {
@@ -1964,7 +2048,9 @@ describe(SLUG + ' - blind kit spec', () => {
   it('the two riders sit at the kit 636 : 675 ratio', (ctx: any) => {
     // Compares the best-buffed in-FB instance of each rider, so buff state cancels. Skipped if
     // the damage event carries no numeric amount field under any of the probed names.
-    const a1 = bridS1Riders.map(amountOf).filter((v) => typeof v === 'number') as number[];
+    const a1 = bridS1Riders
+      .map(amountOf)
+      .filter((v) => typeof v === 'number') as number[];
     const a2 = bridS2Riders
       .filter((e) => e.inFullBurst === true)
       .map(amountOf)
@@ -2013,7 +2099,8 @@ describe(SLUG + ' - blind kit spec', () => {
 ```
 
 ## 6. S6 BLIND OVERRIDE (claude-opus-5)
-```json
+
+````json
 {
   "slug": "brid-silent-track",
   "skill1": [
@@ -2451,9 +2538,10 @@ describe('brid-silent-track — kit spec', () => {
     });
   });
 });
-```
+````
 
 ## 7b. DRIVER IMPLEMENTATION — src/skills/overrides/brid-silent-track.json
+
 ```json
 {
   "note": "PROMOTED + SOLO-VALIDATED 2026-07-16 (loaded override). Solo real/sim 1.058 (real 74,592,500). || SG NOTE 2026-07-16: the old 'core bands HR-contaminated' cap is DEAD (isabel solo read confirmed SG core bands HR-clean). She now has her OWN measured solo read — docs/probe-data/brid-silent-track-sg-band.json (end screen 74,592,500; per-band M mid 0.984 / near1 1.224 / far 0.709 / midfar 0.866 / near2 1.374; ATK term measured +1.63% above scope-lock nominal, rider-confirmed) — SG landing at range remains the open lever (LOG 2026-07-16: no engine change; per-unit facts recorded). || Brid: Silent Track — Fire SG Burst II Supporter (ammo 9, reloadFrames 111, hitsPerShot 10 pellets). Her VALUE is the team casterAtk buff, not her own (SG-capped) damage. MODEL: (burst) ATK ▲ 66.52% of caster's ATK to allies 10s on burstCast — main support line; kit 'Affects all allies (except self)' now modeled on `allies` excludeSelf:true [2026-07-17 EXCLUDE-SELF FIX — the `allies` target gained excludeSelf; removes the prior minor self-inflation of her own SG-capped damage; brid is not board-measured so this is faithful-but-board-inert today]. (S1) 636% flatDamage on fullBurstEnter (fires each rotation FB); function rider → crits at sheet rate, no core (no 'core strike' text), FB by TIMING (default noFb OFF — lands at FB enter so gets +50%, prior 2). (S2) 675% flatDamage every 5 normal attacks → hitCount 50 (5 shots × hitsPerShot 10 = 50 pellet-hits; engine hitCounter increments by hitsPerShot/shot, sim.ts:1677) — recurring rider, big cumulative (41.6% of her solo total), crit/no-core/FB-by-timing. MEASURED 2026-07-16 (solo read): trigger CONFIRMED = every 5th PULL (43 riders = floor(215 pulls/5) EXACT, fires as a separate event ~6 frames after the 5th pull, zero fusions); fixed values 673,819 non-crit / 1,010,728 crit = EXACTLY 675.00% at the measured effective term 99,825.6. That term ≈ base 98,227 (static 98,367 − bossDef 140) + her Elysion-Supporter max bond ATK 1367 = 99,594, i.e. the ~+1.63% elevation was the RELATIONSHIP bonus, now modeled globally [DECISIONS/open-questions U18] (the remaining ~0.23% is measurement-basis slack). Coefficient stays the FAITHFUL kit 675% — with the term now correct the rider lands on the measured value; no per-unit fudge. (Historical: before relationship was modeled the sim's term read ~1.6% under, which this note previously flagged as unresolved.) resolved). WIND-CODE DEBUFFS NOW MODELED (bossElementGate, 2026-07-17): the two Wind-Code-gated boss debuffs (S1 Damage Taken ▲15.12%/10s on FB enter; S2 Damage Taken ▲12.12%/10s after 10 NA = hitCount 100) use the new `bossElementGate: 'Wind'` block gate — element-gated composed with their real triggers (fullBurstEnter / hitCount). INERT vs a non-Wind (incl. the neutral scope-lock) boss; vs a Wind boss they become active team-wide damageTaken amps (a big lever) — see FLAG d. (Previously parked as SKIPPED-CONDITIONAL in this note because the schema had no way to compose element-gating with an event trigger.) No heal/shield/DEF/HP/lifesteal/gauge/reload/ammo lines in this kit; nothing else parked in ignored. ⚑ FLAGS: (a) CADENCE TUPLE — pullsPerSec datamine not supplied + reloadFrames 111 datamine; SG default rate, ammo 9 empties in >1s so no fire-mode escalation; est = class-default SG cadence + reloadFrames 111; recipe = read rounds/min + reload gap from a focus video. (b) SG 'normal attack' = SHOT vs PELLET — 10× lever on both S2 counters; shipped the standard SHOT reading (5 NA = 5 shots = hitCount 50; 10 NA = 10 shots = hitCount 100); if pellets were meant divide by 10; recipe = count shots between 675% popups in a focus video. (c) SG SPRAY UNDER-MODEL + HR-contaminated core bands (G4) — her own SG spray/core damage is low-confidence (~1.5× under per noir/dorothy anchors); est = engine default bands; recipe = SG-clean-anchor re-derivation (open fix #2). (d) WIND-CODE CONDITIONAL DEBUFFS off by default (non-Wind boss); est = OFF; recipe = confirm boss element, if Wind enable both as damageTakenPct enemy buffs (15.12% team-wide FB-enter + 12.12% per-10-NA). (e) noFb on the 636%/675% riders = default OFF (FB by timing, prior 2); set noFb:true ONLY with measured FB-OFF popups; recipe = focus popup value FB-on vs FB-off. (f) burst target 'allies except self' now expressible → `allies` excludeSelf:true (fixed 2026-07-17); self-inflation gone. || Kit-autonomy gauntlet 2026-07-25: re-validated test-first — scripts/tests/units/brid-silent-track.test.ts (18 assertions GREEN vs this override; each line pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: ungated Wind-debuff leak, removed 636%/675% riders, pellet-misread hitCount, includes-self burst, 100%-caster magnitude reference). Cross-family S2b (claude-fable-5) independently re-derived all 5 lines FAITHFUL with matching discriminations, no REAL-GOTCHA; dispositions converge. TIER 2 (bossElementGate status-gate + hitCount round-count cadence + fullBurstEnter-vs-burstCast + meta-defining casterAtk party buff). The two kit-status findings (Wind-deboss composition, excludeSelf) were already fixed 2026-07-17 and are re-confirmed here.",

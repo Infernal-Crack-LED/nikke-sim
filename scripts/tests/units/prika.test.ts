@@ -122,7 +122,7 @@ const s1BaseLevel = withPatchedOverride('prika', (ov) => {
   const pierce = eff.find((e: any) => e.stat === 'pierceDamagePct');
   const atk = eff.find((e: any) => e.stat === 'casterAtkPct');
   if (!proj || !pierce || !atk)
-    throw new Error('prika S1 effects missing — fixture is stale');
+    {throw new Error('prika S1 effects missing — fixture is stale');}
   proj.value = 11.82; // level-1 base (kit level-10 = 20)
   pierce.value = 7.73; // level-1 base (kit level-10 = 13.09)
   atk.stat = 'atkPct'; // nearest wrong: 20% of each target's OWN ATK, not the caster's
@@ -136,10 +136,10 @@ const s1Removed = withPatchedOverride('prika', (ov) => {
         hasStat(b, 'projectileExplosionPct') ||
         hasStat(b, 'pierceDamagePct') ||
         hasStat(b, 'casterAtkPct')
-      ),
+      )
   );
   if (ov.skill1.length === before)
-    throw new Error('prika S1 block missing — fixture is stale');
+    {throw new Error('prika S1 block missing — fixture is stale');}
 });
 /** Encore + burst buffs reduced to level-1 BASE magnitudes. */
 const s2BurstBaseLevel = withPatchedOverride('prika', (ov) => {
@@ -150,7 +150,7 @@ const s2BurstBaseLevel = withPatchedOverride('prika', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.stat === 'chargeDamagePct');
   if (!enc || !chg)
-    throw new Error('prika Encore/burst buffs missing — fixture is stale');
+    {throw new Error('prika Encore/burst buffs missing — fixture is stale');}
   enc.value = 14.29; // level-1 base (kit level-10 = 25.01)
   chg.value = 13.88; // level-1 base (kit level-10 = 25)
 });
@@ -158,13 +158,13 @@ const s2BurstBaseLevel = withPatchedOverride('prika', (ov) => {
 const cdrDecrease = withPatchedOverride('prika', (ov) => {
   let hit = 0;
   for (const b of ov.skill2)
-    for (const e of b.effects)
-      if (e.kind === 'burstCdr' && e.seconds === -21) {
+    {for (const e of b.effects)
+      {if (e.kind === 'burstCdr' && e.seconds === -21) {
         e.seconds = 21;
         hit++;
-      }
+      }}}
   if (!hit)
-    throw new Error('prika solo burstCdr -21 missing — fixture is stale');
+    {throw new Error('prika solo burstCdr -21 missing — fixture is stale');}
 });
 
 // ---- P7 heal fixture (liter/prika/crown/ada — prika LEFT of crown so she wins the B2 cast) ----
@@ -186,12 +186,12 @@ function runHeal(overrides: Record<string, any> = {}) {
 const healOnce = withPatchedOverride('prika', (ov) => {
   let hit = 0;
   for (const b of ov.burst)
-    for (const e of b.effects)
-      if (e.kind === 'heal') {
+    {for (const e of b.effects)
+      {if (e.kind === 'heal') {
         e.ticks = 1;
         hit++;
-      }
-  if (!hit) throw new Error('prika burst heal missing — fixture is stale');
+      }}}
+  if (!hit) {throw new Error('prika burst heal missing — fixture is stale');}
 });
 /** Reference: the heal removed entirely (no recovery events from Prika). */
 const healRemoved = withPatchedOverride('prika', (ov) => {
@@ -199,9 +199,9 @@ const healRemoved = withPatchedOverride('prika', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
-    if (b.effects.length !== before) hit++;
+    if (b.effects.length !== before) {hit++;}
   }
-  if (!hit) throw new Error('prika burst heal missing — fixture is stale');
+  if (!hit) {throw new Error('prika burst heal missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -222,7 +222,7 @@ const prikaBuffs = (evs: SimEvent[], stat: string) =>
 const targets = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((t): t is number => t !== null),
+      bs.map((b) => b.targetIdx).filter((t): t is number => t !== null)
     ),
   ].sort((a, b) => a - b);
 const values = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.value))];
@@ -231,7 +231,7 @@ const durFrames = (bs: BuffApply[]) => [
 ];
 const prikaBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'prika',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'prika'
   );
 
 describe('prika — kit spec', () => {
@@ -243,12 +243,12 @@ describe('prika — kit spec', () => {
       expect(targets(applied)).toEqual(ALL_ALLIES);
       expect(
         applied.length,
-        'no Projectile Explosion buff was applied',
+        'no Projectile Explosion buff was applied'
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING: base-level parser would emit 11.82', () => {
       expect(
-        values(prikaBuffs(baseLvl.events, 'projectileExplosionPct')),
+        values(prikaBuffs(baseLvl.events, 'projectileExplosionPct'))
       ).not.toEqual([20]);
     });
     it('is live (removing S1 deletes the buff entirely)', () => {
@@ -265,7 +265,7 @@ describe('prika — kit spec', () => {
     });
     it('DISCRIMINATING: base-level parser would emit 7.73', () => {
       expect(values(prikaBuffs(baseLvl.events, 'pierceDamagePct'))).not.toEqual(
-        [13.09],
+        [13.09]
       );
     });
     it('is damage-INERT at scope lock (no Pierce-tagged recipient until "Gains Pierce" is modeled)', () => {
@@ -274,9 +274,9 @@ describe('prika — kit spec', () => {
       // "Gains Pierce" would light it up on her own SR fire.
       const noPierce = withPatchedOverride('prika', (ov) => {
         for (const b of ov.skill1)
-          b.effects = b.effects.filter(
-            (e: any) => e.stat !== 'pierceDamagePct',
-          );
+          {b.effects = b.effects.filter(
+            (e: any) => e.stat !== 'pierceDamagePct'
+          );}
       });
       expect(run({ prika: noPierce }).totals).toEqual(base.totals);
     });
@@ -287,16 +287,16 @@ describe('prika — kit spec', () => {
     it('is a flat caster-scoped add, identical to every recipient (not a per-target %)', () => {
       expect(
         applied.length,
-        'no casterAtkPct buff was applied',
+        'no casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       const vals = values(applied);
       expect(
         vals.length,
-        'caster-scoped buff must be ONE flat value shared by all allies',
+        'caster-scoped buff must be ONE flat value shared by all allies'
       ).toBe(1);
       expect(
         vals[0],
-        'a flat ATK add (~20% of Prika ATK), not the percentage 20',
+        'a flat ATK add (~20% of Prika ATK), not the percentage 20'
       ).toBeGreaterThan(1000);
       expect(targets(applied)).toEqual(ALL_ALLIES);
       expect(durFrames(applied)).toEqual([3 * FPS]);
@@ -321,7 +321,7 @@ describe('prika — kit spec', () => {
       expect(nBursts).toBeGreaterThan(0);
       expect(
         applied.length,
-        `${applied.length} applications vs ${nBursts} bursts × 3 allies`,
+        `${applied.length} applications vs ${nBursts} bursts × 3 allies`
       ).toBe(nBursts * ALL_ALLIES.length);
     });
     it('DISCRIMINATING: base-level parser would emit 14.29', () => {
@@ -354,24 +354,24 @@ describe('prika — kit spec', () => {
       const casts = prikaBursts(base.events);
       expect(
         casts.length,
-        'CD-increase cadence: ~60s between casts → 3 casts / 180s',
+        'CD-increase cadence: ~60s between casts → 3 casts / 180s'
       ).toBe(3);
       // Gaps between consecutive casts are ~60s (40 base + 21 increase), within rotation slack.
       const gaps: number[] = [];
       for (let i = 1; i < casts.length; i++)
-        gaps.push((casts[i].frame - casts[i - 1].frame) / FPS);
+        {gaps.push((casts[i].frame - casts[i - 1].frame) / FPS);}
       for (const g of gaps)
-        expect(
+        {expect(
           g,
-          `cast gap ${g.toFixed(1)}s should be ~60s (40+21)`,
-        ).toBeGreaterThan(50);
+          `cast gap ${g.toFixed(1)}s should be ~60s (40+21)`
+        ).toBeGreaterThan(50);}
     });
     it('DISCRIMINATING: mis-reading ▲ as a DECREASE (+21) yields strictly more casts', () => {
       const shipped = prikaBursts(base.events).length;
       const decreased = prikaBursts(cdrDown.events).length;
       expect(
         decreased,
-        'a cooldown DECREASE must produce more casts than the shipped increase',
+        'a cooldown DECREASE must produce more casts than the shipped increase'
       ).toBeGreaterThan(shipped);
     });
   });
@@ -387,9 +387,9 @@ describe('prika — kit spec', () => {
               (b) =>
                 b.casterIdx === CROWN &&
                 b.stat === 'attackDamagePct' &&
-                Math.abs(b.value - 20.99) < 0.01,
+                Math.abs(b.value - 20.99) < 0.01
             )
-            .map((b) => b.frame),
+            .map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
 
@@ -399,19 +399,19 @@ describe('prika — kit spec', () => {
       const casts = prikaBursts(evs);
       const out: number[] = [];
       for (const c of casts)
-        out.push(
-          frames.filter((f) => f >= c.frame && f <= c.frame + 25 * FPS).length,
-        );
+        {out.push(
+          frames.filter((f) => f >= c.frame && f <= c.frame + 25 * FPS).length
+        );}
       return out;
     };
 
     it('non-vacuity: prika wins the B2 cast (left of crown) and Performance actually fires', () => {
       expect(
         prikaBursts(healBase.events).length,
-        'prika (slot 1, left of crown) must win the B2 cast',
+        'prika (slot 1, left of crown) must win the B2 cast'
       ).toBeGreaterThan(0);
       expect(
-        prikaBuffs(healBase.events, 'chargeDamagePct').length,
+        prikaBuffs(healBase.events, 'chargeDamagePct').length
       ).toBeGreaterThan(0);
     });
 
@@ -419,10 +419,10 @@ describe('prika — kit spec', () => {
       const windows = perCastWindowFrames(healBase.events);
       expect(windows.length).toBeGreaterThan(0);
       for (const n of windows)
-        expect(
+        {expect(
           n,
-          `${n} recovery frames in a 25s window — a 25-tick stream lands ~25, a single instant lands 1`,
-        ).toBeGreaterThanOrEqual(20);
+          `${n} recovery frames in a 25s window — a 25-tick stream lands ~25, a single instant lands 1`
+        ).toBeGreaterThanOrEqual(20);}
     });
 
     it('DISCRIMINATING: collapsing to ticks:1 starves the consumer (one firing per cast, then lapse)', () => {
@@ -431,13 +431,13 @@ describe('prika — kit spec', () => {
       const sum = (a: number[]) => a.reduce((s, x) => s + x, 0);
       expect(
         sum(once),
-        'ticks:1 must produce far fewer recovery firings than the 25-tick stream',
+        'ticks:1 must produce far fewer recovery firings than the 25-tick stream'
       ).toBeLessThan(sum(shipped) / 2);
     });
 
     it('is live: removing the heal drops crown to its self-proc baseline (strictly fewer firings)', () => {
       expect(crownRecoveryFrames(healNoneRun.events).length).toBeLessThan(
-        crownRecoveryFrames(healBase.events).length,
+        crownRecoveryFrames(healBase.events).length
       );
     });
   });

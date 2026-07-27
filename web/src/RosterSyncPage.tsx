@@ -32,18 +32,18 @@ const UNIT_BY_CODE: Record<
   const chars = (charactersJson as any).characters as Record<string, any>;
   for (const [slug, c] of Object.entries(chars)) {
     const code = c?.role?.meta?.name_code;
-    if (code != null) map[code] = { slug, name: c.name, imageUrl: c.imageUrl };
+    if (code != null) {map[code] = { slug, name: c.name, imageUrl: c.imageUrl };}
   }
   return map;
 })();
 
 // "3 minutes ago" / "just now" — coarse, good enough for staleness signalling.
 function timeAgo(iso: string | null): string {
-  if (!iso) return 'never';
+  if (!iso) {return 'never';}
   const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return 'unknown';
+  if (Number.isNaN(then)) {return 'unknown';}
   const sec = Math.max(0, Math.round((Date.now() - then) / 1000));
-  if (sec < 45) return 'just now';
+  if (sec < 45) {return 'just now';}
   const units: [number, string][] = [
     [60, 'second'],
     [60, 'minute'],
@@ -115,24 +115,24 @@ function UnitTile({ c }: { c: RosterCharacter }) {
   const known = UNIT_BY_CODE[c.name_code];
   return (
     <div
-      className='roster-unit'
+      className="roster-unit"
       title={known ? known.name : `Unit ${c.name_code}`}
     >
-      <div className='roster-unit-portrait'>
+      <div className="roster-unit-portrait">
         {known ? (
           <img
             src={manifestThumbUrl(known.imageUrl, 64) ?? known.imageUrl}
-            alt=''
-            loading='lazy'
+            alt=""
+            loading="lazy"
           />
         ) : (
-          <span className='roster-unit-code'>{c.name_code}</span>
+          <span className="roster-unit-code">{c.name_code}</span>
         )}
       </div>
-      <div className='roster-unit-name'>
+      <div className="roster-unit-name">
         {known ? known.name : `#${c.name_code}`}
       </div>
-      <div className='roster-unit-cp muted'>{c.combat.toLocaleString()}</div>
+      <div className="roster-unit-cp muted">{c.combat.toLocaleString()}</div>
     </div>
   );
 }
@@ -147,18 +147,18 @@ function UnprivateHelp({
   onToggle: () => void;
 }) {
   return (
-    <div className='patch-entry roster-unprivate'>
+    <div className="patch-entry roster-unprivate">
       <button
-        className='roster-unprivate-head'
+        className="roster-unprivate-head"
         onClick={onToggle}
         aria-expanded={open}
       >
-        <span className='patch-title'>Roster private? Make it visible</span>
-        <span className='muted'>{open ? '▲' : '▼'}</span>
+        <span className="patch-title">Roster private? Make it visible</span>
+        <span className="muted">{open ? '▲' : '▼'}</span>
       </button>
       {open && (
-        <div className='roster-unprivate-body'>
-          <p className='muted' style={{ margin: '4px 0 10px' }}>
+        <div className="roster-unprivate-body">
+          <p className="muted" style={{ margin: '4px 0 10px' }}>
             A sync only works if your roster is public in SHIFTYPAD. If it
             isn't, follow these steps:
           </p>
@@ -166,9 +166,9 @@ function UnprivateHelp({
             <li>
               Sign in to{' '}
               <a
-                href='https://www.blablalink.com/'
-                target='_blank'
-                rel='noreferrer'
+                href="https://www.blablalink.com/"
+                target="_blank"
+                rel="noreferrer"
               >
                 blablalink.com
               </a>
@@ -190,9 +190,9 @@ function UnprivateHelp({
             </li>
           </ol>
           <img
-            className='roster-unprivate-shot'
+            className="roster-unprivate-shot"
             src={`${import.meta.env.BASE_URL}blabla-padlock.png`}
-            alt='blablalink profile card with the padlock icon highlighted in the top-right'
+            alt="blablalink profile card with the padlock icon highlighted in the top-right"
           />
         </div>
       )}
@@ -213,7 +213,7 @@ export function RosterSyncPage({
   const [busy, setBusy] = useState(false); // a live sync is in flight
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [error, setError] = useState<ReturnType<typeof describeError> | null>(
-    null,
+    null
   );
   const [unprivateOpen, setUnprivateOpen] = useState(false);
   const [showSwitch, setShowSwitch] = useState(false);
@@ -221,32 +221,32 @@ export function RosterSyncPage({
 
   const current = useMemo(
     () => accounts?.find((a) => a.current) ?? null,
-    [accounts],
+    [accounts]
   );
 
   // On load (once we have a user): pull the account list, and if a current
   // account has been synced before, preload its roster from the DB (instant).
   useEffect(() => {
-    if (!user || didInit.current) return;
+    if (!user || didInit.current) {return;}
     didInit.current = true;
     let cancelled = false;
     setLoadingInitial(true);
     (async () => {
       try {
         const accs = await fetchNikkeAccounts();
-        if (cancelled) return;
+        if (cancelled) {return;}
         setAccounts(accs);
         const cur = accs.find((a) => a.current);
         if (cur && cur.syncedAt) {
           const r = await fetchRoster(cur.openId, { details: true });
-          if (!cancelled) setRoster(r);
+          if (!cancelled) {setRoster(r);}
         }
       } catch (e) {
         if (!cancelled && e instanceof ApiError && e.status === 401) {
           // token expired mid-session — the header login control handles re-auth
         }
       } finally {
-        if (!cancelled) setLoadingInitial(false);
+        if (!cancelled) {setLoadingInitial(false);}
       }
     })();
     return () => {
@@ -281,7 +281,7 @@ export function RosterSyncPage({
     } catch (e) {
       const desc = describeError(e);
       setError(desc);
-      if (desc.unprivate) setUnprivateOpen(true);
+      if (desc.unprivate) {setUnprivateOpen(true);}
     } finally {
       setBusy(false);
     }
@@ -295,7 +295,7 @@ export function RosterSyncPage({
       setAccounts(accs);
       const cur = accs.find((a) => a.current);
       setRoster(
-        cur?.syncedAt ? await fetchRoster(cur.openId, { details: true }) : null,
+        cur?.syncedAt ? await fetchRoster(cur.openId, { details: true }) : null
       );
     } catch (e) {
       setError(describeError(e));
@@ -309,7 +309,7 @@ export function RosterSyncPage({
       await deleteNikkeAccount(openId);
       const accs = await fetchNikkeAccounts();
       setAccounts(accs);
-      if (roster && roster.openId === openId) setRoster(null);
+      if (roster && roster.openId === openId) {setRoster(null);}
     } catch (e) {
       setError(describeError(e));
     }
@@ -330,10 +330,10 @@ export function RosterSyncPage({
   const history = accounts?.filter((a) => !a.current) ?? [];
 
   return (
-    <div className='app roster-sync-page'>
+    <div className="app roster-sync-page">
       <header>
         <h1>Sync your NIKKE roster</h1>
-        <p className='muted'>
+        <p className="muted">
           Paste your blablalink profile link to pull your roster into the sim —
           no manual entry. Your roster is remembered between sessions; just come
           back and it loads automatically.
@@ -341,13 +341,13 @@ export function RosterSyncPage({
       </header>
 
       {!user ? (
-        <div className='patch-entry roster-login'>
-          <p className='muted' style={{ margin: '0 0 12px' }}>
+        <div className="patch-entry roster-login">
+          <p className="muted" style={{ margin: '0 0 12px' }}>
             Log in with Discord to sync your roster.
           </p>
-          <button className='share-btn discord' onClick={onLogin}>
-            <span className='discord-icon' aria-hidden='true'>
-              <BrandIcon name='discord' />
+          <button className="share-btn discord" onClick={onLogin}>
+            <span className="discord-icon" aria-hidden="true">
+              <BrandIcon name="discord" />
             </span>
             <span>Log in with Discord</span>
           </button>
@@ -356,29 +356,29 @@ export function RosterSyncPage({
         <>
           {/* Current account panel — shown once a synced account exists. */}
           {current && current.syncedAt && !showSwitch && (
-            <div className='patch-entry roster-current'>
-              <div className='patch-head'>
-                <span className='patch-title'>
+            <div className="patch-entry roster-current">
+              <div className="patch-head">
+                <span className="patch-title">
                   {current.label || 'My roster'}
                 </span>
-                <span className='patch-date'>
+                <span className="patch-date">
                   synced {timeAgo(current.syncedAt)}
                 </span>
               </div>
-              <div className='roster-current-meta muted'>
+              <div className="roster-current-meta muted">
                 <span>open id ···{current.openId.slice(-6)}</span>
                 {roster && <span>· {rosterCount} units</span>}
               </div>
-              <div className='roster-current-actions'>
+              <div className="roster-current-actions">
                 <button
-                  className='share-btn'
+                  className="share-btn"
                   disabled={busy}
                   onClick={() => runSync(current.openId, true)}
                 >
                   {busy ? 'Syncing…' : 'Re-sync'}
                 </button>
                 <button
-                  className='share-btn ghost'
+                  className="share-btn ghost"
                   disabled={busy}
                   onClick={() => setShowSwitch(true)}
                 >
@@ -390,25 +390,25 @@ export function RosterSyncPage({
 
           {/* Open id input — shown when there's no current account, or on "Switch". */}
           {(!current || !current.syncedAt || showSwitch) && (
-            <div className='patch-entry roster-input-card'>
-              <label className='roster-input-label' htmlFor='roster-openid'>
+            <div className="patch-entry roster-input-card">
+              <label className="roster-input-label" htmlFor="roster-openid">
                 Paste your blablalink profile link (or open id)
               </label>
-              <div className='roster-input-row'>
+              <div className="roster-input-row">
                 <input
-                  id='roster-openid'
-                  className='roster-openid-input'
-                  type='text'
-                  placeholder='https://www.blablalink.com/user?openid=…'
+                  id="roster-openid"
+                  className="roster-openid-input"
+                  type="text"
+                  placeholder="https://www.blablalink.com/user?openid=…"
                   value={input}
                   disabled={busy}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') runSync(input, true);
+                    if (e.key === 'Enter') {runSync(input, true);}
                   }}
                 />
                 <button
-                  className='share-btn'
+                  className="share-btn"
                   disabled={busy}
                   onClick={() => runSync(input, true)}
                 >
@@ -416,7 +416,7 @@ export function RosterSyncPage({
                 </button>
                 {showSwitch && (
                   <button
-                    className='share-btn ghost'
+                    className="share-btn ghost"
                     disabled={busy}
                     onClick={() => setShowSwitch(false)}
                   >
@@ -424,7 +424,7 @@ export function RosterSyncPage({
                   </button>
                 )}
               </div>
-              <p className='muted roster-input-hint'>
+              <p className="muted roster-input-hint">
                 Open your blablalink profile — the address bar shows something
                 like <code>blablalink.com/user?openid=…</code>. Paste that whole
                 link.
@@ -433,7 +433,7 @@ export function RosterSyncPage({
           )}
 
           {error && (
-            <div className='roster-error'>
+            <div className="roster-error">
               {error.msg}
               {error.retryAfterSec
                 ? ` (try again in ${error.retryAfterSec}s)`
@@ -442,27 +442,27 @@ export function RosterSyncPage({
           )}
 
           {loadingInitial && !roster && (
-            <p className='muted'>Loading your roster…</p>
+            <p className="muted">Loading your roster…</p>
           )}
 
           {/* Roster summary. */}
           {roster && (
-            <div className='patch-entry roster-summary'>
-              <div className='patch-head'>
-                <span className='patch-title'>{rosterCount} units</span>
-                <span className='patch-date'>
+            <div className="patch-entry roster-summary">
+              <div className="patch-head">
+                <span className="patch-title">{rosterCount} units</span>
+                <span className="patch-date">
                   {roster.source === 'live'
                     ? 'freshly synced'
                     : `synced ${timeAgo(roster.syncedAt)}`}
                 </span>
               </div>
-              <div className='roster-unit-grid'>
+              <div className="roster-unit-grid">
                 {topUnits.map((c) => (
                   <UnitTile key={c.name_code} c={c} />
                 ))}
               </div>
               {rosterCount > topUnits.length && (
-                <p className='muted roster-more'>
+                <p className="muted roster-more">
                   + {rosterCount - topUnits.length} more units
                 </p>
               )}
@@ -471,30 +471,30 @@ export function RosterSyncPage({
 
           {/* My accounts — history + forget/switch (kept subtle). */}
           {history.length > 0 && (
-            <div className='patch-entry roster-accounts'>
-              <div className='patch-head'>
-                <span className='patch-title'>Other accounts</span>
+            <div className="patch-entry roster-accounts">
+              <div className="patch-head">
+                <span className="patch-title">Other accounts</span>
               </div>
-              <ul className='roster-account-list'>
+              <ul className="roster-account-list">
                 {history.map((a) => (
                   <li key={a.id}>
-                    <span className='roster-account-id'>
+                    <span className="roster-account-id">
                       {a.label || `···${a.openId.slice(-6)}`}
                     </span>
-                    <span className='muted'>
+                    <span className="muted">
                       {a.syncedAt
                         ? `synced ${timeAgo(a.syncedAt)}`
                         : 'never synced'}
                     </span>
                     <button
-                      className='roster-account-btn'
+                      className="roster-account-btn"
                       disabled={busy}
                       onClick={() => switchAccount(a.openId)}
                     >
                       Use
                     </button>
                     <button
-                      className='roster-account-btn danger'
+                      className="roster-account-btn danger"
                       onClick={() => forgetAccount(a.openId)}
                     >
                       Forget

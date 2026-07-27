@@ -94,17 +94,19 @@ function base() {
 const BASE = run(base());
 
 const sakuraDamage = BASE.events.filter(
-  (e) => e.kind === 'damage' && e.slug === SLUG,
+  (e) => e.kind === 'damage' && e.slug === SLUG
 );
 const sakuraBuffs = BASE.events.filter(
-  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG,
+  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG
 );
 const burstCasts = BASE.events.filter(
-  (e) => e.kind === 'burstCast' && e.slug === SLUG,
+  (e) => e.kind === 'burstCast' && e.slug === SLUG
 );
 
 // Sustained-flavored damage from sakura only (S2b Sakura Petals + Bb burst DoT both land here).
-const sustained = sakuraDamage.filter((e) => e.bucket === 'sustained' || e.flavor === 'sustained');
+const sustained = sakuraDamage.filter(
+  (e) => e.bucket === 'sustained' || e.flavor === 'sustained'
+);
 
 describe('sakura-bloom-in-summer — skill1', () => {
   it('S1a: skill2 is force-cast at the start of battle (first Sakura Petals tick lands in the opening second, not at a cooldown)', () => {
@@ -143,7 +145,7 @@ describe('sakura-bloom-in-summer — skill1', () => {
       (e) =>
         e.kind === 'buffApply' &&
         e.stat === 'sustainedDamagePct' &&
-        Math.abs((e.value ?? 0) - 5.1) < 1e-6,
+        Math.abs((e.value ?? 0) - 5.1) < 1e-6
     );
     expect(s51).toHaveLength(0);
   });
@@ -153,10 +155,11 @@ describe('sakura-bloom-in-summer — skill1', () => {
     // 25.02s (15 + 10.02) or Sakura Petals as a 25.02s DoT. Both are unconditional grants of an
     // effect the kit gates on part destruction.
     const dancing = sakuraBuffs.filter(
-      (e) => e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) =>
+        e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     for (const ev of dancing) {
-      if (ev.expiresFrame == null) continue;
+      if (ev.expiresFrame == null) {continue;}
       const durSec = (ev.expiresFrame - ev.frame) / FPS;
       expect(durSec).toBeLessThan(20); // 15s, not 25.02s
     }
@@ -166,7 +169,8 @@ describe('sakura-bloom-in-summer — skill1', () => {
 describe('sakura-bloom-in-summer — skill2', () => {
   it('S2a: Dancing Flower is a SELF Attack Damage +15.64% buff for 15s (not ATK, not team-wide)', () => {
     const dancing = sakuraBuffs.filter(
-      (e) => e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) =>
+        e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     expect(dancing.length).toBeGreaterThan(0);
 
@@ -176,7 +180,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
         e.kind === 'buffApply' &&
         e.stat === 'attackDamagePct' &&
         Math.abs((e.value ?? 0) - 15.64) < 1e-6 &&
-        e.targetSlug !== SLUG,
+        e.targetSlug !== SLUG
     );
     expect(onOthers).toHaveLength(0);
 
@@ -184,7 +188,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
     // NEAREST-WRONG: atkPct 15.64 — same headline number, different bucket, different dilution and
     // it would feed ATK-scaled ally effects. Assert no such buff exists.
     const asAtk = sakuraBuffs.filter(
-      (e) => e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) => e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     expect(asAtk).toHaveLength(0);
 
@@ -202,7 +206,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2?.blocks ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'buff' && e.stat === 'attackDamagePct') e.value = 0;
+          if (e.kind === 'buff' && e.stat === 'attackDamagePct') {e.value = 0;}
         }
       }
     });
@@ -210,7 +214,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
 
     expect(totals(res)[SLUG]).toBeLessThan(totals(BASE.res)[SLUG]);
     for (const slug of Object.keys(totals(BASE.res))) {
-      if (slug === SLUG) continue;
+      if (slug === SLUG) {continue;}
       expect(totals(res)[slug]).toBeCloseTo(totals(BASE.res)[slug], 6);
     }
   });
@@ -221,13 +225,17 @@ describe('sakura-bloom-in-summer — skill2', () => {
     const petals = sustained.filter((e) => nearPct(e, 256));
     expect(petals.length).toBeGreaterThan(0);
 
-    const frames = [...new Set(petals.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(petals.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     const gaps = frames.slice(1).map((f, i) => f - frames[i]);
     // Within one 15s instance the gap is exactly 1s; across instances it may be longer (the recast
     // cadence). The 1s gap must be the DOMINANT spacing — a model that fired the whole 15s payload
     // as a single lump, or ticked at 0.5s/2s, produces no 60-frame mode at all.
     const oneSec = gaps.filter((g) => g === FPS).length;
-    expect(oneSec).toBeGreaterThanOrEqual(Math.max(5, Math.floor(gaps.length * 0.5)));
+    expect(oneSec).toBeGreaterThanOrEqual(
+      Math.max(5, Math.floor(gaps.length * 0.5))
+    );
 
     // DURATION (question 2): 15 ticks per activation at 1/sec.
     // NEAREST-WRONG: durationSec authored as 15 but intervalSec left at some other value, or the
@@ -241,7 +249,9 @@ describe('sakura-bloom-in-summer — skill2', () => {
     //
     // ⛑ The interval LENGTH is not in the kit prose (see header) — deliberately not asserted.
     const petals = sustained.filter((e) => nearPct(e, 256));
-    const frames = [...new Set(petals.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(petals.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     expect(frames.length).toBeGreaterThan(15);
     // and it is not one continuous whole-fight instance either (trap #5: a duration >= fight length
     // on a repeating trigger multiplies). A real re-fire shows at least one gap > 1s.
@@ -318,7 +328,9 @@ describe('sakura-bloom-in-summer — burst', () => {
 
   it('Bb: each burst-DoT instance lasts 10 sec at 1 sec intervals', () => {
     const dotTicks = sustained.filter((e) => nearPct(e, 35.16));
-    const frames = [...new Set(dotTicks.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(dotTicks.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     const gaps = frames.slice(1).map((f, i) => f - frames[i]);
     // 1s tick spacing dominates within a live window.
     expect(gaps.filter((g) => g === FPS).length).toBeGreaterThanOrEqual(5);
@@ -333,7 +345,7 @@ describe('sakura-bloom-in-summer — burst', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst?.blocks ?? []) {
         b.effects = b.effects.filter(
-          (e: any) => !(e.kind === 'dot' && Math.abs(e.atkPct - 35.16) < 1e-6),
+          (e: any) => !(e.kind === 'dot' && Math.abs(e.atkPct - 35.16) < 1e-6)
         );
       }
     });
@@ -341,13 +353,13 @@ describe('sakura-bloom-in-summer — burst', () => {
 
     expect(totals(res)[SLUG]).toBeLessThan(totals(BASE.res)[SLUG]);
     for (const slug of Object.keys(totals(BASE.res))) {
-      if (slug === SLUG) continue;
+      if (slug === SLUG) {continue;}
       expect(totals(res)[slug]).toBeCloseTo(totals(BASE.res)[slug], 6);
     }
 
     // the 457.14% volley must be untouched by removing the DoT
     const volleyAfter = events.filter(
-      (e) => e.kind === 'damage' && e.slug === SLUG && nearPct(e as Ev, 457.14),
+      (e) => e.kind === 'damage' && e.slug === SLUG && nearPct(e as Ev, 457.14)
     );
     const volleyBefore = sakuraDamage.filter((e) => nearPct(e, 457.14));
     expect(volleyAfter.length).toBe(volleyBefore.length);
@@ -364,7 +376,12 @@ describe('sakura-bloom-in-summer — whole-unit sanity', () => {
 
   it('no ally-targeted buffs at all: every line in this kit reads "Affects self" or targets the enemy', () => {
     const leaked = BASE.events.filter(
-      (e) => e.kind === 'buffApply' && e.casterIdx != null && e.targetSlug != null && e.targetSlug !== SLUG && casterIsSakura(e, BASE.res),
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.casterIdx != null &&
+        e.targetSlug != null &&
+        e.targetSlug !== SLUG &&
+        casterIsSakura(e, BASE.res)
     );
     expect(leaked).toHaveLength(0);
   });
@@ -375,13 +392,12 @@ describe('sakura-bloom-in-summer — whole-unit sanity', () => {
 /** Match a damage event to a kit percentage via its multiplier decomposition. */
 function nearPct(ev: Ev, pct: number): boolean {
   const m = ev.mult ?? ev.atkPct ?? ev.multiplier;
-  if (m == null) return false;
+  if (m == null) {return false;}
   return Math.abs(m - pct) < 0.01;
 }
 
 function casterIsSakura(ev: Ev, res: any): boolean {
-  if (ev.casterSlug != null) return ev.casterSlug === SLUG;
+  if (ev.casterSlug != null) {return ev.casterSlug === SLUG;}
   const idx = res.units?.findIndex?.((u: any) => u.slug === SLUG);
   return idx != null && idx >= 0 && ev.casterIdx === idx;
 }
-

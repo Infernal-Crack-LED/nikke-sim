@@ -107,14 +107,14 @@ function selfBuffs(events: SimEvent[], stat: string) {
       e.stat === stat &&
       e.targetSlug === SLUG &&
       e.casterIdx !== null &&
-      e.casterIdx === e.targetIdx,
+      e.casterIdx === e.targetIdx
   );
 }
 
 /** boss-held debuffs: casterIdx === null AND targetIdx === null. */
 function bossDebuffs(events: SimEvent[], stat: string) {
   return ev(events, 'buffApply').filter(
-    (e) => e.stat === stat && e.casterIdx === null && e.targetIdx === null,
+    (e) => e.stat === stat && e.casterIdx === null && e.targetIdx === null
   );
 }
 
@@ -174,7 +174,7 @@ const cfSelfDamageTaken = run({
           };
           if (esc.kind === 'escalating' && Array.isArray(esc.steps)) {
             esc.steps = esc.steps.filter(
-              (s) => !(s.kind === 'buff' && s.stat === 'damageTakenPct'),
+              (s) => !(s.kind === 'buff' && s.stat === 'damageTakenPct')
             );
           }
         }
@@ -190,11 +190,11 @@ const cfNoFbShorten = run({
     [SLUG]: withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst!) {
         b.effects = b.effects.filter(
-          (e) => (e as { kind: string }).kind !== 'fullBurstExtend',
+          (e) => (e as { kind: string }).kind !== 'fullBurstExtend'
         );
       }
       ov.burst = ov.burst.filter(
-        (b: { effects: unknown[] }) => b.effects.length > 0,
+        (b: { effects: unknown[] }) => b.effects.length > 0
       );
     }),
   },
@@ -234,7 +234,7 @@ describe('isabel — fixture non-vacuity', () => {
   it('a SECOND Burst III unit is present, so burstCast ≠ fullBurstEnter is observable', () => {
     // SCHEMA RECONCILIATION (driver, S5): burstCast events key the unit by `slug`.
     const ownCasts = ev(base.events, 'burstCast').filter(
-      (e) => e.slug === SLUG,
+      (e) => e.slug === SLUG
     ).length;
     const fbStarts = ev(base.events, 'fullBurstStart').length;
     // If these were equal the two trigger models would be indistinguishable in this
@@ -293,7 +293,7 @@ describe('isabel skill1 — Marked Target escalation (burst-cast keyed, self, 45
         (e) =>
           e.stat === stat &&
           e.casterIdx === unitOf(base.res, SLUG).position - 1 && // SCHEMA: casterIdx 0-based, position 1-based
-          e.targetSlug !== SLUG,
+          e.targetSlug !== SLUG
       );
       expect(strays).toHaveLength(0);
     }
@@ -336,7 +336,7 @@ describe('isabel skill2 — recurring 170.58% of final ATK rider', () => {
   it('the rider is a caster-scaled flat hit, not a stat buff', () => {
     const slot = unitOf(base.res, SLUG).position - 1; // SCHEMA: casterIdx 0-based, position 1-based
     const buffsFromSkill2 = ev(base.events, 'buffApply').filter(
-      (e) => e.casterIdx === slot && e.stat === 'attackDamagePct',
+      (e) => e.casterIdx === slot && e.stat === 'attackDamagePct'
     );
     // Nearest-wrong: encoding "deals 170.58% of final ATK" as a damage-up percentage buff.
     expect(buffsFromSkill2).toHaveLength(0);
@@ -344,7 +344,7 @@ describe('isabel skill2 — recurring 170.58% of final ATK rider', () => {
 
   it('INERTNESS: skill2 moves no teammate total', () => {
     for (const [slug, dmg] of Object.entries(totals(base.res))) {
-      if (slug === SLUG) continue;
+      if (slug === SLUG) {continue;}
       expect(totals(cfNoSkill2.res)[slug]).toBeCloseTo(dmg, 6);
     }
   });
@@ -363,7 +363,7 @@ describe('isabel skill2 — recurring 170.58% of final ATK rider', () => {
 describe('isabel burst — staged payload, boss debuff, Full Burst shortening', () => {
   it('the burst deals direct damage in the burst bucket', () => {
     const burstHits = isabelDamage(base.events, base.res).filter(
-      (e) => e.bucket === 'burst',
+      (e) => e.bucket === 'burst'
     );
     expect(burstHits.length).toBeGreaterThan(0);
   });
@@ -379,7 +379,7 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
       .filter((e) => e.slug === SLUG)
       .map((e) => Number(e.frame ?? e.atFrame ?? 0));
     const hits = isabelDamage(base.events, base.res).filter(
-      (e) => e.bucket === 'burst',
+      (e) => e.bucket === 'burst'
     );
     const perCast = casts.map((f, i) => {
       const next = casts[i + 1] ?? Number.POSITIVE_INFINITY;
@@ -411,7 +411,7 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
     const cfT = totals(cfSelfDamageTaken.res);
     const mates = Object.keys(baseT).filter((s) => s !== SLUG);
     expect(mates.length).toBeGreaterThan(0);
-    for (const m of mates) expect(cfT[m]).toBeLessThan(baseT[m]);
+    for (const m of mates) {expect(cfT[m]).toBeLessThan(baseT[m]);}
   });
 
   it('"Full Burst Duration ▼ 5 sec" is modelled and moves the team (it is not cosmetic)', () => {
@@ -421,7 +421,7 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
       Object.values(t).reduce((a, b) => a + b, 0);
     expect(sum(totals(cfNoFbShorten.res))).not.toBeCloseTo(
       sum(totals(base.res)),
-      6,
+      6
     );
     // ⚑ BLAST-RADIUS RECONCILIATION (driver, S5): the blind author further asserted the NET
     // SIGN — that removing the shortener RAISES team damage (i.e. the ▼5s is a net harm). That
@@ -437,7 +437,7 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
     const baseT = totals(base.res);
     const cfT = totals(cfNoFbShorten.res);
     const moved = Object.keys(baseT).filter(
-      (s) => s !== SLUG && cfT[s] !== baseT[s],
+      (s) => s !== SLUG && cfT[s] !== baseT[s]
     );
     expect(moved.length).toBeGreaterThan(0);
   });
@@ -449,8 +449,8 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
         e.casterIdx === slot &&
         e.targetSlug !== SLUG &&
         ['atkPct', 'critRatePct', 'critDamagePct', 'casterAtkPct'].includes(
-          String(e.stat),
-        ),
+          String(e.stat)
+        )
     );
     // Her only ally-facing line is the (negative) Full Burst Duration one.
     expect(allyBuffs).toHaveLength(0);

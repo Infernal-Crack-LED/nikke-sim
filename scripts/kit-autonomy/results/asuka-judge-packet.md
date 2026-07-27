@@ -12,6 +12,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -22,12 +23,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -53,29 +56,56 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
@@ -85,6 +115,7 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
 **Fixture:** controlComp('asuka') = liter(B1/Iron) / crown(B2/Iron) / asuka(B3/Fire) / helm(B3/Water), boss Fire, focus asuka. asuka = slot index 2. asuka casts 6 bursts; 11 Full-Burst entries.
 
 **Line inventory (driver disposition):**
+
 - S1 "Damage dealt to Shield ▲601.01% continuously" → UNMODELED (no shield-damage StatKey; partless v1 boss never shields — inert). Verbatim in unmodeled.skill1.
 - S1 "ATK ▲96.98% for 25s when recovery takes effect" → FAITHFUL (recovery trigger, self, atkPct 96.98/25s).
 - S2 "Elem Advantage Attack Damage ▲30.02%/10s, self when in Shield status, FB enter" → FAITHFUL (fullBurstEnter, self, elemAdvantageDamagePct 30.02/10s, **requiresShielded:true gate**).
@@ -95,12 +126,14 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
 - Burst "Hit Rate ▲101.37%/10s" → FAITHFUL (burstCast, self, hitRatePct 101.37/10s; feeds core rate via hrCoreMult).
 
 **TWO GAUNTLET FIXES** (both engine-supported, independently derived by BOTH blind models, damage-neutral in the control comp — probe-verified byte-identical team totals 443617952.67):
+
 1. **S2 Elemental Advantage += requiresShielded:true.** The shipped parser-baseline modeled this UNCONDITIONAL, claiming "engine has no shield-state gate." That premise is FALSE — `requiresShielded?: boolean` IS a real block gate in src/skills/types.ts (cf. naga). The kit literally says "Affects self when in Shield status." Both blind models gated it (fable S2b flagged the dropped gate as nearest-wrong; opus S6 encoded requiresShielded:true). In the control comp crown's burst shield (15s, all allies) keeps asuka shielded at every FB entry, so the gate is satisfied → 11 applies (damage byte-identical, buff inert vs Fire boss). Removing crown's shield → 0 applies (gate proven live, not decorative).
 2. **Pierce hasPierce:true → gainPierce:25s burstCast effect.** The kit says "Gain Pierce for 25 sec" — a timed window, not the permanent top-level flag. Both blind models chose gainPierce:25s. Pierce is inert in v1 (PIERCE_CORE_DOUBLE off, no pierceDamagePct), so damage is byte-identical either way; the timed effect is the faithful encoding.
 
 **RESIDUAL KEPT (non-fabrication):** burst lifesteal modeled as a SINGLE recovery event at cast, not a 10-tick HoT (ticks:10). The kit says "over 10 sec"; whether the in-game lifesteal HoT procs "when recovery takes effect" per-tick is UNMEASURED, and ticks:10 vs ticks:1 is MATERIAL to S1 ATK uptime (~10s/rotation). Per MEASURED>FUDGE, the single-event model is kept and flagged ⚑ (estimate + recipe in note), NOT fabricated to ticks:10. Both blind models recommended ticks:10 but flagged it as an estimate.
 
 **S5 blind test vs SHIPPED (post-FIX) override: 14 pass / 3 fail / 3 skip.** The 3 failures are ALL artifacts (classified below); the pierce divergence was RESOLVED by FIX #2:
+
 - [1] S2a "the in-Shield-status gate suppresses the block in a comp with no shield source" → FIXTURE MISCONCEPTION (RECON_ERROR): the blind test's stated premise is "no unit in controlComp applies a Shield to asuka." FALSE — crown's burst applies a shield to all allies, satisfying the gate → 11 applies (not 0). The shipped encoding now CONVERGES with the blind override (both requiresShielded:true); the assertion fails only on the blind's false fixture premise. The gate's correctness is independently proven by the driver's crownNoShield counterfactual (0 applies).
 - [2] burst Attack damage "moves asuka damage and nothing else (self scope)" → ARTIFACT: asserts `unitOf(liter)` deep-equal between base and noAtkDmg runs. liter's `totalDamage` is BYTE-IDENTICAL (129303667.87 both); only the team-relative `share` field shifts because asuka's damage dropped, changing the team-total denominator. Self-scope is correct; the whole-record deep-equal is too strict.
 - [3] burst Hit Rate "carries real damage ... only for asuka" → same ARTIFACT as [2] (liter totalDamage identical; share field team-relative).
@@ -285,16 +318,13 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
     "burst:hitRatePct 101.37 10s"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Damage dealt to Shield ▲ 601.01% continuously."
-    ],
+    "skill1": ["Damage dealt to Shield ▲ 601.01% continuously."],
     "skill2": [],
     "burst": []
   },
   "notes": "Expected shared-prior misreads to reconcile, in priority order: (1) The burst lifesteal is the load-bearing line most likely skipped as 'defensive' — it self-loops into skill1's recovery-triggered ATK ▲96.98%/25s, and with the burst cd at 40s plus any team heal source (helm in controlComp) that ATK buff can approach permanent uptime; a driver who modeled S1 correctly but dropped the burst heal, or who never patched out team heals when asserting the loop, has an untested tandem. (2) All four burst self-lines must be burstCast, not fullBurstEnter — controlComp runs helm as co-B3, so the two keyings genuinely diverge there; any assertion set that only checks 'buff present during FB' is green under both and proves nothing. (3) skill2a must be doubly distinguishable: elemAdvantageDamagePct (inert vs the Fire control boss — asserting controlComp invariance catches an attackDamagePct misencoding) AND requiresShielded (catches the dropped gate; note the gate is evaluated at FB-enter, so shield-vs-FB event ordering matters if a shielder like crown applies shields on the same FB edge — the assertion should apply the probe shield strictly before FB). (4) Burst durations are mixed 25/10/10/10 — Pierce at 25s is the odd one out and invites a copy-paste 10s. (5) The 601.01% shield line is the biggest single number in the kit and the most dangerous if promoted to a damage bucket; it must appear verbatim in `unmodeled` (rule 6: no ignored-blocks) with an explicit inertness assertion. (6) AR, chargeFrames 0, hitsPerShot 1 — no charge/round-count semantics anywhere in this kit; any durationShots usage would itself be a misread.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ---
@@ -381,251 +411,312 @@ measurement, NEVER a number chosen to hit the board. Tight structured JSON, not 
 // engine can express (S2a in-Shield-status gate; Gain Pierce as a timed gainPierce:25s effect), the
 // assertion runs as-written against the committed override and any RED is an honest divergence for
 // the S7 reconciling judge to arbitrate — not a silent pass and not a fabricated green.
-import { describe, it, expect } from 'vitest'
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../../tests/lib/harness.js'
+import { describe, it, expect } from 'vitest';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../../tests/lib/harness.js';
 
-type Ev = any
+type Ev = any;
 
 // ---------------------------------------------------------------- plumbing
-const near = (a: any, b: number, tol = 0.05) => typeof a === 'number' && Math.abs(a - b) <= tol
+const near = (a: any, b: number, tol = 0.05) =>
+  typeof a === 'number' && Math.abs(a - b) <= tol;
 
 function run(opts: any) {
-  const events: Ev[] = []
-  const res = runComp({ ...opts, cfg: { ...(opts.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) } } as any)
-  return { res, events }
+  const events: Ev[] = [];
+  const res = runComp({
+    ...opts,
+    cfg: { ...(opts.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) },
+  } as any);
+  return { res, events };
 }
 
 function runPatched(mutate: (ov: any) => void, helm = true) {
-  const b: any = controlComp('asuka', helm)
-  const patched = withPatchedOverride('asuka', mutate)
-  return run({ ...b, overrides: { ...(b.overrides ?? {}), asuka: patched } })
+  const b: any = controlComp('asuka', helm);
+  const patched = withPatchedOverride('asuka', mutate);
+  return run({ ...b, overrides: { ...(b.overrides ?? {}), asuka: patched } });
 }
 
 /** read the committed override WITHOUT running a sim — withPatchedOverride hands us the clone. */
 function inspect<T>(read: (ov: any) => T): T {
-  let out: any
-  withPatchedOverride('asuka', (ov: any) => { out = read(ov) })
-  return out as T
+  let out: any;
+  withPatchedOverride('asuka', (ov: any) => {
+    out = read(ov);
+  });
+  return out as T;
 }
 
 // MECHANICAL ADAPTATION: the committed OverrideFile splits blocks across skill1/skill2/burst.
-const allBlocks = (ov: any): any[] => [...(ov.skill1 ?? []), ...(ov.skill2 ?? []), ...(ov.burst ?? [])]
+const allBlocks = (ov: any): any[] => [
+  ...(ov.skill1 ?? []),
+  ...(ov.skill2 ?? []),
+  ...(ov.burst ?? []),
+];
 
 const eachEffect = (ov: any, fn: (e: any, b: any) => void) => {
-  for (const b of allBlocks(ov)) for (const e of b.effects ?? []) fn(e, b)
-}
+  for (const b of allBlocks(ov)) for (const e of b.effects ?? []) fn(e, b);
+};
 const setValue = (pred: (e: any) => boolean, value: number) => (ov: any) =>
-  eachEffect(ov, (e) => { if (pred(e)) e.value = value })
+  eachEffect(ov, (e) => {
+    if (pred(e)) e.value = value;
+  });
 const dropEffect = (pred: (e: any) => boolean) => (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => !pred(e))
-}
+  for (const b of allBlocks(ov))
+    b.effects = (b.effects ?? []).filter((e: any) => !pred(e));
+};
 
 // Effect predicates. The prose magnitudes are unique inside this kit, so they are the identity —
 // this keeps the patches independent of how the driver ordered or split the blocks.
-const isAtk9698 = (e: any) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 96.98)
-const isElemAdv30 = (e: any) => e.kind === 'buff' && near(e.value, 30.02)
-const isCore60 = (e: any) => e.kind === 'buff' && near(e.value, 60.07)
-const isAtkDmg150 = (e: any) => e.kind === 'buff' && near(e.value, 150.04)
-const isHitRate = (e: any) => e.kind === 'buff' && near(e.value, 101.37)
-const isPierce = (e: any) => e.kind === 'gainPierce'
-const isHeal = (e: any) => e.kind === 'heal'
+const isAtk9698 = (e: any) =>
+  e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 96.98);
+const isElemAdv30 = (e: any) => e.kind === 'buff' && near(e.value, 30.02);
+const isCore60 = (e: any) => e.kind === 'buff' && near(e.value, 60.07);
+const isAtkDmg150 = (e: any) => e.kind === 'buff' && near(e.value, 150.04);
+const isHitRate = (e: any) => e.kind === 'buff' && near(e.value, 101.37);
+const isPierce = (e: any) => e.kind === 'gainPierce';
+const isHeal = (e: any) => e.kind === 'heal';
 
 const retargetCore = (target: any) => (ov: any) => {
-  for (const b of allBlocks(ov)) if ((b.effects ?? []).some(isCore60)) b.target = target
-}
+  for (const b of allBlocks(ov))
+    if ((b.effects ?? []).some(isCore60)) b.target = target;
+};
 const ungateShield = (ov: any) => {
-  for (const b of allBlocks(ov)) if ((b.effects ?? []).some(isElemAdv30)) delete b.requiresShielded
-}
+  for (const b of allBlocks(ov))
+    if ((b.effects ?? []).some(isElemAdv30)) delete b.requiresShielded;
+};
 
 // ---------------------------------------------------------------- runs (hoisted; each is a full 180s sim)
-const base = run(controlComp('asuka', true))
-const noHelm = run(controlComp('asuka', false))
-const noHeal = runPatched(dropEffect(isHeal), false)
-const shieldUngated = runPatched(ungateShield, true)
-const coreAllAllies = runPatched(retargetCore({ kind: 'allies' }), true)
-const coreWind = runPatched(retargetCore({ kind: 'alliesOfElement', element: 'Wind' }), true)
-const noAtkDmg = runPatched(setValue(isAtkDmg150, 0), true)
-const noHitRate = runPatched(setValue(isHitRate, 0), true)
-const noPierce = runPatched(dropEffect(isPierce), true)
+const base = run(controlComp('asuka', true));
+const noHelm = run(controlComp('asuka', false));
+const noHeal = runPatched(dropEffect(isHeal), false);
+const shieldUngated = runPatched(ungateShield, true);
+const coreAllAllies = runPatched(retargetCore({ kind: 'allies' }), true);
+const coreWind = runPatched(
+  retargetCore({ kind: 'alliesOfElement', element: 'Wind' }),
+  true
+);
+const noAtkDmg = runPatched(setValue(isAtkDmg150, 0), true);
+const noHitRate = runPatched(setValue(isHitRate, 0), true);
+const noPierce = runPatched(dropEffect(isPierce), true);
 
 // ---------------------------------------------------------------- event helpers
 const applies = (evs: Ev[], pred: (e: Ev) => boolean) =>
-  evs.filter(e => e.kind === 'buffApply' && pred(e))
-const countKind = (evs: Ev[], kind: string) => evs.filter(e => e.kind === kind).length
+  evs.filter((e) => e.kind === 'buffApply' && pred(e));
+const countKind = (evs: Ev[], kind: string) =>
+  evs.filter((e) => e.kind === kind).length;
 
 // asuka slot index, derived from one of her three self-only burst/skill magnitudes. Recomputed PER RUN
 // because the helm=false comp has a different roster and therefore different slot indices.
 const idxIn = (evs: Ev[]) => {
   for (const v of [101.37, 150.04, 96.98]) {
-    const hit = evs.find(e => e.kind === 'buffApply' && near(e.value, v) && typeof e.targetIdx === 'number')
-    if (hit) return hit.targetIdx as number
+    const hit = evs.find(
+      (e) =>
+        e.kind === 'buffApply' &&
+        near(e.value, v) &&
+        typeof e.targetIdx === 'number'
+    );
+    if (hit) return hit.targetIdx as number;
   }
-  return -1
-}
-const aiBase = idxIn(base.events)
-const aiNoHelm = idxIn(noHelm.events)
-const fbBase = countKind(base.events, 'fullBurstStart')
+  return -1;
+};
+const aiBase = idxIn(base.events);
+const aiNoHelm = idxIn(noHelm.events);
+const fbBase = countKind(base.events, 'fullBurstStart');
 
 const asukaDamage = (res: any) => {
-  const u: any = unitOf(res, 'asuka')
-  const v = u?.damage ?? u?.total ?? u?.totalDamage ?? u?.dmg
-  expect(typeof v).toBe('number')
-  return v as number
-}
+  const u: any = unitOf(res, 'asuka');
+  const v = u?.damage ?? u?.total ?? u?.totalDamage ?? u?.dmg;
+  expect(typeof v).toBe('number');
+  return v as number;
+};
 
 describe('asuka — fixture sanity (non-vacuity for everything below)', () => {
   it('the carry is resolvable and the comp actually reaches Full Burst repeatedly', () => {
-    expect(aiBase).toBeGreaterThanOrEqual(0)
-    expect(aiNoHelm).toBeGreaterThanOrEqual(0)
-    expect(fbBase).toBeGreaterThan(1)
-    expect(unitOf(base.res, 'liter')).toBeTruthy()
-    expect(asukaDamage(base.res)).toBeGreaterThan(0)
-  })
-})
+    expect(aiBase).toBeGreaterThanOrEqual(0);
+    expect(aiNoHelm).toBeGreaterThanOrEqual(0);
+    expect(fbBase).toBeGreaterThan(1);
+    expect(unitOf(base.res, 'liter')).toBeTruthy();
+    expect(asukaDamage(base.res)).toBeGreaterThan(0);
+  });
+});
 
 describe('asuka S1a — Damage dealt to Shield ▲601.01% (no primitive)', () => {
   it('is recorded as unmodeled text and is NOT smuggled into some other stat', () => {
-    const um: any = inspect((ov: any) => ov.unmodeled ?? {})
-    const s1: string[] = um.skill1 ?? []
-    expect(s1.some(l => /Shield/i.test(String(l)))).toBe(true)
+    const um: any = inspect((ov: any) => ov.unmodeled ?? {});
+    const s1: string[] = um.skill1 ?? [];
+    expect(s1.some((l) => /Shield/i.test(String(l)))).toBe(true);
     const smuggled = inspect((ov: any) => {
-      let f = false
-      eachEffect(ov, (e) => { if (near(e.value, 601.01, 0.5) || near(e.atkPct, 601.01, 0.5)) f = true })
-      return f
-    })
-    expect(smuggled).toBe(false)
-  })
+      let f = false;
+      eachEffect(ov, (e) => {
+        if (near(e.value, 601.01, 0.5) || near(e.atkPct, 601.01, 0.5)) f = true;
+      });
+      return f;
+    });
+    expect(smuggled).toBe(false);
+  });
 
-  it.skip('shield-damage payload — GAP: no StatKey for damage-to-shield and the v1 boss has no shield pool', () => {})
-})
+  it.skip('shield-damage payload — GAP: no StatKey for damage-to-shield and the v1 boss has no shield pool', () => {});
+});
 
 describe('asuka S1b — ATK ▲96.98% for 25s when recovery takes effect', () => {
   it('fires from a recovery event, not from battle start (nearest-wrong: passive)', () => {
-    const hits = applies(noHelm.events, isAtk9698Ev)
-    expect(hits.length).toBeGreaterThan(0)
-    const firstApply = noHelm.events.findIndex(e => e.kind === 'buffApply' && near(e.value, 96.98))
-    const firstBurstCast = noHelm.events.findIndex(e => e.kind === 'burstCast')
-    expect(firstBurstCast).toBeGreaterThanOrEqual(0)
-    expect(firstApply).toBeGreaterThan(firstBurstCast)
-  })
+    const hits = applies(noHelm.events, isAtk9698Ev);
+    expect(hits.length).toBeGreaterThan(0);
+    const firstApply = noHelm.events.findIndex(
+      (e) => e.kind === 'buffApply' && near(e.value, 96.98)
+    );
+    const firstBurstCast = noHelm.events.findIndex(
+      (e) => e.kind === 'burstCast'
+    );
+    expect(firstBurstCast).toBeGreaterThanOrEqual(0);
+    expect(firstApply).toBeGreaterThan(firstBurstCast);
+  });
 
   it('is driven by her OWN burst heal — removing the heal removes the ATK buff entirely', () => {
-    expect(applies(noHelm.events, isAtk9698Ev).length).toBeGreaterThan(0)
-    expect(applies(noHeal.events, isAtk9698Ev).length).toBe(0)
-  })
+    expect(applies(noHelm.events, isAtk9698Ev).length).toBeGreaterThan(0);
+    expect(applies(noHeal.events, isAtk9698Ev).length).toBe(0);
+  });
 
   it('is self-only (Affects self) — no ally ever receives it', () => {
-    const hits = applies(noHelm.events, isAtk9698Ev)
-    expect(hits.every(e => e.targetIdx === aiNoHelm)).toBe(true)
-  })
+    const hits = applies(noHelm.events, isAtk9698Ev);
+    expect(hits.every((e) => e.targetIdx === aiNoHelm)).toBe(true);
+  });
 
-  it.skip('heal tick cadence — ⚑ MEASUREMENT-GATED: prose says over 10 sec without a per-tick rate, so refresh count (1 vs 10 recovery events) is not derivable from text', () => {})
-})
+  it.skip('heal tick cadence — ⚑ MEASUREMENT-GATED: prose says over 10 sec without a per-tick rate, so refresh count (1 vs 10 recovery events) is not derivable from text', () => {});
+});
 
 describe('asuka S2a — Elemental Advantage Attack Damage ▲30.02%, shield-gated, on FB enter', () => {
   it('the in-Shield-status gate suppresses the block in a comp with no shield source', () => {
-    expect(applies(base.events, isElemAdvEv).length).toBe(0)
-    expect(applies(shieldUngated.events, isElemAdvEv).length).toBeGreaterThan(0)
-  })
+    expect(applies(base.events, isElemAdvEv).length).toBe(0);
+    expect(applies(shieldUngated.events, isElemAdvEv).length).toBeGreaterThan(
+      0
+    );
+  });
 
   it('is full-burst-enter keyed and self-targeted (nearest-wrong: burstCast / whole team)', () => {
-    const hits = applies(shieldUngated.events, isElemAdvEv)
-    const fb = countKind(shieldUngated.events, 'fullBurstStart')
-    const ai = idxIn(shieldUngated.events)
-    expect(hits.length).toBe(fb)
-    expect(hits.every(e => e.targetIdx === ai)).toBe(true)
-  })
+    const hits = applies(shieldUngated.events, isElemAdvEv);
+    const fb = countKind(shieldUngated.events, 'fullBurstStart');
+    const ai = idxIn(shieldUngated.events);
+    expect(hits.length).toBe(fb);
+    expect(hits.every((e) => e.targetIdx === ai)).toBe(true);
+  });
 
   it('uses the elemental-advantage stat, not generic element/attack damage', () => {
-    const hits = applies(shieldUngated.events, isElemAdvEv)
-    expect(hits.length).toBeGreaterThan(0)
-    expect(hits.every(e => e.stat === 'elemAdvantageDamagePct')).toBe(true)
-  })
-})
+    const hits = applies(shieldUngated.events, isElemAdvEv);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.every((e) => e.stat === 'elemAdvantageDamagePct')).toBe(true);
+  });
+});
 
 describe('asuka S2b — core damage ▲60.07% to all Fire Code allies on FB enter', () => {
   it('applies once per Full Burst, to asuka included (nearest-wrong: burstCast keying, or excludeSelf)', () => {
-    const hits = applies(base.events, isCore60Ev)
-    const toAsuka = hits.filter(e => e.targetIdx === aiBase)
-    expect(toAsuka.length).toBe(fbBase)
-    expect(hits.every(e => e.stat === 'coreDamagePct')).toBe(true)
-  })
+    const hits = applies(base.events, isCore60Ev);
+    const toAsuka = hits.filter((e) => e.targetIdx === aiBase);
+    expect(toAsuka.length).toBe(fbBase);
+    expect(hits.every((e) => e.stat === 'coreDamagePct')).toBe(true);
+  });
 
   it('is Fire-Code scoped, not team-wide', () => {
-    const recip = (evs: Ev[]) => new Set(applies(evs, isCore60Ev).map(e => e.targetIdx))
-    const committed = recip(base.events)
-    const allAllies = recip(coreAllAllies.events)
-    expect(committed.size).toBeGreaterThan(0)
-    expect([...committed].every(i => allAllies.has(i))).toBe(true)
-    expect(committed.size).toBeLessThan(allAllies.size)
-  })
+    const recip = (evs: Ev[]) =>
+      new Set(applies(evs, isCore60Ev).map((e) => e.targetIdx));
+    const committed = recip(base.events);
+    const allAllies = recip(coreAllAllies.events);
+    expect(committed.size).toBeGreaterThan(0);
+    expect([...committed].every((i) => allAllies.has(i))).toBe(true);
+    expect(committed.size).toBeLessThan(allAllies.size);
+  });
 
   it('the element key is Fire — asuka drops out of the target set when it is changed', () => {
-    const ai = idxIn(coreWind.events)
-    const toAsuka = applies(coreWind.events, isCore60Ev).filter(e => e.targetIdx === ai)
-    expect(toAsuka.length).toBe(0)
-    expect(applies(base.events, isCore60Ev).filter(e => e.targetIdx === aiBase).length).toBeGreaterThan(0)
-  })
-})
+    const ai = idxIn(coreWind.events);
+    const toAsuka = applies(coreWind.events, isCore60Ev).filter(
+      (e) => e.targetIdx === ai
+    );
+    expect(toAsuka.length).toBe(0);
+    expect(
+      applies(base.events, isCore60Ev).filter((e) => e.targetIdx === aiBase)
+        .length
+    ).toBeGreaterThan(0);
+  });
+});
 
 describe('asuka burst — Attack damage ▲150.04% for 10s (self)', () => {
   it('is burst-cast keyed, self-targeted, and lands in the Damage-Up bucket not the ATK stat', () => {
-    const hits = applies(base.events, isAtkDmgEv)
-    expect(hits.length).toBeGreaterThan(0)
-    expect(hits.length).toBeLessThan(fbBase)
-    expect(hits.every(e => e.targetIdx === aiBase)).toBe(true)
-    expect(hits.every(e => e.stat === 'attackDamagePct')).toBe(true)
-    expect(applies(base.events, e => e.stat === 'atkPct' && near(e.value, 150.04)).length).toBe(0)
-  })
+    const hits = applies(base.events, isAtkDmgEv);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.length).toBeLessThan(fbBase);
+    expect(hits.every((e) => e.targetIdx === aiBase)).toBe(true);
+    expect(hits.every((e) => e.stat === 'attackDamagePct')).toBe(true);
+    expect(
+      applies(base.events, (e) => e.stat === 'atkPct' && near(e.value, 150.04))
+        .length
+    ).toBe(0);
+  });
 
   it('moves asuka damage and nothing else (self scope)', () => {
-    expect(asukaDamage(noAtkDmg.res)).toBeLessThan(asukaDamage(base.res))
-    expect(unitOf(noAtkDmg.res, 'liter')).toEqual(unitOf(base.res, 'liter'))
-    expect(unitOf(noAtkDmg.res, 'crown')).toEqual(unitOf(base.res, 'crown'))
-  })
-})
+    expect(asukaDamage(noAtkDmg.res)).toBeLessThan(asukaDamage(base.res));
+    expect(unitOf(noAtkDmg.res, 'liter')).toEqual(unitOf(base.res, 'liter'));
+    expect(unitOf(noAtkDmg.res, 'crown')).toEqual(unitOf(base.res, 'crown'));
+  });
+});
 
 describe('asuka burst — Hit Rate ▲101.37% for 10s (self)', () => {
   it('applies once per own burst, to self only', () => {
-    const hits = applies(base.events, isHitRateEv)
-    expect(hits.length).toBeGreaterThan(0)
-    expect(hits.length).toBeLessThan(fbBase)
-    expect(hits.every(e => e.targetIdx === aiBase && e.stat === 'hitRatePct')).toBe(true)
-    expect(hits.length).toBe(applies(base.events, isAtkDmgEv).length)
-  })
+    const hits = applies(base.events, isHitRateEv);
+    expect(hits.length).toBeGreaterThan(0);
+    expect(hits.length).toBeLessThan(fbBase);
+    expect(
+      hits.every((e) => e.targetIdx === aiBase && e.stat === 'hitRatePct')
+    ).toBe(true);
+    expect(hits.length).toBe(applies(base.events, isAtkDmgEv).length);
+  });
 
   it('carries real damage through the hit-rate core lift, and only for asuka', () => {
-    expect(asukaDamage(noHitRate.res)).toBeLessThan(asukaDamage(base.res))
-    expect(unitOf(noHitRate.res, 'liter')).toEqual(unitOf(base.res, 'liter'))
-  })
+    expect(asukaDamage(noHitRate.res)).toBeLessThan(asukaDamage(base.res));
+    expect(unitOf(noHitRate.res, 'liter')).toEqual(unitOf(base.res, 'liter'));
+  });
 
-  it.skip('hit-rate -> core MAGNITUDE — ⚑ measured-only (hrCoreMult is a derived engine constant, not a kit value)', () => {})
-})
+  it.skip('hit-rate -> core MAGNITUDE — ⚑ measured-only (hrCoreMult is a derived engine constant, not a kit value)', () => {});
+});
 
 describe('asuka burst — Gain Pierce for 25 sec (self)', () => {
   it('carries the 25s window, not the 10s window the other three burst lines use', () => {
     const p: any = inspect((ov: any) => {
-      let hit: any = null
-      eachEffect(ov, (e) => { if (!hit && e.kind === 'gainPierce') hit = e })
-      return hit
-    })
-    expect(p).toBeTruthy()
-    expect(p.durationSec).toBe(25)
-  })
+      let hit: any = null;
+      eachEffect(ov, (e) => {
+        if (!hit && e.kind === 'gainPierce') hit = e;
+      });
+      return hit;
+    });
+    expect(p).toBeTruthy();
+    expect(p.durationSec).toBe(25);
+  });
 
   it('is damage-inert in v1 (pierceDamagePct is parsed but inert) — documents, not asserts, a payload', () => {
-    expect(totals(noPierce.res)).toEqual(totals(base.res))
-  })
-})
+    expect(totals(noPierce.res)).toEqual(totals(base.res));
+  });
+});
 
 // isXEv wrappers keep the event predicates separate from the override-effect predicates above:
 // buffApply events carry stat+value, override effects carry kind+stat+value.
-function isAtk9698Ev(e: Ev) { return e.stat === 'atkPct' && near(e.value, 96.98) }
-function isElemAdvEv(e: Ev) { return near(e.value, 30.02) }
-function isCore60Ev(e: Ev) { return near(e.value, 60.07) }
-function isAtkDmgEv(e: Ev) { return near(e.value, 150.04) }
-function isHitRateEv(e: Ev) { return near(e.value, 101.37) }
-
+function isAtk9698Ev(e: Ev) {
+  return e.stat === 'atkPct' && near(e.value, 96.98);
+}
+function isElemAdvEv(e: Ev) {
+  return near(e.value, 30.02);
+}
+function isCore60Ev(e: Ev) {
+  return near(e.value, 60.07);
+}
+function isAtkDmgEv(e: Ev) {
+  return near(e.value, 150.04);
+}
+function isHitRateEv(e: Ev) {
+  return near(e.value, 101.37);
+}
 ```
 
 ---
@@ -973,7 +1064,6 @@ function isHitRateEv(e: Ev) { return near(e.value, 101.37) }
     }
   ]
 }
-
 ```
 
 ```typescript (scripts/tests/units/asuka.test.ts — driver kit spec, 15 tests GREEN vs shipped)
@@ -1116,7 +1206,7 @@ const asukaS2All = withPatchedOverride('asuka', (ov) => {
     if (
       b.effects.some(
         (e: any) =>
-          e.stat === 'elemAdvantageDamagePct' || e.stat === 'coreDamagePct',
+          e.stat === 'elemAdvantageDamagePct' || e.stat === 'coreDamagePct'
       )
     ) {
       b.target = { kind: 'allies' };
@@ -1171,11 +1261,11 @@ const asukaBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === ASUKA &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const asukaBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'asuka',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'asuka'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -1189,15 +1279,15 @@ const dur = (bs: BuffApply[]) => [
 const SHIPPED = JSON.parse(
   readFileSync(
     new URL('../../../src/skills/overrides/asuka.json', import.meta.url),
-    'utf8',
-  ),
+    'utf8'
+  )
 );
 
 describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
   describe('H1 — S1 shield-damage 601.01% is honestly UNMODELED (inert: no StatKey, partless boss)', () => {
     it('is documented verbatim in unmodeled.skill1, not silently dropped', () => {
       expect(SHIPPED.unmodeled.skill1).toContain(
-        'Damage dealt to Shield ▲ 601.01% continuously.',
+        'Damage dealt to Shield ▲ 601.01% continuously.'
       );
     });
   });
@@ -1220,15 +1310,15 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       const passiveApplied = asukaBuffs(passive.events, 'atkPct', 96.98);
       expect(
         frames(passiveApplied),
-        'passive applies a single always-on buff at t=0',
+        'passive applies a single always-on buff at t=0'
       ).toEqual([0]);
       expect(
         applied.length,
-        'recovery re-fires as heals land — far more than the single passive grant',
+        'recovery re-fires as heals land — far more than the single passive grant'
       ).toBeGreaterThan(passiveApplied.length);
       expect(
         Math.max(...frames(applied)),
-        'recovery firings span the whole fight, not just t=0',
+        'recovery firings span the whole fight, not just t=0'
       ).toBeGreaterThan(1000);
     });
   });
@@ -1250,13 +1340,13 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       // shield source) and the gate must zero the block. Proves the gate is live, not decorative —
       // the nearest-wrong model (gate dropped) keeps firing here.
       expect(
-        asukaBuffs(noShield.events, 'elemAdvantageDamagePct', 30.02).length,
+        asukaBuffs(noShield.events, 'elemAdvantageDamagePct', 30.02).length
       ).toBe(0);
     });
 
     it('DISCRIMINATING: un-scoping to all allies would reach every slot', () => {
       expect(
-        targets(asukaBuffs(s2All.events, 'elemAdvantageDamagePct', 30.02)),
+        targets(asukaBuffs(s2All.events, 'elemAdvantageDamagePct', 30.02))
       ).toEqual([0, 1, 2, 3]);
     });
   });
@@ -1277,7 +1367,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
 
     it('DISCRIMINATING: an all-allies encoding would reach all four slots', () => {
       expect(targets(asukaBuffs(s2All.events, 'coreDamagePct', 60.07))).toEqual(
-        [0, 1, 2, 3],
+        [0, 1, 2, 3]
       );
     });
   });
@@ -1302,7 +1392,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       expect(burstFrames.length).toBeGreaterThan(0);
       expect(
         frames(s1),
-        'each burst lifesteal procs exactly one S1 recovery, at the cast frame',
+        'each burst lifesteal procs exactly one S1 recovery, at the cast frame'
       ).toEqual(burstFrames);
     });
   });
@@ -1322,7 +1412,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
 
   describe('PIERCE — burst "Gain Pierce 25s" is a timed gainPierce effect (inert in v1)', () => {
     const pierceEffect = SHIPPED.burst[0].effects.find(
-      (e: any) => e.kind === 'gainPierce',
+      (e: any) => e.kind === 'gainPierce'
     );
 
     it('is encoded as a timed gainPierce:25s burstCast effect, not the permanent hasPierce flag', () => {
@@ -1339,14 +1429,13 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
     });
   });
 });
-
 ```
 
 ---
 
 ## S2d INDEPENDENT VERIFICATION
 
-``` (driver test vs shipped override)
+```(driver test vs shipped override)
 
 [1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-24[39m
 

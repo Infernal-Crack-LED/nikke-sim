@@ -19,9 +19,7 @@
     "rl3": 1.95,
     "burstGaugePerShot": 0.05,
     "treasure": false,
-    "nicknames": [
-      "swid"
-    ],
+    "nicknames": ["swid"],
     "skills": {
       "skill1": "■ Activates after landing 30 normal attack(s). Affects self.\nMax Ammunition Capacity ▲ 25.66%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects enemies within attack range. \nDeals 188.68% of final ATK as damage.",
       "skill2": "■ Activates when landing 50 normal attack(s). Affects all enemies.\nDeals 61.69% of final ATK as damage. \n■ Activates when using Burst Skill. Affects self.\nAttack damage ▲ 21.12% for 10 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -325,16 +319,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Hit count required for Skill 2 ▼ {description_value_01} time(s) for {description_value_02} sec.</color>\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.</color>\n<color=#00AEFF>Unlimited ammunition for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -418,20 +403,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            122430101,
-            122430102,
-            122430103,
-            122430104
+            122430101, 122430102, 122430103, 122430104
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -456,9 +432,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -489,9 +463,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Snow White: Innocent Days's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

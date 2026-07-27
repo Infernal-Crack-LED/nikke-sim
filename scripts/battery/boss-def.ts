@@ -26,7 +26,7 @@
 // as an evidence-backed approximation (error <0.2%); revisit only if a future low-ATK
 // low-coefficient popup shows a uniform cold bias.
 
-import { loadWorld, BEATS, autoWire, type BatteryTeam } from './lib.js';
+import { loadWorld, autoWire, type BatteryTeam } from './lib.js';
 import { prepareTeam, type UnitOptions } from '../../src/prepare.js';
 import { loadOverride } from '../../src/skills/overrides-node.js';
 import { runSim } from '../../src/engine/sim.js';
@@ -37,17 +37,33 @@ const w = loadWorld();
 function runWithDef(team: BatteryTeam, boss: Element | null, bossDef: number) {
   const chars = team.slugs.map((s) => w.data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of team.slugs) overrides[s] = loadOverride(s);
+  for (const s of team.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = team.slugs.map((slug) => ({
-    doll: false, ol: 'base5', mode: team.modes?.[slug], lambdaStage: team.lambda?.[slug],
+    doll: false,
+    ol: 'base5',
+    mode: team.modes?.[slug],
+    lambdaStage: team.lambda?.[slug],
   }));
   const cfg: SimConfig = {
-    slugs: team.slugs, bossElement: boss, bossDef, level: 400, copies: 10,
-    doll: false, ol: 'base5', coreHitRate: 1, rangeBonus: true, durationSec: 180,
+    slugs: team.slugs,
+    bossElement: boss,
+    bossDef,
+    level: 400,
+    copies: 10,
+    doll: false,
+    ol: 'base5',
+    coreHitRate: 1,
+    rangeBonus: true,
+    durationSec: 180,
     focusSlug: team.focus,
   };
   const prepared = prepareTeam(chars, unitOpts, {
-    overrides, skillLevels: w.skillLevels, cubes: w.cubes, olLines: w.olLines,
+    overrides,
+    skillLevels: w.skillLevels,
+    cubes: w.cubes,
+    olLines: w.olLines,
   });
   return runSim(chars, w.mult, cfg, prepared);
 }
@@ -57,23 +73,49 @@ const SWEEP: { name: string; team: BatteryTeam; boss: Element }[] = [
   {
     name: 'T1 (attacker-heavy)',
     boss: 'Iron',
-    team: { name: 'T1 (attacker-heavy)', slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
-      focus: 'anis-star', modes: {}, lambda: {} },
+    team: {
+      name: 'T1 (attacker-heavy)',
+      slugs: [
+        'mast-romantic-maid',
+        'scarlet-black-shadow',
+        'anis-star',
+        'liberalio',
+        'crown',
+      ],
+      focus: 'anis-star',
+      modes: {},
+      lambda: {},
+    },
   },
   {
     name: 'T3 (support-heavy)',
     boss: 'Wind',
-    team: { name: 'T3 (support-heavy)', slugs: ['rapi-red-hood', 'mihara-bonding-chain', 'little-mermaid', 'crown', 'helm'],
-      focus: 'little-mermaid', modes: {}, lambda: {} },
+    team: {
+      name: 'T3 (support-heavy)',
+      slugs: [
+        'rapi-red-hood',
+        'mihara-bonding-chain',
+        'little-mermaid',
+        'crown',
+        'helm',
+      ],
+      focus: 'little-mermaid',
+      modes: {},
+      lambda: {},
+    },
   },
 ];
 
 const DEFS = [0, 140, 560, 2000, 5000, 10000, 20000];
 
 console.log('='.repeat(78));
-console.log('PART 1 — Board sensitivity to bossDef (sim-only, fully reproducible)');
+console.log(
+  'PART 1 — Board sensitivity to bossDef (sim-only, fully reproducible)'
+);
 console.log('='.repeat(78));
-console.log('ginmy measured boss-type DEF ~= 140. Sweep shows per-unit total %-shift vs def=0.\n');
+console.log(
+  'ginmy measured boss-type DEF ~= 140. Sweep shows per-unit total %-shift vs def=0.\n'
+);
 
 let worstAt140 = 0;
 for (const s of SWEEP) {
@@ -82,7 +124,10 @@ for (const s of SWEEP) {
   const baseByUnit = new Map(base.units.map((u) => [u.slug, u.totalDamage]));
   console.log(`--- ${s.name}  boss ${s.boss} ---`);
   // header
-  const hdr = ['bossDef'.padStart(8), ...base.units.map((u) => u.slug.slice(0, 10).padStart(11))].join('');
+  const hdr = [
+    'bossDef'.padStart(8),
+    ...base.units.map((u) => u.slug.slice(0, 10).padStart(11)),
+  ].join('');
   console.log(hdr + '   maxΔ%');
   for (const def of DEFS) {
     const res = runWithDef(s.team, s.boss, def);
@@ -90,40 +135,75 @@ for (const s of SWEEP) {
     let maxAbs = 0;
     for (const u of res.units) {
       const b = baseByUnit.get(u.slug) ?? u.totalDamage;
-      const pct = b > 0 ? (u.totalDamage - b) / b * 100 : 0;
-      if (Math.abs(pct) > maxAbs) maxAbs = Math.abs(pct);
+      const pct = b > 0 ? ((u.totalDamage - b) / b) * 100 : 0;
+      if (Math.abs(pct) > maxAbs) {
+        maxAbs = Math.abs(pct);
+      }
       cells.push(pct.toFixed(2).padStart(11));
     }
-    if (def === 140 && maxAbs > worstAt140) worstAt140 = maxAbs;
-    console.log(String(def).padStart(8) + cells.join('') + `   ${maxAbs.toFixed(2)}%`);
+    if (def === 140 && maxAbs > worstAt140) {
+      worstAt140 = maxAbs;
+    }
+    console.log(
+      String(def).padStart(8) + cells.join('') + `   ${maxAbs.toFixed(2)}%`
+    );
   }
   console.log('');
 }
 
 console.log('='.repeat(78));
-console.log('PART 2 — DEF bounds from measured clean-coefficient popups (docs/probe-runs.md)');
+console.log(
+  'PART 2 — DEF bounds from measured clean-coefficient popups (docs/probe-runs.md)'
+);
 console.log('='.repeat(78));
 console.log(`
 Each anchor is a single-instance popup whose coefficient is DATAMINED (not a calibrated
 override value), decomposed against the sim's combat ATK at bossDef=0. Because DEF scales
 a hit by (1 - DEF/effATK), the sim/real match error caps DEF at:  |DEF| <= matchErr * effATK.
 `);
-type Anchor = { unit: string; popup: number; coef: string; effAtk: number; matchPct: number; src: string };
+type Anchor = {
+  unit: string;
+  popup: number;
+  coef: string;
+  effAtk: number;
+  matchPct: number;
+  src: string;
+};
 const ANCHORS: Anchor[] = [
   // cinderella rocket core hit — 32.11% datamined coef, matched to 0.3% at combat ATK 80,118
-  { unit: 'cinderella', popup: 121_124, coef: '32.11% x 200% charge x core x elem x 1.07',
-    effAtk: 80_118, matchPct: 0.3, src: 'probe-runs.md:352 (u8 e3, OL0 basis)' },
+  {
+    unit: 'cinderella',
+    popup: 121_124,
+    coef: '32.11% x 200% charge x core x elem x 1.07',
+    effAtk: 80_118,
+    matchPct: 0.3,
+    src: 'probe-runs.md:352 (u8 e3, OL0 basis)',
+  },
   // cinderella pre-full-burst rocket core / proc pair — matched to 0.3%
-  { unit: 'cinderella', popup: 113_571, coef: '32.11% pre-FB rocket core',
-    effAtk: 80_118, matchPct: 0.3, src: 'probe-runs.md:401' },
+  {
+    unit: 'cinderella',
+    popup: 113_571,
+    coef: '32.11% pre-FB rocket core',
+    effAtk: 80_118,
+    matchPct: 0.3,
+    src: 'probe-runs.md:401',
+  },
   // opening-shot popups matched to 99.7% across four classes (body 180,633)
-  { unit: 'multi-class opener', popup: 180_633, coef: 'datamined normal, non-crit opener',
-    effAtk: 80_118, matchPct: 0.3, src: 'probe-runs.md:425 (99.7% on 4 classes)' },
+  {
+    unit: 'multi-class opener',
+    popup: 180_633,
+    coef: 'datamined normal, non-crit opener',
+    effAtk: 80_118,
+    matchPct: 0.3,
+    src: 'probe-runs.md:425 (99.7% on 4 classes)',
+  },
 ];
 for (const a of ANCHORS) {
   const bound = Math.round((a.matchPct / 100) * a.effAtk);
-  console.log(`  ${a.unit.padEnd(18)} popup ${a.popup.toLocaleString().padStart(9)}  ` +
-    `effATK ${a.effAtk.toLocaleString()}  match ${a.matchPct}%  =>  |DEF| <= ~${bound}`);
+  console.log(
+    `  ${a.unit.padEnd(18)} popup ${a.popup.toLocaleString().padStart(9)}  ` +
+      `effATK ${a.effAtk.toLocaleString()}  match ${a.matchPct}%  =>  |DEF| <= ~${bound}`
+  );
   console.log(`      coef: ${a.coef}`);
   console.log(`      src:  ${a.src}\n`);
 }

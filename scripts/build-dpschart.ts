@@ -43,7 +43,7 @@ const mult = load<LevelMultiplier>('../data/level-multiplier.json');
 const cubes = load<CubesFile>('../data/cubes.json');
 const olLines = load<OlLinesFile>('../data/ol-lines.json');
 const tiersFile = load<{ tiers: Record<string, string> }>(
-  '../data/bossing-tiers.json',
+  '../data/bossing-tiers.json'
 );
 let skillLevels: SkillLevelData = {};
 try {
@@ -55,7 +55,7 @@ try {
 // overrides for every character (undefined where none) — teams pull controls + carries
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters))
-  overrides[slug] = loadOverride(slug);
+  {overrides[slug] = loadOverride(slug);}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RunCtx = { characters: data.characters as any, mult, deps };
@@ -78,13 +78,13 @@ interface UnitMeta {
 }
 const population: UnitMeta[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (c.burst !== 'III') continue;
+  if (c.burst !== 'III') {continue;}
   // generatorSupported gates chart eligibility (enikk-proven); simSupported is required too —
   // without a kit override the damage number would be near-meaningless (no buffs/burst behavior).
   // Today the two always coincide, but they're independent tags going forward (src/types.ts).
-  if (!c.generatorSupported || !c.simSupported) continue;
+  if (!c.generatorSupported || !c.simSupported) {continue;}
   const tier = tiersFile.tiers[slug];
-  if (!tier || !SELECTOR_TIERS.has(tier)) continue;
+  if (!tier || !SELECTOR_TIERS.has(tier)) {continue;}
   population.push({
     slug,
     name: c.name,
@@ -109,12 +109,12 @@ for (const cell of CELLS) {
   cells[cellId(cell as Cell)] = ranked.map((r) => [r.slug, Math.round(r.dps)]);
   done++;
   if (done % 12 === 0)
-    process.stderr.write(`  …${done}/${CELLS.length} cells\n`);
+    {process.stderr.write(`  …${done}/${CELLS.length} cells\n`);}
 }
 
 const axis = <T extends { id: string; label: string }>(
   ids: string[],
-  rec: Record<string, T>,
+  rec: Record<string, T>
 ) => ids.map((id) => ({ id, label: rec[id].label }));
 
 const artifact = {
@@ -149,7 +149,7 @@ const artifact = {
         chartPop: u.chartPop,
         imageUrl: u.imageUrl,
       },
-    ]),
+    ])
   ),
   cells,
 };
@@ -162,5 +162,5 @@ const out =
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 process.stderr.write(
-  `dpschart: ${CELLS.length} cells × ${population.length} B3 (${population.filter((u) => u.chartPop).length} charted) → ${out}\n`,
+  `dpschart: ${CELLS.length} cells × ${population.length} B3 (${population.filter((u) => u.chartPop).length} charted) → ${out}\n`
 );

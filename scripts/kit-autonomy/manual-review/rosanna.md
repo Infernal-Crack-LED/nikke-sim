@@ -31,19 +31,19 @@ rather than a silent drop.
 
 ## Line-by-line
 
-| Line | Disposition | Notes |
-|------|-------------|-------|
-| S1: 120 normals → self Concealment 10s (removed on hit) | DOCUMENTED_GAP | Targeting-prevention status, no concealment primitive; v1 boss deals no damage so "removed on hit" never fires. Verbatim in `unmodeled.skill1` |
-| S1: 120 normals → self Critical Rate ▲19.34% / 3s | FAITHFUL | UNSCOPED `critRatePct` (not `critRateNormalPct`), `hitCount:120`, self, `durationSec:3`; 49 applies = floor(5991/120). R2 GREEN vs shipped, RED vs scoped-crit counterfactual |
-| S1: 10 normals → remove 5 buffs, once/battle | DOCUMENTED_GAP | Enemy buff-strip; boss carries no buffs. S2b independently warns NOT to misread as clearing boss-held `damageTakenPct`. Verbatim |
-| S1: stage target appears → Elemental Advantage Attack Damage ▲20% | FAITHFUL | Passive self `elemAdvantageDamagePct:20`; ELEMENT bucket, applied only while `advantaged()`. Two-sided: `mult.elem` 1.30 live vs Water → 1.10 on removal; inert vs Iron (1.00). Always-on `attackDamagePct` counterfactual provably NON-inert vs Iron |
-| S2: battle start → self Concealment 5s | DOCUMENTED_GAP | Long expired before any 40s+ burst cast; NOT the live gate for the 561.6% rider. Verbatim in `unmodeled.skill2` |
-| S2: ally incapacitated → Frenzy ATK ▲22.61% ×10/30s + gauge 36.54% | DOCUMENTED_GAP | No incapacitation TriggerDef; immortal-boss fixture → zero stacks is faithful. Catastrophic nearest-wrong (passive-at-stacks ≈ +226% ATK over-credit) avoided by every role. Verbatim |
-| S2: ally incapacitated → 400% final ATK to 1 enemy | DOCUMENTED_GAP | Same ally-death trigger; R7 asserts no rosanna hit at `atkPct:400` exists (not silently proxied). Verbatim |
-| S2: 500 normals → Frenzy ATK ▲22.61% ×10/30s | FAITHFUL | DISTINCT 500-normal source (not the ally-death one). `hitCount:500` → `atkPct:22.61` / `maxStacks:10` / `durationSec:30`; 11 pulsed applies = floor(5991/500), none at frame 0. R3 RED vs always-on passive counterfactual (one apply at frame 0) |
-| Burst: Assalto 1310.4% of final ATK (prio Attacker, 2 enemies) | FAITHFUL | `burstCast` → enemy `flatDamage:1310.4`; 5 hits = 5 casts, burst bucket, `fbMajorApplied:false` on every hit; "2 enemies / prio Attacker" collapses to the single boss. R4 RED vs lvl-9 1244.88 counterfactual |
-| Burst: 561.6% additional when Concealed | DOCUMENTED_GAP | Honest ⚑1 — gated on a Concealment self-state with no engine primitive; R6 asserts no 561.6% proxy hit exists. Estimate ≈ +43% burst when concealed; recipe + tier below. 2-of-3 blinds (S5 skip, S6 unmodeled) corroborate the gap over S2b's model-ungated suggestion |
-| Burst: Assalto target is Water Code → Damage Taken ▲29% / 30s | FAITHFUL | `burstCast` + `bossElementGate:'Water'` → boss-held (`casterIdx`+`targetIdx` null) `damageTakenPct:29`, once per cast; team-wide `mult.taken` 1.29 in-window (crown + helm drop on removal); 0 applies vs Iron. R5 RED vs ungated counterfactual (fires vs Iron) |
+| Line                                                               | Disposition    | Notes                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------ | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1: 120 normals → self Concealment 10s (removed on hit)            | DOCUMENTED_GAP | Targeting-prevention status, no concealment primitive; v1 boss deals no damage so "removed on hit" never fires. Verbatim in `unmodeled.skill1`                                                                                                                          |
+| S1: 120 normals → self Critical Rate ▲19.34% / 3s                  | FAITHFUL       | UNSCOPED `critRatePct` (not `critRateNormalPct`), `hitCount:120`, self, `durationSec:3`; 49 applies = floor(5991/120). R2 GREEN vs shipped, RED vs scoped-crit counterfactual                                                                                           |
+| S1: 10 normals → remove 5 buffs, once/battle                       | DOCUMENTED_GAP | Enemy buff-strip; boss carries no buffs. S2b independently warns NOT to misread as clearing boss-held `damageTakenPct`. Verbatim                                                                                                                                        |
+| S1: stage target appears → Elemental Advantage Attack Damage ▲20%  | FAITHFUL       | Passive self `elemAdvantageDamagePct:20`; ELEMENT bucket, applied only while `advantaged()`. Two-sided: `mult.elem` 1.30 live vs Water → 1.10 on removal; inert vs Iron (1.00). Always-on `attackDamagePct` counterfactual provably NON-inert vs Iron                   |
+| S2: battle start → self Concealment 5s                             | DOCUMENTED_GAP | Long expired before any 40s+ burst cast; NOT the live gate for the 561.6% rider. Verbatim in `unmodeled.skill2`                                                                                                                                                         |
+| S2: ally incapacitated → Frenzy ATK ▲22.61% ×10/30s + gauge 36.54% | DOCUMENTED_GAP | No incapacitation TriggerDef; immortal-boss fixture → zero stacks is faithful. Catastrophic nearest-wrong (passive-at-stacks ≈ +226% ATK over-credit) avoided by every role. Verbatim                                                                                   |
+| S2: ally incapacitated → 400% final ATK to 1 enemy                 | DOCUMENTED_GAP | Same ally-death trigger; R7 asserts no rosanna hit at `atkPct:400` exists (not silently proxied). Verbatim                                                                                                                                                              |
+| S2: 500 normals → Frenzy ATK ▲22.61% ×10/30s                       | FAITHFUL       | DISTINCT 500-normal source (not the ally-death one). `hitCount:500` → `atkPct:22.61` / `maxStacks:10` / `durationSec:30`; 11 pulsed applies = floor(5991/500), none at frame 0. R3 RED vs always-on passive counterfactual (one apply at frame 0)                       |
+| Burst: Assalto 1310.4% of final ATK (prio Attacker, 2 enemies)     | FAITHFUL       | `burstCast` → enemy `flatDamage:1310.4`; 5 hits = 5 casts, burst bucket, `fbMajorApplied:false` on every hit; "2 enemies / prio Attacker" collapses to the single boss. R4 RED vs lvl-9 1244.88 counterfactual                                                          |
+| Burst: 561.6% additional when Concealed                            | DOCUMENTED_GAP | Honest ⚑1 — gated on a Concealment self-state with no engine primitive; R6 asserts no 561.6% proxy hit exists. Estimate ≈ +43% burst when concealed; recipe + tier below. 2-of-3 blinds (S5 skip, S6 unmodeled) corroborate the gap over S2b's model-ungated suggestion |
+| Burst: Assalto target is Water Code → Damage Taken ▲29% / 30s      | FAITHFUL       | `burstCast` + `bossElementGate:'Water'` → boss-held (`casterIdx`+`targetIdx` null) `damageTakenPct:29`, once per cast; team-wide `mult.taken` 1.29 in-window (crown + helm drop on removal); 0 applies vs Iron. R5 RED vs ungated counterfactual (fires vs Iron)        |
 
 ## Cross-family corroboration
 
@@ -100,8 +100,8 @@ rather than a silent drop.
    ungated would bake an unmeasured sim artifact into the total (fudge). R6 asserts no 561.6% proxy
    hit exists today, so an "always-on" fudge cannot sneak in silently.
 2. **⚑2 — MG cadence tuple is datamine-default (proc COUNTS only).** MG pulls/s + `reloadFrames:121`
-   + `ammo:300` are datamined defaults, not yet measured from video. The `hitCount:120` /
-   `hitCount:500` proc ENCODINGS are kit-exact regardless, but the absolute proc COUNTS (49 crit
-   applies, 11 Frenzy applies over 180s) scale with fire cadence, so a measured cadence would refine
-   them. **Recipe:** rounds/min + reload gap from a focus video. Inherited flag; does not touch any
-   encoding.
+   - `ammo:300` are datamined defaults, not yet measured from video. The `hitCount:120` /
+     `hitCount:500` proc ENCODINGS are kit-exact regardless, but the absolute proc COUNTS (49 crit
+     applies, 11 Frenzy applies over 180s) scale with fire cadence, so a measured cadence would refine
+     them. **Recipe:** rounds/min + reload gap from a focus video. Inherited flag; does not touch any
+     encoding.

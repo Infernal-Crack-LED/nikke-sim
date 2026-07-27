@@ -1,7 +1,7 @@
 # Blind kit-rebuild test
 
 A **two-way faithfulness check** on the sim's kit implementation. Normally we author an override
-*from* a unit's skill text (prose → code). This test runs the arrow backwards: an LLM reads **only the
+_from_ a unit's skill text (prose → code). This test runs the arrow backwards: an LLM reads **only the
 engine code + the structured override, with all skill text stripped out**, and reconstructs the unit's
 in-game skill prose purely from what the code implements. Comparing that reconstruction against the real
 kit surfaces **non-obvious implementation gotchas** — the things a forward read glosses over:
@@ -13,7 +13,7 @@ kit surfaces **non-obvious implementation gotchas** — the things a forward rea
 - or an override that simply mis-encodes the kit (wrong value / stat / trigger / target).
 
 If a code-only reader reconstructs the real kit **faithfully**, the implementation is transparent for
-that unit. Where it can't — and the gap isn't a known `unmodeled` line — the divergence *is* the finding.
+that unit. Where it can't — and the gap isn't a known `unmodeled` line — the divergence _is_ the finding.
 
 This is a **findings-only** harness (like the kit-status audit). Nothing it produces is an enacted
 change; a confirmed `GOTCHA/ENGINE` is a candidate for
@@ -39,7 +39,7 @@ the usual measured>fudge / DECISIONS discipline.
 ```
 
 - **build-packet.ts** — deterministic. Emits the matched pair per unit.
-- **RECONSTRUCTOR** (`RECONSTRUCT.md`) — a *blind* subagent. Sees the blind packet + engine code, never
+- **RECONSTRUCTOR** (`RECONSTRUCT.md`) — a _blind_ subagent. Sees the blind packet + engine code, never
   the truth file, never the real prose, never the unit's identity. Outputs reconstructed kit prose +
   its `codeDrivenSurprises` (candidate gotchas it spotted in the code).
 - **JUDGE** (`JUDGE.md`) — sees the reconstruction + the truth file (real prose + the override's
@@ -52,12 +52,12 @@ can't recall the real kit from training data) and the override is stripped of ev
 field: `note`, `unmodeled`, `caveats`, and any stray `raw` verbatim text on a block. The unit's
 `skills` prose and the `role` datamine blob (which embeds raw `description_localkey` skill text + the
 unit name) are excluded entirely. `build-packet.ts` runs a **leak assertion** on every packet — it
-scans all string *values* for prose glyphs (`■`, `▲`), synergy-API `_localkey`s, and the unit's own
+scans all string _values_ for prose glyphs (`■`, `▲`), synergy-API `_localkey`s, and the unit's own
 name tokens, and **throws** if any appear. The whole test is void if the reconstructor can read the
 answer, so the builder fails loudly rather than emit a tainted packet.
 
 > Known residual leak (accepted): the engine code itself (`types.ts`, `sim.ts`) names some real units
-> in comments as examples. A reconstructor *may* therefore recognize a unit whose block structure
+> in comments as examples. A reconstructor _may_ therefore recognize a unit whose block structure
 > matches a named example. Mitigation: `RECONSTRUCT.md` requires it to (a) reconstruct strictly from
 > code semantics regardless, and (b) declare any `recognizedUnit` so the judge can discount recall.
 

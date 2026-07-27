@@ -13,15 +13,15 @@
 
 ## Line dispositions (driver ↔ fable S2b ↔ opus S5/S6 — all converged)
 
-| Line | Disposition | Encoding (shipped) |
-|------|-------------|--------------------|
-| C1 S1 ATK 2.71% MaxHP / B3 entry / self / 10s | FAITHFUL | `skill1[0]` stageEnter{3} → self `atkOfMaxHpPct` 2.71 / 10s — **byte-identical** to the S6 blind override |
-| C2 S1 Charge Speed ▲100% / removed on reload | FAITHFUL (DOCUMENTED mechanism substitution) | `charFixes.magDumpRof` (video-measured whole-mag dump) |
-| C3 S1 136.6% full-charge rider | FAITHFUL | `skill1[2]` shotFired → enemy `flatDamage` 136.6 |
-| C4 S2 Decoy avatar (×2) | UNMODELED (defensive/aggro; inert vs damageless v1 boss; verbatim in `unmodeled.skill2`) | — |
-| C5 S2 Beautiful MaxHP ▲1.6%×12 | FAITHFUL | `skill1[1]` passive → self `casterMaxHpPct` 19.2 `rampSec` 36 (1.6×12; 3s×12) |
-| C6 Burst 1365.92%×10 nuke | FAITHFUL | `burst[0]` burstCast → enemy `flatDamage` 13659.2 `flavor:sequential` (consolidated; FB-exempt by cast timing) |
-| C7 Burst 28.9%×Beautiful-stacks mirror | FAITHFUL | `burst[1]` burstCast → enemy `flatDamage` 346.8 `rampSec` 36 — **byte-identical** to the S6 blind override |
+| Line                                          | Disposition                                                                              | Encoding (shipped)                                                                                             |
+| --------------------------------------------- | ---------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| C1 S1 ATK 2.71% MaxHP / B3 entry / self / 10s | FAITHFUL                                                                                 | `skill1[0]` stageEnter{3} → self `atkOfMaxHpPct` 2.71 / 10s — **byte-identical** to the S6 blind override      |
+| C2 S1 Charge Speed ▲100% / removed on reload  | FAITHFUL (DOCUMENTED mechanism substitution)                                             | `charFixes.magDumpRof` (video-measured whole-mag dump)                                                         |
+| C3 S1 136.6% full-charge rider                | FAITHFUL                                                                                 | `skill1[2]` shotFired → enemy `flatDamage` 136.6                                                               |
+| C4 S2 Decoy avatar (×2)                       | UNMODELED (defensive/aggro; inert vs damageless v1 boss; verbatim in `unmodeled.skill2`) | —                                                                                                              |
+| C5 S2 Beautiful MaxHP ▲1.6%×12                | FAITHFUL                                                                                 | `skill1[1]` passive → self `casterMaxHpPct` 19.2 `rampSec` 36 (1.6×12; 3s×12)                                  |
+| C6 Burst 1365.92%×10 nuke                     | FAITHFUL                                                                                 | `burst[0]` burstCast → enemy `flatDamage` 13659.2 `flavor:sequential` (consolidated; FB-exempt by cast timing) |
+| C7 Burst 28.9%×Beautiful-stacks mirror        | FAITHFUL                                                                                 | `burst[1]` burstCast → enemy `flatDamage` 346.8 `rampSec` 36 — **byte-identical** to the S6 blind override     |
 
 ## Cross-family convergence
 

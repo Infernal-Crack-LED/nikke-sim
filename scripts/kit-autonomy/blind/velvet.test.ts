@@ -27,14 +27,25 @@
 //   - ammo-pouch depletion / whether the expend-ammo effects are hard-gated on pool balance.
 
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 // --- effect-signature predicates (structure-robust: match by effect, not block index) ---
 const hasBuff = (stat: string, v: number) => (b: any) =>
-  (b.effects || []).some((e: any) => e.kind === 'buff' && e.stat === stat && Math.abs(e.value - v) < 0.6);
+  (b.effects || []).some(
+    (e: any) =>
+      e.kind === 'buff' && e.stat === stat && Math.abs(e.value - v) < 0.6
+  );
 const hasFlat = (v: number) => (b: any) =>
-  (b.effects || []).some((e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - v) < 1);
-const hasSwap = (b: any) => (b.effects || []).some((e: any) => e.kind === 'weaponSwap');
+  (b.effects || []).some(
+    (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - v) < 1
+  );
+const hasSwap = (b: any) =>
+  (b.effects || []).some((e: any) => e.kind === 'weaponSwap');
 
 // --- runner: baseline or counterfactual (remove every block matching `remove`) ---
 function go(remove?: (b: any) => boolean) {
@@ -52,7 +63,10 @@ function go(remove?: (b: any) => boolean) {
 }
 
 const applyOf = (events: any[], stat: string, v: number) =>
-  events.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - v) < 0.6);
+  events.filter(
+    (e) =>
+      e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - v) < 0.6
+  );
 const dmgTotal = (res: any, slug: string) => unitOf(res, slug).total;
 
 // hoisted baseline (one full 180s sim)
@@ -62,25 +76,31 @@ const vIdx: number = vUnit.idx ?? vUnit.slot; // velvet's slot index
 
 describe('velvet — fixture non-vacuity', () => {
   it('a full burst occurs and velvet casts her own Burst II', () => {
-    expect(base.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      base.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
     // proxy for "velvet cast": her burst-only self buff (34.52%) is present
     const cast = applyOf(base.events, 'attackDamagePct', 34.52).filter(
-      (e) => e.casterIdx === vIdx && e.targetIdx === vIdx,
+      (e) => e.casterIdx === vIdx && e.targetIdx === vIdx
     );
     expect(cast.length).toBeGreaterThan(0);
   });
 });
 
 describe('S1b — Full Charge outside FB: self ATK + Attack Damage 30.5% / 3s', () => {
-  const atk = applyOf(base.events, 'atkPct', 30.5).filter((e) => e.casterIdx === vIdx);
-  const dmg = applyOf(base.events, 'attackDamagePct', 30.5).filter((e) => e.casterIdx === vIdx);
+  const atk = applyOf(base.events, 'atkPct', 30.5).filter(
+    (e) => e.casterIdx === vIdx
+  );
+  const dmg = applyOf(base.events, 'attackDamagePct', 30.5).filter(
+    (e) => e.casterIdx === vIdx
+  );
 
   it('velvet gains both ATK 30.5% and Attack Damage 30.5%', () => {
     expect(atk.length).toBeGreaterThan(0);
     expect(dmg.length).toBeGreaterThan(0);
   });
   it('self-scoped: every application targets velvet (nearest-wrong: allies scope)', () => {
-    for (const e of [...atk, ...dmg]) expect(e.targetIdx).toBe(vIdx);
+    for (const e of [...atk, ...dmg]) {expect(e.targetIdx).toBe(vIdx);}
   });
   it('inert on teammates: removing the block leaves teammate totals byte-identical', () => {
     const cf = go(hasBuff('atkPct', 30.5));
@@ -92,8 +112,12 @@ describe('S1b — Full Charge outside FB: self ATK + Attack Damage 30.5% / 3s', 
 });
 
 describe('S2a — Full Charge during FB: allies casterATK 25.2% + Charge Damage 100.8% / 3s', () => {
-  const cAtk = applyOf(base.events, 'casterAtkPct', 25.2).filter((e) => e.casterIdx === vIdx);
-  const chg = applyOf(base.events, 'chargeDamagePct', 100.8).filter((e) => e.casterIdx === vIdx);
+  const cAtk = applyOf(base.events, 'casterAtkPct', 25.2).filter(
+    (e) => e.casterIdx === vIdx
+  );
+  const chg = applyOf(base.events, 'chargeDamagePct', 100.8).filter(
+    (e) => e.casterIdx === vIdx
+  );
 
   it('ATK grant is caster-scaled (casterAtkPct), NOT target-scaled (atkPct)', () => {
     expect(cAtk.length).toBeGreaterThan(0);
@@ -111,7 +135,7 @@ describe('S2a — Full Charge during FB: allies casterATK 25.2% + Charge Damage 
     const cf = go(hasBuff('chargeDamagePct', 100.8));
     expect(applyOf(cf.events, 'chargeDamagePct', 100.8).length).toBe(0);
     const moved = ['liter', 'crown', 'helm'].some(
-      (s) => dmgTotal(cf.res, s) !== dmgTotal(base.res, s),
+      (s) => dmgTotal(cf.res, s) !== dmgTotal(base.res, s)
     );
     expect(moved).toBe(true);
   });
@@ -119,29 +143,37 @@ describe('S2a — Full Charge during FB: allies casterATK 25.2% + Charge Damage 
 
 describe('S2b — 50 normals during FB: self Attack Damage 15.03% + 400.92% rider', () => {
   const self15 = applyOf(base.events, 'attackDamagePct', 15.03).filter(
-    (e) => e.casterIdx === vIdx && e.targetIdx === vIdx,
+    (e) => e.casterIdx === vIdx && e.targetIdx === vIdx
   );
   const fbNormals = base.events.filter(
-    (e) => e.kind === 'damage' && e.srcSlot === vIdx && e.bucket === 'normal' && e.inFullBurst,
+    (e) =>
+      e.kind === 'damage' &&
+      e.srcSlot === vIdx &&
+      e.bucket === 'normal' &&
+      e.inFullBurst
   ).length;
 
   it('the self 15.03% buff fires iff velvet lands >=50 normals in a FB window', () => {
-    if (fbNormals >= 50) expect(self15.length).toBeGreaterThan(0);
-    else expect(self15.length).toBe(0); // trigger correctly unreached (payload if driver over-fires)
+    if (fbNormals >= 50) {expect(self15.length).toBeGreaterThan(0);}
+    else {expect(self15.length).toBe(0);} // trigger correctly unreached (payload if driver over-fires)
   });
   it('self-scoped when it fires', () => {
-    for (const e of self15) expect(e.targetIdx).toBe(vIdx);
+    for (const e of self15) {expect(e.targetIdx).toBe(vIdx);}
   });
   it('counterfactual: removing the block never increases velvet damage and drops the buff', () => {
-    const cf = go((b) => hasBuff('attackDamagePct', 15.03)(b) || hasFlat(400.92)(b));
+    const cf = go(
+      (b) => hasBuff('attackDamagePct', 15.03)(b) || hasFlat(400.92)(b)
+    );
     expect(applyOf(cf.events, 'attackDamagePct', 15.03).length).toBe(0);
-    expect(dmgTotal(cf.res, 'velvet')).toBeLessThanOrEqual(dmgTotal(base.res, 'velvet'));
+    expect(dmgTotal(cf.res, 'velvet')).toBeLessThanOrEqual(
+      dmgTotal(base.res, 'velvet')
+    );
   });
 });
 
 describe('Bst — own B2 burst: weapon swap (7%/shot, 10s) + self Attack Damage 34.52% / 10s', () => {
   const self34 = applyOf(base.events, 'attackDamagePct', 34.52).filter(
-    (e) => e.casterIdx === vIdx && e.targetIdx === vIdx,
+    (e) => e.casterIdx === vIdx && e.targetIdx === vIdx
   );
   it('velvet self-buffs Attack Damage 34.52% on burst', () => {
     expect(self34.length).toBeGreaterThan(0);
@@ -151,8 +183,12 @@ describe('Bst — own B2 burst: weapon swap (7%/shot, 10s) + self Attack Damage 
     // the self 34.52% buff lives in the same block -> gone
     expect(applyOf(cf.events, 'attackDamagePct', 34.52).length).toBe(0);
     // and the swapped weapon fires on a different cadence/ammo than the base SR
-    const baseShots = base.events.filter((e) => e.kind === 'shot' && e.srcSlot === vIdx).length;
-    const cfShots = cf.events.filter((e) => e.kind === 'shot' && e.srcSlot === vIdx).length;
+    const baseShots = base.events.filter(
+      (e) => e.kind === 'shot' && e.srcSlot === vIdx
+    ).length;
+    const cfShots = cf.events.filter(
+      (e) => e.kind === 'shot' && e.srcSlot === vIdx
+    ).length;
     expect(cfShots).not.toBe(baseShots);
   });
 });

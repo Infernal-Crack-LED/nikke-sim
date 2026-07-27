@@ -1,4 +1,9 @@
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 /**
  * soda-twinkling-bunny — SG / Iron / Attacker / Burst III (cd 40s, ammo 9, hitsPerShot 10)
@@ -37,65 +42,152 @@ import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../li
 
 const SLUG = 'soda-twinkling-bunny';
 const near = (a: number, b: number, eps = 0.6) => Math.abs(a - b) <= eps;
-const tOf = (e: any) => (e.t ?? e.time ?? e.sec ?? 0);
+const tOf = (e: any) => e.t ?? e.time ?? e.sec ?? 0;
 
 function collect(opts: any) {
   const evs: any[] = [];
-  const o = { ...opts, cfg: { ...(opts.cfg ?? {}), onEvent: (e: any) => evs.push(e) } };
+  const o = {
+    ...opts,
+    cfg: { ...(opts.cfg ?? {}), onEvent: (e: any) => evs.push(e) },
+  };
   const res = runComp(o);
   return { res, evs };
 }
 const dmg = (res: any, slug: string) => unitOf(res, slug)?.total ?? 0;
-function sodaIdxOf(res: any) { return unitOf(res, SLUG)?.idx; }
-function allySlugs(res: any) { return (res.units ?? []).map((u: any) => u.slug).filter((s: string) => s !== SLUG); }
+function sodaIdxOf(res: any) {
+  return unitOf(res, SLUG)?.idx;
+}
+function allySlugs(res: any) {
+  return (res.units ?? [])
+    .map((u: any) => u.slug)
+    .filter((s: string) => s !== SLUG);
+}
 
 // ---- hoisted runs (each is a full 180s deterministic sim) ------------------
 const base = collect(controlComp(SLUG, true));
 const sodaIdx = sodaIdxOf(base.res);
 
 // counterfactual overrides located by SEMANTIC content (blind to block order)
-const noStartChip = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  const gc = (o.resources ?? []).find((r: any) => /chip/i.test(r.name));
-  if (gc) gc.initial = 0;
-}) as any, true));
+const noStartChip = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      const gc = (o.resources ?? []).find((r: any) => /chip/i.test(r.name));
+      if (gc) {
+        gc.initial = 0;
+      }
+    }) as any,
+    true
+  )
+);
 
-const flatCrit = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) for (const e of b.effects ?? [])
-    if (e.kind === 'buff' && e.stat === 'critDamagePct') { delete e.perResource; e.value = 1.32; e.maxStacks = 1; }
-}) as any, true));
+const flatCrit = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks) {
+        for (const e of b.effects ?? []) {
+          if (e.kind === 'buff' && e.stat === 'critDamagePct') {
+            delete e.perResource;
+            e.value = 1.32;
+            e.maxStacks = 1;
+          }
+        }
+      }
+    }) as any,
+    true
+  )
+);
 
-const noAtkDmg = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) => !(e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 10.51)));
-}) as any, true));
+const noAtkDmg = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'buff' &&
+              e.stat === 'attackDamagePct' &&
+              near(e.value, 10.51)
+            )
+        );
+      }
+    }) as any,
+    true
+  )
+);
 
-const noFbExtend = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'fullBurstExtend');
-}) as any, true));
+const noFbExtend = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
+          (e: any) => e.kind !== 'fullBurstExtend'
+        );
+      }
+    }) as any,
+    true
+  )
+);
 
-const noRider = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) =>
-    !(e.kind === 'flatDamage' && (near(e.atkPct, 52.04) || near(e.atkPct, 85.02))));
-}) as any, true));
+const noRider = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'flatDamage' &&
+              (near(e.atkPct, 52.04) || near(e.atkPct, 85.02))
+            )
+        );
+      }
+    }) as any,
+    true
+  )
+);
 
-const noBurstBuffs = collect(controlComp(withPatchedOverride(SLUG, (o: any) => {
-  for (const b of o.blocks) b.effects = (b.effects ?? []).filter((e: any) =>
-    !(e.kind === 'buff' && ((e.stat === 'hitRatePct' && near(e.value, 38.91)) || (e.stat === 'atkPct' && near(e.value, 65.25)))));
-}) as any, true));
+const noBurstBuffs = collect(
+  controlComp(
+    withPatchedOverride(SLUG, (o: any) => {
+      for (const b of o.blocks) {
+        b.effects = (b.effects ?? []).filter(
+          (e: any) =>
+            !(
+              e.kind === 'buff' &&
+              ((e.stat === 'hitRatePct' && near(e.value, 38.91)) ||
+                (e.stat === 'atkPct' && near(e.value, 65.25)))
+            )
+        );
+      }
+    }) as any,
+    true
+  )
+);
 
 // helper extractors on base
-const sodaDmg = (evs: any[]) => evs.filter(e => e.kind === 'damage' && (e.srcSlot === sodaIdx || e.casterIdx === sodaIdx));
-const buffApplies = (evs: any[], stat: string, val: number) => evs.filter(e => e.kind === 'buffApply' && e.stat === stat && near(e.value, val));
+const sodaDmg = (evs: any[]) =>
+  evs.filter(
+    (e) =>
+      e.kind === 'damage' && (e.srcSlot === sodaIdx || e.casterIdx === sodaIdx)
+  );
+const buffApplies = (evs: any[], stat: string, val: number) =>
+  evs.filter(
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, val)
+  );
 const fbWindows = (evs: any[]) => {
-  const out: number[] = []; let start: number | null = null;
+  const out: number[] = [];
+  let start: number | null = null;
   for (const e of evs) {
-    if (e.kind === 'fullBurstStart') start = tOf(e);
-    else if (e.kind === 'fullBurstEnd' && start != null) { out.push(tOf(e) - start); start = null; }
+    if (e.kind === 'fullBurstStart') {
+      start = tOf(e);
+    } else if (e.kind === 'fullBurstEnd' && start != null) {
+      out.push(tOf(e) - start);
+      start = null;
+    }
   }
   return out;
 };
 
 describe('soda-twinkling-bunny — blind kit spec', () => {
-
   // S1a — start-of-battle Golden Chip 50 -> crit-dmg live from t=0 AND burst gates open.
   it('S1a: battle-start Golden Chip 50 raises soda total (removing the grant strictly lowers it)', () => {
     expect(dmg(base.res, SLUG)).toBeGreaterThan(dmg(noStartChip.res, SLUG));
@@ -112,31 +204,36 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
   it('S1c: attackDamagePct 10.51 hits self + exactly one other ally (NOT all allies)', () => {
     const applies = buffApplies(base.evs, 'attackDamagePct', 10.51);
     expect(applies.length).toBeGreaterThan(0);
-    const targets = new Set(applies.map(e => e.targetIdx));
-    expect(targets.has(sodaIdx)).toBe(true);                 // self is a target
-    const others = [...targets].filter(t => t !== sodaIdx);
-    expect(others.length).toBe(1);                            // exactly ONE ally besides self
+    const targets = new Set(applies.map((e) => e.targetIdx));
+    expect(targets.has(sodaIdx)).toBe(true); // self is a target
+    const others = [...targets].filter((t) => t !== sodaIdx);
+    expect(others.length).toBe(1); // exactly ONE ally besides self
     expect(others.length).toBeLessThan(allySlugs(base.res).length); // discriminates "all allies"
     const dur = applies[0].durationSec;
-    if (dur != null) expect(near(dur, 2, 0.05)).toBe(true);   // 2s, not rounds/permanent
+    if (dur != null) {
+      expect(near(dur, 2, 0.05)).toBe(true);
+    } // 2s, not rounds/permanent
   });
 
   it('S1c inertness: removing it leaves the NON-buffed teammates byte-identical', () => {
     const applies = buffApplies(base.evs, 'attackDamagePct', 10.51);
-    const buffed = new Set(applies.map(e => e.targetIdx));
+    const buffed = new Set(applies.map((e) => e.targetIdx));
     for (const s of allySlugs(base.res)) {
       const idx = unitOf(base.res, s)?.idx;
-      if (idx === sodaIdx || buffed.has(idx)) continue;       // soda + the top-ATK ally legitimately move
+      if (idx === sodaIdx || buffed.has(idx)) {
+        continue;
+      } // soda + the top-ATK ally legitimately move
       expect(dmg(noAtkDmg.res, s)).toEqual(dmg(base.res, s)); // everyone else unchanged
     }
   });
 
   // S2a — FB duration extension gated by Golden Chip (Time Extension I/II).
   it('S2a: soda extends Full Burst beyond the 10s default (removing the extend shortens it)', () => {
-    const w = fbWindows(base.evs), wn = fbWindows(noFbExtend.evs);
+    const w = fbWindows(base.evs),
+      wn = fbWindows(noFbExtend.evs);
     expect(w.length).toBeGreaterThan(0);
     expect(Math.max(...w)).toBeGreaterThan(Math.max(...wn) + 0.5); // strictly longer than un-extended
-    expect(Math.max(...w)).toBeGreaterThan(11);                    // >=10 stacks -> +2s at minimum
+    expect(Math.max(...w)).toBeGreaterThan(11); // >=10 stacks -> +2s at minimum
   });
 
   // S2b — per-normal-attack enemy rider during FB (TE-gated). Behavioral discriminator.
@@ -151,11 +248,11 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
 
   // BURST S1 — 628.7% burst-skill damage, FB-exempt (lands pre-FB).
   it('BURST S1: soda emits a ~628.7% burst-bucket hit', () => {
-    const burstHits = sodaDmg(base.evs).filter(e => e.bucket === 'burst');
+    const burstHits = sodaDmg(base.evs).filter((e) => e.bucket === 'burst');
     expect(burstHits.length).toBeGreaterThan(0);
-    expect(burstHits.some(e => near(e.mult, 628.7, 5))).toBe(true);
+    expect(burstHits.some((e) => near(e.mult, 628.7, 5))).toBe(true);
     // burst cast lands before the FB window opens
-    expect(burstHits.some(e => e.inFullBurst === false)).toBe(true);
+    expect(burstHits.some((e) => e.inFullBurst === false)).toBe(true);
   });
 
   // BURST S2/S3 — self Hit Rate 38.91% + ATK 65.25%, each 15s, stack-gated (>=20 / >=30).
@@ -165,23 +262,33 @@ describe('soda-twinkling-bunny — blind kit spec', () => {
     expect(hr.length).toBeGreaterThan(0);
     expect(atk.length).toBeGreaterThan(0);
     for (const e of [...hr, ...atk]) {
-      expect(e.targetIdx).toBe(sodaIdx);                       // self only
-      if (e.durationSec != null) expect(near(e.durationSec, 15, 0.1)).toBe(true);
+      expect(e.targetIdx).toBe(sodaIdx); // self only
+      if (e.durationSec != null) {
+        expect(near(e.durationSec, 15, 0.1)).toBe(true);
+      }
     }
   });
 
   it('BURST S3 inertness+lever: removing the two self burst-buffs lowers soda total, teammates identical', () => {
     expect(dmg(base.res, SLUG)).toBeGreaterThan(dmg(noBurstBuffs.res, SLUG));
-    for (const s of allySlugs(base.res)) expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));
+    for (const s of allySlugs(base.res)) {
+      expect(dmg(noBurstBuffs.res, s)).toEqual(dmg(base.res, s));
+    }
   });
 
   // NON-VACUITY for the >=20 / >=30 stack GATES: because burst consumes 17 and rebuild is slow,
   // later bursts should FALL BELOW the ATK gate — so the 65.25 ATK buff must NOT apply on every
   // burst. If the driver never lets the pool decay, this goes RED (the intended divergence payload).
   it('BURST gating bites: ATK 65.25 applies on FEWER bursts than the number of soda burst casts (⛑ stack trajectory)', () => {
-    const casts = base.evs.filter(e => e.kind === 'burstCast' && (e.casterIdx === sodaIdx || e.srcSlot === sodaIdx));
+    const casts = base.evs.filter(
+      (e) =>
+        e.kind === 'burstCast' &&
+        (e.casterIdx === sodaIdx || e.srcSlot === sodaIdx)
+    );
     const atk = buffApplies(base.evs, 'atkPct', 65.25);
-    if (casts.length < 3) return; // guard: need enough rotations for the pool to draw down
+    if (casts.length < 3) {
+      return;
+    } // guard: need enough rotations for the pool to draw down
     expect(atk.length).toBeLessThan(casts.length); // the >=30 gate must exclude at least one late burst
   });
 

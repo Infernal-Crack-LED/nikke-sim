@@ -12,19 +12,19 @@ All 11 kit lines re-derived **FAITHFUL**; both `unmodeled` arrays empty (nothing
 Driver test `scripts/tests/units/scarlet-black-shadow.test.ts` — **19 tests GREEN** vs the shipped
 override, each with a nearest-wrong counterfactual.
 
-| Line | Encoding | Pin |
-| --- | --- | --- |
-| S1 activates on Full Charge | `chargeCounter` (advances only when `charged`) | B1 consistency pin (see caveat below) |
-| S1 "only one effect at a time" | one block, `effects[phase]` cycling 0→1→2 | B2 — value sequence is the exact 283.03→565→848.03 cycle, no two procs/frame |
-| S1 3× 283.03% single | `flatDamage` 283.03, plain | B3 — post-patch value (not pre-patch 250.47) |
-| S1 6× 565% Distributed | `flatDamage` 565, `flavor:"distributed"` | B3 value + B4 flavor (structural + board-inert) |
-| S1 9× 848.03% Distributed | `flatDamage` 848.03, `flavor:"distributed"` | B3 value + B4 flavor; wrap to phase 1 (B2) |
-| S2 on Full Burst entry | trigger `fullBurstEnter` | B5 — maxAmmo applies == fullBurstStart count (12) > own casts (6); helm opens the other 6 |
-| S2 Max Ammo +60% / 10s | `buff maxAmmoPct 60 / 10s / self` | B6 — value/600f/self |
-| S2 Reload 100% | `instantReload fraction 1`, ordered AFTER the cap | B7 — structural + behavioural (peak magazine 17 > 12 baseline; FB-window shots > no-effects) |
-| Burst count-requirement 1/2/3 | `chargeCounter.countInFb 1`, gated on OWN `lastBurstCastFrame` | B10 — own-cast windows out-proc every helm-opened FB window; no-lowering counterfactual |
-| Burst ATK +115.12% / 10s | `buff atkPct 115.12 / 10s / self` on `burstCast` | B8 — count == own casts (6) < FB (12) |
-| Burst Charge Damage +169.63% / 10s | `buff chargeDamagePct 169.63 / 10s / self` (additive, **not** `chargeDamageMultPct`) | B9 — stat identity + value |
+| Line                               | Encoding                                                                             | Pin                                                                                          |
+| ---------------------------------- | ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| S1 activates on Full Charge        | `chargeCounter` (advances only when `charged`)                                       | B1 consistency pin (see caveat below)                                                        |
+| S1 "only one effect at a time"     | one block, `effects[phase]` cycling 0→1→2                                            | B2 — value sequence is the exact 283.03→565→848.03 cycle, no two procs/frame                 |
+| S1 3× 283.03% single               | `flatDamage` 283.03, plain                                                           | B3 — post-patch value (not pre-patch 250.47)                                                 |
+| S1 6× 565% Distributed             | `flatDamage` 565, `flavor:"distributed"`                                             | B3 value + B4 flavor (structural + board-inert)                                              |
+| S1 9× 848.03% Distributed          | `flatDamage` 848.03, `flavor:"distributed"`                                          | B3 value + B4 flavor; wrap to phase 1 (B2)                                                   |
+| S2 on Full Burst entry             | trigger `fullBurstEnter`                                                             | B5 — maxAmmo applies == fullBurstStart count (12) > own casts (6); helm opens the other 6    |
+| S2 Max Ammo +60% / 10s             | `buff maxAmmoPct 60 / 10s / self`                                                    | B6 — value/600f/self                                                                         |
+| S2 Reload 100%                     | `instantReload fraction 1`, ordered AFTER the cap                                    | B7 — structural + behavioural (peak magazine 17 > 12 baseline; FB-window shots > no-effects) |
+| Burst count-requirement 1/2/3      | `chargeCounter.countInFb 1`, gated on OWN `lastBurstCastFrame`                       | B10 — own-cast windows out-proc every helm-opened FB window; no-lowering counterfactual      |
+| Burst ATK +115.12% / 10s           | `buff atkPct 115.12 / 10s / self` on `burstCast`                                     | B8 — count == own casts (6) < FB (12)                                                        |
+| Burst Charge Damage +169.63% / 10s | `buff chargeDamagePct 169.63 / 10s / self` (additive, **not** `chargeDamageMultPct`) | B9 — stat identity + value                                                                   |
 
 ## Cross-family corroboration
 
@@ -33,7 +33,7 @@ override, each with a nearest-wrong counterfactual.
   retained `src/skills/types.ts:73` (a `chargeCounter` comment naming SBS + `[3,6,9]`/`[1,2,3]` +
   848% rarity) because the driver's token list lacked those strings. Fixed by re-running
   `prepare-cross-family-packet.ts` with comma-free tokens (`Black Shadow` / `848` / `barely
-  materialise`); the contaminated result was superseded. Crucially, the **clean** reviewer
+materialise`); the contaminated result was superseded. Crucially, the **clean** reviewer
   independently derived the **cumulative** cadence (3/6/9 outside, 1/1/1 in-burst) = the shipped
   scalar model (the contaminated review had pushed per-phase gaps).
 - **S5 (claude-opus-5, blind test):** 25 tests. Vs the driver override: 19 pass / 4 skip / 2 fail —

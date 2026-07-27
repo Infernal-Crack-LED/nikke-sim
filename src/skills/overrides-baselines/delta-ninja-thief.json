@@ -7,7 +7,12 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 12, "durationSec": 15 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 12,
+          "durationSec": 15
+        }
       ]
     },
     {
@@ -23,7 +28,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 8, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 8,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -33,9 +43,7 @@
       "trigger": { "kind": "hitCount", "count": 200 },
       "target": { "kind": "allies" },
       "mode": "with defender ally",
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     }
   ],
   "burst": [
@@ -44,8 +52,18 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "distributedDamagePct", "value": 20, "durationSec": 10 },
-        { "kind": "buff", "stat": "casterAtkPct", "value": 15, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 20,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 15,
+          "durationSec": 10
+        }
       ]
     },
     {

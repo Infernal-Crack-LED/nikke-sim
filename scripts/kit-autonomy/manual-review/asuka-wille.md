@@ -23,12 +23,12 @@ bonus hit. When the state ends she fires **Annihilation** at every target carryi
 The shipped parser-baseline was substantially hand-authored but carried one structural faithfulness bug
 plus several timing proxies. The gauntlet fixed:
 
-1. **Anti A.T. Field consumption (the headline fix).** The finisher prose says the status *"is removed
-   after the effect is triggered"* — the debuff is consumed at Annihilation-State end (~cast+9s), so its
+1. **Anti A.T. Field consumption (the headline fix).** The finisher prose says the status _"is removed
+   after the effect is triggered"_ — the debuff is consumed at Annihilation-State end (~cast+9s), so its
    real life is the ~9s build window each 40s cycle, **not** the near-permanent 30-stack boss debuff the
    baseline shipped. The baseline over-credited the whole team's damage by ~3–4× on average
    (team sum **1979M → 1837M** after the fix). Now modeled faithfully: the burst inflicts
-   `targetStatus 'Annihilation State'` 9s (the engine has no *self*-status gate, so the mode is proxied as
+   `targetStatus 'Annihilation State'` 9s (the engine has no _self_-status gate, so the mode is proxied as
    a boss status per the marciana/privaty `requiresTargetStatus` pattern); the S1 proc carries
    `requiresTargetStatus 'Annihilation State'` at `hitCount 10` (every 10 in-window shots, replacing the
    ungated `hitCount 44` time-average); debuff `durationSec 9` (effective = consumed, not the nominal 30s).

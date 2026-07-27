@@ -94,16 +94,16 @@ function leonaComp(overrides: Record<string, any> = {}) {
 const roarCount5 = withPatchedOverride('leona', (ov) => {
   const b = ov.skill1.find((x: any) => x.trigger.kind === 'hitCount');
   if (!b || b.trigger.count !== 50)
-    throw new Error('leona S1 hitCount:50 block missing — fixture is stale');
+    {throw new Error('leona S1 hitCount:50 block missing — fixture is stale');}
   b.trigger.count = 5;
 });
 /** L3: her S2 hit-rate line fired on her own cast instead of FB entry. */
 const s2OnBurstCast = withPatchedOverride('leona', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'hitRatePct'),
+    x.effects.some((e: any) => e.stat === 'hitRatePct')
   );
   if (!b || b.trigger.kind !== 'fullBurstEnter')
-    throw new Error('leona S2 hitRatePct block missing — fixture is stale');
+    {throw new Error('leona S2 hitRatePct block missing — fixture is stale');}
   b.trigger.kind = 'burstCast';
 });
 /** L4 nearest-wrong: the SUPERSEDED normalAttackPct +50% proxy (additive with other normal-mult
@@ -111,7 +111,7 @@ const s2OnBurstCast = withPatchedOverride('leona', (ov) => {
  *  block to the proxy; pre-S3 the shipped block IS the proxy, so the run is left as-is. */
 const pelletProxy = withPatchedOverride('leona', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'pelletCountFlat'),
+    x.effects.some((e: any) => e.stat === 'pelletCountFlat')
   );
   if (b) {
     const e = b.effects.find((x: any) => x.stat === 'pelletCountFlat');
@@ -119,9 +119,7 @@ const pelletProxy = withPatchedOverride('leona', (ov) => {
     e.value = 50;
   } else if (
     !ov.skill2.some((x: any) =>
-      x.effects.some(
-        (e: any) => e.stat === 'normalAttackPct' && e.value === 50,
-      ),
+      x.effects.some((e: any) => e.stat === 'normalAttackPct' && e.value === 50)
     )
   ) {
     throw new Error('leona S2 pellet block missing — fixture is stale');
@@ -131,28 +129,28 @@ const pelletProxy = withPatchedOverride('leona', (ov) => {
 const pelletsToAll = withPatchedOverride('leona', (ov) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some(
-      (e: any) => e.stat === 'pelletCountFlat' || e.stat === 'normalAttackPct',
-    ),
+      (e: any) => e.stat === 'pelletCountFlat' || e.stat === 'normalAttackPct'
+    )
   );
   if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG')
-    throw new Error('leona S2 pellet block missing — fixture is stale');
+    {throw new Error('leona S2 pellet block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 /** L5: both burst blocks fired on FB entry instead of her cast. */
 const burstOnFbEnter = withPatchedOverride('leona', (ov) => {
   for (const b of ov.burst) {
     if (b.trigger.kind !== 'burstCast')
-      throw new Error('leona burst trigger missing — fixture is stale');
+      {throw new Error('leona burst trigger missing — fixture is stale');}
     b.trigger.kind = 'fullBurstEnter';
   }
 });
 /** L6: the 21.32% crit line unscoped to `allies`. */
 const critSgToAll = withPatchedOverride('leona', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'critRatePct'),
+    x.effects.some((e: any) => e.stat === 'critRatePct')
   );
   if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG')
-    throw new Error('leona burst critRatePct block missing — fixture is stale');
+    {throw new Error('leona burst critRatePct block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 /** Whole-kit zero: proves the buffer is live via her allies' totals, not her own damage. */
@@ -181,13 +179,13 @@ const leonaBuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === LEONA &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 const leonaCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'leona',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'leona'
   );
 const leonaShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'leona');
@@ -205,10 +203,10 @@ describe('leona — kit spec', () => {
     expect(casts.length).toBe(starts.length);
     const startFrames = new Set(starts.map((s) => s.frame));
     for (const c of casts)
-      expect(
+      {expect(
         startFrames.has(c.frame),
-        `leona cast at ${c.frame} coincides with the FB start`,
-      ).toBe(false);
+        `leona cast at ${c.frame} coincides with the FB start`
+      ).toBe(false);}
   });
 
   describe('L1 — S1 Roar: Critical Rate ▲2.62%, ×5 stacks, 5 sec, all allies, after 5 normal attacks', () => {
@@ -221,11 +219,11 @@ describe('leona — kit spec', () => {
       const first = roar[0].frame;
       // A count:5 encoding procs on pull 1 (10 hits ≥ 5); the shipped count:50 procs on pull 5.
       expect(first, 'first Roar proc must follow her 4th pull').toBeGreaterThan(
-        shots[3].frame,
+        shots[3].frame
       );
       expect(
         first,
-        'first Roar proc must not lag her 5th pull',
+        'first Roar proc must not lag her 5th pull'
       ).toBeLessThanOrEqual(shots[4].frame + 2);
     });
 
@@ -236,7 +234,7 @@ describe('leona — kit spec', () => {
       expect(first).toBeDefined();
       expect(
         first!,
-        'the counterfactual must fail the shipped pin above',
+        'the counterfactual must fail the shipped pin above'
       ).toBeLessThanOrEqual(shots[0].frame + 2);
     });
 
@@ -251,7 +249,7 @@ describe('leona — kit spec', () => {
       const maxObserved = Math.max(...roar.map((b) => b.stacks));
       expect(
         maxObserved,
-        'a single-application buff would never refresh past stack 1',
+        'a single-application buff would never refresh past stack 1'
       ).toBeGreaterThanOrEqual(2);
       expect(maxObserved).toBeLessThanOrEqual(5);
     });
@@ -273,15 +271,15 @@ describe('leona — kit spec', () => {
       const startFrames = new Set(starts.map((s) => s.frame));
       const hrFrames = new Set(hr.map((b) => b.frame));
       for (const s of starts)
-        expect(
+        {expect(
           hrFrames.has(s.frame),
-          `no hit-rate application on the FB start at ${s.frame}`,
-        ).toBe(true);
+          `no hit-rate application on the FB start at ${s.frame}`
+        ).toBe(true);}
       for (const b of hr)
-        expect(
+        {expect(
           startFrames.has(b.frame),
-          'a hit-rate application landed off the FB start frame',
-        ).toBe(true);
+          'a hit-rate application landed off the FB start frame'
+        ).toBe(true);}
     });
 
     it('reaches all four allies for exactly 10 sec', () => {
@@ -293,11 +291,11 @@ describe('leona — kit spec', () => {
       const cf = leonaBuff(cfS2BurstCast.events, 'hitRatePct', 20.28);
       expect(cf.length).toBeGreaterThan(0);
       const startFrames = new Set(
-        fbStarts(cfS2BurstCast.events).map((s) => s.frame),
+        fbStarts(cfS2BurstCast.events).map((s) => s.frame)
       );
       expect(
         cf.filter((b) => startFrames.has(b.frame)).length,
-        'the counterfactual must fail the "lands on the FB start frame" pin',
+        'the counterfactual must fail the "lands on the FB start frame" pin'
       ).toBe(0);
     });
   });
@@ -308,11 +306,11 @@ describe('leona — kit spec', () => {
     it('is the real pellet-count primitive, not the superseded normalAttackPct +50% proxy', () => {
       expect(
         pel.length,
-        'no pelletCountFlat 5 application — the encoding is still the normalAttackPct proxy',
+        'no pelletCountFlat 5 application — the encoding is still the normalAttackPct proxy'
       ).toBeGreaterThan(0);
       expect(
         leonaBuff(base.events, 'normalAttackPct', 50).length,
-        'the superseded +50% proxy must be gone',
+        'the superseded +50% proxy must be gone'
       ).toBe(0);
     });
 
@@ -330,10 +328,10 @@ describe('leona — kit spec', () => {
     it('DISCRIMINATING: the proxy encoding emits normalAttackPct 50 and no queryable pellet count', () => {
       expect(
         leonaBuff(cfPelletProxy.events, 'pelletCountFlat', 5).length,
-        'the counterfactual must fail the pelletCountFlat pin',
+        'the counterfactual must fail the pelletCountFlat pin'
       ).toBe(0);
       expect(
-        leonaBuff(cfPelletProxy.events, 'normalAttackPct', 50).length,
+        leonaBuff(cfPelletProxy.events, 'normalAttackPct', 50).length
       ).toBeGreaterThan(0);
     });
 
@@ -341,7 +339,7 @@ describe('leona — kit spec', () => {
       const cf = leonaBuff(cfPelletsAll.events, 'pelletCountFlat', 5);
       expect(
         cf.some((b) => b.targetIdx === LITER),
-        'the counterfactual must fail the "never the SMG ally" pin',
+        'the counterfactual must fail the "never the SMG ally" pin'
       ).toBe(true);
     });
   });
@@ -354,10 +352,10 @@ describe('leona — kit spec', () => {
       expect(cd.length).toBe(casts.length * ALL_SLOTS.size);
       const castFrames = new Set(casts.map((c) => c.frame));
       for (const b of cd)
-        expect(
+        {expect(
           castFrames.has(b.frame),
-          `crit-dmg application at ${b.frame} is not a leona cast frame`,
-        ).toBe(true);
+          `crit-dmg application at ${b.frame} is not a leona cast frame`
+        ).toBe(true);}
       expect(holders(cd)).toEqual(ALL_SLOTS);
       expect([...new Set(durations(cd))]).toEqual([10 * FPS]);
     });
@@ -366,11 +364,11 @@ describe('leona — kit spec', () => {
       const cf = leonaBuff(cfBurstFbEnter.events, 'critDamagePct', 34.64);
       expect(cf.length).toBeGreaterThan(0);
       const castFrames = new Set(
-        leonaCasts(cfBurstFbEnter.events).map((c) => c.frame),
+        leonaCasts(cfBurstFbEnter.events).map((c) => c.frame)
       );
       expect(
         cf.filter((b) => castFrames.has(b.frame)).length,
-        'the counterfactual must fail the "lands on the cast frame" pin',
+        'the counterfactual must fail the "lands on the cast frame" pin'
       ).toBe(0);
     });
   });
@@ -390,7 +388,7 @@ describe('leona — kit spec', () => {
       const cf = leonaBuff(cfCritAll.events, 'critRatePct', 21.32);
       expect(
         cf.some((b) => b.targetIdx === LITER),
-        'the counterfactual must fail the "never the SMG ally" pin',
+        'the counterfactual must fail the "never the SMG ally" pin'
       ).toBe(true);
     });
   });

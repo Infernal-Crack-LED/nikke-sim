@@ -112,7 +112,7 @@ const sftBuff = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === SOLINE && b.stat === stat);
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 /** soline's skill1-keyed buffApply events (key prefix `<SOLINE>:skill1:`). */
 const s1Keyed = (evs: SimEvent[]) =>
@@ -127,16 +127,18 @@ const fbStartFrames = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
 /** crown's recovery consumer firings (team Attack Damage ▲20.99%), deduped to distinct frames. */
 const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
-  [...new Set(
-    buffs(evs)
-      .filter(
-        (b) =>
-          b.casterIdx === CROWN &&
-          b.stat === 'attackDamagePct' &&
-          b.value === 20.99,
-      )
-      .map((b) => b.frame),
-  )].sort((a, b) => a - b);
+  [
+    ...new Set(
+      buffs(evs)
+        .filter(
+          (b) =>
+            b.casterIdx === CROWN &&
+            b.stat === 'attackDamagePct' &&
+            b.value === 20.99
+        )
+        .map((b) => b.frame)
+    ),
+  ].sort((a, b) => a - b);
 
 // ---- counterfactual patches (nearest-wrong readings) -----------------------------------------
 // F1 nearest-wrong (value): the ticket grant at 1 ticket (10%) instead of the steady-state 2 tickets (20%).
@@ -145,52 +147,56 @@ const cfMaxHp10 = withPatchedOverride(SFT, (ov: any) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterMaxHpPct');
   if (!e)
-    throw new Error('soline S1 casterMaxHpPct effect missing — fixture is stale');
+    {throw new Error(
+      'soline S1 casterMaxHpPct effect missing — fixture is stale'
+    );}
   e.value = 10;
 });
 // F1 nearest-wrong (target): all allies → self only.
 const cfMaxHpSelf = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'casterMaxHpPct'),
+    x.effects.some((e: any) => e.stat === 'casterMaxHpPct')
   );
   if (!b)
-    throw new Error('soline S1 casterMaxHpPct block missing — fixture is stale');
+    {throw new Error(
+      'soline S1 casterMaxHpPct block missing — fixture is stale'
+    );}
   b.target = { kind: 'self' };
 });
 // F2 nearest-wrong (presence): the burstCdr block removed → no team CDR → fewer Full Bursts.
 const cfNoCdr = withPatchedOverride(SFT, (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill1.length === before)
-    throw new Error('soline S1 burstCdr block missing — fixture is stale');
+    {throw new Error('soline S1 burstCdr block missing — fixture is stale');}
 });
 // F6 nearest-wrong (trigger): the burst heal keyed to fullBurstEnter (FB-start frames) instead of burstCast.
 const cfHealFbEnter = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'heal'),
+    x.effects.some((e: any) => e.kind === 'heal')
   );
-  if (!b) throw new Error('soline burst heal block missing — fixture is stale');
+  if (!b) {throw new Error('soline burst heal block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // F6 nearest-wrong (presence): the burst heal block removed → no recovery source → crown's recovery never fires.
 const cfNoHeal = withPatchedOverride(SFT, (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'heal'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
   if (ov.burst.length === before)
-    throw new Error('soline burst heal block missing — fixture is stale');
+    {throw new Error('soline burst heal block missing — fixture is stale');}
 });
 // Isolation: remove crown's own Relax self-heal so soline's burst heal is the ONLY recovery source in the fight.
 const crownNoHeal = withPatchedOverride('crown', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'heal'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
   if (ov.skill2.length === before)
-    throw new Error('crown S2 heal block missing — fixture is stale');
+    {throw new Error('crown S2 heal block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -231,13 +237,13 @@ describe('soline-frost-ticket — kit spec', () => {
     it('DISCRIMINATING (value): 1 ticket (10%, nearest-wrong) keys the buff :10, not :20', () => {
       expect(
         sftBuff(maxHp10.events, 'maxHpFlat').filter((b) =>
-          b.key.endsWith(':maxHpFlat:20'),
-        ).length,
+          b.key.endsWith(':maxHpFlat:20')
+        ).length
       ).toBe(0);
       expect(
         sftBuff(maxHp10.events, 'maxHpFlat').filter((b) =>
-          b.key.endsWith(':maxHpFlat:10'),
-        ).length,
+          b.key.endsWith(':maxHpFlat:10')
+        ).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): self (nearest-wrong) reaches only soline, not all 3 allies', () => {
@@ -254,7 +260,7 @@ describe('soline-frost-ticket — kit spec', () => {
       expect(withCdr).toBeGreaterThan(without);
       // soline's own cast count tracks the team cadence
       expect(castFrames(base.events).length).toBeGreaterThanOrEqual(
-        castFrames(noCdr.events).length,
+        castFrames(noCdr.events).length
       );
     });
     // RESIDUAL (documented): fullBurstEnter vs burstCast trigger identity is NOT behaviorally discriminable for a

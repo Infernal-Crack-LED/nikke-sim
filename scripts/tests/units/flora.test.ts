@@ -88,7 +88,7 @@ const stripBurstEffect = (slug: string, stat: string) =>
     for (const b of ov.burst) {
       const before = b.effects.length;
       b.effects = b.effects.filter((e: any) => e.stat !== stat);
-      if (b.effects.length !== before) return;
+      if (b.effects.length !== before) {return;}
     }
     throw new Error(`flora burst ${stat} effect missing — fixture is stale`);
   });
@@ -100,9 +100,9 @@ const floraBurstAtkSelf = withPatchedOverride('flora', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error(
-      'flora burst casterAtkPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'flora burst casterAtkPct effect missing — fixture is stale'
+    );}
   e.stat = 'atkPct';
 });
 /** F2 reference: Flora's burst True Damage line removed (heal + casterAtkPct kept). */
@@ -112,14 +112,14 @@ const crownNoSelfHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
   if (ov.skill2.length === before)
-    throw new Error('crown S2 self-heal block missing — fixture is stale');
+    {throw new Error('crown S2 self-heal block missing — fixture is stale');}
 });
 /** F3 isolation: also remove Flora's S1 HoT, leaving ONLY the burst heal as a recovery source. */
 const floraNoHoT = withPatchedOverride('flora', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
   if (ov.skill1.length === before)
-    throw new Error('flora S1 HoT block missing — fixture is stale');
+    {throw new Error('flora S1 HoT block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -135,7 +135,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const floraBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'flora',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'flora'
   );
 /** Frames crown's recovery consumer fired (+20.99% Attack Damage), deduped per frame. */
 const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
@@ -146,26 +146,26 @@ const crownRecoveryFrames = (evs: SimEvent[]): number[] =>
           (b) =>
             b.casterIdx === CROWN &&
             b.stat === 'attackDamagePct' &&
-            Math.abs(b.value - 20.99) < 0.01,
+            Math.abs(b.value - 20.99) < 0.01
         )
-        .map((b) => b.frame),
+        .map((b) => b.frame)
     ),
   ].sort((a, b) => a - b);
 
 describe('flora — kit spec', () => {
   describe("F1 — burst ATK ▲ 85.86% of FLORA's ATK (caster-scaled flat add) to all allies, 10s", () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === FLORA && b.stat === 'casterAtkPct',
+      (b) => b.casterIdx === FLORA && b.stat === 'casterAtkPct'
     );
     const floraStaticAtk = unitOf(base.res, 'flora').staticAtk;
 
     it("is the flat resolution of 85.86% of Flora's static ATK, identical for every ally", () => {
       expect(
         applied.length,
-        'no burst casterAtkPct buff was applied',
+        'no burst casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       const expected = (85.86 / 100) * floraStaticAtk;
-      for (const b of applied) expect(b.value).toBeCloseTo(expected, 3);
+      for (const b of applied) {expect(b.value).toBeCloseTo(expected, 3);}
       // Caster-scaled => the SAME flat add lands on every target (not % of each target's own ATK).
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([
         LITER,
@@ -175,13 +175,13 @@ describe('flora — kit spec', () => {
       ]);
       expect(
         new Set(applied.map((b) => b.value)).size,
-        'flat add must be identical across targets',
+        'flat add must be identical across targets'
       ).toBe(1);
     });
 
     it('reaches all four allies for exactly 10 sec per burst cast', () => {
       expect(applied.length).toBe(floraBursts(base.events).length * 4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a generic atkPct (target-own-ATK) moves the carry differently', () => {
@@ -196,13 +196,13 @@ describe('flora — kit spec', () => {
 
   describe('F2 — burst True Damage ▲ 42.39% to all allies, 10s, FLAVOR-GATED to true damage', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === FLORA && b.stat === 'trueDamagePct',
+      (b) => b.casterIdx === FLORA && b.stat === 'trueDamagePct'
     );
 
     it('is 42.39% for 10 sec, reaching all four allies per burst cast', () => {
       expect(applied.length).toBe(floraBursts(base.events).length * 4);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([42.39]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('moves ada (true-flavored grenades) when removed', () => {
@@ -231,12 +231,12 @@ describe('flora — kit spec', () => {
       const burstFrames = bursts.map((b) => b.frame);
       expect(
         frames.length,
-        `${frames.length} recovery firings vs ${burstFrames.length} Flora bursts`,
+        `${frames.length} recovery firings vs ${burstFrames.length} Flora bursts`
       ).toBe(burstFrames.length);
       for (const f of burstFrames) {
         expect(
           frames,
-          `no recovery firing at Flora burst frame ${f}`,
+          `no recovery firing at Flora burst frame ${f}`
         ).toContain(f);
       }
     });
@@ -252,7 +252,7 @@ describe('flora — kit spec', () => {
     it("fires crown's consumer on ~every second of the fight (near-permanent)", () => {
       expect(
         hotFrames,
-        `${hotFrames} distinct recovery frames over ${FIGHT_SEC}s — a 1s HoT yields ~${FIGHT_SEC}`,
+        `${hotFrames} distinct recovery frames over ${FIGHT_SEC}s — a 1s HoT yields ~${FIGHT_SEC}`
       ).toBeGreaterThanOrEqual(Math.floor(FIGHT_SEC * 0.8));
     });
 

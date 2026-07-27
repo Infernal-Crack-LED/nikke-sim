@@ -52,36 +52,47 @@ const data = JSON.parse(
 function stripInert(blocks: Block[], intoUnmodeled?: string[]): Block[] {
   const out: Block[] = [];
   for (const b of blocks) {
-    if (b.trigger.kind === 'unsupported') continue; // lines already reported by the parser
+    if (b.trigger.kind === 'unsupported') {continue;} // lines already reported by the parser
     const effects: EffectDef[] = [];
     for (const e of b.effects) {
-      if (e.kind === 'unsupported') continue; // raw already reported by the parser
+      if (e.kind === 'unsupported') {continue;} // raw already reported by the parser
       if (e.kind === 'escalating') {
         const steps = e.steps.filter((s) => {
-          if (s.kind !== 'unsupported') return true;
+          if (s.kind !== 'unsupported') {return true;}
           intoUnmodeled?.push(s.raw);
           return false;
         });
-        if (steps.length === 0) continue;
+        if (steps.length === 0) {continue;}
         effects.push(steps.length === e.steps.length ? e : { ...e, steps });
         continue;
       }
       effects.push(e);
     }
-    if (effects.length) out.push(effects === b.effects ? b : { ...b, effects });
+    if (effects.length) {out.push(effects === b.effects ? b : { ...b, effects });}
   }
   return out;
 }
 
 // Canonical key order so diffs stay readable across regenerations.
 const KEY_ORDER = [
-  'note', 'modes', 'hasPierce', 'pierceModes', 'charFixes', 'consolidation',
-  'burstSnapshotsPreFb', 'unmodeled', 'caveats', 'skill1', 'skill2', 'burst',
+  'note',
+  'modes',
+  'hasPierce',
+  'pierceModes',
+  'charFixes',
+  'consolidation',
+  'burstSnapshotsPreFb',
+  'unmodeled',
+  'caveats',
+  'skill1',
+  'skill2',
+  'burst',
 ];
 function serialize(o: Record<string, unknown>): string {
   const ordered: Record<string, unknown> = {};
-  for (const k of KEY_ORDER) if (o[k] !== undefined) ordered[k] = o[k];
-  for (const k of Object.keys(o)) if (!(k in ordered) && o[k] !== undefined) ordered[k] = o[k];
+  for (const k of KEY_ORDER) {if (o[k] !== undefined) {ordered[k] = o[k];}}
+  for (const k of Object.keys(o))
+    {if (!(k in ordered) && o[k] !== undefined) {ordered[k] = o[k];}}
   return JSON.stringify(ordered, null, 2) + '\n';
 }
 
@@ -90,7 +101,7 @@ let verified = 0;
 let diffs = 0;
 
 for (const [slug, char] of Object.entries(data.characters)) {
-  if (onlySlugs.length && !onlySlugs.includes(slug)) continue;
+  if (onlySlugs.length && !onlySlugs.includes(slug)) {continue;}
   const path = OVERRIDES_URL(slug);
   const old: Partial<OverrideFile> = existsSync(path)
     ? JSON.parse(readFileSync(path, 'utf8'))
@@ -99,14 +110,16 @@ for (const [slug, char] of Object.entries(data.characters)) {
   // ---- build the new, complete override -----------------------------------
   const next: Record<string, unknown> = { ...old };
   const unmodeled: Record<SkillSlot, string[]> = {
-    skill1: [], skill2: [], burst: [],
+    skill1: [],
+    skill2: [],
+    burst: [],
     ...(old as any).unmodeled,
   };
   const caveats: string[] = [...((old as any).caveats ?? [])];
   const filledSlots: SkillSlot[] = [];
 
   for (const slot of SLOTS) {
-    if (old[slot]) continue; // hand-authored (or previously materialized) — keep verbatim
+    if (old[slot]) {continue;} // hand-authored (or previously materialized) — keep verbatim
     const parsed = parseSkill(char.skills[slot], slot);
     const dropped: string[] = [];
     next[slot] = stripInert(parsed.blocks, dropped);
@@ -115,7 +128,7 @@ for (const [slug, char] of Object.entries(data.characters)) {
     filledSlots.push(slot);
   }
   next.unmodeled = unmodeled;
-  if (caveats.length) next.caveats = caveats;
+  if (caveats.length) {next.caveats = caveats;}
 
   if (filledSlots.length) {
     if (!old.note) {
@@ -143,13 +156,17 @@ for (const [slug, char] of Object.entries(data.characters)) {
       ? old[slot]!.map((b) => ({ ...b, slot }))
       : parseSkill(char.skills[slot], slot).blocks;
     oldMerged.push(...stripInert(oldSlot));
-    newAssembled.push(...stripInert((next[slot] as Block[]).map((b) => ({ ...b, slot }))));
+    newAssembled.push(
+      ...stripInert((next[slot] as Block[]).map((b) => ({ ...b, slot })))
+    );
   }
   const a = JSON.stringify(oldMerged);
   const b = JSON.stringify(newAssembled);
   if (a !== b) {
     diffs++;
-    console.error(`✗ ${slug}: VERIFY DIFF — old runtime blocks != materialized blocks`);
+    console.error(
+      `✗ ${slug}: VERIFY DIFF — old runtime blocks != materialized blocks`
+    );
     console.error(`  old: ${a.slice(0, 400)}`);
     console.error(`  new: ${b.slice(0, 400)}`);
     continue;
@@ -158,9 +175,11 @@ for (const [slug, char] of Object.entries(data.characters)) {
 
   const before = existsSync(path) ? readFileSync(path, 'utf8') : '';
   const after = serialize(next);
-  if (before === after) continue;
+  if (before === after) {continue;}
   changed++;
-  const summary = filledSlots.length ? `materialized ${filledSlots.join('/')}` : 'metadata refresh';
+  const summary = filledSlots.length
+    ? `materialized ${filledSlots.join('/')}`
+    : 'metadata refresh';
   if (write) {
     writeFileSync(path, after);
     console.log(`✓ ${slug}: wrote (${summary})`);
@@ -172,4 +191,4 @@ for (const [slug, char] of Object.entries(data.characters)) {
 console.log(
   `\n${verified} verified identical, ${changed} file(s) ${write ? 'written' : 'pending (dry-run — pass --write)'}, ${diffs} verify diff(s)`
 );
-if (diffs) process.exit(1);
+if (diffs) {process.exit(1);}

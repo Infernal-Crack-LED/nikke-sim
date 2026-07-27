@@ -2,7 +2,10 @@
 // values at the 9 measured window states, scored as total binomial deviance across the
 // 18 cells (vs the analysis fit's 25.4 on 16 dof; PASS = within +6).
 // Calls the engine's own functions directly (src/engine/unigeo.ts) - no full sim.
-import { unigeoSgLanding, unigeoSgCorePerLanded } from '../../src/engine/unigeo.js';
+import {
+  unigeoSgLanding,
+  unigeoSgCorePerLanded,
+} from '../../src/engine/unigeo.js';
 
 const STATES: [string, string, number, number, number, number][] = [
   // label, band, hr, shots, landed, cores
@@ -32,11 +35,14 @@ for (const [label, band, hr, shots, landed, cores] of STATES) {
   sat += bll(landed, n, landed / n) + bll(cores, landed, cores / landed);
   ll += bll(landed, n, pL) + bll(cores, landed, pC);
   const zL = (landed / n - pL) / Math.sqrt(Math.max(pL * (1 - pL), 1e-12) / n);
-  const zC = (cores / landed - pC) / Math.sqrt(Math.max(pC * (1 - pC), 1e-12) / landed);
+  const zC =
+    (cores / landed - pC) / Math.sqrt(Math.max(pC * (1 - pC), 1e-12) / landed);
   console.log(
-    `${label.padEnd(14)} ${pL.toFixed(4).padStart(8)} ${(landed / n).toFixed(4).padStart(8)} ${zL.toFixed(2).padStart(6)} ${pC.toFixed(4).padStart(9)} ${(cores / landed).toFixed(4).padStart(8)} ${zC.toFixed(2).padStart(6)}`,
+    `${label.padEnd(14)} ${pL.toFixed(4).padStart(8)} ${(landed / n).toFixed(4).padStart(8)} ${zL.toFixed(2).padStart(6)} ${pC.toFixed(4).padStart(9)} ${(cores / landed).toFixed(4).padStart(8)} ${zC.toFixed(2).padStart(6)}`
   );
 }
 const dev = 2 * (sat - ll);
 console.log(`\nengine total deviance (18 cells): ${dev.toFixed(2)}`);
-console.log(`analysis-fit reference: 25.4 (16 dof); PASS criterion dev <= 31.4: ${dev <= 31.4 ? 'PASS' : 'FAIL'}`);
+console.log(
+  `analysis-fit reference: 25.4 (16 dof); PASS criterion dev <= 31.4: ${dev <= 31.4 ? 'PASS' : 'FAIL'}`
+);

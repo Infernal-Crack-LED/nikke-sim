@@ -12,18 +12,25 @@
   "clock": {
     "method": "top-right 03:00 countdown; fight-clock t = 180 - countdown",
     "anchors": [
-      {"videoSec": 10, "countdown": "02:57", "fightClock": 3},
-      {"videoSec": 20, "countdown": "02:47", "fightClock": 13},
-      {"videoSec": 60, "countdown": "02:06", "fightClock": 54},
-      {"videoSec": 100, "countdown": "01:25", "fightClock": 95},
-      {"videoSec": 140, "countdown": "00:44", "fightClock": 136},
-      {"videoSec": 175, "countdown": "00:09", "fightClock": 171}
+      { "videoSec": 10, "countdown": "02:57", "fightClock": 3 },
+      { "videoSec": 20, "countdown": "02:47", "fightClock": 13 },
+      { "videoSec": 60, "countdown": "02:06", "fightClock": 54 },
+      { "videoSec": 100, "countdown": "01:25", "fightClock": 95 },
+      { "videoSec": 140, "countdown": "00:44", "fightClock": 136 },
+      { "videoSec": 175, "countdown": "00:09", "fightClock": 171 }
     ],
     "offsetSec": 7,
     "note": "NOT a constant offset — the in-game countdown runs ~1.8% FAST relative to the recording clock, so the video->fight-clock offset DRIFTS from ~7s early to ~4s late. Best linear fit: fightClock = 1.018*videoSec - 7.18, i.e. videoSec = (fightClock + 7.18)/1.018. Band windows below were placed with this fit."
   },
   "colourConvention": "white number = NORMAL non-core; red + 'CORE HIT' text = core (may also carry an orange crit icon = core+crit, still counted core); orange number + crit icon (no 'CORE HIT') = crit non-core; classified by COLOUR only (per-band white value shifts with buff state, so value-banding across bands is invalid). EXCLUDED: her skill riders (~359k / ~717k / ~1.08M base, 283/565/848% coef) and burst-cast nuke; the persistent red laser TRACER beam; red circular impact rings on the boss body; red full-screen boss-AoE tint; reticle counters (0XX), red 00X boss-timer boxes, cyan BLOCK over character.",
-  "hitValueTableNeutral": {"normalWhiteBase": 109033, "coreRedBase": 218066, "skill283Base": 359106, "skill565Base": 716866, "skill848Base": 1075972, "source": "scripts/probe/hit-values.ts scarlet-black-shadow (solo, neutral boss)"},
+  "hitValueTableNeutral": {
+    "normalWhiteBase": 109033,
+    "coreRedBase": 218066,
+    "skill283Base": 359106,
+    "skill565Base": 716866,
+    "skill848Base": 1075972,
+    "source": "scripts/probe/hit-values.ts scarlet-black-shadow (solo, neutral boss)"
+  },
   "bands": [
     {
       "band": "mid",
@@ -38,14 +45,23 @@
       "critHits": 5,
       "whiteHits": 9,
       "totalNormals": 20,
-      "coreRate": 0.30,
+      "coreRate": 0.3,
       "confidence": "medium (cores clearly present as red 197368 'CORE HIT'; count softened by reload gaps + popup overlap; ~+/-0.15)"
     },
     {
       "band": "near",
-      "fightClockRange": [[33, 70], [144, 176]],
-      "windowVideoSec": [[60, 68], [166, 174]],
-      "windowFightClock": [[53.9, 61.0], [161.8, 169.0]],
+      "fightClockRange": [
+        [33, 70],
+        [144, 176]
+      ],
+      "windowVideoSec": [
+        [60, 68],
+        [166, 174]
+      ],
+      "windowFightClock": [
+        [53.9, 61.0],
+        [161.8, 169.0]
+      ],
       "bossDistance": "close / large apparent size, boss right (near1) then central-big/point-blank (near2) (matches 'near')",
       "normalWhiteValueObserved": 70488,
       "critOrangeValueObserved": 110392,
@@ -61,8 +77,14 @@
     {
       "band": "far",
       "fightClockRange": [70, 106],
-      "windowVideoSec": [[74, 82], [94, 102]],
-      "windowFightClock": [[68.1, 76.3], [88.5, 96.6]],
+      "windowVideoSec": [
+        [74, 82],
+        [94, 102]
+      ],
+      "windowFightClock": [
+        [68.1, 76.3],
+        [88.5, 96.6]
+      ],
       "bossDistance": "distant, boss small/centre (smallest apparent size of the fight) (matches 'far')",
       "normalWhiteValueObserved": 62922,
       "critOrangeValueObserved": 110392,
@@ -76,9 +98,18 @@
     },
     {
       "band": "midfar",
-      "fightClockRange": [[106, 144], [176, 180]],
-      "windowVideoSec": [[108, 116], [130, 138]],
-      "windowFightClock": [[102.8, 110.9], [125.2, 133.3]],
+      "fightClockRange": [
+        [106, 144],
+        [176, 180]
+      ],
+      "windowVideoSec": [
+        [108, 116],
+        [130, 138]
+      ],
+      "windowFightClock": [
+        [102.8, 110.9],
+        [125.2, 133.3]
+      ],
       "bossDistance": "medium-far, boss central (between mid and far apparent size) (matches 'midfar')",
       "normalWhiteValueObserved": 91635,
       "critOrangeValueObserved": 131538,
@@ -98,7 +129,7 @@
     "sheetsInScratchpad": "scratchpad/scarlet/bands/{mid1,near_a,near_b,far_a,far_b,midfar_a,midfar_b}.png ; calibration frames scratchpad/scarlet/read/{z_20.5,z_20.83,big_25.0,conf_near61,conf_far75}.png (ephemeral — regenerate from windowVideoSec above)."
   },
   "summary": {
-    "coreRateByBand": {"mid": 0.30, "near": 0.44, "far": 0.0, "midfar": 0.03},
+    "coreRateByBand": { "mid": 0.3, "near": 0.44, "far": 0.0, "midfar": 0.03 },
     "headline": "Scarlet's AR auto-aim core rate is STRONGLY range-dependent and roughly binary: substantial when the boss is CLOSE (near ~0.44, mid ~0.30) and ~0 when the boss is FAR (midfar ~0.03, far 0.0). The single-bullet AR shows a much cleaner/larger core signal than Drake's 10-pellet SG (which diluted core across the spread to ~9% at best).",
     "mechanistic": "The boss's core sits at the crosshair; a single AR bullet lands on-core only when the boss is close enough that the reticle is over the (small) core. Beyond ~mid range, auto-aim shots register on the body -> no core. Threshold falls between the 'mid' and 'midfar' bands.",
     "confounds": [
@@ -119,13 +150,60 @@
     },
     "reconciliation": {
       "mags": [
-        {"id": "mag1", "band": "near1", "videoSec": [46.70, 49.05], "bossDist": "close/centre", "ammo": "020->000 (20 shots)", "totalStart": 18639326, "totalEnd": 20732709, "deltaTotal": 2093383, "skillRiders": 0, "arNormalDamage": 2093383, "perShot": 104669},
-        {"id": "mag2", "band": "near1", "videoSec": [50.85, 52.95], "bossDist": "close/right", "ammo": "020->000 (20 shots)", "totalStart": 20732709, "totalEnd": 23146023, "deltaTotal": 2413314, "skillRiders": "one 283% rider = 359835 subtracted", "arNormalDamage": 2053479, "perShot": 102674},
-        {"id": "magN2", "band": "near2", "videoSecBracket": [165.35, 167.60], "bossDist": "central/point-blank", "ammo": "one full 020->000 mag between two reload(000) reads", "totalStart": 74108024, "totalEnd": 76293164, "deltaTotal": 2185140, "skillRiders": "none seen", "arNormalDamage": 2185140, "perShot": 109257}
+        {
+          "id": "mag1",
+          "band": "near1",
+          "videoSec": [46.7, 49.05],
+          "bossDist": "close/centre",
+          "ammo": "020->000 (20 shots)",
+          "totalStart": 18639326,
+          "totalEnd": 20732709,
+          "deltaTotal": 2093383,
+          "skillRiders": 0,
+          "arNormalDamage": 2093383,
+          "perShot": 104669
+        },
+        {
+          "id": "mag2",
+          "band": "near1",
+          "videoSec": [50.85, 52.95],
+          "bossDist": "close/right",
+          "ammo": "020->000 (20 shots)",
+          "totalStart": 20732709,
+          "totalEnd": 23146023,
+          "deltaTotal": 2413314,
+          "skillRiders": "one 283% rider = 359835 subtracted",
+          "arNormalDamage": 2053479,
+          "perShot": 102674
+        },
+        {
+          "id": "magN2",
+          "band": "near2",
+          "videoSecBracket": [165.35, 167.6],
+          "bossDist": "central/point-blank",
+          "ammo": "one full 020->000 mag between two reload(000) reads",
+          "totalStart": 74108024,
+          "totalEnd": 76293164,
+          "deltaTotal": 2185140,
+          "skillRiders": "none seen",
+          "arNormalDamage": 2185140,
+          "perShot": 109257
+        }
       ],
-      "pooled": {"shots": 60, "arNormalDamage": 6332002, "avgPerShot": 105533, "avgOverBase": 1.497},
+      "pooled": {
+        "shots": 60,
+        "arNormalDamage": 6332002,
+        "avgPerShot": 105533,
+        "avgOverBase": 1.497
+      },
       "solve": "avgOverBase = 1 + c + 0.5661*k + 0.5675*k*c, where c = core-involved rate, k = crit-involved rate. => c + 0.5661k + 0.5675kc = 0.497.",
-      "coreRateVsCrit": {"k0.00": 0.497, "k0.15": 0.380, "k0.20": 0.345, "k0.25": 0.311, "k0.30": 0.280},
+      "coreRateVsCrit": {
+        "k0.00": 0.497,
+        "k0.15": 0.38,
+        "k0.20": 0.345,
+        "k0.25": 0.311,
+        "k0.30": 0.28
+      },
       "hardCeiling": "c <= 0.497 REGARDLESS of crit rate (max at k=0). Any positive crit rate lowers c. This alone refutes ~0.70.",
       "critRate": "Solo fight (no support crit buffs); engine base crit 15% + modest self-buff. Visible orange fraction ~0.20-0.25. Best k ~= 0.20 -> c ~= 0.345."
     },
@@ -141,7 +219,15 @@
     "confidence": "HIGH that it is NOT ~0.70 (robust reconciliation). MEDIUM on the exact point (0.33 vs 0.44), limited by crit-rate uncertainty and 12-round/sec popup overlap that prevents clean per-shot visual counting.",
     "bossDistanceNote": "Within fc 33-70, the boss is genuinely close only ~fc 34-49 (v39-55); it drifts left/smaller toward the far transition after ~v55. near2 (fc 144-176) is central/point-blank. All three reconciled mags were placed on genuinely-close boss frames (visually confirmed).",
     "savedFrames": "docs/probes/ar-sg-smg/coreband-frames/reread_*.png (R3 core+crit evidence, mag1 + magN2 total/ammo boundaries, mag1 tail 30fps sheet). Working extractions in scratchpad/scarlet2/ (ephemeral; regenerate from videoSec above).",
-    "measuredValues": {"normalWhite": 70488, "coreRed": 140977, "critOrange": 110392, "coreCritOrange": 220880, "coreOverBase": 2.00, "critOverBase": 1.566, "coreCritOverBase": 3.134},
+    "measuredValues": {
+      "normalWhite": 70488,
+      "coreRed": 140977,
+      "critOrange": 110392,
+      "coreCritOrange": 220880,
+      "coreOverBase": 2.0,
+      "critOverBase": 1.566,
+      "coreCritOverBase": 3.134
+    },
     "ammoMechanic": "Scarlet's AR mag holds 20 rounds; the on-screen reticle shows a live 020->000 ammo counter (ground-truth shot count per burst) — a reusable anchor for AR/SMG reconciliations."
   }
 }

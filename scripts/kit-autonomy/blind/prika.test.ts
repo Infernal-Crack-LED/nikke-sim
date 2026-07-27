@@ -44,7 +44,12 @@ import {
 
 const SLUG = 'prika';
 const ALLIES = ['liter', 'crown', 'prika', 'helm'] as const;
-const HP_STATS = new Set(['maxHpPct', 'maxHpFlat', 'casterMaxHpPct', 'targetMaxHpPct']);
+const HP_STATS = new Set([
+  'maxHpPct',
+  'maxHpFlat',
+  'casterMaxHpPct',
+  'targetMaxHpPct',
+]);
 
 type AnyEv = SimEvent & Record<string, any>;
 type Slot = 'skill1' | 'skill2' | 'burst';
@@ -55,11 +60,15 @@ function runWithEvents(opts: any): { res: any; events: AnyEv[] } {
   const onEvent = (ev: AnyEv) => {
     sink.push(ev);
   };
-  const res = runComp({ ...opts, onEvent, cfg: { ...(opts?.cfg ?? {}), onEvent } } as any);
+  const res = runComp({
+    ...opts,
+    onEvent,
+    cfg: { ...(opts?.cfg ?? {}), onEvent },
+  } as any);
   const seen = new Set<AnyEv>();
   const events: AnyEv[] = [];
   for (const ev of sink) {
-    if (seen.has(ev)) continue;
+    if (seen.has(ev)) {continue;}
     seen.add(ev);
     events.push(ev);
   }
@@ -69,18 +78,19 @@ function runWithEvents(opts: any): { res: any; events: AnyEv[] } {
 /** Accepts both documented override slot shapes. */
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) return s;
-  if (s && Array.isArray(s.blocks)) return s.blocks;
+  if (Array.isArray(s)) {return s;}
+  if (s && Array.isArray(s.blocks)) {return s.blocks;}
   throw new Error('prika override: no blocks found for slot ' + slot);
 }
 
 function eachEffect(ov: any, slot: Slot, fn: (e: any) => void): void {
-  for (const b of blocksOf(ov, slot)) for (const e of b.effects ?? []) fn(e);
+  for (const b of blocksOf(ov, slot)) {for (const e of b.effects ?? []) {fn(e);}}
 }
 
 function dropEffects(ov: any, slot: Slot, pred: (e: any) => boolean): void {
   for (const b of blocksOf(ov, slot)) {
-    if (Array.isArray(b.effects)) b.effects = b.effects.filter((e: any) => !pred(e));
+    if (Array.isArray(b.effects))
+      {b.effects = b.effects.filter((e: any) => !pred(e));}
   }
 }
 
@@ -88,56 +98,73 @@ function withPrika(mutate: (ov: any) => void): any {
   const opts: any = controlComp(SLUG, true);
   return {
     ...opts,
-    overrides: { ...(opts.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, mutate as any) },
+    overrides: {
+      ...(opts.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, mutate as any),
+    },
   };
 }
 
 const applies = (evs: AnyEv[], stat: string, target?: string): AnyEv[] =>
   evs.filter(
     (e) =>
-      e.kind === 'buffApply' && e.stat === stat && (target === undefined || e.targetSlug === target),
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      (target === undefined || e.targetSlug === target)
   );
-const about = (v: number, want: number, eps = 0.02): boolean => Math.abs(v - want) <= eps;
+const about = (v: number, want: number, eps = 0.02): boolean =>
+  Math.abs(v - want) <= eps;
 const dmg = (r: { res: any }, slug: string): number => totals(r.res)[slug];
 
 // ---- hoisted runs (9 × 180 s) ------------------------------------------------------------------
 const base = runWithEvents(controlComp(SLUG, true));
 
 const rNoCasterAtk = runWithEvents(
-  withPrika((ov) => dropEffects(ov, 'skill1', (e) => e.kind === 'buff' && e.stat === 'casterAtkPct')),
+  withPrika((ov) =>
+    dropEffects(
+      ov,
+      'skill1',
+      (e) => e.kind === 'buff' && e.stat === 'casterAtkPct'
+    )
+  )
 );
 const rAtkPctSwap = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
-    }),
-  ),
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+    })
+  )
 );
 const rDur1 = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.durationSec = 1;
-    }),
-  ),
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.durationSec = 1;}
+    })
+  )
 );
 const rDur30 = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.durationSec = 30;
-    }),
-  ),
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.durationSec = 30;}
+    })
+  )
 );
 const rNoCharge = runWithEvents(
   withPrika((ov) =>
-    dropEffects(ov, 'burst', (e) => e.kind === 'buff' && e.stat === 'chargeDamagePct'),
-  ),
+    dropEffects(
+      ov,
+      'burst',
+      (e) => e.kind === 'buff' && e.stat === 'chargeDamagePct'
+    )
+  )
 );
 const rChargeAsAttack = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'burst', (e) => {
-      if (e.kind === 'buff' && e.stat === 'chargeDamagePct') e.stat = 'attackDamagePct';
-    }),
-  ),
+      if (e.kind === 'buff' && e.stat === 'chargeDamagePct')
+        {e.stat = 'attackDamagePct';}
+    })
+  )
 );
 const rHealOnce = runWithEvents(
   withPrika((ov) =>
@@ -146,11 +173,13 @@ const rHealOnce = runWithEvents(
         e.ticks = 1;
         delete e.intervalSec;
       }
-    }),
-  ),
+    })
+  )
 );
 const rNoMaxHp = runWithEvents(
-  withPrika((ov) => dropEffects(ov, 'skill2', (e) => e.kind === 'buff' && HP_STATS.has(e.stat))),
+  withPrika((ov) =>
+    dropEffects(ov, 'skill2', (e) => e.kind === 'buff' && HP_STATS.has(e.stat))
+  )
 );
 
 const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
@@ -161,7 +190,9 @@ describe('prika — fixture sanity / non-vacuity', () => {
     expect(unitOf(base.res, SLUG).totalDamage).toBeGreaterThan(0);
     // chargeDamagePct ▲25% is unique to prika burst in this comp -> its presence IS proof she cast.
     // If this fails, the two-Burst-II fixture never let her cast and every burst assertion below is vacuous.
-    const perf = applies(base.events, 'chargeDamagePct').filter((e) => about(e.value, 25));
+    const perf = applies(base.events, 'chargeDamagePct').filter((e) =>
+      about(e.value, 25)
+    );
     expect(perf.length).toBeGreaterThanOrEqual(4);
   });
 });
@@ -208,11 +239,15 @@ describe('prika S1 — full-charge all-ally buff (3 sec)', () => {
   it('carries Projectile Explosion ▲20% and Pierce Damage ▲13.09% at kit magnitude to all allies', () => {
     for (const s of ALLIES) {
       expect(
-        applies(base.events, 'projectileExplosionPct', s).some((e) => about(e.value, 20)),
+        applies(base.events, 'projectileExplosionPct', s).some((e) =>
+          about(e.value, 20)
+        )
       ).toBe(true);
-      expect(applies(base.events, 'pierceDamagePct', s).some((e) => about(e.value, 13.09))).toBe(
-        true,
-      );
+      expect(
+        applies(base.events, 'pierceDamagePct', s).some((e) =>
+          about(e.value, 13.09)
+        )
+      ).toBe(true);
     }
   });
 
@@ -228,20 +263,24 @@ describe('prika S2 — Max HP on Full Burst entry (self, 10 sec)', () => {
       applies(rNoMaxHp.events, 'maxHpFlat', SLUG).length;
     expect(dSelf).toBe(fbStarts); // a passive would be 1; an interval/shot key would overshoot
     for (const s of ALLIES) {
-      if (s === SLUG) continue;
+      if (s === SLUG) {continue;}
       const d =
-        applies(base.events, 'maxHpFlat', s).length - applies(rNoMaxHp.events, 'maxHpFlat', s).length;
+        applies(base.events, 'maxHpFlat', s).length -
+        applies(rNoMaxHp.events, 'maxHpFlat', s).length;
       expect(d).toBe(0); // "Affects self" — RED under an allies target set
     }
   });
 
   it('is offensively inert (prika has no HP-scaling ATK line), so removing it moves nobody', () => {
-    for (const s of ALLIES) expect(dmg(rNoMaxHp, s)).toBe(dmg(base, s));
+    for (const s of ALLIES) {expect(dmg(rNoMaxHp, s)).toBe(dmg(base, s));}
   });
 
   it('Encore does not leak: no Sing Along carrier is in this comp, so Attack Damage ▲25.01% must never apply', () => {
     const leaked = base.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'attackDamagePct' && about(e.value, 25.01),
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'attackDamagePct' &&
+        about(e.value, 25.01)
     );
     expect(leaked).toHaveLength(0);
   });
@@ -256,7 +295,9 @@ describe('prika S2 — Max HP on Full Burst entry (self, 10 sec)', () => {
 describe('prika burst — Performance (all allies, 25 sec)', () => {
   it('Charge Damage ▲25% reaches all four allies with a bounded window', () => {
     for (const s of ALLIES) {
-      const ev = applies(base.events, 'chargeDamagePct', s).filter((e) => about(e.value, 25));
+      const ev = applies(base.events, 'chargeDamagePct', s).filter((e) =>
+        about(e.value, 25)
+      );
       expect(ev.length).toBeGreaterThan(0);
       expect(ev[0].durationShots).toBeUndefined();
       expect(typeof ev[0].expiresFrame).toBe('number');

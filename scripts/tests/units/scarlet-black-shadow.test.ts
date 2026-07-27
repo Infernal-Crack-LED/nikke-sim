@@ -116,7 +116,7 @@ function run(overrides: Record<string, any> = {}) {
 const sbsPrePatch = withPatchedOverride(SLUG, (ov) => {
   const fx = ov.skill1[0]?.effects;
   if (!fx || fx.length !== 3)
-    throw new Error('sbs S1 phase effects missing — fixture is stale');
+    {throw new Error('sbs S1 phase effects missing — fixture is stale');}
   fx[0].atkPct = 250.47;
   fx[1].atkPct = 500;
   fx[2].atkPct = 750.47;
@@ -125,7 +125,7 @@ const sbsPrePatch = withPatchedOverride(SLUG, (ov) => {
 const sbsAllPlain = withPatchedOverride(SLUG, (ov) => {
   const fx = ov.skill1[0]?.effects;
   if (!fx || fx[1]?.flavor !== 'distributed' || fx[2]?.flavor !== 'distributed')
-    throw new Error('sbs S1 distributed phases missing — fixture is stale');
+    {throw new Error('sbs S1 distributed phases missing — fixture is stale');}
   delete fx[1].flavor;
   delete fx[2].flavor;
 });
@@ -133,27 +133,27 @@ const sbsAllPlain = withPatchedOverride(SLUG, (ov) => {
 const sbsS2OnCast = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
   if (!b)
-    throw new Error('sbs S2 fullBurstEnter block missing — fixture is stale');
+    {throw new Error('sbs S2 fullBurstEnter block missing — fixture is stale');}
   b.trigger.kind = 'burstCast';
 });
 /** B10 counterfactual: remove the in-burst threshold lowering (countInFb = count = 3, no cluster). */
 const sbsNoLowering = withPatchedOverride(SLUG, (ov) => {
   const t = ov.skill1[0]?.trigger;
   if (!t || t.kind !== 'chargeCounter')
-    throw new Error('sbs S1 chargeCounter missing — fixture is stale');
+    {throw new Error('sbs S1 chargeCounter missing — fixture is stale');}
   t.countInFb = t.count; // 3 in-burst too → no lowering → procs never cluster into the burst window
 });
 /** B7 counterfactual: strip BOTH S2 ammo effects (the +60% cap AND the 100% reload). */
 const sbsNoAmmoFx = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.flatMap((b: any) => b.effects).length;
   for (const b of ov.skill2)
-    b.effects = b.effects.filter(
-      (e: any) => e.stat !== 'maxAmmoPct' && e.kind !== 'instantReload',
-    );
+    {b.effects = b.effects.filter(
+      (e: any) => e.stat !== 'maxAmmoPct' && e.kind !== 'instantReload'
+    );}
   if (ov.skill2.flatMap((b: any) => b.effects).length !== before - 2)
-    throw new Error(
-      'sbs S2 maxAmmoPct/instantReload effects missing — fixture is stale',
-    );
+    {throw new Error(
+      'sbs S2 maxAmmoPct/instantReload effects missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -175,7 +175,7 @@ const chargedFrames = (evs: SimEvent[]) =>
   new Set(
     shots(evs)
       .filter((s) => s.charged)
-      .map((s) => s.frame),
+      .map((s) => s.frame)
   );
 /** sbs S1 phase procs, in frame order. */
 const s1Procs = (evs: SimEvent[]) =>
@@ -190,7 +190,7 @@ const fbStarts = (evs: SimEvent[]) =>
 const helmOpenedFb = (evs: SimEvent[]) => {
   const own = new Set(sbsCasts(evs).map((c) => c.frame));
   return fbStarts(evs).filter(
-    (fb) => ![...own].some((f) => Math.abs(f - fb.frame) < 30),
+    (fb) => ![...own].some((f) => Math.abs(f - fb.frame) < 30)
   );
 };
 /** sbs buffs on a given stat. */
@@ -208,7 +208,7 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
       const cf = chargedFrames(base.events);
       expect(procs.length, 'no S1 procs fired at all').toBeGreaterThan(0);
       expect(procs.filter((p) => !cf.has(p.frame)).map((p) => p.frame)).toEqual(
-        [],
+        []
       );
     });
   });
@@ -223,7 +223,7 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
       const cycle = [283.03, 565, 848.03];
       expect(procs.length).toBeGreaterThanOrEqual(3);
       procs.forEach((p, i) =>
-        expect(p.atkPct, `proc ${i} @${p.frame}`).toBe(cycle[i % 3]),
+        expect(p.atkPct, `proc ${i} @${p.frame}`).toBe(cycle[i % 3])
       );
     });
   });
@@ -232,8 +232,8 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
     it('the distinct proc magnitudes are exactly the post-patch set', () => {
       expect(
         [...new Set(s1Procs(base.events).map((p) => p.atkPct))].sort(
-          (a, b) => a - b,
-        ),
+          (a, b) => a - b
+        )
       ).toEqual([283.03, 565, 848.03]);
     });
     it('DISCRIMINATING: the pre-patch 250.47/500/750.47 model produces a different sequence', () => {
@@ -266,22 +266,22 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
       const own = sbsCasts(base.events).length;
       expect(
         fbs,
-        'fixture must produce FBs helm opens (need fbs > own casts)',
+        'fixture must produce FBs helm opens (need fbs > own casts)'
       ).toBeGreaterThan(own);
       expect(maxAmmo.length).toBe(fbs);
       expect(maxAmmo.length).toBeGreaterThan(own);
     });
     it('the buff frames coincide exactly with the Full Burst openings', () => {
       expect(maxAmmo.map((b) => b.frame)).toEqual(
-        fbStarts(base.events).map((f) => f.frame),
+        fbStarts(base.events).map((f) => f.frame)
       );
     });
     it('DISCRIMINATING: a burstCast trigger would apply it only on her own casts', () => {
       expect(sbsBuff(s2OnCast.events, 'maxAmmoPct').length).toBe(
-        sbsCasts(s2OnCast.events).length,
+        sbsCasts(s2OnCast.events).length
       );
       expect(sbsBuff(s2OnCast.events, 'maxAmmoPct').length).toBeLessThan(
-        fbStarts(s2OnCast.events).length,
+        fbStarts(s2OnCast.events).length
       );
     });
   });
@@ -326,11 +326,11 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
             n +
             sh.filter((s) => s.frame >= fb.frame && s.frame < fb.frame + WINDOW)
               .length,
-          0,
+          0
         );
       };
       expect(fbWindowShots(base.events)).toBeGreaterThan(
-        fbWindowShots(noAmmoFx.events),
+        fbWindowShots(noAmmoFx.events)
       );
     });
   });
@@ -349,7 +349,7 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
     });
     it('the buff frames coincide with her own burst casts', () => {
       expect(atk.map((b) => b.frame)).toEqual(
-        sbsCasts(base.events).map((c) => c.frame),
+        sbsCasts(base.events).map((c) => c.frame)
       );
     });
   });
@@ -370,7 +370,7 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
     it('the lowering produces more procs overall (procs cluster into burst windows)', () => {
       // Shipped (countInFb 1) fires far more S1 procs than the no-lowering model (countInFb 3).
       expect(s1Procs(base.events).length).toBeGreaterThan(
-        s1Procs(noLowering.events).length,
+        s1Procs(noLowering.events).length
       );
     });
     it('her OWN burst windows are dense; FB windows she did NOT cast stay at baseline', () => {
@@ -386,17 +386,17 @@ describe('scarlet-black-shadow (sbs) — kit spec', () => {
         .map((f) => inWin(f.frame));
       expect(
         ownWins.length,
-        'no own burst has a full 10s window',
+        'no own burst has a full 10s window'
       ).toBeGreaterThan(0);
       expect(
         helmWins.length,
-        'no helm-opened FB has a full 10s window',
+        'no helm-opened FB has a full 10s window'
       ).toBeGreaterThan(0);
       // The discrimination: every own-cast window out-procs every helm-opened window. A team-FB-window
       // gate would spike the helm-opened windows into the same band as her own.
       expect(
         Math.min(...ownWins),
-        `own-cast windows ${ownWins} vs helm-opened ${helmWins}`,
+        `own-cast windows ${ownWins} vs helm-opened ${helmWins}`
       ).toBeGreaterThan(Math.max(...helmWins));
     });
   });

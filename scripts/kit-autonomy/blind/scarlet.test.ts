@@ -49,32 +49,44 @@ import {
 const SLUG = 'scarlet';
 type Ev = Record<string, any>;
 
-const near = (a: any, b: number, eps = 0.01) => typeof a === 'number' && Math.abs(a - b) <= eps;
+const near = (a: any, b: number, eps = 0.01) =>
+  typeof a === 'number' && Math.abs(a - b) <= eps;
 
 // --- override readers. Shape-agnostic: a slot may be a Block[] (override FILE shape) or a
 // CharacterSkills carrying its own blocks[] - both are handled so the file cannot guess wrong.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
-  return [...slotBlocks(ov, 'skill1'), ...slotBlocks(ov, 'skill2'), ...slotBlocks(ov, 'burst')];
+  return [
+    ...slotBlocks(ov, 'skill1'),
+    ...slotBlocks(ov, 'skill2'),
+    ...slotBlocks(ov, 'burst'),
+  ];
 }
-function findEffect(ov: any, label: string, pred: (e: any) => boolean): { block: any; effect: any } {
+function findEffect(
+  ov: any,
+  label: string,
+  pred: (e: any) => boolean
+): { block: any; effect: any } {
   for (const b of allBlocks(ov)) {
-    for (const e of b.effects ?? []) if (pred(e)) return { block: b, effect: e };
+    for (const e of b.effects ?? [])
+      {if (pred(e)) {return { block: b, effect: e };}}
   }
   throw new Error('scarlet override does not represent kit line: ' + label);
 }
 
 // Predicates key on MAGNITUDE (not stat) where the point of the test is to assert the stat key,
 // so a mis-encoded stat is still FOUND and then fails a precise assertion.
-const ATK_STACK = (e: any) => e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 23.15);
+const ATK_STACK = (e: any) =>
+  e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 23.15);
 const CRIT_DMG = (e: any) => e?.kind === 'buff' && near(e.value, 6.61);
 const CRIT_RATE = (e: any) => e?.kind === 'buff' && near(e.value, 19.57);
-const NUKE = (e: any) => e?.kind === 'flatDamage' && near(e.atkPct, 849.15, 0.02);
+const NUKE = (e: any) =>
+  e?.kind === 'flatDamage' && near(e.atkPct, 849.15, 0.02);
 
 const OV: any = withPatchedOverride(SLUG, () => {}); // untouched clone, for static shape assertions
 
@@ -83,28 +95,42 @@ function run(patch?: any) {
   const events: Ev[] = [];
   const opts: any = {
     ...base,
-    cfg: { ...(base.cfg ?? {}), onEvent: (e: SimEvent) => events.push(e as unknown as Ev) },
+    cfg: {
+      ...(base.cfg ?? {}),
+      onEvent: (e: SimEvent) => events.push(e as unknown as Ev),
+    },
   };
-  if (patch) opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
+  if (patch) {opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };}
   const res = runComp(opts);
-  return { res, events, total: totals(res)[SLUG] as number, board: totals(res) };
+  return {
+    res,
+    events,
+    total: totals(res)[SLUG] as number,
+    board: totals(res),
+  };
 }
 
-const evs = (events: Ev[], kind: string) => events.filter((e) => e.kind === kind);
+const evs = (events: Ev[], kind: string) =>
+  events.filter((e) => e.kind === kind);
 
 // scarlet-attributed events: prefer the per-unit result row, fall back to slug fields on the log.
 function ownEvents(res: any, events: Ev[], kind: string): Ev[] {
   const row: any = unitOf(res, SLUG);
-  const own = Array.isArray(row?.events) ? row.events.filter((e: any) => e?.kind === kind) : [];
-  if (own.length) return own as Ev[];
+  const own = Array.isArray(row?.events)
+    ? row.events.filter((e: any) => e?.kind === kind)
+    : [];
+  if (own.length) {return own as Ev[];}
   return evs(events, kind).filter((e) =>
-    [e.slug, e.unit, e.srcSlug, e.casterSlug, e.ownerSlug].includes(SLUG),
+    [e.slug, e.unit, e.srcSlug, e.casterSlug, e.ownerSlug].includes(SLUG)
   );
 }
 
-function expectTeammatesIdentical(a: Record<string, number>, b: Record<string, number>) {
+function expectTeammatesIdentical(
+  a: Record<string, number>,
+  b: Record<string, number>
+) {
   for (const slug of Object.keys(a)) {
-    if (slug === SLUG) continue;
+    if (slug === SLUG) {continue;}
     expect(b[slug]).toBe(a[slug]);
   }
 }
@@ -114,55 +140,59 @@ const FAITHFUL = run();
 
 const S1_EVERY_SHOT = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).block.trigger = { kind: 'shotFired' };
-  }),
+    findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).block.trigger = {
+      kind: 'shotFired',
+    };
+  })
 );
 const S1_NO_STACK = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).effect.maxStacks = 1;
-  }),
+  })
 );
 const S1_LONG = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).effect.durationSec = 60;
-  }),
+  })
 );
 const S2_CD_ZERO = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.value = 0;
-  }),
+  })
 );
 const S2_AS_RATE = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.stat = 'critRatePct';
-  }),
+    findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.stat =
+      'critRatePct';
+  })
 );
 const B_CR_ZERO = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.value = 0;
-  }),
+  })
 );
 const B_CR_NORMAL_ONLY = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.stat = 'critRateNormalPct';
-  }),
+    findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.stat =
+      'critRateNormalPct';
+  })
 );
 const B_CR_LONG = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.durationSec = 40;
-  }),
+  })
 );
 const B_NUKE_HALF = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst 849.15% nuke', NUKE).effect.atkPct = 424.575;
-  }),
+  })
 );
 const B_CR_FB_ENTER = run(
   withPatchedOverride(SLUG, (ov: any) => {
     const { block } = findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE);
     block.trigger = { kind: 'fullBurstEnter' };
     delete block.ownBurstGate;
-  }),
+  })
 );
 
 const FB_STARTS = evs(FAITHFUL.events, 'fullBurstStart').length;
@@ -170,10 +200,10 @@ const buffApplies = (r: { events: Ev[] }, pred: (e: Ev) => boolean) =>
   evs(r.events, 'buffApply').filter(pred);
 const CR_APPLIES = buffApplies(
   FAITHFUL,
-  (e) => near(e.value, 19.57) && e.targetSlug === SLUG,
+  (e) => near(e.value, 19.57) && e.targetSlug === SLUG
 );
 const NUKE_HITS = ownEvents(FAITHFUL.res, FAITHFUL.events, 'damage').filter(
-  (e) => e.srcSlot === 'burst',
+  (e) => e.srcSlot === 'burst'
 );
 
 describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec', () => {
@@ -194,7 +224,8 @@ describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec
   it('emits self-scoped 23.15 atkPct applies that actually accrue stacks (non-vacuity)', () => {
     const applies = buffApplies(
       FAITHFUL,
-      (e) => e.stat === 'atkPct' && near(e.value, 23.15) && e.targetSlug === SLUG,
+      (e) =>
+        e.stat === 'atkPct' && near(e.value, 23.15) && e.targetSlug === SLUG
     );
     // ~810 rounds in 180s / 10 landed normals per proc -> dozens of applies. A count of 0 means the
     // line is MISSING or mis-scoped to allies.
@@ -204,8 +235,10 @@ describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec
       expect(a.casterIdx).toBe(a.targetIdx); // 'Affects self.'
       expect(a.maxStacks).toBe(5);
     }
-    const stackVals = applies.map((a) => a.stacks).filter((s) => typeof s === 'number');
-    if (stackVals.length) expect(Math.max(...stackVals)).toBeGreaterThan(1);
+    const stackVals = applies
+      .map((a) => a.stacks)
+      .filter((s) => typeof s === 'number');
+    if (stackVals.length) {expect(Math.max(...stackVals)).toBeGreaterThan(1);}
   });
 
   it('counts 10 LANDED NORMALS, not every trigger pull', () => {
@@ -266,10 +299,10 @@ describe('scarlet S2b - HP<60%: self Critical Damage 6.61% continuously', () => 
   it('is LIVE in the sim - the HP<60% gate is not treated as unreachable', () => {
     const applies = buffApplies(
       FAITHFUL,
-      (e) => near(e.value, 6.61) && e.targetSlug === SLUG,
+      (e) => near(e.value, 6.61) && e.targetSlug === SLUG
     );
     expect(applies.length).toBeGreaterThanOrEqual(1);
-    for (const a of applies) expect(a.stat).toBe('critDamagePct');
+    for (const a of applies) {expect(a.stat).toBe('critDamagePct');}
     expect(S2_CD_ZERO.total).toBeLessThan(FAITHFUL.total); // it actually moves damage
   });
 
@@ -288,7 +321,11 @@ describe('scarlet S2b - HP<60%: self Critical Damage 6.61% continuously', () => 
 
 describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
   it('is a self critRatePct buff, durationSec 10, keyed to HER OWN burst cast', () => {
-    const { block, effect } = findEffect(OV, 'burst crit rate 19.57%', CRIT_RATE);
+    const { block, effect } = findEffect(
+      OV,
+      'burst crit rate 19.57%',
+      CRIT_RATE
+    );
     expect(effect.stat).toBe('critRatePct'); // unscoped in the kit text -> generic, not *NormalPct
     expect(effect.durationSec).toBe(10);
     expect(block.target.kind).toBe('self');
@@ -297,7 +334,9 @@ describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
     // behaviourally-equivalent fullBurstEnter + ownBurstGate:'cast' encoding; rejects a bare
     // fullBurstEnter (over-credits in this 2x-B3 comp) and a passive (always-on).
     const t = block.trigger.kind;
-    const ok = t === 'burstCast' || (t === 'fullBurstEnter' && block.ownBurstGate === 'cast');
+    const ok =
+      t === 'burstCast' ||
+      (t === 'fullBurstEnter' && block.ownBurstGate === 'cast');
     expect(ok).toBe(true);
   });
 
@@ -309,7 +348,7 @@ describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
     expect(FB_STARTS).toBeGreaterThanOrEqual(CR_APPLIES.length);
     const patched = buffApplies(
       B_CR_FB_ENTER,
-      (e) => near(e.value, 19.57) && e.targetSlug === SLUG,
+      (e) => near(e.value, 19.57) && e.targetSlug === SLUG
     ).length;
     expect(patched).toBeGreaterThanOrEqual(CR_APPLIES.length);
     if (FB_STARTS > NUKE_HITS.length) {
@@ -362,7 +401,7 @@ describe('scarlet - no silent drops', () => {
     expect(text).toContain('4.01'); // self current-HP cost
     expect(text).toContain('138.24'); // 30%-when-attacked rider
     for (const b of allBlocks(OV)) {
-      for (const e of b.effects ?? []) expect(e.kind).not.toBe('ignored');
+      for (const e of b.effects ?? []) {expect(e.kind).not.toBe('ignored');}
     }
   });
 
