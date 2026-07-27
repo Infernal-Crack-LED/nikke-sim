@@ -74,17 +74,23 @@ const drakeS1AllAllies = withPatchedOverride('drake', (ov) => {
   const sgBlock = ov.skill1.find(
     (b: any) => b.target?.kind === 'alliesOfWeapon'
   );
-  if (!sgBlock)
-    {throw new Error('drake S1 alliesOfWeapon block missing — fixture is stale');}
+  if (!sgBlock) {
+    throw new Error('drake S1 alliesOfWeapon block missing — fixture is stale');
+  }
   sgBlock.target = { kind: 'allies' };
 });
 
 /** D5/D6 counterfactual: hitCount reads PELLET hits (10/5) instead of PULL hits (100/50). */
 const drakeS2Pellets = withPatchedOverride('drake', (ov) => {
   for (const b of ov.skill2) {
-    if (b.trigger?.kind !== 'hitCount') {continue;}
-    if (b.trigger.count === 100) {b.trigger.count = 10;}
-    else if (b.trigger.count === 50) {b.trigger.count = 5;}
+    if (b.trigger?.kind !== 'hitCount') {
+      continue;
+    }
+    if (b.trigger.count === 100) {
+      b.trigger.count = 10;
+    } else if (b.trigger.count === 50) {
+      b.trigger.count = 5;
+    }
   }
 });
 
@@ -93,8 +99,9 @@ const drakeBurstOld = withPatchedOverride('drake', (ov) => {
   const nuke = ov.burst.find((b: any) =>
     b.effects?.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 3009.6)
   );
-  if (!nuke)
-    {throw new Error('drake burst 3009.6 nuke missing — fixture is stale');}
+  if (!nuke) {
+    throw new Error('drake burst 3009.6 nuke missing — fixture is stale');
+  }
   nuke.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 1254;
 });
 
@@ -143,7 +150,9 @@ describe('drake — kit spec', () => {
           `frame ${frame} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       }
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 
@@ -275,7 +284,9 @@ describe('drake — kit spec', () => {
     it('fires once per burst cast, self-scoped, 10s duration', () => {
       expect(applied.length).toBe(drakeBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DRAKE]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 
@@ -290,7 +301,9 @@ describe('drake — kit spec', () => {
     it('fires once per burst cast, self-scoped, 10s duration', () => {
       expect(applied.length).toBe(drakeBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DRAKE]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 });

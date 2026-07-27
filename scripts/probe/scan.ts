@@ -51,12 +51,14 @@ const WORKER = join(HERE, 'scan-frames.py');
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 
 if (!video || !existsSync(video)) {
   console.error(
@@ -106,8 +108,12 @@ const chain =
   `[c]${barCrop}[s3];` +
   `[d]${soloCrop}[s4]`;
 const args = ['-y', '-loglevel', 'error'];
-if (at) {args.push('-ss', String(at));}
-if (dur) {args.push('-t', String(dur));}
+if (at) {
+  args.push('-ss', String(at));
+}
+if (dur) {
+  args.push('-t', String(dur));
+}
 args.push(
   '-i',
   video,
@@ -150,9 +156,12 @@ const wArgs = [
   '--out',
   rawPath,
 ];
-if (wantBar) {wArgs.push('--bar-dir', dirs.bar, '--solo-dir', dirs.solo);}
-if (flags['debug-dir'] && flags['debug-dir'] !== 'true')
-  {wArgs.push('--debug-dir', flags['debug-dir']);}
+if (wantBar) {
+  wArgs.push('--bar-dir', dirs.bar, '--solo-dir', dirs.solo);
+}
+if (flags['debug-dir'] && flags['debug-dir'] !== 'true') {
+  wArgs.push('--debug-dir', flags['debug-dir']);
+}
 const tScan = Date.now();
 execFileSync(PY, wArgs, { stdio: ['ignore', 'inherit', 'inherit'] });
 console.log(`  scanned in  ${((Date.now() - tScan) / 1000).toFixed(1)}s`);
@@ -202,12 +211,16 @@ for (const e of stageEvents) {
   const k = e.state as keyof Chain;
   // A chain starts at its stage1, or wherever a stage repeats (a chain never casts a stage twice).
   if (!cur || e.state === 'stage1' || cur[k] != null) {
-    if (cur) {chains.push(cur);}
+    if (cur) {
+      chains.push(cur);
+    }
     cur = { stage1: null, stage2: null, stage3: null };
   }
   cur[k] = e.t;
 }
-if (cur) {chains.push(cur);}
+if (cur) {
+  chains.push(cur);
+}
 
 // ---- merge the three FB detectors ----
 // THE DRAIN WINDOW IS THE SPINE. It read the measured count EXACTLY on all 7 validation
@@ -361,38 +374,46 @@ console.log(
   `  FULL BURSTS: ${confirmed.length}   (${corroborated}/${confirmed.length} corroborated by a 2nd detector)`
 );
 console.log(`  gaps: ${gaps.join(', ')}`);
-if (gaugeMissing)
-  {console.log(
+if (gaugeMissing) {
+  console.log(
     '  ⚠ NO gauge widget found — the crop is wrong for this resolution, so this is a ' +
       'SPLASH-ONLY count with no cross-check. Fix --gauge-crop before using it.'
-  );}
-if (orphans.length)
-  {console.log(
+  );
+}
+if (orphans.length) {
+  console.log(
     `  ⚠ ${orphans.length} event(s) matched no Full Burst window (missed render, or a false positive): ` +
       orphans.map((o) => `${o.videoT}(${o.source})`).join(', ')
-  );}
-if (result.summary.minGap != null && result.summary.minGap < minGap)
-  {console.log(
+  );
+}
+if (result.summary.minGap != null && result.summary.minGap < minGap) {
+  console.log(
     `  ⚠ min gap ${result.summary.minGap}s < ${minGap}s — a cut-in false positive is likely`
-  );}
+  );
+}
 if (
   result.summary.maxGap != null &&
   result.summary.minGap != null &&
   result.summary.maxGap > 2 * result.summary.minGap
-)
-  {console.log(
+) {
+  console.log(
     `  ⚠ max gap ${result.summary.maxGap}s is >2x the min ${result.summary.minGap}s — a missed Full Burst is likely`
-  );}
+  );
+}
 const nukes = result.nukeEvents.filter((n) => !n.nearFullBurst).length;
-if (result.nukeEvents.length)
-  {console.log(
+if (result.nukeEvents.length) {
+  console.log(
     `  nuke/laser: ${result.nukeEvents.length} blue events (${nukes} away from a full burst; the rest are cut-in flashes)`
-  );}
-if (expect != null)
-  {console.log(
+  );
+}
+if (expect != null) {
+  console.log(
     `  ${confirmed.length === expect ? 'PASS' : 'FAIL'} — expected ${expect}, scanned ${confirmed.length}`
-  );}
+  );
+}
 
-if (flags['keep-frames'] !== 'true')
-  {for (const d of Object.values(dirs))
-    {rmSync(d, { recursive: true, force: true });}}
+if (flags['keep-frames'] !== 'true') {
+  for (const d of Object.values(dirs)) {
+    rmSync(d, { recursive: true, force: true });
+  }
+}

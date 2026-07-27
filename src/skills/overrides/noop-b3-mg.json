@@ -1,0 +1,26 @@
+{
+  "note": "Synthetic no-op B3 (MG) mock: it contributes a real burst-stage damage profile so control comps aren't missing the B3 nuke entirely. On its own burst cast it gains ATK ▲ 50% and Attack Damage ▲ 100% for 10s (1.5 × 2 = 3× total), covering the Full Burst it initiates; it does not get the buff on rotations where a different B3 bursts. The buffs are intentionally simple and do not replace a real unit's kit. Using MG weapon timing means reload-speed bonuses interact with the real wind-up ladder.",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 50,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 100,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

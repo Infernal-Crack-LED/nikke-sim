@@ -38,7 +38,9 @@ export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
   const load = (src: string, crossOrigin: boolean) =>
     new Promise<HTMLImageElement | null>((resolve) => {
       const img = new Image();
-      if (crossOrigin) {img.crossOrigin = 'anonymous';}
+      if (crossOrigin) {
+        img.crossOrigin = 'anonymous';
+      }
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
       img.src = src;
@@ -47,7 +49,9 @@ export function loadPortrait(url: string): Promise<HTMLImageElement | null> {
     const local = manifestThumbUrl(url, 120); // crisp square, comfortably above draw size
     if (local) {
       const img = await load(local, false);
-      if (img) {return img;}
+      if (img) {
+        return img;
+      }
     }
     const thumb = await portraitThumb(url, 120);
     return load(thumb ?? url, true);
@@ -84,7 +88,9 @@ export async function buildTeamCardBlob(
   cv.width = CARD_W * dpr;
   cv.height = cardHeight(units.length) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) {return null;} // jsdom / no canvas support
+  if (!ctx) {
+    return null;
+  } // jsdom / no canvas support
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
@@ -136,7 +142,9 @@ export async function shareTeamCard(
   filename = 'nikke-team.png'
 ): Promise<'copied' | 'downloaded' | 'unsupported'> {
   const blob = await buildTeamCardBlob(data, meta, imageUrlFor);
-  if (!blob) {return 'unsupported';}
+  if (!blob) {
+    return 'unsupported';
+  }
   return copyOrDownloadPng(blob, filename);
 }
 
@@ -165,8 +173,12 @@ export async function buildRosterCardBlob(
   const cache = new Map<string, Promise<HTMLImageElement | null>>();
   const load = (slug: string) => {
     const url = imageUrlFor(slug);
-    if (!url) {return Promise.resolve(null);}
-    if (!cache.has(slug)) {cache.set(slug, loadPortrait(url));}
+    if (!url) {
+      return Promise.resolve(null);
+    }
+    if (!cache.has(slug)) {
+      cache.set(slug, loadPortrait(url));
+    }
     return cache.get(slug)!;
   };
   const teams = await Promise.all(
@@ -188,7 +200,9 @@ export async function buildRosterCardBlob(
   cv.width = CARD_W * dpr;
   cv.height = rosterCardHeight(teams.length) * dpr;
   const ctx = cv.getContext('2d');
-  if (!ctx) {return null;}
+  if (!ctx) {
+    return null;
+  }
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
@@ -207,6 +221,8 @@ export async function shareRosterCard(
   filename = 'nikke-roster.png'
 ): Promise<'copied' | 'downloaded' | 'unsupported'> {
   const blob = await buildRosterCardBlob(data, meta, imageUrlFor);
-  if (!blob) {return 'unsupported';}
+  if (!blob) {
+    return 'unsupported';
+  }
   return copyOrDownloadPng(blob, filename);
 }

@@ -65,7 +65,11 @@ const OV = withPatchedOverride(SLUG, () => {}) as any;
 
 function patch(match: (e: any) => boolean, mutate: (e: any) => void) {
   return withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of effectsOf(allBlocks(ov))) {if (match(e)) {mutate(e);}}
+    for (const e of effectsOf(allBlocks(ov))) {
+      if (match(e)) {
+        mutate(e);
+      }
+    }
   }) as any;
 }
 
@@ -75,14 +79,18 @@ function run(overrides?: Record<string, any>) {
   // The event hook is documented as cfg.onEvent; wire BOTH plausible spellings and dedupe by
   // object identity so neither a missing hook nor a double-delivery corrupts the counts.
   const push = (e: SimEvent) => {
-    if (seen.has(e)) {return;}
+    if (seen.has(e)) {
+      return;
+    }
     seen.add(e);
     evs.push(e as Ev);
   };
   const opts: any = controlComp(SLUG, true);
   opts.onEvent = push;
   opts.cfg = { ...(opts.cfg ?? {}), onEvent: push };
-  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
+  if (overrides) {
+    opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  }
   const res = runComp(opts);
   return { res, evs, tot: totals(res) as Record<string, number> };
 }
@@ -210,8 +218,9 @@ describe('leona S1a — Roar: Critical Rate ▲2.62%, up to 5 stacks, 5 sec, all
   it.runIf(HAS_FRAMES)('window is exactly 300 frames (5 s at 60 fps)', () => {
     const withFrames = ROAR_SELF.filter((e) => frameOf(e) !== undefined);
     expect(withFrames.length).toBeGreaterThan(0);
-    for (const e of withFrames)
-      {expect(e.expiresFrame - (frameOf(e) as number)).toBe(300);}
+    for (const e of withFrames) {
+      expect(e.expiresFrame - (frameOf(e) as number)).toBe(300);
+    }
   });
 
   it('activates per 5 ROUNDS fired, not per 5 pellet hits', () => {
@@ -259,8 +268,9 @@ describe('leona S2a — Hit Rate ▲20.28% for 10 sec, all allies, on Full Burst
     () => {
       const withFrames = HITRATE.filter((e) => frameOf(e) !== undefined);
       expect(withFrames.length).toBeGreaterThan(0);
-      for (const e of withFrames)
-        {expect(minGap(frameOf(e) as number)).toBeLessThanOrEqual(2);}
+      for (const e of withFrames) {
+        expect(minGap(frameOf(e) as number)).toBeLessThanOrEqual(2);
+      }
     }
   );
 

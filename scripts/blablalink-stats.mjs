@@ -28,7 +28,9 @@ const md5 = (s) => crypto.createHash('md5').update(String(s)).digest('hex');
 // djb2-ish rolling hash, truncated to signed int32 exactly like the site does.
 function djb2Mod(str, prime) {
   let acc = prime;
-  for (let i = 0; i < str.length; i++) {acc = (acc * 33 + str.charCodeAt(i)) | 0;}
+  for (let i = 0; i < str.length; i++) {
+    acc = (acc * 33 + str.charCodeAt(i)) | 0;
+  }
   return acc;
 }
 function twoLetterHash(str, prime) {
@@ -62,7 +64,9 @@ const resourceUrl = (path) => `${CDN}/${obfuscatedPath(path)}`;
 async function getJson(path) {
   const url = resourceUrl(path);
   const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
-  if (!res.ok) {throw new Error(`GET ${path} -> ${res.status} (${url})`);}
+  if (!res.ok) {
+    throw new Error(`GET ${path} -> ${res.status} (${url})`);
+  }
   return res.json();
 }
 

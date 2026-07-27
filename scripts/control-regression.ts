@@ -145,7 +145,9 @@ function run(comp: ControlComp, seed?: number) {
     lambdaStage: comp.lambda?.[slug],
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const cfg = scopeLockCfg(comp.slugs, comp.boss, {
     focusSlug: comp.focus,
     seed,
@@ -217,19 +219,25 @@ for (const comp of CONTROL_COMPS) {
 
   // snapshot — per-unit EV totals, byte-stable
   const totals: Record<string, number> = {};
-  for (const u of ev.units) {totals[u.slug] = Math.round(u.totalDamage);}
+  for (const u of ev.units) {
+    totals[u.slug] = Math.round(u.totalDamage);
+  }
   if (update) {
     snapshot[comp.name] = totals;
   } else if (snapshot[comp.name]) {
     for (const [slug, val] of Object.entries(totals)) {
       const prev = snapshot[comp.name][slug];
-      if (prev === undefined) {continue;}
+      if (prev === undefined) {
+        continue;
+      }
       const drift = Math.abs(val - prev) / prev;
-      if (drift > 0.001)
-        {fail(
+      if (drift > 0.001) {
+        fail(
           `${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`
-        );}
-      else {ok(`${slug} snapshot stable`);}
+        );
+      } else {
+        ok(`${slug} snapshot stable`);
+      }
     }
   } else {
     console.log('  (no snapshot yet — run with --update)');

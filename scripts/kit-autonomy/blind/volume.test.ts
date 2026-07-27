@@ -46,21 +46,28 @@ type Ev = any;
 function walk(effects: any[], fn: (e: any) => void) {
   for (const e of effects) {
     fn(e);
-    if (e && e.kind === 'escalating' && Array.isArray(e.steps))
-      {walk(e.steps, fn);}
+    if (e && e.kind === 'escalating' && Array.isArray(e.steps)) {
+      walk(e.steps, fn);
+    }
   }
 }
 function zeroStat(ov: any, stat: string) {
-  for (const b of ov.blocks)
-    {walk(b.effects, (e) => {
-      if (e.kind === 'buff' && e.stat === stat) {e.value = 0;}
-    });}
+  for (const b of ov.blocks) {
+    walk(b.effects, (e) => {
+      if (e.kind === 'buff' && e.stat === stat) {
+        e.value = 0;
+      }
+    });
+  }
 }
 function zeroBurstCdr(ov: any) {
-  for (const b of ov.blocks)
-    {walk(b.effects, (e) => {
-      if (e.kind === 'burstCdr') {e.seconds = 0;}
-    });}
+  for (const b of ov.blocks) {
+    walk(b.effects, (e) => {
+      if (e.kind === 'burstCdr') {
+        e.seconds = 0;
+      }
+    });
+  }
 }
 
 // Each withPatchedOverride re-clones from the pristine committed JSON, so patches never stack;

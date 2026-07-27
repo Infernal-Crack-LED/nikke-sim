@@ -68,7 +68,9 @@ function runWithEvents(opts: any): { res: any; events: AnyEv[] } {
   const seen = new Set<AnyEv>();
   const events: AnyEv[] = [];
   for (const ev of sink) {
-    if (seen.has(ev)) {continue;}
+    if (seen.has(ev)) {
+      continue;
+    }
     seen.add(ev);
     events.push(ev);
   }
@@ -78,19 +80,28 @@ function runWithEvents(opts: any): { res: any; events: AnyEv[] } {
 /** Accepts both documented override slot shapes. */
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) {return s;}
-  if (s && Array.isArray(s.blocks)) {return s.blocks;}
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (s && Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   throw new Error('prika override: no blocks found for slot ' + slot);
 }
 
 function eachEffect(ov: any, slot: Slot, fn: (e: any) => void): void {
-  for (const b of blocksOf(ov, slot)) {for (const e of b.effects ?? []) {fn(e);}}
+  for (const b of blocksOf(ov, slot)) {
+    for (const e of b.effects ?? []) {
+      fn(e);
+    }
+  }
 }
 
 function dropEffects(ov: any, slot: Slot, pred: (e: any) => boolean): void {
   for (const b of blocksOf(ov, slot)) {
-    if (Array.isArray(b.effects))
-      {b.effects = b.effects.filter((e: any) => !pred(e));}
+    if (Array.isArray(b.effects)) {
+      b.effects = b.effects.filter((e: any) => !pred(e));
+    }
   }
 }
 
@@ -131,21 +142,27 @@ const rNoCasterAtk = runWithEvents(
 const rAtkPctSwap = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.stat = 'atkPct';
+      }
     })
   )
 );
 const rDur1 = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.durationSec = 1;}
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.durationSec = 1;
+      }
     })
   )
 );
 const rDur30 = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'skill1', (e) => {
-      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.durationSec = 30;}
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.durationSec = 30;
+      }
     })
   )
 );
@@ -161,8 +178,9 @@ const rNoCharge = runWithEvents(
 const rChargeAsAttack = runWithEvents(
   withPrika((ov) =>
     eachEffect(ov, 'burst', (e) => {
-      if (e.kind === 'buff' && e.stat === 'chargeDamagePct')
-        {e.stat = 'attackDamagePct';}
+      if (e.kind === 'buff' && e.stat === 'chargeDamagePct') {
+        e.stat = 'attackDamagePct';
+      }
     })
   )
 );
@@ -263,7 +281,9 @@ describe('prika S2 — Max HP on Full Burst entry (self, 10 sec)', () => {
       applies(rNoMaxHp.events, 'maxHpFlat', SLUG).length;
     expect(dSelf).toBe(fbStarts); // a passive would be 1; an interval/shot key would overshoot
     for (const s of ALLIES) {
-      if (s === SLUG) {continue;}
+      if (s === SLUG) {
+        continue;
+      }
       const d =
         applies(base.events, 'maxHpFlat', s).length -
         applies(rNoMaxHp.events, 'maxHpFlat', s).length;
@@ -272,7 +292,9 @@ describe('prika S2 — Max HP on Full Burst entry (self, 10 sec)', () => {
   });
 
   it('is offensively inert (prika has no HP-scaling ATK line), so removing it moves nobody', () => {
-    for (const s of ALLIES) {expect(dmg(rNoMaxHp, s)).toBe(dmg(base, s));}
+    for (const s of ALLIES) {
+      expect(dmg(rNoMaxHp, s)).toBe(dmg(base, s));
+    }
   });
 
   it('Encore does not leak: no Sing Along carrier is in this comp, so Attack Damage ▲25.01% must never apply', () => {

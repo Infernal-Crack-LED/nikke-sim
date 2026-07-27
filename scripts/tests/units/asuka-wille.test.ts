@@ -108,8 +108,9 @@ const hasKind = (b: any, kind: string) =>
   b.effects.some((e: any) => e.kind === kind);
 const findBlock = (arr: any[], pred: (b: any) => boolean, label: string) => {
   const b = arr.find(pred);
-  if (!b)
-    {throw new Error(`asuka-wille ${label} block missing — fixture is stale`);}
+  if (!b) {
+    throw new Error(`asuka-wille ${label} block missing — fixture is stale`);
+  }
   return b;
 };
 
@@ -124,10 +125,11 @@ const awNoAtfDebuff = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'damageTakenPct');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille S1 damageTakenPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W2 counterfactual: drop the Annihilation-State gate — the nearest wrong model (the prior ungated
  *  encoding), which spreads the proc + debuff across the WHOLE fight instead of the 9s window. */
@@ -147,8 +149,9 @@ const awNoS1Nuke = withPatchedOverride(SLUG, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (x: any) => !(x.trigger?.kind === 'hitCount' && x.trigger?.count === 50)
   );
-  if (ov.skill1.length === before)
-    {throw new Error('asuka-wille S1 50-hit block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('asuka-wille S1 50-hit block missing — fixture is stale');
+  }
 });
 /** W3 counterfactual: drop the ownBurstGate so the FB-entry buff fires on EVERY Full Burst
  *  (including the co-B3's rotations) — the nearest wrong model it must discriminate against. */
@@ -171,10 +174,11 @@ const awNoAmmoDump = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.kind !== 'consumeAmmo');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille S2 consumeAmmo effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W5 reference: strip the reloadSpeedPct 60 window from Emergency Repair. */
 const awNoReloadSpeed = withPatchedOverride(SLUG, (ov) => {
@@ -185,10 +189,11 @@ const awNoReloadSpeed = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille S2 reloadSpeedPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W6 reference: strip the burst normalAttackPct -40 self-nerf. */
 const awNoNormalDebuff = withPatchedOverride(SLUG, (ov) => {
@@ -199,10 +204,11 @@ const awNoNormalDebuff = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'normalAttackPct');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille burst normalAttackPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W7 reference: strip the burst instantReload 0.21. */
 const awNoInstantReload = withPatchedOverride(SLUG, (ov) => {
@@ -213,10 +219,11 @@ const awNoInstantReload = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille burst instantReload effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W8 reference: strip the burst casterAtkPct 46.8 (the big ATK line). */
 const awNoCasterAtk = withPatchedOverride(SLUG, (ov) => {
@@ -227,10 +234,11 @@ const awNoCasterAtk = withPatchedOverride(SLUG, (ov) => {
   );
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'casterAtkPct');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'asuka-wille burst casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W9 reference: strip the burst attackDamagePct 36. */
 const awNoBurstAtkDmg = withPatchedOverride(SLUG, (ov) => {
@@ -253,10 +261,11 @@ const awNoFinisher = withPatchedOverride(SLUG, (ov) => {
     (x: any) =>
       !x.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 198.6)
   );
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'asuka-wille burst finisher block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** W10 magnitude counterfactual: finisher at a SINGLE Anti A.T. Field stack (6.62%), not the 30-cap. */
 const awSingleStack = withPatchedOverride(SLUG, (ov) => {
@@ -352,7 +361,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
 
     it('applies the debuff to the BOSS (targetIdx null) at 0.83% per stack, capping at 30', () => {
       expect(debuff.length).toBeGreaterThan(0);
-      for (const b of debuff) {expect(b.targetIdx).toBeNull();}
+      for (const b of debuff) {
+        expect(b.targetIdx).toBeNull();
+      }
       expect([...new Set(debuff.map((b) => b.value))]).toEqual([0.83]);
       expect([...new Set(debuff.map((b) => b.maxStacks))]).toEqual([30]);
       expect(Math.max(...debuff.map((b) => b.stacks))).toBe(30);
@@ -360,7 +371,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('the debuff life is the 9s window (consumed at state-end), NOT the nominal 30s', () => {
       // The prose says 30s but the status is REMOVED by the finisher at ~9s, so the effective
       // duration encoded is 9s. A 30s persistence (the prior encoding) keeps the debuff near-permanent.
-      for (const b of debuff) {expect(b.expiresFrame! - b.frame).toBe(9 * FPS);}
+      for (const b of debuff) {
+        expect(b.expiresFrame! - b.frame).toBe(9 * FPS);
+      }
     });
     it('the 15.62% rider fires ONLY inside the Annihilation State windows (state-gated)', () => {
       expect(rider.length).toBeGreaterThan(0);
@@ -385,7 +398,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('fires at FB entry on HER OWN rotations only (count == her burst-cast count), self-scoped, for 10s', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect(applied.length).toBe(awBursts(base.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
     it('DISCRIMINATING: a bare fullBurstEnter (ownBurstGate dropped) fires on EVERY FB entry — strictly more', () => {
       const fbApplied = awSelfBuff(fbEnter.events, 'attackDamagePct', 30.97);
@@ -413,8 +428,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('applies reloadSpeedPct 60 to herself for the 10.5s window', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60]);
-      for (const b of applied)
-        {expect(b.expiresFrame! - b.frame).toBe(Math.round(10.5 * FPS));}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(Math.round(10.5 * FPS));
+      }
     });
     it('DISCRIMINATING: stripping the window removes every reloadSpeedPct application', () => {
       expect(
@@ -427,7 +443,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     const applied = awSelfBuff(base.events, 'normalAttackPct', -40);
     it('applies -40% to her own normals for 9s', () => {
       expect(applied.length).toBe(awBursts(base.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(9 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(9 * FPS);
+      }
     });
     it('DISCRIMINATING: removing the nerf INCREASES her normal-bucket damage', () => {
       const baseNormal = awNormalDmg(base.events).reduce(
@@ -474,7 +492,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     it('applies 46.8% caster-ATK to herself for 9s, once per cast', () => {
       expect(applied.length).toBe(awBursts(base.events).length);
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(9 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(9 * FPS);
+      }
     });
     it('DISCRIMINATING: removing it drops her total substantially', () => {
       expect(base.totals[SLUG]).toBeGreaterThan(noCasterAtk.totals[SLUG] * 1.1);
@@ -485,7 +505,9 @@ describe('asuka-wille (Asuka: WILLE) — kit spec', () => {
     const applied = awSelfBuff(base.events, 'attackDamagePct', 36);
     it('applies 36% for 9s (the 9s duration separates it from the S2 10s buff)', () => {
       expect(applied.length).toBe(awBursts(base.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(9 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(9 * FPS);
+      }
     });
     it('DISCRIMINATING: removing it drops her total', () => {
       expect(base.totals[SLUG]).toBeGreaterThan(noBurstAtkDmg.totals[SLUG]);

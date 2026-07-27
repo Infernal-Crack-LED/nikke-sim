@@ -54,13 +54,18 @@ const near = (a: number, b: number) => Math.abs(a - b) < 0.005;
 // blocks[]. Both shapes are handled so a counterfactual can never silently become a no-op.
 const slotBlocks = (ov: any, slot: string): any[] => {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 
 const setSlotBlocks = (ov: any, slot: string, blocks: any[]): void => {
-  if (Array.isArray(ov?.[slot])) {ov[slot] = blocks;}
-  else if (ov?.[slot]) {ov[slot].blocks = blocks;}
+  if (Array.isArray(ov?.[slot])) {
+    ov[slot] = blocks;
+  } else if (ov?.[slot]) {
+    ov[slot].blocks = blocks;
+  }
 };
 
 const hasEffect = (b: any, pred: (e: any) => boolean) =>
@@ -76,8 +81,11 @@ const isFlat = (value: number) => (e: any) =>
 
 const retarget = (slot: string, pred: (e: any) => boolean, target: any) =>
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of slotBlocks(ov, slot))
-      {if (hasEffect(b, pred)) {b.target = target;}}
+    for (const b of slotBlocks(ov, slot)) {
+      if (hasEffect(b, pred)) {
+        b.target = target;
+      }
+    }
   });
 
 const dropEffects = (specs: { slot: string; pred: (e: any) => boolean }[]) =>
@@ -232,7 +240,9 @@ describe('drake skill1 -- Shotgun-only branch', () => {
     // as plain allies) makes these two sets equal.
     expect(sgAtk.size).toBeLessThan(all.size);
     expect(sgAmmo.size).toBeLessThan(all.size);
-    for (const s of sgAtk) {expect(all.has(s as string)).toBe(true);}
+    for (const s of sgAtk) {
+      expect(all.has(s as string)).toBe(true);
+    }
   });
 
   it('the Shotgun restriction is real, not an engine no-op', () => {
@@ -329,7 +339,9 @@ describe('drake burst', () => {
   it('Attack Damage 31.68% moves drake and NOTHING else', () => {
     expect(T(base)[SLUG]).toBeGreaterThan(T(noAtkDmg)[SLUG]);
     // Inertness: a self buff must leave every teammate byte-identical.
-    for (const s of teammates) {expect(T(noAtkDmg)[s]).toBe(T(base)[s]);}
+    for (const s of teammates) {
+      expect(T(noAtkDmg)[s]).toBe(T(base)[s]);
+    }
   });
 
   it.skip('hits all enemies within attack range -- AoE spread unobservable on a single boss', () => {

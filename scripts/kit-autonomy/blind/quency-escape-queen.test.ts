@@ -64,18 +64,28 @@ type Rec = Record<string, any>;
 // slot: { blocks: Block[] }. Accept both so the counterfactuals cannot silently no-op.
 function blocksOf(ov: Rec, slot: string): Rec[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s as Rec[];}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s as Rec[];
+  }
   return Array.isArray(s.blocks) ? (s.blocks as Rec[]) : [];
 }
 
 function eachBlock(ov: Rec, fn: (b: Rec, slot: string) => void): void {
-  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
+  for (const slot of SLOTS) {
+    for (const b of blocksOf(ov, slot)) {
+      fn(b, slot);
+    }
+  }
 }
 
 function eachEffect(ov: Rec, fn: (e: Rec, b: Rec, slot: string) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of (b.effects ?? []) as Rec[]) {fn(e, b, slot);}
+    for (const e of (b.effects ?? []) as Rec[]) {
+      fn(e, b, slot);
+    }
   });
 }
 
@@ -112,7 +122,9 @@ const setDuration =
 const dropBurstDamage: Mutator = (ov) => {
   let n = 0;
   eachBlock(ov, (b, slot) => {
-    if (slot !== 'burst') {return;}
+    if (slot !== 'burst') {
+      return;
+    }
     const before = ((b.effects ?? []) as Rec[]).length;
     b.effects = ((b.effects ?? []) as Rec[]).filter(
       (e) => !DAMAGE_KINDS.has(e.kind)
@@ -142,7 +154,9 @@ const touched: Record<string, number> = {};
 function patched(key: string, ...ms: Mutator[]): unknown {
   return withPatchedOverride(SLUG, (ov: any) => {
     let n = 0;
-    for (const m of ms) {n += m(ov as Rec);}
+    for (const m of ms) {
+      n += m(ov as Rec);
+    }
     touched[key] = n;
   });
 }
@@ -156,8 +170,9 @@ interface Run {
 function run(override?: unknown): Run {
   const events: SimEvent[] = [];
   const opts: any = controlComp(SLUG, true);
-  if (override)
-    {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };}
+  if (override) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: override };
+  }
   opts.cfg = {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => events.push(ev),

@@ -68,7 +68,9 @@ function run(overrides?: Record<string, any>): Run {
     onEvent,
     cfg: { ...(base.cfg ?? {}), onEvent },
   };
-  if (overrides) {opts.overrides = { ...(base.overrides ?? {}), ...overrides };}
+  if (overrides) {
+    opts.overrides = { ...(base.overrides ?? {}), ...overrides };
+  }
   return { res: runComp(opts), evs };
 }
 
@@ -101,15 +103,22 @@ function resourceEffects(blocks: any[]): any[] {
 }
 function triggerCount(b: any): number | undefined {
   const c = b?.trigger?.count;
-  if (typeof c === 'number') {return c;}
-  if (Array.isArray(c) && c.length > 0) {return c[0];}
+  if (typeof c === 'number') {
+    return c;
+  }
+  if (Array.isArray(c) && c.length > 0) {
+    return c[0];
+  }
   return undefined;
 }
 function setTriggerCount(b: any, n: number): void {
   const t: any = b.trigger ?? {};
   t.count = Array.isArray(t.count) ? t.count.map(() => n) : n;
-  if (Array.isArray(t.countInFb)) {t.countInFb = t.countInFb.map(() => n);}
-  else if (typeof t.countInFb === 'number') {t.countInFb = n;}
+  if (Array.isArray(t.countInFb)) {
+    t.countInFb = t.countInFb.map(() => n);
+  } else if (typeof t.countInFb === 'number') {
+    t.countInFb = n;
+  }
   b.trigger = t;
 }
 
@@ -121,45 +130,58 @@ const BASE = run();
 // counterfactual: the 6.34% Max HP stack contributes nothing
 const HP0 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of buffEffects(ov, 'targetMaxHpPct')) {e.value = 0;}
+    for (const e of buffEffects(ov, 'targetMaxHpPct')) {
+      e.value = 0;
+    }
   }),
 });
 
 // counterfactual: the Max HP stack fires on EVERY full charge instead of every 6th
 const HP_FAST = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of blocksWithBuff(ov, 'targetMaxHpPct')) {setTriggerCount(b, 1);}
+    for (const b of blocksWithBuff(ov, 'targetMaxHpPct')) {
+      setTriggerCount(b, 1);
+    }
   }),
 });
 
 // counterfactual: the 547.62% full-charge rider deals nothing
 const RIDER0 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of effectsOf(ov.skill2 ?? []))
-      {if (e.kind === 'flatDamage') {e.atkPct = 0;}}
+    for (const e of effectsOf(ov.skill2 ?? [])) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+      }
+    }
   }),
 });
 
 // counterfactual: the rider fires once per 6 full charges instead of every one
 const RIDER_SLOW = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of blocksWithKind(ov.skill2 ?? [], 'flatDamage'))
-      {setTriggerCount(b, 6);}
+    for (const b of blocksWithKind(ov.skill2 ?? [], 'flatDamage')) {
+      setTriggerCount(b, 6);
+    }
   }),
 });
 
 // counterfactual: the burst nuke deals nothing
 const BURST0 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of effectsOf(ov.burst ?? []))
-      {if (e.kind === 'flatDamage') {e.atkPct = 0;}}
+    for (const e of effectsOf(ov.burst ?? [])) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+      }
+    }
   }),
 });
 
 // counterfactual: both elemental-advantage buffs contribute nothing
 const ELEM0 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of buffEffects(ov, 'elemAdvantageDamagePct')) {e.value = 0;}
+    for (const e of buffEffects(ov, 'elemAdvantageDamagePct')) {
+      e.value = 0;
+    }
   }),
 });
 
@@ -188,7 +210,9 @@ function expectAlliesUnmoved(a: Run, b: Run): void {
   const ta: any = totals(a.res);
   const tb: any = totals(b.res);
   for (const slug of Object.keys(ta)) {
-    if (slug === SLUG) {continue;}
+    if (slug === SLUG) {
+      continue;
+    }
     expect(tb[slug], 'teammate ' + slug + ' must not move').toBe(ta[slug]);
   }
 }

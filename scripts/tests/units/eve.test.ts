@@ -110,32 +110,36 @@ const hasKind = (b: any, kind: string) =>
 const eveNoCrit = withPatchedOverride('eve', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('eve S1 critRatePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('eve S1 critRatePct block missing — fixture is stale');
+  }
 });
 /** E2 counterfactual: Unstable Energy at 240% (the ×3 sequential forgotten). */
 const eveUnstable240 = withPatchedOverride('eve', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e || e.atkPct !== 720)
-    {throw new Error('eve S1 720% flatDamage missing — fixture is stale');}
+  if (!e || e.atkPct !== 720) {
+    throw new Error('eve S1 720% flatDamage missing — fixture is stale');
+  }
   e.atkPct = 240;
 });
 /** E5 counterfactual: her S2 reload-refund line removed. */
 const eveNoRefund = withPatchedOverride('eve', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasKind(b, 'instantReload'));
-  if (ov.skill2.length === before)
-    {throw new Error('eve S2 instantReload block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('eve S2 instantReload block missing — fixture is stale');
+  }
 });
 /** E7 counterfactual: Mk2 doubling as the ADDITIVE sequentialDamagePct (the diluting bucket). */
 const eveSeqDamage = withPatchedOverride('eve', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sequentialMultPct');
-  if (!e)
-    {throw new Error('eve burst sequentialMultPct missing — fixture is stale');}
+  if (!e) {
+    throw new Error('eve burst sequentialMultPct missing — fixture is stale');
+  }
   e.stat = 'sequentialDamagePct';
 });
 

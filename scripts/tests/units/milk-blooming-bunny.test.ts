@@ -118,16 +118,18 @@ const noGainPierce = withPatchedOverride(SLUG, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('mbb S1 gainPierce block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('mbb S1 gainPierce block missing — fixture is stale');
+  }
 });
 /** MBB3 counterfactual: burst ATK ▲220% removed. */
 const noAtk220 = withPatchedOverride(SLUG, (ov) => {
   const blk = ov.burst.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'atkPct')
   );
-  if (!blk)
-    {throw new Error('mbb burst atkPct block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('mbb burst atkPct block missing — fixture is stale');
+  }
   blk.effects = blk.effects.filter((e: any) => e.stat !== 'atkPct');
 });
 /** MBB4 counterfactual: S2 burst DoT removed. */
@@ -136,8 +138,9 @@ const noDot = withPatchedOverride(SLUG, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'dot')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('mbb S2 dot block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('mbb S2 dot block missing — fixture is stale');
+  }
 });
 /** MBB5 isolation: the manual-gated Embarrassment blocks stripped. In the DEFAULT auto mode the
  *  engine's mode gate already filters these out, so this must be byte-identical to shipped. */
@@ -209,7 +212,9 @@ describe('milk-blooming-bunny — kit spec', () => {
 
     it('is 117.64% for exactly 10 sec, held by mbb alone', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([117.64]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([MBB]);
     });
 
@@ -242,7 +247,9 @@ describe('milk-blooming-bunny — kit spec', () => {
     it('is the L10 magnitude 220 (not the L1 130), once per cast, for 10 sec, self only', () => {
       expect(applied.length).toBe(mbbBursts(base.events).length);
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([MBB]);
     });
 

@@ -35,12 +35,14 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 const argv = process.argv.slice(2);
 const shot = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 
 if (!shot || !existsSync(shot)) {
   console.error(
@@ -142,22 +144,28 @@ async function ask(
       max_tokens: 900,
     }),
   });
-  if (!res.ok)
-    {throw new Error(
+  if (!res.ok) {
+    throw new Error(
       `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
-    );}
+    );
+  }
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
-  if (Array.isArray(content))
-    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
+  if (Array.isArray(content)) {
+    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+  }
   let s = String(content).trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) {s = fence[1].trim();}
+  if (fence) {
+    s = fence[1].trim();
+  }
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
+  if (a >= 0 && b > a) {
+    s = s.slice(a, b + 1);
+  }
   try {
     return JSON.parse(s) as Record<string, unknown>;
   } catch {
@@ -166,7 +174,9 @@ async function ask(
 }
 
 const num = (v: unknown): number | null => {
-  if (typeof v === 'number' && Number.isFinite(v)) {return Math.round(v);}
+  if (typeof v === 'number' && Number.isFinite(v)) {
+    return Math.round(v);
+  }
   if (typeof v === 'string') {
     const n = Number(v.replace(/[,\s]/g, ''));
     return Number.isFinite(n) ? Math.round(n) : null;
@@ -223,38 +233,44 @@ const deltaPct = cumulativeTotal
   ? Math.round(((sum - cumulativeTotal) / cumulativeTotal) * 10000) / 100
   : null;
 const pass = deltaPct == null ? null : Math.abs(deltaPct) <= tolerance;
-if (cumulativeTotal == null)
-  {warnings.push(
+if (cumulativeTotal == null) {
+  warnings.push(
     'NO CHECKSUM — pass --expect-total or --total-damage. Without it this is an ' +
       'unconfirmed VLM read: report it as a survey, never as a measured per-unit total.'
-  );}
-else if (!pass)
-  {warnings.push(
+  );
+} else if (!pass) {
+  warnings.push(
     `CHECKSUM FAILED — per-unit sum ${sum.toLocaleString()} vs cumulative ` +
       `${cumulativeTotal.toLocaleString()} (${deltaPct}%). At least one row is misread; do not use these values.`
-  );}
+  );
+}
 
 // ---- invariants that catch the classic misreads ----
-if (occupied.some((u) => u.level != null && u.level !== 400))
-  {warnings.push(
+if (occupied.some((u) => u.level != null && u.level !== 400)) {
+  warnings.push(
     'a row reads LV != 400 — scope-lock recordings are sync 400, so the level column was misread'
-  );}
+  );
+}
 const cps = occupied
   .map((u) => u.combatPower)
   .filter((v): v is number => v != null);
-if (cps.length > 1 && new Set(cps).size === 1)
-  {warnings.push(
+if (cps.length > 1 && new Set(cps).size === 1) {
+  warnings.push(
     'every Combat Power is identical — that is the signature of ATK, not CP, so the ⚔ column was misread'
-  );}
-for (const u of occupied)
-  {if (u.combatPower != null && u.combatPower > 200000)
-    {warnings.push(
+  );
+}
+for (const u of occupied) {
+  if (u.combatPower != null && u.combatPower > 200000) {
+    warnings.push(
       `slot ${u.slot} Combat Power ${u.combatPower} is implausibly large — likely a damage value read into the ⚔ column`
-    );}}
-if (comp && comp.length !== occupied.length)
-  {warnings.push(
+    );
+  }
+}
+if (comp && comp.length !== occupied.length) {
+  warnings.push(
     `--comp lists ${comp.length} slugs but ${occupied.length} rows are occupied — slot mapping is unreliable`
-  );}
+  );
+}
 
 const result = {
   screenshot: shot,
@@ -280,14 +296,17 @@ writeFileSync(
 );
 
 console.log(`\nwrote ${outDir}/battle-records.json`);
-for (const u of occupied)
-  {console.log(
+for (const u of occupied) {
+  console.log(
     `  slot ${u.slot}  ${(u.slug ?? u.name ?? '?').padEnd(24)} dmg ${u.totalDamage.toLocaleString().padStart(14)}  taken ${u.damageTaken}  heal ${u.healing}  CP ${u.combatPower}`
-  );}
+  );
+}
 console.log(
   `  sum ${sum.toLocaleString()}` +
     (cumulativeTotal != null
       ? `  vs cumulative ${cumulativeTotal.toLocaleString()}  Δ ${deltaPct}%  ${pass ? 'CHECKSUM PASS' : 'CHECKSUM FAIL'}`
       : '  (no checksum)')
 );
-for (const w of warnings) {console.log(`  ⚠ ${w}`);}
+for (const w of warnings) {
+  console.log(`  ⚠ ${w}`);
+}

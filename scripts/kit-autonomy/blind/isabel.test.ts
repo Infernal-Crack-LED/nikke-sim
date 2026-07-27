@@ -344,7 +344,9 @@ describe('isabel skill2 — recurring 170.58% of final ATK rider', () => {
 
   it('INERTNESS: skill2 moves no teammate total', () => {
     for (const [slug, dmg] of Object.entries(totals(base.res))) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(totals(cfNoSkill2.res)[slug]).toBeCloseTo(dmg, 6);
     }
   });
@@ -411,7 +413,9 @@ describe('isabel burst — staged payload, boss debuff, Full Burst shortening', 
     const cfT = totals(cfSelfDamageTaken.res);
     const mates = Object.keys(baseT).filter((s) => s !== SLUG);
     expect(mates.length).toBeGreaterThan(0);
-    for (const m of mates) {expect(cfT[m]).toBeLessThan(baseT[m]);}
+    for (const m of mates) {
+      expect(cfT[m]).toBeLessThan(baseT[m]);
+    }
   });
 
   it('"Full Burst Duration ▼ 5 sec" is modelled and moves the team (it is not cosmetic)', () => {

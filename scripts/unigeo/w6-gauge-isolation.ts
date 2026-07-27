@@ -49,7 +49,9 @@ function runComp(comp: (typeof COMPS)[number], arm: Arm) {
   process.env.UNIGEO_GAUGE = arm === 'decoupled' ? 'legacy' : '';
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -81,8 +83,9 @@ for (const comp of COMPS) {
         ? '  << decoupled DIFFERS from off'
         : '')
   );
-  if (off.rotationLog.join('\n') !== dec.rotationLog.join('\n'))
-    {rotStillDiffer.push(comp.name);}
+  if (off.rotationLog.join('\n') !== dec.rotationLog.join('\n')) {
+    rotStillDiffer.push(comp.name);
+  }
   for (const u of off.units) {
     const real = comp.real[u.slug];
     const w = data.characters[u.slug].weapon;
@@ -104,7 +107,9 @@ for (const comp of COMPS) {
 }
 
 console.log('=== FB counts (off | coupled sg | decoupled sg) ===');
-for (const l of fbRows) {console.log(l);}
+for (const l of fbRows) {
+  console.log(l);
+}
 console.log('\n=== rotation logs still differing from off at DECOUPLED sg ===');
 console.log(
   rotStillDiffer.length
@@ -118,4 +123,6 @@ console.log(nonSgMovers.length ? nonSgMovers.join('\n') : 'NONE');
 console.log(
   '\n=== graded SG readings: pure landing/core vs rotation-mediated ==='
 );
-for (const l of sgRows) {console.log(l);}
+for (const l of sgRows) {
+  console.log(l);
+}

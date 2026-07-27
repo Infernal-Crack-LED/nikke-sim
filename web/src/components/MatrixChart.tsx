@@ -55,22 +55,28 @@ export function MatrixChart({ initialCell }: { initialCell?: Cell }) {
       .catch((e) => setErr(String(e?.message ?? e)));
   }, []);
 
-  if (err)
-    {return (
+  if (err) {
+    return (
       <p className="muted">
         Couldn’t load chart data ({err}). Regenerate with{' '}
         <code>npm run dpschart</code>.
       </p>
-    );}
-  if (!art) {return <p className="muted">Loading chart data…</p>;}
+    );
+  }
+  if (!art) {
+    return <p className="muted">Loading chart data…</p>;
+  }
 
   const bars = chartBars(art, cell);
   const cmp = compareSlug ? compareIn(art, cell, compareSlug) : null;
   const shareLink = () => {
     const u = new URL(window.location.href);
     u.searchParams.set('chart', cellId(cell));
-    if (compareSlug) {u.searchParams.set('cmp', compareSlug);}
-    else {u.searchParams.delete('cmp');}
+    if (compareSlug) {
+      u.searchParams.set('cmp', compareSlug);
+    } else {
+      u.searchParams.delete('cmp');
+    }
     void navigator.clipboard?.writeText(u.toString());
   };
 

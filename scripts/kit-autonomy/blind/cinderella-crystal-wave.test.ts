@@ -54,7 +54,9 @@ function run(patched?: unknown) {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => evs.push(ev as unknown as Ev),
   };
-  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
+  if (patched) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  }
   const res = runComp(opts as any);
   return {
     evs,
@@ -72,7 +74,11 @@ function findEffects(ov: any, pred: (e: any, b: any) => boolean) {
   const out: { e: any; b: any }[] = [];
   for (const slot of SLOTS) {
     for (const b of ov?.[slot] ?? []) {
-      for (const e of b?.effects ?? []) {if (pred(e, b)) {out.push({ e, b });}}
+      for (const e of b?.effects ?? []) {
+        if (pred(e, b)) {
+          out.push({ e, b });
+        }
+      }
     }
   }
   return out;
@@ -83,7 +89,9 @@ function dropEffects(ov: any, pred: (e: any, b: any) => boolean): number {
   let n = 0;
   for (const slot of SLOTS) {
     for (const b of ov?.[slot] ?? []) {
-      if (!Array.isArray(b?.effects)) {continue;}
+      if (!Array.isArray(b?.effects)) {
+        continue;
+      }
       for (let i = b.effects.length - 1; i >= 0; i--) {
         if (pred(b.effects[i], b)) {
           b.effects.splice(i, 1);
@@ -197,8 +205,9 @@ const hyperGauge = run(
       (x) => x.kind === 'fillGauge'
     )) {
       e.pct = 40;
-      if (b.trigger && typeof b.trigger.count === 'number')
-        {b.trigger.count = 20;}
+      if (b.trigger && typeof b.trigger.count === 'number') {
+        b.trigger.count = 20;
+      }
       nHyper++;
     }
   })
@@ -441,8 +450,9 @@ describe('cinderella-crystal-wave — burst', () => {
 
     // temporary (10s), not continuous — and the SAME 10s for both
     expect(Number.isFinite(ad[0].expiresFrame)).toBe(true);
-    for (let i = 0; i < ad.length; i++)
-      {expect(at[i].expiresFrame).toBe(ad[i].expiresFrame);}
+    for (let i = 0; i < ad.length; i++) {
+      expect(at[i].expiresFrame).toBe(ad[i].expiresFrame);
+    }
   });
 
   // KIT: "Affects the enemy with the highest final ATK. Deals 6000% of final ATK as Burst

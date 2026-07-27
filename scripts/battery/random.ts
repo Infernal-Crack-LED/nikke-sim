@@ -65,8 +65,12 @@ const b1Pool = [...b1s]; // for reuse when dry
 
 const teams: BatteryTeam[] = [];
 for (let i = 0; i < N_TEAMS; i++) {
-  if (b3s.length < 3 || !b2s.length) {break;}
-  if (!b1s.length) {b1s = shuffle(b1Pool);} // reuse, reshuffled (reported as repeats)
+  if (b3s.length < 3 || !b2s.length) {
+    break;
+  }
+  if (!b1s.length) {
+    b1s = shuffle(b1Pool);
+  } // reuse, reshuffled (reported as repeats)
   let b2 = b2s.shift()!;
   let b1: string;
   if (b2 === 'eunhwa-tactical-upgrade') {
@@ -75,7 +79,9 @@ for (let i = 0; i < N_TEAMS; i++) {
     if (ei === -1) {
       b2 = b2s.shift() ?? b2;
       b1 = b1s.shift()!;
-    } else {b1 = b1s.splice(ei, 1)[0];}
+    } else {
+      b1 = b1s.splice(ei, 1)[0];
+    }
   } else {
     b1 = b1s.shift()!;
     // emma without eunhwa runs solo mode (autoWire); that's fine

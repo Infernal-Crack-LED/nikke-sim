@@ -66,8 +66,9 @@ const modeled = new Set(
 
 // display name (no ' (Treasure)') → slug, restricted to synced characters.
 const nameToSlug: Record<string, string> = {};
-for (const [slug, c] of Object.entries(data.characters))
-  {nameToSlug[c.name.replace(' (Treasure)', '')] = slug;}
+for (const [slug, c] of Object.entries(data.characters)) {
+  nameToSlug[c.name.replace(' (Treasure)', '')] = slug;
+}
 
 interface RaidBlock {
   weakness: string;
@@ -87,7 +88,9 @@ function parseAudit(): RaidBlock[] {
     if (rm) {
       const weakness = WEAK_TOKEN[rm[1]];
       cur = weakness ? { weakness, boss: rm[2], teams: [] } : null;
-      if (cur) {out.push(cur);}
+      if (cur) {
+        out.push(cur);
+      }
       inTeams = false;
       continue;
     }
@@ -118,8 +121,15 @@ const raids = parseAudit();
 // every slug that shows up ANYWHERE in the audit (across all raids) — the
 // complement (within the synced roster) is the "too new" fallback set.
 const seenInAudit = new Set<string>();
-for (const r of raids)
-  {for (const t of r.teams) {for (const s of t.slugs) {if (s) {seenInAudit.add(s);}}}}
+for (const r of raids) {
+  for (const t of r.teams) {
+    for (const s of t.slugs) {
+      if (s) {
+        seenInAudit.add(s);
+      }
+    }
+  }
+}
 
 interface MetaWeightEntry {
   raid: string;
@@ -135,17 +145,27 @@ for (const r of raids) {
   const comps: { slugs: string[]; pop: number }[] = [];
   let maxComp = 0;
   for (const t of r.teams) {
-    for (const s of t.slugs) {if (s) {raw.set(s, (raw.get(s) ?? 0) + t.count);}}
+    for (const s of t.slugs) {
+      if (s) {
+        raw.set(s, (raw.get(s) ?? 0) + t.count);
+      }
+    }
     // modeled-COMPLETE comps only (all 5 resolve + have overrides): buildable/simmable
     if (t.slugs.length === 5 && t.slugs.every((s) => s && modeled.has(s))) {
       comps.push({ slugs: t.slugs as string[], pop: t.count });
-      if (t.count > maxComp) {maxComp = t.count;}
+      if (t.count > maxComp) {
+        maxComp = t.count;
+      }
     }
   }
   const maxUnit = Math.max(1, ...raw.values());
   const unitPop: Record<string, number> = {};
-  for (const [slug, v] of raw) {unitPop[slug] = +(v / maxUnit).toFixed(4);}
-  for (const c of comps) {c.pop = +(c.pop / Math.max(1, maxComp)).toFixed(4);}
+  for (const [slug, v] of raw) {
+    unitPop[slug] = +(v / maxUnit).toFixed(4);
+  }
+  for (const c of comps) {
+    c.pop = +(c.pop / Math.max(1, maxComp)).toFixed(4);
+  }
   comps.sort((a, b) => b.pop - a.pop);
   byWeakness[r.weakness] = { raid: r.boss, boss: r.boss, unitPop, comps };
 }
@@ -154,7 +174,9 @@ for (const r of raids) {
 const tierPop: Record<string, number> = {};
 const fallbackSlugs: string[] = [];
 for (const slug of Object.keys(data.characters)) {
-  if (seenInAudit.has(slug)) {continue;}
+  if (seenInAudit.has(slug)) {
+    continue;
+  }
   fallbackSlugs.push(slug);
   const tier = tiers.tiers[slug];
   tierPop[slug] = tier !== undefined ? (TIER_SCORE[tier] ?? 0) : 0;

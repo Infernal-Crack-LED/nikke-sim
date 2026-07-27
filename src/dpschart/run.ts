@@ -52,7 +52,9 @@ function optimizedLines(
   memo: OptMemo
 ): LineSelection[] {
   const cached = memo.get(tested.slug);
-  if (cached) {return cached;}
+  if (cached) {
+    return cached;
+  }
 
   // provisional team: tested carries only the 8-line floor.
   const team = assembleTeam(PROBE_CELL, tested); // no optimizedTestedLines → floor only
@@ -70,7 +72,9 @@ function optimizedLines(
   );
 
   const counts = new Map<string, number>();
-  for (const p of res.picks) {counts.set(p.type, (counts.get(p.type) ?? 0) + 1);}
+  for (const p of res.picks) {
+    counts.set(p.type, (counts.get(p.type) ?? 0) + 1);
+  }
   const lines: LineSelection[] = [...counts].map(([type, count]) => ({
     type,
     count,

@@ -17,7 +17,9 @@ import {
 } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const s of Object.keys(data.characters)) {overrides[s] = loadOverride(s);}
+for (const s of Object.keys(data.characters)) {
+  overrides[s] = loadOverride(s);
+}
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
@@ -93,15 +95,17 @@ describe('sustain board', () => {
       ),
       'nayuta',
     ]);
-    for (const slug of cands)
-      {expect(slug in SUSTAIN_TABLE || HOOKS.has(slug), slug).toBe(true);}
+    for (const slug of cands) {
+      expect(slug in SUSTAIN_TABLE || HOOKS.has(slug), slug).toBe(true);
+    }
     expect(cands.size).toBe(50);
   });
 
   it('sustainRank dual-enters profiled units with the flag', () => {
     const ranked = sustainRank(['nayuta', 'liter', 'prika'], ctx);
-    for (let i = 1; i < ranked.length; i++)
-      {expect(ranked[i].totalHp).toBeLessThanOrEqual(ranked[i - 1].totalHp);}
+    for (let i = 1; i < ranked.length; i++) {
+      expect(ranked[i].totalHp).toBeLessThanOrEqual(ranked[i - 1].totalHp);
+    }
     expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
     const prika = ranked.filter((r) => r.slug === 'prika');
     expect(prika.map((r) => r.profile).sort()).toEqual(

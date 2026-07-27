@@ -15,15 +15,18 @@ const byCode: Record<number, { slug: string; burst: string; name: string }> =
   {};
 for (const [slug, c] of Object.entries(chars)) {
   const code = c?.role?.meta?.name_code;
-  if (code != null) {byCode[code] = { slug, burst: c.burst, name: c.name };}
+  if (code != null) {
+    byCode[code] = { slug, burst: c.burst, name: c.name };
+  }
 }
 
 const stats: Record<
   string,
   { total: number; withGear: number; withOl: number; t10: number }
 > = {};
-for (const b of ['I', 'II', 'III', 'Λ'])
-  {stats[b] = { total: 0, withGear: 0, withOl: 0, t10: 0 };}
+for (const b of ['I', 'II', 'III', 'Λ']) {
+  stats[b] = { total: 0, withGear: 0, withOl: 0, t10: 0 };
+}
 const b1: any[] = [];
 let unmapped = 0;
 for (const u of roster) {
@@ -33,22 +36,31 @@ for (const u of roster) {
     continue;
   }
   const s = stats[info.burst];
-  if (!s) {continue;}
+  if (!s) {
+    continue;
+  }
   s.total++;
   const hasGear = u.gear != null;
   const hasOl = Array.isArray(u.ol) && u.ol.length > 0;
-  if (hasGear) {s.withGear++;}
-  if (hasOl) {s.withOl++;}
-  if (u.gearTier === 'T10') {s.t10++;}
-  if (info.burst === 'I')
-    {b1.push({
+  if (hasGear) {
+    s.withGear++;
+  }
+  if (hasOl) {
+    s.withOl++;
+  }
+  if (u.gearTier === 'T10') {
+    s.t10++;
+  }
+  if (info.burst === 'I') {
+    b1.push({
       slug: info.slug,
       gear: hasGear,
       tier: u.gearTier ?? null,
       ol: hasOl ? u.ol.length : 0,
       grade: u.grade,
       core: u.core,
-    });}
+    });
+  }
 }
 
 console.log(

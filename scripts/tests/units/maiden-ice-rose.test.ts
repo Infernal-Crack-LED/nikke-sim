@@ -110,17 +110,19 @@ const mirNoS1Hp = withPatchedOverride(SLUG, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'targetMaxHpPct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('MIR S1 targetMaxHpPct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('MIR S1 targetMaxHpPct block missing — fixture is stale');
+  }
 });
 
 /** M2 counterfactual: the PRE-2026-07-17 bug — her FB-entry grant reaches herself too. */
 const mirSelfishBuff = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
-  if (!b || b.target.excludeSelf !== true)
-    {throw new Error(
+  if (!b || b.target.excludeSelf !== true) {
+    throw new Error(
       'MIR S2 fullBurstEnter/excludeSelf block missing — fixture is stale'
-    );}
+    );
+  }
   b.target.excludeSelf = false;
 });
 
@@ -130,8 +132,9 @@ const mirNoSelfBuff = withPatchedOverride(SLUG, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !(b.trigger.kind === 'burstCast' && b.target.kind === 'self')
   );
-  if (ov.skill2.length !== before - 2)
-    {throw new Error('MIR S2 burstCast-self blocks missing — fixture is stale');}
+  if (ov.skill2.length !== before - 2) {
+    throw new Error('MIR S2 burstCast-self blocks missing — fixture is stale');
+  }
 });
 
 /** M4 counterfactual: the rider at skill LEVEL 1 (323.58%) instead of level 10 (547.62%). */
@@ -139,7 +142,9 @@ const mirRiderL1 = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 547.62);
-  if (!e) {throw new Error('MIR S2 547.62 rider missing — fixture is stale');}
+  if (!e) {
+    throw new Error('MIR S2 547.62 rider missing — fixture is stale');
+  }
   e.atkPct = 323.58;
 });
 
@@ -148,8 +153,9 @@ const mirAtkOnlyBurst = withPatchedOverride(SLUG, (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'stackedNuke');
-  if (!e || e.hpPct !== 137.28)
-    {throw new Error('MIR burst stackedNuke/hpPct missing — fixture is stale');}
+  if (!e || e.hpPct !== 137.28) {
+    throw new Error('MIR burst stackedNuke/hpPct missing — fixture is stale');
+  }
   delete e.hpPct;
 });
 
@@ -168,10 +174,11 @@ const mirNoElemAdv = withPatchedOverride(SLUG, (ov) => {
       return { ...b, effects };
     })
     .filter((b: any) => b.effects.length > 0);
-  if (removed !== 2)
-    {throw new Error(
+  if (removed !== 2) {
+    throw new Error(
       'MIR S2 elemAdvantageDamagePct effects missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -216,7 +223,9 @@ describe('maiden-ice-rose — kit spec', () => {
       );
       expect(grants.length).toBeGreaterThan(0);
       expect([...new Set(grants.map((b) => b.maxStacks))]).toEqual([10]);
-      for (const b of grants) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of grants) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       // a constant flat value = 6.34% of her (constant) base Max HP
       expect(new Set(grants.map((b) => b.value)).size).toBe(1);
       expect(grants[0].value).toBeGreaterThan(0);
@@ -250,8 +259,9 @@ describe('maiden-ice-rose — kit spec', () => {
       expect(elem.length).toBeGreaterThan(0);
       expect(elem.length).toBe(fbCount(base.events));
       expect(atk.length).toBe(elem.length);
-      for (const b of [...elem, ...atk])
-        {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of [...elem, ...atk]) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('reaches the Electric ally (zwei) and NEVER herself — excludeSelf is live', () => {

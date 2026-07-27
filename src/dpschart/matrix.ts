@@ -285,9 +285,12 @@ function tierLoadout(
   optimizedTestedLines?: LineSelection[]
 ): TierOpts {
   const cube = TIER_CUBE[invest];
-  if (invest === 'scope') {return { cube, ol: 'base5', doll: false, lines: [] };}
-  if (invest === '8of12')
-    {return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };}
+  if (invest === 'scope') {
+    return { cube, ol: 'base5', doll: false, lines: [] };
+  }
+  if (invest === '8of12') {
+    return { cube, ol: 5, doll: true, lines: [...FLOOR_LINES] };
+  }
   // 12of12
   const extra =
     role === 'tested'
@@ -351,7 +354,9 @@ export function assembleTeam(
     const isTested = i === testedIndex;
     // no-op controls: zero damage / zero skills — loadout is inert, only the
     // framework CDR matters. Skip cubes/lines/gear entirely.
-    if (fw.solo && !isTested) {return { burstCdrSec: SOLO_BURST_CDR_SEC };}
+    if (fw.solo && !isTested) {
+      return { burstCdrSec: SOLO_BURST_CDR_SEC };
+    }
     const t = tierLoadout(
       cell.invest,
       isTested ? 'tested' : 'control',
@@ -374,8 +379,12 @@ export function assembleTeam(
       // consecutive stage-3 casts with an 8s rotation stall).
       opt.burstGate = 'everyOther';
     }
-    if (slug === MAST) {opt.burstGate = 'syncWithFocus';}
-    if (isTested) {Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});}
+    if (slug === MAST) {
+      opt.burstGate = 'syncWithFocus';
+    }
+    if (isTested) {
+      Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});
+    }
     return opt;
   });
 

@@ -67,12 +67,18 @@ export const generatorCharacters: Record<
 export function metaScoringFor(
   weakness: Element | null
 ): MetaScoring | undefined {
-  if (!weakness) {return undefined;}
+  if (!weakness) {
+    return undefined;
+  }
   const entry = META_WEIGHTS.byWeakness[weakness];
-  if (!entry) {return undefined;}
+  if (!entry) {
+    return undefined;
+  }
   const fallback = new Set(META_WEIGHTS.fallbackSlugs);
   const compPop: Record<string, number> = {};
-  for (const c of entry.comps) {compPop[[...c.slugs].sort().join('|')] = c.pop;}
+  for (const c of entry.comps) {
+    compPop[[...c.slugs].sort().join('|')] = c.pop;
+  }
   return {
     unitScore: (slug: string) =>
       fallback.has(slug)

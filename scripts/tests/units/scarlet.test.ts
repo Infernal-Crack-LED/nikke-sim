@@ -94,27 +94,33 @@ const findEffect = (blocks: any[], pred: (e: any) => boolean) =>
 /** H1 value: S1 ATK at level-1 17.48 (kit ships 23.15). */
 const scarletS1Wrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill1, (x) => x.stat === 'atkPct');
-  if (!e) {throw new Error('scarlet S1 atkPct missing — fixture is stale');}
+  if (!e) {
+    throw new Error('scarlet S1 atkPct missing — fixture is stale');
+  }
   e.value = 17.48;
 });
 /** H4 value: S2 crit damage at level-1 4.13 (kit ships 6.61). */
 const scarletS2Wrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill2, (x) => x.stat === 'critDamagePct');
-  if (!e)
-    {throw new Error('scarlet S2 critDamagePct missing — fixture is stale');}
+  if (!e) {
+    throw new Error('scarlet S2 critDamagePct missing — fixture is stale');
+  }
   e.value = 4.13;
 });
 /** H4 stat: the same 6.61 mis-keyed to critRatePct (rate buys ~0.5x/pt vs damage ~0.15x/pt → strictly larger). */
 const scarletS2AsRate = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.skill2, (x) => x.kind === 'buff');
-  if (!e) {throw new Error('scarlet S2 buff missing — fixture is stale');}
+  if (!e) {
+    throw new Error('scarlet S2 buff missing — fixture is stale');
+  }
   e.stat = 'critRatePct';
 });
 /** H5 value: burst crit rate at level-1 12.23 (kit ships 19.57). */
 const scarletBurstCritWrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.burst, (x) => x.stat === 'critRatePct');
-  if (!e)
-    {throw new Error('scarlet burst critRatePct missing — fixture is stale');}
+  if (!e) {
+    throw new Error('scarlet burst critRatePct missing — fixture is stale');
+  }
   e.value = 12.23;
 });
 /** H5 trigger: re-key the burst crit-rate to fullBurstEnter (fires on helm's rotations too). */
@@ -122,17 +128,19 @@ const scarletBurstCritFBEnter = withPatchedOverride('scarlet', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'critRatePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'scarlet burst critRatePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** H6 value: burst nuke at level-1 530.71% (kit ships 849.15%). */
 const scarletBurstDmgWrong = withPatchedOverride('scarlet', (ov) => {
   const e = findEffect(ov.burst, (x) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('scarlet burst flatDamage missing — fixture is stale');}
+  if (!e) {
+    throw new Error('scarlet burst flatDamage missing — fixture is stale');
+  }
   e.atkPct = 530.71;
 });
 

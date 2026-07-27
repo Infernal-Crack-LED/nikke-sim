@@ -38,7 +38,9 @@ describe('bestTeam falls back past the enumeration for out-of-shape locks', () =
       `double-B1 lock ${locks.join('+')} built nothing`
     ).not.toBeNull();
     expect(distinct5(team!.slugs)).toBe(true);
-    for (const s of locks) {expect(team!.slugs).toContain(s);}
+    for (const s of locks) {
+      expect(team!.slugs).toContain(s);
+    }
     expect(rotationLegal(chars as any, team!.slugs)).toBe(true);
   });
 });

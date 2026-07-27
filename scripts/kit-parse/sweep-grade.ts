@@ -17,15 +17,20 @@ function simComp(comp: (typeof COMPS)[number]) {
   const w = loadWorld(); // reload each call so a swapped override is picked up
   const r = runOnce(w, { name: comp.name, slugs: comp.slugs }, comp.boss, 1);
   const totals: Record<string, number> = {};
-  for (const u of r.units) {totals[u.slug] = u.totalDamage;}
+  for (const u of r.units) {
+    totals[u.slug] = u.totalDamage;
+  }
   return { fb: r.fullBursts, totals };
 }
 
 function grade(slug: string, candFile: string) {
-  if (!existsSync(candFile))
-    {throw new Error(`candidate not found: ${candFile}`);}
+  if (!existsSync(candFile)) {
+    throw new Error(`candidate not found: ${candFile}`);
+  }
   const comps = COMPS.filter((c) => c.slugs.includes(slug));
-  if (!comps.length) {throw new Error(`no experiment comp contains '${slug}'`);}
+  if (!comps.length) {
+    throw new Error(`no experiment comp contains '${slug}'`);
+  }
 
   // all-real baseline (hand-tune present)
   const A = comps.map((c) => ({ comp: c, sim: simComp(c) }));
@@ -33,14 +38,19 @@ function grade(slug: string, candFile: string) {
   // swap candidate in
   const backup = `/tmp/sweep-${slug}-real.json`;
   const hadReal = existsSync(OV(slug));
-  if (hadReal) {copyFileSync(OV(slug), backup);}
+  if (hadReal) {
+    copyFileSync(OV(slug), backup);
+  }
   copyFileSync(candFile, OV(slug));
   let B: { comp: (typeof COMPS)[number]; sim: ReturnType<typeof simComp> }[];
   try {
     B = comps.map((c) => ({ comp: c, sim: simComp(c) }));
   } finally {
-    if (hadReal) {copyFileSync(backup, OV(slug));}
-    else {rmSync(OV(slug), { force: true });}
+    if (hadReal) {
+      copyFileSync(backup, OV(slug));
+    } else {
+      rmSync(OV(slug), { force: true });
+    }
   }
 
   console.log(
@@ -57,7 +67,9 @@ function grade(slug: string, candFile: string) {
     const vsReal = real ? b.totals[slug] / real : NaN;
     const htVsReal = real ? a.totals[slug] / real : NaN;
     const pass = rotOk && Math.abs(ratio - 1) <= 0.05;
-    if (!pass) {allPass = false;}
+    if (!pass) {
+      allPass = false;
+    }
     console.log(
       `  ${c.name.padEnd(34)} FB ${a.fb}${rotOk ? '=' : '≠'}${b.fb}  ` +
         `cand/HT=${ratio.toFixed(3)} ${Math.abs(ratio - 1) <= 0.05 ? 'ok' : 'OUT'}  ` +

@@ -82,10 +82,11 @@ export function sanityCheck(chars: any[], result: any): string[] {
     (byGroup[`${cls}|${chars[i].manufacturer ?? '—'}`] ??= []).push(atk);
   });
   for (const [group, atks] of Object.entries(byGroup)) {
-    if (new Set(atks).size > 1)
-      {issues.push(
+    if (new Set(atks).size > 1) {
+      issues.push(
         `${group}: same class+manufacturer units have DIFFERENT staticAtk ${[...new Set(atks)]} — base stats + bond are class×manufacturer, this should be impossible`
-      );}
+      );
+    }
   }
   return issues;
 }

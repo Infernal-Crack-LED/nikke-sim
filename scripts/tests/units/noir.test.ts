@@ -87,28 +87,32 @@ const noirAtkPct = withPatchedOverride('noir', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('noir S1 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** N2 trigger reference: S2 fullBurstEnter → burstCast (the prior-10 model). */
 const noirBurstCastTrig = withPatchedOverride('noir', (ov) => {
   let n = 0;
-  for (const b of ov.skill2)
-    {if (b.trigger.kind === 'fullBurstEnter') {
+  for (const b of ov.skill2) {
+    if (b.trigger.kind === 'fullBurstEnter') {
       b.trigger.kind = 'burstCast';
       n++;
-    }}
-  if (n < 2)
-    {throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');}
+    }
+  }
+  if (n < 2) {
+    throw new Error('noir S2 fullBurstEnter blocks missing — fixture is stale');
+  }
 });
 /** N2 target reference: S2 maxAmmoFlat block all allies → self only. */
 const noirSelfAmmo = withPatchedOverride('noir', (ov) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'maxAmmoFlat')
   );
-  if (!b)
-    {throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('noir S2 maxAmmoFlat block missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 /** N2b reference: strip the S2 instantReload effect (leaves the maxAmmoFlat block intact). */
@@ -116,21 +120,24 @@ const noirNoInstantReload = withPatchedOverride('noir', (ov) => {
   const before = ov.skill2
     .flatMap((b: any) => b.effects)
     .filter((e: any) => e.kind === 'instantReload').length;
-  for (const b of ov.skill2)
-    {b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');}
+  for (const b of ov.skill2) {
+    b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
+  }
   ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
-  if (before < 1)
-    {throw new Error('noir S2 instantReload effect missing — fixture is stale');}
+  if (before < 1) {
+    throw new Error('noir S2 instantReload effect missing — fixture is stale');
+  }
 });
 /** N3 scoping reference: burst SG block (hitRatePct 13.93) alliesOfWeapon SG → all allies. */
 const noirAlliesAll = withPatchedOverride('noir', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 13.93)
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'noir burst hitRatePct 13.93 block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'allies' };
 });
 /** N5 gate reference: remove the teamHas gate from the 11.61 block (makes it always-active). */
@@ -138,12 +145,14 @@ const noirNoGate = withPatchedOverride('noir', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'hitRatePct' && e.value === 11.61)
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'noir burst hitRatePct 11.61 block missing — fixture is stale'
-    );}
-  if (!b.teamHas)
-    {throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');}
+    );
+  }
+  if (!b.teamHas) {
+    throw new Error('noir burst 11.61 teamHas gate missing — fixture is stale');
+  }
   delete b.teamHas;
 });
 /** N6 reference: strip every burst partsDamagePct effect (both the SG and the gated block). */
@@ -151,13 +160,15 @@ const noirNoParts = withPatchedOverride('noir', (ov) => {
   const before = ov.burst
     .flatMap((b: any) => b.effects)
     .filter((e: any) => e.stat === 'partsDamagePct').length;
-  for (const b of ov.burst)
-    {b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');}
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'partsDamagePct');
+  }
   ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
-  if (before < 2)
-    {throw new Error(
+  if (before < 2) {
+    throw new Error(
       'noir burst partsDamagePct blocks missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -276,16 +287,19 @@ describe('noir — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('trigger is fullBurstEnter: every grant lands on a Full-Burst-ENTRY frame, not the cast frame', () => {
       expect(ammoFrames.length).toBeGreaterThan(0);
-      for (const f of ammoFrames)
-        {expect(
+      for (const f of ammoFrames) {
+        expect(
           fbFrames,
           `maxAmmoFlat at frame ${f} is not an FB-entry frame`
-        ).toContain(f);}
+        ).toContain(f);
+      }
       expect(
         ammoFrames[0],
         'first grant must coincide with the first FB entry'
@@ -352,7 +366,9 @@ describe('noir — kit spec', () => {
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([13.93]);
       expect([...holders(applied)].sort()).toEqual(['guilty', 'noir']);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: an "all allies" model would also buff the non-SG allies (liter+crown)', () => {
@@ -414,7 +430,9 @@ describe('noir — kit spec', () => {
       expect(holders(applied).size, 'gated block must reach all 4 allies').toBe(
         4
       );
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      }
     });
   });
 

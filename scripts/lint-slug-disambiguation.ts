@@ -28,7 +28,9 @@ const byBase = new Map<
 const nicknames: string[] = [];
 for (const [slug, c] of Object.entries(chars)) {
   const name: string = (c as any)?.name;
-  if (!name) {continue;}
+  if (!name) {
+    continue;
+  }
   const nicks: string[] = (c as any).nicknames ?? [];
   nicknames.push(...nicks);
   // " (Treasure)" is a favorite-item marker, not part of the name — strip it so

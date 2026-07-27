@@ -94,26 +94,29 @@ const hasStat = (b: any, stat: string) =>
 const jillNoNormal = withPatchedOverride('jill', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'normalAttackPct'));
-  if (ov.skill1.length === before)
-    {throw new Error('jill S1 normalAttackPct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('jill S1 normalAttackPct block missing — fixture is stale');
+  }
 });
 /** J1 counterfactual: the same +30 as a GENERIC Damage-Up buff (would lift the dot too). */
 const jillGenericDmgUp = withPatchedOverride('jill', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'normalAttackPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'jill S1 normalAttackPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 /** J2 reference: her S1 true-damage line removed. */
 const jillNoTrueDmg = withPatchedOverride('jill', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'trueDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('jill S1 trueDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('jill S1 trueDamagePct block missing — fixture is stale');
+  }
 });
 /** J3 reference: her Acid Ammo dot removed. */
 const jillNoDot = withPatchedOverride('jill', (ov) => {
@@ -121,29 +124,34 @@ const jillNoDot = withPatchedOverride('jill', (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'dot')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('jill S2 dot block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('jill S2 dot block missing — fixture is stale');
+  }
 });
 /** J4 counterfactual: the ATK buff on the WRONG trigger (burstCast instead of fullBurstEnter). */
 const jillAtkOnCast = withPatchedOverride('jill', (ov) => {
   let hit = false;
-  for (const b of ov.skill2)
-    {if (b.trigger.kind === 'fullBurstEnter') {
+  for (const b of ov.skill2) {
+    if (b.trigger.kind === 'fullBurstEnter') {
       b.trigger.kind = 'burstCast';
       hit = true;
-    }}
-  if (!hit)
-    {throw new Error('jill S2 fullBurstEnter block missing — fixture is stale');}
+    }
+  }
+  if (!hit) {
+    throw new Error('jill S2 fullBurstEnter block missing — fixture is stale');
+  }
 });
 /** J5 reference: her burst Attack Damage line removed. */
 const jillNoAtkDmg = withPatchedOverride('jill', (ov) => {
-  for (const b of ov.burst)
-    {b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');}
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');
+  }
 });
 /** J6 reference: her burst Hit Rate line removed. */
 const jillNoHitRate = withPatchedOverride('jill', (ov) => {
-  for (const b of ov.burst)
-    {b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');}
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
+  }
 });
 /** J7 reference: her burst ammo-dump (forced reload) removed. */
 const jillNoConsume = withPatchedOverride('jill', (ov) => {
@@ -151,10 +159,13 @@ const jillNoConsume = withPatchedOverride('jill', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'consumeAmmo');
-    if (b.effects.length !== before) {hit = true;}
+    if (b.effects.length !== before) {
+      hit = true;
+    }
   }
-  if (!hit)
-    {throw new Error('jill burst consumeAmmo effect missing — fixture is stale');}
+  if (!hit) {
+    throw new Error('jill burst consumeAmmo effect missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------

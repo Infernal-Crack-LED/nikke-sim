@@ -47,7 +47,9 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   // tolerate both authored shapes: slot -> Block[] and slot -> { blocks: Block[] }
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 }
@@ -63,8 +65,11 @@ function effs(b: any): any[] {
 }
 function pairs(ov: any): Array<{ block: any; effect: any }> {
   const out: Array<{ block: any; effect: any }> = [];
-  for (const b of allBlocks(ov))
-    {for (const e of effs(b)) {out.push({ block: b, effect: e });}}
+  for (const b of allBlocks(ov)) {
+    for (const e of effs(b)) {
+      out.push({ block: b, effect: e });
+    }
+  }
   return out;
 }
 function unmodeledText(ov: any): string {
@@ -88,7 +93,9 @@ function runWith(patch?: any) {
       onEvent: (ev: SimEvent) => events.push(ev as Ev),
     },
   };
-  if (patch) {opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };}
+  if (patch) {
+    opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
+  }
   const res = runComp(opts);
   const tot = totals(res);
   return { res, events, tot, self: tot[SLUG] };
@@ -124,8 +131,9 @@ const NO_STACK_SPEED = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 3.81)
-      )
-        {effect.value = 0;}
+      ) {
+        effect.value = 0;
+      }
     }
   })
 );
@@ -136,8 +144,9 @@ const NO_STACKING = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 3.81)
-      )
-        {effect.maxStacks = 1;}
+      ) {
+        effect.maxStacks = 1;
+      }
     }
   })
 );
@@ -158,15 +167,19 @@ const NO_RED_WOLF_ATK = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'atkPct' &&
         near(effect.value, 71.42)
-      )
-        {effect.value = 0;}
+      ) {
+        effect.value = 0;
+      }
     }
   })
 );
 const NO_SWAP_DMG = runWith(
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const { effect } of pairs(ov))
-      {if (effect.kind === 'weaponSwap') {effect.damagePct = 0;}}
+    for (const { effect } of pairs(ov)) {
+      if (effect.kind === 'weaponSwap') {
+        effect.damagePct = 0;
+      }
+    }
   })
 );
 const NO_BURST_SPEED = runWith(
@@ -176,8 +189,9 @@ const NO_BURST_SPEED = runWith(
         effect.kind === 'buff' &&
         effect.stat === 'chargeSpeedPct' &&
         near(effect.value, 100.8)
-      )
-        {effect.value = 0;}
+      ) {
+        effect.value = 0;
+      }
     }
   })
 );
@@ -227,7 +241,9 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
     expect(hits.length, 'no self chargeSpeedPct 3.81 applies').toBeGreaterThan(
       0
     );
-    for (const h of hits) {expect(h.stat).toBe('chargeSpeedPct');}
+    for (const h of hits) {
+      expect(h.stat).toBe('chargeSpeedPct');
+    }
   });
 
   it('re-applies per normal attack rather than sitting at max as a passive', () => {
@@ -237,7 +253,9 @@ describe('S1a — Charge Speed +3.81%, 10 stacks, 5 sec, on normal attack (self)
   });
 
   it('caps at 10 stacks and actually reaches the cap', () => {
-    for (const h of hits) {expect(h.maxStacks).toBe(10);}
+    for (const h of hits) {
+      expect(h.maxStacks).toBe(10);
+    }
     const peak = Math.max(...hits.map((h) => Number(h.stacks ?? 0)));
     expect(peak).toBe(10);
   });
@@ -329,7 +347,9 @@ describe('S1b — excess Charge Speed over 100% converts to Charge Damage at 240
 
   it('is load-bearing, and moves NO teammate (pure damage bucket, no gauge effect)', () => {
     expect(NO_CHARGE_DMG.self).toBeLessThan(BASE.self);
-    for (const m of MATES) {expect(NO_CHARGE_DMG.tot[m]).toBe(BASE.tot[m]);}
+    for (const m of MATES) {
+      expect(NO_CHARGE_DMG.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 
@@ -383,13 +403,17 @@ describe('S2b — Beast Cage: DEF +50.68% of the user DEF, all allies, 10s (step
   it('is offensively inert in v1 (self DEF does not feed damage)', () => {
     const zeroDef = runWith(
       withPatchedOverride(SLUG, (ov: any) => {
-        for (const { effect } of pairs(ov))
-          {if (effect.kind === 'buff' && effect.stat === 'defPct')
-            {effect.value = 0;}}
+        for (const { effect } of pairs(ov)) {
+          if (effect.kind === 'buff' && effect.stat === 'defPct') {
+            effect.value = 0;
+          }
+        }
       })
     );
     expect(zeroDef.self).toBe(BASE.self);
-    for (const m of MATES) {expect(zeroDef.tot[m]).toBe(BASE.tot[m]);}
+    for (const m of MATES) {
+      expect(zeroDef.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 
@@ -447,7 +471,9 @@ describe('S2d — Red Wolf: ATK +71.42% self for 10s (step 3)', () => {
 
   it('is load-bearing and moves no teammate', () => {
     expect(NO_RED_WOLF_ATK.self).toBeLessThan(BASE.self);
-    for (const m of MATES) {expect(NO_RED_WOLF_ATK.tot[m]).toBe(BASE.tot[m]);}
+    for (const m of MATES) {
+      expect(NO_RED_WOLF_ATK.tot[m]).toBe(BASE.tot[m]);
+    }
   });
 });
 

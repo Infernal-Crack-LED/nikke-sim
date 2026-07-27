@@ -22,6 +22,7 @@ import type {
   SimConfig,
 } from '../../src/types';
 import { DpsChartTab } from './DpsChartTab';
+import { SupportRankings } from './SupportRankings';
 import { ResourcesPage } from './ResourcesPage';
 import { TeamBuilderPage } from './TeamBuilderPage';
 import {
@@ -395,6 +396,7 @@ type CalcTab =
   | 'resources'
   | 'dps'
   | 'dpschart'
+  | 'ranks'
   | 'charge'
   | 'teambuilder';
 // Four tool sections, mirrored in the top nav (web/src/router.ts): Sim,
@@ -406,7 +408,8 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'team', label: 'Team Generator', group: 'sim' },
   { key: 'roster', label: 'Roster Generator', group: 'sim' },
   { key: 'dpschart', label: 'DPS Rankings', group: 'rankings' },
-  { key: 'dps', label: 'Unit Comparison', group: 'rankings' },
+  { key: 'ranks', label: 'Support Rankings', group: 'rankings' },
+  { key: 'dps', label: 'Unit Comparisons', group: 'rankings' },
   { key: 'overload', label: 'Optimize Overload', group: 'overload' },
   { key: 'olsim', label: 'Overload Rolling', group: 'overload' },
   { key: 'charge', label: 'Overload Breakpoints', group: 'overload' },
@@ -415,13 +418,35 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'resources', label: 'Resource Calculator', group: 'tools' },
 ];
 
-// Which tab the current URL selects. The first path segment is authoritative
-// (/dpschart, /team, …; / = Sim); a legacy `?chart=` deep link (a shared
-// DPS-chart cell) still implies the DPS Chart tab; else Sim.
+// Canonical URL per tab. The rankings section lives under /ranks/* (owner
+// decision 2026-07-26): the section default (/ranks) is the DPS chart;
+// /dpschart and /dps are LEGACY aliases, canonicalized by the effect below.
+const TAB_PATHS: Partial<Record<CalcTab, string>> = {
+  sim: '/',
+  dpschart: '/ranks',
+  ranks: '/ranks/support',
+  dps: '/ranks/compare',
+};
+
+// Which tab the current URL selects. /ranks/* is the rankings section
+// (/ranks/support → boards, /ranks/compare → comparator, bare /ranks → the
+// DPS chart); the legacy first segments /dpschart and /dps still resolve via
+// the CALC_TABS match (their URLs get canonicalized, but the pre-redirect
+// paint must be correct); a legacy `?chart=` deep link (a shared DPS-chart
+// cell) still implies the DPS Chart tab; else Sim.
 function tabFromLocation(): CalcTab {
-  const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && CALC_TABS.some((x) => x.key === seg)) {
-    return seg as CalcTab;
+  const segs = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  if (segs[0] === 'ranks') {
+    if (segs[1] === 'support') {
+      return 'ranks';
+    }
+    if (segs[1] === 'compare') {
+      return 'dps';
+    }
+    return 'dpschart';
+  }
+  if (segs[0] && CALC_TABS.some((x) => x.key === segs[0])) {
+    return segs[0] as CalcTab;
   }
   return new URLSearchParams(window.location.search).has('chart')
     ? 'dpschart'
@@ -1447,17 +1472,39 @@ export function App({ user }: { user: AuthUser | null }) {
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
   const [tab, setTab] = useState<CalcTab>(() => tabFromLocation());
-  // Switch tab AND reflect it in the URL path (/dpschart, …) so the view is
-  // hyperlinkable and the server can serve tab-specific embed metadata. Uses the
-  // same path-based navigate() as the top-level pages (one routing strategy app
-  // wide); existing query deep-links (team/chart/cmp/b) are preserved; Sim uses
-  // the bare path "/".
+  // Switch tab AND reflect it in the URL path so the view is hyperlinkable and
+  // the server can serve tab-specific embed metadata (rankings tabs map to
+  // /ranks/*; Sim uses the bare path "/"). Uses the same path-based navigate()
+  // as the top-level pages (one routing strategy app wide); existing query
+  // deep-links (team/chart/cmp/b) are preserved.
   const selectTab = (key: CalcTab) => {
     setTab(key);
     const u = new URL(window.location.href);
-    u.pathname = key === 'sim' ? '/' : `/${key}`;
+    u.pathname = TAB_PATHS[key] ?? `/${key}`;
     navigate(u.pathname + u.search + u.hash);
   };
+  // Canonicalize legacy rankings URLs (/dpschart → /ranks, /dps →
+  // /ranks/compare) in place — replaceState, not pushState, so the legacy URL
+  // never enters history; search+hash deep-links are preserved.
+  useEffect(() => {
+    const canonicalize = () => {
+      const seg = window.location.pathname
+        .replace(/^\/+|\/+$/g, '')
+        .split('/')[0];
+      const target =
+        seg === 'dpschart' ? '/ranks' : seg === 'dps' ? '/ranks/compare' : null;
+      if (target) {
+        window.history.replaceState(
+          {},
+          '',
+          target + window.location.search + window.location.hash
+        );
+      }
+    };
+    canonicalize();
+    window.addEventListener('popstate', canonicalize);
+    return () => window.removeEventListener('popstate', canonicalize);
+  }, []);
   // Keep the tab in sync when the user navigates back/forward.
   useEffect(() => {
     const onPop = () => setTab(tabFromLocation());
@@ -3694,7 +3741,6 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'doll' && !dollCal && !calcBusy) {
       runCalc(() => setDollCal(getDollCalibration()));
     }
-    // calcBusy is intentionally omitted to avoid retriggering once it becomes false.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, dollCal]);
   useEffect(() => {
@@ -3707,14 +3753,12 @@ export function App({ user }: { user: AuthUser | null }) {
     ) {
       runDollCalc();
     }
-    // calcBusy/dollResult/runDollCalc intentionally omitted to avoid reruns.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, dollSub, dollCal]);
   useEffect(() => {
     if (tab === 'olsim' && olSimSub === 'calc' && !olSimResult && !calcBusy) {
       runOlSim();
     }
-    // calcBusy/olSimResult/runOlSim intentionally omitted to avoid reruns.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, olSimSub]);
   const runOlMatrix = () =>
@@ -4622,6 +4666,9 @@ export function App({ user }: { user: AuthUser | null }) {
   const renderCalcTab = () => {
     if (tab === 'dpschart') {
       return <DpsChartTab />;
+    }
+    if (tab === 'ranks') {
+      return <SupportRankings />;
     }
     if (tab === 'team') {
       return (
@@ -6984,9 +7031,11 @@ export function App({ user }: { user: AuthUser | null }) {
 
       {/* Global boss options + Apply-to-all loadout: used by the Sim, DPS Test, and
           Overload Calc custom mode. The DPS Chart tab and the Overload matrix mode are
-          self-contained (their own matrix selector defines the boss), and the Charge
-          Speed tab is a pure calculator, so hide this block on those. */}
+          self-contained (their own matrix selector defines the boss), the Support
+          Rankings boards are precomputed (boss settings can't affect them), and the
+          Charge Speed tab is a pure calculator, so hide this block on those. */}
       {tab !== 'dpschart' &&
+        tab !== 'ranks' &&
         tab !== 'charge' &&
         tab !== 'olsim' &&
         tab !== 'doll' &&

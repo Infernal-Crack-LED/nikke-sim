@@ -76,28 +76,31 @@ const hasHeal = (b: any) => b.effects.some((e: any) => e.kind === 'heal');
 const helmNoCrit = withPatchedOverride('helm', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRateNormalPct'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'helm S1 critRateNormalPct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** H1 counterfactual: the same line as a GENERIC (unscoped) crit-rate buff. */
 const helmGenericCrit = withPatchedOverride('helm', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'critRateNormalPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'helm S1 critRateNormalPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'critRatePct';
 });
 /** H4 reference: her parts-damage line removed. */
 const helmNoParts = withPatchedOverride('helm', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before)
-    {throw new Error('helm S2 partsDamagePct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('helm S2 partsDamagePct block missing — fixture is stale');
+  }
 });
 /** H8 isolation: her S1 full-charge heal fires every ~1.5s and SATURATES crown's recovery
  *  consumer, which would mask the burst heal's window entirely. Removing S1's heal (and crown's
@@ -106,14 +109,16 @@ const helmNoParts = withPatchedOverride('helm', (ov) => {
 const helmNoS1Heal = withPatchedOverride('helm', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
-  if (ov.skill1.length === before)
-    {throw new Error('helm S1 heal block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('helm S1 heal block missing — fixture is stale');
+  }
 });
 const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before)
-    {throw new Error('crown S2 heal block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('crown S2 heal block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -144,7 +149,9 @@ function critRatesByUnit(
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of dmg(evs)) {
-    if (!buckets.includes(d.bucket)) {continue;}
+    if (!buckets.includes(d.bucket)) {
+      continue;
+    }
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
@@ -245,18 +252,21 @@ describe('helm (Treasure) — kit spec', () => {
         'no FB-entry attackDamagePct buff was applied'
       ).toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
-      for (const b of applied)
-        {(
+      for (const b of applied) {
+        (
           perFrame.get(b.frame) ??
           perFrame.set(b.frame, new Set()).get(b.frame)!
-        ).add(b.targetIdx);}
+        ).add(b.targetIdx);
+      }
       for (const [frame, holders] of perFrame) {
         expect(
           holders.size,
           `frame ${frame} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       }
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 

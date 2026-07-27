@@ -41,10 +41,11 @@ const getOpt = (name: string): string | undefined => {
   const i = argv.indexOf(`--${name}`);
   return i >= 0 ? argv[i + 1] : undefined;
 };
-if (!slug)
-  {fail(
+if (!slug) {
+  fail(
     'usage: prepare-cross-family-packet.ts <slug> --tokens "t1,t2,..." [--roles s2b,s5,s6]'
-  );}
+  );
+}
 // SHORT-SLUG FIX (2026-07-25): match the slug on a WORD BOUNDARY, not a raw substring. A 3-letter
 // slug like `eve` is a substring of `event`/`level`/`never`/`every`, which a substring match treats
 // as a leak — false-positiving the template/schema redaction on generic infrastructure vocabulary
@@ -59,10 +60,11 @@ const tokens = (getOpt('tokens') ?? '')
   .map((t) => t.trim())
   .filter(Boolean);
 const roles = (getOpt('roles') ?? 's2b').split(',').map((r) => r.trim());
-if (tokens.length === 0)
-  {fail(
+if (tokens.length === 0) {
+  fail(
     "--tokens is required (the target's signature magnitudes + mechanic names)"
-  );}
+  );
+}
 
 const TEMPLATE: Record<string, string> = {
   s2b: 'TEST-FAITHFULNESS-REVIEW.md',
@@ -79,10 +81,11 @@ const TEMPLATE: Record<string, string> = {
 function leakCheck(label: string, text: string, needles: string[]) {
   const lower = text.toLowerCase();
   const hits = needles.filter((tok) => lower.includes(tok));
-  if (hits.length)
-    {fail(
+  if (hits.length) {
+    fail(
       `${label} still contains target token(s): ${hits.join(', ')} — redaction incomplete`
-    );}
+    );
+  }
 }
 
 // ---- 1. kit prose (legitimate input; excluded from the leak check) ----------------------------
@@ -128,10 +131,11 @@ const namesTarget = (lower: string): boolean =>
 // leakCheck directly with tokLower (tokens-only).
 function componentLeakCheck(label: string, text: string) {
   const lower = text.toLowerCase();
-  if (slugRe.test(lower))
-    {fail(
+  if (slugRe.test(lower)) {
+    fail(
       `${label} still names the target slug "${slug}" — redaction incomplete`
-    );}
+    );
+  }
   leakCheck(label, text, componentNeedles);
 }
 
@@ -261,10 +265,11 @@ for (const role of roles) {
     continue;
   }
   const tmplFile = TEMPLATE[role];
-  if (!tmplFile)
-    {fail(
+  if (!tmplFile) {
+    fail(
       `unknown role '${role}' (expected s2b/s5/s6; s7 uses the judge-packet pattern)`
-    );}
+    );
+  }
   const template = readFileSync(join(HERE, tmplFile), 'utf8');
   componentLeakCheck(`template ${tmplFile}`, template);
 

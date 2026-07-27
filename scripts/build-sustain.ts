@@ -18,6 +18,7 @@ import type {
 import { sustainRank, SUSTAIN_PROFILES } from '../src/ranks/sustain.js';
 import { SUSTAIN_TABLE } from '../src/ranks/sustain-table.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
+import type { SustainArtifact, SustainRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -37,8 +38,12 @@ const tags = load<{ tags: Record<string, string[]> }>(
 ).tags;
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// Synthetic no-op B3 (MG) is not in characters.json; load its mock-B3 override so
+// sustain sims (which use no-op teammates) apply its full-burst damage profile.
+overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -55,15 +60,16 @@ const population = [
 ].sort();
 const HOOKS = new Set(['prika', 'mint', 'mana', 'pepper']);
 for (const slug of population) {
-  if (!(slug in SUSTAIN_TABLE) && !HOOKS.has(slug))
-    {throw new Error(
+  if (!(slug in SUSTAIN_TABLE) && !HOOKS.has(slug)) {
+    throw new Error(
       `${slug}: sustain candidate with no table entry and no hook`
-    );}
+    );
+  }
 }
 
 const ranked = sustainRank(population, ctx);
 
-const artifact = {
+const artifact: SustainArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
     'Total effective HP restored + shielded over a 180s scope-lock fight, team ' +
@@ -94,7 +100,7 @@ const artifact = {
   profiles: Object.fromEntries(
     Object.values(SUSTAIN_PROFILES).map((p) => [p.id, p.note])
   ),
-  entries: ranked.map((r) => [
+  entries: ranked.map((r): SustainRow => [
     r.slug,
     Math.round(r.totalHp),
     Math.round(r.totalPct * 10) / 10, // % of caster maxHp

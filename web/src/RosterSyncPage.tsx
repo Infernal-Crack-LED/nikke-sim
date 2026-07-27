@@ -32,18 +32,26 @@ const UNIT_BY_CODE: Record<
   const chars = (charactersJson as any).characters as Record<string, any>;
   for (const [slug, c] of Object.entries(chars)) {
     const code = c?.role?.meta?.name_code;
-    if (code != null) {map[code] = { slug, name: c.name, imageUrl: c.imageUrl };}
+    if (code != null) {
+      map[code] = { slug, name: c.name, imageUrl: c.imageUrl };
+    }
   }
   return map;
 })();
 
 // "3 minutes ago" / "just now" — coarse, good enough for staleness signalling.
 function timeAgo(iso: string | null): string {
-  if (!iso) {return 'never';}
+  if (!iso) {
+    return 'never';
+  }
   const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) {return 'unknown';}
+  if (Number.isNaN(then)) {
+    return 'unknown';
+  }
   const sec = Math.max(0, Math.round((Date.now() - then) / 1000));
-  if (sec < 45) {return 'just now';}
+  if (sec < 45) {
+    return 'just now';
+  }
   const units: [number, string][] = [
     [60, 'second'],
     [60, 'minute'],
@@ -227,26 +235,34 @@ export function RosterSyncPage({
   // On load (once we have a user): pull the account list, and if a current
   // account has been synced before, preload its roster from the DB (instant).
   useEffect(() => {
-    if (!user || didInit.current) {return;}
+    if (!user || didInit.current) {
+      return;
+    }
     didInit.current = true;
     let cancelled = false;
     setLoadingInitial(true);
     (async () => {
       try {
         const accs = await fetchNikkeAccounts();
-        if (cancelled) {return;}
+        if (cancelled) {
+          return;
+        }
         setAccounts(accs);
         const cur = accs.find((a) => a.current);
         if (cur && cur.syncedAt) {
           const r = await fetchRoster(cur.openId, { details: true });
-          if (!cancelled) {setRoster(r);}
+          if (!cancelled) {
+            setRoster(r);
+          }
         }
       } catch (e) {
         if (!cancelled && e instanceof ApiError && e.status === 401) {
           // token expired mid-session — the header login control handles re-auth
         }
       } finally {
-        if (!cancelled) {setLoadingInitial(false);}
+        if (!cancelled) {
+          setLoadingInitial(false);
+        }
       }
     })();
     return () => {
@@ -281,7 +297,9 @@ export function RosterSyncPage({
     } catch (e) {
       const desc = describeError(e);
       setError(desc);
-      if (desc.unprivate) {setUnprivateOpen(true);}
+      if (desc.unprivate) {
+        setUnprivateOpen(true);
+      }
     } finally {
       setBusy(false);
     }
@@ -309,7 +327,9 @@ export function RosterSyncPage({
       await deleteNikkeAccount(openId);
       const accs = await fetchNikkeAccounts();
       setAccounts(accs);
-      if (roster && roster.openId === openId) {setRoster(null);}
+      if (roster && roster.openId === openId) {
+        setRoster(null);
+      }
     } catch (e) {
       setError(describeError(e));
     }
@@ -404,7 +424,9 @@ export function RosterSyncPage({
                   disabled={busy}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {runSync(input, true);}
+                    if (e.key === 'Enter') {
+                      runSync(input, true);
+                    }
                   }}
                 />
                 <button

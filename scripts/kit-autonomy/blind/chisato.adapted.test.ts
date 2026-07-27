@@ -200,8 +200,9 @@ const rider24 = run(
       ...(o.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, (ov) => {
         for (const b of ov.skill2) {
-          if ((b.trigger as any).kind === 'hitCount')
-            {(b.trigger as any).count = 24;}
+          if ((b.trigger as any).kind === 'hitCount') {
+            (b.trigger as any).count = 24;
+          }
         }
       }),
     };
@@ -245,7 +246,9 @@ const burstAtkOnFbEnter = run(
               e.stat === 'atkPct' &&
               Math.abs(e.value - 73.16) < 0.01
           );
-          if (hasAtk) {(b as any).trigger = { kind: 'fullBurstEnter' };}
+          if (hasAtk) {
+            (b as any).trigger = { kind: 'fullBurstEnter' };
+          }
         }
       }),
     };
@@ -380,7 +383,9 @@ describe('chisato skill1 \u2014 ">70%: ATK \u25b2 53.69%" tier', () => {
   it('the ATK tier does NOT move teammates (self-scoped inertness)', () => {
     const t = totals(noAtkTier.res);
     for (const ally of ['liter', 'crown', 'helm']) {
-      if (baseTotals[ally] === undefined) {continue;}
+      if (baseTotals[ally] === undefined) {
+        continue;
+      }
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -413,7 +418,9 @@ describe('chisato skill1 \u2014 ">55%: True Damage \u25b2 48.62%" tier', () => {
   it('does not move teammates', () => {
     const t = totals(noTrueTier.res);
     for (const ally of ['liter', 'crown', 'helm']) {
-      if (baseTotals[ally] === undefined) {continue;}
+      if (baseTotals[ally] === undefined) {
+        continue;
+      }
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -545,7 +552,9 @@ describe('chisato skill2 \u2014 "Normal attacks deal true damage for 10 sec" on 
   it('it is SELF-scoped \u2014 teammates\u2019 damage is byte-identical without it', () => {
     const t = totals(noTrueNormals.res);
     for (const ally of ['liter', 'crown']) {
-      if (baseTotals[ally] === undefined) {continue;}
+      if (baseTotals[ally] === undefined) {
+        continue;
+      }
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -616,7 +625,9 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     expect((b[0] as any).durationShots).toBeNull();
     const exp = (b[0] as any).expiresFrame;
     const at = (b[0] as any).frame ?? 0;
-    if (typeof exp === 'number') {expect(exp - at).toBeCloseTo(600, -1);} // 10s @ 60fps
+    if (typeof exp === 'number') {
+      expect(exp - at).toBeCloseTo(600, -1);
+    } // 10s @ 60fps
   });
 
   it('the burst ATK buff is keyed to chisato\u2019s OWN cast, not team FB entry', () => {

@@ -86,27 +86,31 @@ function run(overrides: Record<string, any> = {}) {
 /** A1 nearest-wrong: S1's burstCasters target with the stage-3 filter removed (unfiltered). */
 const adaUnfilteredS1 = withPatchedOverride('ada', (ov) => {
   let patched = 0;
-  for (const b of ov.skill1)
-    {if (b.target?.kind === 'burstCasters') {
+  for (const b of ov.skill1) {
+    if (b.target?.kind === 'burstCasters') {
       delete b.target.stage;
       patched++;
-    }}
-  if (!patched)
-    {throw new Error('ada S1 burstCasters block missing — fixture is stale');}
+    }
+  }
+  if (!patched) {
+    throw new Error('ada S1 burstCasters block missing — fixture is stale');
+  }
 });
 /** A4 nearest-wrong: the burstCast grenade rider removed (baseline FB-enter stream only). */
 const adaNoRider = withPatchedOverride('ada', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'burstCast');
-  if (ov.skill2.length === before)
-    {throw new Error('ada S2 burstCast rider missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ada S2 burstCast rider missing — fixture is stale');
+  }
 });
 /** A3 reference: both S2 grenade blocks removed (no grenades at all). */
 const adaNoGrenade = withPatchedOverride('ada', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = [];
-  if (!before)
-    {throw new Error('ada S2 grenade blocks missing — fixture is stale');}
+  if (!before) {
+    throw new Error('ada S2 grenade blocks missing — fixture is stale');
+  }
 });
 /** A7 nearest-wrong: the burst weaponSwap removed (no Special Modification). */
 const adaNoSwap = withPatchedOverride('ada', (ov) => {
@@ -114,21 +118,28 @@ const adaNoSwap = withPatchedOverride('ada', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
-    if (b.effects.length !== before) {patched++;}
+    if (b.effects.length !== before) {
+      patched++;
+    }
   }
-  if (!patched)
-    {throw new Error('ada burst weaponSwap missing — fixture is stale');}
+  if (!patched) {
+    throw new Error('ada burst weaponSwap missing — fixture is stale');
+  }
 });
 /** A8 nearest-wrong: the grenade dot re-flavored true→normal (True Damage ▲ buffs no longer apply). */
 const adaNormalFlavor = withPatchedOverride('ada', (ov) => {
   let patched = 0;
-  for (const b of ov.skill2)
-    {for (const e of b.effects)
-      {if (e.kind === 'dot') {
+  for (const b of ov.skill2) {
+    for (const e of b.effects) {
+      if (e.kind === 'dot') {
         e.flavor = 'normal';
         patched++;
-      }}}
-  if (!patched) {throw new Error('ada S2 dot block missing — fixture is stale');}
+      }
+    }
+  }
+  if (!patched) {
+    throw new Error('ada S2 dot block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -165,7 +176,9 @@ describe('ada — kit spec', () => {
         'no ada-cast casterAtkPct grant was applied'
       ).toBeGreaterThan(0);
       expect(targets(grant)).toEqual(STAGE3_CASTERS);
-      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of grant) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('does NOT reach the B1/B2 casters (liter/crown)', () => {
@@ -199,7 +212,9 @@ describe('ada — kit spec', () => {
         'no ada-cast trueDamagePct 50% grant'
       ).toBeGreaterThan(0);
       expect(targets(grant)).toEqual(STAGE3_CASTERS);
-      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of grant) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 
@@ -263,7 +278,9 @@ describe('ada — kit spec', () => {
       expect(grant.length, 'no ada-cast atkPct 40% grant').toBeGreaterThan(0);
       expect(targets(grant)).toEqual([ADA]);
       expect(grant.length).toBe(adaBursts(base.events).length);
-      for (const b of grant) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of grant) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 

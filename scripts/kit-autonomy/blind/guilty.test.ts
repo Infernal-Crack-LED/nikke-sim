@@ -166,10 +166,11 @@ const pDoubled = tryPatch('S1 borrow x2', (ov) => {
   const e = effectsOf(ov.skill1 ?? []).find(
     (x: any) => x.kind === 'buff' && x.value === 8.81
   );
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored'
-    );}
+    );
+  }
   e.value = 17.62;
 });
 /** G1 ranking floor: the same effect re-scaled to guilty's OWN ATK. */
@@ -177,10 +178,11 @@ const pSelfScaled = tryPatch('S1 borrow -> own ATK', (ov) => {
   const e = effectsOf(ov.skill1 ?? []).find(
     (x: any) => x.kind === 'buff' && x.value === 8.81
   );
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored'
-    );}
+    );
+  }
   e.stat = 'casterAtkPct';
 });
 /** G3 scope counterfactual: the Wind-only ATK buff widened to the whole team. */
@@ -189,7 +191,9 @@ const pAllAllies = tryPatch('S2 -> all allies', (ov) => {
     ov.skill2 ?? [],
     (e: any) => e.kind === 'buff' && e.value === 4.13
   );
-  if (!b) {throw new Error('no 4.13 ATK buff block in skill2');}
+  if (!b) {
+    throw new Error('no 4.13 ATK buff block in skill2');
+  }
   b.target = { kind: 'allies' };
 });
 /** G6 non-vacuity: strip every gate from the max-stack burst branch. */
@@ -201,15 +205,20 @@ const pUngated = tryPatch('burst max-stack branch ungated', (ov) => {
         (e.kind === 'flatDamage' && e.atkPct === 277.71) ||
         (e.kind === 'buff' && Math.abs(e.value) === 20.25)
     );
-    if (!carries) {continue;}
+    if (!carries) {
+      continue;
+    }
     found++;
-    for (const g of GATE_KEYS) {delete b[g];}
+    for (const g of GATE_KEYS) {
+      delete b[g];
+    }
   }
-  if (found === 0)
-    {throw new Error(
+  if (found === 0) {
+    throw new Error(
       'neither the 277.71% additional damage nor the 20.25 DEF-down is encoded in the burst slot — ' +
         'the max-stack branch was DROPPED'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

@@ -26,8 +26,9 @@ const EMPTY: Piece = [null, null, null];
 
 function establishCost(model: OlProbModel, maxLocked: number): number {
   let c = 0;
-  for (let j = 1; j <= maxLocked; j++)
-    {c += model.cost.permanentLockEstablishModules[j] ?? 0;}
+  for (let j = 1; j <= maxLocked; j++) {
+    c += model.cost.permanentLockEstablishModules[j] ?? 0;
+  }
   return c;
 }
 
@@ -70,9 +71,15 @@ function phase1Locks(
     const l = piece[i];
     return !!(l && tstats.has(l.key));
   });
-  if (policy === 'greedy') {return [good[0], good[1], good[2]];}
-  if (policy === 'lazy') {return [false, good[1], good[2]];}
-  if (policy === 'lazyRare') {return [false, good[1] && good[2], good[2]];}
+  if (policy === 'greedy') {
+    return [good[0], good[1], good[2]];
+  }
+  if (policy === 'lazy') {
+    return [false, good[1], good[2]];
+  }
+  if (policy === 'lazyRare') {
+    return [false, good[1] && good[2], good[2]];
+  }
   return [good[0] && reqOf(piece[0], target) !== null, good[1], good[2]]; // smart
 }
 
@@ -207,8 +214,9 @@ function histogram(
     count: number;
     overflow?: boolean;
   }> = [];
-  for (let b = 0; b < bins; b++)
-    {out.push({ lo: b * width + 1, hi: (b + 1) * width, count: 0 });}
+  for (let b = 0; b < bins; b++) {
+    out.push({ lo: b * width + 1, hi: (b + 1) * width, count: 0 });
+  }
   out.push({ lo: bins * width + 1, hi: Infinity, count: 0, overflow: true });
   for (const r of rolls) {
     // r can be 0 when the piece is already at target (0 rolls needed); clamp so
@@ -235,7 +243,9 @@ function density(
   }
   for (const v of ops) {
     const b = Math.floor(v / width);
-    if (b >= 0 && b < bins) {out[b].count++;}
+    if (b >= 0 && b < bins) {
+      out[b].count++;
+    }
   }
   return out;
 }
@@ -307,7 +317,9 @@ function push(c: Cols, t: TrialResult) {
   c.perm.push(t.moduleCostPerm);
   c.temp.push(t.moduleCostTemp);
   c.tl.push(t.tempLocks);
-  if (t.censored) {c.censored++;}
+  if (t.censored) {
+    c.censored++;
+  }
 }
 
 // Single-piece: distribution + cost to reach one piece's target.
@@ -326,8 +338,8 @@ export function monteCarlo(
   const trials = o.trials ?? 20_000;
   const rng = makeRng(o.seed ?? 0x1234abcd);
   const c = newCols();
-  for (let i = 0; i < trials; i++)
-    {push(
+  for (let i = 0; i < trials; i++) {
+    push(
       c,
       simulateTrial(rng, model, target, {
         start: o.start,
@@ -335,7 +347,8 @@ export function monteCarlo(
         cap: o.cap,
         lockPolicy: o.lockPolicy,
       })
-    );}
+    );
+  }
   return summarize(
     c,
     trials,
@@ -393,7 +406,9 @@ export function monteCarloBuild(
     tot.perm.push(P);
     tot.temp.push(T);
     tot.tl.push(L);
-    if (c) {tot.censored++;}
+    if (c) {
+      tot.censored++;
+    }
   }
   const perPiece = per.map((p, j) =>
     summarize(
@@ -424,7 +439,9 @@ export interface AnalyticSingle {
 function pTierAtLeast(model: OlProbModel, minTier: number): number {
   let p = 0;
   for (const b of model.tierBands.bands) {
-    if (minTier > b.hi) {continue;}
+    if (minTier > b.hi) {
+      continue;
+    }
     const lo = Math.max(minTier, b.lo);
     p += b.p * ((b.hi - lo + 1) / (b.hi - b.lo + 1));
   }

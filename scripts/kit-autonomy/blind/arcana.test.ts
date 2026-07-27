@@ -242,7 +242,9 @@ const firings = (bs: BuffApply[]) =>
 function holders(bs: BuffApply[]): Map<number, Set<number | null>> {
   const m = new Map<number, Set<number | null>>();
   for (const b of bs) {
-    if (!m.has(b.frame)) {m.set(b.frame, new Set());}
+    if (!m.has(b.frame)) {
+      m.set(b.frame, new Set());
+    }
     m.get(b.frame)!.add(b.targetIdx);
   }
   return m;
@@ -512,7 +514,9 @@ describe('arcana — kit spec (blind)', () => {
 
     it('includes arcana herself (she is Electric) — this is what arms her own WoF gate', () => {
       expect(expected.has(B_ARCANA)).toBe(true);
-      for (const [, hs] of holders(g)) {expect(hs.has(B_ARCANA)).toBe(true);}
+      for (const [, hs] of holders(g)) {
+        expect(hs.has(B_ARCANA)).toBe(true);
+      }
     });
   });
 

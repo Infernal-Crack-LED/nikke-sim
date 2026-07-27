@@ -55,7 +55,9 @@ function run(overrides?: Record<string, unknown>) {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => events.push(ev as AnyEv),
   };
-  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
+  if (overrides) {
+    opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  }
   const res = runComp(opts);
   return { res, events, t: totals(res) };
 }
@@ -300,7 +302,9 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
     const stored = ALL_EFFECTS.filter(
       (e: any) => typeof e.charges === 'number'
     );
-    for (const e of stored) {expect(e.charges).toBeLessThanOrEqual(1);}
+    for (const e of stored) {
+      expect(e.charges).toBeLessThanOrEqual(1);
+    }
   });
 
   it('the projectile damage magnitude is at least the kit base of 88.11%', () => {
@@ -311,7 +315,9 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
       (e: any) => typeof e.atkPct === 'number' && e.atkPct > 0
     );
     expect(proj.length).toBeGreaterThan(0);
-    for (const e of proj) {expect(e.atkPct).toBeGreaterThanOrEqual(88.11 - 0.01);}
+    for (const e of proj) {
+      expect(e.atkPct).toBeGreaterThanOrEqual(88.11 - 0.01);
+    }
   });
 
   it('zeroing the projectile channel lowers ONLY RRH', () => {

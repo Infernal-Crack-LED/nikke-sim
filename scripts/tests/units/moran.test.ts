@@ -103,8 +103,9 @@ const moranSwapGate = withPatchedOverride('moran', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b)
-    {throw new Error('moran S1 flatDamage rider missing — fixture is stale');}
+  if (!b) {
+    throw new Error('moran S1 flatDamage rider missing — fixture is stale');
+  }
   delete b.fbGate;
   b.swapGate = 'swapped';
 });
@@ -113,7 +114,9 @@ const moranAdditive = withPatchedOverride('moran', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (!b) {throw new Error('moran burst weaponSwap missing — fixture is stale');}
+  if (!b) {
+    throw new Error('moran burst weaponSwap missing — fixture is stale');
+  }
   b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
   b.effects.push({
     kind: 'buff',
@@ -129,8 +132,9 @@ const moranNoFervor = withPatchedOverride('moran', (ov) => {
     (b: any) =>
       !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 20)
   );
-  if (ov.skill1.length === before)
-    {throw new Error('moran S1 Fervor burstCdr 20 missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('moran S1 Fervor burstCdr 20 missing — fixture is stale');
+  }
 });
 /** M6 nearest-wrong: the S2 team burst-CDR 7.48 removed. */
 const moranNoTeamCdr = withPatchedOverride('moran', (ov) => {
@@ -139,8 +143,9 @@ const moranNoTeamCdr = withPatchedOverride('moran', (ov) => {
     (b: any) =>
       !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 7.48)
   );
-  if (ov.skill2.length === before)
-    {throw new Error('moran S2 burstCdr 7.48 missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('moran S2 burstCdr 7.48 missing — fixture is stale');
+  }
 });
 /** M12 reference: the ally Damage-Taken reduction removed (must be inert). */
 const moranNoDmgTaken = withPatchedOverride('moran', (ov) => {
@@ -150,16 +155,18 @@ const moranNoDmgTaken = withPatchedOverride('moran', (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'damageTakenPct');
     removed += before - b.effects.length;
   }
-  if (!removed)
-    {throw new Error('moran burst damageTakenPct missing — fixture is stale');}
+  if (!removed) {
+    throw new Error('moran burst damageTakenPct missing — fixture is stale');
+  }
 });
 /** M14 nearest-wrong: burst ATK grant scoped to self. */
 const moranBurstSelf = withPatchedOverride('moran', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'casterAtkPct')
   );
-  if (!b)
-    {throw new Error('moran burst casterAtkPct missing — fixture is stale');}
+  if (!b) {
+    throw new Error('moran burst casterAtkPct missing — fixture is stale');
+  }
   b.target = { kind: 'self' };
 });
 
@@ -344,7 +351,9 @@ describe('moran — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is INERT against the partless boss: removing it changes NO unit total by a single point', () => {
@@ -371,7 +380,9 @@ describe('moran — kit spec', () => {
         holders(applied).size,
         `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to moran alone', () => {

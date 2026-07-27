@@ -141,18 +141,21 @@ function windowShots(evs: SimEvent[]): Shot[] {
 /** G2: drop excludeSelf so grave-self also receives Heat Emission's Pierce Damage 48.4. */
 const graveNoExcludeSelf = withPatchedOverride('grave', (ov) => {
   let touched = false;
-  for (const b of ov.skill1)
-    {if (b.target?.excludeSelf) {
+  for (const b of ov.skill1) {
+    if (b.target?.excludeSelf) {
       delete b.target.excludeSelf;
       touched = true;
-    }}
-  if (!touched)
-    {throw new Error('grave S1 excludeSelf block missing — fixture is stale');}
+    }
+  }
+  if (!touched) {
+    throw new Error('grave S1 excludeSelf block missing — fixture is stale');
+  }
 });
 /** G3: restore the datamined 81f reload the MEASURED 193f replaced. */
 const graveDataminedReload = withPatchedOverride('grave', (ov) => {
-  if (ov.charFixes?.reloadFrames !== 193)
-    {throw new Error('grave charFixes.reloadFrames!=193 — fixture is stale');}
+  if (ov.charFixes?.reloadFrames !== 193) {
+    throw new Error('grave charFixes.reloadFrames!=193 — fixture is stale');
+  }
   ov.charFixes.reloadFrames = 81;
 });
 /** G6: strip gainPierce from the burst — her Pierce Damage ▲ Damage-Up can no longer land. */
@@ -163,7 +166,9 @@ const graveNoGainPierce = withPatchedOverride('grave', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
     n += before - b.effects.length;
   }
-  if (!n) {throw new Error('grave burst gainPierce missing — fixture is stale');}
+  if (!n) {
+    throw new Error('grave burst gainPierce missing — fixture is stale');
+  }
 });
 /** G6: strip unlimitedAmmo — she burns the 60-round mag and must reload mid-window. */
 const graveNoUnlimitedAmmo = withPatchedOverride('grave', (ov) => {
@@ -173,8 +178,9 @@ const graveNoUnlimitedAmmo = withPatchedOverride('grave', (ov) => {
     b.effects = b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo');
     n += before - b.effects.length;
   }
-  if (!n)
-    {throw new Error('grave burst unlimitedAmmo missing — fixture is stale');}
+  if (!n) {
+    throw new Error('grave burst unlimitedAmmo missing — fixture is stale');
+  }
 });
 /** G6: strip the self Critical Rate ▲85.19 burst buff. */
 const graveNoBurstCrit = withPatchedOverride('grave', (ov) => {
@@ -186,7 +192,9 @@ const graveNoBurstCrit = withPatchedOverride('grave', (ov) => {
     );
     n += before - b.effects.length;
   }
-  if (!n) {throw new Error('grave burst critRatePct missing — fixture is stale');}
+  if (!n) {
+    throw new Error('grave burst critRatePct missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -217,8 +225,9 @@ describe('grave — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
         ALL_ALLIES
       );
-      for (const b of applied)
-        {expect(b.frame, 'a passive applies at setup, not mid-fight').toBe(0);}
+      for (const b of applied) {
+        expect(b.frame, 'a passive applies at setup, not mid-fight').toBe(0);
+      }
     });
 
     it('is permanent (no wall-clock expiry, no round budget) — a sustained state, not a timed buff', () => {
@@ -323,8 +332,9 @@ describe('grave — kit spec', () => {
       for (const applied of [atk, atkDmg]) {
         expect(applied.length).toBeGreaterThan(0);
         expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([GRAVE]);
-        for (const b of applied)
-          {expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        }
       }
     });
 
@@ -377,8 +387,9 @@ describe('grave — kit spec', () => {
       for (const applied of [pierce, crit]) {
         expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([GRAVE]);
         expect(applied.length).toBe(N_BURSTS);
-        for (const b of applied)
-          {expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        }
       }
     });
 
@@ -408,8 +419,9 @@ describe('grave — kit spec', () => {
         expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
           ALL_ALLIES
         );
-        for (const b of applied)
-          {expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        }
         // Once per burst per ally → N_BURSTS applications per target.
         expect(applied.length).toBe(N_BURSTS * ALL_ALLIES.length);
       }

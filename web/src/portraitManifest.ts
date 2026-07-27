@@ -17,9 +17,13 @@ export function manifestThumbUrl(
   imageUrl: string | null | undefined,
   cssSize: number
 ): string | null {
-  if (!imageUrl) {return null;}
+  if (!imageUrl) {
+    return null;
+  }
   const slug = URL_TO_SLUG[imageUrl];
-  if (!slug) {return null;}
+  if (!slug) {
+    return null;
+  }
   const dpr = Math.min(
     typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
     3

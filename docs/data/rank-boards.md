@@ -9,34 +9,38 @@
 
 ## Burst generation (`burstgen.json`)
 
-Ranks every sim-supported unit by the **total burst gauge it generates over
-180 seconds**, uncapped (the 100% bar cap is ignored for the count; 100 = one
-full bar). The unit fights **solo with bursting turned off** — the bar sits
-pinned at 100% and every point of generation is counted, including the
-over-cap waste a real fight would lose. Kit gauge effects are included (the
-sim runs the unit's full override). The tested unit holds camera focus, so
-charge weapons get the measured ×2.5 focus bonus.
+Ranks every sim-supported unit by the **gauge-percent it contributes per second of active gauge-building time** over a 180s fight with a standard no-op team and bursting enabled. The unit under test is placed as the **leftmost member of its burst category** so it bursts first when ready, and is measured **unfocused** — camera focus is parked on a non-charge no-op teammate, so charge weapons generate at ×1.0 (the ×2.5 focused charge bonus is a camera artifact a board cannot grant to every unit at once, so it is not applied here). Teammates are weapon-modal no-op controls with empty kits, so the value comes from the unit's own kit, weapon cadence, and burst rotation.
 
-Two units run with partners because their fills scale with team ammunition
-burn: **Little Mermaid with two machine-gun partners** (her 400-ammunition
-fill procs far more often) and **Cinderella: Crystal Wave with one**. A 2026-07-26
-census of every burst-gauge-tagged kit confirmed these are the only two
-team-scaling mechanics; every other kit works identically solo. Both units are
-ranked **both ways** — plain solo and profiled — with a `profile` flag on each
-entry (`with-2mg` / `with-1mg` / `null`) so the two standings compare at a
-glance (same convention on every board).
+The reported value is `unit.gaugeGenerated / sim.gaugeBuildTimeSec` — the unit's uncapped total contribution divided by the time the team bar was actively accepting energy (not full, not locked in Full Burst or a chain stage). The artifact also reports the team's **Full Burst count** for that fight.
 
-Consequence to know: gauge effects that require a Full Burst to have happened
-read zero (none exist among sim-supported units today).
+The no-op B1 (AR) is a synthetic placeholder with a 7 s team burst-cooldown reduction on its burst cast. This normalizes control teams for the baseline CDR a real B1 enabler contributes, even though the placeholder has no other skills.
+
+Standard no-op teams (the unit under test is inserted at the ▼ slot):
+
+- **B1 20s** — `[▼unit, B2 SR, B2 SR, B3 RL, B3 MG]`
+- **B1 40s** — `[▼unit, B1 AR, B2 SR, B3 RL, B3 MG]` (a second B1 covers off-rotations while the 40s B1 is on cooldown)
+- **B2** — `[B1 AR, ▼unit, B2 SR, B3 RL, B3 MG]`
+- **B3** — `[B1 AR, B2 SR, B2 SR, ▼unit, B3 RL]`
+
+Λ units are pinned to B3 for this board. Gauge effects that require a Full Burst to have happened are now counted because the team actually bursts.
+
+**Pair profiles** (`with-2mg` / `with-mg`): the two team-ammo-scaling kits still get MG partners, but now the partners are slotted as B3 teammates so they also sustain the rotation:
+
+- **Little Mermaid** — B3 slots become MG: `[LM, B2 SR, B2 SR, B3 MG, B3 MG]`
+- **Cinderella: Crystal Wave** — the second B3 becomes MG: `[B1 AR, B2 SR, B2 SR, CWC, B3 MG]`
+
+Both units are ranked **both ways** — plain base team and profiled — flagged `null` / `with-2mg` / `with-mg` so the two standings compare at a glance.
 
 ## Burst cooldown reduction (`burstcdr.json`)
 
 Ranks the fifteen burst-CDR-tagged units by **nominal team cooldown reduction,
-in seconds, per 40 seconds of fight**. Cooldown reduction that triggers per
-Full Burst is counted at a standard 20-second full-burst cycle (two procs per
-40 seconds); escalating ladders (Liter, Volume, Dolla, Helm: Aquamarine) are
-ranked at their capped value with the ramp shown. Shot-triggered reduction
-(Dorothy per magazine, D: Killer Wife / Rouge per 8 full-charge shots, Milk per 10) is valued off the unit's own simulated fire cadence.
+in seconds, per 20-second Full Burst, averaged over a 180-second fight**.
+Full-Burst-triggered CDR is counted once per 20-second cycle; escalating ladders
+(Liter, Volume, Dolla, Helm: Aquamarine) are averaged across the full fight so
+their ramp-up pulls the headline below the capped steady-state. The per-FB ramp
+is shown alongside the averaged value. Shot-triggered reduction (Dorothy per
+magazine, D: Killer Wife / Rouge per 8 full-charge shots, Milk per 10) is valued
+off the unit's own simulated fire cadence.
 
 Nominal, not effective: reduction landing on a unit already off cooldown is
 wasted in real rotations, and conditional lines (formation requirements,
@@ -67,14 +71,20 @@ zero by construction, not because the kit is weak.
 
 ## Buffer value (`bufferchart.json`)
 
-Ranks supports by the **damage they add to two standard carries**: synthetic
-class-modal machine-gun and rocket-launcher attackers (no skills, scope-lock
-attacker stats, both elementally advantaged), simulated with the tested buffer
-versus a no-op in the same burst slot. The buffer's own weapon damage is not
-counted. Burst-1 and Burst-2 units burst on cooldown; a tested Burst-3 buffer
-sits rightmost and never bursts, so its value must come through passives.
-Value that comes through faster rotations (gauge batteries, cooldown
-reduction) is captured, because the whole fight is simulated.
+Ranks supports by the **total % team damage increase** they provide to two
+standard carries: synthetic class-modal machine-gun and rocket-launcher
+attackers (no skills, scope-lock attacker stats, both elementally advantaged),
+simulated with the tested buffer versus a no-op in the same burst slot. The
+reported number is `(carry DPS with buffer − carry DPS with no-op) / carry DPS
+with no-op × 100`. The buffer's own weapon damage is not counted. Burst-1 and
+Burst-2 units burst on cooldown; a tested Burst-3 buffer sits rightmost and
+never bursts, so its value must come through passives. Value that comes through
+faster rotations (gauge batteries, cooldown reduction) is captured, because the
+whole fight is simulated.
+
+Soline: Frost Ticket is excluded from this board: her kit reduces team damage
+in the standard comp, so her negative percentage is not useful for ranking
+support value.
 
 Two boards per unit:
 
@@ -86,7 +96,24 @@ Two boards per unit:
   from its override: weapon-typed targets swap both carries to that weapon
   (Tove → shotguns), pierce buffs grant both carries pierce (Ade: Agent
   Bunny), projectile-explosion buffs make both rocket launchers (Anis:
-  Sparkling Summer), element-typed targets set both carries' element.
+  Sparkling Summer), element-typed targets set both carries' element, and
+  boss-element-gated enemy debuffs (Brid: Silent Track's Wind Code, Helm:
+  Aquamarine's Electric Code) set the carries to the advantaged element that
+  wakes the debuff.
+
+**Pair profiles** (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/ Bunny`):
+**Mint**, **Prika**, **Mast: Romantic Maid**, and **Blanc** are ranked with and
+without their canonical B2 partner (`w/ Prika` / `w/ Mint` / `w/ Anchor` / `w/
+Bunny` / `null`). The value shown is the _tested buffer's marginal added team
+damage %_ when the pair is played together, versus a baseline where the tested
+slot is a no-op B2 but the partner is still present in solo/default mode. Mint
+and Prika force each other into their duet kit modes; Mast and Anchor are real
+units; Blanc's `w/ Bunny` partner is a synthetic no-op placeholder that
+represents her "ally from the same squad" condition being satisfied. The rows are
+not additive: each row measures what the tested unit adds on top of the partner
+already being in the team, including the synergy that forces the partner into
+its duet mode (Mint/Prika) or simply adds the tested B2 alongside the partner
+(Mast/Anchor/Blanc).
 
 Read generic as plug-and-play value and typed as built-around value. Purely
 defensive kits read near zero — the scope-lock boss deals no damage, so there

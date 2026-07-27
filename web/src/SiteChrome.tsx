@@ -27,8 +27,9 @@ function navClick(e: MouseEvent, route: Route) {
     e.ctrlKey ||
     e.shiftKey ||
     e.altKey
-  )
-    {return;}
+  ) {
+    return;
+  }
   e.preventDefault();
   navigate(hrefFor(route));
 }
@@ -58,7 +59,9 @@ export function SiteNav({
   // The beta toast dismisses on Escape or a click anywhere outside it (the
   // Okay button is the third exit) — same pattern as the hamburger menu.
   useEffect(() => {
-    if (!betaToastOpen) {return;}
+    if (!betaToastOpen) {
+      return;
+    }
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (
         betaToastRef.current &&
@@ -68,7 +71,9 @@ export function SiteNav({
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {setBetaToastOpen(false);}
+      if (e.key === 'Escape') {
+        setBetaToastOpen(false);
+      }
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -80,14 +85,18 @@ export function SiteNav({
 
   // Close the menu on an outside click or Escape.
   useEffect(() => {
-    if (!menuOpen) {return;}
+    if (!menuOpen) {
+      return;
+    }
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {setMenuOpen(false);}
+      if (e.key === 'Escape') {
+        setMenuOpen(false);
+      }
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);

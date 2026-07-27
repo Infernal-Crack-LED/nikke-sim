@@ -94,7 +94,9 @@ function patched(mutate: (ov: any) => void): Run {
 const memo = new Map<string, Run>();
 function once(key: string, f: () => Run): Run {
   const hit = memo.get(key);
-  if (hit) {return hit;}
+  if (hit) {
+    return hit;
+  }
   const r = f();
   memo.set(key, r);
   return r;
@@ -119,8 +121,9 @@ const dmgEvents = (r: Run, slot: string): Ev[] =>
 const slotBlocks = (ov: any, slot: string): any[] => (ov[slot] ?? []) as any[];
 function findBlock(ov: any, slot: string, pred: (b: any) => boolean): any {
   const hit = slotBlocks(ov, slot).find(pred);
-  if (!hit)
-    {throw new Error(`helm ${slot}: no block matching the kit line under test`);}
+  if (!hit) {
+    throw new Error(`helm ${slot}: no block matching the kit line under test`);
+  }
   return hit;
 }
 const hasBuff =

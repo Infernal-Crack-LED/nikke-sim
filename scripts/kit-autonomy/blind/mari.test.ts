@@ -63,7 +63,9 @@ function runWithEvents(opts: any): { res: any; events: any[] } {
 // would turn every differential assertion below into a false green.
 function blocksOf(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 function allBlocks(ov: any): any[] {
@@ -106,36 +108,48 @@ const MARI_IDX: number | null =
 
 // ---------------------------------------------------------------- counterfactual overrides
 const NO_GAIN_PIERCE = withPatchedOverride('mari', (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');
+  }
 });
 const ALWAYS_PIERCE = withPatchedOverride('mari', (ov: any) => {
   ov.hasPierce = true;
 });
 const SHORT_PIERCE_WINDOW = withPatchedOverride('mari', (ov: any) => {
-  for (const b of allBlocks(ov))
-    {for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'pierceDamagePct')
-        {e.durationSec = 0.5;}
-    }}
+  for (const b of allBlocks(ov)) {
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'buff' && e.stat === 'pierceDamagePct') {
+        e.durationSec = 0.5;
+      }
+    }
+  }
 });
 const ZERO_BURST_NUKE = withPatchedOverride('mari', (ov: any) => {
-  for (const b of blocksOf(ov, 'burst'))
-    {for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') {e.atkPct = 0;}
-    }}
+  for (const b of blocksOf(ov, 'burst')) {
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+      }
+    }
+  }
 });
 const DOUBLE_BURST_NUKE = withPatchedOverride('mari', (ov: any) => {
-  for (const b of blocksOf(ov, 'burst'))
-    {for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') {e.atkPct = (e.atkPct ?? 0) * 2;}
-    }}
+  for (const b of blocksOf(ov, 'burst')) {
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = (e.atkPct ?? 0) * 2;
+      }
+    }
+  }
 });
 const FLIP_BURST_NOFB = withPatchedOverride('mari', (ov: any) => {
-  for (const b of blocksOf(ov, 'burst'))
-    {for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') {e.noFb = !e.noFb;}
-    }}
+  for (const b of blocksOf(ov, 'burst')) {
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {
+        e.noFb = !e.noFb;
+      }
+    }
+  }
 });
 
 const R_NO_GAIN_PIERCE = runWithEvents(withMari(NO_GAIN_PIERCE));
@@ -200,8 +214,9 @@ describe('mari — skill1b: core hit -> all allies Pierce Damage +40.99% / 10s',
   });
 
   it('carries the raw kit percentage (a plain percentage stat, never flat-resolved)', () => {
-    for (const b of pierceBuffs)
-      {expect(near(b.value, PIERCE_DMG_PCT)).toBe(true);}
+    for (const b of pierceBuffs) {
+      expect(near(b.value, PIERCE_DMG_PCT)).toBe(true);
+    }
   });
 
   it('covers every ally, not just self', () => {
@@ -211,8 +226,9 @@ describe('mari — skill1b: core hit -> all allies Pierce Damage +40.99% / 10s',
 
   it('is time-bounded, not permanent', () => {
     // Nearest-wrong: omitting durationSec (a permanent buff) — expiresFrame would not be finite.
-    for (const b of pierceBuffs)
-      {expect(Number.isFinite(b.expiresFrame)).toBe(true);}
+    for (const b of pierceBuffs) {
+      expect(Number.isFinite(b.expiresFrame)).toBe(true);
+    }
   });
 
   it('is load-bearing: collapsing the 10s window to 0.5s lowers mari damage', () => {
@@ -262,8 +278,9 @@ describe('mari — skill2a: self Gain Pierce 5s + ATK +30.78% 5s', () => {
   it('Gain Pierce is self-scoped: removing it leaves every teammate byte-identical', () => {
     // Inertness. Nearest-wrong: granting pierce to allies (they would lose damage too).
     for (const slug of ROSTER) {
-      if (slug !== 'mari')
-        {expect(totals(R_NO_GAIN_PIERCE.res)[slug]).toBe(CTRL_T[slug]);}
+      if (slug !== 'mari') {
+        expect(totals(R_NO_GAIN_PIERCE.res)[slug]).toBe(CTRL_T[slug]);
+      }
     }
   });
 
@@ -288,7 +305,9 @@ describe('mari — skill2b: all allies ATK +30.78% of the skill user ATK / 5s', 
   it('is FLAT-resolved at apply time, not the raw kit percentage', () => {
     // Nearest-wrong: stat atkPct 30.78 to allies (scales each TARGET own ATK — over-credits high-ATK
     // attackers and under-credits supporters). Under that model value === 30.78.
-    for (const b of casterAtk) {expect(b.value).toBeGreaterThan(1000);}
+    for (const b of casterAtk) {
+      expect(b.value).toBeGreaterThan(1000);
+    }
     expect(casterAtk.some((b) => near(b.value, ALLY_CASTER_ATK_PCT))).toBe(
       false
     );
@@ -331,8 +350,7 @@ describe('mari — burst a: 639.36% of final ATK to all enemies', () => {
       // Burst-cast damage lands before the Full Burst window opens, so the +50% major cannot apply and
       // the noFb flag must be inert. If this moves, the nuke is resolving inside FB — a real finding.
       expect(
-        Math.abs(totals(R_FLIP_NOFB.res).mari - CTRL_T.mari) /
-          CTRL_T.mari
+        Math.abs(totals(R_FLIP_NOFB.res).mari - CTRL_T.mari) / CTRL_T.mari
       ).toBeLessThan(1e-9);
     }
   );
@@ -341,8 +359,9 @@ describe('mari — burst a: 639.36% of final ATK to all enemies', () => {
     'is enemy-scoped: zeroing it leaves every teammate byte-identical',
     () => {
       for (const slug of ROSTER) {
-        if (slug !== 'mari')
-          {expect(totals(R_ZERO_BURST.res)[slug]).toBe(CTRL_T[slug]);}
+        if (slug !== 'mari') {
+          expect(totals(R_ZERO_BURST.res)[slug]).toBe(CTRL_T[slug]);
+        }
       }
     }
   );
@@ -366,7 +385,9 @@ describe('mari — burst b: all allies Attack Damage +40.99% / 10s', () => {
   );
 
   it.skipIf(!MARI_BURSTS)('is time-bounded (10s window), not permanent', () => {
-    for (const b of atkDmg) {expect(Number.isFinite(b.expiresFrame)).toBe(true);}
+    for (const b of atkDmg) {
+      expect(Number.isFinite(b.expiresFrame)).toBe(true);
+    }
   });
 
   it.skipIf(!MARI_BURSTS)(

@@ -97,7 +97,9 @@ type FBStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 function runMode(mode: string, overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
   const ov: Record<string, any> = {};
-  for (const s of SLUGS) {ov[s] = overrides[s] ?? loadOverride(s);}
+  for (const s of SLUGS) {
+    ov[s] = overrides[s] ?? loadOverride(s);
+  }
   const chars = SLUGS.map((s) => data.characters[s]);
   const prepared = prepareTeam(
     chars,
@@ -119,10 +121,11 @@ function runMode(mode: string, overrides: Record<string, any> = {}) {
 // ---- counterfactual (H2) ---------------------------------------------------------------------
 /** Nearest-wrong model for the charge-speed debuff: the Taste ▼20% removed (cycle back to 60f). */
 const breadyNoDebuff = withPatchedOverride('bready', (ov) => {
-  if (ov.charFixes?.chargeFrames !== 72)
-    {throw new Error(
+  if (ov.charFixes?.chargeFrames !== 72) {
+    throw new Error(
       'bready charFixes.chargeFrames 72 missing — fixture is stale'
-    );}
+    );
+  }
   ov.charFixes.chargeFrames = 60;
 });
 
@@ -191,7 +194,9 @@ describe('bready — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([70.01]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([BREADY]);
       expect(applied.length).toBe(fbStarts(sustained.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is UNCONDITIONAL — fires in both sustained and distributed modes', () => {
@@ -221,7 +226,9 @@ describe('bready — kit spec', () => {
         'no Damage Taken debuff in sustained mode'
       ).toBeGreaterThan(0);
       expect([...new Set(debuffs.map((b) => b.value))]).toEqual([10.2]);
-      for (const b of debuffs) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
+      for (const b of debuffs) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
     });
 
     it('is INERT in distributed mode (the mode gate)', () => {
@@ -342,7 +349,9 @@ describe('bready — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60.19]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([BREADY]);
       expect(applied.length).toBe(breadyBursts(sustained.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is UNCONDITIONAL — fires in both sustained and distributed modes', () => {
@@ -361,7 +370,9 @@ describe('bready — kit spec', () => {
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([349.8]);
       expect(applied.length).toBe(breadyBursts(sustained.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is INERT in distributed mode (the mode gate)', () => {

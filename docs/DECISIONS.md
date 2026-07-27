@@ -2131,10 +2131,10 @@ visually-counted-white-popups`; the whites were under-counted (~6 vs true ~9–1
   App.tsx; styles.css.
 - **(2026-07-16) Solo control framework (DPS chart, owner spec): the tested B3 in TOTAL isolation —
   three synthetic no-op units instead of named supports.** Team order: no-op B1 (AR), no-op B2 (SR),
-  tested (slot 3 = camera focus), no-op B3 (RL). The no-ops (`src/dpschart/noop.ts`) deal zero damage
+  tested (slot 3 = camera focus), no-op B3 (MG). The no-ops (`src/dpschart/noop.ts`) deal zero damage
   (`normalAttackMultiplier 0`), carry zero skills (empty kit text → the parser yields no blocks), and
   generate weapon-class-modal burst gauge (new `class-modal-*` entries `noop-b1-ar`/`noop-b2-sr`/
-  `noop-b3-rl` in `data/gauge-per-shot.json`); their weapon data are the weapon-class MODAL values
+  `noop-b3-mg` in `data/gauge-per-shot.json`); their weapon data are the weapon-class MODAL values
   from characters.json. Every unit gets a flat **7s burst CDR** (new `UnitOptions.burstCdrSec`,
   applied to the charFixes-corrected cooldown, floor 1s): no-ops 20/20/40 → 13/13/33s, tested (all
   40 tested-population B3s have 40s base) → 33s. Contract: **the tested unit bursts every OTHER Full

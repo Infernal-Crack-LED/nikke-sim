@@ -27,7 +27,9 @@ export function scaleBlocks(
 
   const scaleVal = (v: number, slot: SkillSlot): number => {
     const lvl = levels[slot];
-    if (lvl >= 10 || v === 0) {return v;}
+    if (lvl >= 10 || v === 0) {
+      return v;
+    }
     const abs = Math.abs(v);
     const arr = (arrays[slot] ?? []).find((a) => Math.abs(a[9] - abs) < 0.005);
     if (!arr) {

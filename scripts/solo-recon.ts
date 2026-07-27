@@ -33,7 +33,9 @@ for (const [slug, w] of [
   ];
   const r: any = runSim([c], mult, cfg, prepared);
   const issues = sanityCheck([c], r);
-  if (issues.length) {issues.forEach((i) => console.log('  ⚠ SANITY: ' + i));}
+  if (issues.length) {
+    issues.forEach((i) => console.log('  ⚠ SANITY: ' + i));
+  }
   const real = REAL[`${slug}-${w.toLowerCase()}`];
   const u = r.units[0];
   console.log(

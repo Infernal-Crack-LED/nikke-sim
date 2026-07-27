@@ -108,8 +108,9 @@ describe('hitCount trigger', () => {
       `${rounds} rounds / ${COUNT} — a per-pull reset would give fewer`
     ).toBe(Math.floor(rounds / COUNT));
     const perFrame = new Map<number, number>();
-    for (const p of procs)
-      {perFrame.set(p.frame, (perFrame.get(p.frame) ?? 0) + 1);}
+    for (const p of procs) {
+      perFrame.set(p.frame, (perFrame.get(p.frame) ?? 0) + 1);
+    }
     const counts = [...new Set(perFrame.values())].sort();
     expect(
       Math.max(...counts),
@@ -144,7 +145,9 @@ describe('hitCount trigger', () => {
     const inFb = (frame: number): boolean => {
       let open = false;
       for (const w of windows) {
-        if (w.frame > frame) {break;}
+        if (w.frame > frame) {
+          break;
+        }
         open = w.kind === 'fullBurstStart';
       }
       return open;

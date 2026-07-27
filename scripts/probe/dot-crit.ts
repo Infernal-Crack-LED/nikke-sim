@@ -99,8 +99,9 @@ const lo = vals[0],
 const BINS = 12,
   span = hi - lo || 1;
 const hist = new Array(BINS).fill(0);
-for (const v of vals)
-  {hist[Math.min(BINS - 1, Math.floor(((v - lo) / span) * BINS))]++;}
+for (const v of vals) {
+  hist[Math.min(BINS - 1, Math.floor(((v - lo) / span) * BINS))]++;
+}
 console.log('\n[histogram] value distribution:');
 const maxc = Math.max(...hist);
 for (let i = 0; i < BINS; i++) {

@@ -9,7 +9,9 @@ export function useMediaQuery(query: string): boolean {
     supported ? window.matchMedia(query).matches : false
   );
   useEffect(() => {
-    if (!supported) {return;}
+    if (!supported) {
+      return;
+    }
     const mq = window.matchMedia(query);
     const onChange = () => setMatches(mq.matches);
     onChange();
@@ -42,13 +44,18 @@ export function TabDropdown({
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) {return;}
+    if (!open) {
+      return;
+    }
     const onDown = (e: globalThis.MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        {setOpen(false);}
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {setOpen(false);}
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);

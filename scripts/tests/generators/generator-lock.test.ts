@@ -65,7 +65,9 @@ describe('generator lock-in', () => {
       `three compatible locks (${name(b1[0])}, ${name(b2[0])}, ${name(b3[0])}) built nothing`
     ).not.toBeNull();
     expect(distinct5(multi!.slugs)).toBe(true);
-    for (const s of [b1[0], b2[0], b3[0]]) {expect(multi!.slugs).toContain(s);}
+    for (const s of [b1[0], b2[0], b3[0]]) {
+      expect(multi!.slugs).toContain(s);
+    }
   });
 
   it('refuses an impossible lock set (3× Burst I) rather than build an illegal team', async () => {

@@ -64,7 +64,9 @@ function run(overrides?: Record<string, any>) {
   const events: Ev[] = [];
   const opts: any = controlComp(SLUG, true);
   opts.onEvent = (ev: Ev) => events.push(ev);
-  if (overrides) {opts.overrides = overrides;}
+  if (overrides) {
+    opts.overrides = overrides;
+  }
   const res = runComp(opts);
   return { res, events };
 }
@@ -84,7 +86,9 @@ const cfAtkPct = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.burst ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+        if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+          e.stat = 'atkPct';
+        }
       }
     }
   }),
@@ -95,8 +99,9 @@ const cfSwordBucket = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.skill2 ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'attackDamagePct')
-          {e.stat = 'atkPct';}
+        if (e.kind === 'buff' && e.stat === 'attackDamagePct') {
+          e.stat = 'atkPct';
+        }
       }
     }
   }),
@@ -109,7 +114,9 @@ const cfSwordTargets = run({
       const hasSword = (b.effects ?? []).some(
         (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct'
       );
-      if (hasSword) {b.target = { kind: 'allies' };}
+      if (hasSword) {
+        b.target = { kind: 'allies' };
+      }
     }
   }),
 });

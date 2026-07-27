@@ -1,4 +1,3 @@
- 
 /**
  * ade-agent-bunny (Ade: Agent Bunny) — BLIND per-unit kit-spec test (S5).
  * Written from the kit prose ALONE. No sight of the driver override, driver tests, or truth file.
@@ -53,7 +52,9 @@ const near = (a: number, b: number, eps = 0.06) => Math.abs(a - b) <= eps;
 // ---- integration assumptions live here ONLY ----------------------------------
 function baseOpts(onEvent?: (ev: Ev) => void): any {
   const o: any = controlComp(SLUG, true);
-  if (onEvent) {o.cfg = { ...(o.cfg ?? {}), onEvent };}
+  if (onEvent) {
+    o.cfg = { ...(o.cfg ?? {}), onEvent };
+  }
   return o;
 }
 function runPatched(mutate: (o: any) => number): { res: any; hits: number } {
@@ -91,8 +92,9 @@ function findBuffs(o: any, stat: string, value?: number): any[] {
         e.kind === 'buff' &&
         e.stat === stat &&
         (value === undefined || near(e.value, value))
-      )
-        {out.push({ b, e });}
+      ) {
+        out.push({ b, e });
+      }
     }
   }
   return out;
@@ -159,7 +161,9 @@ const PIERCE_ZERO = runPatched((o) => {
 });
 const PIERCE_OFF = runPatched((o) => {
   o.hasPierce = false;
-  if (o.skills) {o.skills.hasPierce = false;}
+  if (o.skills) {
+    o.skills.hasPierce = false;
+  }
   return 1;
 });
 
@@ -294,7 +298,9 @@ describe('S2a — allies Pierce Damage +18.36%, 5s, per full charge', () => {
 
   it('inertness: zeroing the pierce channel leaves the non-pierce teammates byte-identical', () => {
     expect(PIERCE_ZERO.hits).toBeGreaterThan(0);
-    for (const m of MATES) {expect(uDmg(PIERCE_ZERO.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(PIERCE_ZERO.res, m)).toBe(uDmg(BASE, m));
+    }
     expect(uDmg(PIERCE_ZERO.res, SLUG)).toBeLessThanOrEqual(uDmg(BASE, SLUG));
   });
 
@@ -339,7 +345,9 @@ describe('S2b — at MAX Spy Lens: gains Pierce + ATK +16% continuously (self)',
   it('is live: zeroing it lowers ADE damage and moves nobody else (inertness)', () => {
     expect(S2B_ZERO.hits).toBeGreaterThan(0);
     expect(uDmg(S2B_ZERO.res, SLUG)).toBeLessThan(uDmg(BASE, SLUG));
-    for (const m of MATES) {expect(uDmg(S2B_ZERO.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(S2B_ZERO.res, m)).toBe(uDmg(BASE, m));
+    }
   });
 
   it('non-vacuity: the gate really BITES — an ungated clone out-damages the gated baseline', () => {
@@ -354,7 +362,9 @@ describe('S2b — at MAX Spy Lens: gains Pierce + ATK +16% continuously (self)',
   it('Gains Pierce is carried as the unit-level tag, and removing it never moves teammates', () => {
     const tagged = Boolean(OV.hasPierce ?? OV.skills?.hasPierce);
     expect(tagged).toBe(true);
-    for (const m of MATES) {expect(uDmg(PIERCE_OFF.res, m)).toBe(uDmg(BASE, m));}
+    for (const m of MATES) {
+      expect(uDmg(PIERCE_OFF.res, m)).toBe(uDmg(BASE, m));
+    }
     expect(uDmg(PIERCE_OFF.res, SLUG)).toBeLessThanOrEqual(uDmg(BASE, SLUG));
   });
 });

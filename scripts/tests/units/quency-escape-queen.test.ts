@@ -95,35 +95,39 @@ const hasStat = (b: any, stat: string) =>
 const qeqNoDistrib = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'distributedDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'qeq S1 distributedDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** L1 counterfactual: the same line as a GENERIC (unscoped) attack-damage buff. */
 const qeqDistribAsAtkDmg = withPatchedOverride('quency-escape-queen', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'distributedDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'qeq S1 distributedDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 /** L2 reference: her core-damage line removed. */
 const qeqNoCore = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'coreDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('qeq S1 coreDamagePct block missing — fixture is stale');
+  }
 });
 /** L3 reference: her crit-rate line removed. */
 const qeqNoCrit = withPatchedOverride('quency-escape-queen', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('qeq S1 critRatePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('qeq S1 critRatePct block missing — fixture is stale');
+  }
 });
 /** L4-L9 isolation: strip ONLY the hit-rate effects from S2, keeping the three ATK stacks. */
 const qeqNoHitRate = withPatchedOverride('quency-escape-queen', (ov) => {
@@ -133,28 +137,33 @@ const qeqNoHitRate = withPatchedOverride('quency-escape-queen', (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
     removed += before - b.effects.length;
   }
-  if (removed !== 3)
-    {throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');}
+  if (removed !== 3) {
+    throw new Error('qeq S2 expected 3 hitRatePct effects — fixture is stale');
+  }
 });
 /** L4-L9 reference: her entire Explore Route block removed. */
 const qeqNoS2 = withPatchedOverride('quency-escape-queen', (ov) => {
-  if (!ov.skill2.length)
-    {throw new Error('qeq S2 block missing — fixture is stale');}
+  if (!ov.skill2.length) {
+    throw new Error('qeq S2 block missing — fixture is stale');
+  }
   ov.skill2 = [];
 });
 /** L12 counterfactual: strip the distributed flavor from the nuke (plain burst damage). */
 const qeqPlainNuke = withPatchedOverride('quency-escape-queen', (ov) => {
   let stripped = 0;
-  for (const b of ov.burst)
-    {for (const e of b.effects)
-      {if (e.kind === 'flatDamage' && e.flavor === 'distributed') {
+  for (const b of ov.burst) {
+    for (const e of b.effects) {
+      if (e.kind === 'flatDamage' && e.flavor === 'distributed') {
         delete e.flavor;
         stripped++;
-      }}}
-  if (!stripped)
-    {throw new Error(
+      }
+    }
+  }
+  if (!stripped) {
+    throw new Error(
       'qeq burst distributed flatDamage missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -203,11 +212,12 @@ describe('quency-escape-queen — kit spec', () => {
         applied.length,
         'no distributedDamagePct buff was applied'
       ).toBeGreaterThan(0);
-      for (const b of applied)
-        {expect(
+      for (const b of applied) {
+        expect(
           b.expiresFrame,
           'passive must be permanent (no wall-clock expiry)'
-        ).toBeNull();}
+        ).toBeNull();
+      }
     });
 
     it('lifts the distributed multiplier on her burst nuke to 1.4958 (= 1 + 0.4958)', () => {
@@ -351,7 +361,9 @@ describe('quency-escape-queen — kit spec', () => {
     it('is the kit magnitude for 10s, self-scoped', () => {
       expect(casts.length, 'qeq never casts her burst').toBeGreaterThan(0);
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('fires once per burst cast', () => {
@@ -367,7 +379,9 @@ describe('quency-escape-queen — kit spec', () => {
 
     it('is the kit magnitude for 10s, once per cast, self-scoped', () => {
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
       expect([...new Set(applied.map((b) => b.frame))].length).toBe(
         casts.length
       );

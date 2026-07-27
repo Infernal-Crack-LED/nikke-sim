@@ -11,8 +11,12 @@ function effectiveAtk(u: UnitState, frame: number): number {
   // measured early/late FB-proc growth 633.7k→667.0k).
   let ownMaxHpFlat = 0;
   for (const b of u.buffs) {
-    if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {continue;}
-    if (b.expiresFrame !== null && b.expiresFrame <= frame) {continue;}
+    if (b.stat !== 'maxHpFlat' || b.casterIdx !== u.idx) {
+      continue;
+    }
+    if (b.expiresFrame !== null && b.expiresFrame <= frame) {
+      continue;
+    }
     let c = b.value * b.stacks;
     if (b.rampFrames && b.startFrame !== undefined) {
       c *= Math.min(1, Math.max(0, (frame - b.startFrame) / b.rampFrames));
@@ -204,7 +208,9 @@ function dealDamage(
           }
         }
       }
-    } else {(u as any).__dbgN = -1;}
+    } else {
+      (u as any).__dbgN = -1;
+    }
   }
   u.damage[opts.category] += dmg;
 }
@@ -222,7 +228,9 @@ function resolveTargets(t: TargetDef, ownerIdx: number): UnitState[] {
       const byElement = t.element
         ? casters.filter((u) => u.char.element === t.element)
         : casters;
-      if (t.stage === undefined) {return byElement;}
+      if (t.stage === undefined) {
+        return byElement;
+      }
       return byElement.filter(
         (u) =>
           (t.stage === 3 && (u.char.burst === 'III' || u.lambdaStage === 3)) ||
@@ -335,7 +343,9 @@ function applyBuff(
 // scheduled heal-over-time emitter ticks)
 function fireRecovery(targetIdx: number, frame: number) {
   units[targetIdx].blocks.forEach((rb, ri) => {
-    if (rb.trigger.kind === 'recovery') {applyBlock(targetIdx, rb, ri, frame);}
+    if (rb.trigger.kind === 'recovery') {
+      applyBlock(targetIdx, rb, ri, frame);
+    }
   });
 }
 
@@ -353,11 +363,15 @@ function applyBlock(
   // (No override combines everyN with these gates today — verified — so this is
   // behavior-neutral for every existing unit; the regression snapshot is the control.)
   // core-gated blocks never fire in zero-core fights
-  if (block.requiresCore && cfg.coreHitRate <= 0) {return;}
+  if (block.requiresCore && cfg.coreHitRate <= 0) {
+    return;
+  }
   // full-burst-state gate ('inFb' / 'outFb'), evaluated when the trigger fires
   if (block.fbGate) {
     const fbActive = fbEndFrame > frame;
-    if ((block.fbGate === 'inFb') !== fbActive) {return;}
+    if ((block.fbGate === 'inFb') !== fbActive) {
+      return;
+    }
   }
   // weapon-swap-state gate: block fires only while the owner's kit weaponSwap
   // is (or is not) active — e.g. SWHA's Fully Active extra volley rides only
@@ -365,13 +379,16 @@ function applyBlock(
   // shot, 1発間維持)
   if (block.swapGate) {
     const swapped = owner.swap != null && owner.swap.untilFrame > frame;
-    if ((block.swapGate === 'swapped') !== swapped) {return;}
+    if ((block.swapGate === 'swapped') !== swapped) {
+      return;
+    }
   }
   // boss-element gate: an element-coded line ("when attacking an Electric Code
   // target", "all Wind Code enemies") fires only when the boss element matches.
   // Composes with the block's real trigger; inert vs a non-matching / neutral boss.
-  if (block.bossElementGate && cfg.bossElement !== block.bossElementGate)
-    {return;}
+  if (block.bossElementGate && cfg.bossElement !== block.bossElementGate) {
+    return;
+  }
   // own-burst gate: block fires only when the owner DID ('cast') or did NOT ('notCast')
   // cast their own burst in the rotation leading into this Full Burst. Composes with a
   // `fullBurstEnter` trigger so "Entering Full Burst AFTER this unit uses her own Burst"
@@ -382,7 +399,9 @@ function applyBlock(
   // unit is the sole/actual burster (owner is in the set → 'cast' always passes).
   if (block.ownBurstGate) {
     const cast = rotationCasters.includes(ownerIdx);
-    if ((block.ownBurstGate === 'cast') !== cast) {return;}
+    if ((block.ownBurstGate === 'cast') !== cast) {
+      return;
+    }
   }
   // resource-pool gate: block fires only while a named resource is within [min,max] at trigger
   // time (soda's burst ATK ▲65.25% only at ≥30 Golden Chips). Evaluated with the other abort
@@ -392,8 +411,9 @@ function applyBlock(
     if (
       rv < (block.resourceGate.min ?? -Infinity) ||
       rv > (block.resourceGate.max ?? Infinity)
-    )
-      {return;}
+    ) {
+      return;
+    }
   }
   const activations = (owner.blockActivations.get(bKey) ?? 0) + 1;
   owner.blockActivations.set(bKey, activations);
@@ -404,8 +424,9 @@ function applyBlock(
     if (
       activations < Math.max(off, 1) ||
       (activations - off) % block.everyN !== 0
-    )
-      {return;}
+    ) {
+      return;
+    }
   }
   block.effects.forEach((e: EffectDef, ei) =>
     applyEffect(ownerIdx, block, e, `${bKey}:${ei}`, activations, frame)

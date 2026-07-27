@@ -51,7 +51,9 @@ function run(opts: any) {
 
 const comp = (patched?: any) => {
   const o: any = controlComp(SLUG, true);
-  if (patched) {o.overrides = { ...(o.overrides ?? {}), [SLUG]: patched };}
+  if (patched) {
+    o.overrides = { ...(o.overrides ?? {}), [SLUG]: patched };
+  }
   return o;
 };
 
@@ -93,28 +95,32 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 // counterfactuals (nearest-wrong models)
 // ---------------------------------------------------------------------------
 const pRmGainPierce = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');
+  }
 });
 
 const pRmPierceDmg = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter(
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter(
       (e: any) => e.stat !== 'pierceDamagePct'
-    );}
+    );
+  }
 });
 
 // nearest-wrong trigger identity: "entering Full Burst" mis-read as "when she casts her burst"
 const pPierceDmgOnBurstCast = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (hasEffect(b, (e: any) => e.stat === 'pierceDamagePct'))
-      {b.trigger = { kind: 'burstCast' };}
+    if (hasEffect(b, (e: any) => e.stat === 'pierceDamagePct')) {
+      b.trigger = { kind: 'burstCast' };
+    }
   }
 });
 
 const pRmCdr = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'burstCdr');
+  }
 });
 
 // nearest-wrong threshold: the CDR line keyed to the 5-charge counter instead of 8
@@ -147,14 +153,19 @@ const pAtkDmgSelfOnly = withPatchedOverride(SLUG, (ov: any) => {
 
 const pBurstNukeZero = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'burst')) {
-    for (const e of b.effects ?? []) {if (e.kind === 'flatDamage') {e.atkPct = 0;}}
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+      }
+    }
   }
 });
 
 // nearest-wrong: the riders left UNGATED (Wipe Out never inflicted)
 const pRmStatus = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'targetStatus');}
+  for (const b of allBlocks(ov)) {
+    b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'targetStatus');
+  }
 });
 
 // ---------------------------------------------------------------------------
@@ -175,7 +186,9 @@ describe('d-killer-wife — fixture non-vacuity', () => {
     // A lone Burst I would make ZERO full bursts; every FB-keyed assertion below would be vacuous.
     expect(fbCount(base.events)).toBeGreaterThan(0);
     expect(unitOf(base.res, SLUG).totalDamage).toBeGreaterThan(0);
-    for (const m of MATES) {expect(base.t[m]).toBeGreaterThan(0);}
+    for (const m of MATES) {
+      expect(base.t[m]).toBeGreaterThan(0);
+    }
   });
 
   it('her burst really casts (its status-gated riders fire at least once)', () => {
@@ -214,7 +227,9 @@ describe('d-killer-wife S1a — "Full Charge for 3 time(s)" / self -> Gain Pierc
   it('is damage-INERT in v1 (pierceDamagePct is documented inert) — teammates byte-identical', () => {
     // Inertness assertion: removing the pierce tag must not move any teammate. If this ever
     // goes red, a Pierce consumer went live and the S1a/S1b pair needs a magnitude test.
-    for (const m of MATES) {expect(rmGainPierce.t[m]).toBe(base.t[m]);}
+    for (const m of MATES) {
+      expect(rmGainPierce.t[m]).toBe(base.t[m]);
+    }
   });
 
   it.skip('GAP: "for 1 shot" round-scoped expiry — gainPierce carries only durationSec, no durationShots', () => {
@@ -228,7 +243,9 @@ describe('d-killer-wife S1b — FB-enter, SR allies, Pierce Damage 13.55% / 10s'
 
   it('applies at 13.55 with a finite 10s window (not a permanent buff)', () => {
     expect(evs().length).toBeGreaterThan(0);
-    for (const e of evs()) {expect(Number.isFinite(e.expiresFrame)).toBe(true);}
+    for (const e of evs()) {
+      expect(Number.isFinite(e.expiresFrame)).toBe(true);
+    }
   });
 
   it('is WEAPON-scoped to Sniper Rifles — reaches herself + helm, never liter/crown', () => {
@@ -256,7 +273,9 @@ describe('d-killer-wife S1b — FB-enter, SR allies, Pierce Damage 13.55% / 10s'
 
   it('is currently damage-inert (pierceDamagePct parsed-but-inert in v1) — nothing moves', () => {
     expect(rmPierceDmg.t[SLUG]).toBe(base.t[SLUG]);
-    for (const m of MATES) {expect(rmPierceDmg.t[m]).toBe(base.t[m]);}
+    for (const m of MATES) {
+      expect(rmPierceDmg.t[m]).toBe(base.t[m]);
+    }
   });
 });
 
@@ -302,13 +321,17 @@ describe('d-killer-wife S2b — "Full Charge for 5 time(s)" / all allies -> Atta
     // stat instead and interact differently with every other support buff in the comp.
     expect(evs().length).toBeGreaterThan(0);
     expect(applies(base.events, 'atkPct', 5.06).length).toBe(0);
-    for (const e of evs()) {expect(Number.isFinite(e.expiresFrame)).toBe(true);} // 10s, not permanent
+    for (const e of evs()) {
+      expect(Number.isFinite(e.expiresFrame)).toBe(true);
+    } // 10s, not permanent
   });
 
   it('reaches ALL FOUR allies including herself', () => {
     const tgts = targetsOf(evs());
     expect(tgts.has(SLUG)).toBe(true);
-    for (const m of MATES) {expect(tgts.has(m)).toBe(true);}
+    for (const m of MATES) {
+      expect(tgts.has(m)).toBe(true);
+    }
   });
 
   it('is keyed to a 5-count full-charge counter, distinct from the 8-count CDR block', () => {
@@ -337,7 +360,9 @@ describe('d-killer-wife S2b — "Full Charge for 5 time(s)" / all allies -> Atta
 
   it('re-scoping it to self measurably robs the teammates (proves the ally target set)', () => {
     // Discriminating: under a self-only mis-scope the three mates must lose damage.
-    for (const m of MATES) {expect(atkDmgSelfOnly.t[m]).not.toBe(base.t[m]);}
+    for (const m of MATES) {
+      expect(atkDmgSelfOnly.t[m]).not.toBe(base.t[m]);
+    }
   });
 });
 
@@ -356,7 +381,9 @@ describe('d-killer-wife burst A — 269.28% additional damage + Wipe Out (10s) o
 
   it('is real damage for HER and inert for everyone else', () => {
     expect(base.t[SLUG]).toBeGreaterThan(burstNukeZero.t[SLUG]);
-    for (const m of MATES) {expect(burstNukeZero.t[m]).toBe(base.t[m]);}
+    for (const m of MATES) {
+      expect(burstNukeZero.t[m]).toBe(base.t[m]);
+    }
   });
 
   it('inflicts a named 10s targetStatus authored on an `enemy`-targeted block', () => {
@@ -386,13 +413,17 @@ describe('d-killer-wife burst B — area-dependent riders gated on Wipe Out', ()
     // Name-keying is what stops an unrelated kit\'s status from opening this gate.
     const gated = allBlocks(OV).filter((b: any) => b.requiresTargetStatus);
     expect(gated.length).toBeGreaterThan(0);
-    for (const b of gated) {expect(b.requiresTargetStatus).toBe(statusName());}
+    for (const b of gated) {
+      expect(b.requiresTargetStatus).toBe(statusName());
+    }
   });
 
   it('parts branch: Damage dealt when attacking core 16.26% for 10s, to allies', () => {
     const evs = applies(base.events, 'coreDamagePct', 16.26);
     expect(evs.length).toBeGreaterThan(0);
-    for (const e of evs) {expect(Number.isFinite(e.expiresFrame)).toBe(true);} // 10s window
+    for (const e of evs) {
+      expect(Number.isFinite(e.expiresFrame)).toBe(true);
+    } // 10s window
     // "Affects allies" — a self-only mis-scope would give a single target.
     expect(targetsOf(evs).size).toBeGreaterThanOrEqual(2);
   });
@@ -420,7 +451,9 @@ describe('d-killer-wife burst B — area-dependent riders gated on Wipe Out', ()
     // Active case asserted above; inactive case here: with no status inflicted the riders must
     // never apply, and the team must measurably lose the buffs.
     expect(applies(rmStatus.events, 'coreDamagePct', 16.26).length).toBe(0);
-    for (const m of MATES) {expect(rmStatus.t[m]).not.toBe(base.t[m]);}
+    for (const m of MATES) {
+      expect(rmStatus.t[m]).not.toBe(base.t[m]);
+    }
   });
 
   it.skip('GAP: parts-hit vs body-hit branch selection — the v1 boss is partless', () => {

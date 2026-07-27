@@ -26,13 +26,19 @@ export function useIconThumbs(
     );
     const size = Math.round(cssSize * dpr);
     for (const url of urls) {
-      if (!url) {continue;}
+      if (!url) {
+        continue;
+      }
       const img = new Image();
       img.onload = () => {
-        if (!alive) {return;}
+        if (!alive) {
+          return;
+        }
         const iw = img.naturalWidth || img.width;
         const ih = img.naturalHeight || img.height;
-        if (!iw || !ih) {return;}
+        if (!iw || !ih) {
+          return;
+        }
 
         // Letterbox to square: use the larger dimension as the square size,
         // center the image with transparent padding on the shorter axis.
@@ -46,7 +52,9 @@ export function useIconThumbs(
           out.width = size;
           out.height = size;
           const cx = out.getContext('2d');
-          if (!cx) {return;}
+          if (!cx) {
+            return;
+          }
           cx.imageSmoothingEnabled = true;
           cx.imageSmoothingQuality = 'high';
           const scale = size / squareSide;
@@ -62,7 +70,9 @@ export function useIconThumbs(
           squareCanvas.width = squareSide;
           squareCanvas.height = squareSide;
           const sqCx = squareCanvas.getContext('2d');
-          if (!sqCx) {return;}
+          if (!sqCx) {
+            return;
+          }
           const sx = (squareSide - iw) / 2;
           const sy = (squareSide - ih) / 2;
           sqCx.drawImage(img, 0, 0, iw, ih, sx, sy, iw, ih);

@@ -24,10 +24,11 @@ async function generate(browser, { noPool }) {
     viewport: { width: 1200, height: 900 },
   });
   const page = await ctx.newPage();
-  if (noPool)
-    {await page.addInitScript(() => {
+  if (noPool) {
+    await page.addInitScript(() => {
       globalThis.__NIKKE_NO_POOL__ = true;
-    });}
+    });
+  }
   await page.goto(`${base}/roster`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Wind', exact: true }).click();
   const t0 = Date.now();

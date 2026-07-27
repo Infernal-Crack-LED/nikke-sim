@@ -104,8 +104,9 @@ const stage3 = (ov: any) => {
   const b = ov.burst.find(
     (x: any) => x.trigger.kind === 'burstCast' && x.trigger.stage === 3
   );
-  if (!b)
-    {throw new Error('red-hood stage-3 burst block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('red-hood stage-3 burst block missing — fixture is stale');
+  }
   return b;
 };
 
@@ -115,25 +116,28 @@ const rhNoChargeSpeed = withPatchedOverride('red-hood', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'red-hood S1 chargeSpeedPct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** R2 counterfactual: the chargeDamagePct-90 conversion approximation removed from Red Wolf. */
 const rhNoChargeDmg = withPatchedOverride('red-hood', (ov) => {
   const b = stage3(ov);
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
-  if (b.effects.length === before)
-    {throw new Error(
+  if (b.effects.length === before) {
+    throw new Error(
       'red-hood stage-3 chargeDamagePct missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** R3 counterfactual: permanent Pierce removed. */
 const rhNoPierce = withPatchedOverride('red-hood', (ov) => {
-  if (ov.hasPierce !== true)
-    {throw new Error('red-hood hasPierce missing — fixture is stale');}
+  if (ov.hasPierce !== true) {
+    throw new Error('red-hood hasPierce missing — fixture is stale');
+  }
   ov.hasPierce = false;
 });
 /** R4 counterfactual: the Red Wolf ATK rider removed. */
@@ -143,16 +147,18 @@ const rhNoRedWolfAtk = withPatchedOverride('red-hood', (ov) => {
   b.effects = b.effects.filter(
     (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct')
   );
-  if (b.effects.length === before)
-    {throw new Error('red-hood stage-3 atkPct rider missing — fixture is stale');}
+  if (b.effects.length === before) {
+    throw new Error('red-hood stage-3 atkPct rider missing — fixture is stale');
+  }
 });
 /** R5 counterfactual: Beast Cage retargeted from all allies to self only. */
 const rhBeastCageSelf = withPatchedOverride('red-hood', (ov) => {
   const b = ov.burst.find(
     (x: any) => x.trigger.stage === 1 && x.target.kind === 'allies'
   );
-  if (!b)
-    {throw new Error('red-hood stage-1 allies block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('red-hood stage-1 allies block missing — fixture is stale');
+  }
   b.target.kind = 'self';
 });
 /** R6 counterfactual: the Red Wolf weapon swap (+ its infinite-ammo economy) removed. */
@@ -162,8 +168,9 @@ const rhNoWeaponSwap = withPatchedOverride('red-hood', (ov) => {
   b.effects = b.effects.filter(
     (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo'
   );
-  if (b.effects.length === before)
-    {throw new Error('red-hood stage-3 weaponSwap missing — fixture is stale');}
+  if (b.effects.length === before) {
+    throw new Error('red-hood stage-3 weaponSwap missing — fixture is stale');
+  }
 });
 /** R7 counterfactual: both Burst-CD refunds (Steps 1 & 2, ▼40s once/battle) removed. */
 const rhNoCdr = withPatchedOverride('red-hood', (ov) => {
@@ -171,8 +178,9 @@ const rhNoCdr = withPatchedOverride('red-hood', (ov) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
-  if (ov.burst.length === before)
-    {throw new Error('red-hood burstCdr blocks missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('red-hood burstCdr blocks missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------

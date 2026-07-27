@@ -23,7 +23,9 @@ async function shot(name, { path: urlPath, width, height = 900, actions }) {
   });
   const page = await ctx.newPage();
   await page.goto(base + urlPath, { waitUntil: 'networkidle' });
-  if (actions) {await actions(page);}
+  if (actions) {
+    await actions(page);
+  }
   const file = `${outDir}/${name}.png`;
   await page.screenshot({ path: file, fullPage: true });
   shots.push(file);

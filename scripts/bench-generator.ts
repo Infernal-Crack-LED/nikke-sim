@@ -81,7 +81,9 @@ const rawSim = (slugs: string[]) => {
 
 function poolInfo(): void {
   const byBurst: Record<string, number> = {};
-  for (const c of genChars) {byBurst[c.burst] = (byBurst[c.burst] ?? 0) + 1;}
+  for (const c of genChars) {
+    byBurst[c.burst] = (byBurst[c.burst] ?? 0) + 1;
+  }
   console.log(`pool: ${genChars.length} generator-supported chars`, byBurst);
 }
 
@@ -134,8 +136,9 @@ function reportRoster(
   console.log(
     `${label}: ${secs.toFixed(1)}s, sims=${sims}, teams=${teams.length}, total=${(total / 1e9).toFixed(3)}B, inversions=${inv}`
   );
-  for (const t of teams)
-    {console.log('  ', t.slugs.join(','), Math.round(t.teamDamage / 1e6) + 'M');}
+  for (const t of teams) {
+    console.log('  ', t.slugs.join(','), Math.round(t.teamDamage / 1e6) + 'M');
+  }
 }
 
 async function runTop(
@@ -211,8 +214,9 @@ function benchFocus(): void {
     const vals = results.map(([, v]) => v);
     const spread = (Math.max(...vals) / Math.min(...vals) - 1) * 100;
     console.log(`focus-slot spread (same 5 units): ${spread.toFixed(1)}%`);
-    for (const [focus, v] of results)
-      {console.log(`  focus=${focus}: ${(v / 1e6).toFixed(0)}M`);}
+    for (const [focus, v] of results) {
+      console.log(`  focus=${focus}: ${(v / 1e6).toFixed(0)}M`);
+    }
   } else {
     console.log('focus-slot: reference team not fully in pool, skipped');
   }
@@ -224,14 +228,20 @@ const all = has('--all') || args.length === 0;
 
 async function main(): Promise<void> {
   poolInfo();
-  if (all || has('--single')) {benchSingle();}
-  if (all || has('--best')) {await benchBest();}
+  if (all || has('--single')) {
+    benchSingle();
+  }
+  if (all || has('--best')) {
+    await benchBest();
+  }
   if (all || has('--top')) {
     const i = args.indexOf('--top');
     const n = Number(args[i + 1]);
     await benchTop(Number.isFinite(n) && n > 0 ? n : 5);
   }
-  if (all || has('--focus')) {benchFocus();}
+  if (all || has('--focus')) {
+    benchFocus();
+  }
   if (has('--polish')) {
     const i = args.indexOf('--polish');
     const n = Number(args[i + 1]);

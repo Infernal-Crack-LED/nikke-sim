@@ -67,7 +67,9 @@ export function BrowseNikkesModal({
 
   const place = (slug: string) => {
     const empty = staged.indexOf(null);
-    if (empty < 0) {return;} // strip full — remove one to add another
+    if (empty < 0) {
+      return;
+    } // strip full — remove one to add another
     const next = [...staged];
     next[empty] = slug;
     onStagedChange(next);
@@ -186,7 +188,9 @@ export function BrowseRosterNikkesModal({
           }
         }
       }
-      if (!placed) {return;} // roster full — remove one to add another
+      if (!placed) {
+        return;
+      } // roster full — remove one to add another
     }
     onStagedChange(next);
   };
@@ -303,7 +307,9 @@ export function BrowseExcludeModal({
 }) {
   const thumbs = usePortraitThumbs(staged, 72);
   const add = (slug: string) => {
-    if (staged.includes(slug)) {return;}
+    if (staged.includes(slug)) {
+      return;
+    }
     onStagedChange([...staged, slug]);
   };
   const remove = (slug: string) =>
@@ -395,7 +401,9 @@ export function BrowseRosterGenModal({
   // a clicked grid card lands in the next open box slot ("use these Nikkes")
   const place = (slug: string) => {
     const empty = generic.indexOf(null);
-    if (empty < 0) {return;} // box full — remove one to add another
+    if (empty < 0) {
+      return;
+    } // box full — remove one to add another
     const next = [...generic];
     next[empty] = slug;
     onGenericChange(next);
@@ -500,7 +508,9 @@ export function BrowseRosterGenModal({
                   // Empty slots only materialise mid-drag, as drop targets — the
                   // box otherwise shows just the Nikkes you've added (no
                   // placeholder grid).
-                  if (!slug && !dragging) {return null;}
+                  if (!slug && !dragging) {
+                    return null;
+                  }
                   return (
                     <button
                       key={i}

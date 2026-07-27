@@ -84,10 +84,11 @@ const OV = (slug: string) => `src/skills/overrides/${slug}.json`;
 
 function pickCase(slug: string): Case {
   const c = CASES.find((c) => c.team.slugs.includes(slug));
-  if (!c)
-    {throw new Error(
+  if (!c) {
+    throw new Error(
       `no reference team contains '${slug}' — add a Case in grade.ts`
-    );}
+    );
+  }
   return c;
 }
 
@@ -95,25 +96,33 @@ function simTeam(team: BatteryTeam, boss: Element | null) {
   const w = loadWorld();
   const r = runOnce(w, team, boss, 1); // deterministic, no seed
   const totals: Record<string, number> = {};
-  for (const u of r.units) {totals[u.slug] = u.totalDamage;}
+  for (const u of r.units) {
+    totals[u.slug] = u.totalDamage;
+  }
   return { fb: r.fullBursts, totals };
 }
 
 function grade(slug: string, candFile: string) {
-  if (!existsSync(candFile))
-    {throw new Error(`candidate file not found: ${candFile}`);}
+  if (!existsSync(candFile)) {
+    throw new Error(`candidate file not found: ${candFile}`);
+  }
   const C = pickCase(slug);
   const A = simTeam(C.team, C.boss);
   const backup = `/tmp/kitparse-${slug}-real.json`;
   const hadReal = existsSync(OV(slug));
-  if (hadReal) {copyFileSync(OV(slug), backup);}
+  if (hadReal) {
+    copyFileSync(OV(slug), backup);
+  }
   copyFileSync(candFile, OV(slug));
   let B;
   try {
     B = simTeam(C.team, C.boss);
   } finally {
-    if (hadReal) {copyFileSync(backup, OV(slug));}
-    else {rmSync(OV(slug), { force: true });}
+    if (hadReal) {
+      copyFileSync(backup, OV(slug));
+    } else {
+      rmSync(OV(slug), { force: true });
+    }
   }
   console.log(
     `\n=== GRADE ${slug} in ${C.team.name} (sim-vs-sim, deterministic) ===`
@@ -129,7 +138,9 @@ function grade(slug: string, candFile: string) {
   for (const s of C.team.slugs) {
     const ratio = B.totals[s] / A.totals[s];
     const pass = Math.abs(ratio - 1) <= 0.05;
-    if (!pass) {allPass = false;}
+    if (!pass) {
+      allPass = false;
+    }
     const mark = s === slug ? ' <== unit under test' : '';
     console.log(
       `  ${s.padEnd(15)} real-sim=${(A.totals[s] / 1e6).toFixed(1).padStart(6)}M  cand-sim=${(B.totals[s] / 1e6).toFixed(1).padStart(6)}M  ratio=${ratio.toFixed(3)}  ${pass ? 'ok' : 'OUT'}${mark}`
@@ -137,7 +148,9 @@ function grade(slug: string, candFile: string) {
   }
   console.log(`[secondary — candidate vs recording]`);
   for (const s of C.team.slugs) {
-    if (C.real[s] === undefined) {continue;}
+    if (C.real[s] === undefined) {
+      continue;
+    }
     console.log(
       `  ${s.padEnd(15)} cand-sim=${(B.totals[s] / 1e6).toFixed(1)}M  real=${(C.real[s] / 1e6).toFixed(1)}M  ratio=${(B.totals[s] / C.real[s]).toFixed(3)}`
     );

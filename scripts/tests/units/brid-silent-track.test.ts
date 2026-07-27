@@ -92,48 +92,54 @@ const hasStat = (b: any, stat: string) =>
 const noS1Nuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasFlat(b, 636));
-  if (ov.skill1.length === before)
-    {throw new Error('brid S1 636% block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('brid S1 636% block missing — fixture is stale');
+  }
 });
 /** B4 reference: her S2 675% rider removed entirely. */
 const noS2Nuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasFlat(b, 675));
-  if (ov.skill2.length === before)
-    {throw new Error('brid S2 675% block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('brid S2 675% block missing — fixture is stale');
+  }
 });
 /** B1 counterfactual: the S1 Wind debuff with its element gate DROPPED (fires vs any boss). */
 const ungateS1 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'damageTakenPct'));
-  if (!b || !b.bossElementGate)
-    {throw new Error(
+  if (!b || !b.bossElementGate) {
+    throw new Error(
       'brid S1 gated damageTakenPct block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.bossElementGate;
 });
 /** B3 counterfactual: the S2 Wind debuff with its element gate DROPPED. */
 const ungateS2 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'damageTakenPct'));
-  if (!b || !b.bossElementGate)
-    {throw new Error(
+  if (!b || !b.bossElementGate) {
+    throw new Error(
       'brid S2 gated damageTakenPct block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.bossElementGate;
 });
 /** B4 counterfactual: the SHOT-vs-PELLET misreading — hitCount 5 instead of 50 (≈10× the riders). */
 const s2PelletMisread = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasFlat(x, 675));
-  if (!b || b.trigger.count !== 50)
-    {throw new Error('brid S2 hitCount-50 rider missing — fixture is stale');}
+  if (!b || b.trigger.count !== 50) {
+    throw new Error('brid S2 hitCount-50 rider missing — fixture is stale');
+  }
   b.trigger.count = 5;
 });
 /** B5 counterfactual: the burst buff INCLUDES self (excludeSelf dropped). */
 const burstInclSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'casterAtkPct'));
-  if (!b || b.target.excludeSelf !== true)
-    {throw new Error(
+  if (!b || b.target.excludeSelf !== true) {
+    throw new Error(
       'brid burst excludeSelf casterAtkPct block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.target.excludeSelf;
 });
 /** B5 magnitude reference: 100% of caster ATK → the flat grant equals the caster's static ATK. */
@@ -141,10 +147,11 @@ const burst100 = withPatchedOverride(SLUG, (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'brid burst casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.value = 100;
 });
 
@@ -319,7 +326,9 @@ describe('brid-silent-track — kit spec', () => {
     });
 
     it('lasts 10 sec', () => {
-      for (const b of grants) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of grants) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
   });
 });

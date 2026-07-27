@@ -18,8 +18,9 @@ export function characterStat(
 ): number {
   const curve =
     type === 'atk' ? mult.attack : type === 'hp' ? mult.hp : mult.def;
-  if (level < 1 || level > curve.length)
-    {throw new Error(`level ${level} out of range 1-${curve.length}`);}
+  if (level < 1 || level > curve.length) {
+    throw new Error(`level ${level} out of range 1-${curve.length}`);
+  }
   const base = Math.floor(
     bs[type] * curve[level - 1] * (1 + (grade * bs.grade.ratio) / 1e4) +
       grade * bs.grade[type]
@@ -146,7 +147,9 @@ const DOLL_CHECKPOINTS: Record<DollRarity, Record<number, Stat>> = {
 // Piecewise-linear interpolate a measured-checkpoint map at an integer level 0-15.
 function interpCheckpoints(cp: Record<number, Stat>, level: number): Stat {
   const lv = Math.max(0, Math.min(15, Math.round(level)));
-  if (cp[lv]) {return cp[lv];}
+  if (cp[lv]) {
+    return cp[lv];
+  }
   const keys = Object.keys(cp)
     .map(Number)
     .sort((a, b) => a - b);
@@ -159,8 +162,12 @@ function interpCheckpoints(cp: Record<number, Stat>, level: number): Stat {
       break;
     }
   }
-  if (lv <= lo) {return cp[lo];}
-  if (lv >= hi) {return cp[hi];}
+  if (lv <= lo) {
+    return cp[lo];
+  }
+  if (lv >= hi) {
+    return cp[hi];
+  }
   const f = (lv - lo) / (hi - lo);
   const a = cp[lo];
   const b = cp[hi];
@@ -207,9 +214,13 @@ export function dollWeaponBonus(
   weapon: Weapon,
   level = 15
 ): DollBonus {
-  if (rarity === 'SSR') {return DOLL_BONUS[weapon];}
+  if (rarity === 'SSR') {
+    return DOLL_BONUS[weapon];
+  }
   const rng = DOLL_BONUS_RANGE[weapon];
-  if (!rng) {return {};}
+  if (!rng) {
+    return {};
+  }
   const [lo, hi] = rng[rarity];
   const lv = Math.max(0, Math.min(15, Math.round(level)));
   const val = Math.round((lo + (hi - lo) * (lv / 15)) * 100) / 100;

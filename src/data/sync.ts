@@ -77,8 +77,8 @@ function loadSupportPolicy() {
   // slug → parsed override, so the second stage can DERIVE the counts-as elements from the kit
   // (an `advantageVs` effect) rather than carrying a hand-tag that this rebuild would clobber.
   const overrides = new Map<string, OverrideFile>();
-  for (const slug of overrideSlugs)
-    {overrides.set(
+  for (const slug of overrideSlugs) {
+    overrides.set(
       slug,
       JSON.parse(
         readFileSync(
@@ -86,13 +86,16 @@ function loadSupportPolicy() {
           'utf8'
         )
       ) as OverrideFile
-    );}
+    );
+  }
   return { proven, overrideSlugs, overrides };
 }
 
 async function main() {
   const url = process.env.DATABASE_PUBLIC_URL;
-  if (!url) {throw new Error('DATABASE_PUBLIC_URL not set (add it to .env)');}
+  if (!url) {
+    throw new Error('DATABASE_PUBLIC_URL not set (add it to .env)');
+  }
   const client = new pg.Client({ connectionString: url });
   await client.connect();
 
@@ -114,14 +117,17 @@ async function main() {
     `select value from bot_meta where key = 'nikke_level_multiplier'`
   );
   await client.end();
-  if (!metaRow.rows.length)
-    {throw new Error('bot_meta.nikke_level_multiplier missing');}
+  if (!metaRow.rows.length) {
+    throw new Error('bot_meta.nikke_level_multiplier missing');
+  }
   const levelMultiplier = JSON.parse(metaRow.rows[0].value);
 
   const apiRes = await fetch(`${SYNERGY_API}?limit=500`, {
     headers: SYNERGY_HEADERS,
   });
-  if (!apiRes.ok) {throw new Error(`synergy API ${apiRes.status}`);}
+  if (!apiRes.ok) {
+    throw new Error(`synergy API ${apiRes.status}`);
+  }
   const apiRows: any[] = await apiRes.json();
   const bySynergyId = new Map(apiRows.map((r) => [r.id, r]));
 
@@ -150,7 +156,9 @@ async function main() {
       a.skill1En = api.skill_1_en;
       a.skill2En = api.skill_2_en;
       a.burstSkillEn = api.burst_skill_en;
-      if (api.burst_cooltime) {a.burstCooldown = api.burst_cooltime / 60;}
+      if (api.burst_cooltime) {
+        a.burstCooldown = api.burst_cooltime / 60;
+      }
     }
     if (!a.weapon || !a.burst) {
       skipped.push(`${row.id} (missing weapon/burst)`);
@@ -295,10 +303,18 @@ async function main() {
     if (counts.length > 1) {
       c.countsAsElements = counts;
       multiElement.push(`${slug} (${counts.join('+')})`);
-    } else {delete c.countsAsElements;}
-    if (c.generatorSupported) {generatorCount++;}
-    if (c.simSupported) {simCount++;}
-    if (!c.generatorSupported && !c.simSupported) {unsupported.push(slug);}
+    } else {
+      delete c.countsAsElements;
+    }
+    if (c.generatorSupported) {
+      generatorCount++;
+    }
+    if (c.simSupported) {
+      simCount++;
+    }
+    if (!c.generatorSupported && !c.simSupported) {
+      unsupported.push(slug);
+    }
   }
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
@@ -344,9 +360,12 @@ async function main() {
   console.log(
     `nicknames: ${nickKept} units with approved nicknames; ${nick.dropped.length} aliases dropped as unsafe:`
   );
-  for (const d of nick.dropped)
-    {console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);}
-  if (skipped.length) {console.log('skipped:', skipped.join(', '));}
+  for (const d of nick.dropped) {
+    console.log(`  - "${d.alias}" (${d.id}): ${d.reason}`);
+  }
+  if (skipped.length) {
+    console.log('skipped:', skipped.join(', '));
+  }
 }
 
 main().catch((e) => {

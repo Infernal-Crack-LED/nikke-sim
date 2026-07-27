@@ -111,7 +111,9 @@ describe('grave burst / Prediction (self, 10 s)', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.burst!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
-          if (e.kind === 'unlimitedAmmo') {e.durationSec = 180;}
+          if (e.kind === 'unlimitedAmmo') {
+            e.durationSec = 180;
+          }
         })
       );
     });
@@ -143,7 +145,9 @@ describe('grave burst / Prediction (self, 10 s)', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.burst!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
-          if (e.kind === 'gainPierce') {delete e.durationSec;}
+          if (e.kind === 'gainPierce') {
+            delete e.durationSec;
+          }
         })
       );
     });
@@ -169,7 +173,9 @@ describe('grave burst / Prediction (self, 10 s)', () => {
       (e) => Math.abs(e.value - 85.19) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
-    for (const e of applied) {expect(e.targetSlug).toBe('grave');}
+    for (const e of applied) {
+      expect(e.targetSlug).toBe('grave');
+    }
     // 10 s window at 60 fps = 600 frames from application.
     for (const e of applied) {
       expect(e.expiresFrame).toBeGreaterThan(0);
@@ -182,7 +188,9 @@ describe('grave burst / Prediction (self, 10 s)', () => {
       (e) => Math.abs(e.value - 52.8) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
-    for (const e of applied) {expect(e.targetSlug).toBe('grave');}
+    for (const e of applied) {
+      expect(e.targetSlug).toBe('grave');
+    }
   });
 });
 
@@ -227,7 +235,9 @@ describe('grave burst — all-allies lines (10 s)', () => {
       (e) => Math.abs(e.value - 3) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
-    for (const e of applied) {expect(e.targetSlug).toBeTruthy();}
+    for (const e of applied) {
+      expect(e.targetSlug).toBeTruthy();
+    }
     // nearest-wrong: reading "3 round(s)" as 3 PERCENT.
     const pct = buffs(base.events, 'maxAmmoPct').filter(
       (e) => Math.abs(e.value - 3) < 1e-6
@@ -267,7 +277,9 @@ describe('grave skill1 — Heat Emission', () => {
   it('"Reload Ratio 50% DOWN" is a NEGATIVE reloadSpeedPct (a penalty, not a buff)', () => {
     const applied = onGrave(base.events, 'reloadSpeedPct');
     expect(applied.length).toBeGreaterThan(0);
-    for (const e of applied) {expect(e.value).toBeLessThan(0);}
+    for (const e of applied) {
+      expect(e.value).toBeLessThan(0);
+    }
     expect(applied.some((e) => Math.abs(e.value + 50) < 1e-6)).toBe(true);
   });
 
@@ -275,8 +287,9 @@ describe('grave skill1 — Heat Emission', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.skill1!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
-          if (e.kind === 'buff' && e.stat === 'reloadSpeedPct')
-            {e.value = Math.abs(e.value);}
+          if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {
+            e.value = Math.abs(e.value);
+          }
         })
       );
     });
@@ -406,7 +419,9 @@ describe('grave skill2 — Overheat I/II/III', () => {
       ov.skill2!.blocks.forEach((b: any) => {
         const walk = (effs: any[]) =>
           effs.forEach((e: any) => {
-            if (e.kind === 'escalating') {walk(e.steps);}
+            if (e.kind === 'escalating') {
+              walk(e.steps);
+            }
             if (
               e.kind === 'buff' &&
               e.stat === 'attackDamagePct' &&

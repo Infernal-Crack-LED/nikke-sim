@@ -131,8 +131,9 @@ function stripHeals(slug: string): any {
   return withPatchedOverride(slug, (o: any) => {
     for (const s of SLOTS) {
       const blocks: any[] = o[s] ?? [];
-      for (const b of blocks)
-        {b.effects = b.effects.filter((e: any) => e.kind !== 'heal');}
+      for (const b of blocks) {
+        b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
+      }
       o[s] = blocks.filter((b: any) => b.effects.length > 0);
     }
   });
@@ -287,8 +288,9 @@ describe('mint — kit spec (blind)', () => {
           `frame ${f} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       }
-      for (const b of applied)
-        {expect(b.expiresFrame! - frameOf(b)).toBe(3 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - frameOf(b)).toBe(3 * FPS);
+      }
     });
 
     it('fires at her FULL-CHARGE cadence, not once per burst', () => {
@@ -343,7 +345,9 @@ describe('mint — kit spec (blind)', () => {
       let maxLag = 0;
       for (const f of recoveryFrames) {
         const prev = shots.filter((s) => s <= f).pop();
-        if (prev === undefined) {continue;}
+        if (prev === undefined) {
+          continue;
+        }
         maxLag = Math.max(maxLag, f - prev);
       }
       expect(
@@ -391,8 +395,9 @@ describe('mint — kit spec (blind)', () => {
             `frame ${f} reached ${holders.size} allies, expected 4`
           ).toBe(4);
         }
-        for (const b of applied)
-          {expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);
+        }
       });
     }
 
@@ -496,8 +501,9 @@ describe('mint — kit spec (blind)', () => {
             `frame ${f} reached ${holders.size} allies, expected 4`
           ).toBe(4);
         }
-        for (const b of applied)
-          {expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - frameOf(b)).toBe(10 * FPS);
+        }
       });
     }
 

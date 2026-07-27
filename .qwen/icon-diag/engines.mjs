@@ -36,7 +36,9 @@ function decodePng(buf) {
       w = data.readUInt32BE(0);
       h = data.readUInt32BE(4);
       colorType = data[9];
-    } else if (type === 'IDAT') {idat.push(data);}
+    } else if (type === 'IDAT') {
+      idat.push(data);
+    }
     pos += 12 + len;
   }
   const channels = colorType === 6 ? 4 : 3;
@@ -106,10 +108,14 @@ function ascii(img) {
   return lines.join('\n');
 }
 function deviation(a, b) {
-  if (a.w !== b.w || a.h !== b.h) {return NaN;}
+  if (a.w !== b.w || a.h !== b.h) {
+    return NaN;
+  }
   let sum = 0;
   const n = a.w * a.h * 4;
-  for (let i = 0; i < n; i++) {sum += Math.abs(a.px[i] - b.px[i]);}
+  for (let i = 0; i < n; i++) {
+    sum += Math.abs(a.px[i] - b.px[i]);
+  }
   return sum / n;
 }
 
@@ -223,7 +229,9 @@ async function runEngine(name, launch) {
       console.log(
         `--- ${v.id}  devFromIdeal=${devn.toFixed(2)} (${shot.w}x${shot.h}) ---`
       );
-      if (e === 'fire' || devn > 12) {console.log(ascii(shot));}
+      if (e === 'fire' || devn > 12) {
+        console.log(ascii(shot));
+      }
     }
     await ctx.close();
   }

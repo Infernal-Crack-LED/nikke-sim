@@ -19,12 +19,16 @@ export function makeCanvas(
   w: number,
   h: number = w
 ): { cv: HTMLCanvasElement; cx: CanvasRenderingContext2D } | null {
-  if (typeof document === 'undefined') {return null;}
+  if (typeof document === 'undefined') {
+    return null;
+  }
   const cv = document.createElement('canvas');
   cv.width = w;
   cv.height = h;
   const cx = cv.getContext('2d');
-  if (!cx) {return null;}
+  if (!cx) {
+    return null;
+  }
   cx.imageSmoothingEnabled = true;
   cx.imageSmoothingQuality = 'high';
   return { cv, cx };
@@ -45,7 +49,9 @@ export function steppedDownscale(
 ): HTMLCanvasElement | null {
   // stage 0: the cropped source at its own resolution
   let stage = makeCanvas(sw, sh);
-  if (!stage) {return null;}
+  if (!stage) {
+    return null;
+  }
   stage.cx.drawImage(src, sx, sy, sw, sh, 0, 0, sw, sh);
   let cw = sw;
   let ch = sh;
@@ -55,7 +61,9 @@ export function steppedDownscale(
     const nw = cw > dw * 2 ? Math.max(dw, Math.round(cw / 2)) : cw;
     const nh = ch > dh * 2 ? Math.max(dh, Math.round(ch / 2)) : ch;
     const step = makeCanvas(nw, nh);
-    if (!step) {return null;}
+    if (!step) {
+      return null;
+    }
     step.cx.drawImage(stage.cv, 0, 0, cw, ch, 0, 0, nw, nh);
     stage = step;
     cw = nw;
@@ -63,7 +71,9 @@ export function steppedDownscale(
   }
   if (cw !== dw || ch !== dh) {
     const out = makeCanvas(dw, dh);
-    if (!out) {return null;}
+    if (!out) {
+      return null;
+    }
     out.cx.drawImage(stage.cv, 0, 0, cw, ch, 0, 0, dw, dh);
     stage = out;
   }

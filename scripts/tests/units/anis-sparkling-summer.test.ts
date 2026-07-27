@@ -100,23 +100,26 @@ const hasStat = (b: any, stat: string) =>
 /** H1 counterfactual: S1 re-targeted to ALL allies (drops the Electric element scope). */
 const anisGenericAllies = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
-  for (const b of ov.skill1)
-    {if (b.target?.kind === 'alliesOfElement') {
+  for (const b of ov.skill1) {
+    if (b.target?.kind === 'alliesOfElement') {
       b.target = { kind: 'allies' };
       patched++;
-    }}
-  if (!patched)
-    {throw new Error(
+    }
+  }
+  if (!patched) {
+    throw new Error(
       'anis S1 alliesOfElement target missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** H1 encoding reference: casterAtkPct → atkPct (self-scaling % instead of flat caster add). */
 const anisAtkPct = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error('anis S1 casterAtkPct effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('anis S1 casterAtkPct effect missing — fixture is stale');
+  }
   e.stat = 'atkPct';
 });
 /** H3 encoding reference: the last-bullet rider made core-eligible (text says "as damage", not core). */
@@ -124,45 +127,51 @@ const anisCoreRider = withPatchedOverride(SLUG, (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('anis S2 flatDamage effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('anis S2 flatDamage effect missing — fixture is stale');
+  }
   e.core = true;
 });
 /** H4 reference: her parts-damage line removed. */
 const anisNoParts = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before)
-    {throw new Error('anis S2 partsDamagePct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('anis S2 partsDamagePct block missing — fixture is stale');
+  }
 });
 /** H5 reference: her burst max-ammo line removed (restores 5-round magazines in the window). */
 const anisNoMaxAmmo = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'maxAmmoPct'));
-  if (ov.burst.length === before)
-    {throw new Error('anis burst maxAmmoPct block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('anis burst maxAmmoPct block missing — fixture is stale');
+  }
 });
 /** H7 reference: her burst elemental-advantage line removed. */
 const anisNoElemAdv = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.flatMap((b: any) => b.effects).length;
-  for (const b of ov.burst)
-    {b.effects = b.effects.filter(
+  for (const b of ov.burst) {
+    b.effects = b.effects.filter(
       (e: any) => e.stat !== 'elemAdvantageDamagePct'
-    );}
-  if (ov.burst.flatMap((b: any) => b.effects).length === before)
-    {throw new Error(
+    );
+  }
+  if (ov.burst.flatMap((b: any) => b.effects).length === before) {
+    throw new Error(
       'anis burst elemAdvantageDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** H7 counterfactual: the same line as an UNGATED Damage-Up buff (over-credits when not advantaged). */
 const anisUngatedElemAdv = withPatchedOverride(SLUG, (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'elemAdvantageDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'anis burst elemAdvantageDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'attackDamagePct';
 });
 
@@ -226,8 +235,12 @@ describe('anis-sparkling-summer — kit spec', () => {
         'casterAtkPct',
       ]);
       // the key carries the RAW kit value (55.31); the event `value` is the resolved flat ATK.
-      for (const b of applied) {expect(b.key).toBe(S1_ATK_KEY);}
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.key).toBe(S1_ATK_KEY);
+      }
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('reaches the Electric ally (herself) and EXCLUDES every non-Electric ally', () => {
@@ -263,7 +276,9 @@ describe('anis-sparkling-summer — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([49.28]);
       expect([...holdersOf(base.events, S1_RELOAD_KEY)].sort()).toEqual([ANIS]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: a generic `allies` target would reach all four units', () => {
@@ -325,7 +340,9 @@ describe('anis-sparkling-summer — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([-73.92]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ANIS]);
       expect(applied.length).toBe(anisBursts(base.events).length);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is LIVE: 1-round mags produce strictly MORE last-bullet procs than 5-round mags', () => {

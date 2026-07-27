@@ -1,19 +1,20 @@
 // Burst-CDR ranking board — the 15 `burst-cdr`-tagged units, ranked by NOMINAL
-// team burst-cooldown reduction per 40 seconds of fight. No full-team sim needed:
-// FB-triggered values are kit constants, and the four shot-triggered units get
-// their trigger cadence from a solo bursts-disabled run (UnitResult.pulls — the
-// engine's own fire model, so cadence quirks like SR bolt recovery come free).
+// team burst-cooldown reduction per 20-second Full Burst, averaged over a 180s
+// fight. No full-team sim needed: FB-triggered values are kit constants, and the
+// four shot-triggered units get their trigger cadence from a solo bursts-disabled
+// run (UnitResult.pulls — the engine's own fire model, so cadence quirks like SR
+// bolt recovery come free).
 //
-// Methodology (2026-07-26, owner: "read from skills / simple script"):
+// Methodology (2026-07-27, owner: "read from skills / simple script"):
 //   - FB-triggered CDR fires once per Full Burst; the board assumes a STANDARD
-//     20s full-burst cycle (the sim's own rotations run ~17-22s), i.e. 2 procs
-//     per 40s: cdrPer40s = 2 × per-FB value.
+//     20s full-burst cycle (the sim's own rotations run ~17-22s).
 //   - Escalating ladders ("each subsequent effect triggers all before it") are
-//     cumulative: liter cycle 1/2/3+ = 2.34 / 5.04 / 8.21 per FB. The board
-//     ranks on the CAPPED value and carries the ramp alongside.
+//     cumulative per FB: liter cycle 1/2/3+ = 2.34 / 5.04 / 8.21. The ranked
+//     value is the AVERAGE per-FB CDR over 180s (9 FBs), so ramp-up drags the
+//     headline below the capped steady-state value.
 //   - Shot-triggered CDR (dorothy last-bullet; d-killer-wife/rouge per 8 Full
 //     Charge shots; milk per 10) scales with the unit's own datamined cadence:
-//     procs per 40s = (solo pulls × 40/180) ÷ shots-per-proc.
+//     procs per 20s = (solo pulls × 20/180) ÷ shots-per-proc.
 //   - NOMINAL, not effective: the engine wastes CDR landing on a target already
 //     off cooldown, so real rotations capture less. Gated lines (formation,
 //     own-burst, status) are noted in `condition`, not deducted.
@@ -26,9 +27,10 @@ import { prepareTeam, type UnitOptions } from '../prepare.js';
 import { runSim } from '../engine/sim.js';
 import type { RanksCtx } from './burstgen.js';
 
-// Standard full-burst cycle assumption (sec) → procs per 40s for FB-triggered CDR.
+// Standard full-burst cycle assumption (sec) for FB-triggered CDR.
 export const FB_CYCLE_SEC = 20;
-const FB_PROCS_PER_40 = 40 / FB_CYCLE_SEC; // 2
+export const FIGHT_SEC = 180;
+const FB_PROCS_PER_FIGHT = FIGHT_SEC / FB_CYCLE_SEC; // 9
 
 type CdrSource =
   | { kind: 'perFb'; perFb: number; ramp?: number[] } // per Full Burst (ramp = cumulative per-entry values)
@@ -115,8 +117,8 @@ export const CDR_TABLE: Record<string, CdrRow> = {
 
 export interface CdrEntry {
   slug: string;
-  cdrPer40s: number; // nominal team CDR seconds per 40s (capped for escalating)
-  ramp?: number[]; // escalating: per-40s value by entry count (1st / 2nd / 3rd+)
+  cdrPer20s: number; // nominal team CDR seconds per 20s (one FB cycle), averaged over FIGHT_SEC
+  ramp?: number[]; // escalating: per-20s value by FB entry count (1st / 2nd / 3rd+)
   condition?: string;
   selfCdr?: number;
   kit: string;
@@ -159,22 +161,34 @@ function soloPulls(slug: string, ctx: RanksCtx): number {
 
 export function cdrFor(slug: string, ctx: RanksCtx): CdrEntry {
   const row = CDR_TABLE[slug];
-  if (!row)
-    {throw new Error(
+  if (!row) {
+    throw new Error(
       `${slug}: not on the burst-CDR board (no burst-cdr tag row)`
-    );}
-  let cdrPer40s: number;
+    );
+  }
+  let cdrPer20s: number;
   let ramp: number[] | undefined;
   if (row.source.kind === 'perFb') {
-    cdrPer40s = row.source.perFb * FB_PROCS_PER_40;
-    ramp = row.source.ramp?.map((v) => v * FB_PROCS_PER_40);
+    const perFbRamp = row.source.ramp;
+    if (perFbRamp) {
+      // Escalating ladder: average the ramp-up across the 180s fight.
+      // 1st FB at ramp[0], 2nd FB at ramp[1], all later FBs at the capped ramp[2].
+      const capped = perFbRamp[perFbRamp.length - 1];
+      const totalOverFight =
+        perFbRamp[0] + perFbRamp[1] + capped * (FB_PROCS_PER_FIGHT - 2);
+      cdrPer20s = totalOverFight / FB_PROCS_PER_FIGHT;
+      ramp = perFbRamp; // per-20s cumulative values
+    } else {
+      cdrPer20s = row.source.perFb; // every FB is the same
+    }
   } else {
-    const pullsPer40 = (soloPulls(slug, ctx) * 40) / 180;
-    cdrPer40s = (pullsPer40 / row.source.shots) * row.source.cdr;
+    // Shot-triggered: per-20s rate (half the per-40s rate) is the average over 180s.
+    const pullsPer40 = (soloPulls(slug, ctx) * 40) / FIGHT_SEC;
+    cdrPer20s = ((pullsPer40 / row.source.shots) * row.source.cdr) / 2;
   }
   return {
     slug,
-    cdrPer40s,
+    cdrPer20s,
     ...(ramp ? { ramp } : {}),
     ...(row.condition ? { condition: row.condition } : {}),
     ...(row.selfCdr ? { selfCdr: row.selfCdr } : {}),
@@ -185,6 +199,6 @@ export function cdrFor(slug: string, ctx: RanksCtx): CdrEntry {
 
 export function rankCdr(population: string[], ctx: RanksCtx): CdrEntry[] {
   const entries = population.map((slug) => cdrFor(slug, ctx));
-  entries.sort((a, b) => b.cdrPer40s - a.cdrPer40s);
+  entries.sort((a, b) => b.cdrPer20s - a.cdrPer20s);
   return entries.map((e, i) => ({ ...e, rank: i + 1 }));
 }

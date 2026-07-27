@@ -51,7 +51,9 @@ function runComp(comp: (typeof COMPS)[number], mode: string) {
   process.env.UNIGEO = mode === 'off' ? '' : mode;
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -95,10 +97,12 @@ for (const comp of COMPS) {
         : '  << FB COUNT CHANGED')
   );
   const logOff = rOff.rotationLog.join('\n');
-  if (logOff !== rSg.rotationLog.join('\n'))
-    {rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs sg`);}
-  if (logOff !== rAll.rotationLog.join('\n'))
-    {rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs all`);}
+  if (logOff !== rSg.rotationLog.join('\n')) {
+    rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs sg`);
+  }
+  if (logOff !== rAll.rotationLog.join('\n')) {
+    rotDiffs.push(`${comp.name}: rotation log DIFFERS off vs all`);
+  }
   for (const u of rOff.units) {
     const real = comp.real[u.slug];
     const uSg = rSg.units.find((x) => x.slug === u.slug)!;
@@ -128,7 +132,9 @@ for (const r of rows) {
 }
 
 console.log('\n=== FB counts ===');
-for (const l of fbInfo) {console.log(l);}
+for (const l of fbInfo) {
+  console.log(l);
+}
 console.log(
   rotDiffs.length
     ? '\nrotation-log diffs:\n' + rotDiffs.join('\n')

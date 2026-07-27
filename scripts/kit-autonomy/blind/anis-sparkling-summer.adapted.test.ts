@@ -98,11 +98,12 @@ function run(patch?: (o: any) => void, bossElement: Boss = 'Fire') {
   const opts: any = { ...controlComp(SLUG, true), bossElement };
   const events: Ev[] = [];
   opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) };
-  if (patch)
-    {opts.overrides = {
+  if (patch) {
+    opts.overrides = {
       ...(opts.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, patch),
-    };}
+    };
+  }
   const res: any = runComp(opts);
   // [P4] slot index of anis in the result units array
   const idx: number = res.units.findIndex((u: any) => u.slug === SLUG);
@@ -122,7 +123,9 @@ const S1_ALL_ALLIES = (o: any) => {
   const b = allBlocks(o).find(
     (x: any) => x.slot === 'skill1' && x.target?.kind === 'alliesOfElement'
   );
-  if (!b) {throw new Error('S1 alliesOfElement block missing — fixture stale');}
+  if (!b) {
+    throw new Error('S1 alliesOfElement block missing — fixture stale');
+  }
   b.target = { kind: 'allies' };
 };
 // nearest-wrong rider trigger: shotFired instead of lastBullet
@@ -132,8 +135,12 @@ const RIDER_ON_SHOT = (o: any) => {
       b.slot === 'skill2' &&
       (b.effects ?? []).some((e: any) => e.kind === 'flatDamage')
   );
-  if (!bs.length) {throw new Error('no skill2 flatDamage block found');}
-  for (const b of bs) {b.trigger = { kind: 'shotFired' };}
+  if (!bs.length) {
+    throw new Error('no skill2 flatDamage block found');
+  }
+  for (const b of bs) {
+    b.trigger = { kind: 'shotFired' };
+  }
 };
 // [P7] nearest-wrong ammo line: dropped entirely (the defensive skip)
 const NO_AMMO_CUT = (o: any) => {
@@ -142,7 +149,9 @@ const NO_AMMO_CUT = (o: any) => {
       x.slot === 'burst' &&
       (x.effects ?? []).some((e: any) => e.stat === 'maxAmmoPct')
   );
-  if (!b) {throw new Error('burst maxAmmoPct block missing — fixture stale');}
+  if (!b) {
+    throw new Error('burst maxAmmoPct block missing — fixture stale');
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
 };
 // nearest-wrong ammo line: sign flipped (a capacity UP)
@@ -150,7 +159,9 @@ const AMMO_UP = (o: any) => {
   const e = allBlocks(o)
     .flatMap((b: any) => b.effects ?? [])
     .find((x: any) => x.stat === 'maxAmmoPct');
-  if (!e) {throw new Error('burst maxAmmoPct effect missing — fixture stale');}
+  if (!e) {
+    throw new Error('burst maxAmmoPct effect missing — fixture stale');
+  }
   e.value = Math.abs(e.value);
 };
 // [P7/P10] elem-advantage line removed (inertness probe)
@@ -160,10 +171,11 @@ const NO_ELEM = (o: any) => {
       x.slot === 'burst' &&
       (x.effects ?? []).some((e: any) => e.stat === 'elemAdvantageDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'burst elemAdvantageDamagePct block missing — fixture stale'
-    );}
+    );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'elemAdvantageDamagePct');
 };
 // [P9] parts-damage line removed (inertness probe)
@@ -172,8 +184,9 @@ const NO_PARTS = (o: any) => {
   o.skill2 = o.skill2.filter(
     (b: any) => !(b.effects ?? []).some((e: any) => e.stat === 'partsDamagePct')
   );
-  if (o.skill2.length === before)
-    {throw new Error('skill2 partsDamagePct block missing — fixture stale');}
+  if (o.skill2.length === before) {
+    throw new Error('skill2 partsDamagePct block missing — fixture stale');
+  }
 };
 
 // ---- hoisted runs (boss Fire = the blind writer's fixture, unless noted) ---------------------
@@ -234,7 +247,9 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
   it('S1 ATK grant reaches Electric Code allies ONLY — anis alone in this comp', () => {
     const a = byKey(EV, S1_ATK_KEY);
     expect(a.length).toBeGreaterThan(0);
-    for (const ap of a) {expect(ap.targetIdx).toBe(A);}
+    for (const ap of a) {
+      expect(ap.targetIdx).toBe(A);
+    }
     // Discrimination proof: the nearest-wrong plain-allies encoding MOVES teammates, so the
     // self-only claim above is a real constraint, not an accident of an inert buff.
     const mates = ['liter', 'crown', 'helm'];
@@ -250,7 +265,9 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
     const a = byKey(EV, S1_ATK_KEY);
     expect(a.length).toBeGreaterThan(0);
     // [P6] no time-expiry buffRemove event — read the window off the buffApply itself
-    for (const ap of a) {expect(ap.expiresFrame - ap.frame).toBe(10 * FPS);}
+    for (const ap of a) {
+      expect(ap.expiresFrame - ap.frame).toBe(10 * FPS);
+    }
   });
 
   it('S1 ATK grant is casterAtkPct (flat caster add), not target-scaled atkPct', () => {
@@ -259,15 +276,21 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
     // flagged needs a 2nd Electric ally this fixture lacks).
     const a = byKey(EV, S1_ATK_KEY);
     expect(a.length).toBeGreaterThan(0);
-    for (const ap of a) {expect(ap.stat).toBe('casterAtkPct');}
+    for (const ap of a) {
+      expect(ap.stat).toBe('casterAtkPct');
+    }
   });
 
   // ---------------------------------------------------------------- skill1 line 2 (Reload) [P8]
   it('S1 Reload Speed +49.28% for 10 sec is LIVE (reload speed gates shots = damage), Electric-scoped', () => {
     const a = byKey(EV, S1_RELOAD_KEY);
     expect(a.length).toBe(fbStarts.length);
-    for (const ap of a) {expect(ap.targetIdx).toBe(A);}
-    for (const ap of a) {expect(ap.expiresFrame - ap.frame).toBe(10 * FPS);}
+    for (const ap of a) {
+      expect(ap.targetIdx).toBe(A);
+    }
+    for (const ap of a) {
+      expect(ap.expiresFrame - ap.frame).toBe(10 * FPS);
+    }
   });
 
   // ---------------------------------------------------------------- skill2 line 1 (rider)
@@ -290,23 +313,34 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
 
   it('S2 rider is the kit magnitude, NO core, NO +30% range, FB-by-timing', () => {
     expect(riders.length).toBeGreaterThan(0);
-    for (const r of riders) {expect(r.atkPct).toBe(RIDER);}
-    for (const r of riders) {expect(r.coreEligible).toBe(false);} // no 'core strike' wording
-    for (const r of riders) {expect(r.rangeApplied).toBe(false);} // riders are range-exempt
+    for (const r of riders) {
+      expect(r.atkPct).toBe(RIDER);
+    }
+    for (const r of riders) {
+      expect(r.coreEligible).toBe(false);
+    } // no 'core strike' wording
+    for (const r of riders) {
+      expect(r.rangeApplied).toBe(false);
+    } // riders are range-exempt
     const inFb = riders.filter((r) => r.inFullBurst === true);
     const outFb = riders.filter((r) => r.inFullBurst !== true);
     expect(inFb.length).toBeGreaterThan(0); // NON-VACUITY: both cases exercised
     expect(outFb.length).toBeGreaterThan(0);
-    for (const r of inFb) {expect(r.fbMajorApplied).toBe(true);}
-    for (const r of outFb) {expect(r.fbMajorApplied).toBe(false);}
+    for (const r of inFb) {
+      expect(r.fbMajorApplied).toBe(true);
+    }
+    for (const r of outFb) {
+      expect(r.fbMajorApplied).toBe(false);
+    }
   });
 
   it('S2 rider is crit-eligible at the caster sheet rate', () => {
     const normRate = normals.length ? normals[0].critRate : null;
     expect(typeof normRate).toBe('number');
     expect(normRate as number).toBeGreaterThan(0);
-    for (const r of riders)
-      {expect(Math.abs(r.critRate - (normRate as number))).toBeLessThan(0.001);}
+    for (const r of riders) {
+      expect(Math.abs(r.critRate - (normRate as number))).toBeLessThan(0.001);
+    }
   });
 
   // ---------------------------------------------------------------- skill2 line 2 (parts) [P9]
@@ -346,7 +380,9 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
   it('burst Reload Speed +27.72% for 10 sec is LIVE on her own burst casts (additive with S1)', () => {
     const a = byKey(EV, BU_RELOAD_KEY);
     expect(a.length).toBe(anisBursts.length);
-    for (const ap of a) {expect(ap.targetIdx).toBe(A);}
+    for (const ap of a) {
+      expect(ap.targetIdx).toBe(A);
+    }
     // co-exists with S1's 49.28 line (two distinct reload buffs on her)
     expect(byKey(EV, S1_RELOAD_KEY).length).toBeGreaterThan(0);
   });
@@ -356,7 +392,9 @@ describe('anis-sparkling-summer — blind kit spec (adapted plumbing)', () => {
     const a = byKey(EV, BU_ELEMADV_KEY);
     expect(a.length).toBe(anisBursts.length);
     expect(a.length).toBeLessThan(fbStarts.length); // RED under fullBurstEnter keying
-    for (const ap of a) {expect(ap.targetIdx).toBe(A);}
+    for (const ap of a) {
+      expect(ap.targetIdx).toBe(A);
+    }
   });
 
   it('burst Elemental Advantage +42.24% is applied but damage-INERT vs the Fire boss', () => {

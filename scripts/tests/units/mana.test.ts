@@ -165,31 +165,35 @@ const recoveryFrames = (evs: SimEvent[]): number[] =>
 const manaNoGamma = withPatchedOverride('mana', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill1.length === before)
-    {throw new Error('mana S1 γ atkPct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('mana S1 γ atkPct block missing — fixture is stale');
+  }
 });
 /** M2 reference: σ burstGenPct passive removed entirely. */
 const manaNoSigma = withPatchedOverride('mana', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'burstGenPct'));
-  if (ov.skill2.length === before)
-    {throw new Error('mana S2 σ burstGenPct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('mana S2 σ burstGenPct block missing — fixture is stale');
+  }
 });
 /** M3 counterfactual: the FB-entry buff UNGATED (resourceGate removed) — procs on EVERY FB. */
 const manaUngatedFb = withPatchedOverride('mana', (ov) => {
   const blk = ov.skill2.find((b: any) => hasStat(b, 'attackDamagePct'));
-  if (!blk || !blk.resourceGate)
-    {throw new Error(
+  if (!blk || !blk.resourceGate) {
+    throw new Error(
       'mana S2 σ-gated FB-entry block missing — fixture is stale'
-    );}
+    );
+  }
   delete blk.resourceGate;
 });
 /** M3 counterfactual: the FB-entry buff re-keyed to burstCast (the prior approximation) — procs on
  *  mana's CAST frames, which precede (and are distinct from) the FB-start frames. */
 const manaBurstCastKey = withPatchedOverride('mana', (ov) => {
   const blk = ov.skill2.find((b: any) => hasStat(b, 'attackDamagePct'));
-  if (!blk)
-    {throw new Error('mana S2 FB-entry block missing — fixture is stale');}
+  if (!blk) {
+    throw new Error('mana S2 FB-entry block missing — fixture is stale');
+  }
   blk.trigger = { kind: 'burstCast' };
   delete blk.resourceGate;
 });
@@ -203,24 +207,28 @@ const manaNoRegain = withPatchedOverride('mana', (ov) => {
         b.effects.some((e: any) => e.kind === 'resource')
       )
   );
-  if (ov.skill2.length === before)
-    {throw new Error('mana S2 σ re-grant block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('mana S2 σ re-grant block missing — fixture is stale');
+  }
 });
 /** M4 reference: the burst's sustainedDamagePct buff removed (collapses in-window DoT dmgUp). */
 const manaNoSustained = withPatchedOverride('mana', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'mana burst sustainedDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** M5 counterfactual: lvl-9 DoT magnitude 378 (keeps cadence, moves per-tick ATK%). */
 const manaDotLvl9 = withPatchedOverride('mana', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!e) {throw new Error('mana burst dot effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('mana burst dot effect missing — fixture is stale');
+  }
   e.atkPct = 378;
 });
 /** M5 counterfactual: 2s tick interval (halves the tick count). */
@@ -228,15 +236,18 @@ const manaDotSlow = withPatchedOverride('mana', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!e) {throw new Error('mana burst dot effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('mana burst dot effect missing — fixture is stale');
+  }
   e.intervalSec = 2;
 });
 /** M6 isolation: remove crown's own self-heal so its recovery consumer only fires off others. */
 const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before)
-    {throw new Error('crown S2 heal block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('crown S2 heal block missing — fixture is stale');
+  }
 });
 /** M6 isolation: remove BOTH of helm's heal sources (S1 full-charge heal + burst lifesteal window). */
 const helmNoHeal = withPatchedOverride('helm', (ov) => {
@@ -247,8 +258,9 @@ const helmNoHeal = withPatchedOverride('helm', (ov) => {
 const manaNoHeal = withPatchedOverride('mana', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
-  if (ov.skill1.length === before)
-    {throw new Error('mana S1 heal block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('mana S1 heal block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -330,8 +342,9 @@ describe('mana — kit spec', () => {
       ).toBeGreaterThan(0);
       expect(fbStarts.length).toBeGreaterThan(adFrames.length); // σ-gated, not every FB
       // every apply frame IS a Full Burst start (fullBurstEnter trigger, σ held)
-      for (const f of adFrames)
-        {expect(fbStarts, `apply frame ${f} is not an FB-start`).toContain(f);}
+      for (const f of adFrames) {
+        expect(fbStarts, `apply frame ${f} is not an FB-start`).toContain(f);
+      }
     });
 
     it('is the kit magnitudes for 10 sec, self-scoped', () => {

@@ -55,8 +55,12 @@ interface RunOut {
 // its own blocks[]. Accept both shapes so the test pins the KIT, not the container.
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 
@@ -64,7 +68,9 @@ function needFx(ov: any, slot: Slot, what: string, pred: (e: any) => boolean) {
   for (const b of blocksOf(ov, slot)) {
     const fx: any[] = b.effects ?? [];
     const i = fx.findIndex(pred);
-    if (i >= 0) {return { block: b, effect: fx[i] };}
+    if (i >= 0) {
+      return { block: b, effect: fx[i] };
+    }
   }
   throw new Error(
     `MISSING kit line: ${slot} carries no effect matching ${what}`
@@ -108,11 +114,17 @@ function doRun(over: Record<string, any> | null, helm: boolean) {
       events.push(ev as Ev);
     },
   };
-  if (over) {opts.overrides = { ...(opts.overrides ?? {}), ...over };}
+  if (over) {
+    opts.overrides = { ...(opts.overrides ?? {}), ...over };
+  }
   const res = runComp(opts);
   const t = totals(res);
   const team: Record<string, number> = {};
-  for (const k of Object.keys(t)) {if (k !== SLUG) {team[k] = t[k];}}
+  for (const k of Object.keys(t)) {
+    if (k !== SLUG) {
+      team[k] = t[k];
+    }
+  }
   const row: any = unitOf(res, SLUG);
   return { total: (row?.totalDamage as number) ?? t[SLUG], team, events };
 }
@@ -220,7 +232,9 @@ describe('rei-ayanami — kit spec', () => {
     expect(evs.length).toBeGreaterThan(0);
     // Target set: 'Affects self' — never the allies broadcast the burst block uses.
     expect(new Set(evs.map((e) => e.targetSlug))).toEqual(new Set([SLUG]));
-    for (const e of evs) {expect(e.value).toBeCloseTo(30.23, 2);}
+    for (const e of evs) {
+      expect(e.value).toBeCloseTo(30.23, 2);
+    }
     // Trigger identity: a hit counter re-arms, so a 180s MG fight must re-apply it many times.
     // Fails under a `passive` / start-of-battle mis-read (which would apply exactly once).
     expect(evs.length).toBeGreaterThanOrEqual(5);
@@ -270,7 +284,9 @@ describe('rei-ayanami — kit spec', () => {
     // 'skill1' damage is attributable to rei; liter/crown carry no skill1 damage effects).
     const procs = dmgFromSlot(baseNoHelm.events, 'skill1');
     expect(procs.length).toBeGreaterThanOrEqual(3);
-    for (const e of procs) {expect(!!e.rangeApplied).toBe(false);}
+    for (const e of procs) {
+      expect(!!e.rangeApplied).toBe(false);
+    }
   });
 
   // ---- S2a: Damage dealt to Shield +700.5% continuously ------------------------------------------
@@ -339,7 +355,9 @@ describe('rei-ayanami — kit spec', () => {
     );
     expect(ad.length).toBeGreaterThanOrEqual(1);
     // Plain percentage stats keep their raw kit value (unlike the caster-scaled S2b line above).
-    for (const e of ad) {expect(e.value).toBeCloseTo(48.02, 2);}
+    for (const e of ad) {
+      expect(e.value).toBeCloseTo(48.02, 2);
+    }
     expect(new Set(ad.map((e) => e.targetSlug))).toEqual(new Set([SLUG]));
     // A burst-slot block fires only when SHE casts — never more often than stage-3 entries happen.
     expect(ad.length).toBeLessThanOrEqual(fullBursts(base.events));

@@ -103,57 +103,66 @@ const removeEffect =
       b.effects = b.effects.filter(
         (e: any) => !(e.kind === 'buff' && e.stat === stat)
       );
-      if (b.effects.length !== n) {removed = true;}
+      if (b.effects.length !== n) {
+        removed = true;
+      }
     }
     ov[slot] = ov[slot].filter((b: any) => b.effects.length > 0);
-    if (!removed)
-      {throw new Error(
+    if (!removed) {
+      throw new Error(
         `sugar ${slot} ${stat} effect missing — fixture is stale`
-      );}
+      );
+    }
   };
 const removeAdvantageVs = (ov: any) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'advantageVs')
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'sugar skill1 advantageVs block missing — fixture is stale'
-    );}
+    );
+  }
 };
 /** Nearest-wrong for G1: the continuous passive re-gated to a part-time Full-Burst window. */
 const s1l4ToFbGated = (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'sugar skill1 attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger = { kind: 'fullBurstEnter' };
   b.effects.find((e: any) => e.stat === 'attackDamagePct').durationSec = 10;
 };
 const setTrigger =
   (slot: 'skill2' | 'burst', stat: string, kind: string) => (ov: any) => {
     let hit = false;
-    for (const b of ov[slot])
-      {if (b.effects.some((e: any) => e.kind === 'buff' && e.stat === stat)) {
+    for (const b of ov[slot]) {
+      if (b.effects.some((e: any) => e.kind === 'buff' && e.stat === stat)) {
         b.trigger = { kind };
         hit = true;
-      }}
-    if (!hit)
-      {throw new Error(`sugar ${slot} ${stat} block missing — fixture is stale`);}
+      }
+    }
+    if (!hit) {
+      throw new Error(`sugar ${slot} ${stat} block missing — fixture is stale`);
+    }
   };
 const setTarget =
   (slot: 'skill2' | 'burst', stat: string, target: any) => (ov: any) => {
     let hit = false;
-    for (const b of ov[slot])
-      {if (b.effects.some((e: any) => e.kind === 'buff' && e.stat === stat)) {
+    for (const b of ov[slot]) {
+      if (b.effects.some((e: any) => e.kind === 'buff' && e.stat === stat)) {
         b.target = target;
         hit = true;
-      }}
-    if (!hit)
-      {throw new Error(`sugar ${slot} ${stat} block missing — fixture is stale`);}
+      }
+    }
+    if (!hit) {
+      throw new Error(`sugar ${slot} ${stat} block missing — fixture is stale`);
+    }
   };
 
 // ---- runs (hoisted: each is a full 180s sim, ~33ms) -------------------------------------------
@@ -243,7 +252,9 @@ describe('sugar (Treasure) — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([13.02]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([SUGAR]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
       expect(applied.length).toBe(fbCount(base.events));
     });
 
@@ -267,7 +278,9 @@ describe('sugar (Treasure) — kit spec', () => {
     it('is 25.01%, self-scoped, 10 sec, fired once per Full Burst', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([SUGAR]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
       expect(applied.length).toBe(fbCount(base.events));
     });
 
@@ -282,11 +295,14 @@ describe('sugar (Treasure) — kit spec', () => {
     it('is 83.8%, 15 sec, reaches exactly the shotgun allies (sugar here), once per Full Burst', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([83.8]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(holders(base.events, 'maxAmmoPct')).toEqual(sorted(sgIdx));
       // every holder is genuinely a shotgun ally
-      for (const i of holders(base.events, 'maxAmmoPct'))
-        {expect(COMP[i]).toBeTruthy();}
+      for (const i of holders(base.events, 'maxAmmoPct')) {
+        expect(COMP[i]).toBeTruthy();
+      }
       expect(applied.length).toBe(fbCount(base.events) * sgIdx.length);
     });
 
@@ -309,7 +325,9 @@ describe('sugar (Treasure) — kit spec', () => {
 
     it('is 40.02%, 15 sec, reaches exactly the Water/Iron shotgun allies (sugar here)', () => {
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(
         holders(base.events, 'elemAdvantageDamagePct').filter((i) =>
           applied.some((b) => b.targetIdx === i)
@@ -339,7 +357,9 @@ describe('sugar (Treasure) — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([66]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([SUGAR]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(applied.length).toBe(sugarCasts(base.events));
     });
 
@@ -362,7 +382,9 @@ describe('sugar (Treasure) — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([33]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([SUGAR]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(applied.length).toBe(sugarCasts(base.events));
     });
 
@@ -379,7 +401,9 @@ describe('sugar (Treasure) — kit spec', () => {
     it('is 20%, self-scoped, 15 sec, fired once per sugar burst cast', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([SUGAR]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(applied.length).toBe(sugarCasts(base.events));
     });
 
@@ -395,7 +419,9 @@ describe('sugar (Treasure) — kit spec', () => {
 
     it('is 60.01%, 15 sec, reaches exactly the Water/Iron shotgun allies, once per sugar burst cast', () => {
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
       expect(
         holders(base.events, 'elemAdvantageDamagePct').filter((i) =>
           applied.some((b) => b.targetIdx === i)

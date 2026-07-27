@@ -23,7 +23,9 @@ function teamFor(slug: string): BatteryTeam {
 function extract(slug: string) {
   const w = loadWorld();
   const c = w.data.characters[slug];
-  if (!c) {throw new Error(`no character '${slug}'`);}
+  if (!c) {
+    throw new Error(`no character '${slug}'`);
+  }
   const s = c.skills ?? {};
   const b: any = c.baseStats ?? {};
   console.log(
@@ -69,9 +71,11 @@ function selfcheck(slug: string) {
 }
 
 const [cmd, slug] = process.argv.slice(2);
-if (cmd === 'extract' && slug) {extract(slug);}
-else if (cmd === 'selfcheck' && slug) {selfcheck(slug);}
-else {
+if (cmd === 'extract' && slug) {
+  extract(slug);
+} else if (cmd === 'selfcheck' && slug) {
+  selfcheck(slug);
+} else {
   console.error(
     'usage: parse.ts extract <slug> | selfcheck <slug>  (grading is grade.ts)'
   );

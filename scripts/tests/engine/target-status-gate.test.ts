@@ -36,18 +36,20 @@ type Opts = {
 function run(o: Opts): { skill: number; total: number } {
   const privaty = withPatchedOverride('privaty', (ov) => {
     const applyEffects: any[] = [];
-    if (o.applied)
-      {applyEffects.push({
+    if (o.applied) {
+      applyEffects.push({
         kind: 'targetStatus',
         name: o.applied,
         durationSec: o.durationSec ?? 10,
-      });}
-    if (o.applied2)
-      {applyEffects.push({
+      });
+    }
+    if (o.applied2) {
+      applyEffects.push({
         kind: 'targetStatus',
         name: o.applied2,
         durationSec: o.durationSec ?? 10,
-      });}
+      });
+    }
 
     ov.skill1 = applyEffects.length
       ? [
@@ -68,7 +70,9 @@ function run(o: Opts): { skill: number; total: number } {
       target: { kind: 'enemy' },
       effects: [{ kind: 'flatDamage', atkPct: 500, noRange: true }],
     };
-    if (o.gated) {riderBlock.requiresTargetStatus = o.gated;}
+    if (o.gated) {
+      riderBlock.requiresTargetStatus = o.gated;
+    }
     ov.skill2 = [riderBlock];
     ov.burst = [];
   });

@@ -88,7 +88,9 @@ const stripBurstEffect = (slug: string, stat: string) =>
     for (const b of ov.burst) {
       const before = b.effects.length;
       b.effects = b.effects.filter((e: any) => e.stat !== stat);
-      if (b.effects.length !== before) {return;}
+      if (b.effects.length !== before) {
+        return;
+      }
     }
     throw new Error(`flora burst ${stat} effect missing — fixture is stale`);
   });
@@ -99,10 +101,11 @@ const floraBurstAtkSelf = withPatchedOverride('flora', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'flora burst casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'atkPct';
 });
 /** F2 reference: Flora's burst True Damage line removed (heal + casterAtkPct kept). */
@@ -111,15 +114,17 @@ const floraNoBurstTrueDmg = stripBurstEffect('flora', 'trueDamagePct');
 const crownNoSelfHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before)
-    {throw new Error('crown S2 self-heal block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('crown S2 self-heal block missing — fixture is stale');
+  }
 });
 /** F3 isolation: also remove Flora's S1 HoT, leaving ONLY the burst heal as a recovery source. */
 const floraNoHoT = withPatchedOverride('flora', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
-  if (ov.skill1.length === before)
-    {throw new Error('flora S1 HoT block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('flora S1 HoT block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -165,7 +170,9 @@ describe('flora — kit spec', () => {
         'no burst casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       const expected = (85.86 / 100) * floraStaticAtk;
-      for (const b of applied) {expect(b.value).toBeCloseTo(expected, 3);}
+      for (const b of applied) {
+        expect(b.value).toBeCloseTo(expected, 3);
+      }
       // Caster-scaled => the SAME flat add lands on every target (not % of each target's own ATK).
       expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([
         LITER,
@@ -181,7 +188,9 @@ describe('flora — kit spec', () => {
 
     it('reaches all four allies for exactly 10 sec per burst cast', () => {
       expect(applied.length).toBe(floraBursts(base.events).length * 4);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: a generic atkPct (target-own-ATK) moves the carry differently', () => {
@@ -202,7 +211,9 @@ describe('flora — kit spec', () => {
     it('is 42.39% for 10 sec, reaching all four allies per burst cast', () => {
       expect(applied.length).toBe(floraBursts(base.events).length * 4);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([42.39]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('moves ada (true-flavored grenades) when removed', () => {

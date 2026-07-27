@@ -73,7 +73,9 @@ const isGated = (b: AnyRec) => GATE_KEYS.some((k) => b[k] !== undefined);
 
 function slotBlocks(ov: AnyRec, slot: 'skill1' | 'skill2' | 'burst'): AnyRec[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? (s as AnyRec[]) : ((s.blocks as AnyRec[]) ?? []);
 }
 function slotEffects(
@@ -100,7 +102,9 @@ const OV = withPatchedOverride(LAPLACE, () => {}) as unknown as AnyRec;
 // ---------------------------------------------------------------------------
 const ZERO_CHARGE_RIDER = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'skill2')) {
-    if (approx(e.atkPct, CHARGE_RIDER_PCT)) {e.atkPct = 0;}
+    if (approx(e.atkPct, CHARGE_RIDER_PCT)) {
+      e.atkPct = 0;
+    }
   }
 });
 
@@ -109,19 +113,25 @@ const RIDER_ON_FB_ENTER = withPatchedOverride(LAPLACE, (ov) => {
     const carries = ((b.effects as AnyRec[]) ?? []).some((e) =>
       approx(e.atkPct, CHARGE_RIDER_PCT)
     );
-    if (carries) {b.trigger = { kind: 'fullBurstEnter' };}
+    if (carries) {
+      b.trigger = { kind: 'fullBurstEnter' };
+    }
   }
 });
 
 const SHORT_SWAP = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'burst')) {
-    if (e.kind === 'weaponSwap') {e.durationSec = 0.1;}
+    if (e.kind === 'weaponSwap') {
+      e.durationSec = 0.1;
+    }
   }
 });
 
 const NO_HERO_VISION = withPatchedOverride(LAPLACE, (ov) => {
   for (const e of slotEffects(ov as unknown as AnyRec, 'skill1')) {
-    if (e.kind === 'buff') {e.value = 0;}
+    if (e.kind === 'buff') {
+      e.value = 0;
+    }
   }
 });
 
@@ -132,11 +142,12 @@ function runWith(patched?: unknown) {
   const opts = controlComp(LAPLACE, false) as unknown as AnyRec;
   const events: SimEvent[] = [];
   const cfg: AnyRec = { ...opts, onEvent: (ev: SimEvent) => events.push(ev) };
-  if (patched)
-    {cfg.overrides = {
+  if (patched) {
+    cfg.overrides = {
       ...((opts.overrides as AnyRec) ?? {}),
       [LAPLACE]: patched,
-    };}
+    };
+  }
   const res = runComp(cfg as Parameters<typeof runComp>[0]);
   const map = totals(res) as Record<string, number>;
   const team = Object.fromEntries(
@@ -233,7 +244,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
     const hvBuffs = slotEffects(OV, 'skill1').filter(
       (e) => e.kind === 'buff' && e.maxStacks === HV_STACKS
     );
-    for (const b of hvBuffs) {expect(banned).not.toContain(b.stat);}
+    for (const b of hvBuffs) {
+      expect(banned).not.toContain(b.stat);
+    }
   });
 
   it('s1: Hero Vision moves NO teammate damage (inertness)', () => {
@@ -306,7 +319,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
       return;
     }
     // present is only acceptable behind a gate that cannot open on this boss
-    for (const b of partsBlocks) {expect(isGated(b)).toBe(true);}
+    for (const b of partsBlocks) {
+      expect(isGated(b)).toBe(true);
+    }
   });
 
   // -------------------------------------------------------------------------
@@ -344,7 +359,9 @@ describe('laplace - Laplace (Treasure) - blind kit spec', () => {
       (e) => e.kind === 'weaponSwap' && e.hasPierce === true
     );
     expect(gp.length > 0 || swapPierce).toBe(true);
-    for (const g of gp) {expect(g.durationSec).toBe(BURST_SEC);} // absent durationSec = permanent
+    for (const g of gp) {
+      expect(g.durationSec).toBe(BURST_SEC);
+    } // absent durationSec = permanent
   });
 
   it('b1: the true-damage conversion of swap normals is represented (no silent drop)', () => {

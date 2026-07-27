@@ -86,17 +86,19 @@ const cdrLadder = (seconds: number | null) =>
       ov.skill1 = ov.skill1.filter(
         (b: any) => b.trigger.kind !== 'fullBurstEnter'
       );
-      if (ov.skill1.length === before)
-        {throw new Error(
+      if (ov.skill1.length === before) {
+        throw new Error(
           'liter S1 fullBurstEnter block missing — fixture is stale'
-        );}
+        );
+      }
       return;
     }
     const blk = ov.skill1.find((b: any) => b.trigger.kind === 'fullBurstEnter');
-    if (!blk)
-      {throw new Error(
+    if (!blk) {
+      throw new Error(
         'liter S1 fullBurstEnter block missing — fixture is stale'
-      );}
+      );
+    }
     blk.effects = [{ kind: 'burstCdr', seconds }];
   });
 
@@ -237,11 +239,14 @@ describe('liter — kit spec', () => {
       for (const [stat, value] of STEPS) {
         const applied = literBuffs(base, stat, value);
         expect(applied.length, `${stat} never applied`).toBeGreaterThan(0);
-        for (const b of applied)
-          {expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);
+        }
         const perFrame = new Map<number, Set<number | null>>();
         for (const b of applied) {
-          if (!perFrame.has(b.frame)) {perFrame.set(b.frame, new Set());}
+          if (!perFrame.has(b.frame)) {
+            perFrame.set(b.frame, new Set());
+          }
           perFrame.get(b.frame)!.add(b.targetIdx);
         }
         for (const [frame, holders] of perFrame) {
@@ -285,7 +290,9 @@ describe('liter — kit spec', () => {
       expect([...frames].sort((a, b) => a - b)).toEqual(
         literCasts(base).map((c) => c.frame)
       );
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      }
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(TEAM_SIZE);
     });
 

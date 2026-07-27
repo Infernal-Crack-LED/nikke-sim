@@ -75,11 +75,21 @@ function provenance(note: string): string {
   // The kit-autonomy gauntlet's Land step writes a "Kit-autonomy gauntlet <date>" marker into the override
   // note (S3); checked first because a gauntlet run is the most recent/strongest provenance signal and
   // supersedes any earlier parser/materialization marker the note may still carry.
-  if (note.includes('Kit-autonomy gauntlet')) {return 'gauntlet';}
-  if (note.startsWith('MATERIALIZED PARSER OUTPUT')) {return 'materialized';}
-  if (note.includes('PARSER BASELINE (HYPOTHESIS')) {return 'parser-baseline';}
-  if (note.includes('[re-materialized')) {return 're-materialized';}
-  if (note.includes('[materialized')) {return 'partial-hand';}
+  if (note.includes('Kit-autonomy gauntlet')) {
+    return 'gauntlet';
+  }
+  if (note.startsWith('MATERIALIZED PARSER OUTPUT')) {
+    return 'materialized';
+  }
+  if (note.includes('PARSER BASELINE (HYPOTHESIS')) {
+    return 'parser-baseline';
+  }
+  if (note.includes('[re-materialized')) {
+    return 're-materialized';
+  }
+  if (note.includes('[materialized')) {
+    return 'partial-hand';
+  }
   return 'hand-authored';
 }
 
@@ -117,7 +127,9 @@ if (mode === '--refresh') {
       tiers: ht.tiers,
       reference_grade: ht.reference_grade,
     };
-    for (const u of ht.units) {legacy[u.slug] = u;}
+    for (const u of ht.units) {
+      legacy[u.slug] = u;
+    }
   }
 
   // board readings (sims all COMPS — the slow part); lazy import keeps --check/--set fast
@@ -195,7 +207,9 @@ if (mode === '--refresh') {
     statusCounts[u.kitParse.status] =
       (statusCounts[u.kitParse.status] ?? 0) + 1;
     tierCounts[u.tier] = (tierCounts[u.tier] ?? 0) + 1;
-    if (u.board) {bandCounts[u.board.band] = (bandCounts[u.board.band] ?? 0) + 1;}
+    if (u.board) {
+      bandCounts[u.board.band] = (bandCounts[u.board.band] ?? 0) + 1;
+    }
   }
 
   const doc = {
@@ -225,11 +239,11 @@ if (mode === '--refresh') {
   );
   const doc = loadDoc();
   const errors: string[] = [];
-  if (!doc)
-    {errors.push(
+  if (!doc) {
+    errors.push(
       'data/kit-status.json missing — run scripts/kit-status.ts --refresh'
-    );}
-  else {
+    );
+  } else {
     for (const slug of Object.keys(data.characters).filter(
       (s) => data.characters[s].simSupported
     )) {
@@ -240,8 +254,9 @@ if (mode === '--refresh') {
         );
         continue;
       }
-      if (!STATUSES.includes(u.kitParse?.status))
-        {errors.push(`${slug}: bad kitParse.status "${u.kitParse?.status}"`);}
+      if (!STATUSES.includes(u.kitParse?.status)) {
+        errors.push(`${slug}: bad kitParse.status "${u.kitParse?.status}"`);
+      }
       const o = JSON.parse(readFileSync(OVERRIDE_URL(slug), 'utf8'));
       if (
         JSON.stringify(u.unmodeled) !==
@@ -287,11 +302,15 @@ if (mode === '--refresh') {
         process.exit(1);
       }
       doc.units[slug].kitParse.status = v;
-    } else if (k === 'date') {doc.units[slug].kitParse.date = v;}
-    else if (k === 'tier') {doc.units[slug].tier = v;}
-    else if (k === 'tuned') {doc.units[slug].tuned = v === 'true';}
-    else if (k === 'evidence') {doc.units[slug].evidence = v;}
-    else {
+    } else if (k === 'date') {
+      doc.units[slug].kitParse.date = v;
+    } else if (k === 'tier') {
+      doc.units[slug].tier = v;
+    } else if (k === 'tuned') {
+      doc.units[slug].tuned = v === 'true';
+    } else if (k === 'evidence') {
+      doc.units[slug].evidence = v;
+    } else {
       console.error(`unknown key "${k}" (status|date|tier|tuned|evidence)`);
       process.exit(1);
     }
@@ -344,9 +363,11 @@ if (mode === '--refresh') {
   let evidence: string | undefined;
   let residual: string | undefined;
   for (let i = 2; i < args.length; i++) {
-    if (args[i] === '--evidence') {evidence = args[++i];}
-    else if (args[i] === '--residual') {residual = args[++i];}
-    else {
+    if (args[i] === '--evidence') {
+      evidence = args[++i];
+    } else if (args[i] === '--residual') {
+      residual = args[++i];
+    } else {
       console.error(
         `unknown --gauntlet option "${args[i]}" (expected --evidence|--residual)`
       );
@@ -386,18 +407,25 @@ if (mode === '--refresh') {
   // (MODEL_ONLY / tuned:false until a real fight validates it; a fight-validated unit keeps MEASURED/etc.).
   // There is no GAUNTLET tier — never invent one. The top-level `date` (tuning/recording date) is preserved
   // when present; evidence/residual APPEND the gauntlet line to any existing tuning provenance, not overwrite.
-  if (u.date === undefined) {u.date = date;}
+  if (u.date === undefined) {
+    u.date = date;
+  }
   u.evidence = u.evidence ? `${u.evidence} | ${evidence}` : evidence;
   u.residual = u.residual ? `${u.residual} | ${residual}` : residual;
-  if (u.graded === undefined) {u.graded = { teams: 0, within3pct: 0 };}
+  if (u.graded === undefined) {
+    u.graded = { teams: 0, within3pct: 0 };
+  }
   // AUTO mirrors — sync from the override so `--check` (provenance/unmodeled/caveats mirrors) passes
   // WITHOUT a full `--refresh`. A full --refresh rewrites the global `counts` + EVERY unit's board row;
   // running it per-unit is the conflict surface when concurrent batches share kit-status.json, so defer
   // the global refresh to batch-end / merge reconciliation (SKILL.md "Reconciling concurrent batches").
   // The board row is AUTO and not --check-validated, so it is left to the global refresh as well.
   u.unmodeled = o.unmodeled ?? { skill1: [], skill2: [], burst: [] };
-  if (o.caveats) {u.caveats = o.caveats;}
-  else {delete u.caveats;}
+  if (o.caveats) {
+    u.caveats = o.caveats;
+  } else {
+    delete u.caveats;
+  }
   saveDoc(doc);
   console.log(
     `${slug}: kitParse.status=unit-tested provenance=${u.kitParse.provenance} date=${date}; ` +

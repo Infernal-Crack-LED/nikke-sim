@@ -60,7 +60,9 @@ const SLOTS: Array<'skill1' | 'skill2' | 'burst'> = [
 // the whole test file.
 const blocksOf = (ov: Ov, slot: string): any[] => {
   const s: any = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 };
 const allBlocks = (ov: Ov): any[] => SLOTS.flatMap((s) => blocksOf(ov, s));
@@ -112,18 +114,22 @@ const pNoDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
 
 let nLongDt = 0;
 const pLongDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {for (const e of eff(b))
-      {if (isBuff(e, 'damageTakenPct', 12.56)) {
+  for (const b of allBlocks(ov)) {
+    for (const e of eff(b)) {
+      if (isBuff(e, 'damageTakenPct', 12.56)) {
         e.durationSec = 30;
         nLongDt++;
-      }}}
+      }
+    }
+  }
 });
 
 let nThresh = 0;
 const pDoubleThreshold = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) {continue;}
+    if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) {
+      continue;
+    }
     if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count === 'number') {
       b.trigger.count *= 2;
       nThresh++;
@@ -148,12 +154,14 @@ const pNoInstantReload = withPatchedOverride(SLUG, (ov: any) => {
 
 let nFullReload = 0;
 const pFullReload = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {for (const e of eff(b))
-      {if (isInstantReload(e)) {
+  for (const b of allBlocks(ov)) {
+    for (const e of eff(b)) {
+      if (isInstantReload(e)) {
         e.fraction = 1;
         nFullReload++;
-      }}}
+      }
+    }
+  }
 });
 
 let nNoCrit = 0;
@@ -163,11 +171,12 @@ const pNoCrit = withPatchedOverride(SLUG, (ov: any) => {
 
 let nCritAllies = 0;
 const pCritAllies = withPatchedOverride(SLUG, (ov: any) => {
-  for (const b of allBlocks(ov))
-    {if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
+  for (const b of allBlocks(ov)) {
+    if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
       b.target = { kind: 'allies' };
       nCritAllies++;
-    }}
+    }
+  }
 });
 
 let nNoBurstAtk = 0;
@@ -192,7 +201,9 @@ const collect = (patched?: any) => {
       events.push(ev as Ev);
     },
   };
-  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
+  if (patched) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  }
   const res = runComp(opts);
   const all = totals(res);
   return { res, events, all, self: all[SLUG] };
@@ -244,8 +255,9 @@ describe('ludmilla-winter-owner - fixture sanity (non-vacuity)', () => {
   });
 
   it('the override declares all three skill slots', () => {
-    for (const s of SLOTS)
-      {expect(blocksOf(shipped, s).length).toBeGreaterThan(0);}
+    for (const s of SLOTS) {
+      expect(blocksOf(shipped, s).length).toBeGreaterThan(0);
+    }
   });
 
   it('the comp actually full-bursts and she actually casts', () => {
@@ -443,7 +455,9 @@ describe('S2b - Full Burst start: Critical Rate +14.6% for 10s (self)', () => {
   it('applies on EVERY Full Burst, only ever to herself', () => {
     const applies = buffApplies(base.events, 'critRatePct', 14.6);
     expect(applies.length).toBe(fbStarts);
-    for (const a of applies) {expect(a.targetSlug).toBe(SLUG);}
+    for (const a of applies) {
+      expect(a.targetSlug).toBe(SLUG);
+    }
   });
 
   it('is load-bearing damage and inert on teammates', () => {

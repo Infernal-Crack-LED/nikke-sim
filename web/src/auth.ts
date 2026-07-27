@@ -128,7 +128,9 @@ export function clearToken() {
 // persist it, and scrub it from the URL so it doesn't linger in history.
 export function captureTokenFromUrl(): void {
   const hash = window.location.hash;
-  if (!hash.includes('nsat=')) {return;}
+  if (!hash.includes('nsat=')) {
+    return;
+  }
   const params = new URLSearchParams(hash.replace(/^#/, ''));
   const t = params.get('nsat');
   if (t) {
@@ -164,7 +166,9 @@ async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
     clearToken();
     throw new Error('unauthorized');
   }
-  if (!res.ok) {throw new Error(`api ${res.status}`);}
+  if (!res.ok) {
+    throw new Error(`api ${res.status}`);
+  }
   return res.status === 204 ? (undefined as T) : ((await res.json()) as T);
 }
 
@@ -198,8 +202,12 @@ async function apiEx<T>(path: string, init: RequestInit = {}): Promise<T> {
   } catch {
     /* non-JSON body — leave null */
   }
-  if (res.status === 401) {clearToken();}
-  if (!res.ok) {throw new ApiError(res.status, body);}
+  if (res.status === 401) {
+    clearToken();
+  }
+  if (!res.ok) {
+    throw new ApiError(res.status, body);
+  }
   return body as T;
 }
 
@@ -243,7 +251,9 @@ const NIKKE_LIST_VERSION = 1;
 function b64urlEncode(str: string): string {
   const bytes = new TextEncoder().encode(str);
   let bin = '';
-  for (const b of bytes) {bin += String.fromCharCode(b);}
+  for (const b of bytes) {
+    bin += String.fromCharCode(b);
+  }
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 function b64urlDecode(code: string): string {
@@ -260,8 +270,9 @@ export function encodeNikkeList(slugs: string[]): string {
 export function decodeNikkeList(code: string): string[] | null {
   try {
     const obj = JSON.parse(b64urlDecode(code.trim()));
-    if (!obj || obj.v !== NIKKE_LIST_VERSION || !Array.isArray(obj.slugs))
-      {return null;}
+    if (!obj || obj.v !== NIKKE_LIST_VERSION || !Array.isArray(obj.slugs)) {
+      return null;
+    }
     return obj.slugs.filter((s: unknown): s is string => typeof s === 'string');
   } catch {
     return null;
@@ -277,8 +288,12 @@ export const fetchRoster = (
   opts: { details?: boolean; refresh?: boolean } = {}
 ) => {
   const p = new URLSearchParams({ openid });
-  if (opts.details) {p.set('details', '1');}
-  if (opts.refresh) {p.set('refresh', '1');}
+  if (opts.details) {
+    p.set('details', '1');
+  }
+  if (opts.refresh) {
+    p.set('refresh', '1');
+  }
   return apiEx<RosterResponse>(`/api/blabla-roster?${p.toString()}`);
 };
 // The user's linked accounts (current first, then history).
@@ -305,6 +320,8 @@ export const deleteNikkeAccount = (openid: string) =>
 export async function fetchCurrentSyncedRoster(): Promise<RosterResponse | null> {
   const accounts = await fetchNikkeAccounts();
   const current = accounts.find((a) => a.current && a.syncedAt);
-  if (!current) {return null;}
+  if (!current) {
+    return null;
+  }
   return fetchRoster(current.openId, { details: true });
 }

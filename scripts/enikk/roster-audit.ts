@@ -77,10 +77,13 @@ async function fetchRankings(raid: number): Promise<Row[]> {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ query: QUERY, variables: { raid, all: false } }),
   });
-  if (!res.ok) {throw new Error(`enikk fetch raid ${raid}: HTTP ${res.status}`);}
+  if (!res.ok) {
+    throw new Error(`enikk fetch raid ${raid}: HTTP ${res.status}`);
+  }
   const j = await res.json();
-  if (j.errors)
-    {throw new Error(`enikk GraphQL raid ${raid}: ${JSON.stringify(j.errors)}`);}
+  if (j.errors) {
+    throw new Error(`enikk GraphQL raid ${raid}: ${JSON.stringify(j.errors)}`);
+  }
   if (cacheFile) {
     mkdirSync(CACHE!, { recursive: true });
     writeFileSync(cacheFile, JSON.stringify(j, null, 1));
@@ -98,8 +101,9 @@ const modeled = new Set(
     .map((f) => f.replace(/\.json$/, ''))
 );
 const nameToSlug: Record<string, string> = {};
-for (const [slug, c] of Object.entries(data.characters))
-  {nameToSlug[c.name.replace(' (Treasure)', '')] = slug;}
+for (const [slug, c] of Object.entries(data.characters)) {
+  nameToSlug[c.name.replace(' (Treasure)', '')] = slug;
+}
 const isModeled = (name: string) => {
   const s = nameToSlug[name];
   return s !== undefined && modeled.has(s);
@@ -119,24 +123,33 @@ async function auditRaid(raid: number): Promise<RaidAudit> {
   const rows = await fetchRankings(raid);
   const top = rows.slice(0, TOP); // array order = damage-descending leaderboard
   const raw: string[][] = [];
-  for (const r of top)
-    {for (const t of r.teams ?? []) {
-      if (t.characters && t.characters.length === 5) {raw.push(t.characters);}
-    }}
+  for (const r of top) {
+    for (const t of r.teams ?? []) {
+      if (t.characters && t.characters.length === 5) {
+        raw.push(t.characters);
+      }
+    }
+  }
   // dedup by the SET of 5 units (slot order ignored); keep the first-seen slot
   // order as the representative and count how many top rankers ran the comp.
   const byKey = new Map<string, { characters: string[]; count: number }>();
   for (const chars of raw) {
     const key = [...chars].sort().join('|');
     const cur = byKey.get(key);
-    if (cur) {cur.count++;}
-    else {byKey.set(key, { characters: chars, count: 1 });}
+    if (cur) {
+      cur.count++;
+    } else {
+      byKey.set(key, { characters: chars, count: 1 });
+    }
   }
   const uniqueTeams = [...byKey.values()].sort((a, b) => b.count - a.count);
   // nikkes across surviving unique teams
   const seen = new Map<string, number>();
-  for (const t of uniqueTeams)
-    {for (const n of t.characters) {seen.set(n, (seen.get(n) ?? 0) + 1);}}
+  for (const t of uniqueTeams) {
+    for (const n of t.characters) {
+      seen.set(n, (seen.get(n) ?? 0) + 1);
+    }
+  }
   const nikkes = [...seen.entries()]
     .map(([name, teams]) => ({ name, modeled: isModeled(name), teams }))
     .sort((a, b) => b.teams - a.teams || a.name.localeCompare(b.name));
@@ -165,8 +178,11 @@ function buildOneRaid(
   uniqueTeams: { characters: string[]; count: number }[]
 ): RaidAudit {
   const seen = new Map<string, number>();
-  for (const t of uniqueTeams)
-    {for (const n of t.characters) {seen.set(n, (seen.get(n) ?? 0) + 1);}}
+  for (const t of uniqueTeams) {
+    for (const n of t.characters) {
+      seen.set(n, (seen.get(n) ?? 0) + 1);
+    }
+  }
   const nikkes = [...seen.entries()]
     .map(([name, teams]) => ({ name, modeled: isModeled(name), teams }))
     .sort((a, b) => b.teams - a.teams || a.name.localeCompare(b.name));
@@ -187,7 +203,9 @@ function auditsFromMd(mdPath: string): RaidAudit[] {
   } | null = null;
   let inTeams = false;
   const flush = () => {
-    if (cur) {out.push(buildOneRaid(cur.raid, cur.label, cur.boss, cur.teams));}
+    if (cur) {
+      out.push(buildOneRaid(cur.raid, cur.label, cur.boss, cur.teams));
+    }
   };
   for (const line of lines) {
     const rm = raidRe.exec(line);
@@ -223,7 +241,9 @@ const audits: RaidAudit[] = [];
 if (process.env.FROM_MD) {
   audits.push(...auditsFromMd(process.env.FROM_MD));
 } else {
-  for (const raid of RAIDS) {audits.push(await auditRaid(raid));}
+  for (const raid of RAIDS) {
+    audits.push(await auditRaid(raid));
+  }
 }
 
 // ---- outlier filter (2026-07-15) ----
@@ -237,11 +257,16 @@ function unitStats(name: string): { raidGroups: number; maxUses: number } {
   let maxUses = 0;
   for (const a of audits) {
     let uses = 0;
-    for (const t of a.uniqueTeams)
-      {if (t.characters.includes(name)) {uses += t.count;}}
+    for (const t of a.uniqueTeams) {
+      if (t.characters.includes(name)) {
+        uses += t.count;
+      }
+    }
     if (uses > 0) {
       raids.add(a.raid);
-      if (uses > maxUses) {maxUses = uses;}
+      if (uses > maxUses) {
+        maxUses = uses;
+      }
     }
   }
   return { raidGroups: raids.size, maxUses };
@@ -264,20 +289,23 @@ for (const a of audits) {
   console.log(
     '  ' + a.nikkes.map((n) => `${n.name}${n.modeled ? '' : ' *'}`).join(', ')
   );
-  if (notModeled.length)
-    {console.log(
+  if (notModeled.length) {
+    console.log(
       `  (* not modeled by the sim: ${notModeled.map((n) => n.name).join(', ')})`
-    );}
+    );
+  }
 }
 
 // overall NIKKE union across all audited raids
 const union = new Map<string, { modeled: boolean; raids: Set<number> }>();
-for (const a of audits)
-  {for (const n of a.nikkes) {
-    if (!union.has(n.name))
-      {union.set(n.name, { modeled: n.modeled, raids: new Set() });}
+for (const a of audits) {
+  for (const n of a.nikkes) {
+    if (!union.has(n.name)) {
+      union.set(n.name, { modeled: n.modeled, raids: new Set() });
+    }
     union.get(n.name)!.raids.add(a.raid);
-  }}
+  }
+}
 const unionSorted = [...union.entries()].sort(
   (x, y) => y[1].raids.size - x[1].raids.size || x[0].localeCompare(y[0])
 );
@@ -292,10 +320,11 @@ console.log(
       .map(([n, v]) => `${n}${v.modeled ? '' : ' *'} (${v.raids.size})`)
       .join(', ')
 );
-if (unModeled.length)
-  {console.log(
+if (unModeled.length) {
+  console.log(
     `\n  not modeled by the sim: ${unModeled.map(([n]) => n).join(', ')}`
-  );}
+  );
+}
 
 if (process.env.OUT) {
   const payload = {
@@ -358,11 +387,12 @@ if (process.env.MD) {
       .join(', '),
     ''
   );
-  if (unModeled.length)
-    {L.push(
+  if (unModeled.length) {
+    L.push(
       '',
       `**Not modeled by the sim:** ${unModeled.map(([n]) => n).join(', ')}`
-    );}
+    );
+  }
   writeFileSync(process.env.MD, L.join('\n') + '\n');
   console.log(`Markdown written to ${process.env.MD}`);
 }

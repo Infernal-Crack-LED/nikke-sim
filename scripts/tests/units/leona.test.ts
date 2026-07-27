@@ -93,8 +93,9 @@ function leonaComp(overrides: Record<string, any> = {}) {
 /** L1: the literal "5 hits" misreading of "after 5 normal attacks". */
 const roarCount5 = withPatchedOverride('leona', (ov) => {
   const b = ov.skill1.find((x: any) => x.trigger.kind === 'hitCount');
-  if (!b || b.trigger.count !== 50)
-    {throw new Error('leona S1 hitCount:50 block missing — fixture is stale');}
+  if (!b || b.trigger.count !== 50) {
+    throw new Error('leona S1 hitCount:50 block missing — fixture is stale');
+  }
   b.trigger.count = 5;
 });
 /** L3: her S2 hit-rate line fired on her own cast instead of FB entry. */
@@ -102,8 +103,9 @@ const s2OnBurstCast = withPatchedOverride('leona', (ov) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'hitRatePct')
   );
-  if (!b || b.trigger.kind !== 'fullBurstEnter')
-    {throw new Error('leona S2 hitRatePct block missing — fixture is stale');}
+  if (!b || b.trigger.kind !== 'fullBurstEnter') {
+    throw new Error('leona S2 hitRatePct block missing — fixture is stale');
+  }
   b.trigger.kind = 'burstCast';
 });
 /** L4 nearest-wrong: the SUPERSEDED normalAttackPct +50% proxy (additive with other normal-mult
@@ -132,15 +134,17 @@ const pelletsToAll = withPatchedOverride('leona', (ov) => {
       (e: any) => e.stat === 'pelletCountFlat' || e.stat === 'normalAttackPct'
     )
   );
-  if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG')
-    {throw new Error('leona S2 pellet block missing — fixture is stale');}
+  if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG') {
+    throw new Error('leona S2 pellet block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 /** L5: both burst blocks fired on FB entry instead of her cast. */
 const burstOnFbEnter = withPatchedOverride('leona', (ov) => {
   for (const b of ov.burst) {
-    if (b.trigger.kind !== 'burstCast')
-      {throw new Error('leona burst trigger missing — fixture is stale');}
+    if (b.trigger.kind !== 'burstCast') {
+      throw new Error('leona burst trigger missing — fixture is stale');
+    }
     b.trigger.kind = 'fullBurstEnter';
   }
 });
@@ -149,8 +153,9 @@ const critSgToAll = withPatchedOverride('leona', (ov) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'critRatePct')
   );
-  if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG')
-    {throw new Error('leona burst critRatePct block missing — fixture is stale');}
+  if (!b || b.target.kind !== 'alliesOfWeapon' || b.target.weapon !== 'SG') {
+    throw new Error('leona burst critRatePct block missing — fixture is stale');
+  }
   b.target = { kind: 'allies' };
 });
 /** Whole-kit zero: proves the buffer is live via her allies' totals, not her own damage. */
@@ -202,11 +207,12 @@ describe('leona — kit spec', () => {
     expect(starts.length).toBeGreaterThanOrEqual(8);
     expect(casts.length).toBe(starts.length);
     const startFrames = new Set(starts.map((s) => s.frame));
-    for (const c of casts)
-      {expect(
+    for (const c of casts) {
+      expect(
         startFrames.has(c.frame),
         `leona cast at ${c.frame} coincides with the FB start`
-      ).toBe(false);}
+      ).toBe(false);
+    }
   });
 
   describe('L1 — S1 Roar: Critical Rate ▲2.62%, ×5 stacks, 5 sec, all allies, after 5 normal attacks', () => {
@@ -270,16 +276,18 @@ describe('leona — kit spec', () => {
       expect(hr.length).toBeGreaterThan(0);
       const startFrames = new Set(starts.map((s) => s.frame));
       const hrFrames = new Set(hr.map((b) => b.frame));
-      for (const s of starts)
-        {expect(
+      for (const s of starts) {
+        expect(
           hrFrames.has(s.frame),
           `no hit-rate application on the FB start at ${s.frame}`
-        ).toBe(true);}
-      for (const b of hr)
-        {expect(
+        ).toBe(true);
+      }
+      for (const b of hr) {
+        expect(
           startFrames.has(b.frame),
           'a hit-rate application landed off the FB start frame'
-        ).toBe(true);}
+        ).toBe(true);
+      }
     });
 
     it('reaches all four allies for exactly 10 sec', () => {
@@ -351,11 +359,12 @@ describe('leona — kit spec', () => {
     it("lands on leona's burstCast frame (before the FB window), ×4 allies per cast", () => {
       expect(cd.length).toBe(casts.length * ALL_SLOTS.size);
       const castFrames = new Set(casts.map((c) => c.frame));
-      for (const b of cd)
-        {expect(
+      for (const b of cd) {
+        expect(
           castFrames.has(b.frame),
           `crit-dmg application at ${b.frame} is not a leona cast frame`
-        ).toBe(true);}
+        ).toBe(true);
+      }
       expect(holders(cd)).toEqual(ALL_SLOTS);
       expect([...new Set(durations(cd))]).toEqual([10 * FPS]);
     });

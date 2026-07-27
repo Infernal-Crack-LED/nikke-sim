@@ -93,18 +93,20 @@ const swapEff = (b: any) => b.effects.find((e: any) => e.kind === 'weaponSwap');
 /** L3 counterfactual A: the base-kit S2a VALUE (81.66) on the same per-shot trigger. */
 const laplaceBaseS2Value = withPatchedOverride('laplace', (ov) => {
   const e = flatAtk(ov.skill2[0]);
-  if (!e || e.atkPct !== 132.45)
-    {throw new Error('laplace S2a 132.45 rider missing — fixture is stale');}
+  if (!e || e.atkPct !== 132.45) {
+    throw new Error('laplace S2a 132.45 rider missing — fixture is stale');
+  }
   e.atkPct = 81.66;
 });
 /** L3 counterfactual B: the pre-gauntlet AGGRESSIVE reading — swapGate removed, so the rider
  *  fires on EVERY shot including the swap beam (the model the S7 judge ruled a REAL-GOTCHA). */
 const laplaceS2NoGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.skill2[0];
-  if (!b || b.trigger.kind !== 'shotFired' || b.swapGate !== 'unswapped')
-    {throw new Error(
+  if (!b || b.trigger.kind !== 'shotFired' || b.swapGate !== 'unswapped') {
+    throw new Error(
       'laplace S2a shotFired+unswapped block missing — fixture is stale'
-    );}
+    );
+  }
   delete b.swapGate;
 });
 /** L6 counterfactual: the base-kit First Damage (897.6). */
@@ -113,40 +115,45 @@ const laplaceBaseFirst = withPatchedOverride('laplace', (ov) => {
     (x: any) => x.trigger.kind === 'burstCast' && x.target.kind === 'enemy'
   );
   const e = b && flatAtk(b);
-  if (!e || e.atkPct !== 1455.72)
-    {throw new Error('laplace burst First 1455.72 missing — fixture is stale');}
+  if (!e || e.atkPct !== 1455.72) {
+    throw new Error('laplace burst First 1455.72 missing — fixture is stale');
+  }
   e.atkPct = 897.6;
 });
 /** L7 counterfactual: the base-kit swap Normal Damage (14.52). */
 const laplaceBaseSwap = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(hasSwap);
   const e = b && swapEff(b);
-  if (!e || e.damagePct !== 22.2)
-    {throw new Error('laplace weaponSwap 22.2 missing — fixture is stale');}
+  if (!e || e.damagePct !== 22.2) {
+    throw new Error('laplace weaponSwap 22.2 missing — fixture is stale');
+  }
   e.damagePct = 14.52;
 });
 /** L5/L8 reference: the swap weapon removed entirely. */
 const laplaceNoSwap = withPatchedOverride('laplace', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasSwap(b));
-  if (ov.burst.length === before)
-    {throw new Error('laplace weaponSwap block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('laplace weaponSwap block missing — fixture is stale');
+  }
 });
 /** L12 counterfactual: the 11.9% rider with its swap gate removed (fires on EVERY shot). */
 const laplaceNoRiderGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(
     (x: any) => x.trigger.kind === 'shotFired' && x.swapGate === 'swapped'
   );
-  if (!b || flatAtk(b).atkPct !== 11.9)
-    {throw new Error('laplace 11.9 swap-gated rider missing — fixture is stale');}
+  if (!b || flatAtk(b).atkPct !== 11.9) {
+    throw new Error('laplace 11.9 swap-gated rider missing — fixture is stale');
+  }
   delete b.swapGate;
 });
 /** L9 reference: the swap-scoped pierce tag removed (proves it is damage-inert at scope lock). */
 const laplaceNoPierce = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(hasSwap);
   const e = b && swapEff(b);
-  if (!e || e.hasPierce !== true)
-    {throw new Error('laplace weaponSwap.hasPierce missing — fixture is stale');}
+  if (!e || e.hasPierce !== true) {
+    throw new Error('laplace weaponSwap.hasPierce missing — fixture is stale');
+  }
   delete e.hasPierce;
 });
 

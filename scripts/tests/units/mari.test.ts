@@ -137,18 +137,20 @@ const mariBuffs = (evs: SimEvent[], stat: string) =>
 const mariNoPierceBuff = withPatchedOverride('mari', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'pierceDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error('mari S1 pierceDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('mari S1 pierceDamagePct block missing — fixture is stale');
+  }
 });
 /** MR1 counterfactual: the same line at the lvl-9 magnitude (keeps cadence, moves the value). */
 const mariPierceLvl9 = withPatchedOverride('mari', (ov) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'pierceDamagePct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'mari S1 pierceDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.value = 24.25;
 });
 /** MR3 reference: S2 self ATK block removed. */
@@ -157,8 +159,9 @@ const mariNoSelfAtk = withPatchedOverride('mari', (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !(b.target?.kind === 'self' && hasStat(b, 'atkPct'))
   );
-  if (ov.skill2.length === before)
-    {throw new Error('mari S2 self atkPct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('mari S2 self atkPct block missing — fixture is stale');
+  }
 });
 /** MR4 counterfactual: the ally ATK buff re-keyed to atkPct (a % of each TARGET's own ATK). */
 const mariAllyAtkWrong = withPatchedOverride('mari', (ov) => {
@@ -166,10 +169,11 @@ const mariAllyAtkWrong = withPatchedOverride('mari', (ov) => {
     .filter((b: any) => b.target?.kind === 'allies')
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'mari S2 ally casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.stat = 'atkPct';
 });
 /** MR5 counterfactual: the timed Pierce grant removed — un-tags mari's attacks. Tolerant of the
@@ -185,17 +189,19 @@ const mariBurstLvl9 = withPatchedOverride('mari', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('mari burst flatDamage effect missing — fixture is stale');}
+  if (!e) {
+    throw new Error('mari burst flatDamage effect missing — fixture is stale');
+  }
   e.atkPct = 363.63;
 });
 /** MR7 counterfactual: the burst AD buff re-keyed to fullBurstEnter (procs on FB-start frames). */
 const mariBurstAdFbEnter = withPatchedOverride('mari', (ov) => {
   const blk = ov.burst.find((b: any) => hasStat(b, 'attackDamagePct'));
-  if (!blk)
-    {throw new Error(
+  if (!blk) {
+    throw new Error(
       'mari burst attackDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
   blk.trigger = { kind: 'fullBurstEnter' };
 });
 
