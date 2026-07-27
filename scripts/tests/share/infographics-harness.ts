@@ -27,6 +27,9 @@ import {
   tableHeight,
   drawTableCard,
   visibleRows,
+  UNIT_CARD_W,
+  UNIT_CARD_H,
+  drawUnitCard,
   type Canvas,
   type Canvas2DLike,
   type TeamCardData,
@@ -34,9 +37,13 @@ import {
   type RosterCardData,
   type DpsChartData,
   type TableCardData,
+  type UnitCardData,
 } from '../../../src/infographics/node/render.js';
 
-const SITE_ICON_PATH = new URL('../../../web/public/og.png', import.meta.url);
+const SITE_ICON_PATH = new URL(
+  '../../../src/infographics/assets/nikkesim-icon.png',
+  import.meta.url
+);
 
 type NapiCanvas = Canvas;
 
@@ -299,6 +306,22 @@ export async function buildTableCardWindow(): Promise<TableCardData> {
 
 // ---- renders ----------------------------------------------------------------
 
+// A real unit identity card (Liter — B1 Supporter, real portrait, real
+// characters.json field values).
+export async function buildUnitCard(): Promise<UnitCardData> {
+  return {
+    name: 'Liter',
+    element: 'Iron',
+    weapon: 'SMG',
+    burst: 'I',
+    class: 'Supporter',
+    manufacturer: 'Missilis',
+    burstCooldownSec: 20,
+    img: (await loadPortrait('liter')) ?? undefined,
+    footer: 'nikkesim.app',
+  };
+}
+
 export interface FixtureRender {
   name: string; // fixture filename, e.g. team-card.png
   png: Buffer;
@@ -392,6 +415,11 @@ export async function renderAll(): Promise<FixtureRender[]> {
     w: 400,
     h: 34,
   });
+
+  const unit = await buildUnitCard();
+  const unitCanvas = createCanvas(UNIT_CARD_W, UNIT_CARD_H);
+  drawUnitCard(unitCanvas.getContext('2d') as unknown as Canvas2DLike, unit);
+  finish('unit-card.png', unitCanvas, { x: 36, y: 34, w: 400, h: 34 });
 
   return out;
 }

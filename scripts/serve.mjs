@@ -6,8 +6,11 @@ import { readFile, stat } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const DIST = fileURLToPath(new URL('../dist', import.meta.url));
-const PORT = Number(process.env.PORT) || 4173;
+const DIST =
+  process.env.SERVE_DIST ?? fileURLToPath(new URL('../dist', import.meta.url));
+// Railway provides $PORT. '0' (ephemeral) is honored — the startup log prints
+// the actual bound port (used by the header test).
+const PORT = process.env.PORT ? Number(process.env.PORT) : 4173;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
@@ -176,14 +179,50 @@ async function sendIndex(res, reqUrl) {
   res.end(html);
 }
 
-async function send(res, file, status = 200) {
+// ---- cache policy -------------------------------------------------------------
+// Versioned-by-content URLs are immutable forever; everything else must
+// revalidate. The blanket `immutable` this replaces was a live bug (plan §1
+// "The cache problem"): the unversioned data JSONs are regenerated every
+// deploy under the SAME URL, yet were served with a year-long immutable
+// cache — every browser/proxy/Discord CDN was licensed to hold a stale body.
+const IMMUTABLE = 'public, max-age=31536000, immutable';
+const NO_CACHE = 'no-cache';
+// Unversioned mutable JSON — rebuilt on every deploy at a fixed URL. The
+// manifest is mutable BY DESIGN: it is the only mutable URL in the image set,
+// and everything it points at is content-hashed/immutable (plan §2).
+const MUTABLE_PATHS = new Set([
+  '/dpschart.json',
+  '/burstgen.json',
+  '/burstcdr.json',
+  '/sustain.json',
+  '/bufferchart.json',
+  '/ol-default.json',
+  '/img/manifest.json',
+]);
+// Content-hashed URL patterns: vite bundles (assets/<name>-<hash8>.<ext>),
+// build-infographics PNGs (img/<key>.<hash8-hex>.png), self-hosted fonts
+// (license-stable Roboto subsets — versioned by build, effectively immutable).
+const VITE_HASHED = /^\/assets\/.+-[A-Za-z0-9_-]{8}\.[^/]+$/;
+const IMG_HASHED = /^\/img\/.+\.[0-9a-f]{8}\.png$/;
+const FONT_FILE = /\.woff2?$/;
+function cacheControlFor(path) {
+  if (path.endsWith('index.html') || MUTABLE_PATHS.has(path)) {
+    return NO_CACHE;
+  }
+  if (VITE_HASHED.test(path) || IMG_HASHED.test(path) || FONT_FILE.test(path)) {
+    return IMMUTABLE;
+  }
+  // static-but-mutable (portraits, icons, unversioned art): revalidate
+  return NO_CACHE;
+}
+
+async function send(res, file, urlPath, status = 200) {
   const body = await readFile(file);
   const type = MIME[extname(file).toLowerCase()] ?? 'application/octet-stream';
-  // hashed assets are immutable; index.html must always revalidate
-  const cache = file.endsWith('index.html')
-    ? 'no-cache'
-    : 'public, max-age=31536000, immutable';
-  res.writeHead(status, { 'content-type': type, 'cache-control': cache });
+  res.writeHead(status, {
+    'content-type': type,
+    'cache-control': cacheControlFor(urlPath),
+  });
   res.end(body);
 }
 
@@ -211,7 +250,7 @@ const server = createServer(async (req, res) => {
       await sendIndex(res, req.url ?? '/');
       return;
     }
-    await send(res, file);
+    await send(res, file, rel);
   } catch {
     // last-resort fallback
     try {
@@ -223,5 +262,8 @@ const server = createServer(async (req, res) => {
 });
 
 server.listen(PORT, '0.0.0.0', () => {
-  console.log(`nikke-sim serving ${DIST} on 0.0.0.0:${PORT}`);
+  const bound = server.address();
+  console.log(
+    `nikke-sim serving ${DIST} on 0.0.0.0:${bound ? bound.port : PORT}`
+  );
 });

@@ -33,6 +33,7 @@ describe('infographic golden images', () => {
     'dps-chart-window.png',
     'table-card.png',
     'table-card-window.png',
+    'unit-card.png',
   ]) {
     it(name, () => {
       const render = renders.find((r) => r.name === name);

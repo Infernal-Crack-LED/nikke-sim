@@ -55,7 +55,8 @@ npx tsx scripts/doll-regression.ts
 # Tiers:
 #   verify.sh          fast  — typecheck + validation + regressions. The everyday gate.
 #   verify.sh full     +web  — adds the web build + client smoke. Use this LOCALLY.
-#   verify.sh deploy   +DPS  — adds the DPS-chart + rank-board artifact builds and their smokes. CI/deploy only.
+#   verify.sh deploy   +DPS  — adds the DPS-chart + rank-board artifact builds, their smokes, and
+#                      the infographic pre-generation (dist/img/** + manifest.json). CI/deploy only.
 #
 # Why the chart smokes sit in `deploy` and not in `full`: they need dist/{dpschart,burstgen,burstcdr,
 # sustain,bufferchart}.json, which come from web/public/ — gitignored BUILD OUTPUTS that the builders
@@ -82,6 +83,8 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
     node scripts/web-smoke-dpschart.mjs
     say "rank-boards smoke (pills, bars, profile badges, methodology, buffer boards)"
     node scripts/web-smoke-ranks.mjs
+    say "infographics pre-generation (dist/img + manifest — deploy tier only; reads the artifacts above, writes after vite's emptyOutDir)"
+    npm run build:infographics
   fi
 fi
 

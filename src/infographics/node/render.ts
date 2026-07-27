@@ -18,6 +18,7 @@ export * from '../core/theme.js';
 export * from '../core/teamCard.js';
 export * from '../core/dpsChart.js';
 export * from '../core/tableCard.js';
+export * from '../core/unitCard.js';
 export * from '../core/window.js';
 
 // The Node host surface: canvas factory + image decode (sharp → putImageData;
