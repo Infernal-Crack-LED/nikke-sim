@@ -19,11 +19,12 @@ Harness notes:
   `bash scripts/kit-autonomy/dispatch-kimi.sh <packet.md> <model> <result.json>`, run FOREGROUND with a long
   timeout (~600000 ms — 44KB packets take 2–5 min; a slow dispatch is not a failure).
 - Packet prep + leak assertion: `npx tsx scripts/kit-autonomy/prepare-cross-family-packet.ts <slug> --tokens
-  "<signature magnitudes + mechanic names>" --roles s2b,s7`.
-- **Artifact economy (owner ruling 2026-07-26):** a `manual-review/<slug>.md` owner-review doc is OPT-IN
-  (NO-GO/escalated units only — the review surface for a GO is the kit-status findings + `results/<slug>.json`);
-  force-commit only the `cross-family/<slug>/*.json` RESULT files (packets are regenerable scratch); a
-  DECISIONS.md entry only when an actual ruling/tradeoff occurred.
+"<signature magnitudes + mechanic names>" --roles s2b,s7`.
+- **Artifact economy (owner ruling 2026-07-26, corrected):** a `manual-review/<slug>.md` owner-review doc is
+  ALWAYS generated, for every unit (GO and NO-GO alike) — the owner's review surface alongside the kit-status
+  findings + `results/<slug>.json`; force-commit only the `cross-family/<slug>/*.json` RESULT files (packets
+  are regenerable scratch — stopping the packet force-commit was the only intended cut); a DECISIONS.md entry
+  only when an actual ruling/tradeoff occurred.
 - Batch orchestration (restart-safe unit selection, stall recovery, lean spawn prompts) is documented for the
   Qwen driver in `.qwen/skills/kit-autonomy/SKILL.md` + `.qwen/agents/kit-gauntlet-driver.md`; the same
   patterns apply when this harness drives a batch.

@@ -221,9 +221,12 @@ reason to revert). Unit tests pin _faithful_; the board pins _accurate_; report 
   marker (S3 wrote it).
 - `docs/DECISIONS.md` entry **only when an actual ruling/tradeoff occurred** (a certify-only run decides
   nothing — no entry).
-- **Owner review surface:** `data/kit-status.json` findings + `scripts/kit-autonomy/results/<slug>.json`.
-  A `manual-review/<slug>.md` owner-review doc is **OPT-IN — write one only for a NO-GO / escalated unit**
-  (owner ruling 2026-07-26; the doc restates the judge JSON, so a clean GO does not need one).
+- **Owner review surface:** `data/kit-status.json` findings + `scripts/kit-autonomy/results/<slug>.json` +
+  `scripts/kit-autonomy/manual-review/<slug>.md`. The `manual-review/<slug>.md` owner-review doc is
+  **ALWAYS generated, for every unit (GO and NO-GO alike)** — the owner's short-form review of what the sim
+  implements vs the kit, in the `manual-review/helm.md` format, reflecting the ACTUAL blind models from each
+  result JSON's `model` field. (The 2026-07-26 slimming briefly made this NO-GO-only by mistake; the intended
+  cut was only the cross-family PACKET force-commit below — corrected 2026-07-26, see DECISIONS.md (5).)
 - **Record the outcome in `data/kit-status.json`** (the per-unit SSOT) — this is the gauntlet's last step:
   ```sh
   npx tsx scripts/kit-status.ts --gauntlet <slug> \
@@ -329,4 +332,3 @@ bash scripts/verify.sh                              # the canonical repo gate
 - Harness: `scripts/tests/lib/harness.ts`; exemplar `scripts/tests/units/helm.test.ts`.
 - Reused machinery: `scripts/blind-rebuild/build-packet.ts` (redaction + leak-assertion model);
   `/kit-tdd` (test-writing discipline), `/audit-kit` (triangulation), `/kit-parse` (blind override authoring).
-

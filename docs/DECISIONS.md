@@ -1646,9 +1646,11 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
   guard.
   **(4) Commit-state-hygiene hook slimmed** to two duties as a consequence of (2)+(3): prune landed
   QUEUE.md items / close finished handoffs, and STATE.md sync.
-  **(5) Kit-autonomy artifact economy.** `manual-review/<slug>.md` owner-review docs are OPT-IN
-  (NO-GO/escalated units only — the review surface for a GO is the kit-status findings +
-  `results/<slug>.json`); cross-family RESULT JSONs stay force-committed but the packets are
+  **(5) Kit-autonomy artifact economy.** `manual-review/<slug>.md` owner-review docs are **ALWAYS
+  generated, for every unit (GO and NO-GO alike)** — the owner's short-form review surface alongside
+  the kit-status findings + `results/<slug>.json`. _[Corrected 2026-07-26: the original slimming made
+  these NO-GO-only by mistake; the owner's intent was only to stop force-committing the cross-family
+  packets.]_ Cross-family RESULT JSONs stay force-committed (the evidence) but the packets are
   regenerable scratch and are no longer committed; a DECISIONS entry only when an actual
   ruling/tradeoff occurred (certify-only runs decide nothing). The ~540 already-committed artifact
   files stay as history.
