@@ -90,7 +90,7 @@ const noRecoverySource = (() => {
     ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
     ov.burst = ov.burst.filter((b: any) => !hasHeal(b));
     if (ov.skill1.length === s1 || ov.burst.length === bu)
-      throw new Error('helm heal blocks missing — fixture is stale');
+      {throw new Error('helm heal blocks missing — fixture is stale');}
   });
   const asukaNoLifesteal = withPatchedOverride('asuka', (ov) => {
     let removed = 0;
@@ -100,7 +100,7 @@ const noRecoverySource = (() => {
       removed += before - b.effects.length;
     }
     if (!removed)
-      throw new Error('asuka burst lifesteal missing — fixture is stale');
+      {throw new Error('asuka burst lifesteal missing — fixture is stale');}
   });
   return { helm: helmNoHeal, asuka: asukaNoLifesteal };
 })();
@@ -113,7 +113,7 @@ const lifestealOnly = withPatchedOverride('helm', (ov) => {
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
   ov.burst = ov.burst.filter((b: any) => !hasHeal(b));
   if (ov.skill1.length === s1 || ov.burst.length === bu)
-    throw new Error('helm heal blocks missing — fixture is stale');
+    {throw new Error('helm heal blocks missing — fixture is stale');}
 });
 
 /** H2 counterfactual: the pre-gauntlet encoding — S1 ATK as an always-on PASSIVE (healer-team
@@ -121,12 +121,12 @@ const lifestealOnly = withPatchedOverride('helm', (ov) => {
 const asukaPassiveS1 = withPatchedOverride('asuka', (ov) => {
   let patched = 0;
   for (const b of ov.skill1)
-    if (b.trigger?.kind === 'recovery') {
+    {if (b.trigger?.kind === 'recovery') {
       b.trigger = { kind: 'passive' };
       patched++;
-    }
+    }}
   if (!patched)
-    throw new Error('asuka S1 recovery block missing — fixture is stale');
+    {throw new Error('asuka S1 recovery block missing — fixture is stale');}
 });
 
 /** H3/H4 counterfactual: both S2 buffs un-scoped to ALL allies (drops the self-only and
@@ -137,7 +137,7 @@ const asukaS2All = withPatchedOverride('asuka', (ov) => {
     if (
       b.effects.some(
         (e: any) =>
-          e.stat === 'elemAdvantageDamagePct' || e.stat === 'coreDamagePct',
+          e.stat === 'elemAdvantageDamagePct' || e.stat === 'coreDamagePct'
       )
     ) {
       b.target = { kind: 'allies' };
@@ -145,7 +145,7 @@ const asukaS2All = withPatchedOverride('asuka', (ov) => {
     }
   }
   if (patched < 2)
-    throw new Error('asuka S2 buff blocks missing — fixture is stale');
+    {throw new Error('asuka S2 buff blocks missing — fixture is stale');}
 });
 
 /** H3 gate-discrimination: remove crown's burst SHIELD (the comp's only shield source). With the
@@ -159,7 +159,7 @@ const crownNoShield = withPatchedOverride('crown', (ov) => {
     removed += before - b.effects.length;
   }
   if (!removed)
-    throw new Error('crown burst shield missing — fixture is stale');
+    {throw new Error('crown burst shield missing — fixture is stale');}
 });
 
 /** PIERCE inertness: drop the timed gainPierce effect. Pierce moves no damage vs the v1 boss
@@ -172,7 +172,7 @@ const asukaNoPierce = withPatchedOverride('asuka', (ov) => {
     removed += before - b.effects.length;
   }
   if (!removed)
-    throw new Error('asuka burst gainPierce missing — fixture is stale');
+    {throw new Error('asuka burst gainPierce missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -192,11 +192,11 @@ const asukaBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === ASUKA &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const asukaBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'asuka',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'asuka'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -210,15 +210,15 @@ const dur = (bs: BuffApply[]) => [
 const SHIPPED = JSON.parse(
   readFileSync(
     new URL('../../../src/skills/overrides/asuka.json', import.meta.url),
-    'utf8',
-  ),
+    'utf8'
+  )
 );
 
 describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
   describe('H1 — S1 shield-damage 601.01% is honestly UNMODELED (inert: no StatKey, partless boss)', () => {
     it('is documented verbatim in unmodeled.skill1, not silently dropped', () => {
       expect(SHIPPED.unmodeled.skill1).toContain(
-        'Damage dealt to Shield ▲ 601.01% continuously.',
+        'Damage dealt to Shield ▲ 601.01% continuously.'
       );
     });
   });
@@ -241,15 +241,15 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       const passiveApplied = asukaBuffs(passive.events, 'atkPct', 96.98);
       expect(
         frames(passiveApplied),
-        'passive applies a single always-on buff at t=0',
+        'passive applies a single always-on buff at t=0'
       ).toEqual([0]);
       expect(
         applied.length,
-        'recovery re-fires as heals land — far more than the single passive grant',
+        'recovery re-fires as heals land — far more than the single passive grant'
       ).toBeGreaterThan(passiveApplied.length);
       expect(
         Math.max(...frames(applied)),
-        'recovery firings span the whole fight, not just t=0',
+        'recovery firings span the whole fight, not just t=0'
       ).toBeGreaterThan(1000);
     });
   });
@@ -271,13 +271,13 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       // shield source) and the gate must zero the block. Proves the gate is live, not decorative —
       // the nearest-wrong model (gate dropped) keeps firing here.
       expect(
-        asukaBuffs(noShield.events, 'elemAdvantageDamagePct', 30.02).length,
+        asukaBuffs(noShield.events, 'elemAdvantageDamagePct', 30.02).length
       ).toBe(0);
     });
 
     it('DISCRIMINATING: un-scoping to all allies would reach every slot', () => {
       expect(
-        targets(asukaBuffs(s2All.events, 'elemAdvantageDamagePct', 30.02)),
+        targets(asukaBuffs(s2All.events, 'elemAdvantageDamagePct', 30.02))
       ).toEqual([0, 1, 2, 3]);
     });
   });
@@ -298,7 +298,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
 
     it('DISCRIMINATING: an all-allies encoding would reach all four slots', () => {
       expect(targets(asukaBuffs(s2All.events, 'coreDamagePct', 60.07))).toEqual(
-        [0, 1, 2, 3],
+        [0, 1, 2, 3]
       );
     });
   });
@@ -323,7 +323,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
       expect(burstFrames.length).toBeGreaterThan(0);
       expect(
         frames(s1),
-        'each burst lifesteal procs exactly one S1 recovery, at the cast frame',
+        'each burst lifesteal procs exactly one S1 recovery, at the cast frame'
       ).toEqual(burstFrames);
     });
   });
@@ -343,7 +343,7 @@ describe('asuka (base, AR/Fire/Attacker) — kit spec', () => {
 
   describe('PIERCE — burst "Gain Pierce 25s" is a timed gainPierce effect (inert in v1)', () => {
     const pierceEffect = SHIPPED.burst[0].effects.find(
-      (e: any) => e.kind === 'gainPierce',
+      (e: any) => e.kind === 'gainPierce'
     );
 
     it('is encoded as a timed gainPierce:25s burstCast effect, not the permanent hasPierce flag', () => {

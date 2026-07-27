@@ -30,7 +30,7 @@ import type { DataFile } from '../src/types.js';
 
 const OUT = new URL('../data/archetype-tags.json', import.meta.url);
 const data: DataFile = JSON.parse(
-  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
 );
 
 // ---- prose → blocks -------------------------------------------------------
@@ -130,12 +130,12 @@ const allyFilterClause = (text: string, qualifier: RegExp) =>
     (cl) =>
       qualifier.test(cl) &&
       /\ball(?:y|ies)\b/i.test(cl) &&
-      !/^Affects self\b/i.test(cl),
+      !/^Affects self\b/i.test(cl)
   );
 const allyQualified = (blocks: Block[], qualifier: RegExp) =>
   blocks.some(
     (blk) =>
-      allyFilterClause(blk.text, qualifier) && ALLY_BENEFIT.test(blk.text),
+      allyFilterClause(blk.text, qualifier) && ALLY_BENEFIT.test(blk.text)
   );
 
 // Generic stat/DMG buffs. Note the datamine writes the generic damage buff as
@@ -261,7 +261,7 @@ const TAG_DEFS: TagDef[] = [
       b.some(
         (blk) =>
           blk.enemy &&
-          /\b(?:Fire|Water|Wind|Electric|Iron) Code\b/i.test(blk.text),
+          /\b(?:Fire|Water|Wind|Electric|Iron) Code\b/i.test(blk.text)
       ),
   },
   {
@@ -286,7 +286,7 @@ const TAG_DEFS: TagDef[] = [
     test: (b) =>
       buffSome(
         b,
-        /Projectile[^.\n]{0,24}▲|Projectile (DMG|Damage) ▲|[Dd]amage[^.\n]{0,20}projectile[^.\n]{0,8}▲/i,
+        /Projectile[^.\n]{0,24}▲|Projectile (DMG|Damage) ▲|[Dd]amage[^.\n]{0,20}projectile[^.\n]{0,8}▲/i
       ),
   },
   {
@@ -298,7 +298,7 @@ const TAG_DEFS: TagDef[] = [
     test: (b) =>
       buffSome(
         b,
-        /(Penetration|Pierce)[^.\n]{0,16}▲|grants?[^.\n]{0,24}\b(?:Penetration|Pierce)\b/i,
+        /(Penetration|Pierce)[^.\n]{0,16}▲|grants?[^.\n]{0,24}\b(?:Penetration|Pierce)\b/i
       ),
   },
   {
@@ -427,7 +427,7 @@ const TAG_DEFS: TagDef[] = [
       b.some(
         (blk) =>
           blk.ally &&
-          /(Recovers|Restores|Heal)(?:[^.\n]|\.(?=\d)){0,60}HP/i.test(blk.text),
+          /(Recovers|Restores|Heal)(?:[^.\n]|\.(?=\d)){0,60}HP/i.test(blk.text)
       ),
   },
   {
@@ -456,8 +456,8 @@ const TAG_DEFS: TagDef[] = [
         (blk) =>
           blk.enemy &&
           /(DEF ▼|ATK ▼|(Received|Damage Taken|DMG Taken)[^.\n]{0,16}▲|takes? .*additional damage)/i.test(
-            blk.text,
-          ),
+            blk.text
+          )
       ),
   },
   {
@@ -489,7 +489,7 @@ const TAG_DEFS: TagDef[] = [
     test: (b) =>
       allySome(
         b,
-        /Removes? \d+ debuff|debuff immunit|Removes?[^.\n]{0,24}debuff/i,
+        /Removes? \d+ debuff|debuff immunit|Removes?[^.\n]{0,24}debuff/i
       ),
   },
   {
@@ -535,13 +535,13 @@ for (const [slug, c] of Object.entries(data.characters)) {
   const prose = proseOf(c);
   const blocks = parseBlocks(prose);
   const hits = TAG_DEFS.filter((t) => t.test(blocks, prose)).map((t) => t.id);
-  if (hits.length) tagsBySlug[slug] = hits;
+  if (hits.length) {tagsBySlug[slug] = hits;}
 }
 
 // stats (always printed) — validate the rules against the real roster before --write.
 const counts = new Map<string, number>();
 for (const ids of Object.values(tagsBySlug))
-  for (const id of ids) counts.set(id, (counts.get(id) ?? 0) + 1);
+  {for (const id of ids) {counts.set(id, (counts.get(id) ?? 0) + 1);}}
 const total = Object.keys(data.characters).length;
 const tagged = Object.keys(tagsBySlug).length;
 console.log(`archetype tags — ${tagged}/${total} characters tagged\n`);
@@ -552,7 +552,7 @@ for (const def of TAG_DEFS) {
     .slice(0, 6)
     .map(([slug]) => slug);
   console.log(`${String(n).padStart(4)}  ${def.id.padEnd(20)} ${def.label}`);
-  if (examples.length) console.log(`        e.g. ${examples.join(', ')}`);
+  if (examples.length) {console.log(`        e.g. ${examples.join(', ')}`);}
 }
 const untagged = Object.keys(data.characters).filter((s) => !tagsBySlug[s]);
 console.log(`\n${untagged.length} untagged:`);
@@ -569,7 +569,7 @@ const vocabulary: Record<
   { label: string; blurb: string; group: string }
 > = {};
 for (const def of TAG_DEFS)
-  vocabulary[def.id] = { label: def.label, blurb: def.blurb, group: def.group };
+  {vocabulary[def.id] = { label: def.label, blurb: def.blurb, group: def.group };}
 
 // sort slugs + each tag list for a stable, diff-friendly file.
 const tags: Record<string, string[]> = {};
@@ -577,7 +577,7 @@ for (const slug of Object.keys(tagsBySlug).sort()) {
   tags[slug] = [...tagsBySlug[slug]].sort(
     (a, b) =>
       TAG_DEFS.findIndex((d) => d.id === a) -
-      TAG_DEFS.findIndex((d) => d.id === b),
+      TAG_DEFS.findIndex((d) => d.id === b)
   );
 }
 
@@ -601,5 +601,5 @@ const out = {
 
 writeFileSync(OUT, JSON.stringify(out, null, 1));
 console.log(
-  `\nwrote ${OUT.pathname} (${Object.keys(tags).length} slugs, ${TAG_DEFS.length} tags)`,
+  `\nwrote ${OUT.pathname} (${Object.keys(tags).length} slugs, ${TAG_DEFS.length} tags)`
 );

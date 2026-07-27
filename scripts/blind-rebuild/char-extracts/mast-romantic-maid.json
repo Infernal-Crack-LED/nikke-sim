@@ -19,11 +19,7 @@
     "rl3": 3.55,
     "burstGaugePerShot": 0.05,
     "treasure": false,
-    "nicknames": [
-      "mrm",
-      "mmast",
-      "maids (with anchor)"
-    ],
+    "nicknames": ["mrm", "mmast", "maids (with anchor)"],
     "skills": {
       "skill1": "■ Activates when entering Burst stage 1. Affects self.\nDrunken: Hit Rate ▼ 20%, stacks up to 3 times continuously.\n■ Activates only when in Drunken status. Affects all allies.\nCritical Rate ▲ 20.05% continuously.\nATK ▲ 35.02% of the skill user's ATK continuously.",
       "skill2": "■ Activates when entering Burst Stage 3 while in Drunken status. Affects all allies.\nDistributed Damage ▲ 15.03% x number of Drunken stacks for 10 sec.\nReload Speed ▲ 15.04% x number of Drunken stacks for 10 sec.\n■ Activates when Drunken is at max stacks at the end of Full Burst. Removes all stacks and affects self.\nHangover: Stunned for 10 sec.",
@@ -73,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 150,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 7,
           "prefer_target_condition": "None",
@@ -314,16 +306,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Critical Damage ▲ {description_value_01}% for {description_value_02} sec.\nAttack Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all allies if in Drunken status.\n<color=#00AEFF>ATK ▲ ({description_value_05}% * Number of Drunken stacks) of the skill user's ATK for {description_value_06} sec.</color>",
           "description_value_list": [
@@ -420,21 +403,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            135430101,
-            135430102,
-            135430103,
-            135430104,
-            135430105
+            135430101, 135430102, 135430103, 135430104, 135430105
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -459,9 +432,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -492,9 +463,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Mast: Romantic Maid's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

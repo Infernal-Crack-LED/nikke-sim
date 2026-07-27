@@ -1,26 +1,26 @@
 {
- "CTRL ada (boss Fire, focus ada)": {
-  "liter": 129326353,
-  "crown": 223491489,
-  "ada": 600368416,
-  "helm": 600262390
- },
- "CTRL maiden-ice-rose (boss Fire, focus maiden-ice-rose)": {
-  "liter": 129261096,
-  "crown": 224440057,
-  "maiden-ice-rose": 477016076,
-  "helm": 540597804
- },
- "CTRL scarlet-black-shadow (boss Fire, focus scarlet-black-shadow)": {
-  "liter": 129354380,
-  "crown": 220626578,
-  "scarlet-black-shadow": 934184081,
-  "helm": 572339501
- },
- "CTRL soda-twinkling-bunny (boss Fire, focus soda-twinkling-bunny)": {
-  "liter": 120647545,
-  "crown": 181617114,
-  "soda-twinkling-bunny": 358330423,
-  "helm": 459435332
- }
+  "CTRL ada (boss Fire, focus ada)": {
+    "liter": 129326353,
+    "crown": 223491489,
+    "ada": 600368416,
+    "helm": 600262390
+  },
+  "CTRL maiden-ice-rose (boss Fire, focus maiden-ice-rose)": {
+    "liter": 129261096,
+    "crown": 224440057,
+    "maiden-ice-rose": 477016076,
+    "helm": 540597804
+  },
+  "CTRL scarlet-black-shadow (boss Fire, focus scarlet-black-shadow)": {
+    "liter": 129354380,
+    "crown": 220626578,
+    "scarlet-black-shadow": 934184081,
+    "helm": 572339501
+  },
+  "CTRL soda-twinkling-bunny (boss Fire, focus soda-twinkling-bunny)": {
+    "liter": 120647545,
+    "crown": 181617114,
+    "soda-twinkling-bunny": 358330423,
+    "helm": 459435332
+  }
 }

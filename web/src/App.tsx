@@ -203,7 +203,7 @@ type GuideResult =
     };
 function buildRollGuide(
   current: OlSimLine[],
-  desired: OlSimLine[],
+  desired: OlSimLine[]
 ): GuideResult {
   const statLabel = (k: OlKey) => OL_KEY_LABEL[k];
   const pct = (p: number) => `${Math.round(p * 100)}%`;
@@ -212,22 +212,22 @@ function buildRollGuide(
     .map((d) => ({ key: d.key, tier: d.tier }))
     .filter((d): d is { key: OlKey; tier: number } => d.key !== '');
   if (reqs.length === 0)
-    return {
+    {return {
       kind: 'invalid',
       msg: 'Add at least one desired line (stat + target tier).',
-    };
+    };}
   const dkeys = reqs.map((r) => r.key);
   if (new Set(dkeys).size !== dkeys.length)
-    return {
+    {return {
       kind: 'invalid',
       msg: 'A piece can’t hold the same stat twice — remove the duplicate desired stat.',
-    };
+    };}
   const presentCur = current.filter((c) => c.key !== '');
   if (new Set(presentCur.map((c) => c.key)).size !== presentCur.length)
-    return {
+    {return {
       kind: 'invalid',
       msg: 'Two current lines share a stat — a piece can’t hold the same stat twice.',
-    };
+    };}
 
   const cur = current.map((c) => ({ key: c.key, tier: c.tier }));
   const targetTier = (k: OlKey) => reqs.find((r) => r.key === k)!.tier;
@@ -235,22 +235,22 @@ function buildRollGuide(
     cur.some((l) => l.key === k && l.tier >= minTier);
 
   if (reqs.every((r) => satisfies(r.key, r.tier)))
-    return {
+    {return {
       kind: 'done',
       msg: 'This piece already meets every desired stat and tier — you’re done. 🎉',
-    };
+    };}
 
   const desiredKeys = new Set(reqs.map((r) => r.key));
   // Phase-1 lock set (smart policy): lock Line 2/3 that hold a desired stat; lock
   // Line 1 only when it already meets its target tier (else leave it cheap to
   // reroll, since Line 1 always reappears).
   const phase1Lock = cur.map((l, i) => {
-    if (l.key === '' || !desiredKeys.has(l.key as OlKey)) return false;
-    if (i === 0) return l.tier >= targetTier(l.key as OlKey);
+    if (l.key === '' || !desiredKeys.has(l.key as OlKey)) {return false;}
+    if (i === 0) {return l.tier >= targetTier(l.key as OlKey);}
     return true;
   });
   const securedKeys = new Set(
-    cur.filter((_, i) => phase1Lock[i]).map((l) => l.key as OlKey),
+    cur.filter((_, i) => phase1Lock[i]).map((l) => l.key as OlKey)
   );
   const toHunt = reqs.filter((r) => !securedKeys.has(r.key));
   const freeLines = [0, 1, 2].filter((i) => !phase1Lock[i]);
@@ -280,26 +280,26 @@ function buildRollGuide(
       .filter(({ i }) => phase1Lock[i])
       .map(({ l, i }) => `${Ln(i)} (${statLabel(l.key as OlKey)})`);
     if (keepers.length)
-      p1.push(
+      {p1.push(
         <>
           <b>Lock</b> {keepers.join(', ')} — keeper
           {keepers.length > 1 ? 's' : ''}.
-        </>,
-      );
+        </>
+      );}
     if (junkL1)
-      p1.push(
+      {p1.push(
         <>
           Leave <b>{Ln(0)}</b> ({statLabel(cur[0].key as OlKey)} T{cur[0].tier})
           unlocked — always reappears, don’t lock.
-        </>,
-      );
+        </>
+      );}
 
     if (F === 1) {
       const i = freeLines[0];
       p1.push(
         <>
           <b>Reroll</b> {Ln(i)} → {huntJoin}; lock. [{slotTag(i)} slot]
-        </>,
+        </>
       );
     } else if (M === F) {
       // Greedy: lock each rare slot (L2/L3) the moment it shows a needed stat,
@@ -314,14 +314,14 @@ function buildRollGuide(
           <b>Reroll</b> open ({openJoin}); lock {rareLabel} the moment{' '}
           {rareFree.length > 1 ? 'either' : 'it'} shows a needed stat (
           {huntJoin}) — take whichever lands first.
-        </>,
+        </>
       );
       if (line1Free)
-        p1.push(
+        {p1.push(
           <>
             <b>Reroll</b> {Ln(0)} → last needed stat (final roll, no lock).
-          </>,
-        );
+          </>
+        );}
     } else {
       // M < F: slack — grab stats on any lines, skip the spare rare slot(s)
       p1.push(
@@ -329,29 +329,29 @@ function buildRollGuide(
           <b>Reroll</b> open ({openJoin}); lock any {M} lines that hit{' '}
           {huntJoin}.{line1Free ? ` Don’t lock ${Ln(0)}.` : ''} Spare rare
           slot(s) optional — don’t wait on them.
-        </>,
+        </>
       );
     }
   }
 
   // ---- Phase 2: value reset (tier push) ----
   if (toHunt.length > 0)
-    p2.push(
+    {p2.push(
       <>
         <b>Unlock all</b> → <b>Value-reset</b> (keeps stat, rerolls tier only).
-      </>,
-    );
+      </>
+    );}
   else
-    p2.push(
+    {p2.push(
       <>
         <b>Value-reset</b> (keeps stat, rerolls tier only).
-      </>,
-    );
+      </>
+    );}
   p2.push(
     <>
       Lock lines already ≥ target; value-reset the rest; lock each at target.
       Repeat until all lines ≥ target.
-    </>,
+    </>
   );
 
   const phases = [
@@ -410,7 +410,7 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
 // DPS-chart cell) still implies the DPS Chart tab; else Sim.
 function tabFromLocation(): CalcTab {
   const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && CALC_TABS.some((x) => x.key === seg)) return seg as CalcTab;
+  if (seg && CALC_TABS.some((x) => x.key === seg)) {return seg as CalcTab;}
   return new URLSearchParams(window.location.search).has('chart')
     ? 'dpschart'
     : 'sim';
@@ -442,7 +442,7 @@ function ammoBreakpoints(base: number, perLinePct: number) {
   for (let v = base + 1; v <= maxAmmo; v++) {
     const minPct = (v / base - 1) * 100;
     const linesNeeded = Math.ceil(minPct / perLinePct - 1e-9);
-    if (linesNeeded <= 4) out.push({ ammo: v, minPct, linesNeeded });
+    if (linesNeeded <= 4) {out.push({ ammo: v, minPct, linesNeeded });}
   }
   return out;
 }
@@ -534,12 +534,12 @@ const unionBossLabel = (o: UnionBossOpts): string => {
   const parts: string[] = [];
   parts.push(o.weakness ? `${o.weakness}-weak` : 'no element');
   const def = Number(o.bossDef) || 0;
-  if (def) parts.push(`DEF ${def}`);
-  if (o.bossRange) parts.push(o.bossRange);
+  if (def) {parts.push(`DEF ${def}`);}
+  if (o.bossRange) {parts.push(o.bossRange);}
   parts.push(
     o.coreCustom
       ? `${o.coreCustomVal}% core`
-      : `${Math.round(o.core * 100)}% core`,
+      : `${Math.round(o.core * 100)}% core`
   );
   return parts.join(' · ');
 };
@@ -635,14 +635,14 @@ function TeamPortraits({
   const [cols, setCols] = useState(5);
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    if (!el) {return;}
     const GAP = 4,
       MIN = 32,
       N = slugs.length; // fits N-across at the 32px floor?
     const compute = () =>
       setCols(el.clientWidth >= N * MIN + (N - 1) * GAP ? 5 : 3);
     compute();
-    if (typeof ResizeObserver === 'undefined') return; // jsdom / SSR
+    if (typeof ResizeObserver === 'undefined') {return;} // jsdom / SSR
     const ro = new ResizeObserver(compute);
     ro.observe(el);
     return () => ro.disconnect();
@@ -650,7 +650,7 @@ function TeamPortraits({
   // crisp, pre-downscaled + PORTRAIT_CROP_TOP-cropped thumbnails (max chip = 64px)
   const thumbs = usePortraitThumbs(
     slugs.map((s) => data.characters[s]?.imageUrl),
-    64,
+    64
   );
   // The engine focuses the middle slot (index min(2, n-1)) as the camera unit; a
   // focused charge weapon (SR/RL) generates ×2.5 burst gauge. The generators now
@@ -677,15 +677,15 @@ function TeamPortraits({
               <img
                 src={thumbs[c.imageUrl] ?? c.imageUrl}
                 alt={c?.name ?? slug}
-                loading='lazy'
+                loading="lazy"
               />
             ) : (
-              <span className='tp-init'>
+              <span className="tp-init">
                 {(c?.name?.[0] ?? '?').toUpperCase()}
               </span>
             )}
             {adv && (
-              <span className='tp-adv' title='elemental advantage'>
+              <span className="tp-adv" title="elemental advantage">
                 ▲
               </span>
             )}
@@ -703,14 +703,14 @@ const advSet = (t: TeamResult) =>
 // split into rows of n (for centering a partial last row)
 function chunk<T>(arr: T[], n: number): T[][] {
   const out: T[][] = [];
-  for (let i = 0; i < arr.length; i += n) out.push(arr.slice(i, i + n));
+  for (let i = 0; i < arr.length; i += n) {out.push(arr.slice(i, i + n));}
   return out;
 }
 
 // Charge weapons in the roster, so the Charge Speed picker only offers RL/SR
 // units that actually have a charge phase.
 const CHARGE_CHARS = allChars.filter(
-  (c) => (c.weapon === 'RL' || c.weapon === 'SR') && c.chargeFrames > 0,
+  (c) => (c.weapon === 'RL' || c.weapon === 'SR') && c.chargeFrames > 0
 );
 
 // 'none' = no cube equipped at all (no flat ATK, no elemental damage, no effect);
@@ -804,10 +804,10 @@ const olOptimal = (
 // A slot's 12/12 `olExtra`: the unit's optimal remainder lines, each collapsed to
 // one entry whose value is count × the T11 per-line value for that stat.
 const optimalOlExtra = (
-  slug: string | null,
+  slug: string | null
 ): { type: string; value: string }[] => {
   const picks = slug ? olOptimal[slug] : undefined;
-  if (!picks?.length) return [];
+  if (!picks?.length) {return [];}
   const tv = olTierValues(11);
   return picks.map((p) => ({
     type: p.type,
@@ -819,16 +819,16 @@ const optimalOlExtra = (
 // entry; the textbox value is the total % for that stat). the sim resolves
 // `type` against data/ol-lines.json and adds `value * count` to the stat.
 function buildOlLines(
-  s: SlotState,
+  s: SlotState
 ): { type: string; count: number; value: number }[] {
   const out: { type: string; count: number; value: number }[] = [];
   const push = (type: string, raw: string) => {
     const v = Number(raw);
-    if (Number.isFinite(v) && v > 0) out.push({ type, count: 1, value: v });
+    if (Number.isFinite(v) && v > 0) {out.push({ type, count: 1, value: v });}
   };
   push('elem', s.olElem);
   push('atk', s.olAtk);
-  for (const line of s.olExtra) if (line.type) push(line.type, line.value);
+  for (const line of s.olExtra) {if (line.type) {push(line.type, line.value);}}
   return out;
 }
 
@@ -846,7 +846,7 @@ function slotToUnitOptions(s: SlotState): UnitOptions {
   // bond level: parse the textbox → clamp to [0, manufacturer max]. Blank / NaN →
   // undefined so the engine falls back to the manufacturer max (scope-lock basis).
   const maxBond = maxBondLevel(
-    s.slug ? data.characters[s.slug].manufacturer : null,
+    s.slug ? data.characters[s.slug].manufacturer : null
   );
   const bondRaw = s.relationshipLevel.trim();
   const bondNum = bondRaw === '' ? NaN : Number(bondRaw);
@@ -910,9 +910,9 @@ const emptyTeam = (): SlotState[] =>
 function loadStoredTeam(): SlotState[] | null {
   try {
     const raw = localStorage.getItem(TEAM_STORAGE_KEY);
-    if (!raw) return null;
+    if (!raw) {return null;}
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr) || arr.length !== 5) return null;
+    if (!Array.isArray(arr) || arr.length !== 5) {return null;}
     // merge over defaults so slots saved before a schema change still load,
     // and drop any slug no longer present in the data
     return arr.map((s) => {
@@ -946,18 +946,18 @@ const ROSTER_MODE_STORAGE_KEY = 'nikke-sim.roster-mode.v1';
 // restore a rows×5 roster grid, dropping any slug no longer present in the data
 function loadStoredRoster(
   key: string,
-  rows: number,
+  rows: number
 ): (string | null)[][] | null {
   try {
     const raw = localStorage.getItem(key);
-    if (!raw) return null;
+    if (!raw) {return null;}
     const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) return null;
+    if (!Array.isArray(arr)) {return null;}
     return Array.from({ length: rows }, (_, i) =>
       Array.from({ length: 5 }, (_, j) => {
         const s = arr[i]?.[j];
         return typeof s === 'string' && data.characters[s] ? s : null;
-      }),
+      })
     );
   } catch {
     return null;
@@ -1115,8 +1115,8 @@ function triggerLabel(tr: any): string {
 function collectBuffs(effects: any[]): any[] {
   const out: any[] = [];
   for (const e of effects ?? []) {
-    if (e?.kind === 'buff') out.push(e);
-    else if (e?.kind === 'escalating') out.push(...collectBuffs(e.steps));
+    if (e?.kind === 'buff') {out.push(e);}
+    else if (e?.kind === 'escalating') {out.push(...collectBuffs(e.steps));}
   }
   return out;
 }
@@ -1129,7 +1129,7 @@ function buffLines(blocks: any[]): string[] {
       const dur = e.durationSec ? ` · ${e.durationSec}s` : '';
       const stacks = e.maxStacks && e.maxStacks > 1 ? ` ×${e.maxStacks}` : '';
       lines.push(
-        `${stat} ${e.value}%${stacks} → ${targetLabel(block.target)}${dur} (${triggerLabel(block.trigger)})`,
+        `${stat} ${e.value}%${stacks} → ${targetLabel(block.target)}${dur} (${triggerLabel(block.trigger)})`
       );
     }
   }
@@ -1141,9 +1141,9 @@ function buffLines(blocks: any[]): string[] {
 // where an expanded-card index lands after a reorder from→to (so the open card
 // in compact mode keeps following the same slot)
 function remapIndex(e: number, from: number, to: number): number {
-  if (e === from) return to;
-  if (from < e && to >= e) return e - 1;
-  if (from > e && to <= e) return e + 1;
+  if (e === from) {return to;}
+  if (from < e && to >= e) {return e - 1;}
+  if (from > e && to <= e) {return e + 1;}
   return e;
 }
 
@@ -1166,10 +1166,10 @@ function CharPicker({
     ? pool.filter((c) => charMatchesQuery(c, q)).slice(0, 12)
     : pool.slice(0, 12);
   return (
-    <div className='picker'>
+    <div className="picker">
       <input
         value={open ? query : (selected?.name ?? '')}
-        placeholder='search nikke…'
+        placeholder="search nikke…"
         onFocus={() => {
           setOpen(true);
           setQuery('');
@@ -1178,7 +1178,7 @@ function CharPicker({
         onChange={(e) => setQuery(e.target.value)}
       />
       {open && (
-        <div className='picker-list'>
+        <div className="picker-list">
           {matches.map((c) => (
             <button
               key={c.slug}
@@ -1190,17 +1190,17 @@ function CharPicker({
               {c.imageUrl && (
                 <img
                   src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
-                  alt=''
-                  loading='lazy'
+                  alt=""
+                  loading="lazy"
                 />
               )}
               <span>{c.name}</span>
-              <span className='muted'>
+              <span className="muted">
                 B{c.burst} · {c.weapon} · {c.element}
               </span>
             </button>
           ))}
-          {!matches.length && <div className='muted pad'>no matches</div>}
+          {!matches.length && <div className="muted pad">no matches</div>}
         </div>
       )}
     </div>
@@ -1230,7 +1230,7 @@ function CharSearch({
     .filter((c) => !q || charMatchesQuery(c, q))
     .slice(0, 12);
   return (
-    <div className='picker'>
+    <div className="picker">
       <input
         value={query}
         placeholder={placeholder}
@@ -1239,7 +1239,7 @@ function CharSearch({
         onChange={(e) => setQuery(e.target.value)}
       />
       {open && (
-        <div className='picker-list'>
+        <div className="picker-list">
           {matches.map((c) => (
             <button
               key={c.slug}
@@ -1251,17 +1251,17 @@ function CharSearch({
               {c.imageUrl && (
                 <img
                   src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
-                  alt=''
-                  loading='lazy'
+                  alt=""
+                  loading="lazy"
                 />
               )}
               <span>{c.name}</span>
-              <span className='muted'>
+              <span className="muted">
                 B{c.burst} · {c.weapon} · {c.element}
               </span>
             </button>
           ))}
-          {!matches.length && <div className='muted pad'>no matches</div>}
+          {!matches.length && <div className="muted pad">no matches</div>}
         </div>
       )}
     </div>
@@ -1300,7 +1300,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // over ?team= / localStorage; computed once on mount
   const boot = useMemo(bootBuild, []);
   const [slots, setSlots] = useState<SlotState[]>(() => {
-    if (boot) return boot.s.map(slotFromBuild);
+    if (boot) {return boot.s.map(slotFromBuild);}
     // shareable prefill: ?team=liter,crown,naga,modernia,alice
     const param = new URLSearchParams(window.location.search).get('team');
     if (param) {
@@ -1313,12 +1313,12 @@ export function App({ user }: { user: AuthUser | null }) {
     return loadStoredTeam() ?? emptyTeam();
   });
   const [weakness, setWeakness] = useState<Element | null>(
-    boot ? coerceWeakness(boot.g.weakness) : null,
+    boot ? coerceWeakness(boot.g.weakness) : null
   );
   const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
   const [bossRange, setBossRange] = useState<BossRange | null>(() => {
     const fromBuild = (boot?.g.bossRange as BossRange | null) ?? null;
-    if (fromBuild) return fromBuild;
+    if (fromBuild) {return fromBuild;}
     const p = new URLSearchParams(window.location.search).get('br');
     return p && BOSS_RANGE_OPTIONS.some((o) => o.id === p)
       ? (p as BossRange)
@@ -1327,14 +1327,14 @@ export function App({ user }: { user: AuthUser | null }) {
   const [core, setCore] = useState<number>(boot?.g.core ?? 0);
   const [coreCustom, setCoreCustom] = useState(boot?.g.coreCustom ?? false);
   const [coreCustomVal, setCoreCustomVal] = useState(
-    boot?.g.coreCustomVal ?? '10',
+    boot?.g.coreCustomVal ?? '10'
   );
   const [level, setLevel] = useState(boot?.g.level ?? '400');
   // Synced Roster preset: the user's real account build (name_code→loadout), the
   // account synchro level, and the fetch status. Cached after the first pull so
   // re-applying is instant; cleared implicitly by a page reload.
   const [syncedIdx, setSyncedIdx] = useState<Map<string, SlotLoadout> | null>(
-    null,
+    null
   );
   const [syncedLevel, setSyncedLevel] = useState<number | null>(null);
   const [syncedBusy, setSyncedBusy] = useState(false);
@@ -1343,7 +1343,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // automatically inherits that preset's loadout (scope lock, or its synced build).
   // Set by clicking a preset; the most recently clicked one wins.
   const [activePreset, setActivePreset] = useState<'scope' | 'synced' | null>(
-    null,
+    null
   );
   // Generator: when a roster is synced, whether to include the user's non-OL-geared
   // units (as zero-gear candidates) or disregard them (default). See the pill.
@@ -1363,7 +1363,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // the page the first time each modal opens.
   const [showPicker, setShowPicker] = useState(false);
   const [pickerStaged, setPickerStaged] = useState<(string | null)[] | null>(
-    null,
+    null
   );
   const [showRosterPicker, setShowRosterPicker] = useState(false);
   const [rosterPickerStaged, setRosterPickerStaged] = useState<
@@ -1383,22 +1383,22 @@ export function App({ user }: { user: AuthUser | null }) {
     null,
   ]);
   const [tbRosterMode, setTbRosterMode] = useState<'team' | 'solo' | 'union'>(
-    'team',
+    'team'
   );
   const [tbUnionBossOpts, setTbUnionBossOpts] = useState<UnionBossOpts[]>(
-    Array.from({ length: 3 }, defaultUnionBossOpts),
+    Array.from({ length: 3 }, defaultUnionBossOpts)
   );
   const onTbTeamChange = useCallback(
     (
       slugs: (string | null)[],
       rosterMode: 'team' | 'solo' | 'union',
-      unionBoss?: UnionBossOpts[],
+      unionBoss?: UnionBossOpts[]
     ) => {
       setTbSlugs(slugs);
       setTbRosterMode(rosterMode);
-      if (unionBoss) setTbUnionBossOpts(unionBoss);
+      if (unionBoss) {setTbUnionBossOpts(unionBoss);}
     },
-    [],
+    []
   );
   const [showOlCalc, setShowOlCalc] = useState(false);
   const [olTier, setOlTier] = useState(11); // best-OL calc tier (default 11)
@@ -1421,7 +1421,7 @@ export function App({ user }: { user: AuthUser | null }) {
     return () => window.removeEventListener('popstate', onPop);
   }, []);
   const [blocked, setBlocked] = useState<string[]>(
-    boot?.blocked?.filter((s) => data.characters[s]) ?? [],
+    boot?.blocked?.filter((s) => data.characters[s]) ?? []
   ); // don't-own / excluded
   // Charge Speed tab: chosen unit (null = the generic 1s / 60-frame reference)
   // and whether to list the deep, hard-to-reach breakpoints.
@@ -1447,7 +1447,7 @@ export function App({ user }: { user: AuthUser | null }) {
         .split(',')
         .map((s) => (data.characters[s.trim()] ? s.trim() : null));
       return Array.from({ length: 5 }, (_, t) =>
-        Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+        Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null)
       );
     }
     // otherwise restore the last solo roster from a previous session
@@ -1457,15 +1457,15 @@ export function App({ user }: { user: AuthUser | null }) {
     );
   });
   const [rosterActive, setRosterActive] = useState<[number, number] | null>(
-    null,
+    null
   );
   const [rosterSimResults, setRosterSimResults] = useState<TeamResult[] | null>(
-    null,
+    null
   );
   // Roster Sim mode pill: Solo Raid (5×5) vs Union Raid (3×5)
   const [rosterSimMode, setRosterSimMode] = useState<'solo' | 'union'>(() => {
     const m = new URLSearchParams(window.location.search).get('mode');
-    if (m === 'union' || m === 'solo') return m;
+    if (m === 'union' || m === 'solo') {return m;}
     // no mode in the URL — reopen whichever raid was last active
     return loadStoredRosterMode() ?? 'solo';
   });
@@ -1481,7 +1481,7 @@ export function App({ user }: { user: AuthUser | null }) {
               .map((s) => (data.characters[s.trim()] ? s.trim() : null))
           : [];
         return Array.from({ length: 3 }, (_, t) =>
-          Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null),
+          Array.from({ length: 5 }, (_, u) => slugs[t * 5 + u] ?? null)
         );
       }
       // otherwise restore the last union roster from a previous session
@@ -1489,12 +1489,12 @@ export function App({ user }: { user: AuthUser | null }) {
         loadStoredRoster(UNION_ROSTER_STORAGE_KEY, 3) ??
         Array.from({ length: 3 }, () => Array.from({ length: 5 }, () => null))
       );
-    },
+    }
   );
   const [unionBossOpts, setUnionBossOpts] = useState<UnionBossOpts[]>(() => {
     const p = new URLSearchParams(window.location.search);
     if (p.get('mode') !== 'union')
-      return Array.from({ length: 3 }, defaultUnionBossOpts);
+      {return Array.from({ length: 3 }, defaultUnionBossOpts);}
     const bw = p.get('bw')?.split(',') ?? [];
     const bd = p.get('bd')?.split(',') ?? [];
     const cv = p.get('cv')?.split(',') ?? [];
@@ -1507,8 +1507,7 @@ export function App({ user }: { user: AuthUser | null }) {
         core: cv[i] ? Number(cv[i]) : 0,
         coreCustom: false,
         coreCustomVal: '10',
-        bossRange:
-          r && BOSS_RANGE_OPTIONS.some((o) => o.id === r) ? r : null,
+        bossRange: r && BOSS_RANGE_OPTIONS.some((o) => o.id === r) ? r : null,
       };
     });
   });
@@ -1522,10 +1521,10 @@ export function App({ user }: { user: AuthUser | null }) {
   // each with its own boss options).
   const [rosterGenMode, setRosterGenMode] = useState<'solo' | 'union'>('solo');
   const [unionGenBossOpts, setUnionGenBossOpts] = useState<UnionBossOpts[]>(
-    Array.from({ length: 3 }, defaultUnionBossOpts),
+    Array.from({ length: 3 }, defaultUnionBossOpts)
   );
   const [unionGenResults, setUnionGenResults] = useState<TeamResult[] | null>(
-    null,
+    null
   );
   // Healer requirement for the roster/team generator: when on, every generated
   // team must include at least one unit tagged as a healer.
@@ -1535,21 +1534,21 @@ export function App({ user }: { user: AuthUser | null }) {
   // Generator distinguishes units PINNED to a specific team row from generic
   // "use these" box units the generator places wherever they fit best.
   const [teamGenLock, setTeamGenLock] = useState<(string | null)[]>(() =>
-    Array(5).fill(null),
+    Array(5).fill(null)
   );
   const [showTeamGenPicker, setShowTeamGenPicker] = useState(false);
   const [rosterGenPinned, setRosterGenPinned] = useState<(string | null)[][]>(
-    () => Array.from({ length: 5 }, () => Array(5).fill(null)),
+    () => Array.from({ length: 5 }, () => Array(5).fill(null))
   );
   const [rosterGenGeneric, setRosterGenGeneric] = useState<(string | null)[]>(
-    () => Array(GEN_BOX_SLOTS).fill(null),
+    () => Array(GEN_BOX_SLOTS).fill(null)
   );
   const [showRosterGenPicker, setShowRosterGenPicker] = useState(false);
   const [unionGenPinned, setUnionGenPinned] = useState<(string | null)[][]>(
-    () => Array.from({ length: 3 }, () => Array(5).fill(null)),
+    () => Array.from({ length: 3 }, () => Array(5).fill(null))
   );
   const [unionGenGeneric, setUnionGenGeneric] = useState<(string | null)[]>(
-    () => Array(GEN_BOX_SLOTS).fill(null),
+    () => Array(GEN_BOX_SLOTS).fill(null)
   );
   const [showUnionGenPicker, setShowUnionGenPicker] = useState(false);
   // Exclude picker (the old "Blocked characters" text entry, now a Browse modal)
@@ -1574,14 +1573,14 @@ export function App({ user }: { user: AuthUser | null }) {
   const [olSimCards, setOlSimCards] =
     useState<OlSimLine[][]>(defaultOlSimCards);
   const [olSimLockMode, setOlSimLockMode] = useState<'permanent' | 'temp'>(
-    'permanent',
+    'permanent'
   );
   const [olSimResult, setOlSimResult] = useState<{
     perPiece: McSummary[];
     total: McSummary;
   } | null>(null);
   const [olSimCurrent, setOlSimCurrent] = useState<OlSimCurrentCard[]>(
-    defaultOlSimCurrentCards,
+    defaultOlSimCurrentCards
   );
   const [olSimCurrentResult, setOlSimCurrentResult] = useState<{
     perPiece: McSummary[];
@@ -1654,7 +1653,7 @@ export function App({ user }: { user: AuthUser | null }) {
 
   const setSlot = (i: number, patch: Partial<SlotState>) =>
     setSlots((s) =>
-      s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot)),
+      s.map((slot, j) => (j === i ? { ...slot, ...patch } : slot))
     );
 
   // compact/portrait team UI: a 5-across portrait strip + one expanded card.
@@ -1669,7 +1668,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // reorder a team slot (drives the sim: position sets camera focus / burst
   // order), keeping the expanded card pointed at the same slot it followed.
   const moveSlot = (from: number, to: number) => {
-    if (from === to) return;
+    if (from === to) {return;}
     setSlots((s) => {
       const a = [...s];
       const [m] = a.splice(from, 1);
@@ -1679,7 +1678,7 @@ export function App({ user }: { user: AuthUser | null }) {
     setExpandedSlot((e) => remapIndex(e, from, to));
   };
   const teamReorder = useDragReorder(moveSlot, (i) =>
-    setExpandedSlot((e) => (e === i ? -1 : i)),
+    setExpandedSlot((e) => (e === i ? -1 : i))
   );
 
   // bulk-apply a loadout choice at once. On the DPS tab it targets the variable
@@ -1711,18 +1710,18 @@ export function App({ user }: { user: AuthUser | null }) {
       olAtk: OL_8_12_ATK,
       olExtra: optimalOlExtra(s.slug),
     });
-    if (tab === 'dps') setDpsGroups((gs) => gs.map((g) => g.map(patch)));
-    else setSlots((s) => s.map(patch));
+    if (tab === 'dps') {setDpsGroups((gs) => gs.map((g) => g.map(patch)));}
+    else {setSlots((s) => s.map(patch));}
   };
   // does a slot already carry its 12/12 loadout? (floor + its own optimal remainder)
   const isOl12of12 = (s: SlotState): boolean => {
-    if (s.olElem !== OL_8_12_ELEM || s.olAtk !== OL_8_12_ATK) return false;
+    if (s.olElem !== OL_8_12_ELEM || s.olAtk !== OL_8_12_ATK) {return false;}
     const exp = optimalOlExtra(s.slug);
     return (
       s.olExtra.length === exp.length &&
       exp.every(
         (e, i) =>
-          s.olExtra[i]?.type === e.type && s.olExtra[i]?.value === e.value,
+          s.olExtra[i]?.type === e.type && s.olExtra[i]?.value === e.value
       )
     );
   };
@@ -1756,11 +1755,11 @@ export function App({ user }: { user: AuthUser | null }) {
   // each unit gets its own loadout; units not in the roster are left untouched.
   const applyOneSyncedLoadout = (
     s: SlotState,
-    idx: Map<string, SlotLoadout>,
+    idx: Map<string, SlotLoadout>
   ): SlotState => {
-    if (!s.slug) return s;
+    if (!s.slug) {return s;}
     const L = idx.get(s.slug);
-    if (!L) return s; // slot unit not owned / not modeled — leave as-is
+    if (!L) {return s;} // slot unit not owned / not modeled — leave as-is
     return {
       ...s,
       ol: L.ol,
@@ -1774,7 +1773,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // the dupe presets, so the applied values are actually visible (a real
       // account is often e.g. 2★ / core 4, which matches no preset pill).
       dupeCustom: !DUPE_PRESETS.some(
-        (p) => p.stars === L.stars && p.core === L.core,
+        (p) => p.stars === L.stars && p.core === L.core
       ),
       cubeId: L.cubeId ?? 'none',
       cubeLevel: L.cubeLevel,
@@ -1798,7 +1797,7 @@ export function App({ user }: { user: AuthUser | null }) {
     const base: Partial<SlotState> = {
       slug,
       relationshipLevel: String(
-        maxBondLevel(data.characters[slug].manufacturer),
+        maxBondLevel(data.characters[slug].manufacturer)
       ),
     };
     if (activePreset === 'scope') {
@@ -1821,9 +1820,9 @@ export function App({ user }: { user: AuthUser | null }) {
   // same slug-swap semantics as the old Copy to Sim (the slots' loadouts stay
   // put; only the units change).
   const savePickerToSim = () => {
-    if (!pickerStaged) return;
+    if (!pickerStaged) {return;}
     setSlots((prev) =>
-      prev.map((slot, i) => ({ ...slot, slug: pickerStaged[i] ?? null })),
+      prev.map((slot, i) => ({ ...slot, slug: pickerStaged[i] ?? null }))
     );
     setShowPicker(false);
   };
@@ -1834,20 +1833,20 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   // Save Roster: write the staged 5×5 into the page wholesale.
   const savePickerToRoster = () => {
-    if (!rosterPickerStaged) return;
+    if (!rosterPickerStaged) {return;}
     setRosterSim(rosterPickerStaged.map((row) => [...row]));
     setShowRosterPicker(false);
   };
   // Browse Nikkes (Union Raid): open with the page's current 3-team roster staged.
   const openUnionRosterPicker = () => {
     setUnionRosterPickerStaged(
-      (cur) => cur ?? unionRosterSim.map((row) => [...row]),
+      (cur) => cur ?? unionRosterSim.map((row) => [...row])
     );
     setShowUnionRosterPicker(true);
   };
   // Save Union Roster: write the staged 3×5 into the page wholesale.
   const saveUnionPickerToRoster = () => {
-    if (!unionRosterPickerStaged) return;
+    if (!unionRosterPickerStaged) {return;}
     setUnionRosterSim(unionRosterPickerStaged.map((row) => [...row]));
     setShowUnionRosterPicker(false);
   };
@@ -1866,20 +1865,20 @@ export function App({ user }: { user: AuthUser | null }) {
         const roster = await fetchCurrentSyncedRoster();
         if (!roster) {
           setSyncedMsg(
-            'No synced roster yet — sync it on the “Sync my roster” page.',
+            'No synced roster yet — sync it on the “Sync my roster” page.'
           );
           return;
         }
         if (!roster.syncedLoadouts?.length) {
           setSyncedMsg(
-            'Your roster needs a re-sync to include build stats (backend update pending).',
+            'Your roster needs a re-sync to include build stats (backend update pending).'
           );
           return;
         }
         idx = indexBySlug(roster.syncedLoadouts);
         const maxLv = roster.characters.reduce(
           (m, c) => Math.max(m, c.lv || 0),
-          0,
+          0
         );
         lvl = roster.syncLevel ?? (maxLv > 0 ? maxLv : null);
         setSyncedIdx(idx);
@@ -1890,18 +1889,18 @@ export function App({ user }: { user: AuthUser | null }) {
       const applied =
         tab === 'dps' ? matched(dpsGroups.flat()) : matched(slots);
       if (tab === 'dps')
-        setDpsGroups((gs) =>
-          gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!))),
-        );
-      else setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));
-      if (lvl) setLevel(String(lvl));
+        {setDpsGroups((gs) =>
+          gs.map((g) => g.map((s) => applyOneSyncedLoadout(s, idx!)))
+        );}
+      else {setSlots((s) => s.map((sl) => applyOneSyncedLoadout(sl, idx!)));}
+      if (lvl) {setLevel(String(lvl));}
       setActivePreset('synced'); // armed: newly picked owned nikkes inherit their synced build
       // Surface any synced content the sim couldn't map instead of dropping it
       // silently — this is how a mislabelled OL line (e.g. Ele/Ammo) gets caught.
       const unmapped = new Set<string>();
       for (const L of idx!.values()) {
-        for (const u of L.unmappedLines ?? []) unmapped.add(u);
-        if (L.unmappedCube) unmapped.add(`cube “${L.unmappedCube}”`);
+        for (const u of L.unmappedLines ?? []) {unmapped.add(u);}
+        if (L.unmappedCube) {unmapped.add(`cube “${L.unmappedCube}”`);}
       }
       const unmappedNote = unmapped.size
         ? ` Unmapped synced content (ignored): ${[...unmapped].join(', ')}.`
@@ -1910,13 +1909,13 @@ export function App({ user }: { user: AuthUser | null }) {
         (applied > 0
           ? `Applied your synced build to ${applied} unit${applied === 1 ? '' : 's'}${lvl ? ` · sync ${lvl}` : ''}.`
           : 'None of your team’s units are in your synced roster.') +
-          unmappedNote,
+          unmappedNote
       );
     } catch (e) {
       setSyncedMsg(
         e instanceof ApiError && e.status === 401
           ? 'Please log in again to use your synced roster.'
-          : 'Could not load your synced roster. Try again.',
+          : 'Could not load your synced roster. Try again.'
       );
     } finally {
       setSyncedBusy(false);
@@ -1963,7 +1962,7 @@ export function App({ user }: { user: AuthUser | null }) {
     setBlocked(
       Array.isArray(b.blocked)
         ? b.blocked.filter((s) => data.characters[s])
-        : [],
+        : []
     );
   };
 
@@ -2009,7 +2008,7 @@ export function App({ user }: { user: AuthUser | null }) {
     refreshTeams();
   };
   const suggestedName = () => {
-    if (loadedTeamName) return loadedTeamName;
+    if (loadedTeamName) {return loadedTeamName;}
     const names = slots
       .map((s) => (s.slug ? data.characters[s.slug].name : null))
       .filter(Boolean) as string[];
@@ -2022,7 +2021,7 @@ export function App({ user }: { user: AuthUser | null }) {
       setLoadedTeamName(name);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) refreshTeams();
+      if (showTeams) {refreshTeams();}
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2030,7 +2029,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Roster Sim roster (25 units + shared loadout + boss options) to the same
   // saved-teams store, tagged by the `roster` field in the build code.
   const rosterSuggestedName = () => {
-    if (loadedRosterName) return loadedRosterName;
+    if (loadedRosterName) {return loadedRosterName;}
     const first = rosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} roster`
@@ -2040,14 +2039,14 @@ export function App({ user }: { user: AuthUser | null }) {
     try {
       await saveTeam(
         name,
-        encodeBuild({ ...buildFromState(), roster: rosterSim }),
+        encodeBuild({ ...buildFromState(), roster: rosterSim })
       );
       setNamingRoster(false);
       setLoadedRosterName(name);
       setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) refreshTeams();
+      if (showTeams) {refreshTeams();}
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2055,7 +2054,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // Save a Union Raid roster (3 teams + per-team boss options) — same store,
   // tagged rosterMode:'union' so loading restores the union grid, not solo.
   const unionRosterSuggestedName = () => {
-    if (loadedUnionRosterName) return loadedUnionRosterName;
+    if (loadedUnionRosterName) {return loadedUnionRosterName;}
     const first = unionRosterSim.flat().find(Boolean);
     return first
       ? `${data.characters[first]?.name ?? first} union raid`
@@ -2077,14 +2076,14 @@ export function App({ user }: { user: AuthUser | null }) {
             coreCustomVal: o.coreCustomVal,
             bossRange: o.bossRange,
           })),
-        }),
+        })
       );
       setNamingRoster(false);
       setLoadedUnionRosterName(name);
       setRosterSaves((n) => n + 1);
       setSavedFlash(true);
       setTimeout(() => setSavedFlash(false), 1500);
-      if (showTeams) refreshTeams();
+      if (showTeams) {refreshTeams();}
     } catch (e) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
@@ -2116,7 +2115,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     bossRange: (o.bossRange as BossRange | null) ?? null,
                   }
                 : d;
-            }),
+            })
           );
         }
         setRosterSimMode('union');
@@ -2135,7 +2134,7 @@ export function App({ user }: { user: AuthUser | null }) {
     }
   };
   const onDeleteTeam = async (t: SavedTeam) => {
-    if (!window.confirm(`Delete "${t.name}"?`)) return;
+    if (!window.confirm(`Delete "${t.name}"?`)) {return;}
     try {
       await deleteTeam(t.id);
       setTeams((ts) => ts.filter((x) => x.id !== t.id));
@@ -2179,7 +2178,7 @@ export function App({ user }: { user: AuthUser | null }) {
     try {
       localStorage.setItem(
         UNION_ROSTER_STORAGE_KEY,
-        JSON.stringify(unionRosterSim),
+        JSON.stringify(unionRosterSim)
       );
     } catch {
       /* storage unavailable (private mode / quota) — skip persistence */
@@ -2226,7 +2225,7 @@ export function App({ user }: { user: AuthUser | null }) {
       level,
       tab,
       simRunNonce,
-    ],
+    ]
   );
   // Defer the expensive recompute: an edit (e.g. clicking a bulk pill) paints the
   // urgent UI — the pill's selected state — immediately, and the ~25-fight sim
@@ -2252,9 +2251,9 @@ export function App({ user }: { user: AuthUser | null }) {
       active,
       runNonce,
     } = deferredSimInput;
-    if (!active || runNonce === 0) return {};
+    if (!active || runNonce === 0) {return {};}
     if (slots.some((s) => !s.slug))
-      return { error: 'pick 5 nikkes to run the sim' };
+      {return { error: 'pick 5 nikkes to run the sim' };}
     const chars = slots.map((s) => data.characters[s.slug!]);
     const counts: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
     chars.forEach((c) => counts[c.burst]++);
@@ -2333,21 +2332,21 @@ export function App({ user }: { user: AuthUser | null }) {
   // user can still grab the link manually (Escape / × dismisses it).
   const renderLinkFallback = () =>
     linkFallback ? (
-      <span className='link-fallback'>
+      <span className="link-fallback">
         <input
           readOnly
           autoFocus
           value={linkFallback}
-          aria-label='share link'
+          aria-label="share link"
           onFocus={(e) => e.currentTarget.select()}
           onKeyDown={(e) => {
-            if (e.key === 'Escape') setLinkFallback(null);
+            if (e.key === 'Escape') {setLinkFallback(null);}
           }}
         />
         <button
-          type='button'
-          className='inline-name-x'
-          title='dismiss'
+          type="button"
+          className="inline-name-x"
+          title="dismiss"
           onClick={() => setLinkFallback(null)}
         >
           ×
@@ -2382,9 +2381,9 @@ export function App({ user }: { user: AuthUser | null }) {
       share,
       shareMeta(),
       imageUrlFor,
-      'nikke-team.png',
+      'nikke-team.png'
     );
-    if (res !== 'unsupported') flashImaged();
+    if (res !== 'unsupported') {flashImaged();}
   };
 
   // Share the roster summary card (5 teams: portraits + total-damage bars).
@@ -2404,15 +2403,15 @@ export function App({ user }: { user: AuthUser | null }) {
       share,
       shareMeta(),
       imageUrlFor,
-      'nikke-roster.png',
+      'nikke-roster.png'
     );
-    if (res !== 'unsupported') flashImaged();
+    if (res !== 'unsupported') {flashImaged();}
   };
 
   // Share the Union Raid card (3 teams + per-team boss options).
   const shareUnionRoster = async (
     teams: TeamResult[],
-    opts: UnionBossOpts[],
+    opts: UnionBossOpts[]
   ) => {
     const share: ShareRosterData = {
       title: 'NIKKE Solo Raid Sim · Union Raid',
@@ -2431,9 +2430,9 @@ export function App({ user }: { user: AuthUser | null }) {
       share,
       shareMeta(),
       imageUrlFor,
-      'nikke-union-raid.png',
+      'nikke-union-raid.png'
     );
-    if (res !== 'unsupported') flashImaged();
+    if (res !== 'unsupported') {flashImaged();}
   };
 
   // Generate link for the Roster Sim (solo or union mode).
@@ -2448,22 +2447,22 @@ export function App({ user }: { user: AuthUser | null }) {
         unionRosterSim
           .flat()
           .map((s) => s ?? '')
-          .join(','),
+          .join(',')
       );
       u.searchParams.set(
         'bw',
-        unionBossOpts.map((o) => o.weakness ?? '').join(','),
+        unionBossOpts.map((o) => o.weakness ?? '').join(',')
       );
       u.searchParams.set('bd', unionBossOpts.map((o) => o.bossDef).join(','));
       u.searchParams.set(
         'cv',
         unionBossOpts
           .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
-          .join(','),
+          .join(',')
       );
       u.searchParams.set(
         'br',
-        unionBossOpts.map((o) => o.bossRange ?? '').join(','),
+        unionBossOpts.map((o) => o.bossRange ?? '').join(',')
       );
     } else {
       u.searchParams.set(
@@ -2471,9 +2470,9 @@ export function App({ user }: { user: AuthUser | null }) {
         rosterSim
           .flat()
           .map((s) => s ?? '')
-          .join(','),
+          .join(',')
       );
-      if (bossRange) u.searchParams.set('br', bossRange);
+      if (bossRange) {u.searchParams.set('br', bossRange);}
     }
     await copyLink(u.toString());
   };
@@ -2492,7 +2491,7 @@ export function App({ user }: { user: AuthUser | null }) {
           teams: rows.map((row, i) => ({
             teamDamage: unionRosterSimResults?.[i]?.teamDamage ?? 0,
             bossLabel: unionBossLabel(
-              unionBossOpts[i] ?? defaultUnionBossOpts(),
+              unionBossOpts[i] ?? defaultUnionBossOpts()
             ),
             units: row
               .filter((s): s is string => !!s)
@@ -2504,9 +2503,9 @@ export function App({ user }: { user: AuthUser | null }) {
         },
         shareMeta(),
         imageUrlFor,
-        'nikke-union-raid.png',
+        'nikke-union-raid.png'
       );
-      if (res !== 'unsupported') flashImaged();
+      if (res !== 'unsupported') {flashImaged();}
     } else {
       const rows = rosterSim;
       const res = await shareRosterCard(
@@ -2526,9 +2525,9 @@ export function App({ user }: { user: AuthUser | null }) {
         },
         shareMeta(),
         imageUrlFor,
-        'nikke-roster.png',
+        'nikke-roster.png'
       );
-      if (res !== 'unsupported') flashImaged();
+      if (res !== 'unsupported') {flashImaged();}
     }
   };
 
@@ -2564,22 +2563,22 @@ export function App({ user }: { user: AuthUser | null }) {
         rows
           .flat()
           .map((s) => s ?? '')
-          .join(','),
+          .join(',')
       );
       u.searchParams.set(
         'bw',
-        tbUnionBossOpts.map((o) => o.weakness ?? '').join(','),
+        tbUnionBossOpts.map((o) => o.weakness ?? '').join(',')
       );
       u.searchParams.set('bd', tbUnionBossOpts.map((o) => o.bossDef).join(','));
       u.searchParams.set(
         'cv',
         tbUnionBossOpts
           .map((o) => (o.coreCustom ? o.coreCustomVal : String(o.core)))
-          .join(','),
+          .join(',')
       );
       u.searchParams.set(
         'br',
-        tbUnionBossOpts.map((o) => o.bossRange ?? '').join(','),
+        tbUnionBossOpts.map((o) => o.bossRange ?? '').join(',')
       );
     } else if (rows.length > 1) {
       u.pathname = '/rostersim';
@@ -2588,13 +2587,13 @@ export function App({ user }: { user: AuthUser | null }) {
         rows
           .flat()
           .map((s) => s ?? '')
-          .join(','),
+          .join(',')
       );
-      if (bossRange) u.searchParams.set('br', bossRange);
+      if (bossRange) {u.searchParams.set('br', bossRange);}
     } else {
       u.pathname = '/';
       u.searchParams.set('team', rows[0].map((s) => s ?? '').join(','));
-      if (bossRange) u.searchParams.set('br', bossRange);
+      if (bossRange) {u.searchParams.set('br', bossRange);}
     }
     await copyLink(u.toString());
   };
@@ -2608,7 +2607,7 @@ export function App({ user }: { user: AuthUser | null }) {
               teams: rows.map((row, i) => ({
                 teamDamage: 0,
                 bossLabel: unionBossLabel(
-                  tbUnionBossOpts[i] ?? defaultUnionBossOpts(),
+                  tbUnionBossOpts[i] ?? defaultUnionBossOpts()
                 ),
                 units: row
                   .filter((s): s is string => !!s)
@@ -2620,7 +2619,7 @@ export function App({ user }: { user: AuthUser | null }) {
             },
             shareMeta(),
             imageUrlFor,
-            'nikke-union-raid.png',
+            'nikke-union-raid.png'
           )
         : rows.length > 1
           ? await shareRosterCard(
@@ -2638,7 +2637,7 @@ export function App({ user }: { user: AuthUser | null }) {
               },
               shareMeta(),
               imageUrlFor,
-              'nikke-roster.png',
+              'nikke-roster.png'
             )
           : await shareTeamCard(
               {
@@ -2668,16 +2667,16 @@ export function App({ user }: { user: AuthUser | null }) {
               },
               shareMeta(),
               imageUrlFor,
-              'nikke-team.png',
+              'nikke-team.png'
             );
-    if (res !== 'unsupported') flashImaged();
+    if (res !== 'unsupported') {flashImaged();}
   };
 
   // Copy the Sim-tab result card (real portraits) to the clipboard via the shared
   // teamShare pipeline (same isomorphic drawTeamCard the bot uses). Falls back to
   // a download where the async clipboard image API isn't available (Firefox).
   const onShareImage = async () => {
-    if (!r) return;
+    if (!r) {return;}
     const share: ShareTeamData = {
       teamDamage: r.teamDamage,
       teamDps: r.teamDps,
@@ -2698,9 +2697,9 @@ export function App({ user }: { user: AuthUser | null }) {
       share,
       shareMeta(),
       imageUrlFor,
-      'nikke-team.png',
+      'nikke-team.png'
     );
-    if (res !== 'unsupported') flashImaged();
+    if (res !== 'unsupported') {flashImaged();}
   };
 
   // Remove/clear handlers for the generator include/exclude lists — shared by
@@ -2710,7 +2709,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const clearTeamGenInclude = () => setTeamGenLock(Array(5).fill(null));
   const removeRosterGenInclude = (slug: string) => {
     setRosterGenPinned((p) =>
-      p.map((row) => row.map((s) => (s === slug ? null : s))),
+      p.map((row) => row.map((s) => (s === slug ? null : s)))
     );
     setRosterGenGeneric((g) => g.map((s) => (s === slug ? null : s)));
   };
@@ -2720,7 +2719,7 @@ export function App({ user }: { user: AuthUser | null }) {
   };
   const removeUnionGenInclude = (slug: string) => {
     setUnionGenPinned((p) =>
-      p.map((row) => row.map((s) => (s === slug ? null : s))),
+      p.map((row) => row.map((s) => (s === slug ? null : s)))
     );
     setUnionGenGeneric((g) => g.map((s) => (s === slug ? null : s)));
   };
@@ -2743,12 +2742,12 @@ export function App({ user }: { user: AuthUser | null }) {
     label: string,
     buttonLabel: string,
     title: string,
-    extra?: ReactNode,
+    extra?: ReactNode
   ) => (
-    <div className='field'>
+    <div className="field">
       <label title={title}>{label}</label>
-      <div className='genlock-row'>
-        <button className='share-btn' onClick={onOpen}>
+      <div className="genlock-row">
+        <button className="share-btn" onClick={onOpen}>
           {buttonLabel}
         </button>
         {extra}
@@ -2762,7 +2761,7 @@ export function App({ user }: { user: AuthUser | null }) {
     code: string,
     setPinned: (v: (string | null)[][]) => void,
     setGeneric: (v: (string | null)[]) => void,
-    teams: number,
+    teams: number
   ) => {
     const slugs = decodeNikkeList(code);
     if (!slugs) {
@@ -2771,7 +2770,7 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     const valid = [...new Set(slugs.filter((s) => data.characters[s]))].slice(
       0,
-      GEN_BOX_SLOTS,
+      GEN_BOX_SLOTS
     );
     const box = Array(GEN_BOX_SLOTS).fill(null) as (string | null)[];
     valid.forEach((s, i) => (box[i] = s));
@@ -2794,19 +2793,19 @@ export function App({ user }: { user: AuthUser | null }) {
     '🚫 Exclude Nikkes',
     'nikkes you do not own / want excluded from the search',
     <SaveProfileControl
-      kind='exclude'
+      kind="exclude"
       user={user}
       getCode={() => (blocked.length ? encodeNikkeList(blocked) : null)}
       onLoad={loadExcludeList}
       suggestName={() => 'My exclude list'}
-    />,
+    />
   );
 
   const teamGenLockPanel = genListField(
     () => setShowTeamGenPicker(true),
     'Include Nikkes',
     '➕ Include Nikkes',
-    'nikkes the generator must include in its teams',
+    'nikkes the generator must include in its teams'
   );
   const rosterGenLockPanel = genListField(
     () => setShowRosterGenPicker(true),
@@ -2814,14 +2813,14 @@ export function App({ user }: { user: AuthUser | null }) {
     '➕ Include Nikkes',
     'nikkes the generator must include in its teams',
     <SaveProfileControl
-      kind='include'
+      kind="include"
       user={user}
       getCode={() => {
         const s = [
           ...new Set(
             [...rosterGenPinned.flat(), ...rosterGenGeneric].filter(
-              (x): x is string => !!x,
-            ),
+              (x): x is string => !!x
+            )
           ),
         ];
         return s.length ? encodeNikkeList(s) : null;
@@ -2830,7 +2829,7 @@ export function App({ user }: { user: AuthUser | null }) {
         loadIncludeList(code, setRosterGenPinned, setRosterGenGeneric, 5)
       }
       suggestName={() => 'My include list'}
-    />,
+    />
   );
   const unionGenLockPanel = genListField(
     () => setShowUnionGenPicker(true),
@@ -2838,14 +2837,14 @@ export function App({ user }: { user: AuthUser | null }) {
     '➕ Include Nikkes',
     'nikkes the generator must include in its teams',
     <SaveProfileControl
-      kind='include'
+      kind="include"
       user={user}
       getCode={() => {
         const s = [
           ...new Set(
             [...unionGenPinned.flat(), ...unionGenGeneric].filter(
-              (x): x is string => !!x,
-            ),
+              (x): x is string => !!x
+            )
           ),
         ];
         return s.length ? encodeNikkeList(s) : null;
@@ -2854,7 +2853,7 @@ export function App({ user }: { user: AuthUser | null }) {
         loadIncludeList(code, setUnionGenPinned, setUnionGenGeneric, 3)
       }
       suggestName={() => 'My include list'}
-    />,
+    />
   );
 
   // The included Nikkes per generator (pinned + generic, deduped) — rendered as
@@ -2863,15 +2862,15 @@ export function App({ user }: { user: AuthUser | null }) {
   const rosterGenIncluded = [
     ...new Set(
       [...rosterGenPinned.flat(), ...rosterGenGeneric].filter(
-        (s): s is string => !!s,
-      ),
+        (s): s is string => !!s
+      )
     ),
   ];
   const unionGenIncluded = [
     ...new Set(
       [...unionGenPinned.flat(), ...unionGenGeneric].filter(
-        (s): s is string => !!s,
-      ),
+        (s): s is string => !!s
+      )
     ),
   ];
 
@@ -2881,42 +2880,42 @@ export function App({ user }: { user: AuthUser | null }) {
     slugs: string[],
     label: string,
     onRemove: (slug: string) => void,
-    onClear: () => void,
+    onClear: () => void
   ) => {
     return (
-      <div className='gen-portraits'>
-        <div className='gen-portraits-head'>
-          <span className='gen-portraits-label'>
-            {label} <span className='gen-portraits-count'>{slugs.length}</span>
+      <div className="gen-portraits">
+        <div className="gen-portraits-head">
+          <span className="gen-portraits-label">
+            {label} <span className="gen-portraits-count">{slugs.length}</span>
           </span>
           {slugs.length > 0 && (
             <button
-              type='button'
-              className='gen-portraits-clear'
+              type="button"
+              className="gen-portraits-clear"
               onClick={onClear}
             >
               clear all
             </button>
           )}
         </div>
-        <div className='gen-portraits-grid'>
+        <div className="gen-portraits-grid">
           {slugs.map((slug) => {
             const c = data.characters[slug];
-            if (!c) return null;
+            if (!c) {return null;}
             return (
-              <div className='gen-portrait-wrap' key={slug}>
+              <div className="gen-portrait-wrap" key={slug}>
                 <img
-                  className='gen-portrait'
+                  className="gen-portrait"
                   src={
                     manifestThumbUrl(c.imageUrl, 64) ?? c.imageUrl ?? undefined
                   }
                   alt={c.name}
                   title={c.name}
-                  loading='lazy'
+                  loading="lazy"
                 />
                 <button
-                  type='button'
-                  className='gen-portrait-x'
+                  type="button"
+                  className="gen-portrait-x"
                   aria-label={`remove ${c.name}`}
                   onClick={() => onRemove(slug)}
                 >
@@ -2999,7 +2998,8 @@ export function App({ user }: { user: AuthUser | null }) {
         }
       : loadoutFor;
     const map: Record<string, UnitOptions> = {};
-    for (const slug of Object.keys(generatorCharacters)) map[slug] = resolve(slug);
+    for (const slug of Object.keys(generatorCharacters))
+      {map[slug] = resolve(slug);}
     return map;
   };
   // Serializable generator-calc request for the worker (buildGenCalc reconstructs
@@ -3008,14 +3008,14 @@ export function App({ user }: { user: AuthUser | null }) {
   const genParams = (
     cfg: GenCalcParams['cfg'],
     weak: Element | null,
-    unblock?: Set<string>,
+    unblock?: Set<string>
   ): GenCalcParams => ({
     weakness: weak,
     // locked Nikkes override the blocked list — an explicit lock wins over a
     // don't-own / non-OL exclusion so the generator can always field its locks
     blocked: (genSynced
       ? Object.keys(generatorCharacters).filter(
-          (s) => !genEligible(s) || blocked.includes(s),
+          (s) => !genEligible(s) || blocked.includes(s)
         )
       : blocked
     ).filter((s) => !unblock?.has(s)),
@@ -3029,8 +3029,8 @@ export function App({ user }: { user: AuthUser | null }) {
   // excluded, and — with a synced roster — owned/eligible). Used to decide which
   // always-combos apply (unavailable combos relax silently).
   const genAvailable = (slug: string): boolean => {
-    if (!generatorCharacters[slug]) return false;
-    if (blocked.includes(slug)) return false;
+    if (!generatorCharacters[slug]) {return false;}
+    if (blocked.includes(slug)) {return false;}
     return genSynced ? genEligible(slug) : true;
   };
   // Soft downward-sloped prydwen meta-sum targets for the 5 solo teams (owner
@@ -3077,13 +3077,13 @@ export function App({ user }: { user: AuthUser | null }) {
       setTeamResult(
         await genBestTeam(genParams(calcCfg(), weakness, new Set(locks)), {
           mustInclude: locks,
-        }),
+        })
       );
     });
   const runTopTeams = () =>
     runGen(async () => {
       const userPinned = rosterGenPinned.map((row) =>
-        row.filter((s): s is string => !!s),
+        row.filter((s): s is string => !!s)
       );
       const userMustUse = rosterGenGeneric.filter((s): s is string => !!s);
       // Curated always-combos retired (owner ruling 2026-07-24) — only the
@@ -3097,7 +3097,7 @@ export function App({ user }: { user: AuthUser | null }) {
           pinnedByTeam: userPinned,
           mustUse: userMustUse,
           spreadTargets: soloSpreadTargets(),
-        }),
+        })
       );
     });
   // Union Raid generator: 3 teams, each built against its own boss; no unit is
@@ -3109,7 +3109,7 @@ export function App({ user }: { user: AuthUser | null }) {
       setTeamResult(null);
       setRosterResults(null);
       const userPinned = unionGenPinned.map((row) =>
-        row.filter((s): s is string => !!s),
+        row.filter((s): s is string => !!s)
       );
       const userMustUse = unionGenGeneric.filter((s): s is string => !!s);
       // Curated always-combos retired (owner ruling 2026-07-24): only user pins
@@ -3120,7 +3120,7 @@ export function App({ user }: { user: AuthUser | null }) {
         userMustUse,
         userPinned,
         generatorCharacters as any,
-        3,
+        3
       );
       const reserved = Array.from({ length: 3 }, (_, i) => [
         ...(userPinned[i] ?? []),
@@ -3134,10 +3134,13 @@ export function App({ user }: { user: AuthUser | null }) {
         // keep later teams' reserved units out of this team's pool
         const exclude = new Set(used);
         for (let j = i + 1; j < 3; j++)
-          for (const s of reserved[j]) exclude.add(s);
-        const t = await genBestTeam(params, { exclude, mustInclude: reserved[i] });
-        if (!t) break;
-        for (const s of t.slugs) used.add(s);
+          {for (const s of reserved[j]) {exclude.add(s);}}
+        const t = await genBestTeam(params, {
+          exclude,
+          mustInclude: reserved[i],
+        });
+        if (!t) {break;}
+        for (const s of t.slugs) {used.add(s);}
         out.push(t);
       }
       // (The old mint→prika output post-pass is gone: the mint+prika together
@@ -3167,27 +3170,27 @@ export function App({ user }: { user: AuthUser | null }) {
     ? Object.keys(generatorCharacters).filter(genEligible).length
     : 0;
   const syncedGenPanel = genSynced ? (
-    <div className='field'>
-      <label title='With a synced roster, the generator builds from the units you own, using each unit’s real build. Units without Overload gear are disregarded by default.'>
+    <div className="field">
+      <label title="With a synced roster, the generator builds from the units you own, using each unit’s real build. Units without Overload gear are disregarded by default.">
         Synced roster
       </label>
-      <div className='pills small'>
+      <div className="pills small">
         <button
           className={!genIncludeNonOL ? 'on' : ''}
           onClick={() => setGenIncludeNonOL(false)}
-          title='Only consider units that have Overload gear'
+          title="Only consider units that have Overload gear"
         >
           Ignore Non-OL Units
         </button>
         <button
           className={genIncludeNonOL ? 'on' : ''}
           onClick={() => setGenIncludeNonOL(true)}
-          title='Also consider your non-OL-geared units, modeled with no gear stats'
+          title="Also consider your non-OL-geared units, modeled with no gear stats"
         >
           Include Non-OL Units
         </button>
       </div>
-      <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
+      <div className="muted" style={{ fontSize: 12, marginTop: 4 }}>
         Generating from {genPoolSize} of your owned units
         {genIncludeNonOL ? '' : ' with Overload gear'}, each with its synced
         build.
@@ -3199,11 +3202,11 @@ export function App({ user }: { user: AuthUser | null }) {
   // an opened link reproduces the result from the encoded inputs.
   const didAutoRun = useRef(false);
   useEffect(() => {
-    if (didAutoRun.current) return;
+    if (didAutoRun.current) {return;}
     didAutoRun.current = true;
-    if (new URLSearchParams(window.location.search).get('run') !== '1') return;
-    if (tab === 'team') runBestTeam();
-    else if (tab === 'roster') runTopTeams();
+    if (new URLSearchParams(window.location.search).get('run') !== '1') {return;}
+    if (tab === 'team') {runBestTeam();}
+    else if (tab === 'roster') {runTopTeams();}
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -3215,12 +3218,12 @@ export function App({ user }: { user: AuthUser | null }) {
   const assignRosterSlot = (ti: number, ui: number, slug: string | null) => {
     setRosterSim((r) =>
       r.map((team, t) =>
-        t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team,
-      ),
+        t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team
+      )
     );
     setRosterSimResults(null);
     // on a pick, advance to the next empty slot (fast sequential entry); clear on a clear
-    if (!slug) return setRosterActive([ti, ui]);
+    if (!slug) {return setRosterActive([ti, ui]);}
     let n: [number, number] | null = null;
     for (let k = ti * 5 + ui + 1; k < 25; k++) {
       const [t, u] = [Math.floor(k / 5), k % 5];
@@ -3242,7 +3245,7 @@ export function App({ user }: { user: AuthUser | null }) {
         flat[from] = flat[to];
         flat[to] = tmp;
         return Array.from({ length: r.length }, (_, t) =>
-          flat.slice(t * 5, t * 5 + 5),
+          flat.slice(t * 5, t * 5 + 5)
         );
       });
       setRosterSimResults(null);
@@ -3251,10 +3254,10 @@ export function App({ user }: { user: AuthUser | null }) {
       const t = Math.floor(i / 5);
       const u = i % 5;
       setRosterActive((cur) =>
-        cur && cur[0] === t && cur[1] === u ? null : [t, u],
+        cur && cur[0] === t && cur[1] === u ? null : [t, u]
       );
     },
-    { ignoreFrom: '.chip-x', commitOnDrop: true },
+    { ignoreFrom: '.chip-x', commitOnDrop: true }
   );
   const toTeamResult = (r: SimResult): TeamResult => ({
     slugs: r.units.map((u) => u.slug),
@@ -3290,13 +3293,13 @@ export function App({ user }: { user: AuthUser | null }) {
           const prepared = prepareTeam(
             cs as any,
             slugs.map((s) => loadoutFor(s)),
-            deps as any,
+            deps as any
           );
           const r = runSimMean(
             cs as any,
             mult,
             { ...cfg, slugs } as SimConfig,
-            prepared,
+            prepared
           );
           return toTeamResult(r);
         });
@@ -3308,7 +3311,7 @@ export function App({ user }: { user: AuthUser | null }) {
       Array.from({ length: 5 }, (_, j) => {
         const s = raw?.[i]?.[j];
         return s && data.characters[s] ? s : null;
-      }),
+      })
     );
   // Copy the generated roster into the Roster Sim grid and jump there.
   const copyToRosterSim = (teams: TeamResult[]) => {
@@ -3337,11 +3340,11 @@ export function App({ user }: { user: AuthUser | null }) {
   const assignUnionSlot = (ti: number, ui: number, slug: string | null) => {
     setUnionRosterSim((r) =>
       r.map((team, t) =>
-        t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team,
-      ),
+        t === ti ? team.map((s, u) => (u === ui ? slug : s)) : team
+      )
     );
     setUnionRosterSimResults(null);
-    if (!slug) return setUnionRosterActive([ti, ui]);
+    if (!slug) {return setUnionRosterActive([ti, ui]);}
     let n: [number, number] | null = null;
     for (let k = ti * 5 + ui + 1; k < 15; k++) {
       const [t, u] = [Math.floor(k / 5), k % 5];
@@ -3361,7 +3364,7 @@ export function App({ user }: { user: AuthUser | null }) {
         flat[from] = flat[to];
         flat[to] = tmp;
         return Array.from({ length: r.length }, (_, t) =>
-          flat.slice(t * 5, t * 5 + 5),
+          flat.slice(t * 5, t * 5 + 5)
         );
       });
       setUnionRosterSimResults(null);
@@ -3370,18 +3373,18 @@ export function App({ user }: { user: AuthUser | null }) {
       const t = Math.floor(i / 5);
       const u = i % 5;
       setUnionRosterActive((cur) =>
-        cur && cur[0] === t && cur[1] === u ? null : [t, u],
+        cur && cur[0] === t && cur[1] === u ? null : [t, u]
       );
     },
-    { ignoreFrom: '.chip-x', commitOnDrop: true },
+    { ignoreFrom: '.chip-x', commitOnDrop: true }
   );
   const setUnionBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
     setUnionBossOpts((prev) =>
-      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
+      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o))
     );
   const setUnionGenBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
     setUnionGenBossOpts((prev) =>
-      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
+      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o))
     );
   // Per-team sim config from union boss options (synchro level is shared)
   const unionCalcCfg = (o: UnionBossOpts) => ({
@@ -3415,27 +3418,27 @@ export function App({ user }: { user: AuthUser | null }) {
           const prepared = prepareTeam(
             cs as any,
             slugs.map((s) => loadoutFor(s)),
-            deps as any,
+            deps as any
           );
           const cfg = unionCalcCfg(opts);
           const r = runSimMean(
             cs as any,
             mult,
             { ...cfg, slugs } as SimConfig,
-            prepared,
+            prepared
           );
           return toTeamResult(r);
         });
       setUnionRosterSimResults(results);
     });
   const normalizeUnionRoster = (
-    raw: (string | null)[][],
+    raw: (string | null)[][]
   ): (string | null)[][] =>
     Array.from({ length: 3 }, (_, i) =>
       Array.from({ length: 5 }, (_, j) => {
         const s = raw?.[i]?.[j];
         return s && data.characters[s] ? s : null;
-      }),
+      })
     );
 
   // ---- Overload Calc: rank one carry's four free OL lines in an 8/12 team ----
@@ -3465,7 +3468,7 @@ export function App({ user }: { user: AuthUser | null }) {
         const seen = new Set<OlKey>();
         const reqs: Target = [];
         for (const l of card) {
-          if (!l.key || seen.has(l.key)) continue;
+          if (!l.key || seen.has(l.key)) {continue;}
           seen.add(l.key);
           reqs.push({ key: l.key, minTier: l.tier });
         }
@@ -3483,14 +3486,14 @@ export function App({ user }: { user: AuthUser | null }) {
         const seen = new Set<OlKey>();
         const reqs: Target = [];
         for (const l of card.desired) {
-          if (!l.key || seen.has(l.key)) continue;
+          if (!l.key || seen.has(l.key)) {continue;}
           seen.add(l.key);
           reqs.push({ key: l.key, minTier: l.tier });
         }
         targets.push(reqs);
         const slots: (Line | null)[] = [null, null, null];
         card.current.forEach((l, i) => {
-          if (l.key && i < 3) slots[i] = { key: l.key, tier: l.tier };
+          if (l.key && i < 3) {slots[i] = { key: l.key, tier: l.tier };}
         });
         starts.push(slots as Piece);
       }
@@ -3499,7 +3502,7 @@ export function App({ user }: { user: AuthUser | null }) {
           trials: 10000,
           starts,
           fresh: false,
-        }),
+        })
       );
     });
   // CTA from Optimize Overload: distribute the #1 config's 12 lines (4× Elem + 4×
@@ -3508,7 +3511,7 @@ export function App({ user }: { user: AuthUser | null }) {
   const goToOlSim = (results: OlConfigResult[]) => {
     const t = olMeasureTier;
     const free = results[0].lines.flatMap((l) =>
-      Array(l.count).fill(l.type as OlKey),
+      Array(l.count).fill(l.type as OlKey)
     ) as OlKey[];
     const cards: OlSimLine[][] = [0, 1, 2, 3].map((i) => [
       { key: 'elem' as OlKey | '', tier: t },
@@ -3545,7 +3548,7 @@ export function App({ user }: { user: AuthUser | null }) {
   // 0→15 throughput + per-phase guide on the Doll Calculator (calibration computed once).
   useEffect(() => {
     if (tab === 'doll' && !dollCal && !calcBusy)
-      runCalc(() => setDollCal(getDollCalibration()));
+      {runCalc(() => setDollCal(getDollCalibration()));}
   }, [tab, dollCal]);
   useEffect(() => {
     if (
@@ -3555,11 +3558,11 @@ export function App({ user }: { user: AuthUser | null }) {
       !dollResult &&
       !calcBusy
     )
-      runDollCalc();
+      {runDollCalc();}
   }, [tab, dollSub, dollCal]);
   useEffect(() => {
     if (tab === 'olsim' && olSimSub === 'calc' && !olSimResult && !calcBusy)
-      runOlSim();
+      {runOlSim();}
   }, [tab, olSimSub]);
   const runOlMatrix = () =>
     runCalc(() => {
@@ -3577,7 +3580,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // Solo framework injects synthetic no-op controls (NOOP_B1/B2/B3) that live
       // outside data.characters — resolve them the same way the engine's charFor does.
       const chars = team.slugs.map(
-        (s) => data.characters[s] ?? NOOP_CHARACTERS[s],
+        (s) => data.characters[s] ?? NOOP_CHARACTERS[s]
       );
       const carryIdx = team.slugs.indexOf(olCarry);
       const { baselineDamage, results } = rankFreeLineConfigs({
@@ -3638,15 +3641,15 @@ export function App({ user }: { user: AuthUser | null }) {
     const size = 5 - next.length;
     // reset variable groups whenever the group size may have changed
     setDpsGroups(
-      next.length === 3 || next.length === 4 ? [emptyGroup(size)] : [],
+      next.length === 3 || next.length === 4 ? [emptyGroup(size)] : []
     );
     setDpsResults(null);
   };
   const setGroupUnit = (gi: number, ui: number, patch: Partial<SlotState>) =>
     setDpsGroups((gs) =>
       gs.map((g, j) =>
-        j === gi ? g.map((u, k) => (k === ui ? { ...u, ...patch } : u)) : g,
-      ),
+        j === gi ? g.map((u, k) => (k === ui ? { ...u, ...patch } : u)) : g
+      )
     );
   const groupComplete = (g: SlotState[]) => g.every((u) => u.slug);
   const runDpsTest = () =>
@@ -3673,7 +3676,7 @@ export function App({ user }: { user: AuthUser | null }) {
             cs as any,
             mult,
             { ...cfg, slugs } as SimConfig,
-            prepared,
+            prepared
           );
           const varUnits = r.units.slice(dpsControl.length); // the group's units
           const varDamage = varUnits.reduce((s, u) => s + u.totalDamage, 0);
@@ -3699,29 +3702,29 @@ export function App({ user }: { user: AuthUser | null }) {
   // full result view for the single-team (Optimal Team) generator: portrait
   // strip + summary + per-unit table. (Share/link buttons live in the header.)
   const teamResultView = (t: TeamResult, opts?: { highlight?: string }) => (
-    <div className='calc-result'>
+    <div className="calc-result">
       <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
-      <div className='summary muted'>
-        team <b className='big'>{fmt(t.teamDamage)}</b> · {fmt(t.teamDps)} DPS ·{' '}
+      <div className="summary muted">
+        team <b className="big">{fmt(t.teamDamage)}</b> · {fmt(t.teamDps)} DPS ·{' '}
         {(t.fullBurstUptime * 100).toFixed(0)}% FB uptime
       </div>
       <table>
         <tbody>
           {t.units.map((u) => (
             <tr key={u.slug} className={u.slug === opts?.highlight ? 'hl' : ''}>
-              <td className='muted'>B{u.burst}</td>
+              <td className="muted">B{u.burst}</td>
               <td>
                 {u.name}
                 {u.advantaged && (
-                  <span className='adv' title='advantage'>
+                  <span className="adv" title="advantage">
                     {' '}
                     ▲
                   </span>
                 )}
               </td>
-              <td className='r'>{u.weapon}</td>
-              <td className='r share'>{(u.share * 100).toFixed(1)}%</td>
-              <td className='r'>{fmt(u.totalDamage)}</td>
+              <td className="r">{u.weapon}</td>
+              <td className="r share">{(u.share * 100).toFixed(1)}%</td>
+              <td className="r">{fmt(u.totalDamage)}</td>
             </tr>
           ))}
         </tbody>
@@ -3740,54 +3743,54 @@ export function App({ user }: { user: AuthUser | null }) {
     const metaSum = (t: TeamResult): number =>
       t.slugs.reduce((s, slug) => s + prydwenScoreOf(slug), 0);
     return (
-      <div className='roster-result'>
-        <div className='roster-grid'>
+      <div className="roster-result">
+        <div className="roster-grid">
           {teams.map((t, i) => (
-            <div className='roster-grid-row' key={`g${i}`}>
-              <span className='rg-label muted'>
+            <div className="roster-grid-row" key={`g${i}`}>
+              <span className="rg-label muted">
                 team {i + 1}{' '}
                 <span
-                  className='rg-meta'
-                  title='team meta score — sum of unit prydwen tiers (SSS=5 … ≤C=0)'
+                  className="rg-meta"
+                  title="team meta score — sum of unit prydwen tiers (SSS=5 … ≤C=0)"
                 >
                   ◆{metaSum(t)}
                 </span>
               </span>
               <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
-              <div className='rg-bar'>
+              <div className="rg-bar">
                 <span style={{ width: `${(t.teamDamage / maxTeam) * 100}%` }} />
               </div>
-              <span className='rg-dmg'>{fmt(t.teamDamage)}</span>
+              <span className="rg-dmg">{fmt(t.teamDamage)}</span>
             </div>
           ))}
-          <div className='roster-grid-row total'>
-            <span className='rg-label muted'>roster total</span>
-            <span className='rg-dmg big'>{fmt(rosterTotal)}</span>
+          <div className="roster-grid-row total">
+            <span className="rg-label muted">roster total</span>
+            <span className="rg-dmg big">{fmt(rosterTotal)}</span>
           </div>
         </div>
         {/* explicit rows of 3 so a partial last row (the 2 in 3:2) centers under
             the row above instead of sitting left-aligned */}
-        <div className='roster-cards'>
+        <div className="roster-cards">
           {chunk(teams, 3).map((row, ri) => (
-            <div className='roster-cards-row' key={`r${ri}`}>
+            <div className="roster-cards-row" key={`r${ri}`}>
               {row.map((t, j) => {
                 const i = ri * 3 + j;
                 return (
-                  <div className='roster-card' key={`c${i}`}>
-                    <div className='card-group-label'>
+                  <div className="roster-card" key={`c${i}`}>
+                    <div className="card-group-label">
                       team {i + 1} · {fmt(t.teamDamage)} · ◆{metaSum(t)}
                     </div>
                     <TeamPortraits slugs={t.slugs} advantaged={advSet(t)} />
-                    <table className='roster-card-table'>
+                    <table className="roster-card-table">
                       <tbody>
                         {t.units.map((u) => (
                           <tr
                             key={u.slug}
                             className={u.advantaged ? 'adv-row' : ''}
                           >
-                            <td className='muted'>B{u.burst}</td>
-                            <td className='nm'>{u.name}</td>
-                            <td className='r share'>
+                            <td className="muted">B{u.burst}</td>
+                            <td className="nm">{u.name}</td>
+                            <td className="r share">
                               {(u.share * 100).toFixed(0)}%
                             </td>
                           </tr>
@@ -3808,14 +3811,14 @@ export function App({ user }: { user: AuthUser | null }) {
   // active slot (units are unique across the whole roster).
   const rosterInputThumbs = usePortraitThumbs(
     rosterSim.flat().map((s) => (s ? data.characters[s]?.imageUrl : null)),
-    72,
+    72
   );
   const rosterInputView = (
-    <div className='roster-input'>
+    <div className="roster-input">
       {rosterSim.map((team, ti) => (
-        <div className='roster-input-row' key={ti}>
-          <span className='rg-label muted'>team {ti + 1}</span>
-          <div className='roster-slots'>
+        <div className="roster-input-row" key={ti}>
+          <span className="rg-label muted">team {ti + 1}</span>
+          <div className="roster-slots">
             {team.map((slug, ui) => {
               const c = slug ? data.characters[slug] : null;
               const active =
@@ -3824,7 +3827,7 @@ export function App({ user }: { user: AuthUser | null }) {
               return (
                 <button
                   key={ui}
-                  type='button'
+                  type="button"
                   ref={rosterPageReorder.register(i)}
                   className={
                     'team-chip roster-slot' +
@@ -3842,13 +3845,13 @@ export function App({ user }: { user: AuthUser | null }) {
                       draggable={false}
                     />
                   ) : (
-                    <span className='chip-empty'>+</span>
+                    <span className="chip-empty">+</span>
                   )}
                   {slug && (
                     <span
-                      className='chip-x'
-                      role='button'
-                      aria-label='remove'
+                      className="chip-x"
+                      role="button"
+                      aria-label="remove"
                       onClick={(e) => {
                         e.stopPropagation();
                         assignRosterSlot(ti, ui, null);
@@ -3864,11 +3867,11 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
       ))}
       {rosterActive && (
-        <div className='roster-picker'>
+        <div className="roster-picker">
           <CharSearch
             placeholder={`pick for team ${rosterActive[0] + 1}, slot ${rosterActive[1] + 1}…`}
             exclude={rosterSlugsPlaced.filter(
-              (s) => s !== rosterSim[rosterActive[0]][rosterActive[1]],
+              (s) => s !== rosterSim[rosterActive[0]][rosterActive[1]]
             )}
             onPick={(slug) =>
               assignRosterSlot(rosterActive[0], rosterActive[1], slug)
@@ -3882,19 +3885,19 @@ export function App({ user }: { user: AuthUser | null }) {
   // Union Raid input: 3×5 grid + per-team boss options + shared picker
   const unionInputThumbs = usePortraitThumbs(
     unionRosterSim.flat().map((s) => (s ? data.characters[s]?.imageUrl : null)),
-    72,
+    72
   );
   // Compact per-team boss options (weakness pills + DEF input + core pills).
   // Generic over the options object + setter so the Roster Sim and the Roster
   // Generator can each drive their own per-team state.
   const renderBossControls = (
     o: UnionBossOpts,
-    setOpt: (patch: Partial<UnionBossOpts>) => void,
+    setOpt: (patch: Partial<UnionBossOpts>) => void
   ) => (
-    <div className='union-boss-opts'>
-      <div className='union-boss-row'>
-        <span className='union-boss-label'>Weakness</span>
-        <div className='pills small'>
+    <div className="union-boss-opts">
+      <div className="union-boss-row">
+        <span className="union-boss-label">Weakness</span>
+        <div className="pills small">
           {ELEMENTS.map((e) => (
             <button
               key={e ?? 'none'}
@@ -3906,17 +3909,17 @@ export function App({ user }: { user: AuthUser | null }) {
           ))}
         </div>
       </div>
-      <div className='union-boss-row'>
-        <span className='union-boss-label'>Boss DEF</span>
+      <div className="union-boss-row">
+        <span className="union-boss-label">Boss DEF</span>
         <input
-          className='num'
+          className="num"
           value={o.bossDef}
           onChange={(e) => setOpt({ bossDef: e.target.value })}
         />
       </div>
-      <div className='union-boss-row'>
-        <span className='union-boss-label'>Boss range</span>
-        <div className='pills small'>
+      <div className="union-boss-row">
+        <span className="union-boss-label">Boss range</span>
+        <div className="pills small">
           {BOSS_RANGE_OPTIONS.map((opt) => (
             <button
               key={opt.id ?? 'auto'}
@@ -3928,9 +3931,9 @@ export function App({ user }: { user: AuthUser | null }) {
           ))}
         </div>
       </div>
-      <div className='union-boss-row'>
-        <span className='union-boss-label'>Core</span>
-        <div className='pills small'>
+      <div className="union-boss-row">
+        <span className="union-boss-label">Core</span>
+        <div className="pills small">
           {CORE_PRESETS.map((p) => (
             <button
               key={p.label}
@@ -3949,10 +3952,10 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
         {o.coreCustom && (
           <input
-            className='num'
+            className="num"
             value={o.coreCustomVal}
             onChange={(e) => setOpt({ coreCustomVal: e.target.value })}
-            placeholder='%'
+            placeholder="%"
           />
         )}
       </div>
@@ -3961,12 +3964,12 @@ export function App({ user }: { user: AuthUser | null }) {
   const unionBossControls = (ti: number) =>
     renderBossControls(unionBossOpts[ti], (p) => setUnionBossOpt(ti, p));
   const unionInputView = (
-    <div className='roster-input'>
+    <div className="roster-input">
       {unionRosterSim.map((team, ti) => (
-        <div className='union-team-block' key={ti}>
-          <div className='roster-input-row'>
-            <span className='rg-label muted'>team {ti + 1}</span>
-            <div className='roster-slots'>
+        <div className="union-team-block" key={ti}>
+          <div className="roster-input-row">
+            <span className="rg-label muted">team {ti + 1}</span>
+            <div className="roster-slots">
               {team.map((slug, ui) => {
                 const c = slug ? data.characters[slug] : null;
                 const active =
@@ -3976,7 +3979,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 return (
                   <button
                     key={ui}
-                    type='button'
+                    type="button"
                     ref={unionPageReorder.register(i)}
                     className={
                       'team-chip roster-slot' +
@@ -3994,13 +3997,13 @@ export function App({ user }: { user: AuthUser | null }) {
                         draggable={false}
                       />
                     ) : (
-                      <span className='chip-empty'>+</span>
+                      <span className="chip-empty">+</span>
                     )}
                     {slug && (
                       <span
-                        className='chip-x'
-                        role='button'
-                        aria-label='remove'
+                        className="chip-x"
+                        role="button"
+                        aria-label="remove"
                         onClick={(e) => {
                           e.stopPropagation();
                           assignUnionSlot(ti, ui, null);
@@ -4018,13 +4021,12 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
       ))}
       {unionRosterActive && (
-        <div className='roster-picker'>
+        <div className="roster-picker">
           <CharSearch
             placeholder={`pick for team ${unionRosterActive[0] + 1}, slot ${unionRosterActive[1] + 1}…`}
             exclude={unionSlugsPlaced.filter(
               (s) =>
-                s !==
-                unionRosterSim[unionRosterActive[0]][unionRosterActive[1]],
+                s !== unionRosterSim[unionRosterActive[0]][unionRosterActive[1]]
             )}
             onPick={(slug) =>
               assignUnionSlot(unionRosterActive[0], unionRosterActive[1], slug)
@@ -4051,7 +4053,7 @@ export function App({ user }: { user: AuthUser | null }) {
     hidePortrait?: boolean,
     // support-tag pool for the embedded picker — defaults to sim-supported (Team Sim);
     // the Custom DPS Rankings caller passes generatorChars.
-    pool: typeof allChars = allChars,
+    pool: typeof allChars = allChars
   ) => {
     const c = slot.slug ? data.characters[slot.slug] : null;
     const maxBond = maxBondLevel(c?.manufacturer ?? null); // 0 = no bond table
@@ -4077,10 +4079,10 @@ export function App({ user }: { user: AuthUser | null }) {
         className={'card' + (drag?.dragging ? ' dragging' : '')}
         ref={drag?.register}
       >
-        <div className='slot-head'>
-          <span className='muted'>{slotLabel}</span>
+        <div className="slot-head">
+          <span className="muted">{slotLabel}</span>
           {c && (
-            <span className='tag'>
+            <span className="tag">
               B{c.burst} · {c.weapon} · {c.element}
             </span>
           )}
@@ -4092,11 +4094,11 @@ export function App({ user }: { user: AuthUser | null }) {
             alt={c.name}
           />
         ) : drag ? (
-          <div {...portraitProps} className='portrait empty draggable'>
+          <div {...portraitProps} className="portrait empty draggable">
             ?
           </div>
         ) : (
-          <div className='portrait empty' onClick={focusPicker}>
+          <div className="portrait empty" onClick={focusPicker}>
             ?
           </div>
         )}
@@ -4106,11 +4108,11 @@ export function App({ user }: { user: AuthUser | null }) {
           onPick={(slug) => onChange(pickPatch(slot, slug))}
         />
         {c?.burst === 'Λ' && (
-          <div className='pills small'>
+          <div className="pills small">
             {([0, 1, 2, 3] as const).map((st) => (
               <button
                 key={st}
-                title='Λ burst: which stage she operates as'
+                title="Λ burst: which stage she operates as"
                 className={slot.lambdaStage === st ? 'on' : ''}
                 onClick={() => onChange({ lambdaStage: st })}
               >
@@ -4121,13 +4123,13 @@ export function App({ user }: { user: AuthUser | null }) {
         )}
         {(() => {
           const modes = slot.slug ? overrides[slot.slug]?.modes : undefined;
-          if (!modes?.length) return null;
+          if (!modes?.length) {return null;}
           return (
-            <div className='pills small'>
+            <div className="pills small">
               {modes.map((m) => (
                 <button
                   key={m}
-                  title='kit mode (assumed 100% uptime)'
+                  title="kit mode (assumed 100% uptime)"
                   className={(slot.mode ?? modes[0]) === m ? 'on' : ''}
                   onClick={() => onChange({ mode: m })}
                 >
@@ -4139,11 +4141,11 @@ export function App({ user }: { user: AuthUser | null }) {
         })()}
         {slot.slug &&
           JSON.stringify(overrides[slot.slug] ?? {}).includes(
-            '"stackedNuke"',
+            '"stackedNuke"'
           ) && (
-            <div className='pills small'>
+            <div className="pills small">
               <button
-                title='override the burst order to cast her burst once MP is fully stacked'
+                title="override the burst order to cast her burst once MP is fully stacked"
                 className={slot.mpPriority ? 'on' : ''}
                 onClick={() => onChange({ mpPriority: !slot.mpPriority })}
               >
@@ -4152,19 +4154,19 @@ export function App({ user }: { user: AuthUser | null }) {
             </div>
           )}
         <div
-          className='card-group-label'
-          title='Gear set. Base 5 = scope-lock base gear (the sim’s validation basis); OL 0 / OL 5 = Full T10 overload set at overload level 0 / 5.'
+          className="card-group-label"
+          title="Gear set. Base 5 = scope-lock base gear (the sim’s validation basis); OL 0 / OL 5 = Full T10 overload set at overload level 0 / 5."
         >
           gear
         </div>
-        <div className='pills small'>
+        <div className="pills small">
           {/* A manual gear pick clears any synced gear-stat override. */}
           <button
             className={!slot.gearStats && slot.ol === 'base5' ? 'on' : ''}
             onClick={() =>
               onChange({ ol: 'base5', gearStats: null, hasOverloadGear: false })
             }
-            title='Scope-lock base gear — the real validation basis (lower ATK than OL 0)'
+            title="Scope-lock base gear — the real validation basis (lower ATK than OL 0)"
           >
             Base 5
           </button>
@@ -4173,7 +4175,7 @@ export function App({ user }: { user: AuthUser | null }) {
             onClick={() =>
               onChange({ ol: 0, gearStats: null, hasOverloadGear: false })
             }
-            title='Full T10 overload set, 0 overload lines'
+            title="Full T10 overload set, 0 overload lines"
           >
             OL 0
           </button>
@@ -4182,13 +4184,13 @@ export function App({ user }: { user: AuthUser | null }) {
             onClick={() =>
               onChange({ ol: 5, gearStats: null, hasOverloadGear: false })
             }
-            title='Full T10 overload set, overload level 5'
+            title="Full T10 overload set, overload level 5"
           >
             OL 5
           </button>
           {slot.gearStats && (
             <button
-              className='on'
+              className="on"
               title={`Synced T10 gear — real ATK ${Math.round(slot.gearStats.atk)} (incl. Outpost). Click a gear pill to override.`}
             >
               Synced OL5
@@ -4200,10 +4202,10 @@ export function App({ user }: { user: AuthUser | null }) {
               onChange(
                 slot.dollRarity === 'none'
                   ? { dollRarity: 'SSR', dollLevel: 15 }
-                  : { dollRarity: 'none' },
+                  : { dollRarity: 'none' }
               )
             }
-            title='Favorite Item (doll). Toggles a maxed SSR doll; the Synced Roster preset sets your real rarity + level.'
+            title="Favorite Item (doll). Toggles a maxed SSR doll; the Synced Roster preset sets your real rarity + level."
           >
             {slot.dollRarity === 'none'
               ? 'Doll'
@@ -4212,8 +4214,8 @@ export function App({ user }: { user: AuthUser | null }) {
                 : `Doll ${slot.dollRarity} ${slot.dollLevel}`}
           </button>
         </div>
-        <div className='card-group-label'>dupes</div>
-        <div className='pills small'>
+        <div className="card-group-label">dupes</div>
+        <div className="pills small">
           {DUPE_PRESETS.map((p) => (
             <button
               key={p.label}
@@ -4232,7 +4234,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </button>
           ))}
           <button
-            title='custom stars / core'
+            title="custom stars / core"
             className={slot.dupeCustom ? 'on' : ''}
             onClick={() => onChange({ dupeCustom: !slot.dupeCustom })}
           >
@@ -4241,12 +4243,12 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
         {c && maxBond > 0 && (
           <>
-            <div className='card-group-label'>bond</div>
-            <div className='pills small'>
+            <div className="card-group-label">bond</div>
+            <div className="pills small">
               <label>
-                <span className='muted pill-label'>Lvl</span>
+                <span className="muted pill-label">Lvl</span>
                 <input
-                  className='num'
+                  className="num"
                   value={slot.relationshipLevel}
                   placeholder={String(maxBond)}
                   title={`Relationship (bond) level — blank uses the manufacturer max (${maxBond})`}
@@ -4254,15 +4256,15 @@ export function App({ user }: { user: AuthUser | null }) {
                     onChange({ relationshipLevel: e.target.value })
                   }
                 />
-                <span className='muted'> / {maxBond}</span>
+                <span className="muted"> / {maxBond}</span>
               </label>
             </div>
           </>
         )}
         {slot.dupeCustom && (
           <>
-            <div className='pills small' title='Limit Break stars'>
-              <span className='muted pill-label'>Stars</span>
+            <div className="pills small" title="Limit Break stars">
+              <span className="muted pill-label">Stars</span>
               {STAR_LEVELS.map((st) => (
                 <button
                   key={st}
@@ -4273,8 +4275,8 @@ export function App({ user }: { user: AuthUser | null }) {
                 </button>
               ))}
             </div>
-            <div className='pills small' title='Core enhancement'>
-              <span className='muted pill-label'>Core</span>
+            <div className="pills small" title="Core enhancement">
+              <span className="muted pill-label">Core</span>
               {CORE_LEVELS.map((cr) => (
                 <button
                   key={cr}
@@ -4287,7 +4289,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </div>
           </>
         )}
-        <div className='card-group-label'>skills</div>
+        <div className="card-group-label">skills</div>
         {(
           [
             ['S1', 'skill1'],
@@ -4299,14 +4301,14 @@ export function App({ user }: { user: AuthUser | null }) {
           return (
             <div
               key={key}
-              className='pills small'
+              className="pills small"
               title={
                 hasData
                   ? `${label} skill level`
                   : `${label} skill level — no per-level data for this nikke; values stay at max`
               }
             >
-              <span className='muted pill-label'>{label}</span>
+              <span className="muted pill-label">{label}</span>
               {SKILL_LEVELS.map((lv) => (
                 <button
                   key={lv}
@@ -4319,8 +4321,8 @@ export function App({ user }: { user: AuthUser | null }) {
             </div>
           );
         })}
-        <div className='card-group-label'>cube</div>
-        <div className='cube'>
+        <div className="card-group-label">cube</div>
+        <div className="cube">
           {CUBE_IDS.map((id) => {
             const cube = cubes.cubes[id];
             const effect = cube.effectStat
@@ -4345,7 +4347,7 @@ export function App({ user }: { user: AuthUser | null }) {
             );
           })}
           <button
-            title='No cube — no flat ATK, no elemental damage, no effect'
+            title="No cube — no flat ATK, no elemental damage, no effect"
             className={slot.cubeId === 'none' ? 'on' : ''}
             onClick={() => onChange({ cubeId: 'none' })}
           >
@@ -4353,7 +4355,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </button>
         </div>
         {slot.cubeId !== 'none' && (
-          <div className='pills small'>
+          <div className="pills small">
             {CUBE_LEVELS.map((l) => (
               <button
                 key={l}
@@ -4364,7 +4366,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </button>
             ))}
             <button
-              title='custom cube level'
+              title="custom cube level"
               className={slot.cubeCustom ? 'on' : ''}
               onClick={() => onChange({ cubeCustom: !slot.cubeCustom })}
             >
@@ -4372,7 +4374,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </button>
             {slot.cubeCustom && (
               <input
-                className='num'
+                className="num"
                 value={slot.cubeLevel}
                 onChange={(e) =>
                   onChange({ cubeLevel: Number(e.target.value) || 1 })
@@ -4382,35 +4384,35 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
         )}
         {
-          <div className='ol'>
-            <div className='ol-base'>
+          <div className="ol">
+            <div className="ol-base">
               <label>
                 ELE
                 <input
-                  className='num'
+                  className="num"
                   value={slot.olElem}
-                  placeholder='%'
+                  placeholder="%"
                   onChange={(e) => onChange({ olElem: e.target.value })}
                 />
               </label>
               <label>
                 ATK
                 <input
-                  className='num'
+                  className="num"
                   value={slot.olAtk}
-                  placeholder='%'
+                  placeholder="%"
                   onChange={(e) => onChange({ olAtk: e.target.value })}
                 />
               </label>
             </div>
             {slot.olExtra.map((line, li) => (
-              <div className='ol-line' key={li}>
+              <div className="ol-line" key={li}>
                 <select
                   value={line.type}
                   onChange={(e) =>
                     onChange({
                       olExtra: slot.olExtra.map((l, j) =>
-                        j === li ? { ...l, type: e.target.value } : l,
+                        j === li ? { ...l, type: e.target.value } : l
                       ),
                     })
                   }
@@ -4422,20 +4424,20 @@ export function App({ user }: { user: AuthUser | null }) {
                   ))}
                 </select>
                 <input
-                  className='num'
+                  className="num"
                   value={line.value}
-                  placeholder='%'
+                  placeholder="%"
                   onChange={(e) =>
                     onChange({
                       olExtra: slot.olExtra.map((l, j) =>
-                        j === li ? { ...l, value: e.target.value } : l,
+                        j === li ? { ...l, value: e.target.value } : l
                       ),
                     })
                   }
                 />
                 <button
-                  className='ol-rm'
-                  title='remove line'
+                  className="ol-rm"
+                  title="remove line"
                   onClick={() =>
                     onChange({
                       olExtra: slot.olExtra.filter((_, j) => j !== li),
@@ -4447,7 +4449,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
             ))}
             <button
-              className='ol-add'
+              className="ol-add"
               onClick={() =>
                 onChange({
                   olExtra: [...slot.olExtra, { type: 'ammo', value: '' }],
@@ -4468,9 +4470,9 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     if (tab === 'team') {
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Team Generator</h2>
-          <p className='muted'>
+          <p className="muted">
             Finds the strongest 5-nikke team for the chosen boss weakness
             {weakness ? ` (${weakness})` : ' (no element selected)'} under the
             teamwide options + “Apply to all” loadout above.
@@ -4484,21 +4486,21 @@ export function App({ user }: { user: AuthUser | null }) {
             )}
           </p>
           {syncedGenPanel}
-          <div className='genpanels'>
+          <div className="genpanels">
             {teamGenLockPanel}
             {blockedPanel}
           </div>
-          <div className='pills small gen-options-pills'>
+          <div className="pills small gen-options-pills">
             <button
               className={healerNeeded ? 'on' : ''}
               onClick={() => setHealerNeeded((v) => !v)}
-              title='Require at least one healer on the generated team'
+              title="Require at least one healer on the generated team"
             >
               Include Healer
             </button>
           </div>
           <button
-            className='calc-run'
+            className="calc-run"
             onClick={runBestTeam}
             disabled={calcBusy}
           >
@@ -4506,18 +4508,18 @@ export function App({ user }: { user: AuthUser | null }) {
               ? 'Calculating…'
               : `Calculate best team${weakness ? ` for ${weakness}` : ''}`}
           </button>
-          <div className='genpanels'>
+          <div className="genpanels">
             {nikkePortraitGrid(
               teamGenIncluded,
               'Included',
               removeTeamGenInclude,
-              clearTeamGenInclude,
+              clearTeamGenInclude
             )}
             {nikkePortraitGrid(
               blocked,
               'Excluded',
               removeExclude,
-              clearExclude,
+              clearExclude
             )}
           </div>
           {teamResult && teamResultView(teamResult)}
@@ -4526,9 +4528,9 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     if (tab === 'roster') {
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Roster Generator</h2>
-          <div className='pills roster-mode-pills'>
+          <div className="pills roster-mode-pills">
             <button
               className={rosterGenMode === 'solo' ? 'on' : ''}
               onClick={() => setRosterGenMode('solo')}
@@ -4544,51 +4546,51 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
           {rosterGenMode === 'solo' ? (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Generates 5 sim-optimized teams for Solo Raid. Takes a few
                 seconds — it runs hundreds of fights.
               </p>
               {syncedGenPanel}
-              <div className='pills small gen-options-pills'>
+              <div className="pills small gen-options-pills">
                 <button
                   className={healerNeeded ? 'on' : ''}
                   onClick={() => setHealerNeeded((v) => !v)}
-                  title='Require at least one healer in every generated team'
+                  title="Require at least one healer in every generated team"
                 >
                   Include Healer
                 </button>
               </div>
-              <div className='genpanels'>
+              <div className="genpanels">
                 {rosterGenLockPanel}
                 {blockedPanel}
               </div>
               <button
-                className='calc-run'
+                className="calc-run"
                 onClick={runTopTeams}
                 disabled={calcBusy}
               >
                 {calcBusy ? 'Calculating…' : 'Calculate top 5 teams'}
               </button>
-              <div className='genpanels'>
+              <div className="genpanels">
                 {nikkePortraitGrid(
                   rosterGenIncluded,
                   'Included',
                   removeRosterGenInclude,
-                  clearRosterGenInclude,
+                  clearRosterGenInclude
                 )}
                 {nikkePortraitGrid(
                   blocked,
                   'Excluded',
                   removeExclude,
-                  clearExclude,
+                  clearExclude
                 )}
               </div>
               {rosterResults && (
                 <>
                   <button
-                    className='share-btn roster-copy-btn'
+                    className="share-btn roster-copy-btn"
                     onClick={() => copyToRosterSim(rosterResults)}
-                    title='send these teams to the Roster Sim tab to edit + re-sim'
+                    title="send these teams to the Roster Sim tab to edit + re-sim"
                   >
                     ✎ Copy to Roster Sim
                   </button>
@@ -4598,52 +4600,52 @@ export function App({ user }: { user: AuthUser | null }) {
             </>
           ) : (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Generates 3 sim-optimized teams for Union Raid. Takes a few
                 seconds — it runs hundreds of fights.
               </p>
               {syncedGenPanel}
-              <div className='genpanels'>
+              <div className="genpanels">
                 {unionGenLockPanel}
                 {blockedPanel}
               </div>
-              <div className='roster-input'>
+              <div className="roster-input">
                 {unionGenBossOpts.map((o, ti) => (
-                  <div className='union-team-block' key={ti}>
-                    <div className='roster-input-row'>
-                      <span className='rg-label muted'>team {ti + 1}</span>
+                  <div className="union-team-block" key={ti}>
+                    <div className="roster-input-row">
+                      <span className="rg-label muted">team {ti + 1}</span>
                     </div>
                     {renderBossControls(o, (p) => setUnionGenBossOpt(ti, p))}
                   </div>
                 ))}
               </div>
               <button
-                className='calc-run'
+                className="calc-run"
                 onClick={runUnionTopTeams}
                 disabled={calcBusy}
               >
                 {calcBusy ? 'Calculating…' : 'Calculate 3 teams'}
               </button>
-              <div className='genpanels'>
+              <div className="genpanels">
                 {nikkePortraitGrid(
                   unionGenIncluded,
                   'Included',
                   removeUnionGenInclude,
-                  clearUnionGenInclude,
+                  clearUnionGenInclude
                 )}
                 {nikkePortraitGrid(
                   blocked,
                   'Excluded',
                   removeExclude,
-                  clearExclude,
+                  clearExclude
                 )}
               </div>
               {unionGenResults && (
                 <>
                   <button
-                    className='share-btn roster-copy-btn'
+                    className="share-btn roster-copy-btn"
                     onClick={() => copyUnionGenToRosterSim(unionGenResults)}
-                    title='send these teams to the Roster Sim tab to edit + re-sim'
+                    title="send these teams to the Roster Sim tab to edit + re-sim"
                   >
                     ✎ Copy to Roster Sim
                   </button>
@@ -4657,9 +4659,9 @@ export function App({ user }: { user: AuthUser | null }) {
     }
     if (tab === 'rostersim') {
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Roster Sim</h2>
-          <div className='pills roster-mode-pills'>
+          <div className="pills roster-mode-pills">
             <button
               className={rosterSimMode === 'solo' ? 'on' : ''}
               onClick={() => setRosterSimMode('solo')}
@@ -4675,20 +4677,20 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
           {rosterSimMode === 'solo' ? (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Click Browse Nikkes or a slot to add units.
               </p>
               {rosterInputView}
-              <div className='roster-sim-actions'>
+              <div className="roster-sim-actions">
                 <button
-                  className='share-btn'
-                  title='stage all teams from the filterable roster grid, then save them to the page'
+                  className="share-btn"
+                  title="stage all teams from the filterable roster grid, then save them to the page"
                   onClick={openRosterPicker}
                 >
                   ▦ Browse Nikkes
                 </button>
                 <button
-                  className='calc-run'
+                  className="calc-run"
                   onClick={runRosterSim}
                   disabled={!rosterAnyFilled || calcBusy}
                 >
@@ -4698,16 +4700,16 @@ export function App({ user }: { user: AuthUser | null }) {
                   (namingRoster ? (
                     <InlineNameField
                       initial={rosterSuggestedName()}
-                      placeholder='roster name'
+                      placeholder="roster name"
                       onCommit={doSaveRoster}
                       onCancel={() => setNamingRoster(false)}
                     />
                   ) : (
                     <button
-                      className='share-btn'
+                      className="share-btn"
                       onClick={() => setNamingRoster(true)}
                       disabled={!rosterAnyFilled}
-                      title='save this roster to your account'
+                      title="save this roster to your account"
                     >
                       {savedFlash ? '✓ Saved' : '💾 Save roster'}
                     </button>
@@ -4719,18 +4721,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 />
                 {rosterSlugsPlaced.length > 0 && (
                   <button
-                    className='share-btn'
+                    className="share-btn"
                     onClick={() => {
                       setRosterSim(
                         Array.from({ length: 5 }, () =>
-                          Array.from({ length: 5 }, () => null),
-                        ),
+                          Array.from({ length: 5 }, () => null)
+                        )
                       );
                       setRosterActive(null);
                       setRosterSimResults(null);
                       setLoadedRosterName(null);
                     }}
-                    title='clear all slots'
+                    title="clear all slots"
                   >
                     Clear
                   </button>
@@ -4740,20 +4742,20 @@ export function App({ user }: { user: AuthUser | null }) {
             </>
           ) : (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Click Browse Nikkes or a slot to add units.
               </p>
               {unionInputView}
-              <div className='roster-sim-actions'>
+              <div className="roster-sim-actions">
                 <button
-                  className='share-btn'
-                  title='stage all teams from the filterable roster grid, then save them to the page'
+                  className="share-btn"
+                  title="stage all teams from the filterable roster grid, then save them to the page"
                   onClick={openUnionRosterPicker}
                 >
                   ▦ Browse Nikkes
                 </button>
                 <button
-                  className='calc-run'
+                  className="calc-run"
                   onClick={runUnionRosterSim}
                   disabled={!unionAnyFilled || calcBusy}
                 >
@@ -4763,16 +4765,16 @@ export function App({ user }: { user: AuthUser | null }) {
                   (namingRoster ? (
                     <InlineNameField
                       initial={unionRosterSuggestedName()}
-                      placeholder='roster name'
+                      placeholder="roster name"
                       onCommit={doSaveUnionRoster}
                       onCancel={() => setNamingRoster(false)}
                     />
                   ) : (
                     <button
-                      className='share-btn'
+                      className="share-btn"
                       onClick={() => setNamingRoster(true)}
                       disabled={!unionAnyFilled}
-                      title='save this union raid to your account'
+                      title="save this union raid to your account"
                     >
                       {savedFlash ? '✓ Saved' : '💾 Save roster'}
                     </button>
@@ -4784,18 +4786,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 />
                 {unionSlugsPlaced.length > 0 && (
                   <button
-                    className='share-btn'
+                    className="share-btn"
                     onClick={() => {
                       setUnionRosterSim(
                         Array.from({ length: 3 }, () =>
-                          Array.from({ length: 5 }, () => null),
-                        ),
+                          Array.from({ length: 5 }, () => null)
+                        )
                       );
                       setUnionRosterActive(null);
                       setUnionRosterSimResults(null);
                       setLoadedUnionRosterName(null);
                     }}
-                    title='clear all slots'
+                    title="clear all slots"
                   >
                     Clear
                   </button>
@@ -4811,9 +4813,9 @@ export function App({ user }: { user: AuthUser | null }) {
       const canRun =
         dpsControlValid && dpsGroups.some(groupComplete) && !calcBusy;
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Unit Comparison</h2>
-          <div className='pills small dps-mode'>
+          <div className="pills small dps-mode">
             <button
               className={dpsMode === 'custom' ? 'on' : ''}
               onClick={() => setDpsMode('custom')}
@@ -4829,7 +4831,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
           {dpsMode === 'matrix' ? (
             <>
-              <p className='muted'>
+              <p className="muted">
                 The standardized 72-cell matrix (same grid as the DPS Rankings
                 tab) — pick a cell for its ranked top-10 infographic.
               </p>
@@ -4837,7 +4839,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </>
           ) : (
             <>
-              <p className='muted'>
+              <p className="muted">
                 A fixed <b>control group</b> (3 or 4 nikkes) — scope-locked (no
                 cube / no doll / Base 5 gear / 3★ · 7 core · lvl 400) — plus
                 swap-in variable groups you configure with the{' '}
@@ -4845,16 +4847,16 @@ export function App({ user }: { user: AuthUser | null }) {
                 teamwide row above.
               </p>
 
-              <div className='field'>
+              <div className="field">
                 <label>
                   Control group — pick 3 or 4 ({dpsControl.length}/4)
                 </label>
-                <div className='chips'>
+                <div className="chips">
                   {dpsControl.map((slug) => (
                     <button
                       key={slug}
-                      className='chip'
-                      title='remove'
+                      className="chip"
+                      title="remove"
                       onClick={() =>
                         setControl(dpsControl.filter((s) => s !== slug))
                       }
@@ -4865,7 +4867,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 </div>
                 {dpsControl.length < 4 && (
                   <CharSearch
-                    placeholder='add control nikke…'
+                    placeholder="add control nikke…"
                     exclude={dpsControl}
                     pool={generatorChars}
                     onPick={(slug) => setControl([...dpsControl, slug])}
@@ -4875,24 +4877,24 @@ export function App({ user }: { user: AuthUser | null }) {
 
               {dpsControlValid ? (
                 <>
-                  <div className='card-group-label'>
+                  <div className="card-group-label">
                     variable groups — {dpsGroupSize} nikke
                     {dpsGroupSize > 1 ? 's' : ''} each
                   </div>
-                  <div className='dps-groups-row'>
+                  <div className="dps-groups-row">
                     {dpsGroups.map((group, gi) => (
-                      <div className='dps-group-block' key={gi}>
-                        <div className='dps-group-head'>
-                          <span className='card-group-label'>
+                      <div className="dps-group-block" key={gi}>
+                        <div className="dps-group-head">
+                          <span className="card-group-label">
                             group {gi + 1}
                           </span>
                           {dpsGroups.length > 1 && (
                             <button
-                              className='chip'
-                              title='remove group'
+                              className="chip"
+                              title="remove group"
                               onClick={() =>
                                 setDpsGroups((gs) =>
-                                  gs.filter((_, j) => j !== gi),
+                                  gs.filter((_, j) => j !== gi)
                                 )
                               }
                             >
@@ -4900,7 +4902,7 @@ export function App({ user }: { user: AuthUser | null }) {
                             </button>
                           )}
                         </div>
-                        <div className='dps-cards'>
+                        <div className="dps-cards">
                           {group.map((unit, ui) => (
                             <Fragment key={ui}>
                               {renderCard(
@@ -4909,7 +4911,7 @@ export function App({ user }: { user: AuthUser | null }) {
                                 `unit ${ui + 1}`,
                                 undefined,
                                 undefined,
-                                generatorChars,
+                                generatorChars
                               )}
                             </Fragment>
                           ))}
@@ -4918,7 +4920,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     ))}
                   </div>
                   <button
-                    className='ol-add'
+                    className="ol-add"
                     onClick={() =>
                       setDpsGroups((gs) => [...gs, emptyGroup(dpsGroupSize)])
                     }
@@ -4926,7 +4928,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     + add group
                   </button>
                   <button
-                    className='calc-run'
+                    className="calc-run"
                     onClick={runDpsTest}
                     disabled={!canRun}
                   >
@@ -4934,14 +4936,14 @@ export function App({ user }: { user: AuthUser | null }) {
                   </button>
                 </>
               ) : (
-                <p className='muted'>Pick 3 or 4 control nikkes to begin.</p>
+                <p className="muted">Pick 3 or 4 control nikkes to begin.</p>
               )}
 
               {dpsResults && (
-                <div className='calc-result'>
+                <div className="calc-result">
                   <DpsBarChart
-                    title='Variable groups'
-                    subtitle='ranked by group damage · 180s'
+                    title="Variable groups"
+                    subtitle="ranked by group damage · 180s"
                     bars={dpsResults.map((res, i) => {
                       // synthetic rows (a variable GROUP, not one unit): the element is the
                       // lead unit's, carried only for the bar colour — never filtered on.
@@ -4973,41 +4975,41 @@ export function App({ user }: { user: AuthUser | null }) {
                       })
                     }
                   />
-                  <details className='dps-details'>
-                    <summary className='muted'>full comparison table</summary>
+                  <details className="dps-details">
+                    <summary className="muted">full comparison table</summary>
                     <table>
                       <thead>
                         <tr>
                           <th></th>
                           <th>variable group</th>
-                          <th className='r'>group dmg</th>
-                          <th className='r'>group share</th>
-                          <th className='r'>team dmg</th>
-                          <th className='r'>FB%</th>
+                          <th className="r">group dmg</th>
+                          <th className="r">group share</th>
+                          <th className="r">team dmg</th>
+                          <th className="r">FB%</th>
                         </tr>
                       </thead>
                       <tbody>
                         {dpsResults.map((res, i) => (
                           <tr key={i} className={i === 0 ? 'hl' : ''}>
-                            <td className='muted'>{i + 1}</td>
+                            <td className="muted">{i + 1}</td>
                             <td>
                               {res.varUnits.map((u) => u.name).join(' + ')}
                             </td>
-                            <td className='r'>{fmt(res.varDamage)}</td>
-                            <td className='r share'>
+                            <td className="r">{fmt(res.varDamage)}</td>
+                            <td className="r share">
                               {(res.varShare * 100).toFixed(1)}%
                             </td>
-                            <td className='r'>
+                            <td className="r">
                               <b>{fmt(res.teamDamage)}</b>
                             </td>
-                            <td className='r muted'>
+                            <td className="r muted">
                               {(res.fullBurstUptime * 100).toFixed(0)}%
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    <p className='muted'>
+                    <p className="muted">
                       Ranked by team damage. “Group dmg” is the combined damage
                       of the variable nikke{dpsGroupSize > 1 ? 's' : ''} in each
                       variant.
@@ -5034,8 +5036,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // picked) is a standard release-fired weapon.
       const chInput = (
         chc?.role?.weapon as
-          | { shot_detail?: { input_type?: string } }
-          | undefined
+          { shot_detail?: { input_type?: string } } | undefined
       )?.shot_detail?.input_type;
       const chargeLatency =
         chargeChar &&
@@ -5061,21 +5062,21 @@ export function App({ user }: { user: AuthUser | null }) {
       const ammoRows = ammoBreakpoints(ammoBase, bpTv.ammo);
 
       const chargePanel = (
-        <div className='bp-panel'>
-          <p className='muted'>
+        <div className="bp-panel">
+          <p className="muted">
             Charge weapons fire in whole frames (the game runs at 60&nbsp;fps),
             so charge speed only increases firing rate if it changes the number
             of frames required to fire.Pick a nikke for her charge time, or read
             the standard 1-second table below.
           </p>
 
-          <div className='field'>
+          <div className="field">
             <label>Charge weapon</label>
             {chc ? (
-              <div className='chips'>
+              <div className="chips">
                 <button
-                  className='chip'
-                  title='change'
+                  className="chip"
+                  title="change"
                   onClick={() => setChargeChar(null)}
                 >
                   {chc.name} ({chc.weapon} ·{' '}
@@ -5084,14 +5085,14 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
             ) : (
               <CharSearch
-                placeholder='pick a charge nikke (RL / SR)…'
+                placeholder="pick a charge nikke (RL / SR)…"
                 exclude={nonCharge}
                 onPick={(slug) => setChargeChar(slug)}
               />
             )}
           </div>
 
-          <p className='muted'>
+          <p className="muted">
             {chc ? (
               <>
                 <b>{chc.name}</b> charges in <b>{baseFrames} frames</b> (
@@ -5105,8 +5106,8 @@ export function App({ user }: { user: AuthUser | null }) {
             )}
           </p>
 
-          <div className='table-scroll'>
-            <table className='breakpoint-table'>
+          <div className="table-scroll">
+            <table className="breakpoint-table">
               <thead>
                 <tr>
                   <th>OL Lines</th>
@@ -5122,10 +5123,10 @@ export function App({ user }: { user: AuthUser | null }) {
                     <td>
                       <b>{Math.ceil(row.csNeeded / bpTv.chargespd)}</b>
                     </td>
-                    <td className='r'>≥ {row.csNeeded.toFixed(2)}%</td>
-                    <td className='r'>{row.frames}f</td>
-                    <td className='r'>{Math.round(row.ms)} ms</td>
-                    <td className='r'>
+                    <td className="r">≥ {row.csNeeded.toFixed(2)}%</td>
+                    <td className="r">{row.frames}f</td>
+                    <td className="r">{Math.round(row.ms)} ms</td>
+                    <td className="r">
                       {(
                         FULL_BURST_FRAMES /
                         (row.frames + chargeLatency)
@@ -5137,7 +5138,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </table>
           </div>
 
-          <div className='pills small' style={{ marginTop: 10 }}>
+          <div className="pills small" style={{ marginTop: 10 }}>
             <button
               className={chargeShowAll ? '' : 'on'}
               onClick={() => setChargeShowAll(false)}
@@ -5152,14 +5153,14 @@ export function App({ user }: { user: AuthUser | null }) {
             </button>
           </div>
           {!chargeShowAll && hidden > 0 && (
-            <p className='muted'>
+            <p className="muted">
               {hidden} deeper breakpoint{hidden === 1 ? '' : 's'} hidden (each
               needs more than {REACHABLE_CS}% charge speed). Charge speed caps
               at 100%, which floors the charge at a single frame.
             </p>
           )}
 
-          <div className='notes'>
+          <div className="notes">
             <b>How to read this</b>
             <ul>
               <li>
@@ -5199,19 +5200,19 @@ export function App({ user }: { user: AuthUser | null }) {
       );
 
       const ammoPanel = (
-        <div className='bp-panel'>
-          <p className='muted'>
+        <div className="bp-panel">
+          <p className="muted">
             Max Ammo only increments in whole rounds. Calculate the breakpoints
             per round below.
           </p>
 
-          <div className='field'>
+          <div className="field">
             <label>Nikke</label>
             {amc ? (
-              <div className='chips'>
+              <div className="chips">
                 <button
-                  className='chip'
-                  title='change'
+                  className="chip"
+                  title="change"
                   onClick={() => setAmmoChar(null)}
                 >
                   {amc.name} ({amc.weapon} · {ammoBase} base ammo) ×
@@ -5219,7 +5220,7 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
             ) : (
               <CharSearch
-                placeholder='pick a nikke…'
+                placeholder="pick a nikke…"
                 exclude={[]}
                 onPick={(slug) => setAmmoChar(slug)}
               />
@@ -5227,14 +5228,14 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
 
           {amc && (
-            <p className='muted'>
+            <p className="muted">
               <b>{amc.name}</b> holds <b>{ammoBase} rounds</b> at 0% max ammo (
               {amc.weapon}).
             </p>
           )}
 
-          <div className='table-scroll'>
-            <table className='breakpoint-table'>
+          <div className="table-scroll">
+            <table className="breakpoint-table">
               <thead>
                 <tr>
                   <th>OL Lines</th>
@@ -5249,13 +5250,13 @@ export function App({ user }: { user: AuthUser | null }) {
                       <td>
                         <b>{row.linesNeeded}</b>
                       </td>
-                      <td className='r'>≥ {row.minPct.toFixed(2)}%</td>
-                      <td className='r'>{row.ammo}</td>
+                      <td className="r">≥ {row.minPct.toFixed(2)}%</td>
+                      <td className="r">{row.ammo}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className='muted' colSpan={3}>
+                    <td className="muted" colSpan={3}>
                       no extra rounds reachable within 4 overload lines
                     </td>
                   </tr>
@@ -5264,7 +5265,7 @@ export function App({ user }: { user: AuthUser | null }) {
             </table>
           </div>
 
-          <div className='notes'>
+          <div className="notes">
             <b>How to read this</b>
             <ul>
               <li>
@@ -5284,9 +5285,9 @@ export function App({ user }: { user: AuthUser | null }) {
       );
 
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Overload Breakpoints</h2>
-          <p className='muted'>
+          <p className="muted">
             Calculate the required overload rolls to meet breakpoints for Charge
             Speed and Max Ammo.
           </p>
@@ -5298,7 +5299,7 @@ export function App({ user }: { user: AuthUser | null }) {
               flexWrap: 'wrap',
             }}
           >
-            <div className='pills' style={{ gap: 8 }}>
+            <div className="pills" style={{ gap: 8 }}>
               <button
                 className={bpView === 'charge' ? 'on' : ''}
                 onClick={() => setBpView('charge')}
@@ -5312,7 +5313,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 Max Ammo
               </button>
             </div>
-            <label className='ol-tier'>
+            <label className="ol-tier">
               OL tier
               <select
                 value={bpTier}
@@ -5339,29 +5340,29 @@ export function App({ user }: { user: AuthUser | null }) {
       const carryCu = olCustomCarry ? data.characters[olCustomCarry] : null;
       // compact ranked table beneath a chart
       const olTable = (baseline: number, results: OlConfigResult[]) => (
-        <details className='dps-details'>
-          <summary className='muted'>full line ranking</summary>
+        <details className="dps-details">
+          <summary className="muted">full line ranking</summary>
           <table>
             <thead>
               <tr>
                 <th></th>
                 <th>free 4 overload lines</th>
-                <th className='r'>Nikke dmg</th>
-                <th className='r'>vs 8/12</th>
+                <th className="r">Nikke dmg</th>
+                <th className="r">vs 8/12</th>
               </tr>
             </thead>
             <tbody>
               {results.map((res, i) => (
                 <tr key={res.label} className={i === 0 ? 'hl' : ''}>
-                  <td className='muted'>{i + 1}</td>
+                  <td className="muted">{i + 1}</td>
                   <td>{res.label}</td>
-                  <td className='r'>{fmt(res.damage)}</td>
-                  <td className='r share'>+{res.gainPct.toFixed(1)}%</td>
+                  <td className="r">{fmt(res.damage)}</td>
+                  <td className="r share">+{res.gainPct.toFixed(1)}%</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <p className='muted'>
+          <p className="muted">
             8/12 baseline (4× Elemental DMG + 4× ATK, four free lines empty):{' '}
             {fmt(baseline)}. Ranked by the Nikke’s own damage.
           </p>
@@ -5373,13 +5374,13 @@ export function App({ user }: { user: AuthUser | null }) {
         setOlCustomResults(null);
       };
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Optimize Overload</h2>
-          <p className='muted'>
+          <p className="muted">
             Calculates the optimal overload lines under the selected conditions.
             Assumes 4 ATK/4 ELE.
           </p>
-          <div className='pills small dps-mode'>
+          <div className="pills small dps-mode">
             <button
               className={olMode === 'matrix' ? 'on' : ''}
               onClick={() => setOlMode('matrix')}
@@ -5393,12 +5394,12 @@ export function App({ user }: { user: AuthUser | null }) {
               Custom support teams
             </button>
           </div>
-          <label className='ol-tier'>
+          <label className="ol-tier">
             OL tier
             <select
               value={olMeasureTier}
               onChange={(e) => setOlMeasureTier(+e.target.value)}
-              title='The overload tier every line (the 8/12 floor and the four free lines) is measured at. T11 is the top-band floor most endgame sets aim for.'
+              title="The overload tier every line (the 8/12 floor and the four free lines) is measured at. T11 is the top-band floor most endgame sets aim for."
             >
               {Array.from({ length: 15 }, (_, t) => t + 1).map((t) => (
                 <option key={t} value={t}>
@@ -5410,18 +5411,18 @@ export function App({ user }: { user: AuthUser | null }) {
 
           {olMode === 'matrix' ? (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Pick a Nikke and a test matrix. The control team (Solo by
                 default) auto-fills around it.
               </p>
               <MatrixFilter cell={olCell} onChange={setOlCell} hideInvest />
-              <div className='field'>
+              <div className="field">
                 <label>Nikke — unit to optimize</label>
                 {carryMx ? (
-                  <div className='chips'>
+                  <div className="chips">
                     <button
-                      className='chip'
-                      title='change'
+                      className="chip"
+                      title="change"
                       onClick={() => {
                         setOlCarry(null);
                         setOlMatrixResult(null);
@@ -5432,7 +5433,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   </div>
                 ) : (
                   <CharSearch
-                    placeholder='pick a Nikke…'
+                    placeholder="pick a Nikke…"
                     exclude={[]}
                     onPick={(slug) => {
                       setOlCarry(slug);
@@ -5442,14 +5443,14 @@ export function App({ user }: { user: AuthUser | null }) {
                 )}
               </div>
               <button
-                className='calc-run'
+                className="calc-run"
                 onClick={runOlMatrix}
                 disabled={!carryMx || calcBusy}
               >
                 {calcBusy ? 'Running…' : 'Rank overload lines'}
               </button>
               {olMatrixResult && (
-                <div className='calc-result'>
+                <div className="calc-result">
                   <OlBarChart
                     title={`${data.characters[olMatrixResult.carrySlug].name} — free OL lines`}
                     subtitle={`${cellLabel({ ...olCell, invest: '8of12' })} · 180s`}
@@ -5462,7 +5463,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   />
                   {olTable(olMatrixResult.baseline, olMatrixResult.results)}
                   <button
-                    className='calc-run'
+                    className="calc-run"
                     title={`Send these best lines to the Overload Roll Sim at T${olMeasureTier} and estimate the roll cost`}
                     onClick={() => goToOlSim(olMatrixResult.results)}
                   >
@@ -5473,20 +5474,20 @@ export function App({ user }: { user: AuthUser | null }) {
             </>
           ) : (
             <>
-              <p className='muted'>
+              <p className="muted">
                 Pick one Nikke, then build one or more{' '}
                 <b>4-nikke support teams</b>. Every unit runs the 8/12 loadout;
                 you get one ranked chart per support team so you can see how the
                 best overload spread shifts with support. Boss options come from
                 the teamwide row above.
               </p>
-              <div className='field'>
+              <div className="field">
                 <label>Nikke — unit to optimize</label>
                 {carryCu ? (
-                  <div className='chips'>
+                  <div className="chips">
                     <button
-                      className='chip'
-                      title='change'
+                      className="chip"
+                      title="change"
                       onClick={() => {
                         setOlCustomCarry(null);
                         setOlCustomResults(null);
@@ -5497,7 +5498,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   </div>
                 ) : (
                   <CharSearch
-                    placeholder='pick a Nikke…'
+                    placeholder="pick a Nikke…"
                     exclude={[]}
                     onPick={(slug) => {
                       setOlCustomCarry(slug);
@@ -5508,15 +5509,15 @@ export function App({ user }: { user: AuthUser | null }) {
               </div>
 
               {olSupportTeams.map((team, ti) => (
-                <div className='dps-group-block' key={ti}>
-                  <div className='dps-group-head'>
-                    <span className='card-group-label'>
+                <div className="dps-group-block" key={ti}>
+                  <div className="dps-group-head">
+                    <span className="card-group-label">
                       support team {ti + 1} — {team.length}/4
                     </span>
                     {olSupportTeams.length > 1 && (
                       <button
-                        className='chip'
-                        title='remove team'
+                        className="chip"
+                        title="remove team"
                         onClick={() =>
                           editSupport((ts) => ts.filter((_, j) => j !== ti))
                         }
@@ -5525,17 +5526,17 @@ export function App({ user }: { user: AuthUser | null }) {
                       </button>
                     )}
                   </div>
-                  <div className='chips'>
+                  <div className="chips">
                     {team.map((slug) => (
                       <button
                         key={slug}
-                        className='chip'
-                        title='remove'
+                        className="chip"
+                        title="remove"
                         onClick={() =>
                           editSupport((ts) =>
                             ts.map((t, j) =>
-                              j === ti ? t.filter((s) => s !== slug) : t,
-                            ),
+                              j === ti ? t.filter((s) => s !== slug) : t
+                            )
                           )
                         }
                       >
@@ -5545,14 +5546,14 @@ export function App({ user }: { user: AuthUser | null }) {
                   </div>
                   {team.length < 4 && (
                     <CharSearch
-                      placeholder='add support nikke…'
+                      placeholder="add support nikke…"
                       exclude={[
                         ...(olCustomCarry ? [olCustomCarry] : []),
                         ...team,
                       ]}
                       onPick={(slug) =>
                         editSupport((ts) =>
-                          ts.map((t, j) => (j === ti ? [...t, slug] : t)),
+                          ts.map((t, j) => (j === ti ? [...t, slug] : t))
                         )
                       }
                     />
@@ -5560,26 +5561,26 @@ export function App({ user }: { user: AuthUser | null }) {
                 </div>
               ))}
               <button
-                className='ol-add'
+                className="ol-add"
                 onClick={() => editSupport((ts) => [...ts, []])}
               >
                 + add support team
               </button>
               <button
-                className='calc-run'
+                className="calc-run"
                 onClick={runOlCustom}
                 disabled={!carryCu || !olCustomTeamsValid.length || calcBusy}
               >
                 {calcBusy ? 'Running…' : 'Rank overload lines'}
               </button>
               {!olCustomTeamsValid.length && carryCu && (
-                <p className='muted'>
+                <p className="muted">
                   Fill at least one support team with 4 nikkes.
                 </p>
               )}
 
               {olCustomResults?.map((res, i) => (
-                <div className='calc-result' key={i}>
+                <div className="calc-result" key={i}>
                   <OlBarChart
                     title={`${carryCu?.name ?? 'Nikke'} — support team ${i + 1}`}
                     subtitle={res.teamSlugs
@@ -5594,7 +5595,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   />
                   {olTable(res.baseline, res.results)}
                   <button
-                    className='calc-run'
+                    className="calc-run"
                     title={`Send these best lines to the Overload Roll Sim at T${olMeasureTier} and estimate the roll cost`}
                     onClick={() => goToOlSim(res.results)}
                   >
@@ -5624,7 +5625,7 @@ export function App({ user }: { user: AuthUser | null }) {
         fmtN(
           olSimLockMode === 'permanent'
             ? s.moduleCostPerm.p95
-            : s.moduleCostTemp.p95,
+            : s.moduleCostTemp.p95
         );
       const gridStyle = {
         display: 'grid',
@@ -5635,10 +5636,10 @@ export function App({ user }: { user: AuthUser | null }) {
       const lineRow = (
         line: OlSimLine,
         onKey: (k: OlKey | '') => void,
-        onTier: (t: number) => void,
+        onTier: (t: number) => void
       ) => (
         <div
-          className='field'
+          className="field"
           style={{ display: 'flex', gap: 6, alignItems: 'center' }}
         >
           <select
@@ -5646,7 +5647,7 @@ export function App({ user }: { user: AuthUser | null }) {
             style={{ flex: 1 }}
             onChange={(e) => onKey(e.target.value as OlKey | '')}
           >
-            <option value=''>— none —</option>
+            <option value="">— none —</option>
             {OL_SIM_KEYS.map((k) => (
               <option key={k} value={k}>
                 {OL_KEY_LABEL[k]}
@@ -5665,8 +5666,8 @@ export function App({ user }: { user: AuthUser | null }) {
         </div>
       );
       const lockModePills = (
-        <div className='pills small'>
-          <span className='muted' style={{ marginRight: 8 }}>
+        <div className="pills small">
+          <span className="muted" style={{ marginRight: 8 }}>
             Lock mode:
           </span>
           <button
@@ -5690,7 +5691,7 @@ export function App({ user }: { user: AuthUser | null }) {
           H = 150,
           PAD = 6;
         let maxC = 1;
-        for (const x of d) if (x.count > maxC) maxC = x.count;
+        for (const x of d) {if (x.count > maxC) {maxC = x.count;}}
         const maxX = d.length ? d[d.length - 1].hi : 1;
         const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
         const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
@@ -5716,20 +5717,20 @@ export function App({ user }: { user: AuthUser | null }) {
                 display: 'block',
               }}
             >
-              <path d={area} fill='#5b8def' opacity={0.22} />
-              <path d={line} fill='none' stroke='#5b8def' strokeWidth={2} />
+              <path d={area} fill="#5b8def" opacity={0.22} />
+              <path d={line} fill="none" stroke="#5b8def" strokeWidth={2} />
               <line
                 x1={medX}
                 y1={PAD}
                 x2={medX}
                 y2={H - PAD}
-                stroke='currentColor'
-                strokeDasharray='4 3'
+                stroke="currentColor"
+                strokeDasharray="4 3"
                 opacity={0.5}
               />
             </svg>
             <div
-              className='muted'
+              className="muted"
               style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -5750,62 +5751,62 @@ export function App({ user }: { user: AuthUser | null }) {
       }) => {
         const total = result.total;
         return (
-          <div className='calc-result'>
+          <div className="calc-result">
             <table>
               <thead>
                 <tr>
                   <th>piece</th>
-                  <th className='r'>exp rolls</th>
-                  <th className='r'>p95</th>
-                  <th className='r'>phase 1 / 2</th>
-                  <th className='r'>
+                  <th className="r">exp rolls</th>
+                  <th className="r">p95</th>
+                  <th className="r">phase 1 / 2</th>
+                  <th className="r">
                     {olSimLockMode === 'permanent'
                       ? 'modules'
                       : 'modules + temp-locks'}
                   </th>
-                  <th className='r'>p95</th>
+                  <th className="r">p95</th>
                 </tr>
               </thead>
               <tbody>
                 {result.perPiece.map((s, i) => (
                   <tr key={i}>
-                    <td className='muted'>piece {i + 1}</td>
-                    <td className='r'>{s.ops.mean.toFixed(1)}</td>
-                    <td className='r muted'>{s.ops.pctiles.p95}</td>
-                    <td className='r muted'>
+                    <td className="muted">piece {i + 1}</td>
+                    <td className="r">{s.ops.mean.toFixed(1)}</td>
+                    <td className="r muted">{s.ops.pctiles.p95}</td>
+                    <td className="r muted">
                       {s.phase1Rerolls.mean.toFixed(1)} /{' '}
                       {s.phase2Resets.mean.toFixed(1)}
                     </td>
-                    <td className='r'>{costCol(s)}</td>
-                    <td className='r muted'>{modP95(s)}</td>
+                    <td className="r">{costCol(s)}</td>
+                    <td className="r muted">{modP95(s)}</td>
                   </tr>
                 ))}
-                <tr className='hl'>
+                <tr className="hl">
                   <td>
                     <b>full build</b>
                   </td>
-                  <td className='r'>
+                  <td className="r">
                     <b>{total.ops.mean.toFixed(1)}</b>
                   </td>
-                  <td className='r'>{total.ops.pctiles.p95}</td>
-                  <td className='r'>
+                  <td className="r">{total.ops.pctiles.p95}</td>
+                  <td className="r">
                     {total.phase1Rerolls.mean.toFixed(1)} /{' '}
                     {total.phase2Resets.mean.toFixed(1)}
                   </td>
-                  <td className='r'>
+                  <td className="r">
                     <b>{costCol(total)}</b>
                   </td>
-                  <td className='r'>{modP95(total)}</td>
+                  <td className="r">{modP95(total)}</td>
                 </tr>
               </tbody>
             </table>
-            <p className='muted' style={{ marginTop: 12 }}>
+            <p className="muted" style={{ marginTop: 12 }}>
               Distribution — total rerolls to finish the whole build (median{' '}
               {total.ops.pctiles.p50}, p95 {total.ops.pctiles.p95}):
             </p>
             {bellCurve(total)}
             {total.censoredFrac > 0 && (
-              <p className='muted'>
+              <p className="muted">
                 ⚠ {(total.censoredFrac * 100).toFixed(1)}% of trials hit the op
                 cap (mean is a lower bound).
               </p>
@@ -5817,14 +5818,14 @@ export function App({ user }: { user: AuthUser | null }) {
       const setCalcLine = (ci: number, li: number, patch: Partial<OlSimLine>) =>
         setOlSimCards((cards) =>
           cards.map((c, i) =>
-            i === ci ? c.map((l, j) => (j === li ? { ...l, ...patch } : l)) : c,
-          ),
+            i === ci ? c.map((l, j) => (j === li ? { ...l, ...patch } : l)) : c
+          )
         );
       const setCurLine = (
         ci: number,
         which: 'current' | 'desired',
         li: number,
-        patch: Partial<OlSimLine>,
+        patch: Partial<OlSimLine>
       ) =>
         setOlSimCurrent((cards) =>
           cards.map((c, i) =>
@@ -5832,37 +5833,37 @@ export function App({ user }: { user: AuthUser | null }) {
               ? {
                   ...c,
                   [which]: c[which].map((l, j) =>
-                    j === li ? { ...l, ...patch } : l,
+                    j === li ? { ...l, ...patch } : l
                   ),
                 }
-              : c,
-          ),
+              : c
+          )
         );
 
       const calcPanel = (
         <>
-          <p className='muted'>
+          <p className="muted">
             Estimate the number of Custom Modules required to roll your target
             build.
           </p>
           {lockModePills}
           <div style={gridStyle}>
             {olSimCards.map((card, ci) => (
-              <div key={ci} className='dps-group-block'>
-                <div className='card-group-label'>OL piece {ci + 1}</div>
+              <div key={ci} className="dps-group-block">
+                <div className="card-group-label">OL piece {ci + 1}</div>
                 {card.map((line, li) => (
                   <Fragment key={li}>
                     {lineRow(
                       line,
                       (k) => setCalcLine(ci, li, { key: k }),
-                      (t) => setCalcLine(ci, li, { tier: t }),
+                      (t) => setCalcLine(ci, li, { tier: t })
                     )}
                   </Fragment>
                 ))}
               </div>
             ))}
           </div>
-          <button className='calc-run' onClick={runOlSim} disabled={calcBusy}>
+          <button className="calc-run" onClick={runOlSim} disabled={calcBusy}>
             {calcBusy ? 'Running…' : 'Run roll sim'}
           </button>
           {olSimResult && resultsBlock(olSimResult)}
@@ -5871,7 +5872,7 @@ export function App({ user }: { user: AuthUser | null }) {
 
       const currentPanel = (
         <>
-          <p className='muted'>
+          <p className="muted">
             Recalc from where you are. For each piece, enter the lines you
             already have (top) and the lines you want (bottom). The sim measures
             the remaining reroll cost from your current state.
@@ -5879,10 +5880,10 @@ export function App({ user }: { user: AuthUser | null }) {
           {lockModePills}
           <div style={gridStyle}>
             {olSimCurrent.map((card, ci) => (
-              <div key={ci} className='dps-group-block'>
-                <div className='card-group-label'>OL piece {ci + 1}</div>
+              <div key={ci} className="dps-group-block">
+                <div className="card-group-label">OL piece {ci + 1}</div>
                 <div
-                  className='muted'
+                  className="muted"
                   style={{ fontSize: '0.82em', margin: '4px 0 2px' }}
                 >
                   Current lines
@@ -5892,12 +5893,12 @@ export function App({ user }: { user: AuthUser | null }) {
                     {lineRow(
                       line,
                       (k) => setCurLine(ci, 'current', li, { key: k }),
-                      (t) => setCurLine(ci, 'current', li, { tier: t }),
+                      (t) => setCurLine(ci, 'current', li, { tier: t })
                     )}
                   </Fragment>
                 ))}
                 <div
-                  className='muted'
+                  className="muted"
                   style={{ fontSize: '0.82em', margin: '8px 0 2px' }}
                 >
                   Desired (min tier)
@@ -5907,7 +5908,7 @@ export function App({ user }: { user: AuthUser | null }) {
                     {lineRow(
                       line,
                       (k) => setCurLine(ci, 'desired', li, { key: k }),
-                      (t) => setCurLine(ci, 'desired', li, { tier: t }),
+                      (t) => setCurLine(ci, 'desired', li, { tier: t })
                     )}
                   </Fragment>
                 ))}
@@ -5915,7 +5916,7 @@ export function App({ user }: { user: AuthUser | null }) {
             ))}
           </div>
           <button
-            className='calc-run'
+            className="calc-run"
             onClick={runOlSimCurrent}
             disabled={calcBusy}
           >
@@ -5928,17 +5929,17 @@ export function App({ user }: { user: AuthUser | null }) {
       const setGuideLine = (
         which: 'cur' | 'desired',
         li: number,
-        patch: Partial<OlSimLine>,
+        patch: Partial<OlSimLine>
       ) => {
         const set = which === 'cur' ? setOlGuideCur : setOlGuideDesired;
         set((lines) =>
-          lines.map((l, j) => (j === li ? { ...l, ...patch } : l)),
+          lines.map((l, j) => (j === li ? { ...l, ...patch } : l))
         );
       };
       const guide = buildRollGuide(olGuideCur, olGuideDesired);
       const guidePanel = (
         <>
-          <p className='muted'>
+          <p className="muted">
             Step-by-step guide for <b>one piece</b>. Enter the lines you have
             now and the stats + tiers you want.
           </p>
@@ -5951,15 +5952,15 @@ export function App({ user }: { user: AuthUser | null }) {
               maxWidth: 640,
             }}
           >
-            <div className='dps-group-block'>
-              <div className='card-group-label'>Current lines</div>
+            <div className="dps-group-block">
+              <div className="card-group-label">Current lines</div>
               {olGuideCur.map((line, li) => (
                 <div
                   key={li}
                   style={{ display: 'flex', alignItems: 'center', gap: 6 }}
                 >
                   <span
-                    className='muted'
+                    className="muted"
                     style={{ width: 42, fontSize: '0.82em', flexShrink: 0 }}
                   >
                     Line {li + 1}
@@ -5968,32 +5969,32 @@ export function App({ user }: { user: AuthUser | null }) {
                     {lineRow(
                       line,
                       (k) => setGuideLine('cur', li, { key: k }),
-                      (t) => setGuideLine('cur', li, { tier: t }),
+                      (t) => setGuideLine('cur', li, { tier: t })
                     )}
                   </div>
                 </div>
               ))}
             </div>
-            <div className='dps-group-block'>
-              <div className='card-group-label'>Desired (target tier)</div>
+            <div className="dps-group-block">
+              <div className="card-group-label">Desired (target tier)</div>
               {olGuideDesired.map((line, li) => (
                 <Fragment key={li}>
                   {lineRow(
                     line,
                     (k) => setGuideLine('desired', li, { key: k }),
-                    (t) => setGuideLine('desired', li, { tier: t }),
+                    (t) => setGuideLine('desired', li, { tier: t })
                   )}
                 </Fragment>
               ))}
             </div>
           </div>
           {guide.kind === 'invalid' && (
-            <p className='muted' style={{ marginTop: 14 }}>
+            <p className="muted" style={{ marginTop: 14 }}>
               {guide.msg}
             </p>
           )}
           {guide.kind === 'done' && (
-            <div className='calc-result' style={{ marginTop: 14 }}>
+            <div className="calc-result" style={{ marginTop: 14 }}>
               <p style={{ margin: 0 }}>{guide.msg}</p>
             </div>
           )}
@@ -6001,13 +6002,13 @@ export function App({ user }: { user: AuthUser | null }) {
             (() => {
               let n = 1;
               return (
-                <div className='calc-result' style={{ marginTop: 14 }}>
+                <div className="calc-result" style={{ marginTop: 14 }}>
                   {guide.phases.map((ph, pi) => {
                     const start = n;
                     n += ph.items.length;
                     return (
                       <div key={pi} style={{ marginBottom: 10 }}>
-                        <div className='card-group-label'>{ph.title}</div>
+                        <div className="card-group-label">{ph.title}</div>
                         <ol
                           start={start}
                           style={{
@@ -6023,7 +6024,7 @@ export function App({ user }: { user: AuthUser | null }) {
                       </div>
                     );
                   })}
-                  <p className='muted' style={{ marginTop: 6 }}>
+                  <p className="muted" style={{ marginTop: 6 }}>
                     {guide.note}
                   </p>
                 </div>
@@ -6036,7 +6037,7 @@ export function App({ user }: { user: AuthUser | null }) {
         <div style={{ marginBottom: 22 }}>
           <h4 style={{ margin: '0 0 5px' }}>{q}</h4>
           <div>{tldr}</div>
-          <div className='muted' style={{ marginTop: 5 }}>
+          <div className="muted" style={{ marginTop: 5 }}>
             <b>Why:</b> {why}
           </div>
         </div>
@@ -6055,7 +6056,7 @@ export function App({ user }: { user: AuthUser | null }) {
               early is totally fine here — there&rsquo;s no hard-to-get third
               line to wait on. Two good lines per piece is the best bang for
               your buck.
-            </>,
+            </>
           )}
           {faqItem(
             'Best way to roll a 12/12 T11+ set from scratch?',
@@ -6080,7 +6081,7 @@ export function App({ user }: { user: AuthUser | null }) {
               Line 3 barely changes anything (about 2 modules either way), so
               don&rsquo;t sweat that part — the only rule that really matters
               is: don&rsquo;t lock a junk Line 1.
-            </>,
+            </>
           )}
           {faqItem(
             'I hit a T15 (black line) on Line 1 but nothing else yet — lock it?',
@@ -6105,7 +6106,7 @@ export function App({ user }: { user: AuthUser | null }) {
               Bottom line: keep a T15 Line 1. The sim does this automatically —
               it holds Line 1 only when it&rsquo;s already good enough and
               leaves a weak Line 1 unlocked.
-            </>,
+            </>
           )}
           {faqItem(
             'What are the odds to roll T11 or higher?',
@@ -6116,7 +6117,7 @@ export function App({ user }: { user: AuthUser | null }) {
               effort isn&rsquo;t getting the right stat — it&rsquo;s
               value-resetting a line over and over to shove it up into that top
               band. That&rsquo;s where most of the cost goes.
-            </>,
+            </>
           )}
           {faqItem(
             'What are the odds to roll all 3 lines on one item in a single roll?',
@@ -6127,15 +6128,15 @@ export function App({ user }: { user: AuthUser | null }) {
               <b>30%</b> of the time. Multiply them: 100% × 50% × 30% ={' '}
               <b>15%</b>. That rare third line is exactly why 12/12 sets cost so
               much more than 8/12.
-            </>,
+            </>
           )}
         </div>
       );
 
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Overload Rolling</h2>
-          <div className='pills small dps-mode'>
+          <div className="pills small dps-mode">
             <button
               className={olSimSub === 'calc' ? 'on' : ''}
               onClick={() => setOlSimSub('calc')}
@@ -6214,7 +6215,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 }}
               >
                 <span
-                  className='muted'
+                  className="muted"
                   style={{ fontVariantNumeric: 'tabular-nums', minWidth: 38 }}
                 >
                   {L}→{L + 1}
@@ -6231,7 +6232,7 @@ export function App({ user }: { user: AuthUser | null }) {
           H = 120,
           PAD = 6;
         let maxC = 1;
-        for (const x of d) if (x.count > maxC) maxC = x.count;
+        for (const x of d) {if (x.count > maxC) {maxC = x.count;}}
         const maxX = d.length ? d[d.length - 1].hi : 1;
         const X = (v: number) => PAD + (v / maxX) * (W - 2 * PAD);
         const Y = (c: number) => H - PAD - (c / maxC) * (H - 2 * PAD);
@@ -6255,8 +6256,8 @@ export function App({ user }: { user: AuthUser | null }) {
               display: 'block',
             }}
           >
-            <path d={area} fill='#5b8def' opacity={0.22} />
-            <path d={line} fill='none' stroke='#5b8def' strokeWidth={2} />
+            <path d={area} fill="#5b8def" opacity={0.22} />
+            <path d={line} fill="none" stroke="#5b8def" strokeWidth={2} />
           </svg>
         );
       };
@@ -6264,10 +6265,10 @@ export function App({ user }: { user: AuthUser | null }) {
         rarity: DollRarity,
         from: number,
         dp: DollDp,
-        mc: DollSummary,
+        mc: DollSummary
       ) => (
-        <div className='calc-result'>
-          <p className='muted'>
+        <div className="calc-result">
+          <p className="muted">
             Which kit to feed at each phase ({rarity} doll {from}→15) — the
             simple one-tier-per-phase guide:
           </p>
@@ -6276,18 +6277,18 @@ export function App({ user }: { user: AuthUser | null }) {
             Expected kits to finish: <b>Blue {mc.byTier.R.toFixed(1)}</b> ·{' '}
             <b>Purple {mc.byTier.SR.toFixed(1)}</b> ·{' '}
             <b>Gold {mc.byTier.SSR.toFixed(1)}</b>{' '}
-            <span className='muted'>
+            <span className="muted">
               ({mc.feeds.mean.toFixed(0)} kits total)
             </span>
           </p>
-          <p className='muted' style={{ marginTop: 8 }}>
+          <p className="muted" style={{ marginTop: 8 }}>
             Distribution of total cost (median {fmtN(mc.cost.p50)}):
           </p>
           {dollBell(mc)}
         </div>
       );
       const rarityPills = (val: DollRarity, set: (r: DollRarity) => void) => (
-        <div className='pills small'>
+        <div className="pills small">
           <button className={val === 'R' ? 'on' : ''} onClick={() => set('R')}>
             R doll
           </button>
@@ -6313,7 +6314,7 @@ export function App({ user }: { user: AuthUser | null }) {
           ? dollModel.kitSupply[t] / (dollCal.dollsPer1000Mixed / 1000)
           : 0;
       const throughputHeadline = dollCal ? (
-        <div className='calc-result' style={{ marginBottom: 10 }}>
+        <div className="calc-result" style={{ marginBottom: 10 }}>
           <div style={{ fontSize: '1.05em' }}>
             <b>
               {dollCal.dollsPer1000Mixed.toFixed(0)} SR dolls per 1000 kit-boxes
@@ -6322,25 +6323,25 @@ export function App({ user }: { user: AuthUser | null }) {
             <b>{dollCal.dollsPer1000Pure.toFixed(0)}</b> with the simple
             one-tier-per-phase rule.
           </div>
-          <div className='muted' style={{ marginTop: 4 }}>
+          <div className="muted" style={{ marginTop: 4 }}>
             Best mix ≈ {perDoll('R').toFixed(0)} Blue ·{' '}
             {perDoll('SR').toFixed(0)} Purple · {perDoll('SSR').toFixed(0)} Gold
             per doll. Use every kit — put Gold on the phase 10→15 push.
           </div>
         </div>
       ) : (
-        <p className='muted'>Computing the optimal plan…</p>
+        <p className="muted">Computing the optimal plan…</p>
       );
 
       const dollCalcPanel = (
         <>
-          <p className='muted'>
+          <p className="muted">
             The cheapest way to level a doll to the SR phase-15 target, from
             your kit boxes. Defaults to a fresh SR doll (0→15).
           </p>
           {throughputHeadline}
           <div
-            className='field'
+            className="field"
             style={{
               display: 'flex',
               gap: 10,
@@ -6352,14 +6353,14 @@ export function App({ user }: { user: AuthUser | null }) {
               setDollRarity(r);
               setDollResult(null);
             })}
-            <span className='muted'>from</span>
+            <span className="muted">from</span>
             {phaseSelect(dollFrom, (n) => {
               setDollFrom(n);
               setDollResult(null);
             })}
           </div>
           <button
-            className='calc-run'
+            className="calc-run"
             onClick={runDollCalc}
             disabled={calcBusy}
           >
@@ -6370,18 +6371,18 @@ export function App({ user }: { user: AuthUser | null }) {
               dollResult.rarity,
               dollResult.from,
               dollResult.dp,
-              dollResult.mc,
+              dollResult.mc
             )}
         </>
       );
       const dollCurrentPanel = (
         <>
-          <p className='muted'>
+          <p className="muted">
             Enter the doll you have now — see the kits remaining to reach phase
             15 and what to feed next.
           </p>
           <div
-            className='field'
+            className="field"
             style={{
               display: 'flex',
               gap: 10,
@@ -6393,14 +6394,14 @@ export function App({ user }: { user: AuthUser | null }) {
               setDollCurRarity(r);
               setDollCurResult(null);
             })}
-            <span className='muted'>currently at</span>
+            <span className="muted">currently at</span>
             {phaseSelect(dollCurPhase, (n) => {
               setDollCurPhase(n);
               setDollCurResult(null);
             })}
           </div>
           <button
-            className='calc-run'
+            className="calc-run"
             onClick={runDollCurrent}
             disabled={calcBusy}
           >
@@ -6408,7 +6409,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </button>
           {dollCurResult && (
             <>
-              <div className='calc-result' style={{ marginBottom: 8 }}>
+              <div className="calc-result" style={{ marginBottom: 8 }}>
                 <b>
                   Feed next:{' '}
                   {
@@ -6423,7 +6424,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 dollCurResult.rarity,
                 dollCurResult.from,
                 dollCurResult.dp,
-                dollCurResult.mc,
+                dollCurResult.mc
               )}
             </>
           )}
@@ -6433,7 +6434,7 @@ export function App({ user }: { user: AuthUser | null }) {
         <div style={{ marginBottom: 22 }}>
           <h4 style={{ margin: '0 0 5px' }}>{q}</h4>
           <div>{tldr}</div>
-          <div className='muted' style={{ marginTop: 5 }}>
+          <div className="muted" style={{ marginTop: 5 }}>
             <b>Why:</b> {why}
           </div>
         </div>
@@ -6457,7 +6458,7 @@ export function App({ user }: { user: AuthUser | null }) {
               Purple through the mid-phases, Gold for the final 10→15 climb.
               Splitting some phases between two tiers recovers the last ~20%,
               but the simple rule is close and much easier to follow.
-            </>,
+            </>
           )}
           {dollFaq(
             'Better to level rare (R) dolls 0→15 first, or combine them?',
@@ -6472,15 +6473,15 @@ export function App({ user }: { user: AuthUser | null }) {
               <b>10.6 kit-value each</b> (kits plus a 15% shot at an SR doll).
               So trade your spares — only launder when you specifically need the
               guaranteed SR-doll head-start.
-            </>,
+            </>
           )}
         </div>
       );
 
       return (
-        <section className='calc-tab'>
+        <section className="calc-tab">
           <h2>Doll Leveling</h2>
-          <div className='pills small dps-mode'>
+          <div className="pills small dps-mode">
             <button
               className={dollSub === 'calc' ? 'on' : ''}
               onClick={() => setDollSub('calc')}
@@ -6517,7 +6518,15 @@ export function App({ user }: { user: AuthUser | null }) {
         // Build a minimal Build payload from the slugs (default loadout)
         const build: Build = {
           v: BUILD_VERSION,
-          g: { weakness, bossDef, core, coreCustom, coreCustomVal, level, bossRange },
+          g: {
+            weakness,
+            bossDef,
+            core,
+            coreCustom,
+            coreCustomVal,
+            level,
+            bossRange,
+          },
           s: Array.from({ length: 5 }, (_, i) => ({
             slug: slugs[i] ?? null,
             cubeId: 'other',
@@ -6546,18 +6555,18 @@ export function App({ user }: { user: AuthUser | null }) {
           .filter((s): s is string => !!s)
           .map((s) => data.characters[s])
           .filter((c) => c && !c.simSupported);
-        if (!unsupported.length) return null;
+        if (!unsupported.length) {return null;}
         const names = unsupported.map((c) => c.name).join(', ');
         return `${names} ${unsupported.length === 1 ? 'is' : 'are'} currently unsupported for the sim. We're constantly updating the backlog of unsupported Nikkes, check back soon.`;
       };
       const onTbCopyToSim = (slugs: (string | null)[]): string | null => {
         const warning = unsupportedWarning(slugs);
-        if (warning) return warning;
+        if (warning) {return warning;}
         setSlots((prev) =>
           prev.map((slot, i) => ({
             ...slot,
             slug: slugs[i] ?? null,
-          })),
+          }))
         );
         selectTab('sim');
         return null;
@@ -6566,10 +6575,10 @@ export function App({ user }: { user: AuthUser | null }) {
       // the whole roster and switches to the matching roster sim mode.
       const onTbCopyToRoster = (
         rows: (string | null)[][],
-        mode: 'solo' | 'union',
+        mode: 'solo' | 'union'
       ): string | null => {
         const warning = unsupportedWarning(rows.flat());
-        if (warning) return warning;
+        if (warning) {return warning;}
         if (mode === 'union') {
           setUnionRosterSim(normalizeUnionRoster(rows));
           setUnionRosterSimResults(null);
@@ -6618,9 +6627,9 @@ export function App({ user }: { user: AuthUser | null }) {
     teambuilder: 'Team Builder',
   };
   return (
-    <div className='app'>
+    <div className="app">
       <header>
-        <div className='header-row'>
+        <div className="header-row">
           <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
           {/* team share actions act on the hand-built team, so they stay off
               the generator tabs (which have their own result share buttons)
@@ -6629,30 +6638,30 @@ export function App({ user }: { user: AuthUser | null }) {
             tab !== 'team' &&
             tab !== 'roster' &&
             tab !== 'rostersim' && (
-              <div className='share-actions'>
+              <div className="share-actions">
                 {user && (
                   <>
                     {namingTeam ? (
                       <InlineNameField
                         initial={suggestedName()}
-                        placeholder='team name'
+                        placeholder="team name"
                         onCommit={doSaveTeam}
                         onCancel={() => setNamingTeam(false)}
                       />
                     ) : (
                       <button
-                        className='share-btn'
+                        className="share-btn"
                         onClick={() => setNamingTeam(true)}
                         disabled={slots.every((s) => !s.slug)}
-                        title='save this team + full loadout to your account'
+                        title="save this team + full loadout to your account"
                       >
                         {savedFlash ? '✓ Saved' : '💾 Save team'}
                       </button>
                     )}
                     <button
-                      className='share-btn'
+                      className="share-btn"
                       onClick={openTeams}
-                      title='your saved teams'
+                      title="your saved teams"
                     >
                       📋 My teams
                     </button>
@@ -6662,7 +6671,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   className={'share-btn' + (shared ? ' copied' : '')}
                   onClick={onShare}
                   disabled={slots.every((s) => !s.slug)}
-                  title='copy a link that prefills this team'
+                  title="copy a link that prefills this team"
                 >
                   {shared ? '✓ Copied' : '🔗 Share team'}
                 </button>
@@ -6671,21 +6680,21 @@ export function App({ user }: { user: AuthUser | null }) {
                   className={'share-btn' + (imaged ? ' copied' : '')}
                   onClick={onShareImage}
                   disabled={!r}
-                  title='copy a summary image of the results to your clipboard'
+                  title="copy a summary image of the results to your clipboard"
                 >
                   {imaged ? '✓ Copied' : '🖼 Copy image'}
                 </button>
               </div>
             )}
           {tab === 'rostersim' && (
-            <div className='share-actions'>
+            <div className="share-actions">
               <button
                 className={'share-btn' + (shared ? ' copied' : '')}
                 onClick={() => void onRosterSimGenLink()}
                 disabled={
                   rosterSimMode === 'union' ? !unionAnyFilled : !rosterAnyFilled
                 }
-                title='copy a link that prefills this roster'
+                title="copy a link that prefills this roster"
               >
                 {shared ? '✓ Copied' : '🔗 Generate link'}
               </button>
@@ -6696,18 +6705,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 disabled={
                   rosterSimMode === 'union' ? !unionAnyFilled : !rosterAnyFilled
                 }
-                title='copy a summary image of the roster to your clipboard'
+                title="copy a summary image of the roster to your clipboard"
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
               </button>
             </div>
           )}
           {(tab === 'team' || tab === 'roster') && (
-            <div className='share-actions'>
+            <div className="share-actions">
               <button
                 className={'share-btn' + (shared ? ' copied' : '')}
                 onClick={() => void onGenLink(tab)}
-                title='copy a link that regenerates this result (boss + loadout + blocked list)'
+                title="copy a link that regenerates this result (boss + loadout + blocked list)"
               >
                 {shared ? '✓ Copied' : '🔗 Generate link'}
               </button>
@@ -6729,14 +6738,14 @@ export function App({ user }: { user: AuthUser | null }) {
                       ? !unionGenResults
                       : !rosterResults
                 }
-                title='copy a summary image of the result to your clipboard'
+                title="copy a summary image of the result to your clipboard"
               >
                 {imaged ? '✓ Copied' : '🖼 Copy image'}
               </button>
             </div>
           )}
           {tab === 'teambuilder' && (
-            <div className='share-actions'>
+            <div className="share-actions">
               <button
                 className={'share-btn' + (shared ? ' copied' : '')}
                 onClick={() => void onTbGenerateLink(tbBuildRows())}
@@ -6769,18 +6778,18 @@ export function App({ user }: { user: AuthUser | null }) {
             </div>
           )}
         </div>
-        {!inTools && <p className='muted'>180s fight · auto-mode</p>}
+        {!inTools && <p className="muted">180s fight · auto-mode</p>}
       </header>
 
       {(() => {
         const groupTabs = CALC_TABS.filter(
           (t) =>
-            t.group === (CALC_TABS.find((x) => x.key === tab)?.group ?? 'sim'),
+            t.group === (CALC_TABS.find((x) => x.key === tab)?.group ?? 'sim')
         );
         return mobileNav ? (
-          <div className='tabs-dd-wrap'>
+          <div className="tabs-dd-wrap">
             <TabDropdown
-              label='Tool'
+              label="Tool"
               items={groupTabs.map((t) => ({
                 key: t.key,
                 label: t.label,
@@ -6790,7 +6799,7 @@ export function App({ user }: { user: AuthUser | null }) {
             />
           </div>
         ) : (
-          <nav className='tabs-bar'>
+          <nav className="tabs-bar">
             {groupTabs.map((t) => (
               <button
                 key={t.key}
@@ -6816,363 +6825,378 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'teambuilder' &&
         !(tab === 'overload' && olMode === 'matrix') && (
           <details
-            className='global-details'
+            className="global-details"
             open={settingsOpen}
             onToggle={(e) => setSettingsOpen(e.currentTarget.open)}
           >
-            <summary className='global-summary'>Boss & team settings</summary>
-            <div className='global-details-content'>
-              <section className='global'>
-              {/* Boss weakness / DEF / core are per-team in Union Raid mode */}
-              {!(tab === 'rostersim' && rosterSimMode === 'union') && (
-                <>
-                  <div className='field'>
-                    <label title='the element that is strong against the boss'>
-                      Boss weakness
-                    </label>
-                    <PillGrid>
-                      {ELEMENTS.map((e) => {
-                        const src = e
-                          ? `/nikke-icons/code_${e.toLowerCase()}.svg`
-                          : null;
-                        return (
-                          <button
-                            key={e ?? 'none'}
-                            className={weakness === e ? 'on' : ''}
-                            onClick={() => setWeakness(e)}
-                          >
-                            {src && (
-                              <img
-                                className='pill-icon'
-                                src={src}
-                                alt=''
-                                aria-hidden='true'
-                                data-colored=''
-                              />
-                            )}
-                            {e ?? 'None'}
-                          </button>
-                        );
-                      })}
-                    </PillGrid>
-                  </div>
-                  <div className='field'>
-                    <label>Boss DEF</label>
-                    <input
-                      className='num'
-                      value={bossDef}
-                      onChange={(e) => setBossDef(e.target.value)}
-                    />
-                  </div>
-                  <div className='field'>
-                    <label>Core visibility</label>
-                    <PillGrid>
-                      {CORE_PRESETS.map((p) => (
-                        <button
-                          key={p.label}
-                          className={
-                            !coreCustom && core === p.value ? 'on' : ''
-                          }
-                          onClick={() => {
-                            setCore(p.value);
-                            setCoreCustom(false);
-                          }}
-                        >
-                          {p.label}
-                        </button>
-                      ))}
-                      <button
-                        className={coreCustom ? 'on' : ''}
-                        onClick={() => setCoreCustom(true)}
-                      >
-                        Custom
-                      </button>
-                    </PillGrid>
-                    {coreCustom && (
+            <summary className="global-summary">Boss & team settings</summary>
+            <div className="global-details-content">
+              <section className="global">
+                {/* Boss weakness / DEF / core are per-team in Union Raid mode */}
+                {!(tab === 'rostersim' && rosterSimMode === 'union') && (
+                  <>
+                    <div className="field">
+                      <label title="the element that is strong against the boss">
+                        Boss weakness
+                      </label>
+                      <PillGrid>
+                        {ELEMENTS.map((e) => {
+                          const src = e
+                            ? `/nikke-icons/code_${e.toLowerCase()}.svg`
+                            : null;
+                          return (
+                            <button
+                              key={e ?? 'none'}
+                              className={weakness === e ? 'on' : ''}
+                              onClick={() => setWeakness(e)}
+                            >
+                              {src && (
+                                <img
+                                  className="pill-icon"
+                                  src={src}
+                                  alt=""
+                                  aria-hidden="true"
+                                  data-colored=""
+                                />
+                              )}
+                              {e ?? 'None'}
+                            </button>
+                          );
+                        })}
+                      </PillGrid>
+                    </div>
+                    <div className="field">
+                      <label>Boss DEF</label>
                       <input
-                        className='num'
-                        style={{ marginTop: 6 }}
-                        value={coreCustomVal}
-                        onChange={(e) => setCoreCustomVal(e.target.value)}
-                        placeholder='%'
+                        className="num"
+                        value={bossDef}
+                        onChange={(e) => setBossDef(e.target.value)}
                       />
-                    )}
-                  </div>
-                  <div className='field'>
-                    <label title='Fix the boss at one range band for the whole fight; Auto uses the scripted boss movement'>
-                      Boss range
-                    </label>
-                    <PillGrid>
-                      {BOSS_RANGE_OPTIONS.map((o) => (
+                    </div>
+                    <div className="field">
+                      <label>Core visibility</label>
+                      <PillGrid>
+                        {CORE_PRESETS.map((p) => (
+                          <button
+                            key={p.label}
+                            className={
+                              !coreCustom && core === p.value ? 'on' : ''
+                            }
+                            onClick={() => {
+                              setCore(p.value);
+                              setCoreCustom(false);
+                            }}
+                          >
+                            {p.label}
+                          </button>
+                        ))}
                         <button
-                          key={o.id ?? 'auto'}
-                          className={bossRange === o.id ? 'on' : ''}
-                          onClick={() => setBossRange(o.id)}
+                          className={coreCustom ? 'on' : ''}
+                          onClick={() => setCoreCustom(true)}
                         >
-                          {o.label}
+                          Custom
                         </button>
-                      ))}
-                    </PillGrid>
-                  </div>
-                </>
-              )}
-            </section>
-
-            <section className='global bulk'>
-              <div className='field'>
-                <label>Preset</label>
-                <div className='pills small'>
-                  <button
-                    className={
-                      'scope-lock' + (activePreset === 'scope' ? ' on' : '')
-                    }
-                    title='no cubes · no doll · Base 5 gear · 3★ / 7 core · 400 synchro — stays armed, so newly picked nikkes inherit it'
-                    onClick={applyScopeLock}
-                  >
-                    🔒 Scope Lock
-                  </button>
-                  <button
-                    className={
-                      'scope-lock' + (activePreset === 'synced' ? ' on' : '')
-                    }
-                    disabled={syncedBusy}
-                    title='apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own — stays armed, so newly picked nikkes inherit it'
-                    onClick={applySyncedRoster}
-                  >
-                    {syncedBusy ? '⏳ Syncing…' : '🔄 Synced Roster'}
-                  </button>
-                </div>
-                {syncedMsg && (
-                  <div className='muted' style={{ fontSize: 12, marginTop: 4 }}>
-                    {syncedMsg}
-                  </div>
+                      </PillGrid>
+                      {coreCustom && (
+                        <input
+                          className="num"
+                          style={{ marginTop: 6 }}
+                          value={coreCustomVal}
+                          onChange={(e) => setCoreCustomVal(e.target.value)}
+                          placeholder="%"
+                        />
+                      )}
+                    </div>
+                    <div className="field">
+                      <label title="Fix the boss at one range band for the whole fight; Auto uses the scripted boss movement">
+                        Boss range
+                      </label>
+                      <PillGrid>
+                        {BOSS_RANGE_OPTIONS.map((o) => (
+                          <button
+                            key={o.id ?? 'auto'}
+                            className={bossRange === o.id ? 'on' : ''}
+                            onClick={() => setBossRange(o.id)}
+                          >
+                            {o.label}
+                          </button>
+                        ))}
+                      </PillGrid>
+                    </div>
+                  </>
                 )}
-              </div>
-              <div className='field'>
-                <label>All cubes</label>
-                <PillGrid className='small'>
-                  {CUBE_IDS.map((id) => (
+              </section>
+
+              <section className="global bulk">
+                <div className="field">
+                  <label>Preset</label>
+                  <div className="pills small">
                     <button
-                      key={id}
-                      className={allHave((s) => s.cubeId === id) ? 'on' : ''}
-                      onClick={() => setAll({ cubeId: id })}
-                    >
-                      {cubes.cubes[id].name}
-                    </button>
-                  ))}
-                  <button
-                    className={allHave((s) => s.cubeId === 'none') ? 'on' : ''}
-                    onClick={() => setAll({ cubeId: 'none' })}
-                  >
-                    None
-                  </button>
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>All cube levels</label>
-                <PillGrid className='small'>
-                  {CUBE_LEVELS.map((l) => (
-                    <button
-                      key={l}
                       className={
-                        allHave((s) => !s.cubeCustom && s.cubeLevel === l)
-                          ? 'on'
-                          : ''
+                        'scope-lock' + (activePreset === 'scope' ? ' on' : '')
+                      }
+                      title="no cubes · no doll · Base 5 gear · 3★ / 7 core · 400 synchro — stays armed, so newly picked nikkes inherit it"
+                      onClick={applyScopeLock}
+                    >
+                      🔒 Scope Lock
+                    </button>
+                    <button
+                      className={
+                        'scope-lock' + (activePreset === 'synced' ? ' on' : '')
+                      }
+                      disabled={syncedBusy}
+                      title="apply your synced NIKKE account build (cube · gear · grade/core · skills · overload lines · bond) + synchro level to every unit you own — stays armed, so newly picked nikkes inherit it"
+                      onClick={applySyncedRoster}
+                    >
+                      {syncedBusy ? '⏳ Syncing…' : '🔄 Synced Roster'}
+                    </button>
+                  </div>
+                  {syncedMsg && (
+                    <div
+                      className="muted"
+                      style={{ fontSize: 12, marginTop: 4 }}
+                    >
+                      {syncedMsg}
+                    </div>
+                  )}
+                </div>
+                <div className="field">
+                  <label>All cubes</label>
+                  <PillGrid className="small">
+                    {CUBE_IDS.map((id) => (
+                      <button
+                        key={id}
+                        className={allHave((s) => s.cubeId === id) ? 'on' : ''}
+                        onClick={() => setAll({ cubeId: id })}
+                      >
+                        {cubes.cubes[id].name}
+                      </button>
+                    ))}
+                    <button
+                      className={
+                        allHave((s) => s.cubeId === 'none') ? 'on' : ''
+                      }
+                      onClick={() => setAll({ cubeId: 'none' })}
+                    >
+                      None
+                    </button>
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label>All cube levels</label>
+                  <PillGrid className="small">
+                    {CUBE_LEVELS.map((l) => (
+                      <button
+                        key={l}
+                        className={
+                          allHave((s) => !s.cubeCustom && s.cubeLevel === l)
+                            ? 'on'
+                            : ''
+                        }
+                        onClick={() =>
+                          setAll({ cubeLevel: l, cubeCustom: false })
+                        }
+                      >
+                        L{l}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label>All gear</label>
+                  <PillGrid className="small">
+                    <button
+                      className={
+                        allHave((s) => !s.gearStats && s.ol === 0) ? 'on' : ''
                       }
                       onClick={() =>
-                        setAll({ cubeLevel: l, cubeCustom: false })
+                        setAll({
+                          ol: 0,
+                          gearStats: null,
+                          hasOverloadGear: false,
+                        })
                       }
                     >
-                      L{l}
+                      OL 0
                     </button>
-                  ))}
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>All gear</label>
-                <PillGrid className='small'>
-                  <button
-                    className={
-                      allHave((s) => !s.gearStats && s.ol === 0) ? 'on' : ''
-                    }
-                    onClick={() =>
-                      setAll({ ol: 0, gearStats: null, hasOverloadGear: false })
-                    }
-                  >
-                    OL 0
-                  </button>
-                  <button
-                    className={
-                      allHave((s) => !s.gearStats && s.ol === 5) ? 'on' : ''
-                    }
-                    onClick={() =>
-                      setAll({ ol: 5, gearStats: null, hasOverloadGear: false })
-                    }
-                  >
-                    OL 5
-                  </button>
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>All dolls</label>
-                <PillGrid className='small'>
-                  <button
-                    className={
-                      allHave(
-                        (s) => s.dollRarity === 'SSR' && s.dollLevel === 15,
-                      )
-                        ? 'on'
-                        : ''
-                    }
-                    onClick={() => setAll({ dollRarity: 'SSR', dollLevel: 15 })}
-                  >
-                    Doll 15
-                  </button>
-                  <button
-                    className={
-                      allHave((s) => s.dollRarity === 'none') ? 'on' : ''
-                    }
-                    onClick={() => setAll({ dollRarity: 'none' })}
-                  >
-                    none
-                  </button>
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>All stars</label>
-                <PillGrid className='small'>
-                  {STAR_LEVELS.map((st) => (
                     <button
-                      key={st}
-                      className={allHave((s) => s.stars === st) ? 'on' : ''}
-                      onClick={() => setAll({ stars: st })}
+                      className={
+                        allHave((s) => !s.gearStats && s.ol === 5) ? 'on' : ''
+                      }
+                      onClick={() =>
+                        setAll({
+                          ol: 5,
+                          gearStats: null,
+                          hasOverloadGear: false,
+                        })
+                      }
                     >
-                      {st}
+                      OL 5
                     </button>
-                  ))}
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>All cores</label>
-                <PillGrid className='small'>
-                  {CORE_LEVELS.map((cr) => (
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label>All dolls</label>
+                  <PillGrid className="small">
                     <button
-                      key={cr}
-                      className={allHave((s) => s.core === cr) ? 'on' : ''}
-                      onClick={() => setAll({ core: cr })}
-                    >
-                      {cr}
-                    </button>
-                  ))}
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label title='sets S1, S2 and Burst for every nikke'>
-                  All skills
-                </label>
-                <PillGrid className='small'>
-                  {SKILL_LEVELS.map((lv) => (
-                    <button
-                      key={lv}
                       className={
                         allHave(
-                          (s) =>
-                            s.skill1 === lv &&
-                            s.skill2 === lv &&
-                            s.burst === lv,
+                          (s) => s.dollRarity === 'SSR' && s.dollLevel === 15
                         )
                           ? 'on'
                           : ''
                       }
                       onClick={() =>
-                        setAll({ skill1: lv, skill2: lv, burst: lv })
+                        setAll({ dollRarity: 'SSR', dollLevel: 15 })
                       }
                     >
-                      {lv}/{lv}/{lv}
+                      Doll 15
                     </button>
-                  ))}
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label title='overload lines only (does not touch gear/cube/doll): none (no lines) · 8/12 (4× Elemental DMG + 4× ATK at T11) · 12/12 (that floor + 4 per-unit-optimal lines)'>
-                  Overload
-                </label>
-                <PillGrid className='small'>
-                  <button
-                    className={
-                      allHave(
-                        (s) => !s.olElem && !s.olAtk && s.olExtra.length === 0,
-                      )
-                        ? 'on'
-                        : ''
-                    }
-                    onClick={() =>
-                      setAll({ olElem: '', olAtk: '', olExtra: [] })
-                    }
-                  >
-                    none
-                  </button>
-                  <button
-                    className={allHave(isOl8of12) ? 'on' : ''}
-                    onClick={() =>
-                      setAll({
-                        olElem: OL_8_12_ELEM,
-                        olAtk: OL_8_12_ATK,
-                        olExtra: [],
-                      })
-                    }
-                  >
-                    8/12
-                  </button>
-                  <button
-                    className={
-                      allHave(isOl12of12) && !allHave(isOl8of12) ? 'on' : ''
-                    }
-                    title='8/12 floor + each unit’s damage-optimal 4 remainder lines (precomputed, Solo framework)'
-                    onClick={applyOl12of12}
-                  >
-                    12/12
-                  </button>
-                </PillGrid>
-              </div>
-              <div className='field'>
-                <label>Synchro level</label>
-                <div className='pills'>
-                  <input
-                    className='num'
-                    value={level}
-                    onChange={(e) => setLevel(e.target.value)}
-                    title='synchro level'
-                  />
+                    <button
+                      className={
+                        allHave((s) => s.dollRarity === 'none') ? 'on' : ''
+                      }
+                      onClick={() => setAll({ dollRarity: 'none' })}
+                    >
+                      none
+                    </button>
+                  </PillGrid>
                 </div>
-              </div>
-            </section>
+                <div className="field">
+                  <label>All stars</label>
+                  <PillGrid className="small">
+                    {STAR_LEVELS.map((st) => (
+                      <button
+                        key={st}
+                        className={allHave((s) => s.stars === st) ? 'on' : ''}
+                        onClick={() => setAll({ stars: st })}
+                      >
+                        {st}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label>All cores</label>
+                  <PillGrid className="small">
+                    {CORE_LEVELS.map((cr) => (
+                      <button
+                        key={cr}
+                        className={allHave((s) => s.core === cr) ? 'on' : ''}
+                        onClick={() => setAll({ core: cr })}
+                      >
+                        {cr}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label title="sets S1, S2 and Burst for every nikke">
+                    All skills
+                  </label>
+                  <PillGrid className="small">
+                    {SKILL_LEVELS.map((lv) => (
+                      <button
+                        key={lv}
+                        className={
+                          allHave(
+                            (s) =>
+                              s.skill1 === lv &&
+                              s.skill2 === lv &&
+                              s.burst === lv
+                          )
+                            ? 'on'
+                            : ''
+                        }
+                        onClick={() =>
+                          setAll({ skill1: lv, skill2: lv, burst: lv })
+                        }
+                      >
+                        {lv}/{lv}/{lv}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label title="overload lines only (does not touch gear/cube/doll): none (no lines) · 8/12 (4× Elemental DMG + 4× ATK at T11) · 12/12 (that floor + 4 per-unit-optimal lines)">
+                    Overload
+                  </label>
+                  <PillGrid className="small">
+                    <button
+                      className={
+                        allHave(
+                          (s) => !s.olElem && !s.olAtk && s.olExtra.length === 0
+                        )
+                          ? 'on'
+                          : ''
+                      }
+                      onClick={() =>
+                        setAll({ olElem: '', olAtk: '', olExtra: [] })
+                      }
+                    >
+                      none
+                    </button>
+                    <button
+                      className={allHave(isOl8of12) ? 'on' : ''}
+                      onClick={() =>
+                        setAll({
+                          olElem: OL_8_12_ELEM,
+                          olAtk: OL_8_12_ATK,
+                          olExtra: [],
+                        })
+                      }
+                    >
+                      8/12
+                    </button>
+                    <button
+                      className={
+                        allHave(isOl12of12) && !allHave(isOl8of12) ? 'on' : ''
+                      }
+                      title="8/12 floor + each unit’s damage-optimal 4 remainder lines (precomputed, Solo framework)"
+                      onClick={applyOl12of12}
+                    >
+                      12/12
+                    </button>
+                  </PillGrid>
+                </div>
+                <div className="field">
+                  <label>Synchro level</label>
+                  <div className="pills">
+                    <input
+                      className="num"
+                      value={level}
+                      onChange={(e) => setLevel(e.target.value)}
+                      title="synchro level"
+                    />
+                  </div>
+                </div>
+              </section>
             </div>
           </details>
         )}
 
       {tab === 'sim' && (
         <>
-          <div className='roster-sim-actions'>
+          <div className="roster-sim-actions">
             <button
-              className='share-btn'
-              title='filter the full roster by weapon, burst, class, element, manufacturer, or kit role'
+              className="share-btn"
+              title="filter the full roster by weapon, burst, class, element, manufacturer, or kit role"
               onClick={openTeamPicker}
             >
               ▦ Browse Nikkes
             </button>
             <button
-              className='calc-run'
+              className="calc-run"
               onClick={() => setSimRunNonce((n) => n + 1)}
               disabled={!slots.every((s) => s.slug) || simStale}
-              title='run the 25-fight sim with the current team and boss settings'
+              title="run the 25-fight sim with the current team and boss settings"
             >
               {simStale ? 'Simming…' : 'Run sim'}
             </button>
           </div>
           {compactTeam ? (
-            <section className='team compact'>
-              <div className='team-strip'>
+            <section className="team compact">
+              <div className="team-strip">
                 {slots.map((slot, i) => {
                   const c = slot.slug ? data.characters[slot.slug] : null;
                   return (
@@ -7194,9 +7218,9 @@ export function App({ user }: { user: AuthUser | null }) {
                           draggable={false}
                         />
                       ) : (
-                        <span className='chip-empty'>?</span>
+                        <span className="chip-empty">?</span>
                       )}
-                      <span className='chip-num'>{i + 1}</span>
+                      <span className="chip-num">{i + 1}</span>
                     </button>
                   );
                 })}
@@ -7207,11 +7231,11 @@ export function App({ user }: { user: AuthUser | null }) {
                   (p) => setSlot(expandedSlot, p),
                   `slot ${expandedSlot + 1}`,
                   undefined,
-                  true,
+                  true
                 )}
             </section>
           ) : (
-            <section className='team'>
+            <section className="team">
               {slots.map((slot, i) => (
                 <Fragment key={i}>
                   {renderCard(slot, (p) => setSlot(i, p), `slot ${i + 1}`, {
@@ -7230,17 +7254,17 @@ export function App({ user }: { user: AuthUser | null }) {
           )}
 
           {
-            <section className='ol-calc'>
-              <div className='toggles'>
+            <section className="ol-calc">
+              <div className="toggles">
                 <button onClick={() => setShowOlCalc(!showOlCalc)}>
                   {showOlCalc ? 'hide' : 'show'} best-OL calculator
                 </button>
                 {showOlCalc && (
-                  <label className='ol-tier'>
+                  <label className="ol-tier">
                     tier
                     <input
-                      className='num'
-                      type='number'
+                      className="num"
+                      type="number"
                       min={1}
                       max={15}
                       value={olTier}
@@ -7248,8 +7272,8 @@ export function App({ user }: { user: AuthUser | null }) {
                         setOlTier(
                           Math.min(
                             15,
-                            Math.max(1, Number(e.target.value) || 11),
-                          ),
+                            Math.max(1, Number(e.target.value) || 11)
+                          )
                         )
                       }
                     />
@@ -7263,10 +7287,10 @@ export function App({ user }: { user: AuthUser | null }) {
                     .map((s) => (s.slug ? data.characters[s.slug] : null))
                     .filter(Boolean) as any[];
                   if (!filled.length)
-                    return <div className='notes'>pick nikkes to analyze</div>;
+                    {return <div className="notes">pick nikkes to analyze</div>;}
                   return (
-                    <div className='notes'>
-                      <p className='muted'>
+                    <div className="notes">
+                      <p className="muted">
                         Assumes 8/12 lines are 4× ATK + 4× ELE; the remaining 4
                         are free. Values shown at tier {olTier} ({tv.ammo}%
                         ammo, {tv.chargespd}% charge speed per line). For the
@@ -7287,20 +7311,20 @@ export function App({ user }: { user: AuthUser | null }) {
                         const ammoRows = ammoLineRows(c.ammo, tv.ammo);
                         const bps = ammoBreakpoints(c.ammo, tv.ammo);
                         return (
-                          <div key={c.slug} className='ol-calc-unit'>
+                          <div key={c.slug} className="ol-calc-unit">
                             <b>
                               {c.name}{' '}
-                              <span className='muted'>
+                              <span className="muted">
                                 ({c.weapon} · base {c.ammo} ammo)
                               </span>
                             </b>
-                            <div className='muted'>
+                            <div className="muted">
                               remaining-4 candidates: {candidates.join(', ')}
                             </div>
-                            <div className='ol-calc-cols'>
+                            <div className="ol-calc-cols">
                               {showAmmo && (
                                 <div>
-                                  <div className='muted'>
+                                  <div className="muted">
                                     max ammo by # of lines
                                   </div>
                                   <ul>
@@ -7311,7 +7335,7 @@ export function App({ user }: { user: AuthUser | null }) {
                                       </li>
                                     ))}
                                   </ul>
-                                  <div className='muted'>ammo breakpoints</div>
+                                  <div className="muted">ammo breakpoints</div>
                                   <ul>
                                     {bps.length ? (
                                       bps.map((b) => (
@@ -7330,7 +7354,7 @@ export function App({ user }: { user: AuthUser | null }) {
                               )}
                               {isCharge && (
                                 <div>
-                                  <div className='muted'>
+                                  <div className="muted">
                                     charge-speed breakpoints
                                   </div>
                                   <ul>
@@ -7344,7 +7368,7 @@ export function App({ user }: { user: AuthUser | null }) {
                                             {r.actual.toFixed(1)}%)
                                           </>
                                         ) : (
-                                          <span className='muted'>
+                                          <span className="muted">
                                             &gt;4 lines
                                           </span>
                                         )}
@@ -7363,56 +7387,59 @@ export function App({ user }: { user: AuthUser | null }) {
             </section>
           }
 
-          {sim.error && <div className='banner'>{sim.error}</div>}
+          {sim.error && <div className="banner">{sim.error}</div>}
           {sim.compWarning && (
-            <div className='banner warn'>{sim.compWarning}</div>
+            <div className="banner warn">{sim.compWarning}</div>
           )}
 
           {!r && simRunNonce === 0 && (
-            <div className='banner'>click Run sim to compute the team result</div>
+            <div className="banner">
+              click Run sim to compute the team result
+            </div>
           )}
           {r && (
             <section
-              className='results'
+              className="results"
               style={{
                 opacity: simStale ? 0.55 : 1,
                 transition: 'opacity 0.12s ease',
               }}
             >
               {simStale && (
-                <div className='stale-chip'>
-                  inputs changed — showing the last sim; click Run sim to refresh
+                <div className="stale-chip">
+                  inputs changed — showing the last sim; click Run sim to
+                  refresh
                 </div>
               )}
-              <div className='summary muted'>
-                team <b className='big'>{fmt(r.teamDamage)}</b> ·{' '}
+              <div className="summary muted">
+                team <b className="big">{fmt(r.teamDamage)}</b> ·{' '}
                 {fmt(r.teamDps)} DPS · {r.fullBursts} full bursts ·{' '}
                 {(r.fullBurstUptime * 100).toFixed(0)}% FB uptime ·{' '}
-                <span title='time a burst stage window sat open with no ready caster — the rotation waited'>
+                <span title="time a burst stage window sat open with no ready caster — the rotation waited">
                   {r.rotationStallSec.toFixed(1)}s stalled
                 </span>
               </div>
-              <div className='table-x'>
+              <div className="table-x">
                 <table>
                   <thead>
                     <tr>
                       <th></th>
                       <th>nikke</th>
-                      <th className='r'>damage</th>
-                      <th className='r'>share</th>
-                      <th className='r'>DPS</th>
-                      <th className='r'>normal / skill / burst</th>
-                      <th className='r'>bursts</th>
+                      <th className="r">damage</th>
+                      <th className="r">share</th>
+                      <th className="r">DPS</th>
+                      <th className="r">normal / skill / burst</th>
+                      <th className="r">bursts</th>
                     </tr>
                   </thead>
                   <tbody>
                     {r.units.map((u) => (
                       <tr key={u.position}>
-                        <td className='muted'>{u.position}</td>
+                        <td className="muted">{u.position}</td>
                         <td>
                           {u.name}
                           {u.advantaged && (
-                            <span className='adv' title='elemental advantage'>
+                            <span className="adv" title="elemental advantage">
                               {' '}
                               ▲
                             </span>
@@ -7426,27 +7453,27 @@ export function App({ user }: { user: AuthUser | null }) {
                             </span>
                           )}
                         </td>
-                        <td className='r'>{fmt(u.totalDamage)}</td>
-                        <td className='r share'>
+                        <td className="r">{fmt(u.totalDamage)}</td>
+                        <td className="r share">
                           {(u.share * 100).toFixed(1)}%
                         </td>
-                        <td className='r'>{fmt(u.dps)}</td>
-                        <td className='r muted'>
+                        <td className="r">{fmt(u.dps)}</td>
+                        <td className="r muted">
                           {fmt(u.breakdown.normal)} / {fmt(u.breakdown.skill)} /{' '}
                           {fmt(u.breakdown.burst)}
                         </td>
-                        <td className='r'>{u.burstCasts}</td>
+                        <td className="r">{u.burstCasts}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
-              <div className='results-legend muted'>
+              <div className="results-legend muted">
                 ▲ elemental advantage · ⚠️ not fully modeled (see modeling
                 notes)
               </div>
 
-              <div className='toggles'>
+              <div className="toggles">
                 <button onClick={() => setShowBuffs(!showBuffs)}>
                   {showBuffs ? 'hide' : 'show'} team buffs
                 </button>
@@ -7458,7 +7485,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 </button>
               </div>
               {showBuffs && sim.teamBuffs && (
-                <div className='notes'>
+                <div className="notes">
                   {sim.teamBuffs.map((u) => (
                     <div key={u.position}>
                       <b>{u.name}</b>
@@ -7474,16 +7501,16 @@ export function App({ user }: { user: AuthUser | null }) {
                 </div>
               )}
               {showNotes && (
-                <div className='notes'>
+                <div className="notes">
                   {r.units.map((u) => {
                     const notes = [...u.warnings];
                     if (u.loadout.length)
-                      notes.unshift(`loadout: ${u.loadout.join(' | ')}`);
+                      {notes.unshift(`loadout: ${u.loadout.join(' | ')}`);}
                     // kit text the override deliberately does not model (audit record)
                     const un = overrides[u.slug]?.unmodeled;
                     const unmodeled = un
                       ? (['skill1', 'skill2', 'burst'] as const).flatMap(
-                          (slot) => un[slot].map((l) => `${slot}: ${l}`),
+                          (slot) => un[slot].map((l) => `${slot}: ${l}`)
                         )
                       : [];
                     return (
@@ -7512,7 +7539,7 @@ export function App({ user }: { user: AuthUser | null }) {
                 </div>
               )}
               {showRotation && (
-                <pre className='rotation'>{r.rotationLog.join('\n')}</pre>
+                <pre className="rotation">{r.rotationLog.join('\n')}</pre>
               )}
             </section>
           )}
@@ -7528,9 +7555,9 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowPicker(false)}
           actions={
             <button
-              className='teambuilder-action primary'
+              className="teambuilder-action primary"
               disabled={!pickerStaged.some(Boolean)}
-              title='apply this team to the five slots on the page'
+              title="apply this team to the five slots on the page"
               onClick={savePickerToSim}
             >
               Save Team
@@ -7546,9 +7573,9 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowRosterPicker(false)}
           actions={
             <button
-              className='teambuilder-action primary'
+              className="teambuilder-action primary"
               disabled={!rosterPickerStaged.flat().some(Boolean)}
-              title='apply this roster to the page'
+              title="apply this roster to the page"
               onClick={savePickerToRoster}
             >
               Save Roster
@@ -7564,9 +7591,9 @@ export function App({ user }: { user: AuthUser | null }) {
           onClose={() => setShowUnionRosterPicker(false)}
           actions={
             <button
-              className='teambuilder-action primary'
+              className="teambuilder-action primary"
               disabled={!unionRosterPickerStaged.flat().some(Boolean)}
-              title='apply this roster to the page'
+              title="apply this roster to the page"
               onClick={saveUnionPickerToRoster}
             >
               Save Roster
@@ -7581,10 +7608,10 @@ export function App({ user }: { user: AuthUser | null }) {
           onStagedChange={setTeamGenLock}
           onClose={() => setShowTeamGenPicker(false)}
           restrict={genPickPool}
-          hint='Click a card to include it in the team — the generator fills the remaining slots around your picks. Drag to reorder, click × to remove. Include all five to fully specify the team. Picks apply the next time you calculate.'
+          hint="Click a card to include it in the team — the generator fills the remaining slots around your picks. Drag to reorder, click × to remove. Include all five to fully specify the team. Picks apply the next time you calculate."
           actions={
             <button
-              className='teambuilder-action'
+              className="teambuilder-action"
               onClick={() => setShowTeamGenPicker(false)}
             >
               Done
@@ -7603,7 +7630,7 @@ export function App({ user }: { user: AuthUser | null }) {
           restrict={genPickPool}
           actions={
             <button
-              className='teambuilder-action'
+              className="teambuilder-action"
               onClick={() => setShowRosterGenPicker(false)}
             >
               Done
@@ -7622,7 +7649,7 @@ export function App({ user }: { user: AuthUser | null }) {
           restrict={genPickPool}
           actions={
             <button
-              className='teambuilder-action'
+              className="teambuilder-action"
               onClick={() => setShowUnionGenPicker(false)}
             >
               Done
@@ -7639,7 +7666,7 @@ export function App({ user }: { user: AuthUser | null }) {
           restrict={genPickPool}
           actions={
             <button
-              className='teambuilder-action'
+              className="teambuilder-action"
               onClick={() => setShowExcludePicker(false)}
             >
               Done
@@ -7649,50 +7676,50 @@ export function App({ user }: { user: AuthUser | null }) {
       )}
 
       {showTeams && (
-        <div className='modal-backdrop' onClick={() => setShowTeams(false)}>
-          <div className='modal' onClick={(e) => e.stopPropagation()}>
-            <div className='modal-head'>
+        <div className="modal-backdrop" onClick={() => setShowTeams(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
               <h2>My teams &amp; rosters</h2>
-              <button className='modal-x' onClick={() => setShowTeams(false)}>
+              <button className="modal-x" onClick={() => setShowTeams(false)}>
                 ×
               </button>
             </div>
-            <p className='muted'>
+            <p className="muted">
               Each saved team restores the full loadout — cubes, gear, dolls,
               dupes, skill levels and the boss options.
             </p>
             {namingTeam ? (
               <InlineNameField
                 initial={suggestedName()}
-                placeholder='team name'
+                placeholder="team name"
                 onCommit={doSaveTeam}
                 onCancel={() => setNamingTeam(false)}
               />
             ) : (
               <button
-                className='calc-run'
+                className="calc-run"
                 onClick={() => setNamingTeam(true)}
                 disabled={slots.every((s) => !s.slug)}
-                title='save the current team to your account'
+                title="save the current team to your account"
               >
                 💾 Save current team
               </button>
             )}
-            {authErr && <div className='banner warn'>{authErr}</div>}
+            {authErr && <div className="banner warn">{authErr}</div>}
             {teams.length === 0 && !authErr && (
-              <div className='muted pad'>no saved teams yet</div>
+              <div className="muted pad">no saved teams yet</div>
             )}
-            <ul className='team-list'>
+            <ul className="team-list">
               {teams.map((t) => (
                 <li key={t.id}>
-                  <div className='team-meta'>
+                  <div className="team-meta">
                     <b>
                       {t.name}
                       {decodeBuild(t.code)?.roster && (
-                        <span className='save-tag'>roster</span>
+                        <span className="save-tag">roster</span>
                       )}
                     </b>
-                    <span className='muted'>
+                    <span className="muted">
                       {(() => {
                         const b = decodeBuild(t.code);
                         if (b?.roster) {
@@ -7705,20 +7732,20 @@ export function App({ user }: { user: AuthUser | null }) {
                           .map((s) =>
                             s.slug
                               ? (data.characters[s.slug]?.name ?? s.slug)
-                              : null,
+                              : null
                           )
                           .filter(Boolean);
                         return names.length ? names.join(' · ') : 'empty';
                       })()}
                     </span>
                   </div>
-                  <div className='team-actions'>
-                    <button className='load-btn' onClick={() => onLoadTeam(t)}>
+                  <div className="team-actions">
+                    <button className="load-btn" onClick={() => onLoadTeam(t)}>
                       Load
                     </button>
                     <button
-                      className='chip'
-                      title='delete'
+                      className="chip"
+                      title="delete"
                       onClick={() => onDeleteTeam(t)}
                     >
                       ×

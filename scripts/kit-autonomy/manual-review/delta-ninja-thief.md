@@ -9,13 +9,13 @@
 
 Offense is almost entirely support-shaped. Her own damage = MG normals + one burst distributed nuke.
 
-| Line | Trigger | Target | Effect | Disposition |
-| --- | --- | --- | --- | --- |
-| S1 Ninjutsu Acid Bomb | `fullBurstEnter` | boss (enemy) | Damage Taken ▲12% / 15s | FAITHFUL (team-wide) |
-| S1 (self) | `burstCast` | self | ATK ▲15.04% / 10s | FAITHFUL (self-scoped) |
-| S1 Ninjutsu Hyper Acid Bomb | `burstCast` | boss (enemy) | Damage Taken ▲8% / 10s | FAITHFUL (co-stacks with the 12%) |
-| Burst (allies) | `burstCast` | all allies | Distributed Damage ▲20% + casterAtkPct 15 (flat %-of-caster-ATK) / 10s | FAITHFUL |
-| Burst (nuke) | `burstCast` | boss (enemy) | 170% final ATK distributed, FB-exempt | FAITHFUL |
+| Line                        | Trigger          | Target       | Effect                                                                 | Disposition                       |
+| --------------------------- | ---------------- | ------------ | ---------------------------------------------------------------------- | --------------------------------- |
+| S1 Ninjutsu Acid Bomb       | `fullBurstEnter` | boss (enemy) | Damage Taken ▲12% / 15s                                                | FAITHFUL (team-wide)              |
+| S1 (self)                   | `burstCast`      | self         | ATK ▲15.04% / 10s                                                      | FAITHFUL (self-scoped)            |
+| S1 Ninjutsu Hyper Acid Bomb | `burstCast`      | boss (enemy) | Damage Taken ▲8% / 10s                                                 | FAITHFUL (co-stacks with the 12%) |
+| Burst (allies)              | `burstCast`      | all allies   | Distributed Damage ▲20% + casterAtkPct 15 (flat %-of-caster-ATK) / 10s | FAITHFUL                          |
+| Burst (nuke)                | `burstCast`      | boss (enemy) | 170% final ATK distributed, FB-exempt                                  | FAITHFUL                          |
 
 skill2 is a Defender-count formation fork (solo-defender: taunt + self-shields; with-defender: Camouflage + Injection lifesteal + the Ninjutsu-IFAK all-ally heal). **All of skill2 is event-only / damage-inert** on the partless scope-lock boss — the engine has no shield/heal HP pool and emits no SimEvent for them; taunt/camouflage don't affect a partless boss. The shield-size and IFAK-accumulation ▲20.13% burst riders scale those unmodeled magnitudes, so they are inert too. All six inert lines are carried VERBATIM in `unmodeled`.
 

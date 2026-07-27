@@ -33,8 +33,12 @@ const buffBlock = (
   value: number,
   extra: Record<string, unknown> = {},
   trigger: unknown = { kind: 'passive' },
-  target: unknown = { kind: 'self' },
-) => ({ trigger, target, effects: [{ kind: 'buff', stat: 'attackDamagePct', value, ...extra }] });
+  target: unknown = { kind: 'self' }
+) => ({
+  trigger,
+  target,
+  effects: [{ kind: 'buff', stat: 'attackDamagePct', value, ...extra }],
+});
 
 interface Arm {
   events: SimEvent[];
@@ -45,7 +49,13 @@ interface Arm {
  * Run the shared baseline (carry skill1+skill2 and ally skill1 emptied), with `add` layering the
  * arm's synthetic blocks on top of that same cleared state.
  */
-function arm(add: { carrySkill1?: unknown[]; carrySkill2?: unknown[]; allySkill1?: unknown[] } = {}): Arm {
+function arm(
+  add: {
+    carrySkill1?: unknown[];
+    carrySkill2?: unknown[];
+    allySkill1?: unknown[];
+  } = {}
+): Arm {
   const overrides = {
     [CARRY]: withPatchedOverride(CARRY, (ov) => {
       ov.skill1 = add.carrySkill1 ?? [];
@@ -56,11 +66,16 @@ function arm(add: { carrySkill1?: unknown[]; carrySkill2?: unknown[]; allySkill1
     }),
   };
   const events: SimEvent[] = [];
-  runComp({ ...controlComp(CARRY), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  runComp({
+    ...controlComp(CARRY),
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return {
     events,
     normals: events.filter(
-      (e): e is DamageEvent => e.kind === 'damage' && e.slug === CARRY && e.srcSlot === 'normal',
+      (e): e is DamageEvent =>
+        e.kind === 'damage' && e.slug === CARRY && e.srcSlot === 'normal'
     ),
   };
 }
@@ -69,9 +84,15 @@ const baseline = arm();
 
 /** Per-instance Damage-Up delta vs the baseline, in raw multiplier units (+1.00 == +100%). */
 function dmgUpDelta(a: Arm): number[] {
-  expect(a.normals.length, 'arm and baseline fired a different number of pulls').toBe(baseline.normals.length);
+  expect(
+    a.normals.length,
+    'arm and baseline fired a different number of pulls'
+  ).toBe(baseline.normals.length);
   return a.normals.map((e, i) => {
-    expect(e.frame, `arm drifted off the baseline timeline at instance ${i}`).toBe(baseline.normals[i].frame);
+    expect(
+      e.frame,
+      `arm drifted off the baseline timeline at instance ${i}`
+    ).toBe(baseline.normals[i].frame);
     return e.mult.dmgUp - baseline.normals[i].mult.dmgUp;
   });
 }
@@ -80,17 +101,25 @@ function dmgUpDelta(a: Arm): number[] {
 function constantDelta(a: Arm): number {
   const d = dmgUpDelta(a);
   const spread = Math.max(...d) - Math.min(...d);
-  expect(spread, `a passive buff's contribution varied by ${spread} over the fight`).toBeLessThan(1e-9);
+  expect(
+    spread,
+    `a passive buff's contribution varied by ${spread} over the fight`
+  ).toBeLessThan(1e-9);
   return d[0];
 }
 
 describe('buff application rules', () => {
   it('baseline is live — the carry fires and takes team buffs', () => {
-    expect(baseline.normals.length, 'the carry never fired').toBeGreaterThan(20);
+    expect(baseline.normals.length, 'the carry never fired').toBeGreaterThan(
+      20
+    );
   });
 
   it('a single passive self-buff contributes value/100 to the Damage Up bucket', () => {
-    expect(constantDelta(arm({ carrySkill1: [buffBlock(100)] }))).toBeCloseTo(1, 9);
+    expect(constantDelta(arm({ carrySkill1: [buffBlock(100)] }))).toBeCloseTo(
+      1,
+      9
+    );
   });
 
   it('DISCRIMINATING: the same stat+value from the same slot of the same caster does NOT co-stack', () => {
@@ -100,36 +129,51 @@ describe('buff application rules', () => {
     const two = arm({ carrySkill1: [buffBlock(100), buffBlock(100)] });
     expect(
       constantDelta(two),
-      'two same-slot/same-value blocks stacked instead of overwriting (KR rule, game-mechanics §11)',
+      'two same-slot/same-value blocks stacked instead of overwriting (KR rule, game-mechanics §11)'
     ).toBeCloseTo(1, 9);
     // ...and the engine reports the collision rather than hiding it: the second application is a refresh.
     const applies = two.events.filter(
       (e): e is Extract<SimEvent, { kind: 'buffApply' }> =>
-        e.kind === 'buffApply' && e.stat === 'attackDamagePct' && e.value === 100 && e.targetSlug === CARRY,
+        e.kind === 'buffApply' &&
+        e.stat === 'attackDamagePct' &&
+        e.value === 100 &&
+        e.targetSlug === CARRY
     );
     expect(applies.length, 'both blocks should have applied').toBe(2);
-    expect(applies.map((e) => e.refresh), 'the second application should be a refresh of the first').toEqual([
-      false,
-      true,
-    ]);
-    expect(new Set(applies.map((e) => e.key)).size, 'the two blocks produced different keys').toBe(1);
+    expect(
+      applies.map((e) => e.refresh),
+      'the second application should be a refresh of the first'
+    ).toEqual([false, true]);
+    expect(
+      new Set(applies.map((e) => e.key)).size,
+      'the two blocks produced different keys'
+    ).toBe(1);
   });
 
   it('DISCRIMINATING: change the SLOT, the CASTER, or the VALUE and it stacks again', () => {
     // Each arm differs from the non-stacking case above in exactly ONE coordinate of the buff key,
     // so together they show the key is (caster, slot, stat, value) and not something coarser.
-    const otherSlot = arm({ carrySkill1: [buffBlock(100)], carrySkill2: [buffBlock(100)] });
+    const otherSlot = arm({
+      carrySkill1: [buffBlock(100)],
+      carrySkill2: [buffBlock(100)],
+    });
     const otherCaster = arm({
       carrySkill1: [buffBlock(100)],
       allySkill1: [buffBlock(100, {}, { kind: 'passive' }, { kind: 'allies' })],
     });
     const otherValue = arm({ carrySkill1: [buffBlock(100), buffBlock(100.5)] });
-    expect(constantDelta(otherSlot), 'same caster, DIFFERENT skill slot — must stack').toBeCloseTo(2, 9);
-    expect(constantDelta(otherCaster), 'DIFFERENT caster, same stat/value — must stack').toBeCloseTo(2, 9);
-    expect(constantDelta(otherValue), 'same slot, DIFFERENT value — a different buff, must stack').toBeCloseTo(
-      2.005,
-      9,
-    );
+    expect(
+      constantDelta(otherSlot),
+      'same caster, DIFFERENT skill slot — must stack'
+    ).toBeCloseTo(2, 9);
+    expect(
+      constantDelta(otherCaster),
+      'DIFFERENT caster, same stat/value — must stack'
+    ).toBeCloseTo(2, 9);
+    expect(
+      constantDelta(otherValue),
+      'same slot, DIFFERENT value — a different buff, must stack'
+    ).toBeCloseTo(2.005, 9);
   });
 
   it('maxStacks caps the contribution at value × maxStacks', () => {
@@ -139,12 +183,19 @@ describe('buff application rules', () => {
     // counter from an implementation that jumps straight to the cap or never increments at all.
     const CAP = 3;
     const d = dmgUpDelta(
-      arm({ carrySkill1: [buffBlock(100, { maxStacks: CAP }, { kind: 'shotFired' })] }),
+      arm({
+        carrySkill1: [
+          buffBlock(100, { maxStacks: CAP }, { kind: 'shotFired' }),
+        ],
+      })
     );
     const want = d.map((_, k) => Math.min(k, CAP));
     expect(
       d.map((x) => Math.round(x)).slice(0, 8),
-      `stack ladder should climb 0,1,2,3,3,3… — got ${d.slice(0, 8).map((x) => x.toFixed(2)).join(',')}`,
+      `stack ladder should climb 0,1,2,3,3,3… — got ${d
+        .slice(0, 8)
+        .map((x) => x.toFixed(2))
+        .join(',')}`
     ).toEqual(want.slice(0, 8));
     d.forEach((x, k) => expect(x, `instance ${k}`).toBeCloseTo(want[k], 9));
   });
@@ -155,10 +206,17 @@ describe('buff application rules', () => {
     // timed buff in the roster, and no total-damage test can see it.
     const SEC = 5;
     const a = arm({
-      carrySkill1: [buffBlock(100, { durationSec: SEC }, { kind: 'burstCast' })],
+      carrySkill1: [
+        buffBlock(100, { durationSec: SEC }, { kind: 'burstCast' }),
+      ],
     });
-    const casts = a.events.filter((e) => e.kind === 'burstCast' && e.slug === CARRY).map((e) => e.frame);
-    expect(casts.length, 'the carry never cast her burst — the window never opened').toBeGreaterThan(0);
+    const casts = a.events
+      .filter((e) => e.kind === 'burstCast' && e.slug === CARRY)
+      .map((e) => e.frame);
+    expect(
+      casts.length,
+      'the carry never cast her burst — the window never opened'
+    ).toBeGreaterThan(0);
     const d = dmgUpDelta(a);
     const wrong = a.normals
       .map((e, i) => ({ e, got: d[i] }))
@@ -168,11 +226,19 @@ describe('buff application rules', () => {
         return Math.abs(got - (live ? 1 : 0)) > 1e-9;
       });
     expect(
-      wrong.slice(0, 3).map(({ e, got }) => `${e.sec.toFixed(2)}s delta ${got.toFixed(3)}`),
-      'buff live-window disagrees with [cast, cast + durationSec)',
+      wrong
+        .slice(0, 3)
+        .map(({ e, got }) => `${e.sec.toFixed(2)}s delta ${got.toFixed(3)}`),
+      'buff live-window disagrees with [cast, cast + durationSec)'
     ).toEqual([]);
     // non-vacuous in both directions
-    expect(d.some((x) => x > 0.5), 'the buff was never live').toBe(true);
-    expect(d.some((x) => x < 0.5), 'the buff never expired').toBe(true);
+    expect(
+      d.some((x) => x > 0.5),
+      'the buff was never live'
+    ).toBe(true);
+    expect(
+      d.some((x) => x < 0.5),
+      'the buff never expired'
+    ).toBe(true);
   });
 });

@@ -122,9 +122,7 @@
     "burst:heal 32.26% caster Max HP on burstCast → recovery events to all allies"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Removes First Train Discount."
-    ],
+    "skill1": ["Removes First Train Discount."],
     "skill2": [
       "Recovers 12.27% of the skill user's final Max HP as HP.",
       "Ticket count ▼ 1.",

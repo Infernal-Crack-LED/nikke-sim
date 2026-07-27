@@ -3,7 +3,9 @@
 You are the binding reconciling judge for the kit-autonomy gauntlet on slug `scarlet` (BASE Scarlet — NOT `scarlet-black-shadow`). Read your contract below, then grade the DRIVER's implementation against the kit prose (ground truth) and the two blind cross-family reviews. Return the binding verdict JSON your contract specifies.
 
 ====================================================================
+
 ## PART 1 — YOUR CONTRACT (RECONCILING-JUDGE.md) + RETURN JSON SHAPE
+
 ====================================================================
 
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
@@ -18,6 +20,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -28,12 +31,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -59,34 +64,65 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
 ====================================================================
+
 ## PART 2 — MECHANICS SSOT (damage formula + game mechanics)
+
 ====================================================================
 
 ### docs/data/damage-calculation.md
+
 ```
 # Damage calculation — the exact math the sim computes
 
@@ -109,7 +145,9 @@ Every damage instance — one bullet, one pellet volley, one skill proc, one dot
 hit — is computed independently at the frame it lands (`dealDamage()`):
 
 ```
+
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
+
 ```
 
 Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
@@ -119,11 +157,11 @@ value), after any per-unit override corrections.
 ### 1a. FinalATK
 
 ```
-FinalATK = max(0, effectiveAtk − bossDef)                     // bossDef = 0 at scope lock
 
-effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100)
-             + Σ (caster-ATK grants, as flat values)
-             + (Σ ATK-of-Max-HP % / 100) × ownMaxHp
+FinalATK = max(0, effectiveAtk − bossDef) // bossDef = 0 at scope lock
+
+effectiveAtk = staticAtk × (1 + Σ ATK ▲ % / 100) + Σ (caster-ATK grants, as flat values) + (Σ ATK-of-Max-HP % / 100) × ownMaxHp
+
 ```
 
 - `staticAtk` — the unit's out-of-combat attack: level-table base for its class × grade/core
@@ -141,13 +179,15 @@ independent multiplicative buckets**; same-type buffs **add within** a bucket, d
 **multiply**. THE ENGINE (`dealDamage`) ALREADY MATCHES THIS:
 
 ```
-finalATK = staticAtk × (1 + Σ ATK%)  +  Σ("% of caster's ATK" flat)  +  Σ(HP→ATK flat)
-dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts INSIDE the base, pre-coef
-    × major   [1 + crit + core + fullBurst(0.5) + range(0.3)]  ← ADDITIVE within (core does NOT ×crit)
-    × element [1 + 0.1 advantage + elem-dmg buffs]
-    × charge  [charged shots only]
-    × dmgUp   [1 + attackDamage + sustained + pierce + parts + …]   "Damage Up"
-    × taken   [1 + damageTaken(enemy) + distributed]
+
+finalATK = staticAtk × (1 + Σ ATK%) + Σ("% of caster's ATK" flat) + Σ(HP→ATK flat)
+dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef) ← DEF subtracts INSIDE the base, pre-coef
+× major [1 + crit + core + fullBurst(0.5) + range(0.3)] ← ADDITIVE within (core does NOT ×crit)
+× element [1 + 0.1 advantage + elem-dmg buffs]
+× charge [charged shots only]
+× dmgUp [1 + attackDamage + sustained + pierce + parts + …] "Damage Up"
+× taken [1 + damageTaken(enemy) + distributed]
+
 ```
 
 - **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
@@ -201,55 +241,57 @@ blast radius), as a dedicated owner-greenlit increment. See open-questions U13 +
 ### 1b. Major bucket (crit, core, Full Burst, range — one additive bracket)
 
 ```
+
 Major = 1 + FB + Range + Crit + Core
 
-FB    = 0.5   if Full Burst is active AND the instance is not boundary-timed (see below); else 0
-Range = 0.3   if the weapon is in its effective band vs the boss's current position; RL never;
-              skill/proc instances never (noRange)
-Crit  = critRate × critBonus         (expected-value mode)
-      | critBonus or 0, Bernoulli(critRate)      (Monte Carlo mode, cfg.seed set)
-        critRate  = (base crit rate + Crit Rate ▲ % + normal-only Crit Rate ▲ %) / 100,
-                    clamped 0..1   (base 15%)
-                    the normal-only term (`critRateNormalPct`) joins ONLY on normal-attack
-                    instances — kit lines reading "Critical Rate of normal attacks ▲x%"
-                    (helm S1). Skill procs and burst damage see the unscoped term alone.
-        critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100           (base +50%)
-Core  = coreExposure × ACR × coreBonus    (expected-value mode)
-      | coreBonus or 0, Bernoulli(coreExposure × ACR)   (Monte Carlo mode)
-        coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
-        ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
-        LIVE MODEL — UNIGEO uniform-in-circle (default 'all', 2026-07-22; DECISIONS 2026-07-22),
-              scope-lock (small) boss profile, accuracy-circle weapons (AR/SMG/SG):
-                R(hr)   = (CIRCLE_PX_K · scale_w)/2 · (1 − hr/100) px      (linear to ZERO at HR 100;
-                          CIRCLE_PX_K 0.648 measured, scale_w = datamined start_accuracy_circle_scale
-                          {AR 75, SMG 110, SG 250}; MEASURED at 79.3/48.2 px for SG @ HR 0/38.91)
-                SG:     ACR = min(1, (r_core(band)/R(hr))²) ÷ coverage(band, R(hr))   (per landed pellet)
-                AR/SMG: ACR = lensOverlap(disc R_eff = f_bloom_w·R(hr), offset δ_w(hr), core r_core)
-                              ÷ disc area                                              (per hit)
-                        δ_w(hr) = δ0_w · max(0, 1 − hr/120)
-              Pellet/shot placement inside the circle is UNIFORM PER AREA — MEASURED directly
-              (101 machine-read pellet-marker positions; the previous centered Gaussian is refuted
-              at KS 0.376 vs crit 0.135). r_core diameters: near 31 px MEASURED; mid/midfar/far
-              20.9/15.8/12.7 px ⚑ FIT-SELECTED (UNIGEO_CORE_PX; an owner re-trace supersedes).
-              ⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px; f_bloom = AR 0.578 / SMG 0.728
-              (SMG pair is a saturated 2-cell fit — flagged, see DECISIONS 2026-07-22). Rises
-              steeply with Hit Rate; AR ≥▲80 is all-core geometrically (circle inside the core).
-              MG/SR/RL → flat 0.95 (no accuracy circle; MG gated by its wind-up ramp).
-              Engine: acrForHR → unigeoSgCorePerLanded / unigeoSingleCoreProb (src/engine/unigeo.ts).
-        REVERT / FALLBACK ARMS: UNIGEO=off restores the pre-2026-07-22 engine byte-identically —
-              the δ-offset ("Rician") Gaussian cone (offsetCoreProb, frozen params in sg-geometry.ts:
-              δ0 = AR 18 / SMG 16 / SG 30 px, H 120, S_FLOOR 0.10, σ-shrink {AR .009, SMG .004,
-              SG .009}, K_SIGMA 2.53), which itself falls back at CONE_DELTA=0 to the measured
-              CORE_BY_WEAPON_BAND table × HRCORE lift (NEVER refit; Wilson CIs in
-              docs/probe-data/coreband2-*.json). The cone also remains the LIVE path for
-              medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
-              boss silhouette only).
-              PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
-              OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
-              and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
-              they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
-              `coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
-        coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100   (base +100%)
+FB = 0.5 if Full Burst is active AND the instance is not boundary-timed (see below); else 0
+Range = 0.3 if the weapon is in its effective band vs the boss's current position; RL never;
+skill/proc instances never (noRange)
+Crit = critRate × critBonus (expected-value mode)
+| critBonus or 0, Bernoulli(critRate) (Monte Carlo mode, cfg.seed set)
+critRate = (base crit rate + Crit Rate ▲ % + normal-only Crit Rate ▲ %) / 100,
+clamped 0..1 (base 15%)
+the normal-only term (`critRateNormalPct`) joins ONLY on normal-attack
+instances — kit lines reading "Critical Rate of normal attacks ▲x%"
+(helm S1). Skill procs and burst damage see the unscoped term alone.
+critBonus = (critDamage − 100)/100 + Crit Damage ▲ %/100 (base +50%)
+Core = coreExposure × ACR × coreBonus (expected-value mode)
+| coreBonus or 0, Bernoulli(coreExposure × ACR) (Monte Carlo mode)
+coreExposure = cfg.coreHitRate (1.0 on the scope-lock boss)
+ACR = acrForHR(weapon, band, hitRatePct) — the auto-aim core-hit fraction.
+LIVE MODEL — UNIGEO uniform-in-circle (default 'all', 2026-07-22; DECISIONS 2026-07-22),
+scope-lock (small) boss profile, accuracy-circle weapons (AR/SMG/SG):
+R(hr) = (CIRCLE_PX_K · scale_w)/2 · (1 − hr/100) px (linear to ZERO at HR 100;
+CIRCLE_PX_K 0.648 measured, scale_w = datamined start_accuracy_circle_scale
+{AR 75, SMG 110, SG 250}; MEASURED at 79.3/48.2 px for SG @ HR 0/38.91)
+SG: ACR = min(1, (r_core(band)/R(hr))²) ÷ coverage(band, R(hr)) (per landed pellet)
+AR/SMG: ACR = lensOverlap(disc R_eff = f_bloom_w·R(hr), offset δ_w(hr), core r_core)
+÷ disc area (per hit)
+δ_w(hr) = δ0_w · max(0, 1 − hr/120)
+Pellet/shot placement inside the circle is UNIFORM PER AREA — MEASURED directly
+(101 machine-read pellet-marker positions; the previous centered Gaussian is refuted
+at KS 0.376 vs crit 0.135). r_core diameters: near 31 px MEASURED; mid/midfar/far
+20.9/15.8/12.7 px ⚑ FIT-SELECTED (UNIGEO_CORE_PX; an owner re-trace supersedes).
+⚑ CALIBRATED per class: δ0 = AR 15.9 / SMG 17.9 px; f_bloom = AR 0.578 / SMG 0.728
+(SMG pair is a saturated 2-cell fit — flagged, see DECISIONS 2026-07-22). Rises
+steeply with Hit Rate; AR ≥▲80 is all-core geometrically (circle inside the core).
+MG/SR/RL → flat 0.95 (no accuracy circle; MG gated by its wind-up ramp).
+Engine: acrForHR → unigeoSgCorePerLanded / unigeoSingleCoreProb (src/engine/unigeo.ts).
+REVERT / FALLBACK ARMS: UNIGEO=off restores the pre-2026-07-22 engine byte-identically —
+the δ-offset ("Rician") Gaussian cone (offsetCoreProb, frozen params in sg-geometry.ts:
+δ0 = AR 18 / SMG 16 / SG 30 px, H 120, S_FLOOR 0.10, σ-shrink {AR .009, SMG .004,
+SG .009}, K_SIGMA 2.53), which itself falls back at CONE_DELTA=0 to the measured
+CORE_BY_WEAPON_BAND table × HRCORE lift (NEVER refit; Wilson CIs in
+docs/probe-data/coreband2-*.json). The cone also remains the LIVE path for
+medium/large bossPelletProfile fights (UNIGEO coverage tables are the scope-lock
+boss silhouette only).
+PER-SHOT OVERRIDE (`coreOverride`, bypasses the band table): some hit types have their
+OWN core rate independent of aim/range — a consolidated pellet bullet (dorothy-S, `coreRate`)
+and attached-rocket EXPLOSIONS (Rapi: Red Hood, `storedHit.core` — MEASURED ~1/3 = 0.33,
+they detonate on the boss body regardless of aim; 2026-07-16, DECISIONS). These pass
+`coreOverride` so `acr` is that rate, not `acrFor(weapon, band)`.
+coreBonus = (coreAttackMultiplier − 100)/100 + Core Damage ▲ %/100 (base +100%)
+
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
@@ -297,8 +339,10 @@ non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 ### 1c. Element bucket
 
 ```
-Element = 1.1 + (Element Damage ▲ % + Superior-element Damage ▲ %)/100   with elemental advantage
-        = 1.0                                                             without
+
+Element = 1.1 + (Element Damage ▲ % + Superior-element Damage ▲ %)/100 with elemental advantage
+= 1.0 without
+
 ```
 
 Wheel: Fire→Wind→Iron→Electric→Water→Fire. "Superior element" damage buffs
@@ -314,9 +358,9 @@ is retired (restorable via ENV.ELEMADV='damageup' for A/B comparison only).
 ### 1d. Charge bucket (charge shots only)
 
 ```
-Charge = chargeMult/100
-       + (chargeMult/100) × (doll charge % + Charge-Damage-multiplier buffs %) / 100
-       + Charge Damage ▲ %/100
+
+Charge = chargeMult/100 + (chargeMult/100) × (doll charge % + Charge-Damage-multiplier buffs %) / 100 + Charge Damage ▲ %/100
+
 ```
 
 `chargeMult` is the per-unit full-charge multiplier (SR typically 250, Alice 350, cinderella 200;
@@ -330,15 +374,12 @@ Charge Damage ▲ buffs add flat percentage points; "multiplies base charge dama
 ### 1e. DamageUp bucket
 
 ```
-DamageUp = 1 + ( Attack Damage ▲ %
-               + Sustained Damage ▲ %      [only on sustained-flavored instances (dots)]
-               + Sequential Damage ▲ %     [only on sequential-flavored instances]
-               + True Damage ▲ %           [only on true-flavored instances]
-               + Pierce Damage ▲ %         [only for Pierce-tagged shots: static hasPierce,
-                                            a live gainPierce window, or a swap-scoped
-                                            weaponSwap.hasPierce shot (snow-white cannon)]
-               + Projectile Explosion ▲ %  [RL NORMAL attacks — see 1f]
-               ) / 100
+
+DamageUp = 1 + ( Attack Damage ▲ % + Sustained Damage ▲ % [only on sustained-flavored instances (dots)] + Sequential Damage ▲ % [only on sequential-flavored instances] + True Damage ▲ % [only on true-flavored instances] + Pierce Damage ▲ % [only for Pierce-tagged shots: static hasPierce,
+a live gainPierce window, or a swap-scoped
+weaponSwap.hasPierce shot (snow-white cannon)] + Projectile Explosion ▲ % [RL NORMAL attacks — see 1f]
+) / 100
+
 ```
 
 The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with no dot, etc.
@@ -346,7 +387,9 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 ### 1f. Projectile bucket
 
 ```
+
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
+
 ```
 
 Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
@@ -357,10 +400,11 @@ rocket/proc popup ratio test, 1.2491 = prediction to four digits).
 ### 1g. Taken and Distributed buckets (boss-side)
 
 ```
-Taken       = 1 + (Σ Damage Taken ▲ on the boss
-                   + Σ Distributed-damage Taken ▲ [distributed instances only, and only
-                                                   while a Damage Taken ▲ is active]) / 100
-Distributed = 1 + Distributed Damage ▲ %/100     [distributed instances only]
+
+Taken = 1 + (Σ Damage Taken ▲ on the boss + Σ Distributed-damage Taken ▲ [distributed instances only, and only
+while a Damage Taken ▲ is active]) / 100
+Distributed = 1 + Distributed Damage ▲ %/100 [distributed instances only]
+
 ```
 
 Distributed damage deals the same TOTAL against one target as against many (owner-verified) —
@@ -507,8 +551,10 @@ boundary rule), DamageUp 1.209 (trina's cast-granted +20.9% applies; anis-star's
 does not), Element 1.1, Major = 1.0 non-crit (no FB, no range for burst damage, no core ever):
 
 ```
-187,102 × 14.006 × 1.0 × 1.1 × 1.209 = 3,485,150   →  measured 3,448,659 (98.9%)
-crit: × 1.5                = 5,227,725              →  measured (other fight) ×1.5 pair exact
+
+187,102 × 14.006 × 1.0 × 1.1 × 1.209 = 3,485,150 → measured 3,448,659 (98.9%)
+crit: × 1.5 = 5,227,725 → measured (other fight) ×1.5 pair exact
+
 ```
 
 With the +50% (the rejected branch) the prediction is 34% hot — this single popup pair is what
@@ -534,6 +580,7 @@ guillotine-WS).
 ```
 
 ### docs/data/game-mechanics.md
+
 ```
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
@@ -575,7 +622,9 @@ Damage is a product of independent **buckets**; buffs _inside_ a bucket are addi
 buckets _multiply_. DATAMINED + COMMUNITY, cross-validated by our board.
 
 ```
+
 damage = FinalATK_term × rate% × Major × Element × Charge × DamageUp × Taken × Distributed
+
 ```
 
 Major bucket = `1 + 0.5·FB + 0.3·range + critRate·(critDmg−1) + coreRate·(coreMult−1)` —
@@ -942,10 +991,12 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ```
 
 ====================================================================
+
 ## PART 3 — GROUND TRUTH: scarlet kit prose + base stats (data/characters.json)
+
 ====================================================================
 
-```json
+````json
 {
   "slug": "scarlet",
   "name": "Scarlet",
@@ -1582,13 +1633,16 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   "notes": "Expected shared-prior misreads to hunt: (1) 'when attacked' flipped to 'when attacking' — this single flip fabricates a ~12/s-cadence 138% damage channel and is the highest-magnitude trap in the kit; if the driver shipped ANY cadence for s2a, demand its ⚑ recipe and the boss-attack measurement it rests on. (2) The two HP-threshold crit lines treated as unconditional (t=0 passive / every-cast) because the engine has no HP pool — the faithful encoding routes S1's 'Current HP ▼ 4.01%' through a resource pool + resourceGate; the ORDERING invariant (skill2's 60% gate opens strictly before burst's 50% gate; neither open at t=0; both permanent-once-open for skill2, per-cast-window for burst) is testable regardless of whether the driver chose flat-delta (crossings at S1 proc #10/#13) or compounding (#13/#17) semantics — the test should pin whichever the override encodes and assert the ordering either way. (3) burstCast vs fullBurstEnter for the crit-rate window — controlComp's helm co-B3 makes this divergence LIVE in the standard fixture, so the assertion is cheap: filter buffApply by casterIdx on helm rotations. (4) The 849% nuke taking the +50% FB major (burst-cast damage is FB-exempt by timing). (5) Intra-block effect order: crit-rate buff must precede the nuke so a qualifying cast's nuke crits at the boosted rate. (6) Sim-vs-real threshold skew: the sim's only HP loss is S1 self-drain (boss deals no damage, s2a implies she IS attacked in real fights), so real-world threshold times are earlier than sim-derived — any future footage calibration of 'when does her crit turn on' must not be back-fitted by inflating the drain. Cadence tuple (AR pulls/s, reloadFrames 159) is ALWAYS-⚑ datamine-unreliable; assertions above are hit-count/event-ordered, not wall-clock, to stay robust to cadence retune.",
   "model": "claude-fable-5"
 }
-```
+````
 
 ====================================================================
+
 ## PART 5 — S5 BLIND TEST (claude-opus-5) + its result vs the DRIVER override
+
 ====================================================================
 
 GREEN/RED vs the driver override (src/skills/overrides/scarlet.json below): **19 passed / 1 failed / 2 skipped** of 22.
+
 - The 2 skips are the two GAP lines (S1 'Current HP ▼4.01%' and S2 '30% when attacked') — both correctly unmodeled; the blind test marks them it.skip and guards them live elsewhere.
 - The 1 FAILURE is 'the 5 sec window really expires between procs': it asserts stretching the S1 ATK buff 5s->60s must raise the total. It FAILS because at the datamined cadence the S1 ATK stack sits at 5/5 PERMANENTLY (the 5s window already bridges the 159f reload), so 5s vs 60s is damage-identical. This is a UNIVERSAL cadence artifact: it fails on ANY faithful encoding of this unit (the S1 atkPct block is identical in the driver, S6, and the parser baseline). It is a blind-test non-vacuity over-specification keyed to a slower cadence than the datamine, NOT a faithfulness defect of the driver encoding. The S1 ATK line is otherwise pinned faithfully (value 23.15, maxStacks 5, hitCount:10, 5s, self) and the blind test's other S1 assertions pass.
 
@@ -1644,7 +1698,8 @@ import {
 const SLUG = 'scarlet';
 type Ev = Record<string, any>;
 
-const near = (a: any, b: number, eps = 0.01) => typeof a === 'number' && Math.abs(a - b) <= eps;
+const near = (a: any, b: number, eps = 0.01) =>
+  typeof a === 'number' && Math.abs(a - b) <= eps;
 
 // --- override readers. Shape-agnostic: a slot may be a Block[] (override FILE shape) or a
 // CharacterSkills carrying its own blocks[] - both are handled so the file cannot guess wrong.
@@ -1655,21 +1710,32 @@ function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
-  return [...slotBlocks(ov, 'skill1'), ...slotBlocks(ov, 'skill2'), ...slotBlocks(ov, 'burst')];
+  return [
+    ...slotBlocks(ov, 'skill1'),
+    ...slotBlocks(ov, 'skill2'),
+    ...slotBlocks(ov, 'burst'),
+  ];
 }
-function findEffect(ov: any, label: string, pred: (e: any) => boolean): { block: any; effect: any } {
+function findEffect(
+  ov: any,
+  label: string,
+  pred: (e: any) => boolean
+): { block: any; effect: any } {
   for (const b of allBlocks(ov)) {
-    for (const e of b.effects ?? []) if (pred(e)) return { block: b, effect: e };
+    for (const e of b.effects ?? [])
+      if (pred(e)) return { block: b, effect: e };
   }
   throw new Error('scarlet override does not represent kit line: ' + label);
 }
 
 // Predicates key on MAGNITUDE (not stat) where the point of the test is to assert the stat key,
 // so a mis-encoded stat is still FOUND and then fails a precise assertion.
-const ATK_STACK = (e: any) => e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 23.15);
+const ATK_STACK = (e: any) =>
+  e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 23.15);
 const CRIT_DMG = (e: any) => e?.kind === 'buff' && near(e.value, 6.61);
 const CRIT_RATE = (e: any) => e?.kind === 'buff' && near(e.value, 19.57);
-const NUKE = (e: any) => e?.kind === 'flatDamage' && near(e.atkPct, 849.15, 0.02);
+const NUKE = (e: any) =>
+  e?.kind === 'flatDamage' && near(e.atkPct, 849.15, 0.02);
 
 const OV: any = withPatchedOverride(SLUG, () => {}); // untouched clone, for static shape assertions
 
@@ -1678,26 +1744,40 @@ function run(patch?: any) {
   const events: Ev[] = [];
   const opts: any = {
     ...base,
-    cfg: { ...(base.cfg ?? {}), onEvent: (e: SimEvent) => events.push(e as unknown as Ev) },
+    cfg: {
+      ...(base.cfg ?? {}),
+      onEvent: (e: SimEvent) => events.push(e as unknown as Ev),
+    },
   };
   if (patch) opts.overrides = { ...(base.overrides ?? {}), [SLUG]: patch };
   const res = runComp(opts);
-  return { res, events, total: totals(res)[SLUG] as number, board: totals(res) };
+  return {
+    res,
+    events,
+    total: totals(res)[SLUG] as number,
+    board: totals(res),
+  };
 }
 
-const evs = (events: Ev[], kind: string) => events.filter((e) => e.kind === kind);
+const evs = (events: Ev[], kind: string) =>
+  events.filter((e) => e.kind === kind);
 
 // scarlet-attributed events: prefer the per-unit result row, fall back to slug fields on the log.
 function ownEvents(res: any, events: Ev[], kind: string): Ev[] {
   const row: any = unitOf(res, SLUG);
-  const own = Array.isArray(row?.events) ? row.events.filter((e: any) => e?.kind === kind) : [];
+  const own = Array.isArray(row?.events)
+    ? row.events.filter((e: any) => e?.kind === kind)
+    : [];
   if (own.length) return own as Ev[];
   return evs(events, kind).filter((e) =>
-    [e.slug, e.unit, e.srcSlug, e.casterSlug, e.ownerSlug].includes(SLUG),
+    [e.slug, e.unit, e.srcSlug, e.casterSlug, e.ownerSlug].includes(SLUG)
   );
 }
 
-function expectTeammatesIdentical(a: Record<string, number>, b: Record<string, number>) {
+function expectTeammatesIdentical(
+  a: Record<string, number>,
+  b: Record<string, number>
+) {
   for (const slug of Object.keys(a)) {
     if (slug === SLUG) continue;
     expect(b[slug]).toBe(a[slug]);
@@ -1709,55 +1789,59 @@ const FAITHFUL = run();
 
 const S1_EVERY_SHOT = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).block.trigger = { kind: 'shotFired' };
-  }),
+    findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).block.trigger = {
+      kind: 'shotFired',
+    };
+  })
 );
 const S1_NO_STACK = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).effect.maxStacks = 1;
-  }),
+  })
 );
 const S1_LONG = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S1 ATK stack 23.15%', ATK_STACK).effect.durationSec = 60;
-  }),
+  })
 );
 const S2_CD_ZERO = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.value = 0;
-  }),
+  })
 );
 const S2_AS_RATE = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.stat = 'critRatePct';
-  }),
+    findEffect(ov, 'S2b crit damage 6.61%', CRIT_DMG).effect.stat =
+      'critRatePct';
+  })
 );
 const B_CR_ZERO = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.value = 0;
-  }),
+  })
 );
 const B_CR_NORMAL_ONLY = run(
   withPatchedOverride(SLUG, (ov: any) => {
-    findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.stat = 'critRateNormalPct';
-  }),
+    findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.stat =
+      'critRateNormalPct';
+  })
 );
 const B_CR_LONG = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE).effect.durationSec = 40;
-  }),
+  })
 );
 const B_NUKE_HALF = run(
   withPatchedOverride(SLUG, (ov: any) => {
     findEffect(ov, 'burst 849.15% nuke', NUKE).effect.atkPct = 424.575;
-  }),
+  })
 );
 const B_CR_FB_ENTER = run(
   withPatchedOverride(SLUG, (ov: any) => {
     const { block } = findEffect(ov, 'burst crit rate 19.57%', CRIT_RATE);
     block.trigger = { kind: 'fullBurstEnter' };
     delete block.ownBurstGate;
-  }),
+  })
 );
 
 const FB_STARTS = evs(FAITHFUL.events, 'fullBurstStart').length;
@@ -1765,10 +1849,10 @@ const buffApplies = (r: { events: Ev[] }, pred: (e: Ev) => boolean) =>
   evs(r.events, 'buffApply').filter(pred);
 const CR_APPLIES = buffApplies(
   FAITHFUL,
-  (e) => near(e.value, 19.57) && e.targetSlug === SLUG,
+  (e) => near(e.value, 19.57) && e.targetSlug === SLUG
 );
 const NUKE_HITS = ownEvents(FAITHFUL.res, FAITHFUL.events, 'damage').filter(
-  (e) => e.srcSlot === 'burst',
+  (e) => e.srcSlot === 'burst'
 );
 
 describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec', () => {
@@ -1789,7 +1873,8 @@ describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec
   it('emits self-scoped 23.15 atkPct applies that actually accrue stacks (non-vacuity)', () => {
     const applies = buffApplies(
       FAITHFUL,
-      (e) => e.stat === 'atkPct' && near(e.value, 23.15) && e.targetSlug === SLUG,
+      (e) =>
+        e.stat === 'atkPct' && near(e.value, 23.15) && e.targetSlug === SLUG
     );
     // ~810 rounds in 180s / 10 landed normals per proc -> dozens of applies. A count of 0 means the
     // line is MISSING or mis-scoped to allies.
@@ -1799,7 +1884,9 @@ describe('scarlet S1 - after 10 landed normals: self ATK 23.15%, 5 stacks, 5 sec
       expect(a.casterIdx).toBe(a.targetIdx); // 'Affects self.'
       expect(a.maxStacks).toBe(5);
     }
-    const stackVals = applies.map((a) => a.stacks).filter((s) => typeof s === 'number');
+    const stackVals = applies
+      .map((a) => a.stacks)
+      .filter((s) => typeof s === 'number');
     if (stackVals.length) expect(Math.max(...stackVals)).toBeGreaterThan(1);
   });
 
@@ -1861,7 +1948,7 @@ describe('scarlet S2b - HP<60%: self Critical Damage 6.61% continuously', () => 
   it('is LIVE in the sim - the HP<60% gate is not treated as unreachable', () => {
     const applies = buffApplies(
       FAITHFUL,
-      (e) => near(e.value, 6.61) && e.targetSlug === SLUG,
+      (e) => near(e.value, 6.61) && e.targetSlug === SLUG
     );
     expect(applies.length).toBeGreaterThanOrEqual(1);
     for (const a of applies) expect(a.stat).toBe('critDamagePct');
@@ -1883,7 +1970,11 @@ describe('scarlet S2b - HP<60%: self Critical Damage 6.61% continuously', () => 
 
 describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
   it('is a self critRatePct buff, durationSec 10, keyed to HER OWN burst cast', () => {
-    const { block, effect } = findEffect(OV, 'burst crit rate 19.57%', CRIT_RATE);
+    const { block, effect } = findEffect(
+      OV,
+      'burst crit rate 19.57%',
+      CRIT_RATE
+    );
     expect(effect.stat).toBe('critRatePct'); // unscoped in the kit text -> generic, not *NormalPct
     expect(effect.durationSec).toBe(10);
     expect(block.target.kind).toBe('self');
@@ -1892,7 +1983,9 @@ describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
     // behaviourally-equivalent fullBurstEnter + ownBurstGate:'cast' encoding; rejects a bare
     // fullBurstEnter (over-credits in this 2x-B3 comp) and a passive (always-on).
     const t = block.trigger.kind;
-    const ok = t === 'burstCast' || (t === 'fullBurstEnter' && block.ownBurstGate === 'cast');
+    const ok =
+      t === 'burstCast' ||
+      (t === 'fullBurstEnter' && block.ownBurstGate === 'cast');
     expect(ok).toBe(true);
   });
 
@@ -1904,7 +1997,7 @@ describe('scarlet burst - HP<50%: self Critical Rate 19.57% for 10 sec', () => {
     expect(FB_STARTS).toBeGreaterThanOrEqual(CR_APPLIES.length);
     const patched = buffApplies(
       B_CR_FB_ENTER,
-      (e) => near(e.value, 19.57) && e.targetSlug === SLUG,
+      (e) => near(e.value, 19.57) && e.targetSlug === SLUG
     ).length;
     expect(patched).toBeGreaterThanOrEqual(CR_APPLIES.length);
     if (FB_STARTS > NUKE_HITS.length) {
@@ -1970,10 +2063,13 @@ describe('scarlet - no silent drops', () => {
 ```
 
 ====================================================================
+
 ## PART 6 — S6 BLIND OVERRIDE (claude-opus-5) + diff vs the DRIVER override
+
 ====================================================================
 
 DIFF (S6 blind override vs driver override) — the two CONVERGE on every load-bearing line:
+
 - skill1: IDENTICAL — hitCount:10 → self atkPct 23.15 / maxStacks 5 / 5s.
 - skill2: IDENTICAL — passive self critDamagePct 6.61 with rampSec:56 (the HP<60% gate proxy).
 - burst crit-rate: IDENTICAL — burstCast self critRatePct 19.57 / 10s, ungated (HP<50% gate ⚑ over-credit).
@@ -1981,7 +2077,7 @@ DIFF (S6 blind override vs driver override) — the two CONVERGE on every load-b
 - unmodeled: IDENTICAL — skill1 ['Current HP ▼ 4.01%.'], skill2 [the two when-attacked lines], burst [].
 - note/caveats: differ in wording only; both document the same ⚑s (cadence, HP-gate timing, attacked-proc) and the same encoding rationale.
 
-```json
+````json
 {
   "slug": "scarlet",
   "skill1": [
@@ -2437,9 +2533,10 @@ describe('scarlet — kit spec', () => {
     });
   });
 });
-```
+````
 
 ### src/skills/overrides/scarlet.json (driver override)
+
 ```json
 {
   "note": "BASE Scarlet (slug `scarlet`, AR/Electric/Attacker/B3, cd 40s, ammo 20, chargeFrames 0) — NOT scarlet-black-shadow (RL/B3). Kit-autonomy gauntlet 2026-07-25 (cross-family: S2b claude-fable-5; S5/S6/S7 claude-opus-5; GO faithfulness — see manual-review). MODEL: S1 'after 10 normal attacks' = hitCount:10 → self ATK ▲23.15% / maxStacks 5 / 5s (engine derives the stack level from cadence; at the datamined cadence it reaches 5/5 and holds — the 5s window bridges the 159f reload). S2 'HP<60% → Crit Dmg ▲6.61% continuously' = passive self critDamagePct 6.61 (permanent) with rampSec:56 — the equal-integral proxy for the HP<60% step-on at ~28s (a linear 0→full ramp over 2T has the same time-integral as a step at T; T≈28s from the compounding self-drain below). BURST: 'HP<50% → Crit Rate ▲19.57%/10s' = burstCast self critRatePct 19.57/10s, modeled UNGATED (rampSec is unusable on a per-cast 10s window — its clock would ramp INSIDE the window — so the buff is full-value on every cast and the pre-~37s casts are an over-credit ⚑). burstCast (her OWN cast), NOT fullBurstEnter — controlComp carries helm as co-B3, so team FBs (11) ≠ her casts (6) and fullBurstEnter would over-fire. '849.15% Burst Skill damage' = burstCast flatDamage vs enemy ('all enemies' = the single boss); a burst CAST lands BEFORE the Full Burst window, so it is FB-exempt by timing (no +50% major; verified fact 2026-07-13) and crit-eligible. S2 '30% chance when attacked → 138.24% additional damage' is UNMODELED (sanctioned skip): 'when this unit is hit' never fires in-sim — the v1 boss has no modeled attack cadence. No weapon swap, no charge, no DoT, hitsPerShot 1, element = clean ×1.10 default. HP-THRESHOLD GATES (the kit's design center): S1's 'Current HP ▼4.01%' is a self HP COST — the engine has no HP pool, so it is unmodeled as HP, but it is LOAD-BEARING as the mechanism that opens the two gates: current-HP decay is multiplicative (×0.9599/proc), so HP<60% at 13 procs (130 rounds, ~28s) and HP<50% at 17 procs (170 rounds, ~37s) from self-drain alone; boss damage only makes these EARLIER. These derived crossing times feed the rampSec:56 proxy and the burst over-credit ⚑. ENCODING-CHOICE NOTE (cross-family): the fable S2b reviewer recommended modeling the gates literally via a bloodProc proc-count resource pool + resourceGate (step-on at proc 13/17); the opus S5/S6 reviewers converged on the rampSec/ungated ⚑ proxy here, reasoning that the proc-count threshold is itself cadence-derived and ignores boss damage, so encoding a precise gate would be false precision — the driver adopted the opus-convergent proxy. The resource-pool gate is a legitimate future improvement if an HP pool primitive or a measured fight lands. ⚑1 CADENCE TUPLE (datamine-unreliable): 20-ammo AR with normalMult 27.08 (~3× the usual AR per-shot) + melee-slash flavor = non-class fire-mode tell; datamined pullsPerSec + reloadFrames 159 unverified. The hitCount:10 frequency, the 5-stack steady state, the rampSec:56, and the burst over-credit all scale with true rounds/sec. Recipe: rounds/min + reload gap from a focus video. ⚑2 HP-GATE TIMING: rampSec:56 (S2) and the ungated-burst over-credit are DERIVED from the compounding self-drain reading, not measured; real fights cross earlier (boss damage). Recipe: HP bar + first crit-popup timing from a focus video. ⚑3 S2a ATTACKED-PROC (unmodeled): est 0 in-sim / ~0-3% of real solo total (a handful of boss hits × 30% × 138.24%). Recipe: focus video — count her additional-damage popups coinciding with boss attacks on her; if material, model as a dot at the measured proc cadence.",
@@ -2514,12 +2611,15 @@ describe('scarlet — kit spec', () => {
 ```
 
 ====================================================================
+
 ## RECONCILIATION NOTE from the driver (for your adjudication)
+
 ====================================================================
 
 The HP-threshold gates are the kit's design center and the one modeling judgment call. Three independent readings:
+
 - fable S2b: model the gates literally via a bloodProc proc-count resource pool + resourceGate (step-on at proc 13/17). The driver PROTOTYPED this and it works (engine HAS the primitive, proven on soda-twinkling-bunny): crit-dmg turns on at ~20s, burst crit-rate excludes the first burst.
 - opus S5 (blind test) + opus S6 (blind override): both chose the always-on/ramped family — S6 used rampSec:56 (equal-integral proxy for the ~28s step) for S2 and ungated burst for the crit-rate (rampSec unusable on a per-cast 10s window).
-The driver adopted the opus-convergent rampSec/ungated proxy because: (1) 2/2 post-op opus reviewers converged on it; (2) the proc-count threshold (13/17) is itself cadence-derived (⚑1) and ignores boss damage (real fights cross earlier), so a literal gate would encode false precision; (3) the GO criterion needs the S5 blind test green, and the proxy gets it to a single UNIVERSAL cadence failure (S1_LONG) vs two failures under the resource-pool gate. The resource-pool gate is documented in the override note as a legitimate future improvement. Both encodings honor the SAME ⚑-derived ~28s/~37s crossing; they differ only in shape (step vs ramp/ungated) and neither is measured.
+  The driver adopted the opus-convergent rampSec/ungated proxy because: (1) 2/2 post-op opus reviewers converged on it; (2) the proc-count threshold (13/17) is itself cadence-derived (⚑1) and ignores boss damage (real fights cross earlier), so a literal gate would encode false precision; (3) the GO criterion needs the S5 blind test green, and the proxy gets it to a single UNIVERSAL cadence failure (S1_LONG) vs two failures under the resource-pool gate. The resource-pool gate is documented in the override note as a legitimate future improvement. Both encodings honor the SAME ⚑-derived ~28s/~37s crossing; they differ only in shape (step vs ramp/ungated) and neither is measured.
 
 Return your binding verdict JSON now.

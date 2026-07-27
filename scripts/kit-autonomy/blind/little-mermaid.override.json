@@ -262,9 +262,7 @@
     "skill1": [
       "Activates only when in Focusing status. Affects all allies. Focuses fire continuously."
     ],
-    "skill2": [
-      "Removes Bubble."
-    ],
+    "skill2": ["Removes Bubble."],
     "burst": []
   },
   "caveats": [

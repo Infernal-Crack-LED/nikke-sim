@@ -32,23 +32,29 @@ try {
 } catch {
   /* optional */
 }
-const tags = load<{ tags: Record<string, string[]> }>('../data/archetype-tags.json').tags;
+const tags = load<{ tags: Record<string, string[]> }>(
+  '../data/archetype-tags.json'
+).tags;
 
 const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters))
-  overrides[slug] = loadOverride(slug);
+  {overrides[slug] = loadOverride(slug);}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 
 // Population: exactly the burst-cdr-tagged slugs, and every one must have a
 // curated row (a tag without a row is a table bug — fail loudly).
-const population = Object.keys(tags).filter((s) => tags[s].includes('burst-cdr'));
+const population = Object.keys(tags).filter((s) =>
+  tags[s].includes('burst-cdr')
+);
 for (const slug of population) {
-  if (!CDR_TABLE[slug]) throw new Error(`${slug}: burst-cdr tagged but missing from CDR_TABLE`);
+  if (!CDR_TABLE[slug])
+    {throw new Error(`${slug}: burst-cdr tagged but missing from CDR_TABLE`);}
 }
 for (const slug of Object.keys(CDR_TABLE)) {
-  if (!population.includes(slug)) throw new Error(`${slug}: in CDR_TABLE but not burst-cdr tagged`);
+  if (!population.includes(slug))
+    {throw new Error(`${slug}: in CDR_TABLE but not burst-cdr tagged`);}
 }
 
 const ranked = rankCdr(population, ctx);
@@ -77,7 +83,7 @@ const artifact = {
           imageUrl: c.imageUrl ?? null,
         },
       ];
-    }),
+    })
   ),
   entries: ranked.map((e) => [
     e.slug,
@@ -99,6 +105,11 @@ mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 process.stderr.write(
   `burstcdr: ${ranked.length} units ranked → ${out}\n` +
-    ranked.map((e) => `  #${e.rank} ${e.slug} ${e.cdrPer40s.toFixed(2)}s/40s${e.condition ? ' *' : ''}`).join('\n') +
-    '\n',
+    ranked
+      .map(
+        (e) =>
+          `  #${e.rank} ${e.slug} ${e.cdrPer40s.toFixed(2)}s/40s${e.condition ? ' *' : ''}`
+      )
+      .join('\n') +
+    '\n'
 );

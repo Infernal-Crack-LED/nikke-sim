@@ -7,9 +7,7 @@
     "unmodeled": {
       "skill1": [],
       "skill2": [],
-      "burst": [
-        "Stuns for 3 sec."
-      ]
+      "burst": ["Stuns for 3 sec."]
     },
     "skill1": [
       {
@@ -17,10 +15,30 @@
         "trigger": { "kind": "fullBurstEnter" },
         "target": { "kind": "allies" },
         "effects": [
-          { "kind": "buff", "stat": "atkPct", "value": 23.61, "durationSec": 10 },
-          { "kind": "buff", "stat": "reloadSpeedPct", "value": 51.16, "durationSec": 10 },
-          { "kind": "buff", "stat": "maxAmmoPct", "value": -50.66, "durationSec": 10 },
-          { "kind": "buff", "stat": "attackDamagePct", "value": 20.16, "durationSec": 10 }
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 23.61,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 51.16,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": -50.66,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 20.16,
+            "durationSec": 10
+          }
         ]
       }
     ],
@@ -30,7 +48,12 @@
         "trigger": { "kind": "lastBullet" },
         "target": { "kind": "enemy" },
         "effects": [
-          { "kind": "buff", "stat": "damageTakenPct", "value": 10.01, "durationSec": 10 },
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 10.01,
+            "durationSec": 10
+          },
           { "kind": "flatDamage", "atkPct": 256.17, "crit": true }
         ]
       },
@@ -39,9 +62,7 @@
         "trigger": { "kind": "lastBullet" },
         "target": { "kind": "enemy" },
         "requiresTargetStatus": "Designated Target",
-        "effects": [
-          { "kind": "flatDamage", "atkPct": 1687, "crit": true }
-        ]
+        "effects": [{ "kind": "flatDamage", "atkPct": 1687, "crit": true }]
       }
     ],
     "burst": [
@@ -50,7 +71,12 @@
         "trigger": { "kind": "burstCast" },
         "target": { "kind": "self" },
         "effects": [
-          { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 130, "durationSec": 10 }
+          {
+            "kind": "buff",
+            "stat": "elemAdvantageDamagePct",
+            "value": 130,
+            "durationSec": 10
+          }
         ]
       },
       {
@@ -59,8 +85,17 @@
         "target": { "kind": "enemy" },
         "effects": [
           { "kind": "flatDamage", "atkPct": 1407.64 },
-          { "kind": "targetStatus", "name": "Designated Target", "durationSec": 10 },
-          { "kind": "buff", "stat": "atkPct", "value": -5.02, "durationSec": 10 }
+          {
+            "kind": "targetStatus",
+            "name": "Designated Target",
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": -5.02,
+            "durationSec": 10
+          }
         ]
       }
     ],
@@ -73,23 +108,108 @@
     ]
   },
   "audit": [
-    { "slot": "skill1", "kitLine": "Activates when entering Full Burst", "status": "IMPLEMENTED", "effectOrReason": "trigger fullBurstEnter (literal 'entering Full Burst' = any team FB, not burstCast)" },
-    { "slot": "skill1", "kitLine": "Affects all allies", "status": "IMPLEMENTED", "effectOrReason": "target allies (includes self)" },
-    { "slot": "skill1", "kitLine": "ATK ▲ 23.61% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff atkPct 23.61 dur 10" },
-    { "slot": "skill1", "kitLine": "Reload Speed ▲ 51.16% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff reloadSpeedPct 51.16 dur 10 — weapon-state, gates shot count (HARD RULE 1)" },
-    { "slot": "skill1", "kitLine": "Max Ammunition Capacity ▼ 50.66% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff maxAmmoPct -50.66 dur 10 — ammo capacity ▼ gates reload cadence (HARD RULE 1)" },
-    { "slot": "skill1", "kitLine": "Attack Damage ▲ 20.16% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff attackDamagePct 20.16 dur 10 (Damage Up bucket)" },
-    { "slot": "skill2", "kitLine": "Activates when last bullet hits target", "status": "IMPLEMENTED", "effectOrReason": "trigger lastBullet (recurs every reload)" },
-    { "slot": "skill2", "kitLine": "Damage Taken ▲ 10.01% for 10 sec", "status": "IMPLEMENTED", "effectOrReason": "buff damageTakenPct 10.01 dur 10 on enemy (real damage amplifier)" },
-    { "slot": "skill2", "kitLine": "Deals 256.17% ... additional damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 256.17 crit:true (function rider; no core, FB-by-timing ON)" },
-    { "slot": "skill2", "kitLine": "last bullet hits Designated Target", "status": "IMPLEMENTED", "effectOrReason": "trigger lastBullet + requiresTargetStatus 'Designated Target'" },
-    { "slot": "skill2", "kitLine": "Deals 1687% ... additional damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 1687 crit:true (function rider; gated on burst status)" },
-    { "slot": "burst", "kitLine": "Affects self", "status": "IMPLEMENTED", "effectOrReason": "self block, trigger burstCast (own burst block)" },
-    { "slot": "burst", "kitLine": "Elem Advantage Atk Dmg ▲ 130% 10s", "status": "IMPLEMENTED", "effectOrReason": "buff elemAdvantageDamagePct 130 dur 10 (prior 7, exceeds ×1.10)" },
-    { "slot": "burst", "kitLine": "Affects all enemies", "status": "IMPLEMENTED", "effectOrReason": "enemy block, trigger burstCast" },
-    { "slot": "burst", "kitLine": "Deals 1407.64% ... Burst Skill damage", "status": "IMPLEMENTED", "effectOrReason": "flatDamage 1407.64 (burst-cast nuke, engine auto FB-exempt; no crit set)" },
-    { "slot": "burst", "kitLine": "Stuns for 3 sec", "status": "SKIPPED", "effectOrReason": "control on immortal partless boss that deals no damage = zero DPS impact -> unmodeled.burst" },
-    { "slot": "burst", "kitLine": "Designated Target: ATK ▼ 5.02% 10s", "status": "IMPLEMENTED", "effectOrReason": "targetStatus 'Designated Target' dur 10 (opens S2 gate) + inert atkPct -5.02 boss debuff" }
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter (literal 'entering Full Burst' = any team FB, not burstCast)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target allies (includes self)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 23.61% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 23.61 dur 10"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload Speed ▲ 51.16% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 51.16 dur 10 — weapon-state, gates shot count (HARD RULE 1)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▼ 50.66% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct -50.66 dur 10 — ammo capacity ▼ gates reload cadence (HARD RULE 1)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 20.16% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 20.16 dur 10 (Damage Up bucket)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when last bullet hits target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet (recurs every reload)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage Taken ▲ 10.01% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 10.01 dur 10 on enemy (real damage amplifier)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 256.17% ... additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage 256.17 crit:true (function rider; no core, FB-by-timing ON)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "last bullet hits Designated Target",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet + requiresTargetStatus 'Designated Target'"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 1687% ... additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage 1687 crit:true (function rider; gated on burst status)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "self block, trigger burstCast (own burst block)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Elem Advantage Atk Dmg ▲ 130% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elemAdvantageDamagePct 130 dur 10 (prior 7, exceeds ×1.10)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "enemy block, trigger burstCast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 1407.64% ... Burst Skill damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage 1407.64 (burst-cast nuke, engine auto FB-exempt; no crit set)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Stuns for 3 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "control on immortal partless boss that deals no damage = zero DPS impact -> unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Designated Target: ATK ▼ 5.02% 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "targetStatus 'Designated Target' dur 10 (opens S2 gate) + inert atkPct -5.02 boss debuff"
+    }
   ],
   "flags": [
     {

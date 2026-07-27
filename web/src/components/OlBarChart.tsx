@@ -5,9 +5,12 @@
 import { ELEMENT_COLORS } from '../../../src/share/teamCard';
 
 const fmt = (n: number) =>
-  n >= 1e9 ? `${(n / 1e9).toFixed(2)}B`
-    : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M`
-      : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K`
+  n >= 1e9
+    ? `${(n / 1e9).toFixed(2)}B`
+    : n >= 1e6
+      ? `${(n / 1e6).toFixed(2)}M`
+      : n >= 1e3
+        ? `${(n / 1e3).toFixed(1)}K`
         : n.toFixed(0);
 
 export interface OlChartBar {
@@ -31,30 +34,35 @@ export function OlBarChart({
   const maxGain = Math.max(...bars.map((b) => b.gainPct), 0.01);
   const color = (element && ELEMENT_COLORS[element]) || '#9aa3b2';
   return (
-    <div className='dpschart-card'>
-      <div className='dpschart-head'>
+    <div className="dpschart-card">
+      <div className="dpschart-head">
         <div>
-          <div className='dpschart-title'>{title}</div>
-          {subtitle && <div className='dpschart-sub'>{subtitle}</div>}
+          <div className="dpschart-title">{title}</div>
+          {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
       </div>
       {bars.length === 0 ? (
-        <div className='dpschart-empty'>no data</div>
+        <div className="dpschart-empty">no data</div>
       ) : (
-        <div className='dpschart-bars'>
+        <div className="dpschart-bars">
           {bars.map((b, i) => (
-            <div className='dpschart-row ol-row' key={b.label}>
-              <span className='dpschart-rank'>{i + 1}</span>
-              <span className='dpschart-name ol-lines' title={b.label}>{b.label}</span>
-              <span className='dpschart-track'>
+            <div className="dpschart-row ol-row" key={b.label}>
+              <span className="dpschart-rank">{i + 1}</span>
+              <span className="dpschart-name ol-lines" title={b.label}>
+                {b.label}
+              </span>
+              <span className="dpschart-track">
                 <span
-                  className='dpschart-fill'
-                  style={{ width: `${Math.max(2, (b.gainPct / maxGain) * 100)}%`, background: color }}
+                  className="dpschart-fill"
+                  style={{
+                    width: `${Math.max(2, (b.gainPct / maxGain) * 100)}%`,
+                    background: color,
+                  }}
                 />
               </span>
-              <span className='dpschart-val ol-val'>
+              <span className="dpschart-val ol-val">
                 {fmt(b.damage)}
-                <span className='ol-gain'>+{b.gainPct.toFixed(1)}%</span>
+                <span className="ol-gain">+{b.gainPct.toFixed(1)}%</span>
               </span>
             </div>
           ))}

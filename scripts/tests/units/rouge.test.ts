@@ -81,13 +81,13 @@ const noSwordCoin = withPatchedOverride('rouge', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'attackDamagePct'));
   if (ov.skill2.length === before)
-    throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
+    {throw new Error('rouge S2 attackDamagePct block missing — fixture stale');}
 });
 /** R1 counterfactual: the same buff as a GENERIC all-allies buff (loses the positional scope). */
 const allAlliesSword = withPatchedOverride('rouge', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'attackDamagePct'));
   if (!b)
-    throw new Error('rouge S2 attackDamagePct block missing — fixture stale');
+    {throw new Error('rouge S2 attackDamagePct block missing — fixture stale');}
   b.target = { kind: 'allies' };
 });
 /** R2 reference: the burst caster-ATK block removed entirely. */
@@ -95,7 +95,7 @@ const noBurstAtk = withPatchedOverride('rouge', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'casterAtkPct'));
   if (ov.burst.length === before)
-    throw new Error('rouge burst casterAtkPct block missing — fixture stale');
+    {throw new Error('rouge burst casterAtkPct block missing — fixture stale');}
 });
 /** R2 counterfactual: double the burst caster-ATK magnitude (15.07 → 30.14). */
 const doubleBurstAtk = withPatchedOverride('rouge', (ov) => {
@@ -103,17 +103,17 @@ const doubleBurstAtk = withPatchedOverride('rouge', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e || e.value !== 15.07)
-    throw new Error('rouge burst casterAtkPct 15.07 missing — fixture stale');
+    {throw new Error('rouge burst casterAtkPct 15.07 missing — fixture stale');}
   e.value = 30.14;
 });
 /** R3 reference: the S1 team burst-CDR block removed entirely. */
 const noCdr = withPatchedOverride('rouge', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill1.length === before)
-    throw new Error('rouge S1 burstCdr block missing — fixture stale');
+    {throw new Error('rouge S1 burstCdr block missing — fixture stale');}
 });
 /** INERT proof: strip EVERY inert stat (casterMaxHpPct grants + the Shield Coin Damage-Taken
  *  reduction) from all three slots. These are the ally-granted Max HP lines + the defensive
@@ -131,7 +131,7 @@ const noInert = withPatchedOverride('rouge', (ov) => {
     ov[slot] = (ov[slot] ?? []).filter((b: any) => b.effects.length > 0);
   }
   if (stripped === 0)
-    throw new Error('rouge inert grants missing — fixture stale');
+    {throw new Error('rouge inert grants missing — fixture stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -150,7 +150,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const rougeBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rouge',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rouge'
   );
 /** rouge-caster buffApply events for a given stat. */
 const rougeBuff = (evs: SimEvent[], stat: string) =>
@@ -167,12 +167,12 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
     it('is exactly 6.65% with no wall-clock expiry (continuous)', () => {
       expect(
         applied.length,
-        'no Sword Coin attackDamagePct applied',
+        'no Sword Coin attackDamagePct applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([6.65]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'continuous',
+        'continuous'
       ).toEqual([null]);
     });
 
@@ -181,13 +181,13 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
       // rouge in slot 0, selfAndAdjacent sides:2 → |idx-0|<=2 → {0,1,2}.
       expect(targets).toEqual(new Set([0, 1, 2]));
       expect(targets.has(3), 'slot 3 (helm) is out of positional range').toBe(
-        false,
+        false
       );
     });
 
     it('DISCRIMINATING: a generic all-allies encoding would also reach slot 3', () => {
       const targets = new Set(
-        rougeBuff(allAllies.events, 'attackDamagePct').map((b) => b.targetIdx),
+        rougeBuff(allAllies.events, 'attackDamagePct').map((b) => b.targetIdx)
       );
       expect(targets.size, 'all-allies reaches all 4').toBe(4);
       expect(targets.has(3)).toBe(true);
@@ -207,11 +207,11 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
 
     it('surfaces as a FLAT ATK grant from rouge, on all 4 allies, for 10 sec, once per cast', () => {
       expect(applied.length, 'no burst casterAtkPct applied').toBeGreaterThan(
-        0,
+        0
       );
       expect(applied.length).toBe(rougeBursts(base.events).length * 4); // all 4 allies per cast
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
       const vals = [...new Set(applied.map((b) => b.value))];
       expect(vals.length).toBe(1);
       // FLAT-resolved: value = 0.1507 × rouge.staticAtk, so it is far larger than the raw 15.07.
@@ -225,7 +225,7 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
       const dblVal = rougeBuff(dblBurst.events, 'casterAtkPct')[0]?.value;
       expect(
         dblVal,
-        'doubled override produced no casterAtkPct buff',
+        'doubled override produced no casterAtkPct buff'
       ).toBeDefined();
       expect(dblVal! / baseVal).toBeCloseTo(2, 5);
     });
@@ -249,7 +249,7 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
       expect(baseBursts).toBeGreaterThan(0);
       expect(
         noCdrBursts,
-        'CDR must let her cast more often than the raw 20s CD',
+        'CDR must let her cast more often than the raw 20s CD'
       ).toBeLessThan(baseBursts);
     });
   });
@@ -263,21 +263,21 @@ describe('rouge (Rouge) — kit spec [Tier 2, coin-state support]', () => {
     // with every inert stat stripped.
     it('the inert grants ARE encoded (rouge emits maxHpFlat + a negative ally damageTakenPct)', () => {
       const maxHp = buffs(base.events).filter(
-        (b) => b.casterIdx === ROUGE && b.stat === 'maxHpFlat',
+        (b) => b.casterIdx === ROUGE && b.stat === 'maxHpFlat'
       );
       expect(
         maxHp.length,
-        'no casterMaxHpPct grant resolved to maxHpFlat',
+        'no casterMaxHpPct grant resolved to maxHpFlat'
       ).toBeGreaterThan(0);
       expect(
         new Set(maxHp.map((b) => b.targetIdx)).size,
-        'reaches allies',
+        'reaches allies'
       ).toBeGreaterThan(1);
       const taken = buffs(base.events).filter(
-        (b) => b.casterIdx === ROUGE && b.stat === 'damageTakenPct',
+        (b) => b.casterIdx === ROUGE && b.stat === 'damageTakenPct'
       );
       expect(taken.length, 'no Shield Coin damageTakenPct').toBeGreaterThan(0);
-      for (const b of taken) expect(b.value).toBe(-15.2); // a reduction, never a positive boss amp
+      for (const b of taken) {expect(b.value).toBe(-15.2);} // a reduction, never a positive boss amp
     });
 
     it("PROOF: stripping every inert stat moves NO unit's total by a single point", () => {

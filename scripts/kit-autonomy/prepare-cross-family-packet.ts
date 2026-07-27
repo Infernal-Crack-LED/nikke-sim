@@ -42,9 +42,9 @@ const getOpt = (name: string): string | undefined => {
   return i >= 0 ? argv[i + 1] : undefined;
 };
 if (!slug)
-  fail(
-    'usage: prepare-cross-family-packet.ts <slug> --tokens "t1,t2,..." [--roles s2b,s5,s6]',
-  );
+  {fail(
+    'usage: prepare-cross-family-packet.ts <slug> --tokens "t1,t2,..." [--roles s2b,s5,s6]'
+  );}
 // SHORT-SLUG FIX (2026-07-25): match the slug on a WORD BOUNDARY, not a raw substring. A 3-letter
 // slug like `eve` is a substring of `event`/`level`/`never`/`every`, which a substring match treats
 // as a leak — false-positiving the template/schema redaction on generic infrastructure vocabulary
@@ -52,7 +52,7 @@ if (!slug)
 // Word-boundary matching still catches the unit NAME standing alone; tokens stay substring-matched
 // (they are distinctive magnitudes/mechanic names, not common substrings).
 const slugRe = new RegExp(
-  '\\b' + slug.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b',
+  '\\b' + slug.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'
 );
 const tokens = (getOpt('tokens') ?? '')
   .split(',')
@@ -60,9 +60,9 @@ const tokens = (getOpt('tokens') ?? '')
   .filter(Boolean);
 const roles = (getOpt('roles') ?? 's2b').split(',').map((r) => r.trim());
 if (tokens.length === 0)
-  fail(
-    "--tokens is required (the target's signature magnitudes + mechanic names)",
-  );
+  {fail(
+    "--tokens is required (the target's signature magnitudes + mechanic names)"
+  );}
 
 const TEMPLATE: Record<string, string> = {
   s2b: 'TEST-FAITHFULNESS-REVIEW.md',
@@ -80,9 +80,9 @@ function leakCheck(label: string, text: string, needles: string[]) {
   const lower = text.toLowerCase();
   const hits = needles.filter((tok) => lower.includes(tok));
   if (hits.length)
-    fail(
-      `${label} still contains target token(s): ${hits.join(', ')} — redaction incomplete`,
-    );
+    {fail(
+      `${label} still contains target token(s): ${hits.join(', ')} — redaction incomplete`
+    );}
 }
 
 // ---- 1. kit prose (legitimate input; excluded from the leak check) ----------------------------
@@ -91,7 +91,7 @@ const extractPath = join(
   'scripts',
   'blind-rebuild',
   'char-extracts',
-  `${slug}.json`,
+  `${slug}.json`
 );
 const extract = JSON.parse(readFileSync(extractPath, 'utf8'));
 const unit = extract[slug] ?? Object.values(extract)[0];
@@ -106,7 +106,7 @@ const u = unit as any;
 // from the display-name stem (e.g. "Neon:VE") are surfaced ADVISORILY in the TOKEN HINT below, not hard-redacted —
 // a bare stem like "red" (red-hood) is a substring of "target"/"shared" and would starve the blind role.
 const safeNicknames = ((u.nicknames as string[] | undefined) ?? []).filter(
-  (n) => /^[a-z0-9]{3,8}$/i.test(n),
+  (n) => /^[a-z0-9]{3,8}$/i.test(n)
 );
 const tokLower = tokens.map((t) => t.toLowerCase());
 const displayNameLower = (u.name as string).toLowerCase();
@@ -129,9 +129,9 @@ const namesTarget = (lower: string): boolean =>
 function componentLeakCheck(label: string, text: string) {
   const lower = text.toLowerCase();
   if (slugRe.test(lower))
-    fail(
-      `${label} still names the target slug "${slug}" — redaction incomplete`,
-    );
+    {fail(
+      `${label} still names the target slug "${slug}" — redaction incomplete`
+    );}
   leakCheck(label, text, componentNeedles);
 }
 
@@ -152,7 +152,7 @@ ${u.skills.burst}
 // ---- 2. redacted schema (strip lines naming the target) ---------------------------------------
 const schemaLines = readFileSync(
   join(ROOT, 'src', 'skills', 'types.ts'),
-  'utf8',
+  'utf8'
 ).split('\n');
 const redactedSchema = schemaLines
   .filter((l) => {
@@ -172,13 +172,13 @@ const proseMagnitudes = Array.from(new Set(prose.match(/\d+\.\d{2,}/g) ?? []));
 const missingTokens = proseMagnitudes.filter(
   (m) =>
     schemaText.includes(m) &&
-    !tokens.some((t) => t.includes(m) || m.includes(t)),
+    !tokens.some((t) => t.includes(m) || m.includes(t))
 );
 if (missingTokens.length) {
   console.warn(
     `\n⚠ TOKEN HINT: these kit-prose magnitudes also appear in types.ts but are NOT in --tokens:\n  ${missingTokens.join(
-      ', ',
-    )}\n  If a types.ts comment states one of the unit's own values, add it to --tokens so redaction strips that\n  line. Also include signature mechanic/resource/status NAMES (not just numbers). Lines naming OTHER units\n  are legitimate — do NOT over-redact them.\n`,
+      ', '
+    )}\n  If a types.ts comment states one of the unit's own values, add it to --tokens so redaction strips that\n  line. Also include signature mechanic/resource/status NAMES (not just numbers). Lines naming OTHER units\n  are legitimate — do NOT over-redact them.\n`
   );
 }
 
@@ -194,14 +194,14 @@ if (
   !tokLower.some((t) => t.includes(baseStem))
 ) {
   console.warn(
-    `\n⚠ TOKEN HINT: the display-name stem "${baseStem}" appears in types.ts — a comment may abbreviate this\n  unit (e.g. "${baseStem}:XX"). If so, add the abbreviation to --tokens so redaction strips that line.\n`,
+    `\n⚠ TOKEN HINT: the display-name stem "${baseStem}" appears in types.ts — a comment may abbreviate this\n  unit (e.g. "${baseStem}:XX"). If so, add the abbreviation to --tokens so redaction strips that line.\n`
   );
 }
 
 // ---- 3. redacted methodology (strip lines naming the target) ----------------------------------
 const methLines = readFileSync(
   join(HERE, 'redacted-methodology.md'),
-  'utf8',
+  'utf8'
 ).split('\n');
 const redactedMeth = methLines
   .filter((l) => !namesTarget(l.toLowerCase()))
@@ -256,15 +256,15 @@ const requestLines: string[] = [
 for (const role of roles) {
   if (role === 's7') {
     console.log(
-      `note: ${role} is the judge — NOT de-contaminated; build the full judge-packet (results/judge-packet.md pattern) instead.`,
+      `note: ${role} is the judge — NOT de-contaminated; build the full judge-packet (results/judge-packet.md pattern) instead.`
     );
     continue;
   }
   const tmplFile = TEMPLATE[role];
   if (!tmplFile)
-    fail(
-      `unknown role '${role}' (expected s2b/s5/s6; s7 uses the judge-packet pattern)`,
-    );
+    {fail(
+      `unknown role '${role}' (expected s2b/s5/s6; s7 uses the judge-packet pattern)`
+    );}
   const template = readFileSync(join(HERE, tmplFile), 'utf8');
   componentLeakCheck(`template ${tmplFile}`, template);
 
@@ -300,14 +300,14 @@ ${redactedSchema}
   writeFileSync(packetPath, packet);
   console.log(`✓ ${role}-packet.md  (${packet.length} bytes, leak-clean)`);
   requestLines.push(
-    `| ${role} | cross-family/${slug}/${role}-packet.md | ${tmplFile.replace('.md', '')} output contract | cross-family/${slug}/${role}-result.json |`,
+    `| ${role} | cross-family/${slug}/${role}-packet.md | ${tmplFile.replace('.md', '')} output contract | cross-family/${slug}/${role}-result.json |`
   );
 }
 
 writeFileSync(join(outDir, 'REQUEST.md'), requestLines.join('\n') + '\n');
 console.log(
-  `\n✓ wrote ${outDir.replace(ROOT + '/', '')}/{${roles.filter((r) => r !== 's7').join(', ')}-packet.md, types-redacted.ts, REQUEST.md}`,
+  `\n✓ wrote ${outDir.replace(ROOT + '/', '')}/{${roles.filter((r) => r !== 's7').join(', ')}-packet.md, types-redacted.ts, REQUEST.md}`
 );
 console.log(
-  `Next: the OTHER model family runs each packet and writes <role>-result.json; the driver reconciles into the verdict.`,
+  `Next: the OTHER model family runs each packet and writes <role>-result.json; the driver reconciles into the verdict.`
 );

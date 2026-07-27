@@ -74,29 +74,44 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const guiltyShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'guilty');
 const guiltyBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'guilty');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'guilty'
+  );
 const guiltyDamage = (evs: SimEvent[], srcSlot: string, atkPct: number) =>
   dmg(evs).filter(
-    (d) => d.slug === 'guilty' && (d as any).srcSlot === srcSlot && (d as any).atkPct === atkPct,
+    (d) =>
+      d.slug === 'guilty' &&
+      (d as any).srcSlot === srcSlot &&
+      (d as any).atkPct === atkPct
   );
 
 /** Every buff guilty applies to an ALLY that is not the S2 4.13% ATK line — i.e. the borrow buff.
  *  Value-based, so it matches whether the borrow line was encoded flat-resolved or as a raw %. */
 const borrowApplies = (evs: SimEvent[]) =>
-  buffs(evs).filter((b) => b.casterIdx === GUILTY && b.targetIdx !== null && b.value !== 4.13);
+  buffs(evs).filter(
+    (b) => b.casterIdx === GUILTY && b.targetIdx !== null && b.value !== 4.13
+  );
 const s2AtkApplies = (evs: SimEvent[]) =>
-  buffs(evs).filter((b) => b.casterIdx === GUILTY && b.stat === 'atkPct' && b.value === 4.13);
+  buffs(evs).filter(
+    (b) => b.casterIdx === GUILTY && b.stat === 'atkPct' && b.value === 4.13
+  );
 /** Boss-held debuffs carry casterIdx === null AND targetIdx === null; filter by magnitude. */
 const bossDefDown = (evs: SimEvent[]) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === null && b.targetIdx === null && Math.abs(b.value) === 20.25,
+    (b) =>
+      b.casterIdx === null &&
+      b.targetIdx === null &&
+      Math.abs(b.value) === 20.25
   );
-const framesOf = (bs: BuffApply[]) => [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
+const framesOf = (bs: BuffApply[]) =>
+  [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
 const uniq = <T>(xs: T[]) => [...new Set(xs)];
 
 // ---- override inspection (structural: 'no silent drop' checks) ---------------------------------
@@ -113,14 +128,18 @@ try {
 } catch (e) {
   ovErr = (e as Error).message;
 }
-const effectsOf = (blocks: any[]): any[] => blocks.flatMap((b: any) => b.effects ?? []);
+const effectsOf = (blocks: any[]): any[] =>
+  blocks.flatMap((b: any) => b.effects ?? []);
 const blockCarrying = (blocks: any[], pred: (e: any) => boolean) =>
   blocks.find((b: any) => (b.effects ?? []).some(pred));
 
 // ---- counterfactual patches --------------------------------------------------------------------
 function tryPatch(label: string, mutate: (ov: any) => void) {
   try {
-    return { ov: withPatchedOverride('guilty', mutate) as any, err: null as string | null };
+    return {
+      ov: withPatchedOverride('guilty', mutate) as any,
+      err: null as string | null,
+    };
   } catch (e) {
     return { ov: null as any, err: `${label}: ${(e as Error).message}` };
   }
@@ -144,20 +163,33 @@ const GATE_KEYS = [
 
 /** G1 proportionality: the authored kit percentage doubled. */
 const pDoubled = tryPatch('S1 borrow x2', (ov) => {
-  const e = effectsOf(ov.skill1 ?? []).find((x: any) => x.kind === 'buff' && x.value === 8.81);
-  if (!e) throw new Error('no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored');
+  const e = effectsOf(ov.skill1 ?? []).find(
+    (x: any) => x.kind === 'buff' && x.value === 8.81
+  );
+  if (!e)
+    {throw new Error(
+      'no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored'
+    );}
   e.value = 17.62;
 });
 /** G1 ranking floor: the same effect re-scaled to guilty's OWN ATK. */
 const pSelfScaled = tryPatch('S1 borrow -> own ATK', (ov) => {
-  const e = effectsOf(ov.skill1 ?? []).find((x: any) => x.kind === 'buff' && x.value === 8.81);
-  if (!e) throw new Error('no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored');
+  const e = effectsOf(ov.skill1 ?? []).find(
+    (x: any) => x.kind === 'buff' && x.value === 8.81
+  );
+  if (!e)
+    {throw new Error(
+      'no 8.81 buff effect in skill1 — the borrowed-ATK line is not encoded as authored'
+    );}
   e.stat = 'casterAtkPct';
 });
 /** G3 scope counterfactual: the Wind-only ATK buff widened to the whole team. */
 const pAllAllies = tryPatch('S2 -> all allies', (ov) => {
-  const b = blockCarrying(ov.skill2 ?? [], (e: any) => e.kind === 'buff' && e.value === 4.13);
-  if (!b) throw new Error('no 4.13 ATK buff block in skill2');
+  const b = blockCarrying(
+    ov.skill2 ?? [],
+    (e: any) => e.kind === 'buff' && e.value === 4.13
+  );
+  if (!b) {throw new Error('no 4.13 ATK buff block in skill2');}
   b.target = { kind: 'allies' };
 });
 /** G6 non-vacuity: strip every gate from the max-stack burst branch. */
@@ -167,17 +199,17 @@ const pUngated = tryPatch('burst max-stack branch ungated', (ov) => {
     const carries = (b.effects ?? []).some(
       (e: any) =>
         (e.kind === 'flatDamage' && e.atkPct === 277.71) ||
-        (e.kind === 'buff' && Math.abs(e.value) === 20.25),
+        (e.kind === 'buff' && Math.abs(e.value) === 20.25)
     );
-    if (!carries) continue;
+    if (!carries) {continue;}
     found++;
-    for (const g of GATE_KEYS) delete b[g];
+    for (const g of GATE_KEYS) {delete b[g];}
   }
   if (found === 0)
-    throw new Error(
+    {throw new Error(
       'neither the 277.71% additional damage nor the 20.25 DEF-down is encoded in the burst slot — ' +
-        'the max-stack branch was DROPPED',
-    );
+        'the max-stack branch was DROPPED'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -191,31 +223,42 @@ const SHOTS = guiltyShots(base.events).length;
 const BURSTS = guiltyBursts(base.events).length;
 const BORROW = borrowApplies(base.events);
 /** Peak concurrent borrow stacks the fixture ever reaches — decides whether G5/G6 are reachable. */
-const PEAK_STACKS = BORROW.length ? Math.max(...BORROW.map((b) => b.stacks ?? 1)) : 0;
+const PEAK_STACKS = BORROW.length
+  ? Math.max(...BORROW.map((b) => b.stacks ?? 1))
+  : 0;
 
 describe('guilty — kit spec (blind)', () => {
   it('the override loaded and the fixture fires (fixture sanity)', () => {
     expect(ovErr, 'guilty has no override on disk').toBeNull();
-    expect(SHOTS, 'guilty fired no shots — the fixture is broken').toBeGreaterThan(0);
+    expect(
+      SHOTS,
+      'guilty fired no shots — the fixture is broken'
+    ).toBeGreaterThan(0);
     expect(s1Slot.length + s2Slot.length + burstSlot.length).toBeGreaterThan(0);
   });
 
   describe('G1 — S1 borrows 8.81% of the HIGHEST-ATK ally, self, 5 stacks, 10 sec, every 6 pulls', () => {
     it('applies at all, and only to guilty herself (self-scoped)', () => {
-      expect(BORROW.length, 'the borrowed-ATK buff never applied').toBeGreaterThan(0);
+      expect(
+        BORROW.length,
+        'the borrowed-ATK buff never applied'
+      ).toBeGreaterThan(0);
       expect(
         uniq(BORROW.map((b) => b.targetIdx)),
-        'a self-scoped buff must never be held by a teammate',
+        'a self-scoped buff must never be held by a teammate'
       ).toEqual([GUILTY]);
     });
 
     it('is a FLAT-resolved ATK add, not the raw 8.81 percentage', () => {
       const vals = uniq(BORROW.map((b) => b.value));
-      expect(vals.length, `expected one flat value, saw ${vals.join(',')}`).toBe(1);
+      expect(
+        vals.length,
+        `expected one flat value, saw ${vals.join(',')}`
+      ).toBe(1);
       expect(
         vals[0],
         'emitting 8.81 means the line was encoded as a plain atkPct (scaling guilty OWN ATK by ' +
-          '8.81%) instead of duplicating 8.81% of an ally ATK as a flat add',
+          '8.81%) instead of duplicating 8.81% of an ally ATK as a flat add'
       ).not.toBe(8.81);
     });
 
@@ -236,17 +279,21 @@ describe('guilty — kit spec (blind)', () => {
       expect(pSelfScaled.err).toBeNull();
       const own = uniq(borrowApplies(selfScaled!.events).map((b) => b.value));
       expect(own.length).toBe(1);
-      expect(uniq(BORROW.map((b) => b.value))[0]).toBeGreaterThanOrEqual(own[0]);
+      expect(uniq(BORROW.map((b) => b.value))[0]).toBeGreaterThanOrEqual(
+        own[0]
+      );
     });
 
     it('stacks up to 5 and lasts 10 sec (wall clock, refreshed on each firing)', () => {
       expect(
         uniq(BORROW.map((b) => b.maxStacks)),
         'the kit says 5 stacks; a cap of 6 would mean the S2 stack-count line was folded in here ' +
-          '(see G2 — that is an interpretation fork, not necessarily an error)',
+          '(see G2 — that is an interpretation fork, not necessarily an error)'
       ).toEqual([5]);
       expect(BORROW.every((b) => (b.stacks ?? 1) <= 5)).toBe(true);
-      expect(uniq(BORROW.map((b) => b.expiresFrame! - b.frame))).toEqual([10 * FPS]);
+      expect(uniq(BORROW.map((b) => b.expiresFrame! - b.frame))).toEqual([
+        10 * FPS,
+      ]);
     });
 
     it('DISCRIMINATING: fires every 6 PULLS, not every 6 pellet hits and not every pull', () => {
@@ -258,7 +305,7 @@ describe('guilty — kit spec (blind)', () => {
       expect(
         Math.abs(fired - expected),
         `${fired} firings vs ${SHOTS} pulls — expected ~${expected} (pulls/6); a per-pellet count ` +
-          `would give ~${Math.floor((SHOTS * 10) / 6)}, a per-pull trigger ~${SHOTS}`,
+          `would give ~${Math.floor((SHOTS * 10) / 6)}, a per-pull trigger ~${SHOTS}`
       ).toBeLessThanOrEqual(1);
     });
   });
@@ -278,9 +325,14 @@ describe('guilty — kit spec (blind)', () => {
     const applied = s2AtkApplies(base.events);
 
     it('is a plain 4.13% ATK buff (target-scaled percentage, not a flat add)', () => {
-      expect(applied.length, 'no 4.13% atkPct buff was applied by guilty').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no 4.13% atkPct buff was applied by guilty'
+      ).toBeGreaterThan(0);
       expect(uniq(applied.map((b) => b.value))).toEqual([4.13]);
-      expect(uniq(applied.map((b) => b.expiresFrame! - b.frame))).toEqual([10 * FPS]);
+      expect(uniq(applied.map((b) => b.expiresFrame! - b.frame))).toEqual([
+        10 * FPS,
+      ]);
     });
 
     it('reaches guilty herself (she is Wind Code — an excludeSelf scoping is wrong)', () => {
@@ -292,7 +344,7 @@ describe('guilty — kit spec (blind)', () => {
       expect(
         holders.size,
         `${holders.size} of ${SLUGS.length} allies hold it — an unscoped {kind:'allies'} would ` +
-          'reach every slot',
+          'reach every slot'
       ).toBeLessThan(SLUGS.length);
     });
 
@@ -300,9 +352,13 @@ describe('guilty — kit spec (blind)', () => {
       expect(pAllAllies.err).toBeNull();
       const wide = s2AtkApplies(allAllies!.events);
       expect(new Set(wide.map((b) => b.targetIdx)).size).toBe(SLUGS.length);
-      const moved = SLUGS.filter((s) => s !== 'guilty' && allAllies!.totals[s] !== base.totals[s]);
-      expect(moved.length, 'the widened scope must change teammate totals, else G3 tests nothing')
-        .toBeGreaterThan(0);
+      const moved = SLUGS.filter(
+        (s) => s !== 'guilty' && allAllies!.totals[s] !== base.totals[s]
+      );
+      expect(
+        moved.length,
+        'the widened scope must change teammate totals, else G3 tests nothing'
+      ).toBeGreaterThan(0);
     });
 
     it('fires every 12 PULLS (half the borrow cadence)', () => {
@@ -311,7 +367,7 @@ describe('guilty — kit spec (blind)', () => {
       expect(expected, 'fixture too short to see a firing').toBeGreaterThan(0);
       expect(
         Math.abs(fired - expected),
-        `${fired} firings vs ${SHOTS} pulls — expected ~${expected} (pulls/12)`,
+        `${fired} firings vs ${SHOTS} pulls — expected ~${expected} (pulls/12)`
       ).toBeLessThanOrEqual(1);
     });
   });
@@ -320,13 +376,20 @@ describe('guilty — kit spec (blind)', () => {
     const nukes = guiltyDamage(base.events, 'burst', 284.32);
 
     it('lands exactly once per burst cast, in the burst bucket', () => {
-      expect(BURSTS, 'guilty never cast her burst — the fixture cannot test G4-G6').toBeGreaterThan(0);
+      expect(
+        BURSTS,
+        'guilty never cast her burst — the fixture cannot test G4-G6'
+      ).toBeGreaterThan(0);
       expect(nukes.length).toBe(BURSTS);
       expect(uniq(nukes.map((d) => (d as any).bucket))).toEqual(['burst']);
     });
 
     it('never takes the +50% Full Burst major (the cast precedes the FB window)', () => {
-      expect(nukes.filter((d) => (d as any).fbMajorApplied).map((d) => (d as any).sec)).toEqual([]);
+      expect(
+        nukes
+          .filter((d) => (d as any).fbMajorApplied)
+          .map((d) => (d as any).sec)
+      ).toEqual([]);
     });
   });
 
@@ -338,14 +401,20 @@ describe('guilty — kit spec (blind)', () => {
     // 20.25% damage increase. If the repo deliberately approximates it as damageTakenPct, this is a
     // divergence to adjudicate, not a defect to fix blind.
     const effect = effectsOf(burstSlot).find(
-      (e: any) => e.kind === 'buff' && Math.abs(e.value) === 20.25,
+      (e: any) => e.kind === 'buff' && Math.abs(e.value) === 20.25
     );
 
     it('is present in the burst slot, enemy-scoped, for 5 sec (no silent drop)', () => {
-      expect(effect, 'no 20.25-magnitude buff effect in the burst slot').toBeDefined();
+      expect(
+        effect,
+        'no 20.25-magnitude buff effect in the burst slot'
+      ).toBeDefined();
       expect(effect.durationSec, 'the kit says 5 sec').toBe(5);
       const block = blockCarrying(burstSlot, (e: any) => e === effect);
-      expect(block?.target?.kind, 'a DEF debuff applies to the enemy, not to allies').toBe('enemy');
+      expect(
+        block?.target?.kind,
+        'a DEF debuff applies to the enemy, not to allies'
+      ).toBe('enemy');
     });
 
     it('is not substituted with the Damage Taken mechanic', () => {
@@ -354,7 +423,10 @@ describe('guilty — kit spec (blind)', () => {
 
     it('INERTNESS: no ally ever holds a 20.25 buff from guilty', () => {
       const allyHeld = buffs(base.events).filter(
-        (b) => b.casterIdx === GUILTY && b.targetIdx !== null && Math.abs(b.value) === 20.25,
+        (b) =>
+          b.casterIdx === GUILTY &&
+          b.targetIdx !== null &&
+          Math.abs(b.value) === 20.25
       );
       expect(allyHeld.map((b) => b.targetSlug)).toEqual([]);
       // If the engine does emit it as a boss-held debuff, it must carry the kit window.
@@ -369,15 +441,24 @@ describe('guilty — kit spec (blind)', () => {
 
     it('is encoded at the kit magnitude, not a core strike (no core-strike text)', () => {
       const e = effectsOf(burstSlot).find(
-        (x: any) => x.kind === 'flatDamage' && x.atkPct === 277.71,
+        (x: any) => x.kind === 'flatDamage' && x.atkPct === 277.71
       );
-      expect(e, 'no 277.71% flatDamage in the burst slot — the max-stack rider was dropped').toBeDefined();
-      expect(e.core, 'riders get no core unless the kit says core strike damage').not.toBe(true);
+      expect(
+        e,
+        'no 277.71% flatDamage in the burst slot — the max-stack rider was dropped'
+      ).toBeDefined();
+      expect(
+        e.core,
+        'riders get no core unless the kit says core strike damage'
+      ).not.toBe(true);
     });
 
     it('honours the max-stack gate (and the fixture states which case it exercises)', () => {
       expect(BURSTS).toBeGreaterThan(0);
-      expect(BORROW.length, 'the borrow buff never applied, so the gate is untestable').toBeGreaterThan(0);
+      expect(
+        BORROW.length,
+        'the borrow buff never applied, so the gate is untestable'
+      ).toBeGreaterThan(0);
       if (PEAK_STACKS < 5) {
         // INACTIVE case: an SG at ~9 rounds/magazine accrues a stack only every 6 pulls while each
         // stack lives 10 sec, so 5 concurrent stacks are never reached and the branch is naturally
@@ -386,10 +467,13 @@ describe('guilty — kit spec (blind)', () => {
         expect(
           riders.length,
           `peak borrow stacks ${PEAK_STACKS} < 5, so the gate is never satisfied and the 277.71% ` +
-            'rider must never fire',
+            'rider must never fire'
         ).toBe(0);
         for (const b of bossDefDown(base.events)) {
-          expect(b.frame, 'DEF-down fired while the gate was unsatisfiable').toBe(-1);
+          expect(
+            b.frame,
+            'DEF-down fired while the gate was unsatisfiable'
+          ).toBe(-1);
         }
       } else {
         // ACTIVE case: every firing must sit inside a live 5-stack window.
@@ -400,7 +484,7 @@ describe('guilty — kit spec (blind)', () => {
           const f = (r as any).frame as number;
           expect(
             windows.some(([a, z]) => f >= a && f <= z),
-            `rider at frame ${f} fired outside every 5-stack window`,
+            `rider at frame ${f} fired outside every 5-stack window`
           ).toBe(true);
         }
         expect(riders.length).toBeLessThanOrEqual(BURSTS);
@@ -415,17 +499,20 @@ describe('guilty — kit spec (blind)', () => {
       expect(
         free.length,
         'the ungated branch must land once per cast — otherwise the shipped result is explained by a ' +
-          'missing block rather than by the max-stack gate',
+          'missing block rather than by the max-stack gate'
       ).toBe(casts);
-      expect(free.filter((d) => (d as any).fbMajorApplied).map((d) => (d as any).sec)).toEqual([]);
-      expect(ungated!.totals['guilty']).toBeGreaterThan(base.totals['guilty']);
+      expect(
+        free.filter((d) => (d as any).fbMajorApplied).map((d) => (d as any).sec)
+      ).toEqual([]);
+      expect(ungated!.totals.guilty).toBeGreaterThan(base.totals.guilty);
     });
 
     it('INERTNESS: the gated branch never moves a teammate', () => {
       for (const s of SLUGS.filter((x) => x !== 'guilty')) {
-        expect(ungated!.totals[s], `${s} moved when only guilty burst rider changed`).toBe(
-          base.totals[s],
-        );
+        expect(
+          ungated!.totals[s],
+          `${s} moved when only guilty burst rider changed`
+        ).toBe(base.totals[s]);
       }
     });
   });

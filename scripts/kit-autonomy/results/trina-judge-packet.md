@@ -1,8 +1,10 @@
 # S7 JUDGE PACKET — `trina` (compact, answer-faithful compilation of the gauntlet artifacts)
+
 Unit: Trina (slug `trina`) — RL / Electric / Supporter / Burst II, cd 20s. Driver model family: Qwen. Cross-family reviewers:
 S2b claude-fable-5 (pre-op), S5/S6/S7 claude-opus-4-8 (post-op). Gauntlet date 2026-07-24.
 
 ## 1. Ground truth — kit prose (data/characters.json → characters.trina.skills, structural)
+
 Base: RL/Electric/Supporter/Burst II, cd 20s, ammo 6, reloadFrames 170, chargeFrames 60, chargeMultiplier 250, hitsPerShot 1, normalAttackMultiplier 68.59, coreAttackMultiplier 200. baseStats hp 15000 / atk 500 / def 98.
 
 skill1:
@@ -27,7 +29,7 @@ burst:
 Max HP ▲ 20.14% of the skill user's Max HP without restoring HP for 10 sec.
 Attack Damage ▲ 20.9% for 10 sec.
 ■ Activates when enemy count aside from Nikkes is 1. Affects all allies.
- Spread Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec.
+Spread Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 435.6% for 5 sec.
 ■ Activates when enemy count aside from Nikkes is more than 2. Affects all allies.
 Changes Spread Roots to Wilted Roots.
 Wilted Roots: Burst Skill damage of skills with "Affects all enemies" ▲ 64.46% for 5 sec.
@@ -36,6 +38,7 @@ Hit Rate ▲ 45.3% for 10 sec.
 Max Ammunition Capacity ▲ 20 round(s) for 10 sec.
 
 ## 2. Damage-formula + mechanics SSOT (the facts the verdict turns on)
+
 Damage = ATK × major (×1.10 element if advantaged) × charge × damageUp-bucket × taken × distributed.
 **casterMaxHpPct vs targetMaxHpPct:** "Max HP ▲ x% of the skill USER'S Max HP … without restoring HP" = `casterMaxHpPct` —
 a FLAT add resolving to (x/100)×caster.maxHp at apply time, re-keyed to stat `maxHpFlat` (the buffApply `value` is the
@@ -82,6 +85,7 @@ board; the project queued it pending a measurement → UNMODELED ⚑ (the only �
 formation/teamHas. There is NO ally-HP-percentage gate and NO heal effect kind in v1.
 
 ## 3. Driver's override (src/skills/overrides/trina.json, structural — post-S3-fix)
+
 ```json
 {
   "note": "Kit-autonomy gauntlet 2026-07-24 (cross-family: S2b claude-fable-5, S5/S6/S7 claude-opus-4-8; GO — STRUCTURE certified faithful, magnitudes remain hand-validated; residual owner spot-check = S1 heal/recovery primitive gap + burst Hit Rate 45.3 measurement-gated ⚑, see scripts/kit-autonomy/manual-review/trina.md). GAUNTLET FIX 2026-07-24: the burst 'Max Ammunition Capacity ▲20 round(s)' line is now maxAmmoFlat 20 (kit-literal flat rounds; the engine's flat-rounds path is live — theme 14, cf. tove/grave/noir), SUPERSEDING the prior maxAmmoPct 33.3 proxy which was exact only for a 60-round magazine (a 20-round Electric AR ally got +6.66 rounds vs the kit-literal +20). Cross-family corroborated: the blind fable S2b reviewer independently derived maxAmmoFlat 20 (nearest-wrong 'maxAmmoPct … differ wildly'). Regression-neutral on trina's two snapshot comps (elec battery: moran 60-round → round(60×1.333)=80 == 60+20; N3 scarlet/liberalio iron: no Electric AR ally → the buff lands on nobody). Tier audit (Bossing A). S2's 94.15% Attack Damage + 50.82% reload targets '1 leftmost Electric Code ally with ASSAULT RIFLES' — now modeled EXACTLY via the alliesOfElementWeapon target (U8 run-B video, 2026-07-13: the old alliesOfElement approximation was feeding +94% Attack Damage to the RL carries cindy/neon AND trina herself, the source of the run-B heat trio). Burst kept in parser (team AD 20.9 + maxAmmo 20; the 'Burst Skill damage of AoE skills' rider unsupported, warned). SCOPE AUDIT 2026-07-13: burst slot now overridden — the parser's 'Max Ammunition +20 round(s)' line was hitting ALL Electric allies as +20%; the kit targets 'all Electric Code allies with assault rifles' (= moran-class units) and the value is FLAT 20 rounds (= +33.3% on a 60-round AR magazine; engine only supports percent). Hit Rate 45.3 skipped — hitRatePct lifts AR/SMG/SG core rate via acrForHR and this line targets Electric AR allies, so modeling it would move the board; queued (kit-audit plan 2026-07-20, measurement-gated). The AoE-burst-damage rider lines remain unsupported (warned). [materialized 2026-07-16: skill1 auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]",
@@ -91,9 +95,7 @@ formation/teamHas. There is NO ally-HP-percentage gate and NO heal effect kind i
       "Recovers 2.03% of the skill user's final Max HP as HP.",
       "Recovers 1.57% of the skill user's final Max HP as HP."
     ],
-    "skill2": [
-      "Invulnerable for 2 sec."
-    ],
+    "skill2": ["Invulnerable for 2 sec."],
     "burst": [
       " Spread Roots: Burst Skill damage of skills with \"Affects all enemies\" ▲ 435.6% for 5 sec.",
       "Changes Spread Roots to Wilted Roots.",
@@ -204,6 +206,7 @@ formation/teamHas. There is NO ally-HP-percentage gate and NO heal effect kind i
 ```
 
 ## 4. S2b pre-op adversarial review (claude-fable-5, cross-family) — leakDetected null
+
 ```json
 {
   "slug": "trina",
@@ -378,6 +381,7 @@ formation/teamHas. There is NO ally-HP-percentage gate and NO heal effect kind i
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-4-8, cross-family) — leakDetected null (spec + fixtures + gaps)
+
 ```json
 {
   "slug": "trina",
@@ -458,6 +462,7 @@ formation/teamHas. There is NO ally-HP-percentage gate and NO heal effect kind i
 ```
 
 ### 5b. CONVERGENCE — S5 blind tests run against the driver's shipped (post-S3-fix) override
+
 The blind test as written had mechanical artifacts of blindness (it never saw the override or the repo's harness conventions):
 (a) harness import path (blind/ has no ../lib/harness); (b) `goPatched(mutate)` calls `withPatchedOverride('trina', mutate)`
 and DISCARDS the return clone — withPatchedOverride returns an in-memory clone (committed JSON untouched), it does NOT install
@@ -467,6 +472,7 @@ misreads the harness — `totals(res)` returns a Record<slug,number>, not an obj
 Burst II, so Trina casts only every OTHER Full Burst (still >0, so the burst assertions are NOT vacuous, unlike a never-bursting
 unit). With the import corrected and run as-is against the driver's override:
 **Result: 3 passed / 2 failed / 6 skipped (11).**
+
 - PASSED (all runnable load-bearing assertions): "applies attackDamagePct≈20.9 to ALL allies (=> trina actually bursts)" —
   the 20.9 buff reaches all 4 slots (Trina bursts in the control comp, all-ally scope correct); "skill2 burst-cast Atk Dmg
   ▲94.15% never lands on liter/crown/helm" — inertness holds (none is Electric+AR; the Electric-AR scope is correct, NOT widened
@@ -484,11 +490,12 @@ unit). With the import corrected and run as-is against the driver's override:
   fullBurstEnter split (needs a 2nd burster), the heals/invuln (no HP pool), Spread Roots/Wilted Roots (no engine bucket), and the
   caster-Max-HP grants (inert). The driver's custom fixture [moran(Elec AR)/liter/trina/scarlet(Elec AR)/helm] exercises the
   positive Electric-AR payload + the frame-discriminated trigger split that the blind could not reach.
-**SPEC convergence (the real signal, fixture-independent): FULL.** The blind's per-line spec agrees with the driver on every
-load-bearing line — burst 20.9 all-allies (FAITHFUL), S2 94.15/50.82 Electric-AR count:1 burstCast (FAITHFUL), maxAmmoFlat 20
-(FAITHFUL — independently derived), S1 heals + invuln + Spread Roots/Wilted Roots (GAP), hitRate 45.3 (⚑ measurement-gated).
+  **SPEC convergence (the real signal, fixture-independent): FULL.** The blind's per-line spec agrees with the driver on every
+  load-bearing line — burst 20.9 all-allies (FAITHFUL), S2 94.15/50.82 Electric-AR count:1 burstCast (FAITHFUL), maxAmmoFlat 20
+  (FAITHFUL — independently derived), S1 heals + invuln + Spread Roots/Wilted Roots (GAP), hitRate 45.3 (⚑ measurement-gated).
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, cross-family) — leakDetected null (override + audit + flags)
+
 ```json
 {
   "slug": "trina",
@@ -630,6 +637,7 @@ load-bearing line — burst 20.9 all-allies (FAITHFUL), S2 94.15/50.82 Electric-
 ```
 
 ### 6b. S6 audit + flags
+
 ```json
 {
   "slug": "trina",
@@ -727,7 +735,9 @@ load-bearing line — burst 20.9 all-allies (FAITHFUL), S2 94.15/50.82 Electric-
 ```
 
 ### 6c. S6 structural convergence vs the driver (driver summarizes; judge adjudicates)
+
 The blind override-writer (opus) CONVERGES with the driver on every load-bearing structural decision:
+
 - S2 burstCast → alliesOfElementWeapon(Electric, AR, count 1): attackDamagePct 94.15 + reloadSpeedPct 50.82, 10s — IDENTICAL.
 - Burst → allies: attackDamagePct 20.9, 10s — IDENTICAL.
 - Burst → alliesOfElementWeapon(Electric, AR): **maxAmmoFlat 20**, 10s — IDENTICAL (a THIRD independent derivation of the
@@ -736,8 +746,9 @@ The blind override-writer (opus) CONVERGES with the driver on every load-bearing
   attackDamagePct would over-credit ALL damage) — IDENTICAL reasoning + disposition.
 - S1 two Full-Charge HP-threshold heals + S2 Invulnerable → UNMODELED (no HP pool / no primitive) — IDENTICAL.
 - audit SKIPPED ↔ unmodeled 1:1 (5 SKIPPED lines, 5 unmodeled entries).
-THREE divergences, all adjudicated as the DRIVER being MORE faithful (or following the project's documented decision), none a
-REAL-GOTCHA against the driver:
+  THREE divergences, all adjudicated as the DRIVER being MORE faithful (or following the project's documented decision), none a
+  REAL-GOTCHA against the driver:
+
 1. **Max-HP grants — casterMaxHpPct (driver) vs targetMaxHpPct (blind).** The kit says "of the skill USER'S Max HP" (caster-scaled);
    the driver uses casterMaxHpPct (correct). The blind used targetMaxHpPct and itself flagged the mismatch in caveats: "targetMaxHpPct
    scales by the TARGET's own Max HP — semantic mismatch … If a casterMaxHpPct stat exists, prefer it." casterMaxHpPct DOES exist
@@ -751,6 +762,7 @@ REAL-GOTCHA against the driver:
    not a silent drop (both record it).
 
 ## 7. Driver's test (scripts/tests/units/trina.test.ts) — the gate (22 tests + 1 GAP skip, all GREEN vs the post-fix override)
+
 ```ts
 // PER-UNIT KIT SPEC — `trina` (Trina, Supporter/RL/Electric, Burst II, cd 20s, ammo 6, chargeFrames 60,
 // chargeMultiplier 250, hitsPerShot 1, normalMult 68.59 / coreMult 200).
@@ -880,11 +892,11 @@ function run(overrides: Record<string, any> = {}) {
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 const buffs = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TRINA,
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TRINA
   );
 const byStat = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && (value === undefined || b.value === value),
+    (b) => b.stat === stat && (value === undefined || b.value === value)
   );
 /** buffApply events whose key carries the original (pre-conversion) effect value, e.g. 44.98 / 20.14. */
 const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
@@ -893,13 +905,13 @@ const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort((a, b) => a - b);
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const trinaBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is Extract<SimEvent, { kind: 'burstCast' }> =>
-      e.kind === 'burstCast' && e.slug === 'trina',
+      e.kind === 'burstCast' && e.slug === 'trina'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -948,7 +960,7 @@ const cfS2PassiveDur = withPatchedOverride('trina', (ov: any) => {
 const isS2BurstBuff = (b: any) =>
   b.trigger?.kind === 'burstCast' &&
   b.effects?.some(
-    (e: any) => e.stat === 'attackDamagePct' && e.value === 94.15,
+    (e: any) => e.stat === 'attackDamagePct' && e.value === 94.15
   );
 // T4 nearest-wrong (count): count 1 → 99 (buff BOTH Electric AR allies, not just the leftmost).
 const cfS2Count99 = withPatchedOverride('trina', (ov: any) => {
@@ -997,7 +1009,7 @@ const cfBurstScopeElecAR = withPatchedOverride('trina', (ov: any) => {
 // The burst Max Ammo block (T8 under test — faithful encoding is maxAmmoFlat 20).
 const isBurstMaxAmmo = (b: any) =>
   b.effects?.some(
-    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct',
+    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct'
   );
 // T8 nearest-wrong (the shipped encoding): flat 20 rounds → maxAmmoPct 33.3 (a percentage approximation).
 const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
@@ -1005,7 +1017,7 @@ const cfMaxAmmoPct = withPatchedOverride('trina', (ov: any) => {
   if (!b)
     throw new Error('trina burst maxAmmo block missing — fixture is stale');
   const eff = b.effects.find(
-    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct',
+    (e: any) => e.stat === 'maxAmmoFlat' || e.stat === 'maxAmmoPct'
   );
   eff.stat = 'maxAmmoPct';
   eff.value = 33.3;
@@ -1052,7 +1064,7 @@ describe('trina — kit spec', () => {
     it('the fixture fields exactly two Electric AR allies (moran slot 0, scarlet slot 3) for scope discrimination', () => {
       // the S2 passive (count 99, all Electric AR) reaches exactly moran + scarlet
       expect(targetsOf(byKeyVal(base.events, 'maxHpFlat', 44.98))).toEqual(
-        ELEC_AR,
+        ELEC_AR
       );
     });
   });
@@ -1060,20 +1072,20 @@ describe('trina — kit spec', () => {
   describe("T1 — S1 Nature's Grace (three heal lines) is UNMODELED and inert (no HP pool in v1)", () => {
     it('PIN: Trina emits ZERO skill1-keyed buff events (skill1 is an empty, documented skip)', () => {
       expect(
-        buffs(base.events).filter((b) => b.key.includes(':skill1:')).length,
+        buffs(base.events).filter((b) => b.key.includes(':skill1:')).length
       ).toBe(0);
     });
     it('PIN: Trina deals ZERO skill1-sourced damage', () => {
       const skill1Dmg = base.events.filter(
         (e) =>
-          e.kind === 'damage' && e.slug === 'trina' && e.srcSlot === 'skill1',
+          e.kind === 'damage' && e.slug === 'trina' && e.srcSlot === 'skill1'
       );
       expect(skill1Dmg.length).toBe(0);
     });
     it('DISCRIMINATING: a FABRICATED skill1 buff (nearest-wrong) WOULD emit skill1-keyed events — the empty slot is a deliberate skip, not a harness blind spot', () => {
       expect(
         buffs(fabricateSkill1.events).filter((b) => b.key.includes(':skill1:'))
-          .length,
+          .length
       ).toBeGreaterThan(0);
     });
   });
@@ -1095,7 +1107,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 Electric AR allies', () => {
       expect(
-        targetsOf(byKeyVal(s2ScopeAllies.events, 'maxHpFlat', 44.98)),
+        targetsOf(byKeyVal(s2ScopeAllies.events, 'maxHpFlat', 44.98))
       ).toEqual(ALL_SLOTS);
     });
     it('DISCRIMINATING (stat): targetMaxHpPct (nearest-wrong) yields a PER-TARGET value, not a caster-sourced constant', () => {
@@ -1106,7 +1118,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (duration): a 10s expiry (nearest-wrong) is NOT the faithful constant (no-expiry) passive', () => {
       expect(dursOf(byKeyVal(s2PassiveDur.events, 'maxHpFlat', 44.98))).toEqual(
-        [10 * FPS],
+        [10 * FPS]
       );
     });
   });
@@ -1116,7 +1128,7 @@ describe('trina — kit spec', () => {
       const s2Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':skill2:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s2Stats].sort()).toEqual([
         'attackDamagePct',
@@ -1141,7 +1153,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (count): count 99 (nearest-wrong) buffs BOTH Electric AR allies, not just the leftmost', () => {
       expect(
-        targetsOf(byStat(s2Count99.events, 'attackDamagePct', 94.15)),
+        targetsOf(byStat(s2Count99.events, 'attackDamagePct', 94.15))
       ).toEqual(ELEC_AR);
     });
     it("DISCRIMINATING (trigger): the faithful burstCast lands on Trina's cast frames; fullBurstEnter (nearest-wrong) lands on the later Full-Burst-start frames", () => {
@@ -1150,16 +1162,14 @@ describe('trina — kit spec', () => {
       // faithful burstCast: the 94.15 buff applies exactly on Trina's burstCast frames
       const baseFrames = [
         ...new Set(
-          byStat(base.events, 'attackDamagePct', 94.15).map((b) => b.frame),
+          byStat(base.events, 'attackDamagePct', 94.15).map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
       expect(baseFrames).toEqual([...cast].sort((a, b) => a - b));
       // nearest-wrong fullBurstEnter: applies on the FB-start frames, which never coincide with cast frames
       const cfFrames = [
         ...new Set(
-          byStat(s2FbEnter.events, 'attackDamagePct', 94.15).map(
-            (b) => b.frame,
-          ),
+          byStat(s2FbEnter.events, 'attackDamagePct', 94.15).map((b) => b.frame)
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -1192,15 +1202,15 @@ describe('trina — kit spec', () => {
       const fb = fbStartFrames(base.events);
       const baseFrames = [
         ...new Set(
-          byStat(base.events, 'attackDamagePct', 20.9).map((b) => b.frame),
+          byStat(base.events, 'attackDamagePct', 20.9).map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
       expect(baseFrames).toEqual([...cast].sort((a, b) => a - b));
       const cfFrames = [
         ...new Set(
           byStat(burstFbEnter.events, 'attackDamagePct', 20.9).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -1209,7 +1219,7 @@ describe('trina — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfElementWeapon (nearest-wrong) hits only the 2 Electric AR allies, not all 5', () => {
       expect(
-        targetsOf(byStat(burstScopeElecAR.events, 'attackDamagePct', 20.9)),
+        targetsOf(byStat(burstScopeElecAR.events, 'attackDamagePct', 20.9))
       ).toEqual(ELEC_AR);
     });
   });
@@ -1219,7 +1229,7 @@ describe('trina — kit spec', () => {
       const burstStats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':burst:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       // exactly three modeled families; the Max-Ammo family may be flat (faithful) or pct (the
       // shipped proxy) — either way NO burst-skill-damage-amp stat is present.
@@ -1259,24 +1269,24 @@ describe('trina — kit spec', () => {
       expect(byStat(maxAmmoPct.events, 'maxAmmoFlat', 20).length).toBe(0);
       // … instead a maxAmmoPct 33.3 appears (a percentage approximation, exact only for a 60-round mag)
       expect(
-        byStat(maxAmmoPct.events, 'maxAmmoPct', 33.3).length,
+        byStat(maxAmmoPct.events, 'maxAmmoPct', 33.3).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 Electric AR allies', () => {
       expect(
         targetsOf(
           buffs(maxAmmoScopeAllies.events).filter(
-            (b) => b.stat === 'maxAmmoFlat' || b.stat === 'maxAmmoPct',
-          ),
-        ),
+            (b) => b.stat === 'maxAmmoFlat' || b.stat === 'maxAmmoPct'
+          )
+        )
       ).toEqual(ALL_SLOTS);
     });
   });
 });
-
 ```
 
 ## 8. S2d independent verification matrix (driver) — gate PASSES after the S3 FIX
+
 ```
 === S2d INDEPENDENT VERIFICATION MATRIX — trina (kit-autonomy gauntlet 2026-07-24) ===
 Test file: scripts/tests/units/trina.test.ts (driver-authored S2a; reconciled vs blind S2b claude-fable-5).
@@ -1367,6 +1377,7 @@ documented UNMODELED engine/measurement gaps → owner spot-check items (manual-
 ```
 
 ## 9. ⚑ flags the driver recorded (estimate + recipe + tier)
+
 1. **Burst Spread Roots 435.6% / Wilted Roots 64.46% (GAP, not a ⚑ estimate):** UNMODELED — no engine primitive for "Burst Skill
    damage of skills with 'Affects all enemies'". Tier: DATAMINED magnitude, unmodelable. Recipe: needs a new scoped AoE-burst-skill
    damage bucket + measurement of which teammates' burst damage qualifies (feature request). Teammate-COLD lever; inert on Trina.
@@ -1379,11 +1390,12 @@ documented UNMODELED engine/measurement gaps → owner spot-check items (manual-
 4. **S2 Invulnerable 2s (GAP):** UNMODELED — no invulnerability primitive, defensive, no damage-taken model. Tier: DATAMINED. Inert.
 5. **Max-Ammo encoding (RESOLVED, no longer a ⚑):** the prior maxAmmoPct 33.3 proxy (which assumed a 60-round AR magazine) was
    REPLACED by kit-literal maxAmmoFlat 20 during this gauntlet (cross-family corroborated ×3). No residual ⚑ on this line.
-NOTE: the two casterMaxHpPct grants (S2 44.98%, burst 20.14%) are modeled (not ⚑) and offensively inert (e3 rule) — kit-SSOT
-completeness only, no board movement. Trina's own RL weapon cadence is the standard datamined tuple (chargeFrames 60, ammo 6,
-reloadFrames 170); her own damage is negligible (pure supporter), so the cadence ⚑ impact is tiny.
+   NOTE: the two casterMaxHpPct grants (S2 44.98%, burst 20.14%) are modeled (not ⚑) and offensively inert (e3 rule) — kit-SSOT
+   completeness only, no board movement. Trina's own RL weapon cadence is the standard datamined tuple (chargeFrames 60, ammo 6,
+   reloadFrames 170); her own damage is negligible (pure supporter), so the cadence ⚑ impact is tiny.
 
 ## 10. Verdict instructions
+
 Grade the driver's IMPLEMENTATION against ground truth (the kit prose above + the formula SSOT) using the S2b/S5/S6 blind
 re-derivations to attribute. Per kit line classify FAITHFUL / DOCUMENTED_GAP / REAL-GOTCHA{SILENT_DROP|ENGINE|FIDELITY|ENCODING}
 / RECON_ERROR. Run the convergence check (S5 blind tests vs the driver's override — §5b). Run the fire-rate "modeled≠working"

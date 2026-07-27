@@ -6,10 +6,10 @@ export function useMediaQuery(query: string): boolean {
   const supported =
     typeof window !== 'undefined' && typeof window.matchMedia === 'function';
   const [matches, setMatches] = useState(() =>
-    supported ? window.matchMedia(query).matches : false,
+    supported ? window.matchMedia(query).matches : false
   );
   useEffect(() => {
-    if (!supported) return;
+    if (!supported) {return;}
     const mq = window.matchMedia(query);
     const onChange = () => setMatches(mq.matches);
     onChange();
@@ -31,17 +31,24 @@ export interface TabItem {
 // button with a caret; tapping it drops a panel listing every item. Closes on
 // select, outside-click, or Escape. Desktop keeps its own inline row — render
 // this only under the mobile breakpoint.
-export function TabDropdown({ items, label }: { items: TabItem[]; label?: string }) {
+export function TabDropdown({
+  items,
+  label,
+}: {
+  items: TabItem[];
+  label?: string;
+}) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open) {return;}
     const onDown = (e: globalThis.MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node))
+        {setOpen(false);}
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setOpen(false);
+      if (e.key === 'Escape') {setOpen(false);}
     };
     document.addEventListener('mousedown', onDown);
     document.addEventListener('keydown', onKey);
@@ -60,22 +67,24 @@ export function TabDropdown({ items, label }: { items: TabItem[]; label?: string
   return (
     <div className={`tab-dd${open ? ' open' : ''}`} ref={ref}>
       <button
-        className='tab-dd-current'
-        aria-haspopup='true'
+        className="tab-dd-current"
+        aria-haspopup="true"
         aria-expanded={open}
         aria-label={label}
         onClick={() => setOpen((o) => !o)}
       >
-        <span className='tab-dd-label'>{current?.label}</span>
-        <span className='tab-dd-caret' aria-hidden='true'>▾</span>
+        <span className="tab-dd-label">{current?.label}</span>
+        <span className="tab-dd-caret" aria-hidden="true">
+          ▾
+        </span>
       </button>
       {open && (
-        <div className='tab-dd-panel' role='menu'>
+        <div className="tab-dd-panel" role="menu">
           {items.map((it) =>
             it.href ? (
               <a
                 key={it.key}
-                role='menuitem'
+                role="menuitem"
                 className={'tab-dd-item' + (it.active ? ' on' : '')}
                 href={it.href}
                 onClick={(e) => pick(e, it)}
@@ -85,13 +94,13 @@ export function TabDropdown({ items, label }: { items: TabItem[]; label?: string
             ) : (
               <button
                 key={it.key}
-                role='menuitem'
+                role="menuitem"
                 className={'tab-dd-item' + (it.active ? ' on' : '')}
                 onClick={(e) => pick(e, it)}
               >
                 {it.label}
               </button>
-            ),
+            )
           )}
         </div>
       )}

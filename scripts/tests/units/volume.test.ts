@@ -74,26 +74,33 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const volBuffs = (evs: SimEvent[], stat: string, value: number) =>
-  buffs(evs).filter((b) => b.casterIdx === VOL && b.stat === stat && b.value === value);
-const perTarget = (bs: BuffApply[], tgt: number) => bs.filter((b) => b.targetIdx === tgt);
+  buffs(evs).filter(
+    (b) => b.casterIdx === VOL && b.stat === stat && b.value === value
+  );
+const perTarget = (bs: BuffApply[], tgt: number) =>
+  bs.filter((b) => b.targetIdx === tgt);
 const volBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'volume');
-const fbStarts = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'volume'
+  );
+const fbStarts = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart');
 
 /** Distinct crit rates seen per unit on the given buckets — the V4 scope discriminator. */
 function critRatesByUnit(
   evs: SimEvent[],
-  buckets: Damage['bucket'][],
+  buckets: Damage['bucket'][]
 ): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of evs.filter((e): e is Damage => e.kind === 'damage')) {
-    if (!buckets.includes(d.bucket)) continue;
+    if (!buckets.includes(d.bucket)) {continue;}
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
   return Object.fromEntries(
-    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')]),
+    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')])
   );
 }
 
@@ -113,55 +120,69 @@ const cfS1Passive = withPatchedOverride('volume', (ov: any) => {
 const isCdrBlock = (b: any) =>
   b.trigger?.kind === 'fullBurstEnter' &&
   b.effects?.some(
-    (e: any) => e.kind === 'escalating' && e.steps?.some((s: any) => s.kind === 'burstCdr'),
+    (e: any) =>
+      e.kind === 'escalating' &&
+      e.steps?.some((s: any) => s.kind === 'burstCdr')
   );
 /** V2 nearest-wrong (fire-rate): the burstCdr block removed entirely (an inert/absent encoding). */
 const cfNoCdr = withPatchedOverride('volume', (ov: any) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !isCdrBlock(b));
   if (ov.skill2.length === before)
-    throw new Error('volume S2 burstCdr block missing — fixture is stale');
+    {throw new Error('volume S2 burstCdr block missing — fixture is stale');}
 });
 /** V2 nearest-wrong (trigger): the burstCdr block re-keyed fullBurstEnter → burstCast (over-applies the refund). */
 const cfCdrBurstCast = withPatchedOverride('volume', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2) if (isCdrBlock(b)) (b.trigger = { kind: 'burstCast' }), hit++;
-  if (!hit) throw new Error('volume S2 burstCdr block missing — fixture is stale');
+  for (const b of ov.skill2)
+    {if (isCdrBlock(b)) {((b.trigger = { kind: 'burstCast' }), hit++);}}
+  if (!hit)
+    {throw new Error('volume S2 burstCdr block missing — fixture is stale');}
 });
 /** The skill2 burstCast escalating-critDamage block (V3 under test). */
 const isCdBlock = (b: any) =>
   b.trigger?.kind === 'burstCast' &&
   b.effects?.some(
-    (e: any) => e.kind === 'escalating' && e.steps?.some((s: any) => s.stat === 'critDamagePct'),
+    (e: any) =>
+      e.kind === 'escalating' &&
+      e.steps?.some((s: any) => s.stat === 'critDamagePct')
   );
 /** V3 nearest-wrong (trigger): the critDamage ladder re-keyed burstCast → fullBurstEnter (5×/target not 10×). */
 const cfCdFbEnter = withPatchedOverride('volume', (ov: any) => {
   let hit = 0;
-  for (const b of ov.skill2) if (isCdBlock(b)) (b.trigger = { kind: 'fullBurstEnter' }), hit++;
-  if (!hit) throw new Error('volume S2 critDamage block missing — fixture is stale');
+  for (const b of ov.skill2)
+    {if (isCdBlock(b)) {((b.trigger = { kind: 'fullBurstEnter' }), hit++);}}
+  if (!hit)
+    {throw new Error('volume S2 critDamage block missing — fixture is stale');}
 });
 /** V3 nearest-wrong (escalating): the ladder collapsed to a single "always max" 14.42% buff. */
 const cfCdNoEscalate = withPatchedOverride('volume', (ov: any) => {
   const b = ov.skill2.find((x: any) => isCdBlock(x));
-  if (!b) throw new Error('volume S2 critDamage block missing — fixture is stale');
-  b.effects = [{ kind: 'buff', stat: 'critDamagePct', value: 14.42, durationSec: 5 }];
+  if (!b)
+    {throw new Error('volume S2 critDamage block missing — fixture is stale');}
+  b.effects = [
+    { kind: 'buff', stat: 'critDamagePct', value: 14.42, durationSec: 5 },
+  ];
 });
 /** V4 nearest-wrong (trigger): the burst critRate re-keyed burstCast → fullBurstEnter (5×/target not 10×). */
 const cfCrFbEnter = withPatchedOverride('volume', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9),
+    x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9)
   );
-  if (!b) throw new Error('volume burst critRate block missing — fixture is stale');
+  if (!b)
+    {throw new Error('volume burst critRate block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 /** V4 nearest-wrong (scope): the 31.9% crit as scoped critRateNormalPct (normal attacks only). */
 const cfCrScoped = withPatchedOverride('volume', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9),
+    x.effects?.some((e: any) => e.stat === 'critRatePct' && e.value === 31.9)
   );
-  if (!b) throw new Error('volume burst critRate block missing — fixture is stale');
-  b.effects.find((e: any) => e.stat === 'critRatePct' && e.value === 31.9).stat =
-    'critRateNormalPct';
+  if (!b)
+    {throw new Error('volume burst critRate block missing — fixture is stale');}
+  b.effects.find(
+    (e: any) => e.stat === 'critRatePct' && e.value === 31.9
+  ).stat = 'critRateNormalPct';
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -191,7 +212,11 @@ describe('volume — kit spec', () => {
     it('PIN: Volume applies ZERO atkPct buffs (the kill-gated line can never fire vs the partless boss)', () => {
       expect(volBuffs(base.events, 'atkPct', 12.6).length).toBe(0);
       // no atkPct buff of ANY value from Volume — her kit grants no ATK against an immortal boss
-      expect(buffs(base.events).filter((b) => b.casterIdx === VOL && b.stat === 'atkPct').length).toBe(0);
+      expect(
+        buffs(base.events).filter(
+          (b) => b.casterIdx === VOL && b.stat === 'atkPct'
+        ).length
+      ).toBe(0);
     });
     it('DISCRIMINATING: a passive permanent self ATK 12.6 (nearest-wrong) WOULD apply a buff', () => {
       const cf = volBuffs(s1Passive.events, 'atkPct', 12.6);
@@ -203,16 +228,22 @@ describe('volume — kit spec', () => {
   });
 
   describe('V2 — S2 FB-enter Cooldown of Burst Skill ▼ 2.34/2.7/3.17 sec (escalating burstCdr), all allies', () => {
-    it('FIRE-RATE: the burstCdr block is present AND working — removing it slows Volume\'s own burst cadence', () => {
+    it("FIRE-RATE: the burstCdr block is present AND working — removing it slows Volume's own burst cadence", () => {
       // burstCdr emits no event; observe its effect: Volume is an ally target of her own CDR, so with the
       // block she casts more often over 180s than without it (deterministic: 10 vs 9).
-      expect(volBursts(base.events).length).toBeGreaterThan(volBursts(noCdr.events).length);
+      expect(volBursts(base.events).length).toBeGreaterThan(
+        volBursts(noCdr.events).length
+      );
     });
     it('DISCRIMINATING (trigger): fullBurstEnter (5 activations) ≠ burstCast (10) — burstCast over-accelerates', () => {
       // re-keying the refund to burstCast applies it twice as often → strictly more Volume casts than the
       // faithful fullBurstEnter keying, so the two triggers are provably distinct.
-      expect(volBursts(cdrBurstCast.events).length).toBeGreaterThan(volBursts(base.events).length);
-      expect(volBursts(cdrBurstCast.events).length).not.toBe(volBursts(base.events).length);
+      expect(volBursts(cdrBurstCast.events).length).toBeGreaterThan(
+        volBursts(base.events).length
+      );
+      expect(volBursts(cdrBurstCast.events).length).not.toBe(
+        volBursts(base.events).length
+      );
     });
   });
 
@@ -230,21 +261,37 @@ describe('volume — kit spec', () => {
     it('each step is a distinct 5-second buff reaching all three allies (they coexist + sum, no overwrite)', () => {
       for (const c of [c10, c12, c14]) {
         expect(c.length).toBeGreaterThan(0);
-        expect([...new Set(c.map((b) => b.expiresFrame! - b.frame))]).toEqual([5 * FPS]);
-        for (const tgt of [0, 1, 2]) expect(perTarget(c, tgt).length).toBeGreaterThan(0);
+        expect([...new Set(c.map((b) => b.expiresFrame! - b.frame))]).toEqual([
+          5 * FPS,
+        ]);
+        for (const tgt of [0, 1, 2])
+          {expect(perTarget(c, tgt).length).toBeGreaterThan(0);}
       }
       // distinct buff keys → the three steps stack rather than overwrite one another
       expect(new Set([...c10, ...c12, ...c14].map((b) => b.key)).size).toBe(3);
     });
     it('DISCRIMINATING (escalating): a non-escalating "always max 14.42" encoding drops the 10.77/12.46 steps', () => {
-      expect(volBuffs(cdNoEscalate.events, 'critDamagePct', 10.77).length).toBe(0);
-      expect(volBuffs(cdNoEscalate.events, 'critDamagePct', 12.46).length).toBe(0);
+      expect(volBuffs(cdNoEscalate.events, 'critDamagePct', 10.77).length).toBe(
+        0
+      );
+      expect(volBuffs(cdNoEscalate.events, 'critDamagePct', 12.46).length).toBe(
+        0
+      );
       // …and fires 14.42 on EVERY cast (no ramp), unlike the faithful 8×/target
-      expect(perTarget(volBuffs(cdNoEscalate.events, 'critDamagePct', 14.42), VOL).length).toBe(casts);
+      expect(
+        perTarget(volBuffs(cdNoEscalate.events, 'critDamagePct', 14.42), VOL)
+          .length
+      ).toBe(casts);
     });
     it('DISCRIMINATING (trigger): keyed to burstCast (casts/target), NOT fullBurstEnter (fbs/target)', () => {
-      expect(perTarget(volBuffs(cdFbEnter.events, 'critDamagePct', 10.77), VOL).length).toBe(fbs);
-      expect(perTarget(volBuffs(cdFbEnter.events, 'critDamagePct', 10.77), VOL).length).not.toBe(casts);
+      expect(
+        perTarget(volBuffs(cdFbEnter.events, 'critDamagePct', 10.77), VOL)
+          .length
+      ).toBe(fbs);
+      expect(
+        perTarget(volBuffs(cdFbEnter.events, 'critDamagePct', 10.77), VOL)
+          .length
+      ).not.toBe(casts);
     });
   });
 
@@ -253,19 +300,26 @@ describe('volume — kit spec', () => {
     it('is the generic critRatePct stat, 5s, once per Volume burst cast, reaching all three allies (never the boss)', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.stat))]).toEqual(['critRatePct']);
-      expect([...new Set(applied.map((b) => b.expiresFrame! - b.frame))]).toEqual([5 * FPS]);
+      expect([
+        ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
+      ]).toEqual([5 * FPS]);
       expect(perTarget(applied, VOL).length).toBe(casts);
-      for (const tgt of [0, 1, 2]) expect(perTarget(applied, tgt).length).toBe(casts);
+      for (const tgt of [0, 1, 2])
+        {expect(perTarget(applied, tgt).length).toBe(casts);}
       // ally buff, never a boss debuff
       expect(applied.every((b) => b.targetIdx != null)).toBe(true);
     });
     it('DISCRIMINATING (trigger): keyed to burstCast (casts/target), NOT fullBurstEnter (fbs/target)', () => {
-      expect(perTarget(volBuffs(crFbEnter.events, 'critRatePct', 31.9), VOL).length).toBe(fbs);
-      expect(perTarget(volBuffs(crFbEnter.events, 'critRatePct', 31.9), VOL).length).not.toBe(casts);
+      expect(
+        perTarget(volBuffs(crFbEnter.events, 'critRatePct', 31.9), VOL).length
+      ).toBe(fbs);
+      expect(
+        perTarget(volBuffs(crFbEnter.events, 'critRatePct', 31.9), VOL).length
+      ).not.toBe(casts);
     });
     it('DISCRIMINATING (scope): a scoped critRateNormalPct would leave skill/burst bucket crit UNCHANGED', () => {
       expect(critRatesByUnit(base.events, ['skill', 'burst'])).not.toEqual(
-        critRatesByUnit(crScoped.events, ['skill', 'burst']),
+        critRatesByUnit(crScoped.events, ['skill', 'burst'])
       );
       expect(volBuffs(crScoped.events, 'critRatePct', 31.9).length).toBe(0);
     });

@@ -86,9 +86,7 @@
   ],
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Damage to Interruption Parts ▲ 6.91% for 10 sec."
-    ],
+    "skill2": ["Damage to Interruption Parts ▲ 6.91% for 10 sec."],
     "burst": []
   },
   "caveats": [

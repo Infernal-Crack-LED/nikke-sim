@@ -59,8 +59,8 @@ const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
 function blocksOf(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
@@ -88,7 +88,7 @@ function dropEffects(ov: any, pred: (e: any, b: any) => boolean): number {
 function editEffects(
   ov: any,
   pred: (e: any, b: any) => boolean,
-  edit: (e: any, b: any) => void,
+  edit: (e: any, b: any) => void
 ): number {
   let n = 0;
   for (const b of allBlocks(ov)) {
@@ -104,8 +104,10 @@ function editEffects(
 
 /* ---------- kit-line predicates (magnitudes straight from the prose) ---------- */
 
-const isS1Atk = (e: any) => e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 58.08);
-const isFbAtk = (e: any) => e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 63.36);
+const isS1Atk = (e: any) =>
+  e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 58.08);
+const isFbAtk = (e: any) =>
+  e?.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 63.36);
 const isFbAd = (e: any) =>
   e?.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 21.12);
 const isGauge = (e: any) => e?.kind === 'buff' && e.stat === 'burstGenPct';
@@ -122,7 +124,7 @@ function run(opts: any): Run {
   const events: SimEvent[] = [];
   const seen = new Set<SimEvent>();
   const sink = (ev: SimEvent) => {
-    if (seen.has(ev)) return; // belt: same object never counted twice if both sinks are honoured
+    if (seen.has(ev)) {return;} // belt: same object never counted twice if both sinks are honoured
     seen.add(ev);
     events.push(ev);
   };
@@ -135,7 +137,8 @@ function run(opts: any): Run {
   return { res, events, tot: totals(res) };
 }
 
-const buffApplies = (evs: SimEvent[]) => evs.filter((e: any) => e.kind === 'buffApply') as any[];
+const buffApplies = (evs: SimEvent[]) =>
+  evs.filter((e: any) => e.kind === 'buffApply') as any[];
 const countKind = (evs: SimEvent[], kind: string) =>
   evs.filter((e: any) => e.kind === kind).length;
 const dmg = (r: Run) => r.tot[SLUG];
@@ -161,27 +164,31 @@ const base = run(controlComp(SLUG, true));
 const baseTot = base.tot;
 const mates = Object.keys(baseTot).filter((s) => s !== SLUG);
 
-const rNoS1Atk = run(compWith(patched('s1Atk', (ov) => dropEffects(ov, isS1Atk))));
+const rNoS1Atk = run(
+  compWith(patched('s1Atk', (ov) => dropEffects(ov, isS1Atk)))
+);
 const rS1AtkTimed = run(
   compWith(
     patched('s1AtkTimed', (ov) =>
       editEffects(ov, isS1Atk, (e) => {
         e.durationSec = 10;
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 const rS1AtkAllies = run(
   compWith(
     patched('s1AtkAllies', (ov) =>
       editEffects(ov, isS1Atk, (_e, b) => {
         b.target = { kind: 'allies' };
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 const rNoFbBuffs = run(
-  compWith(patched('fbBuffs', (ov) => dropEffects(ov, (e) => isFbAtk(e) || isFbAd(e)))),
+  compWith(
+    patched('fbBuffs', (ov) => dropEffects(ov, (e) => isFbAtk(e) || isFbAd(e)))
+  )
 );
 const rFbPermanent = run(
   compWith(
@@ -191,19 +198,27 @@ const rFbPermanent = run(
         (e) => isFbAtk(e) || isFbAd(e),
         (e) => {
           delete e.durationSec;
-        },
-      ),
-    ),
-  ),
+        }
+      )
+    )
+  )
 );
-const rNoGauge = run(compWith(patched('gauge', (ov) => dropEffects(ov, isGauge))));
+const rNoGauge = run(
+  compWith(patched('gauge', (ov) => dropEffects(ov, isGauge)))
+);
 const rNoDot = run(compWith(patched('dot', (ov) => dropEffects(ov, isDot))));
 const rNoSust = run(compWith(patched('sust', (ov) => dropEffects(ov, isSust))));
 
 const baseNoHelm = run(controlComp(SLUG, false));
-const rNoHealNoHelm = run(compWith(patched('heal', (ov) => dropEffects(ov, isHeal)), false));
+const rNoHealNoHelm = run(
+  compWith(
+    patched('heal', (ov) => dropEffects(ov, isHeal)),
+    false
+  )
+);
 
-const sum = (t: Record<string, number>) => Object.values(t).reduce((a, b) => a + b, 0);
+const sum = (t: Record<string, number>) =>
+  Object.values(t).reduce((a, b) => a + b, 0);
 
 /* ---------- fixture sanity (non-vacuity) ---------- */
 
@@ -214,7 +229,9 @@ describe('mana — fixture', () => {
     expect(countKind(base.events, 'burstCast')).toBeGreaterThanOrEqual(2);
     expect(mates.length).toBeGreaterThanOrEqual(2);
     // the no-helm fixture must still burst, else the heal-tandem probe tests nothing
-    expect(countKind(baseNoHelm.events, 'fullBurstStart')).toBeGreaterThanOrEqual(1);
+    expect(
+      countKind(baseNoHelm.events, 'fullBurstStart')
+    ).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -223,7 +240,7 @@ describe('mana — fixture', () => {
 describe('mana — skill1 (Metal γ)', () => {
   it('S1a: grants ATK ▲58.08% to SELF and it is load-bearing', () => {
     const applied = buffApplies(base.events).filter(
-      (e) => e.stat === 'atkPct' && near(e.value, 58.08),
+      (e) => e.stat === 'atkPct' && near(e.value, 58.08)
     );
     expect(applied.length).toBeGreaterThanOrEqual(1);
     expect(applied.every((e) => e.targetSlug === SLUG)).toBe(true);
@@ -240,11 +257,15 @@ describe('mana — skill1 (Metal γ)', () => {
 
   it('S1a is SELF-scoped — teammates unmoved (nearest-wrong: "Affects self" widened to allies)', () => {
     expect(removed.s1AtkAllies).toBeGreaterThan(0);
-    expect(mates.some((s) => rS1AtkAllies.tot[s] > baseTot[s] * 1.001)).toBe(true);
+    expect(mates.some((s) => rS1AtkAllies.tot[s] > baseTot[s] * 1.001)).toBe(
+      true
+    );
   });
 
   it('S1b: the heal is modeled, fires every 10 ROUNDS, and targets ALL allies', () => {
-    const healBlocks = allBlocks(shipped).filter((b) => effectsOf(b).some(isHeal));
+    const healBlocks = allBlocks(shipped).filter((b) =>
+      effectsOf(b).some(isHeal)
+    );
     expect(healBlocks.length).toBeGreaterThanOrEqual(1);
     const hb = healBlocks[0];
     // trigger identity: "after landing 10 normal attacks" is a hit count, NOT a 10-second interval
@@ -273,28 +294,32 @@ describe('mana — skill2 (Metal σ)', () => {
     const gauge = allBlocks(shipped).flatMap(effectsOf).filter(isGauge);
     expect(gauge.length).toBeGreaterThanOrEqual(1);
     // accepts either a plain 70.4 buff or a σ-pool-scaled perResource encoding
-    expect(gauge.some((e: any) => near(e.value, 70.4) || near(e.perResource?.mult, 70.4))).toBe(
-      true,
-    );
+    expect(
+      gauge.some(
+        (e: any) => near(e.value, 70.4) || near(e.perResource?.mult, 70.4)
+      )
+    ).toBe(true);
     expect(removed.gauge).toBeGreaterThan(0);
     // gauge speed can only ever ADD full bursts, never remove them
     expect(countKind(base.events, 'fullBurstStart')).toBeGreaterThanOrEqual(
-      countKind(rNoGauge.events, 'fullBurstStart'),
+      countKind(rNoGauge.events, 'fullBurstStart')
     );
   });
 
   it('S2b: entering Full Burst grants SELF Attack Damage ▲21.12% + ATK ▲63.36%, paired, ≤ once per FB', () => {
     const ad = buffApplies(base.events).filter(
-      (e) => e.stat === 'attackDamagePct' && near(e.value, 21.12),
+      (e) => e.stat === 'attackDamagePct' && near(e.value, 21.12)
     );
     const at = buffApplies(base.events).filter(
-      (e) => e.stat === 'atkPct' && near(e.value, 63.36),
+      (e) => e.stat === 'atkPct' && near(e.value, 63.36)
     );
     expect(ad.length).toBeGreaterThanOrEqual(1);
     expect(at.length).toBe(ad.length); // same block -> identical firing count
     expect(ad.every((e) => e.targetSlug === SLUG)).toBe(true);
     expect(at.every((e) => e.targetSlug === SLUG)).toBe(true);
-    expect(ad.length).toBeLessThanOrEqual(countKind(base.events, 'fullBurstStart'));
+    expect(ad.length).toBeLessThanOrEqual(
+      countKind(base.events, 'fullBurstStart')
+    );
     expect(removed.fbBuffs).toBeGreaterThanOrEqual(2);
     expect(dmg(rNoFbBuffs)).toBeLessThan(dmg(base));
   });
@@ -316,7 +341,9 @@ describe('mana — skill2 (Metal σ)', () => {
       Boolean(fbBlock.resourceGate) ||
       Boolean(fbBlock.ownBurstGate) ||
       (Array.isArray(shipped.resources) && shipped.resources.length > 0) ||
-      allBlocks(shipped).some((b) => effectsOf(b).some((e: any) => e?.kind === 'resource'));
+      allBlocks(shipped).some((b) =>
+        effectsOf(b).some((e: any) => e?.kind === 'resource')
+      );
     expect(consumeRegain).toBe(true);
   });
 
@@ -328,7 +355,7 @@ describe('mana — skill2 (Metal σ)', () => {
 describe('mana — burst', () => {
   it('burst-a: self Sustained Damage ▲52.8% for 10 sec, on her OWN burst cast', () => {
     const applied = buffApplies(base.events).filter(
-      (e) => e.stat === 'sustainedDamagePct' && near(e.value, 52.8),
+      (e) => e.stat === 'sustainedDamagePct' && near(e.value, 52.8)
     );
     expect(applied.length).toBeGreaterThanOrEqual(1);
     expect(applied.every((e) => e.targetSlug === SLUG)).toBe(true);
@@ -362,6 +389,6 @@ describe('mana — burst', () => {
   });
 
   it('burst damage is self-only: teammates byte-identical with the DoT removed', () => {
-    for (const s of mates) expect(rNoDot.tot[s]).toBe(baseTot[s]);
+    for (const s of mates) {expect(rNoDot.tot[s]).toBe(baseTot[s]);}
   });
 });

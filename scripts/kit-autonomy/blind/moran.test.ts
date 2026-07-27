@@ -46,14 +46,23 @@ type AnyEv = SimEvent & Record<string, any>;
 const near = (a: unknown, b: number, tol = 0.02) =>
   typeof a === 'number' && Math.abs(a - b) <= tol;
 
-function forEachEffect(ov: any, cb: (eff: any, block: any, slot: string) => void) {
-  for (const slot of SLOTS) for (const b of ov[slot] ?? []) for (const e of b.effects ?? []) cb(e, b, slot);
+function forEachEffect(
+  ov: any,
+  cb: (eff: any, block: any, slot: string) => void
+) {
+  for (const slot of SLOTS)
+    {for (const b of ov[slot] ?? [])
+      {for (const e of b.effects ?? []) {cb(e, b, slot);}}}
 }
 
-function dropEffects(ov: any, pred: (eff: any, block: any, slot: string) => boolean) {
+function dropEffects(
+  ov: any,
+  pred: (eff: any, block: any, slot: string) => boolean
+) {
   for (const slot of SLOTS) {
     const blocks = ov[slot] ?? [];
-    for (const b of blocks) b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b, slot));
+    for (const b of blocks)
+      {b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b, slot));}
     ov[slot] = blocks.filter((b: any) => (b.effects ?? []).length > 0);
   }
 }
@@ -66,95 +75,144 @@ function run(patch?: (ov: any) => void) {
     cfg: { ...(comp.cfg ?? {}), onEvent: (ev: AnyEv) => events.push(ev) },
   };
   if (patch) {
-    opts.overrides = { ...(comp.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, patch) };
+    opts.overrides = {
+      ...(comp.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, patch),
+    };
   }
   const res = runComp(opts);
   return { res, events, tot: totals(res) as Record<string, number> };
 }
 
-const team = (t: Record<string, number>) => Object.values(t).reduce((a, b) => a + b, 0);
-const kindCount = (e: AnyEv[], kind: string) => e.filter((x) => x.kind === kind).length;
+const team = (t: Record<string, number>) =>
+  Object.values(t).reduce((a, b) => a + b, 0);
+const kindCount = (e: AnyEv[], kind: string) =>
+  e.filter((x) => x.kind === kind).length;
 
 // ---- the committed override, read-only (no-op mutator returns the clone) ----
 const OV: any = withPatchedOverride(SLUG, () => {});
 function findAll(pred: (eff: any, block: any, slot: string) => boolean) {
   const out: { slot: string; block: any; eff: any }[] = [];
   for (const slot of SLOTS) {
-    for (const b of OV[slot] ?? []) for (const e of b.effects ?? []) if (pred(e, b, slot)) out.push({ slot, block: b, eff: e });
+    for (const b of OV[slot] ?? [])
+      {for (const e of b.effects ?? [])
+        {if (pred(e, b, slot)) {out.push({ slot, block: b, eff: e });}}}
   }
   return out;
 }
-const docText = [OV.note ?? '', ...SLOTS.flatMap((s) => OV.unmodeled?.[s] ?? [])]
+const docText = [
+  OV.note ?? '',
+  ...SLOTS.flatMap((s) => OV.unmodeled?.[s] ?? []),
+]
   .join(' | ')
   .toLowerCase();
 const documented = (...kws: string[]) => kws.some((k) => docText.includes(k));
 
-const ATK_BUFF = findAll((e, _b, slot) => slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57));
-const RIDER = findAll((e, _b, slot) => slot === 'skill1' && e.kind === 'flatDamage' && near(e.atkPct, 47.18));
-const FERVOR = findAll((e, _b, slot) => slot === 'skill1' && e.kind === 'burstCdr');
-const FB_CDR = findAll((e, _b, slot) => slot === 'skill2' && e.kind === 'burstCdr');
-const SWAP = findAll((e, _b, slot) => slot === 'burst' && e.kind === 'weaponSwap');
-const UNLIMITED = findAll((e, _b, slot) => slot === 'burst' && e.kind === 'unlimitedAmmo');
+const ATK_BUFF = findAll(
+  (e, _b, slot) => slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)
+);
+const RIDER = findAll(
+  (e, _b, slot) =>
+    slot === 'skill1' && e.kind === 'flatDamage' && near(e.atkPct, 47.18)
+);
+const FERVOR = findAll(
+  (e, _b, slot) => slot === 'skill1' && e.kind === 'burstCdr'
+);
+const FB_CDR = findAll(
+  (e, _b, slot) => slot === 'skill2' && e.kind === 'burstCdr'
+);
+const SWAP = findAll(
+  (e, _b, slot) => slot === 'burst' && e.kind === 'weaponSwap'
+);
+const UNLIMITED = findAll(
+  (e, _b, slot) => slot === 'burst' && e.kind === 'unlimitedAmmo'
+);
 const HEAL = findAll((e, _b, slot) => slot === 'burst' && e.kind === 'heal');
 
 const isRiderBlock = (b: any) =>
-  (b.effects ?? []).some((e: any) => e.kind === 'flatDamage' && near(e.atkPct, 47.18));
+  (b.effects ?? []).some(
+    (e: any) => e.kind === 'flatDamage' && near(e.atkPct, 47.18)
+  );
 
 // ---- hoisted runs (11 x 180s) ----
 const base = run();
 const noBurstAtk = run((ov) =>
-  dropEffects(ov, (e, _b, slot) => slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)),
+  dropEffects(
+    ov,
+    (e, _b, slot) =>
+      slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)
+  )
 );
 const atkPctModel = run((ov) =>
   forEachEffect(ov, (e, _b, slot) => {
-    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)) e.stat = 'atkPct';
-  }),
+    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57))
+      {e.stat = 'atkPct';}
+  })
 );
 const dur20 = run((ov) =>
   forEachEffect(ov, (e, _b, slot) => {
-    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)) e.durationSec = 20;
-  }),
+    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57))
+      {e.durationSec = 20;}
+  })
 );
-const noUnlimited = run((ov) => dropEffects(ov, (e) => e.kind === 'unlimitedAmmo'));
+const noUnlimited = run((ov) =>
+  dropEffects(ov, (e) => e.kind === 'unlimitedAmmo')
+);
 const noRider = run((ov) =>
-  dropEffects(ov, (e, _b, slot) => slot === 'skill1' && e.kind === 'flatDamage' && near(e.atkPct, 47.18)),
+  dropEffects(
+    ov,
+    (e, _b, slot) =>
+      slot === 'skill1' && e.kind === 'flatDamage' && near(e.atkPct, 47.18)
+  )
 );
 const riderUngated = run((ov) => {
-  for (const b of ov.skill1 ?? []) if (isRiderBlock(b)) delete b.swapGate;
+  for (const b of ov.skill1 ?? []) {if (isRiderBlock(b)) {delete b.swapGate;}}
 });
 const riderEvery1 = run((ov) => {
   for (const b of ov.skill1 ?? []) {
-    if (!isRiderBlock(b)) continue;
-    if (b.trigger?.kind === 'hitCount') b.trigger.count = 1;
-    if (b.everyN) b.everyN = 1;
+    if (!isRiderBlock(b)) {continue;}
+    if (b.trigger?.kind === 'hitCount') {b.trigger.count = 1;}
+    if (b.everyN) {b.everyN = 1;}
   }
 });
 const noFbCdr = run((ov) =>
-  dropEffects(ov, (e, _b, slot) => slot === 'skill2' && e.kind === 'burstCdr'),
+  dropEffects(ov, (e, _b, slot) => slot === 'skill2' && e.kind === 'burstCdr')
 );
 const noFervor = run((ov) =>
-  dropEffects(ov, (e, _b, slot) => slot === 'skill1' && e.kind === 'burstCdr'),
+  dropEffects(ov, (e, _b, slot) => slot === 'skill1' && e.kind === 'burstCdr')
 );
 const stripDefensive = run((ov) =>
   dropEffects(
     ov,
     (e) =>
       e.kind === 'buff' &&
-      ['defPct', 'maxHpPct', 'maxHpFlat', 'casterMaxHpPct', 'targetMaxHpPct', 'damageTakenPct'].includes(e.stat),
-  ),
+      [
+        'defPct',
+        'maxHpPct',
+        'maxHpFlat',
+        'casterMaxHpPct',
+        'targetMaxHpPct',
+        'damageTakenPct',
+      ].includes(e.stat)
+  )
 );
 
 // moran's burst ATK grant, identified by DIFFING base against the run with it removed —
 // this needs no knowledge of her unit index and survives other units' casterAtkPct buffs.
-const casterAtkEv = (e: AnyEv[]) => e.filter((x) => x.kind === 'buffApply' && x.stat === 'casterAtkPct');
+const casterAtkEv = (e: AnyEv[]) =>
+  e.filter((x) => x.kind === 'buffApply' && x.stat === 'casterAtkPct');
 const diffVals = new Set(casterAtkEv(base.events).map((e) => e.value));
-for (const v of casterAtkEv(noBurstAtk.events).map((e) => e.value)) diffVals.delete(v);
+for (const v of casterAtkEv(noBurstAtk.events).map((e) => e.value))
+  {diffVals.delete(v);}
 const MORAN_ATK_VALUES = [...diffVals];
 const V = MORAN_ATK_VALUES[0];
 const atkApplies = (e: AnyEv[]) =>
-  e.filter((x) => x.kind === 'buffApply' && x.stat === 'casterAtkPct' && x.value === V);
+  e.filter(
+    (x) => x.kind === 'buffApply' && x.stat === 'casterAtkPct' && x.value === V
+  );
 const ATK_TARGETS = new Set(atkApplies(base.events).map((e) => e.targetSlug));
-const castsIn = (e: AnyEv[]) => atkApplies(e).length / Math.max(1, ATK_TARGETS.size);
+const castsIn = (e: AnyEv[]) =>
+  atkApplies(e).length / Math.max(1, ATK_TARGETS.size);
 
 describe('moran — harness wiring + non-vacuity', () => {
   it('the event stream is actually collected', () => {
@@ -196,7 +254,8 @@ describe('burst / allies — ATK up 42.57% of the skill user ATK for 10 sec', ()
 
   it('the target-scaled model is genuinely distinguishable (non-vacuity for the stat choice)', () => {
     const raw = atkPctModel.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'atkPct' && near(e.value, 42.57),
+      (e) =>
+        e.kind === 'buffApply' && e.stat === 'atkPct' && near(e.value, 42.57)
     );
     expect(raw.length).toBeGreaterThan(0);
     expect(team(atkPctModel.tot)).not.toBe(team(base.tot));
@@ -228,8 +287,9 @@ describe('burst / self — weapon swap, unlimited ammunition, lifesteal', () => 
     // Her magazine is 60 and the window is 10s, so the swap window spans about one full
     // magazine: dropping unlimited ammo must cost her at least a reload or some damage.
     expect(
-      kindCount(noUnlimited.events, 'reload') > kindCount(base.events, 'reload') ||
-        base.tot[SLUG] > noUnlimited.tot[SLUG],
+      kindCount(noUnlimited.events, 'reload') >
+        kindCount(base.events, 'reload') ||
+        base.tot[SLUG] > noUnlimited.tot[SLUG]
     ).toBe(true);
     expect(base.tot[SLUG]).toBeGreaterThanOrEqual(noUnlimited.tot[SLUG]);
   });
@@ -237,7 +297,9 @@ describe('burst / self — weapon swap, unlimited ammunition, lifesteal', () => 
   it('the 36.14% lifesteal line is represented, not silently dropped', () => {
     // Damage-inert here (no HP pool), but it is a real on-recovery tandem channel, so it must be
     // either a heal effect or explicitly documented.
-    expect(HEAL.length > 0 || documented('recover', 'lifesteal', 'heal')).toBe(true);
+    expect(HEAL.length > 0 || documented('recover', 'lifesteal', 'heal')).toBe(
+      true
+    );
   });
 });
 
@@ -249,7 +311,7 @@ describe('skill1 — 47.18% of final ATK every 5 normals WHILE THE WEAPON IS CHA
     const trig = block.trigger ?? {};
     expect(
       (trig.kind === 'hitCount' && trig.count === 5) ||
-        (trig.kind === 'shotFired' && block.everyN === 5),
+        (trig.kind === 'shotFired' && block.everyN === 5)
     ).toBe(true);
     // nearest-wrong: an ungated rider that fires all fight instead of only inside her 10s swap.
     expect(block.swapGate).toBe('swapped');
@@ -277,9 +339,12 @@ describe('skill1 — Fervor: Cooldown of Burst Skill down 20 sec, self, continuo
   });
 
   it('is not inert: her 40 sec base cooldown is genuinely shortened', () => {
-    expect(castsIn(base.events)).toBeGreaterThanOrEqual(castsIn(noFervor.events));
+    expect(castsIn(base.events)).toBeGreaterThanOrEqual(
+      castsIn(noFervor.events)
+    );
     expect(
-      castsIn(base.events) > castsIn(noFervor.events) || team(base.tot) > team(noFervor.tot),
+      castsIn(base.events) > castsIn(noFervor.events) ||
+        team(base.tot) > team(noFervor.tot)
     ).toBe(true);
   });
 });
@@ -297,11 +362,12 @@ describe('skill2 — entering Full Burst while in Fervor: all allies Burst CD do
 
   it('accelerates the team rotation', () => {
     expect(kindCount(base.events, 'fullBurstStart')).toBeGreaterThanOrEqual(
-      kindCount(noFbCdr.events, 'fullBurstStart'),
+      kindCount(noFbCdr.events, 'fullBurstStart')
     );
     expect(
-      kindCount(base.events, 'fullBurstStart') > kindCount(noFbCdr.events, 'fullBurstStart') ||
-        team(base.tot) > team(noFbCdr.tot),
+      kindCount(base.events, 'fullBurstStart') >
+        kindCount(noFbCdr.events, 'fullBurstStart') ||
+        team(base.tot) > team(noFbCdr.tot)
     ).toBe(true);
   });
 });

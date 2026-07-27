@@ -52,13 +52,17 @@ const near = (a: unknown, b: number, tol = 1e-6) =>
 
 const blocksOf = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 const allBlocks = (ov: any): Array<{ b: any; slot: Slot }> =>
-  SLOTS.flatMap((s) => blocksOf(ov, s).map((b: any) => ({ b, slot: (b.slot ?? s) as Slot })));
+  SLOTS.flatMap((s) =>
+    blocksOf(ov, s).map((b: any) => ({ b, slot: (b.slot ?? s) as Slot }))
+  );
 const allEffects = (ov: any): Array<{ e: any; b: any; slot: Slot }> =>
-  allBlocks(ov).flatMap(({ b, slot }) => (b.effects ?? []).map((e: any) => ({ e, b, slot })));
+  allBlocks(ov).flatMap(({ b, slot }) =>
+    (b.effects ?? []).map((e: any) => ({ e, b, slot }))
+  );
 
 const OV: any = withPatchedOverride(SLUG, () => {});
 const BLOCKS = allBlocks(OV);
@@ -70,12 +74,13 @@ const blocksWith = (pred: (e: any) => boolean) =>
 const patchEffects = (pred: (e: any) => boolean, mutate: (e: any) => void) =>
   withPatchedOverride(SLUG, (ov: any) => {
     for (const slot of SLOTS)
-      for (const b of blocksOf(ov, slot))
-        for (const e of b.effects ?? []) if (pred(e)) mutate(e);
+      {for (const b of blocksOf(ov, slot))
+        {for (const e of b.effects ?? []) {if (pred(e)) {mutate(e);}}}}
   });
 const patchBlocks = (pred: (b: any) => boolean, mutate: (b: any) => void) =>
   withPatchedOverride(SLUG, (ov: any) => {
-    for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) if (pred(b)) mutate(b);
+    for (const slot of SLOTS)
+      {for (const b of blocksOf(ov, slot)) {if (pred(b)) {mutate(b);}}}
   });
 
 function run(patched?: any, sink?: SimEvent[]) {
@@ -87,7 +92,7 @@ function run(patched?: any, sink?: SimEvent[]) {
     cfg.onEvent = onEvent;
     o.onEvent = onEvent; // belt-and-braces: onEvent lives on cfg, mirrored top-level
   }
-  if (patched) o.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  if (patched) {o.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
   return runComp(o);
 }
 
@@ -98,32 +103,70 @@ const BASE_T = totals(BASE);
 const COMP_SLUGS = Object.keys(BASE_T);
 
 const NO_T1 = totals(
-  run(patchEffects((e) => e.stat === 'casterAtkPct' && near(e.value, 16.2), (e) => { e.value = 0; })),
+  run(
+    patchEffects(
+      (e) => e.stat === 'casterAtkPct' && near(e.value, 16.2),
+      (e) => {
+        e.value = 0;
+      }
+    )
+  )
 );
 const T1_ALL_EV: SimEvent[] = [];
 const T1_ALL = totals(
   run(
     patchBlocks(
       (b) => (b.effects ?? []).some((e: any) => e.stat === 'casterAtkPct'),
-      (b) => { b.target = { kind: 'allies' }; },
+      (b) => {
+        b.target = { kind: 'allies' };
+      }
     ),
-    T1_ALL_EV,
-  ),
+    T1_ALL_EV
+  )
 );
 const NO_T2 = totals(
-  run(patchEffects((e) => e.stat === 'elemAdvantageDamagePct', (e) => { e.value = 0; })),
+  run(
+    patchEffects(
+      (e) => e.stat === 'elemAdvantageDamagePct',
+      (e) => {
+        e.value = 0;
+      }
+    )
+  )
 );
 const NO_B40 = totals(
-  run(patchEffects((e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 40), (e) => { e.value = 0; })),
+  run(
+    patchEffects(
+      (e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 40),
+      (e) => {
+        e.value = 0;
+      }
+    )
+  )
 );
 const NO_NUKE = totals(
-  run(patchEffects((e) => e.kind === 'flatDamage' && near(e.atkPct, 1100), (e) => { e.atkPct = 0; })),
+  run(
+    patchEffects(
+      (e) => e.kind === 'flatDamage' && near(e.atkPct, 1100),
+      (e) => {
+        e.atkPct = 0;
+      }
+    )
+  )
 );
 const NO_B800 = totals(
-  run(patchEffects((e) => e.kind === 'flatDamage' && near(e.atkPct, 800), (e) => { e.atkPct = 0; })),
+  run(
+    patchEffects(
+      (e) => e.kind === 'flatDamage' && near(e.atkPct, 800),
+      (e) => {
+        e.atkPct = 0;
+      }
+    )
+  )
 );
 
-const changed = (t: Record<string, number>) => COMP_SLUGS.filter((s) => t[s] !== BASE_T[s]);
+const changed = (t: Record<string, number>) =>
+  COMP_SLUGS.filter((s) => t[s] !== BASE_T[s]);
 const unchangedExcept = (t: Record<string, number>, keep: string[]) =>
   COMP_SLUGS.filter((s) => !keep.includes(s)).every((s) => t[s] === BASE_T[s]);
 
@@ -131,7 +174,10 @@ const unchangedExcept = (t: Record<string, number>, keep: string[]) =>
 const ELEGG_IDX: number | undefined = (() => {
   const ev: any = EV.find(
     (x: any) =>
-      x.kind === 'buffApply' && x.targetSlug === SLUG && x.casterIdx != null && x.casterIdx === x.targetIdx,
+      x.kind === 'buffApply' &&
+      x.targetSlug === SLUG &&
+      x.casterIdx != null &&
+      x.casterIdx === x.targetIdx
   );
   return ev?.casterIdx;
 })();
@@ -139,8 +185,12 @@ const actorOf = (ev: any): string | undefined =>
   ev.slug ?? ev.unit ?? ev.unitSlug ?? ev.casterSlug ?? ev.srcSlug;
 const byElegg = (ev: any) =>
   actorOf(ev) === SLUG ||
-  (ELEGG_IDX != null && (ev.idx === ELEGG_IDX || ev.unitIdx === ELEGG_IDX || ev.casterIdx === ELEGG_IDX));
-const kind = (k: string, src: SimEvent[] = EV) => src.filter((e: any) => e.kind === k);
+  (ELEGG_IDX != null &&
+    (ev.idx === ELEGG_IDX ||
+      ev.unitIdx === ELEGG_IDX ||
+      ev.casterIdx === ELEGG_IDX));
+const kind = (k: string, src: SimEvent[] = EV) =>
+  src.filter((e: any) => e.kind === k);
 
 describe('elegg-boom-and-shock — harness sanity (guards every event-level claim below)', () => {
   it('the fixture runs, emits events, and elegg is identifiable in them', () => {
@@ -157,14 +207,31 @@ describe('S1b tier-1 — "ATK ▲16.2% of the skill user\'s ATK" to all Water Co
   it('is CASTER-scaled (casterAtkPct 16.2), not a target-scaling atkPct', () => {
     // Nearest-wrong: atkPct 16.2 (scales each ally\'s OWN ATK) or highestAllyAtkPct — different
     // magnitude on every teammate whose base ATK differs from elegg\'s.
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'casterAtkPct' && near(e.value, 16.2)).length).toBeGreaterThan(0);
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 16.2))).toHaveLength(0);
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'highestAllyAtkPct' && near(e.value, 16.2))).toHaveLength(0);
+    expect(
+      fx(
+        (e) =>
+          e.kind === 'buff' && e.stat === 'casterAtkPct' && near(e.value, 16.2)
+      ).length
+    ).toBeGreaterThan(0);
+    expect(
+      fx((e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 16.2))
+    ).toHaveLength(0);
+    expect(
+      fx(
+        (e) =>
+          e.kind === 'buff' &&
+          e.stat === 'highestAllyAtkPct' &&
+          near(e.value, 16.2)
+      )
+    ).toHaveLength(0);
   });
 
   it('is ELEMENT-scoped: lands on a proper subset of the comp, including elegg herself', () => {
     const applies = EV.filter(
-      (e: any) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.casterIdx === ELEGG_IDX,
+      (e: any) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'casterAtkPct' &&
+        e.casterIdx === ELEGG_IDX
     );
     expect(applies.length).toBeGreaterThan(0);
     const targets = new Set(applies.map((e: any) => e.targetSlug));
@@ -175,13 +242,19 @@ describe('S1b tier-1 — "ATK ▲16.2% of the skill user\'s ATK" to all Water Co
 
   it('the element scope is load-bearing: widening it to {kind:allies} adds targets and moves damage', () => {
     const wideApplies = T1_ALL_EV.filter(
-      (e: any) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.casterIdx === ELEGG_IDX,
+      (e: any) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'casterAtkPct' &&
+        e.casterIdx === ELEGG_IDX
     );
     const wide = new Set(wideApplies.map((e: any) => e.targetSlug));
     const baseTargets = new Set(
-      EV.filter((e: any) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.casterIdx === ELEGG_IDX).map(
-        (e: any) => e.targetSlug,
-      ),
+      EV.filter(
+        (e: any) =>
+          e.kind === 'buffApply' &&
+          e.stat === 'casterAtkPct' &&
+          e.casterIdx === ELEGG_IDX
+      ).map((e: any) => e.targetSlug)
     );
     expect(wide.size).toBeGreaterThan(baseTargets.size);
     expect(changed(T1_ALL).length).toBeGreaterThan(0);
@@ -197,10 +270,29 @@ describe('S1b tier-1 — "ATK ▲16.2% of the skill user\'s ATK" to all Water Co
 
 describe('S1b tier-2 — "Elemental Advantage Attack Damage ▲35%" at >=4 ghosts', () => {
   it('uses the advantage-gated stat, not a generic element/attack damage stat', () => {
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'elemAdvantageDamagePct' && near(e.value, 35)).length).toBeGreaterThan(0);
+    expect(
+      fx(
+        (e) =>
+          e.kind === 'buff' &&
+          e.stat === 'elemAdvantageDamagePct' &&
+          near(e.value, 35)
+      ).length
+    ).toBeGreaterThan(0);
     // Nearest-wrong: elementDamagePct/attackDamagePct 35 pays out with NO advantage requirement.
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'elementDamagePct' && near(e.value, 35))).toHaveLength(0);
-    expect(fx((e) => e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 35))).toHaveLength(0);
+    expect(
+      fx(
+        (e) =>
+          e.kind === 'buff' &&
+          e.stat === 'elementDamagePct' &&
+          near(e.value, 35)
+      )
+    ).toHaveLength(0);
+    expect(
+      fx(
+        (e) =>
+          e.kind === 'buff' && e.stat === 'attackDamagePct' && near(e.value, 35)
+      )
+    ).toHaveLength(0);
   });
 
   it('is non-vacuous on this fixture (Water carry vs Fire boss) and is live', () => {
@@ -208,7 +300,9 @@ describe('S1b tier-2 — "Elemental Advantage Attack Damage ▲35%" at >=4 ghost
   });
 
   it('carries the same Water-ally scope as tier-1 (one "Affects all Water Code allies" header)', () => {
-    const t1 = blocksWith((e) => e.stat === 'casterAtkPct' && near(e.value, 16.2));
+    const t1 = blocksWith(
+      (e) => e.stat === 'casterAtkPct' && near(e.value, 16.2)
+    );
     const t2 = blocksWith((e) => e.stat === 'elemAdvantageDamagePct');
     expect(t1.length).toBeGreaterThan(0);
     expect(t2.length).toBeGreaterThan(0);
@@ -225,7 +319,7 @@ describe('S1b tier-2 — "Elemental Advantage Attack Damage ▲35%" at >=4 ghost
         b.resourceGate != null ||
         b.everyN != null ||
         b.trigger?.kind !== 'passive' ||
-        (b.effects ?? []).some((e: any) => e.rampSec != null),
+        (b.effects ?? []).some((e: any) => e.rampSec != null)
     );
     expect(ok).toBe(true);
   });
@@ -233,18 +327,24 @@ describe('S1b tier-2 — "Elemental Advantage Attack Damage ▲35%" at >=4 ghost
 
 describe('S2a — "Activates when using Burst Skill. Affects self. ATK ▲40% for 10 sec."', () => {
   it('is authored as a 10-SECOND self atkPct 40 (seconds, not rounds)', () => {
-    const hit = fx((e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 40));
+    const hit = fx(
+      (e) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 40)
+    );
     expect(hit.length).toBeGreaterThan(0);
     expect(hit.some(({ e }) => near(e.durationSec, 10))).toBe(true);
     expect(hit.every(({ e }) => e.durationShots == null)).toBe(true);
     expect(hit.every(({ b }) => b.target?.kind === 'self')).toBe(true);
   });
 
-  it('fires on elegg\'s OWN burst cast, not on every team Full Burst', () => {
+  it("fires on elegg's OWN burst cast, not on every team Full Burst", () => {
     const eleggBursts = kind('burstCast').filter(byElegg);
     const fbStarts = kind('fullBurstStart');
     const applied = EV.filter(
-      (e: any) => e.kind === 'buffApply' && e.stat === 'atkPct' && near(e.value, 40) && e.targetSlug === SLUG,
+      (e: any) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'atkPct' &&
+        near(e.value, 40) &&
+        e.targetSlug === SLUG
     );
     expect(eleggBursts.length).toBeGreaterThan(1);
     // Fixture non-vacuity: with two B3s + a 40s CD there MUST be Full Bursts elegg did not cast,
@@ -263,7 +363,9 @@ describe('S2a — "Activates when using Burst Skill. Affects self. ATK ▲40% fo
 
 describe('S2b — "when a ghost is captured while at maximum ghost capacity": 1100% of final ATK', () => {
   it('is modeled as a 1100% flat hit', () => {
-    expect(fx((e) => e.kind === 'flatDamage' && near(e.atkPct, 1100)).length).toBeGreaterThan(0);
+    expect(
+      fx((e) => e.kind === 'flatDamage' && near(e.atkPct, 1100)).length
+    ).toBeGreaterThan(0);
   });
 
   it('actually fires in a 180s fight (the at-cap condition is reachable) and is elegg-only', () => {
@@ -273,30 +375,44 @@ describe('S2b — "when a ghost is captured while at maximum ghost capacity": 11
   });
 
   it('is gated on being AT capacity, not on every capture', () => {
-    const nuke = blocksWith((e) => e.kind === 'flatDamage' && near(e.atkPct, 1100));
+    const nuke = blocksWith(
+      (e) => e.kind === 'flatDamage' && near(e.atkPct, 1100)
+    );
     expect(nuke.length).toBeGreaterThan(0);
     // Faithful gate: a resource floor at the 13 cap (or an explicit trigger that can only fire at cap).
     const gated = nuke.every(
-      ({ b }: any) => (b.resourceGate?.min ?? 0) >= 13 || b.mode != null || b.everyN != null,
+      ({ b }: any) =>
+        (b.resourceGate?.min ?? 0) >= 13 || b.mode != null || b.everyN != null
     );
     expect(gated).toBe(true);
   });
 });
 
 describe('burst — two ghost-count branches of 800% sequential hits', () => {
-  const burstRiders = EFFECTS.filter(({ e, slot }) => slot === 'burst' && e.kind === 'flatDamage');
+  const burstRiders = EFFECTS.filter(
+    ({ e, slot }) => slot === 'burst' && e.kind === 'flatDamage'
+  );
 
   it('each hit is 800% and sequential-flavored — hits are NOT merged into one big number', () => {
     const eight = burstRiders.filter(({ e }) => near(e.atkPct, 800));
     expect(eight.length).toBeGreaterThanOrEqual(6);
     expect(eight.every(({ e }) => e.flavor === 'sequential')).toBe(true);
     // Nearest-wrong: one 4800%/10400% lump (loses per-hit crit rolls).
-    expect(burstRiders.filter(({ e }) => near(e.atkPct, 4800) || near(e.atkPct, 10400))).toHaveLength(0);
+    expect(
+      burstRiders.filter(
+        ({ e }) => near(e.atkPct, 4800) || near(e.atkPct, 10400)
+      )
+    ).toHaveLength(0);
   });
 
   it('BOTH branches exist: a 6-hit block (ghosts != 13) and a 13-hit block (ghosts == 13)', () => {
     const counts = BLOCKS.filter(({ slot }) => slot === 'burst')
-      .map(({ b }) => (b.effects ?? []).filter((e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)).length)
+      .map(
+        ({ b }) =>
+          (b.effects ?? []).filter(
+            (e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)
+          ).length
+      )
       .filter((n) => n > 0);
     expect(counts).toContain(6);
     expect(counts).toContain(13);
@@ -306,12 +422,16 @@ describe('burst — two ghost-count branches of 800% sequential hits', () => {
     const six = BLOCKS.find(
       ({ b, slot }: any) =>
         slot === 'burst' &&
-        (b.effects ?? []).filter((e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)).length === 6,
+        (b.effects ?? []).filter(
+          (e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)
+        ).length === 6
     );
     const thirteen = BLOCKS.find(
       ({ b, slot }: any) =>
         slot === 'burst' &&
-        (b.effects ?? []).filter((e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)).length === 13,
+        (b.effects ?? []).filter(
+          (e: any) => e.kind === 'flatDamage' && near(e.atkPct, 800)
+        ).length === 13
     );
     expect(six && thirteen).toBeTruthy();
     expect((six as any).b.resourceGate?.max).toBeLessThanOrEqual(12);
@@ -324,9 +444,9 @@ describe('burst — two ghost-count branches of 800% sequential hits', () => {
       .flat();
     expect(pools.length).toBeGreaterThan(0);
     expect(pools.some((p: any) => p.max === 13)).toBe(true); // "A maximum of 13 ghost(s)"
-    const spends = EFFECTS.filter(({ e, slot }) => slot === 'burst' && e.kind === 'resource' && e.delta < 0).map(
-      ({ e }) => e.delta,
-    );
+    const spends = EFFECTS.filter(
+      ({ e, slot }) => slot === 'burst' && e.kind === 'resource' && e.delta < 0
+    ).map(({ e }) => e.delta);
     expect(spends).toContain(-6);
     expect(spends).toContain(-9);
   });
@@ -339,19 +459,28 @@ describe('burst — two ghost-count branches of 800% sequential hits', () => {
 
 describe('kit-wide hygiene — nothing invented that the prose does not state', () => {
   it('no rider claims a core strike (no "core" wording anywhere in the kit)', () => {
-    expect(EFFECTS.filter(({ e }) => e.kind === 'flatDamage' && e.core).length).toBe(0);
+    expect(
+      EFFECTS.filter(({ e }) => e.kind === 'flatDamage' && e.core).length
+    ).toBe(0);
     expect(BLOCKS.filter(({ b }) => b.requiresCore).length).toBe(0);
   });
 
   it('no measurement-gated ⚑ knobs are silently switched on (noFb, pierce)', () => {
-    expect(EFFECTS.filter(({ e }) => e.kind === 'flatDamage' && e.noFb === true).length).toBe(0);
+    expect(
+      EFFECTS.filter(({ e }) => e.kind === 'flatDamage' && e.noFb === true)
+        .length
+    ).toBe(0);
     expect(OV.hasPierce).toBeFalsy(); // the kit carries no Pierce line
     expect(EFFECTS.filter(({ e }) => e.kind === 'gainPierce').length).toBe(0);
   });
 
   it('carries no `ignored` effect blocks (validator rule) and declares all three slots', () => {
-    expect(EFFECTS.filter(({ e }) => e.kind === 'ignored' || e.kind === 'unsupported').length).toBe(0);
-    for (const s of SLOTS) expect(Array.isArray(blocksOf(OV, s))).toBe(true);
+    expect(
+      EFFECTS.filter(
+        ({ e }) => e.kind === 'ignored' || e.kind === 'unsupported'
+      ).length
+    ).toBe(0);
+    for (const s of SLOTS) {expect(Array.isArray(blocksOf(OV, s))).toBe(true);}
   });
 });
 

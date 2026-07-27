@@ -1,4 +1,10 @@
-import type { BaseStats, GearLevel, LevelMultiplier, NikkeClass, Weapon } from './types.js';
+import type {
+  BaseStats,
+  GearLevel,
+  LevelMultiplier,
+  NikkeClass,
+  Weapon,
+} from './types.js';
 
 // Direct port of ShiftyPad's stat formula (see base-stats-handoff.md).
 // grade = Limit Breaks 0-3, core = Core enhancement 0-7+. ATK is exact; DEF/HP ~0.5%.
@@ -10,16 +16,25 @@ export function characterStat(
   grade: number,
   core: number
 ): number {
-  const curve = type === 'atk' ? mult.attack : type === 'hp' ? mult.hp : mult.def;
-  if (level < 1 || level > curve.length) throw new Error(`level ${level} out of range 1-${curve.length}`);
+  const curve =
+    type === 'atk' ? mult.attack : type === 'hp' ? mult.hp : mult.def;
+  if (level < 1 || level > curve.length)
+    {throw new Error(`level ${level} out of range 1-${curve.length}`);}
   const base = Math.floor(
-    bs[type] * curve[level - 1] * (1 + (grade * bs.grade.ratio) / 1e4) + grade * bs.grade[type]
+    bs[type] * curve[level - 1] * (1 + (grade * bs.grade.ratio) / 1e4) +
+      grade * bs.grade[type]
   );
   return Math.round(base * (1 + (core * bs.core[type]) / 1e4));
 }
 
-export function copiesToGradeCore(copies: number): { grade: number; core: number } {
-  return { grade: Math.min(copies, 3), core: Math.max(0, Math.min(copies - 3, 7)) };
+export function copiesToGradeCore(copies: number): {
+  grade: number;
+  core: number;
+} {
+  return {
+    grade: Math.min(copies, 3),
+    core: Math.max(0, Math.min(copies - 3, 7)),
+  };
 }
 
 // Gear set, per class. Three levels (see gear_doll.md, ATK pieces summed):
@@ -28,9 +43,21 @@ export function copiesToGradeCore(copies: number): { grade: number; core: number
 //             sim previously used OL0 here, a ~1.8% ATK over-count that poisoned grades).
 //   0 / 5   — Full T10 overload set at OL level 0 / 5.
 const GEAR_ATK: Record<NikkeClass, Record<GearLevel, number>> = {
-  Defender: { base5: 3234 + 2057 + 588, 0: 4010 + 2551 + 729, 5: 6015 + 3827 + 1093 },   // 5879 / 7290 / 10935
-  Attacker: { base5: 4849 + 3087 + 882, 0: 6014 + 3827 + 1093, 5: 9021 + 5741 + 1639 },  // 8818 / 10934 / 16401
-  Supporter: { base5: 4041 + 2573 + 735, 0: 5012 + 3189 + 911, 5: 7518 + 4783 + 1367 },  // 7349 / 9112 / 13668
+  Defender: {
+    base5: 3234 + 2057 + 588,
+    0: 4010 + 2551 + 729,
+    5: 6015 + 3827 + 1093,
+  }, // 5879 / 7290 / 10935
+  Attacker: {
+    base5: 4849 + 3087 + 882,
+    0: 6014 + 3827 + 1093,
+    5: 9021 + 5741 + 1639,
+  }, // 8818 / 10934 / 16401
+  Supporter: {
+    base5: 4041 + 2573 + 735,
+    0: 5012 + 3189 + 911,
+    5: 7518 + 4783 + 1367,
+  }, // 7349 / 9112 / 13668
 };
 
 export function gearAtk(cls: NikkeClass, ol: GearLevel): number {
@@ -39,9 +66,21 @@ export function gearAtk(cls: NikkeClass, ol: GearLevel): number {
 
 // Gear set HP (3 HP pieces summed) by class + level — from gear_doll.md.
 const GEAR_HP: Record<NikkeClass, Record<GearLevel, number>> = {
-  Defender: { base5: 48477 + 157548 + 36358, 0: 60111 + 195360 + 45084, 5: 90167 + 293040 + 67626 },
-  Attacker: { base5: 39663 + 29748 + 128905, 0: 49181 + 159840 + 36887, 5: 73771 + 239760 + 55331 },
-  Supporter: { base5: 44070 + 33053 + 143227, 0: 54646 + 177600 + 40985, 5: 81969 + 266400 + 61477 },
+  Defender: {
+    base5: 48477 + 157548 + 36358,
+    0: 60111 + 195360 + 45084,
+    5: 90167 + 293040 + 67626,
+  },
+  Attacker: {
+    base5: 39663 + 29748 + 128905,
+    0: 49181 + 159840 + 36887,
+    5: 73771 + 239760 + 55331,
+  },
+  Supporter: {
+    base5: 44070 + 33053 + 143227,
+    0: 54646 + 177600 + 40985,
+    5: 81969 + 266400 + 61477,
+  },
 };
 
 export function gearHp(cls: NikkeClass, ol: GearLevel): number {
@@ -98,21 +137,30 @@ const DOLL_CHECKPOINTS: Record<DollRarity, Record<number, Stat>> = {
     15: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 }, // == 301800 / 9688 / 2058
   },
   // SSR live levels 0-2 all == SR 15 (owner-stated); model every level as SR 15.
-  SSR: { 0: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 }, 15: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 } },
+  SSR: {
+    0: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 },
+    15: { hp: DOLL_HP, atk: DOLL_ATK, def: 2058 },
+  },
 };
 
 // Piecewise-linear interpolate a measured-checkpoint map at an integer level 0-15.
 function interpCheckpoints(cp: Record<number, Stat>, level: number): Stat {
   const lv = Math.max(0, Math.min(15, Math.round(level)));
-  if (cp[lv]) return cp[lv];
-  const keys = Object.keys(cp).map(Number).sort((a, b) => a - b);
+  if (cp[lv]) {return cp[lv];}
+  const keys = Object.keys(cp)
+    .map(Number)
+    .sort((a, b) => a - b);
   let lo = keys[0];
   let hi = keys[keys.length - 1];
   for (let i = 0; i < keys.length - 1; i++) {
-    if (keys[i] <= lv && lv <= keys[i + 1]) { lo = keys[i]; hi = keys[i + 1]; break; }
+    if (keys[i] <= lv && lv <= keys[i + 1]) {
+      lo = keys[i];
+      hi = keys[i + 1];
+      break;
+    }
   }
-  if (lv <= lo) return cp[lo];
-  if (lv >= hi) return cp[hi];
+  if (lv <= lo) {return cp[lo];}
+  if (lv >= hi) {return cp[hi];}
   const f = (lv - lo) / (hi - lo);
   const a = cp[lo];
   const b = cp[hi];
@@ -136,8 +184,14 @@ export function dollStats(rarity: DollRarity, level: number): Stat {
 // NOTE (owner follow-up): the SR-class DOLL_BONUS carries an extra maxAmmoPct 9.5
 // line that the measured table does NOT list for the SR weapon — preserved here
 // for SSR only; R/SR SR-weapon dolls get just the charge-damage "weapon modifier".
-type BonusField = 'coreDamagePct' | 'normalAttackPct' | 'chargeDamagePct' | 'maxAmmoPct';
-const DOLL_BONUS_RANGE: Partial<Record<Weapon, { field: BonusField; R: [number, number]; SR: [number, number] }>> = {
+type BonusField =
+  'coreDamagePct' | 'normalAttackPct' | 'chargeDamagePct' | 'maxAmmoPct';
+const DOLL_BONUS_RANGE: Partial<
+  Record<
+    Weapon,
+    { field: BonusField; R: [number, number]; SR: [number, number] }
+  >
+> = {
   AR: { field: 'coreDamagePct', R: [5.67, 12.49], SR: [10.22, 17.04] },
   SMG: { field: 'normalAttackPct', R: [1.57, 6.3], SR: [4.74, 9.47] },
   SG: { field: 'normalAttackPct', R: [1.57, 6.3], SR: [4.74, 9.47] },
@@ -148,10 +202,14 @@ const DOLL_BONUS_RANGE: Partial<Record<Weapon, { field: BonusField; R: [number, 
 
 // The doll's weapon "collection effect" (core/normal/charge/ammo multipliers).
 // SSR = the fixed max bonus; R/SR scale their single "weapon modifier" by level.
-export function dollWeaponBonus(rarity: DollRarity, weapon: Weapon, level = 15): DollBonus {
-  if (rarity === 'SSR') return DOLL_BONUS[weapon];
+export function dollWeaponBonus(
+  rarity: DollRarity,
+  weapon: Weapon,
+  level = 15
+): DollBonus {
+  if (rarity === 'SSR') {return DOLL_BONUS[weapon];}
   const rng = DOLL_BONUS_RANGE[weapon];
-  if (!rng) return {};
+  if (!rng) {return {};}
   const [lo, hi] = rng[rarity];
   const lv = Math.max(0, Math.min(15, Math.round(level)));
   const val = Math.round((lo + (hi - lo) * (lv / 15)) * 100) / 100;

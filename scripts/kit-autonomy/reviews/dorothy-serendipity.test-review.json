@@ -185,9 +185,7 @@
     "burst:pellets ▲5 15s"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Expands Pierce range by 200% for 3 round(s)."
-    ],
+    "skill1": ["Expands Pierce range by 200% for 3 round(s)."],
     "skill2": [],
     "burst": []
   },

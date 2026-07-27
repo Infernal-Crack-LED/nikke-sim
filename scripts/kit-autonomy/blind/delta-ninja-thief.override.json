@@ -1,9 +1,6 @@
 {
   "slug": "delta-ninja-thief",
-  "modes": [
-    "soloDefender",
-    "withDefender"
-  ],
+  "modes": ["soloDefender", "withDefender"],
   "skill1": [
     {
       "slot": "skill1",

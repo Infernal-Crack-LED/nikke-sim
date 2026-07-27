@@ -178,9 +178,7 @@
       "Combat Assist: Changes to Burst Stage 1. This effect is continuous.",
       "Cancels Combat Assist."
     ],
-    "skill2": [
-      "Max Ammunition Capacity: 1 round(s)."
-    ],
+    "skill2": ["Max Ammunition Capacity: 1 round(s)."],
     "burst": [
       "Explosion Radius ▲ 100.62% for 10 sec. (Stage 1)",
       "Explosion Radius ▲ 100.62% for 10 sec. (Stage 3)",

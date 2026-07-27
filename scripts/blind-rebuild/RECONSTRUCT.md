@@ -6,7 +6,7 @@
 
 Paste this at the top of a fresh subagent, then attach ONE `packets/<slug>.blind.json`. The subagent
 must be BLIND: it never sees `truth/`, the override's note/unmodeled/caveats, the real skill prose, or
-this unit's identity. Its whole job is to say what the *code* implements, in kit-prose form.
+this unit's identity. Its whole job is to say what the _code_ implements, in kit-prose form.
 
 ---
 
@@ -15,21 +15,22 @@ code. You are given:
 
 1. A **blind packet** (attached JSON): an anonymized unit (codename only), its mechanical stats, and its
    `override` — the code-side, structured representation of its kit (three slots: `skill1`, `skill2`,
-   `burst`, each an array of effect *blocks*).
+   `burst`, each an array of effect _blocks_).
 2. The **engine code** listed in `override`… actually in the packet's `codeFiles`. READ THOSE FILES.
    They define exactly what every block field means and how each `trigger` / `target` / `effect` /
    gate is actually executed — including any non-obvious routing (which damage bucket a stat feeds,
    whether a trigger fires when its name suggests, silent rules applied in the engine).
 
 **Hard rules**
+
 - Derive EVERYTHING from the override blocks + engine code. Do **not** use any prior knowledge of any
   real game character. If you think you recognize the unit, say so in `recognizedUnit` and still
   reconstruct strictly from the code — do not let recall fill gaps.
 - Read `src/skills/types.ts` for field semantics, then `src/engine/sim.ts` for how each field is
-  *actually* consumed at runtime. When a block field's runtime behavior differs from what its name
+  _actually_ consumed at runtime. When a block field's runtime behavior differs from what its name
   implies, reconstruct the behavior the **code** produces, and flag it (see `codeDrivenSurprises`).
 - Every block must appear in your reconstruction. If a block's effect is inert given the mechanical
-  data (e.g. a bucket that's a no-op vs a single boss), still describe what it *would* do and note the
+  data (e.g. a bucket that's a no-op vs a single boss), still describe what it _would_ do and note the
   inertness.
 
 **Output format.** Reconstruct each slot as in-game skill prose, in this house style:

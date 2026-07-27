@@ -21,7 +21,7 @@ and re-ran both test suites green, flipping NO-GO → GO. This doc records that 
 - the burst text labels the beam "**Normal Damage**: 22.2%", contrasting with the base weapon's
   "Full Charge" attacks that S2a keys on;
 - the driver's inclusion rationale was **circular** — it cited its own kit-silent `chargeTimeSec
-  0.25` ⚑ as proof the beam "full-charges";
+0.25` ⚑ as proof the beam "full-charges";
 - the scope is load-bearing: probe shows **-38.1%** of laplace's total (466.8M → 289.1M) if flipped.
 
 **Fix applied:** added `swapGate:"unswapped"` to the skill2 block. The 132.45% rider now fires only

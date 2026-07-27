@@ -13,11 +13,36 @@
   "damage_screen": {
     "total_battle_time": "03:00",
     "units": [
-      {"slot": "I",   "name": "Little Mermaid", "lv": 400, "atk_battle_records": 90415, "damage": 470516754},
-      {"slot": "II",  "name": "Crown",          "lv": 400, "atk_battle_records": 88898, "damage": 213881837},
-      {"slot": "III", "name": "Rapi: Red Hood", "lv": 400, "atk_battle_records": 90870, "damage": 899555690, "focus": true},
-      {"slot": "IV",  "name": "Helm",           "lv": 400, "atk_battle_records": 90315, "damage": 477724348},
-      {"slot": "V",   "name": "EMPTY SLOT",     "damage": 0}
+      {
+        "slot": "I",
+        "name": "Little Mermaid",
+        "lv": 400,
+        "atk_battle_records": 90415,
+        "damage": 470516754
+      },
+      {
+        "slot": "II",
+        "name": "Crown",
+        "lv": 400,
+        "atk_battle_records": 88898,
+        "damage": 213881837
+      },
+      {
+        "slot": "III",
+        "name": "Rapi: Red Hood",
+        "lv": 400,
+        "atk_battle_records": 90870,
+        "damage": 899555690,
+        "focus": true
+      },
+      {
+        "slot": "IV",
+        "name": "Helm",
+        "lv": 400,
+        "atk_battle_records": 90315,
+        "damage": 477724348
+      },
+      { "slot": "V", "name": "EMPTY SLOT", "damage": 0 }
     ],
     "team_total": 2061678629,
     "team_total_check": "470516754+213881837+899555690+477724348 = 2061678629 (matches OPERATION CLEAR + final in-fight counter exactly)",
@@ -34,7 +59,10 @@
   "full_bursts": {
     "method": "yellow FULL-BURST-splash luminance/color spike detection on 8fps 16x16 RGB timeseries, verified by reading 'FULL BURST!' banner at t=43.75 and t=72.1",
     "count": 13,
-    "splash_peak_times_s": [14.12, 28.00, 43.75, 58.00, 72.12, 86.00, 99.50, 113.62, 127.25, 141.25, 155.25, 171.00, 185.12],
+    "splash_peak_times_s": [
+      14.12, 28.0, 43.75, 58.0, 72.12, 86.0, 99.5, 113.62, 127.25, 141.25,
+      155.25, 171.0, 185.12
+    ],
     "interval_s_avg": 14.25,
     "interval_note": "very regular ~14s cadence; no intermediate/irregular splashes found at lowered threshold, so 13 is believed complete"
   },
@@ -53,8 +81,18 @@
   },
   "explosion_popups": {
     "large_bodies_seen_at_fb_start": [
-      {"fb": "FB1 ~t15.0", "value_read": 2319690, "color": "white/plain", "note": "at reticle center inside a red radial explosion effect"},
-      {"fb": "FB6 ~t86.1", "value_read": 1493759, "color": "white/plain", "note": "top of an overlapping stacked cluster"}
+      {
+        "fb": "FB1 ~t15.0",
+        "value_read": 2319690,
+        "color": "white/plain",
+        "note": "at reticle center inside a red radial explosion effect"
+      },
+      {
+        "fb": "FB6 ~t86.1",
+        "value_read": 1493759,
+        "color": "white/plain",
+        "note": "top of an overlapping stacked cluster"
+      }
     ],
     "value_estimate": "explosion-class bodies ~1.5-2.3M observed (below owner's ~4.5M expectation; likely partial reads / DEF-reduced / single-instance vs batch ambiguity)",
     "core_fraction": "UNRESOLVED. The confidently RED 'CORE HIT'-labeled popups were the NORMAL shots, not the big explosion bodies (which read white/plain in the frames captured). Cannot confirm nor deny that explosions core from this footage.",

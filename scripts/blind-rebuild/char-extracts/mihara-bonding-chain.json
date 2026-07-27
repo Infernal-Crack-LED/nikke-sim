@@ -19,11 +19,7 @@
     "rl3": 4.95,
     "burstGaugePerShot": 0.05,
     "treasure": false,
-    "nicknames": [
-      "mbc",
-      "miharabc",
-      "mihara os"
-    ],
+    "nicknames": ["mbc", "miharabc", "mihara os"],
     "skills": {
       "skill1": "■ Activates at the start of battle. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Activates when Full Burst ends if this unit has just used her Burst Skill. Affects self.\nCharges Restraint Chains by 10, up to 10.\n■ Affects random enemy units at a specific timing.\nDeals 50.06% of final ATK as damage. Attacks once for every Restraint Chain. Restraint Chain ▼ 1 for each attack.\n■ Affects the same enemy units.\nEnsnaring Chains: Deals 25.08% final ATK as sustained damage every 1 sec continuously, stacks up to 20 time(s). This effect cannot be removed.",
       "skill2": "■ Activates after landing 40 normal attacks during Full Burst on a target in the Ensnaring Chains state. Affects the target.\nEnsnaring Chains stacks ▲ 1.\n■ Activates when the skill user is incapacitated. Affects targets in the Ensnaring Chains state.\nEnsnaring Chains stacks ▲ 20.\n■ Activates when an enemy is neutralized while in the Ensnaring Chains state. Affects self.\nRestraint Chain ▲ 1, up to 10.\n■ Activates when entering Burst Stage 3. Affects self.\nSustained Damage ▲ 59.98% for 10 sec.",
@@ -73,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 150,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 7,
           "prefer_target_condition": "None",
@@ -327,16 +319,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects targets in Ensnaring Chains status.\n<color=#00AEFF>Dragging Chain: Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as sustained damage every 1 sec. <word_group=10026>Mirrors the stack count</word_group> of Ensnaring Chains on each target for {description_value_04} sec. This effect cannot be removed.\n<word_group=10101>Cancels</word_group> Ensnaring Chains after the effect is triggered.</color>",
           "description_value_list": [
@@ -380,19 +363,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            116230102,
-            116230103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [116230102, 116230103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -417,9 +391,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,
@@ -450,9 +422,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Mihara: Bonding Chain's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

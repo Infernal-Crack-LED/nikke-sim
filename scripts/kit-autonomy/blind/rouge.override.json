@@ -201,9 +201,7 @@
   ],
   "unmodeled": {
     "skill1": [],
-    "skill2": [
-      "Shield Coin: Damage Taken ▼15.2% continuously."
-    ],
+    "skill2": ["Shield Coin: Damage Taken ▼15.2% continuously."],
     "burst": []
   },
   "caveats": [

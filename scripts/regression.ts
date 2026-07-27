@@ -15,7 +15,12 @@
 //   npx tsx scripts/regression.ts            # assert
 //   npx tsx scripts/regression.ts --update   # regenerate snapshots
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
-import type { DataFile, LevelMultiplier, SimConfig, Element } from '../src/types.js';
+import type {
+  DataFile,
+  LevelMultiplier,
+  SimConfig,
+  Element,
+} from '../src/types.js';
 import { runSim, MC_SEED_BASE, DEFAULT_MC_SEEDS } from '../src/engine/sim.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import { scopeLockCfg } from './lib/scope-lock.js';
@@ -29,14 +34,29 @@ import {
 import { assembleTeam, type Cell } from '../src/dpschart/matrix.js';
 import { NOOP_CHARACTERS } from '../src/dpschart/noop.js';
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
-const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../data/level-multiplier.json', import.meta.url), 'utf8'));
-const cubes: CubesFile = JSON.parse(readFileSync(new URL('../data/cubes.json', import.meta.url), 'utf8'));
-const olLines: OlLinesFile = JSON.parse(readFileSync(new URL('../data/ol-lines.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
+);
+const mult: LevelMultiplier = JSON.parse(
+  readFileSync(
+    new URL('../data/level-multiplier.json', import.meta.url),
+    'utf8'
+  )
+);
+const cubes: CubesFile = JSON.parse(
+  readFileSync(new URL('../data/cubes.json', import.meta.url), 'utf8')
+);
+const olLines: OlLinesFile = JSON.parse(
+  readFileSync(new URL('../data/ol-lines.json', import.meta.url), 'utf8')
+);
 let skillLevels: SkillLevelData = {};
 try {
-  skillLevels = JSON.parse(readFileSync(new URL('../data/skill-levels.json', import.meta.url), 'utf8'));
-} catch { /* optional */ }
+  skillLevels = JSON.parse(
+    readFileSync(new URL('../data/skill-levels.json', import.meta.url), 'utf8')
+  );
+} catch {
+  /* optional */
+}
 
 interface Comp {
   name: string;
@@ -55,7 +75,8 @@ const COMPS: Comp[] = [
   {
     name: 'elec battery (run B order)',
     slugs: ['moran', 'cinderella', 'neon-vision-eye', 'trina'],
-    boss: 'Water', focus: 'cinderella',
+    boss: 'Water',
+    focus: 'cinderella',
     realFullBursts: 11, // video, docs/probes/u8 + tb2 test 1
   },
   {
@@ -76,19 +97,37 @@ const COMPS: Comp[] = [
   },
   {
     name: 'iron sweep (run G)',
-    slugs: ['d-killer-wife', 'takina', 'milk-blooming-bunny', 'maxwell', 'liberalio'],
+    slugs: [
+      'd-killer-wife',
+      'takina',
+      'milk-blooming-bunny',
+      'maxwell',
+      'liberalio',
+    ],
     boss: 'Electric',
     realFullBursts: [13, 14], // video, docs/probes/u8 g
   },
   {
     name: 'T2 elec-weak',
-    slugs: ['crown', 'neon-vision-eye', 'anis-star', 'cinderella', 'maiden-ice-rose'],
+    slugs: [
+      'crown',
+      'neon-vision-eye',
+      'anis-star',
+      'cinderella',
+      'maiden-ice-rose',
+    ],
     boss: 'Water',
     realFullBursts: 12, // video, probe u7 "12 burst count elec weak" (2026-07-14): 12/12 splash-counted, caster order exact
   },
   {
     name: 'T5 wind-weak',
-    slugs: ['nayuta', 'cinderella-crystal-wave', 'anis-star', 'liberalio', 'velvet'],
+    slugs: [
+      'nayuta',
+      'cinderella-crystal-wave',
+      'anis-star',
+      'liberalio',
+      'velvet',
+    ],
     boss: 'Iron',
     realFullBursts: 13, // video, probe u7 "13 fb count wind weak" (2026-07-14): 13/13 splash-counted, caster order exact
   },
@@ -103,7 +142,13 @@ const COMPS: Comp[] = [
   },
   {
     name: 'T1 wind-weak',
-    slugs: ['mast-romantic-maid', 'scarlet-black-shadow', 'anis-star', 'liberalio', 'crown'],
+    slugs: [
+      'mast-romantic-maid',
+      'scarlet-black-shadow',
+      'anis-star',
+      'liberalio',
+      'crown',
+    ],
     boss: 'Iron',
     realFullBursts: 13, // video, rrh probe "windweak t257 13fb" (2026-07-14): 13/13, casters
     // exact incl. the alternating Burst II (mast odd cycles / crown even). OWNER NOTE
@@ -114,7 +159,13 @@ const COMPS: Comp[] = [
   },
   {
     name: 'PH water B3s',
-    slugs: ['little-mermaid', 'crown', 'quency-escape-queen', 'dorothy-serendipity', 'guillotine-winter-slayer'],
+    slugs: [
+      'little-mermaid',
+      'crown',
+      'quency-escape-queen',
+      'dorothy-serendipity',
+      'guillotine-winter-slayer',
+    ],
     boss: 'Fire',
     // FB UNPINNED 2026-07-17 (SMG cadence 20→24 = datamined ROF, role-audit D.2 owner decision a):
     // measured = 12 (video, rrh probe "water weak vid" 2026-07-14: 12/12 splash-counted, first banner
@@ -126,8 +177,22 @@ const COMPS: Comp[] = [
   },
   // T4: KNOWN MISMATCH — real = 14 FBs with privaty focus (probe u7, 2026-07-14) vs sim 13.
   // Do NOT pin until the ~1s-fast cycle increment lands (see experiment-harness-ai.md).
-  { name: 'T4', slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'], boss: 'Fire' },
-  { name: 'T7', slugs: ['crown', 'rapi-red-hood', 'anis-star', 'cinderella', 'mast-romantic-maid'], boss: 'Water' },
+  {
+    name: 'T4',
+    slugs: ['anis-star', 'privaty', 'snow-white-heavy-arms', 'helm', 'crown'],
+    boss: 'Fire',
+  },
+  {
+    name: 'T7',
+    slugs: [
+      'crown',
+      'rapi-red-hood',
+      'anis-star',
+      'cinderella',
+      'mast-romantic-maid',
+    ],
+    boss: 'Water',
+  },
 
   // 714 noon probe (2026-07-14) — six of nine teams measured full-burst-exact via the
   // yellow-splash scan (see docs/probe-runs.md). Focus = middle slot (default), unconfirmed
@@ -137,8 +202,15 @@ const COMPS: Comp[] = [
   // like T4/T7.
   {
     name: 'N1 rapi/quency wind',
-    slugs: ['d-killer-wife', 'grave', 'rapi-red-hood', 'quency-escape-queen', 'jill'],
-    boss: 'Wind', focus: 'rapi-red-hood',
+    slugs: [
+      'd-killer-wife',
+      'grave',
+      'rapi-red-hood',
+      'quency-escape-queen',
+      'jill',
+    ],
+    boss: 'Wind',
+    focus: 'rapi-red-hood',
     // UNPINNED 2026-07-22 (owner enactment) — the measured truth is UNCHANGED at 13/13,
     // uniform ~14s cadence (video). It joins N2/N4/N5 in the open burst-cycle timing
     // increment: the sim reads 12. This comp was ALREADY 12×24 / 13×1 across seeds — it
@@ -151,26 +223,48 @@ const COMPS: Comp[] = [
   },
   {
     name: 'N3 scarlet/liberalio iron',
-    slugs: ['rouge', 'trina', 'scarlet-black-shadow', 'liberalio', 'soda-twinkling-bunny'],
-    boss: 'Iron', focus: 'scarlet-black-shadow',
+    slugs: [
+      'rouge',
+      'trina',
+      'scarlet-black-shadow',
+      'liberalio',
+      'soda-twinkling-bunny',
+    ],
+    boss: 'Iron',
+    focus: 'scarlet-black-shadow',
     realFullBursts: 10, // video: 10/10
   },
   {
     name: 'N6 mihara/maiden wind',
-    slugs: ['little-mermaid', 'ade-agent-bunny', 'mihara-bonding-chain', 'maiden-ice-rose', 'maxwell'],
-    boss: 'Wind', focus: 'mihara-bonding-chain',
+    slugs: [
+      'little-mermaid',
+      'ade-agent-bunny',
+      'mihara-bonding-chain',
+      'maiden-ice-rose',
+      'maxwell',
+    ],
+    boss: 'Wind',
+    focus: 'mihara-bonding-chain',
     realFullBursts: 11, // video: 11/11
   },
   {
     name: 'N9 redhood/elegg electric',
-    slugs: ['moran', 'crown', 'red-hood', 'elegg-boom-and-shock', 'dorothy-serendipity'],
-    boss: 'Electric', focus: 'red-hood',
+    slugs: [
+      'moran',
+      'crown',
+      'red-hood',
+      'elegg-boom-and-shock',
+      'dorothy-serendipity',
+    ],
+    boss: 'Electric',
+    focus: 'red-hood',
     realFullBursts: 12, // video: 12/12
   },
   {
     name: 'soda-tb control (neutral, focus soda-twinkling-bunny)',
     slugs: ['little-mermaid', 'crown', 'soda-twinkling-bunny', 'helm'],
-    boss: null, focus: 'soda-twinkling-bunny',
+    boss: null,
+    focus: 'soda-twinkling-bunny',
     // KNOWN MISMATCH — real = 10 Full Bursts, sim = 9. DELIBERATELY UNPINNED, same treatment as T4/T7
     // above: pinning a count the sim cannot currently hit would just paint the gate red without adding
     // information. The comp is still graded on damage + snapshot.
@@ -190,12 +284,23 @@ const COMPS: Comp[] = [
 function run(comp: Comp, seed?: number) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
-    doll: false, ol: 'base5', mode: comp.modes?.[slug], lambdaStage: comp.lambda?.[slug],
+    doll: false,
+    ol: 'base5',
+    mode: comp.modes?.[slug],
+    lambdaStage: comp.lambda?.[slug],
   }));
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) overrides[s] = loadOverride(s);
-  const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus, seed });
-  const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
+  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  const cfg = scopeLockCfg(comp.slugs, comp.boss, {
+    focusSlug: comp.focus,
+    seed,
+  });
+  const prepared = prepareTeam(chars, unitOpts, {
+    overrides,
+    skillLevels,
+    cubes,
+    olLines,
+  });
   return runSim(chars, mult, cfg, prepared);
 }
 
@@ -206,7 +311,11 @@ function run(comp: Comp, seed?: number) {
 // 10 in EV but 11×60%/12×40% seeded, matching the measured 11-12). So a comp PASSES when the
 // measured value/range OVERLAPS the seeded run's observed [min,max] over the same MC seed set
 // board-read uses (MC_SEED_BASE + i). Totals stay on the EV run (byte-stable, below).
-function fbDistribution(comp: Comp): { min: number; max: number; counts: Map<number, number> } {
+function fbDistribution(comp: Comp): {
+  min: number;
+  max: number;
+  counts: Map<number, number>;
+} {
   const counts = new Map<number, number>();
   for (let i = 0; i < DEFAULT_MC_SEEDS; i++) {
     const fb = run(comp, MC_SEED_BASE + i).fullBursts;
@@ -218,12 +327,17 @@ function fbDistribution(comp: Comp): { min: number; max: number; counts: Map<num
 
 const SNAPSHOT_PATH = new URL('./regression-snapshot.json', import.meta.url);
 const update = process.argv.includes('--update');
-const snapshot: Record<string, Record<string, number>> = existsSync(SNAPSHOT_PATH)
+const snapshot: Record<string, Record<string, number>> = existsSync(
+  SNAPSHOT_PATH
+)
   ? JSON.parse(readFileSync(SNAPSHOT_PATH, 'utf8'))
   : {};
 
 let failures = 0;
-const fail = (msg: string) => { failures++; console.error(`  ✗ ${msg}`); };
+const fail = (msg: string) => {
+  failures++;
+  console.error(`  ✗ ${msg}`);
+};
 const ok = (msg: string) => console.log(`  ✓ ${msg}`);
 
 for (const comp of COMPS) {
@@ -236,7 +350,10 @@ for (const comp of COMPS) {
     const [w0, w1] = Array.isArray(want) ? want : [want, want];
     const { min, max, counts } = fbDistribution(comp);
     const pass = w0 <= max && w1 >= min; // measured range overlaps the seeded [min,max]
-    const dist = [...counts.entries()].sort((a, b) => a[0] - b[0]).map(([v, n]) => `${v}×${n}`).join(' ');
+    const dist = [...counts.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([v, n]) => `${v}×${n}`)
+      .join(' ');
     const seededStr = min === max ? `${min}` : `${min}-${max}`;
     (pass ? ok : fail)(
       `[${comp.name}] full bursts seeded ${seededStr} (${dist}) vs measured ${Array.isArray(want) ? want.join('-') : want}`
@@ -245,16 +362,19 @@ for (const comp of COMPS) {
 
   // 2. snapshots — per-unit totals (deterministic run must be byte-stable)
   const totals: Record<string, number> = {};
-  for (const u of res.units) totals[u.slug] = Math.round(u.totalDamage);
+  for (const u of res.units) {totals[u.slug] = Math.round(u.totalDamage);}
   if (update) {
     snapshot[comp.name] = totals;
   } else if (snapshot[comp.name]) {
     for (const [slug, val] of Object.entries(totals)) {
       const prev = snapshot[comp.name][slug];
-      if (prev === undefined) continue;
+      if (prev === undefined) {continue;}
       const drift = Math.abs(val - prev) / prev;
-      if (drift > 0.001) fail(`${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`);
-      else ok(`${slug} snapshot stable`);
+      if (drift > 0.001)
+        {fail(
+          `${slug} total drifted ${(drift * 100).toFixed(2)}% (${prev} → ${val}) — intended? rerun with --update and commit with the change`
+        );}
+      else {ok(`${slug} snapshot stable`);}
     }
   } else {
     console.log('  (no snapshot yet — run with --update)');
@@ -264,9 +384,15 @@ for (const comp of COMPS) {
 // 3. seeded determinism: same seed twice must be identical
 {
   console.log('\nseeded determinism');
-  const a = run(COMPS[0], 1234).units.map((u) => Math.round(u.totalDamage)).join(',');
-  const b = run(COMPS[0], 1234).units.map((u) => Math.round(u.totalDamage)).join(',');
-  (a === b ? ok : fail)(`seed 1234 reproduces (${a === b ? 'identical' : 'DIVERGED'})`);
+  const a = run(COMPS[0], 1234)
+    .units.map((u) => Math.round(u.totalDamage))
+    .join(',');
+  const b = run(COMPS[0], 1234)
+    .units.map((u) => Math.round(u.totalDamage))
+    .join(',');
+  (a === b ? ok : fail)(
+    `seed 1234 reproduces (${a === b ? 'identical' : 'DIVERGED'})`
+  );
 }
 
 // 4. Mast burst-gate (syncWithFocus) invariant: in the Hyper Carry frameworks a gated
@@ -276,17 +402,32 @@ for (const comp of COMPS) {
 {
   console.log('\nMast burst-gate (syncWithFocus)');
   const tslug = 'cinderella-crystal-wave';
-  const tested = { slug: tslug, element: data.characters[tslug].element as Element };
-  const cell: Cell = { framework: 'standard-hc', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+  const tested = {
+    slug: tslug,
+    element: data.characters[tslug].element as Element,
+  };
+  const cell: Cell = {
+    framework: 'standard-hc',
+    eleadv: 'neutral',
+    core: 'c100',
+    invest: 'scope',
+  };
   const team = assembleTeam(cell, tested);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of team.slugs) overrides[s] = loadOverride(s);
+  for (const s of team.slugs) {overrides[s] = loadOverride(s);}
   const chars = team.slugs.map((s) => data.characters[s]);
-  const prepared = prepareTeam(chars, team.unitOpts, { overrides, skillLevels, cubes, olLines });
+  const prepared = prepareTeam(chars, team.unitOpts, {
+    overrides,
+    skillLevels,
+    cubes,
+    olLines,
+  });
   const r = runSim(chars, mult, team.cfg, prepared);
   const mast = r.units.find((u) => u.slug === 'mast-romantic-maid')!.burstCasts;
   const focus = r.units.find((u) => u.slug === tslug)!.burstCasts;
-  (mast <= focus ? ok : fail)(`gated Mast casts (${mast}) ≤ focus casts (${focus})`);
+  (mast <= focus ? ok : fail)(
+    `gated Mast casts (${mast}) ≤ focus casts (${focus})`
+  );
 }
 
 // 5. Solo framework contract: the synthetic no-op controls deal ZERO damage, and the
@@ -296,31 +437,53 @@ for (const comp of COMPS) {
 {
   console.log('\nSolo framework (no-op controls + every-other bursts)');
   for (const tslug of ['scarlet', 'modernia']) {
-    const tested = { slug: tslug, element: data.characters[tslug].element as Element };
-    const cell: Cell = { framework: 'solo', eleadv: 'neutral', core: 'c100', invest: 'scope' };
+    const tested = {
+      slug: tslug,
+      element: data.characters[tslug].element as Element,
+    };
+    const cell: Cell = {
+      framework: 'solo',
+      eleadv: 'neutral',
+      core: 'c100',
+      invest: 'scope',
+    };
     const team = assembleTeam(cell, tested);
     const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-    for (const s of team.slugs) overrides[s] = loadOverride(s);
-    const chars = team.slugs.map((s) => data.characters[s] ?? NOOP_CHARACTERS[s]);
-    const prepared = prepareTeam(chars, team.unitOpts, { overrides, skillLevels, cubes, olLines });
+    for (const s of team.slugs) {overrides[s] = loadOverride(s);}
+    const chars = team.slugs.map(
+      (s) => data.characters[s] ?? NOOP_CHARACTERS[s]
+    );
+    const prepared = prepareTeam(chars, team.unitOpts, {
+      overrides,
+      skillLevels,
+      cubes,
+      olLines,
+    });
     const r = runSim(chars, mult, team.cfg, prepared);
     const t = r.units[team.testedIndex];
-    const noopDmg = r.units.reduce((s, u, i) => (i === team.testedIndex ? s : s + u.totalDamage), 0);
+    const noopDmg = r.units.reduce(
+      (s, u, i) => (i === team.testedIndex ? s : s + u.totalDamage),
+      0
+    );
     const noopB3 = r.units.find((u) => u.slug === 'noop-b3-rl')!;
-    (noopDmg === 0 ? ok : fail)(`${tslug}: no-op controls deal 0 damage (got ${noopDmg})`);
+    (noopDmg === 0 ? ok : fail)(
+      `${tslug}: no-op controls deal 0 damage (got ${noopDmg})`
+    );
     const alternates =
       r.fullBursts > 0 &&
       t.burstCasts + noopB3.burstCasts === r.fullBursts &&
       Math.abs(t.burstCasts - noopB3.burstCasts) <= 1;
     (alternates ? ok : fail)(
-      `${tslug}: every-other bursts (tested ${t.burstCasts} + no-op B3 ${noopB3.burstCasts} = FB ${r.fullBursts})`,
+      `${tslug}: every-other bursts (tested ${t.burstCasts} + no-op B3 ${noopB3.burstCasts} = FB ${r.fullBursts})`
     );
   }
 }
 
 if (update) {
   writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 1));
-  console.log('\nsnapshot regenerated — commit it together with the engine change it reflects');
+  console.log(
+    '\nsnapshot regenerated — commit it together with the engine change it reflects'
+  );
 } else if (failures) {
   console.error(`\nregression: ${failures} failure(s)`);
   process.exit(1);

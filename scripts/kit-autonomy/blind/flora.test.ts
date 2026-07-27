@@ -106,9 +106,9 @@ describe('flora', () => {
   });
 
   it('without a B3 chain there is no Full Burst, no burst cast, and no true-damage buff', () => {
-    expect(
-      noFbEvents.filter((ev) => ev.kind === 'fullBurstStart').length
-    ).toBe(0);
+    expect(noFbEvents.filter((ev) => ev.kind === 'fullBurstStart').length).toBe(
+      0
+    );
     expect(
       noFbEvents.filter((ev) => isBuffApply(ev, 'trueDamagePct')).length
     ).toBe(0);

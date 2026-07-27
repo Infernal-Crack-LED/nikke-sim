@@ -39,7 +39,12 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const CARRY = 'ada';
@@ -63,26 +68,36 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / isolation patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 const hasHeal = (b: any) => b.effects.some((e: any) => e.kind === 'heal');
 
 /** H1 reference: her S1 crit line removed entirely. */
 const helmNoCrit = withPatchedOverride('helm', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRateNormalPct'));
-  if (ov.skill1.length === before) throw new Error('helm S1 critRateNormalPct block missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'helm S1 critRateNormalPct block missing — fixture is stale'
+    );}
 });
 /** H1 counterfactual: the same line as a GENERIC (unscoped) crit-rate buff. */
 const helmGenericCrit = withPatchedOverride('helm', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'critRateNormalPct');
-  if (!e) throw new Error('helm S1 critRateNormalPct effect missing — fixture is stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'critRateNormalPct');
+  if (!e)
+    {throw new Error(
+      'helm S1 critRateNormalPct effect missing — fixture is stale'
+    );}
   e.stat = 'critRatePct';
 });
 /** H4 reference: her parts-damage line removed. */
 const helmNoParts = withPatchedOverride('helm', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before) throw new Error('helm S2 partsDamagePct block missing — fixture is stale');
+  if (ov.skill2.length === before)
+    {throw new Error('helm S2 partsDamagePct block missing — fixture is stale');}
 });
 /** H8 isolation: her S1 full-charge heal fires every ~1.5s and SATURATES crown's recovery
  *  consumer, which would mask the burst heal's window entirely. Removing S1's heal (and crown's
@@ -91,12 +106,14 @@ const helmNoParts = withPatchedOverride('helm', (ov) => {
 const helmNoS1Heal = withPatchedOverride('helm', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
-  if (ov.skill1.length === before) throw new Error('helm S1 heal block missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error('helm S1 heal block missing — fixture is stale');}
 });
 const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
-  if (ov.skill2.length === before) throw new Error('crown S2 heal block missing — fixture is stale');
+  if (ov.skill2.length === before)
+    {throw new Error('crown S2 heal block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -107,66 +124,82 @@ const noParts = run({ helm: helmNoParts });
 const isolated = run({ helm: helmNoS1Heal, crown: crownNoHeal });
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const helmDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'helm' && d.srcSlot === srcSlot);
 const helmShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'helm');
 const helmBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm'
+  );
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 
 /** Distinct crit rates seen per unit on the given buckets — the H1 discriminator. */
-function critRatesByUnit(evs: SimEvent[], buckets: Damage['bucket'][]): Record<string, string> {
+function critRatesByUnit(
+  evs: SimEvent[],
+  buckets: Damage['bucket'][]
+): Record<string, string> {
   const out: Record<string, Set<string>> = {};
   for (const d of dmg(evs)) {
-    if (!buckets.includes(d.bucket)) continue;
+    if (!buckets.includes(d.bucket)) {continue;}
     (out[d.slug] ??= new Set()).add(d.critRate.toFixed(9));
   }
-  return Object.fromEntries(Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')]));
+  return Object.fromEntries(
+    Object.entries(out).map(([k, v]) => [k, [...v].sort().join(',')])
+  );
 }
 
 /** Frames at which crown's recovery-triggered team buff fired (one firing = one frame, even
  *  though the block targets all allies and so emits one buffApply per holder). */
 const recoveryFrames = (evs: SimEvent[]): number[] =>
-  [...new Set(
-    buffs(evs)
-      .filter((b) => b.casterIdx === CROWN && b.stat === 'attackDamagePct' && b.value === 20.99)
-      .map((b) => b.frame),
-  )].sort((a, b) => a - b);
+  [
+    ...new Set(
+      buffs(evs)
+        .filter(
+          (b) =>
+            b.casterIdx === CROWN &&
+            b.stat === 'attackDamagePct' &&
+            b.value === 20.99
+        )
+        .map((b) => b.frame)
+    ),
+  ].sort((a, b) => a - b);
 
 describe('helm (Treasure) — kit spec', () => {
   describe('H1 — S1 crit rate is scoped to NORMAL ATTACKS, for every ally', () => {
     it('does NOT lift crit on any skill or burst damage, team-wide', () => {
       // Shipped must be byte-identical to buff-REMOVED on the non-normal buckets.
       expect(critRatesByUnit(base.events, ['skill', 'burst'])).toEqual(
-        critRatesByUnit(noCrit.events, ['skill', 'burst']),
+        critRatesByUnit(noCrit.events, ['skill', 'burst'])
       );
     });
 
     it('DOES lift crit on normal attacks (the buff is live, not inert)', () => {
       expect(critRatesByUnit(base.events, ['normal'])).not.toEqual(
-        critRatesByUnit(noCrit.events, ['normal']),
+        critRatesByUnit(noCrit.events, ['normal'])
       );
     });
 
     it('DISCRIMINATING: an unscoped critRatePct would move the skill/burst buckets', () => {
       // Proves the first assertion is one the generic (pre-2026-07-23) model provably fails.
-      expect(critRatesByUnit(genericCrit.events, ['skill', 'burst'])).not.toEqual(
-        critRatesByUnit(noCrit.events, ['skill', 'burst']),
-      );
+      expect(
+        critRatesByUnit(genericCrit.events, ['skill', 'burst'])
+      ).not.toEqual(critRatesByUnit(noCrit.events, ['skill', 'burst']));
     });
   });
 
   describe('H2 — S1 full-charge heal fires a recovery event on every charged pull', () => {
-    it('drives crown\'s recovery consumer at HER shot cadence, not once per burst', () => {
+    it("drives crown's recovery consumer at HER shot cadence, not once per burst", () => {
       const frames = recoveryFrames(base.events).length;
       const shots = helmShots(base.events).length;
       const bursts = helmBursts(base.events).length;
       expect(
         frames,
         `${frames} recovery firings vs ${shots} helm pulls / ${bursts} bursts — a burst-only or ` +
-          'magazine-only trigger would land near the burst count',
+          'magazine-only trigger would land near the burst count'
       ).toBeGreaterThanOrEqual(Math.floor(shots * 0.9));
     });
   });
@@ -174,9 +207,15 @@ describe('helm (Treasure) — kit spec', () => {
   describe('H3 — S1 fills Burst Gauge by 14.31% (carried by gauge data, not an override block)', () => {
     it('is the datamined flat per-trigger term, not an override effect', () => {
       const gauge = JSON.parse(
-        readFileSync(new URL('../../../data/gauge-per-shot.json', import.meta.url), 'utf8'),
+        readFileSync(
+          new URL('../../../data/gauge-per-shot.json', import.meta.url),
+          'utf8'
+        )
       );
-      expect(gauge.helm.flatPerTrigger, 'kit 14.31% → flatPerTrigger 1431').toBe(1431);
+      expect(
+        gauge.helm.flatPerTrigger,
+        'kit 14.31% → flatPerTrigger 1431'
+      ).toBe(1431);
     });
 
     it.skip('is unscaled by camera focus and suppressed during FB/chain — step-2 gauge backfill', () => {
@@ -186,14 +225,14 @@ describe('helm (Treasure) — kit spec', () => {
   });
 
   describe('H4 — S2 interruption-parts damage is exactly inert vs the partless boss', () => {
-    it('removing it changes NO unit\'s total by a single point', () => {
+    it("removing it changes NO unit's total by a single point", () => {
       expect(base.totals).toEqual(noParts.totals);
     });
   });
 
   describe('H5 — S2 grants the TREASURE Attack Damage on Full Burst entry', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === HELM && b.stat === 'attackDamagePct',
+      (b) => b.casterIdx === HELM && b.stat === 'attackDamagePct'
     );
 
     it('is 27.87% (treasure), not the untreasured base 11.85%', () => {
@@ -201,13 +240,23 @@ describe('helm (Treasure) — kit spec', () => {
     });
 
     it('reaches all four allies, including herself, for 10 sec', () => {
-      expect(applied.length, 'no FB-entry attackDamagePct buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no FB-entry attackDamagePct buff was applied'
+      ).toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
-      for (const b of applied) (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+      for (const b of applied)
+        {(
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);}
       for (const [frame, holders] of perFrame) {
-        expect(holders.size, `frame ${frame} reached ${holders.size} allies, expected 4`).toBe(4);
+        expect(
+          holders.size,
+          `frame ${frame} reached ${holders.size} allies, expected 4`
+        ).toBe(4);
       }
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
@@ -236,7 +285,10 @@ describe('helm (Treasure) — kit spec', () => {
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
       const took = nukes.filter((d) => d.fbMajorApplied);
-      expect(took.map((d) => d.sec), 'burst-cast damage must precede the FB window').toEqual([]);
+      expect(
+        took.map((d) => d.sec),
+        'burst-cast damage must precede the FB window'
+      ).toEqual([]);
     });
   });
 
@@ -248,30 +300,42 @@ describe('helm (Treasure) — kit spec', () => {
     // lands at ~179.7s and its window is truncated by the end of the fight, which is a property of
     // the fixture, not of the kit.
     const FIGHT_FRAMES = 180 * FPS;
-    const casts = helmBursts(isolated.events).filter((c) => c.frame + 10 * FPS <= FIGHT_FRAMES);
+    const casts = helmBursts(isolated.events).filter(
+      (c) => c.frame + 10 * FPS <= FIGHT_FRAMES
+    );
     const frames = recoveryFrames(isolated.events);
 
     it('has bursts with a complete window to measure', () => {
-      expect(casts.length, 'no helm burst has a full 10s window inside the fight').toBeGreaterThan(0);
+      expect(
+        casts.length,
+        'no helm burst has a full 10s window inside the fight'
+      ).toBeGreaterThan(0);
     });
 
     it('keeps recovery firing across the whole 10 sec after each cast', () => {
       for (const cast of casts) {
-        const inWindow = frames.filter((f) => f >= cast.frame && f <= cast.frame + 10 * FPS);
-        const spanSec = inWindow.length ? (inWindow[inWindow.length - 1] - cast.frame) / FPS : 0;
+        const inWindow = frames.filter(
+          (f) => f >= cast.frame && f <= cast.frame + 10 * FPS
+        );
+        const spanSec = inWindow.length
+          ? (inWindow[inWindow.length - 1] - cast.frame) / FPS
+          : 0;
         expect(
           inWindow.length,
           `burst at ${cast.sec.toFixed(2)}s produced ${inWindow.length} recovery firing(s) ` +
-            `spanning ${spanSec.toFixed(1)}s — a single instant heal produces exactly 1 at 0.0s`,
+            `spanning ${spanSec.toFixed(1)}s — a single instant heal produces exactly 1 at 0.0s`
         ).toBeGreaterThanOrEqual(8);
-        expect(spanSec, 'the window must reach ~10s, not collapse to the cast frame').toBeGreaterThanOrEqual(8);
+        expect(
+          spanSec,
+          'the window must reach ~10s, not collapse to the cast frame'
+        ).toBeGreaterThanOrEqual(8);
       }
     });
   });
 
   describe('H9 — burst Charge Damage Multiplier is a ROUND count, self-scoped', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === HELM && b.stat === 'chargeDamageMultPct',
+      (b) => b.casterIdx === HELM && b.stat === 'chargeDamageMultPct'
     );
 
     it('is 158.4% for 10 rounds with NO wall-clock expiry', () => {
@@ -280,7 +344,7 @@ describe('helm (Treasure) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.durationShots))]).toEqual([10]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'a round-count buff must not also carry a timed expiry',
+        'a round-count buff must not also carry a timed expiry'
       ).toEqual([null]);
     });
 

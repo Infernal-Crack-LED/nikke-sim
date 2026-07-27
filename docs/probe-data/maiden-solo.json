@@ -22,11 +22,43 @@
   "fightClock": false,
   "notes": "RIDER-CRIT test — CONFIRMED. Solo/no-FB gives fixed value bands (hit-values): normal 129,665 (core 259,330), proc/rider 547.62% = 463,341. CLEAN RESULT: her proc reads 437296 (white, non-crit) and 655945 (orange + crit icon) = EXACTLY x1.5 (solo → no FB inflating the major, so a crit is a clean x1.5). So her DAMAGE RIDER CRITS — the clean on-footage confirmation LM/liberalio couldn't give (their bands entangle). Her RL NORMAL shows 'CORE HIT' (244753 ≈ sim normal-core 259,330) on essentially every shot → RL core rate ~near-100% (feeds the AUTO_CORE_RATE per-weapon scan, open-questions A15). Rider crit + ginmy's DoT test together settle: DoT/rider damage crits; engine's XCRIT gate is wrong (open-questions U13).",
   "popups": [
-    { "t": 40.0, "value": 437296, "crit": false, "kind": "proc", "note": "white; 547.62% rider non-crit (sim 463,341)" },
-    { "t": 40.5, "value": 655945, "crit": true, "kind": "proc", "note": "ORANGE + crit icon; = 437296 x1.500 EXACTLY → rider CRIT" },
-    { "t": 41.0, "value": 244753, "crit": false, "core": true, "kind": "normal", "note": "red CORE HIT; RL normal core (sim 259,330)" },
-    { "t": 41.5, "value": 305941, "crit": true, "core": true, "kind": "normal", "note": "red CORE HIT + crit icon; normal core+crit" },
+    {
+      "t": 40.0,
+      "value": 437296,
+      "crit": false,
+      "kind": "proc",
+      "note": "white; 547.62% rider non-crit (sim 463,341)"
+    },
+    {
+      "t": 40.5,
+      "value": 655945,
+      "crit": true,
+      "kind": "proc",
+      "note": "ORANGE + crit icon; = 437296 x1.500 EXACTLY → rider CRIT"
+    },
+    {
+      "t": 41.0,
+      "value": 244753,
+      "crit": false,
+      "core": true,
+      "kind": "normal",
+      "note": "red CORE HIT; RL normal core (sim 259,330)"
+    },
+    {
+      "t": 41.5,
+      "value": 305941,
+      "crit": true,
+      "core": true,
+      "kind": "normal",
+      "note": "red CORE HIT + crit icon; normal core+crit"
+    },
     { "t": 42.0, "value": 437296, "crit": false, "kind": "proc" },
-    { "t": 42.5, "value": 655945, "crit": true, "kind": "proc", "note": "ORANGE crit again — repeatable" }
+    {
+      "t": 42.5,
+      "value": 655945,
+      "crit": true,
+      "kind": "proc",
+      "note": "ORANGE crit again — repeatable"
+    }
   ]
 }

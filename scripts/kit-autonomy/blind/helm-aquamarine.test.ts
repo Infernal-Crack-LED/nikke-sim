@@ -59,7 +59,7 @@ const SLUG = 'helm-aquamarine';
 // carrying its own blocks[] after load). Accept both so a shape guess cannot silently zero a patch.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 
@@ -77,7 +77,7 @@ function effectsOf(b: any): any[] {
   const walk = (es: any[]) => {
     for (const e of es ?? []) {
       out.push(e);
-      if (Array.isArray(e?.steps)) walk(e.steps);
+      if (Array.isArray(e?.steps)) {walk(e.steps);}
     }
   };
   walk(b?.effects ?? []);
@@ -91,7 +91,7 @@ const hasFlat = (b: any, pct: number) =>
 
 function comp(patch?: any): any {
   const c: any = controlComp(SLUG, true);
-  if (patch) c.overrides = { ...(c.overrides ?? {}), [SLUG]: patch };
+  if (patch) {c.overrides = { ...(c.overrides ?? {}), [SLUG]: patch };}
   return c;
 }
 
@@ -121,37 +121,37 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 const NO_S1A = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
     for (const e of effectsOf(b))
-      if (e.kind === 'flatDamage' && near(e.atkPct, 131.34)) e.atkPct = 0;
+      {if (e.kind === 'flatDamage' && near(e.atkPct, 131.34)) {e.atkPct = 0;}}
   }
 });
 // S1a nearest-wrong A: once per magazine instead of every 30 landed hits (ammo 60 => 2 procs/mag).
 const S1A_LASTBULLET = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    if (hasFlat(b, 131.34)) b.trigger = { kind: 'lastBullet' };
+    {if (hasFlat(b, 131.34)) {b.trigger = { kind: 'lastBullet' };}}
 });
 // S1a nearest-wrong B: every trigger pull (60 procs/mag).
 const S1A_SHOTFIRED = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    if (hasFlat(b, 131.34)) b.trigger = { kind: 'shotFired' };
+    {if (hasFlat(b, 131.34)) {b.trigger = { kind: 'shotFired' };}}
 });
 
 // S1b: no cooldown reduction at all.
 const NO_CDR = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of effectsOf(b)) if (e.kind === 'burstCdr') e.seconds = 0;
+    {for (const e of effectsOf(b)) {if (e.kind === 'burstCdr') {e.seconds = 0;}}}
 });
 // S1b nearest-wrong A: flat 1.82s every Full Burst (the 'Once' tier only, no escalation).
 const FLAT_CDR = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'skill1')) {
     if (effectsOf(b).some((e) => e.kind === 'burstCdr'))
-      b.effects = [{ kind: 'burstCdr', seconds: 1.82 }];
+      {b.effects = [{ kind: 'burstCdr', seconds: 1.82 }];}
   }
 });
 // S1b nearest-wrong B: self-only instead of all allies.
 const SELF_CDR = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'skill1')) {
     if (effectsOf(b).some((e) => e.kind === 'burstCdr'))
-      b.target = { kind: 'self' };
+      {b.target = { kind: 'self' };}
   }
 });
 
@@ -159,7 +159,7 @@ const SELF_CDR = withPatchedOverride(SLUG, (ov: any) => {
 const NO_S2A = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
     for (const e of effectsOf(b))
-      if (e.kind === 'flatDamage' && near(e.atkPct, 105.58)) e.atkPct = 0;
+      {if (e.kind === 'flatDamage' && near(e.atkPct, 105.58)) {e.atkPct = 0;}}
   }
 });
 
@@ -169,20 +169,20 @@ const S2B_UNGATED = withPatchedOverride(SLUG, (ov: any) => {
     if (
       effectsOf(b).some((e) => e.kind === 'buff' && e.stat === 'damageTakenPct')
     )
-      delete b.bossElementGate;
+      {delete b.bossElementGate;}
   }
 });
 
 // Burst: strip ONLY the Electric gate on the burst rider.
 const BURST_UNGATED = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'burst'))
-    if (b.bossElementGate) delete b.bossElementGate;
+    {if (b.bossElementGate) {delete b.bossElementGate;}}
 });
 // Burst: kill both 164.83% hits (on a Fire boss only the ungated one is live anyway).
 const NO_BURST_HIT = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of slotBlocks(ov, 'burst')) {
     for (const e of effectsOf(b))
-      if (e.kind === 'flatDamage' && near(e.atkPct, 164.83)) e.atkPct = 0;
+      {if (e.kind === 'flatDamage' && near(e.atkPct, 164.83)) {e.atkPct = 0;}}
   }
 });
 
@@ -232,7 +232,7 @@ describe('helm-aquamarine — S1a: after 30 landed normal attacks, 131.34% of fi
   });
 
   it('is enemy-facing only: it moves no teammate', () => {
-    for (const s of others(BASE.t)) expect(R_NO_S1A.t[s]).toBe(BASE.t[s]);
+    for (const s of others(BASE.t)) {expect(R_NO_S1A.t[s]).toBe(BASE.t[s]);}
   });
 
   it.skip('per-kit noFb on this rider is MEASURED-ONLY (default OFF) — not derivable from prose', () => {});
@@ -259,7 +259,7 @@ describe('helm-aquamarine — S1b: entering Full Burst, escalating Burst CD redu
 
   it('lifts teammate damage (it is a team effect, not a self effect)', () => {
     for (const s of others(BASE.t))
-      expect(BASE.t[s]).toBeGreaterThan(R_NO_CDR.t[s]);
+      {expect(BASE.t[s]).toBeGreaterThan(R_NO_CDR.t[s]);}
   });
 });
 
@@ -271,7 +271,7 @@ describe('helm-aquamarine — S2a: 105.58% of final ATK, 1 enemy, NO activation 
   });
 
   it('is enemy-facing only: it moves no teammate', () => {
-    for (const s of others(BASE.t)) expect(R_NO_S2A.t[s]).toBe(BASE.t[s]);
+    for (const s of others(BASE.t)) {expect(R_NO_S2A.t[s]).toBe(BASE.t[s]);}
   });
 
   it.skip('FLAG: the prose gives this line no trigger, so its cadence (interval period) is outside the input domain — measurement-gated, pin from popup spacing in footage', () => {});
@@ -282,14 +282,14 @@ describe('helm-aquamarine — S2a: 105.58% of final ATK, 1 enemy, NO activation 
 describe('helm-aquamarine — S2b: attacking an Electric Code target, Damage Taken +5.64%', () => {
   it('is INERT against the non-Electric control boss', () => {
     const dt = buffApplies(BASE.events, 'damageTakenPct').filter((e) =>
-      near(e.value, 5.64),
+      near(e.value, 5.64)
     );
     expect(dt.length).toBe(0);
   });
 
   it('goes live as a boss-held debuff once only the Electric gate is stripped', () => {
     const dt = buffApplies(R_S2B_UNGATED.events, 'damageTakenPct').filter((e) =>
-      near(e.value, 5.64),
+      near(e.value, 5.64)
     );
     expect(dt.length).toBeGreaterThan(30); // per-attack cadence, not once per Full Burst (~8 in 180s)
     expect(dt[0].maxStacks).toBe(5);
@@ -300,7 +300,7 @@ describe('helm-aquamarine — S2b: attacking an Electric Code target, Damage Tak
 
   it('lifts the WHOLE team when live (Damage Taken is a debuff, not a self buff)', () => {
     for (const s of others(BASE.t))
-      expect(R_S2B_UNGATED.t[s]).toBeGreaterThan(BASE.t[s]);
+      {expect(R_S2B_UNGATED.t[s]).toBeGreaterThan(BASE.t[s]);}
     expect(R_S2B_UNGATED.t[SLUG]).toBeGreaterThan(BASE.t[SLUG]);
   });
 });
@@ -313,7 +313,7 @@ describe('helm-aquamarine — Burst: 164.83% to all enemies, +164.83% vs Electri
     // holds a Burst II ally, so if she never gets the cast this goes RED and that IS the finding.
     expect(BASE.t[SLUG]).toBeGreaterThan(R_NO_BURST.t[SLUG]);
     expect((BASE.events as any[]).some((e) => e.kind === 'burstCast')).toBe(
-      true,
+      true
     );
   });
 
@@ -346,14 +346,14 @@ describe('helm-aquamarine — override structure matches the kit text literally'
 
   it('S1b: fullBurstEnter -> allies, escalating burstCdr 1.82 / 2.2 / 2.6, not oncePerBattle', () => {
     const b = slotBlocks(OV, 'skill1').find((x) =>
-      effectsOf(x).some((e) => e.kind === 'burstCdr'),
+      effectsOf(x).some((e) => e.kind === 'burstCdr')
     );
     expect(b).toBeTruthy();
     expect(b.trigger.kind).toBe('fullBurstEnter');
     expect(b.target.kind).toBe('allies');
     expect(b.target.excludeSelf).toBeFalsy(); // the header says ALL allies
     expect((b.effects ?? []).some((e: any) => e.kind === 'escalating')).toBe(
-      true,
+      true
     );
     const secs = effectsOf(b)
       .filter((e) => e.kind === 'burstCdr')
@@ -361,7 +361,7 @@ describe('helm-aquamarine — override structure matches the kit text literally'
       .sort((x: number, y: number) => x - y);
     expect(secs).toEqual([1.82, 2.2, 2.6]);
     expect(
-      effectsOf(b).some((e) => e.kind === 'burstCdr' && e.oncePerBattle),
+      effectsOf(b).some((e) => e.kind === 'burstCdr' && e.oncePerBattle)
     ).toBe(false);
   });
 
@@ -375,16 +375,14 @@ describe('helm-aquamarine — override structure matches the kit text literally'
 
   it('S2b: damageTakenPct 5.64 / 5 stacks / 5 sec behind bossElementGate Electric', () => {
     const b = allBlocks(OV).find((x) =>
-      effectsOf(x).some(
-        (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
-      ),
+      effectsOf(x).some((e) => e.kind === 'buff' && e.stat === 'damageTakenPct')
     );
     expect(b).toBeTruthy();
     expect(b.slot).toBe('skill2');
     expect(b.bossElementGate).toBe('Electric');
     expect(b.target.kind).toBe('enemy');
     const e = effectsOf(b).find(
-      (x) => x.kind === 'buff' && x.stat === 'damageTakenPct',
+      (x) => x.kind === 'buff' && x.stat === 'damageTakenPct'
     );
     expect(e.value).toBeCloseTo(5.64, 6);
     expect(e.maxStacks).toBe(5);
@@ -395,11 +393,11 @@ describe('helm-aquamarine — override structure matches the kit text literally'
     const hits = slotBlocks(OV, 'burst').flatMap((b) =>
       effectsOf(b)
         .filter((e) => e.kind === 'flatDamage' && near(e.atkPct, 164.83))
-        .map((e) => ({ b, e })),
+        .map((e) => ({ b, e }))
     );
     expect(hits.length).toBe(2);
     expect(hits.filter((h) => h.b.bossElementGate === 'Electric').length).toBe(
-      1,
+      1
     );
     expect(hits.filter((h) => !h.b.bossElementGate).length).toBe(1);
     for (const h of hits) {

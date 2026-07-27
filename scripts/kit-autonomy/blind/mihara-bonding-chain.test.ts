@@ -51,20 +51,22 @@ type AnyOv = Record<string, any>;
 const OV = withPatchedOverride(SLUG, () => {}) as unknown as AnyOv;
 
 function blocksOf(ov: AnyOv): { slot: string; block: any }[] {
-  return SLOTS.flatMap((s) => ((ov[s] ?? []) as any[]).map((block) => ({ slot: s, block })));
+  return SLOTS.flatMap((s) =>
+    ((ov[s] ?? []) as any[]).map((block) => ({ slot: s, block }))
+  );
 }
 
 function effectsOf(ov: AnyOv): { slot: string; block: any; effect: any }[] {
   return blocksOf(ov).flatMap(({ slot, block }) =>
-    ((block.effects ?? []) as any[]).map((effect) => ({ slot, block, effect })),
+    ((block.effects ?? []) as any[]).map((effect) => ({ slot, block, effect }))
   );
 }
 
 // magnitude of an effect regardless of encoding: perResource-scaled, flat atkPct, or buff value
 function magOf(e: any): number {
-  if (e?.perResource?.mult != null) return e.perResource.mult;
-  if (e?.atkPct != null) return e.atkPct;
-  if (e?.value != null) return e.value;
+  if (e?.perResource?.mult != null) {return e.perResource.mult;}
+  if (e?.atkPct != null) {return e.atkPct;}
+  if (e?.value != null) {return e.value;}
   return 0;
 }
 
@@ -81,13 +83,15 @@ const isSustBuff = (e: any) => e?.kind === 'buff' && near(magOf(e), 59.98, 1);
 function stripEffects(ov: AnyOv, pred: (e: any) => boolean): void {
   for (const s of SLOTS) {
     const blocks = (ov[s] ?? []) as any[];
-    for (const b of blocks) b.effects = ((b.effects ?? []) as any[]).filter((e) => !pred(e));
+    for (const b of blocks)
+      {b.effects = ((b.effects ?? []) as any[]).filter((e) => !pred(e));}
     ov[s] = blocks.filter((b) => ((b.effects ?? []) as any[]).length > 0);
   }
 }
 
 function stripBlocks(ov: AnyOv, pred: (b: any) => boolean): void {
-  for (const s of SLOTS) ov[s] = ((ov[s] ?? []) as any[]).filter((b) => !pred(b));
+  for (const s of SLOTS)
+    {ov[s] = ((ov[s] ?? []) as any[]).filter((b) => !pred(b));}
 }
 
 function run(mutate?: (ov: AnyOv) => void) {
@@ -99,7 +103,10 @@ function run(mutate?: (ov: AnyOv) => void) {
       [SLUG]: withPatchedOverride(SLUG, mutate as any),
     };
   }
-  opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev) };
+  opts.cfg = {
+    ...(opts.cfg ?? {}),
+    onEvent: (ev: SimEvent) => events.push(ev),
+  };
   const res = runComp(opts);
   return { res, events: events as any[], t: totals(res) };
 }
@@ -109,16 +116,21 @@ const base = run();
 const noEns = run((ov) => stripEffects(ov, isEnsnaring));
 const noDrag = run((ov) => stripEffects(ov, isDragging));
 const noVolley = run((ov) => stripEffects(ov, isVolley));
-const noRefill = run((ov) => stripBlocks(ov, (b) => b?.trigger?.kind === 'fullBurstEnd'));
-const noRider = run((ov) => stripBlocks(ov, (b) => b?.trigger?.kind === 'hitCount'));
+const noRefill = run((ov) =>
+  stripBlocks(ov, (b) => b?.trigger?.kind === 'fullBurstEnd')
+);
+const noRider = run((ov) =>
+  stripBlocks(ov, (b) => b?.trigger?.kind === 'hitCount')
+);
 const riderUngated = run((ov) => {
   for (const { block } of blocksOf(ov)) {
-    if (block?.trigger?.kind === 'hitCount') delete block.fbGate;
+    if (block?.trigger?.kind === 'hitCount') {delete block.fbGate;}
   }
 });
 const noSust = run((ov) => stripEffects(ov, isSustBuff));
 const sustAsGeneric = run((ov) => {
-  for (const { effect } of effectsOf(ov)) if (isSustBuff(effect)) effect.stat = 'attackDamagePct';
+  for (const { effect } of effectsOf(ov))
+    {if (isSustBuff(effect)) {effect.stat = 'attackDamagePct';}}
 });
 const starved = run((ov) => {
   ov.skill1 = [];
@@ -132,7 +144,7 @@ const starvedNoDrag = run((ov) => {
 
 const mates = Object.keys(base.t).filter((s) => s !== SLUG);
 function expectMatesIdentical(other: { t: Record<string, number> }): void {
-  for (const s of mates) expect(other.t[s]).toBe(base.t[s]);
+  for (const s of mates) {expect(other.t[s]).toBe(base.t[s]);}
 }
 
 const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
@@ -157,11 +169,15 @@ describe('skill1 — Restraint Chains pool (S1a / S1b)', () => {
     const asResource = pools.some((r) => r?.initial === 10 && r?.max === 10);
     const asStartDelta = blocksOf(OV).some(
       ({ block }) =>
-        (block?.trigger?.kind === 'passive' || block?.trigger?.kind === 'interval') &&
-        ((block.effects ?? []) as any[]).some((e) => e?.kind === 'resource' && e?.delta === 10),
+        (block?.trigger?.kind === 'passive' ||
+          block?.trigger?.kind === 'interval') &&
+        ((block.effects ?? []) as any[]).some(
+          (e) => e?.kind === 'resource' && e?.delta === 10
+        )
     );
     const asTenAttacks = blocksOf(OV).some(
-      ({ block }) => ((block.effects ?? []) as any[]).filter(isVolley).length >= 10,
+      ({ block }) =>
+        ((block.effects ?? []) as any[]).filter(isVolley).length >= 10
     );
     expect(asResource || asStartDelta || asTenAttacks).toBe(true);
   });
@@ -170,13 +186,15 @@ describe('skill1 — Restraint Chains pool (S1a / S1b)', () => {
     // Trigger identity: the kit says 'when Full Burst ends IF this unit has just used her Burst
     // Skill'. Nearest-wrong = a plain fullBurstEnd (or fullBurstEnter), which over-credits in
     // this two-Burst-III fixture whenever the OTHER B3 completes the chain.
-    const fbEnd = blocksOf(OV).filter(({ block }) => block?.trigger?.kind === 'fullBurstEnd');
+    const fbEnd = blocksOf(OV).filter(
+      ({ block }) => block?.trigger?.kind === 'fullBurstEnd'
+    );
     expect(fbEnd.length).toBeGreaterThan(0);
     for (const { block } of fbEnd) {
       const refills = ((block.effects ?? []) as any[]).some(
-        (e) => e?.kind === 'resource' && (e?.delta ?? 0) > 0,
+        (e) => e?.kind === 'resource' && (e?.delta ?? 0) > 0
       );
-      if (refills) expect(block.ownBurstGate).toBe('cast');
+      if (refills) {expect(block.ownBurstGate).toBe('cast');}
     }
   });
 
@@ -196,7 +214,7 @@ describe('skill1 — the chain volley, 50.06% per chain (S1c)', () => {
     // over-credit on an MG carry).
     const volleys = effectsOf(OV).filter(({ effect }) => isVolley(effect));
     expect(volleys.length).toBeGreaterThan(0);
-    for (const { effect } of volleys) expect(effect.core === true).toBe(false);
+    for (const { effect } of volleys) {expect(effect.core === true).toBe(false);}
     expect(base.t[SLUG]).toBeGreaterThan(noVolley.t[SLUG]);
     expectMatesIdentical(noVolley);
   });
@@ -205,11 +223,23 @@ describe('skill1 — the chain volley, 50.06% per chain (S1c)', () => {
     // 'Affects random enemy units at a specific timing' gives NO cadence — an ALWAYS-FLAG field.
     // We therefore pin only that the block repeats (so the pool is consumed and rebuilt), never a
     // specific seconds value. RED under a one-shot passive that fires once at t=0.
-    const ok = ['interval', 'hitCount', 'shotFired', 'lastBullet', 'fullBurstEnter', 'fullBurstEnd', 'burstCast', 'stageEnter', 'passive'];
+    const ok = [
+      'interval',
+      'hitCount',
+      'shotFired',
+      'lastBullet',
+      'fullBurstEnter',
+      'fullBurstEnd',
+      'burstCast',
+      'stageEnter',
+      'passive',
+    ];
     const carriers = effectsOf(OV).filter(({ effect }) => isVolley(effect));
-    for (const { block } of carriers) expect(ok).toContain(block?.trigger?.kind);
+    for (const { block } of carriers)
+      {expect(ok).toContain(block?.trigger?.kind);}
     const repeats = carriers.some(
-      ({ block }) => block?.trigger?.kind !== 'passive' || (block.effects ?? []).length >= 10,
+      ({ block }) =>
+        block?.trigger?.kind !== 'passive' || (block.effects ?? []).length >= 10
     );
     expect(repeats).toBe(true);
   });
@@ -244,7 +274,9 @@ describe('skill1 — Ensnaring Chains, 25.08% sustained / 1 sec (S1d)', () => {
     // of 20 or a maxStacks:20 on the DoT/its stack buff.
     const pools = (OV.resources ?? []) as any[];
     const capResource = pools.some((r) => r?.max === 20);
-    const capStacks = effectsOf(OV).some(({ effect }) => effect?.maxStacks === 20);
+    const capStacks = effectsOf(OV).some(
+      ({ effect }) => effect?.maxStacks === 20
+    );
     expect(capResource || capStacks).toBe(true);
   });
 });
@@ -254,10 +286,14 @@ describe('skill2 — riders and the Stage-3 sustained buff', () => {
     // Trigger identity: '40 normal attacks DURING Full Burst'. Nearest-wrong = an ungated
     // hitCount:40, which on a 300-round MG fires continuously for the whole 180s and floods the
     // stack pool. Structural gate + a directional behavioural check (ungated can only add stacks).
-    const riders = blocksOf(OV).filter(({ block }) => block?.trigger?.kind === 'hitCount');
+    const riders = blocksOf(OV).filter(
+      ({ block }) => block?.trigger?.kind === 'hitCount'
+    );
     expect(riders.length).toBeGreaterThan(0);
     for (const { block } of riders) {
-      expect(block.trigger.count === 40 || block.trigger.countInFb === 40).toBe(true);
+      expect(block.trigger.count === 40 || block.trigger.countInFb === 40).toBe(
+        true
+      );
       expect(block.fbGate).toBe('inFb');
     }
     expect(riderUngated.t[SLUG]).toBeGreaterThanOrEqual(base.t[SLUG]);
@@ -287,7 +323,10 @@ describe('skill2 — riders and the Stage-3 sustained buff', () => {
     }
 
     const applies = base.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'sustainedDamagePct' && near(e.value, 59.98, 1),
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'sustainedDamagePct' &&
+        near(e.value, 59.98, 1)
     );
     expect(applies.length).toBeGreaterThanOrEqual(fbStarts);
     for (const a of applies) {
@@ -307,7 +346,9 @@ describe('skill2 — riders and the Stage-3 sustained buff', () => {
 
 describe('burst — Dragging Chain, 50.05% sustained / 1 sec for 10s', () => {
   it('exists on the burst slot as a 10s 1-sec sustained DoT, never core', () => {
-    const dots = effectsOf(OV).filter(({ slot, effect }) => slot === 'burst' && isDragging(effect));
+    const dots = effectsOf(OV).filter(
+      ({ slot, effect }) => slot === 'burst' && isDragging(effect)
+    );
     expect(dots.length).toBeGreaterThan(0);
     for (const { block, effect } of dots) {
       expect(effect.durationSec).toBe(10);
@@ -336,12 +377,15 @@ describe('burst — Dragging Chain, 50.05% sustained / 1 sec for 10s', () => {
     // burst block (pool reset), or Ensnaring DoT lifetimes bounded to roughly one burst cycle
     // (cd 40s). RED under permanent, never-reset stacked DoT instances.
     const burstReset = ((OV.burst ?? []) as any[]).some((b) =>
-      ((b.effects ?? []) as any[]).some((e) => e?.kind === 'resource' && (e?.delta ?? 0) < 0),
+      ((b.effects ?? []) as any[]).some(
+        (e) => e?.kind === 'resource' && (e?.delta ?? 0) < 0
+      )
     );
     const ensDots = effectsOf(OV)
       .filter(({ effect }) => isEnsnaring(effect))
       .map(({ effect }) => effect);
-    const bounded = ensDots.length > 0 && ensDots.every((d) => (d.durationSec ?? 0) <= 60);
+    const bounded =
+      ensDots.length > 0 && ensDots.every((d) => (d.durationSec ?? 0) <= 60);
     expect(burstReset || bounded).toBe(true);
   });
 });

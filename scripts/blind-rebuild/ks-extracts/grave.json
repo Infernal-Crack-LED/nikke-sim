@@ -29,13 +29,8 @@
         "Removes Heat Emission under certain conditions.",
         "Activates only when in Heat Emission status. Affects self. Recovers 2% Max HP/1s continuously."
       ],
-      "skill2": [
-        "Removed upon reloading to max ammunition."
-      ],
-      "burst": [
-        "Prediction:",
-        "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
-      ]
+      "skill2": ["Removed upon reloading to max ammunition."],
+      "burst": ["Prediction:", "Current HP ▼ 1% every 1 sec, lasts for 10 sec."]
     },
     "caveats": [
       "skill1: Heat Emission team buffs (Burst Gauge filling speed +38.96%, Pierce Damage +48.4%) modeled as always-on passive — real uptime excludes the ~10s Prediction windows after her burst",

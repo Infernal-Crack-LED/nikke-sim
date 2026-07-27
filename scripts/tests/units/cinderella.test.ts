@@ -98,9 +98,9 @@ const cindyNoS1Buff = withPatchedOverride('cinderella', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkOfMaxHpPct'));
   if (ov.skill1.length === before)
-    throw new Error(
-      'cinderella S1 atkOfMaxHpPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'cinderella S1 atkOfMaxHpPct block missing — fixture is stale'
+    );}
 });
 /** C1 nearest-wrong: her S1 ATK conversion as a GENERIC ATK% buff (ATK-scaling, not HP-scaling). */
 const cindyAtkNotHp = withPatchedOverride('cinderella', (ov) => {
@@ -108,17 +108,17 @@ const cindyAtkNotHp = withPatchedOverride('cinderella', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'atkOfMaxHpPct');
   if (!e)
-    throw new Error(
-      'cinderella S1 atkOfMaxHpPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'cinderella S1 atkOfMaxHpPct effect missing — fixture is stale'
+    );}
   e.stat = 'atkPct';
 });
 /** C2 nearest-wrong: per-rocket charging (the mag-dump primitive turned off). */
 const cindyNoMagDump = withPatchedOverride('cinderella', (ov) => {
   if (!ov.charFixes?.magDumpRof)
-    throw new Error(
-      'cinderella charFixes.magDumpRof missing — fixture is stale',
-    );
+    {throw new Error(
+      'cinderella charFixes.magDumpRof missing — fixture is stale'
+    );}
   ov.charFixes.magDumpRof = false;
 });
 /** C3 reference: her full-charge rider removed. */
@@ -129,19 +129,19 @@ const cindyNoRider = withPatchedOverride('cinderella', (ov) => {
       !(
         b.trigger?.kind === 'shotFired' &&
         b.effects.some((e: any) => e.kind === 'flatDamage')
-      ),
+      )
   );
   if (ov.skill1.length === before)
-    throw new Error('cinderella S1 rider block missing — fixture is stale');
+    {throw new Error('cinderella S1 rider block missing — fixture is stale');}
 });
 /** C5 reference: Beautiful removed entirely (no Max-HP ramp → no HP-scaling ATK feed). */
 const cindyNoBeautiful = withPatchedOverride('cinderella', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'casterMaxHpPct'));
   if (ov.skill1.length === before)
-    throw new Error(
-      'cinderella Beautiful (casterMaxHpPct) block missing — fixture is stale',
-    );
+    {throw new Error(
+      'cinderella Beautiful (casterMaxHpPct) block missing — fixture is stale'
+    );}
 });
 /** C5 nearest-wrong: Beautiful present but INSTANT (ramp removed → full from t=0). */
 const cindyInstantBeautiful = withPatchedOverride('cinderella', (ov) => {
@@ -149,7 +149,7 @@ const cindyInstantBeautiful = withPatchedOverride('cinderella', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterMaxHpPct');
   if (!e || e.rampSec == null)
-    throw new Error('cinderella Beautiful rampSec missing — fixture is stale');
+    {throw new Error('cinderella Beautiful rampSec missing — fixture is stale');}
   delete e.rampSec;
 });
 /** C7 nearest-wrong: the burst mirror present but INSTANT (ramp removed → full 346.8 every cast). */
@@ -158,9 +158,9 @@ const cindyInstantMirror = withPatchedOverride('cinderella', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage' && x.rampSec != null);
   if (!e)
-    throw new Error(
-      'cinderella burst mirror rampSec missing — fixture is stale',
-    );
+    {throw new Error(
+      'cinderella burst mirror rampSec missing — fixture is stale'
+    );}
   delete e.rampSec;
 });
 
@@ -183,7 +183,7 @@ const cindyShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'cinderella');
 const cindyBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'cinderella',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'cinderella'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -207,18 +207,18 @@ const maxBaseAtk = (ds: Damage[]) => Math.max(...ds.map((d) => d.baseAtk));
 describe('cinderella — kit spec', () => {
   describe('C1 — S1 ATK = 2.71% of final Max HP on B3 entry (HP-scaling, self, 10s)', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct',
+      (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct'
     );
 
     it('is emitted as atkOfMaxHpPct 2.71, self-scoped, for 10 sec', () => {
       expect(
         applied.length,
-        'no atkOfMaxHpPct buff was applied',
+        'no atkOfMaxHpPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([2.71]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CINDY]);
       expect([
         ...new Set(applied.map((b) => b.expiresFrame! - b.frame)),
@@ -229,7 +229,7 @@ describe('cinderella — kit spec', () => {
       // atkOfMaxHpPct adds 2.71% of ~3.3M Max HP (~90k ATK); a generic atkPct would add 2.71% of
       // ~80k static ATK (~2.2k). The shipped nuke must sit far above the ATK-scaling model.
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(atkNotHp.events)) * 1.5,
+        maxBaseAtk(nukes(atkNotHp.events)) * 1.5
       );
     });
 
@@ -237,8 +237,8 @@ describe('cinderella — kit spec', () => {
       // Proves the first assertion is one the generic atkPct model provably fails.
       expect(
         buffs(atkNotHp.events).filter(
-          (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct',
-        ),
+          (b) => b.casterIdx === CINDY && b.stat === 'atkOfMaxHpPct'
+        )
       ).toEqual([]);
     });
   });
@@ -249,12 +249,12 @@ describe('cinderella — kit spec', () => {
       const perRocket = cindyShots(noMagDump.events).length;
       expect(
         dumped,
-        'mag-dump should fire well over 300 pulls/180s',
+        'mag-dump should fire well over 300 pulls/180s'
       ).toBeGreaterThan(300);
       expect(
         dumped,
         `${dumped} dumped vs ${perRocket} per-rocket — the dump must fire the mag at the autofire ` +
-          'rate after one prime, not charge before every rocket',
+          'rate after one prime, not charge before every rocket'
       ).toBeGreaterThan(perRocket * 2);
     });
 
@@ -267,7 +267,7 @@ describe('cinderella — kit spec', () => {
         .sort((a, b) => a.frame - b.frame);
       expect(
         firstMag.length,
-        'first magazine should hold a full 24-rocket dump',
+        'first magazine should hold a full 24-rocket dump'
       ).toBeGreaterThanOrEqual(20);
       const gaps = firstMag.slice(1).map((s, i) => s.frame - firstMag[i].frame);
       const median = [...gaps].sort((a, b) => a - b)[
@@ -275,7 +275,7 @@ describe('cinderella — kit spec', () => {
       ];
       expect(
         median,
-        'intra-mag gap must be the ~20f autofire rate, not a charge cycle',
+        'intra-mag gap must be the ~20f autofire rate, not a charge cycle'
       ).toBeLessThanOrEqual(25);
     });
   });
@@ -301,28 +301,28 @@ describe('cinderella — kit spec', () => {
 
   describe('C5 — S2 Beautiful is a 36s Max-HP RAMP that feeds her HP-scaling ATK', () => {
     const maxHpFlat = buffs(base.events).filter(
-      (b) => b.casterIdx === CINDY && b.stat === 'maxHpFlat',
+      (b) => b.casterIdx === CINDY && b.stat === 'maxHpFlat'
     );
 
     it('is a self-scoped, always-on Max-HP grant (converted from casterMaxHpPct 19.2)', () => {
       expect(
         maxHpFlat.length,
-        'no Beautiful maxHpFlat buff was applied',
+        'no Beautiful maxHpFlat buff was applied'
       ).toBeGreaterThan(0);
       expect(
         [...new Set(maxHpFlat.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CINDY]);
       expect(
         [...new Set(maxHpFlat.map((b) => b.expiresFrame))],
-        'Beautiful is continuous — no wall-clock expiry',
+        'Beautiful is continuous — no wall-clock expiry'
       ).toEqual([null]);
-      for (const b of maxHpFlat) expect(b.value).toBeGreaterThan(0);
+      for (const b of maxHpFlat) {expect(b.value).toBeGreaterThan(0);}
     });
 
     it('FEEDS her ATK: the shipped nuke baseAtk exceeds the no-Beautiful counterfactual', () => {
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(noBeautiful.events)),
+        maxBaseAtk(nukes(noBeautiful.events))
       );
     });
 
@@ -363,7 +363,7 @@ describe('cinderella — kit spec', () => {
       const took = nukes(base.events).filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
 
@@ -376,7 +376,7 @@ describe('cinderella — kit spec', () => {
       // file DOES — not which reading is correct (the driver cannot view the e3 footage; see the
       // override caveat for the one-popup resolution recipe).
       expect(maxBaseAtk(nukes(base.events))).toBeGreaterThan(
-        maxBaseAtk(nukes(noS1Buff.events)) * 1.3,
+        maxBaseAtk(nukes(noS1Buff.events)) * 1.3
       );
     });
 
@@ -399,18 +399,18 @@ describe('cinderella — kit spec', () => {
     it('fires one mirror per cast, ramping up to the full 346.8', () => {
       const mr = mirrors(base.events);
       expect(mr.length, 'one mirror per burst cast').toBe(
-        cindyBursts(base.events).length,
+        cindyBursts(base.events).length
       );
       const values = [...new Set(mr.map((d) => +d.atkPct.toFixed(3)))].sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
       expect(
         values[values.length - 1],
-        'late casts reach full 28.9% × 12',
+        'late casts reach full 28.9% × 12'
       ).toBe(346.8);
       expect(
         values[0],
-        'the first cast is still ramping (partial Beautiful)',
+        'the first cast is still ramping (partial Beautiful)'
       ).toBeLessThan(346.8);
     });
 
@@ -418,15 +418,15 @@ describe('cinderella — kit spec', () => {
       // The gradual model produces a sub-346.8 mirror (the partial first cast) that the instant
       // model cannot — proving the ramp is a property of the encoding, not coincidence.
       const shippedValues = new Set(
-        mirrors(base.events).map((d) => +d.atkPct.toFixed(3)),
+        mirrors(base.events).map((d) => +d.atkPct.toFixed(3))
       );
       const instantValues = new Set(
-        mirrors(instantMirror.events).map((d) => +d.atkPct.toFixed(3)),
+        mirrors(instantMirror.events).map((d) => +d.atkPct.toFixed(3))
       );
       expect([...instantValues]).toEqual([346.8]);
       expect(
         [...shippedValues].some((v) => v < 346.8),
-        'shipped must have a partial mirror',
+        'shipped must have a partial mirror'
       ).toBe(true);
     });
   });

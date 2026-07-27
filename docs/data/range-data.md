@@ -15,12 +15,12 @@ The effective-range bonus is visible in game, so which weapons receive it at eac
 band's distance directly — no damage back-calculation needed. Taking the weapon windows above and
 requiring that the weapons which DON'T get the bonus also fail their windows:
 
-| band | weapons with the bonus | distance window |
-|---|---|---|
-| near | Shotgun + Submachine Gun | **15 – 25** |
-| mid | Submachine Gun + Assault Rifle | **25 – 35** |
-| mid far | Assault Rifle + Machine Gun | **35 – 45** |
-| far | Machine Gun + Sniper Rifle | **45 – 55** |
+| band    | weapons with the bonus         | distance window |
+| ------- | ------------------------------ | --------------- |
+| near    | Shotgun + Submachine Gun       | **15 – 25**     |
+| mid     | Submachine Gun + Assault Rifle | **25 – 35**     |
+| mid far | Assault Rifle + Machine Gun    | **35 – 45**     |
+| far     | Machine Gun + Sniper Rifle     | **45 – 55**     |
 
 Every window is 10 wide and they tile without gaps, so **consecutive bands sit about 10 apart**
 regardless of where inside its window each one actually falls. Anchoring on the near band's measured

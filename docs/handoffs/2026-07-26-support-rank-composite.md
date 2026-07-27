@@ -12,12 +12,12 @@ sustain, and buffing (the four boards landed 2026-07-26 in `src/ranks/` +
 
 ## Inputs and their units (incompatible — normalization is the first problem)
 
-| Board | Artifact | Metric | Population |
-|---|---|---|---|
-| Burst gen | `burstgen.json` | uncapped gauge % over 180s (100 = 1 bar), solo disableBursts | all simSupported |
-| Burst CDR | `burstcdr.json` | nominal team CDR sec per 40s (static + cadence) | 15 burst-cdr-tagged |
-| Sustain | `sustain.json` | team-total HP restored+shielded, % of caster maxHP + absolute | 50 healer/shield + nayuta |
-| Buffer | `bufferchart.json` | added carry DPS vs no-op baseline (generic & typed arms) | 74 B1/B2 + B3 buffers |
+| Board     | Artifact           | Metric                                                        | Population                |
+| --------- | ------------------ | ------------------------------------------------------------- | ------------------------- |
+| Burst gen | `burstgen.json`    | uncapped gauge % over 180s (100 = 1 bar), solo disableBursts  | all simSupported          |
+| Burst CDR | `burstcdr.json`    | nominal team CDR sec per 40s (static + cadence)               | 15 burst-cdr-tagged       |
+| Sustain   | `sustain.json`     | team-total HP restored+shielded, % of caster maxHP + absolute | 50 healer/shield + nayuta |
+| Buffer    | `bufferchart.json` | added carry DPS vs no-op baseline (generic & typed arms)      | 74 B1/B2 + B3 buffers     |
 
 Different units, different populations, different scales → combine as
 **per-board percentiles** (or z-scores), not raw values.
@@ -54,7 +54,7 @@ Different units, different populations, different scales → combine as
   percentile normalization keeps it from swamping, but a "support rank" may
   want the burst-gen input restricted to KIT-driven generation (subtract the
   class-modal weapon baseline per unit: `gaugeGenerated(unit) −
-  gaugeGenerated(same-class synthetic)` — the synthetics from
+gaugeGenerated(same-class synthetic)` — the synthetics from
   `src/ranks/synthetics.ts` make this one extra run per class).
 - The CDR board is static/nominal while the others are simmed — fine after
   percentile normalization, but don't try to convert CDR seconds into DPS.

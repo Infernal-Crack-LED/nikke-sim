@@ -25,7 +25,13 @@ const CARRY = 'ada';
 
 function probe(block: Record<string, unknown>, cfg: Partial<SimConfig> = {}) {
   const patched = withPatchedOverride(CARRY, (ov) => {
-    ov.skill1 = [{ target: { kind: 'self' }, effects: [{ kind: 'flatDamage', atkPct: 100 }], ...block }];
+    ov.skill1 = [
+      {
+        target: { kind: 'self' },
+        effects: [{ kind: 'flatDamage', atkPct: 100 }],
+        ...block,
+      },
+    ];
   });
   const events: SimEvent[] = [];
   runComp({
@@ -34,15 +40,20 @@ function probe(block: Record<string, unknown>, cfg: Partial<SimConfig> = {}) {
     cfg: { ...cfg, onEvent: (e) => events.push(e) },
   });
   const procs = events.filter(
-    (e): e is DamageEvent => e.kind === 'damage' && e.slug === CARRY && e.srcSlot === 'skill1',
+    (e): e is DamageEvent =>
+      e.kind === 'damage' && e.slug === CARRY && e.srcSlot === 'skill1'
   );
-  const shots = events.filter((e): e is ShotEvent => e.kind === 'shot' && e.slug === CARRY);
+  const shots = events.filter(
+    (e): e is ShotEvent => e.kind === 'shot' && e.slug === CARRY
+  );
   // frame → whether a Full Burst window was open, read off the log's own boundaries
-  const bounds = events.filter((e) => e.kind === 'fullBurstStart' || e.kind === 'fullBurstEnd');
+  const bounds = events.filter(
+    (e) => e.kind === 'fullBurstStart' || e.kind === 'fullBurstEnd'
+  );
   const inFb = (frame: number): boolean => {
     let open = false;
     for (const b of bounds) {
-      if (b.frame > frame) break;
+      if (b.frame > frame) {break;}
       open = b.kind === 'fullBurstStart';
     }
     return open;
@@ -50,8 +61,14 @@ function probe(block: Record<string, unknown>, cfg: Partial<SimConfig> = {}) {
   return { events, procs, shots, inFb };
 }
 
-const perShot = (extra: Record<string, unknown> = {}) => ({ trigger: { kind: 'shotFired' }, ...extra });
-const every5s = (extra: Record<string, unknown> = {}) => ({ trigger: { kind: 'interval', sec: 5 }, ...extra });
+const perShot = (extra: Record<string, unknown> = {}) => ({
+  trigger: { kind: 'shotFired' },
+  ...extra,
+});
+const every5s = (extra: Record<string, unknown> = {}) => ({
+  trigger: { kind: 'interval', sec: 5 },
+  ...extra,
+});
 
 describe('block gates', () => {
   it('fbGate partitions the trigger stream EXACTLY into in-FB and out-of-FB activations', () => {
@@ -65,19 +82,25 @@ describe('block gates', () => {
     // airtight: every pull fires in exactly one of the two arms, and an off-by-one on the window
     // boundary shows up as a pull claimed by neither.
     const ungated = probe(perShot());
-    expect(ungated.procs.map((p) => p.frame), 'the ungated block did not fire on every pull').toEqual(
-      ungated.shots.map((s) => s.frame),
-    );
+    expect(
+      ungated.procs.map((p) => p.frame),
+      'the ungated block did not fire on every pull'
+    ).toEqual(ungated.shots.map((s) => s.frame));
     for (const [gate, want] of [
       ['inFb', true],
       ['outFb', false],
     ] as const) {
       const arm = probe(perShot({ fbGate: gate }));
-      const expected = arm.shots.filter((s) => arm.inFb(s.frame) === want).map((s) => s.frame);
-      expect(expected.length, `no pull was ${want ? 'inside' : 'outside'} a Full Burst — arm is vacuous`).toBeGreaterThan(0);
+      const expected = arm.shots
+        .filter((s) => arm.inFb(s.frame) === want)
+        .map((s) => s.frame);
+      expect(
+        expected.length,
+        `no pull was ${want ? 'inside' : 'outside'} a Full Burst — arm is vacuous`
+      ).toBeGreaterThan(0);
       expect(
         arm.procs.map((p) => p.frame),
-        `fbGate '${gate}' did not fire on exactly the ${want ? 'in-FB' : 'out-of-FB'} pulls`,
+        `fbGate '${gate}' did not fire on exactly the ${want ? 'in-FB' : 'out-of-FB'} pulls`
       ).toEqual(expected);
     }
   });
@@ -85,13 +108,24 @@ describe('block gates', () => {
   it('everyN fires on every Nth activation, and everyNOffset shifts the phase', () => {
     const plain = probe(every5s()).procs.map((p) => p.frame);
     const third = probe(every5s({ everyN: 3 })).procs.map((p) => p.frame);
-    const offset = probe(every5s({ everyN: 3, everyNOffset: 1 })).procs.map((p) => p.frame);
-    expect(plain.length, 'the ungated interval probe never fired').toBeGreaterThan(6);
+    const offset = probe(every5s({ everyN: 3, everyNOffset: 1 })).procs.map(
+      (p) => p.frame
+    );
+    expect(
+      plain.length,
+      'the ungated interval probe never fired'
+    ).toBeGreaterThan(6);
     // activations 3, 6, 9 … vs 1, 4, 7 … — same period, different phase
     expect(third).toEqual(plain.filter((_, i) => (i + 1) % 3 === 0));
     expect(offset).toEqual(plain.filter((_, i) => i % 3 === 0));
-    expect(offset[0], 'the offset arm should fire on the FIRST activation').toBe(plain[0]);
-    expect(third[0], 'the un-offset arm should skip the first two activations').toBe(plain[2]);
+    expect(
+      offset[0],
+      'the offset arm should fire on the FIRST activation'
+    ).toBe(plain[0]);
+    expect(
+      third[0],
+      'the un-offset arm should skip the first two activations'
+    ).toBe(plain[2]);
   });
 
   it('DISCRIMINATING: a gated-out activation does NOT advance the everyN counter', () => {
@@ -103,11 +137,16 @@ describe('block gates', () => {
     // Self-contained within one run (see the gauge-feedback note above): the arm's own in-FB pulls
     // are the activation sequence, and the block must fire on every second one of THOSE.
     const arm = probe(perShot({ fbGate: 'inFb', everyN: 2 }));
-    const inFbPulls = arm.shots.filter((s) => arm.inFb(s.frame)).map((s) => s.frame);
-    expect(inFbPulls.length, 'not enough in-FB pulls to test the phase').toBeGreaterThan(6);
+    const inFbPulls = arm.shots
+      .filter((s) => arm.inFb(s.frame))
+      .map((s) => s.frame);
+    expect(
+      inFbPulls.length,
+      'not enough in-FB pulls to test the phase'
+    ).toBeGreaterThan(6);
     expect(
       arm.procs.map((p) => p.frame),
-      'everyN counted activations the fbGate had already rejected',
+      'everyN counted activations the fbGate had already rejected'
     ).toEqual(inFbPulls.filter((_, i) => (i + 1) % 2 === 0));
   });
 
@@ -115,18 +154,35 @@ describe('block gates', () => {
     // The gate reads the FIGHT's core exposure, not whether a particular hit cored: a kit line whose
     // in-game trigger needs a core hit cannot fire at all against a coreless target.
     const exposed = probe(every5s({ requiresCore: true })).procs;
-    const coreless = probe(every5s({ requiresCore: true }), { coreHitRate: 0 }).procs;
+    const coreless = probe(every5s({ requiresCore: true }), {
+      coreHitRate: 0,
+    }).procs;
     const ungated = probe(every5s(), { coreHitRate: 0 }).procs;
-    expect(exposed.length, 'the core-gated block never fired at 100% core exposure').toBeGreaterThan(0);
-    expect(coreless, 'a core-gated block fired against a coreless target').toEqual([]);
+    expect(
+      exposed.length,
+      'the core-gated block never fired at 100% core exposure'
+    ).toBeGreaterThan(0);
+    expect(
+      coreless,
+      'a core-gated block fired against a coreless target'
+    ).toEqual([]);
     // ...and the coreless fight is otherwise perfectly capable of firing the same block
-    expect(ungated.length, 'the coreless control fired nothing at all — the arm above is vacuous').toBeGreaterThan(0);
+    expect(
+      ungated.length,
+      'the coreless control fired nothing at all — the arm above is vacuous'
+    ).toBeGreaterThan(0);
   });
 
   it('bossElementGate fires only against the matching boss element', () => {
     const match = probe(every5s({ bossElementGate: 'Fire' })).procs;
     const miss = probe(every5s({ bossElementGate: 'Water' })).procs;
-    expect(match.length, 'the element-gated block never fired against its own element').toBeGreaterThan(0);
-    expect(miss, 'an element-gated block fired against the wrong boss element').toEqual([]);
+    expect(
+      match.length,
+      'the element-gated block never fired against its own element'
+    ).toBeGreaterThan(0);
+    expect(
+      miss,
+      'an element-gated block fired against the wrong boss element'
+    ).toEqual([]);
   });
 });

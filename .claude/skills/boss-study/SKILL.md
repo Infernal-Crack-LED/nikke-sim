@@ -12,9 +12,11 @@ infinite HP / time-based triggers, DEF deferred to v2).
 ## The flow
 
 1. **Scan (mechanical, no interpretation):**
+
    ```sh
    python3 scripts/boss-study/scan.py <video> --out <dir>
    ```
+
    Emits `observations.json` + per-window evidence sheets. Detectors: ammo-box tracker
    (NCC + digit-signature verify; NORMAL vs INVERTED=reload states), glyph ammo reads
    (authoritative on settled samples only), digit-stability firing classification

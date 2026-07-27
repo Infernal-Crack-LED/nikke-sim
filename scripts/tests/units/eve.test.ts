@@ -89,7 +89,7 @@ const eveComp = (bossElement: Element | null): CompOptions => ({
 
 function run(
   overrides: Record<string, any> = {},
-  bossElement: Element | null = 'Electric',
+  bossElement: Element | null = 'Electric'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -111,7 +111,7 @@ const eveNoCrit = withPatchedOverride('eve', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
   if (ov.skill1.length === before)
-    throw new Error('eve S1 critRatePct block missing — fixture is stale');
+    {throw new Error('eve S1 critRatePct block missing — fixture is stale');}
 });
 /** E2 counterfactual: Unstable Energy at 240% (the ×3 sequential forgotten). */
 const eveUnstable240 = withPatchedOverride('eve', (ov) => {
@@ -119,7 +119,7 @@ const eveUnstable240 = withPatchedOverride('eve', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
   if (!e || e.atkPct !== 720)
-    throw new Error('eve S1 720% flatDamage missing — fixture is stale');
+    {throw new Error('eve S1 720% flatDamage missing — fixture is stale');}
   e.atkPct = 240;
 });
 /** E5 counterfactual: her S2 reload-refund line removed. */
@@ -127,7 +127,7 @@ const eveNoRefund = withPatchedOverride('eve', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasKind(b, 'instantReload'));
   if (ov.skill2.length === before)
-    throw new Error('eve S2 instantReload block missing — fixture is stale');
+    {throw new Error('eve S2 instantReload block missing — fixture is stale');}
 });
 /** E7 counterfactual: Mk2 doubling as the ADDITIVE sequentialDamagePct (the diluting bucket). */
 const eveSeqDamage = withPatchedOverride('eve', (ov) => {
@@ -135,7 +135,7 @@ const eveSeqDamage = withPatchedOverride('eve', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sequentialMultPct');
   if (!e)
-    throw new Error('eve burst sequentialMultPct missing — fixture is stale');
+    {throw new Error('eve burst sequentialMultPct missing — fixture is stale');}
   e.stat = 'sequentialDamagePct';
 });
 
@@ -184,12 +184,12 @@ describe('eve — kit spec', () => {
   describe('E1 — S1 Critical Rate ▲60% is a live, self-scoped passive (15 → 75%)', () => {
     it("lifts eve's normal-attack crit rate to exactly 0.75", () => {
       expect(
-        distinctNum(eveDamage(base.events, 'normal').map((d) => d.critRate)),
+        distinctNum(eveDamage(base.events, 'normal').map((d) => d.critRate))
       ).toEqual([0.75]);
     });
     it('DISCRIMINATING: removing the line drops her to the 0.15 base', () => {
       expect(
-        distinctNum(eveDamage(noCrit.events, 'normal').map((d) => d.critRate)),
+        distinctNum(eveDamage(noCrit.events, 'normal').map((d) => d.critRate))
       ).toEqual([0.15]);
     });
     it('is self-scoped: a permanent critRatePct=60 buff held by eve alone', () => {
@@ -207,8 +207,8 @@ describe('eve — kit spec', () => {
       expect(
         distinctNum(
           procs.map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([720]);
       expect(distinct(procs.map((d) => d.bucket))).toEqual(['skill']);
     });
@@ -216,8 +216,8 @@ describe('eve — kit spec', () => {
       expect(
         distinctNum(
           unstableProcs(unstable240.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([240]);
     });
     it('fires on the hitCount-59 proxy cadence (44 crits / 0.75), not the literal 44', () => {
@@ -227,15 +227,15 @@ describe('eve — kit spec', () => {
       const expect44 = shots / 44;
       expect(
         procs,
-        `${procs} procs / ${shots} shots — expected ≈${expect59.toFixed(1)} (÷59), not ≈${expect44.toFixed(1)} (÷44)`,
+        `${procs} procs / ${shots} shots — expected ≈${expect59.toFixed(1)} (÷59), not ≈${expect44.toFixed(1)} (÷44)`
       ).toBeGreaterThanOrEqual(Math.floor(expect59 * 0.8));
       expect(
         procs,
-        'proc count is implausibly high for the ÷59 cadence',
+        'proc count is implausibly high for the ÷59 cadence'
       ).toBeLessThanOrEqual(Math.ceil(expect59 * 1.2));
       expect(
         procs,
-        'proc count must sit well below the literal-÷44 reading',
+        'proc count must sit well below the literal-÷44 reading'
       ).toBeLessThan(expect44 * 0.85);
     });
   });
@@ -243,48 +243,48 @@ describe('eve — kit spec', () => {
   describe('E3 — S1 Damage Taken ▲10% is gated on an Electric boss', () => {
     it('vs Electric: the boss carries damageTakenPct 10 (enemy debuff, targetIdx null)', () => {
       const debuff = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(
         debuff.length,
-        'no boss damageTakenPct debuff vs Electric',
+        'no boss damageTakenPct debuff vs Electric'
       ).toBeGreaterThan(0);
       expect(distinctNum(debuff.map((b) => b.value))).toEqual([10]);
     });
     it("vs Electric: eve's damage actually takes the +10% (mult.taken 1.1 once live)", () => {
       const taken = distinctNum(
         eveDamage(base.events, 'normal').map((d) => d.mult.taken),
-        4,
+        4
       );
       expect(
         taken.some((t) => Math.abs(t - 1.1) < 1e-3),
-        `mult.taken values ${taken} never reach 1.1`,
+        `mult.taken values ${taken} never reach 1.1`
       ).toBe(true);
     });
     it('DISCRIMINATING gate: vs an Iron boss the debuff is absent and mult.taken stays 1.0', () => {
       const debuff = buffs(iron.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(debuff).toEqual([]);
       expect(
         distinctNum(
           eveDamage(iron.events, 'normal').map((d) => d.mult.taken),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
     });
     it('Iron is element-neutral for eve (Iron major 1.0, the "Iron == neutral" caveat)', () => {
       expect(
         distinctNum(
           eveDamage(iron.events, 'normal').map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
       expect(
         distinctNum(
           eveDamage(base.events, 'normal').map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1.1]);
     });
   });
@@ -292,25 +292,25 @@ describe('eve — kit spec', () => {
   describe('E4 — S2 Eagle Eye: ATK ▲50% (casterAtkPct flat grant) + Max Ammunition ▲25%, permanent self', () => {
     it("grants casterAtkPct as a flat ATK grant = 50% of eve's ATK, self-held, no expiry", () => {
       const applied = eveBuffs(base.events, 'casterAtkPct').filter(
-        (b) => b.expiresFrame === null,
+        (b) => b.expiresFrame === null
       );
       expect(
         applied.length,
-        'no permanent casterAtkPct passive',
+        'no permanent casterAtkPct passive'
       ).toBeGreaterThan(0);
       // casterAtkPct is "▲50% of the skill user's ATK": the engine resolves it to a FLAT grant
       // (59833.5 = 0.5 × 119667), NOT a generic percentage atkPct and NOT a small flat +50.
       expect(
         distinctNum(
           applied.map((b) => b.value),
-          1,
-        ),
+          1
+        )
       ).toEqual([EVE_ATK_GRANT_50PCT]);
       expect(distinct(applied.map((b) => b.targetIdx))).toEqual([EVE]);
     });
     it('grants maxAmmoPct 25, self-held, no expiry', () => {
       const applied = eveBuffs(base.events, 'maxAmmoPct').filter(
-        (b) => b.expiresFrame === null,
+        (b) => b.expiresFrame === null
       );
       expect(distinctNum(applied.map((b) => b.value))).toEqual([25]);
       expect(distinct(applied.map((b) => b.targetIdx))).toEqual([EVE]);
@@ -323,12 +323,12 @@ describe('eve — kit spec', () => {
       const without = eveReloads(noRefund.events).length;
       expect(
         without,
-        'removing the refund did not increase reloads — refund is inert vs Electric',
+        'removing the refund did not increase reloads — refund is inert vs Electric'
       ).toBeGreaterThan(withRefund);
     });
     it('DISCRIMINATING gate: vs Iron the refund is inert (reload count identical to removed)', () => {
       expect(eveReloads(iron.events).length).toBe(
-        eveReloads(ironNoRefund.events).length,
+        eveReloads(ironNoRefund.events).length
       );
     });
   });
@@ -341,8 +341,8 @@ describe('eve — kit spec', () => {
       expect(
         distinctNum(
           nukes(base.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([2742.84]);
       expect(distinct(nukes(base.events).map((d) => d.bucket))).toEqual([
         'burst',
@@ -352,29 +352,29 @@ describe('eve — kit spec', () => {
       expect(
         nukes(base.events)
           .filter((d) => d.fbMajorApplied)
-          .map((d) => d.sec),
+          .map((d) => d.sec)
       ).toEqual([]);
     });
     it('carries NO sequential flavor: seqMult 1 on every nuke, while the same fight routes the proc to seqMult 2 under Mk2', () => {
       expect(
         distinctNum(
           nukes(base.events).map((d) => d.mult.seqMult),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
       const windows = mk2Windows(base.events);
       const procsInMk2 = unstableProcs(base.events).filter((d) =>
-        inMk2(windows, d.frame),
+        inMk2(windows, d.frame)
       );
       expect(
         procsInMk2.length,
-        'no Unstable Energy proc landed inside an Mk2 window to contrast against',
+        'no Unstable Energy proc landed inside an Mk2 window to contrast against'
       ).toBeGreaterThan(0);
       expect(
         distinctNum(
           procsInMk2.map((d) => d.mult.seqMult),
-          4,
-        ),
+          4
+        )
       ).toEqual([2]);
     });
   });
@@ -399,30 +399,30 @@ describe('eve — kit spec', () => {
       expect(
         distinctNum(
           inside.map((d) => d.mult.seqMult),
-          4,
-        ),
+          4
+        )
       ).toEqual([2]);
       expect(
         distinctNum(
           outside.map((d) => d.mult.seqMult),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
     });
     it('DISCRIMINATING bucket: the additive sequentialDamagePct leaves seqMult 1 (bonus folds into dmgUp)', () => {
       const windows = mk2Windows(seqDamage.events);
       const inside = unstableProcs(seqDamage.events).filter((d) =>
-        inMk2(windows, d.frame),
+        inMk2(windows, d.frame)
       );
       expect(
         inside.length,
-        'no proc inside an Mk2 window in the counterfactual run',
+        'no proc inside an Mk2 window in the counterfactual run'
       ).toBeGreaterThan(0);
       expect(
         distinctNum(
           inside.map((d) => d.mult.seqMult),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
     });
   });
@@ -430,23 +430,23 @@ describe('eve — kit spec', () => {
   describe('E8 — Mk2 re-grants the Eagle Eye ATK as a TIMED (10s) casterAtkPct, equal to the passive', () => {
     it('emits a timed casterAtkPct whose flat value EQUALS the permanent grant (×2 Eagle Eye ATK)', () => {
       const passive = eveBuffs(base.events, 'casterAtkPct').filter(
-        (b) => b.expiresFrame === null,
+        (b) => b.expiresFrame === null
       );
       const timed = eveBuffs(base.events, 'casterAtkPct').filter(
-        (b) => b.expiresFrame !== null,
+        (b) => b.expiresFrame !== null
       );
       expect(timed.length).toBe(eveBursts(base.events).length);
       const passiveVal = distinctNum(
         passive.map((b) => b.value),
-        1,
+        1
       );
       expect(passiveVal).toEqual([EVE_ATK_GRANT_50PCT]);
       // "scaled by 100%" re-grants the SAME 50%-of-ATK, so the timed grant equals the passive.
       expect(
         distinctNum(
           timed.map((b) => b.value),
-          1,
-        ),
+          1
+        )
       ).toEqual(passiveVal);
       expect(distinct(timed.map((b) => b.expiresFrame! - b.frame))).toEqual([
         MK2_FRAMES,

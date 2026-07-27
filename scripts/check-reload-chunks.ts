@@ -38,17 +38,27 @@ interface ShotRow {
 
 const LIST = process.argv.includes('--list');
 
-const chars = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
-const units: any[] = Array.isArray(chars) ? chars : Object.values(chars.characters ?? chars);
+const chars = JSON.parse(
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
+);
+const units: any[] = Array.isArray(chars)
+  ? chars
+  : Object.values(chars.characters ?? chars);
 
 /** The single shot row (weapon spec) on a character entry. */
 const shotRow = (u: any): ShotRow | null => {
   const walk = (o: any): ShotRow | null => {
     if (Array.isArray(o)) {
-      for (const v of o) { const r = walk(v); if (r) return r; }
+      for (const v of o) {
+        const r = walk(v);
+        if (r) {return r;}
+      }
     } else if (o && typeof o === 'object') {
-      if ('reload_bullet' in o) return o as ShotRow;
-      for (const v of Object.values(o)) { const r = walk(v); if (r) return r; }
+      if ('reload_bullet' in o) {return o as ShotRow;}
+      for (const v of Object.values(o)) {
+        const r = walk(v);
+        if (r) {return r;}
+      }
     }
     return null;
   };
@@ -63,16 +73,29 @@ export const reloadChunks = (reloadBullet: number | undefined): number =>
 const expectedReloadFrames = (reloadTime: number, chunks: number): number =>
   Math.round(reloadTime * chunks * 0.6 + 21);
 
-const rows: Array<{ slug: string; weapon: string; chunks: number; rt: number; have: number; want: number; ok: boolean }> = [];
+const rows: Array<{
+  slug: string;
+  weapon: string;
+  chunks: number;
+  rt: number;
+  have: number;
+  want: number;
+  ok: boolean;
+}> = [];
 
 for (const u of units) {
   const s = shotRow(u);
-  if (!s || s.reload_time == null || u.reloadFrames == null) continue;
+  if (!s || s.reload_time == null || u.reloadFrames == null) {continue;}
   const chunks = reloadChunks(s.reload_bullet);
   const want = expectedReloadFrames(s.reload_time, chunks);
   rows.push({
-    slug: u.slug, weapon: u.weapon, chunks, rt: s.reload_time,
-    have: u.reloadFrames, want, ok: Math.abs(want - u.reloadFrames) <= 1,
+    slug: u.slug,
+    weapon: u.weapon,
+    chunks,
+    rt: s.reload_time,
+    have: u.reloadFrames,
+    want,
+    ok: Math.abs(want - u.reloadFrames) <= 1,
   });
 }
 
@@ -88,53 +111,76 @@ for (const u of units) {
 //   asuka / scarlet-black-shadow — single-part units a few frames off the ×1 formula (+3, +11),
 //           unrelated to chunking; upstream table values, never investigated.
 const PINNED: Record<string, { frames: number; why: string }> = {
-  grave: { frames: 81, why: 'held at the ×1 value by owner decision 2026-07-22 (low priority → U30); masked by measured charFixes 193' },
-  asuka: { frames: 84, why: 'single-part, +3 f off the ×1 formula; uninvestigated' },
-  'scarlet-black-shadow': { frames: 152, why: 'single-part, +11 f off the ×1 formula; uninvestigated' },
+  grave: {
+    frames: 81,
+    why: 'held at the ×1 value by owner decision 2026-07-22 (low priority → U30); masked by measured charFixes 193',
+  },
+  asuka: {
+    frames: 84,
+    why: 'single-part, +3 f off the ×1 formula; uninvestigated',
+  },
+  'scarlet-black-shadow': {
+    frames: 152,
+    why: 'single-part, +11 f off the ×1 formula; uninvestigated',
+  },
 };
 
-const chunked = rows.filter(r => r.chunks > 1);
-const bad = rows.filter(r => !r.ok);
+const chunked = rows.filter((r) => r.chunks > 1);
+const bad = rows.filter((r) => !r.ok);
 // A pinned unit is tolerated ONLY while its shipped value still equals the pin.
-const pinnedOk = (r: typeof rows[number]) => PINNED[r.slug]?.frames === r.have;
-const unexpected = bad.filter(r => !pinnedOk(r));
+const pinnedOk = (r: (typeof rows)[number]) =>
+  PINNED[r.slug]?.frames === r.have;
+const unexpected = bad.filter((r) => !pinnedOk(r));
 // Units whose shipped value matches the ×1 formula while `reload_bullet` says they chunk: the
 // silent-regression class this check exists to catch.
-const unmultiplied = bad.filter(r => Math.abs(expectedReloadFrames(r.rt, 1) - r.have) <= 1);
+const unmultiplied = bad.filter(
+  (r) => Math.abs(expectedReloadFrames(r.rt, 1) - r.have) <= 1
+);
 
 if (LIST || unexpected.length) {
-  console.log(`\n${'slug'.padEnd(24)}${'wpn'.padEnd(5)}${'chunks'.padStart(7)}${'reload_time'.padStart(12)}${'reloadFrames'.padStart(13)}${'expected'.padStart(10)}`);
-  for (const r of [...chunked, ...bad.filter(b => b.chunks === 1)].sort((a, b) => a.slug.localeCompare(b.slug))) {
+  console.log(
+    `\n${'slug'.padEnd(24)}${'wpn'.padEnd(5)}${'chunks'.padStart(7)}${'reload_time'.padStart(12)}${'reloadFrames'.padStart(13)}${'expected'.padStart(10)}`
+  );
+  for (const r of [...chunked, ...bad.filter((b) => b.chunks === 1)].sort(
+    (a, b) => a.slug.localeCompare(b.slug)
+  )) {
     console.log(
       `${r.slug.padEnd(24)}${r.weapon.padEnd(5)}${String(r.chunks).padStart(7)}${String(r.rt).padStart(12)}` +
-      `${String(r.have).padStart(13)}${String(r.want).padStart(10)}  ${r.ok ? '✓' : '✗'}`,
+        `${String(r.have).padStart(13)}${String(r.want).padStart(10)}  ${r.ok ? '✓' : '✗'}`
     );
   }
 }
 
 console.log(
   `\nreload-chunk census: ${rows.length} units — ${chunked.length} chunked ` +
-  `(${chunked.filter(r => r.chunks === 3).length}× 3-part, ${chunked.filter(r => r.chunks === 2).length}× 2-part), ` +
-  `${rows.length - chunked.length} single-part.`,
+    `(${chunked.filter((r) => r.chunks === 3).length}× 3-part, ${chunked.filter((r) => r.chunks === 2).length}× 2-part), ` +
+    `${rows.length - chunked.length} single-part.`
 );
 
-const describe = (r: typeof rows[number]) =>
+const describe = (r: (typeof rows)[number]) =>
   `${r.slug}: reloadFrames ${r.have}, expected ${r.want} — ` +
-  (unmultiplied.includes(r) ? `SHIPPED UN-MULTIPLIED (×1 of a ${r.chunks}-part reload)` : 'off-convention');
+  (unmultiplied.includes(r)
+    ? `SHIPPED UN-MULTIPLIED (×1 of a ${r.chunks}-part reload)`
+    : 'off-convention');
 
-for (const r of bad.filter(pinnedOk)) console.log(`  pinned — ${r.slug}: reloadFrames ${r.have} (convention says ${r.want}) — ${PINNED[r.slug].why}`);
+for (const r of bad.filter(pinnedOk))
+  {console.log(
+    `  pinned — ${r.slug}: reloadFrames ${r.have} (convention says ${r.want}) — ${PINNED[r.slug].why}`
+  );}
 
 if (!unexpected.length) {
-  console.log('reload chunks: all reloadFrames match reload_time × chunks × 0.6 + 21 (pinned exceptions aside)');
+  console.log(
+    'reload chunks: all reloadFrames match reload_time × chunks × 0.6 + 21 (pinned exceptions aside)'
+  );
   process.exit(0);
 }
 
 console.log(`\nreload chunks: ${unexpected.length} NEW unexplained unit(s):`);
-for (const r of unexpected) console.log(`  ✗ ${describe(r)}`);
+for (const r of unexpected) {console.log(`  ✗ ${describe(r)}`);}
 console.log(
   '\nA UN-MULTIPLIED unit reloads chunks× too fast unless a charFixes override masks it — which is\n' +
-  'the silent upstream regression this gate exists to catch. A pinned unit whose value DRIFTS also\n' +
-  'lands here. Investigate before adding to\n' +
-  'PINNED; do NOT paper over it with a hand-fitted charFixes.',
+    'the silent upstream regression this gate exists to catch. A pinned unit whose value DRIFTS also\n' +
+    'lands here. Investigate before adding to\n' +
+    'PINNED; do NOT paper over it with a hand-fitted charFixes.'
 );
 process.exit(1);

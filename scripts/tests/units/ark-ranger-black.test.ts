@@ -72,25 +72,25 @@ function run(overrides: Record<string, any> = {}) {
 const arbNoParts = withPatchedOverride('ark-ranger-black', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'partsDamagePct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'partsDamagePct')
   );
   if (ov.skill1.length === before)
-    throw new Error(
-      'ark-ranger-black S1 partsDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'ark-ranger-black S1 partsDamagePct block missing — fixture is stale'
+    );}
 });
 
 /** A3 counterfactual: ATK buff keyed to fullBurstEnter instead of burstCast (fires on every FB). */
 const arbAtkFullBurst = withPatchedOverride('ark-ranger-black', (ov) => {
   const blk = ov.burst.find((b: any) =>
     b.effects.some(
-      (e: any) => e.stat === 'atkPct' && Math.abs(e.value - 156.19) < 0.01,
-    ),
+      (e: any) => e.stat === 'atkPct' && Math.abs(e.value - 156.19) < 0.01
+    )
   );
   if (!blk)
-    throw new Error(
-      'ark-ranger-black burst atkPct 156.19 block missing — fixture is stale',
-    );
+    {throw new Error(
+      'ark-ranger-black burst atkPct 156.19 block missing — fixture is stale'
+    );}
   blk.trigger = { kind: 'fullBurstEnter' };
 });
 
@@ -99,13 +99,13 @@ const arbSustainedPassive = withPatchedOverride('ark-ranger-black', (ov) => {
   const blk = ov.skill1.find((b: any) =>
     b.effects.some(
       (e: any) =>
-        e.stat === 'sustainedDamagePct' && Math.abs(e.value - 59.6) < 0.01,
-    ),
+        e.stat === 'sustainedDamagePct' && Math.abs(e.value - 59.6) < 0.01
+    )
   );
   if (!blk)
-    throw new Error(
-      'ark-ranger-black S1 sustainedDamagePct 59.6 block missing — fixture is stale',
-    );
+    {throw new Error(
+      'ark-ranger-black S1 sustainedDamagePct 59.6 block missing — fixture is stale'
+    );}
   blk.trigger = { kind: 'passive' };
   delete blk.effects[0].durationSec;
 });
@@ -114,15 +114,15 @@ const arbSustainedPassive = withPatchedOverride('ark-ranger-black', (ov) => {
 const arbColliderPermanent = withPatchedOverride('ark-ranger-black', (ov) => {
   const blk = ov.burst.find((b: any) =>
     b.effects.some(
-      (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01,
-    ),
+      (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01
+    )
   );
   if (!blk)
-    throw new Error(
-      'ark-ranger-black burst Ark Black Collider DoT block missing — fixture is stale',
-    );
+    {throw new Error(
+      'ark-ranger-black burst Ark Black Collider DoT block missing — fixture is stale'
+    );}
   const eff = blk.effects.find(
-    (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01,
+    (e: any) => e.kind === 'dot' && Math.abs(e.atkPct - 45.87) < 0.01
   );
   eff.durationSec = 999;
 });
@@ -132,13 +132,13 @@ const arbS2AllAllies = withPatchedOverride('ark-ranger-black', (ov) => {
   const blk = ov.skill2.find((b: any) =>
     b.effects.some(
       (e: any) =>
-        e.stat === 'sustainedDamagePct' && Math.abs(e.value - 77.5) < 0.01,
-    ),
+        e.stat === 'sustainedDamagePct' && Math.abs(e.value - 77.5) < 0.01
+    )
   );
   if (!blk)
-    throw new Error(
-      'ark-ranger-black S2 sustainedDamagePct 77.5 block missing — fixture is stale',
-    );
+    {throw new Error(
+      'ark-ranger-black S2 sustainedDamagePct 77.5 block missing — fixture is stale'
+    );}
   blk.target = { kind: 'allies' };
 });
 
@@ -158,11 +158,11 @@ const buffs = (evs: SimEvent[]) =>
 const arbBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'ark-ranger-black',
+      e.kind === 'burstCast' && e.slug === 'ark-ranger-black'
   );
 const arbShots = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'ark-ranger-black',
+    (e): e is Shot => e.kind === 'shot' && e.slug === 'ark-ranger-black'
   );
 const fullBursts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -179,7 +179,7 @@ describe('ark-ranger-black — kit spec', () => {
       (b) =>
         b.casterIdx === ARB &&
         b.stat === 'atkPct' &&
-        Math.abs(b.value - 156.19) < 0.01,
+        Math.abs(b.value - 156.19) < 0.01
     );
     const bursts = arbBursts(base.events);
     const fbs = fullBursts(base.events);
@@ -187,12 +187,12 @@ describe('ark-ranger-black — kit spec', () => {
     it('fires once per ark-ranger-black burst (not per Full Burst)', () => {
       expect(
         bursts.length,
-        'ark-ranger-black must burst at least once',
+        'ark-ranger-black must burst at least once'
       ).toBeGreaterThan(0);
       expect(
         atkBuffs.length,
         `${atkBuffs.length} ATK buff applications vs ${bursts.length} bursts / ${fbs.length} Full Bursts — ` +
-          'fullBurstEnter would produce ~2× the burst count',
+          'fullBurstEnter would produce ~2× the burst count'
       ).toBe(bursts.length);
     });
 
@@ -201,11 +201,11 @@ describe('ark-ranger-black — kit spec', () => {
         (b) =>
           b.casterIdx === ARB &&
           b.stat === 'atkPct' &&
-          Math.abs(b.value - 156.19) < 0.01,
+          Math.abs(b.value - 156.19) < 0.01
       );
       expect(
         cfBuffs.length,
-        'fullBurstEnter counterfactual must fire more often than burstCast',
+        'fullBurstEnter counterfactual must fire more often than burstCast'
       ).toBeGreaterThan(atkBuffs.length);
     });
 
@@ -217,7 +217,7 @@ describe('ark-ranger-black — kit spec', () => {
       for (const b of atkBuffs) {
         expect(
           b.expiresFrame! - b.frame,
-          'Transformation ATK buff must last 10s',
+          'Transformation ATK buff must last 10s'
         ).toBe(10 * FPS);
       }
     });
@@ -228,20 +228,20 @@ describe('ark-ranger-black — kit spec', () => {
       (b) =>
         b.casterIdx === ARB &&
         b.stat === 'sustainedDamagePct' &&
-        Math.abs(b.value - 59.6) < 0.01,
+        Math.abs(b.value - 59.6) < 0.01
     );
 
     it('first appears after ~30 shots, not from frame 0', () => {
       expect(
         sustBuffs.length,
-        'sustainedDamagePct 59.6% must fire at least once',
+        'sustainedDamagePct 59.6% must fire at least once'
       ).toBeGreaterThan(0);
       const firstFrame = Math.min(...sustBuffs.map((b) => b.frame));
       const shots = arbShots(base.events);
       // 30 shots at 720 RPM (12/s) ≈ 2.5s = 150 frames; allow generous margin for reload timing
       expect(
         firstFrame,
-        `first sustainedDamagePct 59.6% buff at frame ${firstFrame} — a passive would appear at frame 0`,
+        `first sustainedDamagePct 59.6% buff at frame ${firstFrame} — a passive would appear at frame 0`
       ).toBeGreaterThan(60); // > 1 second — definitely not frame 0
     });
 
@@ -250,7 +250,7 @@ describe('ark-ranger-black — kit spec', () => {
         (b) =>
           b.casterIdx === ARB &&
           b.stat === 'sustainedDamagePct' &&
-          Math.abs(b.value - 59.6) < 0.01,
+          Math.abs(b.value - 59.6) < 0.01
       );
       const cfFirst = Math.min(...cfBuffs.map((b) => b.frame));
       expect(cfFirst, 'passive counterfactual must fire at frame 0').toBe(0);
@@ -265,7 +265,7 @@ describe('ark-ranger-black — kit spec', () => {
 
   describe('A5 — Ark Black Collider: 45.87%/s sustained DoT for 10s after each burst', () => {
     const colliderDmg = dmg(base.events).filter(
-      (d) => d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 45.87) < 0.01,
+      (d) => d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 45.87) < 0.01
     );
     const bursts = arbBursts(base.events);
 
@@ -273,13 +273,13 @@ describe('ark-ranger-black — kit spec', () => {
       expect(bursts.length).toBeGreaterThan(0);
       expect(
         colliderDmg.length,
-        'Ark Black Collider DoT must fire',
+        'Ark Black Collider DoT must fire'
       ).toBeGreaterThan(0);
       // Each burst produces ~10 ticks; allow ±2 for fight-boundary truncation
       const perBurst = colliderDmg.length / bursts.length;
       expect(
         perBurst,
-        `${colliderDmg.length} ticks / ${bursts.length} bursts = ${perBurst.toFixed(1)}/burst — expected ~10`,
+        `${colliderDmg.length} ticks / ${bursts.length} bursts = ${perBurst.toFixed(1)}/burst — expected ~10`
       ).toBeGreaterThanOrEqual(8);
       expect(perBurst).toBeLessThanOrEqual(12);
     });
@@ -287,11 +287,11 @@ describe('ark-ranger-black — kit spec', () => {
     it('DISCRIMINATING: permanent DoT counterfactual produces many more ticks', () => {
       const cfDmg = dmg(colliderPermanent.events).filter(
         (d) =>
-          d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 45.87) < 0.01,
+          d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 45.87) < 0.01
       );
       expect(
         cfDmg.length,
-        'permanent DoT counterfactual must produce more ticks than the 10s window',
+        'permanent DoT counterfactual must produce more ticks than the 10s window'
       ).toBeGreaterThan(colliderDmg.length);
     });
 
@@ -302,7 +302,7 @@ describe('ark-ranger-black — kit spec', () => {
 
   describe('A6 — S2 Sustained Damage ▲77.5% on Full Burst entry, scoped to Wind AR allies', () => {
     const sustBuffs = buffs(base.events).filter(
-      (b) => b.stat === 'sustainedDamagePct' && Math.abs(b.value - 77.5) < 0.01,
+      (b) => b.stat === 'sustainedDamagePct' && Math.abs(b.value - 77.5) < 0.01
     );
     const fbs = fullBursts(base.events);
 
@@ -311,7 +311,7 @@ describe('ark-ranger-black — kit spec', () => {
       // One application per Full Burst per Wind AR ally (only ark-ranger-black is Wind AR)
       expect(
         sustBuffs.length,
-        `${sustBuffs.length} applications vs ${fbs.length} Full Bursts — expected 1:1 (only ark-ranger-black is Wind AR)`,
+        `${sustBuffs.length} applications vs ${fbs.length} Full Bursts — expected 1:1 (only ark-ranger-black is Wind AR)`
       ).toBe(fbs.length);
     });
 
@@ -319,19 +319,19 @@ describe('ark-ranger-black — kit spec', () => {
       const holders = new Set(sustBuffs.map((b) => b.targetIdx));
       expect(
         holders,
-        `holders ${[...holders]} — liter(0)/crown(1)/helm(3) are NOT Wind AR`,
+        `holders ${[...holders]} — liter(0)/crown(1)/helm(3) are NOT Wind AR`
       ).toEqual(new Set([ARB]));
     });
 
     it('DISCRIMINATING: all-allies counterfactual buffs all 4 units', () => {
       const cfBuffs = buffs(s2AllAllies.events).filter(
         (b) =>
-          b.stat === 'sustainedDamagePct' && Math.abs(b.value - 77.5) < 0.01,
+          b.stat === 'sustainedDamagePct' && Math.abs(b.value - 77.5) < 0.01
       );
       const cfHolders = new Set(cfBuffs.map((b) => b.targetIdx));
       expect(
         cfHolders.size,
-        'all-allies counterfactual must buff more than just ark-ranger-black',
+        'all-allies counterfactual must buff more than just ark-ranger-black'
       ).toBeGreaterThan(1);
     });
 
@@ -344,8 +344,7 @@ describe('ark-ranger-black — kit spec', () => {
 
   describe('A7 — burst DoT: 266.69%/s sustained damage for 10s on highest-HP enemy', () => {
     const burstDot = dmg(base.events).filter(
-      (d) =>
-        d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 266.69) < 0.01,
+      (d) => d.slug === 'ark-ranger-black' && Math.abs(d.atkPct - 266.69) < 0.01
     );
     const bursts = arbBursts(base.events);
 
@@ -355,7 +354,7 @@ describe('ark-ranger-black — kit spec', () => {
       const perBurst = burstDot.length / bursts.length;
       expect(
         perBurst,
-        `${burstDot.length} ticks / ${bursts.length} bursts = ${perBurst.toFixed(1)}/burst — expected ~10`,
+        `${burstDot.length} ticks / ${bursts.length} bursts = ${perBurst.toFixed(1)}/burst — expected ~10`
       ).toBeGreaterThanOrEqual(8);
       expect(perBurst).toBeLessThanOrEqual(12);
     });
@@ -370,7 +369,7 @@ describe('ark-ranger-black — kit spec', () => {
       (b) =>
         b.casterIdx === ARB &&
         b.stat === 'sustainedDamagePct' &&
-        Math.abs(b.value - 135.83) < 0.01,
+        Math.abs(b.value - 135.83) < 0.01
     );
     const bursts = arbBursts(base.events);
 

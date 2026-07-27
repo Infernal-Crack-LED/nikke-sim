@@ -10,12 +10,12 @@ anchor — all pellet/landing magnitudes live ENGINE-side (SG_LANDING_BY_BAND), 
 
 ## Cross-family chain
 
-| Role | Model | Artifact | Outcome |
-| ---- | ----- | -------- | ------- |
-| S2b test-faithfulness review | claude-fable-5 | `reviews/noir.test-review.json` | converged on all 8 load-bearing lines; nearest-wrongs map 1:1 to driver counterfactuals |
-| S5 blind test writer | claude-opus-5 | `blind/noir.test.ts` | **19 PASSED / 3 skipped / 0 FAILED** vs the driver's SHIPPED override (independent corroboration) |
-| S6 blind override writer | claude-opus-5 | `blind/noir.override.json` | block-for-block **identical** on every stat/value/trigger/target/duration (2 non-finding diffs, see below) |
-| S7 reconciling judge | claude-opus-5 | `results/noir.json` | **GO 1.0**, discriminationOk:true, gotchas:[] |
+| Role                         | Model          | Artifact                        | Outcome                                                                                                    |
+| ---------------------------- | -------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| S2b test-faithfulness review | claude-fable-5 | `reviews/noir.test-review.json` | converged on all 8 load-bearing lines; nearest-wrongs map 1:1 to driver counterfactuals                    |
+| S5 blind test writer         | claude-opus-5  | `blind/noir.test.ts`            | **19 PASSED / 3 skipped / 0 FAILED** vs the driver's SHIPPED override (independent corroboration)          |
+| S6 blind override writer     | claude-opus-5  | `blind/noir.override.json`      | block-for-block **identical** on every stat/value/trigger/target/duration (2 non-finding diffs, see below) |
+| S7 reconciling judge         | claude-opus-5  | `results/noir.json`             | **GO 1.0**, discriminationOk:true, gotchas:[]                                                              |
 
 ## What is verified faithful (pinned by `scripts/tests/units/noir.test.ts`, 18 assertions GREEN)
 

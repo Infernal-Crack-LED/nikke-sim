@@ -20,7 +20,8 @@ import { deps, distinct5, generatorPool, mult } from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
 
-const byBurst = (b: string) => genChars.filter((c) => c.burst === b).map((c) => c.slug);
+const byBurst = (b: string) =>
+  genChars.filter((c) => c.burst === b).map((c) => c.slug);
 const B1 = byBurst('I');
 const B2 = byBurst('II');
 const B3 = byBurst('III');
@@ -49,12 +50,20 @@ describe('solo topTeams team-count is role-bounded by Burst I', () => {
     [5, 5],
     [4, 4],
     [3, 3],
-  ])('a pool with %i Burst-I units → topTeams(5) returns %i legal disjoint teams', async (nB1, want) => {
-    const keep = new Set([...B1.slice(0, nB1), ...AMPLE_B2, ...AMPLE_B3]);
-    const top = await calcForPool(keep).topTeams(5);
-    const slugs = top.flatMap((t) => t.slugs);
-    expect(top, `got ${top.length} team(s), want ${want}`).toHaveLength(want);
-    expect(top.every((t) => distinct5(t.slugs)), 'a team is not 5 distinct units').toBe(true);
-    expect(new Set(slugs).size, 'a unit was reused across teams').toBe(slugs.length);
-  });
+  ])(
+    'a pool with %i Burst-I units → topTeams(5) returns %i legal disjoint teams',
+    async (nB1, want) => {
+      const keep = new Set([...B1.slice(0, nB1), ...AMPLE_B2, ...AMPLE_B3]);
+      const top = await calcForPool(keep).topTeams(5);
+      const slugs = top.flatMap((t) => t.slugs);
+      expect(top, `got ${top.length} team(s), want ${want}`).toHaveLength(want);
+      expect(
+        top.every((t) => distinct5(t.slugs)),
+        'a team is not 5 distinct units'
+      ).toBe(true);
+      expect(new Set(slugs).size, 'a unit was reused across teams').toBe(
+        slugs.length
+      );
+    }
+  );
 });

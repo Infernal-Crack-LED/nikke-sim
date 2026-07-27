@@ -22,10 +22,20 @@ const ANCHORS: BatteryTeam[] = [
   },
   {
     name: 'enikk 35-3 tove shotguns',
-    slugs: ['tove', 'arcana-fortune-mate', 'dorothy-serendipity', 'drake', 'd-killer-wife'],
+    slugs: [
+      'tove',
+      'arcana-fortune-mate',
+      'dorothy-serendipity',
+      'drake',
+      'd-killer-wife',
+    ],
     source: 'enikk raid 35, 8 players',
   },
 ];
 
-runRealisticBattery(loadWorld(), ANCHORS, 'Wind',
-  'REALISTIC fire-weak battery (boss Wind) — enikk raid 35 anchors + roster fill, core exposure 0/50/100');
+runRealisticBattery(
+  loadWorld(),
+  ANCHORS,
+  'Wind',
+  'REALISTIC fire-weak battery (boss Wind) — enikk raid 35 anchors + roster fill, core exposure 0/50/100'
+);

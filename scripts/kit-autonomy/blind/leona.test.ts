@@ -65,7 +65,7 @@ const OV = withPatchedOverride(SLUG, () => {}) as any;
 
 function patch(match: (e: any) => boolean, mutate: (e: any) => void) {
   return withPatchedOverride(SLUG, (ov: any) => {
-    for (const e of effectsOf(allBlocks(ov))) if (match(e)) mutate(e);
+    for (const e of effectsOf(allBlocks(ov))) {if (match(e)) {mutate(e);}}
   }) as any;
 }
 
@@ -75,21 +75,21 @@ function run(overrides?: Record<string, any>) {
   // The event hook is documented as cfg.onEvent; wire BOTH plausible spellings and dedupe by
   // object identity so neither a missing hook nor a double-delivery corrupts the counts.
   const push = (e: SimEvent) => {
-    if (seen.has(e)) return;
+    if (seen.has(e)) {return;}
     seen.add(e);
     evs.push(e as Ev);
   };
   const opts: any = controlComp(SLUG, true);
   opts.onEvent = push;
   opts.cfg = { ...(opts.cfg ?? {}), onEvent: push };
-  if (overrides) opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
   const res = runComp(opts);
   return { res, evs, tot: totals(res) as Record<string, number> };
 }
 
 const applies = (evs: Ev[], stat: string, value: number) =>
   evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value),
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value)
   );
 const slugsOf = (evs: Ev[]) =>
   [...new Set(evs.map((e) => e.targetSlug))].sort();
@@ -125,7 +125,7 @@ const noRoar = run({
     (e) => e.stat === 'critRatePct' && near(e.value, 2.62),
     (e) => {
       e.value = 0;
-    },
+    }
   ),
 });
 const roarOneStack = run({
@@ -133,7 +133,7 @@ const roarOneStack = run({
     (e) => e.stat === 'critRatePct' && near(e.value, 2.62),
     (e) => {
       e.maxStacks = 1;
-    },
+    }
   ),
 });
 const noHitRate = run({
@@ -141,7 +141,7 @@ const noHitRate = run({
     (e) => e.stat === 'hitRatePct',
     (e) => {
       e.value = 0;
-    },
+    }
   ),
 });
 const noPellets = run({
@@ -149,7 +149,7 @@ const noPellets = run({
     (e) => e.stat === 'pelletCountFlat',
     (e) => {
       e.value = 0;
-    },
+    }
   ),
 });
 
@@ -184,7 +184,7 @@ describe('leona S1a — Roar: Critical Rate ▲2.62%, up to 5 stacks, 5 sec, all
     // and is the nearest-wrong encoding for a crit line on a Supporter.
     expect(ROAR_SELF.length).toBeGreaterThan(0);
     expect(
-      effectsOf(allBlocks(OV)).some((e) => e.stat === 'critRateNormalPct'),
+      effectsOf(allBlocks(OV)).some((e) => e.stat === 'critRateNormalPct')
     ).toBe(false);
   });
 
@@ -202,8 +202,8 @@ describe('leona S1a — Roar: Critical Rate ▲2.62%, up to 5 stacks, 5 sec, all
     // Round-count duration would surface as durationShots on the apply event.
     expect(
       ROAR.every(
-        (e) => e.durationShots === undefined || e.durationShots === null,
-      ),
+        (e) => e.durationShots === undefined || e.durationShots === null
+      )
     ).toBe(true);
   });
 
@@ -211,7 +211,7 @@ describe('leona S1a — Roar: Critical Rate ▲2.62%, up to 5 stacks, 5 sec, all
     const withFrames = ROAR_SELF.filter((e) => frameOf(e) !== undefined);
     expect(withFrames.length).toBeGreaterThan(0);
     for (const e of withFrames)
-      expect(e.expiresFrame - (frameOf(e) as number)).toBe(300);
+      {expect(e.expiresFrame - (frameOf(e) as number)).toBe(300);}
   });
 
   it('activates per 5 ROUNDS fired, not per 5 pellet hits', () => {
@@ -260,8 +260,8 @@ describe('leona S2a — Hit Rate ▲20.28% for 10 sec, all allies, on Full Burst
       const withFrames = HITRATE.filter((e) => frameOf(e) !== undefined);
       expect(withFrames.length).toBeGreaterThan(0);
       for (const e of withFrames)
-        expect(minGap(frameOf(e) as number)).toBeLessThanOrEqual(2);
-    },
+        {expect(minGap(frameOf(e) as number)).toBeLessThanOrEqual(2);}
+    }
   );
 
   it.runIf(HAS_FRAMES)('window is exactly 600 frames (10 s)', () => {
@@ -315,7 +315,7 @@ describe('leona burst — Critical Damage ▲34.64% for 10 sec, all allies', () 
     'never fires more often than there are full bursts',
     () => {
       expect(LEONA_BURSTS).toBeLessThanOrEqual(FB_STARTS);
-    },
+    }
   );
 
   it.runIf(LEONA_BURSTS > 0 && HAS_FRAMES)(
@@ -326,7 +326,7 @@ describe('leona burst — Critical Damage ▲34.64% for 10 sec, all allies', () 
       // fullBurstEnter, which would put the apply ON the fbStart frame and over-fire in a comp where a
       // different Burst II completes the chain.
       for (const e of CRITDMG.filter(
-        (x) => x.targetSlug === SLUG && frameOf(x) !== undefined,
+        (x) => x.targetSlug === SLUG && frameOf(x) !== undefined
       )) {
         const f = frameOf(e) as number;
         expect(minGap(f)).toBeGreaterThan(5);
@@ -334,7 +334,7 @@ describe('leona burst — Critical Damage ▲34.64% for 10 sec, all allies', () 
         expect(gap).toBeGreaterThanOrEqual(10);
         expect(gap).toBeLessThanOrEqual(180);
       }
-    },
+    }
   );
 
   it.runIf(LEONA_BURSTS === 0)(
@@ -346,10 +346,10 @@ describe('leona burst — Critical Damage ▲34.64% for 10 sec, all allies', () 
           (e) =>
             e.stat === 'critDamagePct' &&
             near(e.value, 34.64) &&
-            e.durationSec === 10,
-        ),
+            e.durationSec === 10
+        )
       ).toBe(true);
-    },
+    }
   );
 });
 
@@ -361,8 +361,8 @@ describe('leona burst — Critical Rate ▲21.32% for 10 sec (SG allies, Roar at
         (e) =>
           e.stat === 'critRatePct' &&
           near(e.value, 21.32) &&
-          e.durationSec === 10,
-      ),
+          e.durationSec === 10
+      )
     ).toBe(true);
   });
 

@@ -84,14 +84,14 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
-  if (Array.isArray(s.blocks)) return s.blocks;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
+  if (Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 }
 function slotEffects(ov: any, slot: string): any[] {
   return slotBlocks(ov, slot).flatMap((b: any) =>
-    Array.isArray(b.effects) ? b.effects : [],
+    Array.isArray(b.effects) ? b.effects : []
   );
 }
 function blockFor(ov: any, slot: string, pred: (e: any) => boolean): any {
@@ -101,7 +101,7 @@ function editEffects(
   ov: any,
   slot: string,
   pred: (e: any) => boolean,
-  fn: (e: any) => void,
+  fn: (e: any) => void
 ): number {
   let n = 0;
   for (const b of slotBlocks(ov, slot)) {
@@ -144,7 +144,7 @@ function run(ov?: any, helm = true) {
       evs.push(ev as Ev);
     },
   };
-  if (ov) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
   const res = runComp(opts);
   return { res, evs, total: totals(res)[SLUG] ?? 0 };
 }
@@ -152,34 +152,34 @@ function run(ov?: any, helm = true) {
 const CF_ATK_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isAtkBuff, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_ATK_BURSTCAST = patch((ov) => {
   const b = blockFor(ov, 'skill1', isAtkBuff);
-  if (!b) return 0;
+  if (!b) {return 0;}
   b.trigger = { kind: 'burstCast' };
   return 1;
 });
 const CF_CS_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     e.value = 0;
-  }),
+  })
 );
 const CF_CS_TIMED = patch((ov) =>
   editEffects(ov, 'skill1', isChargeSpeed, (e) => {
     delete e.removeOnReload;
     e.durationSec = 10;
-  }),
+  })
 );
 const CF_RIDER_ZERO = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_RIDER_NOFB = patch((ov) =>
   editEffects(ov, 'skill1', isFlat, (e) => {
     e.noFb = true;
-  }),
+  })
 );
 // [P3] driver encodes Beautiful as casterMaxHpPct in SKILL1 (not skill2). Target it precisely —
 // isHpBuff would also match atkOfMaxHpPct (the S1a conversion), which must stay live.
@@ -190,18 +190,18 @@ const CF_BEAUTIFUL_ZERO = patch((ov) =>
     (e: any) => e.stat === 'casterMaxHpPct',
     (e) => {
       e.value = 0;
-    },
-  ),
+    }
+  )
 );
 const CF_MIRROR_ZERO = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     e.atkPct = 0;
-  }),
+  })
 );
 const CF_MIRROR_NORAMP = patch((ov) =>
   editEffects(ov, 'burst', isMirror, (e) => {
     delete e.rampSec;
-  }),
+  })
 );
 // [P2] driver encodes S1b as charFixes.magDumpRof, not a chargeSpeedPct slot effect.
 // Nearest-wrong = the per-rocket-charge model (mag-dump primitive turned off).
@@ -216,7 +216,7 @@ const CF_MAGDUMP_OFF = patch((ov) => {
 // (ramp removed → full from t=0).
 const CF_BEAUTIFUL_INSTANT = patch((ov) => {
   const e = slotEffects(ov, 'skill1').find(
-    (x: any) => x.stat === 'casterMaxHpPct',
+    (x: any) => x.stat === 'casterMaxHpPct'
   );
   if (e && e.rampSec != null) {
     delete e.rampSec;
@@ -249,7 +249,7 @@ const selfBuffs = (evs: Ev[]) =>
       e.kind === 'buffApply' &&
       e.targetSlug === SLUG &&
       e.casterIdx != null &&
-      e.casterIdx === e.targetIdx,
+      e.casterIdx === e.targetIdx
   );
 
 const IDX: number = (() => {
@@ -278,10 +278,10 @@ const IDX_FIELDS = [
 ];
 function fromHer(e: any): boolean {
   for (const f of SLUG_FIELDS)
-    if (typeof e[f] === 'string') return e[f] === SLUG;
+    {if (typeof e[f] === 'string') {return e[f] === SLUG;}}
   if (IDX >= 0)
-    for (const f of IDX_FIELDS)
-      if (typeof e[f] === 'number') return e[f] === IDX;
+    {for (const f of IDX_FIELDS)
+      {if (typeof e[f] === 'number') {return e[f] === IDX;}}}
   return false;
 }
 const herDamage = (evs: Ev[]) =>
@@ -338,20 +338,20 @@ describe('S1a — enter Burst Stage 3, self: ATK +2.71% of final Max HP for 10s'
 
   it('fires once per rotation, and the own-cast model fires no more often', () => {
     const grants = selfBuffs(BASE.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     const fbs = kind(BASE.evs, 'fullBurstStart').length;
     expect(grants.length).toBe(fbs); // one stage-3 entry per rotation
     expect(grants.every((e) => Number(e.value) > 0)).toBe(true);
     expect(grants.every((e) => Number.isFinite(Number(e.expiresFrame)))).toBe(
-      true,
+      true
     );
     // Discriminator vs the burstCast reading: re-keyed to her OWN cast, the
     // grant can only fire on rotations she bursts — never more often. (Strictly
     // fewer only when helm actually takes a stage-3 slot in this fixture; the
     // count equality above is the primary claim.)
     const cfGrants = selfBuffs(R_ATK_BURSTCAST.evs).filter((e) =>
-      /atk/i.test(String(e.stat ?? '')),
+      /atk/i.test(String(e.stat ?? ''))
     );
     expect(CF_ATK_BURSTCAST.n).toBe(1);
     expect(cfGrants.length).toBeLessThanOrEqual(grants.length);
@@ -385,7 +385,7 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
       .sort((a: any, b: any) => a.frame - b.frame);
     expect(
       firstMag.length,
-      'first magazine should hold a full 24-rocket dump',
+      'first magazine should hold a full 24-rocket dump'
     ).toBeGreaterThanOrEqual(20);
     const gaps = firstMag
       .slice(1)
@@ -402,10 +402,10 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     expect(CF_MAGDUMP_OFF.n).toBeGreaterThan(0);
     expect(R_MAGDUMP_OFF.total).toBeLessThan(BASE.total);
     const herShots = kind(BASE.evs, 'shot').filter(
-      (e: any) => e.slug === SLUG,
+      (e: any) => e.slug === SLUG
     ).length;
     const cfShots = kind(R_MAGDUMP_OFF.evs, 'shot').filter(
-      (e: any) => e.slug === SLUG,
+      (e: any) => e.slug === SLUG
     ).length;
     expect(cfShots).toBeLessThan(herShots);
     expect(herShots).toBeGreaterThan(cfShots * 2);
@@ -435,14 +435,12 @@ describe('S1c — full-charge HIT on the target: +136.6% of final ATK', () => {
     expect(R_RIDER_ZERO.total).toBeLessThan(BASE.total);
     const riderHits = herDamage(BASE.evs).filter((e) => e.srcSlot === 'skill1');
     const shots = kind(BASE.evs, 'shot').filter(
-      (e: any) => e.slug === SLUG,
+      (e: any) => e.slug === SLUG
     ).length;
     expect(riderHits.length).toBe(shots); // once per full-charge hit
     // FB-eligible by timing: at least one rider instance lands in FB and takes the major.
     expect(
-      riderHits.some(
-        (e) => e.inFullBurst === true && e.fbMajorApplied === true,
-      ),
+      riderHits.some((e) => e.inFullBurst === true && e.fbMajorApplied === true)
     ).toBe(true);
   });
 });
@@ -477,13 +475,13 @@ describe('S2c — every 3s while a decoy is present, self: Max HP +1.6%, max 12 
   const nukeAt = (evs: Ev[]) =>
     herDamage(evs)
       .filter(
-        (e) => e.bucket === 'burst' && near(Number(e.atkPct), 13659.2, 1e-6),
+        (e) => e.bucket === 'burst' && near(Number(e.atkPct), 13659.2, 1e-6)
       )
       .sort((a, b) => a.frame - b.frame);
 
   it('is a self Max HP ramp of 19.2 (1.6% x 12) over 36s (3s x 12), with no expiry', () => {
     const fx = slotEffects(OV, 'skill1').filter(
-      (e: any) => e.stat === 'casterMaxHpPct',
+      (e: any) => e.stat === 'casterMaxHpPct'
     );
     expect(fx.length).toBe(1); // MISSING/duplicate detector
     expect(Number(fx[0].value)).toBeCloseTo(19.2, 6); // 1.6% x 12 stacks
@@ -505,7 +503,7 @@ describe('S2c — every 3s while a decoy is present, self: Max HP +1.6%, max 12 
     // ...and the ramp grows across the fight (first cast < last cast).
     const shipped = nukeAt(BASE.evs);
     expect(shipped[0].baseAtk).toBeLessThan(
-      shipped[shipped.length - 1].baseAtk,
+      shipped[shipped.length - 1].baseAtk
     );
   });
 
@@ -545,11 +543,11 @@ describe('burst — 1365.92% x10 sequential + the Beautiful mirror rider [P4]', 
 
   it('burst-cast damage is Full-Burst exempt, one nuke per cast', () => {
     const casts = BASE.evs.filter(
-      (e) => e.kind === 'burstCast' && fromHer(e),
+      (e) => e.kind === 'burstCast' && fromHer(e)
     ).length;
     expect(casts).toBeGreaterThan(0);
     const nukes = herDamage(BASE.evs).filter(
-      (e) => e.srcSlot === 'burst' && near(Number(e.atkPct), 13659.2, 1e-6),
+      (e) => e.srcSlot === 'burst' && near(Number(e.atkPct), 13659.2, 1e-6)
     );
     expect(nukes.length).toBe(casts); // one consolidated nuke per cast
     // A burst cast resolves before the Full Burst window opens — nearest-wrong:

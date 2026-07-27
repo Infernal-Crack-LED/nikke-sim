@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "eh"
-    ],
+    "nicknames": ["eh"],
     "skills": {
       "skill1": "■ Activates when obtaining 10 Scrap(s) while having fewer than 4 homemade magazines crafted. Affects self.\nFunction: Crafts magazines out of Scraps and gains a buff.\nEffect 1: Removes Scrap(s).\nEffect 2: Crafts 1 homemade magazine, up to a maximum of 4. This effect is continuous.\nEffect 3: ATK ▲ 7.5% continuously x the number of homemade magazines.",
       "skill2": "■ Affects self.\nFunction: Gains a buff when obtaining Scraps.\nEffect 1: Activates at the start of battle. Scraps ▲ 10 continuously, up to a maximum of 10.\nEffect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.\nEffect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.\nEffect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10.\nEffect 5: Activates when obtaining Scraps. Elemental Advantage Attack Damage ▲ 16.36% for 15 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -325,16 +319,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Changes the weapon in use.\nCharge Time: 0.4 sec\nDamage: {description_value_01}% of <word_group=10025>final</word_group> ATK\nFull Charge Damage: 250% of damage\nMax Ammunition Capacity: 1 x the number of homemade magazines\nDuration: {description_value_02} sec\n<word_group=10097>Deactivation condition</word_group>: When the duration ends or when all rounds have been fired.\nAdditional Effect:\nATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
           "description_value_list": [
@@ -405,20 +390,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            111330101,
-            111330102,
-            111330103,
-            111330104
+            111330101, 111330102, 111330103, 111330104
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -443,9 +419,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -476,9 +450,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "E.H.'s Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

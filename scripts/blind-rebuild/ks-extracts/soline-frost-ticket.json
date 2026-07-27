@@ -18,9 +18,7 @@
     },
     "reference": false,
     "unmodeled": {
-      "skill1": [
-        "Removes First Train Discount."
-      ],
+      "skill1": ["Removes First Train Discount."],
       "skill2": [
         "■ Activates when the HP of anyone in the squad is lower than 15%. Affects the target if the target has any tickets.",
         "Recovers 12.27% of the skill user's final Max HP as HP.",

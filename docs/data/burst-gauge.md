@@ -6,6 +6,7 @@ Detail doc for [game-mechanics.md](game-mechanics.md) §6. Engine:
 gauge recordings; supersedes the calibrated v3 model).
 
 Primary sources:
+
 - **Datamined `CharacterShotTable`** (community CSV mirror:
   https://github.com/coolguydlm123/nikkecsvlibrary) — per-unit columns
   `burst_energy_pershot`, `target_burst_energy_pershot`, `full_charge_burst_energy`,
@@ -146,10 +147,10 @@ einkk's datamined formula: a charge weapon held by the **camera-focused unit** g
 
 ## 6. The two solo measurements (docs/probes/tb2, test 3)
 
-| Solo vs raid boss | Observed | Model |
-|---|---|---|
-| Maiden: Ice Rose | 12.55%/pull in two sub-steps: +9.1% then +3.45% | weapon 364×2.5 = 910 + rider 364 (skill-gen, flat) — exact |
-| Takina | ~14%/shot, full in ~8 shots incl. reload pause | 560×2.5 = 1400 — exact |
+| Solo vs raid boss | Observed                                        | Model                                                      |
+| ----------------- | ----------------------------------------------- | ---------------------------------------------------------- |
+| Maiden: Ice Rose  | 12.55%/pull in two sub-steps: +9.1% then +3.45% | weapon 364×2.5 = 910 + rider 364 (skill-gen, flat) — exact |
+| Takina            | ~14%/shot, full in ~8 shots incl. reload pause  | 560×2.5 = 1400 — exact                                     |
 
 The earlier maiden recording vs the NEUTRAL practice target measured the same 910+345
 per pull — the practice target counts as a stage target too (target column applies).
@@ -165,6 +166,7 @@ shotguns, all plain snipers at 3 charge cycles — and always the UNFOCUSED calc
 independently re-confirming the focus-only rule).
 
 The mismatches decode into exact kit mechanics rather than noise:
+
 - **Ein**: rl3 14.0 = 8.4 (3 shots) + 5.6 (exactly one orb tick in 3s) — orb model
   confirmed to the decimal.
 - **Helm**: rl3 59.73 = 8.4 + 3 × **14.31 flat per shot** — matches the arena data's

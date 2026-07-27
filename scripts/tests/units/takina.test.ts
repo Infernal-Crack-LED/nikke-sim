@@ -119,7 +119,7 @@ const tkBuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === TAKINA &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 /** Boss-held debuffs emit casterIdx===null AND targetIdx===null; read by stat+value (key carries the caster slot). */
 const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
@@ -127,20 +127,20 @@ const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.targetIdx === null &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const takinaBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'takina',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'takina'
   );
 const castFrames = (evs: SimEvent[]) => takinaBursts(evs).map((e) => e.frame);
 const fbStartFrames = (evs: SimEvent[]) =>
@@ -170,117 +170,117 @@ const eff = (b: any, stat: string) =>
 const cfS1AtkFbEnter = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnd');
   if (!b)
-    throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');
+    {throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T2 nearest-wrong (target): self → allies (hit all 3 slots, not just takina).
 const cfS1AtkAllies = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnd');
   if (!b)
-    throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');
+    {throw new Error('takina S1 fullBurstEnd block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 // T3 nearest-wrong (trigger): the FB-enter True Damage line keyed to burstCast (takina's CAST frames).
 const cfS1TrueBurstCast = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
   if (!b)
-    throw new Error(
-      'takina S1 fullBurstEnter block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S1 fullBurstEnter block missing — fixture is stale'
+    );}
   b.trigger = { kind: 'burstCast' };
 });
 // T3 nearest-wrong (duration): 15s → 5s.
 const cfS1TrueDur5 = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
   if (!b)
-    throw new Error(
-      'takina S1 fullBurstEnter block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S1 fullBurstEnter block missing — fixture is stale'
+    );}
   eff(b, 'trueDamagePct').durationSec = 5;
 });
 // T4 nearest-wrong (value): the enemy debuff at the RAW prose magnitude 10.09 (no uptime-average).
 const cfS2TakenRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct'),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
   if (!b)
-    throw new Error(
-      'takina S2 enemy damageTaken block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S2 enemy damageTaken block missing — fixture is stale'
+    );}
   eff(b, 'damageTakenPct').value = 10.09;
 });
 // T4 nearest-wrong (target): enemy → allies (buff the team instead of debuffing the boss).
 const cfS2TakenAllies = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct'),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
   if (!b)
-    throw new Error(
-      'takina S2 enemy damageTaken block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S2 enemy damageTaken block missing — fixture is stale'
+    );}
   b.target = { kind: 'allies' };
 });
 // T5 nearest-wrong (value): the ally True Damage buff at the RAW prose magnitude 140.49 (no uptime-average).
 const cfS2TrueRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'trueDamagePct'),
+    x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
   if (!b)
-    throw new Error(
-      'takina S2 ally trueDamage block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S2 ally trueDamage block missing — fixture is stale'
+    );}
   eff(b, 'trueDamagePct').value = 140.49;
 });
 // T5 nearest-wrong (target): allies → enemy.
 const cfS2TrueEnemy = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'trueDamagePct'),
+    x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
   if (!b)
-    throw new Error(
-      'takina S2 ally trueDamage block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina S2 ally trueDamage block missing — fixture is stale'
+    );}
   b.target = { kind: 'enemy' };
 });
 // T7 nearest-wrong (swap): the burst weaponSwap removed → no 200.64 swap shots.
 const cfNoSwap = withPatchedOverride('takina', (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
   if (ov.burst.length === before)
-    throw new Error('takina burst weaponSwap block missing — fixture is stale');
+    {throw new Error('takina burst weaponSwap block missing — fixture is stale');}
 });
 // T7 nearest-wrong (flavor): trueNormals:true → false (swap shots lose the true flavor → lose trueDamagePct).
 const cfNoTrueNormals = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'weaponSwap'),
+    x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
   if (!b)
-    throw new Error('takina burst weaponSwap block missing — fixture is stale');
+    {throw new Error('takina burst weaponSwap block missing — fixture is stale');}
   b.effects.find((e: any) => e.kind === 'weaponSwap').trueNormals = false;
 });
 // T8 nearest-wrong (gate, UNGATED): strip the gate from the 6.04 shotFired debuff → fires on every takina shot.
 const cfDebuffUngated = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
   if (!b)
-    throw new Error(
-      'takina burst 6.04 debuff block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina burst 6.04 debuff block missing — fixture is stale'
+    );}
   delete b.fbGate;
   delete b.swapGate;
 });
 // T8 nearest-wrong (gate, fbGate — the SHIPPED encoding the FIX replaces): swapGate → fbGate:'inFb'.
 const cfDebuffFbGate = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
   if (!b)
-    throw new Error(
-      'takina burst 6.04 debuff block missing — fixture is stale',
-    );
+    {throw new Error(
+      'takina burst 6.04 debuff block missing — fixture is stale'
+    );}
   delete b.swapGate;
   b.fbGate = 'inFb';
 });
@@ -331,7 +331,7 @@ describe('takina — kit spec', () => {
       expect(atk.length).toBeGreaterThan(0);
       expect(atk.every((b) => b.frame > 0)).toBe(true);
       expect(Math.min(...atk.map((b) => b.frame))).toBe(
-        Math.min(...fbEndFrames(base.events)),
+        Math.min(...fbEndFrames(base.events))
       );
     });
   });
@@ -351,12 +351,12 @@ describe('takina — kit spec', () => {
       const cf = tkBuff(s1AtkFbEnter.events, 'atkPct', 80.04);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => fbStartFrames(s1AtkFbEnter.events).includes(b.frame)),
+        cf.every((b) => fbStartFrames(s1AtkFbEnter.events).includes(b.frame))
       ).toBe(true);
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) hits all 3 slots, not just takina', () => {
       expect(targetsOf(tkBuff(s1AtkAllies.events, 'atkPct', 80.04))).toEqual(
-        ALL_SLOTS,
+        ALL_SLOTS
       );
     });
   });
@@ -368,24 +368,24 @@ describe('takina — kit spec', () => {
       expect(targetsOf(td)).toEqual([TAKINA]);
       expect(dursOf(td)).toEqual([15 * FPS]);
       expect(
-        td.every((b) => fbStartFrames(base.events).includes(b.frame)),
+        td.every((b) => fbStartFrames(base.events).includes(b.frame))
       ).toBe(true);
     });
     it('DISCRIMINATING (trigger): burstCast (nearest-wrong) lands on takina CAST frames, before FB-start', () => {
       const cf = tkBuff(s1TrueBurstCast.events, 'trueDamagePct', 35.05);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => castFrames(s1TrueBurstCast.events).includes(b.frame)),
+        cf.every((b) => castFrames(s1TrueBurstCast.events).includes(b.frame))
       ).toBe(true);
       expect(
         cf.every(
-          (b) => !fbStartFrames(s1TrueBurstCast.events).includes(b.frame),
-        ),
+          (b) => !fbStartFrames(s1TrueBurstCast.events).includes(b.frame)
+        )
       ).toBe(true);
     });
     it('DISCRIMINATING (duration): 5s (nearest-wrong) is not the prose 15s', () => {
       expect(dursOf(tkBuff(s1TrueDur5.events, 'trueDamagePct', 35.05))).toEqual(
-        [5 * FPS],
+        [5 * FPS]
       );
     });
   });
@@ -395,24 +395,24 @@ describe('takina — kit spec', () => {
     it('is a permanent (no expiry) frame-0 debuff on the BOSS (targetIdx null), value 3.36', () => {
       expect(taken.length).toBeGreaterThan(0);
       expect(taken.every((b) => b.value === 3.36 && b.targetIdx === null)).toBe(
-        true,
+        true
       );
       expect(dursOf(taken)).toEqual([null]);
       expect(Math.min(...taken.map((b) => b.frame))).toBe(0);
     });
     it('DISCRIMINATING (value): the raw prose 10.09 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
       expect(bossDebuff(s2TakenRaw.events, 'damageTakenPct', 3.36).length).toBe(
-        0,
+        0
       );
       expect(
-        bossDebuff(s2TakenRaw.events, 'damageTakenPct', 10.09).length,
+        bossDebuff(s2TakenRaw.events, 'damageTakenPct', 10.09).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) buffs the team (casterIdx takina, all slots), not the boss', () => {
       const cf = tkBuff(s2TakenAllies.events, 'damageTakenPct', 3.36);
       expect(targetsOf(cf)).toEqual(ALL_SLOTS);
       expect(
-        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 3.36).length,
+        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 3.36).length
       ).toBe(0);
     });
   });
@@ -429,7 +429,7 @@ describe('takina — kit spec', () => {
     it('DISCRIMINATING (value): the raw prose 140.49 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
       expect(tkBuff(s2TrueRaw.events, 'trueDamagePct', 93.66).length).toBe(0);
       expect(
-        tkBuff(s2TrueRaw.events, 'trueDamagePct', 140.49).length,
+        tkBuff(s2TrueRaw.events, 'trueDamagePct', 140.49).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): enemy (nearest-wrong) removes the ally buff (no trueDamagePct 93.66 on any ally)', () => {
@@ -443,7 +443,7 @@ describe('takina — kit spec', () => {
       const s2Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.startsWith(`${TAKINA}:skill2:`))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s2Stats].sort()).toEqual(['damageTakenPct', 'trueDamagePct']);
     });
@@ -466,7 +466,7 @@ describe('takina — kit spec', () => {
       expect(swapShots(noTrueNormals.events).length).toBeGreaterThan(0);
       // every faithful swap shot outruns every flavor-stripped swap shot (the trueDamagePct contribution)
       expect(Math.min(...swapDmgUp(base.events))).toBeGreaterThan(
-        Math.max(...swapDmgUp(noTrueNormals.events)),
+        Math.max(...swapDmgUp(noTrueNormals.events))
       );
     });
   });
@@ -482,7 +482,7 @@ describe('takina — kit spec', () => {
     it('DISCRIMINATING (gate vs UNGATED): ungated fires outside the swap windows + far more often', () => {
       const cf = bossDebuff(debuffUngated.events, 'damageTakenPct', 6.04);
       expect(
-        cf.some((b) => !inWindow(b.frame, castWindows(debuffUngated.events))),
+        cf.some((b) => !inWindow(b.frame, castWindows(debuffUngated.events)))
       ).toBe(true);
       expect(cf.length).toBeGreaterThan(debuff.length);
     });
@@ -493,7 +493,7 @@ describe('takina — kit spec', () => {
       const cf = bossDebuff(debuffFbGate.events, 'damageTakenPct', 6.04);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => inWindow(b.frame, fbWindows(debuffFbGate.events))),
+        cf.every((b) => inWindow(b.frame, fbWindows(debuffFbGate.events)))
       ).toBe(true);
     });
   });

@@ -82,14 +82,14 @@ const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
 for (let i = 1; i < argv.length; i++)
-  if (argv[i].startsWith('--'))
-    flags[argv[i].slice(2)] =
+  {if (argv[i].startsWith('--'))
+    {flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];
+        : argv[++i];}}
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-burst-gauge.ts <video> [--fps 2] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--gauge-crop "..."] [--timer-crop "..."] [--gauge-zoom 6] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]',
+    'usage: read-burst-gauge.ts <video> [--fps 2] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--gauge-crop "..."] [--timer-crop "..."] [--gauge-zoom 6] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]'
   );
   process.exit(1);
 }
@@ -104,7 +104,7 @@ const at = Number(flags.at ?? 0);
 const dur = flags.dur ? Number(flags.dur) : 0;
 const endpoint = (flags.endpoint ?? 'http://localhost:8090/v1').replace(
   /\/$/,
-  '',
+  ''
 );
 const model = flags.model ?? 'qwen2.5-vl';
 const apikey = flags.apikey ?? 'no-key';
@@ -135,10 +135,10 @@ const timerFramesDir = `${outDir}/frames-timer`;
 // ---- extract frames (two passes — one per crop) ----
 function extract(crop: string, zoom: number, dir: string, label: string) {
   const vf = [`fps=${fps}`, crop];
-  if (zoom !== 1) vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+  if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
   const args = ['-y', '-loglevel', 'error'];
-  if (at) args.push('-ss', String(at));
-  if (dur) args.push('-t', String(dur));
+  if (at) {args.push('-ss', String(at));}
+  if (dur) {args.push('-t', String(dur));}
   args.push('-i', video, '-vf', vf.join(','), '-q:v', '3', `${dir}/f_%05d.jpg`);
   execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });
   const files = readdirSync(dir)
@@ -153,13 +153,13 @@ if (classifier === 'vlm') {
   mkdirSync(gaugeFramesDir, { recursive: true });
   mkdirSync(timerFramesDir, { recursive: true });
   console.log(
-    `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`,
+    `extracting frames @ ${fps}fps${dur ? ` for ${dur}s from t=${at}` : ' (whole video)'} ...`
   );
   gaugeFiles = extract(gaugeCrop, gaugeZoom, gaugeFramesDir, 'gauge');
   timerFiles = extract(timerCrop, timerZoom, timerFramesDir, 'timer');
   if (!gaugeFiles.length || !timerFiles.length) {
     console.error(
-      'no frames extracted — check --at/--dur/--gauge-crop/--timer-crop',
+      'no frames extracted — check --at/--dur/--gauge-crop/--timer-crop'
     );
     process.exit(1);
   }
@@ -200,7 +200,7 @@ const VALID_STATES = new Set<string>([
 
 async function vlmRead(
   b64: string,
-  prompt: string,
+  prompt: string
 ): Promise<Record<string, unknown>> {
   const body: Record<string, unknown> = {
     model,
@@ -219,7 +219,7 @@ async function vlmRead(
     temperature: 0,
     max_tokens: maxTokens,
   };
-  if (jsonMode) body.response_format = { type: 'json_object' };
+  if (jsonMode) {body.response_format = { type: 'json_object' };}
   const res = await fetch(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -229,21 +229,21 @@ async function vlmRead(
     body: JSON.stringify(body),
   });
   if (!res.ok)
-    throw new Error(
-      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`,
-    );
+    {throw new Error(
+      `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
+    );}
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
   if (Array.isArray(content))
-    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
   let s = String(content).trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) s = fence[1].trim();
+  if (fence) {s = fence[1].trim();}
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) s = s.slice(a, b + 1);
+  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
   try {
     return (JSON.parse(s) ?? {}) as Record<string, unknown>;
   } catch {
@@ -267,31 +267,53 @@ async function readTimer(b64: string): Promise<number | null> {
 // ---- CV classifier: delegate to scan.ts (deterministic, no model) ----
 interface CvScan {
   gaugeStates: { videoT: number; state: string | null; fill: number }[];
-  fbCandidates: { videoT: number; sources: string[]; confidence: number; durationSec?: number }[];
+  fbCandidates: {
+    videoT: number;
+    sources: string[];
+    confidence: number;
+    durationSec?: number;
+  }[];
   orphanEvents: { videoT: number; source: string }[];
   fullWindows: { start: number; end: number; durationSec: number }[];
   detectors: Record<string, number>;
-  summary: { fullBursts: number; corroborated: number; gaps: number[]; minGap: number | null; maxGap: number | null };
+  summary: {
+    fullBursts: number;
+    corroborated: number;
+    gaps: number[];
+    minGap: number | null;
+    maxGap: number | null;
+  };
 }
 function runCvScan(): CvScan {
   const scanOut = `${outDir}/scan`;
   const scanScript = new URL('./scan.ts', import.meta.url).pathname;
-  const a = [scanScript, video, '--fps', String(fps), '--out', scanOut, '--gauge-crop', gaugeCrop];
-  if (at) a.push('--at', String(at));
-  if (dur) a.push('--dur', String(dur));
-  if (t0Flag != null) a.push('--t0', String(t0Flag));
+  const a = [
+    scanScript,
+    video,
+    '--fps',
+    String(fps),
+    '--out',
+    scanOut,
+    '--gauge-crop',
+    gaugeCrop,
+  ];
+  if (at) {a.push('--at', String(at));}
+  if (dur) {a.push('--dur', String(dur));}
+  if (t0Flag != null) {a.push('--t0', String(t0Flag));}
   console.log('running deterministic CV scan (scripts/probe/scan.ts) ...');
-  execFileSync('npx', ['tsx', ...a], { stdio: ['ignore', 'inherit', 'inherit'] });
+  execFileSync('npx', ['tsx', ...a], {
+    stdio: ['ignore', 'inherit', 'inherit'],
+  });
   return JSON.parse(readFileSync(`${scanOut}/scan.json`, 'utf8')) as CvScan;
 }
 
 // ---- mock (synthetic burst rotation) ----
 function mockGauge(idx: number): BurstState {
   const cycle = idx % 20;
-  if (cycle < 8) return 'filling';
-  if (cycle < 11) return 'stage1';
-  if (cycle < 14) return 'stage2';
-  if (cycle < 17) return 'stage3';
+  if (cycle < 8) {return 'filling';}
+  if (cycle < 11) {return 'stage1';}
+  if (cycle < 14) {return 'stage2';}
+  if (cycle < 17) {return 'stage3';}
   return 'full';
 }
 function mockTimer(idx: number): number {
@@ -320,16 +342,19 @@ if (classifier === 'cv') {
   console.log(
     `  cv: ${cvScan.summary.fullBursts} full bursts ` +
       `(${cvScan.summary.corroborated}/${cvScan.summary.fullBursts} corroborated), ` +
-      `${reads.length} frames`,
+      `${reads.length} frames`
   );
   if (t0Flag == null)
-    console.log(
+    {console.log(
       '  note: no --t0, so timerSec/fightT are null. Pin game t0 with ONE sheet:\n' +
-        `        npx tsx scripts/probe/frames.ts "${video}" --at 3 --dur 10 --fps 2 --region timer --sheet 5 --zoom 3`,
-    );
+        `        npx tsx scripts/probe/frames.ts "${video}" --at 3 --dur 10 --fps 2 --region timer --sheet 5 --zoom 3`
+    );}
 }
 
-const frameCount = classifier === 'cv' ? reads.length : Math.min(gaugeFiles.length, timerFiles.length);
+const frameCount =
+  classifier === 'cv'
+    ? reads.length
+    : Math.min(gaugeFiles.length, timerFiles.length);
 for (let i = 0; classifier === 'vlm' && i < frameCount; i++) {
   const idx = parseInt(gaugeFiles[i].replace(/\D/g, ''), 10);
   const videoT = at + (idx - 1) / fps;
@@ -341,10 +366,10 @@ for (let i = 0; classifier === 'vlm' && i < frameCount; i++) {
     timerSec = mockTimer(idx);
   } else {
     const gaugeB64 = readFileSync(
-      `${gaugeFramesDir}/${gaugeFiles[i]}`,
+      `${gaugeFramesDir}/${gaugeFiles[i]}`
     ).toString('base64');
     const timerB64 = readFileSync(
-      `${timerFramesDir}/${timerFiles[i]}`,
+      `${timerFramesDir}/${timerFiles[i]}`
     ).toString('base64');
     burstState = null;
     timerSec = null;
@@ -357,25 +382,25 @@ for (let i = 0; classifier === 'vlm' && i < frameCount; i++) {
         break;
       } catch (e) {
         if (attempt === 2)
-          console.error(
-            `  frame ${gaugeFiles[i]}: FAILED — ${(e as Error).message}`,
-          );
-        else await new Promise((r) => setTimeout(r, 1000));
+          {console.error(
+            `  frame ${gaugeFiles[i]}: FAILED — ${(e as Error).message}`
+          );}
+        else {await new Promise((r) => setTimeout(r, 1000));}
       }
     }
   }
   totalMs += Date.now() - t0;
   reads.push({ videoT, timerSec, burstState });
   if (++n % 10 === 0 || n === frameCount)
-    console.log(
-      `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  burst=${burstState ?? '?'}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`,
-    );
+    {console.log(
+      `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  burst=${burstState ?? '?'}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`
+    );}
 }
 
 // ---- timer correction (spine-based — same as read-total-damage.ts) ----
 function correctTimer(
   reads: { videoT: number; timerSec: number | null }[],
-  fps: number,
+  fps: number
 ): number {
   const step = 1 / fps;
   let bestStart = 0,
@@ -400,7 +425,7 @@ function correctTimer(
     bestStart = runStart;
     bestLen = runLen;
   }
-  if (bestLen < 3) return 0;
+  if (bestLen < 3) {return 0;}
   const spineIdx = bestStart + Math.floor(bestLen / 2);
   const spineVal = reads[spineIdx].timerSec!;
   let corrected = 0;
@@ -421,25 +446,27 @@ function correctTimer(
 // path has no digit reader, so it takes t0 as an argument and the arithmetic is exact.
 const timerCorrections = classifier === 'vlm' ? correctTimer(reads, fps) : 0;
 if (timerCorrections)
-  console.log(
-    `  timer: corrected ${timerCorrections} read(s) from linear spine`,
-  );
+  {console.log(
+    `  timer: corrected ${timerCorrections} read(s) from linear spine`
+  );}
 
 // ---- fight-start offset: videoT where the fight timer reads 180 (3:00) ----
 // From any corrected read: fightStartVideoT = videoT + timerSec - 180.
 let fightStartVideoT: number | null = t0Flag;
 if (fightStartVideoT == null)
-  for (const r of reads) {
+  {for (const r of reads) {
     if (r.timerSec != null) {
       fightStartVideoT = Math.round((r.videoT + r.timerSec - 180) * 100) / 100;
       break;
     }
-  }
+  }}
 if (fightStartVideoT != null)
-  console.log(
+  {console.log(
     `  fight starts at videoT=${fightStartVideoT}s (timer=180)` +
-      (t0Flag != null ? ' [--t0, exact]' : ' [inferred from ONE VLM timer read — cross-check it]'),
-  );
+      (t0Flag != null
+        ? ' [--t0, exact]'
+        : ' [inferred from ONE VLM timer read — cross-check it]')
+  );}
 
 // ---- extract transitions (debounced: require 2 consecutive frames of the new state) ----
 const transitions: {
@@ -460,8 +487,10 @@ let pendingState: BurstState | null = null;
 let pendingCount = 0;
 for (const raw0 of reads) {
   const r =
-    classifier === 'cv' && raw0.burstState == null ? { ...raw0, burstState: IDLE } : raw0;
-  if (r.burstState == null) continue;
+    classifier === 'cv' && raw0.burstState == null
+      ? { ...raw0, burstState: IDLE }
+      : raw0;
+  if (r.burstState == null) {continue;}
   if (r.burstState === confirmedState) {
     pendingState = null;
     pendingCount = 0;
@@ -499,38 +528,35 @@ let simTransitions: SimTransition[] | undefined;
 if (simSlugs) {
   console.log(`\n  running sim for: ${simSlugs.join(', ')} ...`);
   const data: DataFile = JSON.parse(
-    readFileSync(
-      new URL('../../data/characters.json', import.meta.url),
-      'utf8',
-    ),
+    readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
   );
   const mult: LevelMultiplier = JSON.parse(
     readFileSync(
       new URL('../../data/level-multiplier.json', import.meta.url),
-      'utf8',
-    ),
+      'utf8'
+    )
   );
   const chars = simSlugs.map((s) => {
     const c = data.characters[s];
-    if (!c) throw new Error(`unknown slug "${s}"`);
+    if (!c) {throw new Error(`unknown slug "${s}"`);}
     return c;
   });
   const overrides = Object.fromEntries(
-    simSlugs.map((s) => [s, loadOverride(s)]),
+    simSlugs.map((s) => [s, loadOverride(s)])
   );
   const cubesData: CubesFile = JSON.parse(
-    readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8')
   );
   const olLinesData: OlLinesFile = JSON.parse(
-    readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8'),
+    readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8')
   );
   let skillLevelData: SkillLevelData = {};
   try {
     skillLevelData = JSON.parse(
       readFileSync(
         new URL('../../data/skill-levels.json', import.meta.url),
-        'utf8',
-      ),
+        'utf8'
+      )
     );
   } catch {
     /* optional */
@@ -559,7 +585,7 @@ if (simSlugs) {
   simTransitions = [];
   for (const line of simResult.rotationLog) {
     const m = line.match(/^([\d.]+)s\s+(.+)$/);
-    if (!m) continue;
+    if (!m) {continue;}
     const fightT = parseFloat(m[1]);
     const label = m[2].trim();
     if (label.startsWith('FULL BURST')) {
@@ -569,24 +595,24 @@ if (simSlugs) {
         label: `full (until ${until?.[1] ?? '?'})`,
       });
       if (until)
-        simTransitions.push({
+        {simTransitions.push({
           fightT: parseFloat(until[1]),
           label: 'filling (FB ended)',
-        });
+        });}
     } else if (/^B\d/.test(label)) {
       simTransitions.push({ fightT, label });
     }
   }
   simTransitions.sort((a, b) => a.fightT - b.fightT);
   console.log(
-    `  sim: ${simResult.fullBursts} full bursts, ${simTransitions.length} events`,
+    `  sim: ${simResult.fullBursts} full bursts, ${simTransitions.length} events`
   );
 
   // Compare observed transitions to sim predictions
   if (fightStartVideoT != null && transitions.length) {
     console.log('\n  observed vs sim (nearest match):');
     for (const t of transitions) {
-      if (t.fightT == null) continue;
+      if (t.fightT == null) {continue;}
       // Find the nearest sim event within 3s
       let best: SimTransition | null = null;
       let bestDelta = Infinity;
@@ -602,7 +628,7 @@ if (simSlugs) {
           ? `~ ${best.label} @ ${best.fightT.toFixed(1)}s (Δ${bestDelta.toFixed(1)}s)`
           : 'no sim match';
       console.log(
-        `    fight=${t.fightT.toFixed(1)}s  ${t.from ?? '(start)'} -> ${t.to}  |  ${match}`,
+        `    fight=${t.fightT.toFixed(1)}s  ${t.from ?? '(start)'} -> ${t.to}  |  ${match}`
       );
     }
   }
@@ -624,8 +650,14 @@ const result = {
   framesProcessed: frameCount,
   timerCorrections,
   fightStartVideoT,
-  t0Source: t0Flag != null ? '--t0 (exact)' : classifier === 'cv' ? 'none' : 'vlm timer spine (single anchor)',
-  fullBursts: classifier === 'cv' ? (cvScan?.summary.fullBursts ?? null) : fbTransitions,
+  t0Source:
+    t0Flag != null
+      ? '--t0 (exact)'
+      : classifier === 'cv'
+        ? 'none'
+        : 'vlm timer spine (single anchor)',
+  fullBursts:
+    classifier === 'cv' ? (cvScan?.summary.fullBursts ?? null) : fbTransitions,
   // CV only: the full scan — per-detector counts, per-burst corroboration, drain-window durations,
   // and any event that matched no window. This is what makes the count auditable.
   cv: cvScan
@@ -648,20 +680,20 @@ console.log(
   `  classifier=${classifier}  ` +
     `${reads.filter((r) => r.burstState != null).length}/${frameCount} gauge reads, ` +
     `${reads.filter((r) => r.timerSec != null).length}/${frameCount} timers, ` +
-    `${transitions.length} state transitions`,
+    `${transitions.length} state transitions`
 );
 console.log(
   `  FULL BURSTS: ${result.fullBursts}` +
     (classifier === 'cv'
       ? `  (drain windows; ${cvScan?.summary.corroborated}/${cvScan?.summary.fullBursts} corroborated by the splash/hexagon detectors)`
-      : `  (transitions into "full" — UNVALIDATED off the VLM classifier; re-run with --classifier cv before this becomes a measured count)`),
+      : `  (transitions into "full" — UNVALIDATED off the VLM classifier; re-run with --classifier cv before this becomes a measured count)`)
 );
 if (transitions.length) {
   console.log('  transitions (debounced):');
   for (const t of transitions.slice(0, 15))
-    console.log(
-      `    fight=${t.fightT != null ? t.fightT.toFixed(1) + 's' : '?'}  ${t.from ?? '(start)'} -> ${t.to}  (video=${t.videoT.toFixed(1)}s timer=${t.timerSec})`,
-    );
+    {console.log(
+      `    fight=${t.fightT != null ? t.fightT.toFixed(1) + 's' : '?'}  ${t.from ?? '(start)'} -> ${t.to}  (video=${t.videoT.toFixed(1)}s timer=${t.timerSec})`
+    );}
   if (transitions.length > 15)
-    console.log(`    ... and ${transitions.length - 15} more`);
+    {console.log(`    ... and ${transitions.length - 15} more`);}
 }

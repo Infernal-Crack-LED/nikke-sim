@@ -30,34 +30,34 @@ different depending on which STEP she casts (the generator force-pins her to B3;
     continuously.**
 - **S2 (Wild Tooth)**
   - ■ at battle start → self: **Gain Pierce continuously.**
-  - ■ during Beast Cage → all allies: DEF ▲50.68% of caster DEF, 10 sec. *(defensive)*
-  - ■ during The Last Howl → self: recover 23.04% of attack damage as HP over 10 sec. *(lifesteal)*
+  - ■ during Beast Cage → all allies: DEF ▲50.68% of caster DEF, 10 sec. _(defensive)_
+  - ■ during The Last Howl → self: recover 23.04% of attack damage as HP over 10 sec. _(lifesteal)_
   - ■ on casting Red Wolf → self: **ATK ▲71.42% for 10 sec.**
 - **Burst**
   - **Step 1 (Beast Cage)** → all allies: **ATK ▲77.55% of caster ATK, 10 sec** + self: **Burst CD ▼40 sec,
     once per battle.**
   - **Step 2 (The Last Howl)** → self: Attract (taunt) 10 sec + Incoming healing ▲74.88% 10 sec + **Burst CD
-    ▼40 sec, once per battle.** *(defensive)*
+    ▼40 sec, once per battle.** _(defensive)_
   - **Step 3 (Red Wolf)** → self: **weapon swap — Damage 51.46% of final ATK, Full Charge 250%, 10 sec** +
     Expand Pierce range 100% 10 sec + **Charge Speed ▲100.8% 10 sec.**
 
 ## 2. What the sim implements (src/skills/overrides/red-hood.json)
 
-| Kit line | Encoding | Status |
-| --- | --- | --- |
-| S1 Charge Speed ▲3.81% ×10 / 5s | `skill1` hitCount{1} → self buff `chargeSpeedPct` 3.81, dur 5, maxStacks 10 | FAITHFUL (R1) |
-| S1 excess-CS→Charge-Damage 240% | static `chargeDamagePct` 90, gated on burstCast stage 3, self, 10s | **DOCUMENTED_GAP ⚑** (R2) |
-| S2 Gain Pierce continuously | top-level `hasPierce: true` (whole-fight, no duration) | FAITHFUL (R3, damage-inert vs single boss) |
-| S2 DEF ▲50.68% (Beast Cage, allies) | — | UNMODELED (inert; no casterDefPct, defPct v1-inert) |
-| S2 lifesteal 23.04% (Last Howl) | — | UNMODELED (inert; no HP pool — see spot-check #2) |
-| S2 Red Wolf ATK ▲71.42% 10s | burst stage-3 → self buff `atkPct` 71.42, dur 10 | FAITHFUL (R4) |
-| B1 Beast Cage team ATK ▲77.55% of caster | burst stage-1 → allies buff `casterAtkPct` 77.55 (flat-resolved), dur 10 | FAITHFUL (R5) |
-| B1 Burst CD ▼40s once/battle | burst stage-1 → self `burstCdr` 40 oncePerBattle | FAITHFUL (R7) |
-| B2 Taunt / Incoming healing ▲74.88% | — | UNMODELED (inert; no aggro/HP primitives) |
-| B2 Burst CD ▼40s once/battle | burst stage-2 → self `burstCdr` 40 oncePerBattle | FAITHFUL (R7) |
-| B3 Red Wolf weapon swap 51.46% / 250% / 10s | burst stage-3 → self `weaponSwap` {damagePct 51.46, chargeMultPct 250, durationSec 10, chargeTimeSec 0.3} + `unlimitedAmmo` 10s | FAITHFUL (R6) |
-| B3 Expand Pierce range 100% | — | UNMODELED (inert; pierce is a boolean tag, single partless boss) |
-| B3 Charge Speed ▲100.8% 10s | folded into the swap's `chargeTimeSec` 0.3 (instant charge → fire-rate-gated 18f cadence) + arms the conversion | FAITHFUL (R6/R2; equivalent encoding) |
+| Kit line                                    | Encoding                                                                                                                        | Status                                                           |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| S1 Charge Speed ▲3.81% ×10 / 5s             | `skill1` hitCount{1} → self buff `chargeSpeedPct` 3.81, dur 5, maxStacks 10                                                     | FAITHFUL (R1)                                                    |
+| S1 excess-CS→Charge-Damage 240%             | static `chargeDamagePct` 90, gated on burstCast stage 3, self, 10s                                                              | **DOCUMENTED_GAP ⚑** (R2)                                        |
+| S2 Gain Pierce continuously                 | top-level `hasPierce: true` (whole-fight, no duration)                                                                          | FAITHFUL (R3, damage-inert vs single boss)                       |
+| S2 DEF ▲50.68% (Beast Cage, allies)         | —                                                                                                                               | UNMODELED (inert; no casterDefPct, defPct v1-inert)              |
+| S2 lifesteal 23.04% (Last Howl)             | —                                                                                                                               | UNMODELED (inert; no HP pool — see spot-check #2)                |
+| S2 Red Wolf ATK ▲71.42% 10s                 | burst stage-3 → self buff `atkPct` 71.42, dur 10                                                                                | FAITHFUL (R4)                                                    |
+| B1 Beast Cage team ATK ▲77.55% of caster    | burst stage-1 → allies buff `casterAtkPct` 77.55 (flat-resolved), dur 10                                                        | FAITHFUL (R5)                                                    |
+| B1 Burst CD ▼40s once/battle                | burst stage-1 → self `burstCdr` 40 oncePerBattle                                                                                | FAITHFUL (R7)                                                    |
+| B2 Taunt / Incoming healing ▲74.88%         | —                                                                                                                               | UNMODELED (inert; no aggro/HP primitives)                        |
+| B2 Burst CD ▼40s once/battle                | burst stage-2 → self `burstCdr` 40 oncePerBattle                                                                                | FAITHFUL (R7)                                                    |
+| B3 Red Wolf weapon swap 51.46% / 250% / 10s | burst stage-3 → self `weaponSwap` {damagePct 51.46, chargeMultPct 250, durationSec 10, chargeTimeSec 0.3} + `unlimitedAmmo` 10s | FAITHFUL (R6)                                                    |
+| B3 Expand Pierce range 100%                 | —                                                                                                                               | UNMODELED (inert; pierce is a boolean tag, single partless boss) |
+| B3 Charge Speed ▲100.8% 10s                 | folded into the swap's `chargeTimeSec` 0.3 (instant charge → fire-rate-gated 18f cadence) + arms the conversion                 | FAITHFUL (R6/R2; equivalent encoding)                            |
 
 **Deep-dive (owner-confirmed 2026-07-20):** Red Wolf swap economy decoded from game data (skill 1470610 +
 weapon 1047002): rate_of_fire 200 rpm → exactly **1 shot/18 frames (0.3s)** regardless of charge speed (the

@@ -34,7 +34,7 @@ export interface Canvas2DLike {
     dx: number,
     dy: number,
     dw: number,
-    dh: number,
+    dh: number
   ): void;
   // source-cropping form (sx,sy,sw,sh → dx,dy,dw,dh): lets us crop a square out of a
   // tall portrait instead of squishing its aspect ratio into the destination box.
@@ -47,7 +47,7 @@ export interface Canvas2DLike {
     dx: number,
     dy: number,
     dw: number,
-    dh: number,
+    dh: number
   ): void;
 }
 
@@ -118,7 +118,7 @@ export function roundRect(
   y: number,
   w: number,
   h: number,
-  r: number,
+  r: number
 ) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -134,7 +134,7 @@ export function roundRect(
 export function drawTeamCard(
   ctx: Canvas2DLike,
   data: TeamCardData,
-  meta: TeamCardMeta,
+  meta: TeamCardMeta
 ) {
   const W = CARD_W;
   const padX = PAD_X;
@@ -161,14 +161,14 @@ export function drawTeamCard(
       data.fullBurstUptime * 100
     ).toFixed(0)}% FB uptime`,
     padX + bigW + 24,
-    102,
+    102
   );
   ctx.fillText(
     `${meta.weakness ? `${meta.weakness}-weak boss` : 'no element'}  ·  lvl ${
       meta.level
     }  ·  ${meta.coreLabel}  ·  180s`,
     padX,
-    136,
+    136
   );
 
   const maxShare = Math.max(...data.units.map((u) => u.share), 0.0001);
@@ -237,7 +237,7 @@ export function drawTeamCard(
   ctx.fillText(
     'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
     padX,
-    H - 22,
+    H - 22
   );
 }
 
@@ -278,7 +278,7 @@ export const rosterCardHeight = (teamCount: number) =>
 export function drawRosterCard(
   ctx: Canvas2DLike,
   data: RosterCardData,
-  meta: TeamCardMeta,
+  meta: TeamCardMeta
 ) {
   const W = CARD_W;
   const padX = PAD_X;
@@ -299,7 +299,7 @@ export function drawRosterCard(
   ctx.fillText(
     data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
     padX,
-    56,
+    56
   );
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.totalDamage), padX, 108);
@@ -309,7 +309,7 @@ export function drawRosterCard(
   ctx.fillText(
     `total damage across all ${data.teams.length} teams`,
     padX + bigW + 24,
-    102,
+    102
   );
   // global meta line — omitted when per-team boss labels carry the options
   if (!hasBossLabels) {
@@ -318,7 +318,7 @@ export function drawRosterCard(
         meta.level
       }  ·  ${meta.coreLabel}  ·  180s`,
       padX,
-      136,
+      136
     );
   } else {
     ctx.fillText(`lvl ${meta.level}  ·  180s`, padX, 136);
@@ -362,7 +362,7 @@ export function drawRosterCard(
         ctx.fillText(
           (u.name[0] ?? '?').toUpperCase(),
           px + R_PS / 2,
-          py + R_PS / 2 + 8,
+          py + R_PS / 2 + 8
         );
         ctx.textAlign = 'left';
       }
@@ -386,7 +386,7 @@ export function drawRosterCard(
       barY,
       Math.max(2, (t.teamDamage / maxDmg) * barW),
       22,
-      11,
+      11
     );
     ctx.fill();
     // value (right aligned)
@@ -403,6 +403,6 @@ export function drawRosterCard(
   ctx.fillText(
     'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
     padX,
-    H - 22,
+    H - 22
   );
 }

@@ -3,13 +3,17 @@
 VARIANT slug `cinderella-crystal-wave` (MG/Attacker/Iron/Burst III, Pilgrim); base counterpart `cinderella` (RL/Electric) is a DIFFERENT unit.
 
 ## POST-FIX CONTEXT (read first)
+
 Your PRIOR verdict on this unit (attached in SECTION 8) was **GO @ faithfulness 0.875**, with TWO low-severity board-inert gotchas and explicit suggested fixes. The driver applied BOTH fixes exactly as prescribed:
+
 - **Gotcha 1 (ENCODING, skill2):** set the Snipe-mode 1189.66% FB rider `core: false` (was core:true). The MG 833.79% branch remains `core: true`. Text-faithful, board-inert (MG is modes[0]; graded comps never enter Snipe).
 - **Gotcha 2 (FIDELITY, skill1):** re-encoded the every-5s 900% line from the `dot` primitive to the engine `interval` trigger (`trigger:{kind:"interval",sec:5}` + `{kind:"flatDamage",atkPct:900}`, target enemy) — the primitive matching the kit wording, giving function flavor (crit yes / core no / range no / FB by landing timing) and an exact 5s cadence with first fire at t=5s.
-Behavioral verification of the fixes (deterministic): the 900% line now fires 35×/180s, first at frame 300 (t=5.00s), bucket skill, rangeApplied false, coreEligible false, critEligible true, fbMajorApplied both states; MG total moved -0.08% (board-inert). The Snipe rider is now coreEligible false / coreRate 0; MG rider stays coreEligible true / coreRate 0.95. The driver spec grew to 27 assertions (added: first-fire-phase pin, function-flavor pin, mode-split core-flag pin) and is GREEN. The S5 blind test is now **10 passed / 6 skipped / 1 failed** — the interval re-encode flipped the prior flatDamage-vs-dot vocabulary RED to GREEN; the SOLE remaining RED is the documented maxAmmo ⚑ (blind asserts 15, driver ships 1 from the 40-round-expend clamp; the blind test own header flags this kit-internal contradiction; you classified it DOCUMENTED_GAP). Re-judge the FIXED artifacts (SECTIONS 5/6/7 carry the current fixed driver test + override) and return an updated binding verdict + faithfulness score.
+  Behavioral verification of the fixes (deterministic): the 900% line now fires 35×/180s, first at frame 300 (t=5.00s), bucket skill, rangeApplied false, coreEligible false, critEligible true, fbMajorApplied both states; MG total moved -0.08% (board-inert). The Snipe rider is now coreEligible false / coreRate 0; MG rider stays coreEligible true / coreRate 0.95. The driver spec grew to 27 assertions (added: first-fire-phase pin, function-flavor pin, mode-split core-flag pin) and is GREEN. The S5 blind test is now **10 passed / 6 skipped / 1 failed** — the interval re-encode flipped the prior flatDamage-vs-dot vocabulary RED to GREEN; the SOLE remaining RED is the documented maxAmmo ⚑ (blind asserts 15, driver ships 1 from the 40-round-expend clamp; the blind test own header flags this kit-internal contradiction; you classified it DOCUMENTED_GAP). Re-judge the FIXED artifacts (SECTIONS 5/6/7 carry the current fixed driver test + override) and return an updated binding verdict + faithfulness score.
 
 ============================================================
+
 ## SECTION 1 — RECONCILING-JUDGE CONTRACT (return JSON shape)
+
 ============================================================
 
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
@@ -24,6 +28,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -34,12 +39,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -65,32 +72,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
-
 ============================================================
+
 ## SECTION 2 — MECHANICS SSOT
+
 ============================================================
 
 ### docs/data/damage-calculation.md
@@ -119,7 +155,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -157,29 +193,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -260,9 +296,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -298,7 +334,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -356,7 +392,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -499,12 +535,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -538,7 +574,6 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
-
 
 ### docs/data/game-mechanics.md
 
@@ -596,15 +631,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -947,9 +982,10 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ============================================================
+
 ## SECTION 3 — GROUND TRUTH: kit prose + base stats
+
 ============================================================
 
 ```json
@@ -997,7 +1033,9 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ```
 
 ============================================================
+
 ## SECTION 4 — S2b CROSS-FAMILY REVIEW (claude-fable-5)
+
 ============================================================
 
 ```json
@@ -1244,11 +1282,12 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   "notes": "Expected shared-prior misreads, in leverage order: (1) The s2 FB-enter mode-branched nuke keyed to plain fullBurstEnter without ownBurstGate:'cast' — the prose says 'after this unit uses her Burst Skill', and in any co-B3 comp the ungated version over-fires; conversely re-keying to burstCast drops the legitimate +50% FB major. This is the single highest-leverage assertion. (2) Whole-fight hasPierce instead of snipe-scoped pierce. (3) Pinpoint (coreDamagePct 26) left permanently on instead of stripped during Snipe Mode by Destroy. (4) The full-charge 'Expends 40 rounds' vs the 15-round snipe magazine — arithmetic contradiction the driver must resolve; the whole-picture reading is clamp-to-empty ⇒ one full-charge shot per snipe magazine with a forced reload, and the resulting snipe shot economy is an ALWAYS-⚑ (weapon-swap shot economy + cadence tuple): flag, don't silently pick. (5) teamAmmo-200 gauge line skipped as 'utility' or counted on own ammo only — it drives FB rotation count. (6) The 900%/5s interval first-firing at t=0 instead of t=5s. (7) The snipe entry/exit state machine (double-reload toggle inside the 6s Preparation window): if the override approximates it with a static `modes` declaration, the approximation and its uptime assumption must be an explicit ⚑, not an implicit snipe-from-t0. Also declare: the effect-schema comment '(CCW: SR only)' on pierceModes leaked this unit's pierce-encoding choice into my packet; my pierce conclusion is independently forced by the prose (Pierce is an Additional Effect of the Snipe Mode swap block), so the review stands, but the packet builder should strip that comment for future runs.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ============================================================
+
 ## SECTION 5 — S5 BLIND TEST (claude-opus-5) + result vs FIXED DRIVER override
+
 ============================================================
 
 Result of running this blind test against the FIXED driver override: **10 passed / 6 skipped (GAP/UNMODELED it.skip) / 1 failed** (was 9/2 before the fixes — the interval re-encode flipped the flatDamage-vocabulary RED to GREEN).
@@ -1360,7 +1399,7 @@ function setBuff(ov: any, stat: string, from: number, to: number): number {
   for (const { e } of findEffects(
     ov,
     (e) =>
-      e.kind === 'buff' && e.stat === stat && Math.abs(e.value - from) < 1e-6,
+      e.kind === 'buff' && e.stat === stat && Math.abs(e.value - from) < 1e-6
   )) {
     e.value = to;
     n++;
@@ -1380,7 +1419,7 @@ const buffs = (evs: Ev[], stat: string, value?: number) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(e.value - value) < 1e-6),
+      (value === undefined || Math.abs(e.value - value) < 1e-6)
   );
 const onSelf = (list: Ev[]) => list.filter((e) => e.targetSlug === SLUG);
 const others = (t: Record<string, number>) => {
@@ -1398,28 +1437,28 @@ let nBeauty = 0;
 const noBeautyFull = run(
   withPatchedOverride(SLUG, (o) => {
     nBeauty = setBuff(o as any, 'attackDamagePct', 24, 0);
-  }),
+  })
 );
 
 let nAtk29 = 0;
 const noAtk29 = run(
   withPatchedOverride(SLUG, (o) => {
     nAtk29 = setBuff(o as any, 'atkPct', 29, 0);
-  }),
+  })
 );
 
 let nPinpoint = 0;
 const noPinpoint = run(
   withPatchedOverride(SLUG, (o) => {
     nPinpoint = setBuff(o as any, 'coreDamagePct', 26, 0);
-  }),
+  })
 );
 
 let nParts = 0;
 const noParts = run(
   withPatchedOverride(SLUG, (o) => {
     nParts = setBuff(o as any, 'partsDamagePct', 26.21, 0);
-  }),
+  })
 );
 
 let nInterval = 0;
@@ -1427,9 +1466,9 @@ const noInterval = run(
   withPatchedOverride(SLUG, (o) => {
     nInterval = dropEffects(
       o as any,
-      (e) => e.kind === 'flatDamage' && e.atkPct === 900,
+      (e) => e.kind === 'flatDamage' && e.atkPct === 900
     );
-  }),
+  })
 );
 
 let nNuke = 0;
@@ -1437,16 +1476,16 @@ const noNuke = run(
   withPatchedOverride(SLUG, (o) => {
     nNuke = dropEffects(
       o as any,
-      (e) => e.kind === 'flatDamage' && e.atkPct === 6000,
+      (e) => e.kind === 'flatDamage' && e.atkPct === 6000
     );
-  }),
+  })
 );
 
 let nGauge = 0;
 const noGauge = run(
   withPatchedOverride(SLUG, (o) => {
     nGauge = dropEffects(o as any, (e) => e.kind === 'fillGauge');
-  }),
+  })
 );
 
 let nHyper = 0;
@@ -1454,14 +1493,14 @@ const hyperGauge = run(
   withPatchedOverride(SLUG, (o) => {
     for (const { e, b } of findEffects(
       o as any,
-      (x) => x.kind === 'fillGauge',
+      (x) => x.kind === 'fillGauge'
     )) {
       e.pct = 40;
       if (b.trigger && typeof b.trigger.count === 'number')
         b.trigger.count = 20;
       nHyper++;
     }
-  }),
+  })
 );
 
 const isRider = (e: any) =>
@@ -1471,7 +1510,7 @@ let nRider = 0;
 const noRider = run(
   withPatchedOverride(SLUG, (o) => {
     nRider = dropEffects(o as any, isRider);
-  }),
+  })
 );
 
 let nUngate = 0;
@@ -1483,7 +1522,7 @@ const ungatedRider = run(
         nUngate++;
       }
     }
-  }),
+  })
 );
 
 const FB = fullBursts(base.evs);
@@ -1510,7 +1549,7 @@ describe('cinderella-crystal-wave — skill1', () => {
   it('Beauty-Full: Attack Damage ▲24% is continuous, self-only, Damage-Up (not ATK)', () => {
     expect(nBeauty).toBeGreaterThan(0); // modeled at all
     expect(
-      onSelf(buffs(base.evs, 'attackDamagePct', 24)).length,
+      onSelf(buffs(base.evs, 'attackDamagePct', 24)).length
     ).toBeGreaterThanOrEqual(1);
     expect(buffs(base.evs, 'atkPct', 24)).toHaveLength(0); // nearest-wrong: ATK, not Attack Damage
     expect(noBeautyFull.self).toBeLessThan(base.self); // live, not inert
@@ -1569,7 +1608,7 @@ describe('cinderella-crystal-wave — skill1', () => {
     // Pierce must be mode/swap-scoped, never an unconditional whole-fight flag.
     if (ov.hasPierce === true) {
       expect(Array.isArray(ov.pierceModes) && ov.pierceModes.length > 0).toBe(
-        true,
+        true
       );
     }
   });
@@ -1602,7 +1641,7 @@ describe('cinderella-crystal-wave — skill2', () => {
   it('ATK ▲29% is continuous, self-only, in the ATK bucket (not Damage Up)', () => {
     expect(nAtk29).toBeGreaterThan(0);
     expect(onSelf(buffs(base.evs, 'atkPct', 29)).length).toBeGreaterThanOrEqual(
-      1,
+      1
     );
     expect(buffs(base.evs, 'attackDamagePct', 29)).toHaveLength(0);
     expect(noAtk29.self).toBeLessThan(base.self);
@@ -1617,7 +1656,7 @@ describe('cinderella-crystal-wave — skill2', () => {
   it('Pinpoint: core-scoped ▲26%, live from battle start, self-only', () => {
     expect(nPinpoint).toBeGreaterThan(0);
     expect(
-      onSelf(buffs(base.evs, 'coreDamagePct', 26)).length,
+      onSelf(buffs(base.evs, 'coreDamagePct', 26)).length
     ).toBeGreaterThanOrEqual(1);
     expect(buffs(base.evs, 'attackDamagePct', 26)).toHaveLength(0); // nearest-wrong: generic
     expect(noPinpoint.self).toBeLessThan(base.self);
@@ -1733,11 +1772,12 @@ describe('cinderella-crystal-wave — unmodeled', () => {
     // override\u2019s `unmodeled.skill2`, never as an `ignored` effect block (validator rejects).
   });
 });
-
 ```
 
 ============================================================
+
 ## SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5) + diff vs FIXED DRIVER override
+
 ============================================================
 
 After the post-fix corrections, the driver override now AGREES with the blind S6 override on BOTH previously-divergent load-bearing points: (1) the Snipe 1189.66% FB branch is now core:false (blind S6 + fable S2b both derived non-core; driver corrected to match); (2) the every-5s 900% line is now an `interval`-trigger flatDamage (blind S6 used a hitCount proxy and self-flagged it as inferior, asking the judge to adjudicate; driver adopted the named `interval` primitive). Remaining benign divergences: Snipe maxAmmo (driver 1 clamp vs blind 15 literal — the documented contradiction), and the Snipe entry/exit state machine (driver static user-selectable modes vs blind lastBullet+whileSwapped — both approximations flagged; inert on the graded MG path). Convergent load-bearing lines: Beauty-Full attackDamagePct 24; ATK atkPct 29; Pinpoint coreDamagePct 26 (driver mode-gated to MG — MORE faithful than blind unconditional, which blind self-flagged as an over-credit); Destroy partsDamagePct 26.21; FB-enter rider fullBurstEnter + ownBurstGate:cast; MG 833.79 core:true; burst 92/65 10s; 6000% nuke FB-exempt; teamAmmo 200 -> fillGauge 12.
@@ -1968,11 +2008,12 @@ After the post-fix corrections, the driver override now AGREES with the blind S6
   ],
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only (S6 cross-family packet); the driver's override, tests, DECISIONS, probe data and board output were NOT consulted. Structure: S1 = a reload-keyed Snipe Mode weapon swap (SR, 1 s fixed charge, 62.13% base × 250% full charge, Pierce) + the always-on Beauty-Full 24% Attack Damage + a 900% periodic hit (hitCount PROXY — no interval trigger exists in the schema) + the teamAmmo-200 → 12% gauge fill for the whole team. S2 = flat 29% ATK, the Destroy/Pinpoint parts-vs-core toggle pair, and the two mutually exclusive FB-entry nukes, both gated ownBurstGate:'cast' because the kit says 'entering Full Burst AFTER this unit uses her Burst Skill' — a bare fullBurstEnter would over-fire in any multi-B3 comp. Burst = 92% Attack Damage + 65% ATK for 10 s on herself plus a 6000% burst-cast nuke marked noFb (burst-cast damage lands before the FB window opens). Three things are load-bearing and unresolved: the 15-round-capacity-vs-40-round-cost contradiction (see caveats), the swap trigger/economy (the schema has no reload-to-max trigger; lastBullet is the proxy), and her MG cadence (which sets the hitCount threshold). Do not read any of the three as calibrated. Unmodeled: the reload-time clamp (no clamp primitive), the Decoy avatar (no HP pool on the v1 boss and it is NOT a shield — encoding it as one would falsely satisfy other kits' requiresShielded gates), and the Destroy/Pinpoint removal clauses."
 }
-
 ```
 
 ============================================================
+
 ## SECTION 7 — DRIVER IMPLEMENTATION (FIXED test + override under judgment)
+
 ============================================================
 
 ### scripts/tests/units/cinderella-crystal-wave.test.ts (27 assertions, GREEN)
@@ -2097,7 +2138,7 @@ const hasStat = (b: any, stat: string) =>
 const mgRiderBlock = (ov: any) => {
   const blk = ov.skill2.find(
     (b: any) =>
-      b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage'),
+      b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage')
   );
   if (!blk) throw new Error('ccw MG FB rider block missing — fixture is stale');
   return blk;
@@ -2150,7 +2191,7 @@ const noRider = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
     (b: any) =>
-      !(b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage')),
+      !(b.mode === 'MG' && b.effects.some((e: any) => e.kind === 'flatDamage'))
   );
   if (ov.skill2.length === before)
     throw new Error('ccw MG FB rider block missing — fixture is stale');
@@ -2167,7 +2208,7 @@ const burstCastRider = withPatchedOverride(SLUG, (ov) => {
   const blk = mgRiderBlock(ov);
   if (blk.trigger?.kind !== 'fullBurstEnter')
     throw new Error(
-      'ccw MG rider trigger is not fullBurstEnter — fixture is stale',
+      'ccw MG rider trigger is not fullBurstEnter — fixture is stale'
     );
   blk.trigger.kind = 'burstCast';
 });
@@ -2209,7 +2250,7 @@ const ccwBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
 const helmBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -2236,22 +2277,22 @@ const intervalHits = (evs: SimEvent[]) =>
 describe('cinderella-crystal-wave — kit spec', () => {
   describe('W1 — S1 Beauty-Full: Attack Damage ▲ 24% continuous, self', () => {
     const applied = ccwBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 24,
+      (b) => b.value === 24
     );
 
     it('is a self-scoped, always-on (continuous) 24% buff', () => {
       expect(
         applied.length,
-        'no Beauty-Full 24% buff was applied',
+        'no Beauty-Full 24% buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([24]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CCW]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'Beauty-Full is continuous — no wall-clock expiry',
+        'Beauty-Full is continuous — no wall-clock expiry'
       ).toEqual([null]);
     });
 
@@ -2262,7 +2303,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
 
   describe('W2 — S2 ATK ▲ 29% continuous, self', () => {
     const applied = ccwBuffs(base.events, 'atkPct').filter(
-      (b) => b.value === 29,
+      (b) => b.value === 29
     );
 
     it('is a self-scoped, always-on (continuous) 29% buff', () => {
@@ -2270,7 +2311,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([29]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'must be self-scoped',
+        'must be self-scoped'
       ).toEqual([CCW]);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
@@ -2288,7 +2329,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(core.map((b) => b.expiresFrame))]).toEqual([null]);
       expect(
         ccwBuffs(base.events, 'partsDamagePct'),
-        'Destroy must NOT apply in MG mode',
+        'Destroy must NOT apply in MG mode'
       ).toEqual([]);
     });
 
@@ -2298,7 +2339,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(parts.map((b) => b.targetIdx))]).toEqual([CCW]);
       expect(
         ccwBuffs(snipe.events, 'coreDamagePct'),
-        'Pinpoint must NOT apply in Snipe mode',
+        'Pinpoint must NOT apply in Snipe mode'
       ).toEqual([]);
     });
 
@@ -2316,22 +2357,22 @@ describe('cinderella-crystal-wave — kit spec', () => {
       // (damage-calculation §1b/§2b). Gauntlet gotcha-1 fix pinned here (two blind roles + formula).
       expect(
         mgRider(base.events).every((d) => d.coreEligible),
-        'MG branch is a core strike',
+        'MG branch is a core strike'
       ).toBe(true);
       expect(
         snipeRider(snipe.events).every((d) => !d.coreEligible),
-        'Snipe branch is plain damage — never core',
+        'Snipe branch is plain damage — never core'
       ).toBe(true);
     });
 
     it('Snipe mode swaps the weapon to 62.13%/shot (the alt weapon-swap path)', () => {
       const norm = ccwDamage(snipe.events).filter(
-        (d) => d.srcSlot === 'normal',
+        (d) => d.srcSlot === 'normal'
       );
       expect([...new Set(norm.map((d) => d.atkPct))]).toEqual([62.13]);
       // MG normal shots are the datamined 5.57% MG round, NOT the snipe round.
       const mgNorm = ccwDamage(base.events).filter(
-        (d) => d.srcSlot === 'normal',
+        (d) => d.srcSlot === 'normal'
       );
       expect([...new Set(mgNorm.map((d) => d.atkPct))]).toEqual([5.57]);
     });
@@ -2352,7 +2393,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect([...new Set(ds.map((d) => d.bucket))]).toEqual(['skill']);
       expect(
         ds.length,
-        `${ds.length} firings — a 5s timer lands ~35×/180s; per-burst would be ~6, per-shot thousands`,
+        `${ds.length} firings — a 5s timer lands ~35×/180s; per-burst would be ~6, per-shot thousands`
       ).toBeGreaterThanOrEqual(30);
       expect(ds.length).toBeLessThanOrEqual(40);
     });
@@ -2363,7 +2404,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ds = intervalHits(base.events);
       expect(
         ds[0].frame,
-        'first firing must be at t=5s (frame 300), not t=0',
+        'first firing must be at t=5s (frame 300), not t=0'
       ).toBe(5 * FPS);
     });
 
@@ -2371,15 +2412,15 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ds = intervalHits(base.events);
       expect(
         ds.every((d) => d.critEligible),
-        'function damage crits at her sheet rate',
+        'function damage crits at her sheet rate'
       ).toBe(true);
       expect(
         ds.every((d) => !d.coreEligible),
-        'function damage is never core',
+        'function damage is never core'
       ).toBe(true);
       expect(
         ds.every((d) => !d.rangeApplied),
-        'riders carry no range bonus',
+        'riders carry no range bonus'
       ).toBe(true);
       // FB by landing timing: procs inside an FB window take the +50%, those outside do not —
       // both states appear over a 180s fight (it is NOT wrongly noFb'd, nor always-on).
@@ -2409,7 +2450,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       expect(rs, 'rider must fire exactly on her own FB entries').toBe(own);
       expect(
         teamFb,
-        'fixture must have co-B3 FB entries to gate against',
+        'fixture must have co-B3 FB entries to gate against'
       ).toBeGreaterThan(own);
     });
 
@@ -2418,17 +2459,17 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const ungatedCount = mgRider(ungated.events).length;
       expect(
         ungatedCount,
-        `${ungatedCount} ungated vs ${gated} gated — ungated fires on helm's FB entries too`,
+        `${ungatedCount} ungated vs ${gated} gated — ungated fires on helm's FB entries too`
       ).toBeGreaterThan(gated);
       expect(ungatedCount).toBe(
-        ccwBursts(ungated.events).length + helmBursts(ungated.events).length,
+        ccwBursts(ungated.events).length + helmBursts(ungated.events).length
       );
     });
 
     it('DISCRIMINATING (trigger): fullBurstEnter takes the +50% FB major; burstCast loses it', () => {
       expect(mgRider(base.events).every((d) => d.fbMajorApplied)).toBe(true);
       expect(mgRider(burstCast.events).every((d) => !d.fbMajorApplied)).toBe(
-        true,
+        true
       );
     });
 
@@ -2447,7 +2488,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
 
   describe('W6 — burst self-buffs: Attack Damage ▲ 92% + ATK ▲ 65% for 10s, one per cast', () => {
     const ad = ccwBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 92,
+      (b) => b.value === 92
     );
     const atk = ccwBuffs(base.events, 'atkPct').filter((b) => b.value === 65);
 
@@ -2458,7 +2499,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       for (const b of [...ad, ...atk]) {
         expect(b.targetIdx).toBe(CCW);
         expect(b.expiresFrame! - b.frame, 'must be a 10s timed buff').toBe(
-          10 * FPS,
+          10 * FPS
         );
       }
     });
@@ -2489,7 +2530,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       const took = nukes(base.events).filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
   });
@@ -2500,7 +2541,7 @@ describe('cinderella-crystal-wave — kit spec', () => {
       // ccw's per-200-ally-ammo 12% fill advances helm's bursts over the fight.
       expect(
         helmBursts(base.events).length,
-        "ccw's teamAmmo fill must advance helm's burst cadence",
+        "ccw's teamAmmo fill must advance helm's burst cadence"
       ).toBeGreaterThan(helmBursts(teamAmmo.events).length);
     });
 
@@ -2515,7 +2556,6 @@ describe('cinderella-crystal-wave — kit spec', () => {
     });
   });
 });
-
 ```
 
 ### src/skills/overrides/cinderella-crystal-wave.json (FIXED shipped override)
@@ -2523,13 +2563,8 @@ describe('cinderella-crystal-wave — kit spec', () => {
 ```json
 {
   "note": "RE-TUNED 2026-07-16 (Fable-approved, kit-parse blind parser out-predicted the prior HT ~13% cold): her FB-enter proc text says \"as CORE STRIKE damage\" and activates ON entering Full Burst — the prior model wrongly set trigger=burstCast (fires PRE-FB, loses the +50%) AND dropped core:true. Restored to text-faithful (fullBurstEnter trigger + core:true, both modes). Single-variable test: T5 0.877->0.99, T8 0.868->1.02 vs real. Overturns the 2026-07-13 U1 over-broad no-core ruling for THIS rider (text explicitly labels core strike). --- User-selectable mode (100% uptime for the chosen mode): MG (default - matches the user's validated real solo-raid sample at core 100%) or Snipe. SNIPE: permanent weapon swap (62.13%/shot, 1s charge, 250% full charge). Magazine modeled as 1 round because Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> one shot per reload cycle (~3.9s/shot); if the 40-round expend actually draws from a separate pool, maxAmmo should be 15 instead (flagged ambiguity). Snipe also carries Destroy (Damage to Parts +26.21%, inert in v1) and the 1189.66% Full-Burst rider. MG: Pinpoint (core damage +26%, matters when core-rate > 0) and the 833.79% core-strike rider (direct core hit -> receives the core bucket, scaled by core-rate; vs a coreless boss it contributes nothing extra). Mode-independent: Beauty-Full (Attack Damage +24% always), ATK +29% always, and the every-5s 900% crosshair hit. Preparation for Change: the per-200-ally-ammo 12% burst-gauge fill is NOW MODELED (2026-07-15) via a teamAmmo trigger (count 200 -> fillGauge 12%, target allies) -- the exact same team-ammo mechanism Little Mermaid uses (count 400 -> 37%); it was wrongly skipped before as 'team ammo not trackable', but teamAmmo IS trackable. This feeds team burst cadence in her comps. Skipped: Preparation for Change reload bookkeeping (reload uses her normal reload time), Decoy (defensive), Pierce (inert). Burst slot left to the parser (Attack Damage 92% + ATK 65% for 10s + 6000% nuke). U1 RULE FIX 2026-07-13: the 833.79% core-strike rider procs ON core hits but, as function-type additional damage, does NOT receive the core damage bucket (datamined rule: procs crit, never core, never range) — core flag removed; was contributing to her 1.16-1.30 heat. [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified]. --- [2026-07-17 OWN-BURST-GATED FB RIDER] Both FB-enter riders (Snipe 1189.66% / MG 833.79% core-strike) now carry `ownBurstGate: 'cast'` — her kit text is explicit: \"Activates when entering Full Burst AFTER this unit uses her Burst Skill.\" The prior plain `fullBurstEnter` over-fired the rider on EVERY team full burst, including ones a DIFFERENT B3 completed (theme 9 / engine ranked fix #4). The kit-status finding assumed 'sole-B3 → graded movement ZERO' — that premise was WRONG (she alternates stage-3 with a co-B3 in BOTH graded comps: Liberalio in T5, Rapi:RH in T8), so the gate is board-MOVING and it IMPROVES the fit: T8 iron-weak 1.062 HOT → 1.001 (the over-fire was masking a multi-B3 over-credit), T5 wind-weak 1.009 → 0.978 (both now within ±3%; board MAD 0.036 → ~0.012). Kept at FB-entry (NOT re-keyed to burstCast) so the MG core-strike rider still receives the +50% FB major. Engine gate: sim.ts applyBlock `block.ownBurstGate` vs rotationCasters; capability is inert until an override opts in. --- [KIT-AUTONOMY GAUNTLET 2026-07-25] Cross-family corroborated (S2b claude-fable-5 converged on all 14 load-bearing lines; S5/S6/S7 claude-opus-5). The validated MG path (graded comps, core 100%) is fully faithful: Beauty-Full attackDamagePct 24, ATK atkPct 29, Pinpoint coreDamagePct 26 (MG) / Destroy partsDamagePct 26.21 (Snipe) mode-toggle with Destroy-removes-Pinpoint, 900%/5s interval dot, teamAmmo-200 -> fillGauge-12% team cadence, burst self-buffs 92/65 for 10s (burstCast self), 6000% burstCast nuke (FB-exempt, no core), and the MG FB-enter rider 833.79% core-strike with ownBurstGate:cast + fullBurstEnter (keeps the +50% FB major) + core:true -- the highest-leverage line, pinned at 6 firings (her own casts) vs 12 for an ungated fullBurstEnter (every team FB incl. the co-B3). Three flags, ALL confined to the NON-validated Snipe alternate path (graded sample is MG; board impact ~0): [FLAG 1] (Snipe FB rider core flag, tier 2): the Snipe-mode 1189.66% FB rider carries core:true, but its kit text (Deals 1189.66% of final ATK as damage; Affects all enemies including parts) reads as PLAIN damage -- only the MG 833.79% branch explicitly says as core strike damage. Estimate: if the Snipe branch is non-core it loses the core bucket on ~95%-core-rate hits (its core contribution ~ current core mult - 1). Recipe: set the Snipe skill2 rider core:false to match the as-damage text (MG branch stays core:true). Needs owner/e3 confirmation of whether the Snipe FB nuke cores. [FLAG 2] (Snipe entry/exit state machine, tier 2): the kit enters/exits Snipe Mode via a double-reload-to-max inside the 6s Preparation-for-Change window (a state machine), approximated here as a static user-selectable modes declaration with 100% uptime for the chosen mode. Estimate: real Snipe has MG ramp-in/out segments, so 100% Snipe uptime slightly over-credits the Snipe path; the graded MG path is exact (she stays in MG). Recipe: model the Preparation-status reload-toggle if a reload-clamp/status primitive lands. [FLAG 3] (Snipe magazine, tier 2, pre-existing): maxAmmo modeled as 1 (Additional Effect 2 expends 40 rounds per full-charge shot vs the listed 15-round mag -> clamp-to-empty -> one shot per reload cycle); if the 40-round expend draws from a separate pool, maxAmmo should be 15. Kit-autonomy gauntlet 2026-07-25.",
-  "modes": [
-    "MG",
-    "Snipe"
-  ],
-  "pierceModes": [
-    "Snipe"
-  ],
+  "modes": ["MG", "Snipe"],
+  "pierceModes": ["Snipe"],
   "unmodeled": {
     "skill1": [
       "Activates when reloading to max ammunition capacity. Affects self. Preparation for Change: Reloading Time changes to fixed 3 sec for 6 sec. (Removed when the last bullet is fired.)"
@@ -2738,11 +2773,12 @@ describe('cinderella-crystal-wave — kit spec', () => {
     }
   ]
 }
-
 ```
 
 ============================================================
+
 ## SECTION 8 — YOUR PRIOR VERDICT (for continuity)
+
 ============================================================
 
 ```json
@@ -2950,5 +2986,4 @@ describe('cinderella-crystal-wave — kit spec', () => {
   "verdictRationale": "The validated MG path — the only path the graded comps exercise — is fully faithful and behaviorally verified, not merely present: every continuous buff (24% Attack Damage in DamageUp, 29% ATK in the ATK bucket, 26% Pinpoint in the core term) applies at frame 0 with null expiry and self-scope; the 900%/5s hit fires ~35× over 180s in the skill bucket with no range; the teamAmmo-200 → 12% fill measurably advances a teammate's burst cadence; the burst self-buffs land once per own cast with a 600-frame expiry; the 6000% nuke never takes the +50% (engine-forced, asserted from the event log by both the driver and the blind); and the centerpiece FB-enter rider is triply discriminated (6 gated firings vs 12 ungated, fbMajorApplied true vs a burstCast re-key, coreEligible true vs core:false). Convergence is RED only twice, and both REDs are benign under classification: one is a blind splice-predicate vocabulary mismatch (flatDamage vs dot) whose own downstream assertions pass, and one is the driver's documented FLAG 3 maxAmmo clamp that the blind test's header independently flags as a kit-internal contradiction. Two real gotchas survive, both low-severity and both board-inert: ranked first, the Snipe-branch core:true, which prose + formula + BOTH blind roles independently agree should be core:false — it is documented with a recipe but it is a known-wrong encoding with a free, text-faithful fix, and it should be corrected rather than parked; second, the substitution of the `dot` primitive for the `interval` trigger on the 900%/5s line, which is undocumented and diverges under the DOTCRIT=off arm or against any future Sustained Damage ▲ source, though it is exactly right on cadence, bucket and range today. Neither is engine-core and neither moves the graded board, so the unit ships. Same-model residual for the owner to spot-check: S5, S6 and S7 are all claude-opus-5, so the strongest independent signal in this packet is the cross-family S2b (claude-fable-5) agreement — worth noting that fable arrived at the Snipe-branch non-core conclusion and the ownBurstGate requirement without seeing the driver, which is why I weight those two findings highest; conversely, the Snipe uptime model (FLAG 2) has NO independent corroboration from any role and rests entirely on an unmeasurable prose reading.",
   "model": "claude-opus-5"
 }
-
 ```

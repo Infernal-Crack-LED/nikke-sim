@@ -111,9 +111,7 @@
     "burst:per-MP 1372.8% of (10% Max HP + ATK)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "without restoring HP"
-    ],
+    "skill1": ["without restoring HP"],
     "skill2": [],
     "burst": []
   },

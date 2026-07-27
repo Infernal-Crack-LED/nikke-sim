@@ -157,9 +157,7 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "Only when at 100%: Dodging Bullets: Invulnerable for 2 sec."
-    ],
+    "skill1": ["Only when at 100%: Dodging Bullets: Invulnerable for 2 sec."],
     "skill2": [],
     "burst": []
   },

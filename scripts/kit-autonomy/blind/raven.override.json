@@ -116,9 +116,7 @@
       "Single Point Attack: Sustained damage ▲ 47.32% for 15 sec.",
       "Removes Vital Attack."
     ],
-    "burst": [
-      "Effect 1: Removes Single Point Attack."
-    ]
+    "burst": ["Effect 1: Removes Single Point Attack."]
   },
   "caveats": [
     "⚑ TRIGGER MAPPING: skill1 sustained-damage line keys on 'performing a Full Charge attack'. Encoded as shotFired (an RL trigger pull in this engine is a full-charge shot). If the engine can fire an RL uncharged, or full charges are counted separately, the faithful key is chargeCounter {count:1}. UNVERIFIED.",

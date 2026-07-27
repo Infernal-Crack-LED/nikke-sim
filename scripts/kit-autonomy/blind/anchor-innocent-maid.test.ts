@@ -72,7 +72,7 @@ function totalDamage(res: any): number {
 function slotOf(res: any, slug: string): number {
   const u: any = unitOf(res, slug);
   const i = u?.slot ?? u?.slotIdx ?? u?.index;
-  if (typeof i === 'number') return i;
+  if (typeof i === 'number') {return i;}
   const arr: any[] = res.units ?? res.perUnit ?? [];
   return arr.findIndex((x: any) => x?.slug === slug);
 }
@@ -105,7 +105,7 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
   for (const b of o.blocks ?? []) {
     for (const e of b.effects ?? []) {
       fn(e, b);
-      if (e.kind === 'escalating') for (const s of e.steps ?? []) fn(s, b);
+      if (e.kind === 'escalating') {for (const s of e.steps ?? []) {fn(s, b);}}
     }
   }
 }
@@ -113,9 +113,9 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
 /** Nearest-wrong for an "Once:/Twice:/Three times:" line — every tier fires on activation #1. */
 function flattenEscalating(o: any, slot: string) {
   for (const b of o.blocks ?? []) {
-    if (b.slot !== slot) continue;
+    if (b.slot !== slot) {continue;}
     b.effects = (b.effects ?? []).flatMap((e: any) =>
-      e.kind === 'escalating' ? (e.steps ?? []) : [e],
+      e.kind === 'escalating' ? (e.steps ?? []) : [e]
     );
   }
 }
@@ -124,7 +124,7 @@ function stepWithStat(o: any, slot: string, stat: string): any {
   let found: any = null;
   walkEffects(o, (e, b) => {
     if (!found && b.slot === slot && e.kind === 'buff' && e.stat === stat)
-      found = e;
+      {found = e;}
   });
   return found;
 }
@@ -140,7 +140,7 @@ const countKind = (evs: Ev[], kind: string) =>
 /** buffApply of `stat` cast by `caster`. Boss-held debuffs (casterIdx===null) are excluded by design. */
 const appliesBy = (evs: Ev[], stat: string, caster: number) =>
   evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && e.casterIdx === caster,
+    (e) => e.kind === 'buffApply' && e.stat === stat && e.casterIdx === caster
   );
 
 /** One apply per target per activation → count the self-targeted copies to get ACTIVATIONS. */
@@ -168,19 +168,19 @@ const FLAT_S1 = runWith((o) => flattenEscalating(o, 'skill1'));
 const FLAT_S2 = runWith((o) => flattenEscalating(o, 'skill2'));
 const ATK_SELF = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
-  }),
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+  })
 );
 const RELOAD_0 = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') e.value = 0;
-  }),
+    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {e.value = 0;}
+  })
 );
 const DIST_GENERIC = runWith((o) =>
   walkEffects(o, (e) => {
     if (e.kind === 'buff' && e.stat === 'distributedDamagePct')
-      e.stat = 'attackDamagePct';
-  }),
+      {e.stat = 'attackDamagePct';}
+  })
 );
 const NO_SQUAD_GATE = runWith((o) => {
   for (const b of o.blocks ?? []) {
@@ -193,7 +193,7 @@ const NO_SQUAD_GATE = runWith((o) => {
 const NO_BURST_HEAL = runWith((o) => {
   for (const b of o.blocks ?? []) {
     if (b.slot === 'burst')
-      b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');
+      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');}
   }
 });
 
@@ -220,7 +220,7 @@ describe('anchor-innocent-maid — fixture non-vacuity', () => {
       (e) =>
         e.kind === 'buffApply' &&
         e.casterIdx === ANCHOR &&
-        e.stat === 'damageTakenPct',
+        e.stat === 'damageTakenPct'
     );
     expect(debuffs.length).toBe(0);
   });
@@ -246,17 +246,17 @@ describe('anchor-innocent-maid — skill1 (entering Full Burst, all allies, esca
 
     // ESCALATING: tier 2 must be absent on Full Burst #1 (the inactive case) and present after.
     expect(
-      precedingCount(BASE.events, ap[0], 'fullBurstStart'),
+      precedingCount(BASE.events, ap[0], 'fullBurstStart')
     ).toBeGreaterThanOrEqual(2);
     expect(activations(BASE.events, 'distributedDamagePct', ANCHOR)).toBe(
-      FB_STARTS - 1,
+      FB_STARTS - 1
     );
 
     // NEAREST-WRONG (all tiers applied at once): fires on FB #1 and once per FB.
     const flat = appliesBy(FLAT_S1.events, 'distributedDamagePct', ANCHOR);
     expect(precedingCount(FLAT_S1.events, flat[0], 'fullBurstStart')).toBe(1);
     expect(
-      activations(FLAT_S1.events, 'distributedDamagePct', ANCHOR),
+      activations(FLAT_S1.events, 'distributedDamagePct', ANCHOR)
     ).toBeGreaterThan(activations(BASE.events, 'distributedDamagePct', ANCHOR));
   });
 
@@ -274,11 +274,11 @@ describe('anchor-innocent-maid — skill1 (entering Full Burst, all allies, esca
       (e) =>
         e.kind === 'buffRemove' &&
         e.stat === 'distributedDamagePct' &&
-        e.casterIdx === ANCHOR,
+        e.casterIdx === ANCHOR
     );
     const applies = appliesBy(BASE.events, 'distributedDamagePct', ANCHOR);
     expect(removes.length).toBeGreaterThanOrEqual(
-      applies.length - teamSize(BASE.res),
+      applies.length - teamSize(BASE.res)
     );
   });
 
@@ -299,7 +299,7 @@ describe('anchor-innocent-maid — skill1 (entering Full Burst, all allies, esca
 
   it('squad heal is a HEAL-OVER-TIME: 8 ticks at 1s, targeted at allies', () => {
     const block = (OV.blocks ?? []).find(
-      (b: any) => b.slot === 'skill1' && hasHeal(b),
+      (b: any) => b.slot === 'skill1' && hasHeal(b)
     );
     expect(block).toBeTruthy();
     const heal = (block.effects ?? []).find((e: any) => e.kind === 'heal');
@@ -316,12 +316,12 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
   it('trigger identity is fullBurstEnd, not fullBurstEnter', () => {
     const blocks = (OV.blocks ?? []).filter((b: any) => b.slot === 'skill2');
     expect(blocks.length).toBeGreaterThan(0);
-    for (const b of blocks) expect(b.trigger?.kind).toBe('fullBurstEnd');
+    for (const b of blocks) {expect(b.trigger?.kind).toBe('fullBurstEnd');}
     const hr = appliesBy(BASE.events, 'hitRatePct', ANCHOR);
     expect(hr.length).toBeGreaterThan(0);
     // Every apply must sit AFTER at least one fullBurstEnd (an FB-enter model would apply before any).
     expect(
-      precedingCount(BASE.events, hr[0], 'fullBurstEnd'),
+      precedingCount(BASE.events, hr[0], 'fullBurstEnd')
     ).toBeGreaterThanOrEqual(1);
   });
 
@@ -341,18 +341,18 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
 
     // ESCALATING — inactive on end #1 (this is the both-cases check), active from #2.
     expect(
-      precedingCount(BASE.events, s2[0], 'fullBurstEnd'),
+      precedingCount(BASE.events, s2[0], 'fullBurstEnd')
     ).toBeGreaterThanOrEqual(2);
     const acts = s2.filter((e) => e.targetIdx === ANCHOR).length;
     expect(acts).toBe(FB_ENDS - 1);
 
     // NEAREST-WRONG #1 — flattened escalation: fires on end #1 and once per end.
     const flat = appliesBy(FLAT_S2.events, 'casterAtkPct', ANCHOR).filter((e) =>
-      near(e.value, 35.02),
+      near(e.value, 35.02)
     );
     expect(precedingCount(FLAT_S2.events, flat[0], 'fullBurstEnd')).toBe(1);
     expect(flat.filter((e) => e.targetIdx === ANCHOR).length).toBeGreaterThan(
-      acts,
+      acts
     );
 
     expect(stepWithStat(OV, 'skill2', 'casterAtkPct').durationSec).toBe(10);
@@ -369,10 +369,10 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
     expect(ap.length).toBeGreaterThan(0);
     expect(near(ap[0].value, 40.04)).toBe(true);
     expect(
-      precedingCount(BASE.events, ap[0], 'fullBurstEnd'),
+      precedingCount(BASE.events, ap[0], 'fullBurstEnd')
     ).toBeGreaterThanOrEqual(3);
     expect(activations(BASE.events, 'reloadSpeedPct', ANCHOR)).toBe(
-      FB_ENDS - 2,
+      FB_ENDS - 2
     );
     // 15s, NOT the 10s of the two tiers above — a transcription slip a totals check cannot see.
     expect(stepWithStat(OV, 'skill2', 'reloadSpeedPct').durationSec).toBe(15);
@@ -391,7 +391,7 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
 describe('anchor-innocent-maid — burst (own cast, all allies)', () => {
   const anchorBursts = BASE.events.filter(
     (e) =>
-      e.kind === 'burstCast' && (e.srcSlot ?? e.slot ?? e.casterIdx) === ANCHOR,
+      e.kind === 'burstCast' && (e.srcSlot ?? e.slot ?? e.casterIdx) === ANCHOR
   ).length;
 
   it('fixture actually lets her cast — and she casts on FEWER rotations than the team Full Bursts', () => {
@@ -404,7 +404,7 @@ describe('anchor-innocent-maid — burst (own cast, all allies)', () => {
 
   it("ATK ▲30.09% of the skill user's ATK / 10s fires on HER cast, not on every Full Burst", () => {
     const ap = appliesBy(BASE.events, 'casterAtkPct', ANCHOR).filter((e) =>
-      near(e.value, 30.09),
+      near(e.value, 30.09)
     );
     expect(ap.length).toBeGreaterThan(0);
     // Trigger identity: activation count tracks HER burst casts. Keying it to fullBurstEnter would
@@ -416,7 +416,7 @@ describe('anchor-innocent-maid — burst (own cast, all allies)', () => {
     const block = (OV.blocks ?? []).find(
       (b: any) =>
         b.slot === 'burst' &&
-        (b.effects ?? []).some((e: any) => e.stat === 'casterAtkPct'),
+        (b.effects ?? []).some((e: any) => e.stat === 'casterAtkPct')
     );
     expect(block.trigger?.kind).toBe('burstCast');
     expect(block.target?.kind).toBe('allies');
@@ -424,7 +424,7 @@ describe('anchor-innocent-maid — burst (own cast, all allies)', () => {
 
   it('the 40.18% Max-HP recovery is wired to allies and feeds the recovery channel', () => {
     const block = (OV.blocks ?? []).find(
-      (b: any) => b.slot === 'burst' && hasHeal(b),
+      (b: any) => b.slot === 'burst' && hasHeal(b)
     );
     expect(block).toBeTruthy();
     expect(block.target?.kind).toBe('allies');
@@ -433,7 +433,7 @@ describe('anchor-innocent-maid — burst (own cast, all allies)', () => {
     // TANDEM: stripping the heal must cost crown recovery re-applications. RED if the heal was
     // skipped as "defensive, no damage".
     expect(crownApplies(BASE.events, CROWN_SLOT)).toBeGreaterThan(
-      crownApplies(NO_BURST_HEAL.events, CROWN_SLOT),
+      crownApplies(NO_BURST_HEAL.events, CROWN_SLOT)
     );
   });
 
@@ -456,7 +456,7 @@ describe('anchor-innocent-maid — audit', () => {
   it('no `ignored`-kind effects (validator-rejected) anywhere in the override', () => {
     let bad = 0;
     walkEffects(OV, (e) => {
-      if (e.kind === 'ignored' || e.kind === 'unsupported') bad++;
+      if (e.kind === 'ignored' || e.kind === 'unsupported') {bad++;}
     });
     expect(bad).toBe(0);
   });

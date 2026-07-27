@@ -117,9 +117,7 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Gains Immunity to Embarrassment for 10 sec."
-    ]
+    "burst": ["Gains Immunity to Embarrassment for 10 sec."]
   },
   "caveats": [
     "⚑ TRIGGER STAND-IN: the Embarrassment entry condition ('not in the Embarrassment state' AND 'Full Charge lasts for 0.5 sec or more') is a HELD-CHARGE player action the engine has no primitive for (it fires a charge shot as soon as it completes). Modeled as interval sec:12 on BOTH the skill1 Embarrassment block and the skill2 Embarrassment-gated Pierce buff so they co-fire. Cadence is an UNMEASURED estimate; her whole damage profile scales roughly linearly in 1/sec.",

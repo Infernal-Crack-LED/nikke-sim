@@ -20,10 +20,7 @@
     "mid": {
       "timestamp": "0:13.9",
       "frameTimeSec": 13.9,
-      "center": [
-        1577,
-        516
-      ],
+      "center": [1577, 516],
       "diametersPx": {
         "core": 28,
         "crosshair": 66,
@@ -44,10 +41,7 @@
     "near": {
       "timestamp": "1:06.9",
       "frameTimeSec": 66.9,
-      "center": [
-        1620,
-        551
-      ],
+      "center": [1620, 551],
       "diametersPx": {
         "core": 31,
         "crosshair": 66,
@@ -68,10 +62,7 @@
     "far": {
       "timestamp": "1:15.2",
       "frameTimeSec": 75.2,
-      "center": [
-        1474,
-        501
-      ],
+      "center": [1474, 501],
       "diametersPx": {
         "core": 17,
         "crosshair": 66,
@@ -92,10 +83,7 @@
     "midfar": {
       "timestamp": "1:57.9",
       "frameTimeSec": 117.9,
-      "center": [
-        1482,
-        515
-      ],
+      "center": [1482, 515],
       "diametersPx": {
         "core": 21,
         "crosshair": 66,

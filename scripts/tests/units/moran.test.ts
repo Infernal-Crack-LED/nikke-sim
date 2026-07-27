@@ -101,19 +101,19 @@ function run(overrides: Record<string, any> = {}) {
 /** M2 faithful encoding (the S3 fix): gate the rider to the weapon-swap window, not the FB window. */
 const moranSwapGate = withPatchedOverride('moran', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
   if (!b)
-    throw new Error('moran S1 flatDamage rider missing — fixture is stale');
+    {throw new Error('moran S1 flatDamage rider missing — fixture is stale');}
   delete b.fbGate;
   b.swapGate = 'swapped';
 });
 /** M7 nearest-wrong (REFUTED kit-status F3): the 14.7 as an ADDITIVE extraHitDamagePct rider. */
 const moranAdditive = withPatchedOverride('moran', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'weaponSwap'),
+    x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
-  if (!b) throw new Error('moran burst weaponSwap missing — fixture is stale');
+  if (!b) {throw new Error('moran burst weaponSwap missing — fixture is stale');}
   b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
   b.effects.push({
     kind: 'buff',
@@ -127,20 +127,20 @@ const moranNoFervor = withPatchedOverride('moran', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
     (b: any) =>
-      !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 20),
+      !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 20)
   );
   if (ov.skill1.length === before)
-    throw new Error('moran S1 Fervor burstCdr 20 missing — fixture is stale');
+    {throw new Error('moran S1 Fervor burstCdr 20 missing — fixture is stale');}
 });
 /** M6 nearest-wrong: the S2 team burst-CDR 7.48 removed. */
 const moranNoTeamCdr = withPatchedOverride('moran', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
     (b: any) =>
-      !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 7.48),
+      !b.effects.some((e: any) => e.kind === 'burstCdr' && e.seconds === 7.48)
   );
   if (ov.skill2.length === before)
-    throw new Error('moran S2 burstCdr 7.48 missing — fixture is stale');
+    {throw new Error('moran S2 burstCdr 7.48 missing — fixture is stale');}
 });
 /** M12 reference: the ally Damage-Taken reduction removed (must be inert). */
 const moranNoDmgTaken = withPatchedOverride('moran', (ov) => {
@@ -151,15 +151,15 @@ const moranNoDmgTaken = withPatchedOverride('moran', (ov) => {
     removed += before - b.effects.length;
   }
   if (!removed)
-    throw new Error('moran burst damageTakenPct missing — fixture is stale');
+    {throw new Error('moran burst damageTakenPct missing — fixture is stale');}
 });
 /** M14 nearest-wrong: burst ATK grant scoped to self. */
 const moranBurstSelf = withPatchedOverride('moran', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'casterAtkPct'),
+    x.effects.some((e: any) => e.stat === 'casterAtkPct')
   );
   if (!b)
-    throw new Error('moran burst casterAtkPct missing — fixture is stale');
+    {throw new Error('moran burst casterAtkPct missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 
@@ -181,7 +181,7 @@ const shots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot');
 const moranCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'moran',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'moran'
   );
 const castsOf = (evs: SimEvent[], slug: string) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === slug)
@@ -194,7 +194,7 @@ const riderHits = (evs: SimEvent[]) =>
     (d) =>
       d.slug === 'moran' &&
       d.srcSlot === 'skill1' &&
-      Math.abs(d.atkPct - 47.18) < 1e-6,
+      Math.abs(d.atkPct - 47.18) < 1e-6
   );
 /** moran's swapped-weapon normal shots: normal bucket at the swap's 14.7% (base AR is 14.71%). */
 const swapShots = (evs: SimEvent[]) =>
@@ -202,14 +202,14 @@ const swapShots = (evs: SimEvent[]) =>
     (d) =>
       d.slug === 'moran' &&
       d.bucket === 'normal' &&
-      Math.abs(d.atkPct - 14.7) < 1e-6,
+      Math.abs(d.atkPct - 14.7) < 1e-6
   );
 const moranShots = (evs: SimEvent[]) =>
   shots(evs).filter((s) => s.slug === 'moran');
 /** moran-cast buffApply by stat (key carries the raw kit magnitude). */
 const moranBuff = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && b.key.startsWith(`${MORAN}:burst`),
+    (b) => b.stat === stat && b.key.startsWith(`${MORAN}:burst`)
   );
 const holders = (bs: BuffApply[]) => new Set(bs.map((b) => b.targetIdx));
 
@@ -219,7 +219,7 @@ describe('moran — kit spec', () => {
       const riders = riderHits(base.events);
       expect(
         riders.length,
-        'no S1 rider hits — the per-5-hits proc never fired',
+        'no S1 rider hits — the per-5-hits proc never fired'
       ).toBeGreaterThan(0);
       expect([...new Set(riders.map((d) => d.atkPct))]).toEqual([47.18]);
       expect([...new Set(riders.map((d) => d.bucket))]).toEqual(['skill']);
@@ -231,7 +231,7 @@ describe('moran — kit spec', () => {
       const swaps = swapShots(base.events).length;
       expect(
         riders,
-        `${riders} riders vs ${swaps} swap shots — expected ~1 per 5 (between 1/6 and 1/4)`,
+        `${riders} riders vs ${swaps} swap shots — expected ~1 per 5 (between 1/6 and 1/4)`
       ).toBeGreaterThan(swaps / 6);
       expect(riders).toBeLessThan(swaps / 4);
     });
@@ -244,23 +244,23 @@ describe('moran — kit spec', () => {
       const firstFb = fbStarts(base.events)[0]?.frame;
       expect(
         firstFb,
-        'no Full Burst opened — fixture produced no rotation',
+        'no Full Burst opened — fixture produced no rotation'
       ).toBeDefined();
       const preFb = riderHits(base.events).filter((d) => d.frame < firstFb!);
       expect(
         preFb.length,
-        'shipped inFb gates the rider OUT of the pre-FB swap gap; a faithful swapGate fires it there',
+        'shipped inFb gates the rider OUT of the pre-FB swap gap; a faithful swapGate fires it there'
       ).toBeGreaterThanOrEqual(1);
     });
 
     it('SANITY: the faithful swapGate moves the pre-FB count off zero without changing the kit magnitude', () => {
       const firstFb = fbStarts(swapGate.events)[0]?.frame;
       const preFb = riderHits(swapGate.events).filter(
-        (d) => d.frame < firstFb!,
+        (d) => d.frame < firstFb!
       );
       expect(
         preFb.length,
-        'swapGate counterfactual should fire pre-FB riders',
+        'swapGate counterfactual should fire pre-FB riders'
       ).toBeGreaterThanOrEqual(1);
       expect([
         ...new Set(riderHits(swapGate.events).map((d) => d.atkPct)),
@@ -278,7 +278,7 @@ describe('moran — kit spec', () => {
       const without = moranCasts(noFervor.events).length;
       expect(
         without,
-        'noFervor counterfactual still cast as often — Fervor is inert',
+        'noFervor counterfactual still cast as often — Fervor is inert'
       ).toBeLessThan(withFervor);
       expect(withFervor).toBeGreaterThanOrEqual(without * 1.5);
     });
@@ -287,10 +287,10 @@ describe('moran — kit spec', () => {
   describe('M6 — S2 entering Full Burst (Fervor) → all allies: Cooldown of Burst Skill ▼7.48s', () => {
     it('DISCRIMINATING: removing the team CDR drops the team burst cadence', () => {
       expect(castsOf(base.events, 'crown')).toBeGreaterThan(
-        castsOf(noTeamCdr.events, 'crown'),
+        castsOf(noTeamCdr.events, 'crown')
       );
       expect(moranCasts(base.events).length).toBeGreaterThan(
-        moranCasts(noTeamCdr.events).length,
+        moranCasts(noTeamCdr.events).length
       );
     });
   });
@@ -300,7 +300,7 @@ describe('moran — kit spec', () => {
       const swaps = swapShots(base.events);
       expect(
         swaps.length,
-        'no 14.7% swap shots — the weapon swap never fired',
+        'no 14.7% swap shots — the weapon swap never fired'
       ).toBeGreaterThan(0);
       expect([...new Set(swaps.map((d) => d.atkPct))]).toEqual([14.7]);
     });
@@ -309,13 +309,13 @@ describe('moran — kit spec', () => {
       // Structural proof: an additive rider never REPLACES the weapon, so no 14.7% normal shots exist.
       expect(
         swapShots(additive.events).length,
-        'additive model must not replace the weapon',
+        'additive model must not replace the weapon'
       ).toBe(0);
       // Corroborating direction: stacking +14.7% on the 14.71 AR over-credits (the REFUTED F3). Muted
       // vs a pure per-shot doubling because removing the swap also deadens the swap-gated M2 rider.
       expect(
         additive.totals.moran,
-        'additive 14.7 on top of the 14.71 AR must over-credit her total',
+        'additive 14.7 on top of the 14.71 AR must over-credit her total'
       ).toBeGreaterThan(base.totals.moran * 1.05);
     });
   });
@@ -323,7 +323,7 @@ describe('moran — kit spec', () => {
   describe('M10 — burst Unlimited ammunition for 10s (rides the swap window)', () => {
     it('the swap-window shots are exactly the unlimited-ammo shots', () => {
       const unlimited = moranShots(base.events).filter(
-        (s) => s.unlimitedAmmo,
+        (s) => s.unlimitedAmmo
       ).length;
       const swaps = swapShots(base.events).length;
       expect(unlimited, 'no unlimited-ammo shots fired').toBeGreaterThan(0);
@@ -337,14 +337,14 @@ describe('moran — kit spec', () => {
     it('is applied to all four allies at the kit magnitude for 10 sec', () => {
       expect(
         applied.length,
-        'no burst damageTakenPct buff was applied',
+        'no burst damageTakenPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([-35.14]);
       expect(
         holders(applied).size,
-        `reached ${holders(applied).size} allies, expected 4`,
+        `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is INERT against the partless boss: removing it changes NO unit total by a single point', () => {
@@ -358,27 +358,27 @@ describe('moran — kit spec', () => {
 
     it("is a FLAT add of moran's ATK (value ≈ 0.4257×staticAtk), reaching all four allies for 10s", () => {
       expect(applied.length, 'no burst casterAtkPct buff was applied').toBe(
-        moranCasts(base.events).length * 4,
+        moranCasts(base.events).length * 4
       );
       for (const b of applied) {
         expect(
           b.value,
-          'casterAtkPct must record a flat ATK grant, not the raw 42.57',
+          'casterAtkPct must record a flat ATK grant, not the raw 42.57'
         ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
       }
       expect(
         holders(applied).size,
-        `reached ${holders(applied).size} allies, expected 4`,
+        `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to moran alone', () => {
       const cf = moranBuff(burstSelf.events, 'casterAtkPct');
       expect(
         [...holders(cf)],
-        'self-only counterfactual must reach only moran',
+        'self-only counterfactual must reach only moran'
       ).toEqual([MORAN]);
     });
   });

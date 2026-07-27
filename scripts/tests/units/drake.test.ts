@@ -42,7 +42,12 @@
 //     the 10s window (⚑4); no instant ammo grant is assumed.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const DRAKE = 2; // slot index in controlComp('drake'): liter 0 / crown 1 / drake 2 / helm 3
@@ -66,26 +71,30 @@ function run(overrides: Record<string, any> = {}) {
 
 /** D3/D4 counterfactual: S1 SG-scoped blocks target ALL allies instead of SG-only. */
 const drakeS1AllAllies = withPatchedOverride('drake', (ov) => {
-  const sgBlock = ov.skill1.find((b: any) => b.target?.kind === 'alliesOfWeapon');
-  if (!sgBlock) throw new Error('drake S1 alliesOfWeapon block missing — fixture is stale');
+  const sgBlock = ov.skill1.find(
+    (b: any) => b.target?.kind === 'alliesOfWeapon'
+  );
+  if (!sgBlock)
+    {throw new Error('drake S1 alliesOfWeapon block missing — fixture is stale');}
   sgBlock.target = { kind: 'allies' };
 });
 
 /** D5/D6 counterfactual: hitCount reads PELLET hits (10/5) instead of PULL hits (100/50). */
 const drakeS2Pellets = withPatchedOverride('drake', (ov) => {
   for (const b of ov.skill2) {
-    if (b.trigger?.kind !== 'hitCount') continue;
-    if (b.trigger.count === 100) b.trigger.count = 10;
-    else if (b.trigger.count === 50) b.trigger.count = 5;
+    if (b.trigger?.kind !== 'hitCount') {continue;}
+    if (b.trigger.count === 100) {b.trigger.count = 10;}
+    else if (b.trigger.count === 50) {b.trigger.count = 5;}
   }
 });
 
 /** D7 counterfactual: burst nuke at the UNTREASURED base magnitude 1254. */
 const drakeBurstOld = withPatchedOverride('drake', (ov) => {
   const nuke = ov.burst.find((b: any) =>
-    b.effects?.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 3009.6),
+    b.effects?.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 3009.6)
   );
-  if (!nuke) throw new Error('drake burst 3009.6 nuke missing — fixture is stale');
+  if (!nuke)
+    {throw new Error('drake burst 3009.6 nuke missing — fixture is stale');}
   nuke.effects.find((e: any) => e.kind === 'flatDamage').atkPct = 1254;
 });
 
@@ -96,54 +105,74 @@ const s2Pellets = run({ drake: drakeS2Pellets });
 const burstOld = run({ drake: drakeBurstOld });
 
 // ---- readers ---------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const drakeDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'drake' && d.srcSlot === srcSlot);
 const drakeShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'drake');
 const drakeBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'drake');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'drake'
+  );
 
 describe('drake — kit spec', () => {
   describe('D1 — S1 Hit Rate ▲20.09% on FB enter, all allies', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'hitRatePct' && b.value === 20.09,
+      (b) =>
+        b.casterIdx === DRAKE && b.stat === 'hitRatePct' && b.value === 20.09
     );
 
     it('fires on every Full Burst enter, targeting all 4 allies for 10s', () => {
-      expect(applied.length, 'no hitRatePct 20.09 buff applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no hitRatePct 20.09 buff applied'
+      ).toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       for (const [frame, holders] of perFrame) {
-        expect(holders.size, `frame ${frame} reached ${holders.size} allies, expected 4`).toBe(4);
+        expect(
+          holders.size,
+          `frame ${frame} reached ${holders.size} allies, expected 4`
+        ).toBe(4);
       }
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
   describe('D2 — S1 ATK ▲11.85% on FB enter, all allies', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 11.85,
+      (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 11.85
     );
 
     it('fires on every FB enter, targeting all 4 allies for 10s', () => {
       expect(applied.length, 'no atkPct 11.85 buff applied').toBeGreaterThan(0);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied) {
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+        (
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);
       }
       for (const [frame, holders] of perFrame) {
-        expect(holders.size, `frame ${frame} reached ${holders.size} allies, expected 4`).toBe(4);
+        expect(
+          holders.size,
+          `frame ${frame} reached ${holders.size} allies, expected 4`
+        ).toBe(4);
       }
     });
   });
 
   describe('D3 — S1 ATK ▲63.88% on FB enter, SG allies ONLY', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 63.88,
+      (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 63.88
     );
 
     it('targets ONLY drake (the sole SG in the comp), not all 4 allies', () => {
@@ -153,26 +182,35 @@ describe('drake — kit spec', () => {
 
     it('DISCRIMINATING: an unscoped "allies" target would hit all 4', () => {
       const allAllies = buffs(s1All.events).filter(
-        (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 63.88,
+        (b) => b.casterIdx === DRAKE && b.stat === 'atkPct' && b.value === 63.88
       );
       const targets = new Set(allAllies.map((b) => b.targetIdx));
-      expect(targets.size, 'counterfactual must hit 4 allies to prove discrimination').toBe(4);
+      expect(
+        targets.size,
+        'counterfactual must hit 4 allies to prove discrimination'
+      ).toBe(4);
     });
   });
 
   describe('D4 — S1 Max Ammo ▲50.14% on FB enter, SG allies ONLY', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'maxAmmoPct' && b.value === 50.14,
+      (b) =>
+        b.casterIdx === DRAKE && b.stat === 'maxAmmoPct' && b.value === 50.14
     );
 
     it('targets ONLY drake (the sole SG in the comp)', () => {
-      expect(applied.length, 'no maxAmmoPct 50.14 buff applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no maxAmmoPct 50.14 buff applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DRAKE]);
     });
   });
 
   describe('D5 — S2 "after 10 attacks" nuke: 98.55% final ATK (hitCount 100 = 10 pulls)', () => {
-    const nukes = drakeDamage(base.events, 'skill2').filter((d) => d.atkPct === 98.55);
+    const nukes = drakeDamage(base.events, 'skill2').filter(
+      (d) => d.atkPct === 98.55
+    );
     const pulls = drakeShots(base.events).length;
 
     it('fires approximately once per 10 pulls (hitCount 100 in pellet-counter semantics)', () => {
@@ -184,13 +222,17 @@ describe('drake — kit spec', () => {
     });
 
     it('DISCRIMINATING: hitCount 10 (pellet reading) would produce ~10× more nukes', () => {
-      const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter((d) => d.atkPct === 98.55);
+      const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter(
+        (d) => d.atkPct === 98.55
+      );
       expect(pelletNukes.length).toBeGreaterThan(nukes.length * 5);
     });
   });
 
   describe('D6 — S2 "after 5 attacks" nuke: 201.6% final ATK (hitCount 50 = 5 pulls)', () => {
-    const nukes = drakeDamage(base.events, 'skill2').filter((d) => d.atkPct === 201.6);
+    const nukes = drakeDamage(base.events, 'skill2').filter(
+      (d) => d.atkPct === 201.6
+    );
     const pulls = drakeShots(base.events).length;
 
     it('fires approximately once per 5 pulls (hitCount 50 in pellet-counter semantics)', () => {
@@ -201,7 +243,9 @@ describe('drake — kit spec', () => {
     });
 
     it('DISCRIMINATING: hitCount 5 (pellet reading) would produce ~10× more nukes', () => {
-      const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter((d) => d.atkPct === 201.6);
+      const pelletNukes = drakeDamage(s2Pellets.events, 'skill2').filter(
+        (d) => d.atkPct === 201.6
+      );
       expect(pelletNukes.length).toBeGreaterThan(nukes.length * 5);
     });
   });
@@ -224,25 +268,29 @@ describe('drake — kit spec', () => {
 
   describe('D8 — burst self-buff: Max Ammo ▲72.18% for 10s', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'maxAmmoPct' && b.value === 72.18,
+      (b) =>
+        b.casterIdx === DRAKE && b.stat === 'maxAmmoPct' && b.value === 72.18
     );
 
     it('fires once per burst cast, self-scoped, 10s duration', () => {
       expect(applied.length).toBe(drakeBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DRAKE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
   describe('D9 — burst self-buff: Attack Damage ▲31.68% for 10s', () => {
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === DRAKE && b.stat === 'attackDamagePct' && b.value === 31.68,
+      (b) =>
+        b.casterIdx === DRAKE &&
+        b.stat === 'attackDamagePct' &&
+        b.value === 31.68
     );
 
     it('fires once per burst cast, self-scoped, 10s duration', () => {
       expect(applied.length).toBe(drakeBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DRAKE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 });

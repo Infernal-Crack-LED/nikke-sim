@@ -92,10 +92,10 @@ const hasStat = (b: any, stat: string) =>
 const noMyOwnStar = withPatchedOverride('anis-star', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.formation === 'noB1' && hasStat(b, 'atkPct')),
+    (b: any) => !(b.formation === 'noB1' && hasStat(b, 'atkPct'))
   );
   if (ov.skill1.length === before)
-    throw new Error('anis-star S1 noB1 atkPct block missing — fixture stale');
+    {throw new Error('anis-star S1 noB1 atkPct block missing — fixture stale');}
 });
 /** A9 counterfactual: double the S2 caster-ATK magnitude (35.01 → 70.02). */
 const doubleCaster = withPatchedOverride('anis-star', (ov) => {
@@ -103,7 +103,7 @@ const doubleCaster = withPatchedOverride('anis-star', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e || e.value !== 35.01)
-    throw new Error('anis-star S2 casterAtkPct 35.01 missing — fixture stale');
+    {throw new Error('anis-star S2 casterAtkPct 35.01 missing — fixture stale');}
   e.value = 70.02;
 });
 /** A7 counterfactual: double the Shooting Stars interval (0.25s → 0.5s) → half the ticks. */
@@ -112,7 +112,7 @@ const halfDot = withPatchedOverride('anis-star', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
   if (!dot || dot.intervalSec !== 0.25)
-    throw new Error('anis-star burst dot 0.25s missing — fixture stale');
+    {throw new Error('anis-star burst dot 0.25s missing — fixture stale');}
   dot.intervalSec = 0.5;
 });
 /** A10 counterfactual: her noB1 team burst-CDR block removed entirely. */
@@ -123,10 +123,10 @@ const noCdr = withPatchedOverride('anis-star', (ov) => {
       !(
         b.formation === 'noB1' &&
         b.effects.some((e: any) => e.kind === 'burstCdr')
-      ),
+      )
   );
   if (ov.skill1.length === before)
-    throw new Error('anis-star S1 noB1 burstCdr block missing — fixture stale');
+    {throw new Error('anis-star S1 noB1 burstCdr block missing — fixture stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -146,7 +146,7 @@ const anisShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'anis-star');
 const anisBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'anis-star',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'anis-star'
   );
 /** anis-caster buffApply events for a given stat. */
 const anisBuff = (evs: SimEvent[], stat: string, casterSlot: number) =>
@@ -155,13 +155,13 @@ const anisBuff = (evs: SimEvent[], stat: string, casterSlot: number) =>
 /** Ticks of the Shooting Stars dot inside the FIRST full 10s burst window. */
 function firstWindowTicks(evs: SimEvent[]): number {
   const firstCast = anisBursts(evs)[0];
-  if (!firstCast) return 0;
+  if (!firstCast) {return 0;}
   return dmg(evs).filter(
     (d) =>
       d.slug === 'anis-star' &&
       d.srcSlot === 'burst' &&
       d.frame >= firstCast.frame &&
-      d.frame <= firstCast.frame + WINDOW,
+      d.frame <= firstCast.frame + WINDOW
   ).length;
 }
 
@@ -172,22 +172,22 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     it('is exactly 40.01%, held by Anis alone, with NO wall-clock expiry', () => {
       expect(
         applied.length,
-        'no My Own Star atkPct buff applied',
+        'no My Own Star atkPct buff applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([40.01]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([ANIS]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'continuous',
+        'continuous'
       ).toEqual([null]);
     });
 
     it('is LIVE: removing it drops her total damage', () => {
       expect(base.totals['anis-star']).toBeGreaterThan(
-        noMOS.totals['anis-star'],
+        noMOS.totals['anis-star']
       );
     });
 
@@ -203,7 +203,7 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       expect([...new Set(applied.map((b) => b.value))]).toEqual([6]);
       expect(
         new Set(applied.map((b) => b.targetIdx)).size,
-        'reaches all 4 allies',
+        'reaches all 4 allies'
       ).toBe(4);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
@@ -211,7 +211,7 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
 
   describe('A3 — S1 full-charge rider: 120.13% of final ATK, once per pull (RL always full-charges)', () => {
     const riders = dmg(base.events).filter(
-      (d) => d.slug === 'anis-star' && d.srcSlot === 'skill1',
+      (d) => d.slug === 'anis-star' && d.srcSlot === 'skill1'
     );
 
     it('lands exactly once per shot at the kit magnitude', () => {
@@ -227,50 +227,50 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     it('is exactly 92.03% on all 4 allies for 10 sec', () => {
       expect(
         applied.length,
-        'no FB-entry projectileExplosionPct applied',
+        'no FB-entry projectileExplosionPct applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([92.03]);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
     });
   });
 
   describe('A5 — S2 Attack Damage ▲34% on Full Burst entry, all allies, 10s (formation-independent)', () => {
     const applied = anisBuff(base.events, 'attackDamagePct', ANIS).filter(
-      (b) => b.value === 34,
+      (b) => b.value === 34
     );
 
     it('is exactly 34% reaching all 4 allies for 10 sec', () => {
       expect(
         applied.length,
-        'no FB-entry attackDamagePct 34 applied',
+        'no FB-entry attackDamagePct 34 applied'
       ).toBeGreaterThan(0);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
     });
   });
 
   describe('A6 — Burst Attack Damage ▲35.2%, self-scoped, 10s (noB1)', () => {
     const applied = anisBuff(base.events, 'attackDamagePct', ANIS).filter(
-      (b) => b.value === 35.2,
+      (b) => b.value === 35.2
     );
 
     it('is exactly 35.2%, held by Anis alone, for 10 sec, once per burst cast', () => {
       expect(
         applied.length,
-        'no burst attackDamagePct 35.2 applied',
+        'no burst attackDamagePct 35.2 applied'
       ).toBeGreaterThan(0);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([ANIS]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
     });
   });
 
   describe('A7 — Burst Shooting Stars: 40.01% dot, 0.25s interval, 10s (projectileExplosion flavor)', () => {
     const ticks = dmg(base.events).filter(
-      (d) => d.slug === 'anis-star' && d.srcSlot === 'burst',
+      (d) => d.slug === 'anis-star' && d.srcSlot === 'burst'
     );
 
     it('is the kit magnitude in the burst bucket', () => {
@@ -296,9 +296,9 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       expect([...new Set(applied.map((b) => b.value))]).toEqual([30]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([ANIS]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
     });
   });
 
@@ -308,10 +308,10 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     it('surfaces as a FLAT ATK grant from Anis, on all 4 allies, for 10 sec', () => {
       expect(
         applied.length,
-        'no FB-entry casterAtkPct applied',
+        'no FB-entry casterAtkPct applied'
       ).toBeGreaterThan(0);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(WINDOW);}
       // single consistent magnitude (35.01% of caster ATK), strictly positive
       const vals = [...new Set(applied.map((b) => b.value))];
       expect(vals.length).toBe(1);
@@ -323,7 +323,7 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       const dblVal = anisBuff(dblCaster.events, 'casterAtkPct', ANIS)[0]?.value;
       expect(
         dblVal,
-        'doubled override produced no casterAtkPct buff',
+        'doubled override produced no casterAtkPct buff'
       ).toBeDefined();
       expect(dblVal! / baseVal).toBeCloseTo(2, 5);
     });
@@ -339,7 +339,7 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
       expect(baseBursts).toBeGreaterThan(0);
       expect(
         noCdrBursts,
-        'CDR must let her cast more often than the raw 20s CD',
+        'CDR must let her cast more often than the raw 20s CD'
       ).toBeLessThan(baseBursts);
     });
   });
@@ -348,30 +348,30 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
     it("noB1: My Own Star self-ATK present; Everyone's-Star Max HP (maxHpFlat) ABSENT", () => {
       expect(
         anisBuff(base.events, 'atkPct', ANIS).length,
-        'My Own Star must fire when sole B1',
+        'My Own Star must fire when sole B1'
       ).toBeGreaterThan(0);
       expect(
         anisBuff(base.events, 'maxHpFlat', ANIS).length,
-        "Everyone's Star must NOT fire when sole B1",
+        "Everyone's Star must NOT fire when sole B1"
       ).toBe(0);
       expect(
         anisBuff(base.events, 'casterAtkPct', ANIS).length,
-        'noB1 caster rider must fire',
+        'noB1 caster rider must fire'
       ).toBeGreaterThan(0);
     });
 
     it("hasB1: My Own Star self-ATK + noB1 caster rider ABSENT; Everyone's-Star Max HP present", () => {
       expect(
         anisBuff(hasB1.events, 'atkPct', ANIS_HB).length,
-        'My Own Star must NOT fire with another B1',
+        'My Own Star must NOT fire with another B1'
       ).toBe(0);
       expect(
         anisBuff(hasB1.events, 'casterAtkPct', ANIS_HB).length,
-        'noB1 caster rider must NOT fire',
+        'noB1 caster rider must NOT fire'
       ).toBe(0);
       expect(
         anisBuff(hasB1.events, 'maxHpFlat', ANIS_HB).length,
-        "Everyone's Star Max HP must fire",
+        "Everyone's Star Max HP must fire"
       ).toBeGreaterThan(0);
     });
 
@@ -380,11 +380,11 @@ describe('anis-star (Anis: Star) — kit spec [Tier 2, formation-gated]', () => 
         const slot = evs === base.events ? ANIS : ANIS_HB;
         expect(anisBuff(evs, 'burstGenPct', slot).length).toBeGreaterThan(0);
         expect(
-          anisBuff(evs, 'projectileExplosionPct', slot).length,
+          anisBuff(evs, 'projectileExplosionPct', slot).length
         ).toBeGreaterThan(0);
         expect(
           anisBuff(evs, 'attackDamagePct', slot).filter((b) => b.value === 34)
-            .length,
+            .length
         ).toBeGreaterThan(0);
       }
     });

@@ -1,0 +1,10 @@
+# build output
+dist/
+web/dist/
+*.tsbuildinfo
+
+# deps
+node_modules/
+
+# lockfiles & generated
+package-lock.json

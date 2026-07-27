@@ -26,7 +26,7 @@ let cache: Promise<DpsArtifact> | null = null;
 export function loadDpsChart(): Promise<DpsArtifact> {
   if (!cache) {
     cache = fetch(`${import.meta.env.BASE_URL}dpschart.json`).then((r) => {
-      if (!r.ok) throw new Error(`dpschart.json ${r.status}`);
+      if (!r.ok) {throw new Error(`dpschart.json ${r.status}`);}
       return r.json() as Promise<DpsArtifact>;
     });
   }
@@ -72,7 +72,7 @@ export function chartBars(
   art: DpsArtifact,
   cell: Cell,
   element?: string | null,
-  topN = 10,
+  topN = 10
 ): BarEntry[] {
   const pop = element
     ? rankedFor(art, cell).filter((e) => e.elements.includes(element))
@@ -87,21 +87,27 @@ export function compareIn(
   art: DpsArtifact,
   cell: Cell,
   slug: string,
-  element?: string | null,
+  element?: string | null
 ): (BarEntry & { total: number }) | null {
   let ranked = rankedFor(art, cell);
   if (element)
-    ranked = ranked
+    {ranked = ranked
       .filter((x) => x.elements.includes(element))
-      .map((x, i) => ({ ...x, rank: i + 1 }));
+      .map((x, i) => ({ ...x, rank: i + 1 }));}
   const e = ranked.find((x) => x.slug === slug);
   return e ? { ...e, total: ranked.length } : null;
 }
 
 // every B3 in the artifact, for the compare dropdown (name-sorted)
 export function allUnits(
-  art: DpsArtifact,
-): { slug: string; name: string; tier: string; element: string; elements: string[] }[] {
+  art: DpsArtifact
+): {
+  slug: string;
+  name: string;
+  tier: string;
+  element: string;
+  elements: string[];
+}[] {
   return Object.entries(art.units)
     .map(([slug, m]) => ({
       slug,

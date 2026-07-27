@@ -160,7 +160,7 @@ behavior) and **per-kit priors** (apply as a starting guess, then verify per uni
 ## The offsetting-errors principle (why bare-frame + firing-validation matter)
 
 A unit graded ~1.0 in normal (buffed, advantaged) teams can still be **wrong** — its value calibrated
-to *absorb* a missing shared buff. The minimal-variable neutral **control-frame** test (see
+to _absorb_ a missing shared buff. The minimal-variable neutral **control-frame** test (see
 `scripts/battery/ref-calibration.ts`) strips buffs/advantage and exposes the base truth; the four
 control anchors read 0.85–0.97 bare while grading ~1.0 in the board. Corollary: **"modeled" is not
 "working."** Crown's team ATK buff was a fixed self-cadence proxy (~27% uptime) instead of
@@ -195,7 +195,7 @@ NOMINAL quantity and wrong about the EFFECTIVE one.** The 2026-07-17 SMG 20→24
 exactly that reasoning, using FB counts as its only instrument — but **FB counts measure gauge/second
 while the ammo counter measures shots/second**, so they could not discriminate the two. When a
 datamined value and a board reading disagree, find the instrument that measures the disputed quantity
-*directly* rather than the one that is merely downstream of it.
+_directly_ rather than the one that is merely downstream of it.
 
 ## Measuring fire cadence: two frames beat a whole session
 

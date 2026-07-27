@@ -75,11 +75,11 @@ const OV: any = normBlocks(withPatchedOverride(SLUG, () => {}));
 // (the sim reads skill1/skill2/burst, which share these object references).
 function normBlocks(ov: any): any {
   if (!ov.blocks)
-    ov.blocks = [
+    {ov.blocks = [
       ...(ov.skill1 ?? []),
       ...(ov.skill2 ?? []),
       ...(ov.burst ?? []),
-    ];
+    ];}
   return ov;
 }
 
@@ -90,7 +90,7 @@ function allEffects(ov: any): Array<{ e: any; b: any }> {
     for (const e of b.effects ?? []) {
       out.push({ e, b });
       if (e.kind === 'escalating')
-        for (const s of e.steps ?? []) out.push({ e: s, b });
+        {for (const s of e.steps ?? []) {out.push({ e: s, b });}}
     }
   }
   return out;
@@ -104,7 +104,7 @@ function findEffects(ov: any, pred: (e: any, b: any) => boolean) {
 function dropEffects(
   ov: any,
   label: string,
-  pred: (e: any, b: any) => boolean,
+  pred: (e: any, b: any) => boolean
 ): number {
   normBlocks(ov);
   let n = 0;
@@ -113,9 +113,9 @@ function dropEffects(
     b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b));
     n += before - b.effects.length;
   }
-  if (!n) throw new Error(`MISSING kit line in override: ${label}`);
+  if (!n) {throw new Error(`MISSING kit line in override: ${label}`);}
   ov.blocks = (ov.blocks ?? []).filter(
-    (b: any) => (b.effects?.length ?? 0) > 0,
+    (b: any) => (b.effects?.length ?? 0) > 0
   );
   return n;
 }
@@ -126,7 +126,7 @@ const isDamageEffect = (e: any) =>
 // 6.62% x N stacks — the driver can only ship a DERIVED constant (no stack-mirroring primitive),
 // so match any near-integer multiple of 6.62 in [1,30] that is not one of the other two riders.
 const isAnnihilationHit = (e: any) => {
-  if (!isDamageEffect(e)) return false;
+  if (!isDamageEffect(e)) {return false;}
   const k = e.atkPct / 6.62;
   return (
     k >= 0.9 &&
@@ -147,13 +147,13 @@ function runWith(patch?: (o: any) => void, helm = true) {
     cfg: { ...(base.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) },
   };
   if (patch)
-    opts.overrides = {
+    {opts.overrides = {
       ...(base.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, (o: any) => {
         normBlocks(o);
         patch(o);
       }),
-    };
+    };}
   const res: any = runComp(opts);
   return { res, events };
 }
@@ -164,17 +164,17 @@ const NO_R471 = runWith((o) =>
   dropEffects(
     o,
     'S1a 471.86% 50-hit rider',
-    (e) => isDamageEffect(e) && near(e.atkPct, 471.86, 0.5),
-  ),
+    (e) => isDamageEffect(e) && near(e.atkPct, 471.86, 0.5)
+  )
 );
 const HITCOUNT_100 = runWith((o) => {
   const b = (o.blocks ?? []).find(
-    (b: any) => b.trigger?.kind === 'hitCount' && b.trigger.count === 50,
+    (b: any) => b.trigger?.kind === 'hitCount' && b.trigger.count === 50
   );
   if (!b)
-    throw new Error(
-      'MISSING: skill1 hitCount(50) trigger for the 471.86% rider',
-    );
+    {throw new Error(
+      'MISSING: skill1 hitCount(50) trigger for the 471.86% rider'
+    );}
   b.trigger.count = 100;
 });
 const NO_R1562 = runWith((o) =>
@@ -183,15 +183,15 @@ const NO_R1562 = runWith((o) =>
     'S1b 15.62% every-10-shots rider',
     (e) =>
       isDamageEffect(e) &&
-      (near(e.atkPct, 15.62, 0.05) || near(e.atkPct, 31.24, 0.05)),
-  ),
+      (near(e.atkPct, 15.62, 0.05) || near(e.atkPct, 31.24, 0.05))
+  )
 );
 const NO_DEBUFF = runWith((o) =>
   dropEffects(
     o,
     'S1b Anti A.T. Field Damage Taken +0.83%',
-    (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
-  ),
+    (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
+  )
 );
 const S2A_UNGATED = runWith((o) => {
   const bs = (o.blocks ?? []).filter((b: any) =>
@@ -199,38 +199,38 @@ const S2A_UNGATED = runWith((o) => {
       (e: any) =>
         e.kind === 'buff' &&
         e.stat === 'attackDamagePct' &&
-        near(e.value, 30.97, 0.1),
-    ),
+        near(e.value, 30.97, 0.1)
+    )
   );
   if (!bs.length)
-    throw new Error('MISSING: skill2 Attack Damage +30.97% block');
+    {throw new Error('MISSING: skill2 Attack Damage +30.97% block');}
   for (const b of bs) {
     delete b.ownBurstGate;
     b.trigger = { kind: 'fullBurstEnter' };
   } // nearest-wrong
 });
 const NO_AMMO_DUMP = runWith((o) =>
-  dropEffects(o, 'S2b removes 100% of ammo', (e) => e.kind === 'consumeAmmo'),
+  dropEffects(o, 'S2b removes 100% of ammo', (e) => e.kind === 'consumeAmmo')
 );
 const NO_RELOAD_BUFF = runWith((o) =>
   dropEffects(
     o,
     'S2b reload speed fixed +60% for 1 round',
-    (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct',
-  ),
+    (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct'
+  )
 );
 const NO_NERF = runWith((o) =>
   dropEffects(
     o,
     'burst normal-attack multiplier -40%',
-    (e) => e.kind === 'buff' && e.stat === 'normalAttackPct',
-  ),
+    (e) => e.kind === 'buff' && e.stat === 'normalAttackPct'
+  )
 );
 const NO_ANNIHILATION = runWith((o) =>
-  dropEffects(o, 'burst Annihilation 6.62% x stacks', isAnnihilationHit),
+  dropEffects(o, 'burst Annihilation 6.62% x stacks', isAnnihilationHit)
 );
 const NO_HEAL = runWith((o) =>
-  dropEffects(o, 'S2b 3.77% max HP heal x3', (e) => e.kind === 'heal'),
+  dropEffects(o, 'S2b 3.77% max HP heal x3', (e) => e.kind === 'heal')
 );
 
 // ---------------------------------------------------------------- derived
@@ -238,7 +238,7 @@ function slotOfUnit(res: any): number {
   // SHIM FIX (driver): the unit row carries no slot field; the slot index IS the unit's position
   // in the comp's ordered units array (controlComp = liter/crown/asuka-wille/helm → 2).
   const idx = res.units.findIndex((x: any) => x.slug === SLUG);
-  if (idx < 0) throw new Error(`cannot resolve slot index for ${SLUG}`);
+  if (idx < 0) {throw new Error(`cannot resolve slot index for ${SLUG}`);}
   return idx;
 }
 const SLOT = slotOfUnit(BASE.res);
@@ -260,12 +260,12 @@ const allyTotal = (evts: Ev[]) =>
 /** multiset difference a \\ b — the timestamps present in the base run and absent once dropped. */
 function removedTimes(a: number[], b: number[]): number[] {
   const bag = new Map<number, number>();
-  for (const t of b) bag.set(t, (bag.get(t) ?? 0) + 1);
+  for (const t of b) {bag.set(t, (bag.get(t) ?? 0) + 1);}
   const out: number[] = [];
   for (const t of a) {
     const c = bag.get(t) ?? 0;
-    if (c > 0) bag.set(t, c - 1);
-    else out.push(t);
+    if (c > 0) {bag.set(t, c - 1);}
+    else {out.push(t);}
   }
   return out;
 }
@@ -282,15 +282,15 @@ const inAnnihState = (t: number) =>
 
 const RIDER471_TIMES = removedTimes(
   herDamageTimes(BASE.events),
-  herDamageTimes(NO_R471.events),
+  herDamageTimes(NO_R471.events)
 );
 const RIDER1562_TIMES = removedTimes(
   herDamageTimes(BASE.events),
-  herDamageTimes(NO_R1562.events),
+  herDamageTimes(NO_R1562.events)
 );
 const ANNIH_TIMES = removedTimes(
   herDamageTimes(BASE.events),
-  herDamageTimes(NO_ANNIHILATION.events),
+  herDamageTimes(NO_ANNIHILATION.events)
 );
 
 // buffApply/buffRemove selectors. Boss-held debuffs come through with casterIdx===null AND
@@ -300,14 +300,14 @@ const buffApplies = (evts: Ev[], stat: string, value?: number, tol = 0.05) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value == null || near(e.value, value, tol)),
+      (value == null || near(e.value, value, tol))
   );
 const buffRemoves = (evts: Ev[], stat: string, value?: number, tol = 0.05) =>
   evts.filter(
     (e) =>
       e.kind === 'buffRemove' &&
       e.stat === stat &&
-      (value == null || near(e.value, value, tol)),
+      (value == null || near(e.value, value, tol))
   );
 
 // =============================================================== FIXTURE
@@ -331,17 +331,17 @@ describe('S1a — "after landing 50 normal attack(s)": 471.86% of final ATK at t
     expect(RIDER471_TIMES.length).toBeGreaterThan(0);
     // hitCount counts ROUNDS; MG hitsPerShot = 1, so procs ~= landedShots/50.
     expect(RIDER471_TIMES.length).toBeLessThanOrEqual(
-      Math.ceil(shots / 50) + 2,
+      Math.ceil(shots / 50) + 2
     );
     expect(RIDER471_TIMES.length).toBeGreaterThanOrEqual(
-      Math.floor(shots / 50) * 0.7,
+      Math.floor(shots / 50) * 0.7
     );
   });
 
   it('doubling the threshold halves the proc count (RED under an interval / shotFired key)', () => {
     const at100 = removedTimes(
       herDamageTimes(HITCOUNT_100.events),
-      herDamageTimes(NO_R471.events),
+      herDamageTimes(NO_R471.events)
     ).length;
     // An `interval` or `shotFired` trigger ignores `count` entirely -> ratio 1.0 -> RED.
     const ratio = at100 / RIDER471_TIMES.length;
@@ -356,7 +356,7 @@ describe('S1a — "after landing 50 normal attack(s)": 471.86% of final ATK at t
 
   it('inertness — it is her own damage only; allies unmoved', () => {
     expect(
-      Math.abs(allyTotal(NO_R471.events) / allyTotal(BASE.events) - 1),
+      Math.abs(allyTotal(NO_R471.events) / allyTotal(BASE.events) - 1)
     ).toBeLessThan(0.001);
     expect(herTotal(BASE.events)).toBeGreaterThan(herTotal(NO_R471.events));
   });
@@ -375,10 +375,10 @@ describe('S1b — Annihilation-State-only: every 10 shots, 15.62% + Anti A.T. Fi
   it('cadence is every 10 SHOTS inside the window, not per-shot and not per-second', () => {
     const w = HER_CASTS[0];
     const shotsInWin = herShots(BASE.events).filter(
-      (e) => inAnnihState(tOf(e)) && tOf(e) >= w - 0.25 && tOf(e) <= w + 9.25,
+      (e) => inAnnihState(tOf(e)) && tOf(e) >= w - 0.25 && tOf(e) <= w + 9.25
     ).length;
     const procsInWin = RIDER1562_TIMES.filter(
-      (t) => t >= w - 0.25 && t <= w + 9.25,
+      (t) => t >= w - 0.25 && t <= w + 9.25
     ).length;
     expect(shotsInWin).toBeGreaterThan(20);
     expect(procsInWin).toBeGreaterThan(0);
@@ -392,7 +392,7 @@ describe('S1b — Annihilation-State-only: every 10 shots, 15.62% + Anti A.T. Fi
     expect(applies.length).toBeGreaterThan(0);
     // Boss-held: emitted with casterIdx===null AND targetIdx===null.
     expect(
-      applies.every((e) => e.targetIdx == null || e.targetIdx !== SLOT),
+      applies.every((e) => e.targetIdx == null || e.targetIdx !== SLOT)
     ).toBe(true);
     // Nearest-wrong: encoding it as a self attackDamagePct leaves allies untouched -> RED.
     const drop = 1 - allyTotal(NO_DEBUFF.events) / allyTotal(BASE.events);
@@ -407,7 +407,7 @@ describe('S1b — Annihilation-State-only: every 10 shots, 15.62% + Anti A.T. Fi
   it('debuff shape: 0.83 per stack, 30 s, capped at 30 stacks (structural)', () => {
     const hits = findEffects(
       OV,
-      (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
+      (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
     );
     expect(hits.length).toBeGreaterThan(0);
     const e = hits[0].e;
@@ -418,7 +418,7 @@ describe('S1b — Annihilation-State-only: every 10 shots, 15.62% + Anti A.T. Fi
 
   it('inertness — the 15.62% rider is her damage only; allies unmoved', () => {
     expect(
-      Math.abs(allyTotal(NO_R1562.events) / allyTotal(BASE.events) - 1),
+      Math.abs(allyTotal(NO_R1562.events) / allyTotal(BASE.events) - 1)
     ).toBeLessThan(0.001);
   });
 
@@ -443,7 +443,7 @@ describe('S2a — entering Full Burst WHILE in Annihilation State: self Attack D
       S2A_UNGATED.events,
       'attackDamagePct',
       30.97,
-      0.05,
+      0.05
     ).length;
     expect(wrong).toBeGreaterThan(applies().length);
     expect(herTotal(S2A_UNGATED.events)).toBeGreaterThan(herTotal(BASE.events));
@@ -455,7 +455,7 @@ describe('S2a — entering Full Burst WHILE in Annihilation State: self Attack D
       (e) =>
         e.kind === 'buff' &&
         e.stat === 'attackDamagePct' &&
-        near(e.value, 30.97, 0.05),
+        near(e.value, 30.97, 0.05)
     );
     expect(hits.length).toBe(1);
     expect(hits[0].e.durationSec).toBe(10); // 10 s, NOT the burst's 9 s
@@ -467,7 +467,7 @@ describe('S2a — entering Full Burst WHILE in Annihilation State: self Attack D
         .map(tOf)
         .filter((t) => t <= tOf(rm));
       if (opened.length)
-        expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5);
+        {expect(tOf(rm) - Math.max(...opened)).toBeLessThan(10.5);}
     }
   });
 });
@@ -480,7 +480,7 @@ describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, 
   it('the 100%-ammo dump lands at Annihilation time, one per burst', () => {
     const removedReloads = removedTimes(
       herReloads(BASE.events).map(r3),
-      herReloads(NO_AMMO_DUMP.events).map(r3),
+      herReloads(NO_AMMO_DUMP.events).map(r3)
     );
     expect(removedReloads.length).toBeGreaterThan(0);
     // Trigger identity is load-bearing: keyed to burstCast instead, the dump would empty a
@@ -496,7 +496,7 @@ describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, 
   it('she does NOT reload in the first second of her own burst window', () => {
     for (const c of HER_CASTS) {
       expect(
-        herReloads(BASE.events).filter((t) => t > c + 0.05 && t < c + 1.0),
+        herReloads(BASE.events).filter((t) => t > c + 0.05 && t < c + 1.0)
       ).toEqual([]);
     }
   });
@@ -504,7 +504,7 @@ describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, 
   it('reload speed is fixed +60% for 1 ROUND, not for 1 second (duration semantics)', () => {
     const hits = findEffects(
       OV,
-      (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct',
+      (e) => e.kind === 'buff' && e.stat === 'reloadSpeedPct'
     );
     expect(hits.length).toBeGreaterThan(0);
     const e = hits[0].e;
@@ -513,7 +513,7 @@ describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, 
     expect(e.durationSec).toBeUndefined();
     // Behaviourally it buys back firing time on each post-Annihilation reload.
     expect(herShots(BASE.events).length).toBeGreaterThan(
-      herShots(NO_RELOAD_BUFF.events).length,
+      herShots(NO_RELOAD_BUFF.events).length
     );
   });
 
@@ -525,11 +525,11 @@ describe('S2b — Emergency Repair, "when using Annihilation" (i.e. cast + 9 s, 
     expect(hits[0].b.target.kind).toBe('self');
     // Tandem, not inert: removing it can never RAISE team damage.
     expect(teamTotal(NO_HEAL.events)).toBeLessThanOrEqual(
-      teamTotal(BASE.events) * 1.0001,
+      teamTotal(BASE.events) * 1.0001
     );
     // ...and it must not move her own damage directly.
     expect(
-      Math.abs(herTotal(NO_HEAL.events) / herTotal(BASE.events) - 1),
+      Math.abs(herTotal(NO_HEAL.events) / herTotal(BASE.events) - 1)
     ).toBeLessThan(0.02);
   });
 
@@ -541,7 +541,7 @@ describe('burst a — Annihilation State self package (9 s)', () => {
   it('the -40% is scoped to the NORMAL-attack multiplier, not a generic damage cut', () => {
     const hits = findEffects(
       OV,
-      (e) => e.kind === 'buff' && e.stat === 'normalAttackPct',
+      (e) => e.kind === 'buff' && e.stat === 'normalAttackPct'
     );
     expect(hits.length).toBe(1);
     expect(hits[0].e.value).toBeLessThan(0); // a downward line; a sign flip is the classic error
@@ -557,15 +557,15 @@ describe('burst a — Annihilation State self package (9 s)', () => {
         0,
         ...herDamage(evts)
           .filter((e) => r3(tOf(e)) === t)
-          .map(dmgOf),
+          .map(dmgOf)
       );
     const riderBase = [...riderSet].reduce(
       (s, t) => s + maxAt(BASE.events, t),
-      0,
+      0
     );
     const riderFree = [...riderSet].reduce(
       (s, t) => s + maxAt(NO_NERF.events, t),
-      0,
+      0
     );
     expect(riderFree / riderBase).toBeGreaterThan(0.98);
     expect(riderFree / riderBase).toBeLessThan(1.02);
@@ -585,7 +585,7 @@ describe('burst a — Annihilation State self package (9 s)', () => {
       (e) =>
         e.kind === 'buff' &&
         (e.stat === 'casterAtkPct' || e.stat === 'atkPct') &&
-        near(e.value, 46.8, 0.05),
+        near(e.value, 46.8, 0.05)
     );
     expect(hits.length).toBe(1);
     expect(hits[0].e.stat).toBe('casterAtkPct'); // "of the skill user's ATK"
@@ -602,7 +602,7 @@ describe('burst a — Annihilation State self package (9 s)', () => {
       (e) =>
         e.kind === 'buff' &&
         e.stat === 'attackDamagePct' &&
-        near(e.value, 36, 0.05),
+        near(e.value, 36, 0.05)
     );
     expect(hits.length).toBe(1);
     expect(hits[0].e.durationSec).toBe(9);
@@ -622,7 +622,7 @@ describe('burst a — Annihilation State self package (9 s)', () => {
       expect(a.length).toBe(HER_CASTS.length);
       expect(a.length).toBeLessThan(FB_STARTS.length);
       for (const e of a)
-        expect(HER_CASTS.some((c) => Math.abs(tOf(e) - c) < 0.5)).toBe(true);
+        {expect(HER_CASTS.some((c) => Math.abs(tOf(e) - c) < 0.5)).toBe(true);}
     }
   });
 
@@ -659,10 +659,10 @@ describe('burst b — Annihilation: fires AFTER Annihilation State ends, mirrori
 
   it('inertness — it is her damage; allies unmoved', () => {
     expect(
-      Math.abs(allyTotal(NO_ANNIHILATION.events) / allyTotal(BASE.events) - 1),
+      Math.abs(allyTotal(NO_ANNIHILATION.events) / allyTotal(BASE.events) - 1)
     ).toBeLessThan(0.001);
     expect(herTotal(BASE.events)).toBeGreaterThan(
-      herTotal(NO_ANNIHILATION.events),
+      herTotal(NO_ANNIHILATION.events)
     );
   });
 

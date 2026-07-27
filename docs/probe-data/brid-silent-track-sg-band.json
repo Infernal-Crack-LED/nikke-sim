@@ -42,10 +42,13 @@
   "clock": {
     "method": "top-right 03:00 countdown read by digit-template decode at 176 sampled frames (1/s) + first-damage anchor from the counter trace. CRITICAL FINDING: the countdown runs FASTER than video time by a uniform 2.07% - linear fit fightClockTimer = 0.017012*frame - 7.140 (i.e. one game-second = 58.78 video frames at 60fps; residuals within +/-0.5s quantization over all 176 reads; countdown hits 0 at frame ~11000 = video 183.3s, end-screen transition begins frame 11043). The video is 60fps CFR (12638 frames, dup=12 from VFR source).",
     "timerAnchors": [
-      {"videoSec": 12, "countdown": "02:55"},
-      {"videoSec": 40, "countdown": "02:26"},
-      {"videoSec": 50, "countdown": "02:16"},
-      {"videoSec": 160, "countdown": "00:24 (fit-corrected read; two raw last-digit misreads at 107s/156s traced to one mislabeled template and corrected)"}
+      { "videoSec": 12, "countdown": "02:55" },
+      { "videoSec": 40, "countdown": "02:26" },
+      { "videoSec": 50, "countdown": "02:16" },
+      {
+        "videoSec": 160,
+        "countdown": "00:24 (fit-corrected read; two raw last-digit misreads at 107s/156s traced to one mislabeled template and corrected)"
+      }
     ],
     "firstDamageFrame": 458,
     "firstDamageVideoSec": 7.633,
@@ -85,7 +88,7 @@
       "landingHeld": 1.0,
       "coreResidual": -0.091,
       "shots": 41,
-      "riders": {"nonCrit": 6, "crit": 2},
+      "riders": { "nonCrit": 6, "crit": 2 },
       "windowDamage": 14049977,
       "riderDamage": 6064370,
       "meanUnitsPerShot": 9.683,
@@ -93,7 +96,7 @@
       "preRegM_H0": 1.075,
       "preRegM_H1": 1.011,
       "devPctVsH0": -8.5,
-      "boundaryShiftM": {"minus1.5s": 0.9876, "plus1.5s": 0.9807},
+      "boundaryShiftM": { "minus1.5s": 0.9876, "plus1.5s": 0.9807 },
       "videoClockM": 0.9841,
       "bossDistance": "medium, boss off to the RIGHT (matches isabel's mid description)",
       "confidence": "high on the value, medium on band purity",
@@ -108,17 +111,17 @@
       "rangeBonusHeld": 0.3,
       "coreResidual": -0.015,
       "shots": 44,
-      "riders": {"nonCrit": 7, "crit": 2},
+      "riders": { "nonCrit": 7, "crit": 2 },
       "windowDamage": 17398979,
       "riderDamage": 6738189,
       "meanUnitsPerShot": 12.045,
       "measuredMeanLandedPellets": 8.52,
-      "landedHistogram": {"6": 3, "7": 5, "8": 12, "9": 14, "10": 10},
+      "landedHistogram": { "6": 3, "7": 5, "8": 12, "9": 14, "10": 10 },
       "meanSurplusPerLandedPellet": 0.113,
       "preRegM_H0": 1.281,
       "preRegM_H1": 1.281,
       "devPctVsH0": -4.4,
-      "boundaryShiftM": {"minus1.5s": 1.2089, "plus1.5s": 1.1996},
+      "boundaryShiftM": { "minus1.5s": 1.2089, "plus1.5s": 1.1996 },
       "videoClockM": 1.1919,
       "bossDistance": "close (boss large, centred)",
       "confidence": "high on the measurement, with the near-control caveat",
@@ -130,19 +133,19 @@
       "M": 0.7091,
       "M_measuredTermBasis": 0.6978,
       "landingHeld": 0.75,
-      "coreResidual": -0.130,
+      "coreResidual": -0.13,
       "shots": 45,
-      "riders": {"nonCrit": 8, "crit": 1},
+      "riders": { "nonCrit": 8, "crit": 1 },
       "windowDamage": 12717367,
       "riderDamage": 6401280,
       "meanUnitsPerShot": 6.978,
       "critExpNormalizedLanded": 6.49,
       "preRegM_H0": 0.806,
-      "preRegM_H1": 0.710,
+      "preRegM_H1": 0.71,
       "devPctVsH0": -12.0,
-      "boundaryShiftM": {"minus1.5s": 0.7199, "plus1.5s": 0.7197},
+      "boundaryShiftM": { "minus1.5s": 0.7199, "plus1.5s": 0.7197 },
       "videoClockM": 0.7149,
-      "M_envelope": [0.698, 0.720],
+      "M_envelope": [0.698, 0.72],
       "bossDistance": "distant (smallest apparent boss of the fight; RELOADING banner visible in one spot-check)",
       "confidence": "high",
       "confidenceNote": "all 45 deltas on the exact 0.5-unit grid; many few-pellet shots (down to 4-landed, 100,574); R6 popup spot-checks on 5 far shots agree with the delta decomposition exactly; envelope 0.698-0.720 across term-basis/boundary/clock variants"
@@ -155,15 +158,15 @@
       "landingHeld": 0.9,
       "coreResidual": -0.113,
       "shots": 45,
-      "riders": {"nonCrit": 8, "crit": 1},
+      "riders": { "nonCrit": 8, "crit": 1 },
       "windowDamage": 14115354,
       "riderDamage": 6401280,
       "meanUnitsPerShot": 8.522,
       "critExpNormalizedLanded": 7.93,
-      "preRegM_H0": 0.970,
+      "preRegM_H0": 0.97,
       "preRegM_H1": 0.925,
       "devPctVsH0": -10.7,
-      "boundaryShiftM": {"minus1.5s": 0.8650, "plus1.5s": 0.8638},
+      "boundaryShiftM": { "minus1.5s": 0.865, "plus1.5s": 0.8638 },
       "videoClockM": 0.8848,
       "bossDistance": "intermediate",
       "confidence": "medium-high",
@@ -178,17 +181,17 @@
       "rangeBonusHeld": 0.3,
       "coreResidual": 0.152,
       "shots": 37,
-      "riders": {"nonCrit": 7, "crit": 0},
+      "riders": { "nonCrit": 7, "crit": 0 },
       "windowDamage": 14782130,
       "riderDamage": 4716733,
       "meanUnitsPerShot": 13.524,
       "measuredMeanLandedPellets": 9.41,
-      "landedHistogram": {"5": 1, "8": 4, "9": 9, "10": 23},
+      "landedHistogram": { "5": 1, "8": 4, "9": 9, "10": 23 },
       "meanSurplusPerLandedPellet": 0.138,
       "preRegM_H0": 1.281,
       "preRegM_H1": 1.281,
       "devPctVsH0": 7.3,
-      "boundaryShiftM": {"minus1.5s": 1.3323, "plus1.5s": 1.3971},
+      "boundaryShiftM": { "minus1.5s": 1.3323, "plus1.5s": 1.3971 },
       "videoClockM": 1.3931,
       "bossDistance": "very close (largest apparent boss of the fight, centred)",
       "confidence": "high on the measurement, with the near-control caveat",
@@ -198,7 +201,7 @@
   "tailExcluded": {
     "fightClockRange": [176, 180],
     "shots": 3,
-    "riders": {"nonCrit": 1, "crit": 0},
+    "riders": { "nonCrit": 1, "crit": 0 },
     "windowDamage": 1528693,
     "M": 1.4397,
     "note": "excluded from the fit per plan, included in total closure. FLAG: all 3 tail shots are 10-landed WITH the near range bonus (26149-grid, u=13.0/14.5/15.0) at fc_game 176.4-177.7, and the boss is still visually LARGE - the scripted 176s near->midfar transition had not landed by 177.7 on the game clock. Firing stops after the shot at fc 177.7 + rider (fc 177.8): the final ~2.3 game-seconds are a firing pause (boss untargetable / fight-end transition; 3 pull slots missing)"
@@ -206,16 +209,46 @@
   "transitionPauses": {
     "description": "four in-fight firing pauses (no counter events, no ammo spent, magazine refilled opportunistically during boss downtime - magazine arithmetic closes at exactly 9 everywhere only under this reading) + the fight-end pause. Pause = last-event -> first-event video frames, mapped to fightClockGame",
     "pauses": [
-      {"frames": [2350, 2479], "fightClockGame": [32.2, 34.4], "scriptTransition": 33, "match": "contains 33"},
-      {"frames": [4492, 4613], "fightClockGame": [68.6, 70.7], "scriptTransition": 70, "match": "contains 70"},
-      {"frames": [6818, 6942], "fightClockGame": [108.2, 110.3], "scriptTransition": 106, "match": "LATE by ~2.2s (106 falls inside the regular reload 6665-6778; the pause itself starts fc 108.2)"},
-      {"frames": [8955, 9092], "fightClockGame": [144.5, 146.9], "scriptTransition": 144, "match": "starts at 144.5"},
-      {"frames": [10910, 11039], "fightClockGame": [177.8, 180.0], "scriptTransition": 176, "match": "LATE by ~1.8s (see tailExcluded)"}
+      {
+        "frames": [2350, 2479],
+        "fightClockGame": [32.2, 34.4],
+        "scriptTransition": 33,
+        "match": "contains 33"
+      },
+      {
+        "frames": [4492, 4613],
+        "fightClockGame": [68.6, 70.7],
+        "scriptTransition": 70,
+        "match": "contains 70"
+      },
+      {
+        "frames": [6818, 6942],
+        "fightClockGame": [108.2, 110.3],
+        "scriptTransition": 106,
+        "match": "LATE by ~2.2s (106 falls inside the regular reload 6665-6778; the pause itself starts fc 108.2)"
+      },
+      {
+        "frames": [8955, 9092],
+        "fightClockGame": [144.5, 146.9],
+        "scriptTransition": 144,
+        "match": "starts at 144.5"
+      },
+      {
+        "frames": [10910, 11039],
+        "fightClockGame": [177.8, 180.0],
+        "scriptTransition": 176,
+        "match": "LATE by ~1.8s (see tailExcluded)"
+      }
     ],
     "note": "on the VIDEO clock the same pauses sit at 31.5-33.7 / 67.2-69.3 / 106.0-108.1 / 141.6-143.9 / 174.2-end; neither clock makes all five land exactly on the script; the game clock matches 3 of 5 within ~1s"
   },
   "wholePictureChecks": {
-    "totalClosure": {"pass": true, "sumOfDeltas": 74592500, "endScreen": 74592500, "note": "EXACT to the digit (258 events; counter monotonic 0 -> 74,592,500; every value read from digit templates)"},
+    "totalClosure": {
+      "pass": true,
+      "sumOfDeltas": 74592500,
+      "endScreen": 74592500,
+      "note": "EXACT to the digit (258 events; counter monotonic 0 -> 74,592,500; every value read from digit templates)"
+    },
     "nearAgreement": {
       "pass": false,
       "near1M": 1.2241,
@@ -233,24 +266,74 @@
       "preRegPredicted": "195-210",
       "note": "215 landing shots; ZERO whiffs proven by the rider schedule (43 riders exactly on shots 5,10,...,215). The pre-reg 195-210 band used a 7.85s cycle; the OBSERVED deterministic cycle is 8x40f + 113f = 433f = 7.22s (the pre-reg arithmetic double-counted one inter-shot gap), which predicts 214-218 over the observed firing span minus pauses - closes exactly. Inter-event gap ledger: 188x40f + 20x113f + 114f + {129,121,124,137,41}f = 10,446f = frames 458->10,904 EXACT"
     },
-    "riderClosure": {"pass": true, "count": 43, "predicted": "floor(215/5) = 43 (exact, +/-0 needed)", "damage": 30995671, "check": "37*673819 + 6*1010728 = 30,995,671 EXACT; residual zero", "pctOfTotal": 41.55},
+    "riderClosure": {
+      "pass": true,
+      "count": 43,
+      "predicted": "floor(215/5) = 43 (exact, +/-0 needed)",
+      "damage": 30995671,
+      "check": "37*673819 + 6*1010728 = 30,995,671 EXACT; residual zero",
+      "pctOfTotal": 41.55
+    },
     "perBandShotCountClosure": {
       "pass": true,
       "note": "R1: per-band landing-shot counts equal the pull-grid arithmetic exactly in every band (zero whiffs anywhere, so there is NO whiff story in any band - the far/midfar deficits are pellets-per-landing-shot, not missing shots): mid 41, near1 44, far 45, midfar 45, near2 37, tail 3; per-band rates 1.16-1.25 shots/s bracketing the 1.21/s cycle average, differences fully explained by reload/pause placement"
     },
-    "quantizationCheck": {"pass": true, "note": "all 215 shot deltas sit exactly on the measured pellet grid (step 20,114.75): mid/far/midfar 100% on the 0.5-unit grid; near/tail 100% on the 1.3L+0.5c grid with unique L decomposition. Both rider values are exact constants. No unexplained delta anywhere in the fight"}
+    "quantizationCheck": {
+      "pass": true,
+      "note": "all 215 shot deltas sit exactly on the measured pellet grid (step 20,114.75): mid/far/midfar 100% on the 0.5-unit grid; near/tail 100% on the 1.3L+0.5c grid with unique L decomposition. Both rider values are exact constants. No unexplained delta anywhere in the fight"
+    }
   },
   "r6PopupSpotChecks": {
     "requirement": "~5 far-band shots: white per-pellet popups counted on frames vs counter-delta-implied pellet count",
     "checks": [
-      {"shot": "far u=5.0 (f4653, delta 100574)", "popups": "2x orange 30172 + 2x white 20115 visible", "decomposition": "4 landed, 2 crit = 5.0u", "agreement": "EXACT (all 4 popups individually legible)"},
-      {"shot": "far u=6.0 (f5086, delta 120690)", "popups": "6x white 20115 (some overlapping)", "decomposition": "6 landed, 0 crit", "agreement": "EXACT count"},
-      {"shot": "far u=7.0 (f4933, delta 140805)", "popups": "~7x white 20115 (overlapping stack)", "decomposition": "7 landed, 0 crit", "agreement": "consistent (overlap limits exact count)"},
-      {"shot": "far u=7.5 (f4773, delta 150862)", "popups": "1x orange 30172 + ~5-6 white 20115 + the rider's own white 673819", "decomposition": "6 landed +1 crit = 7.5u; rider separate", "agreement": "consistent; rider fixed value visually confirmed"},
-      {"shot": "far u=9.0 (f4693, delta 181034)", "popups": "2x orange 30172 + whites 20115", "decomposition": "2*30172 + 6*20115 = 181,034", "agreement": "EXACT arithmetic"},
-      {"shot": "near1 u=13.0 (f3113, delta 261490)", "popups": "10x white 26149", "decomposition": "10 landed all-plain range-bonus", "agreement": "EXACT - direct visual proof of 10/10 landing and the 1.3x pellet"},
-      {"shot": "near1 u=12.2 (f2639, delta 245399)", "popups": "8x white 26149 + 1x orange 36207", "decomposition": "9 landed, 1 crit; 8*26149+36207 = 245,399", "agreement": "EXACT"},
-      {"shot": "near2 u=14.5 (f9092, delta 291664)", "popups": "whites 26149 + 2-3x orange 36207", "decomposition": "10 landed, 3 crit = 13+1.5", "agreement": "consistent"}
+      {
+        "shot": "far u=5.0 (f4653, delta 100574)",
+        "popups": "2x orange 30172 + 2x white 20115 visible",
+        "decomposition": "4 landed, 2 crit = 5.0u",
+        "agreement": "EXACT (all 4 popups individually legible)"
+      },
+      {
+        "shot": "far u=6.0 (f5086, delta 120690)",
+        "popups": "6x white 20115 (some overlapping)",
+        "decomposition": "6 landed, 0 crit",
+        "agreement": "EXACT count"
+      },
+      {
+        "shot": "far u=7.0 (f4933, delta 140805)",
+        "popups": "~7x white 20115 (overlapping stack)",
+        "decomposition": "7 landed, 0 crit",
+        "agreement": "consistent (overlap limits exact count)"
+      },
+      {
+        "shot": "far u=7.5 (f4773, delta 150862)",
+        "popups": "1x orange 30172 + ~5-6 white 20115 + the rider's own white 673819",
+        "decomposition": "6 landed +1 crit = 7.5u; rider separate",
+        "agreement": "consistent; rider fixed value visually confirmed"
+      },
+      {
+        "shot": "far u=9.0 (f4693, delta 181034)",
+        "popups": "2x orange 30172 + whites 20115",
+        "decomposition": "2*30172 + 6*20115 = 181,034",
+        "agreement": "EXACT arithmetic"
+      },
+      {
+        "shot": "near1 u=13.0 (f3113, delta 261490)",
+        "popups": "10x white 26149",
+        "decomposition": "10 landed all-plain range-bonus",
+        "agreement": "EXACT - direct visual proof of 10/10 landing and the 1.3x pellet"
+      },
+      {
+        "shot": "near1 u=12.2 (f2639, delta 245399)",
+        "popups": "8x white 26149 + 1x orange 36207",
+        "decomposition": "9 landed, 1 crit; 8*26149+36207 = 245,399",
+        "agreement": "EXACT"
+      },
+      {
+        "shot": "near2 u=14.5 (f9092, delta 291664)",
+        "popups": "whites 26149 + 2-3x orange 36207",
+        "decomposition": "10 landed, 3 crit = 13+1.5",
+        "agreement": "consistent"
+      }
     ],
     "coreObservation": "zero red CORE HIT popups in any sampled frame; no counter delta requires a core pellet (near surpluses are expressible as crit counts, though 0.5x2-vs-1.0 aliasing means an occasional core cannot be excluded)",
     "rangeBonusFinding": "near-band pellet values are 26,149 (plain) / 36,207 (crit) = step x 1.3 / x 1.8: the +0.3 range bonus is ADDITIVE with the +0.5 crit bonus per pellet (not multiplicative 1.3*1.5 = 1.95x = 39,224, which is NOT observed)"
@@ -263,10 +346,22 @@
     "NO FUSION: the pre-registered rider fusion concern did not materialize - the rider is always a separate event +6f after its triggering shot; no delta >=450k other than the two exact rider constants"
   ],
   "preRegComparison": {
-    "measuredM": {"mid": 0.9841, "near1": 1.2241, "far": 0.7091, "midfar": 0.8661, "near2": 1.3744},
-    "measuredM_measuredTermBasis": {"mid": 0.9683, "near1": 1.2045, "far": 0.6978, "midfar": 0.8522, "near2": 1.3524},
-    "preRegM_H0": {"mid": 1.075, "near": 1.281, "far": 0.806, "midfar": 0.970},
-    "preRegM_H1": {"mid": 1.011, "near": 1.281, "far": 0.710, "midfar": 0.925},
+    "measuredM": {
+      "mid": 0.9841,
+      "near1": 1.2241,
+      "far": 0.7091,
+      "midfar": 0.8661,
+      "near2": 1.3744
+    },
+    "measuredM_measuredTermBasis": {
+      "mid": 0.9683,
+      "near1": 1.2045,
+      "far": 0.6978,
+      "midfar": 0.8522,
+      "near2": 1.3524
+    },
+    "preRegM_H0": { "mid": 1.075, "near": 1.281, "far": 0.806, "midfar": 0.97 },
+    "preRegM_H1": { "mid": 1.011, "near": 1.281, "far": 0.71, "midfar": 0.925 },
     "farEnvelope": "0.698-0.720 across term-basis / +/-1.5s boundary / clock-basis variants",
     "note": "NO verdict, NO H0/H1 classification here per the task spec - the blind panel judges against the pre-registration. Data note only: per-band M and the crit-expectation-normalized landed counts (mid 9.01, far 6.49, midfar 7.93 of 10, core-0 assumption) are provided for the pooling step"
   },

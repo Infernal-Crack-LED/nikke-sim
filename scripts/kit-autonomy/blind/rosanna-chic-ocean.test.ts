@@ -63,7 +63,7 @@ function run(overrides?: Record<string, unknown>): Run {
     ...base,
     cfg: { ...(base.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev) },
   };
-  if (overrides) opts.overrides = { ...(base.overrides ?? {}), ...overrides };
+  if (overrides) {opts.overrides = { ...(base.overrides ?? {}), ...overrides };}
   const res = runComp(opts);
   return { res, events, tot: totals(res) };
 }
@@ -73,12 +73,14 @@ function run(overrides?: Record<string, unknown>): Run {
 // patch lands whichever shape the clone has.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
-  return (['skill1', 'skill2', 'burst'] as const).flatMap((s) => slotBlocks(ov, s));
+  return (['skill1', 'skill2', 'burst'] as const).flatMap((s) =>
+    slotBlocks(ov, s)
+  );
 }
 
 const dmg = (evs: any[]) => evs.filter((e) => e.kind === 'damage');
@@ -87,7 +89,7 @@ const buffs = (evs: any[], stat: string, value?: number) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(e.value - value) < 0.01),
+      (value === undefined || Math.abs(e.value - value) < 0.01)
   );
 const rel = (after: number, before: number) => (after - before) / before;
 
@@ -96,37 +98,40 @@ const rel = (after: number, before: number) => (after - before) / before;
 // Parts buffs blown up 400x: if partsDamagePct were wired to a live damage path, totals move.
 const OV_PARTS_BOOST = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of b.effects ?? [])
-      if (e.kind === 'buff' && e.stat === 'partsDamagePct') e.value = PARTS_PCT * 400;
+    {for (const e of b.effects ?? [])
+      {if (e.kind === 'buff' && e.stat === 'partsDamagePct')
+        {e.value = PARTS_PCT * 400;}}}
 });
 
 // DoT deleted: the damage-event COUNT delta vs base IS the tick count (slot-attribution free).
 const OV_NO_DOT = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    if (Array.isArray(b.effects)) b.effects = b.effects.filter((e: any) => e.kind !== 'dot');
+    {if (Array.isArray(b.effects))
+      {b.effects = b.effects.filter((e: any) => e.kind !== 'dot');}}
 });
 
 // Boss debuff deleted.
 const OV_NO_DMG_TAKEN = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    if (Array.isArray(b.effects))
-      b.effects = b.effects.filter(
-        (e: any) => !(e.kind === 'buff' && e.stat === 'damageTakenPct'),
-      );
+    {if (Array.isArray(b.effects))
+      {b.effects = b.effects.filter(
+        (e: any) => !(e.kind === 'buff' && e.stat === 'damageTakenPct')
+      );}}
 });
 
 // Sustained Damage buff blown up: must move sustained-flavored damage ONLY.
 const OV_SUSTAINED_BOOST = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of b.effects ?? [])
-      if (e.kind === 'buff' && e.stat === 'sustainedDamagePct') e.value = 400;
+    {for (const e of b.effects ?? [])
+      {if (e.kind === 'buff' && e.stat === 'sustainedDamagePct') {e.value = 400;}}}
 });
 
 // Sustained Damage window stretched 10s -> 120s: discriminates "for 10 sec" from permanent.
 const OV_SUSTAINED_LONG = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of b.effects ?? [])
-      if (e.kind === 'buff' && e.stat === 'sustainedDamagePct') e.durationSec = 120;
+    {for (const e of b.effects ?? [])
+      {if (e.kind === 'buff' && e.stat === 'sustainedDamagePct')
+        {e.durationSec = 120;}}}
 });
 
 // ---- hoisted runs (6 x 180s) --------------------------------------------------------------
@@ -157,7 +162,7 @@ describe('skill1 #1 + skill2 #1 — "Damage to Parts \u25b2 24.26%" x2, all alli
     // Nearest-wrong: self-only or excludeSelf scoping -> coverage set is short.
     expect(applies.length).toBeGreaterThan(0);
     const covered = new Set(applies.map((e) => e.targetSlug));
-    for (const s of ALLIES) expect(covered.has(s)).toBe(true);
+    for (const s of ALLIES) {expect(covered.has(s)).toBe(true);}
   });
 
   it('BOTH parts lines are encoded — no silent drop of the duplicate source', () => {
@@ -171,7 +176,7 @@ describe('skill1 #1 + skill2 #1 — "Damage to Parts \u25b2 24.26%" x2, all alli
   it('is damage-inert on the partless scope-lock boss', () => {
     // Nearest-wrong: encoded as attackDamagePct / trueDamagePct "because parts are inert anyway"
     // -> a 400x boost would explode the board. Faithful: partsDamagePct moves nothing.
-    for (const s of ALLIES) expect(PARTS.tot[s]).toBe(BASE.tot[s]);
+    for (const s of ALLIES) {expect(PARTS.tot[s]).toBe(BASE.tot[s]);}
   });
 });
 
@@ -193,7 +198,9 @@ describe('skill1 #2 — part-destruction ATK stacks (GAP)', () => {
       (e) =>
         e.kind === 'buffApply' &&
         e.casterIdx === rosIdx &&
-        (e.stat === 'casterAtkPct' || e.stat === 'atkPct' || e.stat === 'highestAllyAtkPct'),
+        (e.stat === 'casterAtkPct' ||
+          e.stat === 'atkPct' ||
+          e.stat === 'highestAllyAtkPct')
     );
     expect(fromHer).toEqual([]);
   });
@@ -216,7 +223,7 @@ describe('skill2 #2 — 70.4% of final ATK sustained, every 1 sec for 15 sec, ne
     // Nearest-wrong: DoT authored on the wrong owner / as an ally-wide effect.
     expect(NODOT.tot[SLUG]).toBeLessThan(BASE.tot[SLUG]);
     expect(rel(NODOT.tot[SLUG], BASE.tot[SLUG])).toBeLessThan(-0.01);
-    for (const s of TEAMMATES) expect(NODOT.tot[s]).toBe(BASE.tot[s]);
+    for (const s of TEAMMATES) {expect(NODOT.tot[s]).toBe(BASE.tot[s]);}
   });
 
   it('is SUSTAINED-flavored — her own "Sustained Damage \u25b2" moves it', () => {
@@ -233,7 +240,7 @@ describe('burst — Sustained Damage \u25b2 20.32% (allies) + Damage Taken \u25b
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === 'damageTakenPct' &&
-      Math.abs(e.value - DMG_TAKEN_PCT) < 0.01,
+      Math.abs(e.value - DMG_TAKEN_PCT) < 0.01
   );
   const susApplies = buffs(BASE.events, 'sustainedDamagePct', SUSTAINED_PCT);
 
@@ -256,14 +263,14 @@ describe('burst — Sustained Damage \u25b2 20.32% (allies) + Damage Taken \u25b
   it('the boss debuff benefits the WHOLE team, not one unit', () => {
     // Nearest-wrong (taxonomy 4): "Damage Taken \u25b2" read as a self/caster buff -> only her row
     // moves. Faithful: removing it costs EVERY ally damage.
-    for (const s of ALLIES) expect(NODT.tot[s]).toBeLessThan(BASE.tot[s]);
+    for (const s of ALLIES) {expect(NODT.tot[s]).toBeLessThan(BASE.tot[s]);}
   });
 
   it('"Sustained Damage \u25b2 20.32%" lands on all allies at its raw percentage', () => {
     // Plain percentage stat -> value stays 20.32 (not flat-resolved like casterAtkPct).
     // Nearest-wrong: self-only scope -> coverage set is short.
     const covered = new Set(susApplies.map((e) => e.targetSlug));
-    for (const s of ALLIES) expect(covered.has(s)).toBe(true);
+    for (const s of ALLIES) {expect(covered.has(s)).toBe(true);}
   });
 
   it('is SCOPED to sustained damage — teammates (no sustained damage) do not move', () => {

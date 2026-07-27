@@ -45,7 +45,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CompOptions } from '../lib/harness.js';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  data,
+  runComp,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const CARRY = 'ada';
@@ -61,7 +66,8 @@ function runOn(comp: CompOptions, overrides: Record<string, any> = {}) {
   runComp({ ...comp, overrides, cfg: { onEvent: (e) => events.push(e) } });
   return events;
 }
-const run = (overrides: Record<string, any> = {}) => runOn(controlComp(CARRY), overrides);
+const run = (overrides: Record<string, any> = {}) =>
+  runOn(controlComp(CARRY), overrides);
 
 // Gauge-rich, SMG-cadence-robust vehicle for the two rotation-count discriminations (see header):
 // liter B1 / blanc B2 / maiden-ice-rose B3 (focus, ×2.5 charge gauge) / helm B3. No claim about
@@ -77,12 +83,20 @@ const cdrLadder = (seconds: number | null) =>
   withPatchedOverride('liter', (ov) => {
     const before = ov.skill1.length;
     if (seconds === null) {
-      ov.skill1 = ov.skill1.filter((b: any) => b.trigger.kind !== 'fullBurstEnter');
-      if (ov.skill1.length === before) throw new Error('liter S1 fullBurstEnter block missing — fixture is stale');
+      ov.skill1 = ov.skill1.filter(
+        (b: any) => b.trigger.kind !== 'fullBurstEnter'
+      );
+      if (ov.skill1.length === before)
+        {throw new Error(
+          'liter S1 fullBurstEnter block missing — fixture is stale'
+        );}
       return;
     }
     const blk = ov.skill1.find((b: any) => b.trigger.kind === 'fullBurstEnter');
-    if (!blk) throw new Error('liter S1 fullBurstEnter block missing — fixture is stale');
+    if (!blk)
+      {throw new Error(
+        'liter S1 fullBurstEnter block missing — fixture is stale'
+      );}
     blk.effects = [{ kind: 'burstCdr', seconds }];
   });
 
@@ -91,31 +105,40 @@ const cdrLadder = (seconds: number | null) =>
 const stripHeals = (slug: string) =>
   withPatchedOverride(slug, (ov) => {
     for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      ov[slot] = (ov[slot] ?? []).filter((b: any) => !b.effects.some((e: any) => e.kind === 'heal'));
+      ov[slot] = (ov[slot] ?? []).filter(
+        (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
+      );
     }
   });
 
 const base = run();
 const noCdr = run({ liter: cdrLadder(null) });
 const flatTier1 = run({ liter: cdrLadder(2.34) });
-const noOtherHeals = run({ helm: stripHeals('helm'), crown: stripHeals('crown') });
+const noOtherHeals = run({
+  helm: stripHeals('helm'),
+  crown: stripHeals('crown'),
+});
 
 // The two rotation-count discriminations run on the gauge-rich vehicle (see LADDER_COMP).
 const ladderBase = runOn(LADDER_COMP);
 const ladderNonCumulative = runOn(LADDER_COMP, { liter: cdrLadder(3.17) }); // 3rd tier REPLACES, not adds
 const ladderSaturated = runOn(LADDER_COMP, { liter: cdrLadder(8.21) }); // instantly at max from entry 1
 
-const fbCount = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
-const fbFrames = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
-const allCasts = (evs: SimEvent[]) => evs.filter((e): e is BurstCast => e.kind === 'burstCast');
-const literCasts = (evs: SimEvent[]) => allCasts(evs).filter((c) => c.slug === 'liter');
+const fbCount = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fbFrames = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
+const allCasts = (evs: SimEvent[]) =>
+  evs.filter((e): e is BurstCast => e.kind === 'burstCast');
+const literCasts = (evs: SimEvent[]) =>
+  allCasts(evs).filter((c) => c.slug === 'liter');
 const literBuffs = (evs: SimEvent[], stat: string, value?: number) =>
   evs.filter(
     (e): e is BuffApply =>
       e.kind === 'buffApply' &&
       e.casterIdx === LITER &&
       e.stat === stat &&
-      (value === undefined || e.value === value),
+      (value === undefined || e.value === value)
   );
 
 describe('liter — kit spec', () => {
@@ -130,7 +153,7 @@ describe('liter — kit spec', () => {
       expect(
         gapFrames,
         `first cooldown ran ${(gapFrames / FPS).toFixed(3)}s; kit says ${data.characters.liter.burstCooldownSec}s ` +
-          `− 2.34s = ${((baseCd - tier1) / FPS).toFixed(3)}s (the cumulative sum 5.04/8.21 would be shorter)`,
+          `− 2.34s = ${((baseCd - tier1) / FPS).toFixed(3)}s (the cumulative sum 5.04/8.21 would be shorter)`
       ).toBe(baseCd - tier1);
     });
 
@@ -146,7 +169,7 @@ describe('liter — kit spec', () => {
       // burst casts over the fight (margin 3 — robust to the SMG cadence, see header).
       expect(
         allCasts(ladderBase).length,
-        'a non-cumulative reading would deliver strictly less cooldown reduction over the fight',
+        'a non-cumulative reading would deliver strictly less cooldown reduction over the fight'
       ).toBeGreaterThan(allCasts(ladderNonCumulative).length);
     });
 
@@ -162,11 +185,11 @@ describe('liter — kit spec', () => {
       expect(k, 'no Full Bursts to compare').toBeGreaterThan(2);
       expect(
         satFbs.slice(0, k).every((f, i) => f <= rampFbs[i]),
-        'a saturated ladder must never reach a Full Burst LATER than the real ramp',
+        'a saturated ladder must never reach a Full Burst LATER than the real ramp'
       ).toBe(true);
       expect(
         satFbs.slice(0, k).some((f, i) => f < rampFbs[i]),
-        'the real ramp delivers less early cooldown reduction, so some Full Burst must arrive later than under instant saturation',
+        'the real ramp delivers less early cooldown reduction, so some Full Burst must arrive later than under instant saturation'
       ).toBe(true);
     });
   });
@@ -180,36 +203,52 @@ describe('liter — kit spec', () => {
 
     it('unlocks one more step per cast, cumulatively, and holds all three from the 3rd on', () => {
       const castFrames = literCasts(base).map((c) => c.frame);
-      expect(castFrames.length, 'need at least 3 liter casts').toBeGreaterThanOrEqual(3);
+      expect(
+        castFrames.length,
+        'need at least 3 liter casts'
+      ).toBeGreaterThanOrEqual(3);
       for (const [i, frame] of castFrames.entries()) {
         const live = STEPS.filter(([stat, value]) =>
-          literBuffs(base, stat, value).some((b) => b.frame === frame),
+          literBuffs(base, stat, value).some((b) => b.frame === frame)
         ).map(([stat]) => stat);
-        const expected = STEPS.slice(0, Math.min(i + 1, 3)).map(([stat]) => stat);
-        expect(live, `cast #${i + 1} at ${(frame / FPS).toFixed(2)}s`).toEqual(expected);
+        const expected = STEPS.slice(0, Math.min(i + 1, 3)).map(
+          ([stat]) => stat
+        );
+        expect(live, `cast #${i + 1} at ${(frame / FPS).toFixed(2)}s`).toEqual(
+          expected
+        );
       }
     });
 
-    it('fires on HER OWN casts only, never on an ally\'s burst', () => {
-      const applyFrames = new Set(literBuffs(base, 'maxAmmoPct', 45.17).map((b) => b.frame));
-      expect([...applyFrames].sort((a, b) => a - b)).toEqual(literCasts(base).map((c) => c.frame));
-      expect(applyFrames.size, 'the whole team bursts far more often than liter alone').toBeLessThan(
-        allCasts(base).length,
+    it("fires on HER OWN casts only, never on an ally's burst", () => {
+      const applyFrames = new Set(
+        literBuffs(base, 'maxAmmoPct', 45.17).map((b) => b.frame)
       );
+      expect([...applyFrames].sort((a, b) => a - b)).toEqual(
+        literCasts(base).map((c) => c.frame)
+      );
+      expect(
+        applyFrames.size,
+        'the whole team bursts far more often than liter alone'
+      ).toBeLessThan(allCasts(base).length);
     });
 
     it('reaches all four allies for exactly 5 sec', () => {
       for (const [stat, value] of STEPS) {
         const applied = literBuffs(base, stat, value);
         expect(applied.length, `${stat} never applied`).toBeGreaterThan(0);
-        for (const b of applied) expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);
+        for (const b of applied)
+          {expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);}
         const perFrame = new Map<number, Set<number | null>>();
         for (const b of applied) {
-          if (!perFrame.has(b.frame)) perFrame.set(b.frame, new Set());
+          if (!perFrame.has(b.frame)) {perFrame.set(b.frame, new Set());}
           perFrame.get(b.frame)!.add(b.targetIdx);
         }
         for (const [frame, holders] of perFrame) {
-          expect(holders.size, `${stat} at frame ${frame} reached ${holders.size} allies`).toBe(TEAM_SIZE);
+          expect(
+            holders.size,
+            `${stat} at frame ${frame} reached ${holders.size} allies`
+          ).toBe(TEAM_SIZE);
         }
       }
     });
@@ -221,17 +260,19 @@ describe('liter — kit spec', () => {
       // Damage ▲20.99%" on every Full Burst and inflated the whole team (owner ruling 2026-07-21).
       const fired = noOtherHeals.filter(
         (e): e is BuffApply =>
-          e.kind === 'buffApply' && e.stat === 'attackDamagePct' && e.value === 20.99,
+          e.kind === 'buffApply' &&
+          e.stat === 'attackDamagePct' &&
+          e.value === 20.99
       );
       expect(
         fired.map((b) => (b.frame / FPS).toFixed(2)),
-        'a recovery consumer fired with liter as the only possible source',
+        'a recovery consumer fired with liter as the only possible source'
       ).toEqual([]);
     });
 
     it('has the cover-HP line recorded as a deliberate omission, not silently dropped', () => {
       const unmodeled = JSON.stringify(
-        (withPatchedOverride('liter', () => {}) as any).unmodeled.skill2,
+        (withPatchedOverride('liter', () => {}) as any).unmodeled.skill2
       );
       expect(unmodeled).toContain('Cover HP');
     });
@@ -241,8 +282,10 @@ describe('liter — kit spec', () => {
     it('grants exactly 66% to all four allies for 5 sec, once per cast', () => {
       const applied = literBuffs(base, 'atkPct', 66);
       const frames = new Set(applied.map((b) => b.frame));
-      expect([...frames].sort((a, b) => a - b)).toEqual(literCasts(base).map((c) => c.frame));
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      expect([...frames].sort((a, b) => a - b)).toEqual(
+        literCasts(base).map((c) => c.frame)
+      );
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(TEAM_SIZE);
     });
 
@@ -252,7 +295,10 @@ describe('liter — kit spec', () => {
         ...literBuffs(base, 'atkPct', 66).map((b) => b.key),
         ...literBuffs(base, 'atkPct', 14.42).map((b) => b.key),
       ]);
-      expect(keys.size, 'the two ATK buffs must not share a buff key').toBeGreaterThan(1);
+      expect(
+        keys.size,
+        'the two ATK buffs must not share a buff key'
+      ).toBeGreaterThan(1);
     });
   });
 });

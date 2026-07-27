@@ -45,7 +45,7 @@ Every kit line is a buff / cooldown-reduction / heal, so every load-bearing asse
 (buffApply / burstCast / fullBurstStart / recovery), never damage-total based.
 
 - **S1 ticket Max-HP grant ⇒ `casterMaxHpPct 20` (passive, all allies, permanent)** `passive → allies →
-  casterMaxHpPct 20`. The prose says "10% of the SKILL USER's Max HP" → `casterMaxHpPct` family (caster-HP-scaled,
+casterMaxHpPct 20`. The prose says "10% of the SKILL USER's Max HP" → `casterMaxHpPct` family (caster-HP-scaled,
   identical flat HP to every ally), NOT `targetMaxHpPct` ("% of each target's OWN HP") — both blind agents explicitly
   rule out targetMaxHpPct. The engine resolves casterMaxHpPct to flat Max HP at apply time (sim.ts:1772), emitting
   buffApply under stat `maxHpFlat` whose KEY carries the effect value (`0:skill1:maxHpFlat:20`). The value 20 = the
@@ -55,7 +55,7 @@ Every kit line is a buff / cooldown-reduction / heal, so every load-bearing asse
   HP only, e3 rule) — kept per hard rule 3 for a future consumer/scaler, NOT a silent drop. **F1** discriminates value
   (1 ticket = 10% → key `:10`, not `:20`) and target (`self` → only slot 0, not all 3 allies).
 - **S1 FB-enter burst CDR ▼7.48s ⇒ `burstCdr 7.48` (fullBurstEnter, all allies)** `fullBurstEnter → allies →
-  burstCdr seconds 7.48`. Prose "when entering Full Burst" = team-FB entry (regardless of who bursted); both blind
+burstCdr seconds 7.48`. Prose "when entering Full Burst" = team-FB entry (regardless of who bursted); both blind
   agents land fullBurstEnter (NOT oncePerBattle, NOT burstCast, NOT a percent). `burstCdr` emits NO event
   (sim.ts:2047 — it mutates `burstCdFrames` directly); its only observable is the team cadence. **F2 PINS** the block
   is live: removing it drops the Full Burst count over 180s (6 → 5; the 7.48s off the 40s CDs pulls one extra chain
@@ -90,10 +90,10 @@ Every kit line is a buff / cooldown-reduction / heal, so every load-bearing asse
 The judge found **0 gotchas**. The cross-family divergences all resolved toward the driver:
 
 - **Ticket steady-state — flat passive `casterMaxHpPct 20` (driver) vs dual-trigger ramp (fable: passive battle-start
-  + burstCast, cap 2).** The engine has NO cap-2/consume-on-S2 stack primitive, so the faithful AVAILABLE encoding is
-  the derived steady-state flat passive (she reaches cap at her first burst and never consumes under scope-lock). The
-  10%→20% ramp is a documented ⚑3 that moves **zero damage** because the grant is offensively inert (e3 rule). opus S6
-  independently chose the same flat passive 20 (with a cosmetic `maxStacks:2`). Resolves toward the driver.
+  - burstCast, cap 2).** The engine has NO cap-2/consume-on-S2 stack primitive, so the faithful AVAILABLE encoding is
+    the derived steady-state flat passive (she reaches cap at her first burst and never consumes under scope-lock). The
+    10%→20% ramp is a documented ⚑3 that moves **zero damage** because the grant is offensively inert (e3 rule). opus S6
+    independently chose the same flat passive 20 (with a cosmetic `maxStacks:2`). Resolves toward the driver.
 - **Blind S5 harness artifacts (HANDLED — NOT a faithfulness signal).** The opus S5 blind test gave a SUITE ERROR
   (0 tests run): it omits `import {describe,it,expect} from 'vitest'` and vitest globals are not enabled
   (`describe is not defined`). Two further artifacts would confound it even if loaded: its counterfactual helpers

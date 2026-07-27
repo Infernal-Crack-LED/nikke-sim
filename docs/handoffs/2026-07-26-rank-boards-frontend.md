@@ -13,12 +13,12 @@ Four new ranked lists next to the existing DPS chart: **Burst Generation**,
 `web/public/` (gitignored build outputs, served at root, copied into `dist/` by
 the Vite build exactly like `dpschart.json`):
 
-| Artifact | npm script | Content |
-|---|---|---|
-| `burstgen.json` | `ranks:burstgen` | all sim-supported units, uncapped 180s gauge |
-| `burstcdr.json` | `ranks:burstcdr` | 15 CDR units, nominal CDR sec/40s |
-| `sustain.json` | `ranks:sustain` | 50 sustain units, team-total HP |
-| `bufferchart.json` | `ranks:buffer` | 74 buffers × {generic, typed} boards, added carry DPS |
+| Artifact           | npm script       | Content                                               |
+| ------------------ | ---------------- | ----------------------------------------------------- |
+| `burstgen.json`    | `ranks:burstgen` | all sim-supported units, uncapped 180s gauge          |
+| `burstcdr.json`    | `ranks:burstcdr` | 15 CDR units, nominal CDR sec/40s                     |
+| `sustain.json`     | `ranks:sustain`  | 50 sustain units, team-total HP                       |
+| `bufferchart.json` | `ranks:buffer`   | 74 buffers × {generic, typed} boards, added carry DPS |
 
 ## Artifact shapes (all carry `generatedAt`, `methodology`, `units`)
 
@@ -62,8 +62,8 @@ audit strings — good tooltip material ("why did the carries change?").
 1. **Data modules** — one per board, mirroring `web/src/dpschartData.ts`:
    `rankBoardsData.ts` is fine as a single module with four loaders (same
    module-level-cache fetch pattern, `${import.meta.env.BASE_URL}<name>.json`)
-   + `BarEntry` mappers. Keep the row-tuple types in `src/ranks/` (a shared
-   `types.ts` export) so web and builders agree.
+   - `BarEntry` mappers. Keep the row-tuple types in `src/ranks/` (a shared
+     `types.ts` export) so web and builders agree.
 2. **Page** — one `RankBoardsPage.tsx` (route `/ranks`, nav "Rankings") with a
    board pill-switcher (Burst Gen / Burst CDR / Sustain / Buffer) rather than
    four pages — the boards share one ranked-bar UI. Buffer gets a second
@@ -94,7 +94,7 @@ audit strings — good tooltip material ("why did the carries change?").
    `web/src/useDocumentHead.ts` for title/meta.
 7. **Smoke** — extend `scripts/web-smoke.mjs` (or add a sibling like
    `web-smoke-dpschart.mjs`) to fetch each artifact + the new route. `npm run
-   web:build` must stay green.
+web:build` must stay green.
 8. **Build wiring** — decide with the owner whether `ranks:all` joins
    `build:deploy` (it currently only runs `dpschart`); artifacts are gitignored
    so deploys need the builders run first. `verify.sh deploy` mode is the

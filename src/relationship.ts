@@ -8,7 +8,11 @@
 import relData from '../data/relationship-bonus.json' with { type: 'json' };
 import type { NikkeClass } from './types.js';
 
-export interface RelationshipStat { hp: number; atk: number; def: number }
+export interface RelationshipStat {
+  hp: number;
+  atk: number;
+  def: number;
+}
 
 const MAX_LEVEL: Record<string, number> = relData.manufacturerMaxLevel;
 const BY_LEVEL = relData.statsByLevel as Array<
@@ -18,7 +22,7 @@ const ZERO: RelationshipStat = { hp: 0, atk: 0, def: 0 };
 
 /** Normalize a manufacturer string to its max-level key ('… Overspec' → 'overspec'). */
 function mfrKey(manufacturer: string | null): string | null {
-  if (!manufacturer) return null;
+  if (!manufacturer) {return null;}
   const m = manufacturer.toLowerCase();
   return m.endsWith(' overspec') ? 'overspec' : m;
 }
@@ -36,12 +40,12 @@ export function maxBondLevel(manufacturer: string | null): number {
 export function relationshipBonus(
   cls: NikkeClass,
   manufacturer: string | null,
-  level?: number,
+  level?: number
 ): RelationshipStat {
   const max = maxBondLevel(manufacturer);
-  if (max < 1) return ZERO;
+  if (max < 1) {return ZERO;}
   const lvl = Math.max(0, Math.min(Math.round(level ?? max), max));
-  if (lvl < 1) return ZERO;
+  if (lvl < 1) {return ZERO;}
   const row = BY_LEVEL[lvl - 1];
   return row?.[cls] ?? ZERO;
 }

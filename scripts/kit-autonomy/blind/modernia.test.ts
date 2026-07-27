@@ -44,22 +44,22 @@ const SLOTS: Slot[] = ['skill1', 'skill2', 'burst'];
 /* ------------------------------ override readers ------------------------------ */
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) return s;
-  if (s && Array.isArray(s.blocks)) return s.blocks;
+  if (Array.isArray(s)) {return s;}
+  if (s && Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 }
 function eachBlock(ov: any, fn: (b: any, slot: Slot) => void): void {
-  for (const slot of SLOTS) for (const b of blocksOf(ov, slot)) fn(b, slot);
+  for (const slot of SLOTS) {for (const b of blocksOf(ov, slot)) {fn(b, slot);}}
 }
 function eachEffect(ov: any, fn: (e: any, b: any, slot: Slot) => void): void {
   eachBlock(ov, (b, slot) => {
-    for (const e of b.effects ?? []) fn(e, b, slot);
+    for (const e of b.effects ?? []) {fn(e, b, slot);}
   });
 }
 function find(ov: any, pred: (e: any, b: any, slot: Slot) => boolean) {
   const hits: { eff: any; block: any; slot: Slot }[] = [];
   eachEffect(ov, (e, b, slot) => {
-    if (pred(e, b, slot)) hits.push({ eff: e, block: b, slot });
+    if (pred(e, b, slot)) {hits.push({ eff: e, block: b, slot });}
   });
   return hits;
 }
@@ -67,8 +67,8 @@ const mag = (n: unknown) => (typeof n === 'number' ? Math.abs(n) : NaN);
 const isMag = (e: any, want: number, tol = 0.03) =>
   Math.abs(mag(e.value) - want) <= tol || Math.abs(mag(e.atkPct) - want) <= tol;
 function zeroMagnitude(e: any): void {
-  if (typeof e.value === 'number') e.value = 0;
-  if (typeof e.atkPct === 'number') e.atkPct = 0;
+  if (typeof e.value === 'number') {e.value = 0;}
+  if (typeof e.atkPct === 'number') {e.atkPct = 0;}
 }
 function dropEffects(ov: any, kind: string): void {
   eachBlock(ov, (b) => {
@@ -77,7 +77,12 @@ function dropEffects(ov: any, kind: string): void {
 }
 
 /* ---------------------------------- runner ------------------------------------ */
-type Run = { res: any; events: any[]; total: number; all: Record<string, number> };
+type Run = {
+  res: any;
+  events: any[];
+  total: number;
+  all: Record<string, number>;
+};
 function run(mutate?: (ov: any) => void): Run {
   const events: any[] = [];
   const base: any = controlComp(SLUG, true);
@@ -86,7 +91,10 @@ function run(mutate?: (ov: any) => void): Run {
     cfg: { ...(base.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev) },
   };
   if (mutate) {
-    opts.overrides = { ...(base.overrides ?? {}), [SLUG]: withPatchedOverride(SLUG, mutate) };
+    opts.overrides = {
+      ...(base.overrides ?? {}),
+      [SLUG]: withPatchedOverride(SLUG, mutate),
+    };
   }
   const res = runComp(opts);
   return {
@@ -98,17 +106,34 @@ function run(mutate?: (ov: any) => void): Run {
 }
 const evsOf = (r: Run, kind: string) => r.events.filter((e) => e.kind === kind);
 const buffVals = (r: Run, stat: string, want: number, tol = 0.06) =>
-  r.events.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(mag(e.value) - want) <= tol);
-const inFbHits = (r: Run) => r.events.filter((e) => e.kind === 'damage' && e.inFullBurst).length;
+  r.events.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(mag(e.value) - want) <= tol
+  );
+const inFbHits = (r: Run) =>
+  r.events.filter((e) => e.kind === 'damage' && e.inFullBurst).length;
 const drop = (base: number, cf: number) => (base - cf) / base;
 
 /* -------- the committed override, read (not written) via an empty patch clone --- */
 const OV: any = withPatchedOverride(SLUG, () => {});
 const RIDER = find(OV, (e, _b, slot) => slot === 'skill1' && isMag(e, 3.05));
-const CRIT = find(OV, (e) => e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06));
-const AMMO = find(OV, (e) => e.kind === 'buff' && (e.stat === 'maxAmmoPct' || e.stat === 'maxAmmoFlat'));
+const CRIT = find(
+  OV,
+  (e) =>
+    e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)
+);
+const AMMO = find(
+  OV,
+  (e) =>
+    e.kind === 'buff' && (e.stat === 'maxAmmoPct' || e.stat === 'maxAmmoFlat')
+);
 const HITRATE = find(OV, (e) => e.kind === 'buff' && e.stat === 'hitRatePct');
-const ATK29 = find(OV, (e) => e.kind === 'buff' && isMag(e, 29.38, 0.06) && e.stat !== 'hitRatePct');
+const ATK29 = find(
+  OV,
+  (e) => e.kind === 'buff' && isMag(e, 29.38, 0.06) && e.stat !== 'hitRatePct'
+);
 const FBEXT = find(OV, (e) => e.kind === 'fullBurstExtend');
 const UNLIM = find(OV, (e) => e.kind === 'unlimitedAmmo');
 const DESTROY = find(OV, (e, _b, slot) => slot === 'burst' && isMag(e, 2.24));
@@ -116,45 +141,65 @@ const DESTROY = find(OV, (e, _b, slot) => slot === 'burst' && isMag(e, 2.24));
 /* ------------------------- hoisted runs (12 x 180s sims) ---------------------- */
 const BASE = run();
 const NO_RIDER = run((ov) =>
-  find(ov, (e, _b, s) => s === 'skill1' && isMag(e, 3.05)).forEach((h) => zeroMagnitude(h.eff)),
+  find(ov, (e, _b, s) => s === 'skill1' && isMag(e, 3.05)).forEach((h) =>
+    zeroMagnitude(h.eff)
+  )
 );
 const NO_CRITDMG = run((ov) =>
-  find(ov, (e) => e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)).forEach((h) =>
-    zeroMagnitude(h.eff),
-  ),
+  find(
+    ov,
+    (e) =>
+      e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)
+  ).forEach((h) => zeroMagnitude(h.eff))
 );
 const CRIT_1STACK = run((ov) =>
-  find(ov, (e) => e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)).forEach((h) => {
+  find(
+    ov,
+    (e) =>
+      e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)
+  ).forEach((h) => {
     h.eff.maxStacks = 1;
-  }),
+  })
 );
 const CRIT_SHORT = run((ov) =>
-  find(ov, (e) => e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)).forEach((h) => {
+  find(
+    ov,
+    (e) =>
+      e.kind === 'buff' && e.stat === 'critDamagePct' && isMag(e, 14.25, 0.06)
+  ).forEach((h) => {
     h.eff.durationSec = 1;
-  }),
+  })
 );
 const AMMO_POS = run((ov) =>
-  find(ov, (e) => e.kind === 'buff' && (e.stat === 'maxAmmoPct' || e.stat === 'maxAmmoFlat')).forEach((h) => {
+  find(
+    ov,
+    (e) =>
+      e.kind === 'buff' && (e.stat === 'maxAmmoPct' || e.stat === 'maxAmmoFlat')
+  ).forEach((h) => {
     h.eff.value = Math.abs(h.eff.value);
-  }),
+  })
 );
 const NO_HITRATE = run((ov) =>
-  find(ov, (e) => e.kind === 'buff' && e.stat === 'hitRatePct').forEach((h) => zeroMagnitude(h.eff)),
+  find(ov, (e) => e.kind === 'buff' && e.stat === 'hitRatePct').forEach((h) =>
+    zeroMagnitude(h.eff)
+  )
 );
 const HITRATE_10S = run((ov) =>
   find(ov, (e) => e.kind === 'buff' && e.stat === 'hitRatePct').forEach((h) => {
     h.eff.durationSec = 10;
-  }),
+  })
 );
 const NO_FBEXT = run((ov) => dropEffects(ov, 'fullBurstExtend'));
 const NO_UNLIM = run((ov) => dropEffects(ov, 'unlimitedAmmo'));
 const NO_DESTROY = run((ov) =>
-  find(ov, (e, _b, s) => s === 'burst' && isMag(e, 2.24)).forEach((h) => zeroMagnitude(h.eff)),
+  find(ov, (e, _b, s) => s === 'burst' && isMag(e, 2.24)).forEach((h) =>
+    zeroMagnitude(h.eff)
+  )
 );
 const DESTROY_LONG = run((ov) =>
   find(ov, (e, _b, s) => s === 'burst' && isMag(e, 2.24)).forEach((h) => {
-    if (typeof h.eff.durationSec === 'number') h.eff.durationSec = 60;
-  }),
+    if (typeof h.eff.durationSec === 'number') {h.eff.durationSec = 60;}
+  })
 );
 
 const TEAM = Object.keys(BASE.all).filter((s) => s !== SLUG);
@@ -167,17 +212,25 @@ describe('modernia — fixture non-vacuity', () => {
   });
 
   it('all three skill slots carry blocks (no silently-empty slot)', () => {
-    for (const slot of SLOTS) expect(blocksOf(OV, slot).length, `${slot} has no blocks`).toBeGreaterThan(0);
+    for (const slot of SLOTS)
+      {expect(
+        blocksOf(OV, slot).length,
+        `${slot} has no blocks`
+      ).toBeGreaterThan(0);}
   });
 
   it('no `ignored` effects anywhere (validator rule; skips belong in `note`/`unmodeled`)', () => {
-    expect(find(OV, (e) => e.kind === 'ignored' || e.kind === 'unsupported')).toHaveLength(0);
+    expect(
+      find(OV, (e) => e.kind === 'ignored' || e.kind === 'unsupported')
+    ).toHaveLength(0);
   });
 });
 
 describe('S1a — normal-attack hit: 3.05% of final ATK additional damage', () => {
   it('is present in skill1 at the kit magnitude', () => {
-    expect(RIDER.length, 'no 3.05%-magnitude effect in skill1').toBeGreaterThan(0);
+    expect(RIDER.length, 'no 3.05%-magnitude effect in skill1').toBeGreaterThan(
+      0
+    );
   });
 
   // DISCRIMINATES: a PER-HIT rider is worth a large slice of her total (she fires ~40 hits/s as a
@@ -189,7 +242,8 @@ describe('S1a — normal-attack hit: 3.05% of final ATK additional damage', () =
 
   // INERTNESS: 'Affects the target(s)' = enemy-facing damage from HER hits; it must not touch allies.
   it('is self-sourced: teammates are byte-identical when it is zeroed', () => {
-    for (const s of TEAM) expect(NO_RIDER.all[s], `${s} moved`).toBe(BASE.all[s]);
+    for (const s of TEAM)
+      {expect(NO_RIDER.all[s], `${s} moved`).toBe(BASE.all[s]);}
   });
 });
 
@@ -215,7 +269,9 @@ describe('S1b — every 200 normal-attack hits: Crit Damage +14.25%, 5 stacks, 1
   });
 
   it('is self-only — never lands on an ally', () => {
-    const t = new Set(buffVals(BASE, 'critDamagePct', 14.25).map((e) => e.targetSlug));
+    const t = new Set(
+      buffVals(BASE, 'critDamagePct', 14.25).map((e) => e.targetSlug)
+    );
     expect([...t]).toEqual([SLUG]);
   });
 
@@ -233,20 +289,25 @@ describe('S1b — every 200 normal-attack hits: Crit Damage +14.25%, 5 stacks, 1
   });
 
   it('teammates are byte-identical when the self crit-damage buff is zeroed', () => {
-    for (const s of TEAM) expect(NO_CRITDMG.all[s], `${s} moved`).toBe(BASE.all[s]);
+    for (const s of TEAM)
+      {expect(NO_CRITDMG.all[s], `${s} moved`).toBe(BASE.all[s]);}
   });
 });
 
 describe('S1b — every 200 hits: Max Ammunition Capacity DOWN 5.04%, 5 stacks, 10s (self)', () => {
   // A weapon-state modifier IS damage: fewer rounds per belt = more reloads = fewer shots fired.
   it('is modeled, self-scoped, and encoded as a DEBUFF (negative value)', () => {
-    expect(AMMO.length, 'no maxAmmo effect — the DOWN line was dropped as defensive').toBeGreaterThan(0);
+    expect(
+      AMMO.length,
+      'no maxAmmo effect — the DOWN line was dropped as defensive'
+    ).toBeGreaterThan(0);
     for (const h of AMMO) {
       expect(h.eff.value, 'Max Ammo DOWN must be negative').toBeLessThan(0);
       expect(h.block.target?.kind).toBe('self');
       expect(h.eff.maxStacks).toBe(5);
       expect(h.eff.durationSec).toBe(10);
-      if (h.eff.stat === 'maxAmmoPct') expect(Math.abs(h.eff.value)).toBeCloseTo(5.04, 1);
+      if (h.eff.stat === 'maxAmmoPct')
+        {expect(Math.abs(h.eff.value)).toBeCloseTo(5.04, 1);}
     }
   });
 
@@ -275,14 +336,18 @@ describe('S2a — entering Full Burst: ALL ALLIES Hit Rate +8.56% for 15s', () =
 
   // TARGET SET: 'all allies' = every unit in the comp, self included. Nearest-wrong = self-only (1 slug).
   it('lands on the WHOLE team including self', () => {
-    const t = new Set(buffVals(BASE, 'hitRatePct', 8.56).map((e) => e.targetSlug));
+    const t = new Set(
+      buffVals(BASE, 'hitRatePct', 8.56).map((e) => e.targetSlug)
+    );
     expect(t.has(SLUG)).toBe(true);
     expect(t.size).toBe(Object.keys(BASE.all).length);
   });
 
   // TRIGGER IDENTITY: re-fires per Full Burst rather than being a passive — multiple distinct expiry frames.
   it('re-applies each Full Burst (>=2 distinct expiry frames), not once as a passive', () => {
-    const exp = new Set(buffVals(BASE, 'hitRatePct', 8.56).map((e) => e.expiresFrame));
+    const exp = new Set(
+      buffVals(BASE, 'hitRatePct', 8.56).map((e) => e.expiresFrame)
+    );
     expect(exp.size).toBeGreaterThanOrEqual(2);
   });
 
@@ -308,7 +373,10 @@ describe('S2b — every 200 hits during Hit-Rate-up: self ATK +29.38% for 10s', 
   it('is present as an ATK buff (atkPct, not attackDamagePct), self, 10s, hitCount:200', () => {
     expect(ATK29.length, 'no 29.38 ATK buff').toBeGreaterThan(0);
     for (const h of ATK29) {
-      expect(h.eff.stat, 'kit says ATK UP -> atkPct, not the Damage Up bucket').toBe('atkPct');
+      expect(
+        h.eff.stat,
+        'kit says ATK UP -> atkPct, not the Damage Up bucket'
+      ).toBe('atkPct');
       expect(h.block.target?.kind).toBe('self');
       expect(h.eff.durationSec).toBe(10);
       expect(h.block.trigger?.kind).toBe('hitCount');
@@ -327,7 +395,10 @@ describe('S2b — every 200 hits during Hit-Rate-up: self ATK +29.38% for 10s', 
   it.skip('GAP: the Hit-Rate-status gate — no ATK+29.38 application before the first Full Burst', () => {
     const firstFb = BASE.events.findIndex((e) => e.kind === 'fullBurstStart');
     const firstAtk = BASE.events.findIndex(
-      (e) => e.kind === 'buffApply' && e.stat === 'atkPct' && Math.abs(mag(e.value) - 29.38) <= 0.06,
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'atkPct' &&
+        Math.abs(mag(e.value) - 29.38) <= 0.06
     );
     expect(firstAtk).toBeGreaterThan(firstFb);
   });
@@ -372,7 +443,10 @@ describe('burst — unlimited ammunition for 15 sec (self)', () => {
 
 describe('burst — Destroy Mode: 2.24% of final ATK as damage for 15 sec', () => {
   it('is present in the burst slot at the kit magnitude, on a burstCast trigger, self-scoped', () => {
-    expect(DESTROY.length, 'no 2.24%-magnitude effect in the burst slot').toBeGreaterThan(0);
+    expect(
+      DESTROY.length,
+      'no 2.24%-magnitude effect in the burst slot'
+    ).toBeGreaterThan(0);
     for (const h of DESTROY) {
       expect(h.block.trigger?.kind).toBe('burstCast');
       expect(h.block.target?.kind).toBe('self');
@@ -393,7 +467,8 @@ describe('burst — Destroy Mode: 2.24% of final ATK as damage for 15 sec', () =
   });
 
   it('does not leak onto teammates', () => {
-    for (const s of TEAM) expect(NO_DESTROY.all[s], `${s} moved`).toBe(BASE.all[s]);
+    for (const s of TEAM)
+      {expect(NO_DESTROY.all[s], `${s} moved`).toBe(BASE.all[s]);}
   });
 
   // The line-of-sight / auto-aim / 'parts treated as a single enemy' text has no engine primitive and

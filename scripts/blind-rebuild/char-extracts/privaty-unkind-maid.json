@@ -19,9 +19,7 @@
     "rl3": 12.8,
     "burstGaugePerShot": 2,
     "treasure": false,
-    "nicknames": [
-      "pum"
-    ],
+    "nicknames": ["pum"],
     "skills": {
       "skill1": "■ Activates when hitting the target with 30 pellet(s). Affects 2 enemy unit(s) nearest to the crosshair. \nDeals 202.84% of final ATK as damage.",
       "skill2": "■ Activates when 5 or more pellets hit with a single normal attack. Affects self.\nReload Speed ▲ 20.88% for 2 sec.\n■ Activates when hitting 30 times with pellets during Full Burst. Affects self.\nReload 1 round(s).\nATK ▲ 11.22%, stacks up to 5 times and lasts for 2 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nIncreases Hit Rate when attacking.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 105,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 18,
           "prefer_target_condition": "None",
@@ -338,16 +332,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n<color=#00AEFF>Critical Damage ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
           "description_value_list": [
@@ -430,19 +415,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            131330101,
-            131330102
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [131330101, 131330102],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -467,9 +443,7 @@
         }
       },
       "element": {
-        "element_id": [
-          400001
-        ],
+        "element_id": [400001],
         "element_details": [
           {
             "id": 400001,
@@ -500,9 +474,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Privaty: Unkind Maid's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

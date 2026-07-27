@@ -78,7 +78,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 function run(
   slugs: readonly string[],
   focus: string,
-  overrides: Record<string, any> = {},
+  overrides: Record<string, any> = {}
 ) {
   const events: SimEvent[] = [];
   runComp({
@@ -99,13 +99,13 @@ const afmBuffs = (evs: SimEvent[], slot: number) =>
 const afmCasts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'arcana-fortune-mate',
+      e.kind === 'burstCast' && e.slug === 'arcana-fortune-mate'
   );
 const fbEnds = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstEnd');
 const afmDmg = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Damage => e.kind === 'damage' && e.slug === 'arcana-fortune-mate',
+    (e): e is Damage => e.kind === 'damage' && e.slug === 'arcana-fortune-mate'
   );
 /** Sum of afm's NORMAL-bucket damage — the L5 pellet×snapshot multiplicativity observable. */
 const afmNormalTotal = (evs: SimEvent[]) =>
@@ -117,7 +117,7 @@ const firings = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.frame))].sort((a, b) => a - b);
 const targets = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? 99) - (b ?? 99),
+    (a, b) => (a ?? 99) - (b ?? 99)
   );
 
 // ---- counterfactual patches (nearest wrong model each line must beat) -------------------------
@@ -127,32 +127,32 @@ const patch = (mutate: (ov: any) => void) =>
 /** L1 magnitude: 1 Precious Moments stack (13%) instead of 3 (39%). */
 const l1OneStack = patch((ov) => {
   const e = ov.skill1[0]?.effects?.find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) throw new Error('afm S1 casterAtkPct missing — stale fixture');
+  if (!e) {throw new Error('afm S1 casterAtkPct missing — stale fixture');}
   e.value = 13;
 });
 /** L1/L3 targeting: the documented prior approximation — alliesOfClass Attacker (drops SG non-Attackers). */
 const targetClass = patch((ov) => {
   let n = 0;
   for (const b of [...ov.skill1, ...ov.skill2])
-    if (b.target?.kind === 'alliesOfWeapon') {
+    {if (b.target?.kind === 'alliesOfWeapon') {
       b.target = { kind: 'alliesOfClass', cls: 'Attacker' };
       n++;
-    }
+    }}
   if (n !== 2)
-    throw new Error('afm: expected 2 alliesOfWeapon blocks, found ' + n);
+    {throw new Error('afm: expected 2 alliesOfWeapon blocks, found ' + n);}
 });
 /** L1/L3 targeting: all allies (leaks the buff onto the non-SG ally). */
 const targetAll = patch((ov) => {
   for (const b of [...ov.skill1, ...ov.skill2])
-    if (b.target?.kind === 'alliesOfWeapon') b.target = { kind: 'allies' };
+    {if (b.target?.kind === 'alliesOfWeapon') {b.target = { kind: 'allies' };}}
 });
 /** L3: drop excludeSelf — the 55% then leaks onto afm herself (kit: "except self"). */
 const l3NoExclude = patch((ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct'),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
   if (!b?.target?.excludeSelf)
-    throw new Error('afm S2 55% excludeSelf missing — stale fixture');
+    {throw new Error('afm S2 55% excludeSelf missing — stale fixture');}
   delete b.target.excludeSelf;
 });
 /** L5: the pre-A4 encoding — Happy Memories as a SECOND normalAttackPct 30 (additive ×1.60, not
@@ -161,7 +161,7 @@ const l5AdditiveProxy = patch((ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'pelletCountFlat');
-  if (!e) throw new Error('afm pelletCountFlat missing — stale fixture');
+  if (!e) {throw new Error('afm pelletCountFlat missing — stale fixture');}
   e.stat = 'normalAttackPct'; // now Snapshots 30 + Happy 30 = 60 additive
 });
 /** L2/L4/L5/L6 keying: re-key the Making-Memories SELF buffs from own burstCast to fullBurstEnter —
@@ -174,7 +174,7 @@ const selfBuffsOnFbEnter = patch((ov) => {
   ];
   for (const b of selfBlocks) {
     if (b?.trigger?.kind !== 'burstCast')
-      throw new Error('afm self-buff not burstCast-keyed — stale fixture');
+      {throw new Error('afm self-buff not burstCast-keyed — stale fixture');}
     b.trigger = { kind: 'fullBurstEnter' };
   }
 });
@@ -183,7 +183,7 @@ const l7Half = patch((ov) => {
   const fd = ov.burst
     .flatMap((b: any) => b.effects)
     .find((e: any) => e.kind === 'flatDamage');
-  if (!fd) throw new Error('afm burst flatDamage missing — stale fixture');
+  if (!fd) {throw new Error('afm burst flatDamage missing — stale fixture');}
   fd.atkPct = 277.2;
 });
 
@@ -219,11 +219,11 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
     expect(B_CASTS, 'fixture B: afm should burst').toBeGreaterThan(0);
     expect(
       A_FB,
-      'fixture A: Full Bursts still happen (crown closes the chain)',
+      'fixture A: Full Bursts still happen (crown closes the chain)'
     ).toBeGreaterThan(1);
     expect(
       A_CASTS,
-      'fixture A: crown must contest the B2 slot so afm never bursts',
+      'fixture A: crown must contest the B2 slot so afm never bursts'
     ).toBe(0);
   });
 
@@ -232,23 +232,23 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
     it('reaches exactly the SG allies (afm/drake/zwei), never the RL ally (liter), for 15s, per FB-end', () => {
       expect(targets(line)).toEqual(B_SG);
       expect(firings(line).length).toBe(B_FB);
-      for (const b of line) expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      for (const b of line) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
     });
     it('is 39% of caster ATK = 3× the 1-stack (13%) magnitude', () => {
       const cf = afmBuffs(rL1OneStack, B_AFM).filter(
-        (b) => b.stat === 'casterAtkPct',
+        (b) => b.stat === 'casterAtkPct'
       );
       expect(line[0].value / cf[0].value).toBeCloseTo(3, 6); // 39 / 13
     });
     it('DISCRIMINATING: an alliesOfClass-Attacker retarget drops the SG Supporter (zwei)', () => {
       const cf = afmBuffs(rTargetClass, B_AFM).filter(
-        (b) => b.stat === 'casterAtkPct',
+        (b) => b.stat === 'casterAtkPct'
       );
       expect(targets(cf)).toEqual([B_AFM, 2]); // zwei (slot 3, Supporter) lost
     });
     it('DISCRIMINATING: an all-allies retarget leaks onto the RL ally (liter)', () => {
       const cf = afmBuffs(rTargetAll, B_AFM).filter(
-        (b) => b.stat === 'casterAtkPct',
+        (b) => b.stat === 'casterAtkPct'
       );
       expect(targets(cf)).toEqual([0, 1, 2, 3]);
     });
@@ -256,24 +256,24 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
 
   describe('L3 — S2: 55% Attack Damage to SG allies EXCEPT self on burst, 10s', () => {
     const line = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 55,
+      (b) => b.stat === 'attackDamagePct' && b.value === 55
     );
     it('reaches the OTHER SG allies (drake/zwei) but never afm herself, for 10s, per cast', () => {
       expect(targets(line), 'excludeSelf must keep afm (slot 1) out').toEqual([
         2, 3,
       ]);
       expect(firings(line).length).toBe(B_CASTS);
-      for (const b of line) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of line) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('DISCRIMINATING: dropping excludeSelf leaks the 55% onto afm herself', () => {
       const cf = afmBuffs(rL3NoExclude, B_AFM).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 55,
+        (b) => b.stat === 'attackDamagePct' && b.value === 55
       );
       expect(targets(cf)).toEqual([1, 2, 3]);
     });
     it('DISCRIMINATING: an alliesOfClass-Attacker retarget drops zwei AND (no excludeSelf) keeps afm', () => {
       const cf = afmBuffs(rTargetClass, B_AFM).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 55,
+        (b) => b.stat === 'attackDamagePct' && b.value === 55
       );
       expect(targets(cf)).toEqual([1, 2]);
     });
@@ -289,56 +289,56 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
     ];
     const selfBuffsA = afmBuffs(A, A_AFM).filter(
       (b) =>
-        b.targetIdx === A_AFM && selfStats.includes(b.stat) && b.value !== 55,
+        b.targetIdx === A_AFM && selfStats.includes(b.stat) && b.value !== 55
     );
     it('fixture A (afm never bursts): every self-buff is perfectly INERT across 12 team Full Bursts', () => {
       expect(
         selfBuffsA.length,
-        'burstCast keying must hold ALL Making-Memories self-buffs when afm did not cast',
+        'burstCast keying must hold ALL Making-Memories self-buffs when afm did not cast'
       ).toBe(0);
     });
     it('DISCRIMINATING: fullBurstEnter keying would fire them on every team FB in fixture A', () => {
       const cf = afmBuffs(rSelfFbEnterA, A_AFM).filter(
         (b) =>
-          b.targetIdx === A_AFM && selfStats.includes(b.stat) && b.value !== 55,
+          b.targetIdx === A_AFM && selfStats.includes(b.stat) && b.value !== 55
       );
       expect(
         cf.length,
-        'fullBurstEnter over-credits MM on a team afm did not burst in',
+        'fullBurstEnter over-credits MM on a team afm did not burst in'
       ).toBeGreaterThan(0);
     });
   });
 
   describe('L2 — Snapshots of Youth: self Normal Attack Damage Multiplier +30% (10% × 3), 11s', () => {
     const line = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'normalAttackPct' && b.targetIdx === B_AFM,
+      (b) => b.stat === 'normalAttackPct' && b.targetIdx === B_AFM
     );
     it('is 30% on herself, one firing per cast, 11s window', () => {
       expect([...new Set(line.map((b) => b.value))]).toEqual([30]);
       expect(firings(line).length).toBe(B_CASTS);
-      for (const b of line) expect(b.expiresFrame! - b.frame).toBe(11 * FPS);
+      for (const b of line) {expect(b.expiresFrame! - b.frame).toBe(11 * FPS);}
     });
   });
 
   describe('L4 — Precious Moments: self ATK +7.47% (2.49% × 3), 11s', () => {
     const line = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'atkPct' && b.targetIdx === B_AFM,
+      (b) => b.stat === 'atkPct' && b.targetIdx === B_AFM
     );
     it('is 7.47% on herself, one firing per cast, 11s window', () => {
       expect([...new Set(line.map((b) => b.value))]).toEqual([7.47]);
       expect(firings(line).length).toBe(B_CASTS);
-      for (const b of line) expect(b.expiresFrame! - b.frame).toBe(11 * FPS);
+      for (const b of line) {expect(b.expiresFrame! - b.frame).toBe(11 * FPS);}
     });
   });
 
   describe('L5 — Happy Memories: self pelletCountFlat 3 (+1 pellet × 3), MULTIPLICATIVE with Snapshots (A4 fix)', () => {
     const line = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'pelletCountFlat' && b.targetIdx === B_AFM,
+      (b) => b.stat === 'pelletCountFlat' && b.targetIdx === B_AFM
     );
     it('is the real pellet-count primitive (+3) on herself, one firing per cast, 11s window', () => {
       expect([...new Set(line.map((b) => b.value))]).toEqual([3]);
       expect(firings(line).length).toBe(B_CASTS);
-      for (const b of line) expect(b.expiresFrame! - b.frame).toBe(11 * FPS);
+      for (const b of line) {expect(b.expiresFrame! - b.frame).toBe(11 * FPS);}
     });
     it('DISCRIMINATING: shipped normals EXCEED the pre-A4 additive normalAttackPct-30 proxy (×1.69 > ×1.60)', () => {
       const shipped = afmNormalTotal(B);
@@ -346,17 +346,17 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
       expect(
         shipped,
         `pelletCountFlat 3 × normalAttackPct 30 must beat the additive normalAttackPct 60 proxy ` +
-          `(shipped ${shipped.toFixed(0)} vs additive ${additive.toFixed(0)})`,
+          `(shipped ${shipped.toFixed(0)} vs additive ${additive.toFixed(0)})`
       ).toBeGreaterThan(additive * 1.03);
     });
   });
 
   describe('L6 — Making Memories: self Crit Rate +20.09% AND Attack Damage +29.99%, 11s', () => {
     const crit = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'critRatePct' && b.targetIdx === B_AFM,
+      (b) => b.stat === 'critRatePct' && b.targetIdx === B_AFM
     );
     const ad = afmBuffs(B, B_AFM).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 29.99,
+      (b) => b.stat === 'attackDamagePct' && b.value === 29.99
     );
     it('grants both self-buffs per cast, 11s window', () => {
       expect([...new Set(crit.map((b) => b.value))]).toEqual([20.09]);
@@ -364,7 +364,7 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
       expect(firings(crit).length).toBe(B_CASTS);
       expect(firings(ad).length).toBe(B_CASTS);
       for (const b of [...crit, ...ad])
-        expect(b.expiresFrame! - b.frame).toBe(11 * FPS);
+        {expect(b.expiresFrame! - b.frame).toBe(11 * FPS);}
     });
   });
 
@@ -378,7 +378,7 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
     });
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
       expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
     it('DISCRIMINATING: the halved magnitude (277.2%) is a different number', () => {
@@ -393,17 +393,17 @@ describe('arcana-fortune-mate (SG/Fire/B2 Attacker) — kit spec', () => {
         readFileSync(
           new URL(
             '../../../src/skills/overrides/arcana-fortune-mate.json',
-            import.meta.url,
+            import.meta.url
           ),
-          'utf8',
-        ),
+          'utf8'
+        )
       );
       expect(ov.unmodeled.skill2.join(' ')).toMatch(/Reload 6 rounds/);
       expect(ov.unmodeled.burst.join(' ')).toMatch(/Reload 2 rounds/);
       expect(ov.unmodeled.skill1.join(' ')).toMatch(/removes Making Memories/i);
       expect(
         JSON.stringify(ov),
-        'validator forbids ignored-effect blocks',
+        'validator forbids ignored-effect blocks'
       ).not.toMatch(/"ignored"/);
     });
   });

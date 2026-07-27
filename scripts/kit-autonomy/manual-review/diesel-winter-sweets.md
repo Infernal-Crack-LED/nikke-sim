@@ -19,7 +19,7 @@ GO-blocking") — see `results/diesel-winter-sweets.json → verdictFieldNote`.
 **Intro-only** (hard-coded Sustained ▲60.19%). The 2026-07-16 kit-status finding had already CONFIRMED this was the
 root cause of her 0.793 COLD (>15% error): in graded comp N5 (Privaty/SWHA alternate) she never reaches her burst slot
 → makes 0 bursts → stays in **Highlight** → the sustained tier must be **235.03%**, not 60.19%. The gauntlet revised S1
-to model **both** tiers via `ownBurstGate` — the engine's *canonical encoding for this exact line* (`src/skills/types.ts:368`:
+to model **both** tiers via `ownBurstGate` — the engine's _canonical encoding for this exact line_ (`src/skills/types.ts:368`:
 "the inverse is diesel-winter-sweets' Highlight sustained ('notCast')"). Board ratio moved **0.79 → 0.88** toward 1.0
 on re-sim, corroborating the fix.
 
@@ -53,16 +53,16 @@ She is a sustained-DoT attacker: **every damage line she owns is `sustained`-fla
 
 ## 2. What the sim implements (FAITHFUL, 8 lines)
 
-| Line | Encoding | Note |
-| --- | --- | --- |
-| S1 Intro/Highlight Crit Dmg +20.28% (permanent) | `fullBurstEnter → self → critDamagePct 20.28`, single ungated block | Same value in both statuses; re-applied each FB but capped at maxStacks 1 → never stacks. |
-| S1 Intro Sustained +60.19% / 10s | `fullBurstEnter + ownBurstGate:'cast' → self → sustainedDamagePct 60.19` | Fires on FBs she casts. |
-| S1 Highlight Sustained +235.03% / 10s | `fullBurstEnter + ownBurstGate:'notCast' → self → sustainedDamagePct 235.03` | Fires on FBs she does NOT cast (comp N5). **The fix.** |
-| S2 Full-Charge Sustained +318.14% / 3s / ×2 | `shotFired → self → sustainedDamagePct 318.14, maxStacks 2` | RL fires every pull as a full charge (`firePull(charged=true)`), so `shotFired` ≡ "Full Charge attack". 636.28% at 2 stacks; the 3s window LAPSES across the ~3.35s reload+charge gap → stacks reset to 1 each magazine. |
-| S2 FB-entry DoT 63.33%/s ×9s | `fullBurstEnter → enemy → dot 63.33, 9s, 1s, sustained` | Stage target = the single partless boss. |
-| Burst Damage Taken +25.09% / 10s | `burstCast → enemy → damageTakenPct 25.09` | Boss-side debuff; team-wide amplifier. |
-| Burst DoT 18.43%/s ×9s (all enemies) | `burstCast → enemy → dot 18.43, 9s, 1s, sustained` | Additive with the 181.2 line on the solo boss (~199.63%/s combined). |
-| Burst DoT 181.2%/s ×9s (stage target) | `burstCast → enemy → dot 181.2, 9s, 1s, sustained` | NOT either/or with 18.43 — both hit the solo boss. |
+| Line                                            | Encoding                                                                     | Note                                                                                                                                                                                                                     |
+| ----------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| S1 Intro/Highlight Crit Dmg +20.28% (permanent) | `fullBurstEnter → self → critDamagePct 20.28`, single ungated block          | Same value in both statuses; re-applied each FB but capped at maxStacks 1 → never stacks.                                                                                                                                |
+| S1 Intro Sustained +60.19% / 10s                | `fullBurstEnter + ownBurstGate:'cast' → self → sustainedDamagePct 60.19`     | Fires on FBs she casts.                                                                                                                                                                                                  |
+| S1 Highlight Sustained +235.03% / 10s           | `fullBurstEnter + ownBurstGate:'notCast' → self → sustainedDamagePct 235.03` | Fires on FBs she does NOT cast (comp N5). **The fix.**                                                                                                                                                                   |
+| S2 Full-Charge Sustained +318.14% / 3s / ×2     | `shotFired → self → sustainedDamagePct 318.14, maxStacks 2`                  | RL fires every pull as a full charge (`firePull(charged=true)`), so `shotFired` ≡ "Full Charge attack". 636.28% at 2 stacks; the 3s window LAPSES across the ~3.35s reload+charge gap → stacks reset to 1 each magazine. |
+| S2 FB-entry DoT 63.33%/s ×9s                    | `fullBurstEnter → enemy → dot 63.33, 9s, 1s, sustained`                      | Stage target = the single partless boss.                                                                                                                                                                                 |
+| Burst Damage Taken +25.09% / 10s                | `burstCast → enemy → damageTakenPct 25.09`                                   | Boss-side debuff; team-wide amplifier.                                                                                                                                                                                   |
+| Burst DoT 18.43%/s ×9s (all enemies)            | `burstCast → enemy → dot 18.43, 9s, 1s, sustained`                           | Additive with the 181.2 line on the solo boss (~199.63%/s combined).                                                                                                                                                     |
+| Burst DoT 181.2%/s ×9s (stage target)           | `burstCast → enemy → dot 181.2, 9s, 1s, sustained`                           | NOT either/or with 18.43 — both hit the solo boss.                                                                                                                                                                       |
 
 The sustained buffs feed ONLY sustained-flavored damage (the four DoT/tick channels) via `sustainedDamagePct`
 (sim.ts:1412) — the driver's D-scope counterfactual proves her RL normal bucket is byte-identical with them removed

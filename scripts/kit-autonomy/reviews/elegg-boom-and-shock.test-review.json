@@ -116,9 +116,7 @@
       "Affects 1 random enemy."
     ],
     "skill2": [],
-    "burst": [
-      "Affects random enemy units"
-    ]
+    "burst": ["Affects random enemy units"]
   },
   "notes": "Expected shared-prior misreads to reconcile, in priority order. (1) CAPTURE PACING is the biggest magnitude lever: 100 team-cumulative rounds accrue in a few seconds for a 5-wide comp, so whether the 6 s possession/'Recurring interval: 6 sec' caps captures at 1 per 6 s cycle decides the whole ghost ramp (tier-2 at ~24 s and cap-13 at ~78 s vs almost immediately). ⚑ this is a convention until pinned from footage; if the driver filed 'Possession lasts 6 sec' as pure flavor, that IS the divergence to surface. (2) skill2's 40% is burstCast, not fullBurstEnter — the control fixture's co-B3 helm makes this assertable (applies == Elegg burstCasts < fullBurstStarts). (3) The 16.2% is casterAtkPct — the harness flat-resolves it, so assert on the flat value ≈0.162×staticAtk, never the raw 16.2. (4) Resource ORDERING: burst spends (−6/−9) must sit after the branch gates and skill2's min-13 gate must read the pre-clamp/pre-spend pool; a mis-ordered spend silently kills the 13-branch and the 1100% nuke while everything still 'passes'. (5) The 1100% nuke and the 13-hit branch are plausibly UNREACHED in the standard rotation (spend 6–9/burst vs ~1 ghost/6 s accrual) — per the passing-tests-don't-justify-unreached-code rule, the test set needs an engineered pool==13 scenario, not just standard-rotation inertness. (6) Keep flavor 'sequential' on the burst hits — inert solo but load-bearing under any teammate's sequential-scoped buff. (7) teamAmmo as the accrual primitive ignores infinite-ammo shots; note the caveat if any fixture teammate carries unlimitedAmmo.",
   "model": "claude-fable-5"

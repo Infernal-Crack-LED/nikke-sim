@@ -38,7 +38,7 @@ governs (residual ⚑, §4).
 - **Burst (Miracle of Makeshifts)** ■ All allies: ATK ▲ 2.32% of the skill user's ATK; mirrors the stack count of
   Temporary Modification for 15 sec.
   - ■ All shotgun-wielding allies: ATK ▲ 24.21% of the skill user's ATK; mirrors the stack count of Temporary
-  Modification for 15 sec.
+    Modification for 15 sec.
 
 ---
 
@@ -79,14 +79,14 @@ are therefore modeled as **frame-0 passives** (always-on), and the burst "mirror
   — the classic scope-collapse trap is mis-encoding it as generic `allies` (a massive team-wide shot-count
   over-credit). **T5** discriminates SG-scope vs all-allies; inert on SG-free comps.
 - **Burst all-ally ATK ▲2.32% ×3 = 6.96% of caster ATK (all allies, 15s)** `burstCast → allies → casterAtkPct
-  6.96 (15s)`. `casterAtkPct` = a FLAT add of (6.96/100)×Tove.staticATK (caster-keyed; the buffApply `value` is the
+6.96 (15s)`. `casterAtkPct` = a FLAT add of (6.96/100)×Tove.staticATK (caster-keyed; the buffApply `value` is the
   resolved flat ATK ≈6941, the original 6.96 rides the event KEY `:6.96`), NOT `atkPct` (a percentage of each
   target's OWN ATK). Keyed to Tove's OWN `burstCast` (B1 step), NOT `fullBurstEnter` — frame-discriminated: her
   cast frame (180, 1380, …) strictly precedes each fullBurstStart frame (262, 1462, …, ~82f later). 15s (the prose
   value, not the stale datamine 10s). **T6** discriminates five ways: trigger (`fullBurstEnter`), scope
   (`alliesOfWeapon SG`), stat (`atkPct`), duration (10s), and mirror (un-mirrored 2.32).
 - **Burst SG ATK ▲24.21% ×3 = 72.63% of caster ATK (SG allies, 15s)** `burstCast → alliesOfWeapon(SG) →
-  casterAtkPct 72.63 (15s)`. A SECOND, distinct block. **Co-stacks ADDITIVELY** with the all-ally 6.96 line: the
+casterAtkPct 72.63 (15s)`. A SECOND, distinct block. **Co-stacks ADDITIVELY** with the all-ally 6.96 line: the
   two blocks carry distinct buff-key values (6.96 vs 72.63) → no same-slot overwrite → an SG ally is targeted by
   BOTH ■ lines and nets 6.96 + 72.63 = **79.59%** of Tove's ATK (probe-confirmed: SG allies noir/isabel each carry
   both a `:6.96` and a `:72.63` buffApply per cast; matches the prior owner-queued reconciliation in

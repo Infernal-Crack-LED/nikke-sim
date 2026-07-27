@@ -199,7 +199,7 @@ const BURST_RANK: Record<string, number> = { I: 0, II: 1, III: 2, Λ: 3 };
 /** Charge weapons (SR/RL) are the only ones the focus ×2.5 gauge bonus applies to. */
 export const isChargeWeapon = (
   chars: Record<string, Char>,
-  slug: string,
+  slug: string
 ): boolean => {
   const w = chars[slug]?.weapon;
   return w === 'SR' || w === 'RL';
@@ -210,15 +210,15 @@ export const isChargeWeapon = (
 export function canonicalTeamOrder(
   slugs: string[],
   chars: Record<string, Char>,
-  focus?: string,
+  focus?: string
 ): string[] {
   const rank = (s: string) => BURST_RANK[effBurst(s, chars)] ?? 9;
   const sorted = [...slugs].sort(
-    (a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0),
+    (a, b) => rank(a) - rank(b) || (a < b ? -1 : a > b ? 1 : 0)
   );
-  if (!focus || !sorted.includes(focus)) return sorted;
+  if (!focus || !sorted.includes(focus)) {return sorted;}
   const rest = sorted.filter((s) => s !== focus);
-  if (rest.length !== sorted.length - 1) return sorted; // duplicate-slug guard
+  if (rest.length !== sorted.length - 1) {return sorted;} // duplicate-slug guard
   const at = Math.min(2, sorted.length - 1);
   rest.splice(at, 0, focus);
   return rest;
@@ -243,15 +243,15 @@ const CD_PAIR = 40; // two casters at/below this alternate to cover the stage
 function stageCovered(
   slugs: string[],
   chars: Record<string, Char>,
-  stage: 'I' | 'II',
+  stage: 'I' | 'II'
 ): boolean {
   let short = 0;
   let pair = 0;
   for (const s of slugs) {
-    if (effBurst(s, chars) !== stage) continue;
+    if (effBurst(s, chars) !== stage) {continue;}
     const cd = chars[s].burstCooldownSec;
-    if (cd <= CD_SHORT) short++;
-    else if (cd <= CD_PAIR) pair++;
+    if (cd <= CD_SHORT) {short++;}
+    else if (cd <= CD_PAIR) {pair++;}
   }
   return short >= 1 || short + pair >= 2;
 }
@@ -262,10 +262,10 @@ function stageCovered(
  * 40s/60s B1 or B2 is illegal because it can't burst every Full Burst cycle.
  */
 function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
-  if (slugs.length !== 5 || new Set(slugs).size !== 5) return false;
+  if (slugs.length !== 5 || new Set(slugs).size !== 5) {return false;}
   const c: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
-  for (const s of slugs) c[effBurst(s, chars)]++;
-  if ((c['Λ'] ?? 0) < deficits(c)) return false;
+  for (const s of slugs) {c[effBurst(s, chars)]++;}
+  if ((c['Λ'] ?? 0) < deficits(c)) {return false;}
   return stageCovered(slugs, chars, 'I') && stageCovered(slugs, chars, 'II');
 }
 
@@ -284,21 +284,24 @@ function isLegal(slugs: string[], chars: Record<string, Char>): boolean {
  * effBurst has already forced the roster's only Λ (Red Hood) to III, so III is the
  * whole non-support remainder here — no separate wildcard accounting.
  */
-function canFormLegalTeam(pool: string[], chars: Record<string, Char>): boolean {
-  if (pool.length < 5) return false;
+function canFormLegalTeam(
+  pool: string[],
+  chars: Record<string, Char>
+): boolean {
+  if (pool.length < 5) {return false;}
   const slotsFor = (stage: 'I' | 'II'): number[] => {
     const cds = pool
       .filter((s) => effBurst(s, chars) === stage)
       .map((s) => chars[s].burstCooldownSec);
     const ways: number[] = [];
-    if (cds.some((c) => c <= CD_SHORT)) ways.push(1);
-    if (cds.filter((c) => c <= CD_PAIR).length >= 2) ways.push(2);
+    if (cds.some((c) => c <= CD_SHORT)) {ways.push(1);}
+    if (cds.filter((c) => c <= CD_PAIR).length >= 2) {ways.push(2);}
     return ways;
   };
   const thirds = pool.filter((s) => effBurst(s, chars) === 'III').length;
-  if (thirds < NEED.III) return false;
+  if (thirds < NEED.III) {return false;}
   for (const a of slotsFor('I'))
-    for (const b of slotsFor('II')) if (a + b + NEED.III <= 5) return true;
+    {for (const b of slotsFor('II')) {if (a + b + NEED.III <= 5) {return true;}}}
   return false;
 }
 
@@ -310,12 +313,12 @@ function canFormLegalTeam(pool: string[], chars: Record<string, Char>): boolean 
  */
 export function locksFeasible(
   locked: string[],
-  chars: Record<string, Char>,
+  chars: Record<string, Char>
 ): boolean {
-  if (locked.length > 5 || new Set(locked).size !== locked.length) return false;
+  if (locked.length > 5 || new Set(locked).size !== locked.length) {return false;}
   const c: Record<string, number> = { I: 0, II: 0, III: 0, Λ: 0 };
   for (const s of locked) {
-    if (!chars[s]) return false;
+    if (!chars[s]) {return false;}
     c[effBurst(s, chars)]++;
   }
   return deficits(c) <= (c['Λ'] ?? 0) + (5 - locked.length);
@@ -333,7 +336,7 @@ export function assignMustUse(
   mustUse: string[],
   pinnedByTeam: string[][],
   chars: Record<string, Char>,
-  teamCount: number,
+  teamCount: number
 ): { assigned: string[][]; unplaced: string[] } {
   const locked: string[][] = Array.from({ length: teamCount }, (_, t) => [
     ...(pinnedByTeam[t] ?? []),
@@ -342,21 +345,21 @@ export function assignMustUse(
   const unplaced: string[] = [];
   const seen = new Set<string>();
   for (const slug of mustUse) {
-    if (seen.has(slug) || !chars[slug]) continue;
+    if (seen.has(slug) || !chars[slug]) {continue;}
     seen.add(slug);
-    if (locked.some((team) => team.includes(slug))) continue; // already pinned
+    if (locked.some((team) => team.includes(slug))) {continue;} // already pinned
     let bestT = -1;
     let bestRoom = -1;
     for (let t = 0; t < teamCount; t++) {
-      if (locked[t].length >= 5) continue;
-      if (!locksFeasible([...locked[t], slug], chars)) continue;
+      if (locked[t].length >= 5) {continue;}
+      if (!locksFeasible([...locked[t], slug], chars)) {continue;}
       const room = 5 - locked[t].length;
       if (room > bestRoom) {
         bestRoom = room;
         bestT = t;
       }
     }
-    if (bestT < 0) unplaced.push(slug);
+    if (bestT < 0) {unplaced.push(slug);}
     else {
       locked[bestT].push(slug);
       assigned[bestT].push(slug);
@@ -412,7 +415,7 @@ export function assignAlwaysCombos(
   pinnedByTeam: string[][],
   chars: Record<string, Char>,
   teamCount: number,
-  available: (slug: string) => boolean = (s) => !!chars[s],
+  available: (slug: string) => boolean = (s) => !!chars[s]
 ): AlwaysComboAssignment {
   const pinned: string[][] = Array.from({ length: teamCount }, (_, t) => [
     ...(pinnedByTeam[t] ?? []),
@@ -426,40 +429,40 @@ export function assignAlwaysCombos(
   // never share a team.
   const occ: { I: boolean; II: boolean }[] = Array.from(
     { length: teamCount },
-    () => ({ I: false, II: false }),
+    () => ({ I: false, II: false })
   );
   const classesOf = (slugs: string[]): ('I' | 'II')[] => {
     const set = new Set<'I' | 'II'>();
     for (const s of slugs) {
       const b = effBurst(s, chars);
-      if (b === 'I' || b === 'II') set.add(b);
+      if (b === 'I' || b === 'II') {set.add(b);}
     }
     return [...set];
   };
   const conflicts = (t: number, classes: ('I' | 'II')[]): boolean =>
     classes.some((c) => occ[t][c]);
   const mark = (t: number, classes: ('I' | 'II')[]): void => {
-    for (const c of classes) occ[t][c] = true;
+    for (const c of classes) {occ[t][c] = true;}
   };
   // Most-room feasible team, preferring one with no burst-class conflict; falls
   // back to a conflicting team if that's all that fits (relax, never fail).
   const pickTeam = (
     classes: ('I' | 'II')[],
-    feasible: (t: number) => boolean,
+    feasible: (t: number) => boolean
   ): number => {
     let best = -1;
     for (const allowConflict of [false, true]) {
       let bestRoom = -1;
       for (let t = 0; t < teamCount; t++) {
-        if (!feasible(t)) continue;
-        if (!allowConflict && conflicts(t, classes)) continue;
+        if (!feasible(t)) {continue;}
+        if (!allowConflict && conflicts(t, classes)) {continue;}
         const room = 5 - pinned[t].length;
         if (room > bestRoom) {
           bestRoom = room;
           best = t;
         }
       }
-      if (best >= 0) return best;
+      if (best >= 0) {return best;}
     }
     return best;
   };
@@ -472,9 +475,9 @@ export function assignAlwaysCombos(
     ...(combos.singles ?? []),
   ];
   for (const s of userPinnedAlways) {
-    if (!avail(s)) continue;
+    if (!avail(s)) {continue;}
     const t = pinned.findIndex((team) => team.includes(s));
-    if (t >= 0) mark(t, classesOf([s]));
+    if (t >= 0) {mark(t, classesOf([s]));}
   }
 
   // Place a same-team group. If any of its units is already pinned, the rest join
@@ -489,8 +492,8 @@ export function assignAlwaysCombos(
     const homes = new Set<number>();
     uniq.forEach((s) =>
       pinned.forEach((team, t) => {
-        if (team.includes(s)) homes.add(t);
-      }),
+        if (team.includes(s)) {homes.add(t);}
+      })
     );
     if (homes.size > 1) {
       dropped.push(group); // user pins split the group → relax
@@ -502,7 +505,7 @@ export function assignAlwaysCombos(
       if (merged.length <= 5 && locksFeasible(merged, chars)) {
         pinned[t] = merged;
         mark(t, classes);
-      } else dropped.push(group);
+      } else {dropped.push(group);}
       return;
     }
     // not pinned yet: most-room feasible team, preferring no burst-class conflict
@@ -510,14 +513,14 @@ export function assignAlwaysCombos(
       const merged = [...new Set([...pinned[t], ...uniq])];
       return merged.length <= 5 && locksFeasible(merged, chars);
     });
-    if (t < 0) dropped.push(group);
+    if (t < 0) {dropped.push(group);}
     else {
       pinned[t] = [...new Set([...pinned[t], ...uniq])];
       mark(t, classes);
     }
   };
 
-  for (const pair of combos.pairs ?? []) placeGroup(pair);
+  for (const pair of combos.pairs ?? []) {placeGroup(pair);}
   for (const { anchor, choices } of combos.oneOf ?? []) {
     const partner = choices.find(avail);
     if (!avail(anchor) || partner === undefined) {
@@ -540,12 +543,12 @@ export function assignAlwaysCombos(
       mark(homeT, classes); // user-pinned single: occupy its team's burst slot
       continue;
     }
-    if (singles.includes(s)) continue;
+    if (singles.includes(s)) {continue;}
     const t = pickTeam(
       classes,
-      (t) => pinned[t].length < 5 && locksFeasible([...pinned[t], s], chars),
+      (t) => pinned[t].length < 5 && locksFeasible([...pinned[t], s], chars)
     );
-    if (t < 0) singles.push(s);
+    if (t < 0) {singles.push(s);}
     else {
       pinned[t] = [...pinned[t], s];
       mark(t, classes);
@@ -567,7 +570,7 @@ export function assignAlwaysCombos(
 export function countSynergyPairs(
   slugs: string[],
   tags: Record<string, string[]>,
-  pairs: [string, string][],
+  pairs: [string, string][]
 ): number {
   let n = 0;
   for (const [dealer, buffer] of pairs) {
@@ -575,11 +578,11 @@ export function countSynergyPairs(
     let hasBuffer = false;
     for (const s of slugs) {
       const t = tags[s];
-      if (!t) continue;
-      if (t.includes(dealer)) hasDealer = true;
-      if (t.includes(buffer)) hasBuffer = true;
+      if (!t) {continue;}
+      if (t.includes(dealer)) {hasDealer = true;}
+      if (t.includes(buffer)) {hasBuffer = true;}
     }
-    if (hasDealer && hasBuffer) n++;
+    if (hasDealer && hasBuffer) {n++;}
   }
   return n;
 }
@@ -604,8 +607,8 @@ const MAX_TEAM_ENTRIES = 5000;
 /** Deterministic JSON with recursively sorted object keys, so two configs built the
  *  same way hash identically regardless of key insertion order. */
 function stableStringify(v: unknown): string {
-  if (v === null || typeof v !== 'object') return JSON.stringify(v) ?? 'null';
-  if (Array.isArray(v)) return `[${v.map(stableStringify).join(',')}]`;
+  if (v === null || typeof v !== 'object') {return JSON.stringify(v) ?? 'null';}
+  if (Array.isArray(v)) {return `[${v.map(stableStringify).join(',')}]`;}
   const keys = Object.keys(v as Record<string, unknown>).sort();
   return `{${keys
     .map((k) => `${JSON.stringify(k)}:${stableStringify((v as any)[k])}`)
@@ -628,7 +631,7 @@ function getBundle(hash: string): CacheBundle {
   SHARED_BUNDLES.set(hash, bundle);
   while (SHARED_BUNDLES.size > MAX_BUNDLES) {
     const oldest = SHARED_BUNDLES.keys().next().value;
-    if (oldest === undefined) break;
+    if (oldest === undefined) {break;}
     SHARED_BUNDLES.delete(oldest);
   }
   return bundle;
@@ -638,7 +641,7 @@ function getBundle(hash: string): CacheBundle {
 function capMap(m: Map<unknown, unknown>, cap: number): void {
   while (m.size > cap) {
     const k = m.keys().next().value;
-    if (k === undefined) break;
+    if (k === undefined) {break;}
     m.delete(k);
   }
 }
@@ -658,7 +661,7 @@ export function makeCalc(input: TeamCalcInput) {
             cfg: input.cfg,
             loadout: input.loadout,
             loadouts: input.loadouts,
-          }),
+          })
         )
       : null;
   const meta = input.meta;
@@ -682,9 +685,9 @@ export function makeCalc(input: TeamCalcInput) {
   // score (scoreOf) is untouched. Inert when no prydwenScore is supplied.
   const SPREAD_SIGMA = 3;
   const teamMetaSum = (slugs: string[]): number => {
-    if (!prydwenScore) return 0;
+    if (!prydwenScore) {return 0;}
     let s = 0;
-    for (const u of slugs) s += prydwenScore(u);
+    for (const u of slugs) {s += prydwenScore(u);}
     return s;
   };
   const closeness = (sum: number, target: number): number =>
@@ -702,7 +705,7 @@ export function makeCalc(input: TeamCalcInput) {
   // rule keeps only satisfiers the search could actually field.
   const availTo = (s: string): boolean => !!chars[s] && !blocked.has(s);
   const together = (input.constraints?.together ?? []).filter((g) =>
-    g.every(availTo),
+    g.every(availTo)
   );
   const companions = (input.constraints?.companions ?? [])
     .filter((c) => !!chars[c.unit])
@@ -719,14 +722,14 @@ export function makeCalc(input: TeamCalcInput) {
   const constraintsOk = (slugs: string[]): boolean => {
     for (const g of together) {
       const n = g.reduce((k, s) => k + (slugs.includes(s) ? 1 : 0), 0);
-      if (n > 0 && n < g.length) return false;
+      if (n > 0 && n < g.length) {return false;}
     }
     for (const { unit, anyOf } of companions) {
       if (slugs.includes(unit) && !anyOf.some((s) => slugs.includes(s)))
-        return false;
+        {return false;}
     }
     for (const { anyOf } of requiredAny) {
-      if (!anyOf.some((s) => slugs.includes(s))) return false;
+      if (!anyOf.some((s) => slugs.includes(s))) {return false;}
     }
     return true;
   };
@@ -736,9 +739,9 @@ export function makeCalc(input: TeamCalcInput) {
   // Meta prior for a team in [0,1]: mean unit popularity, plus an exact-comp
   // bonus when the 5-unit set matches a popular ranker comp. 0 when no meta.
   const metaPrior = (slugs: string[]): number => {
-    if (!meta) return 0;
+    if (!meta) {return 0;}
     let sum = 0;
-    for (const s of slugs) sum += meta.unitScore(s);
+    for (const s of slugs) {sum += meta.unitScore(s);}
     const unitComp = slugs.length ? sum / slugs.length : 0;
     const combo = meta.compPop[[...slugs].sort().join('|')] ?? 0;
     return Math.min(1, unitComp + meta.comboWeight * combo);
@@ -777,11 +780,12 @@ export function makeCalc(input: TeamCalcInput) {
   // memoize full-team sims (keyed by ordered slugs) and solo scores so repeated
   // bestTeam calls (topTeams) and refine rounds don't re-sim the same teams. Maps
   // come from the shared bundle when opted in (item 5), else are per-instance.
-  const teamCache = bundle?.teamCache ?? new Map<string, ReturnType<typeof runSim>>();
+  const teamCache =
+    bundle?.teamCache ?? new Map<string, ReturnType<typeof runSim>>();
   const simTeam = (slugs: string[]) => {
     const key = slugs.join(',');
     const hit = teamCache.get(key);
-    if (hit) return hit;
+    if (hit) {return hit;}
     const cs = slugs.map((s) => chars[s]);
     const prepared = prepareTeam(cs, slugs.map(unitLoadout), deps);
     const r = runSim(cs, mult, { ...input.cfg, slugs } as SimConfig, prepared);
@@ -820,16 +824,17 @@ export function makeCalc(input: TeamCalcInput) {
   // Batch-evaluate teams to TeamResults, memoized by ordered slugs (perf plan 1b).
   // Cache hits are served immediately; misses go to `input.evaluator` (a worker
   // pool) when present, else run in-process. Order-preserving; null = sim error.
-  const resultCache = bundle?.resultCache ?? new Map<string, TeamResult | null>();
+  const resultCache =
+    bundle?.resultCache ?? new Map<string, TeamResult | null>();
   const evalTeams = async (
-    teams: string[][],
+    teams: string[][]
   ): Promise<(TeamResult | null)[]> => {
     const out: (TeamResult | null)[] = new Array(teams.length);
     const missTeams: string[][] = [];
     const missIdx: number[] = [];
     teams.forEach((t, i) => {
       const k = t.join(',');
-      if (resultCache.has(k)) out[i] = resultCache.get(k)!;
+      if (resultCache.has(k)) {out[i] = resultCache.get(k)!;}
       else {
         missTeams.push(t);
         missIdx.push(i);
@@ -859,7 +864,7 @@ export function makeCalc(input: TeamCalcInput) {
   const soloCache = bundle?.soloCache ?? new Map<string, number>();
   const soloWarned = new Set<string>();
   const warnSolo = (slug: string): void => {
-    if (soloWarned.has(slug)) return;
+    if (soloWarned.has(slug)) {return;}
     soloWarned.add(slug);
     console.warn(`teamcalc: solo sim failed for ${slug} — score 0`);
   };
@@ -867,16 +872,16 @@ export function makeCalc(input: TeamCalcInput) {
   // so buildPool/canonicalFocus can read them synchronously without blocking.
   const warmSolo = async (slugs: string[]): Promise<void> => {
     const miss = slugs.filter((s) => !soloCache.has(s) && chars[s]);
-    if (!miss.length) return;
+    if (!miss.length) {return;}
     const results = await evalTeams(miss.map((s) => [s, s, s, s, s]));
     results.forEach((r, i) => {
-      if (!r) warnSolo(miss[i]);
+      if (!r) {warnSolo(miss[i]);}
       soloCache.set(miss[i], r ? r.units[0].totalDamage : 0);
     });
   };
   const soloScore = (slug: string): number => {
     const hit = soloCache.get(slug);
-    if (hit !== undefined) return hit;
+    if (hit !== undefined) {return hit;}
     let v = 0;
     try {
       v = simTeam([slug, slug, slug, slug, slug]).units[0].totalDamage;
@@ -897,7 +902,7 @@ export function makeCalc(input: TeamCalcInput) {
     let best: string | undefined;
     let bestV = -Infinity;
     for (const s of set) {
-      if (!isChargeWeapon(chars, s)) continue;
+      if (!isChargeWeapon(chars, s)) {continue;}
       const v = soloScore(s);
       if (v > bestV) {
         bestV = v;
@@ -910,9 +915,7 @@ export function makeCalc(input: TeamCalcInput) {
   // before simming, so every permutation of a set collapses to ONE cache entry and
   // the focused unit is deterministic. The search uses this everywhere (refine,
   // seed comps); warmSolo bypasses it (5-copy solo arrays are already canonical).
-  const evalSets = async (
-    sets: string[][],
-  ): Promise<(TeamResult | null)[]> =>
+  const evalSets = async (sets: string[][]): Promise<(TeamResult | null)[]> =>
     evalTeams(sets.map((s) => canonicalTeamOrder(s, chars, canonicalFocus(s))));
   // Final polish on a WINNING team only (≤5 sims): try each charge unit as the
   // camera focus (+ a no-charge-focus arrangement), keep the highest-scoring, and
@@ -922,14 +925,14 @@ export function makeCalc(input: TeamCalcInput) {
   const focusFinalize = async (team: TeamResult): Promise<TeamResult> => {
     const set = team.units.map((u) => u.slug);
     const charge = set.filter((s) => isChargeWeapon(chars, s));
-    if (!charge.length) return team; // focus inert — canonical order already final
+    if (!charge.length) {return team;} // focus inert — canonical order already final
     const focuses: (string | undefined)[] = [...charge, undefined];
     const arrs = focuses.map((f) => canonicalTeamOrder(set, chars, f));
     const results = await evalTeams(arrs);
     let best = team;
     let bestScore = scoreOf(team);
     for (const r of results) {
-      if (!r) continue;
+      if (!r) {continue;}
       const sc = scoreOf(r);
       if (sc > bestScore) {
         best = r;
@@ -951,7 +954,7 @@ export function makeCalc(input: TeamCalcInput) {
       .map((s) => `${s}:${meta ? meta.unitScore(s) : ''}`)
       .join(',');
     const hit = valueTables.get(key);
-    if (hit) return hit;
+    if (hit) {return hit;}
     const vt = await buildValueTable({
       pool,
       effBurst: eb,
@@ -975,7 +978,7 @@ export function makeCalc(input: TeamCalcInput) {
     pool: string[],
     vt: ValueTable,
     mustInclude: string[],
-    seedTarget?: number,
+    seedTarget?: number
   ): string[][] => {
     const poolOf = (b: string) => pool.filter((s) => eb(s) === b);
     const b1s = poolOf('I');
@@ -986,7 +989,7 @@ export function makeCalc(input: TeamCalcInput) {
     for (const s of mustInclude) {
       const b = eb(s);
       const dim = b === 'I' ? b1s : b === 'II' ? b2s : b3s;
-      if (!dim.includes(s)) dim.push(s);
+      if (!dim.includes(s)) {dim.push(s);}
     }
     return enumerateTeams({
       poolB1: b1s,
@@ -1012,7 +1015,7 @@ export function makeCalc(input: TeamCalcInput) {
 
   const buildPool = (extraExclude: Set<string>): string[] => {
     const avail = Object.keys(chars).filter(
-      (s) => !blocked.has(s) && !extraExclude.has(s),
+      (s) => !blocked.has(s) && !extraExclude.has(s)
     );
     const byBurst = (b: string) => avail.filter((s) => eb(s) === b);
     // Adaptive B3 prune (item 3b): keep the top-`poolB3` by rank PLUS any B3
@@ -1030,7 +1033,7 @@ export function makeCalc(input: TeamCalcInput) {
     if (meta) {
       const inPool = new Set(topB3);
       for (const s of byBurst('III')) {
-        if (!inPool.has(s) && meta.unitScore(s) >= 0.15) topB3.push(s);
+        if (!inPool.has(s) && meta.unitScore(s) >= 0.15) {topB3.push(s);}
       }
     }
     // keep all supports + all Λ (few, often enablers or flex DPS)
@@ -1048,18 +1051,18 @@ export function makeCalc(input: TeamCalcInput) {
   const seedTeam = (
     pool: string[],
     mustInclude?: string[],
-    target?: number,
+    target?: number
   ): string[] => {
     const score = new Map(pool.map((s) => [s, soloScore(s)]));
     const ranked = [...pool].sort(
-      (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0),
+      (a, b) => (score.get(b) ?? 0) - (score.get(a) ?? 0)
     );
     const team: string[] = [];
     const take = (pred: (s: string) => boolean): string | undefined => {
       // No spread target → unchanged: highest solo score matching the role.
       if (target === undefined || !prydwenScore) {
         const s = ranked.find((x) => !team.includes(x) && pred(x));
-        if (s) team.push(s);
+        if (s) {team.push(s);}
         return s;
       }
       // Spread-biased pick: solo score weighted by closeness of the resulting
@@ -1067,7 +1070,7 @@ export function makeCalc(input: TeamCalcInput) {
       let bestS: string | undefined;
       let bestK = -Infinity;
       for (const x of pool) {
-        if (team.includes(x) || !pred(x)) continue;
+        if (team.includes(x) || !pred(x)) {continue;}
         const k =
           (score.get(x) ?? 0) * closeness(teamMetaSum([...team, x]), target);
         if (k > bestK) {
@@ -1075,7 +1078,7 @@ export function makeCalc(input: TeamCalcInput) {
           bestS = x;
         }
       }
-      if (bestS) team.push(bestS);
+      if (bestS) {team.push(bestS);}
       return bestS;
     };
     const isB = (b: string) => (s: string) => eb(s) === b || eb(s) === 'Λ';
@@ -1086,27 +1089,27 @@ export function makeCalc(input: TeamCalcInput) {
     // no full cover fits the remaining slots, takes a best-effort single caster
     // and lets isLegal reject the seed rather than emit a gapped rotation.
     const coverStage = (stage: 'I' | 'II') => {
-      if (team.length >= 5 || stageCovered(team, chars, stage)) return;
+      if (team.length >= 5 || stageCovered(team, chars, stage)) {return;}
       const cands = ranked.filter((s) => !team.includes(s) && eb(s) === stage);
       const short = cands.filter((s) => chars[s].burstCooldownSec <= CD_SHORT);
       const pair = cands.filter((s) => chars[s].burstCooldownSec <= CD_PAIR);
-      if (short.length) team.push(short[0]);
+      if (short.length) {team.push(short[0]);}
       else if (pair.length >= 2 && team.length + 2 <= 5)
-        team.push(pair[0], pair[1]);
-      else if (pair.length && team.length + 1 <= 5) team.push(pair[0]);
-      else if (cands.length && team.length + 1 <= 5) team.push(cands[0]);
+        {team.push(pair[0], pair[1]);}
+      else if (pair.length && team.length + 1 <= 5) {team.push(pair[0]);}
+      else if (cands.length && team.length + 1 <= 5) {team.push(cands[0]);}
     };
     const locked = (mustInclude ?? []).filter(
-      (s, i, a) => chars[s] && a.indexOf(s) === i,
+      (s, i, a) => chars[s] && a.indexOf(s) === i
     );
-    for (const s of locked) team.push(s);
+    for (const s of locked) {team.push(s);}
     while (countStage('III') < NEED.III && team.length < 5) {
-      if (!take(isB('III'))) break;
+      if (!take(isB('III'))) {break;}
     }
     coverStage('I');
     coverStage('II');
     while (team.length < 5) {
-      if (!take(() => true)) break; // flex
+      if (!take(() => true)) {break;} // flex
     }
     // Boss-weakness rule: if no advantaged (weakness-element) unit made the team,
     // swap the least-critical non-locked slot (flex first) for an advantaged unit
@@ -1119,12 +1122,12 @@ export function makeCalc(input: TeamCalcInput) {
     // B1 then fits the B1 slot), so search candidates per slot rather than give up.
     if (reqEl && !team.some((s) => chars[s].element === reqEl)) {
       const want = ranked.filter(
-        (s) => !team.includes(s) && chars[s].element === reqEl,
+        (s) => !team.includes(s) && chars[s].element === reqEl
       );
       if (want.length) {
         let swapped = false;
         for (let i = team.length - 1; i >= 0 && !swapped; i--) {
-          if (locked.includes(team[i])) continue;
+          if (locked.includes(team[i])) {continue;}
           const orig = team[i];
           for (const w of want) {
             team[i] = w;
@@ -1133,7 +1136,7 @@ export function makeCalc(input: TeamCalcInput) {
               break;
             }
           }
-          if (!swapped) team[i] = orig;
+          if (!swapped) {team[i] = orig;}
         }
       }
     }
@@ -1150,7 +1153,7 @@ export function makeCalc(input: TeamCalcInput) {
     start: string[],
     pool: string[],
     locked: Set<string>,
-    scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number,
+    scoreFn?: (r: { teamDamage: number; units: { slug: string }[] }) => number
   ): Promise<TeamResult> => {
     const score = scoreFn ?? scoreOf;
     let team = start;
@@ -1161,23 +1164,23 @@ export function makeCalc(input: TeamCalcInput) {
     for (let round = 0; round < rounds; round++) {
       let improved = false;
       for (let i = 0; i < 5; i++) {
-        if (locked.has(team[i])) continue;
+        if (locked.has(team[i])) {continue;}
         const slotBurst = eb(team[i]);
         // collect every legal same-class candidate for this slot, then batch-sim
         const cands: string[][] = [];
         for (const alt of pool) {
-          if (team.includes(alt)) continue;
+          if (team.includes(alt)) {continue;}
           // role-restrict: only swap for the same burst class (or Λ either way)
           // — keeps the search cheap without losing meaningful moves
           const altBurst = eb(alt);
           if (altBurst !== slotBurst && altBurst !== 'Λ' && slotBurst !== 'Λ')
-            continue;
+            {continue;}
           const cand = team.slice();
           cand[i] = alt;
-          if (!legal(cand)) continue;
+          if (!legal(cand)) {continue;}
           cands.push(cand);
         }
-        if (!cands.length) continue;
+        if (!cands.length) {continue;}
         const results = await evalSets(cands);
         // argmax over improvements; first candidate (pool order) wins ties
         let pickScore = bestScore;
@@ -1185,7 +1188,7 @@ export function makeCalc(input: TeamCalcInput) {
         let pickTeam: string[] | null = null;
         for (let k = 0; k < cands.length; k++) {
           const r = results[k];
-          if (!r) continue;
+          if (!r) {continue;}
           const sc = score(r);
           if (sc > pickScore) {
             pickScore = sc;
@@ -1200,7 +1203,7 @@ export function makeCalc(input: TeamCalcInput) {
           improved = true;
         }
       }
-      if (!improved) break;
+      if (!improved) {break;}
     }
     return best;
   };
@@ -1232,12 +1235,12 @@ export function makeCalc(input: TeamCalcInput) {
     // don't-own exclusion), but a unit already used by another team (exclude)
     // can't be locked again. Dedupe + drop unknowns.
     const mustInclude = (opts?.mustInclude ?? []).filter(
-      (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i,
+      (s, i, a) => chars[s] && !exclude.has(s) && a.indexOf(s) === i
     );
     // Warm every candidate's solo score in ONE batch first, so buildPool's B3
     // prune + seedTeam's ranking read soloCache synchronously (perf plan 1b).
     await warmSolo(
-      Object.keys(chars).filter((s) => !blocked.has(s) && !exclude.has(s)),
+      Object.keys(chars).filter((s) => !blocked.has(s) && !exclude.has(s))
     );
     const pool = buildPool(exclude);
     const locked = new Set(mustInclude);
@@ -1259,26 +1262,24 @@ export function makeCalc(input: TeamCalcInput) {
         t.length === 5 &&
         !t.some(
           (s) =>
-            !chars[s] ||
-            (blocked.has(s) && !locked.has(s)) ||
-            exclude.has(s),
+            !chars[s] || (blocked.has(s) && !locked.has(s)) || exclude.has(s)
         ) &&
         mustInclude.every((s) => t.includes(s)) &&
-        legal(t),
+        legal(t)
     );
     const key = (t: string[]) => [...t].sort().join(',');
     const starts: string[][] = [];
     const pushStart = (t: string[]) => {
-      if (!starts.some((s) => key(s) === key(t))) starts.push(t);
+      if (!starts.some((s) => key(s) === key(t))) {starts.push(t);}
     };
-    if (opts?.seedsOnly && !extraStarts.length) return null;
+    if (opts?.seedsOnly && !extraStarts.length) {return null;}
     const cands = opts?.seedsOnly
       ? []
       : enumerateCandidates(
           pool,
           await getValueTable(pool),
           mustInclude,
-          opts?.seedTarget,
+          opts?.seedTarget
         );
     if (cands.length) {
       // SHAPE STRATIFICATION: refine is role-restricted (a B2 slot only swaps
@@ -1313,12 +1314,12 @@ export function makeCalc(input: TeamCalcInput) {
       // 3-B3 team was outside the proxy's top-150).
       for (const n of [1, 2]) {
         const top = ranked.find((x) => shapeOf(x.set) === n);
-        if (top) pushStart(top.set);
+        if (top) {pushStart(top.set);}
       }
       const legacySeed = seedTeam(pool, mustInclude, opts?.seedTarget);
-      if (legal(legacySeed)) pushStart(legacySeed);
+      if (legal(legacySeed)) {pushStart(legacySeed);}
       for (const { set } of ranked) {
-        if (starts.length >= ENUM_REFINE_TOP) break;
+        if (starts.length >= ENUM_REFINE_TOP) {break;}
         pushStart(set);
       }
     }
@@ -1337,9 +1338,9 @@ export function makeCalc(input: TeamCalcInput) {
       const seeded = await evalSets(extraStarts);
       const climb: string[][] = [];
       for (const [k, r] of seeded.entries()) {
-        if (!r) continue;
+        if (!r) {continue;}
         const sc = score(r);
-        if (sc >= POLISH_SEED_FRAC * floor) climb.push(extraStarts[k]);
+        if (sc >= POLISH_SEED_FRAC * floor) {climb.push(extraStarts[k]);}
         if (sc > bestScore) {
           best = r;
           bestScore = sc;
@@ -1356,12 +1357,12 @@ export function makeCalc(input: TeamCalcInput) {
     }
     // Seed-only polish: the caller compares against its incumbent, and the
     // fallback seed + meta comps are already folded into it.
-    if (opts?.seedsOnly) return best && focusFinalize(best);
+    if (opts?.seedsOnly) {return best && focusFinalize(best);}
     // Fallback: locks that fit no enumerated shape (e.g. a pinned double-B1
     // team) or every candidate sim failing → the legacy role-fill seed.
     if (!best) {
       const seed = seedTeam(pool, mustInclude, opts?.seedTarget);
-      if (!legal(seed)) return null; // e.g. everything useful blocked
+      if (!legal(seed)) {return null;} // e.g. everything useful blocked
       best = await refine(seed, pool, locked, score);
       bestScore = score(best);
     }
@@ -1373,12 +1374,12 @@ export function makeCalc(input: TeamCalcInput) {
           comp.length === 5 &&
           !comp.some((s) => !chars[s] || blocked.has(s) || exclude.has(s)) &&
           !mustInclude.some((s) => !comp.includes(s)) &&
-          legal(comp),
+          legal(comp)
       );
       if (comps.length) {
         const results = await evalSets(comps);
         for (const r of results) {
-          if (!r) continue;
+          if (!r) {continue;}
           const sc = score(r);
           if (sc > bestScore) {
             best = r;
@@ -1432,7 +1433,7 @@ export function makeCalc(input: TeamCalcInput) {
         spreadTargets?: number[];
         /** cross-team polish passes (default POLISH_PASSES); 0 = greedy only */
         polishPasses?: number;
-      },
+      }
     ): Promise<TeamResult[]> => {
       const pinned = opts?.pinnedByTeam ?? [];
       const assigned = assignMustUse(opts?.mustUse ?? [], pinned, chars, n);
@@ -1443,12 +1444,12 @@ export function makeCalc(input: TeamCalcInput) {
       const targets = opts?.spreadTargets;
       // team i's ranking score (spread shaping biases it toward its own target)
       const scoreFnAt = (
-        i: number,
+        i: number
       ):
         | ((r: { teamDamage: number; units: { slug: string }[] }) => number)
         | undefined => {
         const target = targets?.[i];
-        if (target === undefined || !prydwenScore) return undefined;
+        if (target === undefined || !prydwenScore) {return undefined;}
         return (r) =>
           scoreOf(r) *
           closeness(teamMetaSum(r.units.map((u) => u.slug)), target);
@@ -1469,7 +1470,7 @@ export function makeCalc(input: TeamCalcInput) {
       const setKey = (t: string[]) => [...t].sort().join(',');
       const build = async (
         seeds: string[][],
-        incumbents?: TeamResult[],
+        incumbents?: TeamResult[]
       ): Promise<TeamResult[]> => {
         const used = new Set<string>();
         const out: TeamResult[] = [];
@@ -1477,14 +1478,16 @@ export function makeCalc(input: TeamCalcInput) {
         for (let i = 0; i < n; i++) {
           const exclude = new Set(used);
           for (let j = i + 1; j < n; j++)
-            for (const s of reserved[j]) exclude.add(s);
+            {for (const s of reserved[j]) {exclude.add(s);}}
           const inc = prefixIntact ? incumbents?.[i] : undefined;
           const t = await bestTeam({
             exclude,
             mustInclude: reserved[i],
             scoreFn: scoreFnAt(i),
             seedTarget:
-              targets?.[i] !== undefined && prydwenScore ? targets[i] : undefined,
+              targets?.[i] !== undefined && prydwenScore
+                ? targets[i]
+                : undefined,
             extraSeeds: seeds,
             seedsOnly: !!inc,
             seedFloor: inc ? scoreAt(i, inc) : undefined,
@@ -1492,11 +1495,11 @@ export function makeCalc(input: TeamCalcInput) {
           // ties keep the incumbent (stable output when nothing improves)
           const pick =
             inc && (!t || scoreAt(i, t) <= scoreAt(i, inc)) ? inc : t;
-          if (!pick) break;
+          if (!pick) {break;}
           out.push(pick);
           pick.slugs.forEach((s) => used.add(s));
           if (prefixIntact && setKey(pick.slugs) !== setKey(inc?.slugs ?? []))
-            prefixIntact = false;
+            {prefixIntact = false;}
         }
         return out;
       };
@@ -1526,7 +1529,7 @@ export function makeCalc(input: TeamCalcInput) {
        */
       const eligible = Object.keys(chars).filter((s) => !blocked.has(s));
       const repairCount = async (
-        cur: TeamResult[],
+        cur: TeamResult[]
       ): Promise<TeamResult[] | null> => {
         // The recovered team lands in the next empty ROW, so it inherits that row's
         // reservations exactly as build() would: row `k`'s pins are its mustInclude,
@@ -1536,12 +1539,10 @@ export function makeCalc(input: TeamCalcInput) {
         const rowPins = reserved[k] ?? [];
         const laterPins = new Set(reserved.slice(k + 1).flat());
         const used = new Set(cur.flatMap((t) => t.slugs));
-        const spare = eligible.filter(
-          (s) => !used.has(s) && !laterPins.has(s),
-        );
+        const spare = eligible.filter((s) => !used.has(s) && !laterPins.has(s));
         // spare already failed to yield a team (that is why build() stopped), so a
         // repair is only conceivable if a swap can change that.
-        if (spare.length < 5) return null;
+        if (spare.length < 5) {return null;}
         // Try the CHEAPEST donation first: give up the lowest solo value that
         // unblocks the leftovers, take the highest back. Solo value is already
         // warmed + cached, so the ordering is free, and it lands on supports
@@ -1555,13 +1556,13 @@ export function makeCalc(input: TeamCalcInput) {
           .sort((a, b) => cheapest(b, a));
         for (const [i, t] of cur.entries()) {
           for (const u of [...t.slugs].sort(cheapest)) {
-            if (reserved[i].includes(u)) continue;
+            if (reserved[i].includes(u)) {continue;}
             const kept = t.slugs.filter((s) => s !== u);
             for (const v of takeBack) {
               const donor = [...kept, v];
-              if (!legal(donor)) continue;
+              if (!legal(donor)) {continue;}
               const rest = spare.filter((s) => s !== v).concat(u);
-              if (!canFormLegalTeam(rest, chars)) continue;
+              if (!canFormLegalTeam(rest, chars)) {continue;}
               // Realize it with the real search: the recovered team is built from
               // `rest` proper (refined + scored like any other), and the donor team
               // is re-simmed so its score reflects the unit it gave up.
@@ -1574,9 +1575,9 @@ export function makeCalc(input: TeamCalcInput) {
                     ? targets[k]
                     : undefined,
               });
-              if (!recovered) continue;
+              if (!recovered) {continue;}
               const donorRes = (await evalSets([donor]))[0];
-              if (!donorRes) continue;
+              if (!donorRes) {continue;}
               return [
                 ...cur.slice(0, i),
                 await focusFinalize(donorRes),
@@ -1596,13 +1597,13 @@ export function makeCalc(input: TeamCalcInput) {
       const passes = opts?.polishPasses ?? POLISH_PASSES;
       while (passes && roster.length && roster.length < n) {
         const repaired = await repairCount(roster);
-        if (!repaired) break;
+        if (!repaired) {break;}
         roster = repaired;
       }
       for (let p = 0; p < passes && roster.length; p++) {
         const cand = await build(
           roster.map((t) => t.slugs),
-          roster,
+          roster
         );
         // Lexicographic (team COUNT, then total): a pass that FIELDS MORE TEAMS wins
         // outright, because a roster that leaves 5 units on the bench is worse than
@@ -1616,7 +1617,7 @@ export function makeCalc(input: TeamCalcInput) {
           (cand.length === roster.length &&
             rosterScore(cand) <= rosterScore(roster))
         )
-          break;
+          {break;}
         roster = cand;
       }
 
@@ -1631,10 +1632,10 @@ export function makeCalc(input: TeamCalcInput) {
     },
     /** Best team built around a pinned unit + that unit's line in it. */
     characterAnalysis: async (
-      slug: string,
+      slug: string
     ): Promise<{ team: TeamResult; unit: TeamUnit } | null> => {
       const team = await bestTeam({ mustInclude: [slug] });
-      if (!team) return null;
+      if (!team) {return null;}
       const unit = team.units.find((u) => u.slug === slug)!;
       return { team, unit };
     },

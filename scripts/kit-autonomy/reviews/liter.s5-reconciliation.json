@@ -10,14 +10,62 @@
   "verdict": "NO-REAL-GOTCHA",
   "rootCause": "The driver wraps BOTH ladders (the S1-block-A burstCdr ladder and the S1-block-B buff ladder) inside a {kind:'escalating', steps:[...]} effect. The 'escalating' union arm in types.ts is commented '// Liter-style \"Once:/Twice:/…\"' — a genuine target-naming line that the de-contamination protocol MUST strip from this unit's blind schema. The blind writer therefore never learned the 'escalating' kind exists, and its override traversal helpers (blocksOf/eachBlock/eachEffect) iterate ONLY top-level block.effects and never descend into e.steps. Every STRUCTURAL assertion that searches top-level effects for burstCdr/buff finds 0 carriers, and every patch-counterfactual that filters/zeroes top-level burstCdr/buff effects is a NO-OP (the escalating wrapper is left untouched), so the patched run is byte-identical to base and the strict-inequality assertions tie.",
   "failureClassification": [
-    { "n": 1, "test": "s1-A: modelled as burstCdr on fullBurstEnter targeting all allies", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock collects blocks whose TOP-LEVEL effects include kind==='burstCdr'; the burstCdr lives in escalating.steps, so 0 carriers found. Driver override IS burstCdr-on-fullBurstEnter-allies (nested in escalating.steps) — confirmed by driver green test + S2b." },
-    { "n": 2, "test": "s1-A: uses only kit-ladder magnitudes, not once-per-battle", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachEffect finds no top-level burstCdr → secs[] empty → 0. Driver's nested seconds are exactly 2.34/2.7/3.17." },
-    { "n": 3, "test": "s1-A: stripping CDR costs Full Bursts", "error": "expected 11 > 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovNoCdr filters top-level effects kind!=='burstCdr'; the escalating wrapper is kept, so nothing is removed → rNoCdr ≡ base → 11==11 tie. The CDR was never actually stripped." },
-    { "n": 4, "test": "s1-A: reaches teammates, not self alone", "error": "expected 11 < 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovCdrSelfOnly retargets blocks whose top-level effects include burstCdr; never true (nested) → patch no-op → rCdrSelf ≡ base → tie." },
-    { "n": 5, "test": "s1-B: keyed to owner's own burstCast not fullBurstEnter", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock searches top-level effects for kind==='buff' with the ladder stats; the buffs are nested in escalating.steps → 0 carriers. The blind test's OWN event-stream assertions confirm burstCast timing behaviourally (tier 1 every cast / tier 2 from cast 2 / tier 3 from cast 3 all PASS)." },
-    { "n": 6, "test": "s1-B: tier-3 ATK is a plain % that moves teammate damage", "error": "expected 916908652.208 < 916908652.208 (identical)", "class": "escalating-redaction artifact (no-op patch)", "why": "ovTierAtkZero zeroes top-level buff atkPct~14.42; nested → never found → rTierZero ≡ base → identical carry total. Within the same test, expect(value).toBeCloseTo(14.42) PASSES and casterAtkPct count is 0 (plain %, not caster-flat) — the buff IS a faithful plain-percentage atkPct 14.42; only the damage-differential line ties because the patch is a no-op." },
-    { "n": 7, "test": "s1-B: all three tiers are second-based windows", "error": "expected null to be undefined", "class": "event-shape guess", "why": "expect(e.durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs. The companion assertion Number.isFinite(e.expiresFrame) holds, and the burst 'permanent encoding over-credits' test PASSES — the 5s time-based window IS real." },
-    { "n": 8, "test": "burst: applies ATK 66% once per cast to every ally, plain %", "error": "expected null to be undefined", "class": "event-shape guess", "why": "Same durationShots null-vs-undefined. All OTHER assertions in this test PASS: burstAtkEvents.length===ammoEvents.length (same cast), value≈66, targets===teamSize, includes literIdx. The burst 66% ATK is faithful." }
+    {
+      "n": 1,
+      "test": "s1-A: modelled as burstCdr on fullBurstEnter targeting all allies",
+      "error": "expected 0 > 0",
+      "class": "escalating-redaction artifact",
+      "why": "eachBlock collects blocks whose TOP-LEVEL effects include kind==='burstCdr'; the burstCdr lives in escalating.steps, so 0 carriers found. Driver override IS burstCdr-on-fullBurstEnter-allies (nested in escalating.steps) — confirmed by driver green test + S2b."
+    },
+    {
+      "n": 2,
+      "test": "s1-A: uses only kit-ladder magnitudes, not once-per-battle",
+      "error": "expected 0 > 0",
+      "class": "escalating-redaction artifact",
+      "why": "eachEffect finds no top-level burstCdr → secs[] empty → 0. Driver's nested seconds are exactly 2.34/2.7/3.17."
+    },
+    {
+      "n": 3,
+      "test": "s1-A: stripping CDR costs Full Bursts",
+      "error": "expected 11 > 11",
+      "class": "escalating-redaction artifact (no-op patch)",
+      "why": "ovNoCdr filters top-level effects kind!=='burstCdr'; the escalating wrapper is kept, so nothing is removed → rNoCdr ≡ base → 11==11 tie. The CDR was never actually stripped."
+    },
+    {
+      "n": 4,
+      "test": "s1-A: reaches teammates, not self alone",
+      "error": "expected 11 < 11",
+      "class": "escalating-redaction artifact (no-op patch)",
+      "why": "ovCdrSelfOnly retargets blocks whose top-level effects include burstCdr; never true (nested) → patch no-op → rCdrSelf ≡ base → tie."
+    },
+    {
+      "n": 5,
+      "test": "s1-B: keyed to owner's own burstCast not fullBurstEnter",
+      "error": "expected 0 > 0",
+      "class": "escalating-redaction artifact",
+      "why": "eachBlock searches top-level effects for kind==='buff' with the ladder stats; the buffs are nested in escalating.steps → 0 carriers. The blind test's OWN event-stream assertions confirm burstCast timing behaviourally (tier 1 every cast / tier 2 from cast 2 / tier 3 from cast 3 all PASS)."
+    },
+    {
+      "n": 6,
+      "test": "s1-B: tier-3 ATK is a plain % that moves teammate damage",
+      "error": "expected 916908652.208 < 916908652.208 (identical)",
+      "class": "escalating-redaction artifact (no-op patch)",
+      "why": "ovTierAtkZero zeroes top-level buff atkPct~14.42; nested → never found → rTierZero ≡ base → identical carry total. Within the same test, expect(value).toBeCloseTo(14.42) PASSES and casterAtkPct count is 0 (plain %, not caster-flat) — the buff IS a faithful plain-percentage atkPct 14.42; only the damage-differential line ties because the patch is a no-op."
+    },
+    {
+      "n": 7,
+      "test": "s1-B: all three tiers are second-based windows",
+      "error": "expected null to be undefined",
+      "class": "event-shape guess",
+      "why": "expect(e.durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs. The companion assertion Number.isFinite(e.expiresFrame) holds, and the burst 'permanent encoding over-credits' test PASSES — the 5s time-based window IS real."
+    },
+    {
+      "n": 8,
+      "test": "burst: applies ATK 66% once per cast to every ally, plain %",
+      "error": "expected null to be undefined",
+      "class": "event-shape guess",
+      "why": "Same durationShots null-vs-undefined. All OTHER assertions in this test PASS: burstAtkEvents.length===ammoEvents.length (same cast), value≈66, targets===teamSize, includes literIdx. The burst 66% ATK is faithful."
+    }
   ],
   "corroboratingPasses": [
     "fixture sanity (3 guards): event sink wired; liter casts ≥3; team FB ≥3",

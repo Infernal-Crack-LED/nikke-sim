@@ -8,7 +8,10 @@
   "video": "docs/probes/ar-sg-smg/drake sg.MP4 (1206x2622 portrait + rotation=90 -> 2622x1206 landscape, 60fps, 200.3s)",
   "date": "2026-07-15",
   "clock": "fightClock = videoSec - 7",
-  "reuses": ["docs/probe-data/sg-pellet-landing.json (popup-count landing fractions)", "docs/probe-data/coreband2-drake-sg.json (popups/shot per band, red-VFX confound characterization)"],
+  "reuses": [
+    "docs/probe-data/sg-pellet-landing.json (popup-count landing fractions)",
+    "docs/probe-data/coreband2-drake-sg.json (popups/shot per band, red-VFX confound characterization)"
+  ],
 
   "preRegisteredProtocol": {
     "impact_numerator": "distinct WHITE/bright round hit-spark burst ON the boss body at a pellet landing point. EXCLUDED: red spider-lily VFX blooms (star/radial red, thrown at all ranges), the persistent pulsing red core gem at crosshair, orange muzzle/impact fire glints and trailing debris, and pellet TRACER lines.",
@@ -31,45 +34,80 @@
 
   "bands": {
     "mid": {
-      "fightClockRange": [0, 33], "videoWindow": [7, 40],
-      "bossDistance": "medium (center)", "pelletValueWhite": 25672,
-      "sampleWindows": ["v19-21 (f_004 shot)"], "shotsSampled": 1,
-      "impactsPerShot": "5-6", "numbersPerShot": "~6",
-      "dropout": 1.0, "dropoutRange": [0.9, 1.2],
+      "fightClockRange": [0, 33],
+      "videoWindow": [7, 40],
+      "bossDistance": "medium (center)",
+      "pelletValueWhite": 25672,
+      "sampleWindows": ["v19-21 (f_004 shot)"],
+      "shotsSampled": 1,
+      "impactsPerShot": "5-6",
+      "numbersPerShot": "~6",
+      "dropout": 1.0,
+      "dropoutRange": [0.9, 1.2],
       "note": "Sparks resolve as ~5-6 distinct white bursts; number count ~6 matches coreband2 (6.0/shot). Impacts ~= numbers."
     },
     "near": {
-      "fightClockRange": [[33, 70], [144, 176]], "videoWindow": [[40, 77], [151, 183]],
-      "bossDistance": "close/large (right); self-burst FB (values 33374)", "pelletValueWhite": 33374,
-      "sampleWindows": ["v52-53 (n_025 isolated shot, cleanest)", "v160-161.5 (n2_018 + n2_025 shots)"], "shotsSampled": 3,
-      "impactsPerShot": "5-6", "numbersPerShot": "~6 (+1 red 559046 core)",
-      "dropout": 1.0, "dropoutRange": [0.9, 1.2],
+      "fightClockRange": [
+        [33, 70],
+        [144, 176]
+      ],
+      "videoWindow": [
+        [40, 77],
+        [151, 183]
+      ],
+      "bossDistance": "close/large (right); self-burst FB (values 33374)",
+      "pelletValueWhite": 33374,
+      "sampleWindows": [
+        "v52-53 (n_025 isolated shot, cleanest)",
+        "v160-161.5 (n2_018 + n2_025 shots)"
+      ],
+      "shotsSampled": 3,
+      "impactsPerShot": "5-6",
+      "numbersPerShot": "~6 (+1 red 559046 core)",
+      "dropout": 1.0,
+      "dropoutRange": [0.9, 1.2],
       "note": "BEST band. n_025 window is a fully isolated single shot (ammo held 005 for 24 frames, only the red core pulse, then 005->004 with a fresh spark cluster developing n_026-040 and fading n_043). Max simultaneous distinct white sparks ~5-6; distinct white numbers ~5-6. NOT the ~9 sparks that dropout ~1.47 would require."
     },
     "far": {
-      "fightClockRange": [70, 106], "videoWindow": [77, 113],
-      "bossDistance": "distant/small (center); smoke + frequent reloading", "pelletValueWhite": 25672,
-      "sampleWindows": ["v84-86 (fr_019 shot, after a reload)"], "shotsSampled": 1,
-      "impactsPerShot": "4-6 (tiny cluster, +/-2-3)", "numbersPerShot": "~5-6",
-      "dropout": 1.0, "dropoutRange": [0.8, 1.2],
+      "fightClockRange": [70, 106],
+      "videoWindow": [77, 113],
+      "bossDistance": "distant/small (center); smoke + frequent reloading",
+      "pelletValueWhite": 25672,
+      "sampleWindows": ["v84-86 (fr_019 shot, after a reload)"],
+      "shotsSampled": 1,
+      "impactsPerShot": "4-6 (tiny cluster, +/-2-3)",
+      "numbersPerShot": "~5-6",
+      "dropout": 1.0,
+      "dropoutRange": [0.8, 1.2],
       "note": "Marginal: boss small + smoke. Spark cluster is a tiny white dot group (~4-6) roughly matching the number count. No sign impacts exceed numbers. Low absolute confidence, but the ratio is ~1.0."
     },
     "midfar": {
-      "fightClockRange": [[106, 144], [176, 180]], "videoWindow": [[113, 151], [183, 187]],
-      "bossDistance": "medium-small (left/center)", "pelletValueWhite": 25672,
-      "sampleWindows": ["v124-125.5 (sustained fire)"], "shotsSampled": "2-3 (overlapping)",
-      "impactsPerShot": "2-4 resolvable (<= numbers)", "numbersPerShot": "~6",
-      "dropout": 1.0, "dropoutRange": [0.8, 1.2],
+      "fightClockRange": [
+        [106, 144],
+        [176, 180]
+      ],
+      "videoWindow": [
+        [113, 151],
+        [183, 187]
+      ],
+      "bossDistance": "medium-small (left/center)",
+      "pelletValueWhite": 25672,
+      "sampleWindows": ["v124-125.5 (sustained fire)"],
+      "shotsSampled": "2-3 (overlapping)",
+      "impactsPerShot": "2-4 resolvable (<= numbers)",
+      "numbersPerShot": "~6",
+      "dropout": 1.0,
+      "dropoutRange": [0.8, 1.2],
       "note": "Hardest band: small boss + red core VFX sits ON the impact zone, so white sparks are under-resolvable (I can distinctly count ~6 numbers but only ~2-4 sparks). This gives NO support for impacts>numbers; if anything sparks are harder to see than numbers. dropout taken as ~1.0, lowest confidence."
     }
   },
 
   "recoveredLanding_popupLandingTimesDropout": {
     "formula": "recovered = sg-pellet-landing.json summaryFraction x dropout(=1.0)",
-    "near":   {"popupLanding": 0.60, "dropout": 1.0, "recovered": 0.60},
-    "mid":    {"popupLanding": 0.60, "dropout": 1.0, "recovered": 0.60},
-    "far":    {"popupLanding": 0.45, "dropout": 1.0, "recovered": 0.45},
-    "midfar": {"popupLanding": 0.55, "dropout": 1.0, "recovered": 0.55},
+    "near": { "popupLanding": 0.6, "dropout": 1.0, "recovered": 0.6 },
+    "mid": { "popupLanding": 0.6, "dropout": 1.0, "recovered": 0.6 },
+    "far": { "popupLanding": 0.45, "dropout": 1.0, "recovered": 0.45 },
+    "midfar": { "popupLanding": 0.55, "dropout": 1.0, "recovered": 0.55 },
     "note": "Because dropout ~= 1.0, recovered landing is UNCHANGED from the popup-count landing. No upward correction toward the ~0.88 near / higher-total that a ~1.47 dropout would have produced."
   },
 

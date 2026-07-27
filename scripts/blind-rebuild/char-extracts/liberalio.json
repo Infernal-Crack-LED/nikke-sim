@@ -19,10 +19,7 @@
     "rl3": 33.6,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "lib",
-      "libby"
-    ],
+    "nicknames": ["lib", "libby"],
     "skills": {
       "skill1": "■ Activates when entering Full Burst. Affects self.\nATK ▲ 160% for 3 sec.\n■ Activates when landing a Full Charge attack on a target's core. Affects self.\nAttack Damage ▲ 20.83% for 60 sec.\n■ Activates when landing a Full Charge attack. Affects the target.\nDeals 40.5% of final ATK as additional damage. Activates 5 times.\n■ Activates when entering Full Burst. Affects the 1 Burst 3 ally unit(s) with the lowest final ATK.\nCharge Speed ▲ 12.74% of the skill user's Charge Speed for 10 sec.",
       "skill2": "■ Activates when landing a Full Charge attack against the stage target. Affects self.\nRaging Current: Attack Damage ▲ 231% continuously.\nRemoves Gentle Current.\n■ Activates when landing a Full Charge attack against a Rapture that is not the stage target. Affects self.\nGentle Current: Fixes charge time at 1 sec continuously.\nRemoves Raging Current.\n■ Activates at the start of battle. Affects self.\nGains immunity to Increase Charge Speed effects. This effect is continuous and cannot be removed.\nGains immunity to Decrease Charge Speed effects. This effect is continuous and cannot be removed.",
@@ -73,13 +70,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -327,16 +320,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack Damage ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_03}% of <word_group=10025>final</word_group> ATK as additional damage.</color>",
           "description_value_list": [
@@ -393,18 +377,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            126230102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            126230101
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [126230102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [126230101],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -429,9 +405,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -462,9 +436,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Liberalio's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

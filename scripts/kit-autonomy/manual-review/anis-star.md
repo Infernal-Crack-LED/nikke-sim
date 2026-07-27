@@ -46,6 +46,7 @@ unit never counts itself). The reference-grade validated basis is the **noB1 ("M
 Star") branch is the dropped/defensive side.
 
 **skill1**
+
 - `passive → allies → burstGenPct 6` (continuous) — formation-independent team burst-gauge fill.
 - `passive → self → atkPct 40.01` (continuous, no expiry), `formation noB1` — My Own Star self ATK. Pinned self-only + continuous; proven ABSENT in a hasB1 comp.
 - `fullBurstEnd → allies → burstCdr 7.48s`, `formation noB1` — the recurring team CDR (re-fires at EVERY Full Burst end, not once-per-battle; the battle-start instance is inert because all cooldowns are 0 at t=0). Pinned: removing it strictly reduces her cast count.
@@ -53,11 +54,13 @@ Star") branch is the dropped/defensive side.
 - `shotFired → enemy → flatDamage atkPct 120.13` — the full-charge rider, once per pull (RL always full-charges). Pinned: rider count === shot count, never 2× (the hitsPerShot=2 per-hit trap), rangeApplied false, no core, self-damage only.
 
 **skill2**
+
 - `fullBurstEnter → allies → casterAtkPct 35.01` (10s), `formation noB1` — a FLAT add of 35.01% of ANIS's ATK (not target-scaled atkPct). buffApply.value is the resolved flat grant (≈28101); pinned by linear scaling (double the pct → double the value).
 - `fullBurstEnter → allies → projectileExplosionPct 92.03 + attackDamagePct 34` (10s) — formation-independent FB-enter Damage-Up. The 92.03% lands in projectileExplosionPct (RL/explosion-flavor bucket), NOT laundered into attackDamagePct; the "lower-DEF allies" target is the documented all-allies ⚑ stand-in (she is the top-DEF Defender, and the stat is inert on the comp's non-RL teammates).
 - The hasB1 full-charge **heal (1.26% Max HP)** is UNMODELED (see §4 gotcha 1).
 
 **burst**
+
 - `burstCast → self → dot atkPct 40.01, intervalSec 0.25, durationSec 10, flavor projectileExplosion` — Shooting Stars, 40 ticks/cast, one instance (no DoT multiplication), no core. The projectileExplosion flavor means the stars pick up her own S2 92.03% aura. Pinned: 40 ticks/window; halfDot (0.25→0.5) → 20.
 - `burstCast → self → chargeSpeedPct 30` (10s) — the "charge time fixed at 0.7s" clamp. The engine charge formula is **SUBTRACTIVE** (sim.ts:2560 `needed = round(chargeFrames × (1 − cs/100))`), so 30 → 60×0.70 = 42f = 0.7s EXACTLY. Both blinds derived 42.86 assuming a multiplicative formula — a RECON_ERROR (they could not read sim.ts); 30 is the only value that yields 0.7s in this engine (corroborated by probe + owner 2026-07-13 ruling).
 - `burstCast → self → attackDamagePct 35.2` (10s), `formation noB1` — My Own Star self Damage-Up (additive with the team 34%). Pinned self-only; absent in hasB1.

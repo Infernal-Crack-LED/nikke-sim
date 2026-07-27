@@ -15,17 +15,17 @@ A plug-and-play team builder: user inputs 5 Nikkes, the sim runs a 180-second (3
 
 ## v1 simplifying assumptions
 
-| Area | v1 assumption |
-| --- | --- |
-| Enemy DEF | 0 |
-| Enemy debuffs on us | none |
-| Core hits | `coreHitRate` parameter, default 0 (boss profiles are v2) |
-| Boss element | single input (or "neutral"); grants 1.1× to advantaged units |
-| Effective range | assumed always in range → +0.3 major modifier (toggle) |
-| Accuracy | 100% of shots/pellets hit |
-| Crit | expected value: `critRate × (0.5 + bonusCritDmg)` folded into major modifiers, no RNG |
-| Parts / pierce / interruption / shields / distributed | out of scope (v2 profiles) |
-| Ally debuffs ON the boss (Damage Taken ▲ etc.) | **in scope** — core team synergy, not an "enemy debuff" |
+| Area                                                  | v1 assumption                                                                         |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Enemy DEF                                             | 0                                                                                     |
+| Enemy debuffs on us                                   | none                                                                                  |
+| Core hits                                             | `coreHitRate` parameter, default 0 (boss profiles are v2)                             |
+| Boss element                                          | single input (or "neutral"); grants 1.1× to advantaged units                          |
+| Effective range                                       | assumed always in range → +0.3 major modifier (toggle)                                |
+| Accuracy                                              | 100% of shots/pellets hit                                                             |
+| Crit                                                  | expected value: `critRate × (0.5 + bonusCritDmg)` folded into major modifiers, no RNG |
+| Parts / pierce / interruption / shields / distributed | out of scope (v2 profiles)                                                            |
+| Ally debuffs ON the boss (Damage Taken ▲ etc.)        | **in scope** — core team synergy, not an "enemy debuff"                               |
 
 ## Data sources
 
@@ -105,6 +105,7 @@ Three-layer approach:
 **In:** 5 slugs in slot order, per-Nikke ATK (optional, defaulted), boss element, `coreHitRate`, toggles (range bonus). Later: skill levels (v1 assumes max — matches DB text values).
 
 **Out (per Nikke + team total):**
+
 - Total damage, DPS, % of team damage
 - Breakdown: normal attack / core portion / skill-proc damage / burst damage
 - Rotation log: full-burst timestamps, who burst at each stage, stalls

@@ -5,9 +5,7 @@
       "slot": "skill1",
       "trigger": { "kind": "hitCount", "count": 30 },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 131.34 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 131.34 }]
     },
     {
       "slot": "skill1",
@@ -30,17 +28,13 @@
       "slot": "skill2",
       "trigger": { "kind": "hitCount", "count": 30 },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 105.58 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 105.58 }]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "bossElement", "element": "Electric" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "buff", "stat": "damageTakenPct", "value": 28.2 }
-      ]
+      "effects": [{ "kind": "buff", "stat": "damageTakenPct", "value": 28.2 }]
     }
   ],
   "burst": [
@@ -48,9 +42,7 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 164.83 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 164.83 }]
     }
   ]
 }

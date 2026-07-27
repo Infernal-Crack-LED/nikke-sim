@@ -128,9 +128,7 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Normal attacks deal True Damage for 10 sec."
-    ]
+    "burst": ["Normal attacks deal True Damage for 10 sec."]
   },
   "caveats": [
     "⚑ Acid Ammo DoT: kit gives no stack/refresh rule. Modeled as ONE maintained instance (192% of final ATK every 1 s, duration >= fight). A literal per-magazine re-application of a 30 s DoT would stack ~10 concurrent instances (~1920%/s) because the engine appends DoT instances without dedup — globally implausible against her normal-attack DPS, so the maintained reading is the working hypothesis, not a measurement.",

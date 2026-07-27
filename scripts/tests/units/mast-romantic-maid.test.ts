@@ -58,7 +58,12 @@
 // Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SLUG = 'mast-romantic-maid';
@@ -84,18 +89,19 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual / reference patches (nearest-wrong models) -------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 
 /** M1 nearest-wrong: the S1 crit-rate line scoped to self instead of all allies. */
 const mrmCritSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'critRatePct'));
-  if (!b) throw new Error('mrm S1 critRatePct missing — fixture is stale');
+  if (!b) {throw new Error('mrm S1 critRatePct missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 /** M2 nearest-wrong: the S1 caster-ATK line scoped to self. */
 const mrmS1AtkSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill1.find((x: any) => hasStat(x, 'casterAtkPct'));
-  if (!b) throw new Error('mrm S1 casterAtkPct missing — fixture is stale');
+  if (!b) {throw new Error('mrm S1 casterAtkPct missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 /** M3 reference: the self Hit-Rate-down (normalAttackPct -40) removed — must raise HER total only. */
@@ -103,35 +109,36 @@ const mrmNoHitDown = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'normalAttackPct'));
   if (ov.skill1.length === before)
-    throw new Error('mrm S1 normalAttackPct missing — fixture is stale');
+    {throw new Error('mrm S1 normalAttackPct missing — fixture is stale');}
 });
 /** M4/M5 nearest-wrong: the x2 cycle-average knocked to x1 stacks (15.03 / 15.04). */
 const mrmX1Stacks = withPatchedOverride(SLUG, (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'distributedDamagePct'));
-  if (!b) throw new Error('mrm S2 distributedDamagePct missing — fixture is stale');
+  if (!b)
+    {throw new Error('mrm S2 distributedDamagePct missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'distributedDamagePct').value = 15.03;
   b.effects.find((e: any) => e.stat === 'reloadSpeedPct').value = 15.04;
 });
 /** M6 nearest-wrong: the burst crit-damage line scoped to self. */
 const mrmBurstSelf = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'critDamagePct'));
-  if (!b) throw new Error('mrm burst critDamagePct missing — fixture is stale');
+  if (!b) {throw new Error('mrm burst critDamagePct missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 /** M8 nearest-wrong: the burst caster-ATK x2 (40.12) knocked to x1 stacks (20.06). */
 const mrmBurstX1 = withPatchedOverride(SLUG, (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'casterAtkPct'));
-  if (!b) throw new Error('mrm burst casterAtkPct missing — fixture is stale');
+  if (!b) {throw new Error('mrm burst casterAtkPct missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterAtkPct').value = 20.06;
 });
 /** M9 reference: the Hangover stun removed — the 10s shot gap must vanish. */
 const mrmNoStun = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'stun'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'stun')
   );
   if (ov.skill2.length === before)
-    throw new Error('mrm S2 stun missing — fixture is stale');
+    {throw new Error('mrm S2 stun missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -145,9 +152,12 @@ const burstX1 = run({ [SLUG]: mrmBurstX1 });
 const noStun = run({ [SLUG]: mrmNoStun });
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const shots = (evs: SimEvent[]) => evs.filter((e): e is Shot => e.kind === 'shot');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const shots = (evs: SimEvent[]) =>
+  evs.filter((e): e is Shot => e.kind === 'shot');
 const holders = (bs: BuffApply[]) => new Set(bs.map((b) => b.targetIdx));
 
 /** mrm-cast buffApply by stat. */
@@ -165,7 +175,7 @@ const stage3Frames = (evs: SimEvent[]) =>
   new Set(
     evs
       .filter((e): e is BurstCast => e.kind === 'burstCast' && e.stage === 3)
-      .map((c) => c.frame),
+      .map((c) => c.frame)
   );
 
 /** mrm's normal-bucket total damage. */
@@ -182,7 +192,8 @@ const shotGaps = (evs: SimEvent[], threshSec: number) => {
     .sort((a, b) => a - b);
   const gaps: { start: number; dur: number }[] = [];
   for (let i = 1; i < s.length; i++)
-    if (s[i] - s[i - 1] > threshSec) gaps.push({ start: s[i - 1], dur: s[i] - s[i - 1] });
+    {if (s[i] - s[i - 1] > threshSec)
+      {gaps.push({ start: s[i - 1], dur: s[i] - s[i - 1] });}}
   return gaps;
 };
 
@@ -195,34 +206,55 @@ describe('mast-romantic-maid — kit spec', () => {
     it('is 20.05% to all four allies, permanent (no expiry), fired at battle start', () => {
       expect(applied.length, 'no S1 critRatePct applied').toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([20.05]);
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
       for (const b of applied) {
-        expect(b.expiresFrame, 'the while-Drunken gate is modeled always-on → permanent').toBeNull();
+        expect(
+          b.expiresFrame,
+          'the while-Drunken gate is modeled always-on → permanent'
+        ).toBeNull();
         expect(b.frame, 'passive fires at battle start').toBe(0);
       }
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to mrm alone', () => {
-      expect([...holders(mrmBuff(critSelf.events, 'critRatePct'))]).toEqual([MRM]);
+      expect([...holders(mrmBuff(critSelf.events, 'critRatePct'))]).toEqual([
+        MRM,
+      ]);
     });
   });
 
-  describe("M2 — S1 while-Drunken team ATK ▲35.02% of caster ATK (casterAtkPct, permanent, all allies)", () => {
+  describe('M2 — S1 while-Drunken team ATK ▲35.02% of caster ATK (casterAtkPct, permanent, all allies)', () => {
     // Permanent (S1) casterAtkPct — split from the burst line (M8) on the null expiry.
-    const applied = mrmBuff(base.events, 'casterAtkPct').filter((b) => b.expiresFrame === null);
+    const applied = mrmBuff(base.events, 'casterAtkPct').filter(
+      (b) => b.expiresFrame === null
+    );
     const expectedFlat = 0.3502 * staticAtk;
 
     it("is a FLAT add of mrm's ATK (≈0.3502×staticAtk) to all four allies, permanent", () => {
-      expect(applied.length, 'no permanent S1 casterAtkPct applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no permanent S1 casterAtkPct applied'
+      ).toBeGreaterThan(0);
       for (const b of applied) {
-        expect(b.value, 'casterAtkPct records a flat grant, not the raw 35.02').toBeGreaterThan(1000);
+        expect(
+          b.value,
+          'casterAtkPct records a flat grant, not the raw 35.02'
+        ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
       }
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to mrm alone', () => {
-      const cf = mrmBuff(s1AtkSelf.events, 'casterAtkPct').filter((b) => b.expiresFrame === null);
+      const cf = mrmBuff(s1AtkSelf.events, 'casterAtkPct').filter(
+        (b) => b.expiresFrame === null
+      );
       expect([...holders(cf)]).toEqual([MRM]);
     });
   });
@@ -231,20 +263,28 @@ describe('mast-romantic-maid — kit spec', () => {
     const applied = mrmBuff(base.events, 'normalAttackPct');
 
     it('is -40 on herself alone, permanent', () => {
-      expect(applied.length, 'no normalAttackPct debuff applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no normalAttackPct debuff applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([-40]);
-      expect([...holders(applied)], 'the miss rate bites HER spray only').toEqual([MRM]);
-      for (const b of applied) expect(b.expiresFrame).toBeNull();
+      expect(
+        [...holders(applied)],
+        'the miss rate bites HER spray only'
+      ).toEqual([MRM]);
+      for (const b of applied) {expect(b.expiresFrame).toBeNull();}
     });
 
     it('is LIVE: removing it raises her own normal total, leaving every ally byte-identical', () => {
       expect(
         mrmNormalTotal(noHitDown.events),
-        'without the miss rate her MG spray must deal MORE',
+        'without the miss rate her MG spray must deal MORE'
       ).toBeGreaterThan(mrmNormalTotal(base.events) * 1.3);
       // Self-only: no ally's total moves a single point.
       for (const s of COMP.filter((x) => x !== SLUG))
-        expect(noHitDown.totals[s], `${s} total must be unchanged`).toBe(base.totals[s]);
+        {expect(noHitDown.totals[s], `${s} total must be unchanged`).toBe(
+          base.totals[s]
+        );}
     });
   });
 
@@ -252,23 +292,38 @@ describe('mast-romantic-maid — kit spec', () => {
     const applied = mrmBuff(base.events, 'distributedDamagePct');
 
     it('is the x2 cycle-average 30.06% to all four allies for 10 sec', () => {
-      expect(applied.length, 'no distributedDamagePct applied').toBeGreaterThan(0);
+      expect(applied.length, 'no distributedDamagePct applied').toBeGreaterThan(
+        0
+      );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([30.06]);
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('fires on the B3 stage-3 cast frame, NOT on her own stage-2 cast', () => {
       const s3 = stage3Frames(base.events);
       const own = new Set(mrmCasts(base.events).map((c) => c.frame));
       for (const b of applied) {
-        expect(s3.has(b.frame), `buff frame ${b.frame} is not a stage-3 entry`).toBe(true);
-        expect(own.has(b.frame), 'must not coincide with her own stage-2 cast').toBe(false);
+        expect(
+          s3.has(b.frame),
+          `buff frame ${b.frame} is not a stage-3 entry`
+        ).toBe(true);
+        expect(
+          own.has(b.frame),
+          'must not coincide with her own stage-2 cast'
+        ).toBe(false);
       }
     });
 
     it('DISCRIMINATING: an x1-stack model would grant 15.03%, not 30.06%', () => {
-      expect([...new Set(mrmBuff(x1Stacks.events, 'distributedDamagePct').map((b) => b.value))]).toEqual([15.03]);
+      expect([
+        ...new Set(
+          mrmBuff(x1Stacks.events, 'distributedDamagePct').map((b) => b.value)
+        ),
+      ]).toEqual([15.03]);
     });
   });
 
@@ -278,12 +333,19 @@ describe('mast-romantic-maid — kit spec', () => {
     it('is the x2 cycle-average 30.08% to all four allies for 10 sec', () => {
       expect(applied.length, 'no reloadSpeedPct applied').toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([30.08]);
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: an x1-stack model would grant 15.04%, not 30.08%', () => {
-      expect([...new Set(mrmBuff(x1Stacks.events, 'reloadSpeedPct').map((b) => b.value))]).toEqual([15.04]);
+      expect([
+        ...new Set(
+          mrmBuff(x1Stacks.events, 'reloadSpeedPct').map((b) => b.value)
+        ),
+      ]).toEqual([15.04]);
     });
   });
 
@@ -291,14 +353,21 @@ describe('mast-romantic-maid — kit spec', () => {
     const applied = mrmBuff(base.events, 'critDamagePct');
 
     it('is 40.04% to all four allies for 10 sec, once per cast', () => {
-      expect(applied.length, 'no burst critDamagePct applied').toBe(mrmCasts(base.events).length * N_ALLIES);
+      expect(applied.length, 'no burst critDamagePct applied').toBe(
+        mrmCasts(base.events).length * N_ALLIES
+      );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([40.04]);
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to mrm alone', () => {
-      expect([...holders(mrmBuff(burstSelf.events, 'critDamagePct'))]).toEqual([MRM]);
+      expect([...holders(mrmBuff(burstSelf.events, 'critDamagePct'))]).toEqual([
+        MRM,
+      ]);
     });
   });
 
@@ -306,32 +375,52 @@ describe('mast-romantic-maid — kit spec', () => {
     const applied = mrmBuff(base.events, 'attackDamagePct');
 
     it('is 15.04% to all four allies for 10 sec, once per cast', () => {
-      expect(applied.length, 'no burst attackDamagePct applied').toBe(mrmCasts(base.events).length * N_ALLIES);
+      expect(applied.length, 'no burst attackDamagePct applied').toBe(
+        mrmCasts(base.events).length * N_ALLIES
+      );
       expect([...new Set(applied.map((b) => b.value))]).toEqual([15.04]);
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
   describe('M8 — burst ATK ▲20.06%×stacks (=40.12) of caster ATK to all allies, 10s (casterAtkPct)', () => {
     // 10s (burst) casterAtkPct — split from the permanent S1 line (M2) on the timed expiry.
-    const applied = mrmBuff(base.events, 'casterAtkPct').filter((b) => b.expiresFrame !== null);
+    const applied = mrmBuff(base.events, 'casterAtkPct').filter(
+      (b) => b.expiresFrame !== null
+    );
     const expectedFlat = 0.4012 * staticAtk;
 
     it("is a FLAT add of mrm's ATK (≈0.4012×staticAtk) to all four allies for 10s, once per cast", () => {
-      expect(applied.length, 'no burst casterAtkPct applied').toBe(mrmCasts(base.events).length * N_ALLIES);
+      expect(applied.length, 'no burst casterAtkPct applied').toBe(
+        mrmCasts(base.events).length * N_ALLIES
+      );
       for (const b of applied) {
-        expect(b.value, 'casterAtkPct records a flat grant, not the raw 40.12').toBeGreaterThan(1000);
+        expect(
+          b.value,
+          'casterAtkPct records a flat grant, not the raw 40.12'
+        ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
       }
-      expect(holders(applied).size, `reached ${holders(applied).size}, expected ${N_ALLIES}`).toBe(N_ALLIES);
+      expect(
+        holders(applied).size,
+        `reached ${holders(applied).size}, expected ${N_ALLIES}`
+      ).toBe(N_ALLIES);
     });
 
     it('DISCRIMINATING: an x1-stack model would grant ≈0.2006×staticAtk, not 0.4012×', () => {
-      const cf = mrmBuff(burstX1.events, 'casterAtkPct').filter((b) => b.expiresFrame !== null);
-      expect(cf.length, 'x1 counterfactual produced no burst casterAtkPct').toBeGreaterThan(0);
-      for (const b of cf) expect(b.value).toBeCloseTo(0.2006 * staticAtk, 4);
+      const cf = mrmBuff(burstX1.events, 'casterAtkPct').filter(
+        (b) => b.expiresFrame !== null
+      );
+      expect(
+        cf.length,
+        'x1 counterfactual produced no burst casterAtkPct'
+      ).toBeGreaterThan(0);
+      for (const b of cf) {expect(b.value).toBeCloseTo(0.2006 * staticAtk, 4);}
       expect(Math.abs(cf[0].value - expectedFlat)).toBeGreaterThan(1000);
     });
   });
@@ -341,31 +430,43 @@ describe('mast-romantic-maid — kit spec', () => {
     const gaps = shotGaps(base.events, 9);
 
     it('she casts more than 3 times so the every-3rd phase is exercised', () => {
-      expect(casts.length, 'fixture must produce ≥3 mrm casts').toBeGreaterThanOrEqual(3);
+      expect(
+        casts.length,
+        'fixture must produce ≥3 mrm casts'
+      ).toBeGreaterThanOrEqual(3);
     });
 
     it('produces exactly ONE ~10s shot gap, right after the 3rd cast', () => {
-      expect(gaps.length, `${gaps.length} gaps over 5 casts — expected exactly 1 (everyN:3)`).toBe(1);
+      expect(
+        gaps.length,
+        `${gaps.length} gaps over 5 casts — expected exactly 1 (everyN:3)`
+      ).toBe(1);
       const third = casts[2].sec;
       expect(gaps[0].dur, 'the stun is 10 sec').toBeGreaterThanOrEqual(9);
       expect(gaps[0].dur).toBeLessThanOrEqual(11.5);
       expect(
         Math.abs(gaps[0].start - third),
-        `gap starts ${gaps[0].start.toFixed(2)}s vs 3rd cast ${third.toFixed(2)}s`,
+        `gap starts ${gaps[0].start.toFixed(2)}s vs 3rd cast ${third.toFixed(2)}s`
       ).toBeLessThan(1.5);
     });
 
     it('no gap follows casts 1, 2, 4, 5 (the stun is NOT every cast)', () => {
       for (const idx of [0, 1, 3, 4]) {
-        if (idx >= casts.length) continue;
+        if (idx >= casts.length) {continue;}
         const c = casts[idx].sec;
         const near = gaps.filter((g) => Math.abs(g.start - c) < 1.5);
-        expect(near.length, `a stun gap landed after non-3rd cast ${idx + 1}`).toBe(0);
+        expect(
+          near.length,
+          `a stun gap landed after non-3rd cast ${idx + 1}`
+        ).toBe(0);
       }
     });
 
     it('DISCRIMINATING: removing the stun deletes the gap (it is live, not cosmetic)', () => {
-      expect(shotGaps(noStun.events, 9).length, 'noStun must fire continuously').toBe(0);
+      expect(
+        shotGaps(noStun.events, 9).length,
+        'noStun must fire continuously'
+      ).toBe(0);
     });
   });
 });

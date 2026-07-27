@@ -94,7 +94,7 @@ const swapEff = (b: any) => b.effects.find((e: any) => e.kind === 'weaponSwap');
 const laplaceBaseS2Value = withPatchedOverride('laplace', (ov) => {
   const e = flatAtk(ov.skill2[0]);
   if (!e || e.atkPct !== 132.45)
-    throw new Error('laplace S2a 132.45 rider missing — fixture is stale');
+    {throw new Error('laplace S2a 132.45 rider missing — fixture is stale');}
   e.atkPct = 81.66;
 });
 /** L3 counterfactual B: the pre-gauntlet AGGRESSIVE reading — swapGate removed, so the rider
@@ -102,19 +102,19 @@ const laplaceBaseS2Value = withPatchedOverride('laplace', (ov) => {
 const laplaceS2NoGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.skill2[0];
   if (!b || b.trigger.kind !== 'shotFired' || b.swapGate !== 'unswapped')
-    throw new Error(
-      'laplace S2a shotFired+unswapped block missing — fixture is stale',
-    );
+    {throw new Error(
+      'laplace S2a shotFired+unswapped block missing — fixture is stale'
+    );}
   delete b.swapGate;
 });
 /** L6 counterfactual: the base-kit First Damage (897.6). */
 const laplaceBaseFirst = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.kind === 'burstCast' && x.target.kind === 'enemy',
+    (x: any) => x.trigger.kind === 'burstCast' && x.target.kind === 'enemy'
   );
   const e = b && flatAtk(b);
   if (!e || e.atkPct !== 1455.72)
-    throw new Error('laplace burst First 1455.72 missing — fixture is stale');
+    {throw new Error('laplace burst First 1455.72 missing — fixture is stale');}
   e.atkPct = 897.6;
 });
 /** L7 counterfactual: the base-kit swap Normal Damage (14.52). */
@@ -122,7 +122,7 @@ const laplaceBaseSwap = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(hasSwap);
   const e = b && swapEff(b);
   if (!e || e.damagePct !== 22.2)
-    throw new Error('laplace weaponSwap 22.2 missing — fixture is stale');
+    {throw new Error('laplace weaponSwap 22.2 missing — fixture is stale');}
   e.damagePct = 14.52;
 });
 /** L5/L8 reference: the swap weapon removed entirely. */
@@ -130,15 +130,15 @@ const laplaceNoSwap = withPatchedOverride('laplace', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasSwap(b));
   if (ov.burst.length === before)
-    throw new Error('laplace weaponSwap block missing — fixture is stale');
+    {throw new Error('laplace weaponSwap block missing — fixture is stale');}
 });
 /** L12 counterfactual: the 11.9% rider with its swap gate removed (fires on EVERY shot). */
 const laplaceNoRiderGate = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.kind === 'shotFired' && x.swapGate === 'swapped',
+    (x: any) => x.trigger.kind === 'shotFired' && x.swapGate === 'swapped'
   );
   if (!b || flatAtk(b).atkPct !== 11.9)
-    throw new Error('laplace 11.9 swap-gated rider missing — fixture is stale');
+    {throw new Error('laplace 11.9 swap-gated rider missing — fixture is stale');}
   delete b.swapGate;
 });
 /** L9 reference: the swap-scoped pierce tag removed (proves it is damage-inert at scope lock). */
@@ -146,7 +146,7 @@ const laplaceNoPierce = withPatchedOverride('laplace', (ov) => {
   const b = ov.burst.find(hasSwap);
   const e = b && swapEff(b);
   if (!e || e.hasPierce !== true)
-    throw new Error('laplace weaponSwap.hasPierce missing — fixture is stale');
+    {throw new Error('laplace weaponSwap.hasPierce missing — fixture is stale');}
   delete e.hasPierce;
 });
 
@@ -169,7 +169,7 @@ const lapShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'laplace');
 const lapBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'laplace',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'laplace'
   );
 const uniqSorted = (xs: number[]) =>
   [...new Set(xs.map((x) => Number(x.toFixed(3))))].sort((a, b) => a - b);
@@ -198,10 +198,10 @@ describe('laplace (Treasure) — kit spec', () => {
       // The burst labels the beam "Normal Damage", not "Full Charge", so the rider rides only the
       // base RL's charged pulls (swapGate unswapped): one rider per 63.11 normal, zero per 22.2 beam.
       expect(s2Riders(base.events).length).toBe(
-        baseRlNormals(base.events).length,
+        baseRlNormals(base.events).length
       );
       expect(s2Riders(base.events).length).toBeLessThan(
-        lapShots(base.events).length,
+        lapShots(base.events).length
       );
     });
 
@@ -215,7 +215,7 @@ describe('laplace (Treasure) — kit spec', () => {
 
     it('DISCRIMINATING: the base-kit value 81.66 fails the magnitude pin', () => {
       expect(
-        uniqSorted(s2Riders(baseS2Value.events).map((d) => d.atkPct)),
+        uniqSorted(s2Riders(baseS2Value.events).map((d) => d.atkPct))
       ).toEqual([81.66]);
     });
 
@@ -223,10 +223,10 @@ describe('laplace (Treasure) — kit spec', () => {
       // The pre-gauntlet model (no swapGate) fires the rider on the 224 swap-beam shots too — the
       // S7 judge's REAL-GOTCHA (+38% of her total). The shipped gate must hold the count to base pulls.
       expect(s2Riders(s2NoGate.events).length).toBe(
-        lapShots(s2NoGate.events).length,
+        lapShots(s2NoGate.events).length
       );
       expect(s2Riders(s2NoGate.events).length).toBeGreaterThan(
-        s2Riders(base.events).length,
+        s2Riders(base.events).length
       );
     });
   });
@@ -243,13 +243,13 @@ describe('laplace (Treasure) — kit spec', () => {
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
       expect(firstNukes(base.events).filter((d) => d.fbMajorApplied)).toEqual(
-        [],
+        []
       );
     });
 
     it('DISCRIMINATING: the base-kit First Damage 897.6 fails the magnitude pin', () => {
       expect(
-        uniqSorted(firstNukes(baseFirst.events).map((d) => d.atkPct)),
+        uniqSorted(firstNukes(baseFirst.events).map((d) => d.atkPct))
       ).toEqual([897.6]);
     });
   });
@@ -278,7 +278,7 @@ describe('laplace (Treasure) — kit spec', () => {
 
     it('DISCRIMINATING: the base-kit swap Normal 14.52 replaces the 22.2 cluster', () => {
       expect(uniqSorted(normals(baseSwap.events).map((d) => d.atkPct))).toEqual(
-        [14.52, 63.11],
+        [14.52, 63.11]
       );
     });
 
@@ -314,7 +314,7 @@ describe('laplace (Treasure) — kit spec', () => {
       expect(sw.hasPierce).toBe(true);
       expect(
         (ov as any).hasPierce,
-        'pierce must be swap-scoped, not whole-fight',
+        'pierce must be swap-scoped, not whole-fight'
       ).toBeUndefined();
     });
 
@@ -343,10 +343,10 @@ describe('laplace (Treasure) — kit spec', () => {
 
     it('DISCRIMINATING: removing the swap gate fires it on EVERY shot', () => {
       expect(trueRiders(noRiderGate.events).length).toBe(
-        lapShots(noRiderGate.events).length,
+        lapShots(noRiderGate.events).length
       );
       expect(trueRiders(noRiderGate.events).length).toBeGreaterThan(
-        trueRiders(base.events).length,
+        trueRiders(base.events).length
       );
     });
   });

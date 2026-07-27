@@ -5,11 +5,7 @@
       "slot": "skill1",
       "trigger": {
         "kind": "fullChargeCount",
-        "count": [
-          3,
-          6,
-          9
-        ]
+        "count": [3, 6, 9]
       },
       "target": {
         "kind": "enemy"
@@ -37,11 +33,7 @@
       "slot": "skill1",
       "trigger": {
         "kind": "fullChargeCount",
-        "count": [
-          3,
-          6,
-          9
-        ]
+        "count": [3, 6, 9]
       },
       "target": {
         "kind": "enemy"
@@ -70,11 +62,7 @@
       "slot": "skill1",
       "trigger": {
         "kind": "fullChargeCount",
-        "count": [
-          1,
-          2,
-          3
-        ]
+        "count": [1, 2, 3]
       },
       "target": {
         "kind": "enemy"

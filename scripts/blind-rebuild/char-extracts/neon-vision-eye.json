@@ -19,12 +19,7 @@
     "rl3": 9,
     "burstGaugePerShot": 0.75,
     "treasure": false,
-    "nicknames": [
-      "nve",
-      "neo neon",
-      "veon",
-      "nneon"
-    ],
+    "nicknames": ["nve", "neo neon", "veon", "nneon"],
     "skills": {
       "skill1": "■ Activates when attacked while not in Healthy Body status. Affects self.\nInvulnerable for 3 sec. Activates 5 time(s) per battle.\nGains debuff immunity to ∞ debuffs for 3 sec. Activates 5 time(s) per battle.\nHealthy Body: Incoming healing ▲ 10.26% for 20 sec.\n■ Activates when landing a Full Charge attack. Affects the enemy if the enemy is the stage target.\nFirepower Explosion:\nEffect: Deals 437.98% of final ATK as additional damage.\nAdditional effect of Super Firepower status: Deals 262.79% of final ATK as additional damage.",
       "skill2": "■ Activates at the start of battle. Affects self.\nIncreases the Firepower Gauge's charge by 100.\n■ Activates when performing a normal attack while in Firepower Charge status. Affects self.\nIncreases the Firepower Gauge's charge by 2.\n■ Activates when Firepower Charge ends. Affects self.\nIncreases the Firepower Gauge's charge by 45.\n■ Activates when Full Burst ends while Firepower Gauge is active. Affects self.\nBurst Gauge filling speed ▲ 5% x Firepower Gauge charge amount for 5 sec.\n■ Activates when entering Full Burst. Affects self.\nMaximum Firepower: \nEffect: ATK ▲ 80.04% for 10 sec.\nAdditional effect for Super Firepower: ATK ▲ 35.05% for 10 sec.",
@@ -76,13 +71,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 500,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 100,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -434,16 +425,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Activates when the Firepower Gauge's charge is lower than 100. Affects self.\n<color=#00AEFF>Firepower Charge: Charges the Firepower Gauge for {description_value_02} sec. This effect cannot be removed.\nIncreases the Firepower Gauge's charge by 1.</color>\n■ Activates when the Firepower Gauge's charge is at 100. Affects self.\n<color=#00AEFF>Super Firepower: Attack Damage ▲ {description_value_04}% for {description_value_05} sec.\nDecreases the Firepower Gauge's charge by 100.</color>\n■ Affects self.\n<color=#00AEFF>Explosion Radius ▲ {description_value_06}% for {description_value_07} sec.\nAttack Damage ▲ {description_value_10}% for {description_value_11} sec.</color>",
           "description_value_list": [
@@ -605,21 +587,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            101830103,
-            101830101,
-            101830102,
-            101830104,
-            101830106
+            101830103, 101830101, 101830102, 101830104, 101830106
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -644,9 +616,7 @@
         }
       },
       "element": {
-        "element_id": [
-          400001
-        ],
+        "element_id": [400001],
         "element_details": [
           {
             "id": 400001,
@@ -677,9 +647,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Neon: Vision Eye's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

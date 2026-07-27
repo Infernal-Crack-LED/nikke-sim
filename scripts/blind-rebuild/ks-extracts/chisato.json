@@ -30,9 +30,7 @@
         "Affects self every 2 sec. Extrasensory ▼ 1%."
       ],
       "skill2": [],
-      "burst": [
-        "Charges Extrasensory to 100%."
-      ]
+      "burst": ["Charges Extrasensory to 100%."]
     },
     "caveats": [
       "skill1: Extrasensory threshold buffs (ATK 53.69 / True Damage 48.62 / Hit Rate 22.37) are modeled as FUSED PASSIVES (live from t=0, expire at 60/90/150s — the derived >70%/>55%/>25% crossing times of the 0.5%/s drain — and REFRESH on her own burstCast, which recharges Extrasensory to 100%). Reproduces both regimes: permanent while she bursts each ~40s rotation, decaying off when she never bursts. Replaces the prior permanent encoding that OVER-CREDITED never-burst comps (her ~1.19 board-hotness).",

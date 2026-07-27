@@ -70,25 +70,25 @@ function run(overrides: Record<string, any> = {}) {
 /** A1/A2 nearest-wrong trigger: S1 keyed to her own burst CAST instead of Full Burst entry. */
 const s1BurstCast = withPatchedOverride('alice', (ov) => {
   if (!ov.skill1[0] || ov.skill1[0].trigger.kind !== 'fullBurstEnter')
-    throw new Error('alice S1 fullBurstEnter block missing — fixture is stale');
+    {throw new Error('alice S1 fullBurstEnter block missing — fixture is stale');}
   ov.skill1[0].trigger.kind = 'burstCast';
 });
 /** A1/A2 nearest-wrong target: the buff blankets all 4 allies instead of the top-2 by final ATK. */
 const s1AllAllies = withPatchedOverride('alice', (ov) => {
   if (ov.skill1[0]?.target?.count !== 2)
-    throw new Error('alice S1 top-2 target missing — fixture is stale');
+    {throw new Error('alice S1 top-2 target missing — fixture is stale');}
   ov.skill1[0].target.count = 4;
 });
 /** C1/C2 nearest-wrong trigger: the self-burst keyed to Full Burst entry instead of her cast. */
 const burstFbEnter = withPatchedOverride('alice', (ov) => {
   if (!ov.burst[0] || ov.burst[0].trigger.kind !== 'burstCast')
-    throw new Error('alice burst burstCast block missing — fixture is stale');
+    {throw new Error('alice burst burstCast block missing — fixture is stale');}
   ov.burst[0].trigger.kind = 'fullBurstEnter';
 });
 /** B1 reference: Pierce removed entirely (the ungated-gate / no-double-hit inertness probe). */
 const noPierce = withPatchedOverride('alice', (ov) => {
   if (ov.hasPierce !== true)
-    throw new Error('alice hasPierce missing — fixture is stale');
+    {throw new Error('alice hasPierce missing — fixture is stale');}
   ov.hasPierce = false;
 });
 
@@ -116,7 +116,7 @@ const aliceCastFrames = (evs: SimEvent[]) =>
 /** alice's own applications of a given stat+value. */
 const aliceBuff = (evs: SimEvent[], stat: string, value: number) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === ALICE && b.stat === stat && b.value === value,
+    (b) => b.casterIdx === ALICE && b.stat === stat && b.value === value
   );
 
 const distinctFrames = (xs: BuffApply[]) =>
@@ -126,9 +126,9 @@ const distinctFrames = (xs: BuffApply[]) =>
 const holdersPerFrame = (xs: BuffApply[]): [number, number][] => {
   const m = new Map<number, Set<number | null>>();
   for (const b of xs)
-    (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
-      b.targetIdx,
-    );
+    {(m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+      b.targetIdx
+    );}
   return [...m.entries()]
     .map(([f, s]): [number, number] => [f, s.size])
     .sort((a, b) => a[0] - b[0]);
@@ -150,8 +150,8 @@ describe('alice — kit spec', () => {
 
     it('reaches exactly 2 allies per firing (highest final ATK), for 10 sec', () => {
       expect(applied.length).toBeGreaterThan(0);
-      for (const [, n] of holdersPerFrame(applied)) expect(n).toBe(2);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const [, n] of holdersPerFrame(applied)) {expect(n).toBe(2);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a blanket all-allies model reaches 4 holders, not 2', () => {
@@ -166,8 +166,8 @@ describe('alice — kit spec', () => {
     it('is 7% (level 10), on every FB entry frame, 2 allies, 10 sec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([7]);
       expect(distinctFrames(applied)).toEqual(fbStartFrames(base.events));
-      for (const [, n] of holdersPerFrame(applied)) expect(n).toBe(2);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const [, n] of holdersPerFrame(applied)) {expect(n).toBe(2);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a burstCast trigger would not align with the FB frames', () => {
@@ -203,7 +203,7 @@ describe('alice — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ALICE]);
       expect(distinctFrames(applied)).toEqual(aliceCastFrames(base.events));
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a fullBurstEnter trigger over-fires on the FB frames, not her casts', () => {
@@ -221,7 +221,7 @@ describe('alice — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ALICE]);
       expect(distinctFrames(applied)).toEqual(aliceCastFrames(base.events));
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a fullBurstEnter trigger over-fires on the FB frames, not her casts', () => {

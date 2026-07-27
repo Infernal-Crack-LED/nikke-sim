@@ -26,11 +26,28 @@
   "method": "ffmpeg 60fps crosshair-region extraction + zoomed 2x2 montages (crop~540:320@1020,220 scaled 2x). Popups classified STRUCTURALLY by red 'CORE HIT' text and by VALUE ANCHOR (self-consistent across conditions). All popups attributable to LM only (LM-focused footage). Independent frames sampled >=0.7-1.0s apart (popup lifetime ~0.6s) to avoid double-counting. Core counted = red 'CORE HIT' number; non-core = white body + orange crit. DoT sub-hits (337736 white / 450314 orange), skill/ambiguous (453086, 386024), barrage (millions), cyan Crown-shield numbers, and green Helm heals all EXCLUDED.",
   "R3_corePlusCritRendering": "CONFIRMED. Core+crit renders as RED 'CORE HIT' text + RED number + orange crit arrow (e.g. in-FB 136658 at t=50.6/51.6/65.4; out-FB 71332 at t=40.5). Plain core body-hit also RED 'CORE HIT'. Distinguished from the persistent RED core-RETICLE graphic (a fixed aim-point circle/X, not a popup) and from orange crit numbers (crit non-core).",
   "valueAnchors": {
-    "outFB_near": { "body_noncore_white": 33119, "crit_noncore_orange": 45856, "core_red": 71332, "altBody": 25485 },
-    "inFB_near": { "body_noncore_white": 64733, "crit_noncore_orange": 82714, "core_red": 136658 },
+    "outFB_near": {
+      "body_noncore_white": 33119,
+      "crit_noncore_orange": 45856,
+      "core_red": 71332,
+      "altBody": 25485
+    },
+    "inFB_near": {
+      "body_noncore_white": 64733,
+      "crit_noncore_orange": 82714,
+      "core_red": 136658
+    },
     "consistencyChecks": {
-      "core_over_body_ratio": { "outFB": 2.154, "inFB": 2.111, "note": "~2.13 both — validates the core anchor across conditions" },
-      "crit_over_body_ratio": { "outFB": 1.385, "inFB": 1.278, "note": "FB compresses the crit factor (base major already ~1.5 in-FB), per the owner colour convention — validates classification" }
+      "core_over_body_ratio": {
+        "outFB": 2.154,
+        "inFB": 2.111,
+        "note": "~2.13 both — validates the core anchor across conditions"
+      },
+      "crit_over_body_ratio": {
+        "outFB": 1.385,
+        "inFB": 1.278,
+        "note": "FB compresses the crit factor (base major already ~1.5 in-FB), per the owner colour convention — validates classification"
+      }
     }
   },
   "fbMap_video_s": {
@@ -42,37 +59,148 @@
   "band": "near (fight 33-70s). BOSS_RANGE_SCRIPT sim.ts:129. Both in-FB and out-FB samples are in the SAME near band. NOTE: SMG is NOT range-eligible in near band (only SG), so the +30% range bonus is OFF in BOTH conditions — range confound is controlled.",
   "windows": {
     "inFB_near": ["FB1 video 46.5-53.5", "FB2 video 60.4-66.4"],
-    "outFB_near": ["G0 pre-FB1 video 40.5-42.6 (cleanest, no barrage)", "G1 video 56.9-57.6", "G2 video 70.5-71.2"]
+    "outFB_near": [
+      "G0 pre-FB1 video 40.5-42.6 (cleanest, no barrage)",
+      "G1 video 56.9-57.6",
+      "G2 video 70.5-71.2"
+    ]
   },
   "perFrameCounts": {
     "inFB": [
-      {"t": 46.5, "core": 1, "noncore": 4, "note": "CORE HIT 136658; 82714 crit + 64733x3"},
-      {"t": 47.4, "core": 0, "noncore": 4, "note": "64733 whites + 82714; 450314 DoT excl"},
-      {"t": 49.5, "core": 0, "noncore": 4, "note": "82714x2 crit + 64733x2"},
-      {"t": 50.6, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 337736 DoT excl"},
-      {"t": 51.6, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 64733x3"},
-      {"t": 52.6, "core": 0, "noncore": 2, "note": "DoT-heavy (337736/450314/453086 excl); 64733x2"},
-      {"t": 60.4, "core": 0, "noncore": 2, "note": "burst-cast moment; 64733x2; cyan 59 excl"},
-      {"t": 62.4, "core": 0, "noncore": 0, "note": "boss obscured by FB effect; no readable normals"},
-      {"t": 64.4, "core": 1, "noncore": 1, "note": "CORE HIT 136658; 337736 DoT excl"},
-      {"t": 65.4, "core": 1, "noncore": 3, "note": "CORE HIT 136658; 64733x3"},
-      {"t": 66.4, "core": 0, "noncore": 5, "note": "82714x2 crit + 64733x3; 450314 DoT excl"},
-      {"t": 61.4, "core": 0, "noncore": 0, "note": "453086 skill x2 excl; no normals readable"}
+      {
+        "t": 46.5,
+        "core": 1,
+        "noncore": 4,
+        "note": "CORE HIT 136658; 82714 crit + 64733x3"
+      },
+      {
+        "t": 47.4,
+        "core": 0,
+        "noncore": 4,
+        "note": "64733 whites + 82714; 450314 DoT excl"
+      },
+      { "t": 49.5, "core": 0, "noncore": 4, "note": "82714x2 crit + 64733x2" },
+      {
+        "t": 50.6,
+        "core": 1,
+        "noncore": 3,
+        "note": "CORE HIT 136658; 337736 DoT excl"
+      },
+      {
+        "t": 51.6,
+        "core": 1,
+        "noncore": 3,
+        "note": "CORE HIT 136658; 64733x3"
+      },
+      {
+        "t": 52.6,
+        "core": 0,
+        "noncore": 2,
+        "note": "DoT-heavy (337736/450314/453086 excl); 64733x2"
+      },
+      {
+        "t": 60.4,
+        "core": 0,
+        "noncore": 2,
+        "note": "burst-cast moment; 64733x2; cyan 59 excl"
+      },
+      {
+        "t": 62.4,
+        "core": 0,
+        "noncore": 0,
+        "note": "boss obscured by FB effect; no readable normals"
+      },
+      {
+        "t": 64.4,
+        "core": 1,
+        "noncore": 1,
+        "note": "CORE HIT 136658; 337736 DoT excl"
+      },
+      {
+        "t": 65.4,
+        "core": 1,
+        "noncore": 3,
+        "note": "CORE HIT 136658; 64733x3"
+      },
+      {
+        "t": 66.4,
+        "core": 0,
+        "noncore": 5,
+        "note": "82714x2 crit + 64733x3; 450314 DoT excl"
+      },
+      {
+        "t": 61.4,
+        "core": 0,
+        "noncore": 0,
+        "note": "453086 skill x2 excl; no normals readable"
+      }
     ],
     "outFB": [
-      {"t": 40.5, "core": 2, "noncore": 4, "note": "CORE HIT 71332 x2; 45856 crit + 33119x3"},
-      {"t": 41.2, "core": 1, "noncore": 5, "note": "faint CORE HIT; 45856x2 + 33119x3"},
-      {"t": 41.9, "core": 1, "noncore": 7, "note": "71332 core; 45856x2 + 33119x5"},
-      {"t": 42.6, "core": 0, "noncore": 5, "note": "45856 + 33119x2 + 25485x2 (boss moving, body value shifting)"},
-      {"t": 56.9, "core": 1, "noncore": 7, "note": "faint CORE HIT; 45856x2 + 33119x5; 84070 ambiguous excl"},
-      {"t": 57.6, "core": 0, "noncore": 4, "note": "45856 + 33119x3; 484070 ambiguous excl"},
-      {"t": 70.5, "core": 1, "noncore": 6, "note": "CORE HIT; 45856x2 + 33119x4; 386024 skill excl"},
-      {"t": 71.2, "core": 0, "noncore": 4, "note": "33119x4; faint red text not confirmed"}
+      {
+        "t": 40.5,
+        "core": 2,
+        "noncore": 4,
+        "note": "CORE HIT 71332 x2; 45856 crit + 33119x3"
+      },
+      {
+        "t": 41.2,
+        "core": 1,
+        "noncore": 5,
+        "note": "faint CORE HIT; 45856x2 + 33119x3"
+      },
+      {
+        "t": 41.9,
+        "core": 1,
+        "noncore": 7,
+        "note": "71332 core; 45856x2 + 33119x5"
+      },
+      {
+        "t": 42.6,
+        "core": 0,
+        "noncore": 5,
+        "note": "45856 + 33119x2 + 25485x2 (boss moving, body value shifting)"
+      },
+      {
+        "t": 56.9,
+        "core": 1,
+        "noncore": 7,
+        "note": "faint CORE HIT; 45856x2 + 33119x5; 84070 ambiguous excl"
+      },
+      {
+        "t": 57.6,
+        "core": 0,
+        "noncore": 4,
+        "note": "45856 + 33119x3; 484070 ambiguous excl"
+      },
+      {
+        "t": 70.5,
+        "core": 1,
+        "noncore": 6,
+        "note": "CORE HIT; 45856x2 + 33119x4; 386024 skill excl"
+      },
+      {
+        "t": 71.2,
+        "core": 0,
+        "noncore": 4,
+        "note": "33119x4; faint red text not confirmed"
+      }
     ]
   },
   "results": {
-    "inFB": { "core": 5, "noncore": 31, "n": 36, "rate": 0.139, "wilson95": [0.061, 0.287] },
-    "outFB": { "core": 6, "noncore": 42, "n": 48, "rate": 0.125, "wilson95": [0.059, 0.247] },
+    "inFB": {
+      "core": 5,
+      "noncore": 31,
+      "n": 36,
+      "rate": 0.139,
+      "wilson95": [0.061, 0.287]
+    },
+    "outFB": {
+      "core": 6,
+      "noncore": 42,
+      "n": 48,
+      "rate": 0.125,
+      "wilson95": [0.059, 0.247]
+    },
     "deltaPP": 1.4,
     "thresholdPP": 10
   },

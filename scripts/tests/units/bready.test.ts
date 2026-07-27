@@ -97,7 +97,7 @@ type FBStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 function runMode(mode: string, overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
   const ov: Record<string, any> = {};
-  for (const s of SLUGS) ov[s] = overrides[s] ?? loadOverride(s);
+  for (const s of SLUGS) {ov[s] = overrides[s] ?? loadOverride(s);}
   const chars = SLUGS.map((s) => data.characters[s]);
   const prepared = prepareTeam(
     chars,
@@ -106,7 +106,7 @@ function runMode(mode: string, overrides: Record<string, any> = {}) {
       ol: 'base5' as const,
       ...(s === 'bready' ? { mode } : {}),
     })),
-    { overrides: ov, ...deps },
+    { overrides: ov, ...deps }
   );
   const cfg = scopeLockCfg([...SLUGS], 'Fire', {
     focusSlug: 'bready',
@@ -120,9 +120,9 @@ function runMode(mode: string, overrides: Record<string, any> = {}) {
 /** Nearest-wrong model for the charge-speed debuff: the Taste ▼20% removed (cycle back to 60f). */
 const breadyNoDebuff = withPatchedOverride('bready', (ov) => {
   if (ov.charFixes?.chargeFrames !== 72)
-    throw new Error(
-      'bready charFixes.chargeFrames 72 missing — fixture is stale',
-    );
+    {throw new Error(
+      'bready charFixes.chargeFrames 72 missing — fixture is stale'
+    );}
   ov.charFixes.chargeFrames = 60;
 });
 
@@ -137,13 +137,13 @@ const dmg = (evs: SimEvent[]) =>
 const breadyDmg = (
   evs: SimEvent[],
   srcSlot: Damage['srcSlot'],
-  atkPct?: number,
+  atkPct?: number
 ) =>
   dmg(evs).filter(
     (d) =>
       d.slug === 'bready' &&
       d.srcSlot === srcSlot &&
-      (atkPct === undefined || d.atkPct === atkPct),
+      (atkPct === undefined || d.atkPct === atkPct)
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -154,7 +154,7 @@ const selfBuff = (evs: SimEvent[], stat: string, value?: number) =>
       b.casterIdx === BREADY &&
       b.targetIdx === BREADY &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 /** A debuff on the boss (targetIdx null). The engine does not attribute a caster to enemy debuffs. */
 const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
@@ -162,13 +162,13 @@ const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.targetIdx === null &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const breadyShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'bready');
 const breadyBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'bready',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'bready'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FBStart => e.kind === 'fullBurstStart');
@@ -183,7 +183,7 @@ describe('bready — kit spec', () => {
       expect(applied.length, 'no S1 ATK buff applied').toBeGreaterThan(0);
       expect(frames(applied)).toEqual(frames(fbStarts(sustained.events)));
       expect(frames(applied)).not.toEqual(
-        frames(breadyBursts(sustained.events)),
+        frames(breadyBursts(sustained.events))
       );
     });
 
@@ -191,12 +191,12 @@ describe('bready — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([70.01]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([BREADY]);
       expect(applied.length).toBe(fbStarts(sustained.events).length);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is UNCONDITIONAL — fires in both sustained and distributed modes', () => {
       expect(selfBuff(distributed.events, 'atkPct', 70.01).length).toBe(
-        fbStarts(distributed.events).length,
+        fbStarts(distributed.events).length
       );
     });
   });
@@ -207,7 +207,7 @@ describe('bready — kit spec', () => {
       const removed = breadyShots(noDebuff.events).length;
       expect(
         shipped,
-        `shipped ${shipped} shots vs debuff-removed ${removed} — the ▼20% must slow her cycle`,
+        `shipped ${shipped} shots vs debuff-removed ${removed} — the ▼20% must slow her cycle`
       ).toBeLessThan(removed);
     });
     // Exact 72 (subtractive) vs 75 (divisive) is MEASUREMENT-GATED — deliberately no exact-value assert.
@@ -218,15 +218,15 @@ describe('bready — kit spec', () => {
       const debuffs = bossDebuff(sustained.events, 'damageTakenPct', 10.2);
       expect(
         debuffs.length,
-        'no Damage Taken debuff in sustained mode',
+        'no Damage Taken debuff in sustained mode'
       ).toBeGreaterThan(0);
       expect([...new Set(debuffs.map((b) => b.value))]).toEqual([10.2]);
-      for (const b of debuffs) expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
+      for (const b of debuffs) {expect(b.expiresFrame! - b.frame).toBe(5 * FPS);}
     });
 
     it('is INERT in distributed mode (the mode gate)', () => {
       expect(
-        bossDebuff(distributed.events, 'damageTakenPct', 10.2).length,
+        bossDebuff(distributed.events, 'damageTakenPct', 10.2).length
       ).toBe(0);
     });
 
@@ -238,7 +238,7 @@ describe('bready — kit spec', () => {
       const shots = breadyShots(sustained.events).length;
       expect(
         procs,
-        `${procs} DT procs vs ${shots} full-charge shots — expected one proc per 3 hits`,
+        `${procs} DT procs vs ${shots} full-charge shots — expected one proc per 3 hits`
       ).toBe(Math.floor(shots / 3));
     });
   });
@@ -249,7 +249,7 @@ describe('bready — kit spec', () => {
     it('ticks at the kit magnitude on a 1-second interval in sustained mode', () => {
       expect(
         ticks.length,
-        'no Aftertaste DoT in sustained mode',
+        'no Aftertaste DoT in sustained mode'
       ).toBeGreaterThan(0);
       expect([...new Set(ticks.map((d) => d.atkPct))]).toEqual([150.04]);
       // Within a proc the ticks are exactly 60f (1s) apart; new procs restart the cadence, so check
@@ -281,18 +281,18 @@ describe('bready — kit spec', () => {
       const shots = breadyShots(distributed.events).length;
       expect(
         applied.length,
-        'no Attack Damage self-buff in distributed mode',
+        'no Attack Damage self-buff in distributed mode'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60.01]);
       expect(
         applied.length,
-        `${applied.length} applications vs ${shots} shots`,
+        `${applied.length} applications vs ${shots} shots`
       ).toBeGreaterThanOrEqual(shots * 0.9);
     });
 
     it('is INERT in sustained mode (the mode gate)', () => {
       expect(selfBuff(sustained.events, 'attackDamagePct', 60.01).length).toBe(
-        0,
+        0
       );
     });
   });
@@ -303,7 +303,7 @@ describe('bready — kit spec', () => {
     it('lands once per full-charge shot at the kit magnitude in distributed mode', () => {
       expect(
         riders.length,
-        'no distributed rider in distributed mode',
+        'no distributed rider in distributed mode'
       ).toBeGreaterThan(0);
       expect([...new Set(riders.map((d) => d.atkPct))]).toEqual([265.07]);
       expect(riders.length).toBe(breadyShots(distributed.events).length);
@@ -332,7 +332,7 @@ describe('bready — kit spec', () => {
     it('lands on the burstCast frame, BEFORE the Full Burst window', () => {
       expect(
         applied.length,
-        'no burst Attack Damage buff applied',
+        'no burst Attack Damage buff applied'
       ).toBeGreaterThan(0);
       expect(frames(applied)).toEqual(frames(breadyBursts(sustained.events)));
       expect(frames(applied)).not.toEqual(frames(fbStarts(sustained.events)));
@@ -342,12 +342,12 @@ describe('bready — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([60.19]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([BREADY]);
       expect(applied.length).toBe(breadyBursts(sustained.events).length);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is UNCONDITIONAL — fires in both sustained and distributed modes', () => {
       expect(
-        selfBuff(distributed.events, 'attackDamagePct', 60.19).length,
+        selfBuff(distributed.events, 'attackDamagePct', 60.19).length
       ).toBe(breadyBursts(distributed.events).length);
     });
   });
@@ -357,16 +357,16 @@ describe('bready — kit spec', () => {
       const applied = selfBuff(sustained.events, 'sustainedDamagePct', 349.8);
       expect(
         applied.length,
-        'no Aftertaste Effect buff in sustained mode',
+        'no Aftertaste Effect buff in sustained mode'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([349.8]);
       expect(applied.length).toBe(breadyBursts(sustained.events).length);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is INERT in distributed mode (the mode gate)', () => {
       expect(
-        selfBuff(distributed.events, 'sustainedDamagePct', 349.8).length,
+        selfBuff(distributed.events, 'sustainedDamagePct', 349.8).length
       ).toBe(0);
     });
     // ADDITIVE sustained Damage-Up bucket; a multiplicative DoT-magnitude reading is measurement-gated.
@@ -377,7 +377,7 @@ describe('bready — kit spec', () => {
       const applied = selfBuff(distributed.events, 'atkPct', 70.09);
       expect(
         applied.length,
-        'no burst ATK buff in distributed mode',
+        'no burst ATK buff in distributed mode'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([70.09]);
       expect(applied.length).toBe(breadyBursts(distributed.events).length);
@@ -391,7 +391,7 @@ describe('bready — kit spec', () => {
   describe('H10 — structural: the mode gate is TOTAL (the two Tastes are mutually exclusive)', () => {
     it('sustained mode fires NO distributed-family line', () => {
       expect(selfBuff(sustained.events, 'attackDamagePct', 60.01).length).toBe(
-        0,
+        0
       ); // S2b
       expect(breadyDmg(sustained.events, 'skill2', 265.07).length).toBe(0); // S2c rider
       expect(selfBuff(sustained.events, 'atkPct', 70.09).length).toBe(0); // burst Recommended
@@ -399,21 +399,21 @@ describe('bready — kit spec', () => {
 
     it('distributed mode fires NO sustained-family line', () => {
       expect(
-        bossDebuff(distributed.events, 'damageTakenPct', 10.2).length,
+        bossDebuff(distributed.events, 'damageTakenPct', 10.2).length
       ).toBe(0); // S2a DT
       expect(breadyDmg(distributed.events, 'skill2', 150.04).length).toBe(0); // S2a Aftertaste DoT
       expect(
-        selfBuff(distributed.events, 'sustainedDamagePct', 349.8).length,
+        selfBuff(distributed.events, 'sustainedDamagePct', 349.8).length
       ).toBe(0); // burst Lingering
     });
 
     it('the UNCONDITIONAL lines fire in BOTH modes (they are not taste-gated)', () => {
       for (const run of [sustained, distributed]) {
         expect(selfBuff(run.events, 'atkPct', 70.01).length).toBe(
-          fbStarts(run.events).length,
+          fbStarts(run.events).length
         );
         expect(selfBuff(run.events, 'attackDamagePct', 60.19).length).toBe(
-          breadyBursts(run.events).length,
+          breadyBursts(run.events).length
         );
       }
     });

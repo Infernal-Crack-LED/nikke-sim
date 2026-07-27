@@ -19,9 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "sc"
-    ],
+    "nicknames": ["sc"],
     "skills": {
       "skill1": "■ Activates only while not in Terminated Contract status. Affects all allies.\nExclusive Recovery Agreement: Max HP ▲ 10% of the skill user's Max HP continuously.\n■ Activates when recovery takes effect if the recovery is not coming from this unit. Affects self.\nProof of Violation: Outgoing healing ▼ 10% continuously, up to 3 time(s).",
       "skill2": "■ Activates after 3 Full Charge attack(s). Affects all allies in Exclusive Recovery Agreement status.\nRecovers 1.32% of the skill user's final Max HP as HP.\n■ Activates when entering Full Burst. Affects all allies. \nGenerates a Shield equal to 9.5% of the skill user's final Max HP for 10 sec.\n■ Activates when Proof of Violation reaches max stacks. Affects self. \nTerminated Contract: Gains immunity to Proof of Violation continuously.\nRecovers 0.24% of the skill user's final Max HP as HP every 1 sec continuously.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF>Recovers {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>\n■ Affects self.\n<color=#00AEFF>Gains Pierce for {description_value_02} sec.</color>",
           "description_value_list": [
@@ -352,19 +337,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            162030101,
-            162030102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [162030101, 162030102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -389,9 +365,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -422,9 +396,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Snow Crane's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

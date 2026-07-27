@@ -76,60 +76,85 @@ function run(bossElement: Element, rosOverride?: any) {
 }
 
 // ---- counterfactual / reference patches (nearest-wrong models) -------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 
 /** R1 reference: the elemental-advantage line removed. */
 const noElem = withPatchedOverride('rosanna', (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'elemAdvantageDamagePct'));
-  if (ov.skill1.length === before) throw new Error('rosanna S1 elemAdvantageDamagePct block missing — fixture stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !hasStat(b, 'elemAdvantageDamagePct')
+  );
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'rosanna S1 elemAdvantageDamagePct block missing — fixture stale'
+    );}
 });
 /** R1 counterfactual: the same magnitude as a plain always-on Damage-Up buff (NOT advantage-gated). */
 const genericElem = withPatchedOverride('rosanna', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'elemAdvantageDamagePct');
-  if (!e) throw new Error('rosanna S1 elemAdvantageDamagePct effect missing — fixture stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'elemAdvantageDamagePct');
+  if (!e)
+    {throw new Error(
+      'rosanna S1 elemAdvantageDamagePct effect missing — fixture stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 /** R2 reference: the crit-rate line removed. */
 const noCrit = withPatchedOverride('rosanna', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critRatePct'));
-  if (ov.skill1.length === before) throw new Error('rosanna S1 critRatePct block missing — fixture stale');
+  if (ov.skill1.length === before)
+    {throw new Error('rosanna S1 critRatePct block missing — fixture stale');}
 });
 /** R2 counterfactual: the crit rate scoped to normal attacks only (the kit says UNSCOPED). */
 const scopedCrit = withPatchedOverride('rosanna', (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'critRatePct');
-  if (!e) throw new Error('rosanna S1 critRatePct effect missing — fixture stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'critRatePct');
+  if (!e)
+    {throw new Error('rosanna S1 critRatePct effect missing — fixture stale');}
   e.stat = 'critRateNormalPct';
 });
 /** R3 reference: the 500-normal Frenzy line removed. */
 const noFrenzy = withPatchedOverride('rosanna', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill2.length === before) throw new Error('rosanna S2 atkPct block missing — fixture stale');
+  if (ov.skill2.length === before)
+    {throw new Error('rosanna S2 atkPct block missing — fixture stale');}
 });
 /** R3 counterfactual: Frenzy as an always-on passive (one apply at frame 0, 100% uptime). */
 const passiveFrenzy = withPatchedOverride('rosanna', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'atkPct'));
-  if (!b) throw new Error('rosanna S2 atkPct block missing — fixture stale');
+  if (!b) {throw new Error('rosanna S2 atkPct block missing — fixture stale');}
   b.trigger = { kind: 'passive' };
 });
 /** R4 counterfactual: the burst nuke at the lvl-9 magnitude instead of the max 1310.4. */
 const lowBurst = withPatchedOverride('rosanna', (ov) => {
-  const e = ov.burst.flatMap((b: any) => b.effects).find((x: any) => x.kind === 'flatDamage' && x.atkPct === 1310.4);
-  if (!e) throw new Error('rosanna burst Assalto flatDamage missing — fixture stale');
+  const e = ov.burst
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'flatDamage' && x.atkPct === 1310.4);
+  if (!e)
+    {throw new Error('rosanna burst Assalto flatDamage missing — fixture stale');}
   e.atkPct = 1244.88;
 });
 /** R5 reference: the Water-Code taken debuff removed. */
 const noTaken = withPatchedOverride('rosanna', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
-  if (ov.burst.length === before) throw new Error('rosanna burst damageTakenPct block missing — fixture stale');
+  if (ov.burst.length === before)
+    {throw new Error(
+      'rosanna burst damageTakenPct block missing — fixture stale'
+    );}
 });
 /** R5 counterfactual: the taken debuff UNGATED (no bossElementGate) — fires vs every boss. */
 const ungatedTaken = withPatchedOverride('rosanna', (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'damageTakenPct'));
-  if (!b) throw new Error('rosanna burst damageTakenPct block missing — fixture stale');
+  if (!b)
+    {throw new Error(
+      'rosanna burst damageTakenPct block missing — fixture stale'
+    );}
   delete b.bossElementGate;
 });
 
@@ -149,18 +174,28 @@ const I_noTaken = run('Iron', noTaken);
 const I_ungatedTaken = run('Iron', ungatedTaken);
 
 // ---- readers ---------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const rosDmg = (evs: SimEvent[], bucket?: Damage['bucket']) =>
-  dmg(evs).filter((d) => d.slug === 'rosanna' && (bucket == null || d.bucket === bucket));
+  dmg(evs).filter(
+    (d) => d.slug === 'rosanna' && (bucket == null || d.bucket === bucket)
+  );
 const rosShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'rosanna');
 const rosBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rosanna');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'rosanna'
+  );
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const rosBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === ROSANNA && b.stat === stat);
 /** Distinct mult.<field> values seen on rosanna's hits in a bucket. */
-const multSet = (evs: SimEvent[], bucket: Damage['bucket'], field: keyof Damage['mult']) =>
+const multSet = (
+  evs: SimEvent[],
+  bucket: Damage['bucket'],
+  field: keyof Damage['mult']
+) =>
   [...new Set(rosDmg(evs, bucket).map((d) => d.mult[field].toFixed(4)))].sort();
 /** Distinct critRate values seen on rosanna's hits in a bucket. */
 const critSet = (evs: SimEvent[], bucket: Damage['bucket']) =>
@@ -182,7 +217,10 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([20]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ROSANNA]);
-      expect([...new Set(applied.map((b) => b.expiresFrame))], 'continuous → no timed expiry').toEqual([null]);
+      expect(
+        [...new Set(applied.map((b) => b.expiresFrame))],
+        'continuous → no timed expiry'
+      ).toEqual([null]);
     });
 
     it('is LIVE vs Water: lifts the normal-hit element bucket 1.1 → 1.3', () => {
@@ -201,7 +239,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       const genericIron = run('Iron', genericElem);
       expect(genericIron.totals.rosanna).not.toBe(I.totals.rosanna);
       // and on Water it moves the Damage-Up bucket, not the element bucket
-      expect(multSet(W_genericElem.events, 'normal', 'elem')).toEqual(['1.1000']);
+      expect(multSet(W_genericElem.events, 'normal', 'elem')).toEqual([
+        '1.1000',
+      ]);
     });
   });
 
@@ -213,7 +253,7 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.stat))]).toEqual(['critRatePct']);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([19.34]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ROSANNA]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
     });
 
     it('fires every 120 normal attacks (floor(shots/120) applies)', () => {
@@ -221,7 +261,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
     });
 
     it('is LIVE: removing it changes the normal-attack crit rates', () => {
-      expect(critSet(W.events, 'normal')).not.toEqual(critSet(W_noCrit.events, 'normal'));
+      expect(critSet(W.events, 'normal')).not.toEqual(
+        critSet(W_noCrit.events, 'normal')
+      );
     });
 
     it('DISCRIMINATING: the scoped critRateNormalPct counterfactual flips the stat field', () => {
@@ -240,12 +282,15 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([22.61]);
       expect([...new Set(applied.map((b) => b.maxStacks))]).toEqual([10]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ROSANNA]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
     });
 
     it('is a hitCount:500 PULSE: floor(shots/500) applies, none at frame 0', () => {
       expect(applied.length).toBe(Math.floor(SHOTS / 500));
-      expect(applied.every((b) => b.frame > 0), 'a pulse never applies at frame 0').toBe(true);
+      expect(
+        applied.every((b) => b.frame > 0),
+        'a pulse never applies at frame 0'
+      ).toBe(true);
     });
 
     it('is LIVE: removing it lowers her total', () => {
@@ -260,7 +305,9 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
   });
 
   describe('R4 — Burst Assalto 1310.4% of final ATK (burstCast flatDamage, burst bucket)', () => {
-    const nukes = rosDmg(W.events, 'burst').filter((d) => d.srcSlot === 'burst');
+    const nukes = rosDmg(W.events, 'burst').filter(
+      (d) => d.srcSlot === 'burst'
+    );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
       expect(BURSTS).toBeGreaterThan(0);
@@ -270,13 +317,19 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
     });
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.atkPct)).toEqual([]);
+      expect(
+        nukes.filter((d) => d.fbMajorApplied).map((d) => d.atkPct)
+      ).toEqual([]);
     });
 
     it('DISCRIMINATING: the lvl-9 1244.88 magnitude is a different number', () => {
-      const low = rosDmg(W_lowBurst.events, 'burst').filter((d) => d.srcSlot === 'burst');
+      const low = rosDmg(W_lowBurst.events, 'burst').filter(
+        (d) => d.srcSlot === 'burst'
+      );
       expect([...new Set(low.map((d) => d.atkPct))]).toEqual([1244.88]);
-      expect([...new Set(nukes.map((d) => d.atkPct))]).not.toEqual([...new Set(low.map((d) => d.atkPct))]);
+      expect([...new Set(nukes.map((d) => d.atkPct))]).not.toEqual([
+        ...new Set(low.map((d) => d.atkPct)),
+      ]);
     });
   });
 
@@ -288,7 +341,7 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
       expect([...new Set(taken.map((b) => b.value))]).toEqual([29]);
       expect([...new Set(taken.map((b) => b.casterIdx))]).toEqual([null]);
       expect([...new Set(taken.map((b) => b.targetIdx))]).toEqual([null]);
-      for (const b of taken) expect(b.expiresFrame! - b.frame).toBe(30 * FPS);
+      for (const b of taken) {expect(b.expiresFrame! - b.frame).toBe(30 * FPS);}
     });
 
     it('is LIVE on her normals in-window (mult.taken reaches 1.29)', () => {
@@ -303,25 +356,34 @@ describe('rosanna (base, MG/Electric/Burst I) — kit spec', () => {
     });
 
     it('is INERT vs a non-Water (Iron) boss: 0 applies, removal changes nothing', () => {
-      expect(buffs(I.events).filter((b) => b.stat === 'damageTakenPct').length).toBe(0);
+      expect(
+        buffs(I.events).filter((b) => b.stat === 'damageTakenPct').length
+      ).toBe(0);
       expect(I_noTaken.totals).toEqual(I.totals);
     });
 
     it('DISCRIMINATING: ungating it makes it fire vs Iron (the gate is load-bearing)', () => {
-      expect(buffs(I_ungatedTaken.events).filter((b) => b.stat === 'damageTakenPct').length).toBeGreaterThan(0);
+      expect(
+        buffs(I_ungatedTaken.events).filter((b) => b.stat === 'damageTakenPct')
+          .length
+      ).toBeGreaterThan(0);
     });
   });
 
   describe('R6 — burst concealment-gated 561.6% additional damage is honestly NOT modeled (⚑1)', () => {
     it('no rosanna hit at 561.6% exists in any bucket (not silently proxied/always-on)', () => {
-      const proxied = dmg(W.events).filter((d) => d.slug === 'rosanna' && d.atkPct === 561.6);
+      const proxied = dmg(W.events).filter(
+        (d) => d.slug === 'rosanna' && d.atkPct === 561.6
+      );
       expect(proxied.map((d) => d.atkPct)).toEqual([]);
     });
   });
 
   describe('R7 — ally-incapacitation 400% hit never fires (out-of-domain: immortal boss)', () => {
     it('no rosanna hit at 400% exists (no ally is ever incapacitated on this basis)', () => {
-      const fired = dmg(W.events).filter((d) => d.slug === 'rosanna' && d.atkPct === 400);
+      const fired = dmg(W.events).filter(
+        (d) => d.slug === 'rosanna' && d.atkPct === 400
+      );
       expect(fired.map((d) => d.atkPct)).toEqual([]);
     });
   });

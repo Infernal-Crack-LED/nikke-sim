@@ -1,8 +1,10 @@
 # S7 JUDGE PACKET — `takina` (compact, answer-faithful compilation of the gauntlet artifacts)
+
 Unit: Takina (slug `takina`) — SR / Iron / Supporter / Burst II, cd 20s. Driver model family: Qwen. Cross-family
 reviewers: S2b claude-fable-5 (pre-op), S5/S6/S7 claude-opus-4-8 (post-op). Gauntlet date 2026-07-24.
 
 ## 1. Ground truth — kit prose (data/characters.json → characters.takina.skills, structural; levels 10/10/10)
+
 Base: SR/Iron/Supporter/Burst II, cd 20s, ammo 6, reloadFrames 141, chargeFrames 60, chargeMultiplier 250,
 hitsPerShot 1, normalAttackMultiplier 69.04, coreAttackMultiplier 200. baseStats hp 15000 / atk 500 / def 84,
 critRate 15 / critDamage 150. Manufacturer Abnormal. The normalized `skills` prose below is the SSOT the sim reads.
@@ -33,6 +35,7 @@ NOTE: skill2 carries NO activation clause and the datamine skill2 table is a pas
 `skill_cooltime` field — the prose gives the durations (5s/10s) but no trigger/cooldown.
 
 ## 2. Damage-formula + mechanics SSOT (the facts the verdict turns on)
+
 Damage = ATK × major (FB +50% by timing; ×1.10 element if advantaged; +30% range) × charge × damageUp-bucket ×
 taken × distributed. takina is Iron, neutral vs the Fire boss in the fixture (no element major).
 
@@ -112,6 +115,7 @@ requiresCore, everyN, hitCount, resourceGate, formation/teamHas. There is NO bat
 gate, and NO partial-reload effect kind in v1.
 
 ## 3. Driver's override (src/skills/overrides/takina.json — post-S3, with the fbGate→swapGate FIX)
+
 ```json
 {
   "note": "Kit-autonomy gauntlet 2026-07-24 (GO faithfulness; cross-family S2b claude-fable-5 / S5-S7 claude-opus-4-8 converged). S1: ATK 80.04%/5s on fullBurstEnd (self) — the battle-start activation of the SAME line is UNMODELED (engine has no battleStart trigger; passive-trigger buffs ignore durationSec, sim.ts:983-993, so that instance is not override-expressible). True Damage 35.05%/15s on fullBurstEnter (self). S2 is a 15s-cooldown pulse (cooldown NOT in the DB text; Prydwen COMMUNITY ⚑ confirms 15s): enemies Damage Taken 10.09%/5s + 2s stun (boss-inert, UNMODELED), allies True Damage 140.49%/10s. The engine cannot pulse a passive-trigger buff (a passive trigger ignores durationSec), so both lines are modeled as uptime-averaged frame-0 permanents: damageTakenPct 10.09 x 5/15 = 3.36 (boss debuff), trueDamagePct 140.49 x 10/15 = 93.66 (all allies incl. self). trueDamagePct is flavor-gated (sim.ts:1414), so the 93.66 benefits ONLY true-flavored damage — inert on allies dealing no true damage. Burst: weaponSwap 200.64%/shot for 10s with trueNormals:true ('Normal attacks deal true damage') so her own 35.05 + the team 93.66 True Damage buffs apply to the swap shots exactly. The 6.04% Damage Taken per target hit during the swap is a shotFired boss debuff gated swapGate:'swapped' — fires only while the swap weapon is live, faithful to 'targets hit' by the swap normals (the prior fbGate:'inFb' approximation conflated the swap window with the FB window; for a bursting B2 they overlap but are not identical). ENGINE NOTE (owner spot-check ⚑): true swap normals still CRIT in the engine (sim.ts:2842 hardcodes crit:true; the §2c 'true damage cannot crit' carve-out is plumbed only for riders via RIDER_CRIT, not swap normals) — an engine-fidelity observation, not an encoding choice made here.",
@@ -240,6 +244,7 @@ gate, and NO partial-reload effect kind in v1.
 ```
 
 ## 4. S2b pre-op adversarial review (claude-fable-5, cross-family) — leakDetected null
+
 ```json
 {
   "slug": "takina",
@@ -368,9 +373,7 @@ gate, and NO partial-reload effect kind in v1.
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Stuns for 2 sec."
-    ],
+    "skill2": ["Stuns for 2 sec."],
     "burst": [
       "Affects self: Normal attacks deal true damage for 10 sec. — ONLY if the driver cannot flavor-tag swap shots; if dropped, it must be recorded here, never silently"
     ]
@@ -381,6 +384,7 @@ gate, and NO partial-reload effect kind in v1.
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-4-8, cross-family) — leakDetected null (spec + fixtures + gaps)
+
 ```json
 {
   "slug": "takina",
@@ -445,6 +449,7 @@ gate, and NO partial-reload effect kind in v1.
   "model": "claude-opus-4-8"
 }
 ```
+
 **S5 convergence run (driver ran the S5 test UNMODIFIED vs the driver's shipped override):** SUITE ERROR — 16 tests,
 ALL 16 SKIPPED, 0 run. The suite fails at `beforeAll` setup: the counterfactual helpers `zeroStat`/`zeroSwap` iterate
 `o.blocks`, but the override shape is `{skill1:[],skill2:[],burst:[]}` (no `blocks` array) → `TypeError: o.blocks is
@@ -461,6 +466,7 @@ burst weaponSwap 200.64, 6.04 debuff, stun GAP); the only spec-level divergence 
 raw 10.09/140.49 interval-pulse reading vs the driver's uptime-average 3.36/93.66 — the documented ⚑ divergence).
 
 ## 6. S6 blind post-op override-writer (claude-opus-4-8, cross-family) — leakDetected null (override + audit + flags)
+
 ```json
 {
   "slug": "takina",
@@ -596,12 +602,8 @@ raw 10.09/140.49 interval-pulse reading vs the driver's uptime-average 3.36/93.6
     ],
     "unmodeled": {
       "skill1": [],
-      "skill2": [
-        "Stuns for 2 sec."
-      ],
-      "burst": [
-        "Affects self: Normal attacks deal true damage for 10 sec."
-      ]
+      "skill2": ["Stuns for 2 sec."],
+      "burst": ["Affects self: Normal attacks deal true damage for 10 sec."]
     },
     "caveats": [
       "⚑ skill2 cadence: kit prose gives NO activation clause for either skill2 group → modeled as interval sec=20 (UNMEASURED estimate; datamine-unreliable). The 140.49% ally True-Damage uptime is highly sensitive to this — pin the skill cooldown + first-fire phase from footage.",
@@ -694,6 +696,7 @@ raw 10.09/140.49 interval-pulse reading vs the driver's uptime-average 3.36/93.6
 ```
 
 ## 7. Driver's test (scripts/tests/units/takina.test.ts — 22 tests, 22 GREEN vs the post-S3 override)
+
 ```ts
 // PER-UNIT KIT SPEC — `takina` (Takina, Supporter/SR/Iron, Burst II, cd 20s, ammo 6, reloadFrames 141,
 // chargeFrames 60, hitsPerShot 1, normalMult 69.04 / coreMult 200, chargeMult 250, critRate 15 / critDamage 150).
@@ -816,7 +819,7 @@ const tkBuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === TAKINA &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 /** Boss-held debuffs emit casterIdx===null AND targetIdx===null; read by stat+value (key carries the caster slot). */
 const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
@@ -824,20 +827,20 @@ const bossDebuff = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.targetIdx === null &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const targetsOf = (bs: BuffApply[]) =>
   [...new Set(bs.map((b) => b.targetIdx))].sort(
-    (a, b) => (a ?? -1) - (b ?? -1),
+    (a, b) => (a ?? -1) - (b ?? -1)
   );
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const takinaBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'takina',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'takina'
   );
 const castFrames = (evs: SimEvent[]) => takinaBursts(evs).map((e) => e.frame);
 const fbStartFrames = (evs: SimEvent[]) =>
@@ -882,7 +885,7 @@ const cfS1TrueBurstCast = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
   if (!b)
     throw new Error(
-      'takina S1 fullBurstEnter block missing — fixture is stale',
+      'takina S1 fullBurstEnter block missing — fixture is stale'
     );
   b.trigger = { kind: 'burstCast' };
 });
@@ -891,51 +894,51 @@ const cfS1TrueDur5 = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill1.find((x: any) => x.trigger?.kind === 'fullBurstEnter');
   if (!b)
     throw new Error(
-      'takina S1 fullBurstEnter block missing — fixture is stale',
+      'takina S1 fullBurstEnter block missing — fixture is stale'
     );
   eff(b, 'trueDamagePct').durationSec = 5;
 });
 // T4 nearest-wrong (value): the enemy debuff at the RAW prose magnitude 10.09 (no uptime-average).
 const cfS2TakenRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct'),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
   if (!b)
     throw new Error(
-      'takina S2 enemy damageTaken block missing — fixture is stale',
+      'takina S2 enemy damageTaken block missing — fixture is stale'
     );
   eff(b, 'damageTakenPct').value = 10.09;
 });
 // T4 nearest-wrong (target): enemy → allies (buff the team instead of debuffing the boss).
 const cfS2TakenAllies = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct'),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct')
   );
   if (!b)
     throw new Error(
-      'takina S2 enemy damageTaken block missing — fixture is stale',
+      'takina S2 enemy damageTaken block missing — fixture is stale'
     );
   b.target = { kind: 'allies' };
 });
 // T5 nearest-wrong (value): the ally True Damage buff at the RAW prose magnitude 140.49 (no uptime-average).
 const cfS2TrueRaw = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'trueDamagePct'),
+    x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
   if (!b)
     throw new Error(
-      'takina S2 ally trueDamage block missing — fixture is stale',
+      'takina S2 ally trueDamage block missing — fixture is stale'
     );
   eff(b, 'trueDamagePct').value = 140.49;
 });
 // T5 nearest-wrong (target): allies → enemy.
 const cfS2TrueEnemy = withPatchedOverride('takina', (ov: any) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'trueDamagePct'),
+    x.effects.some((e: any) => e.stat === 'trueDamagePct')
   );
   if (!b)
     throw new Error(
-      'takina S2 ally trueDamage block missing — fixture is stale',
+      'takina S2 ally trueDamage block missing — fixture is stale'
     );
   b.target = { kind: 'enemy' };
 });
@@ -943,7 +946,7 @@ const cfS2TrueEnemy = withPatchedOverride('takina', (ov: any) => {
 const cfNoSwap = withPatchedOverride('takina', (ov: any) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'weaponSwap')
   );
   if (ov.burst.length === before)
     throw new Error('takina burst weaponSwap block missing — fixture is stale');
@@ -951,7 +954,7 @@ const cfNoSwap = withPatchedOverride('takina', (ov: any) => {
 // T7 nearest-wrong (flavor): trueNormals:true → false (swap shots lose the true flavor → lose trueDamagePct).
 const cfNoTrueNormals = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'weaponSwap'),
+    x.effects.some((e: any) => e.kind === 'weaponSwap')
   );
   if (!b)
     throw new Error('takina burst weaponSwap block missing — fixture is stale');
@@ -960,11 +963,11 @@ const cfNoTrueNormals = withPatchedOverride('takina', (ov: any) => {
 // T8 nearest-wrong (gate, UNGATED): strip the gate from the 6.04 shotFired debuff → fires on every takina shot.
 const cfDebuffUngated = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
   if (!b)
     throw new Error(
-      'takina burst 6.04 debuff block missing — fixture is stale',
+      'takina burst 6.04 debuff block missing — fixture is stale'
     );
   delete b.fbGate;
   delete b.swapGate;
@@ -972,11 +975,11 @@ const cfDebuffUngated = withPatchedOverride('takina', (ov: any) => {
 // T8 nearest-wrong (gate, fbGate — the SHIPPED encoding the FIX replaces): swapGate → fbGate:'inFb'.
 const cfDebuffFbGate = withPatchedOverride('takina', (ov: any) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04),
+    x.effects.some((e: any) => e.stat === 'damageTakenPct' && e.value === 6.04)
   );
   if (!b)
     throw new Error(
-      'takina burst 6.04 debuff block missing — fixture is stale',
+      'takina burst 6.04 debuff block missing — fixture is stale'
     );
   delete b.swapGate;
   b.fbGate = 'inFb';
@@ -1028,7 +1031,7 @@ describe('takina — kit spec', () => {
       expect(atk.length).toBeGreaterThan(0);
       expect(atk.every((b) => b.frame > 0)).toBe(true);
       expect(Math.min(...atk.map((b) => b.frame))).toBe(
-        Math.min(...fbEndFrames(base.events)),
+        Math.min(...fbEndFrames(base.events))
       );
     });
   });
@@ -1048,12 +1051,12 @@ describe('takina — kit spec', () => {
       const cf = tkBuff(s1AtkFbEnter.events, 'atkPct', 80.04);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => fbStartFrames(s1AtkFbEnter.events).includes(b.frame)),
+        cf.every((b) => fbStartFrames(s1AtkFbEnter.events).includes(b.frame))
       ).toBe(true);
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) hits all 3 slots, not just takina', () => {
       expect(targetsOf(tkBuff(s1AtkAllies.events, 'atkPct', 80.04))).toEqual(
-        ALL_SLOTS,
+        ALL_SLOTS
       );
     });
   });
@@ -1065,24 +1068,24 @@ describe('takina — kit spec', () => {
       expect(targetsOf(td)).toEqual([TAKINA]);
       expect(dursOf(td)).toEqual([15 * FPS]);
       expect(
-        td.every((b) => fbStartFrames(base.events).includes(b.frame)),
+        td.every((b) => fbStartFrames(base.events).includes(b.frame))
       ).toBe(true);
     });
     it('DISCRIMINATING (trigger): burstCast (nearest-wrong) lands on takina CAST frames, before FB-start', () => {
       const cf = tkBuff(s1TrueBurstCast.events, 'trueDamagePct', 35.05);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => castFrames(s1TrueBurstCast.events).includes(b.frame)),
+        cf.every((b) => castFrames(s1TrueBurstCast.events).includes(b.frame))
       ).toBe(true);
       expect(
         cf.every(
-          (b) => !fbStartFrames(s1TrueBurstCast.events).includes(b.frame),
-        ),
+          (b) => !fbStartFrames(s1TrueBurstCast.events).includes(b.frame)
+        )
       ).toBe(true);
     });
     it('DISCRIMINATING (duration): 5s (nearest-wrong) is not the prose 15s', () => {
       expect(dursOf(tkBuff(s1TrueDur5.events, 'trueDamagePct', 35.05))).toEqual(
-        [5 * FPS],
+        [5 * FPS]
       );
     });
   });
@@ -1092,24 +1095,24 @@ describe('takina — kit spec', () => {
     it('is a permanent (no expiry) frame-0 debuff on the BOSS (targetIdx null), value 3.36', () => {
       expect(taken.length).toBeGreaterThan(0);
       expect(taken.every((b) => b.value === 3.36 && b.targetIdx === null)).toBe(
-        true,
+        true
       );
       expect(dursOf(taken)).toEqual([null]);
       expect(Math.min(...taken.map((b) => b.frame))).toBe(0);
     });
     it('DISCRIMINATING (value): the raw prose 10.09 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
       expect(bossDebuff(s2TakenRaw.events, 'damageTakenPct', 3.36).length).toBe(
-        0,
+        0
       );
       expect(
-        bossDebuff(s2TakenRaw.events, 'damageTakenPct', 10.09).length,
+        bossDebuff(s2TakenRaw.events, 'damageTakenPct', 10.09).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): allies (nearest-wrong) buffs the team (casterIdx takina, all slots), not the boss', () => {
       const cf = tkBuff(s2TakenAllies.events, 'damageTakenPct', 3.36);
       expect(targetsOf(cf)).toEqual(ALL_SLOTS);
       expect(
-        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 3.36).length,
+        bossDebuff(s2TakenAllies.events, 'damageTakenPct', 3.36).length
       ).toBe(0);
     });
   });
@@ -1126,7 +1129,7 @@ describe('takina — kit spec', () => {
     it('DISCRIMINATING (value): the raw prose 140.49 (nearest-wrong, no uptime-average) is NOT the faithful encoding', () => {
       expect(tkBuff(s2TrueRaw.events, 'trueDamagePct', 93.66).length).toBe(0);
       expect(
-        tkBuff(s2TrueRaw.events, 'trueDamagePct', 140.49).length,
+        tkBuff(s2TrueRaw.events, 'trueDamagePct', 140.49).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (target): enemy (nearest-wrong) removes the ally buff (no trueDamagePct 93.66 on any ally)', () => {
@@ -1140,7 +1143,7 @@ describe('takina — kit spec', () => {
       const s2Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.startsWith(`${TAKINA}:skill2:`))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s2Stats].sort()).toEqual(['damageTakenPct', 'trueDamagePct']);
     });
@@ -1163,7 +1166,7 @@ describe('takina — kit spec', () => {
       expect(swapShots(noTrueNormals.events).length).toBeGreaterThan(0);
       // every faithful swap shot outruns every flavor-stripped swap shot (the trueDamagePct contribution)
       expect(Math.min(...swapDmgUp(base.events))).toBeGreaterThan(
-        Math.max(...swapDmgUp(noTrueNormals.events)),
+        Math.max(...swapDmgUp(noTrueNormals.events))
       );
     });
   });
@@ -1179,7 +1182,7 @@ describe('takina — kit spec', () => {
     it('DISCRIMINATING (gate vs UNGATED): ungated fires outside the swap windows + far more often', () => {
       const cf = bossDebuff(debuffUngated.events, 'damageTakenPct', 6.04);
       expect(
-        cf.some((b) => !inWindow(b.frame, castWindows(debuffUngated.events))),
+        cf.some((b) => !inWindow(b.frame, castWindows(debuffUngated.events)))
       ).toBe(true);
       expect(cf.length).toBeGreaterThan(debuff.length);
     });
@@ -1190,7 +1193,7 @@ describe('takina — kit spec', () => {
       const cf = bossDebuff(debuffFbGate.events, 'damageTakenPct', 6.04);
       expect(cf.length).toBeGreaterThan(0);
       expect(
-        cf.every((b) => inWindow(b.frame, fbWindows(debuffFbGate.events))),
+        cf.every((b) => inWindow(b.frame, fbWindows(debuffFbGate.events)))
       ).toBe(true);
     });
   });
@@ -1198,6 +1201,7 @@ describe('takina — kit spec', () => {
 ```
 
 ## 8. S2d independent verification matrix (scripts/kit-autonomy/reviews/takina.verify.txt)
+
 ```
 S2d INDEPENDENT VERIFICATION GATE — takina (2026-07-24)
 Method: `npx vitest run scripts/tests/units/takina.test.ts` against (i) the unmodified SHIPPED override
@@ -1240,6 +1244,7 @@ greened in S3 by changing the burst 6.04 debuff gate fbGate:'inFb' -> swapGate:'
 ```
 
 ## 9. Driver's reconciliation summary (for the judge to grade, not to trust)
+
 - **Convergent (cross-family):** skill1 ATK 80.04 (FB-end self 5s; battle-start UNMODELED), skill1 TrueDmg 35.05
   (FB-enter self 15s — fable + opus both land fullBurstEnter, NOT burstCast), skill2 stun UNMODELED (boss-inert),
   burst weaponSwap 200.64 (burstCast self 10s), burst 6.04 debuff (shotFired + **swapGate:'swapped'** — independently
@@ -1257,11 +1262,13 @@ greened in S3 by changing the burst 6.04 debuff gate fbGate:'inFb' -> swapGate:'
   misread — none is an override divergence.
 
 ## 10. ⚑ flags the driver recorded (estimate + recipe + tier — all in the override caveats)
+
 1. **skill2 15s cooldown (COMMUNITY ⚑, trigger-cadence):** the skill2 prose gives NO trigger/cooldown; Prydwen lists a 15s pulse. The uptime-average values (damageTakenPct 3.36 = 10.09×5/15; trueDamagePct 93.66 = 140.49×10/15) depend on it. Estimate: 15s cooldown, 5s/10s durations. Recipe: read the real skill2 cooldown + pulse shape from a focused Takina recording; rescale value×uptime/CD. The interval-pulse encoding (fable 15s / opus 20s, full values + durations) is the behavior-equivalent alternative. Tier: COMMUNITY (Prydwen) — CALIBRATED ⚑.
 2. **swap-shot economy (kit-silent ⚑, ALWAYS-⚑ #3):** cadence/charge/ammo of the swapped 200.64% weapon are kit-silent; estimated optimistically by the engine's swap model. No Full Charge line → no chargeMultPct. Recipe: count normal-attack popups inside the 10s burst window → derive shots/sec + magazine. Tier: CALIBRATED ⚑.
 3. **true swap normals crit (ENGINE-fidelity ⚑):** sim.ts:2842 hardcodes crit:true for swap normals; the §2c "true damage cannot crit" carve-out (owner 2026-07-21) is plumbed only for riders (RIDER_CRIT), not swap normals. Measured: takina's 200.64% swap shots are critEligible. Board impact unmeasured. This is an ENGINE question (broad blast radius — chisato/laplace share the path), flagged for owner spot-check, NOT an override encoding and NOT changed here. Tier: engine-fidelity ⚑.
 
 ## 11. Verdict instructions
+
 Grade the driver's IMPLEMENTATION (the override in §3 + the test in §7) against the ground-truth prose (§1) and the formula/mechanics SSOT (§2), using the S2b pre-op review (§4), the S5 blind test (§5), and the S6 blind override (§6) as two independent cross-family re-derivations. Do NOT trust the driver's self-report — grade the artifacts.
 
 Convergence is MECHANICAL: the S5 blind tests run UNMODIFIED vs the driver's shipped override gave a SUITE ERROR (16 tests, all 16 SKIPPED — the `o.blocks is not iterable` harness artifact thrown at beforeAll setup; plus the controlComp B2-contention fixture and the `u.total`/`totalDamage` misread would confound it). Classify this as a documented blind harness artifact, NOT an override divergence. The blind SPEC table (§5) + the S6 blind override (§6) are the fixture-independent convergence signals.
@@ -1272,20 +1279,20 @@ The driver-vs-blind divergences to adjudicate: (1) **skill2 mechanism** — driv
 
 Return ONLY this JSON (tight, structured — not an essay):
 {
-  "slug": "takina",
-  "kitDescription": "<plain-English 3-6 sentences: what the kit DOES in game terms>",
-  "convergence": {
-    "s2b_fable_preop": { "model": "claude-fable-5", "leakDetected": null, "result": "<convergence summary>" },
-    "s5_blind_tests": { "model": "claude-opus-4-8", "leakDetected": null, "specConvergence": "<...>", "testRun": "<suite error / 16 skipped + classification>" },
-    "s6_blind_override": { "model": "claude-opus-4-8", "leakDetected": null, "result": "<convergence summary + divergences adjudicated>" },
-    "overall": "<CONVERGENT|... one line>"
-  },
-  "lineFindings": [ { "slot": "skill1|skill2|burst", "kitLine": "<≤40 chars>", "disposition": "FAITHFUL|UNMODELED|GAP", "classification": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "tier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED", "note": "<...>" } ],
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "...", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful rep or 'needs measurement' + recipe — NEVER a fudge>" } ],
-  "discriminationOk": true,
-  "discriminationNote": "<the §8 matrix + fire-rate check result>",
-  "faithfulnessScore": <0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>,
-  "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
-  "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
+"slug": "takina",
+"kitDescription": "<plain-English 3-6 sentences: what the kit DOES in game terms>",
+"convergence": {
+"s2b_fable_preop": { "model": "claude-fable-5", "leakDetected": null, "result": "<convergence summary>" },
+"s5_blind_tests": { "model": "claude-opus-4-8", "leakDetected": null, "specConvergence": "<...>", "testRun": "<suite error / 16 skipped + classification>" },
+"s6_blind_override": { "model": "claude-opus-4-8", "leakDetected": null, "result": "<convergence summary + divergences adjudicated>" },
+"overall": "<CONVERGENT|... one line>"
+},
+"lineFindings": [ { "slot": "skill1|skill2|burst", "kitLine": "<≤40 chars>", "disposition": "FAITHFUL|UNMODELED|GAP", "classification": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "tier": "MEASURED|DATAMINED|COMMUNITY|CALIBRATED", "note": "<...>" } ],
+"gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "...", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful rep or 'needs measurement' + recipe — NEVER a fudge>" } ],
+"discriminationOk": true,
+"discriminationNote": "<the §8 matrix + fire-rate check result>",
+"faithfulnessScore": <0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>,
+"verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
+"verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 `gotchas` is [] if there are no REAL-GOTCHAs. `suggestedFix` is a faithful representation or a flagged measurement, NEVER a number chosen to hit the board. The verdict is BINDING.

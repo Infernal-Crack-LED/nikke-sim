@@ -68,9 +68,9 @@ const near = (a: number, b: number) => Math.abs(a - b) < 0.01;
 
 function slotBlocks(ov: any, slot: string): any[] {
   const v = ov?.[slot];
-  if (!v) return [];
-  if (Array.isArray(v)) return v;
-  if (Array.isArray(v.blocks)) return v.blocks;
+  if (!v) {return [];}
+  if (Array.isArray(v)) {return v;}
+  if (Array.isArray(v.blocks)) {return v.blocks;}
   return [];
 }
 function allBlocks(ov: any): any[] {
@@ -78,17 +78,17 @@ function allBlocks(ov: any): any[] {
 }
 function allEffects(ov: any): any[] {
   return allBlocks(ov).flatMap((b) =>
-    Array.isArray(b?.effects) ? b.effects : [],
+    Array.isArray(b?.effects) ? b.effects : []
   );
 }
 function effectsOfSlot(ov: any, slot: string): any[] {
   return slotBlocks(ov, slot).flatMap((b) =>
-    Array.isArray(b?.effects) ? b.effects : [],
+    Array.isArray(b?.effects) ? b.effects : []
   );
 }
 function blocksHolding(ov: any, pred: (e: any) => boolean): any[] {
   return allBlocks(ov).filter((b) =>
-    (Array.isArray(b?.effects) ? b.effects : []).some(pred),
+    (Array.isArray(b?.effects) ? b.effects : []).some(pred)
   );
 }
 
@@ -100,7 +100,7 @@ function patchEffects(fn: (e: any) => any | null): {
   let touched = 0;
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
-      if (!Array.isArray(b.effects)) continue;
+      if (!Array.isArray(b.effects)) {continue;}
       const next: any[] = [];
       for (const e of b.effects) {
         const r = fn(e);
@@ -108,7 +108,7 @@ function patchEffects(fn: (e: any) => any | null): {
           touched += 1;
           continue;
         }
-        if (r !== e) touched += 1;
+        if (r !== e) {touched += 1;}
         next.push(r);
       }
       b.effects = next;
@@ -130,7 +130,7 @@ function run(ov?: any): Run {
       evs.push(ev as any);
     },
   };
-  if (ov) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
   const res = runComp(opts);
   const all = totals(res) as unknown as Record<string, number>;
   return { total: all[SLUG], all, evs, res };
@@ -144,7 +144,7 @@ const rotations = (r: Run) =>
   r.evs.filter((e) => e.kind === 'fullBurstStart').length;
 const buffApplies = (r: Run, stat: string, value: number) =>
   r.evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value),
+    (e) => e.kind === 'buffApply' && e.stat === stat && near(e.value, value)
   );
 const others = (r: Run) =>
   Object.fromEntries(Object.entries(r.all).filter(([k]) => k !== SLUG));
@@ -154,25 +154,25 @@ const others = (r: Run) =>
 const OV: any = withPatchedOverride(SLUG, () => {}) as any;
 
 const P_NO_BURST_ATK = patchEffects((e) =>
-  e.kind === 'buff' && near(e.value, 220) ? null : e,
+  e.kind === 'buff' && near(e.value, 220) ? null : e
 );
 const P_BURST_ATK_40 = patchEffects((e) =>
-  e.kind === 'buff' && near(e.value, 220) ? { ...e, durationSec: 40 } : e,
+  e.kind === 'buff' && near(e.value, 220) ? { ...e, durationSec: 40 } : e
 );
 const P_NO_EMB_ATK = patchEffects((e) =>
-  e.kind === 'buff' && near(e.value, 118.7) ? null : e,
+  e.kind === 'buff' && near(e.value, 118.7) ? null : e
 );
 const P_EMB_ATK_10 = patchEffects((e) =>
-  e.kind === 'buff' && near(e.value, 118.7) ? { ...e, durationSec: 10 } : e,
+  e.kind === 'buff' && near(e.value, 118.7) ? { ...e, durationSec: 10 } : e
 );
 const P_NO_290 = patchEffects((e) => (near(e.atkPct ?? -1, 290) ? null : e));
 const P_NO_447 = patchEffects((e) => (near(e.atkPct ?? -1, 447.7) ? null : e));
 const P_NO_AMMO = patchEffects((e) => (e.kind === 'consumeAmmo' ? null : e));
 const P_NO_PIERCE_BUFF = patchEffects((e) =>
-  e.kind === 'buff' && e.stat === 'pierceDamagePct' ? null : e,
+  e.kind === 'buff' && e.stat === 'pierceDamagePct' ? null : e
 );
 const P_NO_GAIN_PIERCE = patchEffects((e) =>
-  e.kind === 'gainPierce' ? null : e,
+  e.kind === 'gainPierce' ? null : e
 );
 
 const BASE = run();
@@ -224,8 +224,8 @@ describe('milk-blooming-bunny / skill1 - Embarrassment entry', () => {
     expect(e1.some((e: any) => near(e.atkPct ?? -1, 290))).toBe(true);
     expect(
       e1.some(
-        (e: any) => near(e.atkPct ?? -1, 290) && e.flavor === 'distributed',
-      ),
+        (e: any) => near(e.atkPct ?? -1, 290) && e.flavor === 'distributed'
+      )
     ).toBe(true);
   });
 
@@ -241,7 +241,7 @@ describe('milk-blooming-bunny / skill1 - Embarrassment entry', () => {
   it('e2/e4: the 100% ammo removal + forced reload are modeled and move the reload economy', () => {
     expect(P_NO_AMMO.touched).toBeGreaterThan(0);
     const e2 = effectsOfSlot(OV, 'skill1').filter(
-      (e: any) => e.kind === 'consumeAmmo',
+      (e: any) => e.kind === 'consumeAmmo'
     );
     expect(e2.length).toBeGreaterThan(0);
     expect(e2.every((e: any) => (e.fraction ?? 1) === 1)).toBe(true);
@@ -257,11 +257,11 @@ describe('milk-blooming-bunny / skill1 - Embarrassment entry', () => {
     expect(b.every((e: any) => e.targetSlug === SLUG)).toBe(true);
     const authored = effectsOfSlot(OV, 'skill1').filter(
       (e: any) =>
-        e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 118.7),
+        e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 118.7)
     );
     expect(authored.length).toBeGreaterThan(0);
     expect(authored.every((e: any) => near(e.durationSec ?? -1, 40))).toBe(
-      true,
+      true
     );
   });
 
@@ -287,9 +287,7 @@ describe('milk-blooming-bunny / skill2', () => {
   it('Pierce Damage 64.7% is continuous (no wall-clock window authored)', () => {
     const authored = allEffects(OV).filter(
       (e: any) =>
-        e.kind === 'buff' &&
-        e.stat === 'pierceDamagePct' &&
-        near(e.value, 64.7),
+        e.kind === 'buff' && e.stat === 'pierceDamagePct' && near(e.value, 64.7)
     );
     expect(authored.length).toBeGreaterThan(0);
     // nearest-wrong: a short refreshing window; the kit word is continuously.
@@ -326,14 +324,13 @@ describe('milk-blooming-bunny / burst - Overconfident, Huh?!', () => {
   it('ATK 220% and Pierce Damage 117.64% are self-scoped burst-cast buffs, 10 sec each', () => {
     const eb = effectsOfSlot(OV, 'burst');
     const atk = eb.filter(
-      (e: any) =>
-        e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 220),
+      (e: any) => e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 220)
     );
     const prc = eb.filter(
       (e: any) =>
         e.kind === 'buff' &&
         e.stat === 'pierceDamagePct' &&
-        near(e.value, 117.64),
+        near(e.value, 117.64)
     );
     expect(atk.length).toBeGreaterThan(0);
     expect(prc.length).toBeGreaterThan(0);
@@ -343,12 +340,12 @@ describe('milk-blooming-bunny / burst - Overconfident, Huh?!', () => {
     const holders = slotBlocks(OV, 'burst').filter((b: any) =>
       (b.effects ?? []).some(
         (e: any) =>
-          e.kind === 'buff' && (near(e.value, 220) || near(e.value, 117.64)),
-      ),
+          e.kind === 'buff' && (near(e.value, 220) || near(e.value, 117.64))
+      )
     );
     expect(holders.length).toBeGreaterThan(0);
     expect(holders.every((b: any) => b.trigger?.kind === 'burstCast')).toBe(
-      true,
+      true
     );
     expect(holders.every((b: any) => b.target?.kind === 'self')).toBe(true);
   });

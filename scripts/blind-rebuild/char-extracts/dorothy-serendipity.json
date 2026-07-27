@@ -19,10 +19,7 @@
     "rl3": 12,
     "burstGaugePerShot": 2,
     "treasure": false,
-    "nicknames": [
-      "ds",
-      "sdoro"
-    ],
+    "nicknames": ["ds", "sdoro"],
     "skills": {
       "skill1": "■ Activates when hitting the target with 80 pellets. Affects self.\nGains Pierce for 3 round(s).\nHit Rate ▲ 98.18% for 3 round(s).\nAttack damage ▲ 72% for 3 round(s).\nPellet count is fixed at 1 for 3 round(s).\n■ Activates when hitting the target with 160 pellets. Affects self.\nExpands Pierce range by 200% for 3 round(s).",
       "skill2": "■ Activates at the start of battle. Affects self.\nPierce damage ▲ 55.08% continuously.\n■ Activates only during Full Burst. Affects self.\nATK ▲ 75.24% continuously.\nHit Rate ▲ 40.68% continuously.",
@@ -73,13 +70,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -327,16 +320,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack speed ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% for {description_value_04} sec.\nNumber of <word_group=10038>pellets</word_group> ▲ {description_value_05} for {description_value_06} sec.</color>",
           "description_value_list": [
@@ -433,20 +417,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            123430101,
-            123430102,
-            123430103,
-            123430104
+            123430101, 123430102, 123430103, 123430104
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -471,9 +446,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -504,9 +477,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Dorothy: Serendipity's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

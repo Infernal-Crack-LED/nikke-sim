@@ -7,7 +7,10 @@
   "hitsPerShot": 10,
   "video": "docs/probes/ar-sg-smg/drake sg.MP4 (1206x2622 portrait + rotation=90 -> landscape 2622x1206, 60fps)",
   "date": "2026-07-15",
-  "reuses": ["docs/probe-data/coreband2-drake-sg.json (per-band pooled pellet popups + shotsSampled)", "docs/probe-data/coreband-drake-sg.json (per-window white/crit/core pellet breakdowns)"],
+  "reuses": [
+    "docs/probe-data/coreband2-drake-sg.json (per-band pooled pellet popups + shotsSampled)",
+    "docs/probe-data/coreband-drake-sg.json (per-window white/crit/core pellet breakdowns)"
+  ],
   "measuredValues": {
     "pelletValueWhite_nonFB": 25672,
     "pelletValueWhite_FB_nearWindows": 33374,
@@ -36,12 +39,45 @@
   "part2_perBandLandingFraction": {
     "method": "landed pellets/shot = pooled pellet popups / shots sampled (coreband2 windows), x dropout factor (1.0). Fraction = landed/10. Wilson 95% CI computed on shots*10 pellet-trials; a further +/-0.10-0.15 SYSTEMATIC band is added for popup overlap/bloom counting error (coreband2's stated ~+/-30% on pooled pellet totals).",
     "bands": {
-      "near":   {"popupsPerShot": 6.0, "shotsSampled": 46, "landingFraction": 0.60, "wilson95": [0.555, 0.644], "systematicBand": [0.45, 0.72], "bossDistanceNote": "close/large in readable windows, BUT distance varies widely inside the near band (seen large AND receded within v40-77 / v151-183) -> extra spread; coincides with self-burst FB."},
-      "mid":    {"popupsPerShot": 6.0, "shotsSampled": 42, "landingFraction": 0.60, "wilson95": [0.552, 0.646], "systematicBand": [0.45, 0.72], "bossDistanceNote": "medium (center). Numbers legible against grey sky -> most reliable band."},
-      "far":    {"popupsPerShot": 4.5, "shotsSampled": 28, "landingFraction": 0.45, "wilson95": [0.393, 0.509], "systematicBand": [0.33, 0.58], "bossDistanceNote": "distant/small + smoke + frequent reloading -> fewer readable shots (28<40)."},
-      "midfar": {"popupsPerShot": 5.5, "shotsSampled": 40, "landingFraction": 0.55, "wilson95": [0.501, 0.598], "systematicBand": [0.42, 0.68], "bossDistanceNote": "medium (left)."}
+      "near": {
+        "popupsPerShot": 6.0,
+        "shotsSampled": 46,
+        "landingFraction": 0.6,
+        "wilson95": [0.555, 0.644],
+        "systematicBand": [0.45, 0.72],
+        "bossDistanceNote": "close/large in readable windows, BUT distance varies widely inside the near band (seen large AND receded within v40-77 / v151-183) -> extra spread; coincides with self-burst FB."
+      },
+      "mid": {
+        "popupsPerShot": 6.0,
+        "shotsSampled": 42,
+        "landingFraction": 0.6,
+        "wilson95": [0.552, 0.646],
+        "systematicBand": [0.45, 0.72],
+        "bossDistanceNote": "medium (center). Numbers legible against grey sky -> most reliable band."
+      },
+      "far": {
+        "popupsPerShot": 4.5,
+        "shotsSampled": 28,
+        "landingFraction": 0.45,
+        "wilson95": [0.393, 0.509],
+        "systematicBand": [0.33, 0.58],
+        "bossDistanceNote": "distant/small + smoke + frequent reloading -> fewer readable shots (28<40)."
+      },
+      "midfar": {
+        "popupsPerShot": 5.5,
+        "shotsSampled": 40,
+        "landingFraction": 0.55,
+        "wilson95": [0.501, 0.598],
+        "systematicBand": [0.42, 0.68],
+        "bossDistanceNote": "medium (left)."
+      }
     },
-    "summaryFractions": {"near": 0.60, "mid": 0.60, "far": 0.45, "midfar": 0.55},
+    "summaryFractions": {
+      "near": 0.6,
+      "mid": 0.6,
+      "far": 0.45,
+      "midfar": 0.55
+    },
     "shape": "Landing is FLAT-ish across bands (0.45-0.60), NOT a near=1.0 / else=0.3 step. Near and mid are essentially equal (~0.60); far is the lowest (~0.45); midfar intermediate (~0.55). Distance correlates weakly with landing (far < midfar ~ near ~ mid)."
   },
 
@@ -55,10 +91,26 @@
   "engineComparison": {
     "engineConstant": "SG_OUT_OF_NEAR_HIT_FRACTION = 0.3 (sim.ts:157, CALIBRATED FLAG); near band credited 1.0 (all 10 pellets), all other bands 0.3 (3 pellets).",
     "measuredVsEngine": {
-      "near":   {"engine": 1.00, "measured": 0.60, "verdict": "engine OVER-credits by ~1.7x -- near is NOT all-10. ~4 pellets/shot miss through the gappy spider-mech silhouette even up close."},
-      "mid":    {"engine": 0.30, "measured": 0.60, "verdict": "engine UNDER-credits by ~2.0x."},
-      "far":    {"engine": 0.30, "measured": 0.45, "verdict": "engine UNDER-credits by ~1.5x."},
-      "midfar": {"engine": 0.30, "measured": 0.55, "verdict": "engine UNDER-credits by ~1.8x."}
+      "near": {
+        "engine": 1.0,
+        "measured": 0.6,
+        "verdict": "engine OVER-credits by ~1.7x -- near is NOT all-10. ~4 pellets/shot miss through the gappy spider-mech silhouette even up close."
+      },
+      "mid": {
+        "engine": 0.3,
+        "measured": 0.6,
+        "verdict": "engine UNDER-credits by ~2.0x."
+      },
+      "far": {
+        "engine": 0.3,
+        "measured": 0.45,
+        "verdict": "engine UNDER-credits by ~1.5x."
+      },
+      "midfar": {
+        "engine": 0.3,
+        "measured": 0.55,
+        "verdict": "engine UNDER-credits by ~1.8x."
+      }
     },
     "predictedDirection": "The brief predicted landing is HIGHER than the flat 0.3 at mid/far (engine runs SG cold at range). CONFIRMED for mid/far/midfar (0.45-0.60 vs 0.30). ADDITIONALLY, the opposite-direction surprise also holds: near is well BELOW 1.0 (~0.60), so the engine runs SG HOT at near on this boss. Net: true landing is much flatter (~0.45-0.60 across all bands) than the engine's 1.0->0.3 step; BOTH edges of the engine model are wrong on this boss."
   },

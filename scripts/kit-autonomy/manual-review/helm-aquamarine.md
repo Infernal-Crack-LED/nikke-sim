@@ -20,14 +20,14 @@ is measured/hand-tuned against a real fight.
 
 ## Kit (6 lines, levels 10/10/10) — all FAITHFUL
 
-| # | Slot | Kit line | Encoding | Disposition |
-|---|------|----------|----------|-------------|
-| HA1 | S1 | after 30 landed normal attacks → target: 131.34% additional damage | `hitCount:30 → enemy → flatDamage 131.34` (recurring; crit sheet-rate / no-core / noRange / FB-by-timing by engine default) | FAITHFUL |
-| HA2 | S1 | entering Full Burst → all allies: Burst CD ▼ 1.82 / 2.2 / 2.6 ("each subsequent triggers all before it") | `fullBurstEnter → allies → escalating[burstCdr 1.82, 2.2, 2.6]` (engine `slice(0,activations)` = the cumulative ladder) | FAITHFUL |
-| HA3 | S2 | 1 random enemy: 105.58% damage (NO activation clause) | `interval:4 → enemy → flatDamage 105.58` (datamined `skillCooldownsSec.skill2 = 4`, resolved 2026-07-20; first fire t=4, ~44/180s) | FAITHFUL |
-| HA4 | S2 | attacking an Electric Code target → Damage Taken ▲5.64% ×5 / 5s | `shotFired + bossElementGate:'Electric' → enemy → buff damageTakenPct 5.64 / maxStacks 5 / durationSec 5` | FAITHFUL |
-| HA5 | BU | all enemies: 164.83% Burst Skill damage | `burstCast → enemy → flatDamage 164.83` (burst-cast FB-exempt; one hit/cast) | FAITHFUL |
-| HA6 | BU | attacking an Electric Code target: 164.83% additional damage | `burstCast + bossElementGate:'Electric' → enemy → flatDamage 164.83` (a SECOND hit; inert off-Electric) | FAITHFUL |
+| #   | Slot | Kit line                                                                                                 | Encoding                                                                                                                           | Disposition |
+| --- | ---- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ----------- |
+| HA1 | S1   | after 30 landed normal attacks → target: 131.34% additional damage                                       | `hitCount:30 → enemy → flatDamage 131.34` (recurring; crit sheet-rate / no-core / noRange / FB-by-timing by engine default)        | FAITHFUL    |
+| HA2 | S1   | entering Full Burst → all allies: Burst CD ▼ 1.82 / 2.2 / 2.6 ("each subsequent triggers all before it") | `fullBurstEnter → allies → escalating[burstCdr 1.82, 2.2, 2.6]` (engine `slice(0,activations)` = the cumulative ladder)            | FAITHFUL    |
+| HA3 | S2   | 1 random enemy: 105.58% damage (NO activation clause)                                                    | `interval:4 → enemy → flatDamage 105.58` (datamined `skillCooldownsSec.skill2 = 4`, resolved 2026-07-20; first fire t=4, ~44/180s) | FAITHFUL    |
+| HA4 | S2   | attacking an Electric Code target → Damage Taken ▲5.64% ×5 / 5s                                          | `shotFired + bossElementGate:'Electric' → enemy → buff damageTakenPct 5.64 / maxStacks 5 / durationSec 5`                          | FAITHFUL    |
+| HA5 | BU   | all enemies: 164.83% Burst Skill damage                                                                  | `burstCast → enemy → flatDamage 164.83` (burst-cast FB-exempt; one hit/cast)                                                       | FAITHFUL    |
+| HA6 | BU   | attacking an Electric Code target: 164.83% additional damage                                             | `burstCast + bossElementGate:'Electric' → enemy → flatDamage 164.83` (a SECOND hit; inert off-Electric)                            | FAITHFUL    |
 
 `unmodeled` is legitimately empty — every printed line is encoded.
 
@@ -35,6 +35,7 @@ is measured/hand-tuned against a real fight.
 
 The scope-lock boss is NOT Electric, so HA4 (damageTaken) and HA6 (extra burst hit) are faithfully **inert**
 there (Iron is element-advantaged vs Electric — this is an anti-Electric kit). The driver test pins BOTH states:
+
 - **Iron** (inert): no damageTakenPct debuff, `mult.taken` 1.0, `mult.elem` 1.0, **1** burst hit/cast.
 - **Electric** (live): stacking damageTakenPct 5.64 (maxStacks 5) → `mult.taken` reaches 1.282, `mult.elem` 1.1, **2** burst hits/cast.
 

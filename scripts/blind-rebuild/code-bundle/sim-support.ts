@@ -29,11 +29,13 @@ export function scaleBlocks(
 
   const scaleVal = (v: number, slot: SkillSlot): number => {
     const lvl = levels[slot];
-    if (lvl >= 10 || v === 0) return v;
+    if (lvl >= 10 || v === 0) {return v;}
     const abs = Math.abs(v);
     const arr = (arrays[slot] ?? []).find((a) => Math.abs(a[9] - abs) < 0.005);
     if (!arr) {
-      missing.add(`${slot}: no level table match for ${v} — kept at max-level value`);
+      missing.add(
+        `${slot}: no level table match for ${v} — kept at max-level value`
+      );
       return v;
     }
     return arr[lvl - 1] * Math.sign(v);
@@ -41,22 +43,29 @@ export function scaleBlocks(
 
   const scaleEffect = (e: EffectDef, slot: SkillSlot): EffectDef => {
     switch (e.kind) {
-      case 'buff': return { ...e, value: scaleVal(e.value, slot) };
-      case 'flatDamage': return { ...e, atkPct: scaleVal(e.atkPct, slot) };
-      case 'dot': return { ...e, atkPct: scaleVal(e.atkPct, slot) };
-      case 'burstCdr': return { ...e, seconds: scaleVal(e.seconds, slot) };
-      case 'escalating': return { ...e, steps: e.steps.map((s) => scaleEffect(s, slot)) };
-      default: return e;
+      case 'buff':
+        return { ...e, value: scaleVal(e.value, slot) };
+      case 'flatDamage':
+        return { ...e, atkPct: scaleVal(e.atkPct, slot) };
+      case 'dot':
+        return { ...e, atkPct: scaleVal(e.atkPct, slot) };
+      case 'burstCdr':
+        return { ...e, seconds: scaleVal(e.seconds, slot) };
+      case 'escalating':
+        return { ...e, steps: e.steps.map((s) => scaleEffect(s, slot)) };
+      default:
+        return e;
     }
   };
 
   const scaled = blocks.map((b) =>
-    levels[b.slot] >= 10 ? b : { ...b, effects: b.effects.map((e) => scaleEffect(e, b.slot)) }
+    levels[b.slot] >= 10
+      ? b
+      : { ...b, effects: b.effects.map((e) => scaleEffect(e, b.slot)) }
   );
   warnings.push(...missing);
   return scaled;
 }
-
 
 // FILE: src/skills/index.ts
 
@@ -69,8 +78,18 @@ export function scaleBlocks(
 // Node callers get overrides from ./overrides-node.ts; the web app bundles them
 // via import.meta.glob.
 import type { CharacterData } from '../types.js';
-import { scaleBlocks, type SkillLevels, type SlotLevelArrays } from './scale.js';
-import type { Block, CharacterSkills, ConsolidationConfig, SkillSlot, UnmodeledText } from './types.js';
+import {
+  scaleBlocks,
+  type SkillLevels,
+  type SlotLevelArrays,
+} from './scale.js';
+import type {
+  Block,
+  CharacterSkills,
+  ConsolidationConfig,
+  SkillSlot,
+  UnmodeledText,
+} from './types.js';
 
 const SLOTS: SkillSlot[] = ['skill1', 'skill2', 'burst'];
 
@@ -96,7 +115,13 @@ export interface OverrideFile {
   pierceModes?: string[]; // pierce only in these modes (e.g. CCW: ["Snipe"])
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
-  charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean; pullsPerSec?: number };
+  charFixes?: {
+    chargeFrames?: number;
+    reloadFrames?: number;
+    burstCooldownSec?: number;
+    noBoltRecovery?: boolean;
+    pullsPerSec?: number;
+  };
   // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
   // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED
   // gate; the "80 landed on the small core" story is interpretive. See open-questions A26.
@@ -112,7 +137,11 @@ export interface OverrideFile {
   burst?: Block[];
 }
 
-export const MAX_SKILL_LEVELS: SkillLevels = { skill1: 10, skill2: 10, burst: 10 };
+export const MAX_SKILL_LEVELS: SkillLevels = {
+  skill1: 10,
+  skill2: 10,
+  burst: 10,
+};
 
 export function resolveSkills(
   char: CharacterData,
@@ -132,7 +161,11 @@ export function resolveSkills(
   }
 
   const warnings: string[] = [...(override.caveats ?? [])];
-  const bySlot: Record<SkillSlot, Block[]> = { skill1: [], skill2: [], burst: [] };
+  const bySlot: Record<SkillSlot, Block[]> = {
+    skill1: [],
+    skill2: [],
+    burst: [],
+  };
   for (const slot of SLOTS) {
     const defined = override[slot];
     if (!Array.isArray(defined)) {
@@ -161,7 +194,6 @@ export function resolveSkills(
     resources: override.resources,
   };
 }
-
 
 // FILE: src/engine/sg-geometry.ts
 
@@ -200,13 +232,22 @@ export const CORE_PX_C = 47;
 // Datamined per-weapon-class accuracy_circle_scale (the class exemplars the px
 // calibration was fit against). Mirrors sim.ts HR_CORE_CIRCLE. MG/SR/RL have no
 // accuracy-circle model here → geometry does not touch their core rate.
-export const ACCURACY_CIRCLE_SCALE: Record<string, number> = { AR: 75, SMG: 110, SG: 250 };
+export const ACCURACY_CIRCLE_SCALE: Record<string, number> = {
+  AR: 75,
+  SMG: 110,
+  SG: 250,
+};
 
 // Measured boss-core diameter per range band (px), hand-outlined on the Noir SG study
 // (noir-sg-bands.json). The boss is the SAME physical union raid boss across element
 // assignments (owner) → these transport across comps. Equivalent to coreDpx() at the
 // calibration's impliedRanges (near 20.7, mid 28.0, midfar 52.9, far 76.4) by construction.
-export const BAND_CORE_PX: Record<string, number> = { near: 31, mid: 28, midfar: 21, far: 17 };
+export const BAND_CORE_PX: Record<string, number> = {
+  near: 31,
+  mid: 28,
+  midfar: 21,
+  far: 17,
+};
 
 // Hand-outlined SG pellet HIT fraction per band (noir-sg-bands.json): the fraction of the
 // fixed D=162 spread circle covered by the boss body = expected fraction of pellets that land.
@@ -236,7 +277,7 @@ export function rangeFromCoreDpx(coreD: number): number {
 // Concentric core inside the accuracy circle ⇒ fraction of shots on the core ≈ area ratio.
 // Clamped to 1 (the core cannot be more than fully covered).
 export function coreFracGeo(coreD: number, circleD: number): number {
-  if (circleD <= 0) return 1;
+  if (circleD <= 0) {return 1;}
   const r = coreD / circleD;
   return Math.min(1, r * r);
 }
@@ -247,7 +288,7 @@ export function circleDpxAtHr(
   scale: number,
   hr: number,
   slope: number,
-  floorFrac: number,
+  floorFrac: number
 ): number {
   const frac = Math.max(floorFrac, 1 - slope * Math.max(0, hr));
   return circleDpx(scale) * frac;
@@ -258,12 +299,12 @@ export function circleDpxAtHr(
 // (frame-measured on noir sg.MP4: 6-band study, all bands "denser-center"). A pellet lands / cores
 // iff it falls within the boss body / core radius ⇒ the Rayleigh CDF. ONE σ drives BOTH SG landing
 // and per-weapon core-hit (same cone at boss-body vs core radius), unifying Workstreams A/B/C.
-export const K_SIGMA = 2.53;      // the visible spread disc (=circleDpx) is the ~2.5σ envelope
+export const K_SIGMA = 2.53; // the visible spread disc (=circleDpx) is the ~2.5σ envelope
 export const CORE_AUTOAIM = 0.55; // core-ONLY auto-aim loss (reticle never nails the ~1px true center)
 
 // P(a pellet lands within radius R of the aim point) for an isotropic 2D Gaussian, σ.
 export function rayleighWithin(R: number, sigma: number): number {
-  if (sigma <= 0) return R > 0 ? 1 : 0;
+  if (sigma <= 0) {return R > 0 ? 1 : 0;}
   return 1 - Math.exp(-(R * R) / (2 * sigma * sigma));
 }
 
@@ -273,7 +314,7 @@ export function pelletSigma(
   scale: number,
   hr: number,
   slope: number,
-  floorFrac: number,
+  floorFrac: number
 ): number {
   return circleDpxAtHr(scale, hr, slope, floorFrac) / 2 / K_SIGMA;
 }
@@ -287,7 +328,11 @@ export function bossBodyRadius(hitFrac: number, profileScale = 1): number {
 }
 
 // SG pellet-landing fraction: Gaussian cone (σ) overlapping the boss body (R_boss).
-export function pelletLandFrac(hitFrac: number, sigma: number, profileScale = 1): number {
+export function pelletLandFrac(
+  hitFrac: number,
+  sigma: number,
+  profileScale = 1
+): number {
   return rayleighWithin(bossBodyRadius(hitFrac, profileScale), sigma);
 }
 
@@ -329,9 +374,13 @@ export function pelletCoreFrac(coreDpxBand: number, sigma: number): number {
 //   0.583) and chisato ▲22 near-exact. Low-HR cells are σ-shrink-invariant, so the clean chisato/
 //   scarlet base cells are untouched. S_FLOOR shared (bites only at HR>~90).
 export const CONE_DELTA0: Record<string, number> = { AR: 18, SMG: 16, SG: 30 }; // px @2622×1206, monotone in cone size
-export const CONE_DELTA_H = 120;        // Hit Rate at which the centering offset δ reaches 0
-export const CONE_SIGMA_SHRINK: Record<string, number> = { AR: 0.009, SMG: 0.004, SG: 0.009 }; // σ shrink per HR point, per weapon
-export const CONE_SIGMA_FLOOR = 0.10;   // σ floor as a fraction of σ(0) (bites only at HR>~90)
+export const CONE_DELTA_H = 120; // Hit Rate at which the centering offset δ reaches 0
+export const CONE_SIGMA_SHRINK: Record<string, number> = {
+  AR: 0.009,
+  SMG: 0.004,
+  SG: 0.009,
+}; // σ shrink per HR point, per weapon
+export const CONE_SIGMA_FLOOR = 0.1; // σ floor as a fraction of σ(0) (bites only at HR>~90)
 
 // Pellet-spread σ (px) under the δ-cone model: half the accuracy circle / K_SIGMA, with a mild
 // Hit-Rate σ-shrink (floored). Matches implementation-plan §2's sigma_w(hr). CIRCLE_PX_C is 0, so
@@ -345,7 +394,7 @@ export function coneSigma(scale: number, hr: number, shrink: number): number {
 // Unknown weapon (MG/SR/RL) → 0 (they have no accuracy-circle model and never route here).
 export function coneDelta(weapon: string, hr: number): number {
   const d0 = CONE_DELTA0[weapon];
-  if (d0 === undefined) return 0;
+  if (d0 === undefined) {return 0;}
   return d0 * Math.max(0, 1 - Math.max(0, hr) / CONE_DELTA_H);
 }
 
@@ -360,7 +409,11 @@ export function besselI0(x: number): number {
       1 +
       t2 *
         (3.5156229 +
-          t2 * (3.0899424 + t2 * (1.2067492 + t2 * (0.2659732 + t2 * (0.0360768 + t2 * 0.0045813)))))
+          t2 *
+            (3.0899424 +
+              t2 *
+                (1.2067492 +
+                  t2 * (0.2659732 + t2 * (0.0360768 + t2 * 0.0045813)))))
     );
   }
   const t = 3.75 / ax;
@@ -377,7 +430,9 @@ export function besselI0(x: number): number {
                     (0.00916281 +
                       t *
                         (-0.02057706 +
-                          t * (0.02635537 + t * (-0.01647633 + t * 0.00392377))))))))
+                          t *
+                            (0.02635537 +
+                              t * (-0.01647633 + t * 0.00392377))))))))
   );
 }
 
@@ -386,17 +441,23 @@ export function besselI0(x: number): number {
 // polar coords about the disc centre: P = ∫₀ᴿ (ρ/σ²)·exp(−(ρ²+δ²)/2σ²)·I₀(ρδ/σ²) dρ (the θ-integral
 // gives 2π·I₀). Deterministic Simpson quadrature, no per-tick RNG. δ=0 reduces EXACTLY to
 // rayleighWithin (special-cased so the reduction is analytic, not quadrature-approximate).
-export function offsetCoreProb(R: number, sigma: number, delta: number): number {
-  if (sigma <= 0) return R > 0 ? 1 : 0;
-  if (R <= 0) return 0;
-  if (delta === 0) return rayleighWithin(R, sigma); // exact centered reduction
+export function offsetCoreProb(
+  R: number,
+  sigma: number,
+  delta: number
+): number {
+  if (sigma <= 0) {return R > 0 ? 1 : 0;}
+  if (R <= 0) {return 0;}
+  if (delta === 0) {return rayleighWithin(R, sigma);} // exact centered reduction
   const s2 = sigma * sigma;
   const d2 = delta * delta;
   const N = 64; // even ⇒ Simpson
   const h = R / N;
   const f = (rho: number): number =>
-    (rho / s2) * Math.exp(-(rho * rho + d2) / (2 * s2)) * besselI0((rho * delta) / s2);
+    (rho / s2) *
+    Math.exp(-(rho * rho + d2) / (2 * s2)) *
+    besselI0((rho * delta) / s2);
   let sum = f(0) + f(R);
-  for (let i = 1; i < N; i++) sum += (i % 2 ? 4 : 2) * f(i * h);
+  for (let i = 1; i < N; i++) {sum += (i % 2 ? 4 : 2) * f(i * h);}
   return Math.min(1, (h / 3) * sum);
 }

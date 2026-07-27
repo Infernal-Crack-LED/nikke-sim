@@ -35,7 +35,9 @@ export function deriveNicknames(rows: AliasRow[]): NicknameDerivation {
   for (const r of rows) {
     fullNames.set(normName(r.name).toLowerCase(), r.id);
     const base = normName(r.name).split(':')[0].trim().toLowerCase();
-    (baseOwners.get(base) ?? baseOwners.set(base, new Set()).get(base)!).add(r.id);
+    (baseOwners.get(base) ?? baseOwners.set(base, new Set()).get(base)!).add(
+      r.id
+    );
   }
 
   // alias -> claiming ids (to drop cross-unit collisions)
@@ -43,7 +45,7 @@ export function deriveNicknames(rows: AliasRow[]): NicknameDerivation {
   for (const r of rows) {
     for (const raw of r.aliases ?? []) {
       const a = raw.toLowerCase().trim();
-      if (!a) continue;
+      if (!a) {continue;}
       (claims.get(a) ?? claims.set(a, new Set()).get(a)!).add(r.id);
     }
   }
@@ -54,20 +56,20 @@ export function deriveNicknames(rows: AliasRow[]): NicknameDerivation {
     const kept: string[] = [];
     for (const raw of r.aliases ?? []) {
       const a = raw.toLowerCase().trim();
-      if (!a || kept.includes(a)) continue;
+      if (!a || kept.includes(a)) {continue;}
       const nameOwner = fullNames.get(a);
       const bases = baseOwners.get(a);
       let reason: string | null = null;
-      if (nameOwner === r.id) reason = 'identity (equals own full name)';
-      else if (nameOwner) reason = `equals full name of ${nameOwner}`;
+      if (nameOwner === r.id) {reason = 'identity (equals own full name)';}
+      else if (nameOwner) {reason = `equals full name of ${nameOwner}`;}
       else if (bases && bases.size >= 2)
-        reason = `ambiguous base name (${[...bases].sort().join(', ')})`;
+        {reason = `ambiguous base name (${[...bases].sort().join(', ')})`;}
       else if (claims.get(a)!.size >= 2)
-        reason = `claimed by multiple units (${[...claims.get(a)!].sort().join(', ')})`;
-      if (reason) dropped.push({ alias: a, id: r.id, reason });
-      else kept.push(a);
+        {reason = `claimed by multiple units (${[...claims.get(a)!].sort().join(', ')})`;}
+      if (reason) {dropped.push({ alias: a, id: r.id, reason });}
+      else {kept.push(a);}
     }
-    if (kept.length) byId[r.id] = kept;
+    if (kept.length) {byId[r.id] = kept;}
   }
   return { byId, dropped };
 }

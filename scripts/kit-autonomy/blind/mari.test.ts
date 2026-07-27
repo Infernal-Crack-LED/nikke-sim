@@ -28,7 +28,13 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const SELF_ATK_PCT = 30.78;
 const ALLY_CASTER_ATK_PCT = 30.78;
@@ -57,15 +63,22 @@ function runWithEvents(opts: any): { res: any; events: any[] } {
 // would turn every differential assertion below into a false green.
 function blocksOf(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 function allBlocks(ov: any): any[] {
-  return [...blocksOf(ov, 'skill1'), ...blocksOf(ov, 'skill2'), ...blocksOf(ov, 'burst')];
+  return [
+    ...blocksOf(ov, 'skill1'),
+    ...blocksOf(ov, 'skill2'),
+    ...blocksOf(ov, 'burst'),
+  ];
 }
 
 const base = () => controlComp('mari', true) as any;
-const withMari = (patched: any) => ({ ...base(), overrides: { mari: patched } });
+const withMari = (patched: any) => ({
+  ...base(),
+  overrides: { mari: patched },
+});
 
 // ---------------------------------------------------------------- control run + event indexing
 const CTRL = runWithEvents(base());
@@ -76,45 +89,53 @@ const CTRL_BUFFS = CTRL.events.filter((e) => e.kind === 'buffApply');
 
 // mari self ATK buff doubles as the caster-index probe (a self-buff has casterIdx === targetIdx).
 const SELF_ATK_BUFFS = CTRL_BUFFS.filter(
-  (b) => b.stat === 'atkPct' && near(b.value, SELF_ATK_PCT) && b.targetSlug === 'mari',
+  (b) =>
+    b.stat === 'atkPct' &&
+    near(b.value, SELF_ATK_PCT) &&
+    b.targetSlug === 'mari'
 );
 const MARI_IDX: number | null =
   SELF_ATK_BUFFS[0]?.casterIdx ??
   CTRL_BUFFS.find(
-    (b) => b.targetSlug === 'mari' && b.casterIdx !== null && b.casterIdx === b.targetIdx,
+    (b) =>
+      b.targetSlug === 'mari' &&
+      b.casterIdx !== null &&
+      b.casterIdx === b.targetIdx
   )?.casterIdx ??
   null;
 
 // ---------------------------------------------------------------- counterfactual overrides
 const NO_GAIN_PIERCE = withPatchedOverride('mari', (ov: any) => {
-  for (const b of allBlocks(ov)) b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');
+  for (const b of allBlocks(ov))
+    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'gainPierce');}
 });
 const ALWAYS_PIERCE = withPatchedOverride('mari', (ov: any) => {
   ov.hasPierce = true;
 });
 const SHORT_PIERCE_WINDOW = withPatchedOverride('mari', (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'pierceDamagePct') e.durationSec = 0.5;
-    }
+    {for (const e of b.effects ?? []) {
+      if (e.kind === 'buff' && e.stat === 'pierceDamagePct')
+        {e.durationSec = 0.5;}
+    }}
 });
 const ZERO_BURST_NUKE = withPatchedOverride('mari', (ov: any) => {
   for (const b of blocksOf(ov, 'burst'))
-    for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') e.atkPct = 0;
-    }
+    {for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {e.atkPct = 0;}
+    }}
 });
 const DOUBLE_BURST_NUKE = withPatchedOverride('mari', (ov: any) => {
   for (const b of blocksOf(ov, 'burst'))
-    for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') e.atkPct = (e.atkPct ?? 0) * 2;
-    }
+    {for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {e.atkPct = (e.atkPct ?? 0) * 2;}
+    }}
 });
 const FLIP_BURST_NOFB = withPatchedOverride('mari', (ov: any) => {
   for (const b of blocksOf(ov, 'burst'))
-    for (const e of b.effects ?? []) {
-      if (e.kind === 'flatDamage') e.noFb = !e.noFb;
-    }
+    {for (const e of b.effects ?? []) {
+      if (e.kind === 'flatDamage') {e.noFb = !e.noFb;}
+    }}
 });
 
 const R_NO_GAIN_PIERCE = runWithEvents(withMari(NO_GAIN_PIERCE));
@@ -127,16 +148,19 @@ const R_FLIP_NOFB = runWithEvents(withMari(FLIP_BURST_NOFB));
 // Did mari actually cast her own Burst II in this fixture? Two independent probes: the nuke is
 // load-bearing (zeroing it moves her total) OR an attributable burstCast event exists.
 const MARI_BURSTS =
-  totals(R_ZERO_BURST.res)['mari'] < CTRL_T['mari'] ||
+  totals(R_ZERO_BURST.res).mari < CTRL_T.mari ||
   CTRL.events.some(
-    (e) => e.kind === 'burstCast' && (e.slot ?? e.srcSlot ?? e.unitIdx) === MARI_IDX,
+    (e) =>
+      e.kind === 'burstCast' && (e.slot ?? e.srcSlot ?? e.unitIdx) === MARI_IDX
   );
 
 // ================================================================ fixture non-vacuity
 describe('mari — fixture sanity (non-vacuity)', () => {
   it('mari fires, deals damage, and the comp reaches Full Burst', () => {
     expect(unitOf(CTRL.res, 'mari').totalDamage).toBeGreaterThan(0);
-    expect(CTRL.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      CTRL.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
     expect(ALLY_COUNT).toBeGreaterThanOrEqual(4);
   });
 
@@ -156,7 +180,7 @@ describe('mari — skill1a: full charge -> all allies Damage dealt to Shield +10
     // Nearest-wrong: encoding 100.09% as attackDamagePct / atkPct because the schema has no shield
     // stat. That would inflate the whole team every full charge.
     const smuggled = CTRL_BUFFS.filter(
-      (b) => b.casterIdx === MARI_IDX && near(b.value, SHIELD_DMG_PCT, 0.5),
+      (b) => b.casterIdx === MARI_IDX && near(b.value, SHIELD_DMG_PCT, 0.5)
     );
     expect(smuggled).toEqual([]);
   });
@@ -170,11 +194,14 @@ describe('mari — skill1b: core hit -> all allies Pierce Damage +40.99% / 10s',
     // Non-vacuity: the buff appearing at all IS proof the core-gated trigger fired in this fixture.
     // Nearest-wrong: a boss-held debuff encoding (casterIdx === null).
     expect(pierceBuffs.length).toBeGreaterThan(0);
-    expect(new Set(pierceBuffs.map((b) => b.casterIdx))).toEqual(new Set([MARI_IDX]));
+    expect(new Set(pierceBuffs.map((b) => b.casterIdx))).toEqual(
+      new Set([MARI_IDX])
+    );
   });
 
   it('carries the raw kit percentage (a plain percentage stat, never flat-resolved)', () => {
-    for (const b of pierceBuffs) expect(near(b.value, PIERCE_DMG_PCT)).toBe(true);
+    for (const b of pierceBuffs)
+      {expect(near(b.value, PIERCE_DMG_PCT)).toBe(true);}
   });
 
   it('covers every ally, not just self', () => {
@@ -184,12 +211,13 @@ describe('mari — skill1b: core hit -> all allies Pierce Damage +40.99% / 10s',
 
   it('is time-bounded, not permanent', () => {
     // Nearest-wrong: omitting durationSec (a permanent buff) — expiresFrame would not be finite.
-    for (const b of pierceBuffs) expect(Number.isFinite(b.expiresFrame)).toBe(true);
+    for (const b of pierceBuffs)
+      {expect(Number.isFinite(b.expiresFrame)).toBe(true);}
   });
 
   it('is load-bearing: collapsing the 10s window to 0.5s lowers mari damage', () => {
     // Proves the buff is not inert AND that the window length is doing work (duration semantics).
-    expect(totals(R_SHORT_PIERCE.res)['mari']).toBeLessThan(CTRL_T['mari']);
+    expect(totals(R_SHORT_PIERCE.res).mari).toBeLessThan(CTRL_T.mari);
   });
 });
 
@@ -220,7 +248,7 @@ describe('mari — skill2a: self Gain Pierce 5s + ATK +30.78% 5s', () => {
         b.stat === 'atkPct' &&
         near(b.value, SELF_ATK_PCT) &&
         b.targetSlug !== 'mari' &&
-        b.casterIdx === MARI_IDX,
+        b.casterIdx === MARI_IDX
     );
     expect(leaked).toEqual([]);
   });
@@ -228,26 +256,29 @@ describe('mari — skill2a: self Gain Pierce 5s + ATK +30.78% 5s', () => {
   it('Gain Pierce is live: removing the gainPierce effect lowers mari damage', () => {
     // gainPierce emits no event, so the tag can only be observed through her own Pierce Damage bucket
     // (fed by skill1b). Nearest-wrong: dropping the pierce line as `defensive/inert`.
-    expect(totals(R_NO_GAIN_PIERCE.res)['mari']).toBeLessThan(CTRL_T['mari']);
+    expect(totals(R_NO_GAIN_PIERCE.res).mari).toBeLessThan(CTRL_T.mari);
   });
 
   it('Gain Pierce is self-scoped: removing it leaves every teammate byte-identical', () => {
     // Inertness. Nearest-wrong: granting pierce to allies (they would lose damage too).
     for (const slug of ROSTER) {
-      if (slug !== 'mari') expect(totals(R_NO_GAIN_PIERCE.res)[slug]).toBe(CTRL_T[slug]);
+      if (slug !== 'mari')
+        {expect(totals(R_NO_GAIN_PIERCE.res)[slug]).toBe(CTRL_T[slug]);}
     }
   });
 
   it('the pierce window is bounded, not whole-fight', () => {
     // Nearest-wrong: the top-level hasPierce boolean instead of a 5s gainPierce effect — strictly
     // more damage, i.e. an over-credit. GREEN only if the shipped model is the bounded one.
-    expect(totals(R_ALWAYS_PIERCE.res)['mari']).toBeGreaterThan(CTRL_T['mari']);
+    expect(totals(R_ALWAYS_PIERCE.res).mari).toBeGreaterThan(CTRL_T.mari);
   });
 });
 
 // ================================================================ skill2 b — allies
 describe('mari — skill2b: all allies ATK +30.78% of the skill user ATK / 5s', () => {
-  const casterAtk = CTRL_BUFFS.filter((b) => b.stat === 'casterAtkPct' && b.casterIdx === MARI_IDX);
+  const casterAtk = CTRL_BUFFS.filter(
+    (b) => b.stat === 'casterAtkPct' && b.casterIdx === MARI_IDX
+  );
 
   it('emits a caster-scaled ATK grant to every ally', () => {
     expect(casterAtk.length).toBeGreaterThan(0);
@@ -257,8 +288,10 @@ describe('mari — skill2b: all allies ATK +30.78% of the skill user ATK / 5s', 
   it('is FLAT-resolved at apply time, not the raw kit percentage', () => {
     // Nearest-wrong: stat atkPct 30.78 to allies (scales each TARGET own ATK — over-credits high-ATK
     // attackers and under-credits supporters). Under that model value === 30.78.
-    for (const b of casterAtk) expect(b.value).toBeGreaterThan(1000);
-    expect(casterAtk.some((b) => near(b.value, ALLY_CASTER_ATK_PCT))).toBe(false);
+    for (const b of casterAtk) {expect(b.value).toBeGreaterThan(1000);}
+    expect(casterAtk.some((b) => near(b.value, ALLY_CASTER_ATK_PCT))).toBe(
+      false
+    );
   });
 
   it('resolves to ONE identical flat value across targets, implying a plausible caster ATK', () => {
@@ -271,59 +304,82 @@ describe('mari — skill2b: all allies ATK +30.78% of the skill user ATK / 5s', 
   });
 
   it('re-applies over the fight, matching the self branch cadence', () => {
-    expect(new Set(casterAtk.map((b) => b.expiresFrame)).size).toBeGreaterThan(1);
+    expect(new Set(casterAtk.map((b) => b.expiresFrame)).size).toBeGreaterThan(
+      1
+    );
   });
 });
 
 // ================================================================ burst a — 639.36% nuke
 describe('mari — burst a: 639.36% of final ATK to all enemies', () => {
-  it.skipIf(!MARI_BURSTS)('is live and LINEAR in atkPct (the magnitude is load-bearing)', () => {
-    // Formula-agnostic magnitude proof: zero / 1x / 2x must produce equal deltas.
-    const b0 = totals(R_ZERO_BURST.res)['mari'];
-    const b2 = totals(R_DOUBLE_BURST.res)['mari'];
-    expect(CTRL_T['mari']).toBeGreaterThan(b0);
-    const d1 = CTRL_T['mari'] - b0;
-    const d2 = b2 - CTRL_T['mari'];
-    expect(Math.abs(d2 - d1) / d1).toBeLessThan(0.02);
-  });
-
-  it.skipIf(!MARI_BURSTS)('resolves OUTSIDE Full Burst — flipping noFb moves nothing', () => {
-    // Burst-cast damage lands before the Full Burst window opens, so the +50% major cannot apply and
-    // the noFb flag must be inert. If this moves, the nuke is resolving inside FB — a real finding.
-    expect(Math.abs(totals(R_FLIP_NOFB.res)['mari'] - CTRL_T['mari']) / CTRL_T['mari']).toBeLessThan(
-      1e-9,
-    );
-  });
-
-  it.skipIf(!MARI_BURSTS)('is enemy-scoped: zeroing it leaves every teammate byte-identical', () => {
-    for (const slug of ROSTER) {
-      if (slug !== 'mari') expect(totals(R_ZERO_BURST.res)[slug]).toBe(CTRL_T[slug]);
+  it.skipIf(!MARI_BURSTS)(
+    'is live and LINEAR in atkPct (the magnitude is load-bearing)',
+    () => {
+      // Formula-agnostic magnitude proof: zero / 1x / 2x must produce equal deltas.
+      const b0 = totals(R_ZERO_BURST.res).mari;
+      const b2 = totals(R_DOUBLE_BURST.res).mari;
+      expect(CTRL_T.mari).toBeGreaterThan(b0);
+      const d1 = CTRL_T.mari - b0;
+      const d2 = b2 - CTRL_T.mari;
+      expect(Math.abs(d2 - d1) / d1).toBeLessThan(0.02);
     }
-  });
+  );
+
+  it.skipIf(!MARI_BURSTS)(
+    'resolves OUTSIDE Full Burst — flipping noFb moves nothing',
+    () => {
+      // Burst-cast damage lands before the Full Burst window opens, so the +50% major cannot apply and
+      // the noFb flag must be inert. If this moves, the nuke is resolving inside FB — a real finding.
+      expect(
+        Math.abs(totals(R_FLIP_NOFB.res).mari - CTRL_T.mari) /
+          CTRL_T.mari
+      ).toBeLessThan(1e-9);
+    }
+  );
+
+  it.skipIf(!MARI_BURSTS)(
+    'is enemy-scoped: zeroing it leaves every teammate byte-identical',
+    () => {
+      for (const slug of ROSTER) {
+        if (slug !== 'mari')
+          {expect(totals(R_ZERO_BURST.res)[slug]).toBe(CTRL_T[slug]);}
+      }
+    }
+  );
 });
 
 // ================================================================ burst b — Attack Damage +40.99%
 describe('mari — burst b: all allies Attack Damage +40.99% / 10s', () => {
   const atkDmg = CTRL_BUFFS.filter(
     (b) =>
-      b.stat === 'attackDamagePct' && near(b.value, BURST_ATK_DMG_PCT) && b.casterIdx === MARI_IDX,
+      b.stat === 'attackDamagePct' &&
+      near(b.value, BURST_ATK_DMG_PCT) &&
+      b.casterIdx === MARI_IDX
   );
 
-  it.skipIf(!MARI_BURSTS)('applies attackDamagePct at the kit magnitude to every ally', () => {
-    expect(atkDmg.length).toBeGreaterThan(0);
-    expect(new Set(atkDmg.map((b) => b.targetSlug)).size).toBe(ALLY_COUNT);
-  });
+  it.skipIf(!MARI_BURSTS)(
+    'applies attackDamagePct at the kit magnitude to every ally',
+    () => {
+      expect(atkDmg.length).toBeGreaterThan(0);
+      expect(new Set(atkDmg.map((b) => b.targetSlug)).size).toBe(ALLY_COUNT);
+    }
+  );
 
   it.skipIf(!MARI_BURSTS)('is time-bounded (10s window), not permanent', () => {
-    for (const b of atkDmg) expect(Number.isFinite(b.expiresFrame)).toBe(true);
+    for (const b of atkDmg) {expect(Number.isFinite(b.expiresFrame)).toBe(true);}
   });
 
-  it.skipIf(!MARI_BURSTS)('is the Damage-Up stat, not a mis-scoped ATK buff', () => {
-    // Nearest-wrong: `Attack damage` read as ATK. Different bucket, different dilution.
-    const misScoped = CTRL_BUFFS.filter(
-      (b) => b.casterIdx === MARI_IDX && b.stat === 'atkPct' && near(b.value, BURST_ATK_DMG_PCT),
-    );
-    expect(misScoped).toEqual([]);
-  });
+  it.skipIf(!MARI_BURSTS)(
+    'is the Damage-Up stat, not a mis-scoped ATK buff',
+    () => {
+      // Nearest-wrong: `Attack damage` read as ATK. Different bucket, different dilution.
+      const misScoped = CTRL_BUFFS.filter(
+        (b) =>
+          b.casterIdx === MARI_IDX &&
+          b.stat === 'atkPct' &&
+          near(b.value, BURST_ATK_DMG_PCT)
+      );
+      expect(misScoped).toEqual([]);
+    }
+  );
 });
-

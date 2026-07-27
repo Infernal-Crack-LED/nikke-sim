@@ -9,9 +9,31 @@
   },
   "bloom": "The reticle PULSES on the fire cadence (~20 Hz) between a contracted floor and the fully-bloomed peak. accuracy_circle_scale maps to the PEAK; a single-frame snapshot can land anywhere between floor and peak (the source of the old under-measured AR/SMG points). The AR contracted floor ~29px ≈ the boss core, which is why high Hit Rate (which suppresses bloom toward the floor) approaches all-core.",
   "calibrationPoints": [
-    { "element": "AR accuracy circle (bloom peak)", "unit": "scarlet", "recording": "docs/probes/ar-sg-smg/scarlet ar.MP4", "scale": 75, "diameterPx": 48, "note": "re-measured at the fire-cadence bloom peak; the prior 0:10 snapshot read 29px (mid-bloom / near the contracted floor)." },
-    { "element": "SMG accuracy circle (bloom peak)", "unit": "little-mermaid", "recording": "docs/probes/control/lm.MP4", "timestamp": "0:10 (bloom peak over 60 frames)", "scale": 110, "diameterPx": 71.5, "note": "the prior quency 60px was a mid-bloom snapshot." },
-    { "element": "SG spread circle (gray)", "unit": "noir", "recording": "docs/probes/ar-sg-smg/noir sg.MP4", "timestamp": "0:13.9 (mid band)", "scale": 250, "diameterPx": 162 }
+    {
+      "element": "AR accuracy circle (bloom peak)",
+      "unit": "scarlet",
+      "recording": "docs/probes/ar-sg-smg/scarlet ar.MP4",
+      "scale": 75,
+      "diameterPx": 48,
+      "note": "re-measured at the fire-cadence bloom peak; the prior 0:10 snapshot read 29px (mid-bloom / near the contracted floor)."
+    },
+    {
+      "element": "SMG accuracy circle (bloom peak)",
+      "unit": "little-mermaid",
+      "recording": "docs/probes/control/lm.MP4",
+      "timestamp": "0:10 (bloom peak over 60 frames)",
+      "scale": 110,
+      "diameterPx": 71.5,
+      "note": "the prior quency 60px was a mid-bloom snapshot."
+    },
+    {
+      "element": "SG spread circle (gray)",
+      "unit": "noir",
+      "recording": "docs/probes/ar-sg-smg/noir sg.MP4",
+      "timestamp": "0:13.9 (mid band)",
+      "scale": 250,
+      "diameterPx": 162
+    }
   ],
   "crossCheck": {
     "finding": "AR contracted-floor / inner-bound reading (29px) == Noir mid-band boss core (28px), measured independently. The AR ACCURACY circle (fully bloomed) is 48px, NOT 29px.",
@@ -25,7 +47,12 @@
     "inverted": "range = 2100 / core_diameter_px - 47",
     "rSquared": 0.93,
     "selection": "Inverse-with-offset (perspective projection: apparent size ~ 1/(distance + camera offset)). Pure inverse d=k/r is RULED OUT (near d*r maxes 775 < far d*r mins 952, no overlap within range bounds). Linear d=a-b*r RULED OUT (mid-far implied range 57.7 exceeds its 35-55 bound). Inverse-offset is the only tested form with all four bands in-bounds.",
-    "rangeBoundsUsed": { "near": [15, 25], "mid": [25, 45], "midfar": [35, 55], "far": [56, 100] },
+    "rangeBoundsUsed": {
+      "near": [15, 25],
+      "mid": [25, 45],
+      "midfar": [35, 55],
+      "far": [56, 100]
+    },
     "impliedRanges": { "near": 20.7, "mid": 28.0, "midfar": 52.9, "far": 76.4 },
     "notes": "k, c ride on fuzzy range midpoints (treat +/-10%); the FORM is robustly selected by the bounds. One hard range value at any band would pin k,c exactly."
   },

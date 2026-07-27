@@ -82,14 +82,14 @@ const SLUG = 'raven';
 // the container.
 function blocksOf(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 
 function eachEffect(ov: any, fn: (e: any, b: any, slot: string) => void): void {
   for (const slot of ['skill1', 'skill2', 'burst']) {
     for (const b of blocksOf(ov, slot)) {
-      for (const e of (b.effects ?? [])) fn(e, b, slot);
+      for (const e of b.effects ?? []) {fn(e, b, slot);}
     }
   }
 }
@@ -125,36 +125,92 @@ const BASE = run();
 const SOLO = run(undefined, false);
 
 // S1a magnitude: 68.46 -> 0 and 68.46 -> 136.92 (linearity of the DoT channel).
-const DOT_ZERO = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'dot') { e.atkPct = 0; nDotZero++; }
-})));
-const DOT_DOUBLE = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'dot') { e.atkPct = e.atkPct * 2; nDotDouble++; }
-})));
+const DOT_ZERO = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'dot') {
+        e.atkPct = 0;
+        nDotZero++;
+      }
+    })
+  )
+);
+const DOT_DOUBLE = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'dot') {
+        e.atkPct = e.atkPct * 2;
+        nDotDouble++;
+      }
+    })
+  )
+);
 // S1a duration/stacking: 5 sec -> 1 sec collapses the overlap to (at most) one
 // live instance at a time.
-const DOT_SHORT = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'dot') { e.durationSec = 1; nDotShort++; }
-})));
+const DOT_SHORT = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'dot') {
+        e.durationSec = 1;
+        nDotShort++;
+      }
+    })
+  )
+);
 // B2 magnitude (also the S1a FLAVOR probe).
-const BURST_SUST_ZERO = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'buff' && e.stat === 'sustainedDamagePct') { e.value = 0; nBurstSust++; }
-})));
+const BURST_SUST_ZERO = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'buff' && e.stat === 'sustainedDamagePct') {
+        e.value = 0;
+        nBurstSust++;
+      }
+    })
+  )
+);
 // S1b magnitude + duration.
-const ATK_ZERO = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'buff' && e.stat === 'casterAtkPct') { e.value = 0; nAtkZero++; }
-})));
-const ATK_SHORT = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'buff' && e.stat === 'casterAtkPct') { e.durationSec = 2; nAtkShort++; }
-})));
+const ATK_ZERO = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.value = 0;
+        nAtkZero++;
+      }
+    })
+  )
+);
+const ATK_SHORT = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+        e.durationSec = 2;
+        nAtkShort++;
+      }
+    })
+  )
+);
 // B1 magnitude.
-const NUKE_ZERO = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'flatDamage') { e.atkPct = 0; nNukeZero++; }
-})));
+const NUKE_ZERO = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'flatDamage') {
+        e.atkPct = 0;
+        nNukeZero++;
+      }
+    })
+  )
+);
 // S2a/S2b inertness.
-const PARTS_ZERO = run(patch((ov) => eachEffect(ov, (e) => {
-  if (e.kind === 'buff' && e.stat === 'partsDamagePct') { e.value = 0; nParts++; }
-})));
+const PARTS_ZERO = run(
+  patch((ov) =>
+    eachEffect(ov, (e) => {
+      if (e.kind === 'buff' && e.stat === 'partsDamagePct') {
+        e.value = 0;
+        nParts++;
+      }
+    })
+  )
+);
 
 // --- event slices ----------------------------------------------------------
 const baseEv = BASE.events;
@@ -164,24 +220,42 @@ const fbStartsSolo = soloEv.filter((e) => e.kind === 'fullBurstStart');
 
 // SELF-cast caster-scaled ATK grants only: crown also hands out casterAtkPct, so
 // the self filter is casterIdx === targetIdx (both non-null).
-const selfAtkBase = baseEv.filter((e) =>
-  e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.targetSlug === SLUG
-  && e.casterIdx !== null && e.casterIdx === e.targetIdx);
-const selfAtkShort = ATK_SHORT.events.filter((e) =>
-  e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.targetSlug === SLUG
-  && e.casterIdx !== null && e.casterIdx === e.targetIdx);
+const selfAtkBase = baseEv.filter(
+  (e) =>
+    e.kind === 'buffApply' &&
+    e.stat === 'casterAtkPct' &&
+    e.targetSlug === SLUG &&
+    e.casterIdx !== null &&
+    e.casterIdx === e.targetIdx
+);
+const selfAtkShort = ATK_SHORT.events.filter(
+  (e) =>
+    e.kind === 'buffApply' &&
+    e.stat === 'casterAtkPct' &&
+    e.targetSlug === SLUG &&
+    e.casterIdx !== null &&
+    e.casterIdx === e.targetIdx
+);
 
-const sustBase = baseEv.filter((e) =>
-  e.kind === 'buffApply' && e.stat === 'sustainedDamagePct' && e.targetSlug === SLUG
-  && e.value === 89.44);
-const sustSolo = soloEv.filter((e) =>
-  e.kind === 'buffApply' && e.stat === 'sustainedDamagePct' && e.targetSlug === SLUG
-  && e.value === 89.44);
+const sustBase = baseEv.filter(
+  (e) =>
+    e.kind === 'buffApply' &&
+    e.stat === 'sustainedDamagePct' &&
+    e.targetSlug === SLUG &&
+    e.value === 89.44
+);
+const sustSolo = soloEv.filter(
+  (e) =>
+    e.kind === 'buffApply' &&
+    e.stat === 'sustainedDamagePct' &&
+    e.targetSlug === SLUG &&
+    e.value === 89.44
+);
 
 const committed: any = withPatchedOverride(SLUG, () => {});
 const partsEffects: any[] = [];
 eachEffect(committed, (e) => {
-  if (e.kind === 'buff' && e.stat === 'partsDamagePct') partsEffects.push(e);
+  if (e.kind === 'buff' && e.stat === 'partsDamagePct') {partsEffects.push(e);}
 });
 const unmodeledBlob = JSON.stringify(committed?.unmodeled ?? {});
 
@@ -235,10 +309,16 @@ describe('raven S1a - full-charge sustained DoT (68.46%/sec, 5 sec)', () => {
   it('ticks both inside and outside Full Burst (non-vacuity of the FB timing rule)', () => {
     // SOLO comp: liter/crown carry no damage riders, so skill1-sourced damage is
     // raven's DoT. A DoT gated to one FB state would fail one of these.
-    const ticks = soloEv.filter((e) => e.kind === 'damage' && e.srcSlot === 'skill1');
+    const ticks = soloEv.filter(
+      (e) => e.kind === 'damage' && e.srcSlot === 'skill1'
+    );
     expect(ticks.length).toBeGreaterThan(0);
-    expect(ticks.filter((e) => e.inFullBurst === true).length).toBeGreaterThan(0);
-    expect(ticks.filter((e) => e.inFullBurst === false).length).toBeGreaterThan(0);
+    expect(ticks.filter((e) => e.inFullBurst === true).length).toBeGreaterThan(
+      0
+    );
+    expect(ticks.filter((e) => e.inFullBurst === false).length).toBeGreaterThan(
+      0
+    );
   });
 
   it.skip('stacks up to 10 - the CAP is non-binding at RL cadence (GAP)', () => {
@@ -277,9 +357,14 @@ describe('raven S1b - Full-Burst-enter self ATK (47.52% of skill user ATK, 10 se
   });
 
   it('is SELF-scoped (no teammate receives it)', () => {
-    const strays = baseEv.filter((e) =>
-      e.kind === 'buffApply' && e.stat === 'casterAtkPct'
-      && e.casterIdx !== null && e.casterIdx === e.targetIdx && e.targetSlug !== SLUG);
+    const strays = baseEv.filter(
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'casterAtkPct' &&
+        e.casterIdx !== null &&
+        e.casterIdx === e.targetIdx &&
+        e.targetSlug !== SLUG
+    );
     // Only raven self-casts a caster-scaled ATK grant in this comp; crown's grants
     // are cross-unit (casterIdx !== targetIdx) and are excluded by the filter.
     expect(strays.length).toBe(selfAtkBase.length - selfAtkBase.length);
@@ -300,7 +385,9 @@ describe('raven S1b - Full-Burst-enter self ATK (47.52% of skill user ATK, 10 se
     // Same deterministic run, same first application frame; only durationSec moved
     // 10 -> 2, so the expiry must shift by exactly 8 sec of frames. RED for 5s/15s
     // or a round-count reading.
-    expect(selfAtkBase[0].expiresFrame - selfAtkShort[0].expiresFrame).toBe(8 * 60);
+    expect(selfAtkBase[0].expiresFrame - selfAtkShort[0].expiresFrame).toBe(
+      8 * 60
+    );
   });
 });
 
@@ -309,9 +396,10 @@ describe('raven S2a/S2b - Vital Attack, Damage to Parts up 21.12% for 5 sec', ()
     // Two independent applications exist in the kit (start of battle + FB entry).
     // Either they are encoded on the schema-inert partsDamagePct stat, or the lines
     // are recorded verbatim in `unmodeled`. Silence in both places is a drop.
-    const accounted = partsEffects.length >= 2
-      || /[Pp]art/.test(unmodeledBlob)
-      || /Vital/.test(unmodeledBlob);
+    const accounted =
+      partsEffects.length >= 2 ||
+      /[Pp]art/.test(unmodeledBlob) ||
+      /Vital/.test(unmodeledBlob);
     expect(accounted).toBe(true);
     for (const e of partsEffects) {
       expect(e.value).toBe(21.12);
@@ -330,9 +418,13 @@ describe('raven S2a/S2b - Vital Attack, Damage to Parts up 21.12% for 5 sec', ()
     // The nearest wrong is encoding 21.12% as attackDamagePct / sustainedDamagePct
     // so the line stops being inert. Nothing raven-targeted may carry 21.12 on a
     // stat other than partsDamagePct.
-    const laundered = baseEv.filter((e) =>
-      e.kind === 'buffApply' && e.targetSlug === SLUG && e.value === 21.12
-      && e.stat !== 'partsDamagePct');
+    const laundered = baseEv.filter(
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.targetSlug === SLUG &&
+        e.value === 21.12 &&
+        e.stat !== 'partsDamagePct'
+    );
     expect(laundered).toHaveLength(0);
   });
 });
@@ -344,8 +436,10 @@ describe('raven S2c - Single Point Attack (sustained up 47.32%, 15 sec)', () => 
     // fire. Encoding it as passive / fullBurstEnter would hand raven a near-permanent
     // +47.32% on her dominant (sustained) channel - the single largest over-credit
     // available in this kit. RED if any 47.32 sustained grant reaches her.
-    const smuggled = baseEv.filter((e) =>
-      e.kind === 'buffApply' && e.targetSlug === SLUG && e.value === 47.32);
+    const smuggled = baseEv.filter(
+      (e) =>
+        e.kind === 'buffApply' && e.targetSlug === SLUG && e.value === 47.32
+    );
     expect(smuggled).toHaveLength(0);
   });
 
@@ -368,14 +462,16 @@ describe('raven burst - 492.3% nuke + A.N. Mode sustained up 89.44% (10 sec)', (
     // A burst cast lands before the Full Burst window opens, so the +50% FB major
     // must not be stamped on it. SOLO comp keeps burst-sourced damage attributable
     // (liter/crown deal no burst damage).
-    const burstHits = soloEv.filter((e) => e.kind === 'damage' && e.srcSlot === 'burst');
+    const burstHits = soloEv.filter(
+      (e) => e.kind === 'damage' && e.srcSlot === 'burst'
+    );
     expect(burstHits.length).toBeGreaterThan(0);
-    for (const h of burstHits) expect(h.fbMajorApplied).not.toBe(true);
+    for (const h of burstHits) {expect(h.fbMajorApplied).not.toBe(true);}
   });
 
   it('A.N. Mode sustained buff is self-scoped, 89.44, and burst-CAST keyed', () => {
     expect(sustSolo.length).toBeGreaterThan(0);
-    for (const e of sustSolo) expect(e.targetSlug).toBe(SLUG);
+    for (const e of sustSolo) {expect(e.targetSlug).toBe(SLUG);}
     // SOLO: raven is the only Burst III, so she casts on every Full Burst and the
     // counts coincide (non-vacuity - the buff really does fire every rotation).
     expect(sustSolo.length).toBe(fbStartsSolo.length);
@@ -393,12 +489,16 @@ describe('raven burst - 492.3% nuke + A.N. Mode sustained up 89.44% (10 sec)', (
     // caught even though the engine emits no lapse event.
     const sustEffects: any[] = [];
     eachEffect(committed, (e) => {
-      if (e.kind === 'buff' && e.stat === 'sustainedDamagePct' && e.value === 89.44) {
+      if (
+        e.kind === 'buff' &&
+        e.stat === 'sustainedDamagePct' &&
+        e.value === 89.44
+      ) {
         sustEffects.push(e);
       }
     });
     expect(sustEffects.length).toBeGreaterThan(0);
-    for (const e of sustEffects) expect(e.durationSec).toBe(10);
+    for (const e of sustEffects) {expect(e.durationSec).toBe(10);}
   });
 });
 

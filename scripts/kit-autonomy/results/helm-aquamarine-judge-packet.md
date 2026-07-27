@@ -1,10 +1,13 @@
 # S7 RECONCILING-JUDGE PACKET — helm-aquamarine (Helm: Aquamarine)
+
 AR / Attacker / Iron / Burst II (cd 20s). Variant of base helm (SR/Water/Attacker/Burst III, "thelm") — a DIFFERENT unit; do not conflate.
 Driver: Qwen. Blind roles: claude-fable-5 (S2b pre-op), claude-opus-5 (S5 blind test, S6 blind override).
 Your job (per RECONCILING-JUDGE.md): issue the BINDING verdict + faithfulnessScore for this unit's kit encoding.
 
 ==============================================================================
+
 ## 1. RECONCILING-JUDGE CONTRACT + RETURN JSON SHAPE
+
 ==============================================================================
 
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
@@ -19,6 +22,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -29,12 +33,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -60,32 +66,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
-
 ==============================================================================
+
 ## 2a. MECHANICS SSOT — damage-calculation.md
+
 ==============================================================================
 
 # Damage calculation — the exact math the sim computes
@@ -112,7 +147,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -150,29 +185,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -253,9 +288,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -291,7 +326,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -349,7 +384,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -492,12 +527,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -532,9 +567,10 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ==============================================================================
+
 ## 2b. MECHANICS SSOT — game-mechanics.md
+
 ==============================================================================
 
 # NIKKE combat mechanics — single source of truth (2026-07-13)
@@ -591,15 +627,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -942,12 +978,14 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ==============================================================================
+
 ## 3. GROUND TRUTH — kit prose + base stats (data/characters.json -> characters["helm-aquamarine"], levels 10/10/10)
+
 ==============================================================================
 
 ### Skills prose (SSOT)
+
 ```
 {
   "skill1": "■ Activates after landing 30 normal attacks. Affects the target.\nDeals 131.34% of final ATK as additional damage.\n■ Activates when entering Full Burst. Affects all allies.\nEffects vary according to the number of times entered. Each subsequent effect triggers all effects before it:\nOnce: Cooldown of Burst Skill ▼ 1.82 sec.\nTwice: Cooldown of Burst Skill ▼ 2.2 sec.\nThree times: Cooldown of Burst Skill ▼ 2.6 sec.",
@@ -957,6 +995,7 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ```
 
 ### Datamined cooldowns + key fields
+
 ```
 {
   "skillCooldownsSec": {
@@ -997,7 +1036,9 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ```
 
 ==============================================================================
+
 ## 4. S2b CROSS-FAMILY TEST REVIEW (claude-fable-5) — reviews/helm-aquamarine.test-review.json
+
 ==============================================================================
 
 ```json
@@ -1106,20 +1147,23 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   "notes": "(1) FIXTURE VALIDITY IS THE FIRST ASSERTION: helm-aquamarine is Burst II, and controlComp fixes crown (also Burst II) in the comp — stage-2 contention means she may never win the burst slot depending on the engine's tie-break, which would leave the ENTIRE burst slot untested (and a fullBurstEnter misread of her burst would silently pass with nonzero damage!). The test must assert unitOf(res,'helm-aquamarine') has ≥1 burstCast event before any burst-slot assertion; if crown always wins stage 2, the fixture cannot exercise her burst and the driver must say so, not fake it. Note helm=true must stay — dropping the base `helm` (B3) removes the only Burst III and kills ALL full bursts. (2) Expected shared-prior misreads, in priority order: (a) skill2/burst Electric gates dropped → both blocks over-credit vs the Fire control boss (Damage-Taken debuff alone ≈ +28% TEAM damage at 5 stacks) — the inertness assertions vs the default boss are the highest-value tests; (b) burst keyed fullBurstEnter instead of burstCast — diverges precisely because crown shares her tier; (c) S1 CDR ladder applied non-cumulatively (−2.6 at entry 3 instead of −6.62) or targeted self-only — 'Each subsequent effect triggers all effects before it' is explicit cumulative, target 'all allies'; (d) skill2 105.58% keyed shotFired instead of interval. (3) The skill2 interval cadence is the ONLY value not in prose — ALWAYS-⚑; prefer the datamined skillCooldownsSec, first-fire t=sec (no force-cast language). (4) 'Damage Taken ▲' assertions must filter boss-held buffApply by stat+value with casterIdx===null. (5) Leak declared above: the schema's bossElementGate example retains this unit's '+164.83% vs Electric' answer with the name stripped — my dispositions were derived from the kit prose, which independently states it.",
   "model": "claude-fable-5"
 }
-
 ```
 
 ==============================================================================
+
 ## 5. S5 BLIND TEST (claude-opus-5) + GREEN/RED COUNT vs DRIVER OVERRIDE
+
 ==============================================================================
 
 ### Green/red count vs the DRIVER override (deterministic, no seed)
+
 - PRISTINE blind test (blind/helm-aquamarine.test.ts, uses controlComp = liter/crown/helm-aquamarine/helm):
   **16 passed / 6 failed / 2 skipped** (of 24).
 - ADAPTED blind test (blind/helm-aquamarine.adapted.test.ts, driver reconciliation — see notes below):
   **22 passed / 2 skipped** (GREEN; the 2 skips are the blind's own honest measurement-gated flags: S2a cadence + S1a noFb).
 
 ### Measured root-causes of the 6 pristine reds (driver evidence; NONE are encoding-faithfulness failures)
+
 - **2 burst-slot reds** ("unconditional burst hit lands", "Electric rider gated off"): FIXTURE artifact. controlComp fixes
   crown (Burst II) beside this Burst II unit; the two contend for the single B2 slot and helm-aquamarine NEVER wins the cast
   (measured: removing her burst block changes her total by 0 in that comp — her burst contributes nothing). The blind's OWN
@@ -1138,6 +1182,7 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   blind independently derived, see section 6), Burst (exactly two 164.83% hits, one Electric-gated, both burstCast).
 
 ### Pristine blind test source
+
 ```typescript
 /**
  * helm-aquamarine (AR / Iron / Attacker / Burst II, cd 20s, ammo 60, hitsPerShot 1) — BLIND kit-spec test.
@@ -1423,14 +1468,14 @@ describe('helm-aquamarine — S2a: 105.58% of final ATK, 1 enemy, NO activation 
 describe('helm-aquamarine — S2b: attacking an Electric Code target, Damage Taken +5.64%', () => {
   it('is INERT against the non-Electric control boss', () => {
     const dt = buffApplies(BASE.events, 'damageTakenPct').filter((e) =>
-      near(e.value, 5.64),
+      near(e.value, 5.64)
     );
     expect(dt.length).toBe(0);
   });
 
   it('goes live as a boss-held debuff once only the Electric gate is stripped', () => {
     const dt = buffApplies(R_S2B_UNGATED.events, 'damageTakenPct').filter((e) =>
-      near(e.value, 5.64),
+      near(e.value, 5.64)
     );
     expect(dt.length).toBeGreaterThan(30); // per-attack cadence, not once per Full Burst (~8 in 180s)
     expect(dt[0].maxStacks).toBe(5);
@@ -1454,7 +1499,7 @@ describe('helm-aquamarine — Burst: 164.83% to all enemies, +164.83% vs Electri
     // holds a Burst II ally, so if she never gets the cast this goes RED and that IS the finding.
     expect(BASE.t[SLUG]).toBeGreaterThan(R_NO_BURST.t[SLUG]);
     expect((BASE.events as any[]).some((e) => e.kind === 'burstCast')).toBe(
-      true,
+      true
     );
   });
 
@@ -1487,14 +1532,14 @@ describe('helm-aquamarine — override structure matches the kit text literally'
 
   it('S1b: fullBurstEnter -> allies, escalating burstCdr 1.82 / 2.2 / 2.6, not oncePerBattle', () => {
     const b = slotBlocks(OV, 'skill1').find((x) =>
-      effectsOf(x).some((e) => e.kind === 'burstCdr'),
+      effectsOf(x).some((e) => e.kind === 'burstCdr')
     );
     expect(b).toBeTruthy();
     expect(b.trigger.kind).toBe('fullBurstEnter');
     expect(b.target.kind).toBe('allies');
     expect(b.target.excludeSelf).toBeFalsy(); // the header says ALL allies
     expect((b.effects ?? []).some((e: any) => e.kind === 'escalating')).toBe(
-      true,
+      true
     );
     const secs = effectsOf(b)
       .filter((e) => e.kind === 'burstCdr')
@@ -1502,7 +1547,7 @@ describe('helm-aquamarine — override structure matches the kit text literally'
       .sort((x: number, y: number) => x - y);
     expect(secs).toEqual([1.82, 2.2, 2.6]);
     expect(
-      effectsOf(b).some((e) => e.kind === 'burstCdr' && e.oncePerBattle),
+      effectsOf(b).some((e) => e.kind === 'burstCdr' && e.oncePerBattle)
     ).toBe(false);
   });
 
@@ -1516,16 +1561,14 @@ describe('helm-aquamarine — override structure matches the kit text literally'
 
   it('S2b: damageTakenPct 5.64 / 5 stacks / 5 sec behind bossElementGate Electric', () => {
     const b = allBlocks(OV).find((x) =>
-      effectsOf(x).some(
-        (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
-      ),
+      effectsOf(x).some((e) => e.kind === 'buff' && e.stat === 'damageTakenPct')
     );
     expect(b).toBeTruthy();
     expect(b.slot).toBe('skill2');
     expect(b.bossElementGate).toBe('Electric');
     expect(b.target.kind).toBe('enemy');
     const e = effectsOf(b).find(
-      (x) => x.kind === 'buff' && x.stat === 'damageTakenPct',
+      (x) => x.kind === 'buff' && x.stat === 'damageTakenPct'
     );
     expect(e.value).toBeCloseTo(5.64, 6);
     expect(e.maxStacks).toBe(5);
@@ -1536,11 +1579,11 @@ describe('helm-aquamarine — override structure matches the kit text literally'
     const hits = slotBlocks(OV, 'burst').flatMap((b) =>
       effectsOf(b)
         .filter((e) => e.kind === 'flatDamage' && near(e.atkPct, 164.83))
-        .map((e) => ({ b, e })),
+        .map((e) => ({ b, e }))
     );
     expect(hits.length).toBe(2);
     expect(hits.filter((h) => h.b.bossElementGate === 'Electric').length).toBe(
-      1,
+      1
     );
     expect(hits.filter((h) => !h.b.bossElementGate).length).toBe(1);
     for (const h of hits) {
@@ -1549,14 +1592,16 @@ describe('helm-aquamarine — override structure matches the kit text literally'
     }
   });
 });
-
 ```
 
 ==============================================================================
+
 ## 6. S6 BLIND OVERRIDE (claude-opus-5) + DIFF vs DRIVER OVERRIDE
+
 ==============================================================================
 
 ### Driver-authored diff summary (driver override vs S6 blind override, both independently derived)
+
 - **skill1 (S1a hitCount:30 -> 131.34 flatDamage enemy): IDENTICAL.**
 - **skill1 (S1b fullBurstEnter -> allies -> escalating burstCdr [1.82,2.2,2.6]): IDENTICAL.**
 - **skill2 (S2a 105.58 flatDamage enemy): trigger CADENCE differs** — driver `interval:{sec:4}` (the DATAMINED
@@ -1564,7 +1609,7 @@ describe('helm-aquamarine — override structure matches the kit text literally'
   this line NO activation clause, so the blind could not derive the cadence and flagged it). Driver is datamined-grounded;
   blind is a sanctioned always-⚑. Same trigger KIND (interval), same magnitude (105.58), same target.
 - **skill2 (S2b Electric damageTaken): IDENTICAL** — both `shotFired + bossElementGate:'Electric' + buff damageTakenPct 5.64 /
-  maxStacks 5 / durationSec 5`. (The driver REVISED to this granular stacking encoding during the gauntlet on cross-family
+maxStacks 5 / durationSec 5`. (The driver REVISED to this granular stacking encoding during the gauntlet on cross-family
   evidence: fable S2b AND opus S5/S6 both independently derived it; leona precedent; engine supports maxStacks. The driver's
   prior bossElement-trigger permanent-28.2 steady-state collapse was sim-identical to 0.019% but less literally faithful.)
 - **burst (Ba burstCast -> 164.83 flatDamage enemy): IDENTICAL.**
@@ -1574,6 +1619,7 @@ So 5 of 6 lines are line-for-line identical between the independent blind overri
 cadence) differs only in the datamined-vs-placeholder interval period (same kind/magnitude/target).
 
 ### S6 blind override source
+
 ```json
 {
   "skill1": [
@@ -1702,10 +1748,13 @@ cadence) differs only in the datamined-vs-placeholder interval period (same kind
 ```
 
 ==============================================================================
+
 ## 7. DRIVER IMPLEMENTATION — scripts/tests/units/helm-aquamarine.test.ts + src/skills/overrides/helm-aquamarine.json
+
 ==============================================================================
 
 ### Driver override (the encoding under test)
+
 ```json
 {
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. || helm-aquamarine (Helm: Aquamarine) — AR/Iron/ATTACKER/Burst II. NOT base `helm` (SR Supporter healer) — no heal anywhere in THIS kit; do not conflate. Kit-parse AUTHOR pass 2026-07-16 (wave 2), merging the reviewed staged baseline (src/skills/overrides-baselines/helm-aquamarine.json) — all its hypotheses + ⚑s carried forward. SCOPE-LOCK CONTEXT: boss is NOT Electric, so both 'Electric Code target' lines are faithfully INERT here (Iron is element-advantaged vs Electric — anti-Electric kit theme — the engine's ×1.10 + these gates would all wake vs an Electric boss). AUDIT (6 kit lines): (S1a) 'after landing 30 normal attacks → 131.34% additional damage' = recurring conditional rider (hard rule 5) → hitCount 30 → flatDamage 131.34 (crits at sheet rate by engine default; NO core — text doesn't say core strike; FB by TIMING per prior 2, no noFb; noRange automatic). (S1b) FB-enter escalating team burst-CDR Once 1.82/Twice 2.2/Thrice 2.6 → fullBurstEnter → allies → escalating[burstCdr 1.82, 2.2, 2.6]; the header line 'Each subsequent effect triggers all effects before it' IS the escalating semantics (steps 1..N on the Nth entry) — IMPLEMENTED, not unmodeled. ROTATION LEVER + BLAST RADIUS: touches every teammate's burst cadence — verify with a /sim-battery diff, never sim-vs-sim self-grade. (S2a) 'Affects 1 enemy randomly. Deals 105.58% as damage' — KIT-SILENT TRIGGER (no 'Activates when…' in the official prose) → pure internal timer. RESOLVED 2026-07-20: the datamined skill CD (characters.json skillCooldownsSec.skill2 = 4s) is the true firing cadence → interval:4 → flatDamage 105.58 (fires ~44×/180s, first at t=4). This REPLACES the prior INVENTED proxy hitCount:30 (borrowed from S1's genuine 30-normal-attack trigger — S2 has no such clause; the proxy over-fired at ~2.5s vs the true 4s). Solo total 51.499M→50.142M (−2.6%); MODEL_ONLY (no graded comp), backed by kit-text-has-no-activation-clause + datamined CD (docs/handoffs/2026-07-20-skill-cooldowns-to-sim.md, class-1 pure-timer). ⚑ first-fire phase (t=4 vs t=0) unpinned — worth ~1 proc; pin from a focused-solo popup if she is ever graded. (S2b) 'when attacking an Electric Code target: Damage Taken ▲5.64%, stacks 5, lasts 5s' → shotFired + bossElementGate:'Electric' → BOSS debuff damageTakenPct 5.64 / maxStacks 5 / durationSec 5 (REVISED 2026-07-25 from the prior bossElement-trigger steady-state-28.2 collapse, on the kit-autonomy gauntlet's cross-family evidence: BOTH blind reviewers — fable S2b and opus S5/S6 — independently derived this granular stacking encoding, the opus S6 blind override reproduces it line-for-line, and it follows the leona precedent for a stacking 5-stack/5s buff; the engine supports maxStacks, types.ts:195). 'When attacking' = shotFired (per pull); the bossElementGate composes with the real trigger (inert vs a non-Electric boss). AR continuous fire rebuilds 5 stacks in ~1s and refreshes well inside the 5s window → steady-state mult.taken 1.282 (= 5.64 x 5 = 28.2 effective), identical to the prior collapse to 0.019% (the only difference is the faithful ~0.5s stack ramp at fight start, which the old permanent-28.2 slightly over-credited). INERT under scope-lock (non-Electric boss). (Ba) 'all enemies: 164.83% Burst Skill damage' → burstCast → flatDamage 164.83 (burst-cast auto FB-exempt, snapshots pre-FB; single boss so all-enemies = the target). (Bb) 'when attacking an Electric Code target: 164.83% additional damage' (burst slot) — NOW MODELED (2026-07-20) via burstCast + bossElementGate:'Electric' (the schema gained the block gate, sim.ts:1706; brid-silent-track/eve/marciana-marine-study use the same pattern). Inert vs the non-Electric scope-lock boss (gate closed -> exactly ONE 164.83% burst hit per cast); vs an Electric boss it awakes as a SECOND 164.83% burst hit per cast. Modeling it ungated would add +164.83%/burst vs EVERY boss = fudge, so the gate is load-bearing. (This paragraph previously read UNMODELED — stale, pre-dating the bossElementGate feature; unmodeled.burst is and stays empty.) NO heal/shield/DEF/HP/lifesteal/gauge/reload/ammo/Hit-Rate lines exist in this kit (hard rules 1–4 vacuous). ⚑ LIST: [1] cadence tuple — pullsPerSec (datamine AR default) / reloadFrames 81 / rolling-reload; ammo 60 empties in several seconds at class rate, no text tells of a special fire mode → standard-priority; recipe: rounds/min + reload gap from any focus video. [2] S2a trigger+cadence RESOLVED 2026-07-20 → interval:4 from the datamined skill CD (was ⚑TOP invented hitCount:30); residual ⚑ = first-fire phase only (t=4 vs t=0). Optional confirm: focused solo, time the first 105.58% popup + its interval. [3] S2b steady-state 28.2 uptime assumption — untestable under scope-lock (needs an Electric boss). [4] Bb Electric burst rider — RESOLVED 2026-07-20 (burstCast + bossElementGate:'Electric'); residual flag = unmeasured vs a real Electric boss (inert under scope-lock). [5] burstCdr rotation blast radius — /sim-battery diff before any board-level claim. Faithful>fit; measured>fudge. || Kit-autonomy gauntlet 2026-07-25: re-validated test-first — scripts/tests/units/helm-aquamarine.test.ts (24 assertions GREEN vs this override; each of the 6 kit lines pinned GREEN vs shipped and RED vs its nearest-wrong counterfactual: removed / magnitude-121.05 S1 rider; burstCast-keyed + flat-2.6 CDR ladder; removed / hitCount-30-proxy S2 interval hit; ungated-passive Electric damageTaken; magnitude-157.33 burst nuke; removed / ungated Electric burst rider). The two Electric-gated lines (S2 damageTaken 28.2, Bb extra 164.83%) are pinned in BOTH states — inert vs Iron (the scope-lock basis: no debuff, mult.taken 1.0, 1 burst hit/cast) and live vs Electric (debuff 28.2, mult.taken 1.282, 2 burst hits/cast). Cross-family S2b (claude-fable-5) independently re-derived all 6 lines FAITHFUL from prose with matching discriminations, no REAL-GOTCHA; dispositions converge. Reconciled divergences (none load-bearing): the driver used a custom sole-B2 fixture [liter / helm-aquamarine / helm] (NOT controlComp — avoids the crown B2 contention the reviewer flagged); S2 damageTaken uses the documented bossElement steady-state collapse (28.2 = 5.64 x 5; the engine has no per-shot stack-accrual path), functionally equivalent to the reviewer's shotFired+gate at AR cadence; the S1 CDR is discriminated by trigger-identity (burstCast 12 casts > faithful fullBurstEnter 10) plus escalating-vs-flat 180s total, because the reviewer's suggested FB-count fire-rate does NOT discriminate here (measured: removing the CDR leaves the FB count at 5 — the 40s Burst III partner gates the rotation). TIER 2 (escalating burstCdr rotation lever + hitCount round-count + interval timer + burstCast-vs-fullBurstEnter + bossElement/bossElementGate status gates). Still MODEL_ONLY/unmeasured — the PARSER-BASELINE measurement banner above stands (the gauntlet validates kit FAITHFULNESS, not a real-fight tune). The S2b leak flag was packet-hygiene only (a redacted schema example retained the +164.83% magnitude); the reviewer reasoned from prose independently.",
@@ -1782,10 +1831,10 @@ cadence) differs only in the datamined-vs-placeholder interval period (same kind
     }
   ]
 }
-
 ```
 
 ### Driver unit test (24 assertions, GREEN vs the driver override)
+
 ```typescript
 // PER-UNIT KIT SPEC — `helm-aquamarine` (Helm: Aquamarine, Attacker/AR/Iron, Burst II, cd 20s,
 // ammo 60, reloadFrames 81, hitsPerShot 1, normalMult 13.65 / coreMult 200, no charge, critRate 15 /
@@ -1895,7 +1944,7 @@ const haComp = (bossElement: Element | null): CompOptions => ({
 
 function run(
   overrides: Record<string, any> = {},
-  bossElement: Element | null = 'Iron',
+  bossElement: Element | null = 'Iron'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -1916,11 +1965,11 @@ const buffs = (evs: SimEvent[]) =>
 const haBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'helm-aquamarine',
+      e.kind === 'burstCast' && e.slug === 'helm-aquamarine'
   );
 const haShots = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'helm-aquamarine',
+    (e): e is Shot => e.kind === 'shot' && e.slug === 'helm-aquamarine'
   );
 
 /** Dedup precision-sensitive floats (kit magnitudes / mult decomposition). */
@@ -1936,7 +1985,7 @@ const cfS1aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger?.kind !== 'hitCount');
   if (ov.skill1.length === before)
     throw new Error(
-      'helm-aquamarine S1 hitCount rider missing — fixture is stale',
+      'helm-aquamarine S1 hitCount rider missing — fixture is stale'
     );
 });
 /** HA1 nearest-wrong (magnitude): the rider at the level-9 value 121.05 instead of 131.34. */
@@ -1946,7 +1995,7 @@ const cfS1aMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
     .find((x: any) => x.kind === 'flatDamage');
   if (!e || e.atkPct !== 131.34)
     throw new Error(
-      'helm-aquamarine S1 131.34% flatDamage missing — fixture is stale',
+      'helm-aquamarine S1 131.34% flatDamage missing — fixture is stale'
     );
   e.atkPct = 121.05;
 });
@@ -1955,7 +2004,7 @@ const isCdrBlock = (b: any) =>
   b.effects?.some(
     (e: any) =>
       e.kind === 'escalating' &&
-      e.steps?.some((s: any) => s.kind === 'burstCdr'),
+      e.steps?.some((s: any) => s.kind === 'burstCdr')
   );
 /** HA2 nearest-wrong (trigger): the CDR ladder re-keyed fullBurstEnter → burstCast (over-applies). */
 const cfS1bBurstCast = withPatchedOverride('helm-aquamarine', (ov: any) => {
@@ -1964,7 +2013,7 @@ const cfS1bBurstCast = withPatchedOverride('helm-aquamarine', (ov: any) => {
     if (isCdrBlock(b)) ((b.trigger = { kind: 'burstCast' }), hit++);
   if (!hit)
     throw new Error(
-      'helm-aquamarine S1 burstCdr block missing — fixture is stale',
+      'helm-aquamarine S1 burstCdr block missing — fixture is stale'
     );
 });
 /** HA2 nearest-wrong (escalating): the ladder collapsed to a flat "always 2.6" burstCdr. */
@@ -1972,7 +2021,7 @@ const cfS1bFlat = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.skill1.find((x: any) => isCdrBlock(x));
   if (!b)
     throw new Error(
-      'helm-aquamarine S1 burstCdr block missing — fixture is stale',
+      'helm-aquamarine S1 burstCdr block missing — fixture is stale'
     );
   b.effects = [{ kind: 'burstCdr', seconds: 2.6 }];
 });
@@ -1982,7 +2031,7 @@ const cfS2aRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   ov.skill2 = ov.skill2.filter((b: any) => b.trigger?.kind !== 'interval');
   if (ov.skill2.length === before)
     throw new Error(
-      'helm-aquamarine S2 interval hit missing — fixture is stale',
+      'helm-aquamarine S2 interval hit missing — fixture is stale'
     );
 });
 /** HA3 nearest-wrong (cadence): the pre-2026-07-20 invented hitCount:30 proxy (ties to shot count). */
@@ -1993,7 +2042,7 @@ const cfS2aHitCount = withPatchedOverride('helm-aquamarine', (ov: any) => {
       ((b.trigger = { kind: 'hitCount', count: 30 }), hit++);
   if (!hit)
     throw new Error(
-      'helm-aquamarine S2 interval hit missing — fixture is stale',
+      'helm-aquamarine S2 interval hit missing — fixture is stale'
     );
 });
 /** HA4 nearest-wrong (gate): the Electric gate stripped → the stacking debuff fires vs every boss (fudge). */
@@ -2007,17 +2056,17 @@ const cfS2bUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
       (delete b.bossElementGate, hit++);
   if (!hit)
     throw new Error(
-      'helm-aquamarine S2 Electric-gated debuff missing — fixture is stale',
+      'helm-aquamarine S2 Electric-gated debuff missing — fixture is stale'
     );
 });
 /** HA5 nearest-wrong (magnitude): the burst nuke at the level-9 value 157.33 instead of 164.83. */
 const cfBaMag = withPatchedOverride('helm-aquamarine', (ov: any) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger?.kind === 'burstCast' && !x.bossElementGate,
+    (x: any) => x.trigger?.kind === 'burstCast' && !x.bossElementGate
   );
   if (!b || b.effects[0]?.atkPct !== 164.83)
     throw new Error(
-      'helm-aquamarine burst 164.83% nuke missing — fixture is stale',
+      'helm-aquamarine burst 164.83% nuke missing — fixture is stale'
     );
   b.effects[0].atkPct = 157.33;
 });
@@ -2027,7 +2076,7 @@ const cfBbRemoved = withPatchedOverride('helm-aquamarine', (ov: any) => {
   ov.burst = ov.burst.filter((b: any) => !b.bossElementGate);
   if (ov.burst.length === before)
     throw new Error(
-      'helm-aquamarine burst bossElementGate block missing — fixture is stale',
+      'helm-aquamarine burst bossElementGate block missing — fixture is stale'
     );
 });
 /** HA6 nearest-wrong (gate): the bossElementGate dropped → the extra hit fires vs every boss (fudge). */
@@ -2037,7 +2086,7 @@ const cfBbUngated = withPatchedOverride('helm-aquamarine', (ov: any) => {
     if (b.bossElementGate) (delete b.bossElementGate, hit++);
   if (!hit)
     throw new Error(
-      'helm-aquamarine burst bossElementGate block missing — fixture is stale',
+      'helm-aquamarine burst bossElementGate block missing — fixture is stale'
     );
 });
 
@@ -2073,8 +2122,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           procs.map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([131.34]);
       expect(distinct(procs.map((d) => d.bucket))).toEqual(['skill']);
     });
@@ -2084,7 +2133,7 @@ describe('helm-aquamarine — kit spec', () => {
       const ratio = shots / procs;
       expect(
         ratio,
-        `${shots} shots / ${procs} procs = ${ratio.toFixed(2)} shots/proc — expected ≈30`,
+        `${shots} shots / ${procs} procs = ${ratio.toFixed(2)} shots/proc — expected ≈30`
       ).toBeGreaterThanOrEqual(29);
       expect(ratio).toBeLessThanOrEqual(31);
     });
@@ -2095,8 +2144,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           haDamage(s1aMag.events, 'skill1').map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([121.05]);
     });
   });
@@ -2107,7 +2156,7 @@ describe('helm-aquamarine — kit spec', () => {
       const block = shipped.skill1.find((b: any) => isCdrBlock(b));
       expect(
         block,
-        'no fullBurstEnter escalating-burstCdr block on skill1',
+        'no fullBurstEnter escalating-burstCdr block on skill1'
       ).toBeDefined();
       expect(block.trigger).toEqual({ kind: 'fullBurstEnter' });
       expect(block.target.kind).toBe('allies');
@@ -2129,7 +2178,7 @@ describe('helm-aquamarine — kit spec', () => {
       // the ramping ladder reaches 1.82+2.2+2.6 = 6.62s/FB from the 3rd entry, far more total refund than
       // a flat 2.6s/FB → the faithful escalating model rotates faster and out-damages the flat counterfactual.
       expect(base.totals['helm-aquamarine']).toBeGreaterThan(
-        s1bFlat.totals['helm-aquamarine'],
+        s1bFlat.totals['helm-aquamarine']
       );
     });
   });
@@ -2141,8 +2190,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           procs.map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([105.58]);
       expect(distinct(procs.map((d) => d.bucket))).toEqual(['skill']);
     });
@@ -2158,7 +2207,7 @@ describe('helm-aquamarine — kit spec', () => {
       // the pre-2026-07-20 proxy ties proc count to shot count (~55) and over-fires the true ~44 interval;
       // the two cadences are provably distinct, pinning the interval:4 resolution.
       expect(haDamage(s2aHitCount.events, 'skill2').length).toBeGreaterThan(
-        haDamage(base.events, 'skill2').length,
+        haDamage(base.events, 'skill2').length
       );
     });
   });
@@ -2166,11 +2215,11 @@ describe('helm-aquamarine — kit spec', () => {
   describe('HA4 — S2 Damage Taken ▲5.64%×5 stacks/5s (28.2 effective) is gated on an Electric boss', () => {
     it('vs Electric: the boss carries a stacking damageTakenPct 5.64 debuff (maxStacks 5, targetIdx null)', () => {
       const debuff = buffs(elec.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(
         debuff.length,
-        'no boss damageTakenPct debuff vs Electric',
+        'no boss damageTakenPct debuff vs Electric'
       ).toBeGreaterThan(0);
       // granular stacking encoding (shotFired + bossElementGate): each apply is one 5.64% stack,
       // capped at 5 stacks (= 28.2 effective) — matches the kit's "▲5.64%, stacks up to 5 times".
@@ -2182,36 +2231,36 @@ describe('helm-aquamarine — kit spec', () => {
         dmg(elec.events)
           .filter((d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal')
           .map((d) => d.mult.taken),
-        4,
+        4
       );
       expect(
         taken.some((t) => Math.abs(t - 1.282) < 1e-3),
-        `mult.taken values ${taken} never reach 1.282`,
+        `mult.taken values ${taken} never reach 1.282`
       ).toBe(true);
     });
     it('DISCRIMINATING gate: vs an Iron boss the debuff is absent and mult.taken stays 1.0', () => {
       const debuff = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(debuff).toEqual([]);
       expect(
         distinctNum(
           dmg(base.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.taken),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
     });
     it('DISCRIMINATING (gate vs fudge): stripping the Electric gate fires the stacking debuff vs the Iron boss', () => {
       const debuff = buffs(s2bUngated.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect(
         debuff.length,
-        'ungating the debuff did not apply it vs Iron — gate is inert anyway',
+        'ungating the debuff did not apply it vs Iron — gate is inert anyway'
       ).toBeGreaterThan(0);
       expect(distinctNum(debuff.map((b) => b.value))).toEqual([5.64]);
       // …and her Iron-boss damage actually takes the stacked +28.2% (mult.taken reaches 1.282),
@@ -2220,11 +2269,11 @@ describe('helm-aquamarine — kit spec', () => {
         dmg(s2bUngated.events)
           .filter((d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal')
           .map((d) => d.mult.taken),
-        4,
+        4
       );
       expect(
         taken.some((t) => Math.abs(t - 1.282) < 1e-3),
-        `ungated mult.taken values ${taken} never reach 1.282`,
+        `ungated mult.taken values ${taken} never reach 1.282`
       ).toBe(true);
     });
     it('Iron is element-neutral for her (Iron major 1.0; Electric is the ×1.10 advantage)', () => {
@@ -2232,21 +2281,21 @@ describe('helm-aquamarine — kit spec', () => {
         distinctNum(
           dmg(base.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1]);
       expect(
         distinctNum(
           dmg(elec.events)
             .filter(
-              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal',
+              (d) => d.slug === 'helm-aquamarine' && d.bucket === 'normal'
             )
             .map((d) => d.mult.elem),
-          4,
-        ),
+          4
+        )
       ).toEqual([1.1]);
     });
   });
@@ -2259,8 +2308,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           nukes(base.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([164.83]);
       expect(distinct(nukes(base.events).map((d) => d.bucket))).toEqual([
         'burst',
@@ -2270,15 +2319,15 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         nukes(base.events)
           .filter((d) => d.fbMajorApplied)
-          .map((d) => d.sec),
+          .map((d) => d.sec)
       ).toEqual([]);
     });
     it('DISCRIMINATING (magnitude): the level-9 reading lands at 157.33, not 164.83', () => {
       expect(
         distinctNum(
           nukes(baMag.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([157.33]);
     });
   });
@@ -2293,8 +2342,8 @@ describe('helm-aquamarine — kit spec', () => {
       expect(
         distinctNum(
           nukes(elec.events).map((d) => d.atkPct),
-          4,
-        ),
+          4
+        )
       ).toEqual([164.83]);
     });
     it('DISCRIMINATING (presence): removing the HA6 block leaves only 1 hit/cast vs Electric', () => {
@@ -2305,5 +2354,4 @@ describe('helm-aquamarine — kit spec', () => {
     });
   });
 });
-
 ```

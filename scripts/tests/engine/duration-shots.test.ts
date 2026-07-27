@@ -25,7 +25,12 @@
 //      Inertness for units with NO round-scoped buff is proven separately by the regression
 //      snapshot being byte-identical for every non-carrier.
 import { describe, expect, it } from 'vitest';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const CARRY = 'ada';
 const TEAMMATES = ['liter', 'crown', CARRY];
@@ -35,16 +40,21 @@ const TEAMMATES = ['liter', 'crown', CARRY];
  * either a round count (`{ shots: N }`) or the wall-clock model it replaced (`{ sec: S }`).
  * Returns every unit's total damage.
  */
-function run(window: { shots: number } | { sec: number }): Record<string, number> {
+function run(
+  window: { shots: number } | { sec: number }
+): Record<string, number> {
   const helm = withPatchedOverride('helm', (ov) => {
     const buff = ov.burst
       .flatMap((b: any) => b.effects)
       .find((e: any) => e.stat === 'chargeDamageMultPct');
-    if (!buff) throw new Error('helm burst chargeDamageMultPct block missing — fixture is stale');
+    if (!buff)
+      {throw new Error(
+        'helm burst chargeDamageMultPct block missing — fixture is stale'
+      );}
     delete buff.durationShots;
     delete buff.durationSec;
-    if ('shots' in window) buff.durationShots = window.shots;
-    else buff.durationSec = window.sec;
+    if ('shots' in window) {buff.durationShots = window.shots;}
+    else {buff.durationSec = window.sec;}
   });
   return totals(runComp({ ...controlComp(CARRY), overrides: { helm } }));
 }
@@ -56,16 +66,19 @@ describe('durationShots (round-count buff duration)', () => {
   it('mechanism is live — more rounds ⇒ more damage', () => {
     expect(
       helmDmg[9],
-      `1 round ${(helmDmg[0] / 1e6).toFixed(1)}M should be < 10 rounds ${(helmDmg[9] / 1e6).toFixed(1)}M`,
+      `1 round ${(helmDmg[0] / 1e6).toFixed(1)}M should be < 10 rounds ${(helmDmg[9] / 1e6).toFixed(1)}M`
     ).toBeGreaterThan(helmDmg[0]);
   });
 
   it('is strictly monotonic across N=1..10 — every added round buys another buffed charged shot', () => {
     // A time proxy, or a decrement fired on something other than her own rounds, plateaus somewhere.
-    const breaks = helmDmg.slice(1).map((d, i) => (d > helmDmg[i] ? null : i + 2)).filter(Boolean);
+    const breaks = helmDmg
+      .slice(1)
+      .map((d, i) => (d > helmDmg[i] ? null : i + 2))
+      .filter(Boolean);
     expect(
       breaks,
-      `no gain at N=${breaks.join(',')} (a time proxy or a mis-scoped decrement); ladder ${helmDmg.map((d) => (d / 1e6).toFixed(0)).join(' → ')}M`,
+      `no gain at N=${breaks.join(',')} (a time proxy or a mis-scoped decrement); ladder ${helmDmg.map((d) => (d / 1e6).toFixed(0)).join(' → ')}M`
     ).toEqual([]);
   });
 
@@ -73,16 +86,18 @@ describe('durationShots (round-count buff duration)', () => {
     const bySec = run({ sec: 13 }).helm;
     expect(
       helmDmg[9],
-      `10 rounds ${(helmDmg[9] / 1e6).toFixed(1)}M should exceed durationSec 13 ${(bySec / 1e6).toFixed(1)}M`,
+      `10 rounds ${(helmDmg[9] / 1e6).toFixed(1)}M should exceed durationSec 13 ${(bySec / 1e6).toFixed(1)}M`
     ).toBeGreaterThan(bySec);
   });
 
   it('is self-scoped — teammates are byte-identical across every N', () => {
     // The buff targets self, so a decrement leaking onto other units (or a shared budget) moves them.
-    const drifted = TEAMMATES.filter((s) => new Set(ladder.map((r) => r[s])).size > 1);
+    const drifted = TEAMMATES.filter(
+      (s) => new Set(ladder.map((r) => r[s])).size > 1
+    );
     expect(
       drifted,
-      `round budget LEAKED onto ${drifted.join(', ')} — the decrement is not holder-scoped`,
+      `round budget LEAKED onto ${drifted.join(', ')} — the decrement is not holder-scoped`
     ).toEqual([]);
   });
 });

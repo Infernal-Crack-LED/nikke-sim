@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 // ============================================================================
 // tove — BLIND S5 kit spec test (written from kit prose alone)
@@ -50,8 +56,11 @@ type Ev = any;
 
 function runCollect(override?: any) {
   const evs: Ev[] = [];
-  const opts: any = { ...BASE, cfg: { ...(BASE as any).cfg, onEvent: (e: Ev) => evs.push(e) } };
-  if (override) opts.overrides = { tove: override };
+  const opts: any = {
+    ...BASE,
+    cfg: { ...(BASE as any).cfg, onEvent: (e: Ev) => evs.push(e) },
+  };
+  if (override) {opts.overrides = { tove: override };}
   const res = runComp(opts);
   return { res, evs };
 }
@@ -60,26 +69,47 @@ const nUnit = (res: any, slug: string): number => {
   const u = unitOf(res, slug) as any;
   return (u?.total ?? u?.damage ?? 0) as number;
 };
-const othersDamage = (res: any): number => OTHERS.reduce((a, s) => a + nUnit(res, s), 0);
-const count = (evs: Ev[], kind: string): number => evs.filter(e => e && e.kind === kind).length;
+const othersDamage = (res: any): number =>
+  OTHERS.reduce((a, s) => a + nUnit(res, s), 0);
+const count = (evs: Ev[], kind: string): number =>
+  evs.filter((e) => e && e.kind === kind).length;
 
 // ---- override patch helpers (operate on the withPatchedOverride clone) -------
 const zeroStat = (stat: string) => (o: any) => {
-  for (const b of o.blocks || []) for (const e of b.effects || []) if (e.kind === 'buff' && e.stat === stat) e.value = 0;
+  for (const b of o.blocks || [])
+    {for (const e of b.effects || [])
+      {if (e.kind === 'buff' && e.stat === stat) {e.value = 0;}}}
 };
 const retargetStat = (stat: string, target: any) => (o: any) => {
-  for (const b of o.blocks || []) if ((b.effects || []).some((e: any) => e.kind === 'buff' && e.stat === stat)) b.target = target;
+  for (const b of o.blocks || [])
+    {if (
+      (b.effects || []).some((e: any) => e.kind === 'buff' && e.stat === stat)
+    )
+      {b.target = target;}}
 };
 const renameStat = (from: string, to: string) => (o: any) => {
-  for (const b of o.blocks || []) for (const e of b.effects || []) if (e.kind === 'buff' && e.stat === from) e.stat = to;
+  for (const b of o.blocks || [])
+    {for (const e of b.effects || [])
+      {if (e.kind === 'buff' && e.stat === from) {e.stat = to;}}}
 };
 
 // ---- hoisted runs (each runComp is a full 180s sim) --------------------------
 const base = runCollect();
-const critDmgOff = runCollect(withPatchedOverride('tove', zeroStat('critDamagePct')));          // skill1-B crit dmg
-const critRateOff = runCollect(withPatchedOverride('tove', zeroStat('critRatePct')));            // skill2-A crit rate
-const atkSpdAllAllies = runCollect(withPatchedOverride('tove', retargetStat('attackSpeedPct', { kind: 'allies' }))); // skill2-B scope
-const maxAmmoOff = runCollect(withPatchedOverride('tove', zeroStat('maxAmmoFlat')));             // skill1-B max ammo
+const critDmgOff = runCollect(
+  withPatchedOverride('tove', zeroStat('critDamagePct'))
+); // skill1-B crit dmg
+const critRateOff = runCollect(
+  withPatchedOverride('tove', zeroStat('critRatePct'))
+); // skill2-A crit rate
+const atkSpdAllAllies = runCollect(
+  withPatchedOverride(
+    'tove',
+    retargetStat('attackSpeedPct', { kind: 'allies' })
+  )
+); // skill2-B scope
+const maxAmmoOff = runCollect(
+  withPatchedOverride('tove', zeroStat('maxAmmoFlat'))
+); // skill1-B max ammo
 
 describe('tove — kit spec (blind S5)', () => {
   // -- non-vacuity: the fixture actually exercises the sim -----------------
@@ -94,7 +124,9 @@ describe('tove — kit spec (blind S5)', () => {
   // reaches allies. Nearest-wrong (self-only): zeroing it would NOT move othersDamage,
   // so base==critDmgOff and this RED-flags the mis-scope.
   it('skill1 Critical Damage buff raises teammate damage (present + all allies)', () => {
-    expect(othersDamage(base.res)).toBeGreaterThan(othersDamage(critDmgOff.res));
+    expect(othersDamage(base.res)).toBeGreaterThan(
+      othersDamage(critDmgOff.res)
+    );
   });
 
   // -- skill2-A: Critical Rate +10.08% to ALL ALLIES (generic, continuous) --
@@ -102,7 +134,9 @@ describe('tove — kit spec (blind S5)', () => {
   // trap: if the driver used the SCOPED stat (critRateNormalPct) the generic key is
   // absent, the zero-patch is a no-op, base==critRateOff => RED.
   it('skill2 Critical Rate buff raises teammate damage (present + all allies, generic key)', () => {
-    expect(othersDamage(base.res)).toBeGreaterThan(othersDamage(critRateOff.res));
+    expect(othersDamage(base.res)).toBeGreaterThan(
+      othersDamage(critRateOff.res)
+    );
   });
 
   // -- skill2-B: Attack Speed is SHOTGUN-scoped (no leak to non-SG allies) --
@@ -110,7 +144,9 @@ describe('tove — kit spec (blind S5)', () => {
   // target to ALL allies must ADD teammate shots (they fire faster) => the SG scoping is
   // load-bearing. Nearest-wrong (already all-allies): the patch is a no-op, equal shots => RED.
   it('skill2 Attack Speed is scoped to shotgun allies (broadening to all allies adds shots)', () => {
-    expect(count(atkSpdAllAllies.evs, 'shot')).toBeGreaterThan(count(base.evs, 'shot'));
+    expect(count(atkSpdAllAllies.evs, 'shot')).toBeGreaterThan(
+      count(base.evs, 'shot')
+    );
   });
 
   // -- skill1-B: Max Ammunition +2 (x3) to allies => fewer reloads --------
@@ -118,12 +154,19 @@ describe('tove — kit spec (blind S5)', () => {
   // fewer reloads over a fixed 180s. Removing it must INCREASE team reload count.
   // (Lower-confidence: relies on the ~+6 ammo shifting an integer reload count; flagged.)
   it('skill1 Max Ammunition buff reduces team reload count (weapon-state, live)', () => {
-    expect(count(maxAmmoOff.evs, 'reload')).toBeGreaterThan(count(base.evs, 'reload'));
+    expect(count(maxAmmoOff.evs, 'reload')).toBeGreaterThan(
+      count(base.evs, 'reload')
+    );
   });
 
   // -- inertness: tove carries no enemy debuff / boss-status --------------
   it('tove applies no boss debuff (no damageTaken / targetStatus channel in kit)', () => {
-    const bossDebuffs = base.evs.filter(e => e && (e.kind === 'targetStatus' || (e.kind === 'buffApply' && e.stat === 'damageTakenPct')));
+    const bossDebuffs = base.evs.filter(
+      (e) =>
+        e &&
+        (e.kind === 'targetStatus' ||
+          (e.kind === 'buffApply' && e.stat === 'damageTakenPct'))
+    );
     expect(bossDebuffs.length).toBe(0);
   });
 

@@ -54,7 +54,7 @@ const coerceEleFilter = (v: string | null): EleFilter =>
 function toChartData(
   title: string,
   bars: BarEntry[],
-  compare: (BarEntry & { total: number }) | null,
+  compare: (BarEntry & { total: number }) | null
 ): DpsChartData {
   return {
     title,
@@ -81,16 +81,16 @@ export function DpsChartTab() {
   const [err, setErr] = useState<string | null>(null);
   const params = new URLSearchParams(window.location.search);
   const [compareSlug, setCompareSlug] = useState<string>(
-    params.get('cmp') ?? '',
+    params.get('cmp') ?? ''
   );
   const [cell, setCell] = useState<Cell>(
-    parseCellId(params.get('chart') ?? '') ?? DEFAULT_CELL,
+    parseCellId(params.get('chart') ?? '') ?? DEFAULT_CELL
   );
   const [eleFilter, setEleFilter] = useState<EleFilter>(
-    coerceEleFilter(params.get('ele')),
+    coerceEleFilter(params.get('ele'))
   );
   const [fwMode, setFwMode] = useState<FwMode>(
-    params.get('fw') === 'team' ? 'team' : 'solo',
+    params.get('fw') === 'team' ? 'team' : 'solo'
   );
 
   useEffect(() => {
@@ -102,9 +102,9 @@ export function DpsChartTab() {
   if (err) {
     // dev note: if this persists locally, regenerate the artifact with `npm run dpschart`
     return (
-      <section className='calc-tab'>
+      <section className="calc-tab">
         <h2>DPS Rankings</h2>
-        <p className='muted'>
+        <p className="muted">
           The rankings data failed to load ({err}). Try refreshing the page — if
           it keeps failing, report it in the Discord (link in the footer).
         </p>
@@ -113,9 +113,9 @@ export function DpsChartTab() {
   }
   if (!art) {
     return (
-      <section className='calc-tab'>
+      <section className="calc-tab">
         <h2>DPS Rankings</h2>
-        <p className='muted'>Loading chart data…</p>
+        <p className="muted">Loading chart data…</p>
       </section>
     );
   }
@@ -125,12 +125,12 @@ export function DpsChartTab() {
   const shareLink = (c: Cell) => {
     const u = new URL(window.location.href);
     u.searchParams.set('chart', cellId(c));
-    if (compareSlug) u.searchParams.set('cmp', compareSlug);
-    else u.searchParams.delete('cmp');
-    if (eleFilter) u.searchParams.set('ele', eleFilter);
-    else u.searchParams.delete('ele');
-    if (fwMode === 'team') u.searchParams.set('fw', 'team');
-    else u.searchParams.delete('fw');
+    if (compareSlug) {u.searchParams.set('cmp', compareSlug);}
+    else {u.searchParams.delete('cmp');}
+    if (eleFilter) {u.searchParams.set('ele', eleFilter);}
+    else {u.searchParams.delete('ele');}
+    if (fwMode === 'team') {u.searchParams.set('fw', 'team');}
+    else {u.searchParams.delete('fw');}
     void navigator.clipboard?.writeText(u.toString());
   };
 
@@ -156,9 +156,9 @@ export function DpsChartTab() {
   };
 
   return (
-    <section className='calc-tab dpschart-tab'>
+    <section className="calc-tab dpschart-tab">
       <h2>DPS Rankings</h2>
-      <p className='muted'>
+      <p className="muted">
         Top-10 B3 carries by DPS under standardized control frameworks, 180s
         fight length. Scores are normalized to the chart’s #1 (rank 1 = 1.00;
         each row = its DPS ÷ the #1’s DPS, so 0.95 ≈ 95% of the top unit’s
@@ -166,7 +166,7 @@ export function DpsChartTab() {
         score and rank to every chart.
       </p>
 
-      <details className='dpschart-frameworks'>
+      <details className="dpschart-frameworks">
         <summary>Control frameworks</summary>
         <dl>
           {FRAMEWORK_IDS.map((id) => (
@@ -176,7 +176,7 @@ export function DpsChartTab() {
             </div>
           ))}
         </dl>
-        <p className='muted'>
+        <p className="muted">
           Elements: <b>Neutral</b> = no advantage; <b>Ele Weak</b> = the boss is
           weak to the tested unit only. Core = boss-core exposure (0/50/100%,
           with the ~85% auto-aim floor). Investment: <b>Scope Lock</b> (no
@@ -185,7 +185,7 @@ export function DpsChartTab() {
         </p>
       </details>
 
-      <details className='dpschart-frameworks'>
+      <details className="dpschart-frameworks">
         <summary>Custom profiles</summary>
         <dl>
           <div>
@@ -220,19 +220,19 @@ export function DpsChartTab() {
         </dl>
       </details>
 
-      <div className='dpschart-compare-pick'>
+      <div className="dpschart-compare-pick">
         <label>Compare a unit</label>
         <select
           value={compareSlug}
           onChange={(e) => setCompareSlug(e.target.value)}
         >
-          <option value=''>— none —</option>
+          <option value="">— none —</option>
           {(['Fire', 'Water', 'Wind', 'Electric', 'Iron'] as const).map(
             (ele) => {
               // a unit whose kit grants a second code's advantage (Rapi: Red Hood is
               // Fire + Iron) is listed under both of its elements
               const group = units.filter((u) => u.elements.includes(ele));
-              if (!group.length) return null;
+              if (!group.length) {return null;}
               return (
                 <optgroup key={ele} label={ele}>
                   {group.map((u) => (
@@ -242,13 +242,13 @@ export function DpsChartTab() {
                   ))}
                 </optgroup>
               );
-            },
+            }
           )}
         </select>
       </div>
 
-      <div className='field'>
-        <label title='which control framework the headliner infographics use'>
+      <div className="field">
+        <label title="which control framework the headliner infographics use">
           Framework
         </label>
         <PillGrid>
@@ -267,8 +267,8 @@ export function DpsChartTab() {
         </PillGrid>
       </div>
 
-      <div className='field'>
-        <label title='restrict every chart to B3s of one element'>
+      <div className="field">
+        <label title="restrict every chart to B3s of one element">
           Element
         </label>
         <PillGrid>
@@ -285,24 +285,24 @@ export function DpsChartTab() {
       </div>
 
       {HEADLINERS_BY_MODE[fwMode].map((h) => (
-        <div className='dpschart-headliner' key={h.slug}>
+        <div className="dpschart-headliner" key={h.slug}>
           <h3>{h.name}</h3>
-          <div className='dpschart-grid'>
+          <div className="dpschart-grid">
             {h.cells.map((c) =>
               renderChart(
                 c,
                 CORES[c.core].label,
-                `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`,
-              ),
+                `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`
+              )
             )}
           </div>
         </div>
       ))}
 
-      <div className='dpschart-matrix'>
+      <div className="dpschart-matrix">
         <h3>Full matrix</h3>
         <MatrixFilter cell={cell} onChange={setCell} />
-        <div className='dpschart-grid one'>
+        <div className="dpschart-grid one">
           {renderChart(cell, cellLabel(cell))}
         </div>
       </div>

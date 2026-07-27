@@ -15,7 +15,10 @@ import { loadOverride } from '../../src/skills/overrides-node.js';
 import type { Element } from '../../src/types.js';
 import { scopeLockCfg, sanityCheck, loadData } from '../lib/scope-lock.js';
 
-export function runScopeLock(bossElement: Element | null, slugs: string[]): void {
+export function runScopeLock(
+  bossElement: Element | null,
+  slugs: string[]
+): void {
   if (!slugs.length) {
     console.error('usage: npx tsx scripts/sim/<element>.ts <slug> [slug...]');
     process.exit(1);
@@ -23,7 +26,10 @@ export function runScopeLock(bossElement: Element | null, slugs: string[]): void
   const { data, mult } = loadData();
   const chars: any[] = slugs.map((s) => {
     const c = data.characters[s];
-    if (!c) { console.error(`unknown slug: ${s}`); process.exit(1); }
+    if (!c) {
+      console.error(`unknown slug: ${s}`);
+      process.exit(1);
+    }
     return c;
   });
   const focus = process.env.FOCUS ?? slugs[Math.floor((slugs.length - 1) / 2)]; // middle slot
@@ -36,14 +42,23 @@ export function runScopeLock(bossElement: Element | null, slugs: string[]): void
   const r: any = runSim(chars, mult, cfg, prepared);
 
   const label = bossElement ?? 'neutral (none)';
-  console.log(`\n=== scope-lock · boss ${label} · DEF ${cfg.bossDef} · core 100% · ${cfg.durationSec}s ===`);
+  console.log(
+    `\n=== scope-lock · boss ${label} · DEF ${cfg.bossDef} · core 100% · ${cfg.durationSec}s ===`
+  );
   if (!process.env.NOSANITY) {
     const issues = sanityCheck(chars, r);
-    if (issues.length) { console.log('  ⚠ SANITY FAIL (config drift?):'); issues.forEach((i) => console.log('   ✗ ' + i)); }
-    else console.log('  ✓ sanity: staticAtk matches scope-lock reference; same-class ATK uniform');
+    if (issues.length) {
+      console.log('  ⚠ SANITY FAIL (config drift?):');
+      issues.forEach((i) => console.log('   ✗ ' + i));
+    } else
+      {console.log(
+        '  ✓ sanity: staticAtk matches scope-lock reference; same-class ATK uniform'
+      );}
   }
   console.log(`  full bursts: ${r.fullBursts ?? r.fullBurstCount ?? 'n/a'}`);
   r.units.forEach((u: any, i: number) => {
-    console.log(`  ${slugs[i].padEnd(26)} ${(u.totalDamage / 1e6).toFixed(1).padStart(7)}M  share ${(u.share * 100).toFixed(1)}%  bursts ${u.burstCasts}  ATK ${u.staticAtk}`);
+    console.log(
+      `  ${slugs[i].padEnd(26)} ${(u.totalDamage / 1e6).toFixed(1).padStart(7)}M  share ${(u.share * 100).toFixed(1)}%  bursts ${u.burstCasts}  ATK ${u.staticAtk}`
+    );
   });
 }

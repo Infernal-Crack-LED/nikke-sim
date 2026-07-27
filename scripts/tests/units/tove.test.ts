@@ -115,11 +115,11 @@ function run(overrides: Record<string, any> = {}) {
 type BuffApply = Extract<SimEvent, { kind: 'buffApply' }>;
 const buffs = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TOVE,
+    (e): e is BuffApply => e.kind === 'buffApply' && e.casterIdx === TOVE
   );
 const byStat = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.stat === stat && (value === undefined || b.value === value),
+    (b) => b.stat === stat && (value === undefined || b.value === value)
   );
 /** buffApply events whose key carries the original (pre-conversion) effect value, e.g. 6.96 / 72.63. */
 const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
@@ -127,18 +127,18 @@ const byKeyVal = (evs: SimEvent[], stat: string, origVal: number) =>
 const targetsOf = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((t): t is number => t != null),
+      bs.map((b) => b.targetIdx).filter((t): t is number => t != null)
     ),
   ].sort((a, b) => a - b);
 const dursOf = (bs: BuffApply[]) => [
   ...new Set(
-    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame)),
+    bs.map((b) => (b.expiresFrame == null ? null : b.expiresFrame - b.frame))
   ),
 ];
 const toveBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is Extract<SimEvent, { kind: 'burstCast' }> =>
-      e.kind === 'burstCast' && e.slug === 'tove',
+      e.kind === 'burstCast' && e.slug === 'tove'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstStart');
@@ -155,21 +155,21 @@ const isS1Passive = (b: any) =>
 // T2 nearest-wrong (stat): maxAmmoFlat 6 → maxAmmoPct 6 (a percentage, not flat rounds).
 const cfS1MaxAmmoPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) throw new Error('tove S1 passive block missing — fixture is stale');
+  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
   const eff = b.effects.find((e: any) => e.stat === 'maxAmmoFlat');
   eff.stat = 'maxAmmoPct';
 });
 // T2/T3 nearest-wrong (scope): allies → alliesOfWeapon SG (hit only the 2 SG allies, not all 5).
 const cfS1ScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) throw new Error('tove S1 passive block missing — fixture is stale');
+  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // T2/T3 nearest-wrong (duration): add a 5s expiry to the steady-state permanent passive.
 const cfS1Dur5 = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill1.find(isS1Passive);
-  if (!b) throw new Error('tove S1 passive block missing — fixture is stale');
-  for (const e of b.effects) e.durationSec = 5;
+  if (!b) {throw new Error('tove S1 passive block missing — fixture is stale');}
+  for (const e of b.effects) {e.durationSec = 5;}
 });
 // The S2 critRatePct 10.08 block (T4 under test, target allies).
 const isS2CritRate = (b: any) =>
@@ -178,7 +178,7 @@ const isS2CritRate = (b: any) =>
 // T4 nearest-wrong (scope): allies → alliesOfWeapon SG (the line says "all allies", not SG-only).
 const cfS2CritRateScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill2.find(isS2CritRate);
-  if (!b) throw new Error('tove S2 critRate block missing — fixture is stale');
+  if (!b) {throw new Error('tove S2 critRate block missing — fixture is stale');}
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // The S2 attackSpeedPct 42.24 block (T5 under test, target alliesOfWeapon SG).
@@ -188,7 +188,8 @@ const isS2AtkSpeed = (b: any) =>
 // T5 nearest-wrong (scope): alliesOfWeapon SG → allies (the classic scope-collapse: SG line as generic).
 const cfS2AtkSpeedScopeAllies = withPatchedOverride('tove', (ov: any) => {
   const b = ov.skill2.find(isS2AtkSpeed);
-  if (!b) throw new Error('tove S2 attackSpeed block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove S2 attackSpeed block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 // The burst all-ally casterAtkPct 6.96 block (T6 under test).
@@ -198,31 +199,36 @@ const isBurstAll = (b: any) =>
 // T6 nearest-wrong (trigger): burstCast → fullBurstEnter (every team FB-start frame, not Tove's cast frame).
 const cfBurstAllFbEnter = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove burst all-ally block missing — fixture is stale');}
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // T6 nearest-wrong (scope): allies → alliesOfWeapon SG (only the 2 SG allies, not all 5).
 const cfBurstAllScopeSG = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove burst all-ally block missing — fixture is stale');}
   b.target = { kind: 'alliesOfWeapon', weapon: 'SG' };
 });
 // T6 nearest-wrong (stat): casterAtkPct → atkPct (a percentage in the ATK bucket, not a caster-keyed flat add).
 const cfBurstAllAtkPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove burst all-ally block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 // T6 nearest-wrong (duration): the stale datamine 10s window (the prose says 15s).
 const cfBurstAllDur10 = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove burst all-ally block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterAtkPct').durationSec = 10;
 });
 // T6 nearest-wrong (mirror): the UN-mirrored per-stack value 2.32 (ignoring "mirrors the stack count" ×3).
 const cfBurstAllUnmirrored = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstAll);
-  if (!b) throw new Error('tove burst all-ally block missing — fixture is stale');
+  if (!b)
+    {throw new Error('tove burst all-ally block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterAtkPct').value = 2.32;
 });
 // The burst SG casterAtkPct 72.63 block (T7 under test).
@@ -232,13 +238,13 @@ const isBurstSG = (b: any) =>
 // T7 nearest-wrong (scope): alliesOfWeapon SG → allies (hit all 5, not just the 2 SG allies).
 const cfBurstSGScopeAllies = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstSG);
-  if (!b) throw new Error('tove burst SG block missing — fixture is stale');
+  if (!b) {throw new Error('tove burst SG block missing — fixture is stale');}
   b.target = { kind: 'allies' };
 });
 // T7 nearest-wrong (stat): casterAtkPct → atkPct.
 const cfBurstSGAtkPct = withPatchedOverride('tove', (ov: any) => {
   const b = ov.burst.find(isBurstSG);
-  if (!b) throw new Error('tove burst SG block missing — fixture is stale');
+  if (!b) {throw new Error('tove burst SG block missing — fixture is stale');}
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat = 'atkPct';
 });
 
@@ -276,7 +282,7 @@ describe('tove — kit spec', () => {
     it('the fixture fields exactly two SG allies (noir slot 3, isabel slot 4) for scope discrimination', () => {
       // the S2 attackSpeed line (alliesOfWeapon SG) reaches exactly noir + isabel
       expect(targetsOf(byStat(base.events, 'attackSpeedPct', 42.24))).toEqual(
-        SG_ALLIES,
+        SG_ALLIES
       );
     });
   });
@@ -286,14 +292,14 @@ describe('tove — kit spec', () => {
       const s1Stats = new Set(
         buffs(base.events)
           .filter((b) => b.key.includes(':skill1:'))
-          .map((b) => b.stat),
+          .map((b) => b.stat)
       );
       expect([...s1Stats].sort()).toEqual(['critDamagePct', 'maxAmmoFlat']);
     });
     it('PIN: Tove deals ZERO skill1-sourced damage (the slot is pure team buffing)', () => {
       const skill1Dmg = base.events.filter(
         (e) =>
-          e.kind === 'damage' && e.slug === 'tove' && e.srcSlot === 'skill1',
+          e.kind === 'damage' && e.slug === 'tove' && e.srcSlot === 'skill1'
       );
       expect(skill1Dmg.length).toBe(0);
     });
@@ -311,15 +317,13 @@ describe('tove — kit spec', () => {
     it('DISCRIMINATING (stat): maxAmmoPct 6 (nearest-wrong) is a percentage, not flat rounds', () => {
       expect(byStat(s1MaxAmmoPct.events, 'maxAmmoFlat', 6).length).toBe(0);
       expect(
-        byStat(s1MaxAmmoPct.events, 'maxAmmoPct', 6).length,
+        byStat(s1MaxAmmoPct.events, 'maxAmmoPct', 6).length
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
-      expect(
-        targetsOf(
-          byStat(s1ScopeSG.events, 'maxAmmoFlat', 6),
-        ),
-      ).toEqual(SG_ALLIES);
+      expect(targetsOf(byStat(s1ScopeSG.events, 'maxAmmoFlat', 6))).toEqual(
+        SG_ALLIES
+      );
     });
     it('DISCRIMINATING (duration): a 5s expiry (nearest-wrong) is NOT the faithful permanent steady-state passive', () => {
       expect(dursOf(byStat(s1Dur5.events, 'maxAmmoFlat', 6))).toEqual([
@@ -338,7 +342,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
       expect(
-        targetsOf(byStat(s1ScopeSG.events, 'critDamagePct', 5.24)),
+        targetsOf(byStat(s1ScopeSG.events, 'critDamagePct', 5.24))
       ).toEqual(SG_ALLIES);
     });
     it('DISCRIMINATING (duration): a 5s expiry (nearest-wrong) is NOT the faithful permanent steady-state passive', () => {
@@ -358,7 +362,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies — the line says "all allies"', () => {
       expect(
-        targetsOf(byStat(s2CritRateScopeSG.events, 'critRatePct', 10.08)),
+        targetsOf(byStat(s2CritRateScopeSG.events, 'critRatePct', 10.08))
       ).toEqual(SG_ALLIES);
     });
   });
@@ -373,7 +377,7 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong scope-collapse) hits all 5 slots, not just the 2 SG allies', () => {
       expect(
-        targetsOf(byStat(s2AtkSpeedScopeAllies.events, 'attackSpeedPct', 42.24)),
+        targetsOf(byStat(s2AtkSpeedScopeAllies.events, 'attackSpeedPct', 42.24))
       ).toEqual(ALL_SLOTS);
     });
   });
@@ -391,8 +395,12 @@ describe('tove — kit spec', () => {
       const toveAtk = vals[0] / 0.0696;
       expect(toveAtk).toBeGreaterThan(0);
       // applies on Tove's burstCast frames
-      const frames = [...new Set(atk.map((b) => b.frame))].sort((a, b) => a - b);
-      expect(frames).toEqual([...castFrames(base.events)].sort((a, b) => a - b));
+      const frames = [...new Set(atk.map((b) => b.frame))].sort(
+        (a, b) => a - b
+      );
+      expect(frames).toEqual(
+        [...castFrames(base.events)].sort((a, b) => a - b)
+      );
     });
     it("DISCRIMINATING (trigger): fullBurstEnter (nearest-wrong) lands on the later FB-start frames, not Tove's cast frames", () => {
       const cast = castFrames(base.events);
@@ -400,8 +408,8 @@ describe('tove — kit spec', () => {
       const cfFrames = [
         ...new Set(
           byKeyVal(burstAllFbEnter.events, 'casterAtkPct', 6.96).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames.length).toBeGreaterThan(0);
@@ -410,27 +418,29 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): alliesOfWeapon SG (nearest-wrong) hits only the 2 SG allies, not all 5', () => {
       expect(
-        targetsOf(byKeyVal(burstAllScopeSG.events, 'casterAtkPct', 6.96)),
+        targetsOf(byKeyVal(burstAllScopeSG.events, 'casterAtkPct', 6.96))
       ).toEqual(SG_ALLIES);
     });
     it('DISCRIMINATING (stat): atkPct (nearest-wrong) is a percentage in the ATK bucket, not a caster-keyed flat add', () => {
       // under the nearest-wrong there is NO casterAtkPct :6.96 …
-      expect(byKeyVal(burstAllAtkPct.events, 'casterAtkPct', 6.96).length).toBe(0);
+      expect(byKeyVal(burstAllAtkPct.events, 'casterAtkPct', 6.96).length).toBe(
+        0
+      );
       // … instead an atkPct 6.96 appears (a percentage, value NOT resolved to flat ATK)
       const pct = byStat(burstAllAtkPct.events, 'atkPct', 6.96);
       expect(pct.length).toBeGreaterThan(0);
     });
     it('DISCRIMINATING (duration): the stale datamine 10s (nearest-wrong) is shorter than the faithful 15s', () => {
-      expect(dursOf(byKeyVal(burstAllDur10.events, 'casterAtkPct', 6.96))).toEqual([
-        10 * FPS,
-      ]);
+      expect(
+        dursOf(byKeyVal(burstAllDur10.events, 'casterAtkPct', 6.96))
+      ).toEqual([10 * FPS]);
     });
     it('DISCRIMINATING (mirror): the UN-mirrored per-stack value 2.32 (nearest-wrong) ignores "mirrors the stack count" ×3', () => {
       expect(
-        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 6.96).length,
+        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 6.96).length
       ).toBe(0);
       expect(
-        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 2.32).length,
+        byKeyVal(burstAllUnmirrored.events, 'casterAtkPct', 2.32).length
       ).toBeGreaterThan(0);
     });
   });
@@ -447,7 +457,11 @@ describe('tove — kit spec', () => {
     it('DISCRIMINATING (co-stack): SG allies receive BOTH the 6.96 all-ally line AND the 72.63 SG line (additive, distinct keys → 79.59% total)', () => {
       const sgTotal = byKeyVal(base.events, 'casterAtkPct', 6.96)
         .filter((b) => b.targetIdx === NOIR)
-        .concat(byKeyVal(base.events, 'casterAtkPct', 72.63).filter((b) => b.targetIdx === NOIR));
+        .concat(
+          byKeyVal(base.events, 'casterAtkPct', 72.63).filter(
+            (b) => b.targetIdx === NOIR
+          )
+        );
       // noir gets both keys
       const keys = new Set(sgTotal.map((b) => b.key));
       expect([...keys].some((k) => k.endsWith(':6.96'))).toBe(true);
@@ -455,13 +469,15 @@ describe('tove — kit spec', () => {
     });
     it('DISCRIMINATING (scope): `allies` (nearest-wrong) hits all 5 slots, not just the 2 SG allies', () => {
       expect(
-        targetsOf(byKeyVal(burstSGScopeAllies.events, 'casterAtkPct', 72.63)),
+        targetsOf(byKeyVal(burstSGScopeAllies.events, 'casterAtkPct', 72.63))
       ).toEqual(ALL_SLOTS);
     });
     it('DISCRIMINATING (stat): atkPct (nearest-wrong) is a percentage, not a caster-keyed flat add', () => {
-      expect(byKeyVal(burstSGAtkPct.events, 'casterAtkPct', 72.63).length).toBe(0);
+      expect(byKeyVal(burstSGAtkPct.events, 'casterAtkPct', 72.63).length).toBe(
+        0
+      );
       expect(
-        byStat(burstSGAtkPct.events, 'atkPct', 72.63).length,
+        byStat(burstSGAtkPct.events, 'atkPct', 72.63).length
       ).toBeGreaterThan(0);
     });
   });

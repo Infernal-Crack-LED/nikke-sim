@@ -88,15 +88,15 @@ describe('cross-team polish (item 4)', () => {
     expect(total(polished)).toBeGreaterThanOrEqual(total(greedy) - 1e-6);
     expect(
       polished.every((t) => distinct5(t.slugs)),
-      'a team is not 5 distinct units',
+      'a team is not 5 distinct units'
     ).toBe(true);
     const slugs = polished.flatMap((t) => t.slugs);
     expect(new Set(slugs).size, 'a unit was reused across teams').toBe(
-      slugs.length,
+      slugs.length
     );
     expect(
       slugs.every((s) => POOL.has(s)),
-      'polish fielded a blocked unit',
+      'polish fielded a blocked unit'
     ).toBe(true);
   });
 
@@ -111,7 +111,7 @@ describe('cross-team polish (item 4)', () => {
     const dmg = teams.map((t) => t.teamDamage);
     expect(
       dmg.every((d, i) => i === 0 || d <= dmg[i - 1] + 1e-6),
-      `roster is out of order: ${dmg.map((d) => Math.round(d / 1e6)).join(' / ')}M`,
+      `roster is out of order: ${dmg.map((d) => Math.round(d / 1e6)).join(' / ')}M`
     ).toBe(true);
   });
 
@@ -127,7 +127,7 @@ describe('cross-team polish (item 4)', () => {
     expect(pinned.length).toBeGreaterThan(1);
     expect(
       weakest.every((s) => pinned[0].slugs.includes(s)),
-      'the row-0 pin did not land in row 0',
+      'the row-0 pin did not land in row 0'
     ).toBe(true);
     expect(pinned[0].teamDamage).toBeLessThan(pinned[1].teamDamage);
   });

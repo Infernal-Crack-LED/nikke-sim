@@ -139,9 +139,7 @@
     "burst:Charge Damage ▲ 25% for 25 sec (burstCast-keyed)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Outgoing healing ▲ 49.92% continuously."
-    ],
+    "skill1": ["Outgoing healing ▲ 49.92% continuously."],
     "skill2": [
       "■ Activates when Sing Along takes effect while Prika is in Performance status. Encore — Function: Extends the duration of Performance for Prika and strengthens allies.",
       "Effect 1: Affects the member who initiated Sing Along. Assigned Part: Singing. This effect is continuous and cannot be removed.",

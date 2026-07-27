@@ -1,8 +1,6 @@
 {
   "note": "Marciana: Marine Study — Iron AR B3 Attacker, Elysion. Kit-autonomy gauntlet 2026-07-24.\n\nS1 (Emergency Whistle): two modelable blocks. (1) FB-enter (ownBurstGate:'cast') → boss: 3789.25% flatDamage + targetStatus 'Flagged Target' 10s (the ATK ▼10.56% content is inert in v1 — boss ATK irrelevant; the named window is modeled for kit completeness). (2) hitCount:20 + requiresTargetStatus:'High-Risk Target' → boss: 152.68% flatDamage — the 20-hit rider against a High-Risk-Target-afflicted boss; hitCount counts all hits (not normal-only), a small over-count for an AR with frequent normals; noted in caveats.\n\nS2 (Penguin Emergency Dispatch): Whistle resource pool (initial:4, max:5). Passive perResource atkPct (whistle×32.73%) — 4 stacks at t=0 (130.92%), 5 at t=5s (163.65%) via interval:5 resource+1 (the '≤3 Raptures for 5s' trigger is always true in the solo-raid sim with 1 enemy, so interval:5 is exact). Passive elemAdvantageDamagePct 20.41 (the 'Rapture appears/neutralized while ≤5' trigger fires once at t=0 in the sim; modeled as passive). The '≥6 Raptures for 1s' Penguin Emergency Dispatch (214.36% AoE + whistle−1) is UNMODELED — never ≥6 enemies in the sim.\n\nBurst: burstCast → self elemAdvantageDamagePct 30.97%/10s + attackDamagePct 27.45%/10s; burstCast + bossElementGate:'Electric' → boss targetStatus 'High-Risk Target' 20s (DEF ▼10.56% content inert at bossDef:0; the named window gates S1's 20-hit rider).\n\nTIER: Tier 2 (elevated) — scoped-buff (Whistle perResource), burstCast-vs-fullBurstEnter (S1 vs burst), status-gate (requiresTargetStatus). S2b/S5/S6/S7 all cross-family.",
-  "resources": [
-    { "name": "whistle", "initial": 4, "min": 0, "max": 5 }
-  ],
+  "resources": [{ "name": "whistle", "initial": 4, "min": 0, "max": 5 }],
   "unmodeled": {
     "skill1": [
       "■ Activates when an enemy is neutralized if the target is in the Flagged Target state. Affects 1 random enemy unit(s). Flagged Target Designation Effect 1: Deals 3789.25% of final ATK as additional damage. Effect 2: Activates when the target is alive. Flagged Target: ATK ▼ 10.56% for 10 sec. — UNMODELED: no enemyNeutralized trigger in the engine; inert in the sim (the boss never dies). The Flagged Target status IS modeled (targetStatus) as the gate for this block, but the block itself never fires."
@@ -36,9 +34,7 @@
       "trigger": { "kind": "hitCount", "count": 20 },
       "requiresTargetStatus": "High-Risk Target",
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 152.68 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 152.68 }]
     }
   ],
   "skill2": [
@@ -47,16 +43,19 @@
       "trigger": { "kind": "passive" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "atkPct", "value": 0, "perResource": { "name": "whistle", "mult": 32.73 } }
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 0,
+          "perResource": { "name": "whistle", "mult": 32.73 }
+        }
       ]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "interval", "sec": 5 },
       "target": { "kind": "self" },
-      "effects": [
-        { "kind": "resource", "name": "whistle", "delta": 1 }
-      ]
+      "effects": [{ "kind": "resource", "name": "whistle", "delta": 1 }]
     },
     {
       "slot": "skill2",
@@ -73,8 +72,18 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 30.97, "durationSec": 10 },
-        { "kind": "buff", "stat": "attackDamagePct", "value": 27.45, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 30.97,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 27.45,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -83,7 +92,11 @@
       "bossElementGate": "Electric",
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "targetStatus", "name": "High-Risk Target", "durationSec": 20 }
+        {
+          "kind": "targetStatus",
+          "name": "High-Risk Target",
+          "durationSec": 20
+        }
       ]
     }
   ]

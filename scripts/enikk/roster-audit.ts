@@ -19,7 +19,13 @@
 // Live fetch needs network; with ENIKK_CACHE set, each raid's raw response is
 // cached there and reused on later runs (offline-friendly, and lets a session
 // seed the cache from an earlier pull).
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import type { DataFile } from '../../src/types.js';
 
@@ -36,7 +42,9 @@ const RAID_META: Record<number, { label: string; boss: string }> = {
 };
 
 const TOP = Number(process.env.TOP ?? 100);
-const RAIDS = (process.env.RAIDS ?? '37,36,35,34,31').split(',').map((s) => Number(s.trim()));
+const RAIDS = (process.env.RAIDS ?? '37,36,35,34,31')
+  .split(',')
+  .map((s) => Number(s.trim()));
 const CACHE = process.env.ENIKK_CACHE;
 
 // Owner-specified manual additions to the enikk-supported roster (below), unioned
@@ -47,8 +55,13 @@ const MANUAL_ADDITIONS: string[] = [
   'Cinderella: Crystal Wave', // user-specified 2026-07-15: too new for solo-raid top-ranker usage yet; owner wants her supported.
 ];
 
-interface Team { characters?: string[] }
-interface Row { damage?: number; teams?: Team[] }
+interface Team {
+  characters?: string[];
+}
+interface Row {
+  damage?: number;
+  teams?: Team[];
+}
 
 const QUERY =
   'query SRRankings($raid: Float!, $all: Boolean) { SRRankings(raid: $raid, all: $all){ damage teams } }';
@@ -64,9 +77,10 @@ async function fetchRankings(raid: number): Promise<Row[]> {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({ query: QUERY, variables: { raid, all: false } }),
   });
-  if (!res.ok) throw new Error(`enikk fetch raid ${raid}: HTTP ${res.status}`);
+  if (!res.ok) {throw new Error(`enikk fetch raid ${raid}: HTTP ${res.status}`);}
   const j = await res.json();
-  if (j.errors) throw new Error(`enikk GraphQL raid ${raid}: ${JSON.stringify(j.errors)}`);
+  if (j.errors)
+    {throw new Error(`enikk GraphQL raid ${raid}: ${JSON.stringify(j.errors)}`);}
   if (cacheFile) {
     mkdirSync(CACHE!, { recursive: true });
     writeFileSync(cacheFile, JSON.stringify(j, null, 1));
@@ -75,15 +89,21 @@ async function fetchRankings(raid: number): Promise<Row[]> {
 }
 
 // name→slug + modeled-roster membership, so the audit flags what the sim covers
-const data: DataFile = JSON.parse(readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
+);
 const modeled = new Set(
   readdirSync(new URL('../../src/skills/overrides', import.meta.url))
     .filter((f) => f.endsWith('.json'))
-    .map((f) => f.replace(/\.json$/, '')),
+    .map((f) => f.replace(/\.json$/, ''))
 );
 const nameToSlug: Record<string, string> = {};
-for (const [slug, c] of Object.entries(data.characters)) nameToSlug[c.name.replace(' (Treasure)', '')] = slug;
-const isModeled = (name: string) => { const s = nameToSlug[name]; return s !== undefined && modeled.has(s); };
+for (const [slug, c] of Object.entries(data.characters))
+  {nameToSlug[c.name.replace(' (Treasure)', '')] = slug;}
+const isModeled = (name: string) => {
+  const s = nameToSlug[name];
+  return s !== undefined && modeled.has(s);
+};
 
 interface RaidAudit {
   raid: number;
@@ -99,27 +119,37 @@ async function auditRaid(raid: number): Promise<RaidAudit> {
   const rows = await fetchRankings(raid);
   const top = rows.slice(0, TOP); // array order = damage-descending leaderboard
   const raw: string[][] = [];
-  for (const r of top) for (const t of r.teams ?? []) {
-    if (t.characters && t.characters.length === 5) raw.push(t.characters);
-  }
+  for (const r of top)
+    {for (const t of r.teams ?? []) {
+      if (t.characters && t.characters.length === 5) {raw.push(t.characters);}
+    }}
   // dedup by the SET of 5 units (slot order ignored); keep the first-seen slot
   // order as the representative and count how many top rankers ran the comp.
   const byKey = new Map<string, { characters: string[]; count: number }>();
   for (const chars of raw) {
     const key = [...chars].sort().join('|');
     const cur = byKey.get(key);
-    if (cur) cur.count++;
-    else byKey.set(key, { characters: chars, count: 1 });
+    if (cur) {cur.count++;}
+    else {byKey.set(key, { characters: chars, count: 1 });}
   }
   const uniqueTeams = [...byKey.values()].sort((a, b) => b.count - a.count);
   // nikkes across surviving unique teams
   const seen = new Map<string, number>();
-  for (const t of uniqueTeams) for (const n of t.characters) seen.set(n, (seen.get(n) ?? 0) + 1);
+  for (const t of uniqueTeams)
+    {for (const n of t.characters) {seen.set(n, (seen.get(n) ?? 0) + 1);}}
   const nikkes = [...seen.entries()]
     .map(([name, teams]) => ({ name, modeled: isModeled(name), teams }))
     .sort((a, b) => b.teams - a.teams || a.name.localeCompare(b.name));
   const meta = RAID_META[raid] ?? { label: '?', boss: '?' };
-  return { raid, label: meta.label, boss: meta.boss, rankers: top.length, rawTeams: raw.length, uniqueTeams, nikkes };
+  return {
+    raid,
+    label: meta.label,
+    boss: meta.boss,
+    rankers: top.length,
+    rawTeams: raw.length,
+    uniqueTeams,
+    nikkes,
+  };
 }
 
 // ---- offline MD reconstruction ----
@@ -128,9 +158,15 @@ async function auditRaid(raid: number): Promise<RaidAudit> {
 // `- (COUNT) Name1, Name2, Name3, Name4, Name5` where COUNT = rankers who ran
 // that comp; a trailing ` *` on a name (sim-not-modeled marker) is stripped.
 // This lets the outlier filter + SUPPORTED writer run with no network.
-function buildOneRaid(raid: number, label: string, boss: string, uniqueTeams: { characters: string[]; count: number }[]): RaidAudit {
+function buildOneRaid(
+  raid: number,
+  label: string,
+  boss: string,
+  uniqueTeams: { characters: string[]; count: number }[]
+): RaidAudit {
   const seen = new Map<string, number>();
-  for (const t of uniqueTeams) for (const n of t.characters) seen.set(n, (seen.get(n) ?? 0) + 1);
+  for (const t of uniqueTeams)
+    {for (const n of t.characters) {seen.set(n, (seen.get(n) ?? 0) + 1);}}
   const nikkes = [...seen.entries()]
     .map(([name, teams]) => ({ name, modeled: isModeled(name), teams }))
     .sort((a, b) => b.teams - a.teams || a.name.localeCompare(b.name));
@@ -143,18 +179,38 @@ function auditsFromMd(mdPath: string): RaidAudit[] {
   const raidRe = /^## Raid (\d+) — (.+?) \(boss (.+?)\)/;
   const teamRe = /^-\s*\((\d+)\)\s*(.+)$/;
   const out: RaidAudit[] = [];
-  let cur: { raid: number; label: string; boss: string; teams: { characters: string[]; count: number }[] } | null = null;
+  let cur: {
+    raid: number;
+    label: string;
+    boss: string;
+    teams: { characters: string[]; count: number }[];
+  } | null = null;
   let inTeams = false;
-  const flush = () => { if (cur) out.push(buildOneRaid(cur.raid, cur.label, cur.boss, cur.teams)); };
+  const flush = () => {
+    if (cur) {out.push(buildOneRaid(cur.raid, cur.label, cur.boss, cur.teams));}
+  };
   for (const line of lines) {
     const rm = raidRe.exec(line);
-    if (rm) { flush(); cur = { raid: Number(rm[1]), label: rm[2], boss: rm[3], teams: [] }; inTeams = false; continue; }
-    if (line.startsWith('### Unique teams')) { inTeams = true; continue; }       // enter the team block
-    if (line.startsWith('###') || line.startsWith('## ')) { inTeams = false; continue; } // any other heading ends it
+    if (rm) {
+      flush();
+      cur = { raid: Number(rm[1]), label: rm[2], boss: rm[3], teams: [] };
+      inTeams = false;
+      continue;
+    }
+    if (line.startsWith('### Unique teams')) {
+      inTeams = true;
+      continue;
+    } // enter the team block
+    if (line.startsWith('###') || line.startsWith('## ')) {
+      inTeams = false;
+      continue;
+    } // any other heading ends it
     if (inTeams && cur) {
       const tm = teamRe.exec(line);
       if (tm) {
-        const characters = tm[2].split(', ').map((n) => n.replace(/\s*\*$/, '').trim()); // split 5 names, strip ` *`
+        const characters = tm[2]
+          .split(', ')
+          .map((n) => n.replace(/\s*\*$/, '').trim()); // split 5 names, strip ` *`
         cur.teams.push({ characters, count: Number(tm[1]) });
       }
     }
@@ -167,7 +223,7 @@ const audits: RaidAudit[] = [];
 if (process.env.FROM_MD) {
   audits.push(...auditsFromMd(process.env.FROM_MD));
 } else {
-  for (const raid of RAIDS) audits.push(await auditRaid(raid));
+  for (const raid of RAIDS) {audits.push(await auditRaid(raid));}
 }
 
 // ---- outlier filter (2026-07-15) ----
@@ -181,8 +237,12 @@ function unitStats(name: string): { raidGroups: number; maxUses: number } {
   let maxUses = 0;
   for (const a of audits) {
     let uses = 0;
-    for (const t of a.uniqueTeams) if (t.characters.includes(name)) uses += t.count;
-    if (uses > 0) { raids.add(a.raid); if (uses > maxUses) maxUses = uses; }
+    for (const t of a.uniqueTeams)
+      {if (t.characters.includes(name)) {uses += t.count;}}
+    if (uses > 0) {
+      raids.add(a.raid);
+      if (uses > maxUses) {maxUses = uses;}
+    }
   }
   return { raidGroups: raids.size, maxUses };
 }
@@ -194,35 +254,63 @@ const keepUnit = (name: string): boolean => {
 // ---- report ----
 for (const a of audits) {
   console.log(`\n===== raid ${a.raid} — ${a.label} (boss ${a.boss}) =====`);
-  console.log(`top ${a.rankers} rankers → ${a.rawTeams} raw teams → ${a.uniqueTeams.length} unique comps`);
+  console.log(
+    `top ${a.rankers} rankers → ${a.rawTeams} raw teams → ${a.uniqueTeams.length} unique comps`
+  );
   const notModeled = a.nikkes.filter((n) => !n.modeled);
-  console.log(`${a.nikkes.length} distinct NIKKEs used (${a.nikkes.length - notModeled.length} modeled, ${notModeled.length} not):`);
-  console.log('  ' + a.nikkes.map((n) => `${n.name}${n.modeled ? '' : ' *'}`).join(', '));
-  if (notModeled.length) console.log(`  (* not modeled by the sim: ${notModeled.map((n) => n.name).join(', ')})`);
+  console.log(
+    `${a.nikkes.length} distinct NIKKEs used (${a.nikkes.length - notModeled.length} modeled, ${notModeled.length} not):`
+  );
+  console.log(
+    '  ' + a.nikkes.map((n) => `${n.name}${n.modeled ? '' : ' *'}`).join(', ')
+  );
+  if (notModeled.length)
+    {console.log(
+      `  (* not modeled by the sim: ${notModeled.map((n) => n.name).join(', ')})`
+    );}
 }
 
 // overall NIKKE union across all audited raids
 const union = new Map<string, { modeled: boolean; raids: Set<number> }>();
-for (const a of audits) for (const n of a.nikkes) {
-  if (!union.has(n.name)) union.set(n.name, { modeled: n.modeled, raids: new Set() });
-  union.get(n.name)!.raids.add(a.raid);
-}
-const unionSorted = [...union.entries()].sort((x, y) => y[1].raids.size - x[1].raids.size || x[0].localeCompare(y[0]));
+for (const a of audits)
+  {for (const n of a.nikkes) {
+    if (!union.has(n.name))
+      {union.set(n.name, { modeled: n.modeled, raids: new Set() });}
+    union.get(n.name)!.raids.add(a.raid);
+  }}
+const unionSorted = [...union.entries()].sort(
+  (x, y) => y[1].raids.size - x[1].raids.size || x[0].localeCompare(y[0])
+);
 const unModeled = unionSorted.filter(([, v]) => !v.modeled);
 console.log(`\n===== ALL RAIDS union =====`);
-console.log(`${union.size} distinct NIKKEs across the ${audits.length} raids (${union.size - unModeled.length} modeled, ${unModeled.length} not)`);
-console.log('  ' + unionSorted.map(([n, v]) => `${n}${v.modeled ? '' : ' *'} (${v.raids.size})`).join(', '));
-if (unModeled.length) console.log(`\n  not modeled by the sim: ${unModeled.map(([n]) => n).join(', ')}`);
+console.log(
+  `${union.size} distinct NIKKEs across the ${audits.length} raids (${union.size - unModeled.length} modeled, ${unModeled.length} not)`
+);
+console.log(
+  '  ' +
+    unionSorted
+      .map(([n, v]) => `${n}${v.modeled ? '' : ' *'} (${v.raids.size})`)
+      .join(', ')
+);
+if (unModeled.length)
+  {console.log(
+    `\n  not modeled by the sim: ${unModeled.map(([n]) => n).join(', ')}`
+  );}
 
 if (process.env.OUT) {
   const payload = {
-    generated: 'run scripts/enikk/roster-audit.ts', top: TOP,
+    generated: 'run scripts/enikk/roster-audit.ts',
+    top: TOP,
     raids: audits.map((a) => ({
       ...a,
       uniqueTeams: a.uniqueTeams,
       nikkes: a.nikkes,
     })),
-    union: unionSorted.map(([name, v]) => ({ name, modeled: v.modeled, raids: [...v.raids].sort() })),
+    union: unionSorted.map(([name, v]) => ({
+      name,
+      modeled: v.modeled,
+      raids: [...v.raids].sort(),
+    })),
   };
   writeFileSync(process.env.OUT, JSON.stringify(payload, null, 1));
   console.log(`\nJSON written to ${process.env.OUT}`);
@@ -231,23 +319,50 @@ if (process.env.OUT) {
 if (process.env.MD) {
   const L: string[] = [];
   L.push(`# enikk top-${TOP} roster audit`, '');
-  L.push(`> Regenerable snapshot — run \`MD=${process.env.MD} ENIKK_CACHE=<dir> npx tsx scripts/enikk/roster-audit.ts\`.`);
-  L.push(`> Source: enikk.app SRRankings, top ${TOP} rankers per raid × their saved teams,`);
-  L.push(`> deduped by unit set. \`*\` marks a unit the sim does not model.`, '');
+  L.push(
+    `> Regenerable snapshot — run \`MD=${process.env.MD} ENIKK_CACHE=<dir> npx tsx scripts/enikk/roster-audit.ts\`.`
+  );
+  L.push(
+    `> Source: enikk.app SRRankings, top ${TOP} rankers per raid × their saved teams,`
+  );
+  L.push(
+    `> deduped by unit set. \`*\` marks a unit the sim does not model.`,
+    ''
+  );
   for (const a of audits) {
     L.push(`## Raid ${a.raid} — ${a.label} (boss ${a.boss})`, '');
-    L.push(`Top ${a.rankers} rankers → ${a.rawTeams} raw teams → **${a.uniqueTeams.length} unique comps**. ${a.nikkes.length} distinct NIKKEs.`, '');
+    L.push(
+      `Top ${a.rankers} rankers → ${a.rawTeams} raw teams → **${a.uniqueTeams.length} unique comps**. ${a.nikkes.length} distinct NIKKEs.`,
+      ''
+    );
     L.push(`### Unique teams (rankers running each)`, '');
     for (const t of a.uniqueTeams) {
-      L.push(`- (${t.count}) ${t.characters.map((n) => (isModeled(n) ? n : `${n} *`)).join(', ')}`);
+      L.push(
+        `- (${t.count}) ${t.characters.map((n) => (isModeled(n) ? n : `${n} *`)).join(', ')}`
+      );
     }
     L.push('', `### NIKKEs used`, '');
-    L.push(a.nikkes.map((n) => (n.modeled ? n.name : `${n.name} *`)).join(', '), '');
+    L.push(
+      a.nikkes.map((n) => (n.modeled ? n.name : `${n.name} *`)).join(', '),
+      ''
+    );
   }
   L.push(`## All raids — NIKKE union`, '');
-  L.push(`${union.size} distinct NIKKEs (${union.size - unModeled.length} modeled, ${unModeled.length} not). Number = raids the unit appears in.`, '');
-  L.push(unionSorted.map(([n, v]) => `${v.modeled ? n : `${n} *`} (${v.raids.size})`).join(', '), '');
-  if (unModeled.length) L.push('', `**Not modeled by the sim:** ${unModeled.map(([n]) => n).join(', ')}`);
+  L.push(
+    `${union.size} distinct NIKKEs (${union.size - unModeled.length} modeled, ${unModeled.length} not). Number = raids the unit appears in.`,
+    ''
+  );
+  L.push(
+    unionSorted
+      .map(([n, v]) => `${v.modeled ? n : `${n} *`} (${v.raids.size})`)
+      .join(', '),
+    ''
+  );
+  if (unModeled.length)
+    {L.push(
+      '',
+      `**Not modeled by the sim:** ${unModeled.map(([n]) => n).join(', ')}`
+    );}
   writeFileSync(process.env.MD, L.join('\n') + '\n');
   console.log(`Markdown written to ${process.env.MD}`);
 }
@@ -261,7 +376,9 @@ if (process.env.SUPPORTED) {
   const enikkNames = unionSorted.map(([n]) => n);
   const dropped = enikkNames.filter((n) => !keepUnit(n));
   if (dropped.length) {
-    console.log(`\noutlier filter dropped ${dropped.length} single-use unit(s) (1 raid AND 1 use):`);
+    console.log(
+      `\noutlier filter dropped ${dropped.length} single-use unit(s) (1 raid AND 1 use):`
+    );
     for (const n of dropped) {
       const s = unitStats(n);
       console.log(`  - ${n} (raidGroups=${s.raidGroups}, uses=${s.maxUses})`);
@@ -269,15 +386,15 @@ if (process.env.SUPPORTED) {
   }
   // union the filtered enikk names with owner-specified manual additions AFTER the
   // filter (dedup), so hardcoded picks always survive regardless of usage.
-  const names = [...new Set([...enikkNames.filter(keepUnit), ...MANUAL_ADDITIONS])].sort((a, b) =>
-    a.localeCompare(b),
-  );
+  const names = [
+    ...new Set([...enikkNames.filter(keepUnit), ...MANUAL_ADDITIONS]),
+  ].sort((a, b) => a.localeCompare(b));
   const payload = {
     updated: new Date().toISOString().slice(0, 10),
     source:
       "docs/enikk-top100-audit.md — per-raid '### Unique teams' blocks (top-100 ranker teams, deduped, across audited raids)",
     policy:
-      "The enikk-supported roster (DECISIONS 2026-07-14). sync.ts keeps a unit iff its name (with " +
+      'The enikk-supported roster (DECISIONS 2026-07-14). sync.ts keeps a unit iff its name (with ' +
       "' (Treasure)' stripped) is in `names` below OR it has a hand-tuned override in " +
       'src/skills/overrides/. Outlier filter (2026-07-15): a unit is DROPPED from the enikk-derived ' +
       'set iff it appears in exactly ONE raid AND its total uses in that raid is 1 (single ranker, ' +
@@ -288,5 +405,7 @@ if (process.env.SUPPORTED) {
     names,
   };
   writeFileSync(process.env.SUPPORTED, JSON.stringify(payload, null, 1) + '\n');
-  console.log(`enikk-supported roster written to ${process.env.SUPPORTED} (${names.length} names)`);
+  console.log(
+    `enikk-supported roster written to ${process.env.SUPPORTED} (${names.length} names)`
+  );
 }

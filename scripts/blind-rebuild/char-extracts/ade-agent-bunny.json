@@ -19,10 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "aab",
-      "bade"
-    ],
+    "nicknames": ["aab", "bade"],
     "skills": {
       "skill1": "■ Activates when landing Full Charge attacks on targets within the effective range. Affects all allies.\nATK ▲ 15.2% of the skill user's ATK for 5 sec.\n■ Activates when attacking with Full Charge. Affects self.\nSpy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec.",
       "skill2": "■ Activates when landing a Full Charge attack on a target within the effective range. Affects all allies.\nPierce Damage ▲ 18.36% for 5 sec.\n■ Activates only if Spy Lens is at max stacks. Affects self.\nGains Pierce. This effect is continuous.\nATK ▲ 16% continuously.",
@@ -72,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -300,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF><word_group=10037>Minimum Effective Range</word_group> ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Affects all allies.\n<color=#00AEFF>Attack Damage ▲ {description_value_03}% for {description_value_04} sec.\n<word_group=10042>Pierce Damage</word_group> ▲ {description_value_05}% for {description_value_06} sec.</color>",
           "description_value_list": [
@@ -405,20 +389,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            131530101,
-            131530102,
-            131530103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [131530101, 131530102, 131530103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -443,9 +417,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -476,9 +448,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Ade: Agent Bunny's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

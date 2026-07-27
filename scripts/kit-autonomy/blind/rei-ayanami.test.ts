@@ -55,8 +55,8 @@ interface RunOut {
 // its own blocks[]. Accept both shapes so the test pins the KIT, not the container.
 function blocksOf(ov: any, slot: Slot): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
-  if (Array.isArray(s)) return s;
+  if (!s) {return [];}
+  if (Array.isArray(s)) {return s;}
   return Array.isArray(s.blocks) ? s.blocks : [];
 }
 
@@ -64,23 +64,39 @@ function needFx(ov: any, slot: Slot, what: string, pred: (e: any) => boolean) {
   for (const b of blocksOf(ov, slot)) {
     const fx: any[] = b.effects ?? [];
     const i = fx.findIndex(pred);
-    if (i >= 0) return { block: b, effect: fx[i] };
+    if (i >= 0) {return { block: b, effect: fx[i] };}
   }
-  throw new Error(`MISSING kit line: ${slot} carries no effect matching ${what}`);
+  throw new Error(
+    `MISSING kit line: ${slot} carries no effect matching ${what}`
+  );
 }
 
-function dropFx(ov: any, slot: Slot, what: string, pred: (e: any) => boolean): void {
+function dropFx(
+  ov: any,
+  slot: Slot,
+  what: string,
+  pred: (e: any) => boolean
+): void {
   const hit = needFx(ov, slot, what, pred);
-  hit.block.effects = (hit.block.effects as any[]).filter((e) => e !== hit.effect);
+  hit.block.effects = (hit.block.effects as any[]).filter(
+    (e) => e !== hit.effect
+  );
 }
 
-const isRider = (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 112.37) < 0.5;
-const isElem = (e: any) => e.kind === 'buff' && e.stat === 'elemAdvantageDamagePct';
+const isRider = (e: any) =>
+  e.kind === 'flatDamage' && Math.abs(e.atkPct - 112.37) < 0.5;
+const isElem = (e: any) =>
+  e.kind === 'buff' && e.stat === 'elemAdvantageDamagePct';
 const isS2Atk = (e: any) =>
-  e.kind === 'buff' && e.stat === 'casterAtkPct' && Math.abs(e.value - 25.03) < 0.5;
+  e.kind === 'buff' &&
+  e.stat === 'casterAtkPct' &&
+  Math.abs(e.value - 25.03) < 0.5;
 const isBurstAd = (e: any) =>
-  e.kind === 'buff' && e.stat === 'attackDamagePct' && Math.abs(e.value - 48.02) < 0.5;
-const isNuke = (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 990.2) < 1;
+  e.kind === 'buff' &&
+  e.stat === 'attackDamagePct' &&
+  Math.abs(e.value - 48.02) < 0.5;
+const isNuke = (e: any) =>
+  e.kind === 'flatDamage' && Math.abs(e.atkPct - 990.2) < 1;
 const isShield = (e: any) => e.kind === 'shield';
 
 function doRun(over: Record<string, any> | null, helm: boolean) {
@@ -92,11 +108,11 @@ function doRun(over: Record<string, any> | null, helm: boolean) {
       events.push(ev as Ev);
     },
   };
-  if (over) opts.overrides = { ...(opts.overrides ?? {}), ...over };
+  if (over) {opts.overrides = { ...(opts.overrides ?? {}), ...over };}
   const res = runComp(opts);
   const t = totals(res);
   const team: Record<string, number> = {};
-  for (const k of Object.keys(t)) if (k !== SLUG) team[k] = t[k];
+  for (const k of Object.keys(t)) {if (k !== SLUG) {team[k] = t[k];}}
   const row: any = unitOf(res, SLUG);
   return { total: (row?.totalDamage as number) ?? t[SLUG], team, events };
 }
@@ -106,24 +122,36 @@ function variant(mutate: (ov: any) => void, helm = true): RunOut {
     const patched = withPatchedOverride(SLUG, mutate as any);
     return { ok: true, error: null, ...doRun({ [SLUG]: patched }, helm) };
   } catch (e: any) {
-    return { ok: false, error: String(e?.message ?? e), total: NaN, team: {}, events: [] };
+    return {
+      ok: false,
+      error: String(e?.message ?? e),
+      total: NaN,
+      team: {},
+      events: [],
+    };
   }
 }
 
 const buffApplies = (evs: Ev[], stat: string) =>
   evs.filter((e) => e.kind === 'buffApply' && e.stat === stat);
-const fullBursts = (evs: Ev[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fullBursts = (evs: Ev[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').length;
 const dmgFromSlot = (evs: Ev[], slot: string) =>
   evs.filter((e) => e.kind === 'damage' && e.srcSlot === slot);
-const sum = (m: Record<string, number>) => Object.values(m).reduce((a, b) => a + b, 0);
+const sum = (m: Record<string, number>) =>
+  Object.values(m).reduce((a, b) => a + b, 0);
 
 // ---- hoisted runs (each is a full 180s sim) ------------------------------------------------
 const base = doRun(null, true);
 const baseNoHelm = doRun(null, false);
 
-const noRider = variant((ov) => dropFx(ov, 'skill1', 'flatDamage 112.37%', isRider));
+const noRider = variant((ov) =>
+  dropFx(ov, 'skill1', 'flatDamage 112.37%', isRider)
+);
 const riderEveryShot = variant((ov) => {
-  needFx(ov, 'skill1', 'flatDamage 112.37%', isRider).block.trigger = { kind: 'shotFired' };
+  needFx(ov, 'skill1', 'flatDamage 112.37%', isRider).block.trigger = {
+    kind: 'shotFired',
+  };
 });
 const riderNoCrit = variant((ov) => {
   needFx(ov, 'skill1', 'flatDamage 112.37%', isRider).effect.crit = false;
@@ -132,29 +160,50 @@ const riderCore = variant((ov) => {
   needFx(ov, 'skill1', 'flatDamage 112.37%', isRider).effect.core = true;
 });
 const elemBig = variant((ov) => {
-  needFx(ov, 'skill1', 'elemAdvantageDamagePct buff', isElem).effect.value = 302.3;
+  needFx(ov, 'skill1', 'elemAdvantageDamagePct buff', isElem).effect.value =
+    302.3;
 });
 
-const noS2Atk = variant((ov) => dropFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk));
+const noS2Atk = variant((ov) =>
+  dropFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk)
+);
 const s2AtkBurstCast = variant((ov) => {
-  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).block.trigger = { kind: 'burstCast' };
+  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).block.trigger = {
+    kind: 'burstCast',
+  };
 });
 const s2AtkAllAllies = variant((ov) => {
-  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).block.target = { kind: 'allies' };
+  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).block.target = {
+    kind: 'allies',
+  };
 });
 const s2AtkLong = variant((ov) => {
-  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).effect.durationSec = 60;
+  needFx(ov, 'skill2', 'casterAtkPct 25.03 buff', isS2Atk).effect.durationSec =
+    60;
 });
 
-const noBurstAd = variant((ov) => dropFx(ov, 'burst', 'attackDamagePct 48.02 buff', isBurstAd));
+const noBurstAd = variant((ov) =>
+  dropFx(ov, 'burst', 'attackDamagePct 48.02 buff', isBurstAd)
+);
 const burstAdAllAllies = variant((ov) => {
-  needFx(ov, 'burst', 'attackDamagePct 48.02 buff', isBurstAd).block.target = { kind: 'allies' };
+  needFx(ov, 'burst', 'attackDamagePct 48.02 buff', isBurstAd).block.target = {
+    kind: 'allies',
+  };
 });
 const burstAdLong = variant((ov) => {
-  needFx(ov, 'burst', 'attackDamagePct 48.02 buff', isBurstAd).effect.durationSec = 60;
+  needFx(
+    ov,
+    'burst',
+    'attackDamagePct 48.02 buff',
+    isBurstAd
+  ).effect.durationSec = 60;
 });
-const noBurstNuke = variant((ov) => dropFx(ov, 'burst', 'flatDamage 990.2%', isNuke));
-const noShield = variant((ov) => dropFx(ov, 'burst', 'shield effect', isShield));
+const noBurstNuke = variant((ov) =>
+  dropFx(ov, 'burst', 'flatDamage 990.2%', isNuke)
+);
+const noShield = variant((ov) =>
+  dropFx(ov, 'burst', 'shield effect', isShield)
+);
 
 describe('rei-ayanami — kit spec', () => {
   it('fixture is non-vacuous: she fires, and the team actually chains Full Bursts', () => {
@@ -171,7 +220,7 @@ describe('rei-ayanami — kit spec', () => {
     expect(evs.length).toBeGreaterThan(0);
     // Target set: 'Affects self' — never the allies broadcast the burst block uses.
     expect(new Set(evs.map((e) => e.targetSlug))).toEqual(new Set([SLUG]));
-    for (const e of evs) expect(e.value).toBeCloseTo(30.23, 2);
+    for (const e of evs) {expect(e.value).toBeCloseTo(30.23, 2);}
     // Trigger identity: a hit counter re-arms, so a 180s MG fight must re-apply it many times.
     // Fails under a `passive` / start-of-battle mis-read (which would apply exactly once).
     expect(evs.length).toBeGreaterThanOrEqual(5);
@@ -221,7 +270,7 @@ describe('rei-ayanami — kit spec', () => {
     // 'skill1' damage is attributable to rei; liter/crown carry no skill1 damage effects).
     const procs = dmgFromSlot(baseNoHelm.events, 'skill1');
     expect(procs.length).toBeGreaterThanOrEqual(3);
-    for (const e of procs) expect(!!e.rangeApplied).toBe(false);
+    for (const e of procs) {expect(!!e.rangeApplied).toBe(false);}
   });
 
   // ---- S2a: Damage dealt to Shield +700.5% continuously ------------------------------------------
@@ -236,8 +285,12 @@ describe('rei-ayanami — kit spec', () => {
     const R = fullBursts(base.events);
     // Isolate rei's own applications by differencing against the run with the effect removed —
     // teammate supports also emit casterAtkPct, so a bare stat filter would be contaminated.
-    const valsBase = buffApplies(base.events, 'casterAtkPct').map((e) => e.value);
-    const valsNone = new Set(buffApplies(noS2Atk.events, 'casterAtkPct').map((e) => e.value));
+    const valsBase = buffApplies(base.events, 'casterAtkPct').map(
+      (e) => e.value
+    );
+    const valsNone = new Set(
+      buffApplies(noS2Atk.events, 'casterAtkPct').map((e) => e.value)
+    );
     const mineVals = [...new Set(valsBase)].filter((v) => !valsNone.has(v));
     // Exactly one new value appears; RED under the classic 'ATK +25.03%' -> atkPct mis-encoding
     // (which would emit no casterAtkPct at all).
@@ -247,7 +300,8 @@ describe('rei-ayanami — kit spec', () => {
     expect(V).toBeGreaterThan(100);
     expect(Math.abs(V - 25.03)).toBeGreaterThan(1);
     const mine = base.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.value === V,
+      (e) =>
+        e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.value === V
     );
     // Trigger identity: 'when entering Burst stage 3' fires on ANY stage-3 entry — one per rotation.
     expect(mine.length).toBe(R);
@@ -257,7 +311,8 @@ describe('rei-ayanami — kit spec', () => {
     // never on every stage-3 entry, whenever the second Burst III takes a turn.
     expect(s2AtkBurstCast.ok).toBe(true);
     const own = s2AtkBurstCast.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.value === V,
+      (e) =>
+        e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.value === V
     ).length;
     expect(own).toBeGreaterThanOrEqual(1);
     expect(own).toBeLessThanOrEqual(R);
@@ -277,11 +332,14 @@ describe('rei-ayanami — kit spec', () => {
   // ---- Burst: Attack Damage +48.02% for 10s, all Fire allies -------------------------------------
   it('burst: Attack Damage +48.02% is Fire-scoped, own-burst keyed, and a real 10s window', () => {
     const ad = base.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'attackDamagePct' && Math.abs(e.value - 48.02) < 0.01,
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'attackDamagePct' &&
+        Math.abs(e.value - 48.02) < 0.01
     );
     expect(ad.length).toBeGreaterThanOrEqual(1);
     // Plain percentage stats keep their raw kit value (unlike the caster-scaled S2b line above).
-    for (const e of ad) expect(e.value).toBeCloseTo(48.02, 2);
+    for (const e of ad) {expect(e.value).toBeCloseTo(48.02, 2);}
     expect(new Set(ad.map((e) => e.targetSlug))).toEqual(new Set([SLUG]));
     // A burst-slot block fires only when SHE casts — never more often than stage-3 entries happen.
     expect(ad.length).toBeLessThanOrEqual(fullBursts(base.events));

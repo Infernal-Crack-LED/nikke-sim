@@ -33,10 +33,32 @@
     "The grey circle is the SAME across all shotgun users at every Hit Rate (owner, already tested elsewhere) - the cross-unit HR contrast (brid-silent-track HR0 vs soda-twinkling-bunny HR38.91) is therefore clean, and the same-unit re-trace strengthener is RETIRED."
   ],
   "extracted": {
-    "aimCircle_hr0_px": { "r_inner": 79.3, "r_mean": 85.7, "r_std": 4.1, "unit": "brid-silent-track (SG)", "band": "near" },
-    "aimCircle_hr3891_px": { "r_inner": 48.2, "r_mean": 54.8, "r_std": 4.1, "unit": "soda-twinkling-bunny (SG)", "band": "near" },
-    "core_px": { "r_inner": 16.1, "r_mean": 22.7, "center": [1678, 545], "band": "near", "note": "diameter ~32 px matches the older near-band '31 px' core figure, implying the old 31->17 px core-size series were DIAMETERS" },
-    "silhouette_near": { "area_px": 114267, "bbox": [1452, 334, 516, 501], "note": "flood-filled from the outline incl. pen-crossing pockets (~5k px)" }
+    "aimCircle_hr0_px": {
+      "r_inner": 79.3,
+      "r_mean": 85.7,
+      "r_std": 4.1,
+      "unit": "brid-silent-track (SG)",
+      "band": "near"
+    },
+    "aimCircle_hr3891_px": {
+      "r_inner": 48.2,
+      "r_mean": 54.8,
+      "r_std": 4.1,
+      "unit": "soda-twinkling-bunny (SG)",
+      "band": "near"
+    },
+    "core_px": {
+      "r_inner": 16.1,
+      "r_mean": 22.7,
+      "center": [1678, 545],
+      "band": "near",
+      "note": "diameter ~32 px matches the older near-band '31 px' core figure, implying the old 31->17 px core-size series were DIAMETERS"
+    },
+    "silhouette_near": {
+      "area_px": 114267,
+      "bbox": [1452, 334, 516, 501],
+      "note": "flood-filled from the outline incl. pen-crossing pockets (~5k px)"
+    }
   },
   "derived": {
     "circleShrinkAtHr3891": "79.3 -> 48.2 px = 39% shrink, weapon-matched (both SG). The live cone's SG sigma-shrink (0.009/HR => 35% at 38.91) is essentially the CIRCLE shrink applied to the wrong object; the earlier '9-25% measured' figure was an artifact of the now-dead centered-Gaussian premise.",
@@ -53,8 +75,20 @@
     "formalFit_16cell": {
       "date": "2026-07-22",
       "model": "radial pellet density ~ r^k in the HR-state circle; landing = density-weighted silhouette coverage x efficiency eps; core = (r_core/R)^(k+1) conditional on landing; core hitbox screen-fixed vs range-scaled compared by AIC; binomial likelihood over 8 landing + 8 core cells",
-      "winner": { "coreHitbox": "range-scaled", "k": 1.04, "eps": 0.96, "logL": -38.55, "AIC": 81.1 },
-      "runnerUp": { "coreHitbox": "screen-fixed", "k": 1.76, "eps": 0.965, "AIC": 91.6, "note": "the interim 'screen-fixed core / k~2 ring' reading from the first pass does NOT survive the formal fit (deltaAIC 10.5)" },
+      "winner": {
+        "coreHitbox": "range-scaled",
+        "k": 1.04,
+        "eps": 0.96,
+        "logL": -38.55,
+        "AIC": 81.1
+      },
+      "runnerUp": {
+        "coreHitbox": "screen-fixed",
+        "k": 1.76,
+        "eps": 0.965,
+        "AIC": 91.6,
+        "note": "the interim 'screen-fixed core / k~2 ring' reading from the first pass does NOT survive the formal fit (deltaAIC 10.5)"
+      },
       "reading": "k~1 = UNIFORM per area in the circle. The owner's 'pellets grouped along the outer edge' is exactly what per-area-uniform looks like radially (75% of a disc's area lies beyond half its radius) - no extra edge exponent needed. eps~0.96 = ~4% landing loss (dropout / aim wander).",
       "cellQuality": "all 8 landing cells |z|<1.9; core cells fine except ONE outlier: midfar ON measured 0.0786 vs predicted 0.0354 (z=+2.76, 11 cores where ~5 expected). Deviance 24.8 on 14 dof (GOF p~0.04, marginal - traced-radius pen slop is not in the error model, and the midfar ON core cell alone contributes ~7.6)."
     },

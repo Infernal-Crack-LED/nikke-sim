@@ -80,7 +80,7 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(
   overrides: Record<string, any> = {},
-  modes?: Record<string, string>,
+  modes?: Record<string, string>
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -98,32 +98,32 @@ const mintFullS1 = withPatchedOverride('mint', (ov) => {
   const solo = ov.skill1.find((b: any) => b.mode === 'solo');
   const e = solo?.effects.find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error(
-      'mint solo S1 casterAtkPct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'mint solo S1 casterAtkPct effect missing — fixture is stale'
+    );}
   e.value = 45.02;
 });
 /** M2 nearest-wrong: FULL Singing values on the solo stage-3 trio (19.94 / 50 / 32.72). */
 const mintFullS2 = withPatchedOverride('mint', (ov) => {
   const solo = ov.skill2.find((b: any) => b.mode === 'solo');
-  if (!solo) throw new Error('mint solo S2 block missing — fixture is stale');
+  if (!solo) {throw new Error('mint solo S2 block missing — fixture is stale');}
   const full: Record<string, number> = {
     critRatePct: 19.94,
     projectileExplosionPct: 50,
     pierceDamagePct: 32.72,
   };
-  for (const e of solo.effects) if (e.stat in full) e.value = full[e.stat];
+  for (const e of solo.effects) {if (e.stat in full) {e.value = full[e.stat];}}
 });
 /** M3 nearest-wrong: "the burst is Singing-gated too" → halve the Sing Along trio. */
 const mintHalvedBurst = withPatchedOverride('mint', (ov) => {
   const b = ov.burst[0];
-  if (!b) throw new Error('mint burst block missing — fixture is stale');
+  if (!b) {throw new Error('mint burst block missing — fixture is stale');}
   const half: Record<string, number> = {
     attackDamagePct: 15.01,
     maxAmmoPct: 20,
     critDamagePct: 22.525,
   };
-  for (const e of b.effects) if (e.stat in half) e.value = half[e.stat];
+  for (const e of b.effects) {if (e.stat in half) {e.value = half[e.stat];}}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -148,7 +148,7 @@ const pctOfCasterAtk = (bs: BuffApply[], atk: number) => [
 const reachesAllAllies = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((x): x is number => x != null),
+      bs.map((b) => b.targetIdx).filter((x): x is number => x != null)
     ),
   ].sort((a, b) => a - b);
 const durations = (bs: BuffApply[]) => [
@@ -164,7 +164,7 @@ describe('mint — kit spec', () => {
 
     it('reads exactly HALF (22.51%) in the default solo mode, for 3s, on every ally', () => {
       expect(applied.length, 'no S1 casterAtkPct buff fired').toBeGreaterThan(
-        0,
+        0
       );
       expect(pctOfCasterAtk(applied, mintAtk)).toEqual([22.51]);
       expect(durations(applied)).toEqual([3]);
@@ -178,7 +178,7 @@ describe('mint — kit spec', () => {
     it("DISCRIMINATING: the raw parser's full-uptime 45.02% is NOT what ships", () => {
       const cf = pctOfCasterAtk(
         mintBuff(fullS1.events, 'casterAtkPct'),
-        mintAtk,
+        mintAtk
       );
       expect(cf).toEqual([45.02]);
       expect(cf).not.toEqual(pctOfCasterAtk(applied, mintAtk));
@@ -195,7 +195,7 @@ describe('mint — kit spec', () => {
       expect(distinct(pierce)).toEqual([16.36]);
       for (const bs of [crit, proj, pierce]) {
         expect(bs.length, 'a stage-3 trio buff did not fire').toBeGreaterThan(
-          0,
+          0
         );
         expect(durations(bs)).toEqual([10]);
         expect(reachesAllAllies(bs)).toEqual([0, 1, 2, 3]);
@@ -203,7 +203,7 @@ describe('mint — kit spec', () => {
       // one application per ally per burst cast
       const bursts =
         buffs(base.events).filter(
-          (b) => b.casterIdx === MINT && b.stat === 'attackDamagePct',
+          (b) => b.casterIdx === MINT && b.stat === 'attackDamagePct'
         ).length / 4;
       expect(crit.length).toBe(bursts * 4);
     });
@@ -211,13 +211,13 @@ describe('mint — kit spec', () => {
     it('DISCRIMINATING: full Singing values (19.94 / 50 / 32.72) are NOT what ships in solo', () => {
       expect(distinct(mintBuff(fullS2.events, 'critRatePct'))).toEqual([19.94]);
       expect(
-        distinct(mintBuff(fullS2.events, 'projectileExplosionPct')),
+        distinct(mintBuff(fullS2.events, 'projectileExplosionPct'))
       ).toEqual([50]);
       expect(distinct(mintBuff(fullS2.events, 'pierceDamagePct'))).toEqual([
         32.72,
       ]);
       expect(distinct(mintBuff(fullS2.events, 'critRatePct'))).not.toEqual(
-        distinct(mintBuff(base.events, 'critRatePct')),
+        distinct(mintBuff(base.events, 'critRatePct'))
       );
     });
   });
@@ -248,10 +248,10 @@ describe('mint — kit spec', () => {
 
     it('DISCRIMINATING: a Singing-gated (halved) burst 15.01 / 20 / 22.525 is NOT what ships', () => {
       expect(distinct(mintBuff(halvedBurst.events, 'attackDamagePct'))).toEqual(
-        [15.01],
+        [15.01]
       );
       expect(
-        distinct(mintBuff(halvedBurst.events, 'attackDamagePct')),
+        distinct(mintBuff(halvedBurst.events, 'attackDamagePct'))
       ).not.toEqual(distinct(atk));
     });
   });
@@ -260,11 +260,11 @@ describe('mint — kit spec', () => {
     it('DOUBLES the S1 Singing buff under duet (45.02% of caster ATK)', () => {
       const soloPct = pctOfCasterAtk(
         mintBuff(base.events, 'casterAtkPct'),
-        mintAtk,
+        mintAtk
       );
       const duetPct = pctOfCasterAtk(
         mintBuff(duet.events, 'casterAtkPct'),
-        mintAtkDuet,
+        mintAtkDuet
       );
       expect(duetPct).toEqual([45.02]);
       expect(soloPct).toEqual([22.51]);
@@ -274,13 +274,13 @@ describe('mint — kit spec', () => {
     it('DOUBLES the S2 stage-3 trio under duet (full 19.94 / 50 / 32.72)', () => {
       expect(distinct(mintBuff(duet.events, 'critRatePct'))).toEqual([19.94]);
       expect(distinct(mintBuff(duet.events, 'projectileExplosionPct'))).toEqual(
-        [50],
+        [50]
       );
       expect(distinct(mintBuff(duet.events, 'pierceDamagePct'))).toEqual([
         32.72,
       ]);
       expect(distinct(mintBuff(duet.events, 'critRatePct'))).not.toEqual(
-        distinct(mintBuff(base.events, 'critRatePct')),
+        distinct(mintBuff(base.events, 'critRatePct'))
       );
     });
   });

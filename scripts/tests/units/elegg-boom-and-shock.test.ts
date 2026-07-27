@@ -68,7 +68,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 function run(
   overrides: Record<string, any> = {},
   bossElement: 'Fire' | 'Iron' = 'Fire',
-  disableBursts = false,
+  disableBursts = false
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -88,7 +88,7 @@ const hasStat = (b: any, stat: string) =>
   b.effects.some((e: any) => e.stat === stat);
 const blockWith = (ov: any, slot: string, pred: (b: any) => boolean) => {
   const b = ov[slot].find(pred);
-  if (!b) throw new Error(`ebs ${slot} block missing — fixture is stale`);
+  if (!b) {throw new Error(`ebs ${slot} block missing — fixture is stale`);}
   return b;
 };
 
@@ -97,7 +97,7 @@ const ebsNoS1Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'casterAtkPct'));
   if (ov.skill1.length === before)
-    throw new Error('ebs S1 casterAtkPct block missing — fixture is stale');
+    {throw new Error('ebs S1 casterAtkPct block missing — fixture is stale');}
 });
 /** H1 counterfactual: the ≥1 tier as an UNSCOPED all-ally ATK buff. */
 const ebsUnscopedS1Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
@@ -110,18 +110,18 @@ const ebsNoS2Atk = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'atkPct'));
   if (ov.skill2.length === before)
-    throw new Error('ebs S2 atkPct block missing — fixture is stale');
+    {throw new Error('ebs S2 atkPct block missing — fixture is stale');}
 });
 /** H4 reference: ≥4-ghost Elemental Advantage tier removed. */
 const ebsNoElemAdv = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !hasStat(b, 'elemAdvantageDamagePct'),
+    (b: any) => !hasStat(b, 'elemAdvantageDamagePct')
   );
 });
 /** H5 counterfactual: the nuke with its pool gate removed (fires on EVERY pool-check, ungated). */
 const ebsUngatedNuke = withPatchedOverride('elegg-boom-and-shock', (ov) => {
   const b = blockWith(ov, 'skill2', (x) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
   delete b.resourceGate;
 });
@@ -152,17 +152,17 @@ const ebsDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
     (e): e is Damage =>
       e.kind === 'damage' &&
       e.slug === 'elegg-boom-and-shock' &&
-      e.srcSlot === srcSlot,
+      e.srcSlot === srcSlot
   );
 const ebsBursts = (evs: SimEvent[]) =>
   evs.filter(
     (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'elegg-boom-and-shock',
+      e.kind === 'burstCast' && e.slug === 'elegg-boom-and-shock'
   );
 const targetSet = (bs: BuffApply[]) =>
   [
     ...new Set(
-      bs.map((b) => b.targetIdx).filter((x): x is number => x != null),
+      bs.map((b) => b.targetIdx).filter((x): x is number => x != null)
     ),
   ].sort((a, b) => a - b);
 const firstFrame = (bs: BuffApply[]) => Math.min(...bs.map((b) => b.frame));
@@ -170,7 +170,7 @@ const firstFrame = (bs: BuffApply[]) => Math.min(...bs.map((b) => b.frame));
 const hitsByFrame = (evs: SimEvent[]) => {
   const m = new Map<number, number>();
   for (const d of ebsDamage(evs, 'burst'))
-    m.set(d.frame, (m.get(d.frame) ?? 0) + 1);
+    {m.set(d.frame, (m.get(d.frame) ?? 0) + 1);}
   return [...m.entries()].sort((a, b) => a[0] - b[0]);
 };
 
@@ -181,14 +181,14 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
     it('reaches exactly the two Water allies (ebs + helm), not the whole team', () => {
       expect(
         applied.length,
-        'no S1 casterAtkPct buff was applied',
+        'no S1 casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       expect(targetSet(applied)).toEqual(WATER_ALLIES);
     });
 
     it('DISCRIMINATING: an unscoped all-ally model would also reach the non-Water allies', () => {
       expect(
-        targetSet(ebsBuffs(unscopedS1Atk.events, 'casterAtkPct')).length,
+        targetSet(ebsBuffs(unscopedS1Atk.events, 'casterAtkPct')).length
       ).toBeGreaterThan(WATER_ALLIES.length);
     });
 
@@ -200,7 +200,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       expect(e.value, 'shipped kit value').toBe(16.2);
       expect(
         applied[0].value,
-        'casterAtkPct resolves to flat ATK (>0)',
+        'casterAtkPct resolves to flat ATK (>0)'
       ).toBeGreaterThan(0);
     });
 
@@ -211,7 +211,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
 
     it("is live: removing it changes the Water allies' damage", () => {
       expect(base.totals['elegg-boom-and-shock']).not.toEqual(
-        noS1Atk.totals['elegg-boom-and-shock'],
+        noS1Atk.totals['elegg-boom-and-shock']
       );
       expect(base.totals.helm).not.toEqual(noS1Atk.totals.helm);
     });
@@ -232,12 +232,12 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
     });
 
     it('is a 10-second window', () => {
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is live: removing it changes her damage', () => {
       expect(base.totals['elegg-boom-and-shock']).not.toEqual(
-        noS2Atk.totals['elegg-boom-and-shock'],
+        noS2Atk.totals['elegg-boom-and-shock']
       );
     });
   });
@@ -250,18 +250,18 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       expect(bursts.length).toBeGreaterThan(0);
       expect(
         [...new Set(nukes.map((d) => d.atkPct))],
-        'each sequential hit is 800%',
+        'each sequential hit is 800%'
       ).toEqual([800]);
       expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
       expect(
         nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec),
-        'burst cast lands before FB',
+        'burst cast lands before FB'
       ).toEqual([]);
       const perCast = hitsByFrame(base.events).map(([, n]) => n);
       expect(perCast.length, 'one cast frame per burst').toBe(bursts.length);
       expect(
         [...new Set(perCast)],
-        'every bursting cast is the 6-hit branch',
+        'every bursting cast is the 6-hit branch'
       ).toEqual([6]);
     });
 
@@ -270,7 +270,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       expect(counts[0], 'first cast at pool=13 is the 13-hit branch').toBe(13);
       expect(
         counts.slice(1).every((n) => n === 6),
-        'the −9 spend drops every later cast to the 6-hit branch',
+        'the −9 spend drops every later cast to the 6-hit branch'
       ).toBe(true);
     });
   });
@@ -281,7 +281,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
     it('is present in the DEFAULT sim at 35% on the Water allies', () => {
       expect(
         applied.length,
-        'the ≥4 tier must be live in the default context',
+        'the ≥4 tier must be live in the default context'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([35]);
       expect(targetSet(applied)).toEqual(WATER_ALLIES);
@@ -297,7 +297,7 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
 
     it('is live under elemental advantage: removing it changes Water damage vs Fire', () => {
       expect(base.totals['elegg-boom-and-shock']).not.toEqual(
-        noElemAdvFire.totals['elegg-boom-and-shock'],
+        noElemAdvFire.totals['elegg-boom-and-shock']
       );
     });
   });
@@ -311,12 +311,12 @@ describe('elegg-boom-and-shock (Elegg: Boom and Shock) — kit spec', () => {
       const nukes = ebsDamage(noBurst.events, 'skill2');
       expect(
         nukes.length,
-        'never-burst nuke fires once the pool reaches 13',
+        'never-burst nuke fires once the pool reaches 13'
       ).toBeGreaterThan(0);
       expect([...new Set(nukes.map((d) => d.atkPct))]).toEqual([1100]);
       expect(
         Math.min(...nukes.map((d) => d.frame)),
-        'first nuke at the t≈78 ramp-to-13',
+        'first nuke at the t≈78 ramp-to-13'
       ).toBeGreaterThanOrEqual(77 * FPS);
     });
 

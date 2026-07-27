@@ -194,9 +194,7 @@
     "burst:allies casterAtkPct 42.57% / 10s"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "DEF ▲ 3.51% continuously for every 1% of HP lost."
-    ],
+    "skill1": ["DEF ▲ 3.51% continuously for every 1% of HP lost."],
     "skill2": [
       "Taunts for 4 sec.",
       "Once: Max HP ▲ 91% for 3 sec. Activates once per battle.",

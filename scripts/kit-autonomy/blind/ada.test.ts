@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness';
 
 // ada — RL/Electric/Attacker/Burst III. BLIND spec test authored from kit prose ALONE.
 // (event/API field names mirror the harness contract described in the packet; where a field is a
@@ -38,9 +44,15 @@ function run(opts: any) {
 
 const ADA = 'ada';
 const applies = (evs: Ev[], stat: string, value: number) =>
-  evs.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - value) < 1e-6);
+  evs.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(e.value - value) < 1e-6
+  );
 // grenade / charge-nuke hits stand far above a normal RL shot (base mult 0.613, core 2.0)
-const bigTrue = (e: Ev) => e.kind === 'damage' && e.mult > 3 && /true/i.test(String(e.bucket));
+const bigTrue = (e: Ev) =>
+  e.kind === 'damage' && e.mult > 3 && /true/i.test(String(e.bucket));
 const normalHit = (e: Ev) => e.kind === 'damage' && e.mult < 3;
 
 // ---- hoisted runs (each is a full 180s sim) ----
@@ -51,11 +63,11 @@ const longCharge = run({
   ...controlComp(ADA, true),
   overridesPatch: withPatchedOverride(ADA, (ov: any) => {
     for (const blk of ov.blocks)
-      for (const eff of blk.effects)
-        if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct') {
+      {for (const eff of blk.effects)
+        {if (eff.kind === 'buff' && eff.stat === 'chargeDamagePct') {
           delete eff.durationShots;
           eff.durationSec = 10;
-        }
+        }}}
   }),
 });
 
@@ -64,14 +76,19 @@ const noGrenade = run({
   ...controlComp(ADA, true),
   overridesPatch: withPatchedOverride(ADA, (ov: any) => {
     ov.blocks = ov.blocks.filter(
-      (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 420) < 1e-6),
+      (b: any) =>
+        !b.effects.some(
+          (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - 420) < 1e-6
+        )
     );
   }),
 });
 
 describe('ada — skill1 (FB-enter, B3 burst-casters)', () => {
   it('fixture actually enters Full Burst (non-vacuity)', () => {
-    expect(base.events.filter((e) => e.kind === 'fullBurstStart').length).toBeGreaterThan(0);
+    expect(
+      base.events.filter((e) => e.kind === 'fullBurstStart').length
+    ).toBeGreaterThan(0);
   });
 
   it('ATK buff is casterAtkPct 60 (flat % of CASTER ATK), NOT self-scaled atkPct 60', () => {
@@ -90,7 +107,9 @@ describe('ada — skill1 (FB-enter, B3 burst-casters)', () => {
   it('skill1 buffs land AT Full Burst entry, not at burst cast', () => {
     // in a solo comp burstCast and fullBurstEnter are 1:1, so this checks COUNT parity with FB starts
     // (a burstCast mis-key would still count 1:1 here — flagged as a solo-comp limitation in the spec).
-    const fbCount = base.events.filter((e) => e.kind === 'fullBurstStart').length;
+    const fbCount = base.events.filter(
+      (e) => e.kind === 'fullBurstStart'
+    ).length;
     expect(applies(base.events, 'casterAtkPct', 60).length).toBe(fbCount);
   });
 
@@ -106,13 +125,19 @@ describe('ada — skill2 (Flash Grenade, during Full Burst)', () => {
   });
 
   it('non-vacuity: the fixture also produces plenty of out-of-FB normal shots', () => {
-    expect(base.events.some((e) => normalHit(e) && e.inFullBurst === false)).toBe(true);
+    expect(
+      base.events.some((e) => normalHit(e) && e.inFullBurst === false)
+    ).toBe(true);
   });
 
   it('grenade is enemy-targeted — removing it drops Ada but leaves teammates byte-identical', () => {
-    expect(unitOf(noGrenade.res, ADA).total).toBeLessThan(unitOf(base.res, ADA).total);
+    expect(unitOf(noGrenade.res, ADA).total).toBeLessThan(
+      unitOf(base.res, ADA).total
+    );
     for (const mate of ['liter', 'crown', 'helm']) {
-      expect(unitOf(noGrenade.res, mate).total).toBe(unitOf(base.res, mate).total);
+      expect(unitOf(noGrenade.res, mate).total).toBe(
+        unitOf(base.res, mate).total
+      );
     }
   });
 
@@ -126,14 +151,19 @@ describe('ada — burst (self)', () => {
   });
 
   it('Special Modification: chargeDamage +1500 & chargeSpeed -300 present', () => {
-    expect(applies(base.events, 'chargeDamagePct', 1500).length).toBeGreaterThan(0);
-    expect(applies(base.events, 'chargeSpeedPct', -300).length).toBeGreaterThan(0);
+    expect(
+      applies(base.events, 'chargeDamagePct', 1500).length
+    ).toBeGreaterThan(0);
+    expect(applies(base.events, 'chargeSpeedPct', -300).length).toBeGreaterThan(
+      0
+    );
   });
 
   it('Special Modification lasts ONE ROUND, not a 10s window', () => {
     // FAITHFUL: durationShots:1 -> only the next charged shot is boosted.
     // NEAREST-WRONG: durationSec:10 -> every charged shot for 10s is boosted -> strictly more total damage.
-    expect(totals(longCharge.res).total).toBeGreaterThan(totals(base.res).total);
+    expect(totals(longCharge.res).total).toBeGreaterThan(
+      totals(base.res).total
+    );
   });
 });
-

@@ -1,7 +1,13 @@
 import type { SimResult } from './engine/sim.js';
 
 const fmt = (n: number) =>
-  n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(2)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : n.toFixed(0);
+  n >= 1e9
+    ? `${(n / 1e9).toFixed(2)}B`
+    : n >= 1e6
+      ? `${(n / 1e6).toFixed(2)}M`
+      : n >= 1e3
+        ? `${(n / 1e3).toFixed(1)}K`
+        : n.toFixed(0);
 
 export function printReport(r: SimResult, showRotation: boolean) {
   const c = r.config;
@@ -12,7 +18,19 @@ export function printReport(r: SimResult, showRotation: boolean) {
     `full bursts: ${r.fullBursts}  |  full burst uptime: ${(r.fullBurstUptime * 100).toFixed(0)}%  |  rotation stalled: ${r.rotationStallSec.toFixed(1)}s\n`
   );
 
-  const header = ['#', 'nikke', 'B', 'wpn', 'elem', 'ATK', 'damage', 'DPS', 'share', 'normal/skill/burst', 'bursts'];
+  const header = [
+    '#',
+    'nikke',
+    'B',
+    'wpn',
+    'elem',
+    'ATK',
+    'damage',
+    'DPS',
+    'share',
+    'normal/skill/burst',
+    'bursts',
+  ];
   const rows = r.units.map((u) => [
     String(u.position),
     u.name,
@@ -26,17 +44,35 @@ export function printReport(r: SimResult, showRotation: boolean) {
     `${fmt(u.breakdown.normal)}/${fmt(u.breakdown.skill)}/${fmt(u.breakdown.burst)}`,
     String(u.burstCasts),
   ]);
-  const widths = header.map((h, i) => Math.max(h.length, ...rows.map((row) => row[i].length)));
-  const line = (cells: string[]) => cells.map((v, i) => v.padEnd(widths[i])).join('  ');
+  const widths = header.map((h, i) =>
+    Math.max(h.length, ...rows.map((row) => row[i].length))
+  );
+  const line = (cells: string[]) =>
+    cells.map((v, i) => v.padEnd(widths[i])).join('  ');
   console.log(line(header));
   console.log(widths.map((w) => '-'.repeat(w)).join('  '));
   rows.forEach((row) => console.log(line(row)));
-  console.log(line(['', 'TEAM', '', '', '', '', fmt(r.teamDamage), fmt(r.teamDps), '100%', '', '']));
+  console.log(
+    line([
+      '',
+      'TEAM',
+      '',
+      '',
+      '',
+      '',
+      fmt(r.teamDamage),
+      fmt(r.teamDps),
+      '100%',
+      '',
+      '',
+    ])
+  );
 
   if (r.units.some((u) => u.loadout.length)) {
     console.log('\nloadout:');
     for (const u of r.units) {
-      if (u.loadout.length) console.log(`  ${u.name}: ${u.loadout.join(' | ')}`);
+      if (u.loadout.length)
+        {console.log(`  ${u.name}: ${u.loadout.join(' | ')}`);}
     }
   }
 

@@ -116,28 +116,28 @@ function run(opts: { mode?: string; overrides?: Record<string, any> } = {}) {
 const noGainPierce = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce')
   );
   if (ov.skill1.length === before)
-    throw new Error('mbb S1 gainPierce block missing — fixture is stale');
+    {throw new Error('mbb S1 gainPierce block missing — fixture is stale');}
 });
 /** MBB3 counterfactual: burst ATK ▲220% removed. */
 const noAtk220 = withPatchedOverride(SLUG, (ov) => {
   const blk = ov.burst.find((b: any) =>
-    b.effects.some((e: any) => e.stat === 'atkPct'),
+    b.effects.some((e: any) => e.stat === 'atkPct')
   );
   if (!blk)
-    throw new Error('mbb burst atkPct block missing — fixture is stale');
+    {throw new Error('mbb burst atkPct block missing — fixture is stale');}
   blk.effects = blk.effects.filter((e: any) => e.stat !== 'atkPct');
 });
 /** MBB4 counterfactual: S2 burst DoT removed. */
 const noDot = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'dot'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'dot')
   );
   if (ov.skill2.length === before)
-    throw new Error('mbb S2 dot block missing — fixture is stale');
+    {throw new Error('mbb S2 dot block missing — fixture is stale');}
 });
 /** MBB5 isolation: the manual-gated Embarrassment blocks stripped. In the DEFAULT auto mode the
  *  engine's mode gate already filters these out, so this must be byte-identical to shipped. */
@@ -167,13 +167,13 @@ const mbbBursts = (evs: SimEvent[]) =>
  *  must key to HER casts, never helm's. */
 const helmBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm'
   );
 /** buffApply events cast by mbb (slot index), by stat. */
 const mbbBuffs = (evs: SimEvent[], stat: string) =>
   evs.filter(
     (e): e is BuffApply =>
-      e.kind === 'buffApply' && e.casterIdx === MBB && e.stat === stat,
+      e.kind === 'buffApply' && e.casterIdx === MBB && e.stat === stat
   );
 /** Does frame `a` coincide (≤2f cast→buff latency) with any frame in `bs`? */
 const near = (a: number, bs: number[]) => bs.some((b) => Math.abs(a - b) <= 2);
@@ -198,7 +198,7 @@ describe('milk-blooming-bunny — kit spec', () => {
       const cfApplied = mbbBuffs(noPierce.events, 'pierceDamagePct');
       expect(
         cfApplied.length,
-        'counterfactual still applies the buff',
+        'counterfactual still applies the buff'
       ).toBeGreaterThan(0);
       expect(noPierce.total).toBeLessThan(base.total);
     });
@@ -209,7 +209,7 @@ describe('milk-blooming-bunny — kit spec', () => {
 
     it('is 117.64% for exactly 10 sec, held by mbb alone', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([117.64]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([MBB]);
     });
 
@@ -219,16 +219,16 @@ describe('milk-blooming-bunny — kit spec', () => {
       const helmFrames = helmBursts(base.events).map((c) => c.frame);
       expect(
         helmFrames.length,
-        'fixture must field helm-led bursts to discriminate',
+        'fixture must field helm-led bursts to discriminate'
       ).toBeGreaterThan(0);
       for (const b of applied) {
         expect(
           near(b.frame, mbbFrames),
-          `buff at ${b.frame} not at an mbb cast`,
+          `buff at ${b.frame} not at an mbb cast`
         ).toBe(true);
         expect(
           near(b.frame, helmFrames),
-          `buff at ${b.frame} leaked onto a helm-led burst`,
+          `buff at ${b.frame} leaked onto a helm-led burst`
         ).toBe(false);
       }
     });
@@ -236,13 +236,13 @@ describe('milk-blooming-bunny — kit spec', () => {
 
   describe('MBB3 — burst "ATK ▲220% for 10 sec", self-scoped, load-bearing', () => {
     const applied = mbbBuffs(base.events, 'atkPct').filter(
-      (b) => b.value === 220,
+      (b) => b.value === 220
     );
 
     it('is the L10 magnitude 220 (not the L1 130), once per cast, for 10 sec, self only', () => {
       expect(applied.length).toBe(mbbBursts(base.events).length);
       expect(applied.length).toBeGreaterThan(0);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([MBB]);
     });
 
@@ -256,11 +256,11 @@ describe('milk-blooming-bunny — kit spec', () => {
       for (const b of applied) {
         expect(
           near(b.frame, mbbFrames),
-          `buff at ${b.frame} not at an mbb cast`,
+          `buff at ${b.frame} not at an mbb cast`
         ).toBe(true);
         expect(
           near(b.frame, helmFrames),
-          `buff at ${b.frame} leaked onto a helm-led burst`,
+          `buff at ${b.frame} leaked onto a helm-led burst`
         ).toBe(false);
       }
     });
@@ -280,15 +280,15 @@ describe('milk-blooming-bunny — kit spec', () => {
     it('ticks 5× per full burst window (interval 2s over 10s) — not 1 (instant) nor 10 (1s)', () => {
       expect(
         fullWindow.length,
-        'no burst has a full 10s window inside the fight',
+        'no burst has a full 10s window inside the fight'
       ).toBeGreaterThan(0);
       for (const cast of fullWindow) {
         const inWindow = ticks.filter(
-          (d) => d.frame >= cast.frame && d.frame <= cast.frame + 10 * FPS,
+          (d) => d.frame >= cast.frame && d.frame <= cast.frame + 10 * FPS
         );
         expect(
           inWindow.length,
-          `burst at ${cast.sec.toFixed(2)}s produced ${inWindow.length} ticks`,
+          `burst at ${cast.sec.toFixed(2)}s produced ${inWindow.length} ticks`
         ).toBe(5);
       }
     });
@@ -301,17 +301,17 @@ describe('milk-blooming-bunny — kit spec', () => {
     it('DISCRIMINATING: ticks only inside HER OWN burst windows — none follow a helm-led burst', () => {
       // burstCast keying (correct) vs fullBurstEnter (would tick after helm-led Full Bursts too).
       const mbbWindows = mbbBursts(base.events).map(
-        (c) => [c.frame, c.frame + 10 * FPS] as const,
+        (c) => [c.frame, c.frame + 10 * FPS] as const
       );
       const helmFrames = helmBursts(base.events).map((c) => c.frame);
       for (const t of ticks) {
         expect(
           mbbWindows.some(([lo, hi]) => t.frame >= lo && t.frame <= hi),
-          `tick at ${t.frame} outside every mbb burst window`,
+          `tick at ${t.frame} outside every mbb burst window`
         ).toBe(true);
         expect(
           near(t.frame, helmFrames),
-          `tick at ${t.frame} sits on a helm-led cast`,
+          `tick at ${t.frame} sits on a helm-led cast`
         ).toBe(false);
       }
     });
@@ -325,7 +325,7 @@ describe('milk-blooming-bunny — kit spec', () => {
     it('AUTO (default): no 290% Embarrassment proc and no ATK 118.7% — she is a plain SR', () => {
       expect(mbbDamage(base.events, 'skill1').length).toBe(0);
       expect(
-        mbbBuffs(base.events, 'atkPct').filter((b) => b.value === 118.7).length,
+        mbbBuffs(base.events, 'atkPct').filter((b) => b.value === 118.7).length
       ).toBe(0);
       expect(mbbBuffs(base.events, 'maxAmmoPct').length).toBe(0);
     });
@@ -333,14 +333,14 @@ describe('milk-blooming-bunny — kit spec', () => {
     it('MANUAL: the Embarrassment cycle activates (ATK 118.7, ammo dump, slow reload)', () => {
       expect(
         mbbBuffs(manual.events, 'atkPct').filter((b) => b.value === 118.7)
-          .length,
+          .length
       ).toBeGreaterThan(0);
       expect([
         ...new Set(mbbBuffs(manual.events, 'maxAmmoPct').map((b) => b.value)),
       ]).toEqual([-100]);
       expect([
         ...new Set(
-          mbbBuffs(manual.events, 'reloadSpeedPct').map((b) => b.value),
+          mbbBuffs(manual.events, 'reloadSpeedPct').map((b) => b.value)
         ),
       ]).toEqual([-50]);
     });

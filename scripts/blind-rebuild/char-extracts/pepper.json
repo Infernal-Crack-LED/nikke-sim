@@ -68,13 +68,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -309,16 +305,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects the {description_value_01} enemy unit(s) with the highest <word_group=10025>final</word_group> ATK.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>\n■ Affects all allies.\n<color=#00AEFF>Increases <word_group=10001>stack count of stackable buffs</word_group> by {description_value_03}</color>.\n■ Activates when Refresh Heart is at max stacks. Affects all allies.\n<color=#00AEFF>Restores HP equal to {description_value_04}% of the skill user's <word_group=10025>final</word_group> Max HP.</color>",
           "description_value_list": [
@@ -388,19 +375,10 @@
           ],
           "prefer_target_condition": "IncludeNoneTargetLast",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            113130101,
-            113130102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [113130101, 113130102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -425,9 +403,7 @@
         }
       },
       "element": {
-        "element_id": [
-          300001
-        ],
+        "element_id": [300001],
         "element_details": [
           {
             "id": 300001,
@@ -458,9 +434,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Pepper's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

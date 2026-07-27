@@ -6,7 +6,13 @@
 import { describe, expect, it } from 'vitest';
 import { makeCalc } from '../../../src/teamcalc.js';
 import { scopeLockCfg } from '../../lib/scope-lock.js';
-import { deps, distinct5, generatorPool, mult, rotationLegal } from '../lib/harness.js';
+import {
+  deps,
+  distinct5,
+  generatorPool,
+  mult,
+  rotationLegal,
+} from '../lib/harness.js';
 
 const { genChars, chars, overrides } = generatorPool();
 const calc = makeCalc({
@@ -27,9 +33,12 @@ describe('bestTeam falls back past the enumeration for out-of-shape locks', () =
     expect(b1.length).toBeGreaterThanOrEqual(2);
     const locks = [b1[0], b1[1]];
     const team = await calc.bestTeam({ mustInclude: locks });
-    expect(team, `double-B1 lock ${locks.join('+')} built nothing`).not.toBeNull();
+    expect(
+      team,
+      `double-B1 lock ${locks.join('+')} built nothing`
+    ).not.toBeNull();
     expect(distinct5(team!.slugs)).toBe(true);
-    for (const s of locks) expect(team!.slugs).toContain(s);
+    for (const s of locks) {expect(team!.slugs).toContain(s);}
     expect(rotationLegal(chars as any, team!.slugs)).toBe(true);
   });
 });

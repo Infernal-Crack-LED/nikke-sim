@@ -213,9 +213,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "DEF ▲ 50.68% of the skill user's DEF for 10 sec."
-    ],
+    "skill2": ["DEF ▲ 50.68% of the skill user's DEF for 10 sec."],
     "burst": [
       "Attract: Taunts all enemies for 10 sec.",
       "Incoming healing ▲ 74.88% for 10 sec.",

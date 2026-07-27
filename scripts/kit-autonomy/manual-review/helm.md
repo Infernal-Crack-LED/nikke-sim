@@ -24,17 +24,17 @@ recovery window, and raises her OWN charge-damage multiplier by 158.4% for her n
 
 ## Line-by-line
 
-| Line | Disposition | Notes |
-|------|-------------|-------|
-| S1: lastBullet → allies critRateNormalPct 14.64/5s | FAITHFUL | Scoped to NORMAL ATTACKS only (never generic critRatePct); H1 discriminates 3 ways |
-| S1: full charge → allies heal (0.59% Max HP) | FAITHFUL | Event-only (no HP pool); drives Crown's "when recovery takes effect" — load-bearing through tandem |
-| S1: full charge → fill Burst Gauge 14.31% | FAITHFUL | Carried by `data/gauge-per-shot.json` (`flatPerTrigger 1431`, datamined 2-way), NOT an override block |
-| S2: passive → allies partsDamagePct 3.08 | FAITHFUL (inert) | Exactly byte-identical totals vs partless boss (H4), not merely "small" |
-| S2: fullBurstEnter → allies attackDamagePct 27.87/10s | FAITHFUL | TREASURE value (base 11.85); `fullBurstEnter` NOT `burstCast` |
-| S2: full charge → enemy flatDamage 178.98% | FAITHFUL | Once per pull, crit-eligible, no core/range; ⚑ trigger read as `shotFired` |
-| Burst: burstCast → enemy flatDamage 8236.8% | FAITHFUL | TREASURE nuke (base 1237.5); FB-exempt (H7: empty fbMajorApplied list) |
-| Burst: burstCast → allies recovery 54.45%/10s | DOCUMENTED_GAP | Event-only 10-tick/1s window; no magnitude fabricated; H8 pins under isolation |
-| Burst: burstCast → self chargeDamageMultPct 158.4 | FAITHFUL | `durationShots:10` (ROUNDS, no timed expiry), self-scoped; rounds-vs-seconds pinned in engine/duration-shots.test.ts |
+| Line                                                  | Disposition      | Notes                                                                                                                |
+| ----------------------------------------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| S1: lastBullet → allies critRateNormalPct 14.64/5s    | FAITHFUL         | Scoped to NORMAL ATTACKS only (never generic critRatePct); H1 discriminates 3 ways                                   |
+| S1: full charge → allies heal (0.59% Max HP)          | FAITHFUL         | Event-only (no HP pool); drives Crown's "when recovery takes effect" — load-bearing through tandem                   |
+| S1: full charge → fill Burst Gauge 14.31%             | FAITHFUL         | Carried by `data/gauge-per-shot.json` (`flatPerTrigger 1431`, datamined 2-way), NOT an override block                |
+| S2: passive → allies partsDamagePct 3.08              | FAITHFUL (inert) | Exactly byte-identical totals vs partless boss (H4), not merely "small"                                              |
+| S2: fullBurstEnter → allies attackDamagePct 27.87/10s | FAITHFUL         | TREASURE value (base 11.85); `fullBurstEnter` NOT `burstCast`                                                        |
+| S2: full charge → enemy flatDamage 178.98%            | FAITHFUL         | Once per pull, crit-eligible, no core/range; ⚑ trigger read as `shotFired`                                           |
+| Burst: burstCast → enemy flatDamage 8236.8%           | FAITHFUL         | TREASURE nuke (base 1237.5); FB-exempt (H7: empty fbMajorApplied list)                                               |
+| Burst: burstCast → allies recovery 54.45%/10s         | DOCUMENTED_GAP   | Event-only 10-tick/1s window; no magnitude fabricated; H8 pins under isolation                                       |
+| Burst: burstCast → self chargeDamageMultPct 158.4     | FAITHFUL         | `durationShots:10` (ROUNDS, no timed expiry), self-scoped; rounds-vs-seconds pinned in engine/duration-shots.test.ts |
 
 ## Cross-family corroboration
 

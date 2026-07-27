@@ -14,10 +14,10 @@ export function TestingRequestsPage() {
   // lowest number first, so the list reads like a stable, cite-able index
   const open = [...(requests as TestRequest[])].sort((a, b) => a.id - b.id);
   return (
-    <div className='app patch-notes testing-requests'>
+    <div className="app patch-notes testing-requests">
       <header>
         <h1>Testing requested</h1>
-        <p className='muted'>
+        <p className="muted">
           The sim is calibrated against Union Shooting Range on 3-Minute Boss
           Mode with scope-lock enabled. The more team tests the community
           submits, the tighter its accuracy gets — every verified run helps
@@ -26,9 +26,9 @@ export function TestingRequestsPage() {
         </p>
       </header>
 
-      <article className='patch-entry'>
-        <div className='patch-head'>
-          <span className='patch-title'>How to run a test fight</span>
+      <article className="patch-entry">
+        <div className="patch-head">
+          <span className="patch-title">How to run a test fight</span>
         </div>
         <ul>
           <li>
@@ -76,11 +76,11 @@ export function TestingRequestsPage() {
         </ul>
       </article>
 
-      <article className='patch-entry'>
-        <div className='patch-head'>
-          <span className='patch-title'>Where to submit</span>
+      <article className="patch-entry">
+        <div className="patch-head">
+          <span className="patch-title">Where to submit</span>
         </div>
-        <p className='muted' style={{ marginBottom: 10 }}>
+        <p className="muted" style={{ marginBottom: 10 }}>
           Everything goes through the submission form below — it uploads your
           files and captures the fight details in one step. Have these ready
           before you start:
@@ -106,39 +106,39 @@ export function TestingRequestsPage() {
             middle slot.
           </li>
         </ul>
-        <div className='dev-callout-links' style={{ marginTop: 12 }}>
+        <div className="dev-callout-links" style={{ marginTop: 12 }}>
           <a
-            className='dev-link'
+            className="dev-link"
             href={FORM_URL}
-            target='_blank'
-            rel='noreferrer'
+            target="_blank"
+            rel="noreferrer"
           >
             Submit a test fight
           </a>
         </div>
       </article>
 
-      <article className='patch-entry'>
-        <div className='patch-head'>
-          <span className='patch-title'>Open requests</span>
+      <article className="patch-entry">
+        <div className="patch-head">
+          <span className="patch-title">Open requests</span>
         </div>
-        <p className='muted' style={{ marginBottom: 10 }}>
+        <p className="muted" style={{ marginBottom: 10 }}>
           When you report a fight, quote the request number below so we know
           which one it’s for.
         </p>
         {open.length ? (
-          <ol className='test-request-list'>
+          <ol className="test-request-list">
             {open.map((rq) => (
-              <li className='test-request' value={rq.id} key={rq.id}>
-                <span className='test-request-team'>{rq.team}</span>
+              <li className="test-request" value={rq.id} key={rq.id}>
+                <span className="test-request-team">{rq.team}</span>
                 {rq.note && (
-                  <span className='test-request-note muted'> — {rq.note}</span>
+                  <span className="test-request-note muted"> — {rq.note}</span>
                 )}
               </li>
             ))}
           </ol>
         ) : (
-          <p className='muted'>No open requests right now — check back soon.</p>
+          <p className="muted">No open requests right now — check back soon.</p>
         )}
       </article>
     </div>

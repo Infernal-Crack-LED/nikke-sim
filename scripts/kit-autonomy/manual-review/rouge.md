@@ -4,22 +4,25 @@
 SR / Supporter / Electric / Burst I (cd 20s). Cross-family: S2b `claude-fable-5`, S5/S6/S7 `claude-opus-5`.
 
 ## What she is
+
 A zero-damage-line support. Her entire contribution is team support: a repeating team-wide
 burst-cooldown cut, a positional Attack Damage aura, and a burst team-ATK grant. Everything else
 is Max-HP / Damage-Taken bookkeeping that is offensively inert on a partless boss that deals no
 damage and where ally-granted Max HP feeds no ATK conversion.
 
 ## The three load-bearing (damage-moving) lines — all FAITHFUL, all proven LIVE
-| Line | Encoding | Why it discriminates |
-| --- | --- | --- |
-| S1 — Cooldown of Burst Skill ▼7s every 8 Full Charges (all allies) | `hitCount{8}` → allies → `burstCdr{seconds:7}` | the kit's dominant lever; deleting it strictly collapses rouge's burstCast count over 180s |
-| S2 — Sword Coin: Attack Damage ▲6.65% (self + 2 each side, continuous) | `passive` → `selfAndAdjacent{sides:2}` → `attackDamagePct 6.65` | positional: edge-slotted rouge covers {0,1,2}, provably misses slot 3; all-allies counterfactual reaches all 4 |
-| Burst — ATK ▲15.07% of caster ATK, 10s (all allies) | `burstCast` → allies → `casterAtkPct 15.07, durationSec 10` | flat-resolved off rouge.staticAtk (emitted value ≫ 15.07, so not plain `atkPct`); deleting it drops the carry's total |
+
+| Line                                                                   | Encoding                                                        | Why it discriminates                                                                                                  |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| S1 — Cooldown of Burst Skill ▼7s every 8 Full Charges (all allies)     | `hitCount{8}` → allies → `burstCdr{seconds:7}`                  | the kit's dominant lever; deleting it strictly collapses rouge's burstCast count over 180s                            |
+| S2 — Sword Coin: Attack Damage ▲6.65% (self + 2 each side, continuous) | `passive` → `selfAndAdjacent{sides:2}` → `attackDamagePct 6.65` | positional: edge-slotted rouge covers {0,1,2}, provably misses slot 3; all-allies counterfactual reaches all 4        |
+| Burst — ATK ▲15.07% of caster ATK, 10s (all allies)                    | `burstCast` → allies → `casterAtkPct 15.07, durationSec 10`     | flat-resolved off rouge.staticAtk (emitted value ≫ 15.07, so not plain `atkPct`); deleting it drops the carry's total |
 
 `hitCount` is the real engine trigger (SR is hitsPerShot 1 and auto always full-charges, so
 hits ≈ full charges). The blind's `chargeCounter` guess is not in the engine TriggerDef union.
 
 ## Inert Max-HP grants (the key ruling)
+
 Every "Max HP ▲ X% of the skill user's Max HP" line is a `casterMaxHpPct` **ally** grant.
 Ally-granted Max HP does **NOT** feed a consumer's ATK=%-of-Max-HP conversion — the conversion
 counts the consumer's OWN Max HP only (MEASURED cinderella e3 video; SSOT
@@ -37,6 +40,7 @@ negative ally `damageTakenPct`, inert). The three per-tier **burst** riders (10.
 over-credit the cadence; documented verbatim.
 
 ## Open residuals (all pre-flagged, all measurement-gated; none block GO)
+
 1. **Coin exclusivity (med — the only flag that touches damage).** Prose is silent on whether
    Sword→Shield→Double Sword REPLACES or COEXISTS. If Shield Coin replaces Sword Coin at ~30 Full
    Charges (~45-60s), the 6.65% Attack Damage dies mid-fight (≈¾ of the run over-credited). Shipped
@@ -55,6 +59,7 @@ over-credit the cadence; documented verbatim.
    `unmodeled`.
 
 ## Cross-family convergence
+
 - **S2b (fable)** corroborated all three offensive lines + the inert determination; pre-registered
   coin-exclusivity as the shared-prior misread and spotted the heal asymmetry.
 - **S5 (opus)** blind test independently derived the same three lines + inert grants. Pristine had 3
@@ -70,6 +75,7 @@ over-credit the cadence; documented verbatim.
 - **S7 (opus, binding judge)** → **GO, faithfulness 1.0**, discriminationOk, S5 GREEN.
 
 ## Owner spot-checks (same-model residuals the judge flagged)
+
 - The driver's R2 linear-scaling discriminator is also green under plain `atkPct`; caster-scaling is
   pinned by the added `value > 15.07` bound (folded in from S5 per the judge) + S5's independent
   assertion. Done.
@@ -77,6 +83,7 @@ over-credit the cadence; documented verbatim.
   firing is inferred from the expected 7-9 full bursts rather than observed (inert either way).
 
 ## Blast radius
+
 The whole kit is zero-damage-line support, so the blast radius of every open flag **except coin
 exclusivity** is exactly zero. Board reading 1.034 (HOT ▲, 0.96–1.07) — unchanged by the inert-grant
 cleanup (offensive lines identical).

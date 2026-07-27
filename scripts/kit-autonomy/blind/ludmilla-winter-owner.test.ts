@@ -49,23 +49,31 @@ const SLUG = 'ludmilla-winter-owner';
 type Ev = SimEvent & Record<string, any>;
 type Ov = Record<string, any>;
 
-const SLOTS: Array<'skill1' | 'skill2' | 'burst'> = ['skill1', 'skill2', 'burst'];
+const SLOTS: Array<'skill1' | 'skill2' | 'burst'> = [
+  'skill1',
+  'skill2',
+  'burst',
+];
 
 // The override FILE is slot-keyed; a slot is either a Block[] or a CharacterSkills
 // carrying its own blocks[]. Both shapes are handled so a shape guess cannot void
 // the whole test file.
 const blocksOf = (ov: Ov, slot: string): any[] => {
   const s: any = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 };
 const allBlocks = (ov: Ov): any[] => SLOTS.flatMap((s) => blocksOf(ov, s));
 const eff = (b: any): any[] => (Array.isArray(b?.effects) ? b.effects : []);
 
-const near = (a: any, b: number) => typeof a === 'number' && Math.abs(a - b) < 1e-6;
+const near = (a: any, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 1e-6;
 const isBuff = (e: any, stat: string, value?: number) =>
-  e?.kind === 'buff' && e.stat === stat && (value === undefined || near(e.value, value));
-const isFlat = (e: any, atkPct: number) => e?.kind === 'flatDamage' && near(e.atkPct, atkPct);
+  e?.kind === 'buff' &&
+  e.stat === stat &&
+  (value === undefined || near(e.value, value));
+const isFlat = (e: any, atkPct: number) =>
+  e?.kind === 'flatDamage' && near(e.atkPct, atkPct);
 const isInstantReload = (e: any) => e?.kind === 'instantReload';
 
 const blockWith = (ov: Ov, pred: (e: any) => boolean) =>
@@ -105,17 +113,17 @@ const pNoDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
 let nLongDt = 0;
 const pLongDamageTaken = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of eff(b))
-      if (isBuff(e, 'damageTakenPct', 12.56)) {
+    {for (const e of eff(b))
+      {if (isBuff(e, 'damageTakenPct', 12.56)) {
         e.durationSec = 30;
         nLongDt++;
-      }
+      }}}
 });
 
 let nThresh = 0;
 const pDoubleThreshold = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov)) {
-    if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) continue;
+    if (!eff(b).some((e: any) => isBuff(e, 'damageTakenPct', 12.56))) {continue;}
     if (b.trigger?.kind === 'hitCount' && typeof b.trigger.count === 'number') {
       b.trigger.count *= 2;
       nThresh++;
@@ -141,11 +149,11 @@ const pNoInstantReload = withPatchedOverride(SLUG, (ov: any) => {
 let nFullReload = 0;
 const pFullReload = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    for (const e of eff(b))
-      if (isInstantReload(e)) {
+    {for (const e of eff(b))
+      {if (isInstantReload(e)) {
         e.fraction = 1;
         nFullReload++;
-      }
+      }}}
 });
 
 let nNoCrit = 0;
@@ -156,10 +164,10 @@ const pNoCrit = withPatchedOverride(SLUG, (ov: any) => {
 let nCritAllies = 0;
 const pCritAllies = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of allBlocks(ov))
-    if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
+    {if (eff(b).some((e: any) => isBuff(e, 'critRatePct', 14.6))) {
       b.target = { kind: 'allies' };
       nCritAllies++;
-    }
+    }}
 });
 
 let nNoBurstAtk = 0;
@@ -184,7 +192,7 @@ const collect = (patched?: any) => {
       events.push(ev as Ev);
     },
   };
-  if (patched) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
   const res = runComp(opts);
   const all = totals(res);
   return { res, events, all, self: all[SLUG] };
@@ -209,13 +217,18 @@ const teammatesIdentical = (r: { all: Record<string, number> }) =>
 const someTeammateMoved = (r: { all: Record<string, number> }) =>
   others.some((s) => r.all[s] !== base.all[s]);
 
-const buffApplies = (evs: Ev[], stat: string, value?: number, target?: string) =>
+const buffApplies = (
+  evs: Ev[],
+  stat: string,
+  value?: number,
+  target?: string
+) =>
   evs.filter(
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
       (value === undefined || near(e.value, value)) &&
-      (target === undefined || e.targetSlug === target),
+      (target === undefined || e.targetSlug === target)
   );
 
 const fbStarts = base.events.filter((e) => e.kind === 'fullBurstStart').length;
@@ -231,7 +244,8 @@ describe('ludmilla-winter-owner - fixture sanity (non-vacuity)', () => {
   });
 
   it('the override declares all three skill slots', () => {
-    for (const s of SLOTS) expect(blocksOf(shipped, s).length).toBeGreaterThan(0);
+    for (const s of SLOTS)
+      {expect(blocksOf(shipped, s).length).toBeGreaterThan(0);}
   });
 
   it('the comp actually full-bursts and she actually casts', () => {
@@ -297,7 +311,11 @@ describe('S1a - every 60 normal hits: Damage Taken +12.56% for 3s (enemy)', () =
     // generous lower band rather than an exact ratio.
     expect(nThresh).toBeGreaterThan(0);
     const baseProcs = buffApplies(base.events, 'damageTakenPct', 12.56).length;
-    const halfProcs = buffApplies(rThresh.events, 'damageTakenPct', 12.56).length;
+    const halfProcs = buffApplies(
+      rThresh.events,
+      'damageTakenPct',
+      12.56
+    ).length;
     expect(halfProcs).toBeGreaterThanOrEqual(1);
     expect(halfProcs).toBeLessThan(baseProcs);
     expect(halfProcs * 2).toBeGreaterThan(baseProcs * 0.7);
@@ -373,7 +391,8 @@ describe('S2a - every 60 CORE hits: +109.64% of final ATK (enemy)', () => {
     // core rate. The nearest-wrong model - hitCount:60 with no core conditioning at
     // all - makes S2a fire exactly as often as S1a and over-credits it.
     const coreGated = b.requiresCore === true;
-    const rarer = b.trigger?.kind === 'hitCount' && (b.trigger?.count ?? 0) > 60;
+    const rarer =
+      b.trigger?.kind === 'hitCount' && (b.trigger?.count ?? 0) > 60;
     expect(coreGated || rarer).toBe(true);
   });
 
@@ -424,7 +443,7 @@ describe('S2b - Full Burst start: Critical Rate +14.6% for 10s (self)', () => {
   it('applies on EVERY Full Burst, only ever to herself', () => {
     const applies = buffApplies(base.events, 'critRatePct', 14.6);
     expect(applies.length).toBe(fbStarts);
-    for (const a of applies) expect(a.targetSlug).toBe(SLUG);
+    for (const a of applies) {expect(a.targetSlug).toBe(SLUG);}
   });
 
   it('is load-bearing damage and inert on teammates', () => {
@@ -453,7 +472,9 @@ describe('Burst - self: ATK +62.54% for 10s, Reload Speed +67.2% for 20s', () =>
     expect(atkBlock.target?.kind).toBe('self');
     expect(rsBlock.target?.kind).toBe('self');
     expect(slotWith(shipped, (e) => isBuff(e, 'atkPct', 62.54))).toBe('burst');
-    expect(slotWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2))).toBe('burst');
+    expect(slotWith(shipped, (e) => isBuff(e, 'reloadSpeedPct', 67.2))).toBe(
+      'burst'
+    );
   });
 
   it('ATK is self-scaling atkPct at the raw kit percentage', () => {

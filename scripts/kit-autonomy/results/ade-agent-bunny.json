@@ -10,9 +10,7 @@
       "verdict": "FAITHFUL",
       "encoding": "shotFired → allies → buff casterAtkPct 15.2, durationSec 5",
       "evidence": "A1: one flat value (≈15159.57 = 0.152 × staticAtk 99734) uniform across all 4 allies, 5s, once per shot (count = shots×4); CF generic atkPct stores raw 15.2 AND moves ada's total (discriminates); CF shotFired→burstCast collapses cadence 420→48 (discriminates). S6 blind converged BYTE-IDENTICALLY.",
-      "flags": [
-        "shotFired-as-full-charge proxy (⚑1)"
-      ]
+      "flags": ["shotFired-as-full-charge proxy (⚑1)"]
     },
     {
       "skill": "skill1",
@@ -20,9 +18,7 @@
       "verdict": "DOCUMENTED_GAP",
       "encoding": "unmodeled.skill1 verbatim (inert STAT — no range StatKey); STACK COUNT modeled via hitCount:10 step on skill2[1]",
       "evidence": "A2 asserts the verbatim line is present in unmodeled.skill1. The load-bearing half (the count) IS modeled and is asserted by A4. Split-classification is correct: the stat is unmodelable, the counter is modeled.",
-      "flags": [
-        "Spy-Lens ramp + refresh-all stack reading (⚑2)"
-      ]
+      "flags": ["Spy-Lens ramp + refresh-all stack reading (⚑2)"]
     },
     {
       "skill": "skill2",

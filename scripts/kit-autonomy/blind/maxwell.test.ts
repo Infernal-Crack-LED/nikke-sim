@@ -58,31 +58,43 @@ type Ev = SimEvent & Record<string, any>;
 // a no-op patch would make the discriminating assertions vacuously green.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) return s;
-  if (s && Array.isArray(s.blocks)) return s.blocks;
+  if (Array.isArray(s)) {return s;}
+  if (s && Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 }
-function setSlotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst', blocks: any[]): void {
+function setSlotBlocks(
+  ov: any,
+  slot: 'skill1' | 'skill2' | 'burst',
+  blocks: any[]
+): void {
   const s = ov?.[slot];
-  if (s && !Array.isArray(s) && Array.isArray(s.blocks)) s.blocks = blocks;
-  else ov[slot] = blocks;
+  if (s && !Array.isArray(s) && Array.isArray(s.blocks)) {s.blocks = blocks;}
+  else {ov[slot] = blocks;}
 }
 function findSwap(ov: any): { block: any; eff: any } | null {
   for (const b of slotBlocks(ov, 'burst')) {
-    for (const e of b.effects ?? []) if (e.kind === 'weaponSwap') return { block: b, eff: e };
+    for (const e of b.effects ?? [])
+      {if (e.kind === 'weaponSwap') {return { block: b, eff: e };}}
   }
   return null;
 }
 function findS1Block(ov: any): any {
   for (const b of slotBlocks(ov, 'skill1')) {
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'atkPct' && Math.abs(e.value - 43.1) < 1e-6) return b;
+      if (
+        e.kind === 'buff' &&
+        e.stat === 'atkPct' &&
+        Math.abs(e.value - 43.1) < 1e-6
+      )
+        {return b;}
     }
   }
   return null;
 }
 function effOf(block: any, stat: string): any {
-  return (block?.effects ?? []).find((e: any) => e.kind === 'buff' && e.stat === stat);
+  return (block?.effects ?? []).find(
+    (e: any) => e.kind === 'buff' && e.stat === stat
+  );
 }
 
 // ---- run helpers -------------------------------------------------------------------
@@ -101,11 +113,20 @@ function compWith(patched: any): any {
   return o;
 }
 const applies = (ev: Ev[], stat: string, value: number) =>
-  ev.filter((e) => e.kind === 'buffApply' && e.stat === stat && Math.abs(e.value - value) < 1e-6);
-const fbStarts = (ev: Ev[]) => ev.filter((e) => e.kind === 'fullBurstStart').length;
+  ev.filter(
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs(e.value - value) < 1e-6
+  );
+const fbStarts = (ev: Ev[]) =>
+  ev.filter((e) => e.kind === 'fullBurstStart').length;
 const mx = (r: { res: any }) => totals(r.res)[SLUG];
 const team = (r: { res: any }) =>
-  Object.values(totals(r.res)).reduce((a: number, b: any) => a + (b as number), 0);
+  Object.values(totals(r.res)).reduce(
+    (a: number, b: any) => a + (b as number),
+    0
+  );
 
 // ---- hoisted runs (10 full 180s sims) ----------------------------------------------
 const OV: any = withPatchedOverride(SLUG, () => {});
@@ -113,31 +134,34 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 const BASE = run(controlComp(SLUG, true));
 
 const S1_OFF = run(
-  compWith(withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'skill1', []))),
+  compWith(
+    withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'skill1', []))
+  )
 );
 const S1_LONG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      for (const e of b?.effects ?? []) if (e.kind === 'buff') e.durationSec = 30;
-    }),
-  ),
+      for (const e of b?.effects ?? [])
+        {if (e.kind === 'buff') {e.durationSec = 30;}}
+    })
+  )
 );
 const S1_ALL = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      if (b) b.target = { kind: 'allies' };
-    }),
-  ),
+      if (b) {b.target = { kind: 'allies' };}
+    })
+  )
 );
 const S1_ONCAST = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      if (b) b.trigger = { kind: 'burstCast' };
-    }),
-  ),
+      if (b) {b.trigger = { kind: 'burstCast' };}
+    })
+  )
 );
 
 const S2_PASSIVE = run(
@@ -154,36 +178,38 @@ const S2_PASSIVE = run(
           ],
         },
       ]);
-    }),
-  ),
+    })
+  )
 );
 
 const B_OFF = run(
-  compWith(withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'burst', []))),
+  compWith(
+    withPatchedOverride(SLUG, (ov: any) => setSlotBlocks(ov, 'burst', []))
+  )
 );
 const B_AMMO6 = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) s.eff.maxAmmo = 6;
-    }),
-  ),
+      if (s) {s.eff.maxAmmo = 6;}
+    })
+  )
 );
 const B_FASTCHG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) s.eff.chargeTimeSec = 0.5;
-    }),
-  ),
+      if (s) {s.eff.chargeTimeSec = 0.5;}
+    })
+  )
 );
 const B_NOFC = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) s.eff.chargeMultPct = 100;
-    }),
-  ),
+      if (s) {s.eff.chargeMultPct = 100;}
+    })
+  )
 );
 
 // ------------------------------------------------------------------------------------
@@ -231,7 +257,9 @@ describe('maxwell skill1 — FB entry, 2 highest-final-ATK allies, 10s', () => {
   });
 
   it('does NOT reach the whole team — the top-2 slice is load-bearing', () => {
-    const recips = new Set(applies(BASE.ev, 'atkPct', 43.1).map((e) => e.targetSlug));
+    const recips = new Set(
+      applies(BASE.ev, 'atkPct', 43.1).map((e) => e.targetSlug)
+    );
     expect(recips.size).toBeLessThan(4); // 4-unit comp: two allies stay untouched each FB
     expect(recips.has(SLUG)).toBe(true); // no except-self clause; maxwell is an Attacker, so top-2
     const all = applies(S1_ALL.ev, 'atkPct', 43.1);
@@ -256,7 +284,9 @@ describe('maxwell skill2 — "above 5 enemy unit(s)" (unreachable in a solo raid
   });
 
   it('the inertness assertion is not vacuous — the same buffs, if always-on, DO move damage', () => {
-    expect(applies(S2_PASSIVE.ev, 'critRatePct', 4.83).length).toBeGreaterThan(0);
+    expect(applies(S2_PASSIVE.ev, 'critRatePct', 4.83).length).toBeGreaterThan(
+      0
+    );
     expect(mx(S2_PASSIVE)).toBeGreaterThan(mx(BASE));
   });
 

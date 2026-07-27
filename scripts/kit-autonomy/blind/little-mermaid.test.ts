@@ -94,7 +94,7 @@ function evs(kind: string, list: Ev[] = baseEv) {
 }
 function buffs(stat: string, list: Ev[] = baseEv) {
   return evs('buffApply', list).filter(
-    (e) => (e as { stat?: string }).stat === stat,
+    (e) => (e as { stat?: string }).stat === stat
   );
 }
 
@@ -106,7 +106,7 @@ describe('little-mermaid — fixture sanity (non-vacuity)', () => {
     const herCasts = evs('burstCast').filter(
       (e) =>
         (e as { srcSlug?: string; slug?: string }).srcSlug === SLUG ||
-        (e as { slug?: string }).slug === SLUG,
+        (e as { slug?: string }).slug === SLUG
     );
     expect(herCasts.length).toBeGreaterThan(0);
     expect(baseTotals[SLUG]).toBeGreaterThan(0);
@@ -116,10 +116,10 @@ describe('little-mermaid — fixture sanity (non-vacuity)', () => {
     // Required before any fbGate assertion can mean anything.
     const dmg = evs('damage');
     expect(
-      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === true),
+      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === true)
     ).toBe(true);
     expect(
-      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === false),
+      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === false)
     ).toBe(true);
   });
 });
@@ -139,26 +139,26 @@ describe('skill1 b) Full-Burst-END burst cooldown reduction 7.48 s, all allies',
             ov.skill1 = (ov.skill1 ?? []).filter(
               (b) =>
                 !b.effects.some(
-                  (e) => (e as { kind: string }).kind === 'burstCdr',
-                ),
+                  (e) => (e as { kind: string }).kind === 'burstCdr'
+                )
             );
           }),
         },
-      } as ReturnType<typeof controlComp>),
+      } as ReturnType<typeof controlComp>)
   );
 
   it('the CDR block exists, is keyed to fullBurstEnd, targets allies, and is 7.48 s', () => {
     // Reads the shipped override structurally: magnitude + trigger + target in one shot.
     const ov = withPatchedOverride(SLUG, () => {});
     const cdrBlocks = (ov.skill1 ?? []).filter((b) =>
-      b.effects.some((e) => (e as { kind: string }).kind === 'burstCdr'),
+      b.effects.some((e) => (e as { kind: string }).kind === 'burstCdr')
     );
     expect(cdrBlocks.length).toBe(1);
     const b = cdrBlocks[0]!;
     expect((b.trigger as { kind: string }).kind).toBe('fullBurstEnd');
     expect((b.target as { kind: string }).kind).toBe('allies');
     const eff = b.effects.find(
-      (e) => (e as { kind: string }).kind === 'burstCdr',
+      (e) => (e as { kind: string }).kind === 'burstCdr'
     ) as {
       seconds: number;
       oncePerBattle?: boolean;
@@ -183,14 +183,14 @@ describe('skill1 b) Full-Burst-END burst cooldown reduction 7.48 s, all allies',
 describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('emits attackDamagePct=4 on every Full Burst entry, to every ally', () => {
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     expect(b.length).toBeGreaterThan(0);
     // Trigger identity: one application PER ALLY PER Full Burst. Nearest-wrong models are
     // (i) self-only  -> only one distinct targetSlug; (ii) burstCast-keyed -> fires only on the
     // rotations SHE bursts, i.e. fewer batches than fullBurstStart events.
     const distinctTargets = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(distinctTargets.size).toBeGreaterThan(1);
     const fbCount = evs('fullBurstStart').length;
@@ -200,10 +200,10 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('is a 10 s window, not permanent', () => {
     // "for 10 sec" — duration semantics. A missing durationSec would make it a whole-fight buff.
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     const withExpiry = b.filter(
-      (e) => typeof (e as { expiresFrame?: number }).expiresFrame === 'number',
+      (e) => typeof (e as { expiresFrame?: number }).expiresFrame === 'number'
     );
     expect(withExpiry.length).toBe(b.length);
     // No buffRemove is emitted on natural lapse, so assert the frame arithmetic instead.
@@ -218,7 +218,7 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('scope is generic Attack Damage (Damage Up bucket), NOT ATK and NOT normal-only', () => {
     // Nearest-wrong: atkPct (multiplies base ATK, a different bucket) or a normal-scoped stat.
     const wrongStat = buffs('atkPct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     expect(wrongStat.length).toBe(0);
   });
@@ -236,7 +236,7 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
                 eff.stat === 'attackDamagePct' &&
                 eff.value === 4
               )
-                eff.value = 0;
+                {eff.value = 0;}
             }
           }
         }),
@@ -257,16 +257,16 @@ describe('skill1 d) team-ammo 400 -> Fills Burst Gauge 37%', () => {
     // (which counts only the OWNER's rounds and would fire far later with a 120-round SMG).
     const ov = withPatchedOverride(SLUG, () => {});
     const blocks = (ov.skill1 ?? []).filter((b) =>
-      b.effects.some((e) => (e as { kind: string }).kind === 'fillGauge'),
+      b.effects.some((e) => (e as { kind: string }).kind === 'fillGauge')
     );
     expect(blocks.length).toBe(1);
     const b = blocks[0]!;
     expect((b.trigger as { kind: string; count?: number }).kind).toBe(
-      'teamAmmo',
+      'teamAmmo'
     );
     expect((b.trigger as { count: number }).count).toBe(400);
     const eff = b.effects.find(
-      (e) => (e as { kind: string }).kind === 'fillGauge',
+      (e) => (e as { kind: string }).kind === 'fillGauge'
     ) as { pct: number };
     expect(eff.pct).toBeCloseTo(37, 5);
   });
@@ -282,15 +282,15 @@ describe('skill1 d) team-ammo 400 -> Fills Burst Gauge 37%', () => {
           ov.skill1 = (ov.skill1 ?? []).filter(
             (b) =>
               !b.effects.some(
-                (e) => (e as { kind: string }).kind === 'fillGauge',
-              ),
+                (e) => (e as { kind: string }).kind === 'fillGauge'
+              )
           );
         }),
       },
     } as ReturnType<typeof controlComp>;
     const r = run(patched);
     expect(evs('fullBurstStart', r.events).length).toBeLessThan(
-      evs('fullBurstStart').length,
+      evs('fullBurstStart').length
     );
   });
 });
@@ -303,7 +303,7 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
       (e) =>
         (e as { casterIdx: number | null }).casterIdx === null &&
         (e as { targetIdx: number | null }).targetIdx === null &&
-        Math.abs((e as { value: number }).value - 5.05) < 1e-9,
+        Math.abs((e as { value: number }).value - 5.05) < 1e-9
     );
     expect(dt.length).toBeGreaterThanOrEqual(1);
   });
@@ -321,7 +321,7 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
         .map((e) => ({
           block: b,
           eff: e as { value: number; durationSec?: number },
-        })),
+        }))
     );
     expect(dtEffects.length).toBe(2);
     for (const { eff } of dtEffects) {
@@ -358,7 +358,7 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
             for (const e of b.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
               if (eff.kind === 'buff' && eff.stat === 'damageTakenPct')
-                eff.value = 0;
+                {eff.value = 0;}
             }
           }
         }),
@@ -393,7 +393,7 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     expect((b.trigger as { sec: number }).sec).toBeCloseTo(1, 5);
     expect(b.fbGate).toBe('inFb');
     const hits = b.effects.filter(
-      (e) => (e as { kind: string }).kind === 'flatDamage',
+      (e) => (e as { kind: string }).kind === 'flatDamage'
     ) as {
       atkPct: number;
       flavor?: string;
@@ -401,7 +401,7 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     // "Attacks sequentially 4 times" — four separate hits of 63.36% each, NOT one 253.44% hit
     // (which would mis-price crit variance and the sequential flavour).
     expect(hits.length).toBe(4);
-    for (const h of hits) expect(h.atkPct).toBeCloseTo(63.36, 5);
+    for (const h of hits) {expect(h.atkPct).toBeCloseTo(63.36, 5);}
   });
 
   it('every one of its damage events lands INSIDE Full Burst (the gate is real)', () => {
@@ -409,18 +409,18 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     const src = unitOf(base.res, SLUG);
     expect(src.totalDamage).toBeGreaterThan(0);
     const her = evs('damage').filter(
-      (e) => (e as { srcSlug?: string }).srcSlug === SLUG,
+      (e) => (e as { srcSlug?: string }).srcSlug === SLUG
     );
     const skillHits = her.filter(
       (e) =>
         (e as { bucket?: string }).bucket !== 'normal' &&
-        Math.abs(((e as { atkPct?: number }).atkPct ?? -1) - 63.36) < 1e-6,
+        Math.abs(((e as { atkPct?: number }).atkPct ?? -1) - 63.36) < 1e-6
     );
     if (skillHits.length > 0) {
       expect(
         skillHits.every(
-          (e) => (e as { inFullBurst?: boolean }).inFullBurst === true,
-        ),
+          (e) => (e as { inFullBurst?: boolean }).inFullBurst === true
+        )
       ).toBe(true);
     }
   });
@@ -432,11 +432,11 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
       overrides: {
         [SLUG]: withPatchedOverride(SLUG, (ov) => {
           ov.skill2 = (ov.skill2 ?? []).map((b) => {
-            if ((b.trigger as { kind: string }).kind !== 'interval') return b;
+            if ((b.trigger as { kind: string }).kind !== 'interval') {return b;}
             return {
               ...b,
               effects: b.effects.filter(
-                (e) => (e as { kind: string }).kind !== 'flatDamage',
+                (e) => (e as { kind: string }).kind !== 'flatDamage'
               ),
             };
           });
@@ -446,7 +446,7 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     const after = totals(run(patched).res);
     expect(after[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
     for (const s of Object.keys(baseTotals)) {
-      if (s === SLUG) continue;
+      if (s === SLUG) {continue;}
       expect(after[s]!).toBe(baseTotals[s]!);
     }
   });
@@ -458,16 +458,16 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
     // slots. Merging them onto one counter is the nearest-wrong model and would mis-time both.
     const ov = withPatchedOverride(SLUG, () => {});
     const blocks = (ov.skill2 ?? []).filter(
-      (b) => (b.trigger as { kind: string }).kind === 'teamAmmo',
+      (b) => (b.trigger as { kind: string }).kind === 'teamAmmo'
     );
     expect(blocks.length).toBe(1);
     expect((blocks[0]!.trigger as { count: number }).count).toBe(500);
     const hits = blocks[0]!.effects.filter(
-      (e) => (e as { kind: string }).kind === 'flatDamage',
+      (e) => (e as { kind: string }).kind === 'flatDamage'
     ) as { atkPct: number }[];
     // "Attacks sequentially 10 times" at 85% each.
     expect(hits.length).toBe(10);
-    for (const h of hits) expect(h.atkPct).toBeCloseTo(85, 5);
+    for (const h of hits) {expect(h.atkPct).toBeCloseTo(85, 5);}
   });
 
   it('fires at least once in a 180 s fight and moves only her own damage', () => {
@@ -476,11 +476,11 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
       overrides: {
         [SLUG]: withPatchedOverride(SLUG, (ov) => {
           ov.skill2 = (ov.skill2 ?? []).map((b) => {
-            if ((b.trigger as { kind: string }).kind !== 'teamAmmo') return b;
+            if ((b.trigger as { kind: string }).kind !== 'teamAmmo') {return b;}
             return {
               ...b,
               effects: b.effects.filter(
-                (e) => (e as { kind: string }).kind !== 'flatDamage',
+                (e) => (e as { kind: string }).kind !== 'flatDamage'
               ),
             };
           });
@@ -493,7 +493,7 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
     // ammo, which a 120-round SMG would reach far more slowly).
     expect(after[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
     for (const s of Object.keys(baseTotals)) {
-      if (s === SLUG) continue;
+      if (s === SLUG) {continue;}
       expect(after[s]!).toBe(baseTotals[s]!);
     }
   });
@@ -502,11 +502,11 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
 describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% caster-ATK to self', () => {
   it('Attack Damage 10.13% / 10 s is applied to ALL allies on her burst cast', () => {
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 10.13) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 10.13) < 1e-9
     );
     expect(b.length).toBeGreaterThan(0);
     const distinct = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(distinct.size).toBeGreaterThan(1); // nearest-wrong: self-only
     // Trigger identity: her OWN burst cast, so the batch count equals her burst casts — NOT the
@@ -526,7 +526,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const reloads = (ov.burst ?? []).flatMap((b) =>
       b.effects
         .filter((e) => (e as { kind: string }).kind === 'instantReload')
-        .map((e) => ({ block: b, eff: e as { fraction?: number } })),
+        .map((e) => ({ block: b, eff: e as { fraction?: number } }))
     );
     expect(reloads.length).toBe(1);
     expect(reloads[0]!.eff.fraction).toBeCloseTo(0.3326, 4);
@@ -540,7 +540,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const b = buffs('casterAtkPct');
     expect(b.length).toBeGreaterThan(0);
     const targets = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(targets.size).toBe(1);
     expect([...targets][0]).toBe(SLUG); // "Affects self"
@@ -560,7 +560,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
             for (const e of blk.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
               if (eff.kind === 'buff' && eff.stat === 'attackDamagePct')
-                eff.value = 0;
+                {eff.value = 0;}
             }
           }
         }),
@@ -574,7 +574,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
             for (const e of blk.effects) {
               const eff = e as { kind: string; stat?: string; value?: number };
               if (eff.kind === 'buff' && eff.stat === 'casterAtkPct')
-                eff.value = 0;
+                {eff.value = 0;}
             }
           }
         }),
@@ -584,7 +584,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const selfAfter = totals(run(noSelf).res);
     const allies = Object.keys(baseTotals).filter((s) => s !== SLUG);
     expect(allies.some((s) => allyAfter[s]! < baseTotals[s]!)).toBe(true);
-    for (const s of allies) expect(selfAfter[s]!).toBe(baseTotals[s]!);
+    for (const s of allies) {expect(selfAfter[s]!).toBe(baseTotals[s]!);}
     expect(selfAfter[SLUG]!).toBeLessThan(baseTotals[SLUG]!);
   });
 });
@@ -602,7 +602,7 @@ describe('cross-cutting inertness', () => {
     // Nearest-wrong: marking the 63.36% / 85% riders core:true, which would inflate them by the
     // core multiplier. Rider damage crits at her rate but takes NO core unless the text says so.
     const her = evs('damage').filter(
-      (e) => (e as { srcSlug?: string }).srcSlug === SLUG,
+      (e) => (e as { srcSlug?: string }).srcSlug === SLUG
     );
     const riders = her.filter((e) => {
       const bucket = (e as { bucket?: string }).bucket;
@@ -610,7 +610,7 @@ describe('cross-cutting inertness', () => {
     });
     for (const r of riders) {
       const coreRate = (r as { coreRate?: number }).coreRate;
-      if (typeof coreRate === 'number') expect(coreRate).toBe(0);
+      if (typeof coreRate === 'number') {expect(coreRate).toBe(0);}
     }
   });
 

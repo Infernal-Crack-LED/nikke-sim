@@ -157,13 +157,8 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Eagle Eye-Type Exospine."
-    ],
-    "burst": [
-      "Exospine Mk2",
-      "Function: Enhances Exospine."
-    ]
+    "skill2": ["Eagle Eye-Type Exospine."],
+    "burst": ["Exospine Mk2", "Function: Enhances Exospine."]
   },
   "notes": "Expected shared-prior misreads to force apart: (1) the 44-counter counts CRITICAL normal hits, not rounds — schema has no crit-gated hitCount, so any faithful encoding is a derived threshold ⚑ (~ceil(44/0.75)≈59 at sheet crit incl. S1's +60); a raw hitCount:44 over-fires ~33% and a static derived threshold silently breaks if team crit buffs exist — the driver must state which they shipped and why. (2) BOTH Mk2 riders key to burstCast, never fullBurstEnter — controlComp's helm co-B3 makes this divergence live, so assert window-count === eve burstCast count. (3) 'scaled by 100%' = ×2 of the BASE multiplier (240→480 event mult), not an additive sequentialDamagePct 100 in the diluted Damage-Up bucket and not a no-op — the in/out window ratio must be exactly 2.0. (4) Sequential damage is PER-HIT (240×3, 457.14×6); a total-split reading loses 3–6×. (5) Both Electric-gated lines (Damage Taken ▲10%, Reloads 3) must carry bossElementGate:'Electric' and be provably inert on the Fire/neutral test boss — the reload rider ungated is a ~30% ammo-sustain over-credit. (6) Whether Unstable Energy hits themselves crit (spending the +60%) is flatDamage crit:false by default and measured-only ⚑ — flag, don't guess. (7) 'ATK ▲ 50% of the skill user's ATK' is casterAtkPct (flat vs static) not atkPct; the buffApply value assertion (≈0.5×staticAtk flat) distinguishes them. Could not write the file to scripts/kit-autonomy/reviews/eve.test-review.json — no tools available in this run; JSON returned inline.",
   "model": "claude-fable-5"

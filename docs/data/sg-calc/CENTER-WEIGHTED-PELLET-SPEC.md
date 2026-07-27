@@ -29,7 +29,7 @@ study of `noir sg.MP4` (6 band-agents over ~80 firing frames + a mid-band CV hea
   a dense core at the reticle tapering to 1–2 outliers near the disc edge.
 - The **range dependence is boss-silhouette clipping of a roughly-constant cone**: a wide near/mid boss
   catches nearly the whole cone; a narrow far/midfar boss clips the outer (low-density) pellets, which
-  miss and render no damage number. The cone is ~constant; the *landing fraction* falls with range
+  miss and render no damage number. The cone is ~constant; the _landing fraction_ falls with range
   because the shrinking boss catches fewer outer pellets.
 
 So the fix is not "use a smaller circle" — it is: **weight the boss-body overlap by a center-peaked
@@ -53,7 +53,7 @@ boss is (approximately) a concentric disc, both reduce to the **Rayleigh CDF**:
 target only (the central point), not to overall landing (which the raw σ already fits).
 
 **One formula, one σ, two outputs.** SG pellet-landing and the per-weapon core-hit table
-(`CORE_BY_WEAPON_BAND`) are the *same* center-weighted cone read at two radii — the boss body (~55–72px)
+(`CORE_BY_WEAPON_BAND`) are the _same_ center-weighted cone read at two radii — the boss body (~55–72px)
 vs the boss core (~14px). This unifies two models that are currently separate.
 
 ### 2a. Spread σ — from the accuracy circle, Hit Rate, and auto-aim
@@ -69,7 +69,7 @@ vs the boss core (~14px). This unifies two models that are currently separate.
   `σ = 162/2 / 2.53 ≈ 32px` (equivalently `σ ≈ circleDpx/5.06`). Per weapon (hr=0): AR 9.6, SMG 14.1,
   SG 32.0 px.
 - The **auto-aim loss is a core-only factor** (`CORE_AUTOAIM≈0.55`, §2), NOT a σ-widener — the raw σ
-  already fits the measured *landing*; widening it would break that. The ~20% auto-aim accuracy loss
+  already fits the measured _landing_; widening it would break that. The ~20% auto-aim accuracy loss
   (dcinside gov/1525776) concentrates at the tiny central target, so it is applied to core-hit only.
 - **HR dependence is inherited for free**: higher Hit Rate shrinks `circleDpx`, shrinks σ, and both
   landing and core rise toward 1 — matching the KR result that pellets converge to a point at ~115–118%
@@ -79,7 +79,7 @@ vs the boss core (~14px). This unifies two models that are currently separate.
 
 - **R_boss(band)** from the measured hand-outlined boss-body area fraction (`BAND_SG_HIT_FRAC`), by
   inverting the uniform-disc relation: `R_boss = R_spread · sqrt(hitFrac)`. For noir:
-  near 72.3, mid 68.3, midfar 64.5, far 55.2 px. (This *reuses* the measured silhouette but re-weights
+  near 72.3, mid 68.3, midfar 64.5, far 55.2 px. (This _reuses_ the measured silhouette but re-weights
   the overlap by the Gaussian instead of assuming uniform density — measured input, better integrator.)
 - **R_core(band)** = `BAND_CORE_PX(band)/2` (near 15.5 → far 8.5 px).
 - **Per-boss generalization** = `bossPelletProfile`: small/medium/large scales R_boss (the boss
@@ -89,14 +89,14 @@ vs the boss core (~14px). This unifies two models that are currently separate.
 ## 3. Calibration — validated, self-consistent
 
 With **σ = 32px** for noir SG (at her HR), the Rayleigh landing reproduces the measured recon values
-from geometry, and — critically — the *same* σ matches the independently-measured pellet footprint:
+from geometry, and — critically — the _same_ σ matches the independently-measured pellet footprint:
 
-| band | R_boss px | uniform (area) | **model (σ=32)** | recon (measured) |
-|---|---|---|---|---|
-| near   | 72.3 | 0.797 | **0.922** | 0.888 |
-| mid    | 68.3 | 0.710 | **0.897** | 0.986 |
-| midfar | 64.5 | 0.634 | **0.869** | 0.888 |
-| far    | 55.2 | 0.465 | **0.775** | 0.740 |
+| band   | R_boss px | uniform (area) | **model (σ=32)** | recon (measured) |
+| ------ | --------- | -------------- | ---------------- | ---------------- |
+| near   | 72.3      | 0.797          | **0.922**        | 0.888            |
+| mid    | 68.3      | 0.710          | **0.897**        | 0.986            |
+| midfar | 64.5      | 0.634          | **0.869**        | 0.888            |
+| far    | 55.2      | 0.465          | **0.775**        | 0.740            |
 
 - **MAE vs recon = 0.044** (σ=30–34 all give 0.044–0.052), vs the uniform area-fraction which is off by
   0.09–0.28 per band. The center-weighting flattens the range curve toward the measured shape (it raises
@@ -137,7 +137,7 @@ from geometry, and — critically — the *same* σ matches the independently-me
 - **σ is calibrated to one unit/boss (noir).** `K_SIGMA=2.53` is fit to noir's recon landing + footprint;
   `CORE_AUTOAIM=0.55` is fit to the AR/SMG/SG near-core cells. Both need a second SG unit/boss to confirm
   transfer (dorothy-serendipity's consolidation makes her a poor σ probe — use guilty/isabel).
-- **Base-vs-HR bookkeeping for `circleDpx`:** the 162px anchor was measured *at noir's HR*, so
+- **Base-vs-HR bookkeeping for `circleDpx`:** the 162px anchor was measured _at noir's HR_, so
   `circleDpx(250)=162` folds in noir's HR shrink. Disentangling base circle vs HR shrink needs one clean
   circle measurement at a known HR (same open item as the px calibration). Until then σ for other-HR SG
   units carries this ⚑.

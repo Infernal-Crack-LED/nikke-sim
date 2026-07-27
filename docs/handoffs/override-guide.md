@@ -44,16 +44,16 @@ Overrides are hand-written JSON files at `src/skills/overrides/<slug>.json` that
 
 ## Triggers
 
-| kind | fires | notes |
-|---|---|---|
-| `passive` | permanently at battle start | buffs under it are **always on — listed durations are ignored** (they re-trigger continuously in-game). Also use for "at start of battle", "when HP above X%" (full HP assumed), "when target appears" |
-| `burstCast` | when THIS unit casts its burst | optional `"stage": 1\|2\|3` restricts to the stage it was used at (Λ / stage-variant kits) |
-| `fullBurstEnter` / `fullBurstEnd` | when full burst starts/ends (any caster) | |
-| `hitCount`, `count: N` | every N normal-attack HITS by this unit | pellets/multi-hits count individually (SG pull = 10 hits). "Every N normal attacks" for 1-hit weapons = N hits |
-| `shotFired` | every trigger pull by this unit | use for "on full charge attack" (charge weapons always full-charge in the sim) |
-| `lastBullet` | this unit's magazine empties | |
-| `stageEnter`, `stage: N` | when a stage-N burst is cast by ANYONE | for "when entering Burst Stage N" |
-| `bossElement`, `element: "Electric"` | permanent, only if the boss element matches | for "when attacking X Code enemies" |
+| kind                                 | fires                                       | notes                                                                                                                                                                                                  |
+| ------------------------------------ | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `passive`                            | permanently at battle start                 | buffs under it are **always on — listed durations are ignored** (they re-trigger continuously in-game). Also use for "at start of battle", "when HP above X%" (full HP assumed), "when target appears" |
+| `burstCast`                          | when THIS unit casts its burst              | optional `"stage": 1\|2\|3` restricts to the stage it was used at (Λ / stage-variant kits)                                                                                                             |
+| `fullBurstEnter` / `fullBurstEnd`    | when full burst starts/ends (any caster)    |                                                                                                                                                                                                        |
+| `hitCount`, `count: N`               | every N normal-attack HITS by this unit     | pellets/multi-hits count individually (SG pull = 10 hits). "Every N normal attacks" for 1-hit weapons = N hits                                                                                         |
+| `shotFired`                          | every trigger pull by this unit             | use for "on full charge attack" (charge weapons always full-charge in the sim)                                                                                                                         |
+| `lastBullet`                         | this unit's magazine empties                |                                                                                                                                                                                                        |
+| `stageEnter`, `stage: N`             | when a stage-N burst is cast by ANYONE      | for "when entering Burst Stage N"                                                                                                                                                                      |
+| `bossElement`, `element: "Electric"` | permanent, only if the boss element matches | for "when attacking X Code enemies"                                                                                                                                                                    |
 
 ## Targets
 
@@ -61,21 +61,21 @@ Overrides are hand-written JSON files at `src/skills/overrides/<slug>.json` that
 
 ## Effects
 
-| kind | fields | semantics |
-|---|---|---|
-| `buff` | `stat`, `value` (%; negative for ▼), `durationSec?` (omit = permanent), `maxStacks?` | re-application refreshes duration and adds a stack (value × stacks). Stacking is per block-effect |
-| `flatDamage` | `atkPct`, `flavor?` | instant hit of caster's final ATK %. No crit/core/charge. flavors: `distributed` (single boss → full value, boosted by caster's `distributedDamagePct`), `true`, `projectileAttachment` / `projectileExplosion` (boosted only by matching stats) |
-| `dot` | `atkPct`, `durationSec`, `intervalSec?` (default 1), `flavor?` | ticks like flatDamage; same flavors as flatDamage. Riders/DoTs NEVER receive core damage (core only applies to direct core hits) |
-| `weaponSwap` | `damagePct`, `durationSec`, `chargeTimeSec?`, `chargeMultPct?`, `maxAmmo?` | temporary weapon: per-pull multiplier override; base cadence kept unless `chargeTimeSec` makes it a charge weapon. Add an `attackSpeedPct` buff alongside if the swap changes fire rate |
-| `fillGauge` | `pct` | instantly adds % to the team burst gauge |
-| `storedHit` | `atkPct`, `charges?` (default 1), `flavor?` | accumulates charges; ALL release as one hit at the next full-burst entry, after FB-enter auras apply (Rapi:RH's attached projectiles) |
-| `burstCdr` | `seconds`, `oncePerBattle?` | reduces targets' current burst cooldowns |
-| `escalating` | `steps: [Effect...]` | Liter-style "Once:/Twice:/…" — Nth activation applies steps 1..N |
-| `fullBurstExtend` | `seconds` (can be negative) | extends the current/next full burst |
-| `unlimitedAmmo` | `durationSec` | |
-| `instantReload` | `fraction?` (default 1) | refills that fraction of the magazine |
-| `burstEligibility` | `stage` | unit may also fill that burst stage (Combat-Assist-style) |
-| `advantageVs` | `element` | unit counts as elementally advantaged vs that boss element |
+| kind               | fields                                                                               | semantics                                                                                                                                                                                                                                        |
+| ------------------ | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `buff`             | `stat`, `value` (%; negative for ▼), `durationSec?` (omit = permanent), `maxStacks?` | re-application refreshes duration and adds a stack (value × stacks). Stacking is per block-effect                                                                                                                                                |
+| `flatDamage`       | `atkPct`, `flavor?`                                                                  | instant hit of caster's final ATK %. No crit/core/charge. flavors: `distributed` (single boss → full value, boosted by caster's `distributedDamagePct`), `true`, `projectileAttachment` / `projectileExplosion` (boosted only by matching stats) |
+| `dot`              | `atkPct`, `durationSec`, `intervalSec?` (default 1), `flavor?`                       | ticks like flatDamage; same flavors as flatDamage. Riders/DoTs NEVER receive core damage (core only applies to direct core hits)                                                                                                                 |
+| `weaponSwap`       | `damagePct`, `durationSec`, `chargeTimeSec?`, `chargeMultPct?`, `maxAmmo?`           | temporary weapon: per-pull multiplier override; base cadence kept unless `chargeTimeSec` makes it a charge weapon. Add an `attackSpeedPct` buff alongside if the swap changes fire rate                                                          |
+| `fillGauge`        | `pct`                                                                                | instantly adds % to the team burst gauge                                                                                                                                                                                                         |
+| `storedHit`        | `atkPct`, `charges?` (default 1), `flavor?`                                          | accumulates charges; ALL release as one hit at the next full-burst entry, after FB-enter auras apply (Rapi:RH's attached projectiles)                                                                                                            |
+| `burstCdr`         | `seconds`, `oncePerBattle?`                                                          | reduces targets' current burst cooldowns                                                                                                                                                                                                         |
+| `escalating`       | `steps: [Effect...]`                                                                 | Liter-style "Once:/Twice:/…" — Nth activation applies steps 1..N                                                                                                                                                                                 |
+| `fullBurstExtend`  | `seconds` (can be negative)                                                          | extends the current/next full burst                                                                                                                                                                                                              |
+| `unlimitedAmmo`    | `durationSec`                                                                        |                                                                                                                                                                                                                                                  |
+| `instantReload`    | `fraction?` (default 1)                                                              | refills that fraction of the magazine                                                                                                                                                                                                            |
+| `burstEligibility` | `stage`                                                                              | unit may also fill that burst stage (Combat-Assist-style)                                                                                                                                                                                        |
+| `advantageVs`      | `element`                                                                            | unit counts as elementally advantaged vs that boss element                                                                                                                                                                                       |
 
 ## Stats (buff `stat` values) and their formula buckets
 

@@ -27,33 +27,53 @@ const OUT = new URL('../web/src/metaWeights.ts', import.meta.url);
 
 // "<token>-weak" label → the element the boss is weak to (the UI's weakness pick).
 const WEAK_TOKEN: Record<string, string> = {
-  water: 'Water', elec: 'Electric', fire: 'Fire', iron: 'Iron', wind: 'Wind',
+  water: 'Water',
+  elec: 'Electric',
+  fire: 'Fire',
+  iron: 'Iron',
+  wind: 'Wind',
 };
 
 // prydwen bossing tier → element-agnostic meta score in [0,1], calibrated to sit
 // on the same scale as the enikk unit popularity (top enikk unit = 1.0).
 const TIER_SCORE: Record<string, number> = {
-  SSS: 1.0, SS: 0.85, S: 0.7, A: 0.5, B: 0.35, C: 0.2, D: 0.1, E: 0.05, F: 0.0,
+  SSS: 1.0,
+  SS: 0.85,
+  S: 0.7,
+  A: 0.5,
+  B: 0.35,
+  C: 0.2,
+  D: 0.1,
+  E: 0.05,
+  F: 0.0,
 };
 
 // strong co-equal blend (owner ruling 2026-07-15): score = dmg × (1 + W·prior).
-const WEIGHT_DEFAULT = 1.0;   // W: a max-meta team can roughly double its score
-const COMBO_WEIGHT = 0.6;     // exact-comp match adds up to 0.6 to the prior
+const WEIGHT_DEFAULT = 1.0; // W: a max-meta team can roughly double its score
+const COMBO_WEIGHT = 0.6; // exact-comp match adds up to 0.6 to the prior
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'));
-const tiers: { tiers: Record<string, string> } =
-  JSON.parse(readFileSync(new URL('../data/bossing-tiers.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
+);
+const tiers: { tiers: Record<string, string> } = JSON.parse(
+  readFileSync(new URL('../data/bossing-tiers.json', import.meta.url), 'utf8')
+);
 const modeled = new Set(
   readdirSync(new URL('../src/skills/overrides', import.meta.url))
     .filter((f) => f.endsWith('.json'))
-    .map((f) => f.replace(/\.json$/, '')),
+    .map((f) => f.replace(/\.json$/, ''))
 );
 
 // display name (no ' (Treasure)') → slug, restricted to synced characters.
 const nameToSlug: Record<string, string> = {};
-for (const [slug, c] of Object.entries(data.characters)) nameToSlug[c.name.replace(' (Treasure)', '')] = slug;
+for (const [slug, c] of Object.entries(data.characters))
+  {nameToSlug[c.name.replace(' (Treasure)', '')] = slug;}
 
-interface RaidBlock { weakness: string; boss: string; teams: { slugs: (string | null)[]; count: number }[] }
+interface RaidBlock {
+  weakness: string;
+  boss: string;
+  teams: { slugs: (string | null)[]; count: number }[];
+}
 
 function parseAudit(): RaidBlock[] {
   const lines = readFileSync(AUDIT, 'utf8').split('\n');
@@ -67,17 +87,25 @@ function parseAudit(): RaidBlock[] {
     if (rm) {
       const weakness = WEAK_TOKEN[rm[1]];
       cur = weakness ? { weakness, boss: rm[2], teams: [] } : null;
-      if (cur) out.push(cur);
+      if (cur) {out.push(cur);}
       inTeams = false;
       continue;
     }
-    if (line.startsWith('### Unique teams')) { inTeams = true; continue; }
-    if (line.startsWith('###') || line.startsWith('## ')) { inTeams = false; continue; }
+    if (line.startsWith('### Unique teams')) {
+      inTeams = true;
+      continue;
+    }
+    if (line.startsWith('###') || line.startsWith('## ')) {
+      inTeams = false;
+      continue;
+    }
     if (inTeams && cur) {
       const tm = teamRe.exec(line);
       if (tm) {
         // split 5 names, strip the trailing ` *` not-modeled marker, resolve to slug
-        const slugs = tm[2].split(', ').map((n) => nameToSlug[n.replace(/\s*\*$/, '').trim()] ?? null);
+        const slugs = tm[2]
+          .split(', ')
+          .map((n) => nameToSlug[n.replace(/\s*\*$/, '').trim()] ?? null);
         cur.teams.push({ slugs, count: Number(tm[1]) });
       }
     }
@@ -90,10 +118,12 @@ const raids = parseAudit();
 // every slug that shows up ANYWHERE in the audit (across all raids) — the
 // complement (within the synced roster) is the "too new" fallback set.
 const seenInAudit = new Set<string>();
-for (const r of raids) for (const t of r.teams) for (const s of t.slugs) if (s) seenInAudit.add(s);
+for (const r of raids)
+  {for (const t of r.teams) {for (const s of t.slugs) {if (s) {seenInAudit.add(s);}}}}
 
 interface MetaWeightEntry {
-  raid: string; boss: string;
+  raid: string;
+  boss: string;
   unitPop: Record<string, number>;
   comps: { slugs: string[]; pop: number }[];
 }
@@ -105,17 +135,17 @@ for (const r of raids) {
   const comps: { slugs: string[]; pop: number }[] = [];
   let maxComp = 0;
   for (const t of r.teams) {
-    for (const s of t.slugs) if (s) raw.set(s, (raw.get(s) ?? 0) + t.count);
+    for (const s of t.slugs) {if (s) {raw.set(s, (raw.get(s) ?? 0) + t.count);}}
     // modeled-COMPLETE comps only (all 5 resolve + have overrides): buildable/simmable
     if (t.slugs.length === 5 && t.slugs.every((s) => s && modeled.has(s))) {
       comps.push({ slugs: t.slugs as string[], pop: t.count });
-      if (t.count > maxComp) maxComp = t.count;
+      if (t.count > maxComp) {maxComp = t.count;}
     }
   }
   const maxUnit = Math.max(1, ...raw.values());
   const unitPop: Record<string, number> = {};
-  for (const [slug, v] of raw) unitPop[slug] = +(v / maxUnit).toFixed(4);
-  for (const c of comps) c.pop = +(c.pop / Math.max(1, maxComp)).toFixed(4);
+  for (const [slug, v] of raw) {unitPop[slug] = +(v / maxUnit).toFixed(4);}
+  for (const c of comps) {c.pop = +(c.pop / Math.max(1, maxComp)).toFixed(4);}
   comps.sort((a, b) => b.pop - a.pop);
   byWeakness[r.weakness] = { raid: r.boss, boss: r.boss, unitPop, comps };
 }
@@ -124,7 +154,7 @@ for (const r of raids) {
 const tierPop: Record<string, number> = {};
 const fallbackSlugs: string[] = [];
 for (const slug of Object.keys(data.characters)) {
-  if (seenInAudit.has(slug)) continue;
+  if (seenInAudit.has(slug)) {continue;}
   fallbackSlugs.push(slug);
   const tier = tiers.tiers[slug];
   tierPop[slug] = tier !== undefined ? (TIER_SCORE[tier] ?? 0) : 0;
@@ -168,10 +198,21 @@ const body =
   `export const META_WEIGHTS: MetaWeightsFile = ${JSON.stringify(file, null, 1)};\n`;
 
 writeFileSync(OUT, banner + body);
-const compCount = Object.values(byWeakness).reduce((n, e) => n + e.comps.length, 0);
+const compCount = Object.values(byWeakness).reduce(
+  (n, e) => n + e.comps.length,
+  0
+);
 console.log(`wrote ${OUT.pathname}`);
-console.log(`  ${Object.keys(byWeakness).length} weakness elements, ${compCount} modeled-complete comps, ${fallbackSlugs.length} tier-fallback units`);
+console.log(
+  `  ${Object.keys(byWeakness).length} weakness elements, ${compCount} modeled-complete comps, ${fallbackSlugs.length} tier-fallback units`
+);
 for (const [w, e] of Object.entries(byWeakness)) {
-  const top = Object.entries(e.unitPop).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s, v]) => `${s} ${v}`).join(', ');
-  console.log(`  ${w.padEnd(9)} (boss ${e.boss}): ${e.comps.length} comps; top units: ${top}`);
+  const top = Object.entries(e.unitPop)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([s, v]) => `${s} ${v}`)
+    .join(', ');
+  console.log(
+    `  ${w.padEnd(9)} (boss ${e.boss}): ${e.comps.length} comps; top units: ${top}`
+  );
 }

@@ -9,7 +9,13 @@
 //
 //   npx tsx scripts/battery/auto.ts
 //   SEEDS=25 ONLY="auto 3" OUT=/tmp/auto.json npx tsx scripts/battery/auto.ts
-import { loadWorld, fillRoster, pickAdvantageBoss, runBattery, type Cell } from './lib.js';
+import {
+  loadWorld,
+  fillRoster,
+  pickAdvantageBoss,
+  runBattery,
+  type Cell,
+} from './lib.js';
 
 const w = loadWorld();
 
@@ -21,22 +27,28 @@ const teams = fillRoster(w, []).map((t, i) => ({
   source: (t.source ?? 'roster fill').replace('roster fill', 'auto-generated'),
 }));
 
-runBattery(w, teams, (team) => {
-  const adv = pickAdvantageBoss(w, team);
-  const cells: Cell[] = [
-    { label: 'neutral c0', boss: null, coreHitRate: 0 },
-    { label: 'neutral c50', boss: null, coreHitRate: 0.5 },
-    { label: 'neutral c100', boss: null, coreHitRate: 1 },
-    { label: `adv(${adv.boss}) c0`, boss: adv.boss, coreHitRate: 0 },
-    { label: `adv(${adv.boss}) c50`, boss: adv.boss, coreHitRate: 0.5 },
-    { label: `adv(${adv.boss}) c100`, boss: adv.boss, coreHitRate: 1 },
-  ];
-  console.log(`    advantage boss ${adv.boss} (via bursting B3 ${adv.via})`);
-  return cells;
-}, {
-  title: 'AUTO battery — scope lock, generated teams, neutral vs advantage x core exposure',
-  derived: [
-    { label: 'core c1/c0', num: 2, den: 0 },  // core-exposure sensitivity (neutral)
-    { label: 'adv/neut', num: 5, den: 2 },    // elemental-advantage lift (at core 100)
-  ],
-});
+runBattery(
+  w,
+  teams,
+  (team) => {
+    const adv = pickAdvantageBoss(w, team);
+    const cells: Cell[] = [
+      { label: 'neutral c0', boss: null, coreHitRate: 0 },
+      { label: 'neutral c50', boss: null, coreHitRate: 0.5 },
+      { label: 'neutral c100', boss: null, coreHitRate: 1 },
+      { label: `adv(${adv.boss}) c0`, boss: adv.boss, coreHitRate: 0 },
+      { label: `adv(${adv.boss}) c50`, boss: adv.boss, coreHitRate: 0.5 },
+      { label: `adv(${adv.boss}) c100`, boss: adv.boss, coreHitRate: 1 },
+    ];
+    console.log(`    advantage boss ${adv.boss} (via bursting B3 ${adv.via})`);
+    return cells;
+  },
+  {
+    title:
+      'AUTO battery — scope lock, generated teams, neutral vs advantage x core exposure',
+    derived: [
+      { label: 'core c1/c0', num: 2, den: 0 }, // core-exposure sensitivity (neutral)
+      { label: 'adv/neut', num: 5, den: 2 }, // elemental-advantage lift (at core 100)
+    ],
+  }
+);

@@ -61,7 +61,12 @@
 // (unmodeled arrays empty); H4's partsDamagePct is modeled-but-engine-inert, not unmodeled.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SLUG = 'anis-sparkling-summer';
@@ -89,79 +94,111 @@ function run(overrides: Record<string, any> = {}, bossElement: Boss = 'Water') {
 }
 
 // ---- counterfactual / reference patches -------------------------------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
 
 /** H1 counterfactual: S1 re-targeted to ALL allies (drops the Electric element scope). */
 const anisGenericAllies = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
-  for (const b of ov.skill1) if (b.target?.kind === 'alliesOfElement') { b.target = { kind: 'allies' }; patched++; }
-  if (!patched) throw new Error('anis S1 alliesOfElement target missing — fixture is stale');
+  for (const b of ov.skill1)
+    {if (b.target?.kind === 'alliesOfElement') {
+      b.target = { kind: 'allies' };
+      patched++;
+    }}
+  if (!patched)
+    {throw new Error(
+      'anis S1 alliesOfElement target missing — fixture is stale'
+    );}
 });
 /** H1 encoding reference: casterAtkPct → atkPct (self-scaling % instead of flat caster add). */
 const anisAtkPct = withPatchedOverride(SLUG, (ov) => {
-  const e = ov.skill1.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) throw new Error('anis S1 casterAtkPct effect missing — fixture is stale');
+  const e = ov.skill1
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'casterAtkPct');
+  if (!e)
+    {throw new Error('anis S1 casterAtkPct effect missing — fixture is stale');}
   e.stat = 'atkPct';
 });
 /** H3 encoding reference: the last-bullet rider made core-eligible (text says "as damage", not core). */
 const anisCoreRider = withPatchedOverride(SLUG, (ov) => {
-  const e = ov.skill2.flatMap((b: any) => b.effects).find((x: any) => x.kind === 'flatDamage');
-  if (!e) throw new Error('anis S2 flatDamage effect missing — fixture is stale');
+  const e = ov.skill2
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.kind === 'flatDamage');
+  if (!e)
+    {throw new Error('anis S2 flatDamage effect missing — fixture is stale');}
   e.core = true;
 });
 /** H4 reference: her parts-damage line removed. */
 const anisNoParts = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
-  if (ov.skill2.length === before) throw new Error('anis S2 partsDamagePct block missing — fixture is stale');
+  if (ov.skill2.length === before)
+    {throw new Error('anis S2 partsDamagePct block missing — fixture is stale');}
 });
 /** H5 reference: her burst max-ammo line removed (restores 5-round magazines in the window). */
 const anisNoMaxAmmo = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'maxAmmoPct'));
-  if (ov.burst.length === before) throw new Error('anis burst maxAmmoPct block missing — fixture is stale');
+  if (ov.burst.length === before)
+    {throw new Error('anis burst maxAmmoPct block missing — fixture is stale');}
 });
 /** H7 reference: her burst elemental-advantage line removed. */
 const anisNoElemAdv = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.flatMap((b: any) => b.effects).length;
-  for (const b of ov.burst) b.effects = b.effects.filter((e: any) => e.stat !== 'elemAdvantageDamagePct');
+  for (const b of ov.burst)
+    {b.effects = b.effects.filter(
+      (e: any) => e.stat !== 'elemAdvantageDamagePct'
+    );}
   if (ov.burst.flatMap((b: any) => b.effects).length === before)
-    throw new Error('anis burst elemAdvantageDamagePct effect missing — fixture is stale');
+    {throw new Error(
+      'anis burst elemAdvantageDamagePct effect missing — fixture is stale'
+    );}
 });
 /** H7 counterfactual: the same line as an UNGATED Damage-Up buff (over-credits when not advantaged). */
 const anisUngatedElemAdv = withPatchedOverride(SLUG, (ov) => {
-  const e = ov.burst.flatMap((b: any) => b.effects).find((x: any) => x.stat === 'elemAdvantageDamagePct');
-  if (!e) throw new Error('anis burst elemAdvantageDamagePct effect missing — fixture is stale');
+  const e = ov.burst
+    .flatMap((b: any) => b.effects)
+    .find((x: any) => x.stat === 'elemAdvantageDamagePct');
+  if (!e)
+    {throw new Error(
+      'anis burst elemAdvantageDamagePct effect missing — fixture is stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
-const base = run();                                                       // boss Water, shipped
+const base = run(); // boss Water, shipped
 const genericAllies = run({ [SLUG]: anisGenericAllies });
 const atkPct = run({ [SLUG]: anisAtkPct });
 const coreRider = run({ [SLUG]: anisCoreRider });
 const noParts = run({ [SLUG]: anisNoParts });
 const noMaxAmmo = run({ [SLUG]: anisNoMaxAmmo });
 const noElemAdv = run({ [SLUG]: anisNoElemAdv });
-const baseIron = run({}, 'Iron');                                         // no advantage control
+const baseIron = run({}, 'Iron'); // no advantage control
 const noElemAdvIron = run({ [SLUG]: anisNoElemAdv }, 'Iron');
 const ungatedElemAdvIron = run({ [SLUG]: anisUngatedElemAdv }, 'Iron');
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const anisDamage = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === SLUG && d.srcSlot === srcSlot);
 const anisShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === SLUG);
 const anisBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 /** Buffs emitted by anis's own kit on the given stat. */
 const anisBuffs = (evs: SimEvent[], stat: string) =>
   buffs(evs).filter((b) => b.casterIdx === ANIS && b.stat === stat);
 /** Distinct holder slot indices a given anis buff key reached. */
 const holdersOf = (evs: SimEvent[], key: string): Set<number> =>
-  new Set(buffs(evs).filter((b) => b.key === key).map((b) => b.targetIdx as number));
+  new Set(
+    buffs(evs)
+      .filter((b) => b.key === key)
+      .map((b) => b.targetIdx as number)
+  );
 
 const S1_ATK_KEY = `${ANIS}:skill1:casterAtkPct:55.31`;
 const S1_RELOAD_KEY = `${ANIS}:skill1:reloadSpeedPct:49.28`;
@@ -171,18 +208,26 @@ const BU_ELEMADV_KEY = `${ANIS}:burst:elemAdvantageDamagePct:42.24`;
 
 describe('anis-sparkling-summer — kit spec', () => {
   it('fixture sanity: anis actually casts her burst (needs the B1→B2→B3 chain)', () => {
-    expect(anisBursts(base.events).length, 'no anis burst was cast — fixture cannot exercise burst lines').toBeGreaterThan(0);
+    expect(
+      anisBursts(base.events).length,
+      'no anis burst was cast — fixture cannot exercise burst lines'
+    ).toBeGreaterThan(0);
   });
 
   describe('H1 — S1 ATK ▲55.31% of HER ATK, fullBurstEnter, scoped to Electric allies', () => {
     const applied = buffs(base.events).filter((b) => b.key === S1_ATK_KEY);
 
-    it('is casterAtkPct (flat add of the skill user\'s ATK), magnitude 55.31, for 10 sec', () => {
-      expect(applied.length, 'no FB-entry casterAtkPct buff was applied').toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.stat))]).toEqual(['casterAtkPct']);
+    it("is casterAtkPct (flat add of the skill user's ATK), magnitude 55.31, for 10 sec", () => {
+      expect(
+        applied.length,
+        'no FB-entry casterAtkPct buff was applied'
+      ).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.stat))]).toEqual([
+        'casterAtkPct',
+      ]);
       // the key carries the RAW kit value (55.31); the event `value` is the resolved flat ATK.
-      for (const b of applied) expect(b.key).toBe(S1_ATK_KEY);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.key).toBe(S1_ATK_KEY);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('reaches the Electric ally (herself) and EXCLUDES every non-Electric ally', () => {
@@ -190,14 +235,23 @@ describe('anis-sparkling-summer — kit spec', () => {
     });
 
     it('DISCRIMINATING: a generic `allies` target would reach all four units', () => {
-      expect([...holdersOf(genericAllies.events, S1_ATK_KEY)].sort()).toEqual([0, 1, ANIS, 3]);
+      expect([...holdersOf(genericAllies.events, S1_ATK_KEY)].sort()).toEqual([
+        0,
+        1,
+        ANIS,
+        3,
+      ]);
     });
 
     it('ENCODING: shipped logs casterAtkPct, the atkPct counterfactual logs atkPct (distinct mechanic)', () => {
       // For the self-only Electric target the two are damage-identical (caster===target), so the
       // mechanic is pinned by the buffApply stat field, not a damage delta (see header note).
       expect(anisBuffs(base.events, 'casterAtkPct').length).toBeGreaterThan(0);
-      expect(anisBuffs(atkPct.events, 'casterAtkPct').filter((b) => b.key.startsWith(`${ANIS}:skill1:`)).length).toBe(0);
+      expect(
+        anisBuffs(atkPct.events, 'casterAtkPct').filter((b) =>
+          b.key.startsWith(`${ANIS}:skill1:`)
+        ).length
+      ).toBe(0);
       expect(anisBuffs(atkPct.events, 'atkPct').length).toBeGreaterThan(0);
     });
   });
@@ -209,23 +263,27 @@ describe('anis-sparkling-summer — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([49.28]);
       expect([...holdersOf(base.events, S1_RELOAD_KEY)].sort()).toEqual([ANIS]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: a generic `allies` target would reach all four units', () => {
-      expect([...holdersOf(genericAllies.events, S1_RELOAD_KEY)].sort()).toEqual([0, 1, ANIS, 3]);
+      expect(
+        [...holdersOf(genericAllies.events, S1_RELOAD_KEY)].sort()
+      ).toEqual([0, 1, ANIS, 3]);
     });
   });
 
   describe('H3 — S2 last-bullet rider: 382.42% of final ATK, fires exactly when the mag empties', () => {
     const riders = anisDamage(base.events, 'skill2');
-    const lastBullets = anisShots(base.events).filter((s) => s.ammoAfter === 0 && !s.unlimitedAmmo).length;
+    const lastBullets = anisShots(base.events).filter(
+      (s) => s.ammoAfter === 0 && !s.unlimitedAmmo
+    ).length;
 
     it('lands once per last bullet (ammo→0), incl. the 1-round burst-window magazines', () => {
       expect(riders.length, 'no last-bullet rider landed').toBeGreaterThan(0);
       expect(
         riders.length,
-        `${riders.length} riders vs ${lastBullets} dry-firing shots — a last-bullet proc is 1:1 with mag-empty`,
+        `${riders.length} riders vs ${lastBullets} dry-firing shots — a last-bullet proc is 1:1 with mag-empty`
       ).toBe(lastBullets);
     });
 
@@ -242,12 +300,14 @@ describe('anis-sparkling-summer — kit spec', () => {
     });
 
     it('DISCRIMINATING: a core:true rider would become core-eligible (text says "as damage")', () => {
-      expect(anisDamage(coreRider.events, 'skill2').every((d) => d.coreEligible)).toBe(true);
+      expect(
+        anisDamage(coreRider.events, 'skill2').every((d) => d.coreEligible)
+      ).toBe(true);
     });
   });
 
   describe('H4 — S2 interruption-parts damage is exactly inert vs the partless boss', () => {
-    it('removing it changes NO unit\'s total by a single point', () => {
+    it("removing it changes NO unit's total by a single point", () => {
       expect(base.totals).toEqual(noParts.totals);
     });
   });
@@ -258,11 +318,14 @@ describe('anis-sparkling-summer — kit spec', () => {
     const noMaxAmmoProcs = anisDamage(noMaxAmmo.events, 'skill2').length;
 
     it('is -73.92% on herself, fired once per burst cast (burstCast-keyed)', () => {
-      expect(applied.length, 'no burst maxAmmoPct buff was applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no burst maxAmmoPct buff was applied'
+      ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([-73.92]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([ANIS]);
       expect(applied.length).toBe(anisBursts(base.events).length);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is LIVE: 1-round mags produce strictly MORE last-bullet procs than 5-round mags', () => {
@@ -274,7 +337,7 @@ describe('anis-sparkling-summer — kit spec', () => {
     });
   });
 
-  describe('H6 — burst Reload Speed ▲27.72% (distinct from S1\'s 49.28, co-stacks on her)', () => {
+  describe("H6 — burst Reload Speed ▲27.72% (distinct from S1's 49.28, co-stacks on her)", () => {
     const applied = buffs(base.events).filter((b) => b.key === BU_RELOAD_KEY);
 
     it('is 27.72% for 10 sec on herself, once per burst cast', () => {
@@ -284,9 +347,13 @@ describe('anis-sparkling-summer — kit spec', () => {
       expect(applied.length).toBe(anisBursts(base.events).length);
     });
 
-    it('co-exists with S1\'s 49.28 line (two distinct reload buffs on her)', () => {
-      expect(buffs(base.events).filter((b) => b.key === S1_RELOAD_KEY).length).toBeGreaterThan(0);
-      expect(buffs(base.events).filter((b) => b.key === BU_RELOAD_KEY).length).toBeGreaterThan(0);
+    it("co-exists with S1's 49.28 line (two distinct reload buffs on her)", () => {
+      expect(
+        buffs(base.events).filter((b) => b.key === S1_RELOAD_KEY).length
+      ).toBeGreaterThan(0);
+      expect(
+        buffs(base.events).filter((b) => b.key === BU_RELOAD_KEY).length
+      ).toBeGreaterThan(0);
     });
   });
 
@@ -310,7 +377,9 @@ describe('anis-sparkling-summer — kit spec', () => {
 
     it('DISCRIMINATING: an ungated Damage-Up buff WOULD change the no-advantage total', () => {
       // Proves the shipped gating is one the generic damage buff provably fails.
-      expect(baseIron.totals[SLUG]).not.toEqual(ungatedElemAdvIron.totals[SLUG]);
+      expect(baseIron.totals[SLUG]).not.toEqual(
+        ungatedElemAdvIron.totals[SLUG]
+      );
     });
   });
 });

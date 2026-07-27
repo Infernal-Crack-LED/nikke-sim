@@ -10,6 +10,7 @@
 > **its per-arm board numbers are STALE** (baseline moved at the cone 07-19 and the rotation model 07-21).
 
 > **STATUS 2026-07-17 — SCAFFOLDING LANDED, all arms default-OFF, NONE promoted.**
+>
 > - **Shared module `src/engine/sg-geometry.ts`** (`circleDpx`, `coreDpx`, `rangeFromCoreDpx`,
 >   `coreFracGeo`, `circleDpxAtHr` + the calibration constants / `BAND_CORE_PX` / `BAND_SG_HIT_FRAC`).
 > - **Unit tests `scripts/sg-geometry-regression.ts`** reproduce the §2 calibration points, §3
@@ -41,14 +42,13 @@
 >     (SMG) are HR-active, and geo-B over-lifts them (quency 1.040→1.322). Testing B for AR needs an
 >     HR-active AR comp (jill's pre-registered +80.78% scenario), which is absent from the board.
 >   - **C (`SGLANDING=geo`) still hurts the calibrated SG board** (noir 1.048→0.861, dorothy-serendipity
->     1.018→0.941) — the circle recalibration doesn't touch SG landing; that gap is the *method* one
+>     1.018→0.941) — the circle recalibration doesn't touch SG landing; that gap is the _method_ one
 >     (area-fraction on the D=162 spread disc vs the tighter aim circle pellets actually fill; see the
 >     KR/JP pellet research). Orthogonal to this recalibration.
 > - **Conclusion / owner call:** the px recalibration is landed (independently measured, R²=0.9999) and
 >   makes `ACR_GEO=replace` a genuine SMG-core candidate. Promotion of A is deferred on the AR
 >   out-of-range-collapse and the lack of a board-wide gain; B needs an HR-active AR comp to test at all;
 >   C needs the aim-circle (not spread-disc) landing fix. Arms stay default-off. Not committed.
-
 
 Wire the calibrated pixel geometry (`accuracy-circle-calibration.json`, `DERIVATION.md`) into the
 sim so core-hit-rate and SG pellet-landing are **geometrically grounded** per range band, per
@@ -57,17 +57,18 @@ free-parameter reticle model.
 
 > **Approximation discipline (read first).** These relations are principled approximations, not
 > measured-truth (see the caveat in `DERIVATION.md`). Therefore:
+>
 > - They may **fill unmeasured bands** and **ground free parameters**, but must **not refit a
 >   measured constant** (hard-constraint #3). Where a measured value exists (e.g. a graded
 >   `CORE_BY_WEAPON_BAND` cell, a measured SG landing), measurement wins; geometry only fills gaps
->   or supplies the *shape* between measured anchors.
+>   or supplies the _shape_ between measured anchors.
 > - Land behind an **ENV flag, default matching current behavior**, until the board says it helps
 >   (same pattern as `HRCORE`). `verify.sh` green + snapshot per step.
 
 ## What already exists (anchor points in `src/engine/sim.ts`)
 
 - **HRCORE reticle model** (718–763): already keys off `accuracy_circle_scale`
-  (`HR_CORE_CIRCLE = {AR:75, SMG:110, SG:250}`) as an *abstract unit*, with a free `HR_CORE_SAT`
+  (`HR_CORE_CIRCLE = {AR:75, SMG:110, SG:250}`) as an _abstract unit_, with a free `HR_CORE_SAT`
   (`circle10` vs `1`) and an exponent `p_w = ln(core_base_near)/ln(SAT/reticle0)`. **Our px
   calibration replaces the abstract unit with real geometry** — this is the biggest lever.
 - **`CORE_BY_WEAPON_BAND` / `coreByWeaponBand`** — the per-weapon per-band core-hit-rate table.
@@ -85,14 +86,14 @@ Concentric core inside accuracy circle ⇒ fraction of shots on core ≈ **area 
       core_D_px(range)    = 2100 / (range + 47)
 
 - Gives a smooth core-hit curve vs range **per weapon** from one datamined field.
-- **Owner ruling needed:** does this *replace* `CORE_BY_WEAPON_BAND`, or only supply unmeasured
+- **Owner ruling needed:** does this _replace_ `CORE_BY_WEAPON_BAND`, or only supply unmeasured
   cells + the inter-band shape while measured cells stay pinned? (Recommend the latter — constraint
   #3.) Optimal-range check (reframed after the 48px recalibration): at AR mid `core_D 28 vs circle_D
-  48 ⇒ coreFrac_geo ≈ 0.34` (≈ measured AR mid 0.30, NOT ~1); the 29px inner bound ≈ core is the
+48 ⇒ coreFrac_geo ≈ 0.34` (≈ measured AR mid 0.30, NOT ~1); the 29px inner bound ≈ core is the
   HR-shrink floor, where core saturates. See DERIVATION §5.
 - Land as `acrForGeo` alongside `acrFor`; ENV `ACR_GEO` default off.
 
-## Workstream B — HR effect on core via the *shrunk* circle (grounds HRCORE `SAT`)
+## Workstream B — HR effect on core via the _shrunk_ circle (grounds HRCORE `SAT`)
 
 HRCORE already shrinks the reticle with hit rate. In px:
 
@@ -101,7 +102,7 @@ HRCORE already shrinks the reticle with hit rate. In px:
     M(hr) = coreFrac_geo(hr) / coreFrac_geo(0)                    — the HR→core multiplier
 
 - This **derives `M` from real geometry** instead of the current `p_w`/`SAT` exponent hack. The
-  `HR_CORE_SAT` free parameter (`circle10` vs `1`, currently an owner toggle) becomes a *derived*
+  `HR_CORE_SAT` free parameter (`circle10` vs `1`, currently an owner toggle) becomes a _derived_
   quantity: saturation is simply where `core_D ≥ circle_D_px(hr)`.
 - Cross-check against the pre-registered HRCORE predictions (jill AR +80.78%, chisato SMG +22.37%,
   sim.ts:723–724) — must stay inside those CIs or better.
@@ -118,7 +119,7 @@ geometric fraction of the spread circle on the boss body = expected fraction of 
 
 - Feed `hitFrac(band)` as the expected value behind `SG_LANDING_BY_BAND` (currently owner-chosen
   near/mid 0.90, midfar 0.80, far 0.70). Compare to measured `sg-pellet-landing.json` before
-  changing — where a measured landing exists it wins; geometry supplies the band *shape* and
+  changing — where a measured landing exists it wins; geometry supplies the band _shape_ and
   unmeasured bosses.
 - Generalize across boss silhouettes via `bossPelletProfile` (small/medium/large): the hit
   fraction is boss-size-dependent, exactly what the profiles encode. Per-boss hit% needs the boss
@@ -187,4 +188,4 @@ disc** rather than the tighter **aim circle** the pellets actually fill (the KR/
 above). That is a method bug, not evidence against geometric landing — and C is the ONLY workstream the cone
 does not pre-empt. Rebuild `BAND_SG_HIT_FRAC` on the aim circle, then re-run the arm against a CURRENT
 baseline. Measured landings still win where they exist (hard-constraint #3); geometry supplies the band
-*shape* and unmeasured bosses (feeding the ⚑ `bossPelletProfile` magnitudes, still owner-chosen).
+_shape_ and unmeasured bosses (feeding the ⚑ `bossPelletProfile` magnitudes, still owner-chosen).

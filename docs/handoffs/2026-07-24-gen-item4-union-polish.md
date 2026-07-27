@@ -20,24 +20,24 @@
 
 ### F1. The plan's polish shape could not have worked (structural, not empirical)
 
-The draft said: re-run team *i* with `exclude` = units of ALL OTHER final teams. Team *i*'s greedy
+The draft said: re-run team _i_ with `exclude` = units of ALL OTHER final teams. Team _i_'s greedy
 pool is `P − ∪_{j<i} T_j − reserved_{j>i}`; that polish pool is `P − ∪_{j≠i} T_j`, a strict SUBSET
-for every *i* and IDENTICAL for the last team. So the pass can only ever search a subset of what
+for every _i_ and IDENTICAL for the last team. So the pass can only ever search a subset of what
 greedy already searched — it cannot reach the team the inversion proves was missed. Anything of this
 shape is a near-no-op by construction. **What shipped instead: a seeded re-run** — the previous
 roster's teams are offered to every team as extra local-search starts (`bestTeam({ extraSeeds })`),
-so team *i* can reclaim AND refine from a team a later index found, and the tail rebuilds behind it.
+so team _i_ can reclaim AND refine from a team a later index found, and the tail rebuilds behind it.
 
 ### F2. The gain came from refining a seed that LOST to its incumbent
 
 Bench reclaim: the 2033M team-5 set, refined inside team 3's pool, reached **2401M** and beat that
 row's 2343M. So the cheap rule "only adopt seeds that already score higher" would have found
 nothing. A seed is a BASIN, not a candidate. Corollary for any future pruning: prune on
-*proximity*, never on *already-winning*.
+_proximity_, never on _already-winning_.
 
 ### F3. The accept rule has to be per-PASS on the roster total, not per-team
 
-A reclaim raises team *i* and the rebuilt tail drops (bench: +58M on row 3, −19M on row 5, net
+A reclaim raises team _i_ and the rebuilt tail drops (bench: +58M on row 3, −19M on row 5, net
 +39M). A per-team strict-improvement rule would have rejected the tail rebuild and left the roster
 inconsistent. Pass-level acceptance on the total is what makes "polish never lowers the roster"
 true, and ties keep the incumbent so a no-op pass is byte-stable (⇒ idempotent, pinned by test).
@@ -59,14 +59,14 @@ documented, and A/B-able by setting it to 0.
 
 ### F6. Where it pays — and where it measurably does nothing
 
-| config | quality | cost |
-|---|---|---|
-| constrained 20-unit pool (4 Burst-I) | greedy **stalls at 3 teams** → polish **4 teams, +13.0%** | small (cache-warm) |
-| no-meta CLI bench, full pool | +0.27% (14.432B → 14.471B) | +28% sims / +19% wall |
-| shipped app config (Chromium, full pool, meta + spread) | **none** — identical roster | **none** — 7865ms vs 7884ms (noise) |
+| config                                                  | quality                                                   | cost                                |
+| ------------------------------------------------------- | --------------------------------------------------------- | ----------------------------------- |
+| constrained 20-unit pool (4 Burst-I)                    | greedy **stalls at 3 teams** → polish **4 teams, +13.0%** | small (cache-warm)                  |
+| no-meta CLI bench, full pool                            | +0.27% (14.432B → 14.471B)                                | +28% sims / +19% wall               |
+| shipped app config (Chromium, full pool, meta + spread) | **none** — identical roster                               | **none** — 7865ms vs 7884ms (noise) |
 
 The app-path no-op and the app-path zero-cost are the SAME fact: with spread shaping on, a team
-built for a different meta-sum target scores low under team *i*'s objective, falls under the gate,
+built for a different meta-sum target scores low under team _i_'s objective, falls under the gate,
 and is never re-climbed. Proof it is not the gate hiding a gain: the **gate-off** arm returns the
 identical roster for +19% wall. ⚠ **n=1 configuration** — one weakness setting, unblocked pool. Not
 evidence of a no-op across app settings.
@@ -86,7 +86,7 @@ does not transfer to union — see U1.**
 
 ### U1. HARD CONSTRAINT: the union roster must NEVER be sorted
 
-Union row *i* is bound to **boss *i***: `unionGenBossOpts[i]` supplies row *i*'s cfg
+Union row _i_ is bound to **boss _i_**: `unionGenBossOpts[i]` supplies row _i_'s cfg
 (`App.tsx:3064–3065`), and `shareUnionRoster(unionGenResults, unionGenBossOpts)` (`App.tsx:6621`)
 zips result index → boss options. Reordering rows would pair each team with the wrong boss — a
 correctness bug, not a cosmetic one. So union takes the polish pass ONLY, never the sort. (The
@@ -107,13 +107,20 @@ polish driver must therefore be parameterized over a per-index build function.
    export async function polishRoster<T extends { slugs: string[] }>(opts: {
      n: number;
      reserved: string[][];
-     passes?: number;                                   // default POLISH_PASSES
-     score: (i: number, t: T) => number;                // team i's ranking score
-     build: (i: number, o: {                            // one team, index i
-       exclude: Set<string>; mustInclude: string[];
-       extraSeeds: string[][]; seedsOnly: boolean; seedFloor?: number;
-     }) => Promise<T | null>;
-   }): Promise<T[]>
+     passes?: number; // default POLISH_PASSES
+     score: (i: number, t: T) => number; // team i's ranking score
+     build: (
+       i: number,
+       o: {
+         // one team, index i
+         exclude: Set<string>;
+         mustInclude: string[];
+         extraSeeds: string[][];
+         seedsOnly: boolean;
+         seedFloor?: number;
+       }
+     ) => Promise<T | null>;
+   }): Promise<T[]>;
    ```
    `topTeams` then becomes `polishRoster(...)` + its sort; behaviour must stay byte-identical
    (re-run `--polish 5` and the generator suite as the gate).
@@ -121,12 +128,12 @@ polish driver must therefore be parameterized over a per-index build function.
    `extraSeeds` / `seedsOnly` / `seedFloor` so `genBestTeam` forwards them, and expose the calc's
    ranking score (see U4).
 3. **`web/src/App.tsx:3039–3079`** — replace the hand-rolled loop with `polishRoster`, whose
-   `build(i, o)` calls `genBestTeam(paramsFor(i), o)` with row *i*'s boss params. Keep
+   `build(i, o)` calls `genBestTeam(paramsFor(i), o)` with row _i_'s boss params. Keep
    `assignMustUse`/`reserved` exactly as they are. **Do not sort the output** (U1).
 
 ### U4. Cross-boss scoring — the one genuinely new problem
 
-`score(i, t)` needs team *i*'s ranking score **under boss *i***. Two sub-problems:
+`score(i, t)` needs team _i_'s ranking score **under boss _i_**. Two sub-problems:
 
 - **Not currently exposed.** `scoreOf` (damage × meta × synergy) is private to `makeCalc`. Add it to
   the returned object (e.g. `scoreTeam(r)`) and thread it through `simClient`. Do NOT reimplement the
@@ -147,7 +154,7 @@ polish driver must therefore be parameterized over a per-index build function.
 
 ### U5. Seeds are cross-boss ⇒ they cost real sims
 
-A seed from row *j* must be re-simmed under boss *i*'s cfg (different bundle, cold entry). Expect
+A seed from row _j_ must be re-simmed under boss _i_'s cfg (different bundle, cold entry). Expect
 union polish to be MORE expensive than solo's app-path no-op — the `seedsOnly` shortcut still helps,
 but the cheap-cache-hit assumption behind F5 is weaker here. **Measure before landing**; if the pass
 is expensive and finds nothing, that is a legitimate "don't ship it" answer (same honesty as F6).
@@ -164,9 +171,10 @@ bundle. Watch the item-5 "2nd Calculate is instant" property when switching mode
 `makeCalc` is importable directly, so the union case is testable without the browser: build **three
 calcs with three different `cfg`s** (different `weakness`/boss) over one restricted pool and drive
 `polishRoster`. Pin:
+
 - roster total never drops vs the greedy arm (`passes: 0`), under whichever U4 rule is chosen;
 - teams stay disjoint, 5 distinct, in-pool, `reserved[i]` honored per row;
-- **row *i* keeps boss *i*** — assert the output order is the construction order (the anti-sort guard);
+- **row _i_ keeps boss _i_** — assert the output order is the construction order (the anti-sort guard);
 - idempotence (a 6-pass run equals the 2-pass run);
 - the solo suite still green + `topTeams` byte-identical after the U3 extraction.
 

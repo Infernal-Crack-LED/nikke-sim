@@ -54,7 +54,7 @@ function run(patched?: unknown) {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => evs.push(ev as unknown as Ev),
   };
-  if (patched) opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };
+  if (patched) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: patched };}
   const res = runComp(opts as any);
   return {
     evs,
@@ -72,7 +72,7 @@ function findEffects(ov: any, pred: (e: any, b: any) => boolean) {
   const out: { e: any; b: any }[] = [];
   for (const slot of SLOTS) {
     for (const b of ov?.[slot] ?? []) {
-      for (const e of b?.effects ?? []) if (pred(e, b)) out.push({ e, b });
+      for (const e of b?.effects ?? []) {if (pred(e, b)) {out.push({ e, b });}}
     }
   }
   return out;
@@ -83,7 +83,7 @@ function dropEffects(ov: any, pred: (e: any, b: any) => boolean): number {
   let n = 0;
   for (const slot of SLOTS) {
     for (const b of ov?.[slot] ?? []) {
-      if (!Array.isArray(b?.effects)) continue;
+      if (!Array.isArray(b?.effects)) {continue;}
       for (let i = b.effects.length - 1; i >= 0; i--) {
         if (pred(b.effects[i], b)) {
           b.effects.splice(i, 1);
@@ -100,7 +100,7 @@ function setBuff(ov: any, stat: string, from: number, to: number): number {
   for (const { e } of findEffects(
     ov,
     (e) =>
-      e.kind === 'buff' && e.stat === stat && Math.abs(e.value - from) < 1e-6,
+      e.kind === 'buff' && e.stat === stat && Math.abs(e.value - from) < 1e-6
   )) {
     e.value = to;
     n++;
@@ -120,7 +120,7 @@ const buffs = (evs: Ev[], stat: string, value?: number) =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(e.value - value) < 1e-6),
+      (value === undefined || Math.abs(e.value - value) < 1e-6)
   );
 const onSelf = (list: Ev[]) => list.filter((e) => e.targetSlug === SLUG);
 const others = (t: Record<string, number>) => {
@@ -138,28 +138,28 @@ let nBeauty = 0;
 const noBeautyFull = run(
   withPatchedOverride(SLUG, (o) => {
     nBeauty = setBuff(o as any, 'attackDamagePct', 24, 0);
-  }),
+  })
 );
 
 let nAtk29 = 0;
 const noAtk29 = run(
   withPatchedOverride(SLUG, (o) => {
     nAtk29 = setBuff(o as any, 'atkPct', 29, 0);
-  }),
+  })
 );
 
 let nPinpoint = 0;
 const noPinpoint = run(
   withPatchedOverride(SLUG, (o) => {
     nPinpoint = setBuff(o as any, 'coreDamagePct', 26, 0);
-  }),
+  })
 );
 
 let nParts = 0;
 const noParts = run(
   withPatchedOverride(SLUG, (o) => {
     nParts = setBuff(o as any, 'partsDamagePct', 26.21, 0);
-  }),
+  })
 );
 
 let nInterval = 0;
@@ -167,9 +167,9 @@ const noInterval = run(
   withPatchedOverride(SLUG, (o) => {
     nInterval = dropEffects(
       o as any,
-      (e) => e.kind === 'flatDamage' && e.atkPct === 900,
+      (e) => e.kind === 'flatDamage' && e.atkPct === 900
     );
-  }),
+  })
 );
 
 let nNuke = 0;
@@ -177,16 +177,16 @@ const noNuke = run(
   withPatchedOverride(SLUG, (o) => {
     nNuke = dropEffects(
       o as any,
-      (e) => e.kind === 'flatDamage' && e.atkPct === 6000,
+      (e) => e.kind === 'flatDamage' && e.atkPct === 6000
     );
-  }),
+  })
 );
 
 let nGauge = 0;
 const noGauge = run(
   withPatchedOverride(SLUG, (o) => {
     nGauge = dropEffects(o as any, (e) => e.kind === 'fillGauge');
-  }),
+  })
 );
 
 let nHyper = 0;
@@ -194,14 +194,14 @@ const hyperGauge = run(
   withPatchedOverride(SLUG, (o) => {
     for (const { e, b } of findEffects(
       o as any,
-      (x) => x.kind === 'fillGauge',
+      (x) => x.kind === 'fillGauge'
     )) {
       e.pct = 40;
       if (b.trigger && typeof b.trigger.count === 'number')
-        b.trigger.count = 20;
+        {b.trigger.count = 20;}
       nHyper++;
     }
-  }),
+  })
 );
 
 const isRider = (e: any) =>
@@ -211,7 +211,7 @@ let nRider = 0;
 const noRider = run(
   withPatchedOverride(SLUG, (o) => {
     nRider = dropEffects(o as any, isRider);
-  }),
+  })
 );
 
 let nUngate = 0;
@@ -223,7 +223,7 @@ const ungatedRider = run(
         nUngate++;
       }
     }
-  }),
+  })
 );
 
 const FB = fullBursts(base.evs);
@@ -250,7 +250,7 @@ describe('cinderella-crystal-wave — skill1', () => {
   it('Beauty-Full: Attack Damage ▲24% is continuous, self-only, Damage-Up (not ATK)', () => {
     expect(nBeauty).toBeGreaterThan(0); // modeled at all
     expect(
-      onSelf(buffs(base.evs, 'attackDamagePct', 24)).length,
+      onSelf(buffs(base.evs, 'attackDamagePct', 24)).length
     ).toBeGreaterThanOrEqual(1);
     expect(buffs(base.evs, 'atkPct', 24)).toHaveLength(0); // nearest-wrong: ATK, not Attack Damage
     expect(noBeautyFull.self).toBeLessThan(base.self); // live, not inert
@@ -309,7 +309,7 @@ describe('cinderella-crystal-wave — skill1', () => {
     // Pierce must be mode/swap-scoped, never an unconditional whole-fight flag.
     if (ov.hasPierce === true) {
       expect(Array.isArray(ov.pierceModes) && ov.pierceModes.length > 0).toBe(
-        true,
+        true
       );
     }
   });
@@ -342,7 +342,7 @@ describe('cinderella-crystal-wave — skill2', () => {
   it('ATK ▲29% is continuous, self-only, in the ATK bucket (not Damage Up)', () => {
     expect(nAtk29).toBeGreaterThan(0);
     expect(onSelf(buffs(base.evs, 'atkPct', 29)).length).toBeGreaterThanOrEqual(
-      1,
+      1
     );
     expect(buffs(base.evs, 'attackDamagePct', 29)).toHaveLength(0);
     expect(noAtk29.self).toBeLessThan(base.self);
@@ -357,7 +357,7 @@ describe('cinderella-crystal-wave — skill2', () => {
   it('Pinpoint: core-scoped ▲26%, live from battle start, self-only', () => {
     expect(nPinpoint).toBeGreaterThan(0);
     expect(
-      onSelf(buffs(base.evs, 'coreDamagePct', 26)).length,
+      onSelf(buffs(base.evs, 'coreDamagePct', 26)).length
     ).toBeGreaterThanOrEqual(1);
     expect(buffs(base.evs, 'attackDamagePct', 26)).toHaveLength(0); // nearest-wrong: generic
     expect(noPinpoint.self).toBeLessThan(base.self);
@@ -442,7 +442,7 @@ describe('cinderella-crystal-wave — burst', () => {
     // temporary (10s), not continuous — and the SAME 10s for both
     expect(Number.isFinite(ad[0].expiresFrame)).toBe(true);
     for (let i = 0; i < ad.length; i++)
-      expect(at[i].expiresFrame).toBe(ad[i].expiresFrame);
+      {expect(at[i].expiresFrame).toBe(ad[i].expiresFrame);}
   });
 
   // KIT: "Affects the enemy with the highest final ATK. Deals 6000% of final ATK as Burst

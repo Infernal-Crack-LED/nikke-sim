@@ -9,22 +9,130 @@
   },
   "lineFindings": {
     "skill1": [
-      { "kitLine": "ATK ▲ 23.61% for 10 sec (all allies)", "category": "FAITHFUL", "subkind": null, "driverSaid": "atkPct 23.61, fullBurstEnter, allies, 10s", "blindSaid": "S6 identical; S2b FAITHFUL", "formulaCheck": "atkPct feeds the ATK base; scope all-allies, 10s duration match prose", "fireRateOk": true, "explanation": "Encoding matches prose and formula. P5c pins fullBurstEnter cadence (once per fullBurstStart frame, not burstCast)." },
-      { "kitLine": "Reload Speed ▲ 51.16% for 10 sec", "category": "FAITHFUL", "subkind": null, "driverSaid": "reloadSpeedPct 51.16, 10s", "blindSaid": "S6 identical", "formulaCheck": "reloadSpeedPct is the correct stat; scope/duration match", "fireRateOk": true, "explanation": "Faithful; P5 confirms applied to all 4 allies for 10s." },
-      { "kitLine": "Max Ammunition Capacity ▼ 50.66%", "category": "FAITHFUL", "subkind": null, "driverSaid": "maxAmmoPct -50.66, 10s", "blindSaid": "S6 identical; S2b top adversarial catch (Max-Ammo tandem)", "formulaCheck": "maxAmmoPct negative matches the ▼; tandem-gates shot count", "fireRateOk": true, "explanation": "Faithful. P5b: removing maxAmmoPct REDUCES the 256.17 rider count, confirming the Max-Ammo→shot-count tandem is live (the highest-risk misread, correctly modeled)." },
-      { "kitLine": "Attack Damage ▲ 20.16% for 10 sec", "category": "FAITHFUL", "subkind": null, "driverSaid": "attackDamagePct 20.16, 10s", "blindSaid": "S6 identical", "formulaCheck": "attackDamagePct routes into the damageUp multiplicative bucket per SSOT", "fireRateOk": true, "explanation": "Faithful; correct bucket (damageUp), scope/duration match." },
-      { "kitLine": "S1 trigger: entering Full Burst", "category": "FAITHFUL", "subkind": null, "driverSaid": "trigger fullBurstEnter", "blindSaid": "S6 identical; S2b catch fullBurstEnter-vs-burstCast", "formulaCheck": "fullBurstEnter (not burstCast) matches 'when entering Full Burst'", "fireRateOk": true, "explanation": "Trigger timing correct; P5c discriminates fullBurstEnter from burstCast cadence." }
+      {
+        "kitLine": "ATK ▲ 23.61% for 10 sec (all allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 23.61, fullBurstEnter, allies, 10s",
+        "blindSaid": "S6 identical; S2b FAITHFUL",
+        "formulaCheck": "atkPct feeds the ATK base; scope all-allies, 10s duration match prose",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose and formula. P5c pins fullBurstEnter cadence (once per fullBurstStart frame, not burstCast)."
+      },
+      {
+        "kitLine": "Reload Speed ▲ 51.16% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "reloadSpeedPct 51.16, 10s",
+        "blindSaid": "S6 identical",
+        "formulaCheck": "reloadSpeedPct is the correct stat; scope/duration match",
+        "fireRateOk": true,
+        "explanation": "Faithful; P5 confirms applied to all 4 allies for 10s."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▼ 50.66%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoPct -50.66, 10s",
+        "blindSaid": "S6 identical; S2b top adversarial catch (Max-Ammo tandem)",
+        "formulaCheck": "maxAmmoPct negative matches the ▼; tandem-gates shot count",
+        "fireRateOk": true,
+        "explanation": "Faithful. P5b: removing maxAmmoPct REDUCES the 256.17 rider count, confirming the Max-Ammo→shot-count tandem is live (the highest-risk misread, correctly modeled)."
+      },
+      {
+        "kitLine": "Attack Damage ▲ 20.16% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 20.16, 10s",
+        "blindSaid": "S6 identical",
+        "formulaCheck": "attackDamagePct routes into the damageUp multiplicative bucket per SSOT",
+        "fireRateOk": true,
+        "explanation": "Faithful; correct bucket (damageUp), scope/duration match."
+      },
+      {
+        "kitLine": "S1 trigger: entering Full Burst",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "trigger fullBurstEnter",
+        "blindSaid": "S6 identical; S2b catch fullBurstEnter-vs-burstCast",
+        "formulaCheck": "fullBurstEnter (not burstCast) matches 'when entering Full Burst'",
+        "fireRateOk": true,
+        "explanation": "Trigger timing correct; P5c discriminates fullBurstEnter from burstCast cadence."
+      }
     ],
     "skill2": [
-      { "kitLine": "Damage Taken ▲ 10.01% for 10 sec", "category": "FAITHFUL", "subkind": null, "driverSaid": "damageTakenPct 10.01, lastBullet, enemy, 10s", "blindSaid": "S6 identical; S2b FAITHFUL", "formulaCheck": "damageTakenPct is the taken-bucket stat on the boss; lastBullet trigger + 10s match prose", "fireRateOk": true, "explanation": "Faithful. The S5 RED on this line is a RECON_ERROR in the S5 test (casterIdx filter vs fact (a) casterIdx===null), NOT an override defect — driver P7 asserts it via stat+value and is GREEN; probe confirms the debuff is applied. P7 bounds it by last-bullet cadence." },
-      { "kitLine": "256.17% final ATK additional dmg", "category": "FAITHFUL", "subkind": null, "driverSaid": "flatDamage 256.17 noRange, lastBullet, enemy", "blindSaid": "S6: flatDamage 256.17 crit:true (no noRange)", "formulaCheck": "function-damage rider; noRange force-set by engine (S6 omission equivalent); riders crit at caster rate by default (S6 crit:true equivalent to driver default)", "fireRateOk": true, "explanation": "Faithful. P1: rider count ≈ reload count and ≪ shot count; counterfactual shotFired → count ≫ discriminates lastBullet. P4 pins FB-by-timing (in-FB riders fbMajorApplied===true). S6 diff is redundant/inert (see gotchas: none)." },
-      { "kitLine": "1687% on Designated Target", "category": "FAITHFUL", "subkind": null, "driverSaid": "flatDamage 1687 noRange, lastBullet, requiresTargetStatus 'Designated Target'", "blindSaid": "S6: flatDamage 1687 crit:true + same requiresTargetStatus gate (converged from prose, no leak)", "formulaCheck": "gated rider; requiresTargetStatus matches 'last bullet hits a target in Designated Target status'", "fireRateOk": true, "explanation": "Faithful. P2: every 1687 rider inside a privaty burstCast+10s window, non-vacuity (≥1 in AND ≥1 out-of-window last bullet), count1687<count256; counterfactual ungated → 1687 out-of-window discriminates the gate. S2b's MEASUREMENT-GATED label was driven by a stale types.ts leak; the gate IS enacted and S2b's own proposed assertion equals driver P2." }
+      {
+        "kitLine": "Damage Taken ▲ 10.01% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "damageTakenPct 10.01, lastBullet, enemy, 10s",
+        "blindSaid": "S6 identical; S2b FAITHFUL",
+        "formulaCheck": "damageTakenPct is the taken-bucket stat on the boss; lastBullet trigger + 10s match prose",
+        "fireRateOk": true,
+        "explanation": "Faithful. The S5 RED on this line is a RECON_ERROR in the S5 test (casterIdx filter vs fact (a) casterIdx===null), NOT an override defect — driver P7 asserts it via stat+value and is GREEN; probe confirms the debuff is applied. P7 bounds it by last-bullet cadence."
+      },
+      {
+        "kitLine": "256.17% final ATK additional dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 256.17 noRange, lastBullet, enemy",
+        "blindSaid": "S6: flatDamage 256.17 crit:true (no noRange)",
+        "formulaCheck": "function-damage rider; noRange force-set by engine (S6 omission equivalent); riders crit at caster rate by default (S6 crit:true equivalent to driver default)",
+        "fireRateOk": true,
+        "explanation": "Faithful. P1: rider count ≈ reload count and ≪ shot count; counterfactual shotFired → count ≫ discriminates lastBullet. P4 pins FB-by-timing (in-FB riders fbMajorApplied===true). S6 diff is redundant/inert (see gotchas: none)."
+      },
+      {
+        "kitLine": "1687% on Designated Target",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 1687 noRange, lastBullet, requiresTargetStatus 'Designated Target'",
+        "blindSaid": "S6: flatDamage 1687 crit:true + same requiresTargetStatus gate (converged from prose, no leak)",
+        "formulaCheck": "gated rider; requiresTargetStatus matches 'last bullet hits a target in Designated Target status'",
+        "fireRateOk": true,
+        "explanation": "Faithful. P2: every 1687 rider inside a privaty burstCast+10s window, non-vacuity (≥1 in AND ≥1 out-of-window last bullet), count1687<count256; counterfactual ungated → 1687 out-of-window discriminates the gate. S2b's MEASUREMENT-GATED label was driven by a stale types.ts leak; the gate IS enacted and S2b's own proposed assertion equals driver P2."
+      }
     ],
     "burst": [
-      { "kitLine": "Elem Advantage Atk Dmg ▲ 130% 10s", "category": "FAITHFUL", "subkind": null, "driverSaid": "elemAdvantageDamagePct 130, burstCast, self, 10s", "blindSaid": "S6 identical; S2b FAITHFUL", "formulaCheck": "elemAdvantageDamagePct is the correct damageUp-bucket stat for the element-wheel advantage; self scope + 10s match", "fireRateOk": true, "explanation": "Faithful. P6: applied per burstCast; S5 confirmed inert on a neutral boss (only bites when advantaged), consistent with the formula's ×1.10 element interaction." },
-      { "kitLine": "1407.64% final ATK Burst Skill dmg", "category": "FAITHFUL", "subkind": null, "driverSaid": "flatDamage 1407.64, burstCast, enemy, burst bucket", "blindSaid": "S6 identical", "formulaCheck": "burst-cast damage is FB-exempt (lands before FB window); burst bucket per SSOT", "fireRateOk": true, "explanation": "Faithful. P6: nuke once per burstCast, burst bucket, fbMajorApplied===[] (FB-exempt) — matches the burst-cast-FB-exempt rule." },
-      { "kitLine": "Stuns for 3 sec", "category": "DOCUMENTED_GAP", "subkind": null, "driverSaid": "unmodeled.burst: 'Stuns for 3 sec'; it.skip'd", "blindSaid": "S6 unmodeled; S2b UNMODELED", "formulaCheck": "stun is a CC primitive with no player-damage path in v1; out of damage scope", "fireRateOk": true, "explanation": "Deliberately unmodeled with reason recorded; correctly it.skip'd in S5 (1 of 2 skips). Acceptable documented gap — no player-damage observable." },
-      { "kitLine": "Designated Target: ATK ▼ 5.02%", "category": "DOCUMENTED_GAP", "subkind": null, "driverSaid": "unmodeled.burst: ATK▼5.02 inert in v1; Designated Target status modeled via targetStatus", "blindSaid": "S6 kept inert atkPct -5.02 as a stat; S2b MEASUREMENT-GATED/UNMODELED", "formulaCheck": "boss ATK feeds no player-damage path in v1, so the stat is inert whether modeled (S6) or listed unmodeled (driver); the load-bearing part — the Designated Target STATUS that gates the 1687 rider — IS modeled via targetStatus", "fireRateOk": true, "explanation": "Documented gap. The functionally relevant effect (the status gate) is modeled and tested (P2); the ATK▼ number is inert in v1. Driver's unmodeled-listing and S6's inert stat are behaviorally identical." }
+      {
+        "kitLine": "Elem Advantage Atk Dmg ▲ 130% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "elemAdvantageDamagePct 130, burstCast, self, 10s",
+        "blindSaid": "S6 identical; S2b FAITHFUL",
+        "formulaCheck": "elemAdvantageDamagePct is the correct damageUp-bucket stat for the element-wheel advantage; self scope + 10s match",
+        "fireRateOk": true,
+        "explanation": "Faithful. P6: applied per burstCast; S5 confirmed inert on a neutral boss (only bites when advantaged), consistent with the formula's ×1.10 element interaction."
+      },
+      {
+        "kitLine": "1407.64% final ATK Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "flatDamage 1407.64, burstCast, enemy, burst bucket",
+        "blindSaid": "S6 identical",
+        "formulaCheck": "burst-cast damage is FB-exempt (lands before FB window); burst bucket per SSOT",
+        "fireRateOk": true,
+        "explanation": "Faithful. P6: nuke once per burstCast, burst bucket, fbMajorApplied===[] (FB-exempt) — matches the burst-cast-FB-exempt rule."
+      },
+      {
+        "kitLine": "Stuns for 3 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst: 'Stuns for 3 sec'; it.skip'd",
+        "blindSaid": "S6 unmodeled; S2b UNMODELED",
+        "formulaCheck": "stun is a CC primitive with no player-damage path in v1; out of damage scope",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled with reason recorded; correctly it.skip'd in S5 (1 of 2 skips). Acceptable documented gap — no player-damage observable."
+      },
+      {
+        "kitLine": "Designated Target: ATK ▼ 5.02%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst: ATK▼5.02 inert in v1; Designated Target status modeled via targetStatus",
+        "blindSaid": "S6 kept inert atkPct -5.02 as a stat; S2b MEASUREMENT-GATED/UNMODELED",
+        "formulaCheck": "boss ATK feeds no player-damage path in v1, so the stat is inert whether modeled (S6) or listed unmodeled (driver); the load-bearing part — the Designated Target STATUS that gates the 1687 rider — IS modeled via targetStatus",
+        "fireRateOk": true,
+        "explanation": "Documented gap. The functionally relevant effect (the status gate) is modeled and tested (P2); the ATK▼ number is inert in v1. Driver's unmodeled-listing and S6's inert stat are behaviorally identical."
+      }
     ]
   },
   "gotchas": [],

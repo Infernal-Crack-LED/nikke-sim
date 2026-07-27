@@ -144,7 +144,7 @@ function setCanonical(href: string) {
 // in App.tsx but without importing the full sim state).
 function tabKey(): string {
   const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && META[seg]) return seg;
+  if (seg && META[seg]) {return seg;}
   return 'sim';
 }
 

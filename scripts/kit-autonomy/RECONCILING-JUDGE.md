@@ -10,6 +10,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -20,12 +21,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -51,25 +54,53 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.

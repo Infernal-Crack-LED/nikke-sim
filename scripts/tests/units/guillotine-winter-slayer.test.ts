@@ -111,21 +111,21 @@ const gwsNoAuras = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.trigger.kind !== 'passive');
   if (ov.skill1.length === before)
-    throw new Error('gws S1 passive aura block missing — fixture is stale');
+    {throw new Error('gws S1 passive aura block missing — fixture is stale');}
 });
 /** G2 counterfactual: her S1 level-up reload reward removed. */
 const gwsNoReload = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'instantReload'));
   if (ov.skill1.length === before)
-    throw new Error('gws S1 instantReload block missing — fixture is stale');
+    {throw new Error('gws S1 instantReload block missing — fixture is stale');}
 });
 /** G3 counterfactual: her S1 level-up heal reward removed. */
 const gwsNoHeal = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'heal'));
   if (ov.skill1.length === before)
-    throw new Error('gws S1 heal block missing — fixture is stale');
+    {throw new Error('gws S1 heal block missing — fixture is stale');}
 });
 /** G2/G3 counterfactual: the level-CAP removed (resourceGate stripped from both reward blocks),
  *  so the level-up rewards fire on EVERY 30-hit cadence (~56×) instead of the kit-permitted 10×.
@@ -140,9 +140,9 @@ const gwsNoGate = withPatchedOverride(SLUG, (ov) => {
     }
   }
   if (removed < 2)
-    throw new Error(
-      'gws S1 reward blocks missing the heroLevel resourceGate — fixture is stale',
-    );
+    {throw new Error(
+      'gws S1 reward blocks missing the heroLevel resourceGate — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -176,19 +176,19 @@ describe('guillotine-winter-slayer — kit spec', () => {
       (b) =>
         b.stat === 'elemAdvantageDamagePct' &&
         b.targetIdx === HELM &&
-        b.expiresFrame === null,
+        b.expiresFrame === null
     );
     const s1ElemAdv = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 12.76,
+      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 12.76
     );
     const casterAtk = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'casterAtkPct' && b.expiresFrame === null,
+      (b) => b.stat === 'casterAtkPct' && b.expiresFrame === null
     );
 
     it('grants Elemental Advantage Attack Damage 12.76% (= 1.16 × Hero Level 11), not level-1 1.16%', () => {
       expect(
         helmAura.length,
-        'no shared elemAdvantageDamagePct aura reached helm',
+        'no shared elemAdvantageDamagePct aura reached helm'
       ).toBeGreaterThan(0);
       expect([...new Set(helmAura.map((b) => b.value))]).toEqual([12.76]);
     });
@@ -196,13 +196,13 @@ describe('guillotine-winter-slayer — kit spec', () => {
     it('grants the ATK-of-caster aura as a flat add (= 0.91% × 11 of her ATK), permanent', () => {
       expect(
         casterAtk.length,
-        'no passive casterAtkPct aura was applied',
+        'no passive casterAtkPct aura was applied'
       ).toBeGreaterThan(0);
       const vals = [...new Set(casterAtk.map((b) => b.value))];
       expect(vals.length).toBe(1);
       expect(
         vals[0],
-        'casterAtkPct must resolve to a positive flat ATK add',
+        'casterAtkPct must resolve to a positive flat ATK add'
       ).toBeGreaterThan(0);
       expect(casterAtk.every((b) => b.expiresFrame === null)).toBe(true);
     });
@@ -228,7 +228,7 @@ describe('guillotine-winter-slayer — kit spec', () => {
       expect(blk.trigger).toEqual({ kind: 'hitCount', count: 30 });
       expect(blk.target).toEqual({ kind: 'self' });
       expect(
-        blk.effects.find((e: any) => e.kind === 'instantReload').fraction,
+        blk.effects.find((e: any) => e.kind === 'instantReload').fraction
       ).toBe(0.1026);
     });
 
@@ -241,7 +241,7 @@ describe('guillotine-winter-slayer — kit spec', () => {
     it('is gated to the first 10 level-ups by a heroLevel resource pool (cap 11) + resourceGate', () => {
       const ov = loadOverride(SLUG)! as any;
       const pool = (ov.resources ?? []).find(
-        (r: any) => r.name === 'heroLevel',
+        (r: any) => r.name === 'heroLevel'
       );
       expect(pool, 'no heroLevel resource pool declared').toBeTruthy();
       // initial 1 (fight starts at Hero Level 1) + max 11 ⇒ exactly 10 level-ups ⇒ 10 reward
@@ -250,16 +250,16 @@ describe('guillotine-winter-slayer — kit spec', () => {
       expect(pool.max).toBe(11);
       // both reward blocks (reload + heal) carry the gate; an increment block feeds the pool.
       const gated = (ov.skill1 as any[]).filter(
-        (b) => b.resourceGate?.name === 'heroLevel',
+        (b) => b.resourceGate?.name === 'heroLevel'
       );
       expect(gated.length).toBe(2);
-      for (const b of gated) expect(b.resourceGate.max).toBe(10);
+      for (const b of gated) {expect(b.resourceGate.max).toBe(10);}
       const increment = (ov.skill1 as any[]).find((b) =>
-        hasKind(b, 'resource'),
+        hasKind(b, 'resource')
       );
       expect(increment, 'no heroLevel increment block').toBeTruthy();
       expect(
-        increment.effects.find((e: any) => e.kind === 'resource'),
+        increment.effects.find((e: any) => e.kind === 'resource')
       ).toMatchObject({
         name: 'heroLevel',
         delta: 1,
@@ -277,7 +277,7 @@ describe('guillotine-winter-slayer — kit spec', () => {
       // Removing the resourceGate lets the reload reward fire on EVERY 30-hit cadence for the whole
       // fight instead of the kit-permitted 10× — proving the gate is live and bounding the cadence.
       expect(gwsShots(base.events).length).toBeLessThan(
-        gwsShots(noGate.events).length,
+        gwsShots(noGate.events).length
       );
       expect(base.totals[SLUG]).toBeLessThan(noGate.totals[SLUG]);
     });
@@ -289,7 +289,7 @@ describe('guillotine-winter-slayer — kit spec', () => {
       const blk = (ov.skill1 as any[]).find((b) => hasKind(b, 'heal'));
       expect(
         blk,
-        'the 2.44% Max HP recovery line must be represented, not silently dropped',
+        'the 2.44% Max HP recovery line must be represented, not silently dropped'
       ).toBeTruthy();
       expect(blk.trigger).toEqual({ kind: 'hitCount', count: 30 });
       expect(blk.target).toEqual({ kind: 'self' });
@@ -308,20 +308,20 @@ describe('guillotine-winter-slayer — kit spec', () => {
 
   describe('G4 — S2 EXP ATK stack: ATK ▲ 1.81% per stack, self-scoped, capped at 100, permanent', () => {
     const stacks = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && b.value === 1.81,
+      (b) => b.stat === 'atkPct' && b.value === 1.81
     );
 
     it('is live and ramps to exactly the ×100 cap (never exceeding it)', () => {
       expect(stacks.length, 'no EXP ATK stack was applied').toBeGreaterThan(
-        100,
+        100
       );
       const maxStacks = Math.max(...stacks.map((b) => b.stacks));
       expect(maxStacks, 'stack count must top out at the kit cap of 100').toBe(
-        100,
+        100
       );
       expect(
         stacks.some((b) => b.stacks === 100),
-        'cap must actually be reached and held',
+        'cap must actually be reached and held'
       ).toBe(true);
     });
 
@@ -333,17 +333,17 @@ describe('guillotine-winter-slayer — kit spec', () => {
 
   describe('G5 — S2 Hero-Level-2 Elemental Advantage is SELF-only (not shared with helm)', () => {
     const selfElemAdv = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 7.46,
+      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 7.46
     );
 
     it('is 7.46%, held by gws alone, permanent', () => {
       expect(
         selfElemAdv.length,
-        'no self elemAdvantageDamagePct 7.46 buff',
+        'no self elemAdvantageDamagePct 7.46 buff'
       ).toBeGreaterThan(0);
       expect(
         targetSet(selfElemAdv),
-        'the 7.46 line affects SELF only — helm must not hold it',
+        'the 7.46 line affects SELF only — helm must not hold it'
       ).toEqual([GWS]);
       expect(selfElemAdv.every((b) => b.expiresFrame === null)).toBe(true);
     });
@@ -353,7 +353,7 @@ describe('guillotine-winter-slayer — kit spec', () => {
         (b) =>
           b.targetIdx === HELM &&
           b.stat === 'elemAdvantageDamagePct' &&
-          b.value === 7.46,
+          b.value === 7.46
       );
       expect(helmHolds.length).toBe(0);
     });
@@ -362,10 +362,10 @@ describe('guillotine-winter-slayer — kit spec', () => {
   describe('G6 — burst grants Water-Code allies Attack Damage 10.14% + Elem Advantage 18.75% for 10s', () => {
     const bursts = gwsBursts(base.events);
     const atkDmg = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 10.14,
+      (b) => b.stat === 'attackDamagePct' && b.value === 10.14
     );
     const elemAdv = gwsBuffs(base.events).filter(
-      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 18.75,
+      (b) => b.stat === 'elemAdvantageDamagePct' && b.value === 18.75
     );
 
     it('casts bursts in the fixture', () => {
@@ -375,10 +375,10 @@ describe('guillotine-winter-slayer — kit spec', () => {
     it('reach exactly the 2 Water allies, once per cast, for exactly 10s (600f)', () => {
       for (const bs of [atkDmg, elemAdv]) {
         expect(bs.length, 'burst Water-ally buff missing').toBe(
-          bursts.length * WATER_ALLIES.length,
+          bursts.length * WATER_ALLIES.length
         );
         expect(targetSet(bs)).toEqual(WATER_ALLIES);
-        for (const b of bs) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+        for (const b of bs) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       }
     });
   });

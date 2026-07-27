@@ -54,14 +54,14 @@ const TEAMMATES = ['liter', 'crown', 'helm'] as const;
 // CharacterSkills-per-slot shape so the patch helpers cannot silently no-op.
 const slotBlocks = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (Array.isArray(s)) return s;
-  if (s && Array.isArray(s.blocks)) return s.blocks;
+  if (Array.isArray(s)) {return s;}
+  if (s && Array.isArray(s.blocks)) {return s.blocks;}
   return [];
 };
 const setSlotBlocks = (ov: any, slot: Slot, blocks: any[]): void => {
-  if (Array.isArray(ov?.[slot])) ov[slot] = blocks;
+  if (Array.isArray(ov?.[slot])) {ov[slot] = blocks;}
   else if (ov?.[slot] && Array.isArray(ov[slot].blocks))
-    ov[slot].blocks = blocks;
+    {ov[slot].blocks = blocks;}
 };
 const effectsOf = (b: any): any[] =>
   Array.isArray(b?.effects) ? b.effects : [];
@@ -89,47 +89,47 @@ const buffs = (evs: Ev[], stat: string, value?: number): Ev[] =>
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6),
+      (value === undefined || Math.abs(Number(e.value) - value) < 1e-6)
   );
 
 // ---- counterfactual overrides (in-memory clones; committed JSON untouched) -----------------
 const pNoS1 = withPatchedOverride('noir', (ov: any) =>
-  setSlotBlocks(ov, 'skill1', []),
+  setSlotBlocks(ov, 'skill1', [])
 );
 const pNoS2 = withPatchedOverride('noir', (ov: any) =>
-  setSlotBlocks(ov, 'skill2', []),
+  setSlotBlocks(ov, 'skill2', [])
 );
 const pNoReload = withPatchedOverride('noir', (ov: any) => {
   for (const b of slotBlocks(ov, 'skill2'))
-    b.effects = effectsOf(b).filter((e) => e.kind !== 'instantReload');
+    {b.effects = effectsOf(b).filter((e) => e.kind !== 'instantReload');}
 });
 const pS2AsBurstCast = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'skill2')) b.trigger = { kind: 'burstCast' };
+  for (const b of slotBlocks(ov, 'skill2')) {b.trigger = { kind: 'burstCast' };}
 });
 const pUngated = withPatchedOverride('noir', (ov: any) => {
-  for (const b of slotBlocks(ov, 'burst')) delete b.teamHas;
+  for (const b of slotBlocks(ov, 'burst')) {delete b.teamHas;}
 });
 const pNoSgHitRate = withPatchedOverride('noir', (ov: any) => {
   for (const b of slotBlocks(ov, 'burst'))
-    b.effects = effectsOf(b).filter(
+    {b.effects = effectsOf(b).filter(
       (e) =>
         !(
           e.kind === 'buff' &&
           e.stat === 'hitRatePct' &&
           Math.abs(Number(e.value) - 13.93) < 1e-6
-        ),
-    );
+        )
+    );}
 });
 const pNoParts = withPatchedOverride('noir', (ov: any) => {
   for (const slot of ['skill1', 'skill2', 'burst'] as Slot[])
-    for (const b of slotBlocks(ov, slot))
-      b.effects = effectsOf(b).filter(
-        (e) => !(e.kind === 'buff' && e.stat === 'partsDamagePct'),
-      );
+    {for (const b of slotBlocks(ov, slot))
+      {b.effects = effectsOf(b).filter(
+        (e) => !(e.kind === 'buff' && e.stat === 'partsDamagePct')
+      );}}
 });
 const pNoNuke = withPatchedOverride('noir', (ov: any) => {
   for (const b of slotBlocks(ov, 'burst'))
-    for (const e of effectsOf(b)) if (e.kind === 'flatDamage') e.atkPct = 0;
+    {for (const e of effectsOf(b)) {if (e.kind === 'flatDamage') {e.atkPct = 0;}}}
 });
 
 // ---- hoisted runs --------------------------------------------------------------------------
@@ -199,7 +199,7 @@ describe('noir S1 — all allies, ATK ▲ 14.08% of the skill user\u2019s ATK, c
         Math.abs(Number(e.value) - noirVals[0]) < 1e-3
           ? i
           : acc,
-      -1,
+      -1
     );
     const firstShot = base.events.findIndex((e) => e.kind === 'shot');
     expect(lastApply).toBeGreaterThan(-1);
@@ -208,7 +208,7 @@ describe('noir S1 — all allies, ATK ▲ 14.08% of the skill user\u2019s ATK, c
   });
 
   it('moves EVERY ally\u2019s damage (team-wide), not just noir\u2019s', () => {
-    for (const s of ALLIES) expect(offS1.t[s]).toBeLessThan(base.t[s]);
+    for (const s of ALLIES) {expect(offS1.t[s]).toBeLessThan(base.t[s]);}
   });
 
   it.skip('the ">70% HP" activation gate is unobservable in v1 (immortal boss, no HP pool) — modeled as permanently satisfied', () => {
@@ -241,7 +241,7 @@ describe('noir S2 — on entering Full Burst, all allies: Max Ammo ▲ 5 (10s) +
   });
 
   it('the slot is load-bearing damage for noir AND for teammates (ally-wide ammo + reload)', () => {
-    expect(offS2.t['noir']).toBeLessThan(base.t['noir']);
+    expect(offS2.t.noir).toBeLessThan(base.t.noir);
     const moved = TEAMMATES.filter((s) => offS2.t[s] !== base.t[s]);
     expect(moved.length).toBeGreaterThan(0); // RED if the slot were scoped to self
   });
@@ -249,7 +249,7 @@ describe('noir S2 — on entering Full Burst, all allies: Max Ammo ▲ 5 (10s) +
   it('the 39.88% magazine reload on its own adds noir damage (weapon-state = damage)', () => {
     // Isolates "Reload 39.88% magazine(s)" from the ammo-capacity buff: dropping only the
     // instantReload must cost shots. RED if the reload line was skipped as "defensive".
-    expect(offReload.t['noir']).toBeLessThan(base.t['noir']);
+    expect(offReload.t.noir).toBeLessThan(base.t.noir);
   });
 
   it.skip('the exact 10s length of the Max-Ammo window is not directly assertable', () => {
@@ -265,8 +265,8 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
   const parts19 = buffs(base.events, 'partsDamagePct', 19.36);
 
   it('the 351.64% burst nuke pays real damage and touches NOBODY else', () => {
-    expect(noNuke.t['noir']).toBeLessThan(base.t['noir']);
-    for (const s of TEAMMATES) expect(noNuke.t[s]).toBe(base.t[s]); // enemy-targeted: inert on allies
+    expect(noNuke.t.noir).toBeLessThan(base.t.noir);
+    for (const s of TEAMMATES) {expect(noNuke.t[s]).toBe(base.t[s]);} // enemy-targeted: inert on allies
   });
 
   it('Hit Rate ▲ 13.93% is SHOTGUN-scoped: a strict subset of allies that includes noir', () => {
@@ -282,13 +282,13 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
   });
 
   it('Hit Rate ▲ 13.93% is load-bearing for noir and inert for the non-shotgun teammates', () => {
-    expect(offSgHr.t['noir']).toBeLessThan(base.t['noir']); // hit rate lifts core rate
-    for (const s of TEAMMATES) expect(offSgHr.t[s]).toBe(base.t[s]);
+    expect(offSgHr.t.noir).toBeLessThan(base.t.noir); // hit rate lifts core rate
+    for (const s of TEAMMATES) {expect(offSgHr.t[s]).toBe(base.t[s]);}
   });
 
   it('Interruption-Part Damage ▲ 23.23% rides the same block but MOVES NOTHING (v1 boss has no parts)', () => {
     expect(parts23).toHaveLength(hr13.length); // same trigger, same target set
-    for (const s of ALLIES) expect(offParts.t[s]).toBe(base.t[s]); // parsed-but-inert, byte-identical
+    for (const s of ALLIES) {expect(offParts.t[s]).toBe(base.t[s]);} // parsed-but-inert, byte-identical
   });
 
   it('the same-squad block is CLOSED with no squad-mate on the field', () => {
@@ -301,7 +301,7 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
     const open11 = buffs(ungated.events, 'hitRatePct', 11.61);
     expect(open11.length).toBeGreaterThan(0);
     expect(new Set(open11.map((e) => e.targetSlug)).size).toBe(4); // "Affects all allies", not SG-scoped
-    expect(ungated.t['noir']).toBeGreaterThan(base.t['noir']);
+    expect(ungated.t.noir).toBeGreaterThan(base.t.noir);
   });
 
   it('the squad-gated riders run 30s against the shotgun riders\u2019 10s (same cast, differenced)', () => {
@@ -311,7 +311,7 @@ describe('noir burst — 351.64% nuke, shotgun-scoped 10s buffs, squad-gated 30s
     expect(first13).toBeTruthy();
     // Both blocks fire on the same burst cast, so the expiry gap is exactly (30−10)s × 60fps.
     expect(
-      Math.round(Number(first11.expiresFrame) - Number(first13.expiresFrame)),
+      Math.round(Number(first11.expiresFrame) - Number(first13.expiresFrame))
     ).toBe(1200);
   });
 

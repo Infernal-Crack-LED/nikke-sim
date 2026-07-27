@@ -20,12 +20,14 @@ const base = `http://localhost:${process.env.PORT}`;
 // (per-team damages + roster total). Any team-composition difference moves a
 // damage, so equal signatures ⇒ identical rosters.
 async function generate(browser, { noPool }) {
-  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1200, height: 900 },
+  });
   const page = await ctx.newPage();
   if (noPool)
-    await page.addInitScript(() => {
+    {await page.addInitScript(() => {
       globalThis.__NIKKE_NO_POOL__ = true;
-    });
+    });}
   await page.goto(`${base}/roster`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Wind', exact: true }).click();
   const t0 = Date.now();
@@ -43,11 +45,11 @@ async function generate(browser, { noPool }) {
       const el = document.querySelector('.rg-dmg.big');
       return el && el.textContent && el.textContent.trim().length > 0;
     },
-    { timeout: 120000 },
+    { timeout: 120000 }
   );
   const ms = Date.now() - t0;
   const sig = await page.$$eval('.rg-dmg', (els) =>
-    els.map((e) => e.textContent.trim()),
+    els.map((e) => e.textContent.trim())
   );
   await ctx.close();
   return { sig, ms };
@@ -56,7 +58,9 @@ async function generate(browser, { noPool }) {
 // Same-context re-run: click Calculate twice on ONE page. The second run should be
 // near-instant because the shared cross-run cache (item 5) reuses every sim.
 async function rerun(browser) {
-  const ctx = await browser.newContext({ viewport: { width: 1200, height: 900 } });
+  const ctx = await browser.newContext({
+    viewport: { width: 1200, height: 900 },
+  });
   const page = await ctx.newPage();
   await page.goto(`${base}/roster`, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Wind', exact: true }).click();
@@ -70,7 +74,7 @@ async function rerun(browser) {
         const el = document.querySelector('.rg-dmg.big');
         return el && el.textContent && el.textContent.trim().length > 0;
       },
-      { timeout: 120000 },
+      { timeout: 120000 }
     );
     return Date.now() - t0;
   };
@@ -91,14 +95,14 @@ try {
   console.log('pool     :', pool.sig.join(' | '), `(${pool.ms}ms)`);
   console.log('fallback :', solo.sig.join(' | '), `(${solo.ms}ms)`);
   console.log(
-    same ? '✓ PARITY: pool roster === fallback roster' : '✗ PARITY FAILED',
+    same ? '✓ PARITY: pool roster === fallback roster' : '✗ PARITY FAILED'
   );
   const speedup = solo.ms / pool.ms;
   console.log(
-    `wall clock: pool ${pool.ms}ms vs fallback ${solo.ms}ms (${speedup.toFixed(2)}× )`,
+    `wall clock: pool ${pool.ms}ms vs fallback ${solo.ms}ms (${speedup.toFixed(2)}× )`
   );
   console.log(
-    `cross-run cache (item 5): 1st ${rr.first}ms → 2nd ${rr.second}ms (${(rr.first / rr.second).toFixed(1)}× faster re-run)`,
+    `cross-run cache (item 5): 1st ${rr.first}ms → 2nd ${rr.second}ms (${(rr.first / rr.second).toFixed(1)}× faster re-run)`
   );
   if (!same) {
     console.error('ROSTER MISMATCH — pool path is not byte-identical');

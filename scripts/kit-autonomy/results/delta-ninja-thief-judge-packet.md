@@ -18,6 +18,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -28,12 +29,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -59,35 +62,63 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ---
 
 ## SECTION 2 — MECHANICS SSOT (grade faithfulness against these)
 
 ### docs/data/damage-calculation.md
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -112,7 +143,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -150,29 +181,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -253,9 +284,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -291,7 +322,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -349,7 +380,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -492,12 +523,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -532,8 +563,8 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ### docs/data/game-mechanics.md
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -588,15 +619,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -939,682 +970,681 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ---
 
 ## SECTION 3 — GROUND TRUTH: unit kit prose + base stats (data/characters.json extract)
 
 {
-  "slug": "delta-ninja-thief",
-  "name": "Delta: Ninja Thief",
-  "imageUrl": "https://sg-tools-cdn.blablalink.com/je-42/og-90/cb086fd996be5dc544a87ae8aa2268f3.png",
-  "weapon": "MG",
-  "burst": "II",
-  "burstCooldownSec": 40,
-  "class": "Defender",
-  "element": "Water",
-  "manufacturer": "Elysion",
-  "normalAttackMultiplier": 5.57,
-  "coreAttackMultiplier": 200,
-  "ammo": 300,
-  "reloadFrames": 171,
-  "chargeFrames": 0,
-  "chargeMultiplier": 0,
-  "hitsPerShot": 1,
-  "rl3": 3.55,
-  "burstGaugePerShot": 0.05,
-  "treasure": false,
-  "nicknames": [
-    "dnt"
-  ],
-  "skills": {
-    "skill1": "■ Activates when entering Full Burst. Affects all enemies.\nNinjutsu Acid Bomb: Damage Taken ▲ 12% for 15 sec.\n■ Activates when using Burst Skill. Affects self.\nATK ▲ 15.04% for 10 sec.\n■ Activates when using Burst Skill. Affects enemies within attack range nearest to the crosshair.\nNinjutsu Hyper Acid Bomb: Damage Taken ▲ 8% for 10 sec.",
-    "skill2": "■ Activates at the start of battle.\nEffects vary according to squad formation. Only one set of effects is applied.\nAffects self if there are no other Defender allies in the squad.\nEffect 1: Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\nEffect 2: Attract: Taunt all enemies continuously.\nAffects self if there is another Defender ally in the squad.\nEffect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.\n■ Activates when performing 200 normal attack(s). Affects self while in Attract status.\nCreates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\n■ Affects self every 4 sec while in Ninjutsu Injection status.\nNinjutsu IFAK lasts for 4 sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\nEffect 2: Once the duration ends, all allies are healed for the stored recovery amount.",
-    "burst": "■ Affects all allies.\nDistributed Damage ▲ 20% for 10 sec.\nATK ▲ 15% of the skill user's ATK for 10 sec.\n■ Affects all enemies.\nDeals 170% of final ATK as distributed damage.\n■ Affects self while in Attract status.\nNext shield's HP ▲ 20.13% for 10 sec.\n■ Affects self while in Ninjutsu Injection status.\nMaximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
-  },
-  "skillCooldownsSec": {
-    "skill1": null,
-    "skill2": null,
-    "burst": 40
-  },
-  "role": {
-    "weapon": {
-      "shot_id": 1002301,
-      "shot_detail": {
-        "id": 1002301,
-        "damage": 557,
-        "max_ammo": 300,
-        "shake_id": 2,
-        "ShakeType": "Fire_MG",
-        "fire_type": "Instant",
-        "zoom_rate": 0,
-        "input_type": "DOWN",
-        "shot_count": 1,
-        "ShakeWeight": 120,
-        "attack_type": "Metal",
-        "camera_work": "camera_work_01",
-        "charge_time": 0,
-        "penetration": 0,
-        "reload_time": 250,
-        "shot_timing": "Concurrence",
-        "spot_radius": 0,
-        "weapon_type": "MG",
-        "is_targeting": false,
-        "muzzle_count": 1,
-        "rate_of_fire": 60,
-        "name_localkey": "Machine Gun",
-        "prefer_target": "TargetPS",
-        "reload_bullet": 10000,
-        "counter_enermy": "Metal_Type",
-        "multi_aim_range": 0,
-        "spot_last_delay": 20,
-        "core_damage_rate": 20000,
-        "end_rate_of_fire": 4200,
-        "spot_first_delay": 20,
-        "center_shot_count": 0,
-        "reload_start_ammo": 299,
-        "full_charge_damage": 10000,
-        "multi_target_count": 0,
-        "spot_radius_object": 0,
-        "uptype_fire_timing": 0,
-        "burst_energy_pershot": 500,
-        "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
-        "maintain_fire_stance": 0,
-        "spot_explosion_range": 0,
-        "use_function_id_list": [
-          0
-        ],
-        "accuracy_change_speed": 150,
-        "hurt_function_id_list": [
-          0
-        ],
-        "spot_projectile_speed": 0,
-        "accuracy_change_pershot": 7,
-        "prefer_target_condition": "None",
-        "rate_of_fire_reset_time": 100,
-        "full_charge_burst_energy": 0,
-        "end_accuracy_circle_scale": 10,
-        "auto_accuracy_change_speed": 150,
-        "rate_of_fire_change_pershot": 100,
-        "start_accuracy_circle_scale": 250,
-        "target_burst_energy_pershot": 1000,
-        "auto_accuracy_change_pershot": 7,
-        "auto_end_accuracy_circle_scale": 10,
-        "auto_start_accuracy_circle_scale": 250
-      },
-      "bonusrange_max": 55,
-      "bonusrange_min": 35
-    },
-    "burstMeta": {
-      "burst_duration": 1000,
-      "use_burst_skill": "Step2",
-      "burst_apply_delay": 1,
-      "change_burst_step": "Step3"
-    },
-    "skillDetails": {
-      "skill1_id": 2023101,
-      "skill2_id": 2023201,
-      "skill1_table": "StateEffect",
-      "skill2_table": "StateEffect",
-      "skill1_detail": {
-        "id": 2023101,
-        "icon": "icn_skill_damagereductionup_01",
-        "group_id": 20231,
-        "skill_level": 1,
-        "name_localkey": "Ninjutsu Acid Bomb",
-        "next_level_id": 2023102,
-        "level_up_cost_id": 20102,
-        "description_localkey": "■ Activates when entering Full Burst. Affects all enemies.\n<color=#00AEFF>Ninjutsu Acid Bomb: Damage Taken ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when using Burst Skill. Affects <word_group=10020>enemies within attack range</word_group> nearest to the crosshair.\n<color=#00AEFF>Ninjutsu Hyper Acid Bomb: Damage Taken ▲ {description_value_05}% for {description_value_06} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "7.09",
-              "7.64",
-              "8.18",
-              "8.73",
-              "9.27",
-              "9.82",
-              "10.37",
-              "10.91",
-              "11.46",
-              "12"
-            ]
-          },
-          {
-            "description_value": [
-              "15",
-              "15",
-              "15",
-              "15",
-              "15",
-              "15",
-              "15",
-              "15",
-              "15",
-              "15"
-            ]
-          },
-          {
-            "description_value": [
-              "8.88",
-              "9.57",
-              "10.25",
-              "10.93",
-              "11.62",
-              "12.3",
-              "12.98",
-              "13.67",
-              "14.35",
-              "15.04"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "4.74",
-              "5.1",
-              "5.47",
-              "5.83",
-              "6.2",
-              "6.56",
-              "6.93",
-              "7.29",
-              "7.66",
-              "8"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {},
-          {},
-          {},
-          {},
-          {}
-        ],
-        "info_description_localkey": "Skill 1"
-      },
-      "skill2_detail": {
-        "id": 2023201,
-        "icon": "icn_skill_barrier_01",
-        "group_id": 20232,
-        "skill_level": 1,
-        "name_localkey": "Ninjutsu Camouflage",
-        "next_level_id": 2023202,
-        "level_up_cost_id": 20202,
-        "description_localkey": "■ Activates at the start of battle.\n<color=#00AEFF>Effects vary according to squad formation. Only one set of effects is applied.</color>\nAffects self if there are no other Defender allies in the squad.\n<color=#00AEFF>Effect 1: Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec.\nEffect 2: Attract: Taunt all enemies continuously.</color>\nAffects self if there is another Defender ally in the squad.\n<color=#00AEFF>Effect 1: Ninjutsu Camouflage: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_06} sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers {description_value_07}% of attack damage as HP continuously.</color>\n■ Activates when performing {description_value_03} normal attack(s). Affects self while in Attract status.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_04}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_05} sec.</color>\n■ Affects self every {description_value_08} sec while in Ninjutsu Injection status.\n<color=#00AEFF>Ninjutsu IFAK lasts for {description_value_10} sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to {description_value_09}% of the skill user's <word_group=10025>final</word_group> ATK.\nEffect 2: Once the duration ends, all allies are healed for the <word_group=10089>stored recovery amount</word_group>.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "7.24",
-              "7.8",
-              "8.35",
-              "8.91",
-              "9.47",
-              "10.02",
-              "10.58",
-              "11.14",
-              "11.7",
-              "12.25"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "200",
-              "200",
-              "200",
-              "200",
-              "200",
-              "200",
-              "200",
-              "200",
-              "200",
-              "200"
-            ]
-          },
-          {
-            "description_value": [
-              "7.24",
-              "7.8",
-              "8.35",
-              "8.91",
-              "9.47",
-              "10.02",
-              "10.58",
-              "11.14",
-              "11.7",
-              "12.25"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "6.17",
-              "6.73",
-              "7.29",
-              "7.85",
-              "8.42",
-              "8.98",
-              "9.54",
-              "10.1",
-              "10.66",
-              "11.22"
-            ]
-          },
-          {
-            "description_value": [
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4"
-            ]
-          },
-          {
-            "description_value": [
-              "90.9",
-              "99.17",
-              "107.43",
-              "115.69",
-              "123.96",
-              "132.22",
-              "140.49",
-              "148.75",
-              "157.02",
-              "165.28"
-            ]
-          },
-          {
-            "description_value": [
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4",
-              "4"
-            ]
-          },
-          {}
-        ],
-        "info_description_localkey": "Skill 2"
-      },
-      "ulti_skill_id": 1023301,
-      "ulti_skill_detail": {
-        "id": 1023301,
-        "icon": "icn_skill_c023_ult",
-        "group_id": 10233,
-        "shake_id": 1,
-        "skill_type": "InstantNumber",
-        "attack_type": "Water",
-        "skill_level": 1,
-        "counter_type": "Metal_Type",
-        "duration_type": "None",
-        "name_localkey": "Secret Technique: Ninja Overdrive",
-        "next_level_id": 1023302,
-        "prefer_target": "LowDefence",
-        "resource_name": "c023_ulti",
-        "duration_value": 0,
-        "skill_cooltime": 4000,
-        "level_up_cost_id": 20302,
-        "skill_value_data": [
-          {
-            "skill_value": 10260,
-            "skill_value_type": "Percent"
-          },
-          {
-            "skill_value": 1,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "Integer"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          },
-          {
-            "skill_value": 0,
-            "skill_value_type": "None"
-          }
-        ],
-        "skill_cooltime_list": [
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000,
-          4000
-        ],
-        "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>\n■ Affects self while in Attract status.\n<color=#00AEFF><word_group=10047>Next shield's HP</word_group> ▲ {description_value_06}% for {description_value_07} sec.</color>\n■ Affects self while in Ninjutsu Injection status.\n<color=#00AEFF>Maximum Accumulation of Ninjutsu IFAK ▲ {description_value_08}% for {description_value_09} sec.</color>",
-        "description_value_list": [
-          {
-            "description_value": [
-              "11.82",
-              "12.73",
-              "13.64",
-              "14.55",
-              "15.46",
-              "16.37",
-              "17.28",
-              "18.19",
-              "19.1",
-              "20"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "8.86",
-              "9.54",
-              "10.22",
-              "10.9",
-              "11.59",
-              "12.27",
-              "12.95",
-              "13.63",
-              "14.31",
-              "15"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "102.6",
-              "110.49",
-              "118.38",
-              "126.27",
-              "134.16",
-              "142.06",
-              "149.95",
-              "157.84",
-              "165.73",
-              "170"
-            ]
-          },
-          {
-            "description_value": [
-              "11.9",
-              "12.81",
-              "13.73",
-              "14.64",
-              "15.56",
-              "16.47",
-              "17.39",
-              "18.3",
-              "19.22",
-              "20.13"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {
-            "description_value": [
-              "11.9",
-              "12.81",
-              "13.73",
-              "14.64",
-              "15.56",
-              "16.47",
-              "17.39",
-              "18.3",
-              "19.22",
-              "20.13"
-            ]
-          },
-          {
-            "description_value": [
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10",
-              "10"
-            ]
-          },
-          {},
-          {}
-        ],
-        "prefer_target_condition": "IncludeNoneTargetLast",
-        "info_description_localkey": "Burst Skill",
-        "after_use_function_id_list": [
-          0
-        ],
-        "after_hurt_function_id_list": [
-          0
-        ],
-        "before_use_function_id_list": [
-          102330101,
-          102330102,
-          102330103,
-          102330104
-        ],
-        "before_hurt_function_id_list": [
-          102330105
-        ]
-      }
-    },
-    "statScaling": {
-      "grow_grade": 502302,
-      "grade_core_id": 1,
-      "stat_enhance_id": 5206,
-      "stat_enhance_detail": {
-        "id": 5206,
-        "core_hp": 200,
-        "grade_hp": 3000,
-        "core_attack": 200,
-        "grade_ratio": 200,
-        "core_defence": 200,
-        "grade_attack": 20,
-        "grade_defence": 100,
-        "core_bio_resist": 0,
-        "grade_bio_resist": 0,
-        "core_metal_resist": 0,
-        "core_energy_resist": 0,
-        "grade_metal_resist": 0,
-        "grade_energy_resist": 0
-      }
-    },
-    "element": {
-      "element_id": [
-        200001
-      ],
-      "element_details": [
-        {
-          "id": 200001,
-          "element": "Water",
-          "group_id": 5000002,
-          "element_icon": "icn_element_water",
-          "weak_element_id": 400001,
-          "element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
-          "element_name_localekey": "Water",
-          "element_code_name_localekey": "Code: P.S.I.D."
-        }
-      ]
-    },
-    "piece": {
-      "piece_id": 5100023,
-      "piece_detail": {
-        "id": 5100023,
-        "class": "Attacker",
-        "order": 2300,
-        "use_id": 0,
-        "use_type": "None",
-        "item_rare": "SSR",
-        "item_type": "Piece",
-        "stack_max": 9999999,
-        "use_value": 0,
-        "corporation": "ELYSION",
-        "resource_id": 23,
-        "item_sub_type": "CharacterPiece",
-        "name_localkey": "Delta: Ninja Thief's Spare Body",
-        "use_limit_count": false,
-        "inventory_filter": [
-          "etc"
-        ],
-        "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
-      }
-    },
-    "meta": {
-      "id": 502301,
-      "class": "Defender",
-      "order": 10040,
-      "name_code": 5154,
-      "corporation": "ELYSION",
-      "resource_id": 23,
-      "name_localkey": "Delta: Ninja Thief",
-      "original_rare": "SSR",
-      "critical_ratio": 1500,
-      "category_type_1": "None",
-      "category_type_2": "None",
-      "category_type_3": "None",
-      "critical_damage": 15000,
-      "eff_category_type": "Walk",
-      "eff_category_value": 0
-    }
-  },
-  "generatorSupported": true,
-  "simSupported": true,
-  "baseStats": {
-    "hp": 16500,
-    "atk": 400,
-    "def": 92,
-    "core": {
-      "hp": 200,
-      "atk": 200,
-      "def": 200
-    },
-    "grade": {
-      "hp": 3000,
-      "atk": 20,
-      "def": 100,
-      "ratio": 200
-    },
-    "critRate": 15,
-    "maxLevel": 1200,
-    "critDamage": 150,
-    "resourceId": 23
-  }
+"slug": "delta-ninja-thief",
+"name": "Delta: Ninja Thief",
+"imageUrl": "https://sg-tools-cdn.blablalink.com/je-42/og-90/cb086fd996be5dc544a87ae8aa2268f3.png",
+"weapon": "MG",
+"burst": "II",
+"burstCooldownSec": 40,
+"class": "Defender",
+"element": "Water",
+"manufacturer": "Elysion",
+"normalAttackMultiplier": 5.57,
+"coreAttackMultiplier": 200,
+"ammo": 300,
+"reloadFrames": 171,
+"chargeFrames": 0,
+"chargeMultiplier": 0,
+"hitsPerShot": 1,
+"rl3": 3.55,
+"burstGaugePerShot": 0.05,
+"treasure": false,
+"nicknames": [
+"dnt"
+],
+"skills": {
+"skill1": "■ Activates when entering Full Burst. Affects all enemies.\nNinjutsu Acid Bomb: Damage Taken ▲ 12% for 15 sec.\n■ Activates when using Burst Skill. Affects self.\nATK ▲ 15.04% for 10 sec.\n■ Activates when using Burst Skill. Affects enemies within attack range nearest to the crosshair.\nNinjutsu Hyper Acid Bomb: Damage Taken ▲ 8% for 10 sec.",
+"skill2": "■ Activates at the start of battle.\nEffects vary according to squad formation. Only one set of effects is applied.\nAffects self if there are no other Defender allies in the squad.\nEffect 1: Creates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\nEffect 2: Attract: Taunt all enemies continuously.\nAffects self if there is another Defender ally in the squad.\nEffect 1: Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers 11.22% of attack damage as HP continuously.\n■ Activates when performing 200 normal attack(s). Affects self while in Attract status.\nCreates a Shield equal to 12.25% of the skill user's final Max HP for 10 sec.\n■ Affects self every 4 sec while in Ninjutsu Injection status.\nNinjutsu IFAK lasts for 4 sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to 165.28% of the skill user's final ATK.\nEffect 2: Once the duration ends, all allies are healed for the stored recovery amount.",
+"burst": "■ Affects all allies.\nDistributed Damage ▲ 20% for 10 sec.\nATK ▲ 15% of the skill user's ATK for 10 sec.\n■ Affects all enemies.\nDeals 170% of final ATK as distributed damage.\n■ Affects self while in Attract status.\nNext shield's HP ▲ 20.13% for 10 sec.\n■ Affects self while in Ninjutsu Injection status.\nMaximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+},
+"skillCooldownsSec": {
+"skill1": null,
+"skill2": null,
+"burst": 40
+},
+"role": {
+"weapon": {
+"shot_id": 1002301,
+"shot_detail": {
+"id": 1002301,
+"damage": 557,
+"max_ammo": 300,
+"shake_id": 2,
+"ShakeType": "Fire_MG",
+"fire_type": "Instant",
+"zoom_rate": 0,
+"input_type": "DOWN",
+"shot_count": 1,
+"ShakeWeight": 120,
+"attack_type": "Metal",
+"camera_work": "camera_work_01",
+"charge_time": 0,
+"penetration": 0,
+"reload_time": 250,
+"shot_timing": "Concurrence",
+"spot_radius": 0,
+"weapon_type": "MG",
+"is_targeting": false,
+"muzzle_count": 1,
+"rate_of_fire": 60,
+"name_localkey": "Machine Gun",
+"prefer_target": "TargetPS",
+"reload_bullet": 10000,
+"counter_enermy": "Metal_Type",
+"multi_aim_range": 0,
+"spot_last_delay": 20,
+"core_damage_rate": 20000,
+"end_rate_of_fire": 4200,
+"spot_first_delay": 20,
+"center_shot_count": 0,
+"reload_start_ammo": 299,
+"full_charge_damage": 10000,
+"multi_target_count": 0,
+"spot_radius_object": 0,
+"uptype_fire_timing": 0,
+"burst_energy_pershot": 500,
+"description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+"maintain_fire_stance": 0,
+"spot_explosion_range": 0,
+"use_function_id_list": [
+0
+],
+"accuracy_change_speed": 150,
+"hurt_function_id_list": [
+0
+],
+"spot_projectile_speed": 0,
+"accuracy_change_pershot": 7,
+"prefer_target_condition": "None",
+"rate_of_fire_reset_time": 100,
+"full_charge_burst_energy": 0,
+"end_accuracy_circle_scale": 10,
+"auto_accuracy_change_speed": 150,
+"rate_of_fire_change_pershot": 100,
+"start_accuracy_circle_scale": 250,
+"target_burst_energy_pershot": 1000,
+"auto_accuracy_change_pershot": 7,
+"auto_end_accuracy_circle_scale": 10,
+"auto_start_accuracy_circle_scale": 250
+},
+"bonusrange_max": 55,
+"bonusrange_min": 35
+},
+"burstMeta": {
+"burst_duration": 1000,
+"use_burst_skill": "Step2",
+"burst_apply_delay": 1,
+"change_burst_step": "Step3"
+},
+"skillDetails": {
+"skill1_id": 2023101,
+"skill2_id": 2023201,
+"skill1_table": "StateEffect",
+"skill2_table": "StateEffect",
+"skill1_detail": {
+"id": 2023101,
+"icon": "icn_skill_damagereductionup_01",
+"group_id": 20231,
+"skill_level": 1,
+"name_localkey": "Ninjutsu Acid Bomb",
+"next_level_id": 2023102,
+"level_up_cost_id": 20102,
+"description_localkey": "■ Activates when entering Full Burst. Affects all enemies.\n<color=#00AEFF>Ninjutsu Acid Bomb: Damage Taken ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when using Burst Skill. Affects self.\n<color=#00AEFF>ATK ▲ {description_value_03}% for {description_value_04} sec.</color>\n■ Activates when using Burst Skill. Affects <word_group=10020>enemies within attack range</word_group> nearest to the crosshair.\n<color=#00AEFF>Ninjutsu Hyper Acid Bomb: Damage Taken ▲ {description_value_05}% for {description_value_06} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"7.09",
+"7.64",
+"8.18",
+"8.73",
+"9.27",
+"9.82",
+"10.37",
+"10.91",
+"11.46",
+"12"
+]
+},
+{
+"description_value": [
+"15",
+"15",
+"15",
+"15",
+"15",
+"15",
+"15",
+"15",
+"15",
+"15"
+]
+},
+{
+"description_value": [
+"8.88",
+"9.57",
+"10.25",
+"10.93",
+"11.62",
+"12.3",
+"12.98",
+"13.67",
+"14.35",
+"15.04"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"4.74",
+"5.1",
+"5.47",
+"5.83",
+"6.2",
+"6.56",
+"6.93",
+"7.29",
+"7.66",
+"8"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{},
+{},
+{},
+{},
+{}
+],
+"info_description_localkey": "Skill 1"
+},
+"skill2_detail": {
+"id": 2023201,
+"icon": "icn_skill_barrier_01",
+"group_id": 20232,
+"skill_level": 1,
+"name_localkey": "Ninjutsu Camouflage",
+"next_level_id": 2023202,
+"level_up_cost_id": 20202,
+"description_localkey": "■ Activates at the start of battle.\n<color=#00AEFF>Effects vary according to squad formation. Only one set of effects is applied.</color>\nAffects self if there are no other Defender allies in the squad.\n<color=#00AEFF>Effect 1: Creates a <word_group=10023>Shield</word_group> equal to {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_02} sec.\nEffect 2: Attract: Taunt all enemies continuously.</color>\nAffects self if there is another Defender ally in the squad.\n<color=#00AEFF>Effect 1: Ninjutsu Camouflage: <word_group=10004>Prevents being targeted by single-target attacks</word_group> for {description_value_06} sec. This effect is removed upon taking a direct hit.\nEffect 2: Ninjutsu Injection: Recovers {description_value_07}% of attack damage as HP continuously.</color>\n■ Activates when performing {description_value_03} normal attack(s). Affects self while in Attract status.\n<color=#00AEFF>Creates a <word_group=10023>Shield</word_group> equal to {description_value_04}% of the skill user's <word_group=10025>final</word_group> Max HP for {description_value_05} sec.</color>\n■ Affects self every {description_value_08} sec while in Ninjutsu Injection status.\n<color=#00AEFF>Ninjutsu IFAK lasts for {description_value_10} sec.\nFunction: Stores up HP recovery for a time, after which all allies are healed for the stored amount.\nEffect 1: The maximum amount stored is equal to {description_value_09}% of the skill user's <word_group=10025>final</word_group> ATK.\nEffect 2: Once the duration ends, all allies are healed for the <word_group=10089>stored recovery amount</word_group>.</color>",
+"description_value_list": [
+{
+"description_value": [
+"7.24",
+"7.8",
+"8.35",
+"8.91",
+"9.47",
+"10.02",
+"10.58",
+"11.14",
+"11.7",
+"12.25"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"200",
+"200",
+"200",
+"200",
+"200",
+"200",
+"200",
+"200",
+"200",
+"200"
+]
+},
+{
+"description_value": [
+"7.24",
+"7.8",
+"8.35",
+"8.91",
+"9.47",
+"10.02",
+"10.58",
+"11.14",
+"11.7",
+"12.25"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"6.17",
+"6.73",
+"7.29",
+"7.85",
+"8.42",
+"8.98",
+"9.54",
+"10.1",
+"10.66",
+"11.22"
+]
+},
+{
+"description_value": [
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4"
+]
+},
+{
+"description_value": [
+"90.9",
+"99.17",
+"107.43",
+"115.69",
+"123.96",
+"132.22",
+"140.49",
+"148.75",
+"157.02",
+"165.28"
+]
+},
+{
+"description_value": [
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4",
+"4"
+]
+},
+{}
+],
+"info_description_localkey": "Skill 2"
+},
+"ulti_skill_id": 1023301,
+"ulti_skill_detail": {
+"id": 1023301,
+"icon": "icn_skill_c023_ult",
+"group_id": 10233,
+"shake_id": 1,
+"skill_type": "InstantNumber",
+"attack_type": "Water",
+"skill_level": 1,
+"counter_type": "Metal_Type",
+"duration_type": "None",
+"name_localkey": "Secret Technique: Ninja Overdrive",
+"next_level_id": 1023302,
+"prefer_target": "LowDefence",
+"resource_name": "c023_ulti",
+"duration_value": 0,
+"skill_cooltime": 4000,
+"level_up_cost_id": 20302,
+"skill_value_data": [
+{
+"skill_value": 10260,
+"skill_value_type": "Percent"
+},
+{
+"skill_value": 1,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 0,
+"skill_value_type": "Integer"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+},
+{
+"skill_value": 0,
+"skill_value_type": "None"
+}
+],
+"skill_cooltime_list": [
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000,
+4000
+],
+"description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10019>Distributed Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as <word_group=10019>distributed damage</word_group>.</color>\n■ Affects self while in Attract status.\n<color=#00AEFF><word_group=10047>Next shield's HP</word_group> ▲ {description_value_06}% for {description_value_07} sec.</color>\n■ Affects self while in Ninjutsu Injection status.\n<color=#00AEFF>Maximum Accumulation of Ninjutsu IFAK ▲ {description_value_08}% for {description_value_09} sec.</color>",
+"description_value_list": [
+{
+"description_value": [
+"11.82",
+"12.73",
+"13.64",
+"14.55",
+"15.46",
+"16.37",
+"17.28",
+"18.19",
+"19.1",
+"20"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"8.86",
+"9.54",
+"10.22",
+"10.9",
+"11.59",
+"12.27",
+"12.95",
+"13.63",
+"14.31",
+"15"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"102.6",
+"110.49",
+"118.38",
+"126.27",
+"134.16",
+"142.06",
+"149.95",
+"157.84",
+"165.73",
+"170"
+]
+},
+{
+"description_value": [
+"11.9",
+"12.81",
+"13.73",
+"14.64",
+"15.56",
+"16.47",
+"17.39",
+"18.3",
+"19.22",
+"20.13"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{
+"description_value": [
+"11.9",
+"12.81",
+"13.73",
+"14.64",
+"15.56",
+"16.47",
+"17.39",
+"18.3",
+"19.22",
+"20.13"
+]
+},
+{
+"description_value": [
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10",
+"10"
+]
+},
+{},
+{}
+],
+"prefer_target_condition": "IncludeNoneTargetLast",
+"info_description_localkey": "Burst Skill",
+"after_use_function_id_list": [
+0
+],
+"after_hurt_function_id_list": [
+0
+],
+"before_use_function_id_list": [
+102330101,
+102330102,
+102330103,
+102330104
+],
+"before_hurt_function_id_list": [
+102330105
+]
+}
+},
+"statScaling": {
+"grow_grade": 502302,
+"grade_core_id": 1,
+"stat_enhance_id": 5206,
+"stat_enhance_detail": {
+"id": 5206,
+"core_hp": 200,
+"grade_hp": 3000,
+"core_attack": 200,
+"grade_ratio": 200,
+"core_defence": 200,
+"grade_attack": 20,
+"grade_defence": 100,
+"core_bio_resist": 0,
+"grade_bio_resist": 0,
+"core_metal_resist": 0,
+"core_energy_resist": 0,
+"grade_metal_resist": 0,
+"grade_energy_resist": 0
+}
+},
+"element": {
+"element_id": [
+200001
+],
+"element_details": [
+{
+"id": 200001,
+"element": "Water",
+"group_id": 5000002,
+"element_icon": "icn_element_water",
+"weak_element_id": 400001,
+"element_desc_localekey": "Injects Code: P.S.I.D. to all fire-type enemies, dealing 10% additional damage.",
+"element_name_localekey": "Water",
+"element_code_name_localekey": "Code: P.S.I.D."
+}
+]
+},
+"piece": {
+"piece_id": 5100023,
+"piece_detail": {
+"id": 5100023,
+"class": "Attacker",
+"order": 2300,
+"use_id": 0,
+"use_type": "None",
+"item_rare": "SSR",
+"item_type": "Piece",
+"stack_max": 9999999,
+"use_value": 0,
+"corporation": "ELYSION",
+"resource_id": 23,
+"item_sub_type": "CharacterPiece",
+"name_localkey": "Delta: Ninja Thief's Spare Body",
+"use_limit_count": false,
+"inventory_filter": [
+"etc"
+],
+"description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
+}
+},
+"meta": {
+"id": 502301,
+"class": "Defender",
+"order": 10040,
+"name_code": 5154,
+"corporation": "ELYSION",
+"resource_id": 23,
+"name_localkey": "Delta: Ninja Thief",
+"original_rare": "SSR",
+"critical_ratio": 1500,
+"category_type_1": "None",
+"category_type_2": "None",
+"category_type_3": "None",
+"critical_damage": 15000,
+"eff_category_type": "Walk",
+"eff_category_value": 0
+}
+},
+"generatorSupported": true,
+"simSupported": true,
+"baseStats": {
+"hp": 16500,
+"atk": 400,
+"def": 92,
+"core": {
+"hp": 200,
+"atk": 200,
+"def": 200
+},
+"grade": {
+"hp": 3000,
+"atk": 20,
+"def": 100,
+"ratio": 200
+},
+"critRate": 15,
+"maxLevel": 1200,
+"critDamage": 150,
+"resourceId": 23
+}
 }
 
 ---
@@ -1622,229 +1652,226 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
 ## SECTION 4 — S2b CROSS-FAMILY TEST-FAITHFULNESS REVIEW (claude-fable-5, independent)
 
 {
-  "slug": "delta-ninja-thief",
-  "leakDetected": null,
-  "spec": [
-    {
-      "slot": "skill1",
-      "kitLine": "FB enter: Damage Taken ▲ 12% / 15 sec",
-      "disposition": "FAITHFUL",
-      "scope": "generic boss debuff — benefits every ally's damage, all buckets",
-      "durationSemantics": "durationSec 15 (wall-clock; outlasts the ~10s FB window into the lull)",
-      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team FB, including rotations delta does not cast (her 40s burst cd guarantees non-cast FBs exist)",
-      "targetSet": "enemy (boss-held debuff: buffApply with casterIdx===null && targetIdx===null)",
-      "nearestWrongModel": "keyed to burstCast — with burst cd 40s (and/or a second B2 like crown in the fixture) the debuff would silently miss every FB rotation she doesn't cast, under-crediting the whole team; secondary misread: encoding as a self/ally buff instead of a boss damageTakenPct debuff",
-      "distinguishingAssertion": "filter buffApply{stat:'damageTakenPct', value:12, casterIdx:null, targetIdx:null}: count === count of fullBurstStart events (fires on EVERY FB, including rotations with no delta burstCast event); each has expiresFrame ≈ apply+15s",
-      "inertness": "must not fire outside FB entry; must not appear as a stat on any ally",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Burst Skill: self ATK ▲ 15.04% / 10 sec",
-      "disposition": "FAITHFUL",
-      "scope": "generic self ATK (scales her own ATK; feeds her burst nuke snapshot)",
-      "durationSemantics": "durationSec 10",
-      "triggerIdentity": "burstCast — 'when using Burst Skill' = HER OWN cast only; with cd 40s she cannot cast every rotation, so uptime < naive per-FB",
-      "targetSet": "self",
-      "nearestWrongModel": "keyed to fullBurstEnter — over-credits by firing on every team FB including her cd-locked rotations; diverges hard in any comp with a second B2",
-      "distinguishingAssertion": "buffApply{stat:'atkPct', value:15.04, targetSlug:'delta-ninja-thief'} count === her burstCast event count, and ZERO such events on FB rotations lacking a delta burstCast (40s cd makes these exist deterministically)",
-      "inertness": "no other unit ever receives this stat/key; no application on non-cast FBs",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill1",
-      "kitLine": "Burst Skill: DT ▲ 8% (Hyper Acid) / 10 sec",
-      "disposition": "FAITHFUL",
-      "scope": "boss debuff, distinct key from the 12% line — the two STACK during her cast rotations",
-      "durationSemantics": "durationSec 10",
-      "triggerIdentity": "burstCast (same clause as the ATK line) — NOT fullBurstEnter",
-      "targetSet": "enemy ('nearest to crosshair' = the single boss; boss-held, casterIdx/targetIdx null)",
-      "nearestWrongModel": "(a) merged/deduped with the 12% FB-enter debuff as one line; (b) keyed to fullBurstEnter, giving it 100% FB coverage her 40s cd doesn't allow",
-      "distinguishingAssertion": "on a rotation delta casts: TWO distinct boss-held damageTakenPct buffApply events (value 12 with ~15s expiry, value 8 with ~10s expiry) coexist; on a non-cast FB rotation only the 12 appears",
-      "inertness": "the 8% must NOT appear on non-cast FB rotations",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "no-other-Defender: Shield 12.25% MaxHP 10s",
-      "disposition": "FAITHFUL",
-      "scope": "shield effect (no HP pool modeled) — its job is the 'shielded' tandem channel + formation-branch correctness",
-      "durationSemantics": "durationSec 10, applied once at battle start (passive/t=0 trigger)",
-      "triggerIdentity": "start-of-battle (passive), gated to the NO-other-Defender formation branch — 'Only one set of effects is applied' is exclusive",
-      "targetSet": "self",
-      "nearestWrongModel": "branch gate dropped (shield fires even with another Defender present) — note crown, the stock control-comp B2, IS a Defender, so the default fixture must select the OTHER branch; also note schema has teamHas (positive) but no teamLacks, so verify how the negative branch is expressed (mode gate or equivalent) rather than assuming",
-      "distinguishingAssertion": "in a Defender-free comp a t=0 shield event targets delta (her shielded-trigger consumers fire); in the crown comp there is NO t=0 shield event from skill2",
-      "inertness": "zero shield events from this block in any comp containing another Defender",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Attract: Taunt all enemies continuously",
-      "disposition": "UNMODELED",
-      "scope": "targeting/aggro — no targeting model in v1",
-      "durationSemantics": "continuous (permanent status while in branch A)",
-      "triggerIdentity": "start-of-battle, branch A only",
-      "targetSet": "enemy (taunt) / self (status holder)",
-      "nearestWrongModel": "dropping the STATUS along with the taunt — 'Attract status' is a named gate consumed by the 200-attack shield and the burst next-shield line; the taunt is unmodeled but the branch-A status condition must still gate those blocks",
-      "distinguishingAssertion": "taunt itself moves nothing; but the two Attract-gated blocks are LIVE in a Defender-free comp and DEAD in the crown comp — that gating is the observable",
-      "inertness": "no damage/buff events from the taunt itself in any comp",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "other-Defender: Camouflage untargetable 10s",
-      "disposition": "UNMODELED",
-      "scope": "defensive (boss deals no damage in v1)",
-      "durationSemantics": "10s, removed on direct hit (unreachable in v1)",
-      "triggerIdentity": "start-of-battle, branch B",
-      "targetSet": "self",
-      "nearestWrongModel": "modeling it as some damage-adjacent buff; it is purely defensive",
-      "distinguishingAssertion": "removing/adding this line changes no totals for any unit",
-      "inertness": "fully inert",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "Injection: 11.22% dmg as HP continuously",
-      "disposition": "FAITHFUL",
-      "scope": "self lifesteal — heal MAGNITUDE unmodeled, but the block defines the 'Ninjutsu Injection status' that gates IFAK and a burst line; per taxonomy rule 4, never skip a heal line on isolation grounds",
-      "durationSemantics": "continuous (permanent status while branch B active)",
-      "triggerIdentity": "start-of-battle, branch B (another Defender present — TRUE in the crown control comp)",
-      "targetSet": "self",
-      "nearestWrongModel": "skipped as 'defensive, no damage' — which silently kills the IFAK interval heal downstream (the unit's main tandem channel with a recovery-triggered teammate); or applying BOTH branches at once, ignoring 'Only one set of effects is applied'",
-      "distinguishingAssertion": "in the crown comp the Injection-gated IFAK block fires (see next line); in a Defender-free comp it never fires — the two branches are mutually exclusive, never simultaneous",
-      "inertness": "the self-lifesteal itself moves no damage (she has no on-recovery consumer)",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "200 normal attacks: Shield (Attract only)",
-      "disposition": "FAITHFUL",
-      "scope": "repeating self-shield, gated on Attract status (branch A ONLY)",
-      "durationSemantics": "shield durationSec 10; trigger cadence in ROUNDS — hitCount counts rounds, MG hitsPerShot 1 so 200 bullets (ammo 300 → fires more than once per magazine cycle at MG cadence)",
-      "triggerIdentity": "hitCount 200 + branch-A gate",
-      "targetSet": "self",
-      "nearestWrongModel": "ungated — firing in branch B (the crown comp) where Attract never exists; the driver's default fixture would then emit spurious shielded events every ~200 rounds",
-      "distinguishingAssertion": "Defender-free comp: shield events at every 200th round fired by delta, repeating; crown comp: ZERO shield events from this block for the whole fight",
-      "inertness": "dead in any comp with another Defender",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "skill2",
-      "kitLine": "every 4 sec in Injection: IFAK team heal",
-      "disposition": "FAITHFUL",
-      "scope": "team-wide heal pulse — magnitude (165.28% ATK cap) unmodeled, but the RECOVERY EVENTS to all allies are the tandem payload (keeps any on-recovery consumer, e.g. a Crown-style kit, refreshed for the whole fight)",
-      "durationSemantics": "interval 4s trigger; each IFAK stores 4s then releases → heal lands one 4s store-delay after each trigger (⚑ first-heal phase t≈4 vs t≈8 is a convention; assert on steady 4s periodicity, not the first timestamp)",
-      "triggerIdentity": "interval sec:4, gated on Injection status = branch B (active in the crown comp from t=0)",
-      "targetSet": "allies (ALL allies healed at release — not self-only)",
-      "nearestWrongModel": "the single most likely shared misread: skipped as a no-damage heal (taxonomy rule 4 violation), or healed self-only — either kills the recovery-trigger synergy that is this Defender's main offensive contribution in a heal-consumer comp",
-      "distinguishingAssertion": "crown comp: recovery events targeting EVERY ally on a stable ~4s period for the full fight (count ≈ fightLen/4), and an on-recovery consumer's buff shows near-continuous refresh; Defender-free comp: zero IFAK recovery events",
-      "inertness": "no heal pulses in branch A; heal itself adds no damage events",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "allies: DistDmg ▲20% + ATK ▲15% of user",
-      "disposition": "FAITHFUL",
-      "scope": "team buff, two effects: distributedDamagePct 20 (only boosts holders' distributed-flavored hits — in practice mostly her own 170% nuke, if effect ordering lets her cast-time buff cover her cast-time nuke: verify order) and a CASTER-scaled ATK grant",
-      "durationSemantics": "durationSec 10 each",
-      "triggerIdentity": "burstCast (burst block, no activation clause = on her own cast; cd 40s → NOT every rotation)",
-      "targetSet": "allies including self ('all allies')",
-      "nearestWrongModel": "ATK line encoded as atkPct 15 (scaling each TARGET's own ATK) instead of casterAtkPct — the kit text is explicit: '15% of the skill user's ATK'. The harness flat-resolves casterAtkPct at apply time, so the wrong encoding is directly visible in the event value",
-      "distinguishingAssertion": "on her cast: buffApply{stat:'casterAtkPct'} on every ally with the IDENTICAL flat value = 0.1504…×? — no: value === 0.15 × delta.staticAtk (same flat number for all five targets, regardless of each target's own ATK); nearest-wrong emits stat 'atkPct' value 15 varying in effect per target. Plus buffApply{stat:'distributedDamagePct', value:20} on all allies",
-      "inertness": "no application on FB rotations she doesn't cast",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "enemies: 170% final ATK distributed dmg",
-      "disposition": "FAITHFUL",
-      "scope": "instant flatDamage, flavor 'distributed'; snapshots her buffed ATK at cast (s1's 15.04% self-ATK and the burst's own casterAtkPct grant land the same cast — assert whether they cover the nuke, i.e. effect ordering)",
-      "durationSemantics": "instant, once per cast",
-      "triggerIdentity": "burstCast",
-      "targetSet": "enemy",
-      "nearestWrongModel": "FB +50% applied — per methodology rule 9, burst-cast instant damage lands BEFORE the FB window opens and is always FB-exempt (noFb); also no core, no range on an instant rider",
-      "distinguishingAssertion": "damage event: srcSlot=delta, bucket/flavor distributed, mult 170, fbMajorApplied === false and no core contribution; one such event per delta burstCast (fight count matches her cast count under the 40s cd, not the FB count)",
-      "inertness": "no per-FB repetition; must not appear on rotations she doesn't cast",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": true
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Attract: next shield's HP ▲ 20.13%",
-      "disposition": "UNMODELED",
-      "scope": "shield HP magnitude — no shield HP pool exists in v1",
-      "durationSemantics": "10s window on the modifier",
-      "triggerIdentity": "burstCast, Attract-gated (branch A only)",
-      "targetSet": "self",
-      "nearestWrongModel": "modeling it as a maxHpFlat/maxHpPct stat buff (which would feed HP-scaling consumers) — it modifies a SHIELD's HP, not her Max HP",
-      "distinguishingAssertion": "no buffApply with any HP-family stat from this line; totals unchanged if the line is absent",
-      "inertness": "fully inert; must not touch maxHpFlat/atkOfMaxHpPct paths",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    },
-    {
-      "slot": "burst",
-      "kitLine": "Injection: IFAK max accumulation ▲20.13%",
-      "disposition": "UNMODELED",
-      "scope": "heal-cap magnitude — heal amounts are not modeled (heal effects carry no HP quantity), so a cap increase has no observable",
-      "durationSemantics": "10s",
-      "triggerIdentity": "burstCast, Injection-gated (branch B)",
-      "targetSet": "self",
-      "nearestWrongModel": "inventing a stat encoding for it; correct handling is verbatim in `unmodeled`",
-      "distinguishingAssertion": "no event-log footprint; IFAK recovery-event CADENCE (4s) is unchanged by her burst",
-      "inertness": "fully inert",
-      "evidenceTier": "DATAMINED",
-      "loadBearing": false
-    }
-  ],
-  "loadBearingSet": [
-    "skill1:FB-enter DamageTaken▲12%/15s (fullBurstEnter, boss-held)",
-    "skill1:burstCast self ATK▲15.04%/10s",
-    "skill1:burstCast DamageTaken▲8%/10s (stacks with 12%)",
-    "skill2:branch-A t=0 shield 12.25% MaxHP (exclusive formation branch)",
-    "skill2:branch-B Injection status (gates IFAK; exclusive with branch A)",
-    "skill2:hitCount-200 shield (Attract/branch-A-gated only)",
-    "skill2:interval-4s IFAK team heal → recovery events to ALL allies (tandem)",
-    "burst:allies distributedDamagePct 20 + casterAtkPct 15 (flat = 15% of delta staticAtk)",
-    "burst:170% distributed flatDamage, noFb, no core, once per cast"
-  ],
-  "unmodeledVerbatim": {
-    "skill1": [],
-    "skill2": [
-      "Attract: Taunt all enemies continuously. (taunt/targeting itself — the branch-A status gate is still tracked)",
-      "Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
-      "Recovers 11.22% of attack damage as HP continuously. (HP amount — the Injection STATUS is tracked)",
-      "The maximum amount stored is equal to 165.28% of the skill user's final ATK. (heal magnitude — recovery EVENTS are modeled)"
-    ],
-    "burst": [
-      "Next shield's HP ▲ 20.13% for 10 sec.",
-      "Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
-    ]
-  },
-  "notes": "Fixture geometry is the crux and the likeliest place for a shared-prior misread. (1) Delta is Burst II with a 40s burst cd: the stock controlComp puts crown at B2, so tests must build a comp with delta actually holding/casting B2 — and the 40s cd itself guarantees FB rotations WITHOUT a delta cast, which is exactly what separates the three burstCast lines (s1 ATK, s1 8% debuff, burst pair) from the fullBurstEnter 12% debuff. Assert per-rotation: 12% fires on every FB, the others only on her cast rotations. (2) Crown is a Defender: the default fixture silently selects the OTHER-Defender branch (Camouflage/Injection), so branch-A lines (t=0 shield, Attract, 200-attack shield, burst shield-HP) must be proven INERT there and live only in a purpose-built Defender-free comp; conversely IFAK is live in the crown comp. 'Only one set of effects is applied' is exclusive — assert the branches never coexist. Schema note: teamHas gates positively but there is no teamLacks — verify how the no-other-Defender branch is expressed (mode gate or equivalent) instead of assuming it's encodable. (3) The IFAK every-4s ALL-ally heal is her strongest tandem channel (feeds any on-recovery consumer — crown-style kits — continuously); the classic misread is skipping the whole skill2 as 'defensive'. (4) Burst ATK grant is casterAtkPct (flat, 15% of HER ATK, identical value on every target in the buffApply log), not atkPct. (5) The 170% distributed nuke is burst-cast instant → FB-exempt (fbMajorApplied false), no core; also check effect ORDERING within her cast — whether her own +20% distributedDamagePct and +15.04% ATK cover the same-cast nuke snapshot is an order-of-application fact worth pinning with an assertion either way. (6) All magnitudes are literal kit text (DATAMINED); no ALWAYS-⚑ fields are exercised except the interval first-fire phase convention on IFAK (assert periodicity, not the first timestamp).",
-  "model": "claude-fable-5"
+"slug": "delta-ninja-thief",
+"leakDetected": null,
+"spec": [
+{
+"slot": "skill1",
+"kitLine": "FB enter: Damage Taken ▲ 12% / 15 sec",
+"disposition": "FAITHFUL",
+"scope": "generic boss debuff — benefits every ally's damage, all buckets",
+"durationSemantics": "durationSec 15 (wall-clock; outlasts the ~10s FB window into the lull)",
+"triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team FB, including rotations delta does not cast (her 40s burst cd guarantees non-cast FBs exist)",
+"targetSet": "enemy (boss-held debuff: buffApply with casterIdx===null && targetIdx===null)",
+"nearestWrongModel": "keyed to burstCast — with burst cd 40s (and/or a second B2 like crown in the fixture) the debuff would silently miss every FB rotation she doesn't cast, under-crediting the whole team; secondary misread: encoding as a self/ally buff instead of a boss damageTakenPct debuff",
+"distinguishingAssertion": "filter buffApply{stat:'damageTakenPct', value:12, casterIdx:null, targetIdx:null}: count === count of fullBurstStart events (fires on EVERY FB, including rotations with no delta burstCast event); each has expiresFrame ≈ apply+15s",
+"inertness": "must not fire outside FB entry; must not appear as a stat on any ally",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "Burst Skill: self ATK ▲ 15.04% / 10 sec",
+"disposition": "FAITHFUL",
+"scope": "generic self ATK (scales her own ATK; feeds her burst nuke snapshot)",
+"durationSemantics": "durationSec 10",
+"triggerIdentity": "burstCast — 'when using Burst Skill' = HER OWN cast only; with cd 40s she cannot cast every rotation, so uptime < naive per-FB",
+"targetSet": "self",
+"nearestWrongModel": "keyed to fullBurstEnter — over-credits by firing on every team FB including her cd-locked rotations; diverges hard in any comp with a second B2",
+"distinguishingAssertion": "buffApply{stat:'atkPct', value:15.04, targetSlug:'delta-ninja-thief'} count === her burstCast event count, and ZERO such events on FB rotations lacking a delta burstCast (40s cd makes these exist deterministically)",
+"inertness": "no other unit ever receives this stat/key; no application on non-cast FBs",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill1",
+"kitLine": "Burst Skill: DT ▲ 8% (Hyper Acid) / 10 sec",
+"disposition": "FAITHFUL",
+"scope": "boss debuff, distinct key from the 12% line — the two STACK during her cast rotations",
+"durationSemantics": "durationSec 10",
+"triggerIdentity": "burstCast (same clause as the ATK line) — NOT fullBurstEnter",
+"targetSet": "enemy ('nearest to crosshair' = the single boss; boss-held, casterIdx/targetIdx null)",
+"nearestWrongModel": "(a) merged/deduped with the 12% FB-enter debuff as one line; (b) keyed to fullBurstEnter, giving it 100% FB coverage her 40s cd doesn't allow",
+"distinguishingAssertion": "on a rotation delta casts: TWO distinct boss-held damageTakenPct buffApply events (value 12 with ~15s expiry, value 8 with ~10s expiry) coexist; on a non-cast FB rotation only the 12 appears",
+"inertness": "the 8% must NOT appear on non-cast FB rotations",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "no-other-Defender: Shield 12.25% MaxHP 10s",
+"disposition": "FAITHFUL",
+"scope": "shield effect (no HP pool modeled) — its job is the 'shielded' tandem channel + formation-branch correctness",
+"durationSemantics": "durationSec 10, applied once at battle start (passive/t=0 trigger)",
+"triggerIdentity": "start-of-battle (passive), gated to the NO-other-Defender formation branch — 'Only one set of effects is applied' is exclusive",
+"targetSet": "self",
+"nearestWrongModel": "branch gate dropped (shield fires even with another Defender present) — note crown, the stock control-comp B2, IS a Defender, so the default fixture must select the OTHER branch; also note schema has teamHas (positive) but no teamLacks, so verify how the negative branch is expressed (mode gate or equivalent) rather than assuming",
+"distinguishingAssertion": "in a Defender-free comp a t=0 shield event targets delta (her shielded-trigger consumers fire); in the crown comp there is NO t=0 shield event from skill2",
+"inertness": "zero shield events from this block in any comp containing another Defender",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "Attract: Taunt all enemies continuously",
+"disposition": "UNMODELED",
+"scope": "targeting/aggro — no targeting model in v1",
+"durationSemantics": "continuous (permanent status while in branch A)",
+"triggerIdentity": "start-of-battle, branch A only",
+"targetSet": "enemy (taunt) / self (status holder)",
+"nearestWrongModel": "dropping the STATUS along with the taunt — 'Attract status' is a named gate consumed by the 200-attack shield and the burst next-shield line; the taunt is unmodeled but the branch-A status condition must still gate those blocks",
+"distinguishingAssertion": "taunt itself moves nothing; but the two Attract-gated blocks are LIVE in a Defender-free comp and DEAD in the crown comp — that gating is the observable",
+"inertness": "no damage/buff events from the taunt itself in any comp",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill2",
+"kitLine": "other-Defender: Camouflage untargetable 10s",
+"disposition": "UNMODELED",
+"scope": "defensive (boss deals no damage in v1)",
+"durationSemantics": "10s, removed on direct hit (unreachable in v1)",
+"triggerIdentity": "start-of-battle, branch B",
+"targetSet": "self",
+"nearestWrongModel": "modeling it as some damage-adjacent buff; it is purely defensive",
+"distinguishingAssertion": "removing/adding this line changes no totals for any unit",
+"inertness": "fully inert",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "skill2",
+"kitLine": "Injection: 11.22% dmg as HP continuously",
+"disposition": "FAITHFUL",
+"scope": "self lifesteal — heal MAGNITUDE unmodeled, but the block defines the 'Ninjutsu Injection status' that gates IFAK and a burst line; per taxonomy rule 4, never skip a heal line on isolation grounds",
+"durationSemantics": "continuous (permanent status while branch B active)",
+"triggerIdentity": "start-of-battle, branch B (another Defender present — TRUE in the crown control comp)",
+"targetSet": "self",
+"nearestWrongModel": "skipped as 'defensive, no damage' — which silently kills the IFAK interval heal downstream (the unit's main tandem channel with a recovery-triggered teammate); or applying BOTH branches at once, ignoring 'Only one set of effects is applied'",
+"distinguishingAssertion": "in the crown comp the Injection-gated IFAK block fires (see next line); in a Defender-free comp it never fires — the two branches are mutually exclusive, never simultaneous",
+"inertness": "the self-lifesteal itself moves no damage (she has no on-recovery consumer)",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "200 normal attacks: Shield (Attract only)",
+"disposition": "FAITHFUL",
+"scope": "repeating self-shield, gated on Attract status (branch A ONLY)",
+"durationSemantics": "shield durationSec 10; trigger cadence in ROUNDS — hitCount counts rounds, MG hitsPerShot 1 so 200 bullets (ammo 300 → fires more than once per magazine cycle at MG cadence)",
+"triggerIdentity": "hitCount 200 + branch-A gate",
+"targetSet": "self",
+"nearestWrongModel": "ungated — firing in branch B (the crown comp) where Attract never exists; the driver's default fixture would then emit spurious shielded events every ~200 rounds",
+"distinguishingAssertion": "Defender-free comp: shield events at every 200th round fired by delta, repeating; crown comp: ZERO shield events from this block for the whole fight",
+"inertness": "dead in any comp with another Defender",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "skill2",
+"kitLine": "every 4 sec in Injection: IFAK team heal",
+"disposition": "FAITHFUL",
+"scope": "team-wide heal pulse — magnitude (165.28% ATK cap) unmodeled, but the RECOVERY EVENTS to all allies are the tandem payload (keeps any on-recovery consumer, e.g. a Crown-style kit, refreshed for the whole fight)",
+"durationSemantics": "interval 4s trigger; each IFAK stores 4s then releases → heal lands one 4s store-delay after each trigger (⚑ first-heal phase t≈4 vs t≈8 is a convention; assert on steady 4s periodicity, not the first timestamp)",
+"triggerIdentity": "interval sec:4, gated on Injection status = branch B (active in the crown comp from t=0)",
+"targetSet": "allies (ALL allies healed at release — not self-only)",
+"nearestWrongModel": "the single most likely shared misread: skipped as a no-damage heal (taxonomy rule 4 violation), or healed self-only — either kills the recovery-trigger synergy that is this Defender's main offensive contribution in a heal-consumer comp",
+"distinguishingAssertion": "crown comp: recovery events targeting EVERY ally on a stable ~4s period for the full fight (count ≈ fightLen/4), and an on-recovery consumer's buff shows near-continuous refresh; Defender-free comp: zero IFAK recovery events",
+"inertness": "no heal pulses in branch A; heal itself adds no damage events",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "allies: DistDmg ▲20% + ATK ▲15% of user",
+"disposition": "FAITHFUL",
+"scope": "team buff, two effects: distributedDamagePct 20 (only boosts holders' distributed-flavored hits — in practice mostly her own 170% nuke, if effect ordering lets her cast-time buff cover her cast-time nuke: verify order) and a CASTER-scaled ATK grant",
+"durationSemantics": "durationSec 10 each",
+"triggerIdentity": "burstCast (burst block, no activation clause = on her own cast; cd 40s → NOT every rotation)",
+"targetSet": "allies including self ('all allies')",
+"nearestWrongModel": "ATK line encoded as atkPct 15 (scaling each TARGET's own ATK) instead of casterAtkPct — the kit text is explicit: '15% of the skill user's ATK'. The harness flat-resolves casterAtkPct at apply time, so the wrong encoding is directly visible in the event value",
+"distinguishingAssertion": "on her cast: buffApply{stat:'casterAtkPct'} on every ally with the IDENTICAL flat value = 0.1504…×? — no: value === 0.15 × delta.staticAtk (same flat number for all five targets, regardless of each target's own ATK); nearest-wrong emits stat 'atkPct' value 15 varying in effect per target. Plus buffApply{stat:'distributedDamagePct', value:20} on all allies",
+"inertness": "no application on FB rotations she doesn't cast",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "enemies: 170% final ATK distributed dmg",
+"disposition": "FAITHFUL",
+"scope": "instant flatDamage, flavor 'distributed'; snapshots her buffed ATK at cast (s1's 15.04% self-ATK and the burst's own casterAtkPct grant land the same cast — assert whether they cover the nuke, i.e. effect ordering)",
+"durationSemantics": "instant, once per cast",
+"triggerIdentity": "burstCast",
+"targetSet": "enemy",
+"nearestWrongModel": "FB +50% applied — per methodology rule 9, burst-cast instant damage lands BEFORE the FB window opens and is always FB-exempt (noFb); also no core, no range on an instant rider",
+"distinguishingAssertion": "damage event: srcSlot=delta, bucket/flavor distributed, mult 170, fbMajorApplied === false and no core contribution; one such event per delta burstCast (fight count matches her cast count under the 40s cd, not the FB count)",
+"inertness": "no per-FB repetition; must not appear on rotations she doesn't cast",
+"evidenceTier": "DATAMINED",
+"loadBearing": true
+},
+{
+"slot": "burst",
+"kitLine": "Attract: next shield's HP ▲ 20.13%",
+"disposition": "UNMODELED",
+"scope": "shield HP magnitude — no shield HP pool exists in v1",
+"durationSemantics": "10s window on the modifier",
+"triggerIdentity": "burstCast, Attract-gated (branch A only)",
+"targetSet": "self",
+"nearestWrongModel": "modeling it as a maxHpFlat/maxHpPct stat buff (which would feed HP-scaling consumers) — it modifies a SHIELD's HP, not her Max HP",
+"distinguishingAssertion": "no buffApply with any HP-family stat from this line; totals unchanged if the line is absent",
+"inertness": "fully inert; must not touch maxHpFlat/atkOfMaxHpPct paths",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
+},
+{
+"slot": "burst",
+"kitLine": "Injection: IFAK max accumulation ▲20.13%",
+"disposition": "UNMODELED",
+"scope": "heal-cap magnitude — heal amounts are not modeled (heal effects carry no HP quantity), so a cap increase has no observable",
+"durationSemantics": "10s",
+"triggerIdentity": "burstCast, Injection-gated (branch B)",
+"targetSet": "self",
+"nearestWrongModel": "inventing a stat encoding for it; correct handling is verbatim in `unmodeled`",
+"distinguishingAssertion": "no event-log footprint; IFAK recovery-event CADENCE (4s) is unchanged by her burst",
+"inertness": "fully inert",
+"evidenceTier": "DATAMINED",
+"loadBearing": false
 }
-
+],
+"loadBearingSet": [
+"skill1:FB-enter DamageTaken▲12%/15s (fullBurstEnter, boss-held)",
+"skill1:burstCast self ATK▲15.04%/10s",
+"skill1:burstCast DamageTaken▲8%/10s (stacks with 12%)",
+"skill2:branch-A t=0 shield 12.25% MaxHP (exclusive formation branch)",
+"skill2:branch-B Injection status (gates IFAK; exclusive with branch A)",
+"skill2:hitCount-200 shield (Attract/branch-A-gated only)",
+"skill2:interval-4s IFAK team heal → recovery events to ALL allies (tandem)",
+"burst:allies distributedDamagePct 20 + casterAtkPct 15 (flat = 15% of delta staticAtk)",
+"burst:170% distributed flatDamage, noFb, no core, once per cast"
+],
+"unmodeledVerbatim": {
+"skill1": [],
+"skill2": [
+"Attract: Taunt all enemies continuously. (taunt/targeting itself — the branch-A status gate is still tracked)",
+"Ninjutsu Camouflage: Prevents being targeted by single-target attacks for 10 sec. This effect is removed upon taking a direct hit.",
+"Recovers 11.22% of attack damage as HP continuously. (HP amount — the Injection STATUS is tracked)",
+"The maximum amount stored is equal to 165.28% of the skill user's final ATK. (heal magnitude — recovery EVENTS are modeled)"
+],
+"burst": [
+"Next shield's HP ▲ 20.13% for 10 sec.",
+"Maximum Accumulation of Ninjutsu IFAK ▲ 20.13% for 10 sec."
+]
+},
+"notes": "Fixture geometry is the crux and the likeliest place for a shared-prior misread. (1) Delta is Burst II with a 40s burst cd: the stock controlComp puts crown at B2, so tests must build a comp with delta actually holding/casting B2 — and the 40s cd itself guarantees FB rotations WITHOUT a delta cast, which is exactly what separates the three burstCast lines (s1 ATK, s1 8% debuff, burst pair) from the fullBurstEnter 12% debuff. Assert per-rotation: 12% fires on every FB, the others only on her cast rotations. (2) Crown is a Defender: the default fixture silently selects the OTHER-Defender branch (Camouflage/Injection), so branch-A lines (t=0 shield, Attract, 200-attack shield, burst shield-HP) must be proven INERT there and live only in a purpose-built Defender-free comp; conversely IFAK is live in the crown comp. 'Only one set of effects is applied' is exclusive — assert the branches never coexist. Schema note: teamHas gates positively but there is no teamLacks — verify how the no-other-Defender branch is expressed (mode gate or equivalent) instead of assuming it's encodable. (3) The IFAK every-4s ALL-ally heal is her strongest tandem channel (feeds any on-recovery consumer — crown-style kits — continuously); the classic misread is skipping the whole skill2 as 'defensive'. (4) Burst ATK grant is casterAtkPct (flat, 15% of HER ATK, identical value on every target in the buffApply log), not atkPct. (5) The 170% distributed nuke is burst-cast instant → FB-exempt (fbMajorApplied false), no core; also check effect ORDERING within her cast — whether her own +20% distributedDamagePct and +15.04% ATK cover the same-cast nuke snapshot is an order-of-application fact worth pinning with an assertion either way. (6) All magnitudes are literal kit text (DATAMINED); no ALWAYS-⚑ fields are exercised except the interval first-fire phase convention on IFAK (assert periodicity, not the first timestamp).",
+"model": "claude-fable-5"
+}
 
 ---
 
 ## SECTION 5 — S5 BLIND TEST (claude-opus-5, independent re-derivation) + its result vs the driver override
 
-
 S5 BLIND TEST vs DRIVER OVERRIDE: 22 passed / 5 skipped (documented inert GAPs) / 0 FAILED.
 (The blind draft shipped with 4 plumbing/fixture bugs the driver repaired WITHOUT touching its assertions: harness import path, onEvent placed in cfg, ov.skillN.blocks -> direct-array OverrideFile shape, and a fixture where crown — itself a Burst II Defender — out-competed dnt for the B2 slot so dnt never cast; the fixture was swapped to liter/dnt/helm with dnt as sole B2, which is the blind draft's OWN stated intent. The independent assertions are unchanged.)
-
 
 ```typescript
 import { describe, expect, it } from 'vitest';
@@ -1923,7 +1950,7 @@ function run(opts: ReturnType<typeof controlComp>) {
 
 function buffs(events: SimEvent[], stat: string) {
   return events.filter(
-    (e) => e.kind === 'buffApply' && (e as any).stat === stat,
+    (e) => e.kind === 'buffApply' && (e as any).stat === stat
   ) as any[];
 }
 
@@ -1939,7 +1966,7 @@ describe('delta-ninja-thief — fixture sanity (non-vacuity)', () => {
 
   it("the fixture actually casts this unit's burst AND enters full burst (both gates exercised)", () => {
     const ownCasts = baseEvents.filter(
-      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG
     );
     const fbEnters = baseEvents.filter((e) => e.kind === 'fullBurstStart');
     expect(ownCasts.length).toBeGreaterThan(0);
@@ -1954,7 +1981,7 @@ describe('delta-ninja-thief — fixture sanity (non-vacuity)', () => {
 describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
   it('emits a boss-held damageTakenPct=12 debuff, once per full-burst entry', () => {
     const dt12 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     const fbEnters = baseEvents.filter((e) => e.kind === 'fullBurstStart');
     expect(dt12.length).toBe(fbEnters.length);
@@ -1967,7 +1994,7 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
 
   it("is keyed to FULL-BURST ENTRY, not to this unit's burst cast (nearest-wrong: burstCast)", () => {
     const dt12 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     const fbEnters = baseEvents.filter((e) => e.kind === 'fullBurstStart');
     // Each application lands at a full-burst-start frame, NOT at the (earlier) burst-cast frame.
@@ -1980,9 +2007,7 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
         if (
           b.effects.some(
             (e: any) =>
-              e.kind === 'buff' &&
-              e.stat === 'damageTakenPct' &&
-              e.value === 12,
+              e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value === 12
           )
         ) {
           b.trigger = { kind: 'burstCast' } as any;
@@ -1994,7 +2019,7 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
       overrides: { [SLUG]: patched },
     });
     const altDt12 = buffs(alt.events, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     const altOnFb = altDt12.filter((e) => fbFrames.has(e.frame)).length;
     expect(altOnFb).toBeLessThan(dt12.length);
@@ -2002,7 +2027,7 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
 
   it('15s duration, not 10s (nearest-wrong: the 10s window of S1c)', () => {
     const dt12 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill1) {
@@ -2021,11 +2046,11 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
       overrides: { [SLUG]: patched },
     });
     const altDt12 = buffs(alt.events, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     // expiresFrame encodes the window; a 15s buff outlives a 10s one by 5s of frames.
     expect(dt12[0].expiresFrame - dt12[0].frame).toBeGreaterThan(
-      altDt12[0].expiresFrame - altDt12[0].frame,
+      altDt12[0].expiresFrame - altDt12[0].frame
     );
     // and the longer window is worth strictly more team damage
     expect(baseTotals[SLUG]).toBeGreaterThan(totals(alt.res)[SLUG]);
@@ -2037,10 +2062,8 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
         (b: any) =>
           !b.effects.some(
             (e: any) =>
-              e.kind === 'buff' &&
-              e.stat === 'damageTakenPct' &&
-              e.value === 12,
-          ),
+              e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value === 12
+          )
       );
     });
     const alt = run({
@@ -2055,7 +2078,7 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
   it('emits atkPct=15.04 on SELF only, once per own burst cast (scope + target set)', () => {
     const atk = buffs(baseEvents, 'atkPct').filter((e) => e.value === 15.04);
     const ownCasts = baseEvents.filter(
-      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG
     );
     expect(atk.length).toBe(ownCasts.length);
     for (const e of atk) expect(e.targetSlug).toBe(SLUG);
@@ -2068,7 +2091,7 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
         if (
           b.effects.some(
             (e: any) =>
-              e.kind === 'buff' && e.stat === 'atkPct' && e.value === 15.04,
+              e.kind === 'buff' && e.stat === 'atkPct' && e.value === 15.04
           )
         ) {
           b.trigger = { kind: 'fullBurstEnter' } as any;
@@ -2084,7 +2107,7 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
     const castFrames = new Set(
       baseEvents
         .filter((e) => e.kind === 'burstCast' && (e as any).slug === SLUG)
-        .map((e) => e.frame),
+        .map((e) => e.frame)
     );
     expect(atk.every((e) => castFrames.has(e.frame))).toBe(true);
     expect(altAtk.every((e) => castFrames.has(e.frame))).toBe(false);
@@ -2095,7 +2118,7 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
       for (const b of ov.skill1) {
         b.effects = (b.effects as any[]).filter(
           (e) =>
-            !(e.kind === 'buff' && e.stat === 'atkPct' && e.value === 15.04),
+            !(e.kind === 'buff' && e.stat === 'atkPct' && e.value === 15.04)
         );
       }
     });
@@ -2114,16 +2137,16 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
 describe('S1c — own burst cast: enemy Damage Taken ▲8% for 10s (distinct from S1a)', () => {
   it('is a SEPARATE debuff instance at 8%, not merged into the 12% one', () => {
     const dt8 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 8,
+      (e) => e.value === 8
     );
     const dt12 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 12,
+      (e) => e.value === 12
     );
     expect(dt8.length).toBeGreaterThan(0);
     expect(dt12.length).toBeGreaterThan(0);
     // Nearest-wrong: one merged 20% debuff would emit neither an 8 nor a 12.
     expect(
-      buffs(baseEvents, 'damageTakenPct').some((e) => e.value === 20),
+      buffs(baseEvents, 'damageTakenPct').some((e) => e.value === 20)
     ).toBe(false);
     for (const e of dt8) {
       expect(e.casterIdx).toBeNull();
@@ -2133,10 +2156,10 @@ describe('S1c — own burst cast: enemy Damage Taken ▲8% for 10s (distinct fro
 
   it("keys to this unit's burst cast (count matches own casts, not FB entries)", () => {
     const dt8 = buffs(baseEvents, 'damageTakenPct').filter(
-      (e) => e.value === 8,
+      (e) => e.value === 8
     );
     const ownCasts = baseEvents.filter(
-      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG
     );
     expect(dt8.length).toBe(ownCasts.length);
   });
@@ -2147,8 +2170,8 @@ describe('S1c — own burst cast: enemy Damage Taken ▲8% for 10s (distinct fro
         (b: any) =>
           !b.effects.some(
             (e: any) =>
-              e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value === 8,
-          ),
+              e.kind === 'buff' && e.stat === 'damageTakenPct' && e.value === 8
+          )
       );
     });
     const alt = run({
@@ -2165,7 +2188,7 @@ describe('S2 — formation branch: no other Defender ally in the control comp', 
       (e) =>
         e.kind === 'buffApply' &&
         (e as any).targetSlug === SLUG &&
-        (e as any).stat === 'maxHpFlat',
+        (e as any).stat === 'maxHpFlat'
     );
     // A caster-Max-HP shield/grant flat-resolves under maxHpFlat; at minimum the battle-start
     // branch must produce SOMETHING at frame 0 on self, and nothing on a teammate.
@@ -2173,8 +2196,8 @@ describe('S2 — formation branch: no other Defender ally in the control comp', 
     expect(
       atZero.length +
         baseEvents.filter(
-          (e) => e.kind === 'buffApply' && (e as any).key === 'shield',
-        ).length,
+          (e) => e.kind === 'buffApply' && (e as any).key === 'shield'
+        ).length
     ).toBeGreaterThanOrEqual(0); // shape probe; the discriminating check is the branch gate below
   });
 
@@ -2196,17 +2219,17 @@ describe('S2 — formation branch: no other Defender ally in the control comp', 
     });
     // Ungating may add heals; it must never REMOVE the branch that is live in base.
     const baseHeals = baseEvents.filter(
-      (e) => e.kind === 'buffApply' && (e as any).key === 'heal',
+      (e) => e.kind === 'buffApply' && (e as any).key === 'heal'
     ).length;
     const altHeals = alt.events.filter(
-      (e) => e.kind === 'buffApply' && (e as any).key === 'heal',
+      (e) => e.kind === 'buffApply' && (e as any).key === 'heal'
     ).length;
     expect(altHeals).toBeGreaterThanOrEqual(baseHeals);
   });
 
   it('S2b hitCount(200) shield: the fixture actually reaches 200 rounds (non-vacuity)', () => {
     const shots = baseEvents.filter(
-      (e) => e.kind === 'shot' && (e as any).slug === SLUG,
+      (e) => e.kind === 'shot' && (e as any).slug === SLUG
     );
     expect(shots.length).toBeGreaterThan(200);
   });
@@ -2221,7 +2244,7 @@ describe('S2 — formation branch: no other Defender ally in the control comp', 
 describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster ATK, 10s', () => {
   it('distributedDamagePct=20 lands on EVERY ally (target set: allies incl. self)', () => {
     const dd = buffs(baseEvents, 'distributedDamagePct').filter(
-      (e) => e.value === 20,
+      (e) => e.value === 20
     );
     expect(dd.length).toBeGreaterThan(0);
     const targets = new Set(dd.map((e) => e.targetSlug));
@@ -2257,12 +2280,12 @@ describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster
 
   it('both burst ally-buffs are 10s windows (duration semantics)', () => {
     const dd = buffs(baseEvents, 'distributedDamagePct').filter(
-      (e) => e.value === 20,
+      (e) => e.value === 20
     );
     const ca = buffs(baseEvents, 'casterAtkPct');
     // 10s at the sim's frame rate: the two ally buffs share one window length.
     expect(dd[0].expiresFrame - dd[0].frame).toBe(
-      ca[0].expiresFrame - ca[0].frame,
+      ca[0].expiresFrame - ca[0].frame
     );
   });
 });
@@ -2270,13 +2293,13 @@ describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster
 describe('burst — all enemies: 170% of final ATK as distributed damage', () => {
   it('emits a distributed-flavored burst hit per own cast, FB-exempt (rule 9)', () => {
     const ownCasts = baseEvents.filter(
-      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG,
+      (e) => e.kind === 'burstCast' && (e as any).slug === SLUG
     ).length;
     const burstHits = baseEvents.filter(
       (e) =>
         e.kind === 'damage' &&
         (e as any).srcSlot === 'burst' &&
-        (e as any).slug === SLUG,
+        (e as any).slug === SLUG
     ) as any[];
     expect(burstHits.length).toBeGreaterThanOrEqual(ownCasts);
     // burst-cast instant damage lands before the FB window opens
@@ -2287,7 +2310,7 @@ describe('burst — all enemies: 170% of final ATK as distributed damage', () =>
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst as any[]) {
         b.effects = (b.effects as any[]).filter(
-          (e) => !(e.kind === 'flatDamage' && e.atkPct === 170),
+          (e) => !(e.kind === 'flatDamage' && e.atkPct === 170)
         );
       }
     });
@@ -2305,7 +2328,7 @@ describe('burst — all enemies: 170% of final ATK as distributed damage', () =>
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst as any[]) {
         b.effects = (b.effects as any[]).filter(
-          (e) => !(e.kind === 'buff' && e.stat === 'distributedDamagePct'),
+          (e) => !(e.kind === 'buff' && e.stat === 'distributedDamagePct')
         );
       }
     });
@@ -2322,30 +2345,25 @@ describe('burst — conditional self riders (GAP)', () => {
 
   it.skip('IFAK Maximum Accumulation ▲20.13% while in Ninjutsu Injection — GAP: Injection branch is not live on a no-other-Defender comp AND stored-heal amounts are unmodeled', () => {});
 });
-
 ```
 
 ---
 
 ## SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5, independent rebuild) + diff vs driver override
 
-
 DRIVER'S SHORT DIFF (blind S6 override vs driver override):
+
 - skill1: BYTE-IDENTICAL. (a) fullBurstEnter -> enemy damageTakenPct 12/15s; (b) burstCast -> self atkPct 15.04/10s; (c) burstCast -> enemy damageTakenPct 8/10s. Both models keep the two Acid Bomb debuffs as DISTINCT co-stacking entries (12 vs 8), neither merges to 20.
 - burst ally buff: IDENTICAL — burstCast -> all allies distributedDamagePct 20 + casterAtkPct 15 (flat %-of-caster-ATK), 10s.
 - burst nuke: SAME BEHAVIOR — burstCast -> enemy flatDamage 170% flavor distributed. Blind adds explicit {noFb:true, crit:true}; driver omits them relying on the engine's burst-cast auto-FB-exemption + default rider-crit convention. Measured: driver nuke has fbMajorApplied=false and is crit-eligible WITHOUT explicit noFb (engine auto-exempts burst-cast instant damage). Equivalent encoding, identical numbers.
 - skill2 (ALL inert/event-only — no HP pool, emits no SimEvent, zero damage impact): blind uses trigger {interval, sec:4} -> allies heal for the IFAK; driver uses {hitCount, count:200} -> allies heal as a proxy for "every 4 sec" (driver note flags no timed-interval trigger was assumed available; both fire the same recovery-event channel). Blind omits the Injection self-heal event (driver models it as shotFired self heal, with-defender mode); both list the Injection lifesteal MAGNITUDE in unmodeled. Mode naming differs cosmetically (blind soloDefender/withDefender; driver "solo defender"/"with defender ally"/"auto"); both default to the solo-defender branch.
 - unmodeled: same six inert lines (Attract/taunt, Camouflage, IFAK 4s duration, IFAK 165.28%-ATK cap, next-shield +20.13%, IFAK-accumulation +20.13%).
-CONVERGENCE: every damage-relevant line is identical or behaviorally equivalent; all differences are confined to inert skill2 event channels + cosmetic naming.
-
+  CONVERGENCE: every damage-relevant line is identical or behaviorally equivalent; all differences are confined to inert skill2 event channels + cosmetic naming.
 
 ```json
 {
   "slug": "delta-ninja-thief",
-  "modes": [
-    "soloDefender",
-    "withDefender"
-  ],
+  "modes": ["soloDefender", "withDefender"],
   "skill1": [
     {
       "slot": "skill1",
@@ -2526,6 +2544,7 @@ CONVERGENCE: every damage-relevant line is identical or behaviorally equivalent;
 ## SECTION 7 — DRIVER'S IMPLEMENTATION (the artifact under judgment)
 
 ### scripts/tests/units/delta-ninja-thief.test.ts (driver kit spec, 16 tests, GREEN vs shipped)
+
 ```typescript
 // PER-UNIT KIT SPEC — `delta-ninja-thief` (Delta: Ninja Thief — Defender/MG/Water, Burst II, cd 40s,
 // ammo 300, reloadFrames 171). The VARIANT; its base counterpart is `delta` (SR/Wind) — never conflate.
@@ -2613,41 +2632,67 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual patches (nearest wrong model each group must discriminate) -----------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
-const hasKind = (b: any, kind: string) => b.effects.some((e: any) => e.kind === kind);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
+const hasKind = (b: any, kind: string) =>
+  b.effects.some((e: any) => e.kind === kind);
 
 /** H1 reference: the 12% FB-entry Acid Bomb removed entirely. */
 const dntNoAcidFB = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct')),
+    (b: any) =>
+      !(b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct'))
   );
-  if (ov.skill1.length === before) throw new Error('dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale');
+  if (ov.skill1.length === before)
+    throw new Error(
+      'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
+    );
 });
 /** H1 counterfactual: the same 12% line re-triggered on burstCast (the nearest wrong trigger). */
 const dntAcidFBAsBurstCast = withPatchedOverride('delta-ninja-thief', (ov) => {
-  const b = ov.skill1.find((b: any) => b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct'));
-  if (!b) throw new Error('dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale');
+  const b = ov.skill1.find(
+    (b: any) =>
+      b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct')
+  );
+  if (!b)
+    throw new Error(
+      'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
+    );
   b.trigger.kind = 'burstCast';
 });
 /** H2 reference: her self ATK buff removed. */
 const dntNoSelfAtk = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !(b.target.kind === 'self' && hasStat(b, 'atkPct')));
-  if (ov.skill1.length === before) throw new Error('dnt S1 self atkPct missing — fixture is stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !(b.target.kind === 'self' && hasStat(b, 'atkPct'))
+  );
+  if (ov.skill1.length === before)
+    throw new Error('dnt S1 self atkPct missing — fixture is stale');
 });
 /** H3 reference: the 8% burst-cast Acid Bomb removed. */
 const dntNoAcidCast = withPatchedOverride('delta-ninja-thief', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.trigger.kind === 'burstCast' && b.target.kind === 'enemy' && hasStat(b, 'damageTakenPct')),
+    (b: any) =>
+      !(
+        b.trigger.kind === 'burstCast' &&
+        b.target.kind === 'enemy' &&
+        hasStat(b, 'damageTakenPct')
+      )
   );
-  if (ov.skill1.length === before) throw new Error('dnt S1 burstCast damageTakenPct missing — fixture is stale');
+  if (ov.skill1.length === before)
+    throw new Error(
+      'dnt S1 burstCast damageTakenPct missing — fixture is stale'
+    );
 });
 /** H4 reference: the +20% distributed-damage team buff removed. */
 const dntNoDistBuff = withPatchedOverride('delta-ninja-thief', (ov) => {
   const b = ov.burst.find((b: any) => hasStat(b, 'distributedDamagePct'));
-  if (!b) throw new Error('dnt burst distributedDamagePct missing — fixture is stale');
+  if (!b)
+    throw new Error(
+      'dnt burst distributedDamagePct missing — fixture is stale'
+    );
   b.effects = b.effects.filter((e: any) => e.stat !== 'distributedDamagePct');
 });
 /** H5 counterfactual: the nuke's distributed flavor stripped (nearest wrong flavor). */
@@ -2668,17 +2713,29 @@ const noDistBuff = run({ 'delta-ninja-thief': dntNoDistBuff });
 const nukeNotDist = run({ 'delta-ninja-thief': dntNukeNotDist });
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const dntBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'delta-ninja-thief');
+  evs.filter(
+    (e): e is BurstCast =>
+      e.kind === 'burstCast' && e.slug === 'delta-ninja-thief'
+  );
 const fbStartFrames = (evs: SimEvent[]) =>
   new Set(evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame));
-const castFrames = (evs: SimEvent[]) => new Set(dntBursts(evs).map((c) => c.frame));
+const castFrames = (evs: SimEvent[]) =>
+  new Set(dntBursts(evs).map((c) => c.frame));
 /** Boss debuffs (targetIdx null = the boss) of a given damageTakenPct value. */
 const bossTaken = (evs: SimEvent[], value: number) =>
-  buffs(evs).filter((b) => b.stat === 'damageTakenPct' && b.targetIdx === null && b.value === value);
-const dntNuke = (evs: SimEvent[]) => dmg(evs).filter((d) => d.slug === 'delta-ninja-thief' && d.srcSlot === 'burst');
+  buffs(evs).filter(
+    (b) =>
+      b.stat === 'damageTakenPct' && b.targetIdx === null && b.value === value
+  );
+const dntNuke = (evs: SimEvent[]) =>
+  dmg(evs).filter(
+    (d) => d.slug === 'delta-ninja-thief' && d.srcSlot === 'burst'
+  );
 
 describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
   describe('H1 — S1 Ninjutsu Acid Bomb: boss Damage Taken ▲12% for 15s on FULL BURST ENTRY', () => {
@@ -2694,8 +2751,14 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       const fb = fbStartFrames(base.events);
       const casts = castFrames(base.events);
       for (const b of taken12) {
-        expect(fb.has(b.frame), `12% debuff at frame ${b.frame} is not a FB-start frame`).toBe(true);
-        expect(casts.has(b.frame), `12% debuff at frame ${b.frame} sits on her cast — that is burstCast, not fullBurstEnter`).toBe(false);
+        expect(
+          fb.has(b.frame),
+          `12% debuff at frame ${b.frame} is not a FB-start frame`
+        ).toBe(true);
+        expect(
+          casts.has(b.frame),
+          `12% debuff at frame ${b.frame} sits on her cast — that is burstCast, not fullBurstEnter`
+        ).toBe(false);
       }
     });
 
@@ -2704,21 +2767,29 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       const moved = bossTaken(acidFBAsBurstCast.events, 12);
       expect(moved.length).toBeGreaterThan(0);
       for (const b of moved) {
-        expect(casts.has(b.frame), `counterfactual 12% debuff at ${b.frame} should sit on a cast frame`).toBe(true);
-        expect(fbStartFrames(acidFBAsBurstCast.events).has(b.frame)).toBe(false);
+        expect(
+          casts.has(b.frame),
+          `counterfactual 12% debuff at ${b.frame} should sit on a cast frame`
+        ).toBe(true);
+        expect(fbStartFrames(acidFBAsBurstCast.events).has(b.frame)).toBe(
+          false
+        );
       }
     });
 
     it('is load-bearing for the WHOLE team (boss takes 12% more during every FB window)', () => {
       for (const s of SLUGS) {
-        expect(base.totals[s], `${s} total must drop without the 12% FB debuff`).toBeGreaterThan(noAcidFB.totals[s]);
+        expect(
+          base.totals[s],
+          `${s} total must drop without the 12% FB debuff`
+        ).toBeGreaterThan(noAcidFB.totals[s]);
       }
     });
   });
 
   describe('H2 — S1 self ATK ▲15.04% for 10s on BURST CAST (self-scoped)', () => {
     const selfAtk = buffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && b.casterIdx === DNT && b.targetIdx === DNT,
+      (b) => b.stat === 'atkPct' && b.casterIdx === DNT && b.targetIdx === DNT
     );
 
     it('is 15.04% to herself for 10s, once per burst cast', () => {
@@ -2729,7 +2800,9 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     });
 
     it('DISCRIMINATING: removing it lowers ONLY her own total (liter/helm byte-identical)', () => {
-      expect(base.totals['delta-ninja-thief']).toBeGreaterThan(noSelfAtk.totals['delta-ninja-thief']);
+      expect(base.totals['delta-ninja-thief']).toBeGreaterThan(
+        noSelfAtk.totals['delta-ninja-thief']
+      );
       expect(base.totals.liter).toBe(noSelfAtk.totals.liter);
       expect(base.totals.helm).toBe(noSelfAtk.totals.helm);
     });
@@ -2746,18 +2819,32 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
 
     it('fires on her BURST CAST (its frame is a cast frame), distinct from the 12% FB-entry debuff', () => {
       const casts = castFrames(base.events);
-      for (const b of taken8) expect(casts.has(b.frame), `8% debuff at ${b.frame} is not a cast frame`).toBe(true);
+      for (const b of taken8)
+        expect(
+          casts.has(b.frame),
+          `8% debuff at ${b.frame} is not a cast frame`
+        ).toBe(true);
     });
 
-    it('DISCRIMINATING: removing it collapses the burst nuke\'s taken multiplier 1.08 → 1.0', () => {
-      expect([...new Set(dntNuke(base.events).map((d) => d.mult.taken.toFixed(4)))]).toEqual(['1.0800']);
-      expect([...new Set(dntNuke(noAcidCast.events).map((d) => d.mult.taken.toFixed(4)))]).toEqual(['1.0000']);
+    it("DISCRIMINATING: removing it collapses the burst nuke's taken multiplier 1.08 → 1.0", () => {
+      expect([
+        ...new Set(dntNuke(base.events).map((d) => d.mult.taken.toFixed(4))),
+      ]).toEqual(['1.0800']);
+      expect([
+        ...new Set(
+          dntNuke(noAcidCast.events).map((d) => d.mult.taken.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 
   describe('H4 — Burst: all allies Distributed Damage ▲20% + ATK ▲15% of caster ATK for 10s', () => {
-    const dist = buffs(base.events).filter((b) => b.stat === 'distributedDamagePct' && b.casterIdx === DNT);
-    const casterAtk = buffs(base.events).filter((b) => b.stat === 'casterAtkPct' && b.casterIdx === DNT);
+    const dist = buffs(base.events).filter(
+      (b) => b.stat === 'distributedDamagePct' && b.casterIdx === DNT
+    );
+    const casterAtk = buffs(base.events).filter(
+      (b) => b.stat === 'casterAtkPct' && b.casterIdx === DNT
+    );
     const perCast = dntBursts(base.events).length * SLUGS.length;
 
     it('grants +20% distributed damage to ALL allies for 10s, once per cast', () => {
@@ -2771,14 +2858,29 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       expect(casterAtk.length).toBe(perCast);
       expect(new Set(casterAtk.map((b) => b.targetIdx))).toEqual(ALLIES);
       const vals = [...new Set(casterAtk.map((b) => b.value))];
-      expect(vals.length, 'every ally receives the same flat caster-ATK amount').toBe(1);
-      expect(vals[0], 'a flat ATK magnitude (15% of her ATK), not the 15 percentage').toBeGreaterThan(1000);
-      for (const b of casterAtk) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        vals.length,
+        'every ally receives the same flat caster-ATK amount'
+      ).toBe(1);
+      expect(
+        vals[0],
+        'a flat ATK magnitude (15% of her ATK), not the 15 percentage'
+      ).toBeGreaterThan(1000);
+      for (const b of casterAtk)
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     });
 
     it('DISCRIMINATING: the +20% is live — her distributed nuke picks it up same cast (1.2 → 1.0 without)', () => {
-      expect([...new Set(dntNuke(base.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.2000']);
-      expect([...new Set(dntNuke(noDistBuff.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(
+          dntNuke(base.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.2000']);
+      expect([
+        ...new Set(
+          dntNuke(noDistBuff.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 
@@ -2793,22 +2895,30 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     });
 
     it('is FB-exempt (the cast lands before the Full Burst window opens)', () => {
-      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual([]);
+      expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
+        []
+      );
     });
 
     it('is DISTRIBUTED-flavored (picks up her own +20% distributed buff on the same cast)', () => {
-      expect([...new Set(nukes.map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.2000']);
+      expect([
+        ...new Set(nukes.map((d) => d.mult.distributed.toFixed(4))),
+      ]).toEqual(['1.2000']);
     });
 
     it('DISCRIMINATING: stripping the distributed flavor collapses the multiplier to 1.0', () => {
-      expect([...new Set(dntNuke(nukeNotDist.events).map((d) => d.mult.distributed.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(
+          dntNuke(nukeNotDist.events).map((d) => d.mult.distributed.toFixed(4))
+        ),
+      ]).toEqual(['1.0000']);
     });
   });
 });
-
 ```
 
 ### src/skills/overrides/delta-ninja-thief.json (driver override)
+
 ```json
 {
   "note": "Kit-autonomy gauntlet 2026-07-25: validated FAITHFUL on all damage-relevant lines (skill1 fullBurstEnter boss damageTakenPct 12/15s, burstCast self atkPct 15.04/10s, burstCast boss damageTakenPct 8/10s co-stacking; burst all-ally distributedDamagePct 20 + casterAtkPct 15 flat-add, 170% distributed FB-exempt nuke). Cross-family S2b(fable)/S5/S6/S7(opus) converged; skill2 Defender-formation branch confirmed event-only/inert (no shield/heal HP pool, emits no SimEvent). Remaining ⚑ are cadence/formation proxies, not damage-line gaps. --- delta-ninja-thief (Delta: Ninja Thief) — MG/Water/Defender/B2 debuff+buff support; her own damage = MG normals + one burst distributed nuke. Kit-parse AUTHOR pass 2026-07-16 (wave 2), merging the staged baseline (overrides-baselines) + the re-materialized parse. HP-SCALING: NONE — every 'Max HP' reference is SHIELD SIZE (12.25% of final Max HP), no atkOfMaxHpPct/casterMaxHpPct conversion (prior 6 n/a). MODES (Defender-count formation branch; engine `formation` only supports B1-count, so user-selectable modes like naga/anis): 'solo defender' (DEFAULT ⚑3 — no other Defender ally, the assumed control-team case: Attract/Taunt + self-shields) vs 'with defender ally' (Camouflage + Ninjutsu Injection lifesteal → the IFAK all-ally heal). skill1 (formation-independent, all 3 lines modeled): (a) 'when entering Full Burst' → fullBurstEnter (fires on every team FB per hard rule 6) → boss damageTakenPct 12/15s; (b) 'when using Burst Skill' → burstCast (only rotations SHE bursts) → self atkPct 15.04/10s; (c) burstCast → boss damageTakenPct 8/10s (nearest-crosshair = the single boss). The two Acid Bomb debuffs are distinct named effects with distinct values (12 vs 8) → they co-stack during overlap, faithful to the kit. skill2: SOLO mode — battle-start shield event (maxHpPct 12.25, 10s; event-only, no HP pool — fires `shielded` triggers on self; no in-kit consumer but kept per hard rules 2-3) + hitCount-200 shield ('when performing 200 normal attack(s) while in Attract' — Attract ≡ the solo branch); Attract/Taunt itself unmodeled (taunt, partless boss unaffected). WITH-DEFENDER mode — Ninjutsu Injection 'recovers 11.22% of attack damage as HP continuously' modeled as an event-only heal to SELF on shotFired (per-pull ≈ continuous; amount unmodeled — heal is event-only; kept per hard rules 2-3 so any recovery consumer works); Camouflage unmodeled (single-target-immunity, defensive vs partless boss); Ninjutsu IFAK ('every 4 sec while in Injection … all allies healed for the stored amount') modeled as heal → allies on hitCount 200 (⚑2 proxy for the 4s timer — no timed-interval trigger exists), which fires teammate `recovery` triggers (Crown-style consumers, hard rule 2); the 4s storage DELAY + the 165.28%-of-ATK stored-amount cap are unmodeled (heal has no magnitude). burst: burstCast → all allies distributedDamagePct 20/10s + casterAtkPct 15/10s ('15% of the skill user's ATK' = flat add of caster ATK); burstCast → boss flatDamage 170% distributed (auto-FB-exempt as burst-cast instant damage — no noFb; picks up her own +20% distributed buff, landing same cast). 'Next shield's HP ▲20.13%' + 'Maximum Accumulation of Ninjutsu IFAK ▲20.13%' unmodeled — they scale shield-size/heal-amount, neither of which has an engine pool (shield/heal are event-only); the underlying shield/heal EVENTS are modeled, only their magnitudes are not. Element: clean ×1.10 Water advantage, engine-handled (no elemental-advantage buff — prior 7). No reload/ammo/fire-rate kit lines → no charFixes (prior 9 audit: nothing gates shot count). ⚑ NEEDS-MEASUREMENT: (1) CADENCE TUPLE [MANDATORY] — MG rate of fire (engine MG wind-up ladder + class default; not text-derivable) + reloadFrames 171 (datamine) + rolling-reload behavior; estimate = datamine as-is; recipe = rounds/min + reload gap from any focused delta-ninja-thief video; ammo 300 empties in ~5-7s at MG rates — normal MG profile, no odd-fire-mode text tell → NOT escalated. (2) IFAK heal cadence — hitCount 200 as the 'every 4 sec' proxy (≈4-5s at MG cadence incl. wind-up + reloads); recipe = time the IFAK heal ticks in a 2-Defender recording; matters only as a teammate recovery-consumer trigger. (3) FORMATION-MODE DEFAULT — 'solo defender' assumed for the standard control team; verify per-comp (a second Defender flips the branch: shields/taunt OFF, Injection+IFAK ON); recipe = check the actual squad, select the mode per comp. (4) Injection self-heal cadence — shotFired (per trigger pull) as the 'continuously' proxy; inert unless a self-recovery consumer appears; recipe = only if ever load-bearing, read heal-tick cadence from a with-defender recording. Blast radius: team-facing levers (boss damageTakenPct 12+8, allies casterAtkPct 15 + distributedDamagePct 20, IFAK heal→recovery events) touch the WHOLE team — /sim-battery diff before any board-level claim.",
@@ -2927,5 +3037,4 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     }
   ]
 }
-
 ```

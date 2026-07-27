@@ -53,7 +53,12 @@
 // counterfactual's whole point is that the total moves.
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const SLUG = 'rapi-red-hood';
@@ -64,7 +69,10 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 
 function run(opts: ReturnType<typeof controlComp> | any) {
   const events: SimEvent[] = [];
-  const res = runComp({ ...opts, cfg: { ...opts.cfg, onEvent: (e) => events.push(e) } });
+  const res = runComp({
+    ...opts,
+    cfg: { ...opts.cfg, onEvent: (e) => events.push(e) },
+  });
   return { events, totals: totals(res) };
 }
 
@@ -85,52 +93,58 @@ const NOB1_RRH = 1; // crown 0 / rrh 1 / ada 2
 const rrhNoAtk = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.formation !== 'hasB1');
-  if (ov.skill1.length === before) throw new Error('rrh S1 hasB1 block missing — fixture stale');
+  if (ov.skill1.length === before)
+    {throw new Error('rrh S1 hasB1 block missing — fixture stale');}
 });
 /** RRH3: her S2 passive projectile Attachment/Explosion buffs removed. */
 const rrhNoProj = withPatchedOverride(SLUG, (ov) => {
   let n = 0;
   for (const b of ov.skill2)
-    b.effects = b.effects.filter((e: any) => {
-      const drop = e.stat === 'projectileAttachmentPct' || e.stat === 'projectileExplosionPct';
-      if (drop) n++;
+    {b.effects = b.effects.filter((e: any) => {
+      const drop =
+        e.stat === 'projectileAttachmentPct' ||
+        e.stat === 'projectileExplosionPct';
+      if (drop) {n++;}
       return !drop;
-    });
-  if (n !== 2) throw new Error('rrh S2 projectile buffs missing — fixture stale');
+    });}
+  if (n !== 2)
+    {throw new Error('rrh S2 projectile buffs missing — fixture stale');}
 });
 /** RRH4: her S2 stored explosion (storedHit) removed — the attachment flatDamage stays. */
 const rrhNoExpl = withPatchedOverride(SLUG, (ov) => {
   let n = 0;
   for (const b of ov.skill2)
-    b.effects = b.effects.filter((e: any) => {
-      if (e.kind !== 'storedHit') return true;
+    {b.effects = b.effects.filter((e: any) => {
+      if (e.kind !== 'storedHit') {return true;}
       n++;
       return false;
-    });
-  if (n !== 1) throw new Error('rrh S2 storedHit missing — fixture stale');
+    });}
+  if (n !== 1) {throw new Error('rrh S2 storedHit missing — fixture stale');}
 });
 /** RRH5: her Stage-3 burst nuke removed. */
 const rrhNoNuke = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !(b.trigger.kind === 'burstCast' && b.trigger.stage === 3),
+    (b: any) => !(b.trigger.kind === 'burstCast' && b.trigger.stage === 3)
   );
-  if (ov.burst.length === before) throw new Error('rrh burst stage-3 nuke missing — fixture stale');
+  if (ov.burst.length === before)
+    {throw new Error('rrh burst stage-3 nuke missing — fixture stale');}
 });
 /** RRH2: her noB1 Full-Burst-enter team block removed. */
 const rrhNoAssist = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.formation === 'noB1' && b.trigger.kind === 'fullBurstEnter'),
+    (b: any) => !(b.formation === 'noB1' && b.trigger.kind === 'fullBurstEnter')
   );
-  if (ov.skill1.length === before) throw new Error('rrh S1 noB1 FB-enter block missing — fixture stale');
+  if (ov.skill1.length === before)
+    {throw new Error('rrh S1 noB1 FB-enter block missing — fixture stale');}
 });
 /** RRH6: her Stage-1 casterAtkPct magnitude knocked to the level-1 value (11.16 vs 18.01). */
 const rrhCasterWrong = withPatchedOverride(SLUG, (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) throw new Error('rrh burst casterAtkPct missing — fixture stale');
+  if (!e) {throw new Error('rrh burst casterAtkPct missing — fixture stale');}
   e.value = 11.16;
 });
 
@@ -142,13 +156,18 @@ const hNoExpl = run({ ...hasB1Comp, overrides: { [SLUG]: rrhNoExpl } });
 const hNoNuke = run({ ...hasB1Comp, overrides: { [SLUG]: rrhNoNuke } });
 const nBase = run(noB1Comp);
 const nNoAssist = run({ ...noB1Comp, overrides: { [SLUG]: rrhNoAssist } });
-const nCasterWrong = run({ ...noB1Comp, overrides: { [SLUG]: rrhCasterWrong } });
+const nCasterWrong = run({
+  ...noB1Comp,
+  overrides: { [SLUG]: rrhCasterWrong },
+});
 
 // ---- readers ---------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
 const rrhDmg = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === SLUG && d.srcSlot === srcSlot);
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const rrhBuffs = (evs: SimEvent[], stat: string, rrhSlot: number) =>
   buffs(evs).filter((b) => b.casterIdx === rrhSlot && b.stat === stat);
 const rrhBursts = (evs: SimEvent[]) =>
@@ -157,7 +176,10 @@ const rrhBursts = (evs: SimEvent[]) =>
 /** Distinct holders a buff reached, per frame — for all-allies assertions. */
 function holdersPerFrame(bs: BuffApply[]): Map<number, Set<number | null>> {
   const m = new Map<number, Set<number | null>>();
-  for (const b of bs) (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+  for (const b of bs)
+    {(m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+      b.targetIdx
+    );}
   return m;
 }
 
@@ -167,48 +189,83 @@ const near = (a: number, b: number, eps = 1e-3) => Math.abs(a - b) < eps;
 
 describe('rapi-red-hood — kit spec', () => {
   describe('RRH1 — S1 hasB1: self ATK ▲95.04% on Full Burst entry (formation-gated)', () => {
-    const applied = rrhBuffs(hBase.events, 'atkPct', HASB1_RRH).filter((b) => b.value === 95.04);
+    const applied = rrhBuffs(hBase.events, 'atkPct', HASB1_RRH).filter(
+      (b) => b.value === 95.04
+    );
 
     it('fires in hasB1, self-scoped, for 10 sec', () => {
-      expect(applied.length, 'no hasB1 atkPct 95.04 buff applied').toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([HASB1_RRH]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      expect(
+        applied.length,
+        'no hasB1 atkPct 95.04 buff applied'
+      ).toBeGreaterThan(0);
+      expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([
+        HASB1_RRH,
+      ]);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is LIVE (removing it drops her total)', () => {
       expect(hNoAtk.totals[SLUG]).toBeLessThan(hBase.totals[SLUG]);
-      expect(rrhBuffs(hNoAtk.events, 'atkPct', HASB1_RRH).filter((b) => b.value === 95.04)).toEqual([]);
+      expect(
+        rrhBuffs(hNoAtk.events, 'atkPct', HASB1_RRH).filter(
+          (b) => b.value === 95.04
+        )
+      ).toEqual([]);
     });
 
     it('DISCRIMINATING: does NOT fire in noB1 formation (the gate is real)', () => {
-      expect(rrhBuffs(nBase.events, 'atkPct', NOB1_RRH).filter((b) => b.value === 95.04)).toEqual([]);
+      expect(
+        rrhBuffs(nBase.events, 'atkPct', NOB1_RRH).filter(
+          (b) => b.value === 95.04
+        )
+      ).toEqual([]);
     });
   });
 
   describe('RRH2 — S1 noB1: Combat Assist fills B1 + team Attack Damage ▲8.02% on FB entry', () => {
-    const applied = rrhBuffs(nBase.events, 'attackDamagePct', NOB1_RRH).filter((b) => b.value === 8.02);
+    const applied = rrhBuffs(nBase.events, 'attackDamagePct', NOB1_RRH).filter(
+      (b) => b.value === 8.02
+    );
 
     it('fills the B1 slot — she casts her burst at STAGE 1 in noB1', () => {
       const stages = rrhBursts(nBase.events).map((b) => b.stage);
-      expect(stages.length, 'noB1 chain never opened — rrh did not fill B1').toBeGreaterThan(0);
+      expect(
+        stages.length,
+        'noB1 chain never opened — rrh did not fill B1'
+      ).toBeGreaterThan(0);
       expect([...new Set(stages)]).toEqual([1]);
     });
 
     it('grants 8.02% Attack Damage to ALL allies for 10 sec on each FB entry', () => {
-      expect(applied.length, 'no noB1 attackDamagePct 8.02 buff applied').toBeGreaterThan(0);
+      expect(
+        applied.length,
+        'no noB1 attackDamagePct 8.02 buff applied'
+      ).toBeGreaterThan(0);
       for (const [, holders] of holdersPerFrame(applied)) {
-        expect(holders.size, `reached ${holders.size} allies, expected 3`).toBe(3);
+        expect(holders.size, `reached ${holders.size} allies, expected 3`).toBe(
+          3
+        );
       }
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: removing the noB1 FB-enter block erases the team buff', () => {
-      expect(rrhBuffs(nNoAssist.events, 'attackDamagePct', NOB1_RRH).filter((b) => b.value === 8.02)).toEqual([]);
+      expect(
+        rrhBuffs(nNoAssist.events, 'attackDamagePct', NOB1_RRH).filter(
+          (b) => b.value === 8.02
+        )
+      ).toEqual([]);
     });
 
     it('DISCRIMINATING: does NOT fire in hasB1 formation, where she casts STAGE 3', () => {
-      expect(rrhBuffs(hBase.events, 'attackDamagePct', HASB1_RRH).filter((b) => b.value === 8.02)).toEqual([]);
-      expect([...new Set(rrhBursts(hBase.events).map((b) => b.stage))]).toEqual([3]);
+      expect(
+        rrhBuffs(hBase.events, 'attackDamagePct', HASB1_RRH).filter(
+          (b) => b.value === 8.02
+        )
+      ).toEqual([]);
+      expect([...new Set(rrhBursts(hBase.events).map((b) => b.stage))]).toEqual(
+        [3]
+      );
     });
   });
 
@@ -218,20 +275,30 @@ describe('rapi-red-hood — kit spec', () => {
     const explode = s2.filter((d) => near(d.mult.projFactor, PROJ_EXPLODE));
 
     it('attachment hits carry projFactor 2.5072, explosion hits 2.0060', () => {
-      expect(attach.length, 'no attachment-flavored rocket hit').toBeGreaterThan(0);
-      expect(explode.length, 'no explosion-flavored rocket hit').toBeGreaterThan(0);
+      expect(
+        attach.length,
+        'no attachment-flavored rocket hit'
+      ).toBeGreaterThan(0);
+      expect(
+        explode.length,
+        'no explosion-flavored rocket hit'
+      ).toBeGreaterThan(0);
     });
 
     it('normals are never touched by the projectile bucket', () => {
       const normals = rrhDmg(hBase.events, 'normal');
       expect(normals.length).toBeGreaterThan(0);
-      expect([...new Set(normals.map((d) => d.mult.projFactor.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(normals.map((d) => d.mult.projFactor.toFixed(4))),
+      ]).toEqual(['1.0000']);
     });
 
     it('DISCRIMINATING: removing the buffs collapses every rocket projFactor to 1.0', () => {
       const s2p = rrhDmg(hNoProj.events, 'skill2');
       expect(s2p.length).toBeGreaterThan(0);
-      expect([...new Set(s2p.map((d) => d.mult.projFactor.toFixed(4)))]).toEqual(['1.0000']);
+      expect([
+        ...new Set(s2p.map((d) => d.mult.projFactor.toFixed(4))),
+      ]).toEqual(['1.0000']);
     });
   });
 
@@ -239,17 +306,30 @@ describe('rapi-red-hood — kit spec', () => {
     const s2 = rrhDmg(hBase.events, 'skill2');
     const attach = s2.filter((d) => near(d.mult.projFactor, PROJ_ATTACH));
     const explode = s2.filter((d) => near(d.mult.projFactor, PROJ_EXPLODE));
-    const isMultipleOf8811 = (a: number) => Math.abs(a / 88.11 - Math.round(a / 88.11)) < 1e-6;
+    const isMultipleOf8811 = (a: number) =>
+      Math.abs(a / 88.11 - Math.round(a / 88.11)) < 1e-6;
 
     it('every rocket instance is an integer multiple of 88.11% of final ATK', () => {
       expect(s2.length).toBeGreaterThan(0);
-      for (const d of s2) expect(isMultipleOf8811(d.atkPct), `atkPct ${d.atkPct} not ×88.11`).toBe(true);
+      for (const d of s2)
+        {expect(
+          isMultipleOf8811(d.atkPct),
+          `atkPct ${d.atkPct} not ×88.11`
+        ).toBe(true);}
     });
 
     it('the attachment is immediate and does NOT core; the explosion cores at ×0.33', () => {
-      expect(attach.every((d) => d.coreEligible === false), 'attachment must not core').toBe(true);
-      expect(explode.every((d) => d.coreEligible === true), 'explosion must core').toBe(true);
-      expect([...new Set(explode.map((d) => d.coreRate.toFixed(3)))]).toEqual(['0.330']);
+      expect(
+        attach.every((d) => d.coreEligible === false),
+        'attachment must not core'
+      ).toBe(true);
+      expect(
+        explode.every((d) => d.coreEligible === true),
+        'explosion must core'
+      ).toBe(true);
+      expect([...new Set(explode.map((d) => d.coreRate.toFixed(3)))]).toEqual([
+        '0.330',
+      ]);
     });
 
     it('both flavors crit-eligible (the stored explosion is NOT crit-exempt)', () => {
@@ -258,7 +338,9 @@ describe('rapi-red-hood — kit spec', () => {
     });
 
     it('DISCRIMINATING: removing the storedHit erases every explosion-flavor instance', () => {
-      const explodeGone = rrhDmg(hNoExpl.events, 'skill2').filter((d) => near(d.mult.projFactor, PROJ_EXPLODE));
+      const explodeGone = rrhDmg(hNoExpl.events, 'skill2').filter((d) =>
+        near(d.mult.projFactor, PROJ_EXPLODE)
+      );
       expect(explodeGone).toEqual([]);
       expect(hNoExpl.totals[SLUG]).toBeLessThan(hBase.totals[SLUG]);
     });
@@ -276,7 +358,10 @@ describe('rapi-red-hood — kit spec', () => {
     });
 
     it('takes the +50% Full Burst major (it lands ~0.4s after the cast, inside the window)', () => {
-      expect(nukes.every((d) => d.fbMajorApplied), 'nuke must land inside FB').toBe(true);
+      expect(
+        nukes.every((d) => d.fbMajorApplied),
+        'nuke must land inside FB'
+      ).toBe(true);
       expect(nukes.every((d) => d.critEligible)).toBe(true);
     });
 
@@ -290,11 +375,15 @@ describe('rapi-red-hood — kit spec', () => {
     const applied = rrhBuffs(nBase.events, 'casterAtkPct', NOB1_RRH);
 
     it('reaches all three allies for 10 sec, in noB1 (stage 1)', () => {
-      expect(applied.length, 'no stage-1 casterAtkPct grant').toBeGreaterThan(0);
+      expect(applied.length, 'no stage-1 casterAtkPct grant').toBeGreaterThan(
+        0
+      );
       for (const [, holders] of holdersPerFrame(applied)) {
-        expect(holders.size, `reached ${holders.size} allies, expected 3`).toBe(3);
+        expect(holders.size, `reached ${holders.size} allies, expected 3`).toBe(
+          3
+        );
       }
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('is 18.01% of caster ATK (magnitude pinned vs the 11.16 counterfactual)', () => {

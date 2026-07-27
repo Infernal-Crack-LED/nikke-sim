@@ -6,6 +6,7 @@ description: Mine recurring correction patterns ACROSS hand-tunes into reusable 
 # Tuning priors — turn the tuning history into a better starting model
 
 ## When to use
+
 - A hand-tune just landed and its root cause is one you've fixed before on another unit.
 - After a calibration batch (e.g. a reference-grade push, a probe run of several units).
 - Periodically, to re-mine the corpus and refresh `docs/modeling-priors.md`.
@@ -54,6 +55,7 @@ small correction, not a from-scratch fit.
    not a reason to delete the prior.
 
 ## Verify
+
 ```sh
 bash scripts/verify.sh   # only if a prior was promoted to an engine default
 ```

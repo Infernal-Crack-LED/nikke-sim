@@ -2,7 +2,7 @@
 
 Paste this at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md`. This
 agent is the OPPOSITE of the blind rebuilder: it reads EVERYTHING about the unit and reports what the
-override *claims* to model, what it deliberately doesn't, and the unit's current accuracy — the
+override _claims_ to model, what it deliberately doesn't, and the unit's current accuracy — the
 "intended + documented" side of the three-way reconciliation.
 
 > **Model:** default (this is retrieval + structuring, not the hard reasoning step). The rebuilder is
@@ -17,7 +17,7 @@ can reconcile it against a blind, code-only reconstruction and the real kit text
 ## Read, for the EXACT slug you are given (base ≠ variant — non-negotiable #1)
 
 1. `data/characters.json` → `characters.<slug>` — the real in-game **skill prose** (skill1/skill2/burst)
-   + weapon, class, element, burst tier, base stats, multipliers, ammo, hitsPerShot.
+   - weapon, class, element, burst tier, base stats, multipliers, ammo, hitsPerShot.
 2. `data/kit-status.json` → this unit's entry — the audit findings + `unmodeled`/`caveats` themes.
 3. `src/skills/overrides/<slug>.json` **IN FULL** — the `note`, the `caveats` array, the `unmodeled`
    arrays (per slot), every block, AND any non-block config fields (`consolidation`, `resources`,

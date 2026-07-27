@@ -6,6 +6,7 @@ description: Draft player-facing patch notes for the web app's Patch Notes page 
 # Patch notes
 
 ## When to use
+
 - The owner is about to **make a PR or push to `main`** (the `pre-pr-patch-notes.sh` PreToolUse
   hook fires a reminder), OR the owner says "patch notes" / "update the changelog".
 - There are new settled changes worth telling players about (usually new `docs/DECISIONS.md`
@@ -18,7 +19,7 @@ community-readable notes that file holds.
 ## Steps
 
 1. **Find the coverage window.** Read `web/src/patch-notes.json` (array, newest first). The top
-   entry's `date` is the last published note — new notes cover changes settled *after* it.
+   entry's `date` is the last published note — new notes cover changes settled _after_ it.
 
 2. **Collect what changed.** Read `docs/DECISIONS.md` and take the dated entries
    (`**(YYYY-MM-DD) …**`, newest first) with a date after the last published note. Cross-check the
@@ -49,8 +50,10 @@ community-readable notes that file holds.
    web deploy and travels with the normal commit (owner-triggered, as always).
 
 ## Verify
+
 ```sh
 npm run web:build && node scripts/web-smoke.mjs   # site still builds + renders with patch-notes.json
 bash scripts/verify.sh
 ```
+
 Then eyeball `/patch-notes` in `npm run web` — the new entry shows at the top of Patch notes.

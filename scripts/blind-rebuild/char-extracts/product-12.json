@@ -19,9 +19,7 @@
     "rl3": 3.55,
     "burstGaugePerShot": 0.05,
     "treasure": false,
-    "nicknames": [
-      "p1"
-    ],
+    "nicknames": ["p1"],
     "skills": {
       "skill1": "■ Affects self. Activates after 200 normal attacks.\nATK ▲ 8.28% for 5 sec.",
       "skill2": "■ Affects 1 enemy unit(s) with the lowest remaining HP. \nDeals 109.09% of final ATK as damage.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 150,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 7,
           "prefer_target_condition": "None",
@@ -260,16 +254,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects <word_group=10020>enemies within attack range</word_group>. \nDeals <color=#00AEFF>{description_value_02}% of <word_group=10025>final</word_group> ATK as damage. </color>",
           "description_value_list": [
@@ -313,18 +298,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -349,9 +326,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,

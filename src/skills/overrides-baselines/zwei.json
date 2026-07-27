@@ -6,8 +6,18 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 20.13, "durationSec": 10 },
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 10.06, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 20.13,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 10.06,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -16,7 +26,13 @@
       "fbGate": "inFb",
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 24.99, "durationSec": 10, "maxStacks": 3 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 24.99,
+          "durationSec": 10,
+          "maxStacks": 3
+        }
       ]
     }
   ],
@@ -26,16 +42,19 @@
       "trigger": { "kind": "shotFired" },
       "everyN": 5,
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 18.63, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 18.63,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -44,7 +63,13 @@
       "fbGate": "inFb",
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "critRatePct", "value": 15, "durationSec": 5, "maxStacks": 3 }
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 15,
+          "durationSec": 5,
+          "maxStacks": 3
+        }
       ]
     }
   ],
@@ -54,7 +79,14 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "weaponSwap", "damagePct": 50.69, "chargeTimeSec": 1.2, "chargeMultPct": 300, "maxAmmo": 1, "durationSec": 10 }
+        {
+          "kind": "weaponSwap",
+          "damagePct": 50.69,
+          "chargeTimeSec": 1.2,
+          "chargeMultPct": 300,
+          "maxAmmo": 1,
+          "durationSec": 10
+        }
       ]
     },
     {
@@ -62,7 +94,12 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
       "effects": [
-        { "kind": "buff", "stat": "pierceDamagePct", "value": 25.03, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "pierceDamagePct",
+          "value": 25.03,
+          "durationSec": 10
+        }
       ]
     }
   ]

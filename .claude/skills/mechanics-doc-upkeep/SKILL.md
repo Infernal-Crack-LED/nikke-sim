@@ -6,7 +6,9 @@ description: Keep the two mechanics source-of-truth docs synchronized with the e
 # Mechanics doc upkeep — the source-of-truth pair stays true
 
 ## The contract
+
 Two documents must let a human reconstruct the sim's math without reading code:
+
 1. `docs/data/game-mechanics.md` — WHAT the game does (mechanics, evidence tiers, sources).
    Detail docs it links: nikke-damage-formula.md, burst-gauge.md, charge-weapons.md,
    auto-play.md, nikke-mg-windup-model.md, range-data.md.
@@ -15,6 +17,7 @@ Two documents must let a human reconstruct the sim's math without reading code:
    match popup-verified real values.
 
 ## Steps for an incremental change
+
 1. Identify which claims the change touches. Grep both docs for the mechanic's terms.
 2. Update in place. The two SSOT docs are CURRENT-STATE class (docs/CONVENTIONS.md → Doc hygiene):
    keep the current truth, delete stale content — a reversed ruling's history goes to `DECISIONS.md`,
@@ -31,6 +34,7 @@ Two documents must let a human reconstruct the sim's math without reading code:
    snapshot with the doc edits.
 
 ## Steps for a full re-review (periodic, or after a batch of engine changes)
+
 1. Read `dealDamage()` + the constants block + the rotation state machine in `src/engine/sim.ts`
    top to bottom; list every formula/constant/branch.
 2. Walk `damage-calculation.md` section by section against that list — every engine term must
@@ -40,7 +44,9 @@ Two documents must let a human reconstruct the sim's math without reading code:
 4. Cross-check `game-mechanics.md` summaries and its links to detail docs.
 
 ## Verify
+
 ```sh
 bash scripts/verify.sh
 ```
+
 Plus: the worked examples in damage-calculation.md recompute correctly.

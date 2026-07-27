@@ -65,7 +65,7 @@ export interface TeamBuilderProps {
   // warning (and does NOT switch) on unsupported units.
   onCopyToRoster: (
     rows: (string | null)[][],
-    mode: 'solo' | 'union',
+    mode: 'solo' | 'union'
   ) => string | null;
   // Report the current build up to the App so the page header's Generate
   // link / Copy image buttons can act on it (team vs roster implementation
@@ -73,7 +73,7 @@ export interface TeamBuilderProps {
   onTeamChange: (
     slugs: (string | null)[],
     rosterMode: RosterMode,
-    unionBossOpts?: UnionBossOpts[],
+    unionBossOpts?: UnionBossOpts[]
   ) => void;
 }
 
@@ -111,7 +111,7 @@ export function TeamBuilderPage({
 
   // Per-team boss options for union mode (3 teams)
   const [unionBossOpts, setUnionBossOpts] = useState<UnionBossOpts[]>(
-    Array.from({ length: 3 }, defaultUnionBossOpts),
+    Array.from({ length: 3 }, defaultUnionBossOpts)
   );
 
   // Keep the App's copy of the build in sync (drives the header share buttons)
@@ -119,19 +119,19 @@ export function TeamBuilderPage({
     onTeamChange(
       teamSlots,
       rosterMode,
-      rosterMode === 'union' ? unionBossOpts : undefined,
+      rosterMode === 'union' ? unionBossOpts : undefined
     );
   }, [teamSlots, rosterMode, unionBossOpts, onTeamChange]);
 
   // Dismiss the expand-choice popover on outside click / Escape
   useEffect(() => {
-    if (!showExpandChoice) return;
+    if (!showExpandChoice) {return;}
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (expandRef.current && !expandRef.current.contains(e.target as Node))
-        setShowExpandChoice(false);
+        {setShowExpandChoice(false);}
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setShowExpandChoice(false);
+      if (e.key === 'Escape') {setShowExpandChoice(false);}
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -150,7 +150,7 @@ export function TeamBuilderPage({
     setShowExpandChoice(false);
     setTeamSlots((prev) => {
       const target = mode === 'solo' ? 25 : 15;
-      if (prev.length >= target) return prev.slice(0, target);
+      if (prev.length >= target) {return prev.slice(0, target);}
       return [
         ...prev,
         ...Array.from({ length: target - prev.length }, () => null),
@@ -188,7 +188,7 @@ export function TeamBuilderPage({
         return next;
       }
       const emptyIdx = prev.indexOf(null);
-      if (emptyIdx < 0) return prev; // team full — remove one to add another
+      if (emptyIdx < 0) {return prev;} // team full — remove one to add another
       const next = [...prev];
       next[emptyIdx] = slug;
       return next;
@@ -220,7 +220,7 @@ export function TeamBuilderPage({
   // The name comes from the inline field (no window.prompt); the App-side
   // onSaveTeam no longer prompts either — the old flow prompted twice.
   const doSaveTeamBuilder = async (name: string) => {
-    if (!hasTeam) return;
+    if (!hasTeam) {return;}
     try {
       await onSaveTeam(teamSlots, name);
       setNamingTb(false);
@@ -236,23 +236,23 @@ export function TeamBuilderPage({
     rosterMode === 'team'
       ? [teamSlots]
       : Array.from({ length: teamCount }, (_, r) =>
-          teamSlots.slice(r * 5, r * 5 + 5),
+          teamSlots.slice(r * 5, r * 5 + 5)
         );
 
   const handleCopyToSim = () => {
-    if (!hasTeam) return;
+    if (!hasTeam) {return;}
     setCopyWarning(onCopyToSim(teamSlots));
   };
 
   const handleCopyToRoster = () => {
-    if (!hasTeam) return;
+    if (!hasTeam) {return;}
     const mode = rosterMode === 'union' ? 'union' : 'solo';
     setCopyWarning(onCopyToRoster(currentRows(), mode));
   };
 
   const setUnionBossOpt = (ti: number, patch: Partial<UnionBossOpts>) =>
     setUnionBossOpts((prev) =>
-      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o)),
+      prev.map((o, i) => (i === ti ? { ...o, ...patch } : o))
     );
 
   // Portrait thumbs for the strip chips — team-sized in team mode, the
@@ -260,7 +260,7 @@ export function TeamBuilderPage({
   const teamSlotUrls = teamSlots.filter(Boolean) as string[];
   const teamSlotThumbs = usePortraitThumbs(
     teamSlotUrls,
-    rosterMode === 'team' ? 124 : 72,
+    rosterMode === 'team' ? 124 : 72
   );
 
   // Units already placed (anywhere in the grid) leave the grid below
@@ -274,7 +274,7 @@ export function TeamBuilderPage({
     return (
       <button
         key={i}
-        type='button'
+        type="button"
         ref={draggable ? teamReorder.register(i) : undefined}
         className={
           'team-chip roster-slot' +
@@ -291,13 +291,13 @@ export function TeamBuilderPage({
             draggable={false}
           />
         ) : (
-          <span className='chip-empty'>+</span>
+          <span className="chip-empty">+</span>
         )}
         {slug && (
           <span
-            className='chip-x'
-            role='button'
-            aria-label='remove'
+            className="chip-x"
+            role="button"
+            aria-label="remove"
             onClick={(e) => {
               e.stopPropagation();
               removeFromSlot(i);
@@ -314,10 +314,10 @@ export function TeamBuilderPage({
   const renderUnionBossOpts = (ti: number) => {
     const o = unionBossOpts[ti];
     return (
-      <div className='union-boss-opts'>
-        <div className='union-boss-row'>
-          <span className='union-boss-label'>Weakness</span>
-          <div className='pills small'>
+      <div className="union-boss-opts">
+        <div className="union-boss-row">
+          <span className="union-boss-label">Weakness</span>
+          <div className="pills small">
             {ELEMENTS.map((e) => (
               <button
                 key={e ?? 'none'}
@@ -329,9 +329,9 @@ export function TeamBuilderPage({
             ))}
           </div>
         </div>
-        <div className='union-boss-row'>
-          <span className='union-boss-label'>Range</span>
-          <div className='pills small'>
+        <div className="union-boss-row">
+          <span className="union-boss-label">Range</span>
+          <div className="pills small">
             {BOSS_RANGE_OPTIONS.map((opt) => (
               <button
                 key={opt.id ?? 'auto'}
@@ -343,17 +343,17 @@ export function TeamBuilderPage({
             ))}
           </div>
         </div>
-        <div className='union-boss-row'>
-          <span className='union-boss-label'>Boss DEF</span>
+        <div className="union-boss-row">
+          <span className="union-boss-label">Boss DEF</span>
           <input
-            className='num'
+            className="num"
             value={o.bossDef}
             onChange={(e) => setUnionBossOpt(ti, { bossDef: e.target.value })}
           />
         </div>
-        <div className='union-boss-row'>
-          <span className='union-boss-label'>Core</span>
-          <div className='pills small'>
+        <div className="union-boss-row">
+          <span className="union-boss-label">Core</span>
+          <div className="pills small">
             {CORE_PRESETS.map((p) => (
               <button
                 key={p.label}
@@ -374,12 +374,12 @@ export function TeamBuilderPage({
           </div>
           {o.coreCustom && (
             <input
-              className='num'
+              className="num"
               value={o.coreCustomVal}
               onChange={(e) =>
                 setUnionBossOpt(ti, { coreCustomVal: e.target.value })
               }
-              placeholder='%'
+              placeholder="%"
             />
           )}
         </div>
@@ -388,8 +388,8 @@ export function TeamBuilderPage({
   };
 
   return (
-    <section className='calc-tab teambuilder-page'>
-      <p className='muted'>
+    <section className="calc-tab teambuilder-page">
+      <p className="muted">
         Browse all NIKKEs and filter by weapon, burst, class, element,
         manufacturer, or kit role. Click a card to add it to the team; click ×
         on a portrait to remove it. Then copy the team into the Sim or Roster
@@ -398,18 +398,18 @@ export function TeamBuilderPage({
 
       {/* Team slots — 5 boxes (or a full roster grid) that fill in as you click
           characters below; the + / − button switches between the modes */}
-      <div className='teambuilder-team'>
+      <div className="teambuilder-team">
         {rosterMode === 'team' ? (
-          <div className='roster-slots'>
+          <div className="roster-slots">
             {teamSlots.map((_, i) => renderChip(i, true))}
           </div>
         ) : (
-          <div className='roster-input'>
+          <div className="roster-input">
             {Array.from({ length: teamCount }, (_, t) => (
-              <div className='union-team-block' key={t}>
-                <div className='roster-input-row'>
-                  <span className='rg-label muted'>team {t + 1}</span>
-                  <div className='roster-slots'>
+              <div className="union-team-block" key={t}>
+                <div className="roster-input-row">
+                  <span className="rg-label muted">team {t + 1}</span>
+                  <div className="roster-slots">
                     {teamSlots
                       .slice(t * 5, t * 5 + 5)
                       .map((_, u) => renderChip(t * 5 + u, true))}
@@ -420,23 +420,23 @@ export function TeamBuilderPage({
             ))}
           </div>
         )}
-        <div className='teambuilder-expand-wrap' ref={expandRef}>
+        <div className="teambuilder-expand-wrap" ref={expandRef}>
           {rosterMode === 'team' ? (
             <>
               <button
-                type='button'
-                className='teambuilder-expand'
-                title='expand to a full roster'
+                type="button"
+                className="teambuilder-expand"
+                title="expand to a full roster"
                 onClick={() => setShowExpandChoice((v) => !v)}
               >
                 +
               </button>
               {showExpandChoice && (
-                <div className='teambuilder-choice'>
-                  <button type='button' onClick={() => expandTo('solo')}>
+                <div className="teambuilder-choice">
+                  <button type="button" onClick={() => expandTo('solo')}>
                     Solo Raid
                   </button>
-                  <button type='button' onClick={() => expandTo('union')}>
+                  <button type="button" onClick={() => expandTo('union')}>
                     Union Raid
                   </button>
                 </div>
@@ -444,9 +444,9 @@ export function TeamBuilderPage({
             </>
           ) : (
             <button
-              type='button'
-              className='teambuilder-expand'
-              title='collapse to a single team of 5 (keeps team 1)'
+              type="button"
+              className="teambuilder-expand"
+              title="collapse to a single team of 5 (keeps team 1)"
               onClick={collapseToTeam}
             >
               −
@@ -460,9 +460,9 @@ export function TeamBuilderPage({
           when expanded to a roster grid. Generate link + Copy image live in the
           page header (App) and switch implementations with the mode. */}
       {(hasTeam || user) && (
-        <div className='teambuilder-actions'>
+        <div className="teambuilder-actions">
           {hasTeam && (
-            <button className='teambuilder-clear' onClick={clearTeam}>
+            <button className="teambuilder-clear" onClick={clearTeam}>
               Clear team
             </button>
           )}
@@ -470,13 +470,13 @@ export function TeamBuilderPage({
             (namingTb ? (
               <InlineNameField
                 initial={suggestedTeamName()}
-                placeholder='team name'
+                placeholder="team name"
                 onCommit={doSaveTeamBuilder}
                 onCancel={() => setNamingTb(false)}
               />
             ) : (
               <button
-                className='teambuilder-action'
+                className="teambuilder-action"
                 onClick={() => setNamingTb(true)}
                 disabled={!hasTeam}
                 title={
@@ -491,13 +491,13 @@ export function TeamBuilderPage({
           {hasTeam &&
             (rosterMode !== 'team' ? (
               <button
-                className='teambuilder-action'
+                className="teambuilder-action"
                 onClick={handleCopyToRoster}
               >
                 ✎ Copy to Roster Sim
               </button>
             ) : (
-              <button className='teambuilder-action' onClick={handleCopyToSim}>
+              <button className="teambuilder-action" onClick={handleCopyToSim}>
                 ✎ Copy to Sim
               </button>
             ))}
@@ -505,7 +505,7 @@ export function TeamBuilderPage({
       )}
 
       {copyWarning && (
-        <div className='teambuilder-warning' role='alert'>
+        <div className="teambuilder-warning" role="alert">
           {copyWarning}
         </div>
       )}

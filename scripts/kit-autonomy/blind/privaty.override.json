@@ -4,9 +4,7 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Stuns for 3 sec."
-    ]
+    "burst": ["Stuns for 3 sec."]
   },
   "skill1": [
     {

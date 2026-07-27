@@ -12,13 +12,13 @@ import { manifestThumbUrl } from './portraitManifest';
 // straight at the full-res art.
 export function usePortraitThumbs(
   urls: (string | null | undefined)[],
-  cssSize: number,
+  cssSize: number
 ): Record<string, string> {
   const [thumbs, setThumbs] = useState<Record<string, string>>(() => {
     const out: Record<string, string> = {};
     for (const url of urls) {
       const hit = manifestThumbUrl(url, cssSize);
-      if (url && hit) out[url] = hit;
+      if (url && hit) {out[url] = hit;}
     }
     return out;
   });
@@ -27,13 +27,13 @@ export function usePortraitThumbs(
     let alive = true;
     const dpr = Math.min(
       typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1,
-      3,
+      3
     );
     const size = Math.round(cssSize * dpr);
     const found: Record<string, string> = {};
     const jobs: Promise<void>[] = [];
     for (const url of urls) {
-      if (!url) continue;
+      if (!url) {continue;}
       const hit = manifestThumbUrl(url, cssSize);
       if (hit) {
         found[url] = hit;
@@ -42,12 +42,12 @@ export function usePortraitThumbs(
       // no generated thumbnail — downscale the raw art at runtime
       jobs.push(
         portraitThumb(url, size).then((data) => {
-          if (data) found[url] = data;
-        }),
+          if (data) {found[url] = data;}
+        })
       );
     }
     Promise.all(jobs).then(() => {
-      if (!alive) return;
+      if (!alive) {return;}
       setThumbs((prev) => {
         let changed = false;
         const next = { ...prev };

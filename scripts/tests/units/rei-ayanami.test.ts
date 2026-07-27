@@ -106,7 +106,7 @@ function run(overrides: Record<string, any> = {}, bossElement: Boss = 'Wind') {
  *  RA4/RA5). Boss Wind keeps rei the only advantaged unit. */
 function runHelm(
   overrides: Record<string, any> = {},
-  bossElement: Boss = 'Wind',
+  bossElement: Boss = 'Wind'
 ) {
   const events: SimEvent[] = [];
   const res = runComp({
@@ -126,13 +126,13 @@ const hasStat = (b: any, stat: string) =>
 const reiNoElemAdv = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.flatMap((b: any) => b.effects).length;
   for (const b of ov.skill1)
-    b.effects = b.effects.filter(
-      (e: any) => e.stat !== 'elemAdvantageDamagePct',
-    );
+    {b.effects = b.effects.filter(
+      (e: any) => e.stat !== 'elemAdvantageDamagePct'
+    );}
   if (ov.skill1.flatMap((b: any) => b.effects).length === before)
-    throw new Error(
-      'rei S1 elemAdvantageDamagePct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'rei S1 elemAdvantageDamagePct effect missing — fixture is stale'
+    );}
 });
 /** RA1 counterfactual: the same line as an UNGATED Damage-Up buff (over-credits when not advantaged). */
 const reiUngatedElemAdv = withPatchedOverride(SLUG, (ov) => {
@@ -140,25 +140,25 @@ const reiUngatedElemAdv = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'elemAdvantageDamagePct');
   if (!e)
-    throw new Error(
-      'rei S1 elemAdvantageDamagePct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'rei S1 elemAdvantageDamagePct effect missing — fixture is stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 /** RA2/RA5 encoding reference: both flatDamage riders made core-eligible (text says "as damage"). */
 const reiCoreRider = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
   for (const slot of ['skill1', 'burst'] as const)
-    for (const b of ov[slot])
-      for (const e of b.effects)
-        if (e.kind === 'flatDamage') {
+    {for (const b of ov[slot])
+      {for (const e of b.effects)
+        {if (e.kind === 'flatDamage') {
           e.core = true;
           patched++;
-        }
+        }}}}
   if (patched !== 2)
-    throw new Error(
-      'rei expected 2 flatDamage riders (S1 + burst) — fixture is stale',
-    );
+    {throw new Error(
+      'rei expected 2 flatDamage riders (S1 + burst) — fixture is stale'
+    );}
 });
 /** RA3 encoding reference: casterAtkPct → atkPct (self-scaling % instead of flat caster add). */
 const reiAtkPct = withPatchedOverride(SLUG, (ov) => {
@@ -166,32 +166,32 @@ const reiAtkPct = withPatchedOverride(SLUG, (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error('rei S2 casterAtkPct effect missing — fixture is stale');
+    {throw new Error('rei S2 casterAtkPct effect missing — fixture is stale');}
   e.stat = 'atkPct';
 });
 /** RA3/RA4 counterfactual: re-target every Fire-element-scoped block to ALL allies. */
 const reiGenericAllies = withPatchedOverride(SLUG, (ov) => {
   let patched = 0;
   for (const slot of ['skill2', 'burst'] as const)
-    for (const b of ov[slot])
-      if (b.target?.kind === 'alliesOfElement') {
+    {for (const b of ov[slot])
+      {if (b.target?.kind === 'alliesOfElement') {
         b.target = { kind: 'allies' };
         patched++;
-      }
+      }}}
   if (patched !== 2)
-    throw new Error(
-      'rei expected 2 alliesOfElement blocks (S2 + burst) — fixture is stale',
-    );
+    {throw new Error(
+      'rei expected 2 alliesOfElement blocks (S2 + burst) — fixture is stale'
+    );}
 });
 /** RA4 reference: her burst Attack-damage line removed (the load-bearing Damage-Up buff). */
 const reiNoBurstDmgUp = withPatchedOverride(SLUG, (ov) => {
   const before = ov.burst.flatMap((b: any) => b.effects).length;
   for (const b of ov.burst)
-    b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');
+    {b.effects = b.effects.filter((e: any) => e.stat !== 'attackDamagePct');}
   if (ov.burst.flatMap((b: any) => b.effects).length === before)
-    throw new Error(
-      'rei burst attackDamagePct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'rei burst attackDamagePct effect missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -217,7 +217,7 @@ const reiBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
 const helmBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'helm'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -229,7 +229,7 @@ const holdersOf = (evs: SimEvent[], key: string): Set<number> =>
   new Set(
     buffs(evs)
       .filter((b) => b.key === key)
-      .map((b) => b.targetIdx as number),
+      .map((b) => b.targetIdx as number)
   );
 
 const S1_ELEMADV_KEY = `${REI}:skill1:elemAdvantageDamagePct:30.23`;
@@ -240,7 +240,7 @@ describe('rei-ayanami — kit spec', () => {
   it('fixture sanity: rei actually casts her burst (needs the B1→B2→B3 chain)', () => {
     expect(
       reiBursts(base.events).length,
-      'no rei burst was cast — fixture cannot exercise burst lines',
+      'no rei burst was cast — fixture cannot exercise burst lines'
     ).toBeGreaterThan(0);
   });
 
@@ -251,7 +251,7 @@ describe('rei-ayanami — kit spec', () => {
     it('is 30.23% on herself, one proc per 100 landed hits, 3 sec window', () => {
       expect(
         applied.length,
-        'no S1 elemAdvantageDamagePct buff was applied',
+        'no S1 elemAdvantageDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.stat))]).toEqual([
         'elemAdvantageDamagePct',
@@ -260,9 +260,9 @@ describe('rei-ayanami — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([REI]);
       expect(
         applied.length,
-        `${applied.length} procs vs ${procsExpected} = floor(shots/100)`,
+        `${applied.length} procs vs ${procsExpected} = floor(shots/100)`
       ).toBe(procsExpected);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(3 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(3 * FPS);}
     });
 
     it('is LIVE under Fire advantage (Wind boss): removing it changes her total', () => {
@@ -275,7 +275,7 @@ describe('rei-ayanami — kit spec', () => {
 
     it('DISCRIMINATING: an ungated Damage-Up buff WOULD change the no-advantage total', () => {
       expect(baseIron.totals[SLUG]).not.toEqual(
-        ungatedElemAdvIron.totals[SLUG],
+        ungatedElemAdvIron.totals[SLUG]
       );
     });
   });
@@ -288,7 +288,7 @@ describe('rei-ayanami — kit spec', () => {
       expect(riders.length, 'no S1 nuke landed').toBeGreaterThan(0);
       expect(
         riders.length,
-        `${riders.length} procs vs ${procsExpected} = floor(shots/100)`,
+        `${riders.length} procs vs ${procsExpected} = floor(shots/100)`
       ).toBe(procsExpected);
       expect(riders.length).toBeLessThan(reiShots(base.events).length);
     });
@@ -302,7 +302,7 @@ describe('rei-ayanami — kit spec', () => {
 
     it('DISCRIMINATING: a core:true rider would become core-eligible (text says "as damage")', () => {
       expect(
-        reiDamage(coreRider.events, 'skill1').every((d) => d.coreEligible),
+        reiDamage(coreRider.events, 'skill1').every((d) => d.coreEligible)
       ).toBe(true);
     });
 
@@ -319,13 +319,13 @@ describe('rei-ayanami — kit spec', () => {
     it("is casterAtkPct (flat add of the skill user's ATK), magnitude 25.03, for 10 sec", () => {
       expect(
         applied.length,
-        'no stageEnter-3 casterAtkPct buff was applied',
+        'no stageEnter-3 casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.stat))]).toEqual([
         'casterAtkPct',
       ]);
-      for (const b of applied) expect(b.key).toBe(S2_ATK_KEY);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.key).toBe(S2_ATK_KEY);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('fires on her burstCast frames (sole B3 in fixture ⇒ once per burst cast)', () => {
@@ -348,8 +348,8 @@ describe('rei-ayanami — kit spec', () => {
       expect(reiBuffs(base.events, 'casterAtkPct').length).toBeGreaterThan(0);
       expect(
         reiBuffs(atkPct.events, 'casterAtkPct').filter((b) =>
-          b.key.startsWith(`${REI}:skill2:`),
-        ).length,
+          b.key.startsWith(`${REI}:skill2:`)
+        ).length
       ).toBe(0);
       expect(reiBuffs(atkPct.events, 'atkPct').length).toBeGreaterThan(0);
     });
@@ -361,11 +361,11 @@ describe('rei-ayanami — kit spec', () => {
     it('is 48.02% for 10 sec, burstCast-keyed (once per cast)', () => {
       expect(
         applied.length,
-        'no burst attackDamagePct buff was applied',
+        'no burst attackDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([48.02]);
       expect(applied.length).toBe(reiBursts(base.events).length);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('reaches the Fire ally (herself) and EXCLUDES every non-Fire ally', () => {
@@ -374,7 +374,7 @@ describe('rei-ayanami — kit spec', () => {
 
     it('DISCRIMINATING: a generic `allies` target would reach all three units', () => {
       expect([...holdersOf(genericAllies.events, BU_DMGUP_KEY)].sort()).toEqual(
-        [0, 1, REI],
+        [0, 1, REI]
       );
     });
 
@@ -399,13 +399,13 @@ describe('rei-ayanami — kit spec', () => {
       const took = nukes.filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
 
     it('DISCRIMINATING: a core:true nuke would become core-eligible (text says "as damage")', () => {
       expect(
-        reiDamage(coreRider.events, 'burst').every((d) => d.coreEligible),
+        reiDamage(coreRider.events, 'burst').every((d) => d.coreEligible)
       ).toBe(true);
     });
   });
@@ -425,18 +425,18 @@ describe('rei-ayanami — kit spec', () => {
 
     it("RA3 (stageEnter:3) fires on EVERY B3 cast — rei's AND helm's rotations", () => {
       const applied = buffs(withHelm.events).filter(
-        (b) => b.key === S2_ATK_KEY,
+        (b) => b.key === S2_ATK_KEY
       );
       expect(applied.length).toBe(reiCasts + helmCasts);
       expect(
         applied.length,
-        'strictly more than rei-only ⇒ stageEnter, not burstCast',
+        'strictly more than rei-only ⇒ stageEnter, not burstCast'
       ).toBeGreaterThan(reiCasts);
     });
 
     it("RA4 (burstCast Attack damage) fires on rei's casts ONLY, not helm's", () => {
       const applied = buffs(withHelm.events).filter(
-        (b) => b.key === BU_DMGUP_KEY,
+        (b) => b.key === BU_DMGUP_KEY
       );
       expect(applied.length).toBe(reiCasts);
     });
@@ -446,7 +446,7 @@ describe('rei-ayanami — kit spec', () => {
       expect(nukes.length).toBe(reiCasts);
       expect(
         nukes.length,
-        'a stageEnter-keyed nuke would fire on helm rotations too',
+        'a stageEnter-keyed nuke would fire on helm rotations too'
       ).toBeLessThan(reiCasts + helmCasts);
     });
   });

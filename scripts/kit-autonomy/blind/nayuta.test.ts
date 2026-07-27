@@ -58,17 +58,20 @@ function run(opts: Opts) {
   const events: any[] = [];
   const o: any = {
     ...(opts as any),
-    cfg: { ...((opts as any).cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev) },
+    cfg: {
+      ...((opts as any).cfg ?? {}),
+      onEvent: (ev: SimEvent) => events.push(ev),
+    },
   };
   return { res: runComp(o), events };
 }
 
 const frameOf = (ev: any): number => {
-  if (typeof ev?.frame === 'number') return ev.frame;
-  if (typeof ev?.f === 'number') return ev.f;
-  if (typeof ev?.t === 'number') return Math.round(ev.t * FPS);
-  if (typeof ev?.timeSec === 'number') return Math.round(ev.timeSec * FPS);
-  if (typeof ev?.sec === 'number') return Math.round(ev.sec * FPS);
+  if (typeof ev?.frame === 'number') {return ev.frame;}
+  if (typeof ev?.f === 'number') {return ev.f;}
+  if (typeof ev?.t === 'number') {return Math.round(ev.t * FPS);}
+  if (typeof ev?.timeSec === 'number') {return Math.round(ev.timeSec * FPS);}
+  if (typeof ev?.sec === 'number') {return Math.round(ev.sec * FPS);}
   return NaN;
 };
 const slugOf = (ev: any): string | undefined =>
@@ -77,7 +80,7 @@ const slugOf = (ev: any): string | undefined =>
 // slot value may be Block[] (file shape) or CharacterSkills{blocks} (harness cheat-sheet) — accept both
 const blocksOf = (ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] => {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 };
 const effectsOf = (ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] =>
@@ -99,7 +102,11 @@ withPatchedOverride(SLUG, (ov: any) => {
   INV.skill1 = effectsOf(ov, 'skill1');
   INV.skill2 = effectsOf(ov, 'skill2');
   INV.burst = effectsOf(ov, 'burst');
-  INV.blocks = [...blocksOf(ov, 'skill1'), ...blocksOf(ov, 'skill2'), ...blocksOf(ov, 'burst')];
+  INV.blocks = [
+    ...blocksOf(ov, 'skill1'),
+    ...blocksOf(ov, 'skill2'),
+    ...blocksOf(ov, 'burst'),
+  ];
 });
 
 const NO_S1_DMG = run({
@@ -107,7 +114,9 @@ const NO_S1_DMG = run({
   overrides: {
     [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
       for (const b of blocksOf(ov, 'skill1')) {
-        b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'flatDamage');
+        b.effects = (b.effects ?? []).filter(
+          (e: any) => e.kind !== 'flatDamage'
+        );
       }
     }),
   },
@@ -119,7 +128,7 @@ const NO_SWAP = run({
     [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
       for (const b of blocksOf(ov, 'burst')) {
         b.effects = (b.effects ?? []).filter(
-          (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo',
+          (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo'
         );
       }
     }),
@@ -132,9 +141,13 @@ const NIDX: number | undefined = (() => {
   const MAGS = [25.15, 20.27, 21.05, 35.45, 15.2, 1.4];
   for (const m of MAGS) {
     const hit = buffApplies.find(
-      (e) => e.casterIdx !== null && e.casterIdx !== undefined && typeof e.value === 'number' && NEAR(e.value, m),
+      (e) =>
+        e.casterIdx !== null &&
+        e.casterIdx !== undefined &&
+        typeof e.value === 'number' &&
+        NEAR(e.value, m)
     );
-    if (hit) return hit.casterIdx as number;
+    if (hit) {return hit.casterIdx as number;}
   }
   return undefined;
 })();
@@ -142,31 +155,52 @@ const mine = (e: any) => NIDX !== undefined && e.casterIdx === NIDX;
 
 const nEvs: any[] = (() => {
   const row: any = unitOf(BASE.res, SLUG);
-  if (Array.isArray(row?.events) && row.events.length) return row.events;
+  if (Array.isArray(row?.events) && row.events.length) {return row.events;}
   return evs.filter((e) => slugOf(e) === SLUG);
 })();
 
-const shotFrames: number[] = nEvs.filter((e) => e.kind === 'shot').map(frameOf).filter(Number.isFinite);
-const reloadFrames: number[] = nEvs.filter((e) => e.kind === 'reload').map(frameOf).filter(Number.isFinite);
+const shotFrames: number[] = nEvs
+  .filter((e) => e.kind === 'shot')
+  .map(frameOf)
+  .filter(Number.isFinite);
+const reloadFrames: number[] = nEvs
+  .filter((e) => e.kind === 'reload')
+  .map(frameOf)
+  .filter(Number.isFinite);
 const dmgEvs: any[] = nEvs.filter((e) => e.kind === 'damage');
 
 // cast frames: prefer burstCast events; fall back to the frames of her own 15s burst aura
 const castFrames: number[] = (() => {
-  const fromEv = nEvs.filter((e) => e.kind === 'burstCast').map(frameOf).filter(Number.isFinite);
-  if (fromEv.length) return fromEv;
+  const fromEv = nEvs
+    .filter((e) => e.kind === 'burstCast')
+    .map(frameOf)
+    .filter(Number.isFinite);
+  if (fromEv.length) {return fromEv;}
   return buffApplies
-    .filter((e) => mine(e) && e.stat === 'attackDamagePct' && NEAR(e.value, 35.45) && e.targetSlug === SLUG)
+    .filter(
+      (e) =>
+        mine(e) &&
+        e.stat === 'attackDamagePct' &&
+        NEAR(e.value, 35.45) &&
+        e.targetSlug === SLUG
+    )
     .map(frameOf)
     .filter(Number.isFinite);
 })();
 
-const inAnySwapWindow = (f: number) => castFrames.some((c) => f >= c && f <= c + 600);
-const countIn = (frames: number[], a: number, b: number) => frames.filter((f) => f >= a && f <= b).length;
+const inAnySwapWindow = (f: number) =>
+  castFrames.some((c) => f >= c && f <= c + 600);
+const countIn = (frames: number[], a: number, b: number) =>
+  frames.filter((f) => f >= a && f <= b).length;
 const idxOfFirst = (pred: (e: any) => boolean) => evs.findIndex(pred);
 const stacksBefore = (idx: number) =>
   idx < 0
     ? -1
-    : evs.slice(0, idx).filter((e) => e.kind === 'buffApply' && e.stat === 'hitRatePct' && mine(e)).length;
+    : evs
+        .slice(0, idx)
+        .filter(
+          (e) => e.kind === 'buffApply' && e.stat === 'hitRatePct' && mine(e)
+        ).length;
 
 // ---------------------------------------------------------------- fixture sanity / non-vacuity
 describe('nayuta — fixture', () => {
@@ -189,7 +223,9 @@ describe('nayuta — fixture', () => {
 
 // ---------------------------------------------------------------- skill1
 describe('nayuta — skill1', () => {
-  const s1Core = buffApplies.filter((e) => mine(e) && e.stat === 'coreDamagePct' && NEAR(e.value, 25.15));
+  const s1Core = buffApplies.filter(
+    (e) => mine(e) && e.stat === 'coreDamagePct' && NEAR(e.value, 25.15)
+  );
   const s1Atk = buffApplies.filter((e) => mine(e) && e.stat === 'casterAtkPct');
 
   it.skip('S1-a Indomitability 9s, 1x — UNMODELED: defensive status, no primitive and no HP pool in v1', () => {});
@@ -227,7 +263,11 @@ describe('nayuta — skill1', () => {
   });
 
   it('S1-b inertness: no plain atkPct 30.16 buff is ever emitted by nayuta', () => {
-    expect(buffApplies.some((e) => mine(e) && e.stat === 'atkPct' && NEAR(e.value, 30.16))).toBe(false);
+    expect(
+      buffApplies.some(
+        (e) => mine(e) && e.stat === 'atkPct' && NEAR(e.value, 30.16)
+      )
+    ).toBe(false);
   });
 
   it.skip('S1-b "Equally shares HP recovery for 5 sec" — UNMODELED: no HP pool / no damage taken in v1', () => {});
@@ -247,7 +287,10 @@ describe('nayuta — skill1', () => {
   it('S1-d rider fires ONLY inside the Memory Incineration swap window, ~1 per 1.8s full charge', () => {
     // nearest-wrong: rider keyed to every shot / every charge with no swapGate → it would fire
     // hundreds of times across the fight instead of ~5 per 10s burst window
-    const riders = dmgEvs.filter((e) => e.srcSlot === 'skill1').map(frameOf).filter(Number.isFinite);
+    const riders = dmgEvs
+      .filter((e) => e.srcSlot === 'skill1')
+      .map(frameOf)
+      .filter(Number.isFinite);
     expect(riders.length).toBeGreaterThan(0);
     expect(riders.every((f) => inAnySwapWindow(f))).toBe(true);
     for (const c of castFrames) {
@@ -286,7 +329,13 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
 
   it('S2-b Stage 1 (ATK ▲15.2%) waits for ≥2 stacks', () => {
     // nearest-wrong: all three stage buffs authored as passives live from frame 0
-    const i = idxOfFirst((e) => e.kind === 'buffApply' && mine(e) && e.stat === 'atkPct' && NEAR(e.value, 15.2));
+    const i = idxOfFirst(
+      (e) =>
+        e.kind === 'buffApply' &&
+        mine(e) &&
+        e.stat === 'atkPct' &&
+        NEAR(e.value, 15.2)
+    );
     expect(i).toBeGreaterThanOrEqual(0);
     expect(stacksBefore(i)).toBeGreaterThanOrEqual(1); // ≥2 stacks; tolerant of intra-frame ordering
     expect(frameOf(evs[i])).toBeGreaterThanOrEqual(300); // 2 stacks ⇒ t≈6s
@@ -295,7 +344,11 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
 
   it('S2-b Stage 2 (Attack Damage ▲20.27%) waits for ≥10 stacks', () => {
     const i = idxOfFirst(
-      (e) => e.kind === 'buffApply' && mine(e) && e.stat === 'attackDamagePct' && NEAR(e.value, 20.27),
+      (e) =>
+        e.kind === 'buffApply' &&
+        mine(e) &&
+        e.stat === 'attackDamagePct' &&
+        NEAR(e.value, 20.27)
     );
     expect(i).toBeGreaterThanOrEqual(0);
     expect(stacksBefore(i)).toBeGreaterThanOrEqual(9);
@@ -305,7 +358,11 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
 
   it('S2-b Stage 3 (core dmg ▲21.05%) waits for the FULL 30 stacks', () => {
     const i = idxOfFirst(
-      (e) => e.kind === 'buffApply' && mine(e) && e.stat === 'coreDamagePct' && NEAR(e.value, 21.05),
+      (e) =>
+        e.kind === 'buffApply' &&
+        mine(e) &&
+        e.stat === 'coreDamagePct' &&
+        NEAR(e.value, 21.05)
     );
     expect(i).toBeGreaterThanOrEqual(0);
     expect(stacksBefore(i)).toBeGreaterThanOrEqual(29);
@@ -315,7 +372,11 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
 
   it('S2-b non-vacuity: the fixture exercises BOTH the pre-stage-3 and post-stage-3 regimes', () => {
     const i = idxOfFirst(
-      (e) => e.kind === 'buffApply' && mine(e) && e.stat === 'coreDamagePct' && NEAR(e.value, 21.05),
+      (e) =>
+        e.kind === 'buffApply' &&
+        mine(e) &&
+        e.stat === 'coreDamagePct' &&
+        NEAR(e.value, 21.05)
     );
     const g = frameOf(evs[i]);
     const dmgFrames = dmgEvs.map(frameOf).filter(Number.isFinite);
@@ -329,7 +390,7 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
         mine(e) &&
         ((e.stat === 'atkPct' && NEAR(e.value, 15.2)) ||
           (e.stat === 'attackDamagePct' && NEAR(e.value, 20.27)) ||
-          (e.stat === 'coreDamagePct' && NEAR(e.value, 21.05))),
+          (e.stat === 'coreDamagePct' && NEAR(e.value, 21.05)))
     );
     expect(stage.length).toBeGreaterThan(0);
     expect(new Set(stage.map((e) => e.targetSlug))).toEqual(new Set([SLUG]));
@@ -338,7 +399,9 @@ describe('nayuta — skill2 (Memory Absorption)', () => {
 
 // ---------------------------------------------------------------- burst
 describe('nayuta — burst', () => {
-  const aura = buffApplies.filter((e) => mine(e) && e.stat === 'attackDamagePct' && NEAR(e.value, 35.45));
+  const aura = buffApplies.filter(
+    (e) => mine(e) && e.stat === 'attackDamagePct' && NEAR(e.value, 35.45)
+  );
 
   it('B-a Attack Damage ▲35.45% goes to all four allies for 15s, once per cast', () => {
     // nearest-wrong: self-only, or a 10s window copied from the swap duration
@@ -403,8 +466,16 @@ describe('nayuta — burst', () => {
       Array.isArray(noSwapRow?.events) && noSwapRow.events.length
         ? noSwapRow.events
         : NO_SWAP.events.filter((e) => slugOf(e) === SLUG);
-    const noSwapShots = noSwapEvs.filter((e) => e.kind === 'shot').map(frameOf).filter(Number.isFinite);
-    expect(countIn(noSwapShots, castFrames[0], castFrames[0] + 600)).toBeGreaterThanOrEqual(50);
-    expect(totals(NO_SWAP.res)[SLUG]).not.toBeCloseTo(totals(BASE.res)[SLUG], 0);
+    const noSwapShots = noSwapEvs
+      .filter((e) => e.kind === 'shot')
+      .map(frameOf)
+      .filter(Number.isFinite);
+    expect(
+      countIn(noSwapShots, castFrames[0], castFrames[0] + 600)
+    ).toBeGreaterThanOrEqual(50);
+    expect(totals(NO_SWAP.res)[SLUG]).not.toBeCloseTo(
+      totals(BASE.res)[SLUG],
+      0
+    );
   });
 });

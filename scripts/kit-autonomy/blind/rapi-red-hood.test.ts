@@ -51,8 +51,11 @@ type AnyEv = SimEvent & Record<string, any>;
 function run(overrides?: Record<string, unknown>) {
   const events: AnyEv[] = [];
   const opts = controlComp(SLUG, false) as any;
-  opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: SimEvent) => events.push(ev as AnyEv) };
-  if (overrides) opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  opts.cfg = {
+    ...(opts.cfg ?? {}),
+    onEvent: (ev: SimEvent) => events.push(ev as AnyEv),
+  };
+  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
   const res = runComp(opts);
   return { res, events, t: totals(res) };
 }
@@ -70,7 +73,7 @@ function buffs(events: AnyEv[], stat: string, value?: number) {
     (e) =>
       e.kind === 'buffApply' &&
       e.stat === stat &&
-      (value === undefined || Math.abs((e.value as number) - value) < 0.01),
+      (value === undefined || Math.abs((e.value as number) - value) < 0.01)
   );
 }
 
@@ -137,7 +140,11 @@ let nAtkZeroed = 0;
 const OV_NO_ATK = withPatchedOverride(SLUG, (ov: any) => {
   for (const b of ov.skill1 ?? []) {
     for (const e of b.effects ?? []) {
-      if (e.kind === 'buff' && e.stat === 'atkPct' && Math.abs(e.value - 95.04) < 0.01) {
+      if (
+        e.kind === 'buff' &&
+        e.stat === 'atkPct' &&
+        Math.abs(e.value - 95.04) < 0.01
+      ) {
         e.value = 0;
         nAtkZeroed++;
       }
@@ -170,7 +177,9 @@ describe('rapi-red-hood skill1 — formation-gated Combat Assist', () => {
     // "Affects self if there are no Burst 1 allies" / "...if there are Burst 1 allies" is a
     // STATIC squad fact, not a runtime trigger. Nearest-wrong: one ungated block that always
     // fires (over-credits the team in a hasB1 comp AND the self branch in a noB1 comp).
-    const gates = (OV.skill1 ?? []).map((b: any) => b.formation).filter(Boolean);
+    const gates = (OV.skill1 ?? [])
+      .map((b: any) => b.formation)
+      .filter(Boolean);
     expect(gates).toContain('noB1');
     expect(gates).toContain('hasB1');
   });
@@ -206,7 +215,9 @@ describe('rapi-red-hood skill1 — formation-gated Combat Assist', () => {
 
   it('...and that inertness is NOT vacuous — ungating the branch makes it appear', () => {
     expect(nFormationStripped).toBeGreaterThan(0);
-    expect(buffs(UNGATED.events, 'attackDamagePct', 8.02).length).toBeGreaterThan(0);
+    expect(
+      buffs(UNGATED.events, 'attackDamagePct', 8.02).length
+    ).toBeGreaterThan(0);
   });
 
   it('the Combat-Assist branch carries the 7.48s burst-CD reduction', () => {
@@ -214,7 +225,7 @@ describe('rapi-red-hood skill1 — formation-gated Combat Assist', () => {
     // asserted structurally. Nearest-wrong: dropped as "defensive/utility" (it is a real
     // rotation-rate change) or mis-signed.
     const cdr = ALL_EFFECTS.filter(
-      (e: any) => e.kind === 'burstCdr' && Math.abs(e.seconds - 7.48) < 0.01,
+      (e: any) => e.kind === 'burstCdr' && Math.abs(e.seconds - 7.48) < 0.01
     );
     expect(cdr.length).toBeGreaterThan(0);
   });
@@ -222,7 +233,7 @@ describe('rapi-red-hood skill1 — formation-gated Combat Assist', () => {
   it('Damage to Interruption Parts +48% is modeled or explicitly recorded (no silent drop)', () => {
     // partsDamagePct is inert in v1 (partless boss) but must not vanish silently.
     const asStat = ALL_EFFECTS.some(
-      (e: any) => e.stat === 'partsDamagePct' && Math.abs(e.value - 48) < 0.01,
+      (e: any) => e.stat === 'partsDamagePct' && Math.abs(e.value - 48) < 0.01
     );
     expect(asStat || /Interruption/i.test(UNMODELED_TEXT)).toBe(true);
   });
@@ -235,7 +246,9 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
     // "Applies Elemental Advantage damage to Electric Code enemies continuously."
     // Nearest-wrong: a flat elementDamagePct that would pay out against ANY boss.
     const adv = ALL_EFFECTS.some(
-      (e: any) => e.kind === 'advantageVs' && String(e.element).toLowerCase() === 'electric',
+      (e: any) =>
+        e.kind === 'advantageVs' &&
+        String(e.element).toLowerCase() === 'electric'
     );
     expect(adv).toBe(true);
   });
@@ -244,12 +257,16 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
     // "Activates after 120 normal attack(s)" — counts rounds fired (MG, hitsPerShot 1).
     // Nearest-wrong: an interval trigger, which would fire on a wall-clock cadence and
     // decouple the channel from fire rate / reloads entirely.
-    const t120 = (OV.skill2 ?? []).some((b: any) => (b.trigger ?? {}).count === 120);
+    const t120 = (OV.skill2 ?? []).some(
+      (b: any) => (b.trigger ?? {}).count === 120
+    );
     expect(t120).toBe(true);
   });
 
   it('the projectile channel actually pays out damage', () => {
-    const s2 = BASE.events.filter((e) => e.kind === 'damage' && e.srcSlot === 'skill2');
+    const s2 = BASE.events.filter(
+      (e) => e.kind === 'damage' && e.srcSlot === 'skill2'
+    );
     expect(s2.length).toBeGreaterThan(0);
   });
 
@@ -280,17 +297,21 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
     // "Max Ammunition Capacity: 1 round(s)" — at most one stored projectile, so at most one
     // explosion per Full Burst. Nearest-wrong: charges accumulating across the whole fight and
     // dumping N-at-once into a late FB.
-    const stored = ALL_EFFECTS.filter((e: any) => typeof e.charges === 'number');
-    for (const e of stored) expect(e.charges).toBeLessThanOrEqual(1);
+    const stored = ALL_EFFECTS.filter(
+      (e: any) => typeof e.charges === 'number'
+    );
+    for (const e of stored) {expect(e.charges).toBeLessThanOrEqual(1);}
   });
 
   it('the projectile damage magnitude is at least the kit base of 88.11%', () => {
     // Either the raw 88.11% with the continuous +150.72% / +100.6% modeled separately, or a
     // baked value >= 88.11 (the schema has no projectile-damage StatKey — see gaps). A value
     // BELOW 88.11 means the base line was mis-transcribed.
-    const proj = effectsIn(OV.skill2).filter((e: any) => typeof e.atkPct === 'number' && e.atkPct > 0);
+    const proj = effectsIn(OV.skill2).filter(
+      (e: any) => typeof e.atkPct === 'number' && e.atkPct > 0
+    );
     expect(proj.length).toBeGreaterThan(0);
-    for (const e of proj) expect(e.atkPct).toBeGreaterThanOrEqual(88.11 - 0.01);
+    for (const e of proj) {expect(e.atkPct).toBeGreaterThanOrEqual(88.11 - 0.01);}
   });
 
   it('zeroing the projectile channel lowers ONLY RRH', () => {
@@ -305,7 +326,7 @@ describe('rapi-red-hood skill2 — attachable projectiles', () => {
 describe('rapi-red-hood burst — stage-3 branch', () => {
   it('the 2808% additional-damage line is encoded', () => {
     const nuke = effectsIn(OV.burst).some(
-      (e: any) => typeof e.atkPct === 'number' && Math.abs(e.atkPct - 2808) < 1,
+      (e: any) => typeof e.atkPct === 'number' && Math.abs(e.atkPct - 2808) < 1
     );
     expect(nuke).toBe(true);
   });
@@ -325,21 +346,32 @@ describe('rapi-red-hood burst — stage-3 branch', () => {
     // every comp. Non-vacuity: the 95.04% self buff fires above, which is the mutually
     // exclusive not-in-Combat-Assist branch — so the fixture demonstrably resolves the gate.
     const stage1 = (OV.burst ?? []).filter(
-      (b: any) => (b.trigger ?? {}).stage === 1 || b.formation === 'noB1' || b.mode,
+      (b: any) =>
+        (b.trigger ?? {}).stage === 1 || b.formation === 'noB1' || b.mode
     );
     expect(stage1.length).toBeGreaterThan(0);
     const flatFromCaster = BASE.events.filter(
-      (e) => e.kind === 'buffApply' && e.stat === 'casterAtkPct' && e.targetSlug !== undefined && e.casterIdx !== null && e.targetSlug !== SLUG,
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.stat === 'casterAtkPct' &&
+        e.targetSlug !== undefined &&
+        e.casterIdx !== null &&
+        e.targetSlug !== SLUG
     );
     // no caster-scaled ATK grant sourced from RRH's stage-1 branch reaches an ally here
     expect(
-      flatFromCaster.filter((e) => Math.abs((e.value as number)) > 0 && e.key && /18\.01|stage1|squadSupport/i.test(String(e.key))).length,
+      flatFromCaster.filter(
+        (e) =>
+          Math.abs(e.value as number) > 0 &&
+          e.key &&
+          /18\.01|stage1|squadSupport/i.test(String(e.key))
+      ).length
     ).toBe(0);
   });
 
   it('the 20s stage-1 burst-CD reduction is recorded', () => {
     const cdr = effectsIn(OV.burst).some(
-      (e: any) => e.kind === 'burstCdr' && Math.abs(e.seconds - 20) < 0.01,
+      (e: any) => e.kind === 'burstCdr' && Math.abs(e.seconds - 20) < 0.01
     );
     expect(cdr).toBe(true);
   });

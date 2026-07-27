@@ -37,6 +37,7 @@ triggering, the swap-state gate on the riders, and the time-average factors for 
 ## 2. What the code does (override + blind re-derivations)
 
 **skill1**
+
 - `passive` → `allies` → `coreDamagePct 25.15` + `casterAtkPct 30.16`. The kit's 5s window is refreshed every 3s
   (each Memory Absorption tick), so it is continuously up after t≈3s; the override folds it to a permanent passive
   (over-credits only the opening ~3s, <2% of the fight — residual **R5**). `casterAtkPct` resolves to a FLAT add of
@@ -52,6 +53,7 @@ triggering, the swap-state gate on the riders, and the time-average factors for 
 - UNMODELED (defensive, verbatim): Indomitability (survival), Equally shares HP recovery (no HP pool / no redistribution primitive), Recovers 25% final Max HP (self-heal, no HP pool; self-only so no teammate on-recovery consumer fires).
 
 **skill2**
+
 - `passive` → `self` → `atkPct 14.4` + `attackDamagePct 16.8` + `coreDamagePct 10.5`. These are the three stack-gated
   stage buffs (kit 15.2 / 20.27 / 21.05) **time-averaged over the ramp**: stacks accrue +1/3s to 30, so stage 1/2/3
   go live at ≈9s/30s/90s of a 180s fight → 15.2×171/180=14.4, 20.27×150/180=16.8, 21.05×90/180=10.5. The engine has no
@@ -66,18 +68,19 @@ triggering, the swap-state gate on the riders, and the time-average factors for 
   with a structured residual is the conservative MEASURED>FUDGE call (it under-credits her). Residual **R3**.
 
 **burst**
+
 - `burstCast` → `allies` → `attackDamagePct 35.45` for 15s (probe: 48 applies = 12 casts × 4 allies, expDelta 900).
   Keyed `burstCast` (not `fullBurstEnter`) — the canonical over-credit is excluded; the driver fixture makes Nayuta the
   sole B2 so the line is exercised on all 12 Full Bursts (not vacuous).
 - `burstCast` → `enemy` → `flatDamage atkPct 645.33` (burst bucket, once per cast, `fbMajorApplied` never true — the
   cast lands before the FB window opens).
 - `burstCast` → `self` → `weaponSwap {damagePct 275.18, chargeTimeSec 2.13, chargeMultPct 250, weapon:'SR', durationSec 10}`
-  + `unlimitedAmmo {durationSec 10}`. Memory Incineration swaps her to an SR charge weapon: normal-bucket shots become
-  275.18% × 250% full-charge (charge mult 2.5 ≈ 687.95%/shot) for 10s, base SMG halts. `weapon:'SR'` is the landed
-  2026-07-17 SWAP-CLASS FIX (SR range-banding + HI auto-core in midfar/far; board 0.658→0.894) — a measured basis the
-  blinds lacked (they left `weapon` unset per kit silence). `chargeMultPct 250` is read multiplicatively (×2.5), not
-  additive. Residual **R2**: `chargeTimeSec 2.13` vs the kit's stated 1.8 — the 1.8s kit charge + ~0.5s SR bolt-recovery
-  cycle folded in (swaps are exempt from the engine's auto bolt-recovery; same correction validated on helm/velvet).
+  - `unlimitedAmmo {durationSec 10}`. Memory Incineration swaps her to an SR charge weapon: normal-bucket shots become
+    275.18% × 250% full-charge (charge mult 2.5 ≈ 687.95%/shot) for 10s, base SMG halts. `weapon:'SR'` is the landed
+    2026-07-17 SWAP-CLASS FIX (SR range-banding + HI auto-core in midfar/far; board 0.658→0.894) — a measured basis the
+    blinds lacked (they left `weapon` unset per kit silence). `chargeMultPct 250` is read multiplicatively (×2.5), not
+    additive. Residual **R2**: `chargeTimeSec 2.13` vs the kit's stated 1.8 — the 1.8s kit charge + ~0.5s SR bolt-recovery
+    cycle folded in (swaps are exempt from the engine's auto bolt-recovery; same correction validated on helm/velvet).
 
 ---
 
@@ -103,13 +106,13 @@ buff with the identical 530.46 total and identical swap gating). This mirrors th
 
 ## 4. Lines worth a human spot-check (residuals — all measurement-gated, all conservative)
 
-| ⚑ | Line | Shipped | Alternative | Estimate | Recipe to settle | Tier |
-|---|------|---------|-------------|----------|------------------|------|
-| **R1** | 380.46% stage-target block scope | per-full-charge fold (530.46 rider) | one-time-per-burst | ~10–15% of swap-window damage | popup footage of ONE Memory Incineration window: count 380.46 procs vs the full-charge count | 2 |
-| **R2** | Memory Incineration chargeTimeSec | 2.13 (1.8 + ~0.5s bolt-recovery folded) | kit-literal 1.8 | ~5% swap-shot cadence | high-fps capture: frame-count the gap between two consecutive swapped full-charge releases | 2 |
-| **R3** | Memory Absorption Hit Rate 1.4%/stack | UNMODELED (measurement-gated) | encode 42% HR at cap | up to ~8–12% self core-rate at cap | controlled probe of core-hit rate at 0 vs 42% HR (geometry is the instrument, not damage back-derivation) | 2 |
-| **R4** | S2 stack-gate ramp | time-averaged 14.4/16.8/10.5 from t0 | explicit delayed-step ramp | <2% (same 180s integral) | read the Memory Absorption counter off a recording at t=30 and t=90 (should read 10 and 30) | 2 |
-| **R5** | S1 ally buffs (core 25.15, casterAtk 30.16) | permanent passive | 5s window refreshed every 3s | <2% (over-credits opening ~3s only) | timestamp the FIRST ally buff icon (t≈0 vs t≈3) | 2 |
+| ⚑      | Line                                        | Shipped                                 | Alternative                  | Estimate                            | Recipe to settle                                                                                          | Tier |
+| ------ | ------------------------------------------- | --------------------------------------- | ---------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------- | ---- |
+| **R1** | 380.46% stage-target block scope            | per-full-charge fold (530.46 rider)     | one-time-per-burst           | ~10–15% of swap-window damage       | popup footage of ONE Memory Incineration window: count 380.46 procs vs the full-charge count              | 2    |
+| **R2** | Memory Incineration chargeTimeSec           | 2.13 (1.8 + ~0.5s bolt-recovery folded) | kit-literal 1.8              | ~5% swap-shot cadence               | high-fps capture: frame-count the gap between two consecutive swapped full-charge releases                | 2    |
+| **R3** | Memory Absorption Hit Rate 1.4%/stack       | UNMODELED (measurement-gated)           | encode 42% HR at cap         | up to ~8–12% self core-rate at cap  | controlled probe of core-hit rate at 0 vs 42% HR (geometry is the instrument, not damage back-derivation) | 2    |
+| **R4** | S2 stack-gate ramp                          | time-averaged 14.4/16.8/10.5 from t0    | explicit delayed-step ramp   | <2% (same 180s integral)            | read the Memory Absorption counter off a recording at t=30 and t=90 (should read 10 and 30)               | 2    |
+| **R5** | S1 ally buffs (core 25.15, casterAtk 30.16) | permanent passive                       | 5s window refreshed every 3s | <2% (over-credits opening ~3s only) | timestamp the FIRST ally buff icon (t≈0 vs t≈3)                                                           | 2    |
 
 **The single highest-value capture** is one Memory Incineration window of popup footage: it settles **R1** (380.46
 proc count vs full-charge count) and **R2** (charge cadence) from the same recording. Her 0.854 COLD board position is

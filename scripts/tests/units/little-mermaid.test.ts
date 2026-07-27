@@ -105,18 +105,17 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const lmCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'little-mermaid',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'little-mermaid'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 const lmShots = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'little-mermaid',
+    (e): e is Shot => e.kind === 'shot' && e.slug === 'little-mermaid'
   );
 const lmReloads = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Reload => e.kind === 'reload' && e.slug === 'little-mermaid',
+    (e): e is Reload => e.kind === 'reload' && e.slug === 'little-mermaid'
   );
 /** LM's skill2 damage instances at a given kit magnitude. */
 const lmS2 = (evs: SimEvent[], atkPct: number) =>
@@ -124,7 +123,7 @@ const lmS2 = (evs: SimEvent[], atkPct: number) =>
     (d) =>
       d.slug === 'little-mermaid' &&
       d.srcSlot === 'skill2' &&
-      d.atkPct === atkPct,
+      d.atkPct === atkPct
   );
 /** LM-caster buff applications of a stat (optionally at an exact value). */
 const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
@@ -132,7 +131,7 @@ const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === LM &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 
 // ---- counterfactual patches (nearest wrong model per line) ------------------------------------
@@ -140,29 +139,29 @@ const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
 const cfNoCdr = withPatchedOverride('little-mermaid', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill1.length === before)
-    throw new Error('LM S1 burstCdr block missing — fixture is stale');
+    {throw new Error('LM S1 burstCdr block missing — fixture is stale');}
 });
 /** M3 nearest-wrong (trigger): the 4% team buff re-keyed fullBurstEnter → burstCast (lands ~1.4s
  *  before the window actually opens). */
 const cfAtk4BurstCast = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct' && e.value === 4),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct' && e.value === 4)
   );
   if (!b)
-    throw new Error('LM S1 attackDamagePct 4 block missing — fixture is stale');
+    {throw new Error('LM S1 attackDamagePct 4 block missing — fixture is stale');}
   b.trigger = { kind: 'burstCast' };
 });
 /** M4 nearest-wrong (absent): the teamAmmo-400 gauge fill removed. */
 const cfNoFill = withPatchedOverride('little-mermaid', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'fillGauge'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'fillGauge')
   );
   if (ov.skill1.length === before)
-    throw new Error('LM S1 fillGauge block missing — fixture is stale');
+    {throw new Error('LM S1 fillGauge block missing — fixture is stale');}
 });
 /** M5 nearest-wrong (F1 coexistence): Bubble + Explosive Bubble both persist → 10.1% taken. */
 const cfStack10 = withPatchedOverride('little-mermaid', (ov) => {
@@ -170,7 +169,7 @@ const cfStack10 = withPatchedOverride('little-mermaid', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'damageTakenPct');
   if (!e)
-    throw new Error('LM S2 damageTakenPct effect missing — fixture is stale');
+    {throw new Error('LM S2 damageTakenPct effect missing — fixture is stale');}
   e.value = 10.1;
 });
 /** M7 nearest-wrong (trigger): the DoT re-keyed fullBurstEnter → burstCast. The cast lands
@@ -180,9 +179,9 @@ const cfStack10 = withPatchedOverride('little-mermaid', (ov) => {
  *  noFb flag — the video-verified FB-boost is pinned by the fbMajor counts in the PIN above.) */
 const cfDotBurstCast = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'dot'),
+    x.effects.some((e: any) => e.kind === 'dot')
   );
-  if (!b) throw new Error('LM S2 dot block missing — fixture is stale');
+  if (!b) {throw new Error('LM S2 dot block missing — fixture is stale');}
   b.trigger = { kind: 'burstCast' };
 });
 /** M7 nearest-wrong (magnitude): the ×4 sequential attacks dropped → 63.36%/s, not 253.44%/s. */
@@ -190,16 +189,16 @@ const cfDot63 = withPatchedOverride('little-mermaid', (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!e) throw new Error('LM S2 dot effect missing — fixture is stale');
+  if (!e) {throw new Error('LM S2 dot effect missing — fixture is stale');}
   e.atkPct = 63.36;
 });
 /** M8 nearest-wrong (trigger): the pre-Q6 hitCount-500 proxy (her OWN hits) for the team-ammo
  *  trigger — undercounts ~3× (3115 own shots vs ~9000 team ammo over 180s). */
 const cfBarrageHitCount = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b) throw new Error('LM S2 flatDamage block missing — fixture is stale');
+  if (!b) {throw new Error('LM S2 flatDamage block missing — fixture is stale');}
   b.trigger = { kind: 'hitCount', count: 500 };
 });
 /** M8 nearest-wrong (core): Barrage made core-eligible (user-confirmed core:false). */
@@ -207,7 +206,7 @@ const cfBarrageCore = withPatchedOverride('little-mermaid', (ov) => {
   const e = ov.skill2
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'flatDamage');
-  if (!e) throw new Error('LM S2 flatDamage effect missing — fixture is stale');
+  if (!e) {throw new Error('LM S2 flatDamage effect missing — fixture is stale');}
   e.core = true;
 });
 /** M9 nearest-wrong (reload absent): the 33.26% magazine refill removed from the burst. */
@@ -216,19 +215,19 @@ const cfNoReload = withPatchedOverride('little-mermaid', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'instantReload');
-    if (b.effects.length !== before) hit++;
+    if (b.effects.length !== before) {hit++;}
   }
   if (!hit)
-    throw new Error('LM burst instantReload effect missing — fixture is stale');
+    {throw new Error('LM burst instantReload effect missing — fixture is stale');}
 });
 /** M10 nearest-wrong (stat/scope): "ATK ▲ 17.28% of the skill user's ATK" misread as a generic
  *  team attackDamagePct 17.28. */
 const cfCasterTeam = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'casterAtkPct'),
+    x.effects.some((e: any) => e.stat === 'casterAtkPct')
   );
   if (!b)
-    throw new Error('LM burst casterAtkPct block missing — fixture is stale');
+    {throw new Error('LM burst casterAtkPct block missing — fixture is stale');}
   b.target = { kind: 'allies' };
   b.effects.find((e: any) => e.stat === 'casterAtkPct').stat =
     'attackDamagePct';
@@ -265,21 +264,21 @@ describe('little-mermaid — kit spec', () => {
       // structural read straight off the shipped override, via a no-op patch clone
       const shipped = withPatchedOverride('little-mermaid', () => {});
       const blk = (shipped as any).skill1.find((x: any) =>
-        x.effects.some((e: any) => e.kind === 'burstCdr'),
+        x.effects.some((e: any) => e.kind === 'burstCdr')
       );
       expect(blk.trigger).toEqual({ kind: 'fullBurstEnd' });
       expect(blk.target).toEqual({ kind: 'allies' });
       expect(blk.effects.find((e: any) => e.kind === 'burstCdr').seconds).toBe(
-        7.48,
+        7.48
       );
     });
     it('FIRE-RATE: removing it slows BOTH her cast cadence and the team Full-Burst cadence', () => {
       // burstCdr emits no event; observe the cadence (volume.test V2 precedent).
       expect(lmCasts(base.events).length).toBeGreaterThan(
-        lmCasts(noCdr.events).length,
+        lmCasts(noCdr.events).length
       );
       expect(fbStarts(base.events).length).toBeGreaterThan(
-        fbStarts(noCdr.events).length,
+        fbStarts(noCdr.events).length
       );
     });
   });
@@ -289,7 +288,7 @@ describe('little-mermaid — kit spec', () => {
     it('lands on the Full-Burst-ENTER frame exactly, not on her (earlier) burstCast frame', () => {
       expect(applied.length).toBeGreaterThan(0);
       const buffFrames = [...new Set(applied.map((b) => b.frame))].sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
       const fbFrames = fbStarts(base.events)
         .map((f) => f.frame)
@@ -299,8 +298,8 @@ describe('little-mermaid — kit spec', () => {
       const cfFrames = [
         ...new Set(
           lmBuffs(atk4BurstCast.events, 'attackDamagePct', 4).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames).not.toEqual(fbFrames);
@@ -308,16 +307,16 @@ describe('little-mermaid — kit spec', () => {
     it('reaches all four allies for exactly 10 sec', () => {
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied)
-        (
+        {(
           perFrame.get(b.frame) ??
           perFrame.set(b.frame, new Set()).get(b.frame)!
-        ).add(b.targetIdx);
+        ).add(b.targetIdx);}
       for (const [frame, holders] of perFrame)
-        expect(
+        {expect(
           holders.size,
-          `frame ${frame} reached ${holders.size} allies, expected 4`,
-        ).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+          `frame ${frame} reached ${holders.size} allies, expected 4`
+        ).toBe(4);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
   });
 
@@ -325,7 +324,7 @@ describe('little-mermaid — kit spec', () => {
     it('is encoded teamAmmo(400) → fillGauge(37) → allies (the pre-Q6 hitCount proxy is wrong)', () => {
       const shipped = withPatchedOverride('little-mermaid', () => {});
       const blk = (shipped as any).skill1.find((x: any) =>
-        x.effects.some((e: any) => e.kind === 'fillGauge'),
+        x.effects.some((e: any) => e.kind === 'fillGauge')
       );
       expect(blk.trigger).toEqual({ kind: 'teamAmmo', count: 400 });
       expect(blk.target).toEqual({ kind: 'allies' });
@@ -334,7 +333,7 @@ describe('little-mermaid — kit spec', () => {
     it('BEHAVIOURAL: the gauge fill is live — removing it lowers her 180s total (deterministic)', () => {
       // fillGauge emits no event; faster gauge → earlier casts → more buff/DoT uptime.
       expect(base.totals['little-mermaid']).toBeGreaterThan(
-        noFill.totals['little-mermaid'],
+        noFill.totals['little-mermaid']
       );
     });
   });
@@ -342,7 +341,7 @@ describe('little-mermaid — kit spec', () => {
   describe('M5 — S2 Bubble: a SINGLE permanent Damage Taken ▲ 5.05% on the boss', () => {
     it('applies exactly one boss debuff: 5.05, no holder, no expiry', () => {
       const debuffs = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct',
+        (b) => b.stat === 'damageTakenPct'
       );
       expect(debuffs.length).toBe(1);
       expect(debuffs[0].value).toBe(5.05);
@@ -374,25 +373,25 @@ describe('little-mermaid — kit spec', () => {
     });
     it('lands exactly 10 ticks per full window, 9 FB-boosted (the +10s boundary tick loses the major by timing)', () => {
       const complete = fbStarts(base.events).filter(
-        (f) => f.endFrame <= FIGHT_FRAMES,
+        (f) => f.endFrame <= FIGHT_FRAMES
       );
       expect(complete.length).toBeGreaterThan(0);
       for (const fb of complete) {
         const inWin = dots.filter(
-          (d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2,
+          (d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2
         );
         expect(inWin.length, `window @${fb.sec.toFixed(1)}s tick count`).toBe(
-          10,
+          10
         );
         expect(
           inWin.filter((d) => d.fbMajorApplied).length,
-          `window @${fb.sec.toFixed(1)}s FB-boosted ticks`,
+          `window @${fb.sec.toFixed(1)}s FB-boosted ticks`
         ).toBe(9);
         // nothing leaks past the 10s window
         expect(
           dots.filter(
-            (d) => d.frame > fb.endFrame + 2 && d.frame <= fb.endFrame + 62,
-          ).length,
+            (d) => d.frame > fb.endFrame + 2 && d.frame <= fb.endFrame + 62
+          ).length
         ).toBe(0);
       }
     });
@@ -400,14 +399,14 @@ describe('little-mermaid — kit spec', () => {
       const cf = lmS2(dotBurstCast.events, 253.44);
       expect(cf.length).toBeGreaterThan(0);
       const complete = fbStarts(dotBurstCast.events).filter(
-        (f) => f.endFrame <= FIGHT_FRAMES,
+        (f) => f.endFrame <= FIGHT_FRAMES
       );
       const inWinTotal = complete.reduce(
         (n, fb) =>
           n +
           cf.filter((d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2)
             .length,
-        0,
+        0
       );
       // the cast precedes the window, so every full window loses its early ticks
       expect(inWinTotal).toBeLessThan(10 * complete.length);
@@ -430,17 +429,17 @@ describe('little-mermaid — kit spec', () => {
       const windows = fbStarts(base.events);
       for (const d of barrages) {
         const inWindow = windows.some(
-          (f) => d.frame >= f.frame && d.frame < f.endFrame,
+          (f) => d.frame >= f.frame && d.frame < f.endFrame
         );
         expect(d.fbMajorApplied, `barrage @${d.sec.toFixed(1)}s`).toBe(
-          inWindow,
+          inWindow
         );
       }
     });
     it('DISCRIMINATING (trigger): team ammo fires it strictly more often than her OWN hits would', () => {
       // pre-Q6 hitCount-500 proxy: ~3115 own shots / 500 ≈ 6 firings vs ~9000 team ammo / 500 = 18.
       expect(barrages.length).toBeGreaterThan(
-        lmS2(barrageHitCount.events, 850).length,
+        lmS2(barrageHitCount.events, 850).length
       );
     });
     it('DISCRIMINATING (core): a core:true encoding flips coreEligible on', () => {
@@ -456,26 +455,26 @@ describe('little-mermaid — kit spec', () => {
       expect(applied.length).toBe(casts * 4);
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of applied)
-        (
+        {(
           perFrame.get(b.frame) ??
           perFrame.set(b.frame, new Set()).get(b.frame)!
-        ).add(b.targetIdx);
+        ).add(b.targetIdx);}
       expect(perFrame.size).toBe(casts);
       for (const [frame, holders] of perFrame)
-        expect(
+        {expect(
           holders.size,
-          `frame ${frame} reached ${holders.size} allies, expected 4`,
-        ).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+          `frame ${frame} reached ${holders.size} allies, expected 4`
+        ).toBe(4);}
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('the 33.26% refill is live: removing it costs her magazine reloads and shots', () => {
       // instantReload emits no event; observe the ammo economy (25 reloads / 3115 shots with it
       // vs 28 / 3048 without — deterministic).
       expect(lmReloads(base.events).length).toBeLessThan(
-        lmReloads(noReload.events).length,
+        lmReloads(noReload.events).length
       );
       expect(lmShots(base.events).length).toBeGreaterThan(
-        lmShots(noReload.events).length,
+        lmShots(noReload.events).length
       );
     });
   });
@@ -485,13 +484,13 @@ describe('little-mermaid — kit spec', () => {
     it('applies once per cast, to HER alone, for exactly 10 sec', () => {
       expect(applied.length).toBe(casts);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([LM]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('DISCRIMINATING (misread): no generic team attackDamagePct 17.28 exists in the shipped model', () => {
       expect(lmBuffs(base.events, 'attackDamagePct', 17.28).length).toBe(0);
       // ...but the misread counterfactual produces exactly that
       expect(
-        lmBuffs(casterTeam.events, 'attackDamagePct', 17.28).length,
+        lmBuffs(casterTeam.events, 'attackDamagePct', 17.28).length
       ).toBeGreaterThan(0);
     });
   });

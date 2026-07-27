@@ -663,16 +663,17 @@ footage → an empirical core rate per unit/weapon. Sources in the research; not
 **PER-WEAPON SCAN 2026-07-14 (focused footage, docs/probe-data/): a flat 0.85 is wrong — core rate
 splits by weapon class, confirming the research.** Qualitative reads (red "CORE HIT" fraction of the
 unit's NORMAL popups; procs/riders correctly don't core):
-| weapon | unit (footage) | observed core rate |
-|---|---|---|
-| MG | crown (control) | ~near-100% (dense red core stacks, warmed) |
-| SR | liberalio (rrh) | ~near-100% |
-| RL | maiden (solo) | ~near-100% ("CORE HIT" ~every shot) |
-| AR | snow-white (control) | moderate/mixed (~0.7-0.9) |
-| SMG | little-mermaid (control) | lower (many white non-cores, ~0.7-0.85) |
-| SG | (no focused footage) | research: range-dependent (~0 off-band → ~1.0 optimal) |
-So the RELIABLE auto classes (MG/SR/RL) core ~near-100% — a flat 0.85 UNDER-credits every MG/SR/RL
-carry (the boss-DPS backbone); AR/SMG sit around/below 0.85.
+
+| weapon                                                                                             | unit (footage)           | observed core rate                                     |
+| -------------------------------------------------------------------------------------------------- | ------------------------ | ------------------------------------------------------ |
+| MG                                                                                                 | crown (control)          | ~near-100% (dense red core stacks, warmed)             |
+| SR                                                                                                 | liberalio (rrh)          | ~near-100%                                             |
+| RL                                                                                                 | maiden (solo)            | ~near-100% ("CORE HIT" ~every shot)                    |
+| AR                                                                                                 | snow-white (control)     | moderate/mixed (~0.7-0.9)                              |
+| SMG                                                                                                | little-mermaid (control) | lower (many white non-cores, ~0.7-0.85)                |
+| SG                                                                                                 | (no focused footage)     | research: range-dependent (~0 off-band → ~1.0 optimal) |
+| So the RELIABLE auto classes (MG/SR/RL) core ~near-100% — a flat 0.85 UNDER-credits every MG/SR/RL |
+| carry (the boss-DPS backbone); AR/SMG sit around/below 0.85.                                       |
 
 **LANDED 2026-07-14 ⚑ refit — AUTO_CORE_RATE is now weapon-class-indexed** (sim.ts `acrFor`): MG/SR/RL
 = **0.95**, AR/SMG/SG = 0.85. Three supporting lines: (a) the footage scan above; (b) JP research
@@ -689,54 +690,55 @@ Three scope-lock SOLO recordings (Scarlet AR, Chisato SMG, Drake SG — no Full 
 reads) binned every normal-attack core popup (red "CORE HIT" text) by the boss-range band. Core is
 strongly range-concentrated (close → far), FB-independent (aim geometry), weapon-ordered AR > SMG > SG;
 ALL bands far below 0.85. Measured per-band ⚑ (Wilson 95% CIs in `docs/probe-data/coreband2-*.json`):
-| weapon | near | mid | midfar | far |
-|---|---|---|---|---|
-| AR | 0.40 | 0.30 | 0.03 | 0.00 |
-| SMG | 0.28 | 0.244 | 0.076 | 0.059 |
-| SG | 0.072 | 0.00 | 0.0045 | 0.00 |
-The union raid boss is the SAME physical boss across element assignments (owner) → these values transport
-across every validation comp. **Falsifiable test confirmed:** only AR/SMG/SG rows moved (146-row board),
-all downward; MG/SR/RL byte-identical; LM's SMG residual closed as predicted (1.36→1.00). Per-weapon mean:
-AR 1.095→0.881, SMG 1.069→0.831, SG 1.106→0.755. Board median 0.995→0.950, MAE 0.141→0.144 (≈flat),
-within-±10% 53→56%. The re-centering to ~0.95 is EXPECTED/diagnostic (the flat 0.85 masked pre-existing
-AR/SG under-models). New knob `CORERATEBAND=off` restores the prior flat per-weapon table for A/B.
-STILL OPEN / RESOLVED:
-(1) **SG extreme-near (0–25) band — RESOLVED 2026-07-15 (s1 online research):** ore-game verify-memo
-measures SG front-row core ~6% (auto, base accuracy), CORROBORATING our measured near 0.072 (two
-independent base-accuracy reads converge at 6–8%). Sharp near-only STEP (6%→1.6%→0%), not a continuous
-curve → the band-table is the right form. SG near 0.072 STANDS — do NOT raise it (10-pellet spread +
-12.5px auto reticle floor structurally caps SG cores; 40–90% figures need 75–88% accuracy, absent under
-scope lock; our small central core if anything reads lower). ⟹ the cold-SG residual (0.755) is NOT the
-core rate — it's a separate under-model (pellet-body-hit crediting / band-time allocation), under s4's
-audit. `docs/probe-data/sg-core-research.md`.
-(2) **AR near 0.40 CONFIRMED 2026-07-15 (s2, Moran re-record):** direct "CORE HIT"-count 0.40 [0.27,0.55]
-AND an ammo-verified damage reconciliation 0.40 agree EXACTLY (two methods, one unit) — and match Scarlet's
-0.40, so two independent AR units converge and the ~10% Scarlet non-core-error worry is removed. AR near
-provisional flag DROPPED. AR mid/midfar carry boss-distance-in-scripted-window noise (Moran's "midfar"
-window sat at medium range; per-band mid/midfar disagree between the two units while pooled-by-actual-
-distance agrees ~0.13–0.16) — a known refinement candidate, but the damage-dominant near value is solid.
-`docs/probe-data/coreband2-moran-ar.json`. ⟹ grave/guillotine coldness is NOT a too-low AR table (near is
-confirmed) — it's a separate exposed under-model, same as noir/naga on the SG side.
-(3) **Geometric distance→core-size model (Option 2) — SHELVED (owner ruling 2026-07-15):** sources describe
-a sharp near-only step, not a continuous distance curve, so the landed per-band table is already the right
-shape; geometric generality is not indicated. Revive only if a future multi-boss dataset shows the table
-failing to transport.
-(4) control-team calibration to promote the ⚑ table toward MEASURED tier.
-(5) **SMG core table is Hit-Rate-CONTAMINATED — known bug, deferred fix (2026-07-17, premise-pass finding).**
-The `CORE_BY_WEAPON_BAND.SMG` row (near 0.28 / mid 0.244 / midfar 0.076 / far 0.059) was measured on
-`chisato`, whose S1 grants `hitRatePct 22.37` (Extrasensory>25%, self, NOT Full-Burst-gated) — live from
-battle start to ~t150s of the ~180s read. So those figures are SMG core at `x_base+22.37% Hit Rate`, NOT
-base accuracy, yet the engine applies them to EVERY SMG unit including Hit-Rate-less ones → those units are
-OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core model (the deferred
-SG+AR-first plan, `docs/handoffs/closed/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is
-validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us
-back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.
-**UPDATE 2026-07-17 — contamination MEASURED SMALL, downgraded to minor.** Re-read `chisato smg.MP4` binned
-by her on-screen Extrasensory gauge (HR ▲22.37% on >25%, crosses 25% at fight ~151s; she never bursts →
-FB-deconfounded): SMG near core **HR-off = 0.28 [0.18,0.42]** vs **HR-on = 0.33–0.34**, delta **+0.05
-(p≈0.5, NOT significant)**. So the table's 0.30 is only ~0.02 hot for HR-less SMG units — a MINOR over-credit,
-not a real bug. HR-off SMG-near baseline ≈ 0.28 now measured. Direction (HR raises SMG core) confirmed but
-underpowered; a significant slope needs a bigger HR magnitude on a standard weapon (see the hitrate-core plan).
+
+| weapon                                                                                                          | near  | mid   | midfar | far   |
+| --------------------------------------------------------------------------------------------------------------- | ----- | ----- | ------ | ----- |
+| AR                                                                                                              | 0.40  | 0.30  | 0.03   | 0.00  |
+| SMG                                                                                                             | 0.28  | 0.244 | 0.076  | 0.059 |
+| SG                                                                                                              | 0.072 | 0.00  | 0.0045 | 0.00  |
+| The union raid boss is the SAME physical boss across element assignments (owner) → these values transport       |
+| across every validation comp. **Falsifiable test confirmed:** only AR/SMG/SG rows moved (146-row board),        |
+| all downward; MG/SR/RL byte-identical; LM's SMG residual closed as predicted (1.36→1.00). Per-weapon mean:      |
+| AR 1.095→0.881, SMG 1.069→0.831, SG 1.106→0.755. Board median 0.995→0.950, MAE 0.141→0.144 (≈flat),             |
+| within-±10% 53→56%. The re-centering to ~0.95 is EXPECTED/diagnostic (the flat 0.85 masked pre-existing         |
+| AR/SG under-models). New knob `CORERATEBAND=off` restores the prior flat per-weapon table for A/B.              |
+| STILL OPEN / RESOLVED:                                                                                          |
+| (1) **SG extreme-near (0–25) band — RESOLVED 2026-07-15 (s1 online research):** ore-game verify-memo            |
+| measures SG front-row core ~6% (auto, base accuracy), CORROBORATING our measured near 0.072 (two                |
+| independent base-accuracy reads converge at 6–8%). Sharp near-only STEP (6%→1.6%→0%), not a continuous          |
+| curve → the band-table is the right form. SG near 0.072 STANDS — do NOT raise it (10-pellet spread +            |
+| 12.5px auto reticle floor structurally caps SG cores; 40–90% figures need 75–88% accuracy, absent under         |
+| scope lock; our small central core if anything reads lower). ⟹ the cold-SG residual (0.755) is NOT the          |
+| core rate — it's a separate under-model (pellet-body-hit crediting / band-time allocation), under s4's          |
+| audit. `docs/probe-data/sg-core-research.md`.                                                                   |
+| (2) **AR near 0.40 CONFIRMED 2026-07-15 (s2, Moran re-record):** direct "CORE HIT"-count 0.40 [0.27,0.55]       |
+| AND an ammo-verified damage reconciliation 0.40 agree EXACTLY (two methods, one unit) — and match Scarlet's     |
+| 0.40, so two independent AR units converge and the ~10% Scarlet non-core-error worry is removed. AR near        |
+| provisional flag DROPPED. AR mid/midfar carry boss-distance-in-scripted-window noise (Moran's "midfar"          |
+| window sat at medium range; per-band mid/midfar disagree between the two units while pooled-by-actual-          |
+| distance agrees ~0.13–0.16) — a known refinement candidate, but the damage-dominant near value is solid.        |
+| `docs/probe-data/coreband2-moran-ar.json`. ⟹ grave/guillotine coldness is NOT a too-low AR table (near is       |
+| confirmed) — it's a separate exposed under-model, same as noir/naga on the SG side.                             |
+| (3) **Geometric distance→core-size model (Option 2) — SHELVED (owner ruling 2026-07-15):** sources describe     |
+| a sharp near-only step, not a continuous distance curve, so the landed per-band table is already the right      |
+| shape; geometric generality is not indicated. Revive only if a future multi-boss dataset shows the table        |
+| failing to transport.                                                                                           |
+| (4) control-team calibration to promote the ⚑ table toward MEASURED tier.                                       |
+| (5) **SMG core table is Hit-Rate-CONTAMINATED — known bug, deferred fix (2026-07-17, premise-pass finding).**   |
+| The `CORE_BY_WEAPON_BAND.SMG` row (near 0.28 / mid 0.244 / midfar 0.076 / far 0.059) was measured on            |
+| `chisato`, whose S1 grants `hitRatePct 22.37` (Extrasensory>25%, self, NOT Full-Burst-gated) — live from        |
+| battle start to ~t150s of the ~180s read. So those figures are SMG core at `x_base+22.37% Hit Rate`, NOT        |
+| base accuracy, yet the engine applies them to EVERY SMG unit including Hit-Rate-less ones → those units are     |
+| OVER-credited on SMG core. Cannot be cleanly corrected without a Hit-Rate→core model (the deferred              |
+| SG+AR-first plan, `docs/handoffs/closed/2026-07-17-hitrate-core-landing-plan.md`): once that model's slope is   |
+| validated on AR (jill) + SG (noir), chisato's known +22.37% becomes an SMG VALIDATION point and lets us         |
+| back out the true SMG base and refactor this row. Until then: left as-is, flagged. Owner ruling 2026-07-17.     |
+| **UPDATE 2026-07-17 — contamination MEASURED SMALL, downgraded to minor.** Re-read `chisato smg.MP4` binned     |
+| by her on-screen Extrasensory gauge (HR ▲22.37% on >25%, crosses 25% at fight ~151s; she never bursts →         |
+| FB-deconfounded): SMG near core **HR-off = 0.28 [0.18,0.42]** vs **HR-on = 0.33–0.34**, delta **+0.05           |
+| (p≈0.5, NOT significant)**. So the table's 0.30 is only ~0.02 hot for HR-less SMG units — a MINOR over-credit,  |
+| not a real bug. HR-off SMG-near baseline ≈ 0.28 now measured. Direction (HR raises SMG core) confirmed but      |
+| underpowered; a significant slope needs a bigger HR magnitude on a standard weapon (see the hitrate-core plan). |
 
 ### A26 — Shotgun pellet-landing ⚑ + Dorothy: Serendipity consolidation — SEQUENCED (2026-07-15, Fable-arbitrated)
 

@@ -52,15 +52,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on

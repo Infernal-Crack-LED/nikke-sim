@@ -85,7 +85,10 @@ type Reload = Extract<SimEvent, { kind: 'reload' }>;
 type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 type FBStart = Extract<SimEvent, { kind: 'fullBurstStart' }>;
 
-function run(overrides: Record<string, any> = {}, comp: Partial<CompOptions> = {}) {
+function run(
+  overrides: Record<string, any> = {},
+  comp: Partial<CompOptions> = {}
+) {
   const events: SimEvent[] = [];
   const res = runComp({
     ...controlComp('privaty', true),
@@ -100,7 +103,10 @@ function run(overrides: Record<string, any> = {}, comp: Partial<CompOptions> = {
 /** Defensive patch: returns undefined if the target structure is absent from the shipped override,
  *  so a counterfactual PROOF skips instead of crashing the whole file at import (we are blind to the
  *  driver's exact block layout). The primary assertion against the shipped override always runs. */
-function tryPatch(slug: string, mutate: (ov: any) => void): OverrideFile | undefined {
+function tryPatch(
+  slug: string,
+  mutate: (ov: any) => void
+): OverrideFile | undefined {
   try {
     return withPatchedOverride(slug, mutate);
   } catch {
@@ -108,7 +114,7 @@ function tryPatch(slug: string, mutate: (ov: any) => void): OverrideFile | undef
   }
 }
 const requireFound = (found: boolean, msg: string) => {
-  if (!found) throw new Error(msg);
+  if (!found) {throw new Error(msg);}
 };
 
 /** P1-P4 reference: S1 removed entirely (robust — empty the slot, structure-independent). */
@@ -124,8 +130,10 @@ const noBurstSelfOv = tryPatch('privaty', (ov) => {
   let found = false;
   for (const b of ov.burst) {
     const before = b.effects.length;
-    b.effects = b.effects.filter((e: any) => e.stat !== 'elemAdvantageDamagePct');
-    if (b.effects.length !== before) found = true;
+    b.effects = b.effects.filter(
+      (e: any) => e.stat !== 'elemAdvantageDamagePct'
+    );
+    if (b.effects.length !== before) {found = true;}
   }
   ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
   requireFound(found, 'burst elemAdvantageDamagePct not found');
@@ -134,41 +142,41 @@ const noBurstSelfOv = tryPatch('privaty', (ov) => {
 const elemAsAttackOv = tryPatch('privaty', (ov) => {
   let found = false;
   for (const b of ov.burst)
-    for (const e of b.effects)
-      if (e.stat === 'elemAdvantageDamagePct') {
+    {for (const e of b.effects)
+      {if (e.stat === 'elemAdvantageDamagePct') {
         e.stat = 'attackDamagePct';
         found = true;
-      }
+      }}}
   requireFound(found, 'burst elemAdvantageDamagePct not found');
 });
 /** P1-P4 trigger counterfactual: fullBurstEnter → burstCast (privaty's own casts only). */
 const s1BurstCastOv = tryPatch('privaty', (ov) => {
   let found = false;
   for (const b of ov.skill1)
-    if (b.trigger?.kind === 'fullBurstEnter') {
+    {if (b.trigger?.kind === 'fullBurstEnter') {
       b.trigger = { kind: 'burstCast' };
       found = true;
-    }
+    }}
   requireFound(found, 'no fullBurstEnter trigger in skill1');
 });
 /** P6 trigger counterfactual: lastBullet → shotFired (every trigger pull). */
 const s2ShotFiredOv = tryPatch('privaty', (ov) => {
   let found = false;
   for (const b of ov.skill2)
-    if (b.trigger?.kind === 'lastBullet') {
+    {if (b.trigger?.kind === 'lastBullet') {
       b.trigger = { kind: 'shotFired' };
       found = true;
-    }
+    }}
   requireFound(found, 'no lastBullet trigger in skill2');
 });
 /** P7 gate counterfactual: drop the Designated-Target status gate (fires every last bullet). */
 const s2UngatedOv = tryPatch('privaty', (ov) => {
   let found = false;
   for (const b of ov.skill2)
-    if (b.requiresTargetStatus) {
+    {if (b.requiresTargetStatus) {
       delete b.requiresTargetStatus;
       found = true;
-    }
+    }}
   requireFound(found, 'no requiresTargetStatus gate in skill2');
 });
 /** P3 isolation: remove only the maxAmmo▼ effect from S1. */
@@ -177,7 +185,7 @@ const noMaxAmmoOv = tryPatch('privaty', (ov) => {
   for (const b of ov.skill1) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
-    if (b.effects.length !== before) found = true;
+    if (b.effects.length !== before) {found = true;}
   }
   ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
   requireFound(found, 'skill1 maxAmmoPct not found');
@@ -189,16 +197,22 @@ const noS1 = run({ privaty: noS1Ov });
 const noS2 = run({ privaty: noS2Ov });
 const baseNeutral = run({}, { bossElement: null });
 const noBurstSelf = noBurstSelfOv ? run({ privaty: noBurstSelfOv }) : null;
-const noBurstSelfNeutral = noBurstSelfOv ? run({ privaty: noBurstSelfOv }, { bossElement: null }) : null;
-const elemAsAttackNeutral = elemAsAttackOv ? run({ privaty: elemAsAttackOv }, { bossElement: null }) : null;
+const noBurstSelfNeutral = noBurstSelfOv
+  ? run({ privaty: noBurstSelfOv }, { bossElement: null })
+  : null;
+const elemAsAttackNeutral = elemAsAttackOv
+  ? run({ privaty: elemAsAttackOv }, { bossElement: null })
+  : null;
 const s1BurstCast = s1BurstCastOv ? run({ privaty: s1BurstCastOv }) : null;
 const s2ShotFired = s2ShotFiredOv ? run({ privaty: s2ShotFiredOv }) : null;
 const s2Ungated = s2UngatedOv ? run({ privaty: s2UngatedOv }) : null;
 const noMaxAmmo = noMaxAmmoOv ? run({ privaty: noMaxAmmoOv }) : null;
 
 // ---- readers ----------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const privDmg = (evs: SimEvent[], srcSlot: Damage['srcSlot']) =>
   dmg(evs).filter((d) => d.slug === 'privaty' && d.srcSlot === srcSlot);
 const privBuffs = (evs: SimEvent[], stat: string) =>
@@ -208,7 +222,9 @@ const shots = (evs: SimEvent[]) =>
 const reloads = (evs: SimEvent[]) =>
   evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === 'privaty');
 const privBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'privaty');
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'privaty'
+  );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FBStart => e.kind === 'fullBurstStart');
 /** P6 ungated last-bullet rider (256.17%). */
@@ -228,14 +244,21 @@ function s1Describe(stat: string, value: number, label: string) {
   describe(`S1 ${label} (${stat} ${value}%)`, () => {
     it(`applies ${value}% to all four allies, 10s wall-clock (not rounds), on every FB entry`, () => {
       const ap = privBuffs(base.events, stat);
-      expect(ap.length, `no privaty ${stat} buff was applied`).toBeGreaterThan(0);
+      expect(ap.length, `no privaty ${stat} buff was applied`).toBeGreaterThan(
+        0
+      );
       expect([...new Set(ap.map((b) => b.value))]).toEqual([value]);
       // scope: all 4 allies (incl. self) per application frame
       const perFrame = new Map<number, Set<number | null>>();
       for (const b of ap)
-        (perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!).add(b.targetIdx);
+        {(
+          perFrame.get(b.frame) ??
+          perFrame.set(b.frame, new Set()).get(b.frame)!
+        ).add(b.targetIdx);}
       for (const [, holders] of perFrame)
-        expect([...holders].sort((a, b) => (a ?? 9) - (b ?? 9))).toEqual(ALL_ALLIES);
+        {expect([...holders].sort((a, b) => (a ?? 9) - (b ?? 9))).toEqual(
+          ALL_ALLIES
+        );}
       // duration: 10s wall-clock, NOT a round count
       for (const b of ap) {
         expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
@@ -254,16 +277,23 @@ s1Describe('attackDamagePct', 20.16, 'Attack Damage ▲');
 describe('S1 trigger — fullBurstEnter (every team FB), not burstCast (own casts only)', () => {
   it('FIXTURE NON-VACUITY: privaty casts >0 and helm completes some FBs (casts < total FBs)', () => {
     expect(privBursts(base.events).length).toBeGreaterThan(0);
-    expect(privBursts(base.events).length).toBeLessThan(fbStarts(base.events).length);
+    expect(privBursts(base.events).length).toBeLessThan(
+      fbStarts(base.events).length
+    );
   });
   it('applies on every FB frame (== #fullBurstStart), more than #privaty-casts', () => {
     const frames = applyFrames(base.events, 'atkPct');
     expect(frames).toBe(fbStarts(base.events).length);
     expect(frames).toBeGreaterThan(privBursts(base.events).length);
   });
-  it.skipIf(!s1BurstCast)('DISCRIMINATING: a burstCast-keyed model applies on fewer frames', () => {
-    expect(applyFrames(s1BurstCast!.events, 'atkPct')).toBeLessThan(applyFrames(base.events, 'atkPct'));
-  });
+  it.skipIf(!s1BurstCast)(
+    'DISCRIMINATING: a burstCast-keyed model applies on fewer frames',
+    () => {
+      expect(applyFrames(s1BurstCast!.events, 'atkPct')).toBeLessThan(
+        applyFrames(base.events, 'atkPct')
+      );
+    }
+  );
 });
 
 describe('S1 mechanical — weapon-state modifiers are live', () => {
@@ -273,8 +303,10 @@ describe('S1 mechanical — weapon-state modifiers are live', () => {
   it.skipIf(!noMaxAmmo)(
     'P3 maxAmmo▼ raises the last-bullet rate (more 256.17 riders than with it removed)',
     () => {
-      expect(rider256(base.events).length).toBeGreaterThan(rider256(noMaxAmmo!.events).length);
-    },
+      expect(rider256(base.events).length).toBeGreaterThan(
+        rider256(noMaxAmmo!.events).length
+      );
+    }
   );
 });
 
@@ -282,15 +314,24 @@ describe('S1 mechanical — weapon-state modifiers are live', () => {
 describe('S2 P5 — last-bullet Damage Taken ▲10.01% is a BOSS debuff (benefits whole team)', () => {
   const taken = privBuffs(base.events, 'damageTakenPct');
   it('is 10.01% on the boss (targetIdx null), 10s, on lastBullet cadence', () => {
-    expect(taken.length, 'no privaty damageTakenPct debuff was applied').toBeGreaterThan(0);
+    expect(
+      taken.length,
+      'no privaty damageTakenPct debuff was applied'
+    ).toBeGreaterThan(0);
     expect([...new Set(taken.map((b) => b.value))]).toEqual([10.01]);
-    expect([...new Set(taken.map((b) => b.targetIdx))], 'Damage Taken must target the boss, not an ally').toEqual([null]);
-    for (const b of taken) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+    expect(
+      [...new Set(taken.map((b) => b.targetIdx))],
+      'Damage Taken must target the boss, not an ally'
+    ).toEqual([null]);
+    for (const b of taken) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     // same lastBullet cadence as the 256.17 rider (±1 for fight-end reload timing)
-    expect(Math.abs(taken.length - rider256(base.events).length)).toBeLessThanOrEqual(2);
+    expect(
+      Math.abs(taken.length - rider256(base.events).length)
+    ).toBeLessThanOrEqual(2);
   });
   it('feeds the taken bucket team-wide (more high-taken hits than with S2 removed)', () => {
-    const highTaken = (evs: SimEvent[]) => dmg(evs).filter((d) => d.mult.taken > 1.05).length;
+    const highTaken = (evs: SimEvent[]) =>
+      dmg(evs).filter((d) => d.mult.taken > 1.05).length;
     expect(highTaken(base.events)).toBeGreaterThan(highTaken(noS2.events));
   });
 });
@@ -307,24 +348,36 @@ describe('S2 P6 — last-bullet rider deals 256.17% of final ATK (skill2 bucket)
     const r = rider256(base.events).length;
     const s = shots(base.events).length;
     expect(r).toBeGreaterThan(0);
-    expect(r, `${r} riders vs ${s} shots — a shotFired model lands near the shot count`).toBeLessThan(s / 3);
+    expect(
+      r,
+      `${r} riders vs ${s} shots — a shotFired model lands near the shot count`
+    ).toBeLessThan(s / 3);
   });
-  it.skipIf(!s2ShotFired)('DISCRIMINATING: a shotFired model fires the rider on every pull', () => {
-    expect(rider256(s2ShotFired!.events).length).toBeGreaterThan(rider256(base.events).length);
-  });
+  it.skipIf(!s2ShotFired)(
+    'DISCRIMINATING: a shotFired model fires the rider on every pull',
+    () => {
+      expect(rider256(s2ShotFired!.events).length).toBeGreaterThan(
+        rider256(base.events).length
+      );
+    }
+  );
 });
 
 describe('S2 P7 — gated rider: 1687% on last bullets hitting a Designated Target', () => {
   const r1687 = rider1687(base.events);
   const r256 = rider256(base.events);
   const castFrames = privBursts(base.events).map((c) => c.frame);
-  const inWindow = (f: number) => castFrames.some((c) => f >= c - 30 && f <= c + 10 * FPS + 30);
+  const inWindow = (f: number) =>
+    castFrames.some((c) => f >= c - 30 && f <= c + 10 * FPS + 30);
 
   it('NON-VACUITY: fixture exercises BOTH the active and the inactive case', () => {
-    expect(r1687.length, 'active case: no gated rider ever fired').toBeGreaterThan(0);
+    expect(
+      r1687.length,
+      'active case: no gated rider ever fired'
+    ).toBeGreaterThan(0);
     expect(
       r256.filter((d) => !inWindow(d.frame)).length,
-      'inactive case: every last bullet qualified — the gate is vacuous',
+      'inactive case: every last bullet qualified — the gate is vacuous'
     ).toBeGreaterThan(0);
   });
   it('is a strict gated subset of last bullets (fewer than the ungated 256.17 rider)', () => {
@@ -333,11 +386,17 @@ describe('S2 P7 — gated rider: 1687% on last bullets hitting a Designated Targ
   });
   it('every gated rider lands inside a Designated-Target window (~10s after a privaty cast)', () => {
     for (const d of r1687)
-      expect(inWindow(d.frame), `gated rider at ${d.sec.toFixed(2)}s is outside every cast window`).toBe(true);
+      {expect(
+        inWindow(d.frame),
+        `gated rider at ${d.sec.toFixed(2)}s is outside every cast window`
+      ).toBe(true);}
   });
-  it.skipIf(!s2Ungated)('DISCRIMINATING: dropping the gate fires 1687 on EVERY last bullet', () => {
-    expect(rider1687(s2Ungated!.events).length).toBeGreaterThan(r1687.length);
-  });
+  it.skipIf(!s2Ungated)(
+    'DISCRIMINATING: dropping the gate fires 1687 on EVERY last bullet',
+    () => {
+      expect(rider1687(s2Ungated!.events).length).toBeGreaterThan(r1687.length);
+    }
+  );
 });
 
 describe('Burst P11 — Designated-Target status (gates P7), applied per cast, ~10s', () => {
@@ -345,7 +404,11 @@ describe('Burst P11 — Designated-Target status (gates P7), applied per cast, ~
     const r1687 = rider1687(base.events);
     const castFrames = privBursts(base.events).map((c) => c.frame);
     const windowsHit = new Set(
-      r1687.map((d) => castFrames.find((c) => d.frame >= c - 30 && d.frame <= c + 10 * FPS + 30)),
+      r1687.map((d) =>
+        castFrames.find(
+          (c) => d.frame >= c - 30 && d.frame <= c + 10 * FPS + 30
+        )
+      )
     );
     expect(windowsHit.size).toBeGreaterThanOrEqual(2);
   });
@@ -355,29 +418,45 @@ describe('Burst P11 — Designated-Target status (gates P7), applied per cast, ~
 describe('Burst P8 — self Elemental Advantage Attack Damage ▲130% (burstCast, self, 10s)', () => {
   const elemAdv = privBuffs(base.events, 'elemAdvantageDamagePct');
   it('is 130% self-scoped, once per privaty burst cast (burstCast, not fullBurstEnter), for 10s', () => {
-    expect(elemAdv.length, 'no privaty elemAdvantageDamagePct buff was applied').toBeGreaterThan(0);
+    expect(
+      elemAdv.length,
+      'no privaty elemAdvantageDamagePct buff was applied'
+    ).toBeGreaterThan(0);
     expect([...new Set(elemAdv.map((b) => b.value))]).toEqual([130]);
-    expect([...new Set(elemAdv.map((b) => b.targetIdx))], 'self-scoped').toEqual([PRIVATY]);
-    for (const b of elemAdv) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+    expect(
+      [...new Set(elemAdv.map((b) => b.targetIdx))],
+      'self-scoped'
+    ).toEqual([PRIVATY]);
+    for (const b of elemAdv) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     expect(elemAdv.length).toBe(privBursts(base.events).length);
     expect(elemAdv.length).toBeLessThan(fbStarts(base.events).length);
   });
-  it.skipIf(!noBurstSelf)('is LIVE with advantage (Water>Fire): removing it lowers privaty damage', () => {
-    expect(base.totals.privaty).toBeGreaterThan(noBurstSelf!.totals.privaty);
-  });
-  it.skipIf(!noBurstSelfNeutral)('is INERT without advantage (neutral boss): removing it changes nothing', () => {
-    expect(baseNeutral.totals).toEqual(noBurstSelfNeutral!.totals);
-  });
+  it.skipIf(!noBurstSelf)(
+    'is LIVE with advantage (Water>Fire): removing it lowers privaty damage',
+    () => {
+      expect(base.totals.privaty).toBeGreaterThan(noBurstSelf!.totals.privaty);
+    }
+  );
+  it.skipIf(!noBurstSelfNeutral)(
+    'is INERT without advantage (neutral boss): removing it changes nothing',
+    () => {
+      expect(baseNeutral.totals).toEqual(noBurstSelfNeutral!.totals);
+    }
+  );
   it.skipIf(!elemAsAttackNeutral || !noBurstSelfNeutral)(
     'DISCRIMINATING: a generic attackDamagePct would still move damage on a neutral boss',
     () => {
-      expect(elemAsAttackNeutral!.totals.privaty).toBeGreaterThan(noBurstSelfNeutral!.totals.privaty);
-    },
+      expect(elemAsAttackNeutral!.totals.privaty).toBeGreaterThan(
+        noBurstSelfNeutral!.totals.privaty
+      );
+    }
   );
 });
 
 describe('Burst P9 — nuke: 1407.64% of final ATK, Burst Skill damage, FB-exempt', () => {
-  const nukes = privDmg(base.events, 'burst').filter((d) => Math.abs(d.atkPct - 1407.64) < 0.01);
+  const nukes = privDmg(base.events, 'burst').filter(
+    (d) => Math.abs(d.atkPct - 1407.64) < 0.01
+  );
   it('fires once per privaty burst cast at the kit magnitude, in the burst bucket', () => {
     expect(nukes.length).toBe(privBursts(base.events).length);
     expect(nukes.length).toBeGreaterThan(0);
@@ -394,8 +473,5 @@ describe('Burst P10 — stun 3s', () => {
 });
 
 describe('Burst P11b — Designated Target: ATK ▼5.02% on the enemy', () => {
-  it.skip(
-    'UNMODELED/inert: boss ATK feeds no damage path in v1 (the load-bearing part is the Designated-Target STATUS, asserted via P7/P11)',
-    () => {},
-  );
+  it.skip('UNMODELED/inert: boss ATK feeds no damage path in v1 (the load-bearing part is the Designated-Target STATUS, asserted via P7/P11)', () => {});
 });

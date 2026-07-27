@@ -115,7 +115,7 @@ const selfBuffs = (evs: Ev[], stat: string) =>
 const dmg = (evs: Ev[]) => evOf(evs, 'damage');
 const chisatoDmg = (evs: Ev[]) =>
   dmg(evs).filter(
-    (e) => (e as any).slug === SLUG || (e as any).srcSlug === SLUG,
+    (e) => (e as any).slug === SLUG || (e as any).srcSlug === SLUG
   );
 
 // Counterfactual A: strip the >70% ATK tier (53.69%) from skill1.
@@ -132,14 +132,14 @@ const noAtkTier = run(
                 e.kind === 'buff' &&
                 e.stat === 'atkPct' &&
                 Math.abs(e.value - 53.69) < 0.01
-              ),
+              )
           );
         }
         ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual B: strip the >55% True Damage ▲ 48.62% tier.
@@ -156,14 +156,14 @@ const noTrueTier = run(
                 e.kind === 'buff' &&
                 e.stat === 'trueDamagePct' &&
                 Math.abs(e.value - 48.62) < 0.01
-              ),
+              )
           );
         }
         ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual C: strip the >25% Hit Rate ▲ 22.37% tier.
@@ -180,14 +180,14 @@ const noHitRate = run(
                 e.kind === 'buff' &&
                 e.stat === 'hitRatePct' &&
                 Math.abs(e.value - 22.37) < 0.01
-              ),
+              )
           );
         }
         ov.skill1 = ov.skill1.filter((b: any) => b.effects.length > 0);
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual D: skill2's 472.18% rider retriggered on every 24 hits instead
@@ -201,12 +201,12 @@ const rider24 = run(
       [SLUG]: withPatchedOverride(SLUG, (ov) => {
         for (const b of ov.skill2) {
           if ((b.trigger as any).kind === 'hitCount')
-            (b.trigger as any).count = 24;
+            {(b.trigger as any).count = 24;}
         }
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual E: skill2's 472.18% rider removed entirely.
@@ -219,14 +219,14 @@ const noRider = run(
         for (const b of ov.skill2) {
           b.effects = b.effects.filter(
             (e: any) =>
-              !(e.kind === 'flatDamage' && Math.abs(e.atkPct - 472.18) < 0.01),
+              !(e.kind === 'flatDamage' && Math.abs(e.atkPct - 472.18) < 0.01)
           );
         }
         ov.skill2 = ov.skill2.filter((b: any) => b.effects.length > 0);
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual F: the burst ATK ▲73.16% re-keyed to fullBurstEnter (fires on
@@ -243,14 +243,14 @@ const burstAtkOnFbEnter = run(
             (e: any) =>
               e.kind === 'buff' &&
               e.stat === 'atkPct' &&
-              Math.abs(e.value - 73.16) < 0.01,
+              Math.abs(e.value - 73.16) < 0.01
           );
-          if (hasAtk) (b as any).trigger = { kind: 'fullBurstEnter' };
+          if (hasAtk) {(b as any).trigger = { kind: 'fullBurstEnter' };}
         }
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual G: the burst ATK buff made permanent (durationSec dropped) —
@@ -275,7 +275,7 @@ const burstAtkPermanent = run(
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // Counterfactual H: skill2-A ("Normal attacks deal true damage for 10 sec")
@@ -287,12 +287,12 @@ const noTrueNormals = run(
       ...(o.overrides ?? {}),
       [SLUG]: withPatchedOverride(SLUG, (ov) => {
         ov.skill2 = ov.skill2.filter(
-          (b: any) => (b.trigger as any).kind !== 'burstCast',
+          (b: any) => (b.trigger as any).kind !== 'burstCast'
         );
       }),
     };
     return o;
-  })(),
+  })()
 );
 
 // ---------------------------------------------------------------- fixture sanity
@@ -302,7 +302,7 @@ describe('chisato — fixture non-vacuity', () => {
     // A lone B3 makes ZERO Full Bursts. Every burst-keyed assertion below is
     // vacuous unless BOTH of these fire, so this gate runs first.
     const casts = evOf(baseEvents, 'burstCast').filter(
-      (e) => (e as any).slug === SLUG,
+      (e) => (e as any).slug === SLUG
     );
     const fbs = evOf(baseEvents, 'fullBurstStart');
     expect(casts.length).toBeGreaterThan(0);
@@ -317,7 +317,7 @@ describe('chisato — fixture non-vacuity', () => {
   it('a second Burst III (helm) is present \u2014 burst-cast vs FB-enter can diverge', () => {
     // Non-vacuity for the trigger-identity test: burstCast and fullBurstEnter
     // are only DISTINGUISHABLE when another same-tier unit can complete a chain.
-    expect(baseTotals['helm']).toBeGreaterThan(0);
+    expect(baseTotals.helm).toBeGreaterThan(0);
   });
 });
 
@@ -330,11 +330,11 @@ describe('chisato skill1 \u2014 "Charges Extrasensory to 100%" at battle start',
     // tier buffs late (or never). Assert the first ATK-tier apply is at/near
     // frame 0 rather than deep into the fight.
     const atkTier = selfBuffs(baseEvents, 'atkPct').filter(
-      (e) => Math.abs((e as any).value - 53.69) < 0.01,
+      (e) => Math.abs((e as any).value - 53.69) < 0.01
     );
     expect(atkTier.length).toBeGreaterThan(0);
     const firstFrame = Math.min(
-      ...atkTier.map((e) => ((e as any).frame ?? 0) as number),
+      ...atkTier.map((e) => ((e as any).frame ?? 0) as number)
     );
     expect(firstFrame).toBeLessThanOrEqual(60); // within the first second
   });
@@ -348,8 +348,8 @@ describe('chisato skill1 \u2014 "Charges Extrasensory to 100%" at battle start',
           (e as any).targetSlug &&
           (e as any).targetSlug !== SLUG &&
           [53.69, 48.62, 22.37].some(
-            (v) => Math.abs((e as any).value - v) < 0.01,
-          ),
+            (v) => Math.abs((e as any).value - v) < 0.01
+          )
       );
       expect(foreign).toHaveLength(0);
     }
@@ -361,7 +361,7 @@ describe('chisato skill1 \u2014 "Charges Extrasensory to 100%" at battle start',
 describe('chisato skill1 \u2014 ">70%: ATK \u25b2 53.69%" tier', () => {
   it('emits a SELF atkPct buff at exactly the kit magnitude', () => {
     const e = selfBuffs(baseEvents, 'atkPct').filter(
-      (x) => Math.abs((x as any).value - 53.69) < 0.01,
+      (x) => Math.abs((x as any).value - 53.69) < 0.01
     );
     expect(e.length).toBeGreaterThan(0);
     // atkPct is a plain percentage stat \u2014 the emitted value is the raw kit %,
@@ -380,7 +380,7 @@ describe('chisato skill1 \u2014 ">70%: ATK \u25b2 53.69%" tier', () => {
   it('the ATK tier does NOT move teammates (self-scoped inertness)', () => {
     const t = totals(noAtkTier.res);
     for (const ally of ['liter', 'crown', 'helm']) {
-      if (baseTotals[ally] === undefined) continue;
+      if (baseTotals[ally] === undefined) {continue;}
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -394,11 +394,11 @@ describe('chisato skill1 \u2014 ">55%: True Damage \u25b2 48.62%" tier', () => {
     // attackDamagePct. Encoding it as generic attackDamagePct would
     // over-credit every bucket instead of only true-flavored damage.
     const t = selfBuffs(baseEvents, 'trueDamagePct').filter(
-      (x) => Math.abs((x as any).value - 48.62) < 0.01,
+      (x) => Math.abs((x as any).value - 48.62) < 0.01
     );
     expect(t.length).toBeGreaterThan(0);
     const miscoded = selfBuffs(baseEvents, 'attackDamagePct').filter(
-      (x) => Math.abs((x as any).value - 48.62) < 0.01,
+      (x) => Math.abs((x as any).value - 48.62) < 0.01
     );
     expect(miscoded).toHaveLength(0);
   });
@@ -413,7 +413,7 @@ describe('chisato skill1 \u2014 ">55%: True Damage \u25b2 48.62%" tier', () => {
   it('does not move teammates', () => {
     const t = totals(noTrueTier.res);
     for (const ally of ['liter', 'crown', 'helm']) {
-      if (baseTotals[ally] === undefined) continue;
+      if (baseTotals[ally] === undefined) {continue;}
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -424,7 +424,7 @@ describe('chisato skill1 \u2014 ">55%: True Damage \u25b2 48.62%" tier', () => {
 describe('chisato skill1 \u2014 ">25%: Hit Rate \u25b2 22.37%" tier', () => {
   it('emits a SELF hitRatePct buff at the kit magnitude', () => {
     const h = selfBuffs(baseEvents, 'hitRatePct').filter(
-      (x) => Math.abs((x as any).value - 22.37) < 0.01,
+      (x) => Math.abs((x as any).value - 22.37) < 0.01
     );
     expect(h.length).toBeGreaterThan(0);
   });
@@ -445,7 +445,7 @@ describe('chisato skill1 \u2014 ">25%: Hit Rate \u25b2 22.37%" tier', () => {
         0,
         ...chisatoDmg(evs)
           .filter((e) => (e as any).bucket === 'normal')
-          .map((e) => ((e as any).coreRate ?? 0) as number),
+          .map((e) => ((e as any).coreRate ?? 0) as number)
       );
     const baseCore = coreRateOf(baseEvents);
     const noHrCore = coreRateOf(noHitRate.events);
@@ -455,7 +455,7 @@ describe('chisato skill1 \u2014 ">25%: Hit Rate \u25b2 22.37%" tier', () => {
 
   it('is not encoded as coreDamagePct (wrong primitive)', () => {
     const wrong = selfBuffs(baseEvents, 'coreDamagePct').filter(
-      (x) => Math.abs((x as any).value - 22.37) < 0.01,
+      (x) => Math.abs((x as any).value - 22.37) < 0.01
     );
     expect(wrong).toHaveLength(0);
   });
@@ -487,14 +487,14 @@ describe('chisato skill1 \u2014 "Affects self every 2 sec. Extrasensory \u25bc 1
           [SLUG]: withPatchedOverride(SLUG, (ov) => {
             for (const b of ov.burst) {
               b.effects = (b.effects as any[]).filter(
-                (e) => e.kind !== 'resource',
+                (e) => e.kind !== 'resource'
               );
             }
             ov.burst = ov.burst.filter((b: any) => b.effects.length > 0);
           }),
         };
         return o;
-      })(),
+      })()
     );
     // NOTE: this is a DIRECTIONAL assertion. If the shipped override models
     // Extrasensory as always-\u2265-the-thresholds (drain judged inert over 180s
@@ -510,10 +510,10 @@ describe('chisato skill1 \u2014 "Affects self every 2 sec. Extrasensory \u25bc 1
     // live without Hit Rate. Assert the count of ATK-tier applies never exceeds
     // the count of Hit-Rate-tier applies.
     const nAtk = selfBuffs(baseEvents, 'atkPct').filter(
-      (x) => Math.abs((x as any).value - 53.69) < 0.01,
+      (x) => Math.abs((x as any).value - 53.69) < 0.01
     ).length;
     const nHr = selfBuffs(baseEvents, 'hitRatePct').filter(
-      (x) => Math.abs((x as any).value - 22.37) < 0.01,
+      (x) => Math.abs((x as any).value - 22.37) < 0.01
     ).length;
     expect(nAtk).toBeLessThanOrEqual(nHr);
   });
@@ -528,7 +528,7 @@ describe('chisato skill2 \u2014 "Normal attacks deal true damage for 10 sec" on 
     // fire on rotations chisato does NOT burst \u2014 producing MORE activations
     // than chisato has burst casts.
     const casts = evOf(baseEvents, 'burstCast').filter(
-      (e) => (e as any).slug === SLUG,
+      (e) => (e as any).slug === SLUG
     ).length;
     const fbs = evOf(baseEvents, 'fullBurstStart').length;
     expect(casts).toBeGreaterThan(0);
@@ -545,7 +545,7 @@ describe('chisato skill2 \u2014 "Normal attacks deal true damage for 10 sec" on 
   it('it is SELF-scoped \u2014 teammates\u2019 damage is byte-identical without it', () => {
     const t = totals(noTrueNormals.res);
     for (const ally of ['liter', 'crown']) {
-      if (baseTotals[ally] === undefined) continue;
+      if (baseTotals[ally] === undefined) {continue;}
       expect(t[ally]).toBeCloseTo(baseTotals[ally], 6);
     }
   });
@@ -561,7 +561,7 @@ describe('chisato skill2 \u2014 "after landing 48 normal attack(s)" \u2192 472.1
     const riders = chisatoDmg(baseEvents).filter(
       (e) =>
         Math.abs(((e as any).mult ?? 0) - 472.18) < 0.5 ||
-        (e as any).srcSlot === 'skill2',
+        (e as any).srcSlot === 'skill2'
     );
     expect(riders.length).toBeGreaterThan(1);
   });
@@ -587,7 +587,7 @@ describe('chisato skill2 \u2014 "after landing 48 normal attack(s)" \u2192 472.1
   it('the rider takes NO core \u2014 the kit never says "core strike"', () => {
     // noFb/range/core convention: riders get no core unless the text says so.
     const riderCore = chisatoDmg(baseEvents).filter(
-      (e) => (e as any).srcSlot === 'skill2' && (e as any).bucket === 'core',
+      (e) => (e as any).srcSlot === 'skill2' && (e as any).bucket === 'core'
     );
     expect(riderCore).toHaveLength(0);
   });
@@ -597,7 +597,7 @@ describe('chisato skill2 \u2014 "after landing 48 normal attack(s)" \u2192 472.1
       (e) =>
         (e as any).srcSlug === SLUG &&
         (e as any).slug &&
-        (e as any).slug !== SLUG,
+        (e as any).slug !== SLUG
     );
     expect(foreign).toHaveLength(0);
   });
@@ -608,7 +608,7 @@ describe('chisato skill2 \u2014 "after landing 48 normal attack(s)" \u2192 472.1
 describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.16% for 10 sec"', () => {
   it('emits a SELF atkPct buff at 73.16 with a 10s window', () => {
     const b = selfBuffs(baseEvents, 'atkPct').filter(
-      (x) => Math.abs((x as any).value - 73.16) < 0.01,
+      (x) => Math.abs((x as any).value - 73.16) < 0.01
     );
     expect(b.length).toBeGreaterThan(0);
     // DURATION SEMANTICS: "for 10 sec" is wall-clock, NOT rounds. A durationShots
@@ -616,7 +616,7 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     expect((b[0] as any).durationShots).toBeNull();
     const exp = (b[0] as any).expiresFrame;
     const at = (b[0] as any).frame ?? 0;
-    if (typeof exp === 'number') expect(exp - at).toBeCloseTo(600, -1); // 10s @ 60fps
+    if (typeof exp === 'number') {expect(exp - at).toBeCloseTo(600, -1);} // 10s @ 60fps
   });
 
   it('the burst ATK buff is keyed to chisato\u2019s OWN cast, not team FB entry', () => {
@@ -625,14 +625,14 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     // equal, the fixture never diverges and the test says so via the count check
     // in the fixture block above.
     const casts = evOf(baseEvents, 'burstCast').filter(
-      (e) => (e as any).slug === SLUG,
+      (e) => (e as any).slug === SLUG
     ).length;
     const applies = selfBuffs(baseEvents, 'atkPct').filter(
-      (x) => Math.abs((x as any).value - 73.16) < 0.01,
+      (x) => Math.abs((x as any).value - 73.16) < 0.01
     ).length;
     expect(applies).toBe(casts);
     expect(totals(burstAtkOnFbEnter.res)[SLUG]).toBeGreaterThanOrEqual(
-      baseTotals[SLUG],
+      baseTotals[SLUG]
     );
   });
 
@@ -640,7 +640,7 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     // "for 10 sec" vs permanent. No buffRemove is emitted on natural lapse, so
     // expiry is proven by the counterfactual delta, not by a removal event.
     expect(totals(burstAtkPermanent.res)[SLUG]).toBeGreaterThan(
-      baseTotals[SLUG],
+      baseTotals[SLUG]
     );
   });
 
@@ -648,7 +648,7 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     const removes = evOf(baseEvents, 'buffRemove').filter(
       (e) =>
         (e as any).targetSlug === SLUG &&
-        Math.abs((e as any).value - 73.16) < 0.01,
+        Math.abs((e as any).value - 73.16) < 0.01
     );
     expect(removes).toHaveLength(0);
   });
@@ -657,7 +657,7 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     const foreign = buffs(baseEvents, 'atkPct').filter(
       (e) =>
         (e as any).targetSlug !== SLUG &&
-        Math.abs((e as any).value - 73.16) < 0.01,
+        Math.abs((e as any).value - 73.16) < 0.01
     );
     expect(foreign).toHaveLength(0);
   });
@@ -676,7 +676,7 @@ describe('chisato burst \u2014 "Charges Extrasensory to 100%" + "ATK \u25b2 73.1
     const stillBuffed =
       late.length > 0 ||
       selfBuffs(baseEvents, 'atkPct').some(
-        (x) => Math.abs((x as any).value - 53.69) < 0.01,
+        (x) => Math.abs((x as any).value - 53.69) < 0.01
       );
     expect(stillBuffed).toBe(true);
   });
@@ -692,18 +692,18 @@ describe('chisato \u2014 global inertness', () => {
         (e as any).targetSlug &&
         (e as any).targetSlug !== SLUG &&
         (e as any).casterIdx !== null &&
-        MAGS.some((v) => Math.abs((e as any).value - v) < 0.01),
+        MAGS.some((v) => Math.abs((e as any).value - v) < 0.01)
     );
     expect(foreign).toHaveLength(0);
   });
 
   it('no boss debuff is emitted \u2014 the kit inflicts no Damage Taken \u25b2 or status', () => {
     const bossHeld = evOf(baseEvents, 'buffApply').filter(
-      (e) => (e as any).casterIdx === null && (e as any).targetIdx === null,
+      (e) => (e as any).casterIdx === null && (e as any).targetIdx === null
     );
     const chisatoMags = [53.69, 48.62, 22.37, 73.16];
     const mine = bossHeld.filter((e) =>
-      chisatoMags.some((v) => Math.abs((e as any).value - v) < 0.01),
+      chisatoMags.some((v) => Math.abs((e as any).value - v) < 0.01)
     );
     expect(mine).toHaveLength(0);
   });
@@ -732,7 +732,7 @@ describe('chisato \u2014 global inertness', () => {
 
   it('no unlimitedAmmo / weaponSwap: the kit swaps no weapon', () => {
     const swapish = evOf(baseEvents, 'shot').filter(
-      (e) => (e as any).slug === SLUG && (e as any).swapped === true,
+      (e) => (e as any).slug === SLUG && (e as any).swapped === true
     );
     expect(swapish).toHaveLength(0);
   });

@@ -62,10 +62,10 @@ function run(overrides: Record<string, any> = {}, comp = mainComp()) {
 const blancNoCdr = withPatchedOverride('blanc', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill2.length === before)
-    throw new Error('blanc S2 burstCdr block missing — fixture stale');
+    {throw new Error('blanc S2 burstCdr block missing — fixture stale');}
 });
 
 /** B7 counterfactual: level-1 value 20.08 instead of 39.26. */
@@ -74,9 +74,9 @@ const blancWrongDebuff = withPatchedOverride('blanc', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'damageTakenPct');
   if (!e)
-    throw new Error(
-      'blanc burst damageTakenPct effect missing — fixture stale',
-    );
+    {throw new Error(
+      'blanc burst damageTakenPct effect missing — fixture stale'
+    );}
   e.value = 20.08;
 });
 
@@ -86,9 +86,9 @@ const blancWrongMaxHp = withPatchedOverride('blanc', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'targetMaxHpPct');
   if (!e)
-    throw new Error(
-      'blanc burst targetMaxHpPct effect missing — fixture stale',
-    );
+    {throw new Error(
+      'blanc burst targetMaxHpPct effect missing — fixture stale'
+    );}
   e.value = 18.72;
 });
 
@@ -104,7 +104,7 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const blancBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'blanc',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'blanc'
   );
 
 /** Blanc is slot 1 in mainComp (liter 0 / blanc 1 / ada 2). */
@@ -116,7 +116,7 @@ describe('blanc — kit spec', () => {
   describe('B7 — burst applies Damage Taken ▲39.26% to all enemies for 10 sec', () => {
     // Enemy debuffs carry casterIdx:null (boss has no unit slot); filter by stat+targetIdx:null.
     const applied = buffs(base.events).filter(
-      (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+      (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
     );
 
     it('fires once per burst cast at the kit magnitude 39.26', () => {
@@ -133,7 +133,7 @@ describe('blanc — kit spec', () => {
 
     it('DISCRIMINATING: level-1 value 20.08 is NOT what ships', () => {
       const wrong = buffs(wrongDebuff.events).filter(
-        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null,
+        (b) => b.stat === 'damageTakenPct' && b.targetIdx === null
       );
       expect([...new Set(wrong.map((b) => b.value))]).toEqual([20.08]);
       // The wrong value must produce different team totals (debuff is live, not inert)
@@ -156,7 +156,7 @@ describe('blanc — kit spec', () => {
     // Engine converts targetMaxHpPct → maxHpFlat (flat HP = 31.68% of target's own maxHp).
     // The buffApply event carries stat:'maxHpFlat' and the computed flat value.
     const applied = buffs(base.events).filter(
-      (b) => b.casterIdx === BLANC_SLOT && b.stat === 'maxHpFlat',
+      (b) => b.casterIdx === BLANC_SLOT && b.stat === 'maxHpFlat'
     );
 
     it('fires once per burst cast (targetMaxHpPct → maxHpFlat in engine)', () => {
@@ -178,7 +178,7 @@ describe('blanc — kit spec', () => {
 
     it('DISCRIMINATING: level-1 value 18.72 produces a smaller flat HP grant', () => {
       const wrong = buffs(wrongMaxHp.events).filter(
-        (b) => b.casterIdx === BLANC_SLOT && b.stat === 'maxHpFlat',
+        (b) => b.casterIdx === BLANC_SLOT && b.stat === 'maxHpFlat'
       );
       expect(wrong.length).toBeGreaterThan(0);
       // 18.72% < 31.68% → smaller flat value
@@ -188,7 +188,7 @@ describe('blanc — kit spec', () => {
     it('is offensively inert (no team total changes vs a comp without it)', () => {
       const noMaxHp = withPatchedOverride('blanc', (ov) => {
         ov.burst = ov.burst.filter(
-          (b: any) => !b.effects.some((e: any) => e.stat === 'targetMaxHpPct'),
+          (b: any) => !b.effects.some((e: any) => e.stat === 'targetMaxHpPct')
         );
       });
       const without = run({ blanc: noMaxHp });
@@ -205,7 +205,7 @@ describe('blanc — kit spec', () => {
       (b) =>
         b.casterIdx === CROWN_SLOT &&
         b.stat === 'attackDamagePct' &&
-        b.value === 20.99,
+        b.value === 20.99
     );
 
     it("crown's recovery trigger fires (blanc's heals are live, not inert)", () => {
@@ -226,7 +226,7 @@ describe('blanc — kit spec', () => {
     // that blanc's shot count reaches 120+ (so the trigger condition is met).
     it('blanc fires enough shots to trigger the shield (120+ hits in 180s)', () => {
       const shots = base.events.filter(
-        (e) => e.kind === 'shot' && e.slug === 'blanc',
+        (e) => e.kind === 'shot' && e.slug === 'blanc'
       ).length;
       // 60-ammo AR at 720rpm = 12 rounds/sec; 180s → ~2160 rounds (well over 120)
       expect(shots).toBeGreaterThanOrEqual(120);

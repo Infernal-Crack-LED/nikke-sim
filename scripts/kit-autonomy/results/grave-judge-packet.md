@@ -16,6 +16,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -26,12 +27,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -57,29 +60,56 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ## 1. Ground truth — kit prose (data/characters.json → characters.grave.skills, level-10 values)
 
@@ -119,44 +149,45 @@ Max Ammunition Capacity ▲ 3 round(s) for 10 sec.
 ### Base stats / weapon datamine
 
 {
- "weapon": "AR",
- "burst": "II",
- "class": "Supporter",
- "element": "Fire",
- "manufacturer": "Pilgrim",
- "burstCooldownSec": 20,
- "normalAttackMultiplier": 17.91,
- "coreAttackMultiplier": 200,
- "ammo": 60,
- "reloadFrames": 81,
- "chargeFrames": 0,
- "hitsPerShot": 1,
- "burstGaugePerShot": 0.45,
- "baseStats": {
-  "hp": 15000,
-  "atk": 500,
-  "def": 100,
-  "core": {
-   "hp": 200,
-   "atk": 200,
-   "def": 200
-  },
-  "grade": {
-   "hp": 3000,
-   "atk": 20,
-   "def": 100,
-   "ratio": 200
-  },
-  "critRate": 15,
-  "maxLevel": 1200,
-  "critDamage": 150,
-  "resourceId": 514
- }
+"weapon": "AR",
+"burst": "II",
+"class": "Supporter",
+"element": "Fire",
+"manufacturer": "Pilgrim",
+"burstCooldownSec": 20,
+"normalAttackMultiplier": 17.91,
+"coreAttackMultiplier": 200,
+"ammo": 60,
+"reloadFrames": 81,
+"chargeFrames": 0,
+"hitsPerShot": 1,
+"burstGaugePerShot": 0.45,
+"baseStats": {
+"hp": 15000,
+"atk": 500,
+"def": 100,
+"core": {
+"hp": 200,
+"atk": 200,
+"def": 200
+},
+"grade": {
+"hp": 3000,
+"atk": 20,
+"def": 100,
+"ratio": 200
+},
+"critRate": 15,
+"maxLevel": 1200,
+"critDamage": 150,
+"resourceId": 514
+}
 }
 
 ## 2. Damage-formula + mechanics SSOT (summary; full text in docs/data/damage-calculation.md + docs/data/game-mechanics.md)
 
 Multiplicative buckets: amount = baseAtk × (atkPct/100) × major × elem × charge × dmgUp × seqMult × projFactor × taken × distributed.
+
 - ATK bucket (atkPct / casterAtkPct): multiplies the sheet ATK; boss DEF subtracted per hit first (baseAtk).
 - Damage-Up bucket (attackDamagePct, pierceDamagePct, partsDamagePct, ...): ADDITIVE with each other, then ×(1+sum/100); only lands on damage of the matching tag (pierceDamagePct only on pierce-tagged attacks).
 - major: +50% Full Burst major applies only to damage INSIDE the FB window; a burst CAST lands BEFORE the window opens (no major).
@@ -331,7 +362,6 @@ Multiplicative buckets: amount = baseAtk × (atkPct/100) × major × elem × cha
     }
   ]
 }
-
 ```
 
 ## 4. S2b pre-op adversarial test-faithfulness review (claude-fable-5, CROSS-FAMILY) — reconciled
@@ -398,7 +428,6 @@ Multiplicative buckets: amount = baseAtk × (atkPct/100) × major × elem × cha
     "comps run ~1.18 HOT on purpose after enabling the real pierce — the residual is a SEPARATE, now-isolated burst-window over-model tracked in open-questions U19 (fix with a measurement), not a pierce error"
   ]
 }
-
 ```
 
 ## 5. S5 blind post-op test-writer (claude-opus-5, CROSS-FAMILY) — run UNMODIFIED vs driver override
@@ -408,9 +437,10 @@ DIAGNOSIS — the RED is NOT a faithfulness defect in the driver override; it de
 (a) FIXTURE RECON_ERROR: the blind test used controlComp('grave', true) = liter/crown/grave/helm. crown is Burst II AND grave is Burst II; crown wins the B2 slot every chain, so grave casts 0 bursts (MEASURED: 0 bursts in this fixture vs 12 in the driver's liter/grave/ada/helm fixture). Every burst-gated assertion (unlimitedAmmo, gainPierce, the burst buffs, Overheat II/III) therefore sees 0 applications and vacuously fails.
 (b) SCHEMA RECON_ERROR: the blind counterfactuals patch ov.skill1.blocks / ov.skill2.blocks / ov.burst.blocks, but the live override schema is a FLAT ARRAY of blocks (ov.skill1 IS the array; cf. the driver test and crown.test.ts using ov.skill1.filter / ov.burst.flatMap). Those .blocks accesses are undefined, so the counterfactual patches throw or no-op.
 (c) TWO GENUINE ENCODING DIVERGENCES that would persist in ANY working fixture, both DOCUMENTED owner decisions where the driver is the more-faithful or a deliberate approximation:
-   1. Reload Ratio ▼50%: blind encodes reloadSpeedPct -50 (literal). Driver encodes the MEASURED charFixes.reloadFrames 193 (effective 201f, from grave solo.MP4 n=19). The override note explicitly REFUTES the literal reading: reloadSpeedPct-50 -> 131f is too fast vs the measured 201f. Driver = measured > literal.
-   2. Overheat I 'Removed upon reloading to max ammunition': blind encodes removeOnReload:true (literal). Driver models Overheat I as a SUSTAINED hitCount-15 buff and lists the removal VERBATIM in unmodeled.skill2 as a documented hand approximation ('absorbed by the sustained hitCount-15 approximation, hand decision'). Small effect; documented; owner may enact removeOnReload later.
-CONVERGENCE (blind spec + its it.skip gaps independently match the driver): burstCast-not-fullBurstEnter; unlimitedAmmo 10s; gainPierce timed EFFECT not hasPierce flag; critRatePct 85.19 UNSCOPED not critRateNormalPct; pierceDamagePct 52.8 self; attackDamagePct 48.2 all-allies-INCL-self not atkPct; maxAmmoFlat 3 not maxAmmoPct; pierceDamagePct 39.98 allies; burstGenPct 38.96 all allies; pierceDamagePct 48.4 all allies; Overheat I hitCount15 atkPct15.48; Overheat II atkPct20.66; Overheat III attackDamagePct30.8 NOT atkPct; Overheat self-only; inertness (no core/crit-damage/charge/fire-rate buffs). Blind it.skip gaps == driver ⚑s: Prediction-end trigger (no primitive), Heat-Emission removal condition (unstated), self-status gate (no primitive -> passive approx), HP-drain (no HP pool).
+
+1.  Reload Ratio ▼50%: blind encodes reloadSpeedPct -50 (literal). Driver encodes the MEASURED charFixes.reloadFrames 193 (effective 201f, from grave solo.MP4 n=19). The override note explicitly REFUTES the literal reading: reloadSpeedPct-50 -> 131f is too fast vs the measured 201f. Driver = measured > literal.
+2.  Overheat I 'Removed upon reloading to max ammunition': blind encodes removeOnReload:true (literal). Driver models Overheat I as a SUSTAINED hitCount-15 buff and lists the removal VERBATIM in unmodeled.skill2 as a documented hand approximation ('absorbed by the sustained hitCount-15 approximation, hand decision'). Small effect; documented; owner may enact removeOnReload later.
+    CONVERGENCE (blind spec + its it.skip gaps independently match the driver): burstCast-not-fullBurstEnter; unlimitedAmmo 10s; gainPierce timed EFFECT not hasPierce flag; critRatePct 85.19 UNSCOPED not critRateNormalPct; pierceDamagePct 52.8 self; attackDamagePct 48.2 all-allies-INCL-self not atkPct; maxAmmoFlat 3 not maxAmmoPct; pierceDamagePct 39.98 allies; burstGenPct 38.96 all allies; pierceDamagePct 48.4 all allies; Overheat I hitCount15 atkPct15.48; Overheat II atkPct20.66; Overheat III attackDamagePct30.8 NOT atkPct; Overheat self-only; inertness (no core/crit-damage/charge/fire-rate buffs). Blind it.skip gaps == driver ⚑s: Prediction-end trigger (no primitive), Heat-Emission removal condition (unstated), self-status gate (no primitive -> passive approx), HP-drain (no HP pool).
 
 ### S5 blind test source (scripts/kit-autonomy/blind/grave.test.ts)
 
@@ -474,11 +504,15 @@ type Ev = SimEvent & Record<string, any>;
 
 function run(opts: Parameters<typeof runComp>[0]) {
   const events: Ev[] = [];
-  const res = runComp({ ...opts, onEvent: (ev: SimEvent) => events.push(ev as Ev) } as any);
+  const res = runComp({
+    ...opts,
+    onEvent: (ev: SimEvent) => events.push(ev as Ev),
+  } as any);
   return { res, events };
 }
 
-const buffs = (events: Ev[], stat: string) => events.filter((e) => e.kind === 'buffApply' && e.stat === stat);
+const buffs = (events: Ev[], stat: string) =>
+  events.filter((e) => e.kind === 'buffApply' && e.stat === stat);
 const onGrave = (events: Ev[], stat: string) =>
   buffs(events, stat).filter((e) => e.targetSlug === 'grave');
 
@@ -492,7 +526,9 @@ describe('grave — baseline sanity', () => {
     expect(graveTotal).toBeGreaterThan(0);
     expect(base.events.some((e) => e.kind === 'fullBurstStart')).toBe(true);
     expect(base.events.some((e) => e.kind === 'burstCast')).toBe(true);
-    expect(base.events.filter((e) => e.kind === 'shot').length).toBeGreaterThan(0);
+    expect(base.events.filter((e) => e.kind === 'shot').length).toBeGreaterThan(
+      0
+    );
   });
 
   it('grave is present as a damage dealer, not a pure inert support', () => {
@@ -510,7 +546,10 @@ describe('grave burst / Prediction (self, 10 s)', () => {
         effects: b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo'),
       }));
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // Unlimited ammo removes reload downtime inside her window => strictly more shots.
     expect(totals(res)['grave']).toBeLessThan(graveTotal);
   });
@@ -520,10 +559,13 @@ describe('grave burst / Prediction (self, 10 s)', () => {
       ov.burst!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
           if (e.kind === 'unlimitedAmmo') e.durationSec = 180;
-        }),
+        })
       );
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // nearest-wrong: a whole-fight unlimited-ammo window. Must be strictly stronger.
     expect(totals(res)['grave']).toBeGreaterThan(graveTotal);
   });
@@ -534,7 +576,10 @@ describe('grave burst / Prediction (self, 10 s)', () => {
     const patchedFlag = withPatchedOverride('grave', (ov) => {
       (ov as any).hasPierce = true;
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patchedFlag } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patchedFlag },
+    });
     // Nearest-wrong (whole-fight pierce) lets her 48.4% + 52.8% + 39.98% Pierce Damage buffs feed
     // EVERY shot, not just the burst window => strictly more damage. If this is equal, the
     // committed file already has hasPierce:true, i.e. the timed scope was lost.
@@ -546,10 +591,13 @@ describe('grave burst / Prediction (self, 10 s)', () => {
       ov.burst!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
           if (e.kind === 'gainPierce') delete e.durationSec;
-        }),
+        })
       );
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // nearest-wrong: durationSec absent => permanent pierce.
     expect(totals(res)['grave']).toBeGreaterThan(graveTotal);
   });
@@ -565,7 +613,7 @@ describe('grave burst / Prediction (self, 10 s)', () => {
 
   it('self crit buff is 10 s and self-targeted only (target set)', () => {
     const applied = buffs(base.events, 'critRatePct').filter(
-      (e) => Math.abs(e.value - 85.19) < 1e-6,
+      (e) => Math.abs(e.value - 85.19) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
     for (const e of applied) expect(e.targetSlug).toBe('grave');
@@ -578,7 +626,7 @@ describe('grave burst / Prediction (self, 10 s)', () => {
 
   it('self Pierce Damage 52.8% lands on grave only', () => {
     const applied = buffs(base.events, 'pierceDamagePct').filter(
-      (e) => Math.abs(e.value - 52.8) < 1e-6,
+      (e) => Math.abs(e.value - 52.8) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
     for (const e of applied) expect(e.targetSlug).toBe('grave');
@@ -589,7 +637,7 @@ describe('grave burst / Prediction (self, 10 s)', () => {
 describe('grave burst — all-allies lines (10 s)', () => {
   it('Attack Damage 48.2% reaches every ally, in the Damage-Up bucket', () => {
     const applied = buffs(base.events, 'attackDamagePct').filter(
-      (e) => Math.abs(e.value - 48.2) < 1e-6,
+      (e) => Math.abs(e.value - 48.2) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
     const hit = new Set(applied.map((e) => e.targetSlug));
@@ -602,24 +650,35 @@ describe('grave burst — all-allies lines (10 s)', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.burst!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
-          if (e.kind === 'buff' && e.stat === 'attackDamagePct' && Math.abs(e.value - 48.2) < 1e-6) {
+          if (
+            e.kind === 'buff' &&
+            e.stat === 'attackDamagePct' &&
+            Math.abs(e.value - 48.2) < 1e-6
+          ) {
             e.stat = 'atkPct';
           }
-        }),
+        })
       );
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // ATK is multiplicative with the sheet; Damage-Up is additive with other supports.
     // The two buckets cannot coincide across a full comp of differently-buffed units.
     expect(totals(res)['grave']).not.toBe(graveTotal);
   });
 
   it('Max Ammunition +3 is maxAmmoFlat (rounds), not maxAmmoPct', () => {
-    const applied = buffs(base.events, 'maxAmmoFlat').filter((e) => Math.abs(e.value - 3) < 1e-6);
+    const applied = buffs(base.events, 'maxAmmoFlat').filter(
+      (e) => Math.abs(e.value - 3) < 1e-6
+    );
     expect(applied.length).toBeGreaterThan(0);
     for (const e of applied) expect(e.targetSlug).toBeTruthy();
     // nearest-wrong: reading "3 round(s)" as 3 PERCENT.
-    const pct = buffs(base.events, 'maxAmmoPct').filter((e) => Math.abs(e.value - 3) < 1e-6);
+    const pct = buffs(base.events, 'maxAmmoPct').filter(
+      (e) => Math.abs(e.value - 3) < 1e-6
+    );
     expect(pct.length).toBe(0);
   });
 
@@ -627,11 +686,14 @@ describe('grave burst — all-allies lines (10 s)', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.burst!.blocks.forEach((b: any) => {
         b.effects = b.effects.filter(
-          (e: any) => !(e.kind === 'buff' && e.stat === 'maxAmmoFlat'),
+          (e: any) => !(e.kind === 'buff' && e.stat === 'maxAmmoFlat')
         );
       });
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     const t = totals(res);
     // +3 rounds raises magazine size for the whole team for 10 s -> at least one ally must move.
     const moved = Object.keys(baseTotals).some((s) => t[s] !== baseTotals[s]);
@@ -640,7 +702,7 @@ describe('grave burst — all-allies lines (10 s)', () => {
 
   it('ally Pierce Damage 39.98% is distinct from the self 52.8% line', () => {
     const ally = buffs(base.events, 'pierceDamagePct').filter(
-      (e) => Math.abs(e.value - 39.98) < 1e-6,
+      (e) => Math.abs(e.value - 39.98) < 1e-6
     );
     expect(ally.length).toBeGreaterThan(0);
     expect(new Set(ally.map((e) => e.targetSlug)).size).toBeGreaterThan(1);
@@ -660,18 +722,22 @@ describe('grave skill1 — Heat Emission', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.skill1!.blocks.forEach((b: any) =>
         b.effects.forEach((e: any) => {
-          if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') e.value = Math.abs(e.value);
-        }),
+          if (e.kind === 'buff' && e.stat === 'reloadSpeedPct')
+            e.value = Math.abs(e.value);
+        })
       );
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // Reload speed gates shots fired -> it IS damage (never "defensive, skip").
     expect(totals(res)['grave']).toBeGreaterThan(graveTotal);
   });
 
   it('Burst Gauge filling speed 38.96% is burstGenPct on ALL allies (incl. self)', () => {
     const applied = buffs(base.events, 'burstGenPct').filter(
-      (e) => Math.abs(e.value - 38.96) < 1e-6,
+      (e) => Math.abs(e.value - 38.96) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
     const hit = new Set(applied.map((e) => e.targetSlug));
@@ -683,12 +749,17 @@ describe('grave skill1 — Heat Emission', () => {
     const patched = withPatchedOverride('grave', (ov) => {
       ov.skill1!.blocks.forEach((b: any) => {
         b.effects = b.effects.filter(
-          (e: any) => !(e.kind === 'buff' && e.stat === 'burstGenPct'),
+          (e: any) => !(e.kind === 'buff' && e.stat === 'burstGenPct')
         );
       });
     });
-    const { events } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
-    const fbBase = base.events.filter((e) => e.kind === 'fullBurstStart').length;
+    const { events } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
+    const fbBase = base.events.filter(
+      (e) => e.kind === 'fullBurstStart'
+    ).length;
     const fbNo = events.filter((e) => e.kind === 'fullBurstStart').length;
     // +38.96% gauge for the whole team must not be Full-Burst-count-neutral over 180 s.
     expect(fbNo).toBeLessThanOrEqual(fbBase);
@@ -697,7 +768,7 @@ describe('grave skill1 — Heat Emission', () => {
 
   it('Pierce Damage 48.4% is an ALL-ALLIES continuous line (not self-only)', () => {
     const applied = buffs(base.events, 'pierceDamagePct').filter(
-      (e) => Math.abs(e.value - 48.4) < 1e-6,
+      (e) => Math.abs(e.value - 48.4) < 1e-6
     );
     expect(applied.length).toBeGreaterThan(0);
     expect(new Set(applied.map((e) => e.targetSlug)).size).toBeGreaterThan(1);
@@ -711,7 +782,10 @@ describe('grave skill1 — Heat Emission', () => {
         b.effects = b.effects.filter((e: any) => e.kind !== 'heal');
       });
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     const t = totals(res);
     // crown (B2 in controlComp) consumes recovery; removing grave's heal must move SOMETHING,
     // proving the heal is wired rather than decorative.
@@ -723,7 +797,9 @@ describe('grave skill1 — Heat Emission', () => {
 // ============================================================ SKILL 2 — Overheat
 describe('grave skill2 — Overheat I/II/III', () => {
   it('Overheat I ATK 15.48% fires on a hit COUNT of 15, not on a timer', () => {
-    const applied = onGrave(base.events, 'atkPct').filter((e) => Math.abs(e.value - 15.48) < 1e-6);
+    const applied = onGrave(base.events, 'atkPct').filter(
+      (e) => Math.abs(e.value - 15.48) < 1e-6
+    );
     expect(applied.length).toBeGreaterThan(0);
     const first = applied[0];
     // A hitCount:15 trigger cannot land at t=0; an interval/passive mis-encoding would.
@@ -733,7 +809,7 @@ describe('grave skill2 — Overheat I/II/III', () => {
   it('Overheat I is removeOnReload, NOT a wall-clock buff (duration semantics)', () => {
     // The engine emits buffRemove ONLY for removeOnReload buffs at reload-to-max.
     const removes = base.events.filter(
-      (e) => e.kind === 'buffRemove' && e.targetSlug === 'grave',
+      (e) => e.kind === 'buffRemove' && e.targetSlug === 'grave'
     );
     expect(removes.length).toBeGreaterThan(0);
     expect(removes.some((e) => (e as any).cause === 'reload')).toBe(true);
@@ -745,25 +821,32 @@ describe('grave skill2 — Overheat I/II/III', () => {
             delete e.removeOnReload;
             e.durationSec = 999;
           }
-        }),
+        })
       );
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // nearest-wrong: a permanent buff never stripped by reloads => strictly more damage.
     expect(totals(res)['grave']).toBeGreaterThan(graveTotal);
   });
 
   it('Overheat II ATK 20.66% is atkPct (ATK line)', () => {
-    const applied = onGrave(base.events, 'atkPct').filter((e) => Math.abs(e.value - 20.66) < 1e-6);
+    const applied = onGrave(base.events, 'atkPct').filter(
+      (e) => Math.abs(e.value - 20.66) < 1e-6
+    );
     expect(applied.length).toBeGreaterThan(0);
   });
 
   it('Overheat III 30.8% is attackDamagePct (Damage-Up), NOT atkPct — bucket discrimination', () => {
     const asDamageUp = onGrave(base.events, 'attackDamagePct').filter(
-      (e) => Math.abs(e.value - 30.8) < 1e-6,
+      (e) => Math.abs(e.value - 30.8) < 1e-6
     );
     expect(asDamageUp.length).toBeGreaterThan(0);
-    const asAtk = onGrave(base.events, 'atkPct').filter((e) => Math.abs(e.value - 30.8) < 1e-6);
+    const asAtk = onGrave(base.events, 'atkPct').filter(
+      (e) => Math.abs(e.value - 30.8) < 1e-6
+    );
     expect(asAtk.length).toBe(0);
 
     const patched = withPatchedOverride('grave', (ov) => {
@@ -771,23 +854,32 @@ describe('grave skill2 — Overheat I/II/III', () => {
         const walk = (effs: any[]) =>
           effs.forEach((e: any) => {
             if (e.kind === 'escalating') walk(e.steps);
-            if (e.kind === 'buff' && e.stat === 'attackDamagePct' && Math.abs(e.value - 30.8) < 1e-6) {
+            if (
+              e.kind === 'buff' &&
+              e.stat === 'attackDamagePct' &&
+              Math.abs(e.value - 30.8) < 1e-6
+            ) {
               e.stat = 'atkPct';
             }
           });
         walk(b.effects);
       });
     });
-    const { res } = run({ ...controlComp('grave', true), overrides: { grave: patched } });
+    const { res } = run({
+      ...controlComp('grave', true),
+      overrides: { grave: patched },
+    });
     // "Attack Damage" is the additive Damage-Up bucket (diluted by liter/crown/helm buffs);
     // atkPct multiplies the sheet. With other supports present these cannot be equal.
     expect(totals(res)['grave']).not.toBe(graveTotal);
   });
 
   it('Overheat II/III are gated behind Prediction — they are NOT live from t=0 (non-vacuity, both cases)', () => {
-    const oh2 = onGrave(base.events, 'atkPct').filter((e) => Math.abs(e.value - 20.66) < 1e-6);
+    const oh2 = onGrave(base.events, 'atkPct').filter(
+      (e) => Math.abs(e.value - 20.66) < 1e-6
+    );
     const oh3 = onGrave(base.events, 'attackDamagePct').filter(
-      (e) => Math.abs(e.value - 30.8) < 1e-6,
+      (e) => Math.abs(e.value - 30.8) < 1e-6
     );
     // ACTIVE case exercised...
     expect(oh2.length).toBeGreaterThan(0);
@@ -807,7 +899,7 @@ describe('grave skill2 — Overheat I/II/III', () => {
         e.kind === 'buffApply' &&
         e.targetSlug !== 'grave' &&
         e.targetSlug != null &&
-        vals.some((v) => Math.abs((e as any).value - v) < 1e-6),
+        vals.some((v) => Math.abs((e as any).value - v) < 1e-6)
     );
     expect(leaked).toEqual([]);
   });
@@ -816,7 +908,12 @@ describe('grave skill2 — Overheat I/II/III', () => {
 // ============================================================ INERTNESS
 describe('grave — inertness', () => {
   it('grave carries no core/crit-damage/charge buffs the kit never grants', () => {
-    for (const stat of ['coreDamagePct', 'critDamagePct', 'chargeDamagePct', 'chargeSpeedPct']) {
+    for (const stat of [
+      'coreDamagePct',
+      'critDamagePct',
+      'chargeDamagePct',
+      'chargeSpeedPct',
+    ]) {
       expect(onGrave(base.events, stat)).toEqual([]);
     }
   });
@@ -827,14 +924,16 @@ describe('grave — inertness', () => {
         e.kind === 'buffApply' &&
         (e as any).casterIdx === null &&
         (e as any).targetIdx === null &&
-        (e as any).stat === 'damageTakenPct',
+        (e as any).stat === 'damageTakenPct'
     );
     expect(bossDebuffs).toEqual([]);
   });
 
   it('grave grants no fireRate / attackSpeed / chargeSpeed the kit never mentions', () => {
     for (const stat of ['fireRatePct', 'attackSpeedPct']) {
-      expect(buffs(base.events, stat).filter((e) => e.targetSlug === 'grave')).toEqual([]);
+      expect(
+        buffs(base.events, stat).filter((e) => e.targetSlug === 'grave')
+      ).toEqual([]);
     }
   });
 });
@@ -851,7 +950,6 @@ describe('grave — modeling gaps', () => {
 
   it.skip('skill2 counts "attacks LANDED", but hitCount counts rounds fired-and-hit; with no miss model the two coincide here, and the 30/60 thresholds are additionally gated on Prediction being active — the Prediction gate itself is not expressible', () => {});
 });
-
 ```
 
 ## 6. S6 blind post-op override-writer (claude-opus-5, CROSS-FAMILY) — independent rebuild + diff vs driver
@@ -859,11 +957,12 @@ describe('grave — modeling gaps', () => {
 S6 blind override (independent rebuild) vs driver override — encoding decisions:
 CONVERGED (identical intent): burst trigger burstCast; self unlimitedAmmo 10s; self gainPierce durationSec 10 (blind: 'timed, so NOT the whole-fight hasPierce'); hasPierce false; self pierceDamagePct 52.8 10s; self critRatePct 85.19 10s UNSCOPED; allies attackDamagePct 48.2 10s (incl self); allies pierceDamagePct 39.98 10s; allies maxAmmoFlat 3 10s (blind: 'FLAT rounds, not maxAmmoPct'); Overheat I hitCount15 atkPct15.48 self; Overheat II hitCount30 atkPct20.66 self; Overheat III hitCount60 attackDamagePct30.8 self (Damage-Up not atkPct); HP-drain SKIPPED (no HP pool); 'Affects all allies' includes self.
 DIVERGED (all on documented-approximation lines; driver position measured or soundly-reasoned):
-  - Heat Emission trigger/timing: blind = fullBurstEnd + ownBurstGate:'cast' (synthesizes Prediction-end = cast+10s) with a DERIVED ally window durationSec 2.7; driver = passive (always-on), documented over-credit during Prediction windows. Both acknowledge the missing status-end primitive; the driver note explains fullBurstEnd would over-fire on FBs she did not produce.
-  - Reload Ratio ▼50%: blind = reloadSpeedPct -50 + removeOnReload (literal, datamined reloadFrames 81, flagged 'known-unreliable datamine'); driver = MEASURED charFixes.reloadFrames 193 (201f). Driver measured-superior.
-  - Overheat I/II/III removeOnReload: blind = removeOnReload:true on all tiers (literal + tier dependency); driver = Overheat I sustained (documented), Overheat II/III burstCast 10s window ('While in Prediction' gate).
-  - 'Removes 100% of ammo': blind = consumeAmmo fraction 1 (implements the dump); driver = UNMODELED (note: no engine effect can EMPTY a magazine; instantReload only ADDS). This is the Prediction-end forced-reload residual (⚑, ~9-11/fight in comps, small, tracked).
-  - self-heal 2%/1s: blind = heal ticks:3 intervalSec:1 (emits recovery events); driver = UNMODELED (self-target; grave has no on-recovery trigger and a self-heal cannot feed a teammate's recovery consumer — genuinely inert cross-unit).
+
+- Heat Emission trigger/timing: blind = fullBurstEnd + ownBurstGate:'cast' (synthesizes Prediction-end = cast+10s) with a DERIVED ally window durationSec 2.7; driver = passive (always-on), documented over-credit during Prediction windows. Both acknowledge the missing status-end primitive; the driver note explains fullBurstEnd would over-fire on FBs she did not produce.
+- Reload Ratio ▼50%: blind = reloadSpeedPct -50 + removeOnReload (literal, datamined reloadFrames 81, flagged 'known-unreliable datamine'); driver = MEASURED charFixes.reloadFrames 193 (201f). Driver measured-superior.
+- Overheat I/II/III removeOnReload: blind = removeOnReload:true on all tiers (literal + tier dependency); driver = Overheat I sustained (documented), Overheat II/III burstCast 10s window ('While in Prediction' gate).
+- 'Removes 100% of ammo': blind = consumeAmmo fraction 1 (implements the dump); driver = UNMODELED (note: no engine effect can EMPTY a magazine; instantReload only ADDS). This is the Prediction-end forced-reload residual (⚑, ~9-11/fight in comps, small, tracked).
+- self-heal 2%/1s: blind = heal ticks:3 intervalSec:1 (emits recovery events); driver = UNMODELED (self-target; grave has no on-recovery trigger and a self-heal cannot feed a teammate's recovery consumer — genuinely inert cross-unit).
 
 ### S6 blind override (scripts/kit-autonomy/blind/grave.override.json)
 
@@ -1061,9 +1160,7 @@ DIVERGED (all on documented-approximation lines; driver position measured or sou
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Current HP ▼ 1% every 1 sec, lasts for 10 sec."
-    ]
+    "burst": ["Current HP ▼ 1% every 1 sec, lasts for 10 sec."]
   },
   "caveats": [
     "⚑ S1 trigger 'Activates when Prediction status ends' has no engine primitive. Prediction is a 10s self status opened by her OWN burst cast; the team Full Burst window is also 10s and opens moments after that cast, so Prediction end ≈ Full Burst end. Modeled as fullBurstEnd + ownBurstGate:'cast' (so it never fires on rotations where another Burst II casts). Real Prediction end is slightly EARLIER than FB end (by the cast→FB-open gap) — pin from footage.",
@@ -1169,17 +1266,25 @@ type Shot = Extract<SimEvent, { kind: 'shot' }>;
 
 function run(overrides: Record<string, any> = {}) {
   const events: SimEvent[] = [];
-  const res = runComp({ ...graveComp(), overrides, cfg: { onEvent: (e) => events.push(e) } });
+  const res = runComp({
+    ...graveComp(),
+    overrides,
+    cfg: { onEvent: (e) => events.push(e) },
+  });
   return { events, t: totals(res) };
 }
 
 // ---- readers ----------------------------------------------------------------------------------
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
-const graveBuffs = (evs: SimEvent[]) => buffs(evs).filter((b) => b.casterIdx === GRAVE);
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const graveBuffs = (evs: SimEvent[]) =>
+  buffs(evs).filter((b) => b.casterIdx === GRAVE);
 const graveShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.unitIdx === GRAVE);
 const graveBursts = (evs: SimEvent[]) =>
-  evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.unitIdx === GRAVE);
+  evs.filter(
+    (e): e is BurstCast => e.kind === 'burstCast' && e.unitIdx === GRAVE
+  );
 const graveDamage = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage' && e.unitIdx === GRAVE);
 const firstBurstFrame = (evs: SimEvent[]) => graveBursts(evs)[0]?.frame ?? NaN;
@@ -1188,52 +1293,81 @@ const firstBurstFrame = (evs: SimEvent[]) => graveBursts(evs)[0]?.frame ?? NaN;
 function windowDmgUp(evs: SimEvent[]): number[] {
   const bf = firstBurstFrame(evs);
   const win = graveDamage(evs).filter(
-    (d) => d.bucket === 'normal' && d.frame >= bf && d.frame <= bf + WINDOW_FRAMES,
+    (d) =>
+      d.bucket === 'normal' && d.frame >= bf && d.frame <= bf + WINDOW_FRAMES
   );
-  return [...new Set(win.map((d) => +d.mult.dmgUp.toFixed(4)))].sort((a, b) => a - b);
+  return [...new Set(win.map((d) => +d.mult.dmgUp.toFixed(4)))].sort(
+    (a, b) => a - b
+  );
 }
 /** grave's normal-attack resolved crit rate inside her first burst window. */
 function windowCritRate(evs: SimEvent[]): number[] {
   const bf = firstBurstFrame(evs);
   const win = graveDamage(evs).filter(
-    (d) => d.bucket === 'normal' && d.frame >= bf && d.frame <= bf + WINDOW_FRAMES,
+    (d) =>
+      d.bucket === 'normal' && d.frame >= bf && d.frame <= bf + WINDOW_FRAMES
   );
-  return [...new Set(win.map((d) => +d.critRate.toFixed(4)))].sort((a, b) => a - b);
+  return [...new Set(win.map((d) => +d.critRate.toFixed(4)))].sort(
+    (a, b) => a - b
+  );
 }
 /** grave's shots inside her first burst window. */
 function windowShots(evs: SimEvent[]): Shot[] {
   const bf = firstBurstFrame(evs);
-  return graveShots(evs).filter((s) => s.frame >= bf && s.frame <= bf + WINDOW_FRAMES);
+  return graveShots(evs).filter(
+    (s) => s.frame >= bf && s.frame <= bf + WINDOW_FRAMES
+  );
 }
 
 // ---- counterfactual patches (nearest-wrong model each group must discriminate against) --------
 /** G2: drop excludeSelf so grave-self also receives Heat Emission's Pierce Damage 48.4. */
 const graveNoExcludeSelf = withPatchedOverride('grave', (ov) => {
   let touched = false;
-  for (const b of ov.skill1) if (b.target?.excludeSelf) { delete b.target.excludeSelf; touched = true; }
-  if (!touched) throw new Error('grave S1 excludeSelf block missing — fixture is stale');
+  for (const b of ov.skill1)
+    if (b.target?.excludeSelf) {
+      delete b.target.excludeSelf;
+      touched = true;
+    }
+  if (!touched)
+    throw new Error('grave S1 excludeSelf block missing — fixture is stale');
 });
 /** G3: restore the datamined 81f reload the MEASURED 193f replaced. */
 const graveDataminedReload = withPatchedOverride('grave', (ov) => {
-  if (ov.charFixes?.reloadFrames !== 193) throw new Error('grave charFixes.reloadFrames!=193 — fixture is stale');
+  if (ov.charFixes?.reloadFrames !== 193)
+    throw new Error('grave charFixes.reloadFrames!=193 — fixture is stale');
   ov.charFixes.reloadFrames = 81;
 });
 /** G6: strip gainPierce from the burst — her Pierce Damage ▲ Damage-Up can no longer land. */
 const graveNoGainPierce = withPatchedOverride('grave', (ov) => {
   let n = 0;
-  for (const b of ov.burst) { const before = b.effects.length; b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce'); n += before - b.effects.length; }
+  for (const b of ov.burst) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter((e: any) => e.kind !== 'gainPierce');
+    n += before - b.effects.length;
+  }
   if (!n) throw new Error('grave burst gainPierce missing — fixture is stale');
 });
 /** G6: strip unlimitedAmmo — she burns the 60-round mag and must reload mid-window. */
 const graveNoUnlimitedAmmo = withPatchedOverride('grave', (ov) => {
   let n = 0;
-  for (const b of ov.burst) { const before = b.effects.length; b.effects = b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo'); n += before - b.effects.length; }
-  if (!n) throw new Error('grave burst unlimitedAmmo missing — fixture is stale');
+  for (const b of ov.burst) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo');
+    n += before - b.effects.length;
+  }
+  if (!n)
+    throw new Error('grave burst unlimitedAmmo missing — fixture is stale');
 });
 /** G6: strip the self Critical Rate ▲85.19 burst buff. */
 const graveNoBurstCrit = withPatchedOverride('grave', (ov) => {
   let n = 0;
-  for (const b of ov.burst) { const before = b.effects.length; b.effects = b.effects.filter((e: any) => !(e.kind === 'buff' && e.stat === 'critRatePct')); n += before - b.effects.length; }
+  for (const b of ov.burst) {
+    const before = b.effects.length;
+    b.effects = b.effects.filter(
+      (e: any) => !(e.kind === 'buff' && e.stat === 'critRatePct')
+    );
+    n += before - b.effects.length;
+  }
   if (!n) throw new Error('grave burst critRatePct missing — fixture is stale');
 });
 
@@ -1249,16 +1383,24 @@ const N_BURSTS = graveBursts(base.events).length;
 
 describe('grave — kit spec', () => {
   it('fixture sanity: grave casts a real rotation of bursts', () => {
-    expect(N_BURSTS, 'grave must burst repeatedly for the burst-gated lines to be observable').toBeGreaterThanOrEqual(8);
+    expect(
+      N_BURSTS,
+      'grave must burst repeatedly for the burst-gated lines to be observable'
+    ).toBeGreaterThanOrEqual(8);
   });
 
   describe('G1 — S1 Heat Emission: team Burst Gauge filling speed ▲38.96% (passive, all allies)', () => {
-    const applied = graveBuffs(base.events).filter((b) => b.stat === 'burstGenPct');
+    const applied = graveBuffs(base.events).filter(
+      (b) => b.stat === 'burstGenPct'
+    );
 
     it('is 38.96%, reaches all four allies including herself, applied at setup', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([38.96]);
-      expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(ALL_ALLIES);
-      for (const b of applied) expect(b.frame, 'a passive applies at setup, not mid-fight').toBe(0);
+      expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
+        ALL_ALLIES
+      );
+      for (const b of applied)
+        expect(b.frame, 'a passive applies at setup, not mid-fight').toBe(0);
     });
 
     it('is permanent (no wall-clock expiry, no round budget) — a sustained state, not a timed buff', () => {
@@ -1269,23 +1411,31 @@ describe('grave — kit spec', () => {
 
   describe('G2 — S1 Heat Emission: team Pierce Damage ▲48.4% (passive, allies EXCLUDESELF)', () => {
     const applied = graveBuffs(base.events).filter(
-      (b) => b.stat === 'pierceDamagePct' && Math.abs(b.value - 48.4) < 0.01,
+      (b) => b.stat === 'pierceDamagePct' && Math.abs(b.value - 48.4) < 0.01
     );
 
     it('reaches the three allies but NOT grave herself (excludeSelf)', () => {
-      expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([0, 2, 3]);
+      expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual([
+        0, 2, 3,
+      ]);
       expect(applied.filter((b) => b.targetIdx === GRAVE)).toEqual([]);
     });
 
     it('DISCRIMINATING: dropping excludeSelf puts 48.4 on grave AND lifts her in-window Damage-Up', () => {
       const cfApplied = graveBuffs(noExcludeSelf.events).filter(
-        (b) => b.stat === 'pierceDamagePct' && Math.abs(b.value - 48.4) < 0.01 && b.targetIdx === GRAVE,
+        (b) =>
+          b.stat === 'pierceDamagePct' &&
+          Math.abs(b.value - 48.4) < 0.01 &&
+          b.targetIdx === GRAVE
       );
-      expect(cfApplied.length, 'the counterfactual must land 48.4 on grave').toBeGreaterThan(0);
+      expect(
+        cfApplied.length,
+        'the counterfactual must land 48.4 on grave'
+      ).toBeGreaterThan(0);
       // The shipped in-window Damage-Up is strictly LOWER — the 48.4 would double-count in the
       // Prediction window (she is pierce-tagged there), which excludeSelf correctly prevents.
       expect(Math.max(...windowDmgUp(base.events))).toBeLessThan(
-        Math.min(...windowDmgUp(noExcludeSelf.events)),
+        Math.min(...windowDmgUp(noExcludeSelf.events))
       );
     });
   });
@@ -1302,14 +1452,14 @@ describe('grave — kit spec', () => {
       expect(
         shippedShots,
         `${shippedShots} shipped shots vs ${dataminedShots} on the datamined 81f reload — the ` +
-          'measured 193f must reduce shot count (reload time gates shots gate damage)',
+          'measured 193f must reduce shot count (reload time gates shots gate damage)'
       ).toBeLessThan(dataminedShots);
     });
   });
 
   describe('G4 — S2 Overheat I: ATK ▲15.48% after 15 normal hits (self, sustained)', () => {
     const applied = graveBuffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && Math.abs(b.value - 15.48) < 0.01,
+      (b) => b.stat === 'atkPct' && Math.abs(b.value - 15.48) < 0.01
     );
 
     it('is 15.48%, self-scoped, sustained (no expiry)', () => {
@@ -1320,10 +1470,14 @@ describe('grave — kit spec', () => {
 
     it('is hitCount-triggered: first fires after setup and well before her first burst', () => {
       const first = Math.min(...applied.map((b) => b.frame));
-      expect(first, 'a hitCount buff cannot apply at frame 0 (that would be a passive)').toBeGreaterThan(0);
-      expect(first, 'Overheat I builds from normal hits, so it precedes the first burst cast').toBeLessThan(
-        firstBurstFrame(base.events),
-      );
+      expect(
+        first,
+        'a hitCount buff cannot apply at frame 0 (that would be a passive)'
+      ).toBeGreaterThan(0);
+      expect(
+        first,
+        'Overheat I builds from normal hits, so it precedes the first burst cast'
+      ).toBeLessThan(firstBurstFrame(base.events));
     });
 
     it('is encoded as a hitCount-15 self block (structural pin)', () => {
@@ -1331,39 +1485,57 @@ describe('grave — kit spec', () => {
       const block = ov.skill2.find((b: any) => b.trigger?.kind === 'hitCount');
       expect(block?.trigger?.count).toBe(15);
       expect(block?.target?.kind).toBe('self');
-      expect(block.effects.some((e: any) => e.stat === 'atkPct' && Math.abs(e.value - 15.48) < 0.01)).toBe(true);
+      expect(
+        block.effects.some(
+          (e: any) => e.stat === 'atkPct' && Math.abs(e.value - 15.48) < 0.01
+        )
+      ).toBe(true);
     });
   });
 
   describe('G5 — S2 Overheat II/III: ATK ▲20.66% + Attack Damage ▲30.8% on burstCast (self, 10s)', () => {
-    const atk = graveBuffs(base.events).filter((b) => b.stat === 'atkPct' && Math.abs(b.value - 20.66) < 0.01);
-    const atkDmg = graveBuffs(base.events).filter((b) => b.stat === 'attackDamagePct' && Math.abs(b.value - 30.8) < 0.01);
+    const atk = graveBuffs(base.events).filter(
+      (b) => b.stat === 'atkPct' && Math.abs(b.value - 20.66) < 0.01
+    );
+    const atkDmg = graveBuffs(base.events).filter(
+      (b) => b.stat === 'attackDamagePct' && Math.abs(b.value - 30.8) < 0.01
+    );
 
     it('both fire, self-scoped, for exactly 10s', () => {
       for (const applied of [atk, atkDmg]) {
         expect(applied.length).toBeGreaterThan(0);
         expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([GRAVE]);
-        for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        for (const b of applied)
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
       }
     });
 
     it('is burstCast-triggered: first fires on the first burst frame, once per burst', () => {
-      expect(Math.min(...atk.map((b) => b.frame))).toBe(firstBurstFrame(base.events));
-      expect(atk.length, 'Overheat II refreshes once per burst cast').toBe(N_BURSTS);
-      expect(atkDmg.length, 'Overheat III refreshes once per burst cast').toBe(N_BURSTS);
+      expect(Math.min(...atk.map((b) => b.frame))).toBe(
+        firstBurstFrame(base.events)
+      );
+      expect(atk.length, 'Overheat II refreshes once per burst cast').toBe(
+        N_BURSTS
+      );
+      expect(atkDmg.length, 'Overheat III refreshes once per burst cast').toBe(
+        N_BURSTS
+      );
     });
   });
 
   describe('G6 — Burst (self, Prediction window): unlimitedAmmo + Gain Pierce + Pierce Dmg 52.8 + Crit 85.19, 10s', () => {
     it('unlimitedAmmo: every in-window shot is unlimited (remove it → she reloads mid-window)', () => {
       const shipped = windowShots(base.events);
-      expect(shipped.length, 'she should fire the whole 10s window without reloading').toBeGreaterThanOrEqual(100);
+      expect(
+        shipped.length,
+        'she should fire the whole 10s window without reloading'
+      ).toBeGreaterThanOrEqual(100);
       expect([...new Set(shipped.map((s) => s.unlimitedAmmo))]).toEqual([true]);
 
       const cf = windowShots(noUnlimitedAmmo.events);
       expect(
         cf.length < shipped.length || cf.some((s) => !s.unlimitedAmmo),
-        'without unlimitedAmmo she burns the 60-round mag and cannot sustain the full window',
+        'without unlimitedAmmo she burns the 60-round mag and cannot sustain the full window'
       ).toBe(true);
     });
 
@@ -1373,17 +1545,22 @@ describe('grave — kit spec', () => {
       expect(
         Math.min(...shipped),
         `shipped in-window dmgUp ${shipped} vs no-pierce ${cf} — Gain Pierce is what makes the ` +
-          'Pierce Damage ▲ a real Damage-Up entry',
+          'Pierce Damage ▲ a real Damage-Up entry'
       ).toBeGreaterThan(Math.max(...cf));
     });
 
     it('Pierce Damage ▲52.8% (self) and Critical Rate ▲85.19% (self) apply once per burst for 10s', () => {
-      const pierce = graveBuffs(base.events).filter((b) => b.stat === 'pierceDamagePct' && Math.abs(b.value - 52.8) < 0.01);
-      const crit = graveBuffs(base.events).filter((b) => b.stat === 'critRatePct' && Math.abs(b.value - 85.19) < 0.01);
+      const pierce = graveBuffs(base.events).filter(
+        (b) => b.stat === 'pierceDamagePct' && Math.abs(b.value - 52.8) < 0.01
+      );
+      const crit = graveBuffs(base.events).filter(
+        (b) => b.stat === 'critRatePct' && Math.abs(b.value - 85.19) < 0.01
+      );
       for (const applied of [pierce, crit]) {
         expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([GRAVE]);
         expect(applied.length).toBe(N_BURSTS);
-        for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        for (const b of applied)
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
       }
     });
 
@@ -1400,21 +1577,32 @@ describe('grave — kit spec', () => {
       ['maxAmmoFlat', 3],
     ];
 
-    it.each(specs)('%s %i reaches all four allies for 10s, once per burst', (stat, value) => {
-      const applied = graveBuffs(base.events).filter(
-        (b) => b.stat === stat && Math.abs(b.value - value) < 0.01,
-      );
-      expect(applied.length, `${stat} ${value} must be applied`).toBeGreaterThan(0);
-      expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(ALL_ALLIES);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
-      // Once per burst per ally → N_BURSTS applications per target.
-      expect(applied.length).toBe(N_BURSTS * ALL_ALLIES.length);
-    });
+    it.each(specs)(
+      '%s %i reaches all four allies for 10s, once per burst',
+      (stat, value) => {
+        const applied = graveBuffs(base.events).filter(
+          (b) => b.stat === stat && Math.abs(b.value - value) < 0.01
+        );
+        expect(
+          applied.length,
+          `${stat} ${value} must be applied`
+        ).toBeGreaterThan(0);
+        expect([...new Set(applied.map((b) => b.targetIdx))].sort()).toEqual(
+          ALL_ALLIES
+        );
+        for (const b of applied)
+          expect(b.expiresFrame! - b.frame).toBe(WINDOW_FRAMES);
+        // Once per burst per ally → N_BURSTS applications per target.
+        expect(applied.length).toBe(N_BURSTS * ALL_ALLIES.length);
+      }
+    );
 
     it('max ammo is the kit-literal FLAT rounds (maxAmmoFlat 3), not the old maxAmmoPct proxy', () => {
       const ov = withPatchedOverride('grave', () => {}) as any;
       const eff = ov.burst.flatMap((b: any) => b.effects);
-      expect(eff.some((e: any) => e.stat === 'maxAmmoFlat' && e.value === 3)).toBe(true);
+      expect(
+        eff.some((e: any) => e.stat === 'maxAmmoFlat' && e.value === 3)
+      ).toBe(true);
       expect(eff.some((e: any) => e.stat === 'maxAmmoPct')).toBe(false);
     });
   });
@@ -1427,7 +1615,9 @@ describe('grave — kit spec', () => {
       expect(u.length).toBe(3);
       const joined = u.join(' ');
       expect(joined).toContain('Removes 100% of ammo');
-      expect(joined).toContain('Removes Heat Emission under certain conditions');
+      expect(joined).toContain(
+        'Removes Heat Emission under certain conditions'
+      );
       expect(joined).toContain('Recovers 2%');
     });
 
@@ -1442,7 +1632,6 @@ describe('grave — kit spec', () => {
     });
   });
 });
-
 ```
 
 ## 8. S2c reconciliation (driver)

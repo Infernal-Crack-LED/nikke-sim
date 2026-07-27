@@ -9,17 +9,17 @@ Arcana is a Burst II Electric supporter whose entire payload lands on the tail o
 
 ## Line-by-line disposition (driver ⇄ S2b fable ⇄ S6 opus — all converge)
 
-| Line | Disposition | Encoding |
-| --- | --- | --- |
-| S1 The Magician: S2 CD ▼75% / 15s | **DOCUMENTED-GAP** (UNMODELED verbatim) | no skill-CD primitive; S2 is event-keyed to FB-end so a CD cut has nothing to act on. All three agents independently refused to call it inert — it is a real, large uplift the sim under-credits. |
-| S1 180% AD / 15s (B3 Electric casters, WoF-gated) | **FAITHFUL** | `fullBurstEnd` + `ownBurstGate:'cast'`, target `burstCasters{stage:3,element:Electric}`, `attackDamagePct 180/15s` |
-| S1 5% casterATK / 10s (all allies, ungated) | **FAITHFUL** | `fullBurstEnd`, target `allies`, `casterAtkPct 5/10s` |
-| S2 Strength 180% casterATK / 15s (B3 Electric casters, WoF-gated) | **FAITHFUL** | `fullBurstEnd` + `ownBurstGate:'cast'`, `casterAtkPct 180/15s` |
-| S2 Death: burstCdr 6s + 50% casterATK / 5s (all allies, WoF-gated) | **FAITHFUL** (burstCdr effect = low-severity residual, below) | `fullBurstEnd` + `ownBurstGate:'cast'`, `burstCdr 6` + `casterAtkPct 50/5s` |
-| S2 7.5% AD / 10s (all allies, ungated) | **FAITHFUL** | `fullBurstEnd`, target `allies`, `attackDamagePct 7.5/10s` |
-| Burst Wheel of Fortune 10% AD / 10s (Electric allies) | **FAITHFUL** | `burstCast`, target `alliesOfElement Electric`, `attackDamagePct 10/10s` |
-| Burst 300% final ATK damage (all enemies) | **FAITHFUL** | `burstCast`, target `enemy`, `flatDamage atkPct 300` (FB-exempt, burst-cast) |
-| Burst Judgement 10% damage taken / 10s (all enemies) | **FAITHFUL** | `burstCast`, target `enemy`, `damageTakenPct 10/10s` (boss-held, casterIdx=null) |
+| Line                                                               | Disposition                                                   | Encoding                                                                                                                                                                                          |
+| ------------------------------------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| S1 The Magician: S2 CD ▼75% / 15s                                  | **DOCUMENTED-GAP** (UNMODELED verbatim)                       | no skill-CD primitive; S2 is event-keyed to FB-end so a CD cut has nothing to act on. All three agents independently refused to call it inert — it is a real, large uplift the sim under-credits. |
+| S1 180% AD / 15s (B3 Electric casters, WoF-gated)                  | **FAITHFUL**                                                  | `fullBurstEnd` + `ownBurstGate:'cast'`, target `burstCasters{stage:3,element:Electric}`, `attackDamagePct 180/15s`                                                                                |
+| S1 5% casterATK / 10s (all allies, ungated)                        | **FAITHFUL**                                                  | `fullBurstEnd`, target `allies`, `casterAtkPct 5/10s`                                                                                                                                             |
+| S2 Strength 180% casterATK / 15s (B3 Electric casters, WoF-gated)  | **FAITHFUL**                                                  | `fullBurstEnd` + `ownBurstGate:'cast'`, `casterAtkPct 180/15s`                                                                                                                                    |
+| S2 Death: burstCdr 6s + 50% casterATK / 5s (all allies, WoF-gated) | **FAITHFUL** (burstCdr effect = low-severity residual, below) | `fullBurstEnd` + `ownBurstGate:'cast'`, `burstCdr 6` + `casterAtkPct 50/5s`                                                                                                                       |
+| S2 7.5% AD / 10s (all allies, ungated)                             | **FAITHFUL**                                                  | `fullBurstEnd`, target `allies`, `attackDamagePct 7.5/10s`                                                                                                                                        |
+| Burst Wheel of Fortune 10% AD / 10s (Electric allies)              | **FAITHFUL**                                                  | `burstCast`, target `alliesOfElement Electric`, `attackDamagePct 10/10s`                                                                                                                          |
+| Burst 300% final ATK damage (all enemies)                          | **FAITHFUL**                                                  | `burstCast`, target `enemy`, `flatDamage atkPct 300` (FB-exempt, burst-cast)                                                                                                                      |
+| Burst Judgement 10% damage taken / 10s (all enemies)               | **FAITHFUL**                                                  | `burstCast`, target `enemy`, `damageTakenPct 10/10s` (boss-held, casterIdx=null)                                                                                                                  |
 
 All level-10 magnitudes confirmed against the datamine (`description_value_list` index 9): S1 180/5, S2 180/6/50/7.5, burst 10/300/10.
 
@@ -28,11 +28,12 @@ All level-10 magnitudes confirmed against the datamine (`description_value_list`
 The parser-baseline gated the three Wheel-of-Fortune lines (S1 180% AD, S2 Strength, S2 Death) with a round-count proxy `everyN:2 offset:1` on `fullBurstEnd`. The gauntlet replaced it with `ownBurstGate:'cast'`.
 
 **Why the proxy was unfaithful (reproduced, not inferred):**
+
 - "if self is in Wheel of Fortune status" reduces to "arcana cast her burst this rotation" — she is the **sole** source of Wheel of Fortune (her own burst grants it to Electric allies including herself).
-- A *literal* 10s buff-aliveness check at FB-end is **dead-by-epsilon**: cast → FB opens → ~10s FB → FB-end is >10s after the cast, so the WoF buff has expired by FB-end. A literal reading would zero the entire gated half of the kit, contradicting that it works in game.
+- A _literal_ 10s buff-aliveness check at FB-end is **dead-by-epsilon**: cast → FB opens → ~10s FB → FB-end is >10s after the cast, so the WoF buff has expired by FB-end. A literal reading would zero the entire gated half of the kit, contradicting that it works in game.
 - The round-count proxy was wrong in **both** directions:
   - **OVER-fire:** in `[liter,crown,arcana,ada,helm]` arcana casts **0** bursts (crown cd20 contests the B2 slot), yet the proxy fired the gated 180% AD **6×** and Death-50% **30×** — she is never in Wheel of Fortune, so these should be inert.
-  - **UNDER-fire:** in `[liter,arcana,ada]` (sole B2, bursts every rotation) the proxy fired the gated lines on only `ceil(FB/2)` FB-ends — she is in Wheel of Fortune *every* rotation.
+  - **UNDER-fire:** in `[liter,arcana,ada]` (sole B2, bursts every rotation) the proxy fired the gated lines on only `ceil(FB/2)` FB-ends — she is in Wheel of Fortune _every_ rotation.
 - `ownBurstGate:'cast'` is correct in both regimes (measured: 0 firings at 0 casts; every FB-end when she casts every rotation).
 - **Engine code-verified:** `sim.ts:2246` fires `fullBurstEnd` triggers **before** `:2252` resets `rotationCasters`, so `ownBurstGate:'cast'` correctly sees this-rotation casters at FB-end (resolves the S6 "modeled ≠ working" concern).
 - **Cross-family corroborated:** the fable pre-op reviewer (S2b) and the opus blind override-writer (S6) **independently** derived `ownBurstGate:'cast'` from the prose alone, both naming the dead-by-epsilon trap.
@@ -55,12 +56,13 @@ The parser-baseline gated the three Wheel-of-Fortune lines (S1 180% AD, S2 Stren
 ### S5 blind-test failures — all adjudicated as blind-test artifacts (judge-confirmed against engine facts)
 
 The blind test ran 6 red vs the driver override; the judge confirmed **none** are real divergences:
-- **K3 ×2, K4, K5a-ACTIVE** — one root cause: the blind filters `casterAtkPct` buffApply events by the *percentage* (5/50/180), but the engine stores `casterAtkPct` as an **absolute ATK** value (arcana ATK × pct/100 ≈ 4986.7 / 49867 / 179521). The filters return empty. The driver test pins these lines via magnitude **ratios** (5:50:180 = 1:10:36). (RECON_ERROR.)
+
+- **K3 ×2, K4, K5a-ACTIVE** — one root cause: the blind filters `casterAtkPct` buffApply events by the _percentage_ (5/50/180), but the engine stores `casterAtkPct` as an **absolute ATK** value (arcana ATK × pct/100 ≈ 4986.7 / 49867 / 179521). The filters return empty. The driver test pins these lines via magnitude **ratios** (5:50:180 = 1:10:36). (RECON_ERROR.)
 - **K5b** — FB-count probe too coarse to cross a boundary on the event-silent burstCdr (see residual 2). Discrimination weakness, not inertness.
 - **inertness reloadSpeedPct** — slot-index collision: the forbidden-stat filter reads `casterIdx===1` across the union of both fixtures, and slot 1 in fixture A is **crown**, whose kit (not arcana's) grants reloadSpeedPct. (RECON_ERROR.)
 - The highest-leverage S5 assertions whose observable the engine stores as a plain percentage (K2 180% Damage-Up + its no-Electric-B3 inertness discriminator, K6, K7, K8, K9, K10 trigger-identity) ran **unmodified and passed** — so FB-end-vs-enter, Damage-Up-vs-ATK bucket, Electric-only Wheel scoping, FB-exemption on the 300% nuke, and boss-held Judgement are cross-family corroborated.
 
-**Judge's correction to the driver's reconciliation (accepted):** K5a's fixture-A gate discrimination passes *vacuously* against the old proxy too (the same value-filter bug empties it), so it does **not** corroborate the fix. Gate corroboration properly rests on the driver's **A4** (`attackDamagePct 180`, a true percentage, non-vacuously inert at 0 arcana casts while both the ungated and everyN counterfactuals fire) plus the two blinds' independent derivation. Sufficient, but a narrower base than the driver's §8 claimed.
+**Judge's correction to the driver's reconciliation (accepted):** K5a's fixture-A gate discrimination passes _vacuously_ against the old proxy too (the same value-filter bug empties it), so it does **not** corroborate the fix. Gate corroboration properly rests on the driver's **A4** (`attackDamagePct 180`, a true percentage, non-vacuously inert at 0 arcana casts while both the ungated and everyN counterfactuals fire) plus the two blinds' independent derivation. Sufficient, but a narrower base than the driver's §8 claimed.
 
 ## Packet-hygiene flag
 

@@ -2,7 +2,13 @@
 // Canvas2D-compatible context, so the web app (browser canvas) and the bakery-bot
 // (@napi-rs/canvas / node-canvas) produce a pixel-identical image. DOM-free — the
 // caller creates and sizes the canvas and hands us the ctx. Mirrors teamCard.ts.
-import { type Canvas2DLike, roundRect, FONT, ELEMENT_COLORS, PORTRAIT_CROP_TOP } from './teamCard.js';
+import {
+  type Canvas2DLike,
+  roundRect,
+  FONT,
+  ELEMENT_COLORS,
+  PORTRAIT_CROP_TOP,
+} from './teamCard.js';
 
 export type { Canvas2DLike } from './teamCard.js';
 
@@ -18,8 +24,8 @@ export interface DpsBar {
   element: string;
   dps: number;
   advantaged?: boolean;
-  imageUrl?: string | null;   // portrait source (loaded by the caller into `img`)
-  img?: unknown;              // pre-loaded CanvasImageSource; drawn if present
+  imageUrl?: string | null; // portrait source (loaded by the caller into `img`)
+  img?: unknown; // pre-loaded CanvasImageSource; drawn if present
 }
 export interface DpsCompare {
   name: string;
@@ -31,7 +37,7 @@ export interface DpsCompare {
 export interface DpsChartData {
   title: string;
   subtitle?: string;
-  bars: DpsBar[];          // already sorted desc, already sliced to top-N
+  bars: DpsBar[]; // already sorted desc, already sliced to top-N
   compare?: DpsCompare | null;
 }
 
@@ -73,7 +79,7 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
 
   const maxDps = Math.max(...data.bars.map((b) => b.dps), 1);
   const hasPortraits = data.bars.some((b) => b.img);
-  const labelW = hasPortraits ? 210 : 168;  // rank (+ portrait) + name column
+  const labelW = hasPortraits ? 210 : 168; // rank (+ portrait) + name column
   const barX = padX + labelW;
   const valueW = 96;
   const barW = W - barX - valueW - padX;
@@ -96,7 +102,12 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     if (b.img) {
       const px = padX + 20;
       const py = y + (ROW_H - PORTRAIT) / 2;
-      const im = b.img as { naturalWidth?: number; naturalHeight?: number; width?: number; height?: number };
+      const im = b.img as {
+        naturalWidth?: number;
+        naturalHeight?: number;
+        width?: number;
+        height?: number;
+      };
       const iw = im.naturalWidth ?? im.width ?? PORTRAIT;
       const ih = im.naturalHeight ?? im.height ?? PORTRAIT;
       const side = Math.min(iw, ih);
@@ -156,6 +167,6 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   ctx.fillText(
     'nikke-sim · expected-value crits · scope-lock basis · partless boss',
     padX,
-    H - 18,
+    H - 18
   );
 }

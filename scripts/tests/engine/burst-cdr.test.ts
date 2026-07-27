@@ -31,7 +31,7 @@ import type { SimEvent } from '../../../src/types.js';
 import { data, runComp, withPatchedOverride } from '../lib/harness.js';
 
 const CARRY = 'maiden-ice-rose'; // the burstCdr holder (Burst III, RL, 40s cooldown)
-const OTHER_B3 = 'helm';         // the SR/Water Helm — the alternating Burst III (NOT helm-aquamarine)
+const OTHER_B3 = 'helm'; // the SR/Water Helm — the alternating Burst III (NOT helm-aquamarine)
 // SMG-free core so the SMG cadence default cannot move this fixture (see header).
 const CDR_CORE = ['zwei', 'crown'] as const; // zwei B1 / crown B2
 const cdrComp = (): CompOptions => ({
@@ -46,12 +46,19 @@ interface Rotation {
 }
 
 /** Run the SMG-free comp with a burstCdr probe on a 5s interval (omit `cdr` for the baseline). */
-function rotation(cdr?: { seconds: number; oncePerBattle?: boolean }, target: unknown = { kind: 'allies' }): Rotation {
+function rotation(
+  cdr?: { seconds: number; oncePerBattle?: boolean },
+  target: unknown = { kind: 'allies' }
+): Rotation {
   const overrides = cdr
     ? {
         [CARRY]: withPatchedOverride(CARRY, (ov) => {
           ov.skill1 = [
-            { trigger: { kind: 'interval', sec: 5 }, target, effects: [{ kind: 'burstCdr', ...cdr }] },
+            {
+              trigger: { kind: 'interval', sec: 5 },
+              target,
+              effects: [{ kind: 'burstCdr', ...cdr }],
+            },
           ];
         }),
       }
@@ -61,8 +68,8 @@ function rotation(cdr?: { seconds: number; oncePerBattle?: boolean }, target: un
   const casts: Record<string, number> = {};
   let fullBursts = 0;
   for (const e of events) {
-    if (e.kind === 'burstCast') casts[e.slug] = (casts[e.slug] ?? 0) + 1;
-    else if (e.kind === 'fullBurstStart') fullBursts++;
+    if (e.kind === 'burstCast') {casts[e.slug] = (casts[e.slug] ?? 0) + 1;}
+    else if (e.kind === 'fullBurstStart') {fullBursts++;}
   }
   return { casts, fullBursts };
 }
@@ -79,7 +86,9 @@ describe('burstCdr (burst cooldown reduction)', () => {
     // The whole readout depends on the holder and OTHER_B3 alternating: whoever is off cooldown
     // takes the stage-3 slot. If they ever stop sharing it (a data change to either cooldown), the
     // arms below stop measuring cooldown pressure and this test would drift into asserting else.
-    expect(data.characters[CARRY].burstCooldownSec).toBe(data.characters[OTHER_B3].burstCooldownSec);
+    expect(data.characters[CARRY].burstCooldownSec).toBe(
+      data.characters[OTHER_B3].burstCooldownSec
+    );
     expect(base.casts[CARRY], `${CARRY} never cast`).toBeGreaterThan(0);
     expect(base.casts[OTHER_B3], `${OTHER_B3} never cast`).toBeGreaterThan(0);
   });
@@ -88,24 +97,26 @@ describe('burstCdr (burst cooldown reduction)', () => {
     const ladder = [base, cdr2, cdr5, huge].map((r) => r.casts[CARRY]);
     expect(
       ladder.every((n, i) => i === 0 || n >= ladder[i - 1]),
-      `casts should be non-decreasing in the reduction: ${ladder.join(' → ')}`,
+      `casts should be non-decreasing in the reduction: ${ladder.join(' → ')}`
     ).toBe(true);
-    expect(ladder[ladder.length - 1], `no gain at all across the ladder ${ladder.join(' → ')}`).toBeGreaterThan(
-      ladder[0],
-    );
+    expect(
+      ladder[ladder.length - 1],
+      `no gain at all across the ladder ${ladder.join(' → ')}`
+    ).toBeGreaterThan(ladder[0]);
   });
 
   it('DISCRIMINATING: the reduction reaches the RESOLVED target set, not everyone and not just self', () => {
     // Same 5s reduction, same trigger, only the target differs. Targeting `allies` additionally
     // takes time off the Burst I/II cooldowns, which is worth one more Full Burst over the fight;
     // targeting `self` leaves them alone. A globally-applied reduction makes the two arms identical.
-    expect(cdr5self.casts[CARRY], 'the self-targeted arm did not move the holder at all').toBeGreaterThan(
-      base.casts[CARRY],
-    );
+    expect(
+      cdr5self.casts[CARRY],
+      'the self-targeted arm did not move the holder at all'
+    ).toBeGreaterThan(base.casts[CARRY]);
     expect(
       cdr5.fullBursts,
       `allies-targeted ${cdr5.fullBursts} FB vs self-targeted ${cdr5self.fullBursts} FB — the target ` +
-        'set made no difference, so the reduction is not being routed through resolveTargets',
+        'set made no difference, so the reduction is not being routed through resolveTargets'
     ).toBeGreaterThan(cdr5self.fullBursts);
   });
 
@@ -117,12 +128,12 @@ describe('burstCdr (burst cooldown reduction)', () => {
     expect(
       cdr5once.casts[CARRY],
       `oncePerBattle gave the holder ${cdr5once.casts[CARRY]} casts, the same as applying it every ` +
-        `trigger (${cdr5.casts[CARRY]}) — the once-gate leaks`,
+        `trigger (${cdr5.casts[CARRY]}) — the once-gate leaks`
     ).toBeLessThan(cdr5.casts[CARRY]);
     expect(
       cdr5once.fullBursts,
       `oncePerBattle produced ${cdr5once.fullBursts} Full Bursts vs ${base.fullBursts} with no ` +
-        'reduction at all — its single application did nothing',
+        'reduction at all — its single application did nothing'
     ).toBeGreaterThan(base.fullBursts);
   });
 
@@ -130,12 +141,17 @@ describe('burstCdr (burst cooldown reduction)', () => {
     // max(0, cd - N): a 1000s reduction makes the holder permanently ready, so it takes EVERY
     // stage-3 slot and OTHER_B3 never gets one. Total stage-3 casts still equal the Full Burst
     // count — the rotation cannot manufacture extra stages out of a negative cooldown.
-    expect(huge.casts[CARRY], `${CARRY} did not take every stage-3 slot`).toBe(huge.fullBursts);
-    expect(huge.casts[OTHER_B3] ?? 0, `${OTHER_B3} still cast despite the holder always being ready`).toBe(0);
+    expect(huge.casts[CARRY], `${CARRY} did not take every stage-3 slot`).toBe(
+      huge.fullBursts
+    );
+    expect(
+      huge.casts[OTHER_B3] ?? 0,
+      `${OTHER_B3} still cast despite the holder always being ready`
+    ).toBe(0);
     expect(
       huge.fullBursts,
       `${huge.fullBursts} Full Bursts on an unbounded reduction vs ${cdr5.fullBursts} on a 5s one — ` +
-        'the cooldown should already be saturated, so the extra reduction must buy nothing',
+        'the cooldown should already be saturated, so the extra reduction must buy nothing'
     ).toBe(cdr5.fullBursts);
   });
 });

@@ -23,20 +23,20 @@ video-verified cast-by-cast in kit-status (Run B). The binding judge (opus) adju
 ## 1. Real kit (data/characters.json — ground truth, level-10 values)
 
 - **S1 (Healthy Body / Firepower Explosion)**
-  - ■ when attacked while not in Healthy Body, self: Invulnerable 3s (5×/battle) + debuff immunity ∞ 3s (5×).  *[defensive]*
-  - Healthy Body: Incoming healing ▲ 10.26% for 20s.  *[received-heal amp]*
+  - ■ when attacked while not in Healthy Body, self: Invulnerable 3s (5×/battle) + debuff immunity ∞ 3s (5×). _[defensive]_
+  - Healthy Body: Incoming healing ▲ 10.26% for 20s. _[received-heal amp]_
   - ■ landing a Full Charge attack → the stage target: **Firepower Explosion 437.98% of final ATK** as additional damage.
   - Additional effect of Super Firepower status: **262.79% of final ATK** as additional damage.
 - **S2 (Firepower Charge / Maximum Firepower)**
   - ■ battle start, self: Firepower Gauge +100.
   - ■ normal attack during Firepower Charge, self: Firepower Gauge +2.
   - ■ Firepower Charge ends, self: Firepower Gauge +45.
-  - ■ Full Burst ends while gauge active, self: Burst Gauge filling speed ▲ 5% × gauge charge for 5s.  *[burst-gen]*
+  - ■ Full Burst ends while gauge active, self: Burst Gauge filling speed ▲ 5% × gauge charge for 5s. _[burst-gen]_
   - ■ entering Full Burst, self: **Maximum Firepower ATK ▲ 80.04% for 10s**; additional effect for Super Firepower: **ATK ▲ 35.05% for 10s**.
 - **Burst (Super Firepower)**
   - ■ gauge < 100, self: Firepower Charge — charges the gauge 10s (unremovable), +1 gauge.
   - ■ gauge = 100, self: **Super Firepower Attack Damage ▲ 45.03% for 10s**, −100 gauge.
-  - ■ self: Explosion Radius ▲ 200% for 10s.  *[inert vs partless boss]*
+  - ■ self: Explosion Radius ▲ 200% for 10s. _[inert vs partless boss]_
   - ■ self: **Attack Damage ▲ 110.21% for 10s** (unconditional).
 
 ---
@@ -54,13 +54,14 @@ not calibration-fragile: one window from ~60 always caps (needs only +45+1), one
 (would need ≥27 shots in 10s — impossible for this RL), so the exact shots-per-window cannot move the period.
 
 **skill1** — two blocks:
+
 - `shotFired` → `enemy` → `flatDamage atkPct 437.98` (the base Firepower Explosion). Fires once per full-charge
   shot (an RL charges every pull). Function "additional damage": crits at caster rate, never cores, noRange, FB by
   landing timing (SSOT §2b / U1). Driver test N1 pins riders === shots, bucket 'skill', critEligible, ¬coreEligible,
   and the removal counterfactual zeroes it.
 - `burstCast` → `self`, `everyN: 3, everyNOffset: 1` → the **three Super riders** for 10s: `extraHitDamagePct
-  262.79` (per-shot additional damage while live → burst-bucket rider, srcSlot null), `atkPct 35.05`, `attackDamagePct
-  45.03`. Driver test N2/N4/N5 pin the exact Super frames (burst indices ≡ 0 mod 3 → casts 1 & 4 over the 5-burst
+262.79` (per-shot additional damage while live → burst-bucket rider, srcSlot null), `atkPct 35.05`, `attackDamagePct
+45.03`. Driver test N2/N4/N5 pin the exact Super frames (burst indices ≡ 0 mod 3 → casts 1 & 4 over the 5-burst
   fixture), the first-cast-is-Super phase, magnitudes, 10s durations, self-scope, and the always-on counterfactual
   (everyN removed) over-firing.
 
@@ -103,10 +104,10 @@ the 262.79 rider gate on the status rather than the cast counter).
   value is 5% × a live pool the sim doesn't track, so any modeled number is invented. Fable independently graded it
   GAP; the S6 blind modeled it only with a self-declared placeholder (75 = "5×~15, not a measurement"). Per
   MEASURED>FUDGE the documented skip is the correct call. **Honest residual:** under-credits her burst generation on
-  charge rotations. *Recipe to close:* read her burst-gauge fill rate for 5s after a Full Burst end on a charge
+  charge rotations. _Recipe to close:_ read her burst-gauge fill rate for 5s after a Full Burst end on a charge
   rotation vs a Super rotation (gauge 0 → no buff).
 - **Explosion Radius ▲200%**: inert vs a single partless boss (no AoE/radius primitive). Correctly skipped rather
-  than laundered into a damage stat. *Measurement note (S6 ⚑7):* a larger blast could lift effective hit/core rate —
+  than laundered into a damage stat. _Measurement note (S6 ⚑7):_ a larger blast could lift effective hit/core rate —
   the first suspect if a recording ever shows her in-burst hit or core rate rising.
 
 ---

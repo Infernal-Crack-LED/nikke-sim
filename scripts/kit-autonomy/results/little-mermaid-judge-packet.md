@@ -1,12 +1,15 @@
 # S7 RECONCILING-JUDGE PACKET — unit `little-mermaid` (Little Mermaid)
-# Assembled by the gauntlet driver. You are the BINDING cross-family judge (kimi-code/k3).
-# Grade the DRIVER implementation against the kit prose + the mechanics SSOT, reconciling the two blind re-derivations.
-# Return the binding verdict JSON per the contract in section 1.
 
+# Assembled by the gauntlet driver. You are the BINDING cross-family judge (kimi-code/k3).
+
+# Grade the DRIVER implementation against the kit prose + the mechanics SSOT, reconciling the two blind re-derivations.
+
+# Return the binding verdict JSON per the contract in section 1.
 
 ================================================================================
 SECTION 1 — RECONCILING-JUDGE CONTRACT (your role + return JSON shape)
 ================================================================================
+
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
 
 Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md` AND the mechanics
@@ -19,6 +22,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -29,12 +33,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -60,33 +66,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ================================================================================
 SECTION 2 — MECHANICS SSOT (damage formula + game mechanics)
 ================================================================================
+
 ## docs/data/damage-calculation.md
 
 # Damage calculation — the exact math the sim computes
@@ -113,7 +147,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -151,29 +185,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -254,9 +288,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -292,7 +326,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -350,7 +384,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -494,12 +528,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -533,7 +567,6 @@ re-tune pass (DECISIONS 2026-07-22), the N5 fire comp's real-12-vs-sim-10 Full B
 uniform damage-side deficit under the corrected rotation model, per-unit kit-generation quirks
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
-
 
 ## docs/data/game-mechanics.md
 
@@ -591,15 +624,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -944,13 +977,14 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ================================================================================
 SECTION 3 — GROUND TRUTH: kit prose + base stats (data/characters.json → characters.little-mermaid)
 ================================================================================
+
 Unit: Little Mermaid — SMG / Supporter / Wind / Burst I, burstCooldownSec 20, ammo 120, rate_of_fire 1440 rpm, hitsPerShot 1, normalAttackMultiplier 10.12, coreAttackMultiplier 250.
 
 ## skill1 (Bubble Order)
+
 ■ Activates only when in Focusing status. Affects all allies.
 Focuses fire continuously.
 ■ Activates when Full Burst ends. Affects all allies.
@@ -961,6 +995,7 @@ Attack Damage ▲ 4% for 10 sec.
 Fills Burst Gauge by 37%.
 
 ## skill2 (Bubble Wave)
+
 ■ Activates when the enemy appears. Affects the target.
 Bubble: Damage Taken ▲ 5.05% continuously.
 ■ Activates after landing 50 normal attacks. Affects the target if the target is in Bubble status.
@@ -973,6 +1008,7 @@ Deals 63.36% of final ATK as damage. Attacks sequentially 4 times.
 Bubble Barrage: Deals 85% of final ATK as damage. Attacks sequentially 10 times.
 
 ## burst (Siren Song)
+
 ■ Affects all allies.
 Attack damage ▲ 10.13% for 10 sec.
 Reloads 33.26% magazine(s).
@@ -980,6 +1016,7 @@ Reloads 33.26% magazine(s).
 ATK ▲ 17.28% of the skill user's ATK for 10 sec.
 
 ## baseStats
+
 ```json
 {
   "hp": 15000,
@@ -1003,10 +1040,10 @@ ATK ▲ 17.28% of the skill user's ATK for 10 sec.
 }
 ```
 
-
 ================================================================================
 SECTION 4 — S2b PRE-OP REVIEW (claude-fable-5, independent test-faithfulness spec)
 ================================================================================
+
 ```json
 {
   "slug": "little-mermaid",
@@ -1165,28 +1202,24 @@ SECTION 4 — S2b PRE-OP REVIEW (claude-fable-5, independent test-faithfulness s
     "burst:burstCast self casterAtkPct 17.28 (10s)"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Focuses fire continuously."
-    ],
-    "skill2": [
-      "Stuns for 3 sec."
-    ],
+    "skill1": ["Focuses fire continuously."],
+    "skill2": ["Stuns for 3 sec."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads to check hardest: (1) BOTH team-ammo triggers read as owner-only hitCount — the kit says 'total ammo expended by allies' twice, with DIFFERENT thresholds (400 gauge / 500 barrage); they need two independent teamAmmo counters, and unlimitedAmmo shots must not feed either. (2) Bubble/Explosive-Bubble stacked to 10.1% or re-proc'd every 50 rounds — 'Removes Bubble' caps the boss DT at a single 5.05% instance for the whole fight and closes the status gate permanently; the schema has no removeStatus effect kind (hence GAP), so the driver must express one-time-swap semantics some other way (e.g. permanent 5.05% + a gate that can only fire once) and the test must pin the 5.05-not-10.1 invariant plus no re-fire at 100/150 rounds. (3) The FB-only 1s interval left ungated (≈2× over-credit plus wrongly-earned non-FB landings). (4) Burst reload 33.26% treated as a full instantReload — this shifts every ally's lastBullet/reload cadence, a team-wide shot-economy error. (5) The fullBurstEnd 7.48s CDR mis-keyed to fullBurstEnter or made once-per-battle — as a B1 rotation engine this plus the 400-ammo 37% gauge fill IS the unit's identity; judge it by measured FB-count arithmetic on a fixed comp. (6) 'Attacks sequentially N times' collapsed into one hit — hit COUNT matters both for totals and because sequential flavor makes these hits eligible for teammates' sequentialDamagePct/sequentialMultPct buffs. Fixture note: she is Burst I — controlComp fixes liter in the B1 slot, so tests must place little-mermaid AS the B1 (analog of the lone-B3 zero-FB trap: a comp with her wedged into a non-castable slot never exercises her burst blocks). The boss stun is inert in v1 (boss deals no damage, movement script is measured) but must be listed in unmodeled, not silently dropped.",
   "model": "claude-fable-5"
 }
-
 ```
-
 
 ================================================================================
 SECTION 5 — S5 BLIND TEST (claude-opus-5, written from prose alone) + driver run record vs the shipped override
 ================================================================================
+
 DRIVER RUN RECORD (npx vitest run --config scripts/kit-autonomy/blind/vitest.little-mermaid.config.ts): 27 tests — 18 passed / 7 failed / 2 skipped, after THREE mechanical blindness-plumbing fixes (assertions untouched): (1) harness import depth (../lib/harness.js → ../../tests/lib/harness.js); (2) fixture B1 lockout — the blind keyed controlComp(little-mermaid), slotting LM as carry BESIDE liter (another Burst I, slot 0); the engine picks liter for every stage-1 cast so LM never burst — replaced with the sole-B1 fixture [little-mermaid, crown, ada, helm] keeping the blind own boss/focus assumptions; (3) onEvent passed at the TOP level of CompOptions where runComp ignores it (it lives in cfg) — threaded into cfg so events are captured.
 The 7 remaining failures classify as: (a) 2× the F1 Explosive-Bubble modeling question — the blind expects TWO damageTakenPct 5.05 blocks (passive + hitCount-50) where the driver carries ONE (kit-literal RELOCATION reading: "Removes Bubble" + same 5.05 re-applied; net single stack; kit-status F1 flags the 10.1% coexistence hypothesis as MEASUREMENT-GATED); (b) 2× sequential-granularity dialect — the blind expects interval{sec:1}+fbGate:inFb with 4× flatDamage 63.36 and teamAmmo-500 with 10× flatDamage 85, where the driver carries dot 253.44%/s on fullBurstEnter (10s, 1s interval) and a single flatDamage 850 — the driver encoding is VIDEO-VERIFIED (control/lm.MP4 2026-07-15: measured sub-hit 337,736 = 63.36% × FB boost, all 4 sub-hits land on the single boss; user confirmed 850 = 85×10 PER HIT, core:false); fbGate and targetStatus DO exist in the schema (src/skills/types.ts:327/251/348), so both encodings are implementable; (c) 2× delta tests whose patch targets the blind EXPECTED encoding (filter flatDamage off an interval-trigger block the driver does not have → no-op → totals unchanged → the strict less-than / byte-identical assertions fail); the barrage delta also assumes byte-identical teammate totals, ignoring the skillGauge channel (flatDamage procs feed weapon-base gauge, shifting rotation ~0.07%); (d) 1× a hard-coded blind constant — it asserts the casterAtkPct flat value ≈ 0.1728 × 98,367 (its own guessed Supporter static ATK) while the scope-lock fixture ATK is 100,317 → emitted 17,334.78 (stat/target/duration assertions pass).
 
 ## blind test source (scripts/kit-autonomy/blind/little-mermaid.test.ts, post-plumbing-fixes)
+
 ```typescript
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
@@ -1284,7 +1317,7 @@ function evs(kind: string, list: Ev[] = baseEv) {
 }
 function buffs(stat: string, list: Ev[] = baseEv) {
   return evs('buffApply', list).filter(
-    (e) => (e as { stat?: string }).stat === stat,
+    (e) => (e as { stat?: string }).stat === stat
   );
 }
 
@@ -1296,7 +1329,7 @@ describe('little-mermaid — fixture sanity (non-vacuity)', () => {
     const herCasts = evs('burstCast').filter(
       (e) =>
         (e as { srcSlug?: string; slug?: string }).srcSlug === SLUG ||
-        (e as { slug?: string }).slug === SLUG,
+        (e as { slug?: string }).slug === SLUG
     );
     expect(herCasts.length).toBeGreaterThan(0);
     expect(baseTotals[SLUG]).toBeGreaterThan(0);
@@ -1306,10 +1339,10 @@ describe('little-mermaid — fixture sanity (non-vacuity)', () => {
     // Required before any fbGate assertion can mean anything.
     const dmg = evs('damage');
     expect(
-      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === true),
+      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === true)
     ).toBe(true);
     expect(
-      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === false),
+      dmg.some((e) => (e as { inFullBurst?: boolean }).inFullBurst === false)
     ).toBe(true);
   });
 });
@@ -1329,26 +1362,26 @@ describe('skill1 b) Full-Burst-END burst cooldown reduction 7.48 s, all allies',
             ov.skill1 = (ov.skill1 ?? []).filter(
               (b) =>
                 !b.effects.some(
-                  (e) => (e as { kind: string }).kind === 'burstCdr',
-                ),
+                  (e) => (e as { kind: string }).kind === 'burstCdr'
+                )
             );
           }),
         },
-      } as ReturnType<typeof controlComp>),
+      } as ReturnType<typeof controlComp>)
   );
 
   it('the CDR block exists, is keyed to fullBurstEnd, targets allies, and is 7.48 s', () => {
     // Reads the shipped override structurally: magnitude + trigger + target in one shot.
     const ov = withPatchedOverride(SLUG, () => {});
     const cdrBlocks = (ov.skill1 ?? []).filter((b) =>
-      b.effects.some((e) => (e as { kind: string }).kind === 'burstCdr'),
+      b.effects.some((e) => (e as { kind: string }).kind === 'burstCdr')
     );
     expect(cdrBlocks.length).toBe(1);
     const b = cdrBlocks[0]!;
     expect((b.trigger as { kind: string }).kind).toBe('fullBurstEnd');
     expect((b.target as { kind: string }).kind).toBe('allies');
     const eff = b.effects.find(
-      (e) => (e as { kind: string }).kind === 'burstCdr',
+      (e) => (e as { kind: string }).kind === 'burstCdr'
     ) as {
       seconds: number;
       oncePerBattle?: boolean;
@@ -1373,14 +1406,14 @@ describe('skill1 b) Full-Burst-END burst cooldown reduction 7.48 s, all allies',
 describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('emits attackDamagePct=4 on every Full Burst entry, to every ally', () => {
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     expect(b.length).toBeGreaterThan(0);
     // Trigger identity: one application PER ALLY PER Full Burst. Nearest-wrong models are
     // (i) self-only  -> only one distinct targetSlug; (ii) burstCast-keyed -> fires only on the
     // rotations SHE bursts, i.e. fewer batches than fullBurstStart events.
     const distinctTargets = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(distinctTargets.size).toBeGreaterThan(1);
     const fbCount = evs('fullBurstStart').length;
@@ -1390,10 +1423,10 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('is a 10 s window, not permanent', () => {
     // "for 10 sec" — duration semantics. A missing durationSec would make it a whole-fight buff.
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     const withExpiry = b.filter(
-      (e) => typeof (e as { expiresFrame?: number }).expiresFrame === 'number',
+      (e) => typeof (e as { expiresFrame?: number }).expiresFrame === 'number'
     );
     expect(withExpiry.length).toBe(b.length);
     // No buffRemove is emitted on natural lapse, so assert the frame arithmetic instead.
@@ -1408,7 +1441,7 @@ describe('skill1 c) FB-enter Attack Damage 4% / 10 s to ALL allies', () => {
   it('scope is generic Attack Damage (Damage Up bucket), NOT ATK and NOT normal-only', () => {
     // Nearest-wrong: atkPct (multiplies base ATK, a different bucket) or a normal-scoped stat.
     const wrongStat = buffs('atkPct').filter(
-      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 4) < 1e-9
     );
     expect(wrongStat.length).toBe(0);
   });
@@ -1447,16 +1480,16 @@ describe('skill1 d) team-ammo 400 -> Fills Burst Gauge 37%', () => {
     // (which counts only the OWNER's rounds and would fire far later with a 120-round SMG).
     const ov = withPatchedOverride(SLUG, () => {});
     const blocks = (ov.skill1 ?? []).filter((b) =>
-      b.effects.some((e) => (e as { kind: string }).kind === 'fillGauge'),
+      b.effects.some((e) => (e as { kind: string }).kind === 'fillGauge')
     );
     expect(blocks.length).toBe(1);
     const b = blocks[0]!;
     expect((b.trigger as { kind: string; count?: number }).kind).toBe(
-      'teamAmmo',
+      'teamAmmo'
     );
     expect((b.trigger as { count: number }).count).toBe(400);
     const eff = b.effects.find(
-      (e) => (e as { kind: string }).kind === 'fillGauge',
+      (e) => (e as { kind: string }).kind === 'fillGauge'
     ) as { pct: number };
     expect(eff.pct).toBeCloseTo(37, 5);
   });
@@ -1472,15 +1505,15 @@ describe('skill1 d) team-ammo 400 -> Fills Burst Gauge 37%', () => {
           ov.skill1 = (ov.skill1 ?? []).filter(
             (b) =>
               !b.effects.some(
-                (e) => (e as { kind: string }).kind === 'fillGauge',
-              ),
+                (e) => (e as { kind: string }).kind === 'fillGauge'
+              )
           );
         }),
       },
     } as ReturnType<typeof controlComp>;
     const r = run(patched);
     expect(evs('fullBurstStart', r.events).length).toBeLessThan(
-      evs('fullBurstStart').length,
+      evs('fullBurstStart').length
     );
   });
 });
@@ -1493,7 +1526,7 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
       (e) =>
         (e as { casterIdx: number | null }).casterIdx === null &&
         (e as { targetIdx: number | null }).targetIdx === null &&
-        Math.abs((e as { value: number }).value - 5.05) < 1e-9,
+        Math.abs((e as { value: number }).value - 5.05) < 1e-9
     );
     expect(dt.length).toBeGreaterThanOrEqual(1);
   });
@@ -1511,7 +1544,7 @@ describe('skill2 e/f) Bubble + Explosive Bubble — boss Damage Taken 5.05% each
         .map((e) => ({
           block: b,
           eff: e as { value: number; durationSec?: number },
-        })),
+        }))
     );
     expect(dtEffects.length).toBe(2);
     for (const { eff } of dtEffects) {
@@ -1583,7 +1616,7 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     expect((b.trigger as { sec: number }).sec).toBeCloseTo(1, 5);
     expect(b.fbGate).toBe('inFb');
     const hits = b.effects.filter(
-      (e) => (e as { kind: string }).kind === 'flatDamage',
+      (e) => (e as { kind: string }).kind === 'flatDamage'
     ) as {
       atkPct: number;
       flavor?: string;
@@ -1599,18 +1632,18 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
     const src = unitOf(base.res, SLUG);
     expect(src.totalDamage).toBeGreaterThan(0);
     const her = evs('damage').filter(
-      (e) => (e as { srcSlug?: string }).srcSlug === SLUG,
+      (e) => (e as { srcSlug?: string }).srcSlug === SLUG
     );
     const skillHits = her.filter(
       (e) =>
         (e as { bucket?: string }).bucket !== 'normal' &&
-        Math.abs(((e as { atkPct?: number }).atkPct ?? -1) - 63.36) < 1e-6,
+        Math.abs(((e as { atkPct?: number }).atkPct ?? -1) - 63.36) < 1e-6
     );
     if (skillHits.length > 0) {
       expect(
         skillHits.every(
-          (e) => (e as { inFullBurst?: boolean }).inFullBurst === true,
-        ),
+          (e) => (e as { inFullBurst?: boolean }).inFullBurst === true
+        )
       ).toBe(true);
     }
   });
@@ -1626,7 +1659,7 @@ describe('skill2 g) every 1 s during Full Burst — 63.36% x4 sequential', () =>
             return {
               ...b,
               effects: b.effects.filter(
-                (e) => (e as { kind: string }).kind !== 'flatDamage',
+                (e) => (e as { kind: string }).kind !== 'flatDamage'
               ),
             };
           });
@@ -1648,12 +1681,12 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
     // slots. Merging them onto one counter is the nearest-wrong model and would mis-time both.
     const ov = withPatchedOverride(SLUG, () => {});
     const blocks = (ov.skill2 ?? []).filter(
-      (b) => (b.trigger as { kind: string }).kind === 'teamAmmo',
+      (b) => (b.trigger as { kind: string }).kind === 'teamAmmo'
     );
     expect(blocks.length).toBe(1);
     expect((blocks[0]!.trigger as { count: number }).count).toBe(500);
     const hits = blocks[0]!.effects.filter(
-      (e) => (e as { kind: string }).kind === 'flatDamage',
+      (e) => (e as { kind: string }).kind === 'flatDamage'
     ) as { atkPct: number }[];
     // "Attacks sequentially 10 times" at 85% each.
     expect(hits.length).toBe(10);
@@ -1670,7 +1703,7 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
             return {
               ...b,
               effects: b.effects.filter(
-                (e) => (e as { kind: string }).kind !== 'flatDamage',
+                (e) => (e as { kind: string }).kind !== 'flatDamage'
               ),
             };
           });
@@ -1692,11 +1725,11 @@ describe('skill2 h) team-ammo 500 -> Bubble Barrage 85% x10 sequential', () => {
 describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% caster-ATK to self', () => {
   it('Attack Damage 10.13% / 10 s is applied to ALL allies on her burst cast', () => {
     const b = buffs('attackDamagePct').filter(
-      (e) => Math.abs((e as { value: number }).value - 10.13) < 1e-9,
+      (e) => Math.abs((e as { value: number }).value - 10.13) < 1e-9
     );
     expect(b.length).toBeGreaterThan(0);
     const distinct = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(distinct.size).toBeGreaterThan(1); // nearest-wrong: self-only
     // Trigger identity: her OWN burst cast, so the batch count equals her burst casts — NOT the
@@ -1716,7 +1749,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const reloads = (ov.burst ?? []).flatMap((b) =>
       b.effects
         .filter((e) => (e as { kind: string }).kind === 'instantReload')
-        .map((e) => ({ block: b, eff: e as { fraction?: number } })),
+        .map((e) => ({ block: b, eff: e as { fraction?: number } }))
     );
     expect(reloads.length).toBe(1);
     expect(reloads[0]!.eff.fraction).toBeCloseTo(0.3326, 4);
@@ -1730,7 +1763,7 @@ describe('burst i/j/k) 10.13% Attack Damage + 33.26% reload to allies; 17.28% ca
     const b = buffs('casterAtkPct');
     expect(b.length).toBeGreaterThan(0);
     const targets = new Set(
-      b.map((e) => (e as { targetSlug?: string }).targetSlug),
+      b.map((e) => (e as { targetSlug?: string }).targetSlug)
     );
     expect(targets.size).toBe(1);
     expect([...targets][0]).toBe(SLUG); // "Affects self"
@@ -1792,7 +1825,7 @@ describe('cross-cutting inertness', () => {
     // Nearest-wrong: marking the 63.36% / 85% riders core:true, which would inflate them by the
     // core multiplier. Rider damage crits at her rate but takes NO core unless the text says so.
     const her = evs('damage').filter(
-      (e) => (e as { srcSlug?: string }).srcSlug === SLUG,
+      (e) => (e as { srcSlug?: string }).srcSlug === SLUG
     );
     const riders = her.filter((e) => {
       const bucket = (e as { bucket?: string }).bucket;
@@ -1819,13 +1852,12 @@ describe('cross-cutting inertness', () => {
     expect(all).toContain('focus');
   });
 });
-
 ```
-
 
 ================================================================================
 SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5, from prose alone) + diff vs driver
 ================================================================================
+
 DIFF SUMMARY: CONVERGED — skill1 all 3 blocks (fullBurstEnd burstCdr 7.48 allies; fullBurstEnter attackDamagePct 4/10s allies; teamAmmo 400 fillGauge 37 allies) and burst both blocks (burstCast allies attackDamagePct 10.13/10s + instantReload 0.3326; burstCast self casterAtkPct 17.28/10s) are line-for-line identical to the driver. DIVERGENT: (1) skill2 Bubble — blind adds targetStatus:Bubble on the passive block + a hitCount-50 block with a SECOND damageTakenPct 5.05 + stun 3s (driver: single passive 5.05, Explosive Bubble documented measurement-gated per F1 — the stun is inert, no boss-action model); (2) skill2 FB nuke — blind: interval{sec:1} + fbGate:inFb + 4× flatDamage 63.36 (driver: dot 253.44 on fullBurstEnter, 10s, 1s interval, noRange — video-verified); (3) skill2 barrage — blind: 10× flatDamage 85 (driver: single flatDamage 850, core:false — user-confirmed). The blind S6 flags list independently names the Explosive-Bubble additivity question (5.05 vs 10.1) as "highest-leverage unknown in this kit" — cross-family corroboration of the driver measurement-gate.
 
 ```json
@@ -2093,9 +2125,7 @@ DIFF SUMMARY: CONVERGED — skill1 all 3 blocks (fullBurstEnd burstCdr 7.48 alli
     "skill1": [
       "Activates only when in Focusing status. Affects all allies. Focuses fire continuously."
     ],
-    "skill2": [
-      "Removes Bubble."
-    ],
+    "skill2": ["Removes Bubble."],
     "burst": []
   },
   "caveats": [
@@ -2113,13 +2143,14 @@ DIFF SUMMARY: CONVERGED — skill1 all 3 blocks (fullBurstEnd burstCdr 7.48 alli
 }
 ```
 
-
 ================================================================================
 SECTION 7 — DRIVER IMPLEMENTATION (scripts/tests/units/little-mermaid.test.ts + src/skills/overrides/little-mermaid.json)
 ================================================================================
+
 S2d: all 22 driver tests GREEN vs shipped (scripts/kit-autonomy/reviews/little-mermaid.verify.txt). No engine change (S4): every primitive exists.
 
 ## driver test (scripts/tests/units/little-mermaid.test.ts)
+
 ```typescript
 // PER-UNIT KIT SPEC — `little-mermaid` (Little Mermaid, Supporter/SMG/Wind, Burst I, cd 20s,
 // ammo 120, SMG 1440 rpm). Kit-autonomy gauntlet 2026-07-26, S2a test-first spec.
@@ -2228,18 +2259,17 @@ const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const lmCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast =>
-      e.kind === 'burstCast' && e.slug === 'little-mermaid',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'little-mermaid'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
 const lmShots = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Shot => e.kind === 'shot' && e.slug === 'little-mermaid',
+    (e): e is Shot => e.kind === 'shot' && e.slug === 'little-mermaid'
   );
 const lmReloads = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is Reload => e.kind === 'reload' && e.slug === 'little-mermaid',
+    (e): e is Reload => e.kind === 'reload' && e.slug === 'little-mermaid'
   );
 /** LM's skill2 damage instances at a given kit magnitude. */
 const lmS2 = (evs: SimEvent[], atkPct: number) =>
@@ -2247,7 +2277,7 @@ const lmS2 = (evs: SimEvent[], atkPct: number) =>
     (d) =>
       d.slug === 'little-mermaid' &&
       d.srcSlot === 'skill2' &&
-      d.atkPct === atkPct,
+      d.atkPct === atkPct
   );
 /** LM-caster buff applications of a stat (optionally at an exact value). */
 const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
@@ -2255,7 +2285,7 @@ const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === LM &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 
 // ---- counterfactual patches (nearest wrong model per line) ------------------------------------
@@ -2263,7 +2293,7 @@ const lmBuffs = (evs: SimEvent[], stat: string, value?: number) =>
 const cfNoCdr = withPatchedOverride('little-mermaid', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.skill1.length === before)
     throw new Error('LM S1 burstCdr block missing — fixture is stale');
@@ -2272,7 +2302,7 @@ const cfNoCdr = withPatchedOverride('little-mermaid', (ov) => {
  *  before the window actually opens). */
 const cfAtk4BurstCast = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct' && e.value === 4),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct' && e.value === 4)
   );
   if (!b)
     throw new Error('LM S1 attackDamagePct 4 block missing — fixture is stale');
@@ -2282,7 +2312,7 @@ const cfAtk4BurstCast = withPatchedOverride('little-mermaid', (ov) => {
 const cfNoFill = withPatchedOverride('little-mermaid', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'fillGauge'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'fillGauge')
   );
   if (ov.skill1.length === before)
     throw new Error('LM S1 fillGauge block missing — fixture is stale');
@@ -2303,7 +2333,7 @@ const cfStack10 = withPatchedOverride('little-mermaid', (ov) => {
  *  noFb flag — the video-verified FB-boost is pinned by the fbMajor counts in the PIN above.) */
 const cfDotBurstCast = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'dot'),
+    x.effects.some((e: any) => e.kind === 'dot')
   );
   if (!b) throw new Error('LM S2 dot block missing — fixture is stale');
   b.trigger = { kind: 'burstCast' };
@@ -2320,7 +2350,7 @@ const cfDot63 = withPatchedOverride('little-mermaid', (ov) => {
  *  trigger — undercounts ~3× (3115 own shots vs ~9000 team ammo over 180s). */
 const cfBarrageHitCount = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.skill2.find((x: any) =>
-    x.effects.some((e: any) => e.kind === 'flatDamage'),
+    x.effects.some((e: any) => e.kind === 'flatDamage')
   );
   if (!b) throw new Error('LM S2 flatDamage block missing — fixture is stale');
   b.trigger = { kind: 'hitCount', count: 500 };
@@ -2348,7 +2378,7 @@ const cfNoReload = withPatchedOverride('little-mermaid', (ov) => {
  *  team attackDamagePct 17.28. */
 const cfCasterTeam = withPatchedOverride('little-mermaid', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'casterAtkPct'),
+    x.effects.some((e: any) => e.stat === 'casterAtkPct')
   );
   if (!b)
     throw new Error('LM burst casterAtkPct block missing — fixture is stale');
@@ -2388,21 +2418,21 @@ describe('little-mermaid — kit spec', () => {
       // structural read straight off the shipped override, via a no-op patch clone
       const shipped = withPatchedOverride('little-mermaid', () => {});
       const blk = (shipped as any).skill1.find((x: any) =>
-        x.effects.some((e: any) => e.kind === 'burstCdr'),
+        x.effects.some((e: any) => e.kind === 'burstCdr')
       );
       expect(blk.trigger).toEqual({ kind: 'fullBurstEnd' });
       expect(blk.target).toEqual({ kind: 'allies' });
       expect(blk.effects.find((e: any) => e.kind === 'burstCdr').seconds).toBe(
-        7.48,
+        7.48
       );
     });
     it('FIRE-RATE: removing it slows BOTH her cast cadence and the team Full-Burst cadence', () => {
       // burstCdr emits no event; observe the cadence (volume.test V2 precedent).
       expect(lmCasts(base.events).length).toBeGreaterThan(
-        lmCasts(noCdr.events).length,
+        lmCasts(noCdr.events).length
       );
       expect(fbStarts(base.events).length).toBeGreaterThan(
-        fbStarts(noCdr.events).length,
+        fbStarts(noCdr.events).length
       );
     });
   });
@@ -2412,7 +2442,7 @@ describe('little-mermaid — kit spec', () => {
     it('lands on the Full-Burst-ENTER frame exactly, not on her (earlier) burstCast frame', () => {
       expect(applied.length).toBeGreaterThan(0);
       const buffFrames = [...new Set(applied.map((b) => b.frame))].sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
       const fbFrames = fbStarts(base.events)
         .map((f) => f.frame)
@@ -2422,8 +2452,8 @@ describe('little-mermaid — kit spec', () => {
       const cfFrames = [
         ...new Set(
           lmBuffs(atk4BurstCast.events, 'attackDamagePct', 4).map(
-            (b) => b.frame,
-          ),
+            (b) => b.frame
+          )
         ),
       ];
       expect(cfFrames).not.toEqual(fbFrames);
@@ -2438,7 +2468,7 @@ describe('little-mermaid — kit spec', () => {
       for (const [frame, holders] of perFrame)
         expect(
           holders.size,
-          `frame ${frame} reached ${holders.size} allies, expected 4`,
+          `frame ${frame} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     });
@@ -2448,7 +2478,7 @@ describe('little-mermaid — kit spec', () => {
     it('is encoded teamAmmo(400) → fillGauge(37) → allies (the pre-Q6 hitCount proxy is wrong)', () => {
       const shipped = withPatchedOverride('little-mermaid', () => {});
       const blk = (shipped as any).skill1.find((x: any) =>
-        x.effects.some((e: any) => e.kind === 'fillGauge'),
+        x.effects.some((e: any) => e.kind === 'fillGauge')
       );
       expect(blk.trigger).toEqual({ kind: 'teamAmmo', count: 400 });
       expect(blk.target).toEqual({ kind: 'allies' });
@@ -2457,7 +2487,7 @@ describe('little-mermaid — kit spec', () => {
     it('BEHAVIOURAL: the gauge fill is live — removing it lowers her 180s total (deterministic)', () => {
       // fillGauge emits no event; faster gauge → earlier casts → more buff/DoT uptime.
       expect(base.totals['little-mermaid']).toBeGreaterThan(
-        noFill.totals['little-mermaid'],
+        noFill.totals['little-mermaid']
       );
     });
   });
@@ -2465,7 +2495,7 @@ describe('little-mermaid — kit spec', () => {
   describe('M5 — S2 Bubble: a SINGLE permanent Damage Taken ▲ 5.05% on the boss', () => {
     it('applies exactly one boss debuff: 5.05, no holder, no expiry', () => {
       const debuffs = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct',
+        (b) => b.stat === 'damageTakenPct'
       );
       expect(debuffs.length).toBe(1);
       expect(debuffs[0].value).toBe(5.05);
@@ -2497,25 +2527,25 @@ describe('little-mermaid — kit spec', () => {
     });
     it('lands exactly 10 ticks per full window, 9 FB-boosted (the +10s boundary tick loses the major by timing)', () => {
       const complete = fbStarts(base.events).filter(
-        (f) => f.endFrame <= FIGHT_FRAMES,
+        (f) => f.endFrame <= FIGHT_FRAMES
       );
       expect(complete.length).toBeGreaterThan(0);
       for (const fb of complete) {
         const inWin = dots.filter(
-          (d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2,
+          (d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2
         );
         expect(inWin.length, `window @${fb.sec.toFixed(1)}s tick count`).toBe(
-          10,
+          10
         );
         expect(
           inWin.filter((d) => d.fbMajorApplied).length,
-          `window @${fb.sec.toFixed(1)}s FB-boosted ticks`,
+          `window @${fb.sec.toFixed(1)}s FB-boosted ticks`
         ).toBe(9);
         // nothing leaks past the 10s window
         expect(
           dots.filter(
-            (d) => d.frame > fb.endFrame + 2 && d.frame <= fb.endFrame + 62,
-          ).length,
+            (d) => d.frame > fb.endFrame + 2 && d.frame <= fb.endFrame + 62
+          ).length
         ).toBe(0);
       }
     });
@@ -2523,14 +2553,14 @@ describe('little-mermaid — kit spec', () => {
       const cf = lmS2(dotBurstCast.events, 253.44);
       expect(cf.length).toBeGreaterThan(0);
       const complete = fbStarts(dotBurstCast.events).filter(
-        (f) => f.endFrame <= FIGHT_FRAMES,
+        (f) => f.endFrame <= FIGHT_FRAMES
       );
       const inWinTotal = complete.reduce(
         (n, fb) =>
           n +
           cf.filter((d) => d.frame > fb.frame && d.frame <= fb.endFrame + 2)
             .length,
-        0,
+        0
       );
       // the cast precedes the window, so every full window loses its early ticks
       expect(inWinTotal).toBeLessThan(10 * complete.length);
@@ -2553,17 +2583,17 @@ describe('little-mermaid — kit spec', () => {
       const windows = fbStarts(base.events);
       for (const d of barrages) {
         const inWindow = windows.some(
-          (f) => d.frame >= f.frame && d.frame < f.endFrame,
+          (f) => d.frame >= f.frame && d.frame < f.endFrame
         );
         expect(d.fbMajorApplied, `barrage @${d.sec.toFixed(1)}s`).toBe(
-          inWindow,
+          inWindow
         );
       }
     });
     it('DISCRIMINATING (trigger): team ammo fires it strictly more often than her OWN hits would', () => {
       // pre-Q6 hitCount-500 proxy: ~3115 own shots / 500 ≈ 6 firings vs ~9000 team ammo / 500 = 18.
       expect(barrages.length).toBeGreaterThan(
-        lmS2(barrageHitCount.events, 850).length,
+        lmS2(barrageHitCount.events, 850).length
       );
     });
     it('DISCRIMINATING (core): a core:true encoding flips coreEligible on', () => {
@@ -2587,7 +2617,7 @@ describe('little-mermaid — kit spec', () => {
       for (const [frame, holders] of perFrame)
         expect(
           holders.size,
-          `frame ${frame} reached ${holders.size} allies, expected 4`,
+          `frame ${frame} reached ${holders.size} allies, expected 4`
         ).toBe(4);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     });
@@ -2595,10 +2625,10 @@ describe('little-mermaid — kit spec', () => {
       // instantReload emits no event; observe the ammo economy (25 reloads / 3115 shots with it
       // vs 28 / 3048 without — deterministic).
       expect(lmReloads(base.events).length).toBeLessThan(
-        lmReloads(noReload.events).length,
+        lmReloads(noReload.events).length
       );
       expect(lmShots(base.events).length).toBeGreaterThan(
-        lmShots(noReload.events).length,
+        lmShots(noReload.events).length
       );
     });
   });
@@ -2614,15 +2644,15 @@ describe('little-mermaid — kit spec', () => {
       expect(lmBuffs(base.events, 'attackDamagePct', 17.28).length).toBe(0);
       // ...but the misread counterfactual produces exactly that
       expect(
-        lmBuffs(casterTeam.events, 'attackDamagePct', 17.28).length,
+        lmBuffs(casterTeam.events, 'attackDamagePct', 17.28).length
       ).toBeGreaterThan(0);
     });
   });
 });
-
 ```
 
 ## driver override (src/skills/overrides/little-mermaid.json)
+
 ```json
 {
   "note": "Burst-I Wind supporter. skill1 overridden to recover the parser-dropped gauge fill: block1 'Focusing status / focuses fire' has no numeric effect and is skipped; block2 (team burst-CDR 7.48s on Full Burst end) and block3 (team Attack Damage 4% for 10s on Full Burst enter) are re-included verbatim; block4 'Fills Burst Gauge 37% each time allies expend 400 ammo' is a TEAM-ammo trigger with no engine equivalent, modeled conservatively as this unit's own hitCount 400 (she is an SMG, 1 hit/shot, so her hits == her ammo). Real team ammo hits 400 faster than she alone does, so this UNDERFILLS -- flagged; effect is mostly burst-cadence, not her own damage. skill2 overridden (parser skipped 3 of 4 blocks on unsupported triggers): block1 Bubble applies Damage Taken 5.05% to the boss continuously -> modeled as a passive enemy debuff; block2 Explosive Bubble (after 50 normals) REMOVES Bubble and re-applies the same 5.05% (plus a 3s stun) -- it relocates the debuff, it does NOT stack to 10.1%, so it is intentionally not added again (stun skipped, boss doesn't act); block3 'every 1s during Full Burst, 63.36% x4 to random enemies' = 253.44%/s modeled as a dot on Full Burst enter, interval 1s, duration 10s (one full-burst window); block4 Bubble Barrage '85% x10 each time allies expend 500 ammo' = 850%, modeled with the same self-ammo proxy as hitCount 500 (UNDERCOUNTS team ammo -- flagged). burst omitted: the parser's team Attack Damage 10.13% + 33.26% reload and self ATK 17.28%-of-caster blocks are already faithful. Q6 UPDATE (2026-07-13): the 37% gauge fill (per 400) and Bubble Barrage 850% = 85x10 PER-HIT (user-confirmed) now fire on TEAM ammo consumed via the new teamAmmo trigger (was her own hits, a 5-8x undercount in MG comps). Barrage core:false (user-confirmed; flatDamage default). noFb RELICS REMOVED (2026-07-15, autonomous-invariant-audit): the FB DoT (253.44%/s) and the 850% barrage were carrying noFb:true -- a calibration relic (DECISIONS 2026-07-14 names these exact 6 units' noFb flags as relics; FB is a TIMING gate, so her DoT ticks + barrage landing during FB get +50%; only Modernia Paradise Lost is type-exempt). noRange KEPT (range is universally skills-never). Per-component values are VIDEO-PLAUSIBLE (docs/probe-data/control-little-mermaid.json): normals 14-68k band ~= sim ~40k/shot; DoT sub-hits 63.36%x4 ~= 156-220k each ~= sim ~668k/tick. OPEN residual (post-removal she grades ~1.16-1.36 across the N-comps, avg ~1.23 hot; was ~1.24 hot in N-comps even fudged, so this over-model PRE-DATES the noFb removal): since per-hit values check out, the excess is in COUNTS/uptime, not coefficients -- two faithful unknowns: (a) whether all 4 DoT sub-hits ('x4 to random enemies') land on a SINGLE boss or fewer, (b) her real normal-fire uptime (sim fires her continuously). The existing control read was INCONCLUSIVE on the DoT band (parse note: 'Re-read needed targeting the ~156-220k band'). DoT-band re-read DONE (2026-07-15, control/lm.MP4, FB-countdown-timed): (1) DoT ticks DO get +50% FB -- measured sub-hit 337,736 matches the FB-boosted 330,467 (2.2%), nowhere near non-FB 220,311 -> CONFIRMS the noFb removal was CORRECT; (2) all 4 sub-hits land on the single boss (253.44%/s is right, count never exceeds 4); (3) her ~22% over is NOT the DoT (FB + count confirmed) -- it lives in her SMG NORMALS, i.e. the flat SMG core-rate over-count off-optimal-range (see docs/closed/range-dependent-core-model.md; teammates Crown/Helm/SW all match ~1.0, only LM's normals overshoot). So LM's residual will be fixed by the range-dependent core model (Chisato SMG recording), NOT an LM-specific change. BONUS FINDING (separate, broader): her DoT sub-hits CRIT in-game (measured orange 450,314 = 337,736 × 1.333 FB-crit), but the sim models DoT without crit (DOT_CRIT off) -> ~7.5% DoT under-count; this is the U13 DoT-crit question (ginmy-confirmed) -> a panel/Fable decision affecting ALL DoTs, do NOT flip in isolation (it would worsen LM's normal-driven over). Do NOT re-add noFb or fudge coefficients to cool her. [materialized 2026-07-16: burst auto-filled from the offline parser (blablalink prose) — behavior-identical to the prior runtime parse; NOT hand-verified] [re-materialized 2026-07-16: burst re-frozen with the upgraded offline parser (skill-user's-ATK→casterAtkPct, used-their-Burst→burstCasters, Reload Speed stat, DEF→defPct, shield event) — still NOT hand-verified] Kit-autonomy gauntlet 2026-07-26: FAITHFUL (cross-family corroborated — fable S2b converged on all 8 modeled lines + 2 UNMODELED). Every line pinned GREEN vs shipped + RED vs nearest-wrong counterfactual in a 22-test spec (scripts/tests/units/little-mermaid.test.ts): FB-end burstCdr 7.48 (cadence 12 vs 9 casts), FB-enter attackDamagePct 4 (frame-exact on fullBurstStart), teamAmmo-400 fillGauge 37 (structural + total delta), passive single-stack damageTakenPct 5.05 (mult.taken uniformly 1.0505; the F1 10.1 counterfactual would read 1.101), FB DoT 253.44%/s = 10 ticks/window, 9 FB-boosted (the +10s boundary tick loses the major by the engine 'timing' FBRULE; the per-kit noFb flag is inert since the 2026-07-23 default rule), teamAmmo-500 flatDamage 850 core:false (18 procs vs ~6 under the pre-Q6 hitCount proxy), burst attackDamagePct 10.13 + instantReload 0.3326 (25 vs 28 magazine reloads), self casterAtkPct 17.28. ⚑ F1 Explosive-Bubble coexistence remains MEASUREMENT-GATED (see caveats). Tier 2.",
@@ -2785,5 +2815,4 @@ describe('little-mermaid — kit spec', () => {
     "The 'every 1 sec only during Full Burst' nuke is encoded as a 10-second damage-over-time started at Full Burst entry — tick count assumes the nominal 10s Full Burst window and does not track shortened or extended Full Bursts."
   ]
 }
-
 ```

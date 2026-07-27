@@ -19,10 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "mbb",
-      "bmilk"
-    ],
+    "nicknames": ["mbb", "bmilk"],
     "skills": {
       "skill1": "■ Activates when performing a Full Charge attack. Affects self.\nGain Pierce for 6 sec.\n■ Activates when not in the Embarrassment state and when Full Charge lasts for 0.5 sec or more. Affects self.\nEmbarrassment\nFunction: Forcefully reloads at reduced reload speed, but increases attack capabilities and deals Distributed Damage.\nEffect 1: Affects all enemies. Deals 290% of final ATK as Distributed Damage.\nEffect 2: Affects self. Removes 100% of ammo.\nEffect 3: Affects self. Reload speed is fixed at a 50% reduction for 1 reload(s).\nEffect 4: Affects self. Forced Reload.\nEffect 5: Affects self. ATK ▲ 118.7% for 40 sec.",
       "skill2": "■ Activates only when in Embarrassment status. Affects self.\nPierce Damage ▲ 64.7% continuously.\n■ Activates only when in Overconfident, Huh?! status. Affects all enemies every 2 sec. \nDeals 447.7% of final ATK as Distributed Damage.",
@@ -72,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -326,16 +319,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Overconfident, Huh?!:\nGains Immunity to Embarrassment for 10 sec.\n<word_group=10042>Pierce Damage</word_group> ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% for {description_value_04} sec.</color>",
           "description_value_list": [
@@ -405,20 +389,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            114330101,
-            114330102,
-            114330103
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [114330101, 114330102, 114330103],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -443,9 +417,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -476,9 +448,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Milk: Blooming Bunny's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

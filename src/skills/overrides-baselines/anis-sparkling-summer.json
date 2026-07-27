@@ -6,8 +6,18 @@
       "trigger": { "kind": "fullBurstEnter" },
       "target": { "kind": "alliesOfElement", "element": "Electric" },
       "effects": [
-        { "kind": "buff", "stat": "casterAtkPct", "value": 55.31, "durationSec": 10 },
-        { "kind": "buff", "stat": "reloadSpeedPct", "value": 49.28, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 55.31,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 49.28,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -16,16 +26,19 @@
       "slot": "skill2",
       "trigger": { "kind": "lastBullet" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 382.42 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 382.42 }]
     },
     {
       "slot": "skill2",
       "trigger": { "kind": "lastBullet" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "partsDamagePct", "value": 6.91, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 6.91,
+          "durationSec": 10
+        }
       ]
     }
   ],
@@ -35,9 +48,24 @@
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "self" },
       "effects": [
-        { "kind": "buff", "stat": "maxAmmoPct", "value": -73.92, "durationSec": 10 },
-        { "kind": "buff", "stat": "reloadSpeedPct", "value": 27.72, "durationSec": 10 },
-        { "kind": "buff", "stat": "elemAdvantageDamagePct", "value": 42.24, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -73.92,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 27.72,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 42.24,
+          "durationSec": 10
+        }
       ]
     }
   ]

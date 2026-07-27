@@ -7,8 +7,18 @@
 // Node callers get overrides from ./overrides-node.ts; the web app bundles them
 // via import.meta.glob.
 import type { CharacterData } from '../types.js';
-import { scaleBlocks, type SkillLevels, type SlotLevelArrays } from './scale.js';
-import type { Block, CharacterSkills, ConsolidationConfig, SkillSlot, UnmodeledText } from './types.js';
+import {
+  scaleBlocks,
+  type SkillLevels,
+  type SlotLevelArrays,
+} from './scale.js';
+import type {
+  Block,
+  CharacterSkills,
+  ConsolidationConfig,
+  SkillSlot,
+  UnmodeledText,
+} from './types.js';
 
 const SLOTS: SkillSlot[] = ['skill1', 'skill2', 'burst'];
 
@@ -34,7 +44,14 @@ export interface OverrideFile {
   pierceModes?: string[]; // pierce only in these modes (e.g. CCW: ["Snipe"])
   // hand-measured corrections to DB weapon data (e.g. real SR fire cycle =
   // charge + bolt recovery, where the DB only records the charge time)
-  charFixes?: { chargeFrames?: number; reloadFrames?: number; burstCooldownSec?: number; noBoltRecovery?: boolean; pullsPerSec?: number; magDumpRof?: boolean };
+  charFixes?: {
+    chargeFrames?: number;
+    reloadFrames?: number;
+    burstCooldownSec?: number;
+    noBoltRecovery?: boolean;
+    pullsPerSec?: number;
+    magDumpRof?: boolean;
+  };
   // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
   // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED
   // gate; the "80 landed on the small core" story is interpretive. See open-questions A26.
@@ -50,7 +67,11 @@ export interface OverrideFile {
   burst?: Block[];
 }
 
-export const MAX_SKILL_LEVELS: SkillLevels = { skill1: 10, skill2: 10, burst: 10 };
+export const MAX_SKILL_LEVELS: SkillLevels = {
+  skill1: 10,
+  skill2: 10,
+  burst: 10,
+};
 
 export function resolveSkills(
   char: CharacterData,
@@ -70,7 +91,11 @@ export function resolveSkills(
   }
 
   const warnings: string[] = [...(override.caveats ?? [])];
-  const bySlot: Record<SkillSlot, Block[]> = { skill1: [], skill2: [], burst: [] };
+  const bySlot: Record<SkillSlot, Block[]> = {
+    skill1: [],
+    skill2: [],
+    burst: [],
+  };
   for (const slot of SLOTS) {
     const defined = override[slot];
     if (!Array.isArray(defined)) {

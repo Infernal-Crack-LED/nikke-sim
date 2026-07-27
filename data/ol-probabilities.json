@@ -3,20 +3,29 @@
 
   "typeWeights": {
     "_comment": "Relative weight of each stat TYPE when a line's stat is drawn. Sums to 100. Draw is WITHOUT replacement — a piece cannot hold the same stat twice.",
-    "atk": 10, "def": 10, "elem": 10, "critdmg": 10,
-    "hitrate": 12, "ammo": 12, "chargedmg": 12, "chargespd": 12, "critrate": 12
+    "atk": 10,
+    "def": 10,
+    "elem": 10,
+    "critdmg": 10,
+    "hitrate": 12,
+    "ammo": 12,
+    "chargedmg": 12,
+    "chargespd": 12,
+    "critrate": 12
   },
 
   "lineCountGates": {
     "_comment": "Probability each of the 3 positional line-slots is present on a roll. Slot 1 always; slot 2 50%; slot 3 30%. All three present = 1*0.5*0.3 = 15%.",
-    "slot1": 1.0, "slot2": 0.5, "slot3": 0.3
+    "slot1": 1.0,
+    "slot2": 0.5,
+    "slot3": 0.3
   },
 
   "tierBands": {
     "_comment": "When a line rolls, its value TIER (1..15) is drawn from these bands (front-loaded — low tiers common). Within-band per-tier split is NOT datamined; the sim assumes UNIFORM within a band (flagged assumption, not measured).",
     "bands": [
-      { "lo": 1,  "hi": 5,  "p": 0.60 },
-      { "lo": 6,  "hi": 10, "p": 0.35 },
+      { "lo": 1, "hi": 5, "p": 0.6 },
+      { "lo": 6, "hi": 10, "p": 0.35 },
       { "lo": 11, "hi": 15, "p": 0.05 }
     ]
   },

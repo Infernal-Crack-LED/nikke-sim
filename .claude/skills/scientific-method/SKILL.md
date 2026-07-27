@@ -14,14 +14,15 @@ pre-op and post-op. (Inverse of the retired experiment-harness era, where the dr
 
 The judge/verifier/reviewer roles are durable agent definitions, not prose to re-improvise:
 
-| Step | Agent | Model | Blind to |
-|---|---|---|---|
-| 0 premise gate | `premise-verifier` | opus | the driver's belief / the expected answer |
-| 1 pre-op | `preop-judge` | fable | — (judges the plan openly) |
-| 4 post-op | `postop-judge` | fable | the driver's verdict + reasoning |
-| 7 code review | `implementation-reviewer` | opus | — (**sighted, PR-style**; gets the accepted claim) |
+| Step           | Agent                     | Model | Blind to                                           |
+| -------------- | ------------------------- | ----- | -------------------------------------------------- |
+| 0 premise gate | `premise-verifier`        | opus  | the driver's belief / the expected answer          |
+| 1 pre-op       | `preop-judge`             | fable | — (judges the plan openly)                         |
+| 4 post-op      | `postop-judge`            | fable | the driver's verdict + reasoning                   |
+| 7 code review  | `implementation-reviewer` | opus  | — (**sighted, PR-style**; gets the accepted claim) |
 
 ## When to use
+
 - The owner says **"use the scientific method + fable pre-op"** — that phrase means: run this skill.
 - Any new empirical test against real in-game data (footage, damage screenshots, band reads).
 - Before changing an engine constant or default, or landing a measurement-driven override retune.
@@ -50,14 +51,15 @@ re-deriving ground truth by hand — for a labeled set the regression harness al
 
 That is a genuine method-diverse check: the labels were produced independently of the reader under test,
 which is exactly the property "prove it differently" is asking for. It is **not** a weaker substitute for
-the pipeline — for tooling it is the *correct* instrument, and the pipeline is the wrong one.
+the pipeline — for tooling it is the _correct_ instrument, and the pipeline is the wrong one.
 
 **No labeled set exists?** Say so explicitly and state the cost of building one **before** starting. Then
 build the fixture (cheap, reusable, committed) rather than doing a one-off hand derivation that leaves
 nothing behind. Escalate to the full pipeline only if the tool's output will itself set a damage-model
-constant — and then the gate is on *that value*, not on the tool.
+constant — and then the gate is on _that value_, not on the tool.
 
 ## Non-negotiables
+
 Prepend `.claude/subagent-non-negotiables.md` to EVERY subagent prompt below — including the work
 subagent. **Blindness is load-bearing**: the value of gate #2 is that it is uncorrelated with the
 driver, and one pasted sentence of your reasoning destroys it. REJECT is cheap; a wrong ACCEPT is not.
@@ -71,6 +73,7 @@ A plan is only as sound as its premises, and premise drift is the driver's most 
 `snow-white-heavy-arms` conflation; the unverified "SG bands are hit-rate-contaminated" premise).
 
 List the plan's **load-bearing premises** — anything it TREATS AS GIVEN:
+
 - **anchor identity** — "unit X is the control"; "X and Y are the same/different unit" (exact slug);
 - **basis cleanliness** — "this reading is hit-rate-clean / partless-boss / same-recording / not
   confounded by Z";
@@ -87,7 +90,7 @@ expected answer.** It returns CONFIRM / REFUTE / CANNOT-VERIFY + a cited primary
 - A **SCOPE CORRECTION** (true only in a narrower form) rewrites the premise to the narrow form — this
   is the most common useful outcome, and it is not a CONFIRM.
 
-*Cheapness gate:* load-bearing premises only, not every decision. One already CONFIRMed from a file
+_Cheapness gate:_ load-bearing premises only, not every decision. One already CONFIRMed from a file
 this session and not mutated since need not be re-probed. This is files-as-truth: a fresh agent
 reloading from disk beats the driver's possibly-drifted memory — **empty context ≠ clean context.**
 
@@ -126,8 +129,9 @@ panel.** A wrong reject is cheap and recoverable; a wrong accept is not. The pan
 ## Step 4 — POST-OP PANEL (gate #2 — the BLIND Fable judge)
 
 Spawn `Agent(subagent_type: "postop-judge")` with **exactly**: [the SAME context the pre-op judge got]
-+ [the work subagent's judge-ready deliverable]. **NEVER inject your approval, reasoning, or verdict.**
-It returns its own ACCEPT / REJECT / INCONCLUSIVE + confidence, scored on the Q1–Q4 rubric it carries.
+
+- [the work subagent's judge-ready deliverable]. **NEVER inject your approval, reasoning, or verdict.**
+  It returns its own ACCEPT / REJECT / INCONCLUSIVE + confidence, scored on the Q1–Q4 rubric it carries.
 
 ## Step 5 — 2-OF-2 LANDING RULE
 
@@ -148,7 +152,7 @@ change re-litigating a DECISIONS entry needs same-tier new evidence or it is dea
 
 - **IMPLEMENT** — requires **2-of-2 ACCEPT + both HIGH confidence**, no pending Q3 control-team gate,
   no open one-character (Q4) question. Then: implement properly → `npx tsx scripts/regression.ts
-  --update` (only together with the change) → docs via `/mechanics-doc-upkeep` → a `docs/DECISIONS.md`
+--update` (only together with the change) → docs via `/mechanics-doc-upkeep` → a `docs/DECISIONS.md`
   entry → a `docs/probe-runs.md` line if a measurement was consumed → `bash scripts/verify.sh` green →
   **step 7, the implementation review, before it merges back.** Engine edits happen on an **isolated
   worktree**, never the shared main tree (CLAUDE.md constraint 8) — which is also what scopes the diff
@@ -170,6 +174,7 @@ the idea; they could not judge the code, because when they ran there was none. R
 change is written and `verify.sh` is green on the isolated worktree, **before it merges back**.
 
 Spawn `Agent(subagent_type: "implementation-reviewer")` — sighted, PR-style. Packet:
+
 1. **The accepted claim in the JUDGES' words** — the `postop-judge`'s "THE CLAIM YOU ARE ACCEPTING" +
    what it STRUCK + its reservations. This is the PR description. Do NOT substitute your own summary
    of what you built; the review must anchor to what was approved, not to what you believe you
@@ -197,6 +202,7 @@ success. Both are diff-reading problems, not numerical ones.
 ---
 
 ## Confidence rubric (both judges score independently)
+
 Q1 provability from HARD DATA · Q2 math naturalness (no free knobs) · Q3 control-team validatability
 (**PENDING — not yet calibrated → caps at LOG**) · Q4 one-character-at-board-cost (if yes, loop to Q1).
 HIGH = Q1 strong + Q2 natural + Q4 clean, Q3 not gating. MEDIUM = any one partial/bounded/pending.
@@ -205,6 +211,7 @@ not exist.** Full wording lives in `.claude/agents/postop-judge.md` (the judge's
 keep this summary in sync with it). **HIGH+HIGH → Implement; anything less → Log.**
 
 ## Gotchas
+
 - **Contaminating the post-op packet** voids gate #2 entirely. Build the post-op prompt from the SAVED
   pre-op packet + the deliverable — never by editing down your own analysis.
 - **A control asserted but not measured is a false premise.** The "near landing is a universal control"
@@ -220,7 +227,9 @@ keep this summary in sync with it). **HIGH+HIGH → Implement; anything less →
   residual was later the +1.63% gear-tier signal.
 
 ## Verify
+
 ```sh
 bash scripts/verify.sh          # only on an IMPLEMENT decision (with the snapshot regen)
 ```
+
 LOG and REJECT decisions touch no code — their deliverable is the appended decision-log entry.

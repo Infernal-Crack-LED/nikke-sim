@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": true,
-    "nicknames": [
-      "tmiranda"
-    ],
+    "nicknames": ["tmiranda"],
     "skills": {
       "skill1": "■ Activates after landing 30 normal attack(s). Affects all allies.\nHit Rate ▲ 5.44% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects all allies with a Submachine Gun.\nHit Rate ▲ 3.79% for 5 sec.\n■ Activates after landing 30 normal attack(s). Affects self.\nATK ▲ 50.06% for 5 sec.",
       "skill2": "■ Activates when entering Full Burst. Affects all allies.\nCritical Damage ▲ 32.99% for 10 sec.\n■ Activates when entering Full Burst. Affects self.\nCritical Rate ▲ 30.1% for 10 sec.\nAttack Damage ▲ 23.7% for 10 sec.\n■ Activates when entering Full Burst. Affects 1 ally unit(s) with the highest final ATK (except the skill user; including the skill user if there are not enough allies). \nCritical Rate ▲ 85.42% for 1 round(s).",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -299,16 +293,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects {description_value_01} ally unit(s) with the highest <word_group=10025>final</word_group> ATK (includes the skill user if there are not enough allies). \n<color=#00AEFF>ATK ▲ {description_value_02}% for {description_value_03} sec. \nCritical Damage ▲ {description_value_04}% for {description_value_05} sec.</color>",
           "description_value_list": [
@@ -391,18 +376,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            103230101
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [103230101],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -427,9 +404,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,
@@ -460,9 +435,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Miranda's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

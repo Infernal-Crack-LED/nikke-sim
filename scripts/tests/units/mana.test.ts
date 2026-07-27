@@ -115,7 +115,7 @@ const manaShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'mana');
 const manaCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'mana',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'mana'
   );
 const manaCastFrames = (evs: SimEvent[]) =>
   manaCasts(evs)
@@ -129,7 +129,7 @@ const fbStartFrames = (evs: SimEvent[]) =>
 /** Mana's burst-bucket damage is ONLY the sustained DoT ticks (her other burst line is a buff). */
 const manaDot = (evs: SimEvent[]) =>
   dmg(evs).filter(
-    (d) => d.slug === 'mana' && d.bucket === 'burst' && d.srcSlot === 'burst',
+    (d) => d.slug === 'mana' && d.bucket === 'burst' && d.srcSlot === 'burst'
   );
 const manaNormals = (evs: SimEvent[]) =>
   dmg(evs).filter((d) => d.slug === 'mana' && d.bucket === 'normal');
@@ -141,7 +141,7 @@ const manaAdBuffFrames = (evs: SimEvent[]) =>
         b.casterIdx === MANA &&
         b.targetIdx === MANA &&
         b.stat === 'attackDamagePct' &&
-        Math.abs(b.value - 21.12) < 0.01,
+        Math.abs(b.value - 21.12) < 0.01
     )
     .map((b) => b.frame)
     .sort((a, b) => a - b);
@@ -154,9 +154,9 @@ const recoveryFrames = (evs: SimEvent[]): number[] =>
           (b) =>
             b.casterIdx === CROWN &&
             b.stat === 'attackDamagePct' &&
-            b.value === 20.99,
+            b.value === 20.99
         )
-        .map((b) => b.frame),
+        .map((b) => b.frame)
     ),
   ].sort((a, b) => a - b);
 
@@ -166,22 +166,22 @@ const manaNoGamma = withPatchedOverride('mana', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkPct'));
   if (ov.skill1.length === before)
-    throw new Error('mana S1 γ atkPct block missing — fixture is stale');
+    {throw new Error('mana S1 γ atkPct block missing — fixture is stale');}
 });
 /** M2 reference: σ burstGenPct passive removed entirely. */
 const manaNoSigma = withPatchedOverride('mana', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'burstGenPct'));
   if (ov.skill2.length === before)
-    throw new Error('mana S2 σ burstGenPct block missing — fixture is stale');
+    {throw new Error('mana S2 σ burstGenPct block missing — fixture is stale');}
 });
 /** M3 counterfactual: the FB-entry buff UNGATED (resourceGate removed) — procs on EVERY FB. */
 const manaUngatedFb = withPatchedOverride('mana', (ov) => {
   const blk = ov.skill2.find((b: any) => hasStat(b, 'attackDamagePct'));
   if (!blk || !blk.resourceGate)
-    throw new Error(
-      'mana S2 σ-gated FB-entry block missing — fixture is stale',
-    );
+    {throw new Error(
+      'mana S2 σ-gated FB-entry block missing — fixture is stale'
+    );}
   delete blk.resourceGate;
 });
 /** M3 counterfactual: the FB-entry buff re-keyed to burstCast (the prior approximation) — procs on
@@ -189,7 +189,7 @@ const manaUngatedFb = withPatchedOverride('mana', (ov) => {
 const manaBurstCastKey = withPatchedOverride('mana', (ov) => {
   const blk = ov.skill2.find((b: any) => hasStat(b, 'attackDamagePct'));
   if (!blk)
-    throw new Error('mana S2 FB-entry block missing — fixture is stale');
+    {throw new Error('mana S2 FB-entry block missing — fixture is stale');}
   blk.trigger = { kind: 'burstCast' };
   delete blk.resourceGate;
 });
@@ -201,26 +201,26 @@ const manaNoRegain = withPatchedOverride('mana', (ov) => {
       !(
         b.trigger?.kind === 'burstCast' &&
         b.effects.some((e: any) => e.kind === 'resource')
-      ),
+      )
   );
   if (ov.skill2.length === before)
-    throw new Error('mana S2 σ re-grant block missing — fixture is stale');
+    {throw new Error('mana S2 σ re-grant block missing — fixture is stale');}
 });
 /** M4 reference: the burst's sustainedDamagePct buff removed (collapses in-window DoT dmgUp). */
 const manaNoSustained = withPatchedOverride('mana', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
   if (ov.burst.length === before)
-    throw new Error(
-      'mana burst sustainedDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'mana burst sustainedDamagePct block missing — fixture is stale'
+    );}
 });
 /** M5 counterfactual: lvl-9 DoT magnitude 378 (keeps cadence, moves per-tick ATK%). */
 const manaDotLvl9 = withPatchedOverride('mana', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!e) throw new Error('mana burst dot effect missing — fixture is stale');
+  if (!e) {throw new Error('mana burst dot effect missing — fixture is stale');}
   e.atkPct = 378;
 });
 /** M5 counterfactual: 2s tick interval (halves the tick count). */
@@ -228,7 +228,7 @@ const manaDotSlow = withPatchedOverride('mana', (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.kind === 'dot');
-  if (!e) throw new Error('mana burst dot effect missing — fixture is stale');
+  if (!e) {throw new Error('mana burst dot effect missing — fixture is stale');}
   e.intervalSec = 2;
 });
 /** M6 isolation: remove crown's own self-heal so its recovery consumer only fires off others. */
@@ -236,7 +236,7 @@ const crownNoHeal = withPatchedOverride('crown', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasHeal(b));
   if (ov.skill2.length === before)
-    throw new Error('crown S2 heal block missing — fixture is stale');
+    {throw new Error('crown S2 heal block missing — fixture is stale');}
 });
 /** M6 isolation: remove BOTH of helm's heal sources (S1 full-charge heal + burst lifesteal window). */
 const helmNoHeal = withPatchedOverride('helm', (ov) => {
@@ -248,7 +248,7 @@ const manaNoHeal = withPatchedOverride('mana', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasHeal(b));
   if (ov.skill1.length === before)
-    throw new Error('mana S1 heal block missing — fixture is stale');
+    {throw new Error('mana S1 heal block missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -275,13 +275,13 @@ describe('mana — kit spec', () => {
         b.casterIdx === MANA &&
         b.targetIdx === MANA &&
         b.stat === 'atkPct' &&
-        Math.abs(b.value - 58.08) < 0.01,
+        Math.abs(b.value - 58.08) < 0.01
     );
 
     it('is applied at t=0 with NO wall-clock expiry (permanent, "once per battle")', () => {
       expect(
         gamma.length,
-        'no γ atkPct 58.08 buff was applied',
+        'no γ atkPct 58.08 buff was applied'
       ).toBeGreaterThan(0);
       expect(gamma[0].frame, 'γ must be live from battle start').toBe(0);
       expect([...new Set(gamma.map((b) => b.expiresFrame))]).toEqual([null]);
@@ -301,14 +301,14 @@ describe('mana — kit spec', () => {
         (b) =>
           b.casterIdx === MANA &&
           b.targetIdx === MANA &&
-          b.stat === 'burstGenPct',
+          b.stat === 'burstGenPct'
       );
 
     it('is applied at t=0 as a permanent passive (no wall-clock expiry)', () => {
       const applied = sigma(base.events);
       expect(
         applied.length,
-        'no σ burstGenPct passive was applied',
+        'no σ burstGenPct passive was applied'
       ).toBeGreaterThan(0);
       expect(applied[0].frame, 'σ must be live from battle start').toBe(0);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
@@ -326,12 +326,12 @@ describe('mana — kit spec', () => {
     it('applies on FB-start frames where σ is held — a STRICT SUBSET of all FBs (multi-B3)', () => {
       expect(
         adFrames.length,
-        'mana never applied her FB-entry buff',
+        'mana never applied her FB-entry buff'
       ).toBeGreaterThan(0);
       expect(fbStarts.length).toBeGreaterThan(adFrames.length); // σ-gated, not every FB
       // every apply frame IS a Full Burst start (fullBurstEnter trigger, σ held)
       for (const f of adFrames)
-        expect(fbStarts, `apply frame ${f} is not an FB-start`).toContain(f);
+        {expect(fbStarts, `apply frame ${f} is not an FB-start`).toContain(f);}
     });
 
     it('is the kit magnitudes for 10 sec, self-scoped', () => {
@@ -339,14 +339,14 @@ describe('mana — kit spec', () => {
         (b) =>
           b.casterIdx === MANA &&
           b.targetIdx === MANA &&
-          b.stat === 'attackDamagePct',
+          b.stat === 'attackDamagePct'
       );
       const atk = buffs(base.events).filter(
         (b) =>
           b.casterIdx === MANA &&
           b.targetIdx === MANA &&
           b.stat === 'atkPct' &&
-          Math.abs(b.value - 63.36) < 0.01,
+          Math.abs(b.value - 63.36) < 0.01
       );
       expect([...new Set(ad.map((b) => b.value))]).toEqual([21.12]);
       expect([...new Set(ad.map((b) => buffDurSec(b)))]).toEqual([10]);
@@ -356,10 +356,10 @@ describe('mana — kit spec', () => {
 
     it('DISCRIMINATING: ungated fullBurstEnter would proc on EVERY FB-start frame', () => {
       expect(manaAdBuffFrames(ungatedFb.events)).toEqual(
-        fbStartFrames(ungatedFb.events),
+        fbStartFrames(ungatedFb.events)
       );
       expect(manaAdBuffFrames(ungatedFb.events).length).toBeGreaterThan(
-        adFrames.length,
+        adFrames.length
       );
     });
 
@@ -378,12 +378,12 @@ describe('mana — kit spec', () => {
       const regained = manaAdBuffFrames(noRegain.events);
       expect(
         shipped.length,
-        'shipped σ buff must proc on more than just FB1',
+        'shipped σ buff must proc on more than just FB1'
       ).toBeGreaterThan(1);
       // without the re-grant, σ is consumed at FB1 and never re-armed → exactly one proc (the initial σ)
       expect(
         regained.length,
-        'no-regain should leave only the FB1 proc from the initial σ',
+        'no-regain should leave only the FB1 proc from the initial σ'
       ).toBe(1);
     });
   });
@@ -394,15 +394,15 @@ describe('mana — kit spec', () => {
         (b) =>
           b.casterIdx === MANA &&
           b.targetIdx === MANA &&
-          b.stat === 'sustainedDamagePct',
+          b.stat === 'sustainedDamagePct'
       );
       expect(
         applied.length,
-        'no sustainedDamagePct buff was applied',
+        'no sustainedDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([52.8]);
       expect(applied.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        manaCastFrames(base.events),
+        manaCastFrames(base.events)
       );
       expect([...new Set(applied.map((b) => buffDurSec(b)))]).toEqual([10]);
     });
@@ -419,7 +419,7 @@ describe('mana — kit spec', () => {
         .map((d) => d.amount);
       expect(
         baseTick.length,
-        'no in-window DoT ticks to compare',
+        'no in-window DoT ticks to compare'
       ).toBeGreaterThan(0);
       expect(baseTick[0]).toBeGreaterThan(noSustTick[0]);
       const normalTotal = (evs: SimEvent[]) =>
@@ -431,7 +431,7 @@ describe('mana — kit spec', () => {
   describe('M5 — burst DoT: 396% of final ATK as sustained damage every 1s for 10s (10 ticks/cast)', () => {
     const ticks = manaDot(base.events);
     const completeCasts = manaCastFrames(base.events).filter(
-      (c) => c + 10 * FPS <= FIGHT_FRAMES,
+      (c) => c + 10 * FPS <= FIGHT_FRAMES
     );
 
     it('is the kit magnitude, in the burst bucket off srcSlot burst', () => {
@@ -444,15 +444,15 @@ describe('mana — kit spec', () => {
     it('lands exactly 10 ticks per cast whose full 10s window fits the fight, at 1 tick/sec', () => {
       expect(
         completeCasts.length,
-        'no cast has a full window inside the fight',
+        'no cast has a full window inside the fight'
       ).toBeGreaterThan(0);
       for (const c of completeCasts) {
         const inWindow = ticks.filter(
-          (d) => d.frame > c && d.frame <= c + 10 * FPS,
+          (d) => d.frame > c && d.frame <= c + 10 * FPS
         );
         expect(
           inWindow.length,
-          `cast at frame ${c} produced ${inWindow.length} ticks, expected 10`,
+          `cast at frame ${c} produced ${inWindow.length} ticks, expected 10`
         ).toBe(10);
       }
     });
@@ -467,11 +467,11 @@ describe('mana — kit spec', () => {
       const slowTicks = manaDot(dotSlow.events);
       for (const c of completeCasts) {
         const inWindow = slowTicks.filter(
-          (d) => d.frame > c && d.frame <= c + 10 * FPS,
+          (d) => d.frame > c && d.frame <= c + 10 * FPS
         );
         expect(
           inWindow.length,
-          `2s interval should give 5 ticks, got ${inWindow.length}`,
+          `2s interval should give 5 ticks, got ${inWindow.length}`
         ).toBe(5);
       }
     });
@@ -483,13 +483,13 @@ describe('mana — kit spec', () => {
       const shots = manaShots(isolated.events).length;
       expect(
         frames,
-        `${frames} recovery firings vs ${shots} mana shots — a per-10 heal lands near shots/10`,
+        `${frames} recovery firings vs ${shots} mana shots — a per-10 heal lands near shots/10`
       ).toBeGreaterThanOrEqual(Math.floor((shots / 10) * 0.9));
     });
 
     it('DISCRIMINATING: removing her heal collapses the isolated recovery count', () => {
       expect(recoveryFrames(isolated.events).length).toBeGreaterThan(
-        recoveryFrames(isolatedNoHeal.events).length,
+        recoveryFrames(isolatedNoHeal.events).length
       );
     });
   });
@@ -497,11 +497,11 @@ describe('mana — kit spec', () => {
   describe('M7 — S2 Charge Time ▼0.18s support: fullBurstEnter trigger is live (magnitude/target are ⚑)', () => {
     it('applies a chargeSpeedPct buff to allies on Full Burst entry (trigger present, NOT σ-gated)', () => {
       const applied = buffs(base.events).filter(
-        (b) => b.casterIdx === MANA && b.stat === 'chargeSpeedPct',
+        (b) => b.casterIdx === MANA && b.stat === 'chargeSpeedPct'
       );
       expect(
         applied.length,
-        'no chargeSpeedPct buff was applied on FB entry',
+        'no chargeSpeedPct buff was applied on FB entry'
       ).toBeGreaterThan(0);
       // value 18 and the all-allies target set are flagged ⚑ approximations — NOT pinned as measured.
     });

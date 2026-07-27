@@ -6,17 +6,17 @@ Grave — AR / Supporter / Fire / Burst II, cd 20s, ammo 60, Pilgrim OVERSPEC. N
 
 ## What ran
 
-| Stage | Role | Model | Outcome |
-| --- | --- | --- | --- |
-| S0 | slug lint + line inventory | driver | clean (no AMBIGUOUS); 17 kit lines → 12 FAITHFUL + 5 documented-UNMODELED; Tier 2 |
-| S2a | driver test (test-first) | driver | `scripts/tests/units/grave.test.ts`, 23 assertions, 7 groups (G1–G7 + unmodeled pins), 6 counterfactual runs |
-| S2b | test-faithfulness review | **claude-fable-5** | independently re-derived all 16 load-bearing lines; converged on every burst mechanic + magnitude; leakDetected null |
-| S2c/S2d | reconcile + verify | driver | 23/23 green vs shipped (`reviews/grave.verify.txt`); reconciliation `reviews/grave.test-review.json` |
-| S3 | minimum faithful edit | driver | note provenance stamp only; no encoding change (already faithful + measured); validate-overrides VALID |
-| S4 | engine check | driver | no change — missing primitives (status-end trigger, empty-magazine effect) block bounded/documented/non-anchor lines → ⚑, not NO-GO |
-| S5 | blind test writer | **claude-opus-5** | 5 pass / 24 fail / 5 skip vs driver override — judge ruled ALL 24 fails RECON_ERROR or driver-wins divergence |
-| S6 | blind override writer | **claude-opus-5** | independent rebuild converged on every load-bearing burst mechanic + magnitude; diverged only on documented-approx lines |
-| S7 | reconciling judge (binding) | **claude-opus-5** | **GO**, faithfulness 1.0, 0 REAL-GOTCHA (`results/grave.json`) |
+| Stage   | Role                        | Model              | Outcome                                                                                                                             |
+| ------- | --------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| S0      | slug lint + line inventory  | driver             | clean (no AMBIGUOUS); 17 kit lines → 12 FAITHFUL + 5 documented-UNMODELED; Tier 2                                                   |
+| S2a     | driver test (test-first)    | driver             | `scripts/tests/units/grave.test.ts`, 23 assertions, 7 groups (G1–G7 + unmodeled pins), 6 counterfactual runs                        |
+| S2b     | test-faithfulness review    | **claude-fable-5** | independently re-derived all 16 load-bearing lines; converged on every burst mechanic + magnitude; leakDetected null                |
+| S2c/S2d | reconcile + verify          | driver             | 23/23 green vs shipped (`reviews/grave.verify.txt`); reconciliation `reviews/grave.test-review.json`                                |
+| S3      | minimum faithful edit       | driver             | note provenance stamp only; no encoding change (already faithful + measured); validate-overrides VALID                              |
+| S4      | engine check                | driver             | no change — missing primitives (status-end trigger, empty-magazine effect) block bounded/documented/non-anchor lines → ⚑, not NO-GO |
+| S5      | blind test writer           | **claude-opus-5**  | 5 pass / 24 fail / 5 skip vs driver override — judge ruled ALL 24 fails RECON_ERROR or driver-wins divergence                       |
+| S6      | blind override writer       | **claude-opus-5**  | independent rebuild converged on every load-bearing burst mechanic + magnitude; diverged only on documented-approx lines            |
+| S7      | reconciling judge (binding) | **claude-opus-5**  | **GO**, faithfulness 1.0, 0 REAL-GOTCHA (`results/grave.json`)                                                                      |
 
 ## Line-by-line (judge `lineFindings`: 12 FAITHFUL + 5 DOCUMENTED_GAP)
 

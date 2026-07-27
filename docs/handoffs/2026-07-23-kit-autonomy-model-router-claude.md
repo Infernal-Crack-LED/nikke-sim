@@ -8,6 +8,7 @@
 > — read it first; do not re-derive the protocol here.
 
 ## Why (the problem this solves)
+
 A clean GO from same-model blind reviewers is evidence against IDIOSYNCRATIC error, not proof of faithfulness:
 two same-model agents both make the systematic misreads the model's prior favors (scope-collapse, duration-
 semantics, trigger-identity — the repo's dominant error classes) and CONVERGE on the wrong reading = false
@@ -17,14 +18,17 @@ Model diversity RAISES confidence; it does not certify faithfulness (shared blin
 magnitudes still need the owner/measurement).
 
 ## Claude's advantage (what Claude can do that Qwen can't)
+
 The Claude `agent`/Workflow tool **has a `model` parameter** (audit-kit already pins Opus/Fable for the blind
 rebuild). So Claude can:
+
 1. **Pin same-family blind roles to a DIFFERENT Claude model than the driver** — within-family diversity (e.g.
    driver Sonnet → S2b/S7 on Opus/Fable). Weaker than cross-family, but real, and cheap.
 2. **Prepare cross-family handoffs to Qwen** (the strong fix) — de-contaminated packets the owner runs through
    Qwen, then reconcile the results.
 
 ## Work order
+
 1. **Add `## Model routing` to `.claude/skills/kit-autonomy/SKILL.md`** — the routing policy from the protocol
    (which model runs each blind role, by driver model + risk tier). Reference
    `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md`; do not duplicate it.
@@ -48,6 +52,7 @@ rebuild). So Claude can:
      eliminates it — those need the owner/measurement).
 
 ## Acceptance criteria
+
 - The skill routes S2b/S7 cross-family by default (Tier 1) and all roles cross-family for Tier-2 units.
 - Same-family blind roles are pinned to a different Claude model than the driver (within-family diversity).
 - De-contaminated packets pass the leak assertion (verify: the script exits 0 and the independent awk-grep
@@ -56,6 +61,7 @@ rebuild). So Claude can:
 - `bash scripts/verify.sh` green; the privaty run still GOs (re-run the gauntlet end-to-end as the integration test).
 
 ## Notes / future work
+
 - True cross-family calls still need the owner (or a multi-provider bridge) to run packets through the other
   family; automating that bridge is future work. The router automates everything up to the handoff + the
   reconciliation when results return.

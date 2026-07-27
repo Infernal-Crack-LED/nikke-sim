@@ -102,10 +102,10 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactual patches ------------------------------------------------------------------
 const stage3 = (ov: any) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.kind === 'burstCast' && x.trigger.stage === 3,
+    (x: any) => x.trigger.kind === 'burstCast' && x.trigger.stage === 3
   );
   if (!b)
-    throw new Error('red-hood stage-3 burst block missing — fixture is stale');
+    {throw new Error('red-hood stage-3 burst block missing — fixture is stale');}
   return b;
 };
 
@@ -113,12 +113,12 @@ const stage3 = (ov: any) => {
 const rhNoChargeSpeed = withPatchedOverride('red-hood', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'chargeSpeedPct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'chargeSpeedPct')
   );
   if (ov.skill1.length === before)
-    throw new Error(
-      'red-hood S1 chargeSpeedPct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'red-hood S1 chargeSpeedPct block missing — fixture is stale'
+    );}
 });
 /** R2 counterfactual: the chargeDamagePct-90 conversion approximation removed from Red Wolf. */
 const rhNoChargeDmg = withPatchedOverride('red-hood', (ov) => {
@@ -126,14 +126,14 @@ const rhNoChargeDmg = withPatchedOverride('red-hood', (ov) => {
   const before = b.effects.length;
   b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
   if (b.effects.length === before)
-    throw new Error(
-      'red-hood stage-3 chargeDamagePct missing — fixture is stale',
-    );
+    {throw new Error(
+      'red-hood stage-3 chargeDamagePct missing — fixture is stale'
+    );}
 });
 /** R3 counterfactual: permanent Pierce removed. */
 const rhNoPierce = withPatchedOverride('red-hood', (ov) => {
   if (ov.hasPierce !== true)
-    throw new Error('red-hood hasPierce missing — fixture is stale');
+    {throw new Error('red-hood hasPierce missing — fixture is stale');}
   ov.hasPierce = false;
 });
 /** R4 counterfactual: the Red Wolf ATK rider removed. */
@@ -141,18 +141,18 @@ const rhNoRedWolfAtk = withPatchedOverride('red-hood', (ov) => {
   const b = stage3(ov);
   const before = b.effects.length;
   b.effects = b.effects.filter(
-    (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct'),
+    (e: any) => !(e.kind === 'buff' && e.stat === 'atkPct')
   );
   if (b.effects.length === before)
-    throw new Error('red-hood stage-3 atkPct rider missing — fixture is stale');
+    {throw new Error('red-hood stage-3 atkPct rider missing — fixture is stale');}
 });
 /** R5 counterfactual: Beast Cage retargeted from all allies to self only. */
 const rhBeastCageSelf = withPatchedOverride('red-hood', (ov) => {
   const b = ov.burst.find(
-    (x: any) => x.trigger.stage === 1 && x.target.kind === 'allies',
+    (x: any) => x.trigger.stage === 1 && x.target.kind === 'allies'
   );
   if (!b)
-    throw new Error('red-hood stage-1 allies block missing — fixture is stale');
+    {throw new Error('red-hood stage-1 allies block missing — fixture is stale');}
   b.target.kind = 'self';
 });
 /** R6 counterfactual: the Red Wolf weapon swap (+ its infinite-ammo economy) removed. */
@@ -160,19 +160,19 @@ const rhNoWeaponSwap = withPatchedOverride('red-hood', (ov) => {
   const b = stage3(ov);
   const before = b.effects.length;
   b.effects = b.effects.filter(
-    (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo',
+    (e: any) => e.kind !== 'weaponSwap' && e.kind !== 'unlimitedAmmo'
   );
   if (b.effects.length === before)
-    throw new Error('red-hood stage-3 weaponSwap missing — fixture is stale');
+    {throw new Error('red-hood stage-3 weaponSwap missing — fixture is stale');}
 });
 /** R7 counterfactual: both Burst-CD refunds (Steps 1 & 2, ▼40s once/battle) removed. */
 const rhNoCdr = withPatchedOverride('red-hood', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter(
-    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr'),
+    (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
   if (ov.burst.length === before)
-    throw new Error('red-hood burstCdr blocks missing — fixture is stale');
+    {throw new Error('red-hood burstCdr blocks missing — fixture is stale');}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) -------------------------------------------------
@@ -194,7 +194,7 @@ const rhShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'red-hood');
 const rhBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'red-hood',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'red-hood'
   );
 const rhStageCasts = (evs: SimEvent[], stage: number) =>
   rhBursts(evs).filter((c) => c.stage === stage);
@@ -217,7 +217,7 @@ describe('red-hood — kit spec', () => {
 
     it('is 3.81% per stack, max 10 stacks, 5-sec duration, self-scoped', () => {
       expect(cs.length, 'no chargeSpeedPct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect([...new Set(cs.map((b) => b.value))]).toEqual([3.81]);
       expect([...new Set(cs.map((b) => b.maxStacks))]).toEqual([10]);
@@ -231,7 +231,7 @@ describe('red-hood — kit spec', () => {
       expect(cs.length).toBe(rhShots(base.events).length);
       expect(
         Math.max(...cs.map((b) => b.stacks)),
-        'stacks never reached the ×10 cap',
+        'stacks never reached the ×10 cap'
       ).toBe(10);
     });
 
@@ -245,7 +245,7 @@ describe('red-hood — kit spec', () => {
 
     it('is modeled as a static chargeDamagePct 90, self-scoped, 10 sec, fired on each Red Wolf cast', () => {
       expect(cd.length, 'no chargeDamagePct buff was applied').toBeGreaterThan(
-        0,
+        0
       );
       expect([...new Set(cd.map((b) => b.value))]).toEqual([90]);
       expect([...new Set(cd.map((b) => b.targetIdx))]).toEqual([RH]);
@@ -258,25 +258,25 @@ describe('red-hood — kit spec', () => {
     it('adds exactly +0.9 to the swap charge multiplier (2.5 full charge → 3.4)', () => {
       const shipped = [
         ...new Set(
-          swapDamage(base.events).map((d) => +d.mult.charge.toFixed(6)),
+          swapDamage(base.events).map((d) => +d.mult.charge.toFixed(6))
         ),
       ];
       expect(
         shipped,
-        'swap shots must carry a single charge multiplier',
+        'swap shots must carry a single charge multiplier'
       ).toEqual([3.4]);
     });
 
     it('DISCRIMINATING: removing the conversion drops the swap charge mult by exactly 0.9', () => {
       const counter = [
         ...new Set(
-          swapDamage(noChargeDmg.events).map((d) => +d.mult.charge.toFixed(6)),
+          swapDamage(noChargeDmg.events).map((d) => +d.mult.charge.toFixed(6))
         ),
       ];
       expect(counter.length).toBe(1);
       expect(
         3.4 - counter[0],
-        'the buff must contribute exactly +0.9 (90/100) to the charge mult',
+        'the buff must contribute exactly +0.9 (90/100) to the charge mult'
       ).toBeCloseTo(0.9, 6);
       expect(rhCastBuff(noChargeDmg.events, 'chargeDamagePct').length).toBe(0);
     });
@@ -312,7 +312,7 @@ describe('red-hood — kit spec', () => {
     it('DISCRIMINATING: removing the rider deletes the buff and lowers her total', () => {
       expect(rhCastBuff(noRedWolfAtk.events, 'atkPct').length).toBe(0);
       expect(noRedWolfAtk.totals['red-hood']).toBeLessThan(
-        base.totals['red-hood'],
+        base.totals['red-hood']
       );
     });
   });
@@ -329,11 +329,11 @@ describe('red-hood — kit spec', () => {
       const values = [...new Set(ca.map((b) => b.value))];
       expect(
         values.length,
-        'every holder must receive the identical caster-relative flat ATK',
+        'every holder must receive the identical caster-relative flat ATK'
       ).toBe(1);
       expect(
         values[0],
-        'stored as flat ATK, not a 77.55 percentage',
+        'stored as flat ATK, not a 77.55 percentage'
       ).toBeGreaterThan(1000);
       expect([...new Set(ca.map((b) => b.expiresFrame! - b.frame))]).toEqual([
         10 * FPS,
@@ -358,7 +358,7 @@ describe('red-hood — kit spec', () => {
       const swap = swapDamage(base.events);
       expect(
         swap.length,
-        'no Red Wolf swap shots were produced',
+        'no Red Wolf swap shots were produced'
       ).toBeGreaterThan(0);
       // base SR normals (69.04%) must also exist — she returns to base SR when the window ends
       expect(rhDamage(base.events).some((d) => d.atkPct === 69.04)).toBe(true);
@@ -367,7 +367,7 @@ describe('red-hood — kit spec', () => {
     it('is fire-rate-gated to exactly 1 shot / 18 frames (0.3s) on infinite ammo', () => {
       const ua = uaShots(base.events);
       expect(ua.length, 'no unlimited-ammo (Red Wolf) shots').toBeGreaterThan(
-        0,
+        0
       );
       // every Red Wolf shot is unlimited-ammo and there are no reloads inside a window
       expect(ua.length).toBe(swapDamage(base.events).length);
@@ -377,7 +377,7 @@ describe('red-hood — kit spec', () => {
       expect(withinWindow.length).toBeGreaterThan(0);
       expect(
         [...new Set(withinWindow)],
-        'cadence must be a constant 18 frames (0.3s)',
+        'cadence must be a constant 18 frames (0.3s)'
       ).toEqual([18]);
     });
 
@@ -387,7 +387,7 @@ describe('red-hood — kit spec', () => {
       const perWindow = swapDamage(base.events).length / windows;
       expect(
         perWindow,
-        'a 10s window at 0.3s cadence yields ~33 shots',
+        'a 10s window at 0.3s cadence yields ~33 shots'
       ).toBeGreaterThan(30);
       expect(perWindow).toBeLessThan(36);
     });
@@ -396,7 +396,7 @@ describe('red-hood — kit spec', () => {
       expect(swapDamage(noWeaponSwap.events).length).toBe(0);
       expect(uaShots(noWeaponSwap.events).length).toBe(0);
       expect(
-        rhDamage(noWeaponSwap.events).every((d) => d.atkPct === 69.04),
+        rhDamage(noWeaponSwap.events).every((d) => d.atkPct === 69.04)
       ).toBe(true);
     });
   });
@@ -417,7 +417,7 @@ describe('red-hood — kit spec', () => {
       const noCdrStages = noCdrCasts.map((c) => c.stage).join(',');
       expect(
         noCdrCasts.length !== baseCasts.length || noCdrStages !== baseStages,
-        `removing the refunds must change the burst economy (base ${baseCasts.length} casts [${baseStages}] vs ${noCdrCasts.length} [${noCdrStages}])`,
+        `removing the refunds must change the burst economy (base ${baseCasts.length} casts [${baseStages}] vs ${noCdrCasts.length} [${noCdrStages}])`
       ).toBe(true);
     });
   });

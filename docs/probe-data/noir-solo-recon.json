@@ -57,10 +57,34 @@
   "perBandReconciliation": {
     "method": "Running-counter deltas at band boundaries (videoSec = fightClock+7), both near windows and both midfar windows combined. Reconstructs to 64.87M (matches screenshot).",
     "bands": {
-      "mid":    {"real": 12371258, "sim": 7460000,  "ratio": 1.66, "simLanding": 0.60, "impliedRealLanding": 1.00},
-      "near":   {"real": 30011332, "sim": 20310000, "ratio": 1.48, "simLanding": 0.60, "impliedRealLanding": 0.89},
-      "far":    {"real": 9367940,  "sim": 5720000,  "ratio": 1.64, "simLanding": 0.45, "impliedRealLanding": 0.74},
-      "midfar": {"real": 13123057, "sim": 8170000,  "ratio": 1.61, "simLanding": 0.55, "impliedRealLanding": 0.88}
+      "mid": {
+        "real": 12371258,
+        "sim": 7460000,
+        "ratio": 1.66,
+        "simLanding": 0.6,
+        "impliedRealLanding": 1.0
+      },
+      "near": {
+        "real": 30011332,
+        "sim": 20310000,
+        "ratio": 1.48,
+        "simLanding": 0.6,
+        "impliedRealLanding": 0.89
+      },
+      "far": {
+        "real": 9367940,
+        "sim": 5720000,
+        "ratio": 1.64,
+        "simLanding": 0.45,
+        "impliedRealLanding": 0.74
+      },
+      "midfar": {
+        "real": 13123057,
+        "sim": 8170000,
+        "ratio": 1.61,
+        "simLanding": 0.55,
+        "impliedRealLanding": 0.88
+      }
     },
     "shape": "Under-model is nearly UNIFORM across all bands (1.48-1.66). near is the LEAST under-modeled only because the sim's near per-shot is already inflated by the +30% range bonus. Implied real landing is ~0.74-1.0 across bands (vs sim 0.45-0.60) -- i.e. SG lands ~most/all pellets on this large boss everywhere, not 45-60%.",
     "caveat": "impliedRealLanding assumes the sim's per-band shot allocation is ~right (justified: measured near cadence ~1.5/s firing = sim). The mid=1.0 > near=0.89 ordering is physically odd and likely reflects boss-transition-edge firing gaps depressing the near-band average + band-boundary counter timing; the DIRECTLY measured near value (peak 0.97, mag-avg ~0.89) is the trustworthy anchor."

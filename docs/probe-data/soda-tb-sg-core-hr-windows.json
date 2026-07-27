@@ -20,12 +20,7 @@
     "bossPartless": true,
     "durationSec": 180,
     "focusReason": "middle slot — popups render focus-only (soda-twinkling-bunny)",
-    "comp": [
-      "little-mermaid",
-      "crown",
-      "soda-twinkling-bunny",
-      "helm"
-    ],
+    "comp": ["little-mermaid", "crown", "soda-twinkling-bunny", "helm"],
     "boss": "NEUTRAL (owner 2026-07-22) — the control videos were recorded against a boss that advantages nobody on the team. Team is Wind/Iron/Iron/Water, so neutral requires boss Fire or Wind. Modelled as boss:null, same as the four C-* control comps."
   },
   "clock": {
@@ -44,50 +39,35 @@
       {
         "burst": 1,
         "cast": 10,
-        "window": [
-          10,
-          25
-        ],
+        "window": [10, 25],
         "band": "mid",
         "chips": "50 -> 34"
       },
       {
         "burst": 2,
         "cast": 47,
-        "window": [
-          47,
-          62
-        ],
+        "window": [47, 62],
         "band": "near",
         "chips": "44 -> 27"
       },
       {
         "burst": 3,
         "cast": 82,
-        "window": [
-          82,
-          97
-        ],
+        "window": [82, 97],
         "band": "far",
         "chips": "39 -> 22"
       },
       {
         "burst": 4,
         "cast": 123,
-        "window": [
-          123,
-          138
-        ],
+        "window": [123, 138],
         "band": "midfar",
         "chips": "36 -> 19"
       },
       {
         "burst": 5,
         "cast": 162,
-        "window": [
-          162,
-          177
-        ],
+        "window": [162, 177],
         "band": "near",
         "chips": "30 -> 13"
       }
@@ -110,380 +90,110 @@
     "windowsCounted": "priority ranks 1-4 (all four bands, ON + OFF). Ranks 5 (extra near n) not counted.",
     "shots": {
       "near_ON": [
-        [
-          9,
-          0
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          3
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          10,
-          2
-        ],
-        [
-          10,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          10,
-          0
-        ]
+        [9, 0],
+        [10, 0],
+        [9, 1],
+        [9, 3],
+        [10, 0],
+        [10, 2],
+        [10, 1],
+        [9, 0],
+        [9, 0],
+        [9, 1],
+        [9, 1],
+        [9, 1],
+        [8, 0],
+        [10, 0],
+        [9, 1],
+        [10, 0]
       ],
       "near_OFF": [
-        [
-          7,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          0
-        ]
+        [7, 0],
+        [7, 0],
+        [9, 0],
+        [7, 0],
+        [9, 0]
       ],
       "mid_ON": [
-        [
-          10,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          10,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          10,
-          1
-        ]
+        [10, 1],
+        [9, 0],
+        [10, 0],
+        [9, 1],
+        [9, 0],
+        [10, 0],
+        [9, 1],
+        [9, 0],
+        [9, 1],
+        [9, 0],
+        [9, 0],
+        [10, 0],
+        [9, 0],
+        [9, 0],
+        [8, 0],
+        [9, 0],
+        [8, 0],
+        [9, 0],
+        [10, 1]
       ],
       "mid_OFF": [
-        [
-          10,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          7,
-          1
-        ]
+        [10, 0],
+        [7, 0],
+        [7, 0],
+        [7, 1]
       ],
       "far_ON": [
-        [
-          6,
-          0
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          5,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          8,
-          2
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          5,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          9,
-          0
-        ]
+        [6, 0],
+        [8, 0],
+        [8, 0],
+        [5, 0],
+        [9, 1],
+        [7, 0],
+        [6, 0],
+        [9, 0],
+        [7, 0],
+        [8, 2],
+        [6, 0],
+        [6, 0],
+        [7, 0],
+        [7, 0],
+        [5, 0],
+        [7, 0],
+        [9, 0],
+        [6, 0],
+        [9, 0]
       ],
       "far_OFF": [
-        [
-          7,
-          0
-        ],
-        [
-          5,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          8,
-          0
-        ]
+        [7, 0],
+        [5, 0],
+        [6, 0],
+        [6, 0],
+        [8, 0]
       ],
       "midfar_ON": [
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          8,
-          1
-        ],
-        [
-          10,
-          1
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          7,
-          1
-        ],
-        [
-          7,
-          1
-        ],
-        [
-          7,
-          1
-        ],
-        [
-          9,
-          0
-        ],
-        [
-          7,
-          0
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          9,
-          1
-        ],
-        [
-          6,
-          1
-        ],
-        [
-          7,
-          1
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          6,
-          1
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          9,
-          0
-        ]
+        [7, 0],
+        [9, 0],
+        [8, 1],
+        [10, 1],
+        [9, 1],
+        [7, 1],
+        [7, 1],
+        [7, 1],
+        [9, 0],
+        [7, 0],
+        [9, 1],
+        [9, 1],
+        [6, 1],
+        [7, 1],
+        [8, 0],
+        [6, 1],
+        [6, 0],
+        [9, 0]
       ],
       "midfar_OFF": [
-        [
-          8,
-          0
-        ],
-        [
-          8,
-          0
-        ],
-        [
-          6,
-          0
-        ],
-        [
-          6,
-          0
-        ]
+        [8, 0],
+        [8, 0],
+        [6, 0],
+        [6, 0]
       ]
     },
     "ownerObservation": "NO PELLET EVER LEFT HER GREY HIT CIRCLE — every pellet that missed the boss missed INSIDE the drawn accuracy circle. (Owner's sentence was truncated mid-thought; the consequence they were drawing has been asked for, not assumed.) Direct consequence either way: pellets flying outside the drawn circle is NOT a loss channel, so landing = the boss body's coverage of the AIM CIRCLE — which is exactly the basis step 3's BAND_SG_HIT_FRAC rebuild is meant to move to.",
@@ -494,19 +204,13 @@
           "k": 11,
           "n": 149,
           "f": 0.0738,
-          "wilson95": [
-            0.042,
-            0.127
-          ]
+          "wilson95": [0.042, 0.127]
         },
         "OFF": {
           "k": 0,
           "n": 39,
           "f": 0.0,
-          "wilson95": [
-            0.0,
-            0.09
-          ]
+          "wilson95": [0.0, 0.09]
         }
       },
       "mid": {
@@ -514,19 +218,13 @@
           "k": 5,
           "n": 174,
           "f": 0.0287,
-          "wilson95": [
-            0.012,
-            0.065
-          ]
+          "wilson95": [0.012, 0.065]
         },
         "OFF": {
           "k": 1,
           "n": 31,
           "f": 0.0323,
-          "wilson95": [
-            0.006,
-            0.162
-          ]
+          "wilson95": [0.006, 0.162]
         }
       },
       "midfar": {
@@ -534,19 +232,13 @@
           "k": 11,
           "n": 140,
           "f": 0.0786,
-          "wilson95": [
-            0.044,
-            0.135
-          ]
+          "wilson95": [0.044, 0.135]
         },
         "OFF": {
           "k": 0,
           "n": 28,
           "f": 0.0,
-          "wilson95": [
-            0.0,
-            0.121
-          ]
+          "wilson95": [0.0, 0.121]
         }
       },
       "far": {
@@ -554,19 +246,13 @@
           "k": 3,
           "n": 135,
           "f": 0.0222,
-          "wilson95": [
-            0.008,
-            0.063
-          ]
+          "wilson95": [0.008, 0.063]
         },
         "OFF": {
           "k": 0,
           "n": 32,
           "f": 0.0,
-          "wilson95": [
-            0.0,
-            0.107
-          ]
+          "wilson95": [0.0, 0.107]
         }
       },
       "pooled": {
@@ -792,33 +478,21 @@
       "corePopups": 3,
       "totalPopups": 49,
       "coreFraction": 0.061,
-      "wilson95": [
-        0.021,
-        0.165
-      ],
+      "wilson95": [0.021, 0.165],
       "coreFrames": [
         "166.6s (357129 red CORE HIT)",
         "167.8s (crit+core, value obscured)",
         "172.6s ('CORE HIT' text, value obscured)"
       ],
-      "windowVideoSec": [
-        163.0,
-        176.2
-      ]
+      "windowVideoSec": [163.0, 176.2]
     },
     "near_HR0_OFF": {
       "framesRead": 4,
       "corePopups": 0,
       "totalPopups": 29,
       "coreFraction": 0.0,
-      "wilson95": [
-        0.0,
-        0.117
-      ],
-      "windowVideoSec": [
-        149.5,
-        161.5
-      ],
+      "wilson95": [0.0, 0.117],
+      "windowVideoSec": [149.5, 161.5],
       "note": "immediately BEFORE her 5th burst — same band, same fight phase; partly inside helm's Full Burst, which matches FB state without granting her Hit Rate"
     }
   },
@@ -853,100 +527,70 @@
         "rank": 1,
         "band": "near",
         "hr": "ON 38.91",
-        "videoSec": [
-          163.5,
-          175.5
-        ],
+        "videoSec": [163.5, 175.5],
         "source": "burst 5"
       },
       {
         "rank": 1,
         "band": "near",
         "hr": "OFF",
-        "videoSec": [
-          150.5,
-          160.5
-        ],
+        "videoSec": [150.5, 160.5],
         "source": "pre-burst-5, same band"
       },
       {
         "rank": 2,
         "band": "mid",
         "hr": "ON 38.91",
-        "videoSec": [
-          11.5,
-          23.5
-        ],
+        "videoSec": [11.5, 23.5],
         "source": "burst 1"
       },
       {
         "rank": 2,
         "band": "mid",
         "hr": "OFF",
-        "videoSec": [
-          26.5,
-          36.5
-        ],
+        "videoSec": [26.5, 36.5],
         "source": "post-burst-1, same band"
       },
       {
         "rank": 3,
         "band": "far",
         "hr": "ON 38.91",
-        "videoSec": [
-          83.5,
-          95.5
-        ],
+        "videoSec": [83.5, 95.5],
         "source": "burst 3"
       },
       {
         "rank": 3,
         "band": "far",
         "hr": "OFF",
-        "videoSec": [
-          98.5,
-          109.5
-        ],
+        "videoSec": [98.5, 109.5],
         "source": "post-burst-3, same band"
       },
       {
         "rank": 4,
         "band": "midfar",
         "hr": "ON 38.91",
-        "videoSec": [
-          124.5,
-          136.5
-        ],
+        "videoSec": [124.5, 136.5],
         "source": "burst 4"
       },
       {
         "rank": 4,
         "band": "midfar",
         "hr": "OFF",
-        "videoSec": [
-          139.5,
-          147.5
-        ],
+        "videoSec": [139.5, 147.5],
         "source": "post-burst-4, same band"
       },
       {
         "rank": 5,
         "band": "near",
         "hr": "OFF (extra n)",
-        "videoSec": [
-          63.5,
-          73.5
-        ],
+        "videoSec": [63.5, 73.5],
         "source": "post-burst-2, same band"
       },
       {
         "rank": 5,
         "band": "near",
         "hr": "ON (extra n)",
-        "videoSec": [
-          48.5,
-          60.5
-        ],
+        "videoSec": [48.5, 60.5],
         "source": "burst 2"
       }
     ],

@@ -92,7 +92,7 @@ const hasKind = (b: any, kind: string) =>
  *  sustained buff; a one-shot passive dot is its cleanest proxy (ticks ~5× total, never stacks). */
 const ravenSingleDot = withPatchedOverride('raven', (ov) => {
   const b = ov.skill1.find((x: any) => hasKind(x, 'dot'));
-  if (!b) throw new Error('raven S1 dot block missing — fixture is stale');
+  if (!b) {throw new Error('raven S1 dot block missing — fixture is stale');}
   b.trigger.kind = 'passive';
 });
 /** R2 counterfactual: the FB-enter ATK buff as a GENERIC (compounding) atkPct, not the flat
@@ -102,7 +102,7 @@ const ravenAtkPctS1 = withPatchedOverride('raven', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error('raven S1 casterAtkPct effect missing — fixture is stale');
+    {throw new Error('raven S1 casterAtkPct effect missing — fixture is stale');}
   e.stat = 'atkPct';
 });
 /** R3/R4 reference: both Vital Attack parts-damage lines removed — totals must be byte-identical
@@ -111,18 +111,18 @@ const ravenNoParts = withPatchedOverride('raven', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'partsDamagePct'));
   if (ov.skill2.length !== before - 2)
-    throw new Error(
-      'raven S2 expected 2 partsDamagePct blocks — fixture is stale',
-    );
+    {throw new Error(
+      'raven S2 expected 2 partsDamagePct blocks — fixture is stale'
+    );}
 });
 /** R6 reference: the burst's sustainedDamagePct buff removed — isolates what the 89.44 feeds. */
 const ravenNoSustained = withPatchedOverride('raven', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'sustainedDamagePct'));
   if (ov.burst.length !== before - 1)
-    throw new Error(
-      'raven burst sustainedDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'raven burst sustainedDamagePct block missing — fixture is stale'
+    );}
 });
 /** R6 counterfactual: the same buff as a GENERIC attackDamagePct — would lift her normal shots too,
  *  which the sustained-scoped shipped encoding must NOT. */
@@ -131,9 +131,9 @@ const ravenSustainedAsAttack = withPatchedOverride('raven', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'sustainedDamagePct');
   if (!e)
-    throw new Error(
-      'raven burst sustainedDamagePct effect missing — fixture is stale',
-    );
+    {throw new Error(
+      'raven burst sustainedDamagePct effect missing — fixture is stale'
+    );}
   e.stat = 'attackDamagePct';
 });
 
@@ -169,7 +169,7 @@ const ravenShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'raven');
 const ravenBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'raven',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'raven'
   );
 const fbStarts = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart');
@@ -189,7 +189,7 @@ describe('raven — kit spec', () => {
       expect(
         ticks,
         `${ticks} skill1 ticks vs ${shots} shots — a per-shot 5s instance ticks ~5× (fight-end ` +
-          'truncation shaves the ratio slightly below 5); a single refreshing instance ticks ~1/s',
+          'truncation shaves the ratio slightly below 5); a single refreshing instance ticks ~1/s'
       ).toBeGreaterThanOrEqual(4 * shots);
     });
 
@@ -198,7 +198,7 @@ describe('raven — kit spec', () => {
       const single = s1Ticks(singleDot.events).length;
       expect(
         single,
-        `${single} ticks for the single-instance model — one 5s passive dot ticks ~5× total`,
+        `${single} ticks for the single-instance model — one 5s passive dot ticks ~5× total`
       ).toBeLessThan(20);
       expect(stacked).toBeGreaterThan(4 * single);
     });
@@ -217,7 +217,7 @@ describe('raven — kit spec', () => {
     it('fires once per Full Burst, self-scoped, for 10 sec', () => {
       expect(
         applied.length,
-        'no FB-entry casterAtkPct buff applied',
+        'no FB-entry casterAtkPct buff applied'
       ).toBeGreaterThan(0);
       expect(applied.length).toBe(fbStarts(base.events).length);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([RAVEN]);
@@ -228,7 +228,7 @@ describe('raven — kit spec', () => {
 
     it('is 47.52% of her STATIC ATK as a flat add (constant across every cast)', () => {
       const expected = (47.52 / 100) * RAVEN_STATIC_ATK;
-      for (const b of applied) expect(b.value).toBeCloseTo(expected, 1);
+      for (const b of applied) {expect(b.value).toBeCloseTo(expected, 1);}
       // A flat add of static ATK does not vary with the team's buff state at cast time.
       expect(new Set(applied.map((b) => b.value.toFixed(4))).size).toBe(1);
     });
@@ -239,7 +239,7 @@ describe('raven — kit spec', () => {
       const appliedCoB3 = ravenBuffs(coB3.events, 'casterAtkPct');
       expect(
         ownCasts,
-        'co-B3 fixture must produce FBs raven sat out',
+        'co-B3 fixture must produce FBs raven sat out'
       ).toBeLessThan(fb);
       // "when entering Full Burst" = fullBurstEnter (any team FB); a burstCast misread would
       // match only her own casts and under-fire here.
@@ -293,7 +293,7 @@ describe('raven — kit spec', () => {
       const took = nukes.filter((d) => d.fbMajorApplied);
       expect(
         took.map((d) => d.sec),
-        'burst-cast damage must precede the FB window',
+        'burst-cast damage must precede the FB window'
       ).toEqual([]);
     });
   });
@@ -316,7 +316,7 @@ describe('raven — kit spec', () => {
       const appliedCoB3 = ravenBuffs(coB3.events, 'sustainedDamagePct');
       expect(
         ownCasts,
-        'co-B3 fixture must produce FBs raven sat out',
+        'co-B3 fixture must produce FBs raven sat out'
       ).toBeLessThan(fb);
       // A.N. Mode is granted inside her OWN burst block → burstCast. The canonical over-credit is
       // keying it to fullBurstEnter, which would also fire on helm-cast rotations (count == FBs).
@@ -331,23 +331,23 @@ describe('raven — kit spec', () => {
         maxDmgUp(s1Ticks(base.events)) - maxDmgUp(s1Ticks(noSustained.events));
       expect(delta).toBeCloseTo(0.8944, 2);
       expect(sum(s1Ticks(base.events))).toBeGreaterThan(
-        sum(s1Ticks(noSustained.events)),
+        sum(s1Ticks(noSustained.events))
       );
     });
 
     it('does NOT touch her normal RL shots (sustained-scoped, not a generic damage buff)', () => {
       // Normal-bucket damage is byte-identical with the buff present vs removed.
       expect(sum(ravenNormals(base.events))).toBe(
-        sum(ravenNormals(noSustained.events)),
+        sum(ravenNormals(noSustained.events))
       );
       expect(maxDmgUp(ravenNormals(base.events))).toBe(
-        maxDmgUp(ravenNormals(noSustained.events)),
+        maxDmgUp(ravenNormals(noSustained.events))
       );
     });
 
     it('DISCRIMINATING: a generic attackDamagePct WOULD lift the normal shots', () => {
       expect(maxDmgUp(ravenNormals(sustainedAsAttack.events))).toBeGreaterThan(
-        maxDmgUp(ravenNormals(base.events)),
+        maxDmgUp(ravenNormals(base.events))
       );
     });
   });
@@ -359,19 +359,19 @@ describe('raven — kit spec', () => {
     // over-credit on every DoT tick. Pin that its magnitude never appears anywhere.
     it("no sustainedDamagePct 47.32 buff is ever applied (only the burst's 89.44)", () => {
       const sustValues = new Set(
-        ravenBuffs(base.events, 'sustainedDamagePct').map((b) => b.value),
+        ravenBuffs(base.events, 'sustainedDamagePct').map((b) => b.value)
       );
       expect(sustValues).toEqual(new Set([89.44]));
       expect(
         ravenBuffs(base.events, 'sustainedDamagePct').some(
-          (b) => b.value === 47.32,
-        ),
+          (b) => b.value === 47.32
+        )
       ).toBe(false);
     });
 
     it('no raven buff of any stat carries the 47.32 magnitude', () => {
       const any47 = buffs(base.events).filter(
-        (b) => b.casterIdx === RAVEN && b.value === 47.32,
+        (b) => b.casterIdx === RAVEN && b.value === 47.32
       );
       expect(any47).toEqual([]);
     });

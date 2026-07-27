@@ -74,9 +74,13 @@ type Ev = SimEvent & Record<string, any>;
 
 function run(overrides?: Record<string, any>) {
   const events: Ev[] = [];
-  const opts: any = { slugs: ['rouge', 'crown', 'ada', 'helm'], bossElement: 'Fire', focusSlug: 'ada' }; // ADAPTED (3): rouge at edge slot 0 so selfAndAdjacent(2) != all allies
+  const opts: any = {
+    slugs: ['rouge', 'crown', 'ada', 'helm'],
+    bossElement: 'Fire',
+    focusSlug: 'ada',
+  }; // ADAPTED (3): rouge at edge slot 0 so selfAndAdjacent(2) != all allies
   opts.cfg = { ...(opts.cfg ?? {}), onEvent: (ev: Ev) => events.push(ev) };
-  if (overrides) opts.overrides = overrides;
+  if (overrides) {opts.overrides = overrides;}
   const res = runComp(opts);
   return { res, events };
 }
@@ -96,7 +100,7 @@ const cfAtkPct = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.burst ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'casterAtkPct') e.stat = 'atkPct';
+        if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
       }
     }
   }),
@@ -107,7 +111,8 @@ const cfSwordBucket = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.skill2 ?? []) {
       for (const e of b.effects ?? []) {
-        if (e.kind === 'buff' && e.stat === 'attackDamagePct') e.stat = 'atkPct';
+        if (e.kind === 'buff' && e.stat === 'attackDamagePct')
+          {e.stat = 'atkPct';}
       }
     }
   }),
@@ -118,9 +123,9 @@ const cfSwordTargets = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.skill2 ?? []) {
       const hasSword = (b.effects ?? []).some(
-        (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct',
+        (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct'
       );
-      if (hasSword) b.target = { kind: 'allies' };
+      if (hasSword) {b.target = { kind: 'allies' };}
     }
   }),
 });
@@ -130,7 +135,7 @@ const cfNoBurstAtk = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
     for (const b of ov.burst ?? []) {
       b.effects = (b.effects ?? []).filter(
-        (e: any) => !(e.kind === 'buff' && e.stat === 'casterAtkPct'),
+        (e: any) => !(e.kind === 'buff' && e.stat === 'casterAtkPct')
       );
     }
   }),
@@ -148,7 +153,7 @@ const cfNoMaxHp = run({
               (e.stat === 'casterMaxHpPct' ||
                 e.stat === 'maxHpFlat' ||
                 e.stat === 'targetMaxHpPct')
-            ),
+            )
         );
       }
     }
@@ -197,12 +202,14 @@ describe('rouge — fixture sanity (non-vacuity)', () => {
     expect(casts.length).toBeGreaterThan(0);
     expect(fbs.length).toBeGreaterThan(0);
     // rouge is Burst I: she must be among the casters, or her burst block never fires.
-    expect(casts.some((e) => e.targetSlug === SLUG || e.slug === SLUG)).toBe(true);
+    expect(casts.some((e) => e.targetSlug === SLUG || e.slug === SLUG)).toBe(
+      true
+    );
   });
 
   it('rouge fires charge shots, so the full-charge counters are reachable', () => {
     const shots = base.events.filter(
-      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
+      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG)
     );
     // 180s at SR cadence with chargeFrames 60 and ammo 6 => tens of charges.
     // The 8-charge tier must be reachable many times; the 30-charge tier at least once.
@@ -232,7 +239,7 @@ describe('rouge burst — ATK \u25b2 15.07% of the skill user\u2019s ATK, 10 sec
     const hit = new Set(
       buffs(base.events, 'casterAtkPct')
         .map((e) => e.targetSlug)
-        .filter(Boolean),
+        .filter(Boolean)
     );
     for (const slug of Object.keys(baseTotals)) {
       expect(hit.has(slug)).toBe(true);
@@ -257,14 +264,14 @@ describe('rouge burst — ATK \u25b2 15.07% of the skill user\u2019s ATK, 10 sec
 describe('rouge skill2 — Sword Coin: Attack Damage \u25b2 6.65% continuously', () => {
   it('is encoded in the Damage Up bucket (attackDamagePct), value 6.65', () => {
     const evs = buffs(base.events, 'attackDamagePct').filter(
-      (e) => Math.abs(e.value - 6.65) < 1e-6,
+      (e) => Math.abs(e.value - 6.65) < 1e-6
     );
     expect(evs.length).toBeGreaterThan(0);
   });
 
   it('is CONTINUOUS: no time expiry and no round count', () => {
     const e = buffs(base.events, 'attackDamagePct').find(
-      (x) => Math.abs(x.value - 6.65) < 1e-6,
+      (x) => Math.abs(x.value - 6.65) < 1e-6
     )!;
     expect(e.durationShots).toBeNull();
     // "continuously" => either no expiry, or one past the end of the fight.
@@ -294,7 +301,11 @@ describe('rouge skill2 — Sword Coin: Attack Damage \u25b2 6.65% continuously',
 describe('rouge skill1 — Cooldown of Burst Skill \u25bc 7 sec', () => {
   it('is encoded as a burstCdr effect worth 7 seconds', () => {
     const ov = withPatchedOverride(SLUG, () => {}) as any;
-    const all = [...(ov.skill1 ?? []), ...(ov.skill2 ?? []), ...(ov.burst ?? [])];
+    const all = [
+      ...(ov.skill1 ?? []),
+      ...(ov.skill2 ?? []),
+      ...(ov.burst ?? []),
+    ];
     const cdr = all
       .flatMap((b: any) => b.effects ?? [])
       .filter((e: any) => e.kind === 'burstCdr');
@@ -314,11 +325,11 @@ describe('rouge skill1 — Cooldown of Burst Skill \u25bc 7 sec', () => {
 describe('rouge — full-charge counters (8 / 30) are charge-keyed, not pull-keyed', () => {
   it('the 8-charge tier fires repeatedly but far fewer times than rouge fires shots', () => {
     const shots = base.events.filter(
-      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG),
+      (e) => e.kind === 'shot' && (e.slug === SLUG || e.targetSlug === SLUG)
     ).length;
     // The skill1 Max-HP grant is the observable of the 8-charge trigger.
     const fires = buffs(base.events, 'maxHpFlat').filter(
-      (e) => e.expiresFrame != null,
+      (e) => e.expiresFrame != null
     ).length;
     expect(fires).toBeGreaterThan(0);
     // A hitCount:8 misread on trigger PULLS would fire ~shots/8 times; a chargeCounter
@@ -373,7 +384,7 @@ describe('rouge — every Max HP grant (skill1 5%, S2 15.08%, burst 10.15/20.1/3
     const hit = new Set(
       buffs(base.events, 'maxHpFlat')
         .map((e) => e.targetSlug)
-        .filter(Boolean),
+        .filter(Boolean)
     );
     expect(hit.size).toBeGreaterThan(1);
   });
@@ -399,7 +410,7 @@ describe('rouge — teammate inertness / no over-reach', () => {
     const rougeStats = new Set(
       base.events
         .filter((e) => e.kind === 'buffApply' && e.casterSlug === SLUG)
-        .map((e) => e.stat),
+        .map((e) => e.stat)
     );
     for (const s of rougeStats) {
       expect([

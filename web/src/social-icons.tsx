@@ -15,8 +15,8 @@ const PATHS: Record<IconName, string> = {
 
 export function BrandIcon({ name }: { name: IconName }) {
   return (
-    <svg viewBox='0 0 24 24' aria-hidden='true' focusable='false'>
-      <path fill='currentColor' d={PATHS[name]} />
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path fill="currentColor" d={PATHS[name]} />
     </svg>
   );
 }

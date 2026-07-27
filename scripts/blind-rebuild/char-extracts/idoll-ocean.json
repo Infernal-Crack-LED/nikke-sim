@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "io"
-    ],
+    "nicknames": ["io"],
     "skills": {
       "skill1": "■ Activates when the last bullet hits the target. Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 4.86% of the skill user's final Max HP as HP.",
       "skill2": "■ Affects 1 ally unit(s) with the lowest HP percentage. \nRecovers 9.69% of the skill user's final Max HP as HP.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -247,16 +241,7 @@
             }
           ],
           "skill_cooltime_list": [
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000,
-            2000
+            2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000
           ],
           "description_localkey": "■ Affects all allies. \n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP as HP. </color>",
           "description_value_list": [
@@ -300,18 +285,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            130530101
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [130530101],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -336,9 +313,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,

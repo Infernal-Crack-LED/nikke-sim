@@ -19,9 +19,7 @@
     "rl3": 8.4,
     "burstGaugePerShot": 2.8,
     "treasure": false,
-    "nicknames": [
-      "rh"
-    ],
+    "nicknames": ["rh"],
     "skills": {
       "skill1": "■ Activates when performing a normal attack. Affects self.\nCharge Speed ▲ 3.81%, stacks up to 10 time(s) and lasts for 5 sec.\n■ Activates at the start of battle. Affects self.\nConvert excess value over 100% of Charge Speed to Charge Damage. Charge Damage ▲ 240% of the excess value continuously.",
       "skill2": "■ Activates at the start of battle. Affects self.\nGain Pierce continuously.\n■ Activates during Beast Cage. Affects all allies.\nDEF ▲ 50.68% of the skill user's DEF for 10 sec.\n■ Activates during The Last Howl. Affects self.\nRecovers 23.04% of attack damage as HP over 10 sec.\n■ Activates when casting Red Wolf. Affects self.\nATK ▲ 71.42% for 10 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -325,16 +319,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "When used in Step 1: Beast Cage\n■ Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_01}% of the skill user's ATK for {description_value_02} sec.</color>\n■ Affects self.\n<color=#00AEFF><word_group=10031>Cooldown</word_group> of Burst Skill ▼ 40 sec. Activates once per battle.</color>\nWhen used in Step 2: The Last Howl\n■ Affects self.\n<color=#00AEFF>Attract: Taunts all enemies for {description_value_04} sec.\nIncoming healing ▲ {description_value_05}% for {description_value_06} sec.\n<word_group=10031>Cooldown</word_group> of Burst Skill ▼ 40 sec. Activates once per battle.</color>\nWhen used in Step 3: Red Wolf\n■ Affects self.\n<color=#00AEFF>Changes the weapon in use:\nDamage: {description_value_07}% of final ATK \nFull Charge Damage: 250% of damage\nDuration: 10 sec\nAdditional Effects:\nExpand Pierce range by {description_value_08}% for {description_value_09} sec.\nCharge Speed ▲ {description_value_10}% for {description_value_11} sec.</color>",
           "description_value_list": [
@@ -482,20 +467,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            147030101,
-            147030104,
-            147030108
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [147030101, 147030104, 147030108],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -520,9 +495,7 @@
         }
       },
       "element": {
-        "element_id": [
-          500001
-        ],
+        "element_id": [500001],
         "element_details": [
           {
             "id": 500001,
@@ -553,9 +526,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Red Hood's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "corporation_sub_type": "OVERSPEC",
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }

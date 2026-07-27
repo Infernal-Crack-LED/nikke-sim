@@ -74,30 +74,30 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactual patches (the nearest-wrong model each pin must beat) ----------------------
 const flatAtkPct = (b: any, pct: number) =>
   b.effects.find(
-    (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - pct) < 0.01,
+    (e: any) => e.kind === 'flatDamage' && Math.abs(e.atkPct - pct) < 0.01
   );
 
 /** P1 counterfactual: the ungated 256.17 rider fires on EVERY pull, not just the last bullet. */
 const privatyShotFired = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill2.find((x: any) => flatAtkPct(x, 256.17));
-  if (!b) throw new Error('privaty S2 256.17 block missing — fixture is stale');
+  if (!b) {throw new Error('privaty S2 256.17 block missing — fixture is stale');}
   b.trigger = { kind: 'shotFired' };
 });
 /** P2 counterfactual: the 1687 rider is UNGATED (fires on every last bullet, in- or out-of-window). */
 const privatyUngated1687 = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill2.find((x: any) => flatAtkPct(x, 1687));
-  if (!b) throw new Error('privaty S2 1687 block missing — fixture is stale');
+  if (!b) {throw new Error('privaty S2 1687 block missing — fixture is stale');}
   if (!b.requiresTargetStatus)
-    throw new Error('privaty 1687 block has no gate — fixture is stale');
+    {throw new Error('privaty 1687 block has no gate — fixture is stale');}
   delete b.requiresTargetStatus;
 });
 /** P5b counterfactual: the Max Ammo ▼50.66% debuff removed — the "it's just a penalty" misread. */
 const privatyNoMaxAmmo = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'maxAmmoPct'),
+    x.effects.some((e: any) => e.stat === 'maxAmmoPct')
   );
   if (!b)
-    throw new Error('privaty S1 maxAmmoPct block missing — fixture is stale');
+    {throw new Error('privaty S1 maxAmmoPct block missing — fixture is stale');}
   b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
 });
 // NOTE (engine finding, surfaced by this test): `noFb` in an override is INERT under the default
@@ -126,7 +126,7 @@ const privReloads = (evs: SimEvent[]) =>
   evs.filter((e): e is Reload => e.kind === 'reload' && e.slug === 'privaty');
 const privBursts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'privaty',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'privaty'
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -145,23 +145,23 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
       const shots = privShots(base.events).length;
       expect(
         n,
-        '256.17 rider should fire ~once per magazine',
+        '256.17 rider should fire ~once per magazine'
       ).toBeGreaterThanOrEqual(Math.floor(reloads * 0.7));
       expect(n, '256.17 rider must not fire per-shot').toBeLessThanOrEqual(
-        reloads + 1,
+        reloads + 1
       );
       expect(
         n,
-        'lastBullet count must be far below the shot count',
+        'lastBullet count must be far below the shot count'
       ).toBeLessThan(shots * 0.5);
       expect(reloads).toBeGreaterThan(0);
     });
     it('DISCRIMINATING: a shotFired trigger fires the rider on (almost) every pull', () => {
       expect(rider256(shotFired.events).length).toBeGreaterThan(
-        privShots(shotFired.events).length * 0.8,
+        privShots(shotFired.events).length * 0.8
       );
       expect(rider256(shotFired.events).length).toBeGreaterThan(
-        rider256(base.events).length * 2,
+        rider256(base.events).length * 2
       );
     });
   });
@@ -171,21 +171,21 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
       const r = rider1687(base.events);
       expect(
         r.length,
-        'the gated rider must fire at least once in-window',
+        'the gated rider must fire at least once in-window'
       ).toBeGreaterThan(0);
       for (const d of r) {
         expect(
           inDtWindow(base.events, d.frame),
-          `1687 rider at ${(d as any).sec.toFixed(2)}s is out-of-window`,
+          `1687 rider at ${(d as any).sec.toFixed(2)}s is out-of-window`
         ).toBe(true);
       }
       // Non-vacuity: there ARE last bullets out-of-window where 1687 correctly did NOT fire.
       const outOfWindowLastBullets = rider256(base.events).filter(
-        (d) => !inDtWindow(base.events, d.frame),
+        (d) => !inDtWindow(base.events, d.frame)
       );
       expect(
         outOfWindowLastBullets.length,
-        'fixture has no out-of-window last bullet — gate untested',
+        'fixture has no out-of-window last bullet — gate untested'
       ).toBeGreaterThan(0);
       // The gate makes 1687 strictly rarer than the ungated 256.17 last-bullet rider.
       expect(r.length).toBeLessThan(rider256(base.events).length);
@@ -196,7 +196,7 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
       const outOfWindow = r.filter((d) => !inDtWindow(ungated.events, d.frame));
       expect(
         outOfWindow.length,
-        'ungated 1687 must appear out-of-window',
+        'ungated 1687 must appear out-of-window'
       ).toBeGreaterThan(0);
     });
   });
@@ -218,19 +218,19 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
       const inFb = r.filter((d) => d.inFullBurst);
       const outFb = r.filter((d) => !d.inFullBurst);
       expect(inFb.length, 'fixture has no in-FB 256.17 rider').toBeGreaterThan(
-        0,
+        0
       );
       expect(
         outFb.length,
-        'fixture has no out-of-FB 256.17 rider',
+        'fixture has no out-of-FB 256.17 rider'
       ).toBeGreaterThan(0);
       expect(
         inFb.every((d) => d.fbMajorApplied === true),
-        'in-FB rider must take the FB major',
+        'in-FB rider must take the FB major'
       ).toBe(true);
       expect(
         outFb.every((d) => d.fbMajorApplied === false),
-        'out-of-FB rider must NOT take the FB major',
+        'out-of-FB rider must NOT take the FB major'
       ).toBe(true);
     });
   });
@@ -248,11 +248,11 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
           (b) =>
             b.casterIdx === PRIVATY &&
             b.stat === stat &&
-            Math.abs(b.value - value) < 0.001,
+            Math.abs(b.value - value) < 0.001
         );
         expect(
           applied.length,
-          `no ${stat} ${value} buff applied`,
+          `no ${stat} ${value} buff applied`
         ).toBeGreaterThan(0);
         const perFrame = new Map<number, Set<number | null>>();
         for (const b of applied) {
@@ -264,11 +264,11 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
         for (const [frame, holders] of perFrame) {
           expect(
             holders.size,
-            `frame ${frame} reached ${holders.size} allies, expected ${N_ALLIES}`,
+            `frame ${frame} reached ${holders.size} allies, expected ${N_ALLIES}`
           ).toBe(N_ALLIES);
         }
         for (const b of applied)
-          expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+          {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       });
     }
   });
@@ -279,7 +279,7 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
     // thus every lastBullet-triggered skill2 proc. Removing it must REDUCE the last-bullet (256.17) count.
     it('removing the Max Ammo ▼ debuff REDUCES the last-bullet rider count (it gates shot count = damage)', () => {
       expect(rider256(noMaxAmmo.events).length).toBeLessThan(
-        rider256(base.events).length,
+        rider256(base.events).length
       );
     });
   });
@@ -288,19 +288,19 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
     // S2b trigger-identity catch: fullBurstEnter fires on any team FB; burstCast only on privaty's own casts.
     it('S1 atkPct 23.61 is applied once per Full Burst start frame', () => {
       const fbStarts = base.events.filter(
-        (e) => e.kind === 'fullBurstStart',
+        (e) => e.kind === 'fullBurstStart'
       ).length;
       const applied = buffs(base.events).filter(
         (b) =>
           b.casterIdx === PRIVATY &&
           b.stat === 'atkPct' &&
-          Math.abs(b.value - 23.61) < 0.001,
+          Math.abs(b.value - 23.61) < 0.001
       );
       const frames = new Set(applied.map((b) => b.frame));
       expect(fbStarts).toBeGreaterThan(0);
       expect(
         frames.size,
-        'S1 must fire once per FB entry (fullBurstEnter)',
+        'S1 must fire once per FB entry (fullBurstEnter)'
       ).toBe(fbStarts);
     });
   });
@@ -308,21 +308,21 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
   describe('P6 — burst: self elem-advantage buff + 1407.64% nuke (FB-exempt by cast timing)', () => {
     it('applies self elemAdvantageDamagePct 130 on each burstCast', () => {
       const applied = buffs(base.events).filter(
-        (b) => b.casterIdx === PRIVATY && b.stat === 'elemAdvantageDamagePct',
+        (b) => b.casterIdx === PRIVATY && b.stat === 'elemAdvantageDamagePct'
       );
       expect(applied.length).toBe(privBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([130]);
     });
     it('nuke lands once per burstCast at 1407.64% in the burst bucket, never taking the +50% FB major', () => {
       const nukes = privDmg(base.events, 'burst').filter(
-        (d) => Math.abs(d.atkPct - 1407.64) < 0.01,
+        (d) => Math.abs(d.atkPct - 1407.64) < 0.01
       );
       expect(nukes.length).toBe(privBursts(base.events).length);
       expect(nukes.length).toBeGreaterThan(0);
       expect([...new Set(nukes.map((d) => d.bucket))]).toEqual(['burst']);
       expect(
         nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec),
-        'burst-cast damage precedes the FB window',
+        'burst-cast damage precedes the FB window'
       ).toEqual([]);
     });
   });
@@ -333,15 +333,15 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
     // damageTakenPct source in the fixture, so stat+value uniquely identifies her debuff.
     it('a damageTakenPct 10.01 debuff is applied, bounded by the last-bullet cadence', () => {
       const applied = buffs(base.events).filter(
-        (b) => b.stat === 'damageTakenPct' && Math.abs(b.value - 10.01) < 0.001,
+        (b) => b.stat === 'damageTakenPct' && Math.abs(b.value - 10.01) < 0.001
       );
       expect(
         applied.length,
-        'no damageTakenPct 10.01 debuff applied',
+        'no damageTakenPct 10.01 debuff applied'
       ).toBeGreaterThan(0);
       expect(
         applied.length,
-        'debuff must track last bullets, not fire per shot',
+        'debuff must track last bullets, not fire per shot'
       ).toBeLessThanOrEqual(privReloads(base.events).length + 1);
     });
   });

@@ -41,13 +41,69 @@ interface WeaponModal {
 }
 
 export const MODAL_WEAPON: Record<Weapon, WeaponModal> = {
-  MG: { normalAttackMultiplier: 5.57, ammo: 300, reloadFrames: 171, chargeFrames: 0, chargeMultiplier: 0, hitsPerShot: 1, rl3: 3.55 },
-  RL: { normalAttackMultiplier: 61.3, ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, hitsPerShot: 1, rl3: 16.8 },
-  SG: { normalAttackMultiplier: 201.5, ammo: 9, reloadFrames: 111, chargeFrames: 0, chargeMultiplier: 0, hitsPerShot: 10, rl3: 12 },
-  AR: { normalAttackMultiplier: 13.65, ammo: 60, reloadFrames: 81, chargeFrames: 0, chargeMultiplier: 0, hitsPerShot: 1, rl3: 7.6 },
-  SR: { normalAttackMultiplier: 69.04, ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, hitsPerShot: 1, rl3: 8.4 },
-  SMG: { normalAttackMultiplier: 10.12, ammo: 120, reloadFrames: 81, chargeFrames: 0, chargeMultiplier: 0, hitsPerShot: 1, rl3: 5.7 },
-  Pistol: { normalAttackMultiplier: 0, ammo: 0, reloadFrames: 0, chargeFrames: 0, chargeMultiplier: 0, hitsPerShot: 1, rl3: 0 }, // unused — no synthetic pistols
+  MG: {
+    normalAttackMultiplier: 5.57,
+    ammo: 300,
+    reloadFrames: 171,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    hitsPerShot: 1,
+    rl3: 3.55,
+  },
+  RL: {
+    normalAttackMultiplier: 61.3,
+    ammo: 6,
+    reloadFrames: 141,
+    chargeFrames: 60,
+    chargeMultiplier: 250,
+    hitsPerShot: 1,
+    rl3: 16.8,
+  },
+  SG: {
+    normalAttackMultiplier: 201.5,
+    ammo: 9,
+    reloadFrames: 111,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    hitsPerShot: 10,
+    rl3: 12,
+  },
+  AR: {
+    normalAttackMultiplier: 13.65,
+    ammo: 60,
+    reloadFrames: 81,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    hitsPerShot: 1,
+    rl3: 7.6,
+  },
+  SR: {
+    normalAttackMultiplier: 69.04,
+    ammo: 6,
+    reloadFrames: 141,
+    chargeFrames: 60,
+    chargeMultiplier: 250,
+    hitsPerShot: 1,
+    rl3: 8.4,
+  },
+  SMG: {
+    normalAttackMultiplier: 10.12,
+    ammo: 120,
+    reloadFrames: 81,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    hitsPerShot: 1,
+    rl3: 5.7,
+  },
+  Pistol: {
+    normalAttackMultiplier: 0,
+    ammo: 0,
+    reloadFrames: 0,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    hitsPerShot: 1,
+    rl3: 0,
+  }, // unused — no synthetic pistols
 };
 
 // Attacker-class base stats (identical across real Attackers — atk 600 / hp 13500,
@@ -76,7 +132,7 @@ function synthetic(
   weapon: Weapon,
   cls: 'Attacker' | 'Supporter',
   baseStats: BaseStats,
-  damageDealing: boolean,
+  damageDealing: boolean
 ): SyntheticCharacter {
   const w = MODAL_WEAPON[weapon];
   return {
@@ -115,15 +171,36 @@ export const CARRY_RL = 'carry-rl';
 // The MG ammo-burn partner (zero damage, B3/40s so it never displaces a real stage
 // pick — on the burst-gen board bursts are disabled anyway; only its belt matters).
 export const NOOP_MG_CHAR = synthetic(
-  NOOP_MG, 'No-op MG partner', 'III', 40, 'MG', 'Supporter', SUPPORTER_BASE_STATS, false,
+  NOOP_MG,
+  'No-op MG partner',
+  'III',
+  40,
+  'MG',
+  'Supporter',
+  SUPPORTER_BASE_STATS,
+  false
 );
 
 // The buffer board's two standard carries (damage-dealing B3/40s).
 export const CARRY_MG_CHAR = synthetic(
-  CARRY_MG, 'Standard Carry (MG)', 'III', 40, 'MG', 'Attacker', ATTACKER_BASE_STATS, true,
+  CARRY_MG,
+  'Standard Carry (MG)',
+  'III',
+  40,
+  'MG',
+  'Attacker',
+  ATTACKER_BASE_STATS,
+  true
 );
 export const CARRY_RL_CHAR = synthetic(
-  CARRY_RL, 'Standard Carry (RL)', 'III', 40, 'RL', 'Attacker', ATTACKER_BASE_STATS, true,
+  CARRY_RL,
+  'Standard Carry (RL)',
+  'III',
+  40,
+  'RL',
+  'Attacker',
+  ATTACKER_BASE_STATS,
+  true
 );
 
 // Clone a standard carry onto another weapon class's modal stats (typed buffer
@@ -132,16 +209,23 @@ export const CARRY_RL_CHAR = synthetic(
 export function carryWithWeapon(weapon: Weapon): SyntheticCharacter {
   const slug = `carry-${weapon.toLowerCase()}`;
   return synthetic(
-    slug, `Standard Carry (${weapon})`, 'III', 40, weapon, 'Attacker', ATTACKER_BASE_STATS, true,
+    slug,
+    `Standard Carry (${weapon})`,
+    'III',
+    40,
+    weapon,
+    'Attacker',
+    ATTACKER_BASE_STATS,
+    true
   );
 }
 
 // Lookup for every synthetic this module can mint (fixed trio + carry weapon variants).
 export function syntheticFor(slug: string): SyntheticCharacter | undefined {
-  if (slug === NOOP_MG) return NOOP_MG_CHAR;
-  if (slug === CARRY_MG) return CARRY_MG_CHAR;
-  if (slug === CARRY_RL) return CARRY_RL_CHAR;
+  if (slug === NOOP_MG) {return NOOP_MG_CHAR;}
+  if (slug === CARRY_MG) {return CARRY_MG_CHAR;}
+  if (slug === CARRY_RL) {return CARRY_RL_CHAR;}
   const m = /^carry-(mg|rl|sg|ar|sr|smg)$/.exec(slug);
-  if (m) return carryWithWeapon(m[1].toUpperCase() as Weapon);
+  if (m) {return carryWithWeapon(m[1].toUpperCase() as Weapon);}
   return undefined;
 }

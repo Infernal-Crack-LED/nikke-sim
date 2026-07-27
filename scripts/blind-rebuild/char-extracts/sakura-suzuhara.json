@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "ss"
-    ],
+    "nicknames": ["ss"],
     "skills": {
       "skill1": "■ Activates after landing 120 normal attacks. Affects the target(s).\nDamage Taken ▲ 17.18% for 5 sec.",
       "skill2": "■ Activates after landing 60 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nIncoming healing ▲ 15.18% for 10 sec.\n■ Activates after landing 120 normal attacks. Affects the 2 ally unit(s) with the lowest HP percentage.\nDamage Taken ▼ 14.97% for 10 sec.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -338,16 +332,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects {description_value_01} ally unit(s) with the lowest HP percentage.\n<color=#00AEFF>Recovers {description_value_02}% of the skill user's <word_group=10025>final</word_group> Max HP every 1 sec for {description_value_03} sec.</color>",
           "description_value_list": [
@@ -404,18 +389,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            0
-          ],
-          "after_hurt_function_id_list": [
-            183630101
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [183630101],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -440,9 +417,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -473,9 +448,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Sakura's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

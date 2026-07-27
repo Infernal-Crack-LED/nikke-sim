@@ -98,10 +98,10 @@ function run(overrides: Record<string, any> = {}) {
 /** N1 nearest-wrong: S1 ally block scoped to self (coreDamagePct no longer reaches the team). */
 const nayutaS1Self = withPatchedOverride('nayuta', (ov) => {
   const b = ov.skill1.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'coreDamagePct'),
+    x.effects.some((e: any) => e.stat === 'coreDamagePct')
   );
   if (!b)
-    throw new Error('nayuta S1 coreDamagePct block missing — fixture is stale');
+    {throw new Error('nayuta S1 coreDamagePct block missing — fixture is stale');}
   b.target = { kind: 'self' };
 });
 /** N2 encoding reference: S1 casterAtkPct → atkPct (% of each ally's OWN ATK, not nayuta's flat). */
@@ -110,19 +110,19 @@ const nayutaS1AtkPct = withPatchedOverride('nayuta', (ov) => {
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
   if (!e)
-    throw new Error('nayuta S1 casterAtkPct effect missing — fixture is stale');
+    {throw new Error('nayuta S1 casterAtkPct effect missing — fixture is stale');}
   e.stat = 'atkPct';
 });
 /** N3 nearest-wrong: the Memory-Incineration full-charge rider removed. */
 const nayutaNoRider = withPatchedOverride('nayuta', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct')
   );
   if (ov.skill1.length === before)
-    throw new Error(
-      'nayuta S1 extraHitDamagePct rider missing — fixture is stale',
-    );
+    {throw new Error(
+      'nayuta S1 extraHitDamagePct rider missing — fixture is stale'
+    );}
 });
 /** N4/N5/N6 nearest-wrong: the naive FULL-from-t0 stack values (ramp ignored). */
 const nayutaFullStacks = withPatchedOverride('nayuta', (ov) => {
@@ -133,23 +133,23 @@ const nayutaFullStacks = withPatchedOverride('nayuta', (ov) => {
   };
   let patched = 0;
   for (const b of ov.skill2)
-    for (const e of b.effects)
-      if (e.stat in map) {
+    {for (const e of b.effects)
+      {if (e.stat in map) {
         e.value = map[e.stat];
         patched++;
-      }
+      }}}
   if (patched < 3)
-    throw new Error('nayuta S2 stack-gate buffs missing — fixture is stale');
+    {throw new Error('nayuta S2 stack-gate buffs missing — fixture is stale');}
 });
 /** N7 nearest-wrong: burst Attack Damage scoped to self. */
 const nayutaBurstSelf = withPatchedOverride('nayuta', (ov) => {
   const b = ov.burst.find((x: any) =>
-    x.effects.some((e: any) => e.stat === 'attackDamagePct'),
+    x.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
   if (!b)
-    throw new Error(
-      'nayuta burst attackDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'nayuta burst attackDamagePct block missing — fixture is stale'
+    );}
   b.target = { kind: 'self' };
 });
 /** N9 nearest-wrong: Memory Incineration removed. The S1 full-charge rider (extraHitDamagePct
@@ -162,16 +162,16 @@ const nayutaNoSwap = withPatchedOverride('nayuta', (ov) => {
   for (const b of ov.burst) {
     const before = b.effects.length;
     b.effects = b.effects.filter((e: any) => e.kind !== 'weaponSwap');
-    if (b.effects.length !== before) swapped++;
+    if (b.effects.length !== before) {swapped++;}
   }
   const beforeS1 = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct'),
+    (b: any) => !b.effects.some((e: any) => e.stat === 'extraHitDamagePct')
   );
   if (!swapped || ov.skill1.length === beforeS1)
-    throw new Error(
-      'nayuta Memory Incineration blocks missing — fixture is stale',
-    );
+    {throw new Error(
+      'nayuta Memory Incineration blocks missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -190,7 +190,7 @@ const dmg = (evs: SimEvent[]) =>
   evs.filter((e): e is Damage => e.kind === 'damage');
 const nayutaCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'nayuta',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'nayuta'
   );
 /** nayuta-cast buffApply by exact key (key carries the raw kit magnitude; value is the resolved stat). */
 const nayutaBuff = (evs: SimEvent[], key: string) =>
@@ -202,12 +202,12 @@ const swapShots = (evs: SimEvent[]) =>
     (d) =>
       d.slug === 'nayuta' &&
       d.bucket === 'normal' &&
-      Math.abs(d.atkPct - 275.18) < 1e-6,
+      Math.abs(d.atkPct - 275.18) < 1e-6
   );
 /** nayuta's Memory-Incineration rider hits (150% + 380.46% folded). */
 const riderHits = (evs: SimEvent[]) =>
   dmg(evs).filter(
-    (d) => d.slug === 'nayuta' && Math.abs(d.atkPct - 530.46) < 1e-6,
+    (d) => d.slug === 'nayuta' && Math.abs(d.atkPct - 530.46) < 1e-6
   );
 
 const S1_CORE_KEY = `${NAYUTA}:skill1:coreDamagePct:25.15`;
@@ -225,12 +225,12 @@ describe('nayuta — kit spec', () => {
     it('is 25.15% reaching all four allies, with no expiry (always-up passive)', () => {
       expect(
         applied.length,
-        'no S1 coreDamagePct 25.15 buff was applied',
+        'no S1 coreDamagePct 25.15 buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([25.15]);
       expect(
         holders(applied).size,
-        `reached ${holders(applied).size} allies, expected 4`,
+        `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
@@ -239,7 +239,7 @@ describe('nayuta — kit spec', () => {
       const cf = nayutaBuff(s1Self.events, S1_CORE_KEY);
       expect(
         [...holders(cf)],
-        'self-only counterfactual must reach only nayuta',
+        'self-only counterfactual must reach only nayuta'
       ).toEqual([NAYUTA]);
     });
   });
@@ -251,7 +251,7 @@ describe('nayuta — kit spec', () => {
     it("is a FLAT add of nayuta's ATK (value ≈ 0.3016×staticAtk, >> a percentage)", () => {
       expect(
         applied.length,
-        'no S1 casterAtkPct buff was applied',
+        'no S1 casterAtkPct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.stat))]).toEqual([
         'casterAtkPct',
@@ -259,7 +259,7 @@ describe('nayuta — kit spec', () => {
       for (const b of applied) {
         expect(
           b.value,
-          'casterAtkPct must record a flat ATK grant, not the raw 30.16',
+          'casterAtkPct must record a flat ATK grant, not the raw 30.16'
         ).toBeGreaterThan(1000);
         expect(b.value).toBeCloseTo(expectedFlat, 4);
       }
@@ -268,11 +268,11 @@ describe('nayuta — kit spec', () => {
     it('reaches all four allies with the SAME flat value, no expiry', () => {
       expect(
         holders(applied).size,
-        `reached ${holders(applied).size} allies, expected 4`,
+        `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
       expect(
         [...new Set(applied.map((b) => b.value))].length,
-        'value must be identical for every ally',
+        'value must be identical for every ally'
       ).toBe(1);
       expect([...new Set(applied.map((b) => b.expiresFrame))]).toEqual([null]);
     });
@@ -282,16 +282,16 @@ describe('nayuta — kit spec', () => {
         buffs(s1AtkPct.events).filter(
           (b) =>
             b.casterIdx === NAYUTA &&
-            b.key.startsWith(`${NAYUTA}:skill1:casterAtkPct`),
-        ).length,
+            b.key.startsWith(`${NAYUTA}:skill1:casterAtkPct`)
+        ).length
       ).toBe(0);
       expect(
         buffs(s1AtkPct.events).filter(
           (b) =>
             b.casterIdx === NAYUTA &&
             b.stat === 'atkPct' &&
-            b.key.startsWith(`${NAYUTA}:skill1:`),
-        ).length,
+            b.key.startsWith(`${NAYUTA}:skill1:`)
+        ).length
       ).toBeGreaterThan(0);
     });
 
@@ -306,11 +306,11 @@ describe('nayuta — kit spec', () => {
     it('is applied to self on every burst cast, for 10 sec', () => {
       expect(
         applied.length,
-        'no S1 extraHitDamagePct 530.46 buff was applied',
+        'no S1 extraHitDamagePct 530.46 buff was applied'
       ).toBe(nayutaCasts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([530.46]);
       expect([...holders(applied)]).toEqual([NAYUTA]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('emits one 530.46% hit per swapped full charge (rider is live, not inert)', () => {
@@ -319,7 +319,7 @@ describe('nayuta — kit spec', () => {
       expect(hits.length, 'no 530.46% rider hits').toBeGreaterThan(0);
       expect(
         hits.length,
-        `${hits.length} rider hits vs ${shots.length} swap shots — expected one rider per full charge`,
+        `${hits.length} rider hits vs ${shots.length} swap shots — expected one rider per full charge`
       ).toBe(shots.length);
     });
 
@@ -338,7 +338,7 @@ describe('nayuta — kit spec', () => {
       ] as const) {
         const applied = nayutaBuff(base.events, key);
         expect(applied.length, `no S2 ${key} buff was applied`).toBeGreaterThan(
-          0,
+          0
         );
         expect([...new Set(applied.map((b) => b.value))]).toEqual([value]);
         expect([...holders(applied)], `${key} must be self-only`).toEqual([
@@ -365,28 +365,28 @@ describe('nayuta — kit spec', () => {
       const casts = nayutaCasts(base.events).length;
       expect(
         applied.length,
-        'no burst attackDamagePct 35.45 buff was applied',
+        'no burst attackDamagePct 35.45 buff was applied'
       ).toBe(casts * 4);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([35.45]);
       expect(
         holders(applied).size,
-        `reached ${holders(applied).size} allies, expected 4`,
+        `reached ${holders(applied).size} allies, expected 4`
       ).toBe(4);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
     });
 
     it('DISCRIMINATING: a self-only model collapses the holder set to nayuta alone', () => {
       const cf = nayutaBuff(burstSelf.events, BU_DMG_KEY);
       expect(
         [...holders(cf)],
-        'self-only counterfactual must reach only nayuta',
+        'self-only counterfactual must reach only nayuta'
       ).toEqual([NAYUTA]);
     });
   });
 
   describe('N8 — burst nuke: 645.33% of final ATK to all enemies, cast BEFORE the FB window', () => {
     const nukes = dmg(base.events).filter(
-      (d) => d.slug === 'nayuta' && d.srcSlot === 'burst',
+      (d) => d.slug === 'nayuta' && d.srcSlot === 'burst'
     );
 
     it('fires once per burst cast at the kit magnitude, in the burst bucket', () => {
@@ -398,7 +398,7 @@ describe('nayuta — kit spec', () => {
 
     it('never takes the +50% Full Burst major (the cast lands before FB opens)', () => {
       expect(nukes.filter((d) => d.fbMajorApplied).map((d) => d.sec)).toEqual(
-        [],
+        []
       );
     });
   });
@@ -408,11 +408,11 @@ describe('nayuta — kit spec', () => {
       const shots = swapShots(base.events);
       expect(
         shots.length,
-        'no swapped full-charge shots — Memory Incineration never fired',
+        'no swapped full-charge shots — Memory Incineration never fired'
       ).toBeGreaterThan(0);
       expect(
         [...new Set(shots.map((d) => d.mult.charge))],
-        'swap full charge = 250% of damage → ×2.5',
+        'swap full charge = 250% of damage → ×2.5'
       ).toEqual([2.5]);
     });
 
@@ -433,20 +433,20 @@ describe('nayuta — kit spec', () => {
       // property of the fixture, not the kit (mirrors helm H8).
       const FIGHT_FRAMES = 180 * FPS;
       const casts = nayutaCasts(base.events).filter(
-        (c) => c.frame + 10 * FPS <= FIGHT_FRAMES,
+        (c) => c.frame + 10 * FPS <= FIGHT_FRAMES
       );
       const shots = swapShots(base.events);
       expect(
         casts.length,
-        'fixture produced no burst with a full window',
+        'fixture produced no burst with a full window'
       ).toBeGreaterThan(0);
       for (const cast of casts) {
         const inWindow = shots.filter(
-          (s) => s.frame >= cast.frame && s.frame <= cast.frame + 10 * FPS,
+          (s) => s.frame >= cast.frame && s.frame <= cast.frame + 10 * FPS
         );
         expect(
           inWindow.length,
-          `burst at ${(cast.frame / FPS).toFixed(1)}s produced no swapped full charge`,
+          `burst at ${(cast.frame / FPS).toFixed(1)}s produced no swapped full charge`
         ).toBeGreaterThanOrEqual(1);
       }
     });
@@ -454,11 +454,11 @@ describe('nayuta — kit spec', () => {
     it('encodes unlimitedAmmo alongside the swap (10s)', () => {
       const ov: any = withPatchedOverride('nayuta', () => {});
       const blk = ov.burst.find((b: any) =>
-        b.effects.some((e: any) => e.kind === 'unlimitedAmmo'),
+        b.effects.some((e: any) => e.kind === 'unlimitedAmmo')
       );
       expect(blk, 'no burst unlimitedAmmo block').toBeTruthy();
       expect(
-        blk.effects.find((e: any) => e.kind === 'unlimitedAmmo').durationSec,
+        blk.effects.find((e: any) => e.kind === 'unlimitedAmmo').durationSec
       ).toBe(10);
     });
   });

@@ -9,9 +9,24 @@
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "critRatePct", "value": 6.26, "durationSec": 45 },
-            { "kind": "buff", "stat": "critDamagePct", "value": 18.03, "durationSec": 45 },
-            { "kind": "buff", "stat": "atkPct", "value": 17.28, "durationSec": 45 }
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 6.26,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 18.03,
+              "durationSec": 45
+            },
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 17.28,
+              "durationSec": 45
+            }
           ]
         }
       ]
@@ -23,7 +38,12 @@
       "trigger": { "kind": "passive" },
       "target": { "kind": "enemy" },
       "effects": [
-        { "kind": "dot", "atkPct": 170.58, "durationSec": 9999, "intervalSec": 14.7 }
+        {
+          "kind": "dot",
+          "atkPct": 170.58,
+          "durationSec": 9999,
+          "intervalSec": 14.7
+        }
       ]
     }
   ],
@@ -32,9 +52,7 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "enemy" },
-      "effects": [
-        { "kind": "flatDamage", "atkPct": 149.85 }
-      ]
+      "effects": [{ "kind": "flatDamage", "atkPct": 149.85 }]
     },
     {
       "slot": "burst",
@@ -44,7 +62,12 @@
         {
           "kind": "escalating",
           "steps": [
-            { "kind": "buff", "stat": "damageTakenPct", "value": 39.96, "durationSec": 5 },
+            {
+              "kind": "buff",
+              "stat": "damageTakenPct",
+              "value": 39.96,
+              "durationSec": 5
+            },
             { "kind": "flatDamage", "atkPct": 299.7 },
             { "kind": "flatDamage", "atkPct": 349.65 }
           ]
@@ -55,9 +78,7 @@
       "slot": "burst",
       "trigger": { "kind": "burstCast" },
       "target": { "kind": "allies" },
-      "effects": [
-        { "kind": "fullBurstExtend", "seconds": -5 }
-      ]
+      "effects": [{ "kind": "fullBurstExtend", "seconds": -5 }]
     }
   ]
 }

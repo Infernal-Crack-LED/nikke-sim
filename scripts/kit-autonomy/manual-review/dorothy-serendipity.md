@@ -11,7 +11,7 @@ OVERSPEC. **This is the SG variant — a different unit from the AR/Water base a
 **Verdict:** 🟢 **GO (cross-family corroborated)** · faithfulness **1.0** (10 FAITHFUL, 2 DOCUMENTED_GAP) ·
 **0 silent drops, 0 REAL-GOTCHA, 2 non-blocking FIDELITY residuals** · S2b claude-fable-5, S5/S6/S7 claude-opus-5
 (all cross-family). Both blind models independently re-derived every load-bearing line; S2b and S6 independently
-named the *same* two tricky points the driver had already resolved by measurement (the pellet-vs-round trigger
+named the _same_ two tricky points the driver had already resolved by measurement (the pellet-vs-round trigger
 and the pierce rounds-vs-seconds window). The S7 judge ruled the driver **strictly more faithful** than the blind
 on the pierce window (exact 3-shell window vs the blind's argued `durationSec 2.2`) and the pellet clamp
 ("fixed at 1" honoured literally — the burst's +5 is dropped, not summed to 6).
@@ -91,7 +91,7 @@ all 7 REDs as STRUCTURAL / RECON_ERROR / DOCUMENTED_GAP — not faithfulness dis
    ~0.13 residual is the shared SG-spray under-model (sim spray ~23M vs measured ~32M, ~1.4× short; noir 1.56×
    confirms), localized to noir's clean anchor.
 
-2. **Documentation-only note contradiction (low).** The override note's *lead* paragraph is superseded
+2. **Documentation-only note contradiction (low).** The override note's _lead_ paragraph is superseded
    pre-consolidation text claiming "'Pellet count fixed at 1' + 'Gains Pierce' are NOT modeled" and "pellet-count
    triggers map to hitCount" — which contradicts the consolidation block shipped below it (the note later self-marks
    "CONSOLIDATION MODE — CORRECTLY MODELED 2026-07-15 … SUPERSEDES an earlier misread"). The shipped JSON implements
@@ -100,7 +100,7 @@ all 7 REDs as STRUCTURAL / RECON_ERROR / DOCUMENTED_GAP — not faithfulness dis
    tread-lightly on hand-authored note history; the supersession is self-documented within the note.)
 
 **Same-model residual to watch:** all four agents share a model family pair (fable + opus), so their agreement on
-the FB-state keying and the 15s-outlives-10s duration split proves *stability*, not truth. The one thing only
+the FB-state keying and the 15s-outlives-10s duration split proves _stability_, not truth. The one thing only
 footage settles is the consolidation episode **cadence** — exactly residual (1).
 
 ---

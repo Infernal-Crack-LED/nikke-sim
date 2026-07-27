@@ -45,7 +45,10 @@ Key query for this work:
 
 ```graphql
 query SRRankings($raid: Float!, $all: Boolean) {
-  SRRankings(raid: $raid, all: $all) { damage teams }
+  SRRankings(raid: $raid, all: $all) {
+    damage
+    teams
+  }
 }
 ```
 
@@ -120,7 +123,7 @@ MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json \
    priority; the modeled ones can seed new `/sim-battery` anchors.
 4. A new raid changes the union, so **regenerate the full snapshot + keep-filter
    together** with the canonical command above (`MD=…docs/enikk-top100-audit.md
-   SUPPORTED=data/enikk-supported.json … RAIDS=<all raids incl. the new one>`) —
+SUPPORTED=data/enikk-supported.json … RAIDS=<all raids incl. the new one>`) —
    otherwise `data/enikk-supported.json` (and the `sync.ts` prune) goes stale
    against the new meta. Then re-apply the support policy: model any newly
    enikk-proven unit, and the next `npm run sync` will keep them.
@@ -140,4 +143,3 @@ MD=docs/enikk-top100-audit.md SUPPORTED=data/enikk-supported.json \
 ```sh
 npx tsx scripts/enikk/roster-audit.ts   # exits 0, prints the per-raid + union report
 ```
-

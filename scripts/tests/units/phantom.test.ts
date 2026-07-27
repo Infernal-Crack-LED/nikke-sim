@@ -120,7 +120,7 @@ const dropBlock =
     const before = ov[slot].length;
     ov[slot] = ov[slot].filter((b: any) => !b.effects.some(pred));
     if (ov[slot].length === before)
-      throw new Error(`phantom ${slot} block missing — fixture is stale`);
+      {throw new Error(`phantom ${slot} block missing — fixture is stale`);}
   };
 
 const noStatus = dropBlock('skill1', (e) => e.kind === 'targetStatus'); // P1: closes both gates
@@ -128,34 +128,33 @@ const noStatus = dropBlock('skill1', (e) => e.kind === 'targetStatus'); // P1: c
 function noTreasureGrant(ov: any) {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter(
-    (b: any) => !(b.trigger.kind === 'hitCount' && b.trigger.count === 30),
+    (b: any) => !(b.trigger.kind === 'hitCount' && b.trigger.count === 30)
   );
   if (ov.skill1.length === before)
-    throw new Error(
-      'phantom treasure hitCount:30 block missing — fixture is stale',
-    );
+    {throw new Error(
+      'phantom treasure hitCount:30 block missing — fixture is stale'
+    );}
 }
 /** P4 nearest-wrong #1: the Attack Damage gate removed (always-on, 100% duty). */
 function ungatedAttackDamage(ov: any) {
   const b = ov.skill1.find((x: any) =>
     x.effects.some(
-      (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct',
-    ),
+      (e: any) => e.kind === 'buff' && e.stat === 'attackDamagePct'
+    )
   );
   if (!b || !b.requiresTargetStatus)
-    throw new Error(
-      'phantom gated attackDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'phantom gated attackDamagePct block missing — fixture is stale'
+    );}
   delete b.requiresTargetStatus;
 }
 const noConsume = dropBlock(
   'skill2',
-  (e) => e.kind === 'flatDamage' && e.atkPct === 84.33,
+  (e) => e.kind === 'flatDamage' && e.atkPct === 84.33
 ); // P5/P6/P7
 const noDistAmp = dropBlock(
   'skill2',
-  (e) =>
-    e.kind === 'buff' && e.stat === 'distributedDamagePct' && e.perResource,
+  (e) => e.kind === 'buff' && e.stat === 'distributedDamagePct' && e.perResource
 ); // P7
 /** P7 counterfactual: the burst no longer resets distAmp (pool pins at cap after the first ramp). */
 function noDistAmpReset(ov: any) {
@@ -163,49 +162,48 @@ function noDistAmpReset(ov: any) {
   ov.burst = ov.burst.filter(
     (b: any) =>
       !b.effects.some(
-        (e: any) =>
-          e.kind === 'resource' && e.name === 'distAmp' && e.delta < 0,
-      ),
+        (e: any) => e.kind === 'resource' && e.name === 'distAmp' && e.delta < 0
+      )
   );
   if (ov.burst.length === before)
-    throw new Error(
-      'phantom burst distAmp reset block missing — fixture is stale',
-    );
+    {throw new Error(
+      'phantom burst distAmp reset block missing — fixture is stale'
+    );}
 }
 const noS2L4 = dropBlock(
   'skill2',
-  (e) => e.kind === 'buff' && e.stat === 'atkPct',
+  (e) => e.kind === 'buff' && e.stat === 'atkPct'
 ); // P8
 /** P2 counterfactual: the dagger tracked as always-at-max (flat 77.25%) instead of a live pool. */
 function hitRateFlatMax(ov: any) {
   const b = ov.skill1.find((x: any) =>
     x.effects.some(
-      (e: any) => e.kind === 'buff' && e.stat === 'hitRatePct' && e.perResource,
-    ),
+      (e: any) => e.kind === 'buff' && e.stat === 'hitRatePct' && e.perResource
+    )
   );
   if (!b)
-    throw new Error(
-      'phantom perResource hitRatePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'phantom perResource hitRatePct block missing — fixture is stale'
+    );}
   const e = b.effects.find((x: any) => x.stat === 'hitRatePct');
   delete e.perResource;
   e.value = 77.25; // 3 × 25.75 — the max-stacks magnitude held permanently
 }
 const noHitRate = dropBlock(
   'skill1',
-  (e) => e.kind === 'buff' && e.stat === 'hitRatePct',
+  (e) => e.kind === 'buff' && e.stat === 'hitRatePct'
 ); // P2
 const noNuke = dropBlock(
   'burst',
-  (e) => e.kind === 'flatDamage' && e.atkPct === 1457.28,
+  (e) => e.kind === 'flatDamage' && e.atkPct === 1457.28
 ); // P9
 const noVuln = dropBlock(
   'burst',
-  (e) => e.kind === 'buff' && e.stat === 'damageTakenPct',
+  (e) => e.kind === 'buff' && e.stat === 'damageTakenPct'
 ); // P10
 const noAmmo = dropBlock(
   'burst',
-  (e) => e.kind === 'buff' && e.stat === 'maxAmmoPct',
+  (e) => e.kind === 'buff' && e.stat === 'maxAmmoPct'
 ); // P11
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -234,7 +232,7 @@ const fbCount = (evs: SimEvent[]) =>
   evs.filter((e): e is FbStart => e.kind === 'fullBurstStart').length;
 const phantomCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom'
   ).length;
 const phantomShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'phantom')
@@ -246,10 +244,10 @@ const pBuffs = (evs: SimEvent[], stat: string) =>
 const pHits = (
   evs: SimEvent[],
   srcSlot: 'skill1' | 'skill2' | 'burst',
-  atkPct: number,
+  atkPct: number
 ) =>
   damages(evs).filter(
-    (d) => d.slug === 'phantom' && d.srcSlot === srcSlot && d.atkPct === atkPct,
+    (d) => d.slug === 'phantom' && d.srcSlot === srcSlot && d.atkPct === atkPct
   );
 
 // ---- derived constants ------------------------------------------------------------------------
@@ -261,16 +259,16 @@ const distHits = pHits(base.events, 'skill2', 250);
 
 // sanity: the fixture must actually exercise the kit (bursts cast, cycle run many times)
 if (casts < 3)
-  throw new Error(
-    'fixture stale: phantom must cast >= 3 bursts in the 180s window',
-  );
+  {throw new Error(
+    'fixture stale: phantom must cast >= 3 bursts in the 180s window'
+  );}
 if (consumeHits.length < 10)
-  throw new Error('fixture stale: the dagger cycle must consume >= 10 times');
+  {throw new Error('fixture stale: the dagger cycle must consume >= 10 times');}
 
 describe('phantom (Treasure) — kit spec', () => {
   describe('P1 — S1 Calling Card status window gates the kit (DEF content inert)', () => {
     const atkDmg = pBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 75.17,
+      (b) => b.value === 75.17
     );
 
     it('the gated Attack Damage buff applies throughout (the window self-extends on every shot)', () => {
@@ -282,8 +280,8 @@ describe('phantom (Treasure) — kit spec', () => {
       // no Calling Card → no Attack Damage applies AND the consume (requiresTargetStatus) never fires.
       expect(
         pBuffs(rNoStatus.events, 'attackDamagePct').filter(
-          (b) => b.value === 75.17,
-        ).length,
+          (b) => b.value === 75.17
+        ).length
       ).toBe(0);
       expect(pHits(rNoStatus.events, 'skill2', 84.33).length).toBe(0);
       expect(base.totals.phantom).toBeGreaterThan(rNoStatus.totals.phantom);
@@ -316,7 +314,7 @@ describe('phantom (Treasure) — kit spec', () => {
       const noTreasureConsumes = pHits(
         rNoTreasure.events,
         'skill2',
-        84.33,
+        84.33
       ).length;
       // with treasure: 3 gains / 60 hits (magazine start + 2× every-30) → consume every magazine;
       // without: 1 gain / 60 hits → consume every THIRD magazine.
@@ -334,13 +332,13 @@ describe('phantom (Treasure) — kit spec', () => {
 
   describe('P4 — S1 Attack Damage ▲75.17% for 1 round, gated on Calling Card (59/60 duty)', () => {
     const atkDmg = pBuffs(base.events, 'attackDamagePct').filter(
-      (b) => b.value === 75.17,
+      (b) => b.value === 75.17
     );
 
     it('is self-scoped, round-count scoped (durationShots), and rides ~all shots (self-extending window)', () => {
       expect(atkDmg.length).toBeGreaterThan(0);
       expect([...new Set(atkDmg.map((b) => b.targetIdx))]).toEqual([PHANTOM]);
-      for (const b of atkDmg) expect(b.durationShots).toBe(2); // kit "1 round" + engine-order compensation (header)
+      for (const b of atkDmg) {expect(b.durationShots).toBe(2);} // kit "1 round" + engine-order compensation (header)
       // duty: applies on every shot but the battle's first (the sole application event) — the
       // self-extending window keeps the gate open for the whole fight under continuous fire.
       const duty = atkDmg.length / shots;
@@ -378,7 +376,7 @@ describe('phantom (Treasure) — kit spec', () => {
   describe('P6 — S2 consume: 250% final ATK Distributed Damage to all enemies, removes the stacks', () => {
     it('pairs 1:1 with the 84.33 hit and every hit carries a live distributed multiplier', () => {
       expect(distHits.length).toBe(consumeHits.length);
-      for (const d of distHits) expect(d.mult.distributed).toBeGreaterThan(1); // S2L4 31.92% is live at every consume
+      for (const d of distHits) {expect(d.mult.distributed).toBeGreaterThan(1);} // S2L4 31.92% is live at every consume
     });
 
     it('the cycle restarts after each consume (stacks removed): consumes keep coming, one per magazine', () => {
@@ -390,7 +388,7 @@ describe('phantom (Treasure) — kit spec', () => {
 
   describe('P7 — S2 Distributed Damage ▲12.86% continuously ×3, removed on burst use (distAmp pool)', () => {
     const reader = pBuffs(base.events, 'distributedDamagePct').filter(
-      (b) => b.value === 0,
+      (b) => b.value === 0
     );
 
     it('is a frame-0 duration-less perResource reader (value 0 + live pool)', () => {
@@ -408,7 +406,7 @@ describe('phantom (Treasure) — kit spec', () => {
       // counterfactual reads the permanent cap (high).
       const burstFrames = base.events
         .filter(
-          (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom',
+          (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom'
         )
         .map((e) => e.frame);
       const after2nd = distHits.filter((d) => d.frame > burstFrames[1]);
@@ -417,14 +415,14 @@ describe('phantom (Treasure) — kit spec', () => {
       expect(minShipped).toBeLessThan(1.4); // just after a reset: 0-1 stacks on top of S2L4's 31.92%
       const noResetFrames = rNoReset.events
         .filter(
-          (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom',
+          (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'phantom'
         )
         .map((e) => e.frame);
       const noResetAfter2nd = pHits(rNoReset.events, 'skill2', 250).filter(
-        (d) => d.frame > noResetFrames[1],
+        (d) => d.frame > noResetFrames[1]
       );
       const minNoReset = Math.min(
-        ...noResetAfter2nd.map((d) => d.mult.distributed),
+        ...noResetAfter2nd.map((d) => d.mult.distributed)
       );
       expect(minNoReset).toBeGreaterThan(1.6); // pinned at cap 3: 1 + 31.92% + 3×12.86% = 1.705
     });
@@ -433,7 +431,7 @@ describe('phantom (Treasure) — kit spec', () => {
   describe('P8 — S2 every 10 normal attacks: ATK ▲85.12% / 5s + Distributed Damage ▲31.92% / 10s', () => {
     const atk = pBuffs(base.events, 'atkPct').filter((b) => b.value === 85.12);
     const dist = pBuffs(base.events, 'distributedDamagePct').filter(
-      (b) => b.value === 31.92,
+      (b) => b.value === 31.92
     );
 
     it('fire once per 10 shots, self-scoped, with exact 5s / 10s durations', () => {
@@ -443,7 +441,7 @@ describe('phantom (Treasure) — kit spec', () => {
         expect(b.targetIdx).toBe(PHANTOM);
         expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
       }
-      for (const b of dist) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of dist) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       // apply count tracks hits / 10 (refreshes collapse re-applies inside the 10s window — count is
       // a lower bound well above zero and far below the shot count).
       expect(atk.length).toBeLessThanOrEqual(Math.floor(shots / 10));
@@ -477,7 +475,7 @@ describe('phantom (Treasure) — kit spec', () => {
     // boss-held debuffs emit casterIdx === null && targetIdx === null — filter by stat+value.
     const bossDebuffs = (evs: SimEvent[], stat: string, value: number) =>
       buffs(evs).filter(
-        (b) => b.stat === stat && b.value === value && b.targetIdx === null,
+        (b) => b.stat === stat && b.value === value && b.targetIdx === null
       );
     const vuln = bossDebuffs(base.events, 'damageTakenPct', 18);
 
@@ -491,7 +489,7 @@ describe('phantom (Treasure) — kit spec', () => {
 
     it("is load-bearing vs Fire: removing it drops the WHOLE team's totals (team-wide vuln)", () => {
       for (const s of COMP)
-        expect(base.totals[s]).toBeGreaterThanOrEqual(rNoVuln.totals[s]);
+        {expect(base.totals[s]).toBeGreaterThanOrEqual(rNoVuln.totals[s]);}
       expect(base.totals.phantom).toBeGreaterThan(rNoVuln.totals.phantom);
     });
 
@@ -503,7 +501,7 @@ describe('phantom (Treasure) — kit spec', () => {
 
   describe('P11 — burst: self Max Ammunition Capacity ▲50% / 10s', () => {
     const ammo = pBuffs(base.events, 'maxAmmoPct').filter(
-      (b) => b.value === 50,
+      (b) => b.value === 50
     );
 
     it('is 50%, self-scoped, 10s, once per phantom cast', () => {

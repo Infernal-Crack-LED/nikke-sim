@@ -9,6 +9,7 @@ description: Build batches of teams for someone to record in-game (owner's own r
 
 Build batches of teams for someone to record in-game, so we can hand-tune the
 sim against real fights. Two consumers:
+
 - The **owner's own recording batch** — teams built from units the owner owns,
   for them to run and screenshot/video.
 - The **community Testing Requests page** — teams featuring units the owner does

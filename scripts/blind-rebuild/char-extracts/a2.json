@@ -69,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\nUnleashes sword energy for an attack of large range. \n<color=#00AEFF>Deals {damage}% of ATK as damage.\nCharge Time: {charge_time} sec.\nFull Charge Damage: {full_charge_damage}% of damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 84,
           "spot_explosion_range": 750,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 300,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -284,16 +280,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects self.\n<color=#00AEFF>Mode B:\nOwn HP decreases every second while ATK and Charge Speed increase. If own HP dips below {description_value_01}%, Mode B is removed.\nEffect 1: Current HP ▼ {description_value_02}% every 1 sec.\nEffect 2: ATK ▲ {description_value_03}%\nEffect 3: Charge Speed ▲ {description_value_04}%.</color>",
           "description_value_list": [
@@ -364,20 +351,11 @@
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
           "after_use_function_id_list": [
-            181130101,
-            181130102,
-            181130103,
-            181130104
+            181130101, 181130102, 181130103, 181130104
           ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -402,9 +380,7 @@
         }
       },
       "element": {
-        "element_id": [
-          100001
-        ],
+        "element_id": [100001],
         "element_details": [
           {
             "id": 100001,
@@ -435,9 +411,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "A2's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

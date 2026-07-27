@@ -10,17 +10,17 @@ Slot order below is exact (leftmost-first burst priority depends on it). "Boss" 
 weakness to select (boss element in parens) — chosen so themed kits get their advantage.
 Site mode pills to set are listed per run. Sim predictions verified: no unexpected stalls.
 
-| run | slots 1→5 | boss | probes (anchors) | modes / notes |
-|---|---|---|---|---|
-| A | anis-star · prika · mint · alice · red-hood | wind weak (Iron) | prika, mint, alice, red-hood (anis) | prika+mint = duet modes (Prika auto-takes the FIRST B2 regardless of slot order — burstFirst rule); red-hood operates as B3. Rotation is genuinely slow for this comp shape (~50% uptime) — expected, sim models it |
-| B | moran · trina · cinderella · neon-VE | elec weak (Water) | moran, trina (cindy, neon) | 4-unit comp (no 5th needed — 12 FBs, no stall); trina's single-target buff lands on the elec carries |
-| C | anis-star · tia · naga · SWHA · helm | water weak (Fire) | tia, naga (anis, SWHA, helm) | naga mode "with shielder" (tia IS the shielder); tia flexes as 2nd B1, her S1 CDR/AD still fire |
-| D | emma-TU · eunhwa-TU · diesel-WS · helm | fire weak (Wind) | emma-TU, eunhwa-TU, diesel-WS (helm) | 4-unit comp per user; emma+eunhwa = duo modes; ~50% uptime expected (emma's 40s B1 + 2x40s B3s, CD-bound — real matches). BONUS: helm bursts here (4x) — first live test of her 8236.8% nuke model |
-| E | rouge · crown · ein · ada · cinderella | elec weak (Water) | rouge, ein, ada (crown, cindy) | each unit judged on its OWN sim-vs-real (no delta methodology — too confounded); rouge's grant modeling surfaces as cindy reading hot/cold with rouge present |
-| F | maiden-IR SOLO (field only her) | elec weak (Water) | maiden | no B1/B2 → full burst never happens (sim + real alike): pure normals + her 547.62% proc. Sim prediction (range-band model): 96.1M total (35.3M normals + 60.8M procs). Real ≈104M → model right; ≈42M → proc ~absent outside FB; between → value/cadence partial |
-| G | d-killer-wife · takina · milk-BB · maxwell · liberalio | iron weak (Electric) | DKW, takina, milk-BB, maxwell (liberalio) | milk auto mode (default); tests DKW's fixed CDR cadence |
-| H | little-mermaid · crown · quency-EQ · dorothy-S · guillotine-WS | water weak (Fire) | quency-EQ, dorothy-S, xGuillo (LM, crown) | user lacks xLudmilla — xGuillo (fresh override) takes the slot; she never bursts here (slot 5), so her level auras/ramp get tested, not her burst dot |
-| I | anis-star · grave · chisato · jill · noir | elec weak (Water) | grave, chisato, jill, noir (anis) | |
+| run | slots 1→5                                                      | boss                 | probes (anchors)                          | modes / notes                                                                                                                                                                                                                                                    |
+| --- | -------------------------------------------------------------- | -------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A   | anis-star · prika · mint · alice · red-hood                    | wind weak (Iron)     | prika, mint, alice, red-hood (anis)       | prika+mint = duet modes (Prika auto-takes the FIRST B2 regardless of slot order — burstFirst rule); red-hood operates as B3. Rotation is genuinely slow for this comp shape (~50% uptime) — expected, sim models it                                              |
+| B   | moran · trina · cinderella · neon-VE                           | elec weak (Water)    | moran, trina (cindy, neon)                | 4-unit comp (no 5th needed — 12 FBs, no stall); trina's single-target buff lands on the elec carries                                                                                                                                                             |
+| C   | anis-star · tia · naga · SWHA · helm                           | water weak (Fire)    | tia, naga (anis, SWHA, helm)              | naga mode "with shielder" (tia IS the shielder); tia flexes as 2nd B1, her S1 CDR/AD still fire                                                                                                                                                                  |
+| D   | emma-TU · eunhwa-TU · diesel-WS · helm                         | fire weak (Wind)     | emma-TU, eunhwa-TU, diesel-WS (helm)      | 4-unit comp per user; emma+eunhwa = duo modes; ~50% uptime expected (emma's 40s B1 + 2x40s B3s, CD-bound — real matches). BONUS: helm bursts here (4x) — first live test of her 8236.8% nuke model                                                               |
+| E   | rouge · crown · ein · ada · cinderella                         | elec weak (Water)    | rouge, ein, ada (crown, cindy)            | each unit judged on its OWN sim-vs-real (no delta methodology — too confounded); rouge's grant modeling surfaces as cindy reading hot/cold with rouge present                                                                                                    |
+| F   | maiden-IR SOLO (field only her)                                | elec weak (Water)    | maiden                                    | no B1/B2 → full burst never happens (sim + real alike): pure normals + her 547.62% proc. Sim prediction (range-band model): 96.1M total (35.3M normals + 60.8M procs). Real ≈104M → model right; ≈42M → proc ~absent outside FB; between → value/cadence partial |
+| G   | d-killer-wife · takina · milk-BB · maxwell · liberalio         | iron weak (Electric) | DKW, takina, milk-BB, maxwell (liberalio) | milk auto mode (default); tests DKW's fixed CDR cadence                                                                                                                                                                                                          |
+| H   | little-mermaid · crown · quency-EQ · dorothy-S · guillotine-WS | water weak (Fire)    | quency-EQ, dorothy-S, xGuillo (LM, crown) | user lacks xLudmilla — xGuillo (fresh override) takes the slot; she never bursts here (slot 5), so her level auras/ramp get tested, not her burst dot                                                                                                            |
+| I   | anis-star · grave · chisato · jill · noir                      | elec weak (Water)    | grave, chisato, jill, noir (anis)         |                                                                                                                                                                                                                                                                  |
 
 Coverage: 27 probe units in 9 runs, every run carrying 1-3 validated anchors so probe error is
 attributable. Tail units not covered (lower priority, audited-clean, niche, or not owned): miranda:T, exia:T, asuka, rei-ayanami (not owned), soline-FT (40s mono-B1, stalls any comp she anchors), snow-white,
@@ -31,22 +31,23 @@ Per run, report: per-unit damage totals (+ who actually burst if it deviated fro
 
 ## RESULTS (2026-07-13, screenshots in docs/"7:13 probe runs"; scored in scripts/experiment.ts as PA-PI)
 
-| run | unit: real → sim/real ratio |
-|---|---|
-| A | anis 794.6M → **0.43** · mint 200.1M → 0.90 · prika 167.8M → 0.65 · alice 403.9M → **0.49** · red-hood 853.3M → **0.29** |
-| B | moran 222.3M → 0.93 ✓ · trina 50.9M → **2.72** · cinderella 582.7M → **1.76** · neon 467.2M → **1.88** |
-| C | tia 159.9M → 1.30 · anis 779.4M → **0.47** · naga 174.2M → **2.14** · SWHA 1320.3M → 1.06 ✓ · helm 652.0M → 1.24 |
-| D | emma-TU 138.6M → 1.16 · eunhwa-TU 303.3M → **2.13** · diesel-WS 547.1M → 1.06 ✓ · helm 273.0M → 1.18 |
-| E | rouge 106.7M → 1.48 · crown 147.6M → 1.38 · ein 560.3M → 0.88 · ada 460.2M → 0.99 ✓ · cinderella 342.6M → 0.73 |
-| F | maiden SOLO 76.6M → **1.26** (sim 96.1M; proc exists at ~0.68 of modeled value) |
-| G | DKW 57.8M → 1.11 · takina 427.4M → 0.92 ✓ · milk-BB 391.2M → **0.67** · maxwell 126.6M → **1.93** · liberalio 484.6M → 0.82 |
-| H | LM 341.6M → 1.09 · crown 161.3M → 1.05 · quency-EQ 594.1M → 0.86 · dorothy-S 766.3M → **1.84** · xGuillo 273.9M → 1.34 |
-| I | anis 602.8M → 0.99 ✓ · grave 288.1M → 1.23 · chisato 492.0M → 1.29 · jill 518.4M → **2.09** · noir 160.6M → **2.05** |
+| run | unit: real → sim/real ratio                                                                                                 |
+| --- | --------------------------------------------------------------------------------------------------------------------------- |
+| A   | anis 794.6M → **0.43** · mint 200.1M → 0.90 · prika 167.8M → 0.65 · alice 403.9M → **0.49** · red-hood 853.3M → **0.29**    |
+| B   | moran 222.3M → 0.93 ✓ · trina 50.9M → **2.72** · cinderella 582.7M → **1.76** · neon 467.2M → **1.88**                      |
+| C   | tia 159.9M → 1.30 · anis 779.4M → **0.47** · naga 174.2M → **2.14** · SWHA 1320.3M → 1.06 ✓ · helm 652.0M → 1.24            |
+| D   | emma-TU 138.6M → 1.16 · eunhwa-TU 303.3M → **2.13** · diesel-WS 547.1M → 1.06 ✓ · helm 273.0M → 1.18                        |
+| E   | rouge 106.7M → 1.48 · crown 147.6M → 1.38 · ein 560.3M → 0.88 · ada 460.2M → 0.99 ✓ · cinderella 342.6M → 0.73              |
+| F   | maiden SOLO 76.6M → **1.26** (sim 96.1M; proc exists at ~0.68 of modeled value)                                             |
+| G   | DKW 57.8M → 1.11 · takina 427.4M → 0.92 ✓ · milk-BB 391.2M → **0.67** · maxwell 126.6M → **1.93** · liberalio 484.6M → 0.82 |
+| H   | LM 341.6M → 1.09 · crown 161.3M → 1.05 · quency-EQ 594.1M → 0.86 · dorothy-S 766.3M → **1.84** · xGuillo 273.9M → 1.34      |
+| I   | anis 602.8M → 0.99 ✓ · grave 288.1M → 1.23 · chisato 492.0M → 1.29 · jill 518.4M → **2.09** · noir 160.6M → **2.05**        |
 
 Slot orders as fielded: A = anis·mint·prika·alice·RH (mint BEFORE prika — burstFirst live test);
 C = tia·anis·naga·SWHA·helm (tia slot 1). B and D were 4-unit comps.
 
 ### First-pass read
+
 - VALIDATED: moran 0.93 (20s-CD rework), ada 0.99 (grenade rework), takina 0.92, diesel-WS
   1.06, SWHA 1.06, mint 0.90, anchors in H/I (LM 1.09, crown 1.05, anis-I 0.99), DKW 1.11.
 - Maiden solo 1.26: the per-shot proc EXISTS but at ~68% of modeled value (real proc portion
@@ -61,11 +62,13 @@ C = tia·anis·naga·SWHA·helm (tia slot 1). B and D were 4-unit comps.
   casterMaxHp grant may be over-modeled), liberalio-G 0.82.
 
 ### Post-measurement state (helm recording processed)
+
 SR cycle MEASURED at 1.37s (charge 60f + recovery 22f) from the damage-counter frame analysis;
 SR_BOLT_RECOVERY_FRAMES = 22 is no longer a fitted value. Anis: Star's team CDR proven
 formation-independent (runs A+C rotated at CDR speed in-game) — ungated; run A sim now 13 FB/71%.
 
 ### Corrections from user + re-entry mechanic (2026-07-13, post-scoreboard)
+
 - Anis CDR IS formation-gated; Λ units count as NO burst type for formation checks (engine
   fixed — run A's rotation now correct via her noB1 branch). Her ATK riders are ALSO
   formation-gated (user ruling). Tia counts as "B1+" (a re-entry B1) — a rare edge case we
@@ -78,6 +81,7 @@ formation-independent (runs A+C rotated at CDR speed in-game) — ungated; run A
 - Post-fix: run A anis 0.95 ✓, run C anis 1.03 ✓, SWHA-C 0.95 ✓, tia 1.25, helm-C 1.17.
 
 ### Remaining leads, priority order
+
 1. Run A residual (~0.6 across SR carries even after CDR fix): mint/prika duet buffs on
    alice/RH may be under-modeled (charge-speed/crit snapshot), or RH's Red Wolf swap values low
    (real RH 853M!) — RH's B3 window deserves a dedicated look.
@@ -93,8 +97,8 @@ formation-independent (runs A+C rotated at CDR speed in-game) — ungated; run A
    overfeeding crown/... and under-modeling cindy's own kit in that comp — entangled, revisit
    after gauge work.
 
-
 ### Gauge + kit-heat pass (2026-07-13, late)
+
 ENGINE: shot-based burst generation replaces the static rl3/3 model (gen accrues per landed
 pull, outside FB, never in unhittable windows) with GEN_SCALE 1.4 ⚑ calibrated on the 7
 validated fights (skill hits also generate in-game — per-source rates unknown; run B keeps a
@@ -112,11 +116,12 @@ run-B residual (trina 2.55/cindy 1.49/neon 1.57 — gauge model), alice-A 0.59 /
 0.36 COLD (Red Wolf window under-modeled — real RH topped run A at 853M), takina-G 0.62,
 milk-BB accepted-cold, maiden 1.26 (U2 x0.68 proc factor).
 
-
 ## DEEP-DIVE PASS (2026-07-13, second session) — see docs/closed/deep-dive-brief.md for the mission
 
 ### New ground truth ingested (docs/probes/"712 probes"/ — 9 screenshots, named by boss weakness)
+
 Seven were the original T1-T7 fights (numbers match exactly) but carried corrections:
+
 - TRUE SLOT ORDERS for T1/T2/T3/T4 (experiment.ts had guessed wrong; burst assignment barely
   changed — the B3 CDs force alternation either way).
 - **T6 was actually fire-weak (Wind boss)**, not neutral — rescored with rapi-RH advantaged.
@@ -126,6 +131,7 @@ Seven were the original T1-T7 fights (numbers match exactly) but carried correct
   — validates 0.96-1.07 everywhere except cindy-CW 1.28.
 
 ### Engine changes this pass (mechanism-sourced; see open-questions A11-A16)
+
 1. **Gauge v3** (datamined): per-hit energy table == DB burstGaugePerShot column (verified,
    incl. battery outliers trina/anis-star/a2); boss hits x2; skill hits + dot ticks generate
    weapon base; SG gauge scales with pellet falloff; charge never scales gen on auto;
@@ -141,27 +147,29 @@ Seven were the original T1-T7 fights (numbers match exactly) but carried correct
 8. PIERCE_CORE_DOUBLE switch (OFF — rejected for partless boss, kept for part-ed bosses).
 
 ### BOARD v7 (superseded by v9 below)
-| fight | ratios |
-|---|---|
-| T1 | mast 1.06 · SBS 1.22 · anis 1.00 · liberalio 1.00 · crown 1.03 |
-| T3 | rapi 1.07 · mihara 0.90 · LM 0.98 · crown 0.96 · helm 0.94 |
+
+| fight  | ratios                                                                                                |
+| ------ | ----------------------------------------------------------------------------------------------------- |
+| T1     | mast 1.06 · SBS 1.22 · anis 1.00 · liberalio 1.00 · crown 1.03                                        |
+| T3     | rapi 1.07 · mihara 0.90 · LM 0.98 · crown 0.96 · helm 0.94                                            |
 | T4/T4b | anis 0.85 · privaty 0.90-0.93 · SWHA 0.90-0.92 · helm 0.82 · crown 0.91 (comp-wide ~0.88 cold — OPEN) |
-| T2 | crown 1.10 · neon 0.97 · anis 0.96 · cindy 1.21 · maiden 1.25 |
-| T5 | nayuta 0.87 · cindy-CW 1.12 · anis 0.97 · liberalio 0.96 · velvet 1.05 |
-| T6 | crown 0.97 · rapi 1.07 · LM 1.00 · SWHA 0.96 · helm 0.95 |
-| T7 | crown 1.14 · rapi 1.10 · anis 1.04 · cindy 1.21 · mast 1.02 |
-| T8 | anis 1.04 · crown 0.97 · rapi 1.07 · cindy-CW 1.28 · helm 0.96 |
-| PA | anis 0.97 · mint 1.27 · prika 0.84 · **alice 1.15** · **red-hood 0.92** (was 0.59/0.36!) |
-| PB | moran 0.91 · trina 2.59 · cindy 1.85 · neon 1.87 (U8 rotation ground truth) |
-| PC | tia 1.10 · naga 1.07 · SWHA 0.94 · helm 1.18 (anis excluded) |
-| PD | emma 1.07 · eunhwa 1.34 · diesel 1.01 · helm 1.19 |
-| PE | rouge 1.39 · crown 1.41 · ein 0.94 · ada 0.99 · cindy 0.80 (U8) |
-| PF | maiden SOLO **1.01** ✓ (U2 resolved) |
-| PG | DKW 1.00 · takina 0.78 · milk 0.57 (accepted) · maxwell 0.81 · liberalio 0.80 (U8 — comp-wide cold) |
-| PH | LM 1.06 · crown 1.00 · quency 0.85 · dorothy 1.09 · xguillo 1.24 |
-| PI | anis 0.98 · grave 1.19 · chisato 1.26 · jill 1.86 · noir 1.15 (U8 — comp-wide hot exc. anis) |
+| T2     | crown 1.10 · neon 0.97 · anis 0.96 · cindy 1.21 · maiden 1.25                                         |
+| T5     | nayuta 0.87 · cindy-CW 1.12 · anis 0.97 · liberalio 0.96 · velvet 1.05                                |
+| T6     | crown 0.97 · rapi 1.07 · LM 1.00 · SWHA 0.96 · helm 0.95                                              |
+| T7     | crown 1.14 · rapi 1.10 · anis 1.04 · cindy 1.21 · mast 1.02                                           |
+| T8     | anis 1.04 · crown 0.97 · rapi 1.07 · cindy-CW 1.28 · helm 0.96                                        |
+| PA     | anis 0.97 · mint 1.27 · prika 0.84 · **alice 1.15** · **red-hood 0.92** (was 0.59/0.36!)              |
+| PB     | moran 0.91 · trina 2.59 · cindy 1.85 · neon 1.87 (U8 rotation ground truth)                           |
+| PC     | tia 1.10 · naga 1.07 · SWHA 0.94 · helm 1.18 (anis excluded)                                          |
+| PD     | emma 1.07 · eunhwa 1.34 · diesel 1.01 · helm 1.19                                                     |
+| PE     | rouge 1.39 · crown 1.41 · ein 0.94 · ada 0.99 · cindy 0.80 (U8)                                       |
+| PF     | maiden SOLO **1.01** ✓ (U2 resolved)                                                                  |
+| PG     | DKW 1.00 · takina 0.78 · milk 0.57 (accepted) · maxwell 0.81 · liberalio 0.80 (U8 — comp-wide cold)   |
+| PH     | LM 1.06 · crown 1.00 · quency 0.85 · dorothy 1.09 · xguillo 1.24                                      |
+| PI     | anis 0.98 · grave 1.19 · chisato 1.26 · jill 1.86 · noir 1.15 (U8 — comp-wide hot exc. anis)          |
 
 ### What would close the rest (ground-truth asks for the user)
+
 1. **One recorded re-run of run B** (and ideally E or I, and G) with the burst casts visible —
    FB count + who burst each rotation resolves the entire U8 family (PB/PE/PG/PI comp-level
    residuals are rotation-shaped: sim is kit-faithful but reality seems to rotate slower in
@@ -177,36 +185,37 @@ Seven were the original T1-T7 fights (numbers match exactly) but carried correct
    window — checked); her heat is PI-comp-shaped + possibly acid-dot crit (unverified) —
    revisit after U8.
 
-
 ### BOARD v9 (current — after A17: MG wind-down curve, subtractive reload, buff-overwrite rule)
+
 The three A17 fixes RESOLVED the T4 comp-wide cold (privaty's +51% team reload buff was
 under-credited by the old divisive reload formula) and centered dorothy-S.
 
-| fight | ratios |
-|---|---|
-| T1 | mast 0.95 · SBS 1.23 · anis 1.04 · liberalio 1.02 · crown 0.91 |
-| T3 | rapi 0.95 · mihara 0.88 · LM 0.95 · crown 0.89 · helm 0.96 |
-| T4/T4b | anis 1.01 · privaty 0.89-0.92 · SWHA 0.93 · helm 0.97 · crown 1.10 ✓ RESOLVED |
-| T2 | crown 1.03 · neon 0.91 · anis 0.93 · cindy 1.19 · maiden 1.31 |
-| T5 | nayuta 0.86 · cindy-CW 1.09 · anis 0.94 · liberalio 0.96 · velvet 1.02 |
-| T6 | crown 0.92 · rapi 1.04 · LM 0.95 · SWHA 0.93 · helm 0.93 |
-| T7 | crown 1.01 · rapi 0.97 · anis 1.08 · cindy 1.10 · mast 1.13 |
-| T8 | anis 1.02 · crown 0.92 · rapi 1.05 · cindy-CW 1.25 · helm 0.96 |
-| PA | anis 0.94 · mint 1.21 · prika 0.82 · alice 1.12 · red-hood 0.86 |
-| PB | moran 0.91 · trina 2.62 · cindy 1.86 · neon 1.96 (U8) |
-| PC | tia 1.09 · naga 1.06 · SWHA 0.96 · helm 1.13 (anis excluded) |
-| PD | emma 1.00 · eunhwa 1.32 · diesel 1.02 · helm 1.17 |
-| PE | rouge 1.32 · crown 1.30 · ein 0.89 · ada 0.97 · cindy 0.78 (U8) |
-| PF | maiden SOLO 1.01 ✓ |
-| PG | DKW 0.98 · takina 0.76 · milk 0.56 (accepted) · maxwell 0.80 · liberalio 0.79 (U8) |
-| PH | LM 1.03 · crown 0.97 · quency 0.84 · dorothy 0.99 ✓ · xguillo 1.25 |
-| PI | anis 0.97 · grave 1.19 · chisato 1.21 · jill 1.72 · noir 1.12 (U8) |
-
+| fight  | ratios                                                                             |
+| ------ | ---------------------------------------------------------------------------------- |
+| T1     | mast 0.95 · SBS 1.23 · anis 1.04 · liberalio 1.02 · crown 0.91                     |
+| T3     | rapi 0.95 · mihara 0.88 · LM 0.95 · crown 0.89 · helm 0.96                         |
+| T4/T4b | anis 1.01 · privaty 0.89-0.92 · SWHA 0.93 · helm 0.97 · crown 1.10 ✓ RESOLVED      |
+| T2     | crown 1.03 · neon 0.91 · anis 0.93 · cindy 1.19 · maiden 1.31                      |
+| T5     | nayuta 0.86 · cindy-CW 1.09 · anis 0.94 · liberalio 0.96 · velvet 1.02             |
+| T6     | crown 0.92 · rapi 1.04 · LM 0.95 · SWHA 0.93 · helm 0.93                           |
+| T7     | crown 1.01 · rapi 0.97 · anis 1.08 · cindy 1.10 · mast 1.13                        |
+| T8     | anis 1.02 · crown 0.92 · rapi 1.05 · cindy-CW 1.25 · helm 0.96                     |
+| PA     | anis 0.94 · mint 1.21 · prika 0.82 · alice 1.12 · red-hood 0.86                    |
+| PB     | moran 0.91 · trina 2.62 · cindy 1.86 · neon 1.96 (U8)                              |
+| PC     | tia 1.09 · naga 1.06 · SWHA 0.96 · helm 1.13 (anis excluded)                       |
+| PD     | emma 1.00 · eunhwa 1.32 · diesel 1.02 · helm 1.17                                  |
+| PE     | rouge 1.32 · crown 1.30 · ein 0.89 · ada 0.97 · cindy 0.78 (U8)                    |
+| PF     | maiden SOLO 1.01 ✓                                                                 |
+| PG     | DKW 0.98 · takina 0.76 · milk 0.56 (accepted) · maxwell 0.80 · liberalio 0.79 (U8) |
+| PH     | LM 1.03 · crown 0.97 · quency 0.84 · dorothy 0.99 ✓ · xguillo 1.25                 |
+| PI     | anis 0.97 · grave 1.19 · chisato 1.21 · jill 1.72 · noir 1.12 (U8)                 |
 
 ### U8 ground truth #1 — run B recorded re-run (2026-07-13, docs/probes/u8)
+
 Real totals (new slot order moran · cinderella · neon · trina): moran 220.6M ·
 cinderella 593.9M · neon 510.6M · trina 51.5M — highly repeatable vs the original run
 except neon +9% (slot-order sensitivity, reproduced by the sim).
+
 - **Rotation from video**: 11 full bursts, ~17s average cycle — identical to the sim's
   prediction. The run-B heat was never rotation.
 - **Neon: Vision Eye firepower economy verified frame-by-frame** (her on-screen 火力 gauge):
@@ -222,10 +231,11 @@ except neon +9% (slot-order sensitivity, reproduced by the sim).
   (alliesOfElementWeapon). Scores after the fix, on the recorded run: moran 0.92 ·
   cinderella 1.04 · neon 1.06 · trina 1.14.
 
-
 ### U8 ground truth #2 — run E recorded re-run (2026-07-13, docs/probes/u8 e)
+
 Real totals (new slot order crown · ein · ada · rouge · cinderella): crown 141.6M ·
 ein 538.2M · ada 464.0M · rouge 115.0M · cinderella 398.0M.
+
 - **Rotation from video**: 11 full bursts at ~16s average (sim: 10 at ~17.9s — slightly
   slow for this team).
 - **Cinderella's cold reading is CAST STARVATION, and it is knife-edge real**: rouge's
@@ -246,11 +256,12 @@ ein 538.2M · ada 464.0M · rouge 115.0M · cinderella 398.0M.
   Sword Coin "self and 2 allies on both sides" positional coverage, currently modeled as
   the whole team.
 
-
 ### U8 ground truth #3 — run G recorded re-run (2026-07-13, docs/probes/u8 g)
+
 Real totals (new slot order d-killer-wife · milk · maxwell · takina · liberalio):
 d-killer-wife 57.8M (identical to the first run) · milk 377.2M · maxwell 138.7M ·
 takina 479.8M · liberalio 497.6M.
+
 - **Rotation from video**: 13-14 full bursts at ~13.9s — far faster than the sim's 10 at
   ~18.4s. The sim was gauge-bound; the comp is ALL sniper rifles.
 - **Root cause: sniper-rifle burst generation is charge-scaled even on auto** ⚑. Scaling
@@ -264,6 +275,7 @@ takina 479.8M · liberalio 497.6M.
   0.85 · milk 0.69 (known auto under-performer, accepted). The comp-wide cold is gone.
 
 ### Run E remaining lead (recorded 2026-07-13, from the user)
+
 Rouge was NOT adjacent to cinderella in the first run E (slot 1 vs slot 5) but IS in the
 re-run (slot 4-5) — and rouge's kit is full of POSITIONAL and Max-HP effects our model
 skips as defensive: Sword Coin ("self and 2 allies on both sides", modeled team-wide),
@@ -276,12 +288,13 @@ positional target (self + 2 each side) and the Max-HP grant lines, and verify th
 feeds Max-HP buffs into HP-scaled ATK live. Expected to warm cindy-E and cool
 crown-E/rouge-E.
 
-
 ### U8 ground truth #4 — run I recorded re-run (2026-07-13, docs/probes/u8 i; boss elec-weak = Water)
+
 Real totals (new slot order grave · anis: star · jill · chisato · noir): grave 286.2M ·
 anis 599.4M · jill 534.6M · chisato 481.7M · noir 163.1M — every unit within ±3% of the
 original run despite a changed burst-3 order. This comp is STABLE (contrast run E), so its
 residuals are real modeling error, not selection noise.
+
 - **Rotation from video**: 13 full bursts at ~14.1s (two were initially hidden by bar
   occlusion; confirmed via the full-burst countdown timer). Sim: ~14 at ~12.9s — about 8%
   fast, worth a few points of the burst-3 heat but nothing like jill's 1.67.
@@ -295,8 +308,8 @@ residuals are real modeling error, not selection noise.
   attributing these would validate several units' per-hit models at once. Jill's own
   predicted ~73k/146k popups need a targeted frame hunt.
 
-
 ### U8 ground truth #5 — run E second replicate + rouge rebuild (2026-07-13, docs/probes/u8 e2)
+
 e2 repeats e's exact slot order (crown · ein · ada · rouge · cinderella): crown 140.6M ·
 ein 544.1M · ada 467.8M · rouge 113.3M · cinderella 409.1M — every unit within ±3% of e.
 **Run E is perfectly repeatable WITHIN a slot order.** Combined with the original run
@@ -321,8 +334,8 @@ leftmost-ready selection still doesn't) · crown 1.44 · rouge 1.34. REMAINING r
 crown and rouge's own ~1.3-1.4 heat (crown reads 0.89-1.14 in eight other fights — the
 excess is specific to this team and not yet explained) and cinderella's cast starvation.
 
-
 ### Run E correction (2026-07-13, from the user): popups are FOCUS-UNIT-ONLY
+
 Critical methodology fact learned here: on-screen damage popups come only from the unit
 holding camera focus. The repeating ~4.99M popups in the e/e2 videos are the FOCUS unit's
 burst-window hits — and, per the user, **cinderella is not bursting at all in run E**,
@@ -331,8 +344,8 @@ ready first). The "cast starvation" framing is retracted: the burst selection mo
 CORRECT for this team. Cinderella's remaining 0.83 cold is therefore a NON-BURST output
 under-model (normals + skill + the Max-HP-to-ATK economy), not missing casts.
 
-
 ### Run E RESOLVED — ada's Burst-3-only grant (2026-07-13)
+
 Crown's and rouge's config-invariant ~1.44 heat was ADA'S S1 mis-scope: her kit reads
 "Affects all BURST 3 allies who previously used their Burst Skill" — a +60%-of-her-ATK
 flat grant (+ True Damage 50%) for burst-3 casters only. The model gave it to ALL burst
@@ -348,11 +361,12 @@ rifles", rouge's positional "self and 2 allies on both sides" + Max-HP-to-ATK fe
 ada's "Burst 3 allies" filter. Kit-text target clauses deserve the same scrutiny as
 multiplier values.
 
-
 ### Cinderella focus session — run E third replicate (2026-07-13, docs/probes/u8 e3)
+
 Totals (third run of the same order): crown 140.0M · ein 524.9M · ada 460.1M ·
 rouge 114.0M · cinderella 394.4M (her three runs: 398.0 / 409.1 / 394.4 — ±2%).
 Focus popups decomposed her kit completely; four fixes, each video-measured:
+
 1. **Per-instance values verified exactly** against the sim's combat ATK (80,118): rocket
    core hit 121,124 = 32.11% x 200% charge x core x element x the +7% Damage-Up she
    carries; her 136.6% proc 128,819 — both match to 0.3%. (The battle-records ATK, 92,206,
@@ -366,13 +380,12 @@ Focus popups decomposed her kit completely; four fixes, each video-measured:
    is her Beautiful ramp — and would be ~28% higher if rouge's Max-HP grants fed it.
 4. **Real reload ~1.2s** (visible mid-burst), vs the DB's 2.35s — her
    Preparation-for-Change reload (charFixes).
-The doubling then exposed that her old T2/T7 validation was compensating errors — her
-nuke was receiving the +50% full-burst major it shouldn't get, which resolved U10
-(see open-questions): the full-burst MAJOR is timing-based; frame-0 governs buffs only.
-Cinderella across all five samples after everything: run E 1.00 (video) · run B 0.96-0.98
-(video) · T2 1.22 · T7 1.16 (both entangled with the projectile-explosion-on-RL-normals
-default, the one multiplier a video hasn't yet touched).
-
+   The doubling then exposed that her old T2/T7 validation was compensating errors — her
+   nuke was receiving the +50% full-burst major it shouldn't get, which resolved U10
+   (see open-questions): the full-burst MAJOR is timing-based; frame-0 governs buffs only.
+   Cinderella across all five samples after everything: run E 1.00 (video) · run B 0.96-0.98
+   (video) · T2 1.22 · T7 1.16 (both entangled with the projectile-explosion-on-RL-normals
+   default, the one multiplier a video hasn't yet touched).
 
 ## TEST BATTERY 2 (2026-07-13) — designed experiments for the remaining open questions
 
@@ -381,6 +394,7 @@ only). Predictions use verified combat ATK values (Attackers 120,143 / Supporter
 Defenders 80,118 at scope lock). Ordered by information value.
 
 ### Test 1 — Does burst-skill damage get the +50% full-burst multiplier? — DONE 2026-07-13
+
 **Team: moran · cinderella · neon: Vision Eye · trina (the recorded run-B order) · elec
 weak · CINDERELLA focus.** Recorded (docs/probes/tb2, "tb2 1"); the video contains an
 aborted first attempt (restart at ~49s) and the full run — both were read and agree.
@@ -398,6 +412,7 @@ Bonus resolved directly by the user: **trina is old-style release-fired, 22 fram
 between shots** — exactly the engine's default RL latency (U12: only tia remains).
 
 ### Test 2 — Does Anis: Star's Projectile Explosion aura buff plain RL normal attacks? — DONE 2026-07-13
+
 **Team: anis: star · trina · cinderella (3 units) · elec weak · CINDERELLA focus.**
 Recorded (docs/probes/tb2, "tb2 2"). **RESULT: the aura DOES buff rocket normals.** The
 buff-independent ratio test is exact: rocket core-hit popup 963,377 ÷ proc popup 771,268
@@ -414,6 +429,7 @@ her nuke window) are the BOSS's damage dealt TO her Decoy (her kit summon) — t
 unit's popup stream includes damage received by her own summons, not just damage dealt.
 
 ### Test 3 — Boss x2 gauge multiplier + sniper charge-scaled generation — DONE 2026-07-13
+
 Recorded (docs/probes/tb2, "tb2 3 maiden" + "tb2 3 tak"). **RESULT: the whole gauge model
 was rebuilt from these two solos + the datamined CharacterShotTable** (open-questions A22
 for the full story). Maiden fills 12.55%/pull decomposing into two visible sub-steps —
@@ -424,6 +440,7 @@ focused). No auto-efficiency factor exists. The one remaining knob is the UNfocu
 charge unit's factor (U11b ⚑, engine x2.2).
 
 ### Test 4 — Jill's 1.67 heat — DONE 2026-07-13, SOLVED
+
 **Team: grave · anis: star · jill · chisato · noir · elec weak · JILL focus.** Recorded
 (docs/probes/tb2, "tb2 4"; totals replicate run I within ±3% on all five units). Her
 opening popups matched the sim at 99.7% on all four classes (body 180,633 / core hit
@@ -433,6 +450,7 @@ rolling reload (reload_start_ammo 8: she tops up while firing, zero downtime). J
 reads **1.02** (open-questions A21).
 
 ### Test 5 — Run A burst order + the pierce question — HALF DONE 2026-07-13
+
 **Team: anis: star · mint · prika · alice · red-hood · wind weak (Iron boss) · ALICE
 focus.** Recorded (docs/probes/tb2, "tb2 5"). **(2) ANSWERED: no pierce double-hit** —
 every Alice shot lands as ONE popup (763,961 / 2,269,805 core hits), never two
@@ -445,6 +463,7 @@ else repeated within ±5% — consistent with camera focus granting her charge s
 gauge generation (the recording itself perturbs the fight).
 
 ### Test 6 — kit-level flags (as convenient; ~60s each suffices)
+
 - **Eunhwa: Tactical Upgrade focus** in run D (emma-TU · eunhwa-TU · diesel-WS · helm,
   fire weak): do her railgun swap shots show CORE HIT popups? Her 1.32 drops to ~1.0 if
   they don't core.
@@ -464,6 +483,7 @@ The two highest engine-level unknowns. Part A is two ~45-second recordings; Part
 no video at all — just full-burst counts. All scope lock, full auto, vs the raid boss.
 
 ### Part A — DONE 2026-07-13 (docs/probes/"burst tests") — focus-only CONFIRMED
+
 A1: takina unfocused steps +5.6-6.5%/shot (flat 560; excludes the +8.1% additive
 hypothesis). A2: takina focused steps +14-15%/shot (560x2.5, matches her solo).
 Engine: the ⚑x2.2 unfocused factor is deleted (measured 1.0). See open-questions A24.
@@ -493,6 +513,7 @@ This single pair also resolves a live contradiction: with the ⚑x2.2 the sim no
 either the unfocused factor is too high (A1 says flat) or something else generates.
 
 ### Part A3 — DONE 2026-07-13 — her row is a standard launcher (user hypothesis confirmed)
+
 Measured ~+10.7-11.3%/pull = 280x2.5 shot + 280 proc gen x1.06 aura. The synergy 16.8
 aggregate folds skill generation; the 840 estimate is retired. Her recording also caught
 a live burst-chain collapse (gauge consumed, Burst-1 cast, window expiry, refill). See
@@ -532,25 +553,25 @@ the gauge is consumed when the chain opens; the next chain can't open until ~3s 
 full burst ends — all measured from the run-I/run-B/3-unit bar traces), the sim now
 matches ALL FOUR graded comps exactly and most comps are seed-deterministic:
 
-| fight | slots | sim full bursts | first FB (fight time) | notes |
-|---|---|---|---|---|
-| elec battery (recorded) | moran · cindy · neon · trina | 11 | ~5.0s | **video: 11 ✓ exact** |
-| elec DPS (recorded) | crown · ein · ada · rouge · cindy | 10-11 | ~6.1s | video: ~11-12 ✓ |
-| misc B3s (recorded) | grave · anis:star · jill · chisato · noir | 13 | ~3.4s | **video: 13 ✓ exact, seed-stable** |
-| 3-unit projExpl (recorded) | anis:star · trina · cindy | 4-5 | ~10.5s | video: 5 ✓ |
-| iron sweep (run G) | DKW · takina · milk:BB · maxwell · liberalio | 13 | ~3.4s | video: 13-14 ✓ |
-| wind-weak T1 | mast:RM · SBS · anis:star · liberalio · crown | 13 | ~2.8s | |
-| fire-weak T3 | rapi:RH · mihara:BC · little mermaid · crown · helm | 13 | ~3.6s | |
-| water-weak T4 | anis:star · privaty · SWHA · helm · crown | 13 | ~3.4s | |
-| elec-weak T2 | crown · neon:VE · anis:star · cindy · maiden:IR | 12 | ~4.8s | |
-| wind-weak T5 | nayuta · cindy:CW · anis:star · liberalio · velvet | 13 | ~3.0s | |
-| fire-weak T6 | crown · rapi:RH · LM · SWHA · helm | 13 | ~3.4s | |
-| elec-weak T7 | crown · rapi:RH · anis:star · cindy · mast:RM | 11 | ~5.9s | |
-| iron-weak T8 | anis:star · crown · rapi:RH · cindy:CW · helm | 13 | ~3.5s | |
-| MiKa (run A) | anis:star · mint · prika · alice · red-hood | 11 | ~5.0s | |
-| shields (run C) | tia · anis:star · naga · SWHA · helm | 12 | ~3.9s | |
-| Eva duo (run D) | emma:TU · eunhwa:TU · diesel:WS · helm | 9 | ~3.4s | |
-| water B3s (run H) | LM · crown · quency:EQ · dorothy:S · xGuillo | 12 | ~5.5s | |
+| fight                      | slots                                               | sim full bursts | first FB (fight time) | notes                              |
+| -------------------------- | --------------------------------------------------- | --------------- | --------------------- | ---------------------------------- |
+| elec battery (recorded)    | moran · cindy · neon · trina                        | 11              | ~5.0s                 | **video: 11 ✓ exact**              |
+| elec DPS (recorded)        | crown · ein · ada · rouge · cindy                   | 10-11           | ~6.1s                 | video: ~11-12 ✓                    |
+| misc B3s (recorded)        | grave · anis:star · jill · chisato · noir           | 13              | ~3.4s                 | **video: 13 ✓ exact, seed-stable** |
+| 3-unit projExpl (recorded) | anis:star · trina · cindy                           | 4-5             | ~10.5s                | video: 5 ✓                         |
+| iron sweep (run G)         | DKW · takina · milk:BB · maxwell · liberalio        | 13              | ~3.4s                 | video: 13-14 ✓                     |
+| wind-weak T1               | mast:RM · SBS · anis:star · liberalio · crown       | 13              | ~2.8s                 |                                    |
+| fire-weak T3               | rapi:RH · mihara:BC · little mermaid · crown · helm | 13              | ~3.6s                 |                                    |
+| water-weak T4              | anis:star · privaty · SWHA · helm · crown           | 13              | ~3.4s                 |                                    |
+| elec-weak T2               | crown · neon:VE · anis:star · cindy · maiden:IR     | 12              | ~4.8s                 |                                    |
+| wind-weak T5               | nayuta · cindy:CW · anis:star · liberalio · velvet  | 13              | ~3.0s                 |                                    |
+| fire-weak T6               | crown · rapi:RH · LM · SWHA · helm                  | 13              | ~3.4s                 |                                    |
+| elec-weak T7               | crown · rapi:RH · anis:star · cindy · mast:RM       | 11              | ~5.9s                 |                                    |
+| iron-weak T8               | anis:star · crown · rapi:RH · cindy:CW · helm       | 13              | ~3.5s                 |                                    |
+| MiKa (run A)               | anis:star · mint · prika · alice · red-hood         | 11              | ~5.0s                 |                                    |
+| shields (run C)            | tia · anis:star · naga · SWHA · helm                | 12              | ~3.9s                 |                                    |
+| Eva duo (run D)            | emma:TU · eunhwa:TU · diesel:WS · helm              | 9               | ~3.4s                 |                                    |
+| water B3s (run H)          | LM · crown · quency:EQ · dorothy:S · xGuillo        | 12              | ~5.5s                 |                                    |
 
 If real counts come in 1-2 ABOVE these predictions in the comps carrying liberalio,
 Snow White: Heavy Arms, or helm, that's the per-unit skill-generation quirks (U11c)
@@ -646,14 +667,14 @@ declared focus.
 Each cell shows two values because crown's Skill 2 (+20.99% attack damage, 7-second windows)
 flickers on and off — both sub-classes will appear.
 
-| read | Damage Up placement (engine today) | Element placement (reference) |
-|---|---|---|
-| privaty normal bullet, HER full-burst window | 204,453 / 216,777 | 279,570 / 306,455 |
-| normal bullet, Snow White window (control) | 99,121 / 108,653 | identical |
-| normal bullet, no-full-burst gap (control) | 28,067 | identical |
-| her last-bullet proc (the 256.17% class), her window | 2.56M / 2.71M | 3.50M / 3.84M |
-| that proc outside full burst (~86s, control) | 607,956 | identical |
-| her burst nuke at cast (non-crit) | 6.10M | 7.29M |
+| read                                                 | Damage Up placement (engine today) | Element placement (reference) |
+| ---------------------------------------------------- | ---------------------------------- | ----------------------------- |
+| privaty normal bullet, HER full-burst window         | 204,453 / 216,777                  | 279,570 / 306,455             |
+| normal bullet, Snow White window (control)           | 99,121 / 108,653                   | identical                     |
+| normal bullet, no-full-burst gap (control)           | 28,067                             | identical                     |
+| her last-bullet proc (the 256.17% class), her window | 2.56M / 2.71M                      | 3.50M / 3.84M                 |
+| that proc outside full burst (~86s, control)         | 607,956                            | identical                     |
+| her burst nuke at cast (non-crit)                    | 6.10M                              | 7.29M                         |
 
 Crit/core classes sit at ×1.333 / ×1.667 / ×2.0 of the body value inside full burst and
 ×1.5 / ×2.0 / ×2.5 outside it (both models — use these to validate reads, not to decide).
@@ -661,10 +682,11 @@ Crit/core classes sit at ×1.333 / ×1.667 / ×2.0 of the body value inside full
 ### Verdict key (immune to attack-value drift; read several windows)
 
 Her-window body value ÷ same-band Snow-White-window body value:
+
 - **≈ 1.88–2.19 → Damage Up placement confirmed (engine stays as-is)**
 - **≈ 2.57–3.09 → Element placement confirmed (engine change lands)**
-The ranges span the crown flicker and do not overlap. The proc class gives the same verdict
-independently (2.71M maximum under Damage Up vs 3.50M minimum under Element).
+  The ranges span the crown flicker and do not overlap. The proc class gives the same verdict
+  independently (2.71M maximum under Damage Up vs 3.50M minimum under Element).
 
 Control reads (the Snow White windows, the gaps, and the class ratios) are predicted
 identical under both models — if a control is off, something else is wrong with the window
@@ -746,11 +768,11 @@ PRESENCE of a step class as the verdict, not its frequency (the aura model is ap
 
 Read attach popups OUTSIDE Full Burst (the lone popups between windows). Predictions by state:
 
-| state (when to read) | sim today (core NO): body / crit | core YES adds: core / core-crit |
-|---|---|---|
-| cold, no buffs — 2:56, 2:54, 2:22, 1:28, 1:09, 0:53, 0:17 | 342,982 / 514,473 | 685,964 / 857,455 |
-| post-window state — 2:42, 2:40, 2:08, 2:06, 0:55 | 622,882 / 934,323 | 1,245,764 / 1,557,204 |
-| in-Full-Burst, Cinderella windows — e.g. 2:32, 2:30, 2:00, 1:58, 1:56 | 1,678,352 / 2,237,803 | 2,797,253 / 3,356,704 |
+| state (when to read)                                                  | sim today (core NO): body / crit | core YES adds: core / core-crit |
+| --------------------------------------------------------------------- | -------------------------------- | ------------------------------- |
+| cold, no buffs — 2:56, 2:54, 2:22, 1:28, 1:09, 0:53, 0:17             | 342,982 / 514,473                | 685,964 / 857,455               |
+| post-window state — 2:42, 2:40, 2:08, 2:06, 0:55                      | 622,882 / 934,323                | 1,245,764 / 1,557,204           |
+| in-Full-Burst, Cinderella windows — e.g. 2:32, 2:30, 2:00, 1:58, 1:56 | 1,678,352 / 2,237,803            | 2,797,253 / 3,356,704           |
 
 **Verdict key (drift-immune):** outside Full Burst a core-class attach sits at **×2.000** of the
 body value (crit ×1.5, core-crit ×2.5); inside Full Burst core is **×1.667** (crit ×1.333,
@@ -765,18 +787,18 @@ over ~10 reads is itself a finding (attaches never crit) and should be recorded.
 Pause/scrub at each FULL BURST banner and read the batch of near-identical explosion popups
 individually. Per-explosion predictions (the four-value key per batch):
 
-| banner (clock) | batch size (deferred model) | body (sim today) | crit YES ×1.333 | core YES ×1.667 | both ×2.0 |
-|---|---|---|---|---|---|
-| 2:54 (Rapi window 1) | 2 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
-| 2:38 (Cinderella 1) | 10 | 2,199,601 | 2,932,802 | 3,666,002 | 4,399,203 |
-| 2:20 (Rapi 2) | 5 | 2,298,421 | 3,064,562 | 3,830,702 | 4,596,843 |
-| 2:04 (Cinderella 2) | 10 | 1,958,166 | 2,610,888 | 3,263,610 | 3,916,332 |
-| 1:45 (Rapi 3) | 4 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
-| 1:27 (Cinderella 3) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
-| 1:08 (Rapi 4) | 4 | 2,298,943 | 3,065,258 | 3,831,572 | 4,597,887 |
-| 0:51 (Cinderella 4) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
-| 0:32 (Rapi 5) | 4 | 2,582,396 | 3,443,194 | 4,303,993 | 5,164,791 |
-| 0:15 (Cinderella 5) | 11 | 1,958,240 | 2,610,987 | 3,263,734 | 3,916,481 |
+| banner (clock)       | batch size (deferred model) | body (sim today) | crit YES ×1.333 | core YES ×1.667 | both ×2.0 |
+| -------------------- | --------------------------- | ---------------- | --------------- | --------------- | --------- |
+| 2:54 (Rapi window 1) | 2                           | 2,298,943        | 3,065,258       | 3,831,572       | 4,597,887 |
+| 2:38 (Cinderella 1)  | 10                          | 2,199,601        | 2,932,802       | 3,666,002       | 4,399,203 |
+| 2:20 (Rapi 2)        | 5                           | 2,298,421        | 3,064,562       | 3,830,702       | 4,596,843 |
+| 2:04 (Cinderella 2)  | 10                          | 1,958,166        | 2,610,888       | 3,263,610       | 3,916,332 |
+| 1:45 (Rapi 3)        | 4                           | 2,298,943        | 3,065,258       | 3,831,572       | 4,597,887 |
+| 1:27 (Cinderella 3)  | 11                          | 1,958,240        | 2,610,987       | 3,263,734       | 3,916,481 |
+| 1:08 (Rapi 4)        | 4                           | 2,298,943        | 3,065,258       | 3,831,572       | 4,597,887 |
+| 0:51 (Cinderella 4)  | 11                          | 1,958,240        | 2,610,987       | 3,263,734       | 3,916,481 |
+| 0:32 (Rapi 5)        | 4                           | 2,582,396        | 3,443,194       | 4,303,993       | 5,164,791 |
+| 0:15 (Cinderella 5)  | 11                          | 1,958,240        | 2,610,987       | 3,263,734       | 3,916,481 |
 
 (The 2:38 and 0:32 rows carry Crown's flicker; if a batch value runs ~×1.123 of a neighboring
 row's, that is the flicker, not a step — the within-batch ratios are what decide.)
@@ -816,12 +838,12 @@ Pure counting and timing — no value reads needed (in-window explosion popups, 
 sit at ~2.3 million in her windows / ~2.0 million in Cinderella's, distinct from every other
 class).
 
-| signature | deferred (sim today) | instant (datamine) |
-|---|---|---|
-| explosion-class popups DURING any window | none, ever | yes: ~5 right after Rapi's own banner (her stage-3 batch), then ~3–4 more at ~2-second spacing through the window; ~3 during each Cinderella window |
-| batch size at Cinderella banners (2:38, 2:04, 1:27, 0:51, 0:15) | ~10–11 popups | ~1–2 popups |
-| batch size at Rapi banners | ~2–5 popups | ~1–2 at the banner, then the ~5-batch immediately after |
-| final 15 seconds (inside Cinderella's last window) | the last window's attaches never explode | ~3 explosion popups before 0:00 |
+| signature                                                       | deferred (sim today)                     | instant (datamine)                                                                                                                                  |
+| --------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| explosion-class popups DURING any window                        | none, ever                               | yes: ~5 right after Rapi's own banner (her stage-3 batch), then ~3–4 more at ~2-second spacing through the window; ~3 during each Cinderella window |
+| batch size at Cinderella banners (2:38, 2:04, 1:27, 0:51, 0:15) | ~10–11 popups                            | ~1–2 popups                                                                                                                                         |
+| batch size at Rapi banners                                      | ~2–5 popups                              | ~1–2 at the banner, then the ~5-batch immediately after                                                                                             |
+| final 15 seconds (inside Cinderella's last window)              | the last window's attaches never explode | ~3 explosion popups before 0:00                                                                                                                     |
 
 **Verdict key:** the Cinderella-banner batch count separates the models by a factor of ~5 and
 needs no value reading at all; the presence/absence of explosion popups streaming through any
@@ -855,6 +877,7 @@ apart) and the FULL BURST banner (which lands with the Burst III cast). "clock" 
 on-screen 3:00 countdown.
 
 How to verify against a video:
+
 1. **Caster order must match exactly** (which unit takes each Burst III, alternating
    pattern) — this is the strongest check and is drift-free.
 2. **The first full burst should land within about ±1 second** of the predicted clock time.
@@ -871,8 +894,8 @@ How to verify against a video:
 
 Deterministic predictions (no seed); the focus setting matters and is stated per comp.
 
-    
 ### BATTERY 5 — water-weak T4, PRIVATY focus
+
     full bursts: 13
       t=   2.4s  clock 2:57.6  BI Anis: Star
       t=   2.9s  clock 2:57.1  BII Crown
@@ -926,8 +949,9 @@ Deterministic predictions (no seed); the focus setting matters and is stated per
       t= 172.5s  clock 0:07.5  BII Crown
       t= 173.0s  clock 0:07.0  BIII Privaty
       t= 173.0s  clock 0:07.0  FULL BURST (until 183.0s)
-    
+
 ### BATTERY 6 — elec-weak T7, RAPI: RED HOOD focus
+
     full bursts: 10
       t=   5.5s  clock 2:54.5  BI Anis: Star
       t=   6.0s  clock 2:54.0  BII Crown
@@ -969,8 +993,9 @@ Deterministic predictions (no seed); the focus setting matters and is stated per
       t= 164.6s  clock 0:15.4  BII Crown
       t= 165.1s  clock 0:14.9  BIII Cinderella
       t= 165.1s  clock 0:14.9  FULL BURST (until 175.1s)
-    
+
 ### Part B — elec-weak T2, default focus (middle = anis-star)
+
     full bursts: 12
       t=   3.9s  clock 2:56.1  BI Anis: Star
       t=   4.3s  clock 2:55.7  BII Crown
@@ -1020,8 +1045,9 @@ Deterministic predictions (no seed); the focus setting matters and is stated per
       t= 173.7s  clock 0:06.3  BII Crown
       t= 174.2s  clock 0:05.8  BIII Cinderella
       t= 174.2s  clock 0:05.8  FULL BURST (until 184.2s)
-    
+
 ### Part B — wind-weak T5, default focus (middle = anis-star)
+
     full bursts: 13
       t=   2.0s  clock 2:58.0  BI Anis: Star
       t=   2.5s  clock 2:57.5  BII Nayuta
@@ -1094,6 +1120,7 @@ electric-weak fight's carries (riding Maiden: Ice Rose's aura) warm 8–19%. Det
 docs/DECISIONS.md and docs/data/damage-calculation.md §1c.
 
 **New findings from the same recording (own increments, not part of the landing):**
+
 - **The fight ran 14 full bursts against the sim's predicted 13** — caster order was exact
   all fight, but real burst cycles run about a second faster than the sim's (13.0s vs
   14.0–14.7s), and the accumulated difference fits an extra burst. The elec-weak and
@@ -1118,6 +1145,7 @@ survived — machine guns are not "never in range" and not "mid-far" as the engi
 roughly nil — the already-cold machine-gun rows shift by under half a point).
 
 Two additional observations from the same video:
+
 - The bonus turns on and off with the boss's physical walk, about 4–6 seconds ahead of or
   behind the scripted band boundaries — the real trigger is the boss's instantaneous distance
   crossing the weapon's optimal ring. The band table is an approximation with a few seconds
@@ -1190,6 +1218,7 @@ increment with the bar traces as the superseding measurement.
 
 The three focused recordings (neutral, native-advantage, and Skill-2-advantage bosses)
 overturned the sim's model of her kit and are being synthesized into a rework:
+
 - Her big banner popup is constant within a fight (25.1M / 27.9M / 32.0M by comp) but NOT a
   fixed payload: in the fire-weak fight one instance landed as a crit (×4/3) and the first
   banner had NO instance (she had fewer than 120 shots fired — under one sticky charge).
@@ -1373,6 +1402,7 @@ same direction, two unit classes, confirmed two independent ways on Brid: Silent
 ## Shotgun accuracy-circle geometry campaign (2026-07-22) — drawn-geometry tracings, pellet markers, replication
 
 Three new measurements landed, all owner-sourced, all recorded in `docs/probe-data/`:
+
 - **Drawn-geometry tracings** (`sg-drawn-geometry.json`): the owner traced, on native-resolution
   frames, the boss silhouette + core (blanc solo recording, near band) and the grey aim circle at
   Hit Rate 0 (Brid: Silent Track solo) and Hit Rate 38.91 (Soda: Twinkling Bunny control) — circle
@@ -1401,12 +1431,12 @@ judges, no engine change, cone stays live, follow-ups recorded.
 **Owner-sourced frame read**, `docs/probes/probe u7/priv focus vid.MP4` @ **15.503 s** (video clock;
 game clock 02:49, so ~11 s into the fight). One popup stack on the same frame:
 
-| popup | colour | identification |
-|---|---|---|
-| 571,999 | red "CORE HIT" | normal-attack core hit |
-| 367,714 | white | normal attack |
-| **37,871,391** | white | **the 1687% Designated-Target rider** |
-| 5,750,750 | white | the 256.17% last-bullet rider |
+| popup          | colour         | identification                        |
+| -------------- | -------------- | ------------------------------------- |
+| 571,999        | red "CORE HIT" | normal-attack core hit                |
+| 367,714        | white          | normal attack                         |
+| **37,871,391** | white          | **the 1687% Designated-Target rider** |
+| 5,750,750      | white          | the 256.17% last-bullet rider         |
 
 **Digit provenance:** first read as `37,071,391`; the `8` is occluded in this frame by an overlapping
 marker. Owner re-read it as **37,871,391** on a cleaner frame, and the arithmetic is independently
@@ -1414,8 +1444,9 @@ decisive — `37,871,391 / 5,750,750 × 256.17 = 1687.00`, i.e. exactly the data
 the `0` reading would imply a non-kit 1651.36.
 
 **What it establishes** (all three from this one stack):
-1. **The rider FIRES in the u7 comp.** `privaty.json`'s note records it as *"ABSENT in a confirmed
-   Privaty-burst Designated window (whole-screen check, no ~25-38M popup)"*. That whole-screen check
+
+1. **The rider FIRES in the u7 comp.** `privaty.json`'s note records it as _"ABSENT in a confirmed
+   Privaty-burst Designated window (whole-screen check, no ~25-38M popup)"_. That whole-screen check
    MISSED it — 37.87M is inside the very band it searched, but occluded. **The "1687 is
    COMP/CONDITION-DEPENDENT (T4 yes / u7 no)" puzzle therefore has no mechanism behind it**: it fires
    in both, and the open question "what makes the 1687 fire in T4 but not the u7 comp?" is answered by
@@ -1425,8 +1456,8 @@ the `0` reading would imply a non-kit 1651.36.
    against a kit ratio of 1687/256.17 = 6.58547 (5 dp). Same frame, same multiplier state ⇒ the 1687
    received every major the 256.17 did. **The shipped `noFb: true` on that block is refuted.**
 3. **It is not a DoT.** It lands in the SAME frame as the last-bullet 256.17 rider and shares its exact
-   buff snapshot — consistent with the kit text (*"Activates when the last bullet hits a target in
-   Designated Target status"*), inconsistent with the shipped `intervalSec 3` DoT encoding.
+   buff snapshot — consistent with the kit text (_"Activates when the last bullet hits a target in
+   Designated Target status"_), inconsistent with the shipped `intervalSec 3` DoT encoding.
 
 **NOT ENACTED.** n=1 frame; this records the observation only. The re-encode (burst-cast `dot` → a
 `lastBullet`-triggered `flatDamage 1687` gated on `requiresTargetStatus: 'Designated Target'`, with her
@@ -1443,14 +1474,14 @@ ceilings (`idoll-ocean` 0★/core 0, `claire` 2★/core 0 — they are not SSR).
 Sources: `marciana-folkwang-snowcrane.jpg` / `emma-claire-idollocean.jpg` (+ the two MP4s, not yet
 processed). Damage = the Battle Records damage row; the ⚔ column is Combat Power, NOT ATK.
 
-| unit | wpn | sim | real | sim/real | \|err\| | board mean for the class |
-|---|---|---|---|---|---|---|
-| `snow-crane` | SR | 29,018,296 | 29,430,776 | 0.986 ▼ | 1.4% | 0.973 |
-| `emma` | MG | 58,117,326 | 59,498,961 | 0.977 ▼ | 2.3% | 0.942 |
-| `claire` | RL | 24,044,093 | 23,474,178 | 1.024 ▲ | 2.4% | 0.967 |
-| `folkwang` | AR | 23,911,667 | 25,017,504 | 0.956 ▼ | 4.4% | 0.965 |
-| `marciana` | SG | 35,163,154 | 41,724,144 | **0.843 ▼** | **15.7%** | 0.875 |
-| `idoll-ocean` | SMG | 23,577,817 | 20,217,421 | **1.166 ▲** | **16.6%** | 1.058 |
+| unit          | wpn | sim        | real       | sim/real    | \|err\|   | board mean for the class |
+| ------------- | --- | ---------- | ---------- | ----------- | --------- | ------------------------ |
+| `snow-crane`  | SR  | 29,018,296 | 29,430,776 | 0.986 ▼     | 1.4%      | 0.973                    |
+| `emma`        | MG  | 58,117,326 | 59,498,961 | 0.977 ▼     | 2.3%      | 0.942                    |
+| `claire`      | RL  | 24,044,093 | 23,474,178 | 1.024 ▲     | 2.4%      | 0.967                    |
+| `folkwang`    | AR  | 23,911,667 | 25,017,504 | 0.956 ▼     | 4.4%      | 0.965                    |
+| `marciana`    | SG  | 35,163,154 | 41,724,144 | **0.843 ▼** | **15.7%** | 0.875                    |
+| `idoll-ocean` | SMG | 23,577,817 | 20,217,421 | **1.166 ▲** | **16.6%** | 1.058                    |
 
 3/6 inside ±3%; median |ratio−1| 4.4%. Every reading matches the DIRECTION of its weapon class's
 board mean, which is the whole-picture check on the basis itself.
@@ -1458,6 +1489,7 @@ board mean, which is the whole-picture check on the basis itself.
 **WHAT THIS LOCALIZES — the reason the basis exists.** None of the six has an override and their
 kits contribute zero damage, so neither outlier can be override calibration debt. Both sit in the
 WEAPON MODEL:
+
 1. **SG.** The SG re-tune thread attributes the SG gap to overrides calibrated against the pre-UNIGEO
    landing table. `marciana` carries no override and is still 15.7% COLD, inside the documented
    12–24% landing-debt band ⇒ a large share of that gap is the LANDING MODEL, not override debt.
@@ -1479,10 +1511,10 @@ Isolating WHICH term of the SMG weapon model is wrong, from `idoll-ocean`'s 1.16
 
 **MEASURED.** Ammo counter (the designated shot clock), `idoll-ocean` focused:
 
-| window | band | ammo readings | rounds | rate |
-|---|---|---|---|---|
-| t=60.0→62.0 | mid | 076 → 066 → 056 → 046 → 036 | 10 per 0.5 s | 20.0/s |
-| t=145.0→145.5 | far | 020 → 010 | 10 per 0.5 s | 20.0/s |
+| window        | band | ammo readings               | rounds       | rate   |
+| ------------- | ---- | --------------------------- | ------------ | ------ |
+| t=60.0→62.0   | mid  | 076 → 066 → 056 → 046 → 036 | 10 per 0.5 s | 20.0/s |
+| t=145.0→145.5 | far  | 020 → 010                   | 10 per 0.5 s | 20.0/s |
 
 Dead linear, two separate range bands. **The sim uses 24/s.**
 
@@ -1495,15 +1527,15 @@ This is why SMG is the only weapon class whose board mean sits above 1.0.
 
 **A/B (`SMGQUANT=1`, isolated worktree).** Confirmed on five further units the measurement never saw:
 
-| unit | 24/s | 20/s |
-|---|---|---|
-| `idoll-ocean` (the measured unit — no override, no damage kit) | 1.166 | **1.018** |
-| `chisato` | 1.154 | **0.975** |
-| `quency-escape-queen` | 1.174 | **1.046** |
-| `little-mermaid` | 1.042 | **0.967** |
-| `nayuta` (kit-dominated ⇒ cadence barely matters) | 0.861 | 0.854 |
-| `liter` (control suite, Tier-0) | **1.208** | **1.031** |
-| `helm` (control suite) | 1.042 | 1.017 |
+| unit                                                           | 24/s      | 20/s      |
+| -------------------------------------------------------------- | --------- | --------- |
+| `idoll-ocean` (the measured unit — no override, no damage kit) | 1.166     | **1.018** |
+| `chisato`                                                      | 1.154     | **0.975** |
+| `quency-escape-queen`                                          | 1.174     | **1.046** |
+| `little-mermaid`                                               | 1.042     | **0.967** |
+| `nayuta` (kit-dominated ⇒ cadence barely matters)              | 0.861     | 0.854     |
+| `liter` (control suite, Tier-0)                                | **1.208** | **1.031** |
+| `helm` (control suite)                                         | 1.042     | 1.017     |
 
 `liter`'s per-comp spread tightens [1.222 1.183 1.252 1.174] → [1.039 1.000 1.067 1.019];
 board-read ±5% 10→13, "worse" 26→25. **All 11 measured full-burst assertions pass in BOTH arms.**
@@ -1519,14 +1551,14 @@ shipped as a dead knob.
 default turns 6 unit tests red. Five are FB-count DISCRIMINATION assertions whose vehicle is `liter`
 (an SMG): at 20/s the two arms of each tie, so the fixture stops discriminating — fixture rebuilding,
 not an engine fault. **The sixth is NOT understood:** `modernia` (MG) begins showing a 10-round ammo
-spend per pull in `hits-per-shot.test.ts`. The likely cause is `liter`'s *"Max Ammunition Capacity
-▲45.17%"* proc retiming so its refill lands inside a measured pull-pair window and slips past that
+spend per pull in `hits-per-shot.test.ts`. The likely cause is `liter`'s _"Max Ammunition Capacity
+▲45.17%"_ proc retiming so its refill lands inside a measured pull-pair window and slips past that
 test's `d <= 20` exclusion filter — **hypothesis, not a verified explanation.**
 
 > **ENACTED (2026-07-23) — flipped default-ON, `SMGQUANT` retired, revert is `SMGRATE=24`
 > (DECISIONS 2026-07-23).** All six red tests were resolved without silencing anything. The
 > `modernia` failure was root-caused (the above hypothesis was CLOSE but WRONG on mechanism): it is
-> not `liter`'s ▲ refill landing in the pull pair, but `modernia`'s OWN S1 *"Max Ammunition ▼5.04%"*
+> not `liter`'s ▲ refill landing in the pull pair, but `modernia`'s OWN S1 _"Max Ammunition ▼5.04%"_
 > re-landing on a pull frame and clipping the belt overhang that `liter`'s already-EXPIRED ▲ left
 > over-cap — delta 10 = 8-round clip + 2-round spend. The test's exclusion was re-keyed from the
 > `d≤20` magnitude fudge to the clip's CAUSE (a `maxAmmoPct<0` buffApply on the pull frame) plus a
@@ -1547,11 +1579,11 @@ Re-recorded so `marciana` (SG/Iron, exact slug `marciana` — NOT `marciana-mari
 unfocused). This is an **independent second run**, so it re-scores every unit — first `n=2` for any
 clean-weapon unit. Parse persisted: `docs/probe-data/marciana-sg-band.json` (+ catalog).
 
-| unit | wpn | sim | real (run 2) | ratio | run 1 |
-|---|---|---|---|---|---|
-| `snow-crane` | SR | 29,018,296 | 29,571,250 | 0.981 ▼ | 0.986 |
-| `folkwang` | AR | 23,911,667 | 24,626,087 | 0.971 ▼ | 0.956 |
-| `marciana` | SG | 35,163,154 | **41,392,267** | **0.850 ▼** | 0.843 |
+| unit         | wpn | sim        | real (run 2)   | ratio       | run 1 |
+| ------------ | --- | ---------- | -------------- | ----------- | ----- |
+| `snow-crane` | SR  | 29,018,296 | 29,571,250     | 0.981 ▼     | 0.986 |
+| `folkwang`   | AR  | 23,911,667 | 24,626,087     | 0.971 ▼     | 0.956 |
+| `marciana`   | SG  | 35,163,154 | **41,392,267** | **0.850 ▼** | 0.843 |
 
 **The gap reproduces** — `marciana` 0.843 → 0.850, only 0.8% run-to-run (repeatability is 0.5–3.5%),
 so the 15% SG cold-read is real signal. (⚔ reads 88364/92177/91943 — three different numbers for
@@ -1619,16 +1651,16 @@ Full-Burst duration measurement.
 Three detectors, merged: the drain window (spine), the whole-frame golden splash (independent screen
 region), and the stage-3 hexagon. ~12 s per whole video, one ffmpeg decode, no model anywhere.
 
-| recording | measured FB | scan.ts | corroborated |
-|---|---|---|---|
-| `probe u7/13 fb count wind weak vid.MP4` | 13 | **13** | 13/13 |
-| `probe u7/12 burst count elec weak vid.mov` | 12 | **12** | 12/12 |
-| `rrh probe/mika t255 11fb vid.mov` | 11 | **11** | 11/11 |
-| `rrh probe/team 1 t256 burst 13fb.MP4` | 13 | **13** | 13/13 |
-| `rrh probe/team 2 t257 burst 14fb vid.MP4` | 14 | **14** | 14/14 |
-| `rrh probe/team 3 t256 burst 13fb vid.MP4` | 13 | **13** | 13/13 |
-| `rrh probe/windweak t257 13fb.mov` | 13 | **13** | 13/13 |
-| `control + carry/soda tb control.mov` | 10 (owner countdown read) | **10** | 10/10 |
+| recording                                   | measured FB               | scan.ts | corroborated |
+| ------------------------------------------- | ------------------------- | ------- | ------------ |
+| `probe u7/13 fb count wind weak vid.MP4`    | 13                        | **13**  | 13/13        |
+| `probe u7/12 burst count elec weak vid.mov` | 12                        | **12**  | 12/12        |
+| `rrh probe/mika t255 11fb vid.mov`          | 11                        | **11**  | 11/11        |
+| `rrh probe/team 1 t256 burst 13fb.MP4`      | 13                        | **13**  | 13/13        |
+| `rrh probe/team 2 t257 burst 14fb vid.MP4`  | 14                        | **14**  | 14/14        |
+| `rrh probe/team 3 t256 burst 13fb vid.MP4`  | 13                        | **13**  | 13/13        |
+| `rrh probe/windweak t257 13fb.mov`          | 13                        | **13**  | 13/13        |
+| `control + carry/soda tb control.mov`       | 10 (owner countdown read) | **10**  | 10/10        |
 
 **Exact on 8 of 8.** Per-detector recall: drain window 8/8 exact, splash 7/8 (it under-reads on a
 washed-out background), stage-3 hexagon ~80% (a screen-wide colour wash hides it).
@@ -1685,7 +1717,7 @@ class. That is the entanglement that probe's own notes describe.
 
 Worth recording because it shaped the rule: the FIRST draft (agreeing looks + in-band only)
 auto-accepted 4, of which **2 were bad** — a 10,818,572 read as "normal" whose only matching bands
-were `skill:core`/`skill:crit+core`, and a 64,733 called "crit" when 64,733 is that unit's *non-crit*
+were `skill:core`/`skill:crit+core`, and a 64,733 called "crit" when 64,733 is that unit's _non-crit_
 normal. Both were caught by adding two conditions: the matched band variant must be reachable from
 the reported class, and the value must match exactly one variant. ⇒ **The auto-accept path itself is
 UNEXERCISED** and stays unproven until a focus unit with a clean band trips it.

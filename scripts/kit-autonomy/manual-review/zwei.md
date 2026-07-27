@@ -13,6 +13,7 @@ chargeFrames 0 · hitsPerShot 10 · normalMult 201.5 / coreMult 200 · treasure 
 ---
 
 ## 1. Real kit (data/characters.json — ground truth)
+
 - **S1** ■ entering Full Burst → all allies: Pierce Damage ▲ 20.13% for 1 round(s) · Pierce Damage ▲ 10.06% for 10 sec.
   - ■ normal attack during Full Burst → all allies: Pierce Damage ▲ 24.99%, stacks up to 3, for 1 round(s).
 - **S2** ■ after 5 normal attacks → all allies: Restores 7.52% of Cover HP.
@@ -25,6 +26,7 @@ chargeFrames 0 · hitsPerShot 10 · normalMult 201.5 / coreMult 200 · treasure 
 ---
 
 ## 2. What the code does (the faithful override, line by line)
+
 - **S1a** `fullBurstEnter → allies → pierceDamagePct 20.13, durationShots:1` — a ROUND count (holder-scoped, no
   wall-clock expiry), NOT the stale parser-baseline `durationSec:5`. **This was the primary FIX** (the `durationShots`
   primitive now exists; helm carrier). Coexists with the 10.06 line as a distinct buff (additive 30.19% early FB).
@@ -44,7 +46,7 @@ chargeFrames 0 · hitsPerShot 10 · normalMult 201.5 / coreMult 200 · treasure 
   silent on rotations Zwei does NOT burst (superior to fbGate in multi-B1 comps). Ungated, this line is the single
   largest over-credit in the kit (+45% team crit permanently) — correctly avoided.
 - **Burst-self** `burstCast → self → weaponSwap{damagePct:50.69, chargeTimeSec:1.2, chargeMultPct:300, maxAmmo:1,
-  hasPierce:true, durationSec:10⚑}` — charge cannon; `hasPierce` is SWAP-SCOPED ("Additional Effect: Pierce" on the
+hasPierce:true, durationSec:10⚑}` — charge cannon; `hasPierce` is SWAP-SCOPED ("Additional Effect: Pierce" on the
   changed weapon), NOT a unit-wide flag (her normal SG shots are not pierce-tagged). All three classic swap near-misses
   avoided (chargeMultPct present → ~152% full-charge not 50.69%; hasPierce present; windowed not permanent).
 - **Burst-allies** `burstCast → allies → pierceDamagePct 25.03, durationSec:10` — the "Pierce Attacks 101" status;
@@ -52,15 +54,17 @@ chargeFrames 0 · hitsPerShot 10 · normalMult 201.5 / coreMult 200 · treasure 
   (see §3 — the adjudicated fork).
 
 All `pierceDamagePct` feeds the Damage-Up bucket ONLY on pierce-tagged hits (engine sim.ts:1400-1401): pierce carries
-+ Zwei's own swapped cannon shots. Inert on non-pierce allies by design. (The schema's "parsed but inert in v1" comment
-on `pierceDamagePct` is STALE — the plumbing is live; the judge confirmed.)
+
+- Zwei's own swapped cannon shots. Inert on non-pierce allies by design. (The schema's "parsed but inert in v1" comment
+  on `pierceDamagePct` is STALE — the plumbing is live; the judge confirmed.)
 
 ---
 
 ## 3. The adjudicated fork — `gainPierce` on "Pierce Attacks 101" (OWNER FOOTAGE ACTION)
+
 - **Driver + S2b(fable):** `pierceDamagePct 25.03` only, **no grant**. **S5 + S6 (both opus):** `gainPierce(allies,10s)`
-  + `pierceDamagePct 25.03` (the status NAME "Pierce Attacks 101" denotes granting pierce; whole-picture — without a
-  grant the pierce package is inert on non-pierce allies).
+  - `pierceDamagePct 25.03` (the status NAME "Pierce Attacks 101" denotes granting pierce; whole-picture — without a
+    grant the pierce package is inert on non-pierce allies).
 - **Judge (opus) UPHELD the no-grant reading.** Decisive evidence: the SAME burst block uses the explicit pierce-grant
   vocabulary "Additional Effect: Pierce" for Zwei's swapped weapon, but "Pierce Damage ▲ 25.03%" for the ally line — the
   designers had the grant wording in hand and chose a damage-bucket stat. Inferring a team-wide pierce grant from a
@@ -73,6 +77,7 @@ on `pierceDamagePct` is STALE — the plumbing is live; the judge confirmed.)
 ---
 
 ## 4. Owner spot-check cluster (the residual — systematic-prior-prone lines)
+
 1. **`gainPierce` (§3)** — the load-bearing fork; 2/4 agents split; footage-confirm the pierce grant. (trigger-identity / scope)
 2. **Burst swap duration + shot economy** — kit-silent; authored 10s to match the PA101 window, ~3 full-charge
    shots/window (1.2s charge + 1-ammo reload at 111f). Datamine `duration_value: "1 Shot"` is ambiguous (a 1-shot swap
@@ -87,6 +92,7 @@ on `pierceDamagePct` is STALE — the plumbing is live; the judge confirmed.)
 ---
 
 ## 5. Cross-family provenance + convergence
+
 - **S2b** (fable, pre-op adversarial): converged on 7/8 load-bearing lines; surfaced the `swapGate` proxy (adopted) and
   the cover-HP UNMODELED call (adopted); did NOT infer gainPierce (agreed with driver).
 - **S5** (opus, blind test): 15/19 green vs driver override; 3 RED classified — Z6 RECON_ERROR (over-tight 2% tolerance
@@ -96,6 +102,7 @@ on `pierceDamagePct` is STALE — the plumbing is live; the judge confirmed.)
 - **S7** (opus, judge): GO 0.9, gainPierce adjudicated no-grant, discrimination OK, fire-rate check passes, no REAL-GOTCHA.
 
 ## 6. Board / fit note (non-gating)
+
 Zwei is MODEL_ONLY (no recording) — no board score. The faithful encoding moved her modeled damage 93.2M → 61.2M vs the
 parser-baseline: removing the unit-wide `hasPierce` over-credit (pierce now swap-scoped), removing the cover-HP→crown
 tandem pump, and tightening the "1 round" lines from `durationSec:5` to `durationShots:1`. This is faithful<over-credited

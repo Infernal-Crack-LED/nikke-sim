@@ -137,9 +137,7 @@
   "unmodeled": {
     "skill1": [],
     "skill2": [],
-    "burst": [
-      "Buff takes effect depending on the area hit."
-    ]
+    "burst": ["Buff takes effect depending on the area hit."]
   },
   "caveats": [
     "⚑ skill1 gainPierce is kit-scoped 'for 1 shot' — the engine's gainPierce has only durationSec (no durationShots), so 1.2s is an UNMEASURED stand-in for exactly one full-charge shot (chargeFrames 60 = 1.0s + inter-shot delay). Too long = extra pierce-tagged shots feeding the 13.55% Pierce Damage buff.",

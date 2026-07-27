@@ -152,18 +152,18 @@ ticking while units can't shoot — do not use it); and Full-Burst cut-ins pause
 the FB-splash detector (probe-processing step 4) must run alongside and those windows must be
 attributed to bursts, never to boss downtime.
 
-| Parameter | Provenance | Recipe |
-|---|---|---|
-| Forced cover | video-derived (PRIMARY: face count) | five simultaneous faces = force-covered; runs of face-frames = cover windows |
-| Downtime windows (offscreen/invuln) | video-derived | ammo-box tracking at 2-4 Hz: digit-region static or box absent, with ammo > 0 at window start; classify each window by surrounding frames (boss absent, telegraph, FB splash ⇒ not downtime) |
-| QTE phases | OWNER-AUTHORED | owner declares onset times, durations, `circleDamageCounts`, `gaugeFills` from playing the fight; toolchain never derives these |
-| Element-lock phases | OWNER-AUTHORED | owner declares windows + non-advantaged semantics |
-| Off-screen / walk transitions | video-derived | boss absent from frame; confirm the per-boss transition length |
-| Range script | video-derived | popup class-ratio flips per weapon band (the crown-solo MG method) + visual distance track; output `fromSec/band` rows; note lead/lag ±4-6s approximation |
-| Core-exposed uptime | video-derived | classify.py timeline of red "CORE HIT" popups from a high-core-rate focus unit (AR, auto-aim); windows where damage continues but core popups vanish = core hidden; normalize by that unit's known band core rate |
-| Boss DEF | DEFERRED TO V2 (owner ruling) | v1 ships `def` as a ⚑ estimate (the known-boss 140, effect ~0.1%/hit per A26 — too small to spend harness on now); the v2 recipe stays on record: real-stats popup arithmetic (unit's real final ATK from its stat sheet — never ⚔ Combat Power, never scope-lock `reference-stats.json` — solve `ATK − DEF` from a clean pre-FB white popup) |
-| Hitbox / SG landing | video-derived + arithmetic | the drake solo method (ammo-counter deltas + damage arithmetic, docs/probe-data/sg-pellet-landing.json) on an owner SG solo vs the boss |
-| Element / parts / gimmick inventory | external + video confirm | datamine + wiki; register sources in `data/sources.json` per the accreditation rule |
+| Parameter                           | Provenance                          | Recipe                                                                                                                                                                                                                                                                                                                                        |
+| ----------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Forced cover                        | video-derived (PRIMARY: face count) | five simultaneous faces = force-covered; runs of face-frames = cover windows                                                                                                                                                                                                                                                                  |
+| Downtime windows (offscreen/invuln) | video-derived                       | ammo-box tracking at 2-4 Hz: digit-region static or box absent, with ammo > 0 at window start; classify each window by surrounding frames (boss absent, telegraph, FB splash ⇒ not downtime)                                                                                                                                                  |
+| QTE phases                          | OWNER-AUTHORED                      | owner declares onset times, durations, `circleDamageCounts`, `gaugeFills` from playing the fight; toolchain never derives these                                                                                                                                                                                                               |
+| Element-lock phases                 | OWNER-AUTHORED                      | owner declares windows + non-advantaged semantics                                                                                                                                                                                                                                                                                             |
+| Off-screen / walk transitions       | video-derived                       | boss absent from frame; confirm the per-boss transition length                                                                                                                                                                                                                                                                                |
+| Range script                        | video-derived                       | popup class-ratio flips per weapon band (the crown-solo MG method) + visual distance track; output `fromSec/band` rows; note lead/lag ±4-6s approximation                                                                                                                                                                                     |
+| Core-exposed uptime                 | video-derived                       | classify.py timeline of red "CORE HIT" popups from a high-core-rate focus unit (AR, auto-aim); windows where damage continues but core popups vanish = core hidden; normalize by that unit's known band core rate                                                                                                                             |
+| Boss DEF                            | DEFERRED TO V2 (owner ruling)       | v1 ships `def` as a ⚑ estimate (the known-boss 140, effect ~0.1%/hit per A26 — too small to spend harness on now); the v2 recipe stays on record: real-stats popup arithmetic (unit's real final ATK from its stat sheet — never ⚔ Combat Power, never scope-lock `reference-stats.json` — solve `ATK − DEF` from a clean pre-FB white popup) |
+| Hitbox / SG landing                 | video-derived + arithmetic          | the drake solo method (ammo-counter deltas + damage arithmetic, docs/probe-data/sg-pellet-landing.json) on an owner SG solo vs the boss                                                                                                                                                                                                       |
+| Element / parts / gimmick inventory | external + video confirm            | datamine + wiki; register sources in `data/sources.json` per the accreditation rule                                                                                                                                                                                                                                                           |
 
 ## 3. The flow — mirroring kit-parse end to end
 
@@ -275,6 +275,7 @@ composition; community footage (ruling 1); arena/PvP (standing); small-hitbox ge
 landing beyond a per-boss measured table.
 
 ## Change log
+
 - 2026-07-16 rev 3 — owner review 2: DEF derivation deferred to v2 (ruling 5); face-count added
   as the PRIMARY forced-cover metric (ruling 6) after the owner spotted the 0-ammo-reload edge
   case in the weapon-state signal; blind test against the known profile on

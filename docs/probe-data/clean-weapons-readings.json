@@ -7,7 +7,10 @@
     "burstsDisabled": true,
     "coreHitRate": 1,
     "durationSec": 180,
-    "rarityCeilings": { "idoll-ocean": { "stars": 0, "core": 0 }, "claire": { "stars": 2, "core": 0 } }
+    "rarityCeilings": {
+      "idoll-ocean": { "stars": 0, "core": 0 },
+      "claire": { "stars": 2, "core": 0 }
+    }
   },
   "runs": [
     {
@@ -16,7 +19,11 @@
       "date": "2026-07-23",
       "comp": ["emma", "claire", "idoll-ocean"],
       "focus": "idoll-ocean",
-      "totals": { "emma": 59498961, "claire": 23474178, "idoll-ocean": 20217421 }
+      "totals": {
+        "emma": 59498961,
+        "claire": 23474178,
+        "idoll-ocean": 20217421
+      }
     },
     {
       "recording": "docs/probes/clean-weapons/marciana-folkwang-snowcrane.MP4",
@@ -25,7 +32,11 @@
       "comp": ["marciana", "folkwang", "snow-crane"],
       "focus": "snow-crane",
       "focusNote": "slot 3 = snow-crane, so marciana is UNFOCUSED here — her popups are unreadable in this recording (totals are still valid).",
-      "totals": { "marciana": 41724144, "folkwang": 25017504, "snow-crane": 29430776 }
+      "totals": {
+        "marciana": 41724144,
+        "folkwang": 25017504,
+        "snow-crane": 29430776
+      }
     },
     {
       "recording": "docs/probes/clean-weapons/snowcrane-folkwang-marciana.MP4",
@@ -34,7 +45,11 @@
       "comp": ["snow-crane", "folkwang", "marciana"],
       "focus": "marciana",
       "focusNote": "Re-recorded with marciana in slot 3 so she IS the camera focus — this is the recording the SG landing probe must use (docs/handoffs/2026-07-23-sg-landing-probe.md).",
-      "totals": { "snow-crane": 29571250, "folkwang": 24626087, "marciana": 41392267 }
+      "totals": {
+        "snow-crane": 29571250,
+        "folkwang": 24626087,
+        "marciana": 41392267
+      }
     }
   ]
 }

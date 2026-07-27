@@ -114,9 +114,7 @@
       "Spy Lens: Minimum Effective Range ▲ 4.44%, stacks up to 10 time(s) and lasts for 5 sec."
     ],
     "skill2": [],
-    "burst": [
-      "Minimum Effective Range ▲ 55.56% for 10 sec."
-    ]
+    "burst": ["Minimum Effective Range ▲ 55.56% for 10 sec."]
   },
   "caveats": [
     "⚑ Minimum Effective Range ▲ (S1 Spy Lens 4.44%/stack, burst 55.56%) has NO StatKey in types.ts — the range-band/+30% full-range path is engine-automatic and takes no kit modifier. Both magnitudes are dropped; only the Spy Lens STACK COUNT is modeled (as the `spyLens` resource) because skill2's gate reads it. If the engine ever gains a range-band stat, these are the two lines to re-enact.",

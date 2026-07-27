@@ -73,7 +73,7 @@ function run(opts: any): { res: any; events: Ev[] } {
 // CharacterSkills carrying its own blocks[]. Handle both; there is no top-level ov.blocks.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 const eff = (b: any): any[] => b?.effects ?? [];
@@ -90,11 +90,11 @@ function pickBlock(
   ov: any,
   slot: any,
   pred: (b: any) => boolean,
-  label: string,
+  label: string
 ): any {
   const b = slotBlocks(ov, slot).find(pred);
   if (!b)
-    throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);
+    {throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);}
   return b;
 }
 
@@ -102,31 +102,31 @@ function removeEffect(
   ov: any,
   slot: any,
   pred: (e: any) => boolean,
-  label: string,
+  label: string
 ): void {
   const arr = slotBlocks(ov, slot);
   let hit = false;
   for (let i = arr.length - 1; i >= 0; i--) {
     const b = arr[i];
-    if (!eff(b).some(pred)) continue;
+    if (!eff(b).some(pred)) {continue;}
     hit = true;
     const rest = eff(b).filter((e: any) => !pred(e));
-    if (rest.length === 0) arr.splice(i, 1);
-    else b.effects = rest;
+    if (rest.length === 0) {arr.splice(i, 1);}
+    else {b.effects = rest;}
   }
   if (!hit)
-    throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);
+    {throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);}
 }
 
 function ungateElement(
   ov: any,
   slot: any,
   pred: (b: any) => boolean,
-  fallback: any,
+  fallback: any
 ): void {
   const b = pickBlock(ov, slot, pred, 'element-gated Damage Taken block');
   delete b.bossElementGate;
-  if (b.trigger?.kind === 'bossElement') b.trigger = fallback;
+  if (b.trigger?.kind === 'bossElement') {b.trigger = fallback;}
 }
 
 // ---- event helpers ----------------------------------------------------------
@@ -165,8 +165,8 @@ function multisetDiff(a: Ev[], b: Ev[]): Ev[] {
   for (const e of a) {
     const k = sigOf(e);
     const c = counts.get(k) ?? 0;
-    if (c > 0) counts.set(k, c - 1);
-    else out.push(e);
+    if (c > 0) {counts.set(k, c - 1);}
+    else {out.push(e);}
   }
   return out;
 }
@@ -176,7 +176,7 @@ const AMOUNT_FIELDS = ['amount', 'damage', 'dmg', 'total'];
 function amountOf(e: Ev): number | undefined {
   for (const f of AMOUNT_FIELDS) {
     const v = e[f];
-    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'number' && Number.isFinite(v)) {return v;}
   }
   return undefined;
 }
@@ -185,7 +185,7 @@ const near = (a: any, b: number) =>
 const teamTotal = (res: any) =>
   Object.values(totals(res) as Record<string, number>).reduce(
     (s, v) => s + v,
-    0,
+    0
   );
 
 // ---- runs (hoisted; each is a full 180s sim) --------------------------------
@@ -209,9 +209,9 @@ const base = run(OPTS);
 const s1RiderOff = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      removeEffect(ov, 'skill1', isFlat, 'skill1 flatDamage 636%'),
-    ),
-  ),
+      removeEffect(ov, 'skill1', isFlat, 'skill1 flatDamage 636%')
+    )
+  )
 );
 const s1RiderHalf = run(
   withOv(
@@ -220,11 +220,11 @@ const s1RiderHalf = run(
         ov,
         'skill1',
         (bl: any) => eff(bl).some(isFlat),
-        'skill1 flatDamage',
+        'skill1 flatDamage'
       );
-      for (const e of eff(b)) if (isFlat(e)) e.atkPct = e.atkPct / 2;
-    }),
-  ),
+      for (const e of eff(b)) {if (isFlat(e)) {e.atkPct = e.atkPct / 2;}}
+    })
+  )
 );
 const s1RiderBurstCast = run(
   withOv(
@@ -233,18 +233,18 @@ const s1RiderBurstCast = run(
         ov,
         'skill1',
         (bl: any) => eff(bl).some(isFlat),
-        'skill1 flatDamage',
+        'skill1 flatDamage'
       );
       b.trigger = { kind: 'burstCast' };
-    }),
-  ),
+    })
+  )
 );
 const s2RiderOff = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
-      removeEffect(ov, 'skill2', isFlat, 'skill2 flatDamage 675%'),
-    ),
-  ),
+      removeEffect(ov, 'skill2', isFlat, 'skill2 flatDamage 675%')
+    )
+  )
 );
 const s2RiderHalf = run(
   withOv(
@@ -253,11 +253,11 @@ const s2RiderHalf = run(
         ov,
         'skill2',
         (bl: any) => eff(bl).some(isFlat),
-        'skill2 flatDamage',
+        'skill2 flatDamage'
       );
-      for (const e of eff(b)) if (isFlat(e)) e.atkPct = e.atkPct / 2;
-    }),
-  ),
+      for (const e of eff(b)) {if (isFlat(e)) {e.atkPct = e.atkPct / 2;}}
+    })
+  )
 );
 const s2Count10 = run(
   withOv(
@@ -266,22 +266,22 @@ const s2Count10 = run(
         ov,
         'skill2',
         (bl: any) => eff(bl).some(isFlat),
-        'skill2 flatDamage',
+        'skill2 flatDamage'
       );
       // ADAPTED: double the driver's ACTUAL threshold (engine hitCount counts pellet-hits; the
       // driver's measured 50 = 5 pulls). Preserves the blind intent "double threshold -> half count".
       b.trigger = { kind: 'hitCount', count: (b.trigger?.count ?? 5) * 2 };
-    }),
-  ),
+    })
+  )
 );
 const s1DebuffUngated = run(
   withOv(
     withPatchedOverride(SLUG, (ov: any) =>
       ungateElement(ov, 'skill1', (b: any) => eff(b).some(isDamageTaken), {
         kind: 'fullBurstEnter',
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 const s2DebuffUngated = run(
   withOv(
@@ -289,9 +289,9 @@ const s2DebuffUngated = run(
       ungateElement(ov, 'skill2', (b: any) => eff(b).some(isDamageTaken), {
         kind: 'hitCount',
         count: 10,
-      }),
-    ),
-  ),
+      })
+    )
+  )
 );
 const burstBuffOff = run(
   withOv(
@@ -300,10 +300,10 @@ const burstBuffOff = run(
         ov,
         'burst',
         isAtkGrant,
-        'burst ATK grant 66.52% of caster ATK',
-      ),
-    ),
-  ),
+        'burst ATK grant 66.52% of caster ATK'
+      )
+    )
+  )
 );
 
 // ---- derived event sets -----------------------------------------------------
@@ -335,7 +335,7 @@ describe(SLUG + ' - blind kit spec', () => {
 
   it('skill1 Damage Taken block is otherwise correct: ungating it applies 15.12% once per FB', () => {
     const dt = buffs(s1DebuffUngated).filter(
-      (e) => e.stat === 'damageTakenPct' && near(e.value, 15.12),
+      (e) => e.stat === 'damageTakenPct' && near(e.value, 15.12)
     );
     expect(dt.length).toBe(fbStarts); // fullBurstEnter trigger, one application per FB entry
     for (const e of dt) {
@@ -354,7 +354,7 @@ describe(SLUG + ' - blind kit spec', () => {
       expect(e.srcSlot).toBe('skill1');
       expect(e.inFullBurst).toBe(true); // FB-enter timing: the rider takes the FB major
       const coreish = e.coreRate ?? e.core;
-      if (typeof coreish === 'number') expect(coreish).toBe(0); // no core strike text in the kit
+      if (typeof coreish === 'number') {expect(coreish).toBe(0);} // no core strike text in the kit
     }
   });
 
@@ -378,12 +378,12 @@ describe(SLUG + ' - blind kit spec', () => {
   it('skill2 Damage Taken 12.12% is element-gated (inert on Fire) but otherwise live at a 10-attack counter', () => {
     expect(
       buffs(base).filter(
-        (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12),
-      ),
+        (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12)
+      )
     ).toHaveLength(0);
 
     const dt = buffs(s2DebuffUngated).filter(
-      (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12),
+      (e) => e.stat === 'damageTakenPct' && near(e.value, 12.12)
     );
     expect(dt.length).toBeGreaterThan(0);
     for (const e of dt) {
@@ -400,7 +400,7 @@ describe(SLUG + ' - blind kit spec', () => {
   // --- skill2 b) 675% of final ATK after 5 normal attacks ---------------------
   it('skill2 675% rider runs off a 5-attack counter, not a full-burst or per-shot trigger', () => {
     expect(bridS2Riders.length).toBeGreaterThan(fbStarts); // not FB-keyed
-    for (const e of bridS2Riders) expect(e.srcSlot).toBe('skill2');
+    for (const e of bridS2Riders) {expect(e.srcSlot).toBe('skill2');}
     // Nearest-wrong: threshold 10 (or a per-shot trigger). Doubling the threshold must halve
     // the fire count; a shotFired encoding would land near 0.1 and fail this band.
     const ratio = bridS2Riders10.length / bridS2Riders.length;

@@ -21,27 +21,50 @@ const RULES = ['perkit', 'timing', 'dotfb', 'seqoff', 'noskillfb'];
 
 function ratiosFor(rule: string): Map<string, number[]> {
   const out = execFileSync('npx', ['tsx', 'scripts/experiment.ts'], {
-    env: { ...process.env, FBRULE: rule }, encoding: 'utf8', maxBuffer: 1 << 24,
+    env: { ...process.env, FBRULE: rule },
+    encoding: 'utf8',
+    maxBuffer: 1 << 24,
   });
   const m = new Map<string, number[]>();
   for (const line of out.split('\n')) {
     const mm = line.match(/^(\S+)\s+shots.*ratio\s+([\d.]+)/);
-    if (mm) { if (!m.has(mm[1])) m.set(mm[1], []); m.get(mm[1])!.push(Number(mm[2])); }
+    if (mm) {
+      if (!m.has(mm[1])) {m.set(mm[1], []);}
+      m.get(mm[1])!.push(Number(mm[2]));
+    }
   }
   return m;
 }
 
-function mae(m: Map<string, number[]>): { mae: number; n: number; within10: number } {
-  let s = 0, n = 0, w = 0;
-  for (const arr of m.values()) for (const r of arr) { s += Math.abs(r - 1); n++; if (r >= 0.9 && r <= 1.1) w++; }
+function mae(m: Map<string, number[]>): {
+  mae: number;
+  n: number;
+  within10: number;
+} {
+  let s = 0,
+    n = 0,
+    w = 0;
+  for (const arr of m.values())
+    {for (const r of arr) {
+      s += Math.abs(r - 1);
+      n++;
+      if (r >= 0.9 && r <= 1.1) {w++;}
+    }}
   return { mae: s / n, n, within10: w / n };
 }
 
-console.log('FB HEURISTIC LAB — board fit per candidate rule (range is settled: skills never get +30%)\n');
+console.log(
+  'FB HEURISTIC LAB — board fit per candidate rule (range is settled: skills never get +30%)\n'
+);
 const byRule = new Map<string, Map<string, number[]>>();
-for (const rule of RULES) byRule.set(rule, ratiosFor(rule));
+for (const rule of RULES) {byRule.set(rule, ratiosFor(rule));}
 
-console.log('rule'.padEnd(12) + 'board MAE'.padStart(11) + 'within±10%'.padStart(12) + '   note');
+console.log(
+  'rule'.padEnd(12) +
+    'board MAE'.padStart(11) +
+    'within±10%'.padStart(12) +
+    '   note'
+);
 const notes: Record<string, string> = {
   perkit: 'baseline (per-kit noFb flags, calibrated)',
   timing: 'ALL non-burst skills get FB (drops every noFb exception)',
@@ -51,7 +74,12 @@ const notes: Record<string, string> = {
 };
 for (const rule of RULES) {
   const s = mae(byRule.get(rule)!);
-  console.log(rule.padEnd(12) + s.mae.toFixed(4).padStart(11) + `${(s.within10 * 100).toFixed(0)}%`.padStart(12) + `   ${notes[rule]}`);
+  console.log(
+    rule.padEnd(12) +
+      s.mae.toFixed(4).padStart(11) +
+      `${(s.within10 * 100).toFixed(0)}%`.padStart(12) +
+      `   ${notes[rule]}`
+  );
 }
 
 // units each rule moves vs perkit
@@ -61,23 +89,78 @@ for (const rule of RULES.slice(1)) {
   const moved: string[] = [];
   for (const [slug, arr] of cur) {
     const b = base.get(slug) ?? [];
-    const d = arr.map((r, i) => r - (b[i] ?? r)).reduce((a, c) => Math.abs(c) > 0.005 ? a + 1 : a, 0);
-    if (d) moved.push(slug);
+    const d = arr
+      .map((r, i) => r - (b[i] ?? r))
+      .reduce((a, c) => (Math.abs(c) > 0.005 ? a + 1 : a), 0);
+    if (d) {moved.push(slug);}
   }
-  console.log(`\n[${rule}] moves ${moved.length} units vs perkit: ${moved.join(', ') || '(none)'}`);
+  console.log(
+    `\n[${rule}] moves ${moved.length} units vs perkit: ${moved.join(', ') || '(none)'}`
+  );
 }
 
-console.log(`\n${'='.repeat(78)}\nMEASURED GROUND TRUTH — the real arbiter (a general rule MUST match these)\n${'='.repeat(78)}`);
-const GROUND: { unit: string; instance: string; fb: 'ON' | 'OFF'; evidence: string }[] = [
-  { unit: 'ein', instance: 'feathers (flatDamage)', fb: 'ON', evidence: 'Prydwen + note: "feathers get the FB multiplier, not the +30% range"' },
-  { unit: 'liberalio', instance: '202.5% core-hit proc', fb: 'ON', evidence: 'MEASURED 2026-07-14: orange proc = white ×1.3333 (crit on FB-raised major); noFb was a removed relic' },
-  { unit: 'ginmy DoT test', instance: 'generic DoT tick', fb: 'ON', evidence: 'MEASURED (nikke_dot_test): Mana DoT 297,240 in-game = 297,243 predicted WITH ×1.5 FB' },
-  { unit: '(any)', instance: 'burst-cast nuke', fb: 'OFF', evidence: 'U10 + JP snapshot rule + our privaty nuke (2,422,498 = FB-off): burst dmg snapshots at USE-time, before FB flips on' },
-  { unit: 'modernia', instance: 'Paradise Lost (失楽園)', fb: 'OFF', evidence: 'note.com: the ONE genuine type-exemption — no crit, no FB' },
-  { unit: 'cinderella', instance: 'burst FRONT/instant hit', fb: 'OFF', evidence: 'KR dcinside (measured): front dmg misses +50% + FB-entry buffs (lands before FB active)' },
-  { unit: 'cinderella', instance: 'burst ADDITIONAL dmg (28.9%×stacks)', fb: 'ON', evidence: 'KR dcinside (measured): same burst, additional dmg GETS +50% (ticks during FB) — proves TIMING not type' },
+console.log(
+  `\n${'='.repeat(78)}\nMEASURED GROUND TRUTH — the real arbiter (a general rule MUST match these)\n${'='.repeat(78)}`
+);
+const GROUND: {
+  unit: string;
+  instance: string;
+  fb: 'ON' | 'OFF';
+  evidence: string;
+}[] = [
+  {
+    unit: 'ein',
+    instance: 'feathers (flatDamage)',
+    fb: 'ON',
+    evidence:
+      'Prydwen + note: "feathers get the FB multiplier, not the +30% range"',
+  },
+  {
+    unit: 'liberalio',
+    instance: '202.5% core-hit proc',
+    fb: 'ON',
+    evidence:
+      'MEASURED 2026-07-14: orange proc = white ×1.3333 (crit on FB-raised major); noFb was a removed relic',
+  },
+  {
+    unit: 'ginmy DoT test',
+    instance: 'generic DoT tick',
+    fb: 'ON',
+    evidence:
+      'MEASURED (nikke_dot_test): Mana DoT 297,240 in-game = 297,243 predicted WITH ×1.5 FB',
+  },
+  {
+    unit: '(any)',
+    instance: 'burst-cast nuke',
+    fb: 'OFF',
+    evidence:
+      'U10 + JP snapshot rule + our privaty nuke (2,422,498 = FB-off): burst dmg snapshots at USE-time, before FB flips on',
+  },
+  {
+    unit: 'modernia',
+    instance: 'Paradise Lost (失楽園)',
+    fb: 'OFF',
+    evidence: 'note.com: the ONE genuine type-exemption — no crit, no FB',
+  },
+  {
+    unit: 'cinderella',
+    instance: 'burst FRONT/instant hit',
+    fb: 'OFF',
+    evidence:
+      'KR dcinside (measured): front dmg misses +50% + FB-entry buffs (lands before FB active)',
+  },
+  {
+    unit: 'cinderella',
+    instance: 'burst ADDITIONAL dmg (28.9%×stacks)',
+    fb: 'ON',
+    evidence:
+      'KR dcinside (measured): same burst, additional dmg GETS +50% (ticks during FB) — proves TIMING not type',
+  },
 ];
-for (const g of GROUND) console.log(`  ${g.fb.padEnd(4)} ${g.unit} — ${g.instance}\n       ${g.evidence}`);
+for (const g of GROUND)
+  {console.log(
+    `  ${g.fb.padEnd(4)} ${g.unit} — ${g.instance}\n       ${g.evidence}`
+  );}
 console.log(`
   THE RULE (JP research 2026-07-14, well-sourced, one measured): FB +50% is a TIMING/SNAPSHOT gate in
   the Boost bucket, NOT a damage-type whitelist. Each type gets it by WHEN it snapshots buffs:
@@ -92,7 +175,9 @@ console.log(`
   over-model (cadence/value), like the liberalio re-tune. Sources: ginmy.net/nikke_dot_test,
   note.com/joyful_flax523/n/nec33793e37d6, daywrite.space/archives/2063.`);
 
-console.log(`\n${'='.repeat(78)}\nCALIBRATION-RELIC CANDIDATES — per-kit noFb flags to re-test against measurement\n${'='.repeat(78)}`);
+console.log(
+  `\n${'='.repeat(78)}\nCALIBRATION-RELIC CANDIDATES — per-kit noFb flags to re-test against measurement\n${'='.repeat(78)}`
+);
 console.log(`  noFb flags currently on: little-mermaid (DoT+barrage), privaty (procs+dot), jill (acid DoT),
   maiden-ice-rose (proc), eve (sequential proc), scarlet (procs — MEASURED off, keep).
   The DoT ones (LM, privaty, jill) contradict ginmy's "DoTs get FB" — likely relics like liberalio's.
@@ -100,7 +185,9 @@ console.log(`  noFb flags currently on: little-mermaid (DoT+barrage), privaty (p
   is the unit's FB factor; ×1.5 raw, or ×1.333 when a crit rides on the FB-raised major). Feed results
   back here and into the override noFb flags + docs/DECISIONS.\n`);
 
-console.log(`${'='.repeat(78)}\nWHAT THE LAB CONCLUDES (2026-07-14 run)\n${'='.repeat(78)}`);
+console.log(
+  `${'='.repeat(78)}\nWHAT THE LAB CONCLUDES (2026-07-14 run)\n${'='.repeat(78)}`
+);
 console.log(`  • NO general FB rule beats the calibrated per-kit flags on the board (perkit is the best MAE);
     every universal rule (timing/dotfb/seqoff/noskillfb) is worse. But that is EXPECTED — each unit's
     noFb flag is co-calibrated with its damage values (offsetting errors), so the board CANNOT reveal

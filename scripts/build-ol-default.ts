@@ -11,8 +11,8 @@ import { monteCarloBuild } from '../src/overload/policy.js';
 const model = JSON.parse(
   readFileSync(
     new URL('../data/ol-probabilities.json', import.meta.url),
-    'utf8',
-  ),
+    'utf8'
+  )
 ) as OlProbModel;
 
 // Default 8/12: 4 pieces, each targeting Elem DMG T11 + ATK T11.
@@ -34,8 +34,8 @@ const fmt = (s: {
   moduleCostPerm: { mean: number; p95: number };
 }) => ({
   expRolls: Math.round(s.ops.mean * 10) / 10,
-  p50: s.ops.pctiles['p50'],
-  p95: s.ops.pctiles['p95'],
+  p50: s.ops.pctiles.p50,
+  p95: s.ops.pctiles.p95,
   phase1: Math.round(s.phase1Rerolls.mean * 10) / 10,
   phase2: Math.round(s.phase2Resets.mean * 10) / 10,
   modules: Math.round(s.moduleCostPerm.mean),

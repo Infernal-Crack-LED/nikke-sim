@@ -61,14 +61,14 @@ function run(overrides: Record<string, any> = {}) {
 // Hoisted runs: shipped override (the encoding under test).
 const shipped = run();
 const shippedBuffs = shipped.events.filter(
-  (e): e is BuffApply => e.kind === 'buffApply',
+  (e): e is BuffApply => e.kind === 'buffApply'
 );
 
 describe('crown — S1 "One for All" (fullBurstEnter)', () => {
   // C1: burstCasters → casterAtkPct (resolved flat value) + reloadSpeedPct 44.35 (15s)
   it('C1: applies casterAtkPct to burst casters (casterIdx = crown)', () => {
     const casterAtkBuffs = shippedBuffs.filter(
-      (e) => e.stat === 'casterAtkPct' && e.casterIdx === CROWN_SLOT,
+      (e) => e.stat === 'casterAtkPct' && e.casterIdx === CROWN_SLOT
     );
     // Crown's S1 fires every FB → at least one round of buffs.
     expect(casterAtkBuffs.length).toBeGreaterThanOrEqual(1);
@@ -83,7 +83,7 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
       (e) =>
         e.stat === 'reloadSpeedPct' &&
         Math.abs(e.value - 44.35) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     expect(reloadBuffs.length).toBeGreaterThanOrEqual(1);
   });
@@ -95,7 +95,7 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
       crown: withPatchedOverride('crown', (ov) => {
         for (const block of ov.skill1) {
           for (const eff of block.effects) {
-            if (eff.stat === 'casterAtkPct') eff.stat = 'atkPct';
+            if (eff.stat === 'casterAtkPct') {eff.stat = 'atkPct';}
           }
         }
       }),
@@ -112,7 +112,7 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
       (e) =>
         e.stat === 'defPct' &&
         Math.abs(e.value - 37.44) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     // defPct events exist (B3 units miss some bursts).
     expect(defBuffs.length).toBeGreaterThanOrEqual(1);
@@ -121,12 +121,12 @@ describe('crown — S1 "One for All" (fullBurstEnter)', () => {
     const casterAtkTargets = new Set(
       shippedBuffs
         .filter((e) => e.stat === 'casterAtkPct' && e.casterIdx === CROWN_SLOT)
-        .map((e) => `${e.targetIdx}:${e.expiresFrame}`),
+        .map((e) => `${e.targetIdx}:${e.expiresFrame}`)
     );
     for (const d of defBuffs) {
       // A defPct target at the same expiry should NOT also have casterAtkPct.
       expect(casterAtkTargets.has(`${d.targetIdx}:${d.expiresFrame}`)).toBe(
-        false,
+        false
       );
     }
   });
@@ -150,7 +150,7 @@ describe('crown — S2 "Royal Attire" (Relax cycle + recovery)', () => {
   it('C6: S2 heal trigger is hitCount 860 (43 attacks × 20 stacks)', () => {
     const ov = withPatchedOverride('crown', () => {});
     const healBlock = (ov as any).skill2.find(
-      (b: any) => b.trigger?.kind === 'hitCount',
+      (b: any) => b.trigger?.kind === 'hitCount'
     );
     expect(healBlock).toBeDefined();
     expect(healBlock.trigger.count).toBe(860);
@@ -164,7 +164,7 @@ describe('crown — S2 "Royal Attire" (Relax cycle + recovery)', () => {
       (e) =>
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 20.99) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     // The recovery trigger fires when Crown receives a heal. In the control comp:
     // Crown's own S2 heal + helm's frequent heals → multiple recovery procs.
@@ -189,13 +189,13 @@ describe('crown — S2 "Royal Attire" (Relax cycle + recovery)', () => {
         e.kind === 'buffApply' &&
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 20.99) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     const shippedAdBuffs = shippedBuffs.filter(
       (e) =>
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 20.99) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     // Count or timing must differ (recovery is heal-driven, not periodic).
     const countDiffers = cfAdBuffs.length !== shippedAdBuffs.length;
@@ -217,7 +217,7 @@ describe('crown — Burst "Last Kingdom" (burstCast)', () => {
       (e) =>
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 36.24) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     expect(adBuffs.length).toBeGreaterThanOrEqual(4);
     const targets = new Set(adBuffs.map((e) => e.targetIdx));
@@ -239,13 +239,13 @@ describe('crown — Burst "Last Kingdom" (burstCast)', () => {
         e.kind === 'buffApply' &&
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 36.24) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     const shippedAdBuffs = shippedBuffs.filter(
       (e) =>
         e.stat === 'attackDamagePct' &&
         Math.abs(e.value - 36.24) < 0.01 &&
-        e.casterIdx === CROWN_SLOT,
+        e.casterIdx === CROWN_SLOT
     );
     const countDiffers = cfAdBuffs.length !== shippedAdBuffs.length;
     const timingDiffers =

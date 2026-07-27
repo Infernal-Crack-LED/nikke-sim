@@ -12,7 +12,7 @@ import type { OverrideFile } from '../../../src/skills/index.js';
 import { data, mult, cubes, olLines, skillLevels } from '../lib/harness.js';
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const s of Object.keys(data.characters)) overrides[s] = loadOverride(s);
+for (const s of Object.keys(data.characters)) {overrides[s] = loadOverride(s);}
 const ctx: RanksCtx = {
   characters: data.characters as any,
   mult,
@@ -32,7 +32,7 @@ describe('buffer board', () => {
   });
 
   it('typed derivation: tove (SG-typed) swaps both carries to SG', () => {
-    const { spec, rules } = deriveCarrySpec(overrides['tove']);
+    const { spec, rules } = deriveCarrySpec(overrides.tove);
     expect(spec.weapon).toBe('SG');
     expect(rules.some((r) => r.includes('alliesOfWeapon SG'))).toBe(true);
   });
@@ -66,7 +66,13 @@ describe('buffer board', () => {
   it('crown: with-healer profile beats plain (her recovery-triggered AD buff at full uptime)', () => {
     const memo = new Map<string, number>();
     const plain = bufferValueFor('crown', 'generic', ctx, memo, null);
-    const profiled = bufferValueFor('crown', 'generic', ctx, memo, 'with-healer');
+    const profiled = bufferValueFor(
+      'crown',
+      'generic',
+      ctx,
+      memo,
+      'with-healer'
+    );
     expect(plain.profile).toBeNull();
     expect(profiled.profile).toBe('with-healer');
     expect(plain.value).toBeGreaterThan(0); // her own Relax self-heal still procs it (~27% uptime)
@@ -76,7 +82,13 @@ describe('buffer board', () => {
   it('naga: with-shielder profile beats plain (her shield-gated lines come alive)', () => {
     const memo = new Map<string, number>();
     const plain = bufferValueFor('naga', 'generic', ctx, memo, null);
-    const profiled = bufferValueFor('naga', 'generic', ctx, memo, 'with-shielder');
+    const profiled = bufferValueFor(
+      'naga',
+      'generic',
+      ctx,
+      memo,
+      'with-shielder'
+    );
     expect(plain.profile).toBeNull();
     expect(profiled.profile).toBe('with-shielder');
     expect(profiled.value).toBeGreaterThan(plain.value);
@@ -86,9 +98,11 @@ describe('buffer board', () => {
     const ranked = rankBuffers(['crown', 'liter'], 'generic', ctx);
     expect(ranked).toHaveLength(3); // crown plain + with-healer, liter
     const crowns = ranked.filter((r) => r.slug === 'crown');
-    expect(crowns.map((r) => r.profile).sort()).toEqual([null, 'with-healer'].sort());
+    expect(crowns.map((r) => r.profile).sort()).toEqual(
+      [null, 'with-healer'].sort()
+    );
     for (let i = 1; i < ranked.length; i++)
-      expect(ranked[i].value).toBeLessThanOrEqual(ranked[i - 1].value);
+      {expect(ranked[i].value).toBeLessThanOrEqual(ranked[i - 1].value);}
     expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
   });
 
@@ -104,7 +118,7 @@ describe('buffer board', () => {
     const ranked = rankBuffers(['liter', 'crown', 'guilty'], 'generic', ctx);
     expect(ranked).toHaveLength(4); // crown dual-enters (plain + with-healer)
     for (let i = 1; i < ranked.length; i++)
-      expect(ranked[i].value).toBeLessThanOrEqual(ranked[i - 1].value);
+      {expect(ranked[i].value).toBeLessThanOrEqual(ranked[i - 1].value);}
     expect(ranked.map((r) => r.rank)).toEqual(ranked.map((_, i) => i + 1));
   });
 });

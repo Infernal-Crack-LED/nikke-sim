@@ -1,5 +1,7 @@
 # RECONCILING-JUDGE PACKET — sakura-bloom-in-summer (Sakura: Bloom in Summer)
+
 # Driver family: Qwen. Blind families: claude-fable-5 (S2b), claude-opus-5 (S5/S6). Judge: claude-opus-5.
+
 # Grade the DRIVER's artifacts against ground truth + two independent blind re-derivations. Return ONLY the binding verdict JSON.
 
 ## 1. Judge contract (RECONCILING-JUDGE.md)
@@ -16,6 +18,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -26,12 +29,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -57,33 +62,61 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
-
 
 ## 2. Mechanics SSOT (focused summary — full docs at docs/data/damage-calculation.md + docs/data/game-mechanics.md)
 
 Damage formula (docs/data/damage-calculation.md:55-60), multiplicative buckets:
+
 ```
 dmg = max(0, finalATK − enemyDEF) × coef
     × major   [1 + crit + core + fullBurst(0.5) + range(0.3)]   (additive within)
@@ -92,17 +125,19 @@ dmg = max(0, finalATK − enemyDEF) × coef
     × dmgUp   [1 + attackDamage + sustained + pierce + parts + …]   "Damage Up"
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
+
 - **+ATK% (atkPct) and +Attack Damage% (attackDamagePct) are DIFFERENT buckets → they multiply.** "Attack Damage ▲" maps to `attackDamagePct` (the Damage-Up bucket), NOT `atkPct`. (damage-calculation.md:73)
 - "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK. (damage-calculation.md:76)
 
 Per-damage-type table (damage-calculation.md:80-84):
-| type | crit | core | range | Attack-Dmg | full-burst | element |
-|---|---|---|---|---|---|---|
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ |
-| DoT / sustained | ✅ (DOT_CRIT ON by default) | ❌* (kit-dependent) | ❌ | ✅ | ✅ (by timing) | ✅ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ |
 
-- **Full Burst timing rule (MEASURED, damage-calculation.md:165-167):** damage dealt BY a burst skill AT its cast lands *before* Full Burst begins — it gets neither the +0.5 major nor any "when entering Full Burst" aura. → a `burstCast` instant volley is FB-EXEMPT (fbMajorApplied=false).
+| type                              | crit                        | core                      | range | Attack-Dmg | full-burst     | element |
+| --------------------------------- | --------------------------- | ------------------------- | ----- | ---------- | -------------- | ------- |
+| skill / function "% of final ATK" | ✅                          | ❌ (unless "as core dmg") | ❌    | ✅         | ✅             | ✅      |
+| DoT / sustained                   | ✅ (DOT_CRIT ON by default) | ❌* (kit-dependent)       | ❌    | ✅         | ✅ (by timing) | ✅      |
+| burst nuke                        | ✅                          | only if "as core dmg"     | ❌    | ✅         | ✅             | ✅      |
+
+- **Full Burst timing rule (MEASURED, damage-calculation.md:165-167):** damage dealt BY a burst skill AT its cast lands _before_ Full Burst begins — it gets neither the +0.5 major nor any "when entering Full Burst" aura. → a `burstCast` instant volley is FB-EXEMPT (fbMajorApplied=false).
 - **Sustained DoT ticks (damage-calculation.md:350-354):** on a tick timer; ticks reference CURRENT buffs (no snapshot), never core/range, tick-crit ON by default; "ticks land during whatever window they land in (Full Burst rules by timing)." → a burst-applied DoT's TICKS take FB by timing even though the instant volley is FB-exempt.
 - **Internal-cooldown skills (`interval` trigger, damage-calculation.md:336-338):** a kit line with no printed activation clause that "just happens" every N seconds of battle. **Fires first at t=N** (⚑ phase convention). A start-of-battle force-cast ("Forcefully uses Skill N") pins the FIRST fire to t=0 instead of t=N.
 - **Passive buffs are always-on:** the engine applies a `passive`-trigger buff at frame 0 and it cannot carry a wall-clock duration (sim.ts alwaysOn). A duration-buff that re-casts on a cooldown must therefore be encoded as its TIME-AVERAGE duty cycle when modeled as a passive (a measured engine limitation, not a kit choice).
@@ -112,7 +147,7 @@ Per-damage-type table (damage-calculation.md:80-84):
 
 Unit: Sakura: Bloom in Summer (sakura-bloom-in-summer). Variant of base `sakura` (a DIFFERENT unit).
 Base: AR / Wind / Attacker / Burst III, burstCooldownSec 40, ammo 60, reloadFrames 81, chargeFrames 0, hitsPerShot 1, normalAttackMultiplier 13.65, coreAttackMultiplier 200, burstGaugePerShot 0.2, rate_of_fire 720 rpm (= 12 pulls/s), reload_start_ammo 59. baseStats atk 600.
-**skillCooldownsSec: { skill1: null, skill2: 30, burst: 40 }**  ← DATAMINED skill2 CD = 30s (owner-confirmed 2026-07-20 as a real re-activation CD).
+**skillCooldownsSec: { skill1: null, skill2: 30, burst: 40 }** ← DATAMINED skill2 CD = 30s (owner-confirmed 2026-07-20 as a real re-activation CD).
 
 skill1 (Bloom):
 ■ Activates at the start of battle. Affects self. → Forcefully uses Skill 2.
@@ -370,17 +405,19 @@ function base() {
 const BASE = run(base());
 
 const sakuraDamage = BASE.events.filter(
-  (e) => e.kind === 'damage' && e.slug === SLUG,
+  (e) => e.kind === 'damage' && e.slug === SLUG
 );
 const sakuraBuffs = BASE.events.filter(
-  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG,
+  (e) => e.kind === 'buffApply' && e.targetSlug === SLUG
 );
 const burstCasts = BASE.events.filter(
-  (e) => e.kind === 'burstCast' && e.slug === SLUG,
+  (e) => e.kind === 'burstCast' && e.slug === SLUG
 );
 
 // Sustained-flavored damage from sakura only (S2b Sakura Petals + Bb burst DoT both land here).
-const sustained = sakuraDamage.filter((e) => e.bucket === 'sustained' || e.flavor === 'sustained');
+const sustained = sakuraDamage.filter(
+  (e) => e.bucket === 'sustained' || e.flavor === 'sustained'
+);
 
 describe('sakura-bloom-in-summer — skill1', () => {
   it('S1a: skill2 is force-cast at the start of battle (first Sakura Petals tick lands in the opening second, not at a cooldown)', () => {
@@ -419,7 +456,7 @@ describe('sakura-bloom-in-summer — skill1', () => {
       (e) =>
         e.kind === 'buffApply' &&
         e.stat === 'sustainedDamagePct' &&
-        Math.abs((e.value ?? 0) - 5.1) < 1e-6,
+        Math.abs((e.value ?? 0) - 5.1) < 1e-6
     );
     expect(s51).toHaveLength(0);
   });
@@ -429,7 +466,8 @@ describe('sakura-bloom-in-summer — skill1', () => {
     // 25.02s (15 + 10.02) or Sakura Petals as a 25.02s DoT. Both are unconditional grants of an
     // effect the kit gates on part destruction.
     const dancing = sakuraBuffs.filter(
-      (e) => e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) =>
+        e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     for (const ev of dancing) {
       if (ev.expiresFrame == null) continue;
@@ -442,7 +480,8 @@ describe('sakura-bloom-in-summer — skill1', () => {
 describe('sakura-bloom-in-summer — skill2', () => {
   it('S2a: Dancing Flower is a SELF Attack Damage +15.64% buff for 15s (not ATK, not team-wide)', () => {
     const dancing = sakuraBuffs.filter(
-      (e) => e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) =>
+        e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     expect(dancing.length).toBeGreaterThan(0);
 
@@ -452,7 +491,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
         e.kind === 'buffApply' &&
         e.stat === 'attackDamagePct' &&
         Math.abs((e.value ?? 0) - 15.64) < 1e-6 &&
-        e.targetSlug !== SLUG,
+        e.targetSlug !== SLUG
     );
     expect(onOthers).toHaveLength(0);
 
@@ -460,7 +499,7 @@ describe('sakura-bloom-in-summer — skill2', () => {
     // NEAREST-WRONG: atkPct 15.64 — same headline number, different bucket, different dilution and
     // it would feed ATK-scaled ally effects. Assert no such buff exists.
     const asAtk = sakuraBuffs.filter(
-      (e) => e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6,
+      (e) => e.stat === 'atkPct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     expect(asAtk).toHaveLength(0);
 
@@ -497,13 +536,17 @@ describe('sakura-bloom-in-summer — skill2', () => {
     const petals = sustained.filter((e) => nearPct(e, 256));
     expect(petals.length).toBeGreaterThan(0);
 
-    const frames = [...new Set(petals.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(petals.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     const gaps = frames.slice(1).map((f, i) => f - frames[i]);
     // Within one 15s instance the gap is exactly 1s; across instances it may be longer (the recast
     // cadence). The 1s gap must be the DOMINANT spacing — a model that fired the whole 15s payload
     // as a single lump, or ticked at 0.5s/2s, produces no 60-frame mode at all.
     const oneSec = gaps.filter((g) => g === FPS).length;
-    expect(oneSec).toBeGreaterThanOrEqual(Math.max(5, Math.floor(gaps.length * 0.5)));
+    expect(oneSec).toBeGreaterThanOrEqual(
+      Math.max(5, Math.floor(gaps.length * 0.5))
+    );
 
     // DURATION (question 2): 15 ticks per activation at 1/sec.
     // NEAREST-WRONG: durationSec authored as 15 but intervalSec left at some other value, or the
@@ -517,7 +560,9 @@ describe('sakura-bloom-in-summer — skill2', () => {
     //
     // ⛑ The interval LENGTH is not in the kit prose (see header) — deliberately not asserted.
     const petals = sustained.filter((e) => nearPct(e, 256));
-    const frames = [...new Set(petals.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(petals.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     expect(frames.length).toBeGreaterThan(15);
     // and it is not one continuous whole-fight instance either (trap #5: a duration >= fight length
     // on a repeating trigger multiplies). A real re-fire shows at least one gap > 1s.
@@ -594,7 +639,9 @@ describe('sakura-bloom-in-summer — burst', () => {
 
   it('Bb: each burst-DoT instance lasts 10 sec at 1 sec intervals', () => {
     const dotTicks = sustained.filter((e) => nearPct(e, 35.16));
-    const frames = [...new Set(dotTicks.map((e) => e.frame))].sort((a, b) => a - b);
+    const frames = [...new Set(dotTicks.map((e) => e.frame))].sort(
+      (a, b) => a - b
+    );
     const gaps = frames.slice(1).map((f, i) => f - frames[i]);
     // 1s tick spacing dominates within a live window.
     expect(gaps.filter((g) => g === FPS).length).toBeGreaterThanOrEqual(5);
@@ -609,7 +656,7 @@ describe('sakura-bloom-in-summer — burst', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst?.blocks ?? []) {
         b.effects = b.effects.filter(
-          (e: any) => !(e.kind === 'dot' && Math.abs(e.atkPct - 35.16) < 1e-6),
+          (e: any) => !(e.kind === 'dot' && Math.abs(e.atkPct - 35.16) < 1e-6)
         );
       }
     });
@@ -623,7 +670,7 @@ describe('sakura-bloom-in-summer — burst', () => {
 
     // the 457.14% volley must be untouched by removing the DoT
     const volleyAfter = events.filter(
-      (e) => e.kind === 'damage' && e.slug === SLUG && nearPct(e as Ev, 457.14),
+      (e) => e.kind === 'damage' && e.slug === SLUG && nearPct(e as Ev, 457.14)
     );
     const volleyBefore = sakuraDamage.filter((e) => nearPct(e, 457.14));
     expect(volleyAfter.length).toBe(volleyBefore.length);
@@ -640,7 +687,12 @@ describe('sakura-bloom-in-summer — whole-unit sanity', () => {
 
   it('no ally-targeted buffs at all: every line in this kit reads "Affects self" or targets the enemy', () => {
     const leaked = BASE.events.filter(
-      (e) => e.kind === 'buffApply' && e.casterIdx != null && e.targetSlug != null && e.targetSlug !== SLUG && casterIsSakura(e, BASE.res),
+      (e) =>
+        e.kind === 'buffApply' &&
+        e.casterIdx != null &&
+        e.targetSlug != null &&
+        e.targetSlug !== SLUG &&
+        casterIsSakura(e, BASE.res)
     );
     expect(leaked).toHaveLength(0);
   });
@@ -660,9 +712,7 @@ function casterIsSakura(ev: Ev, res: any): boolean {
   const idx = res.units?.findIndex?.((u: any) => u.slug === SLUG);
   return idx != null && idx >= 0 && ev.casterIdx === idx;
 }
-
 ```
-
 
 ### 5b. S5 blind test materialized vs the DRIVER override — green/red + driver RECON_ERROR analysis
 
@@ -675,11 +725,13 @@ The 6 PASSED: S1b inertness (no 5.1% sustainedDamagePct buff), S1c/S1d inertness
 **Driver classification: ALL 10 failures are RECON_ERROR (blind-test helper bugs) and/or the two documented ⚑ encoding divergences the blind could not derive without the datamine/engine-knowledge. ZERO REAL-GOTCHA.** Evidence: the driver's own scripts/tests/units/sakura-bloom-in-summer.test.ts (19/19 GREEN, in §7) proves every faithfulness point the blind test attempted, by an independent method (PROVE-IT-DIFFERENTLY bar met).
 
 The three blind-test helper bugs (each independently voids the assertions that depend on it):
+
 1. **`nearPct(ev, pct)` reads `ev.mult ?? ev.atkPct` — but `ev.mult` is the multiplier-DECOMPOSITION OBJECT `{major,elem,charge,dmgUp,seqMult,projFactor,taken,distributed}`, NOT a number.** `ev.mult` is always truthy, so `m = ev.mult` (an object) and `Math.abs(object − pct) = NaN`, so `nearPct` returns FALSE FOR EVERY EVENT. Every magnitude-filtered query (`sakuraDamage.filter(nearPct(e,256))`, `nearPct(e,457.14)`, `nearPct(e,35.16)`) is therefore empty. The correct field is `ev.atkPct` (the kit percentage). This alone voids S2b, S2b-RECURS, Ba (10×457.14), Ba-FB-exempt, Bb, Bb-duration. (The driver test filters on `d.atkPct === 256 / 457.14 / 351.6` and finds 90 / 60 / 60 ticks respectively.)
 2. **`sustained = sakuraDamage.filter(e => e.bucket === 'sustained' || e.flavor === 'sustained')` — damage events have NEITHER.** `bucket ∈ {normal, skill, burst}` (there is no 'sustained' bucket) and the damage event carries NO `flavor` field (sustained-ness is encoded in the bucket/mult, not a flavor tag on the event). So `sustained` is ALWAYS empty, voiding S1a (first tick ≤2s), S2b, S2b-RECURS, Bb, Bb-duration. (The driver test selects Sakura Petals by `srcSlot==='skill2' && atkPct===256` and finds the first tick at sec=1.00 ≤ 2s — S1a's intent IS satisfied.)
 3. **The counterfactual mutations use `ov.skill2?.blocks` / `ov.burst?.blocks` — but the override FILE is SLOT-KEYED (`override.skill2` IS the block array; there is no `.blocks` sub-array).** The harness note in the packet stated this explicitly ("There is NO top-level 'blocks' array … iterate override.skill1 / .skill2 / .burst"). So `ov.skill2?.blocks ?? []` is `[]` and the mutations are NO-OPS → the "load-bearing" / "non-vacuity" counterfactuals change nothing → totals stay byte-identical → the strict-inequality assertions fail. This voids S2a-load-bearing and Bb-non-vacuity. (The driver test mutates the slot array directly and confirms zeroing Dancing Flower lowers her normal-damage total, and removing the burst DoT lowers her total.)
 
 The two genuine encoding divergences (the blind could not derive these without the datamine / engine internals; both are damage-faithful and ⚑-flagged by the driver):
+
 - **⚑3 Dancing Flower — blind expects buff value 15.64 (windowed 15s-per-CD); driver emits 7.82 always-on.** The engine's passive buffs cannot carry a duration (sim.ts alwaysOn), so the driver time-averages: with the DATAMINED skill2 CD=30 (owner-confirmed), uptime = 15s/30s = 50% → 15.64 × 90/180 = 7.82. The blind assumed CD=15 (no datamine in its packet — see its S6 flag: "The kit states NO cooldown for Skill 2 … the datamined skillCooldownsSec field is not in this packet"), which would give 100% uptime = 15.64. The datamine resolves this for the driver: CD=30 → 7.82. The S2a assertion `dancing.filter(value≈15.64).length > 0` fails because the driver (correctly, given the datamine) emits 7.82. The driver test SB2 pins 7.82 and proves her normal-damage total sits strictly BETWEEN the naive-15.64 and single-window-1.30 counterfactuals.
 - **⚑4 burst stacking DoT — blind expects per-stack 35.16 ticks AND asserts NO 351.6 pre-multiplied instance; driver emits one 351.6%/s dot (full 10 stacks applied per cast).** The kit: "35.16%/s … stacks up to 10 times … 10 sec," and the volley "attacks sequentially 10 times" on "the same targets" — all 10 sequential hits land on the single boss, so the DoT opens at full 10 stacks = 351.6%/s from tick 1. The blind modeled a single 35.16 instance (it even labels the pre-multiplied encoding "NEAREST-WRONG B"), under-crediting the stack by 10×; the driver's reading is MORE faithful to "stacks up to 10 times." Both are ⚑-flagged; the driver's recipe (read sustained tick popups right after her burst — flat ~351.6% from the first second = hit-applied) distinguishes them. The driver test SB5 pins flat 351.6 from tick 1 and discriminates the single-stack-35.16 counterfactual.
 
@@ -855,10 +907,10 @@ Net: the blind's SPEC (s5-result.json `spec`) and its S6 override both independe
 }
 ```
 
-
 ### 6b. S6 blind override — diff vs the DRIVER override (driver = src/skills/overrides/sakura-bloom-in-summer.json, §7)
 
 CONVERGENT lines (blind re-derived the same encoding as the driver):
+
 - **Sakura Petals (S2):** blind `dot atkPct 256, intervalSec 1, durationSec 15, flavor sustained, target enemy` == driver `dot atkPct 256, durationSec 15, intervalSec 1, flavor sustained, target enemy`. IDENTICAL effect. (Trigger cadence differs — see divergence (a).)
 - **Burst nuke:** blind `10× flatDamage atkPct 457.14, flavor sequential, crit true, noRange true, on burstCast, FB-exempt by cast timing` == driver `10× flatDamage atkPct 457.14, flavor sequential, on burstCast` (driver also FB-exempt by timing — verified fbMajorApplied=false on all 60 hits). IDENTICAL: ten 457.14 hits per cast (4571.4% total), NOT one 4571.4 lump.
 - **Dancing Flower bucket:** blind `attackDamagePct` (Damage-Up bucket, "NOT atkPct") == driver `attackDamagePct`. IDENTICAL bucket choice (both avoided the atkPct trap).
@@ -867,6 +919,7 @@ CONVERGENT lines (blind re-derived the same encoding as the driver):
 - **No core / no hitRate / no range on riders:** blind == driver. IDENTICAL.
 
 DIVERGENCES (all three resolve in the DRIVER's favor — each is data the blind lacked or a conservative under-credit):
+
 - **(a) skill2 re-cast cadence — blind: interval 15s; driver: interval 30s (DATAMINED).** The blind had no datamine in its packet and chose interval=duration=15s as "the least-assuming choice," explicitly flagging it: "The kit states NO cooldown for Skill 2 … The datamined skillCooldownsSec field is not in this packet. Recipe: Read skillCooldownsSec for slot 2 from the datamine." The driver HAS that datamine: skillCooldownsSec.skill2 = 30, owner-confirmed 2026-07-20 as a real re-activation CD. So the driver's 30s cadence (6×15s windows = 90s/180s = 50% uptime) is the measured value the blind's own recipe points to; the blind's 15s (seamless 100% uptime) is the unmeasured fallback.
 - **(b) Dancing Flower value — blind: 15.64 (with CD=15 → 100% uptime, durationSec 15); driver: 7.82 always-on (time-average at CD=30 → 50% uptime).** A direct consequence of (a) plus the engine's passive-buff cannot-carry-a-duration limitation. Given the datamined CD=30, the faithful damage-equivalent is 15.64 × 90/180 = 7.82. The blind's 15.64 would over-credit by 2× on the measured cadence.
 - **(c) burst stacking DoT — blind: one 35.16%/s instance per cast (stack cap "unenforced," "unreachable in practice" since dur10 < cd40); driver: one 351.6%/s instance (full 10 stacks applied per cast).** The blind modeled a SINGLE un-stacked instance and noted the cap is unreachable; the driver applies all 10 stacks (the 10 sequential volley hits all land on the one boss → "stacks up to 10 times" → 351.6%/s from tick 1). The driver is MORE faithful to the stack semantics (⚑4); the blind under-credits the DoT by 10×. Both flag it; the driver's reading matches the "stacks up to 10 times / affects the same targets" text.
@@ -1047,7 +1100,7 @@ const nukeHits = (evs: SimEvent[]) =>
   sbisDmg(evs).filter((d) => d.srcSlot === 'burst' && d.atkPct === 457.14);
 const burstDotTicks = (evs: SimEvent[]) =>
   sbisDmg(evs).filter(
-    (d) => d.srcSlot === 'burst' && d.bucket === 'burst' && d.atkPct !== 457.14,
+    (d) => d.srcSlot === 'burst' && d.bucket === 'burst' && d.atkPct !== 457.14
   );
 const buffs = (evs: SimEvent[]) =>
   evs.filter((e): e is BuffApply => e.kind === 'buffApply');
@@ -1063,11 +1116,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const early = petalsTicks(base.events).filter((d) => d.sec < 20);
       expect(
         early.length,
-        'no Sakura Petals ticks before 20s — the t=0 force-cast is missing',
+        'no Sakura Petals ticks before 20s — the t=0 force-cast is missing'
       ).toBe(15);
       expect(
         early[0].sec,
-        'first tick must land at 1s off a t=0 cast',
+        'first tick must land at 1s off a t=0 cast'
       ).toBeCloseTo(1, 5);
     });
 
@@ -1076,7 +1129,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       expect(early.length).toBe(0);
       // …and the fight loses exactly one 15-tick window overall.
       expect(
-        petalsTicks(base.events).length - petalsTicks(noForce.events).length,
+        petalsTicks(base.events).length - petalsTicks(noForce.events).length
       ).toBe(15);
     });
 
@@ -1087,7 +1140,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
 
   describe('SB2 — S2 Dancing Flower is the 50%-duty time-average 7.82%, self-scoped always-on', () => {
     const df = buffs(base.events).filter(
-      (b) => b.casterIdx === SBIS && b.stat === 'attackDamagePct',
+      (b) => b.casterIdx === SBIS && b.stat === 'attackDamagePct'
     );
 
     it('is 7.82% (= 15.64 × 90/180), not the naive 15.64 nor the single-window 1.30', () => {
@@ -1110,11 +1163,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const nSingle = normalTotal(singleWin.events);
       expect(
         nNaive,
-        'naive full 15.64 must out-damage shipped',
+        'naive full 15.64 must out-damage shipped'
       ).toBeGreaterThan(nBase);
       expect(
         nBase,
-        'shipped must out-damage the single-window 1.30',
+        'shipped must out-damage the single-window 1.30'
       ).toBeGreaterThan(nSingle);
     });
   });
@@ -1131,7 +1184,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       expect(petalsTicks(base.events).length).toBe(90);
       // six distinct 30s bands: [1-15],[31-45],[61-75],[91-105],[121-135],[151-165]
       const bands = new Set(
-        petalsTicks(base.events).map((d) => Math.floor(d.sec / 30)),
+        petalsTicks(base.events).map((d) => Math.floor(d.sec / 30))
       );
       expect([...bands].sort((a, b) => a - b)).toEqual([0, 1, 2, 3, 4, 5]);
     });
@@ -1159,7 +1212,7 @@ describe('sakura-bloom-in-summer — kit spec', () => {
       const casts = sbisBursts(oneHit.events).length;
       expect(nukeHits(oneHit.events).length).toBe(casts); // 1 per cast, not 10
       expect(nukeHits(base.events).length).toBe(
-        nukeHits(oneHit.events).length * 10,
+        nukeHits(oneHit.events).length * 10
       );
     });
   });
@@ -1202,11 +1255,11 @@ describe('sakura-bloom-in-summer — kit spec', () => {
 
     it('INERT: no Sustained Damage ▲5.1% buff ever applies (the partless boss never triggers it)', () => {
       const sustained = buffs(base.events).filter(
-        (b) => b.stat === 'sustainedDamagePct' && b.casterIdx === SBIS,
+        (b) => b.stat === 'sustainedDamagePct' && b.casterIdx === SBIS
       );
       expect(
         sustained,
-        'a part-destroy sustained-damage buff fired on a partless boss',
+        'a part-destroy sustained-damage buff fired on a partless boss'
       ).toEqual([]);
     });
 

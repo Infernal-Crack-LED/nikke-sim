@@ -6,16 +6,16 @@ EVE — AR / Attacker / Iron / Burst III, cd 40s, ammo 60, no charge. Not a vari
 
 ## What ran
 
-| Stage | Role | Model | Outcome |
-| --- | --- | --- | --- |
-| S0 | slug lint + line inventory | driver | clean (no AMBIGUOUS); 8 effect-lines, all FAITHFUL (3 with documented proxy-⚑) |
-| S2a | driver test (test-first) | driver | `scripts/tests/units/eve.test.ts`, 21 assertions, 8 groups (E1–E8), 7 sim runs |
-| S2b | test-faithfulness review | **claude-fable-5** | independently converged on all 10 load-bearing lines; leakDetected null |
-| S2c/S2d | reconcile + verify | driver | 21/21 green vs shipped (`reviews/eve.verify.txt`) |
-| S3 | minimum faithful edit | driver | note provenance + 2 judge caveats (G1/G3); no encoding change (already faithful) |
-| S5 | blind test writer | **claude-opus-5** | 20 pass / 4 fail / 2 skip vs driver override — all 4 fails ruled RECON_ERROR by the judge |
-| S6 | blind override writer | **claude-opus-5** | near-identical override; independently derived hitCount 59, casterAtkPct, instantReload 0.04, Mk2 riders |
-| S7 | reconciling judge (binding) | **claude-opus-5** | **GO**, faithfulness 1.0, 0 REAL-GOTCHA (`results/eve.json`) |
+| Stage   | Role                        | Model              | Outcome                                                                                                  |
+| ------- | --------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------- |
+| S0      | slug lint + line inventory  | driver             | clean (no AMBIGUOUS); 8 effect-lines, all FAITHFUL (3 with documented proxy-⚑)                           |
+| S2a     | driver test (test-first)    | driver             | `scripts/tests/units/eve.test.ts`, 21 assertions, 8 groups (E1–E8), 7 sim runs                           |
+| S2b     | test-faithfulness review    | **claude-fable-5** | independently converged on all 10 load-bearing lines; leakDetected null                                  |
+| S2c/S2d | reconcile + verify          | driver             | 21/21 green vs shipped (`reviews/eve.verify.txt`)                                                        |
+| S3      | minimum faithful edit       | driver             | note provenance + 2 judge caveats (G1/G3); no encoding change (already faithful)                         |
+| S5      | blind test writer           | **claude-opus-5**  | 20 pass / 4 fail / 2 skip vs driver override — all 4 fails ruled RECON_ERROR by the judge                |
+| S6      | blind override writer       | **claude-opus-5**  | near-identical override; independently derived hitCount 59, casterAtkPct, instantReload 0.04, Mk2 riders |
+| S7      | reconciling judge (binding) | **claude-opus-5**  | **GO**, faithfulness 1.0, 0 REAL-GOTCHA (`results/eve.json`)                                             |
 
 ## Line-by-line (judge `lineFindings`, all FAITHFUL / DOCUMENTED_GAP)
 

@@ -87,11 +87,11 @@ const swSlot = (evs: SimEvent[], slot: Damage['srcSlot']) =>
 const findBlock = (
   ov: any,
   slot: 'skill1' | 'skill2' | 'burst',
-  pred: (b: any) => boolean,
+  pred: (b: any) => boolean
 ) => {
   const b = ov[slot].find(pred);
   if (!b)
-    throw new Error(`snow-white ${slot} block missing — fixture is stale`);
+    {throw new Error(`snow-white ${slot} block missing — fixture is stale`);}
   return b;
 };
 const isRider = (b: any) =>
@@ -133,7 +133,7 @@ const swS4Interval = withPatchedOverride(SW, (ov) => {
 /** SW5 nearest-wrong #1: additive full-charge (no ×10 charge bucket). */
 const swS5NoCharge = withPatchedOverride(SW, (ov) => {
   const e = findBlock(ov, 'burst', isCannon).effects.find(
-    (x: any) => x.kind === 'flatDamage',
+    (x: any) => x.kind === 'flatDamage'
   );
   delete e.charge;
   delete e.chargeMultPct;
@@ -141,7 +141,7 @@ const swS5NoCharge = withPatchedOverride(SW, (ov) => {
 /** SW5 nearest-wrong #2: instant nuke (no delay) — lands before the FB window opens. */
 const swS5Instant = withPatchedOverride(SW, (ov) => {
   const e = findBlock(ov, 'burst', isCannon).effects.find(
-    (x: any) => x.kind === 'flatDamage',
+    (x: any) => x.kind === 'flatDamage'
   );
   delete e.delaySec;
 });
@@ -164,7 +164,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
       const shots = swShots(base.events).length; // hitsPerShot 1 → hits === shots
       expect(
         riders.length,
-        `${riders.length} riders vs ${shots} shots / ${swBursts(base.events).length} bursts`,
+        `${riders.length} riders vs ${shots} shots / ${swBursts(base.events).length} bursts`
       ).toBe(Math.floor(shots / 30));
       expect(riders.length).toBeGreaterThan(20); // 58 here — neither 6 (burst) nor 11 (FB) nor 1 (inert)
     });
@@ -175,17 +175,17 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     });
     it('DISCRIMINATES: a burstCast-gated rider fires far fewer times', () => {
       expect(swSlot(s1BurstGated.events, 'skill1').length).toBe(
-        swBursts(base.events).length,
+        swBursts(base.events).length
       );
       expect(swSlot(s1BurstGated.events, 'skill1').length).not.toBe(
-        riders.length,
+        riders.length
       );
     });
   });
 
   describe('SW2 — S1 every-30-hits self ATK ▲ 8.28% for 5 sec', () => {
     const own = buffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && b.value === 8.28 && b.casterIdx === SW_IDX,
+      (b) => b.stat === 'atkPct' && b.value === 8.28 && b.casterIdx === SW_IDX
     );
     it('targets ONLY snow-white (self), value 8.28, for exactly 5s', () => {
       expect(own.length).toBeGreaterThan(0);
@@ -199,8 +199,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     });
     it('DISCRIMINATES: an all-allies encoding spreads the holders beyond self', () => {
       const spread = buffs(s2Allies.events).filter(
-        (b) =>
-          b.stat === 'atkPct' && b.value === 8.28 && b.casterIdx === SW_IDX,
+        (b) => b.stat === 'atkPct' && b.value === 8.28 && b.casterIdx === SW_IDX
       );
       expect(new Set(spread.map((b) => b.targetIdx)).size).toBeGreaterThan(1);
     });
@@ -211,7 +210,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     const times = procs.map((d) => +d.sec.toFixed(2));
     it('fires ~12×/180s at exact multiples of 15s (interval, first fire t=15)', () => {
       expect(procs.length).toBe(11); // t=15,30,…,165 (engine interval convention; ⚑ phase t=15 vs t=0)
-      for (const t of times) expect(t % 15).toBe(0);
+      for (const t of times) {expect(t % 15).toBe(0);}
     });
     it('is the lvl-10 magnitude 144.73 in the skill bucket', () => {
       expect([...new Set(procs.map((d) => d.atkPct))]).toEqual([144.73]);
@@ -219,17 +218,17 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     });
     it('DISCRIMINATES vs fullBurstEnter: same count, but procs land at FB-ENTRY times, not 15s multiples', () => {
       const fbTimes = swSlot(s3FbEnter.events, 'skill2').map(
-        (d) => +d.sec.toFixed(2),
+        (d) => +d.sec.toFixed(2)
       );
       expect(fbTimes).not.toEqual(times);
       expect(fbTimes.some((t) => t % 15 !== 0)).toBe(true);
     });
     it('DISCRIMINATES vs the swap-gate bug: burstCast fires only per burst (~6×)', () => {
       expect(swSlot(s3BurstGated.events, 'skill2').length).toBe(
-        swBursts(base.events).length,
+        swBursts(base.events).length
       );
       expect(swSlot(s3BurstGated.events, 'skill2').length).not.toBe(
-        procs.length,
+        procs.length
       );
     });
   });
@@ -237,7 +236,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
   describe('SW4 — S2 Crit Rate ▲ 26.1% for 10s is gained on FULL-BURST ENTRY', () => {
     const crits = buffs(base.events).filter(
       (b) =>
-        b.stat === 'critRatePct' && b.value === 26.1 && b.casterIdx === SW_IDX,
+        b.stat === 'critRatePct' && b.value === 26.1 && b.casterIdx === SW_IDX
     );
     it('fires once per Full Burst (== FB count), self-scoped, for 10s', () => {
       expect(crits.length).toBe(fbStarts(base.events).length);
@@ -249,7 +248,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     });
     it('lands exactly at the Full Burst entry frames', () => {
       const critFrames = [...new Set(crits.map((b) => b.frame))].sort(
-        (a, b) => a - b,
+        (a, b) => a - b
       );
       const fbFrames = [
         ...new Set(fbStarts(base.events).map((e) => e.frame)),
@@ -259,9 +258,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     it('DISCRIMINATES vs burstCast: fires only when snow-white casts B3 (6×, not 11×)', () => {
       const gated = buffs(s4BurstGated.events).filter(
         (b) =>
-          b.stat === 'critRatePct' &&
-          b.value === 26.1 &&
-          b.casterIdx === SW_IDX,
+          b.stat === 'critRatePct' && b.value === 26.1 && b.casterIdx === SW_IDX
       );
       expect(gated.length).toBe(swBursts(base.events).length);
       expect(gated.length).not.toBe(crits.length);
@@ -274,9 +271,9 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
               (b) =>
                 b.stat === 'critRatePct' &&
                 b.value === 26.1 &&
-                b.casterIdx === SW_IDX,
+                b.casterIdx === SW_IDX
             )
-            .map((b) => b.frame),
+            .map((b) => b.frame)
         ),
       ].sort((a, b) => a - b);
       const fbFrames = [
@@ -300,7 +297,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     it('DISCRIMINATES vs additive: dropping chargeMultPct collapses the charge bucket to 1', () => {
       expect([
         ...new Set(
-          swSlot(s5NoCharge.events, 'burst').map((d) => d.mult.charge),
+          swSlot(s5NoCharge.events, 'burst').map((d) => d.mult.charge)
         ),
       ]).toEqual([1]);
     });
@@ -310,7 +307,7 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     });
     it('DISCRIMINATES vs instant: an undelayed cast lands before FB opens → no FB major', () => {
       expect(
-        swSlot(s5Instant.events, 'burst').every((d) => d.fbMajorApplied),
+        swSlot(s5Instant.events, 'burst').every((d) => d.fbMajorApplied)
       ).toBe(false);
     });
     it('is core-eligible and range-eligible (rangeOk), unlike a default no-range rider', () => {
@@ -323,11 +320,11 @@ describe('snow-white (BASE, AR/Iron) — kit spec', () => {
     it('the cannon out-damages the skill riders (it is the dominant kit contribution)', () => {
       const cannonDmg = swSlot(base.events, 'burst').reduce(
         (s, d) => s + d.amount,
-        0,
+        0
       );
       const riderDmg = swSlot(base.events, 'skill1').reduce(
         (s, d) => s + d.amount,
-        0,
+        0
       );
       expect(cannonDmg).toBeGreaterThan(riderDmg);
     });

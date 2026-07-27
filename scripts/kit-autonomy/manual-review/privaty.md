@@ -13,6 +13,7 @@ chargeFrames 0 (autofire) · hitsPerShot 1 · treasure · Elysion.
 ---
 
 ## 1. Real kit (data/characters.json — ground truth)
+
 - **S1** ■ Activates when entering Full Burst. Affects all allies.
   - ATK ▲ 23.61% for 10 sec · Reload Speed ▲ 51.16% for 10 sec · Max Ammunition Capacity ▼ 50.66% for 10 sec · Attack Damage ▲ 20.16% for 10 sec.
 - **S2** ■ Activates when the last bullet hits the target. Affects the target.
@@ -58,6 +59,7 @@ ATK ▼ 5.02% to the enemy for 10 sec — INERT in the sim: enemy debuffs other 
 dropped in applyEffect (boss DEF=0, single partless boss), so this line is a no-op.
 
 **codeDrivenSurprises (blind, still valid):**
+
 - skill1's `fullBurstEnter` has no own-burst gate → fires on EVERY team Full Burst, not just this unit's own — it would over-fire in a multi-B3 comp relative to a "when this unit bursts" reading.
 - skill1's `maxAmmoPct` is NEGATIVE (−50.66): a Max Ammunition ▼ penalty; the engine clips the live belt down to the new max the moment it lands.
 - The burst's enemy ATK ▼ 5.02% debuff is completely INERT (applyEffect only routes damageTaken/distributed to enemyBuffs; all other enemy debuffs are dropped).
@@ -68,6 +70,7 @@ dropped in applyEffect (boss DEF=0, single partless boss), so this line is a no-
 - skill2 damageTakenPct (10.01%) refreshes/overwrites on re-trigger (same stat+value+slot+caster) rather than co-stacking.
 
 ### 2.1 Driver correction — the 2026-07-23 re-encode (the one stale part)
+
 The 1687% rider is **NOT** a burstCast DoT. In the current code it is a **`lastBullet`-triggered `flatDamage`
 1687% GATED on `requiresTargetStatus:"Designated Target"`**: the burst applies the **Designated Target
 `targetStatus`** to the boss for 10s (new in the re-encode), and the 1687% rider fires **only on last bullets
@@ -79,7 +82,9 @@ matches the current code.)
 ---
 
 ## 3. Driver's executive summary
+
 Privaty is **faithfully modeled** (gauntlet verdict GO, faithfulness 1.0, 0 real gotchas). The override encodes:
+
 - **S1** — `fullBurstEnter` team buffs to all 4 allies for 10s: `atkPct 23.61`, `reloadSpeedPct 51.16`,
   `maxAmmoPct −50.66`, `attackDamagePct 20.16`. The Max-Ammo cut is the load-bearing tandem: halving the magazine
   during Full Burst roughly doubles her last-bullet frequency, which gates all of S2.
@@ -104,8 +109,10 @@ including the load-bearing 1687 gate) → reconciling judge (GO). The single mec
 ---
 
 ## 4. Owner spot-checks (the honest residual)
+
 This GO is **same-model only** — every reviewer was the same Qwen model, so it rules out idiosyncratic error but
 NOT systematic shared-prior misreads (the same-model limit, `docs/kit-autonomy-decisions.md` §14.1). Please eyeball:
+
 1. **The 1687 Designated-Target gate** — the highest-value structural read; both blind re-derivations converged on
    it from the prose, but it is exactly the kind of trigger/gate subtlety a shared prior could miss.
 2. **The Max-Ammo ▼ tandem** (S1 halves magazines → doubles S2 last-bullet procs) — the highest-risk "looks

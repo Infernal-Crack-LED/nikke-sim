@@ -40,27 +40,57 @@ import {
 import { scopeLockCfg } from '../lib/scope-lock.js';
 import { COMPS } from '../experiment.js';
 
-const data: DataFile = JSON.parse(readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8'));
-const mult: LevelMultiplier = JSON.parse(readFileSync(new URL('../../data/level-multiplier.json', import.meta.url), 'utf8'));
-const cubes: CubesFile = JSON.parse(readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8'));
-const olLines: OlLinesFile = JSON.parse(readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8'));
+const data: DataFile = JSON.parse(
+  readFileSync(new URL('../../data/characters.json', import.meta.url), 'utf8')
+);
+const mult: LevelMultiplier = JSON.parse(
+  readFileSync(
+    new URL('../../data/level-multiplier.json', import.meta.url),
+    'utf8'
+  )
+);
+const cubes: CubesFile = JSON.parse(
+  readFileSync(new URL('../../data/cubes.json', import.meta.url), 'utf8')
+);
+const olLines: OlLinesFile = JSON.parse(
+  readFileSync(new URL('../../data/ol-lines.json', import.meta.url), 'utf8')
+);
 let skillLevels: SkillLevelData = {};
 try {
-  skillLevels = JSON.parse(readFileSync(new URL('../../data/skill-levels.json', import.meta.url), 'utf8'));
-} catch { /* optional */ }
+  skillLevels = JSON.parse(
+    readFileSync(
+      new URL('../../data/skill-levels.json', import.meta.url),
+      'utf8'
+    )
+  );
+} catch {
+  /* optional */
+}
 
 const BANDS = ['near', 'mid', 'midfar', 'far'] as const;
-const BAND_T: Record<string, number> = { near: 69, mid: 33, midfar: 46, far: 36 };
+const BAND_T: Record<string, number> = {
+  near: 69,
+  mid: 33,
+  midfar: 46,
+  far: 36,
+};
 
 // live cone SG landing/core at hr
 function coneSgLanding(band: string, hr: number): number {
   const sig = coneSigma(250, hr, CONE_SIGMA_SHRINK.SG);
   return pelletLandFrac(BAND_SG_HIT_FRAC[band], sig, 1);
 }
-function coneCore(weapon: 'AR' | 'SMG' | 'SG', band: string, hr: number): number {
+function coneCore(
+  weapon: 'AR' | 'SMG' | 'SG',
+  band: string,
+  hr: number
+): number {
   const scale = { AR: 75, SMG: 110, SG: 250 }[weapon];
   const sig = coneSigma(scale, hr, CONE_SIGMA_SHRINK[weapon]);
-  return Math.min(1, offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr)));
+  return Math.min(
+    1,
+    offsetCoreProb(BAND_CORE_PX[band] / 2, sig, coneDelta(weapon, hr))
+  );
 }
 
 console.log('=== model tables (off = live cone, on = UNIGEO) ===');
@@ -68,16 +98,19 @@ console.log('SG landing @HR0 / @HR38.91:');
 for (const b of BANDS) {
   console.log(
     `  ${b.padEnd(7)} off ${coneSgLanding(b, 0).toFixed(3)} -> on ${unigeoSgLanding(b, 0).toFixed(3)}` +
-      `   | HR39 off ${coneSgLanding(b, 38.91).toFixed(3)} -> on ${unigeoSgLanding(b, 38.91).toFixed(3)}`,
+      `   | HR39 off ${coneSgLanding(b, 38.91).toFixed(3)} -> on ${unigeoSgLanding(b, 38.91).toFixed(3)}`
   );
 }
 console.log('SG core-per-landed @HR0:');
 for (const b of BANDS)
-  console.log(`  ${b.padEnd(7)} off ${coneCore('SG', b, 0).toFixed(4)} -> on ${unigeoSgCorePerLanded(b, 0).toFixed(4)}`);
+  {console.log(
+    `  ${b.padEnd(7)} off ${coneCore('SG', b, 0).toFixed(4)} -> on ${unigeoSgCorePerLanded(b, 0).toFixed(4)}`
+  );}
 for (const w of ['AR', 'SMG'] as const) {
   for (const hr of [0, 22.37, 61.1, 80.78]) {
     const row = BANDS.map(
-      (b) => `${b} ${coneCore(w, b, hr).toFixed(3)}->${(unigeoSingleCoreProb(w, b, hr) ?? NaN).toFixed(3)}`,
+      (b) =>
+        `${b} ${coneCore(w, b, hr).toFixed(3)}->${(unigeoSingleCoreProb(w, b, hr) ?? NaN).toFixed(3)}`
     ).join('  ');
     console.log(`${w} core @HR${hr}: ${row}`);
   }
@@ -109,12 +142,20 @@ function sgFactor(cb: number): number {
   for (const b of BANDS) {
     const w = BAND_T[b] * coneSgLanding(b, 0);
     const M = 1 + 0.5 * FB_SHARE + CRIT_AVG + RANGE_B.SG[b];
-    num += w * (unigeoSgLanding(b, 0) / coneSgLanding(b, 0)) * ((M + cb * unigeoSgCorePerLanded(b, 0)) / (M + cb * coneCore('SG', b, 0)));
+    num +=
+      w *
+      (unigeoSgLanding(b, 0) / coneSgLanding(b, 0)) *
+      ((M + cb * unigeoSgCorePerLanded(b, 0)) /
+        (M + cb * coneCore('SG', b, 0)));
     den += w;
   }
   return num / den;
 }
-function singleFactor(weapon: 'AR' | 'SMG', cb: number, states: Array<[number, number]>): number {
+function singleFactor(
+  weapon: 'AR' | 'SMG',
+  cb: number,
+  states: Array<[number, number]>
+): number {
   let f = 0;
   for (const [hr, wt] of states) {
     let num = 0;
@@ -122,7 +163,10 @@ function singleFactor(weapon: 'AR' | 'SMG', cb: number, states: Array<[number, n
     for (const b of BANDS) {
       const w = BAND_T[b];
       const M = 1 + 0.5 * FB_SHARE + CRIT_AVG + RANGE_B[weapon][b];
-      num += w * ((M + cb * (unigeoSingleCoreProb(weapon, b, hr) ?? 0)) / (M + cb * coneCore(weapon, b, hr)));
+      num +=
+        w *
+        ((M + cb * (unigeoSingleCoreProb(weapon, b, hr) ?? 0)) /
+          (M + cb * coneCore(weapon, b, hr)));
       den += w;
     }
     f += wt * (num / den);
@@ -131,12 +175,14 @@ function singleFactor(weapon: 'AR' | 'SMG', cb: number, states: Array<[number, n
 }
 
 console.log('\n=== OFF baseline (deterministic) + predicted movers ===');
-console.log('comp | unit | weapon | ratio_off | normShare | F_sg | F_all | pred dRatio sg | pred dRatio all');
+console.log(
+  'comp | unit | weapon | ratio_off | normShare | F_sg | F_all | pred dRatio sg | pred dRatio all'
+);
 const rows: string[] = [];
 for (const comp of COMPS) {
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) overrides[s] = loadOverride(s);
+  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -144,7 +190,12 @@ for (const comp of COMPS) {
     lambdaStage: comp.lambda?.[slug],
   }));
   const cfg = scopeLockCfg(comp.slugs, comp.boss, { focusSlug: comp.focus });
-  const prepared = prepareTeam(chars, unitOpts, { overrides, skillLevels, cubes, olLines });
+  const prepared = prepareTeam(chars, unitOpts, {
+    overrides,
+    skillLevels,
+    cubes,
+    olLines,
+  });
   const res = runSim(chars, mult, cfg, prepared);
   for (const u of res.units) {
     const ch = data.characters[u.slug];
@@ -165,9 +216,9 @@ for (const comp of COMPS) {
     const dAll = ratio * nShare * (fAll - 1);
     if (w === 'SG' || w === 'AR' || w === 'SMG') {
       rows.push(
-        `${comp.name} | ${u.slug} | ${w} | ${ratio.toFixed(3)} | ${nShare.toFixed(3)} | ${fSg.toFixed(4)} | ${fAll.toFixed(4)} | ${dSg >= 0 ? '+' : ''}${dSg.toFixed(4)} | ${dAll >= 0 ? '+' : ''}${dAll.toFixed(4)}`,
+        `${comp.name} | ${u.slug} | ${w} | ${ratio.toFixed(3)} | ${nShare.toFixed(3)} | ${fSg.toFixed(4)} | ${fAll.toFixed(4)} | ${dSg >= 0 ? '+' : ''}${dSg.toFixed(4)} | ${dAll >= 0 ? '+' : ''}${dAll.toFixed(4)}`
       );
     }
   }
 }
-for (const r of rows) console.log(r);
+for (const r of rows) {console.log(r);}

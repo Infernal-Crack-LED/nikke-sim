@@ -20,7 +20,7 @@ Anything in this file is **findings-only until separately gated**. Nothing here 
 carrier below is UNTOUCHED and unaudited — the primitive now exists, so wiring one is cheap, but each
 still needs its own look before it moves a board number.
 
-Kit lines reading *"for N round(s)"* are currently approximated as `durationSec`, or modeled as
+Kit lines reading _"for N round(s)"_ are currently approximated as `durationSec`, or modeled as
 permanent, or expressed through a bespoke per-unit state machine. Before this build the engine had **no
 general round-count vocabulary**: `BuffInstance` (`src/engine/sim.ts`) expires only on `expiresFrame`,
 and the sole non-time scope is `whileSwappedIdx` (swap-round).
@@ -29,7 +29,7 @@ Prior art, for the record — neither is reusable:
 
 - `dorothy-serendipity` — a REAL round count (`consolidation.shots: 3` → `consolShotsLeft`), but it is a
   field of her bespoke pellet-consolidation state machine, reachable by nothing else.
-- `jill` — kit says *"Magnum Ammo: Normal Attack Damage Multiplier ▲30% for 9 round(s)"*, modeled as a
+- `jill` — kit says _"Magnum Ammo: Normal Attack Damage Multiplier ▲30% for 9 round(s)"_, modeled as a
   permanent passive `normalAttackPct: 30`. **That is correct for her and needs no change**: her magazine
   is exactly 9 rounds and the buff re-triggers on every reload-to-max, so 9 rounds = the whole mag =
   permanent. Do not "fix" this.
@@ -39,15 +39,15 @@ Prior art, for the record — neither is reusable:
 A round count only diverges from `durationSec` when the window's rounds span a **reload** or a fire-rate
 change; a "1 round" line on a fast weapon is usually well approximated already. Each needs its own look:
 
-| unit | kit line | current model | note |
-|---|---|---|---|
-| `ada` | burst: *decreases Charge Speed but increases Charge Damage for 1 round(s)* | `weaponSwap` w/ `chargeTimeSec 4`, `chargeMultPct 1750`, `durationSec 10` | the swap already scopes it; "1 round" may be the swap's own shot |
-| `snow-white-heavy-arms` | skill2: *Charge Damage ▲528%* + *Sequential attack damage ▲158.4%*, both *for 1 round(s)* | `whileSwapped` per-swap-round buffs (MEASURED 2026-07-14) | **already round-scoped** by the swap mechanism — likely correct as-is |
-| `miranda` | skill2: *Critical Rate ▲85.42% for 1 round(s)* | — | SMG, ammo 120: 1 round ≈ one trigger pull, sub-100ms |
-| `zwei` | skill1: *Pierce Damage ▲20.13% / ▲24.99% ×3 for 1 round(s)* | — | pierce is inert vs the partless boss |
-| `asuka-wille` | skill2: *Reload speed is **fixed at** a 60% increase for 1 rounds* | unmodeled | this is a **LOCK**, not a duration — belongs to the clamp primitive (`docs/engine-modeling-gaps.md` §1b), not here |
-| `dorothy-serendipity` | skill1 ×5 *for 3 round(s)* | bespoke `consolidation.shots: 3` | a migration onto the general primitive is possible but moves a graded board unit — separate gated pass |
-| `jill` | skill1 *for 9 round(s)* | permanent passive | **correct, do not touch** (see above) |
+| unit                    | kit line                                                                                  | current model                                                             | note                                                                                                               |
+| ----------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `ada`                   | burst: _decreases Charge Speed but increases Charge Damage for 1 round(s)_                | `weaponSwap` w/ `chargeTimeSec 4`, `chargeMultPct 1750`, `durationSec 10` | the swap already scopes it; "1 round" may be the swap's own shot                                                   |
+| `snow-white-heavy-arms` | skill2: _Charge Damage ▲528%_ + _Sequential attack damage ▲158.4%_, both _for 1 round(s)_ | `whileSwapped` per-swap-round buffs (MEASURED 2026-07-14)                 | **already round-scoped** by the swap mechanism — likely correct as-is                                              |
+| `miranda`               | skill2: _Critical Rate ▲85.42% for 1 round(s)_                                            | —                                                                         | SMG, ammo 120: 1 round ≈ one trigger pull, sub-100ms                                                               |
+| `zwei`                  | skill1: _Pierce Damage ▲20.13% / ▲24.99% ×3 for 1 round(s)_                               | —                                                                         | pierce is inert vs the partless boss                                                                               |
+| `asuka-wille`           | skill2: _Reload speed is **fixed at** a 60% increase for 1 rounds_                        | unmodeled                                                                 | this is a **LOCK**, not a duration — belongs to the clamp primitive (`docs/engine-modeling-gaps.md` §1b), not here |
+| `dorothy-serendipity`   | skill1 ×5 _for 3 round(s)_                                                                | bespoke `consolidation.shots: 3`                                          | a migration onto the general primitive is possible but moves a graded board unit — separate gated pass             |
+| `jill`                  | skill1 _for 9 round(s)_                                                                   | permanent passive                                                         | **correct, do not touch** (see above)                                                                              |
 
 Not simSupported, listed for completeness when the roster expands: `emilia`, `eunhwa`, `harran`, `neve`,
 `nihilister`, `phantom`, `vesti-tactical-upgrade`.
@@ -56,7 +56,7 @@ Not simSupported, listed for completeness when the roster expands: `emilia`, `eu
 
 **Status: LANDED** 2026-07-23 (owner directive → DECISIONS; live model `docs/STATE.md` §5).
 
-Roster census of *"Critical Rate of normal attack(s)"* kit lines: **`helm` is the only simSupported
+Roster census of _"Critical Rate of normal attack(s)"_ kit lines: **`helm` is the only simSupported
 carrier.** The only other is `biscuit`, which is not simSupported — wire her when she is.
 
 Board-wide note: helm's is an **allies** buff, so before the fix it was lifting crit on the whole team's
@@ -71,18 +71,18 @@ overrides were partly calibrated against the inflated crit, so this is fit-expos
 **re-tune them individually; never re-fudge the crit scoping back.** MAD buckets went ±3%: 6 → 5,
 ±5%: 12 → 9. Deltas (board mean, before → after):
 
-| unit | n | before | after | Δ |
-|---|---|---|---|---|
-| `privaty` | 3 | 1.118 | 1.099 | −0.019 |
-| `snow-white-heavy-arms` | 4 | 0.960 | 0.943 | −0.017 |
-| `snow-white` | 4 | 0.956 | 0.939 | −0.017 |
-| `little-mermaid` | 9 | 1.052 | 1.042 | −0.010 |
-| `cinderella-crystal-wave` | 2 | 0.974 | 0.966 | −0.008 |
-| `mihara-bonding-chain` | 2 | 1.061 | 1.053 | −0.008 |
-| `rapi-red-hood` | 5 | 0.935 | 0.929 | −0.006 |
-| `soda-twinkling-bunny` | 2 | 0.816 | 0.810 | −0.006 |
-| `anis-star` | 12 | 0.965 | 0.961 | −0.004 |
-| `helm` | 10 | 0.961 | 0.953 | −0.008 (then → 0.973 with `durationShots`) |
+| unit                      | n   | before | after | Δ                                          |
+| ------------------------- | --- | ------ | ----- | ------------------------------------------ |
+| `privaty`                 | 3   | 1.118  | 1.099 | −0.019                                     |
+| `snow-white-heavy-arms`   | 4   | 0.960  | 0.943 | −0.017                                     |
+| `snow-white`              | 4   | 0.956  | 0.939 | −0.017                                     |
+| `little-mermaid`          | 9   | 1.052  | 1.042 | −0.010                                     |
+| `cinderella-crystal-wave` | 2   | 0.974  | 0.966 | −0.008                                     |
+| `mihara-bonding-chain`    | 2   | 1.061  | 1.053 | −0.008                                     |
+| `rapi-red-hood`           | 5   | 0.935  | 0.929 | −0.006                                     |
+| `soda-twinkling-bunny`    | 2   | 0.816  | 0.810 | −0.006                                     |
+| `anis-star`               | 12  | 0.965  | 0.961 | −0.004                                     |
+| `helm`                    | 10  | 0.961  | 0.953 | −0.008 (then → 0.973 with `durationShots`) |
 
 `privaty` and `little-mermaid` moved TOWARD 1.0 (they were hot); the rest moved away. `snow-white` and
 `snow-white-heavy-arms` are the two worst-affected and the natural first re-tunes.
@@ -117,12 +117,12 @@ overrides were partly calibrated against the inflated crit, so this is fit-expos
 Surfaced while building `src/ranks/` (burst-gen / burst-CDR census over all tagged kits) —
 **findings-only, not enacted**:
 
-- **`d` and `elegg` battle-start gauge fills are silently dropped.** Their S2 lines (*"Activates when
-  the stage target appears … Fills Burst Gauge by 98.56%/100%, once per battle"*) parse to
+- **`d` and `elegg` battle-start gauge fills are silently dropped.** Their S2 lines (_"Activates when
+  the stage target appears … Fills Burst Gauge by 98.56%/100%, once per battle"_) parse to
   `trigger kind: 'unsupported'` — the kit-parser regex (`scripts/lib/kit-parser.ts:78`) matches
   "when the target appears" but not "when **the stage** target appears" — so the fillGauge lands in
   `unmodeled` and never fires. Both are `simSupported: false` today, so nothing live is wrong; fix
   the regex when either unit joins the roster (it also gates their burst-gen board eligibility).
-- **`rupee-winter-shopper`'s FB-end gauge buff gate is dropped.** *"if Shopping is at max stacks when
-  Full Burst ends → filling speed ▲7.9% for 5 sec"* parses as an UNGATED `fullBurstEnd → burstGenPct
-  7.9` — overcounts whenever Shopping isn't stacked. Not simSupported; no board impact today.
+- **`rupee-winter-shopper`'s FB-end gauge buff gate is dropped.** _"if Shopping is at max stacks when
+  Full Burst ends → filling speed ▲7.9% for 5 sec"_ parses as an UNGATED `fullBurstEnd → burstGenPct
+7.9` — overcounts whenever Shopping isn't stacked. Not simSupported; no board impact today.

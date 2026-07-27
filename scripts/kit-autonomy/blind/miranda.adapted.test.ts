@@ -66,20 +66,30 @@ function run(opts: any): { res: any; events: Ev[] } {
 /** Slot accessor that tolerates both override shapes (Block[] or CharacterSkills.blocks). */
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) return [];
+  if (!s) {return [];}
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 
 /** Locate a block STRUCTURALLY by the kit magnitude it carries (no index assumptions). */
-function blockWithBuff(ov: any, slot: 'skill1' | 'skill2' | 'burst', value: number): any {
+function blockWithBuff(
+  ov: any,
+  slot: 'skill1' | 'skill2' | 'burst',
+  value: number
+): any {
   const found = slotBlocks(ov, slot).find((b: any) =>
     (b.effects ?? []).some(
-      (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
-    ),
+      (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6
+    )
   );
   if (!found) {
     throw new Error(
-      '[' + SLUG + '] no ' + slot + ' block carries buff value ' + value + ' — the kit prose says it must',
+      '[' +
+        SLUG +
+        '] no ' +
+        slot +
+        ' block carries buff value ' +
+        value +
+        ' — the kit prose says it must'
     );
   }
   return found;
@@ -87,17 +97,22 @@ function blockWithBuff(ov: any, slot: 'skill1' | 'skill2' | 'burst', value: numb
 
 function buffOf(blk: any, value: number): any {
   return (blk.effects ?? []).find(
-    (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6,
+    (e: any) => e.kind === 'buff' && Math.abs((e.value ?? NaN) - value) < 1e-6
   );
 }
 
 const applies = (evs: Ev[], stat: string, value: number) =>
   evs.filter(
-    (e) => e.kind === 'buffApply' && e.stat === stat && Math.abs((e.value ?? NaN) - value) < 1e-6,
+    (e) =>
+      e.kind === 'buffApply' &&
+      e.stat === stat &&
+      Math.abs((e.value ?? NaN) - value) < 1e-6
   );
 
-const targetsOf = (evs: Ev[]) => Array.from(new Set(evs.map((e) => e.targetSlug)));
-const teamTotal = (res: any) => Object.values(totals(res)).reduce((a, b) => a + b, 0);
+const targetsOf = (evs: Ev[]) =>
+  Array.from(new Set(evs.map((e) => e.targetSlug)));
+const teamTotal = (res: any) =>
+  Object.values(totals(res)).reduce((a, b) => a + b, 0);
 
 // ---------------------------------------------------------------------------
 // Hoisted runs (each runComp is a full 180s sim). 5 runs total.
@@ -116,7 +131,8 @@ const CF_HITCOUNT_X2 = run({
   overrides: {
     [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
       for (const b of slotBlocks(ov, 'skill1')) {
-        if (b.trigger?.kind === 'hitCount') b.trigger.count = (b.trigger.count ?? 30) * 2;
+        if (b.trigger?.kind === 'hitCount')
+          {b.trigger.count = (b.trigger.count ?? 30) * 2;}
       }
     }),
   },
@@ -200,7 +216,7 @@ describe("miranda S1 — 'Activates after landing 30 normal attack(s)'", () => {
     const smg = targetsOf(hrSmg);
     expect(smg).toContain(SLUG); // miranda is an SMG unit, so self is inside the scope
     expect(smg).not.toContain('helm'); // helm is SR — RED if the block is modelled as plain 'allies'
-    for (const s of smg) expect(targetsOf(hrAll)).toContain(s); // SMG set is a subset of the all set
+    for (const s of smg) {expect(targetsOf(hrAll)).toContain(s);} // SMG set is a subset of the all set
     expect(hrSmg.length).toBe(S1_ACTIVATIONS * smg.length);
     expect(hrSmg.length).toBeLessThan(hrAll.length);
   });
@@ -230,7 +246,7 @@ describe("miranda S1 — 'Activates after landing 30 normal attack(s)'", () => {
     const base = totals(BASE.res);
     const cf = totals(CF_S1_ATK_SHORT.res);
     for (const s of ROSTER) {
-      if (s === SLUG) continue;
+      if (s === SLUG) {continue;}
       expect(cf[s]).toBe(base[s]); // byte-identical
     }
   });
@@ -258,14 +274,14 @@ describe("miranda S2 — 'Activates when entering Full Burst'", () => {
   it('Crit Rate 85.42% goes to exactly one non-self ally per Full Burst', () => {
     const cr = applies(BASE.events, 'critRatePct', 85.42);
     expect(cr.length).toBe(FB);
-    for (const ev of cr) expect(ev.targetSlug).not.toBe(SLUG);
+    for (const ev of cr) {expect(ev.targetSlug).not.toBe(SLUG);}
   });
 
   // DURATION SEMANTICS: 'for 1 round(s)' is a ROUND count on the holder, not one second.
-  it("the 85.42% buff carries a ROUND duration (durationShots 1), not seconds", () => {
+  it('the 85.42% buff carries a ROUND duration (durationShots 1), not seconds', () => {
     const cr = applies(BASE.events, 'critRatePct', 85.42);
     expect(cr.length).toBeGreaterThan(0);
-    for (const ev of cr) expect(ev.durationShots).toBe(1);
+    for (const ev of cr) {expect(ev.durationShots).toBe(1);}
   });
 
   it('modelling the round duration as one second changes the outcome', () => {
@@ -296,7 +312,7 @@ describe('miranda burst — 2 top-final-ATK allies, except self', () => {
   });
 
   it('the burst grants never land on miranda herself', () => {
-    for (const ev of atk) expect(ev.targetSlug).not.toBe(SLUG);
+    for (const ev of atk) {expect(ev.targetSlug).not.toBe(SLUG);}
     // and they are strictly a 2-of-3 slice of the roster, never the whole team
     expect(targetsOf(cdm).length).toBeLessThanOrEqual(ROSTER.length - 1);
   });

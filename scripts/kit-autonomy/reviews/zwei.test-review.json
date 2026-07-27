@@ -126,9 +126,7 @@
   ],
   "unmodeledVerbatim": {
     "skill1": [],
-    "skill2": [
-      "Restores 7.52% of Cover HP."
-    ],
+    "skill2": ["Restores 7.52% of Cover HP."],
     "burst": []
   },
   "notes": "Expected shared-prior misreads, in descending damage impact: (1) skill2's 15% crit stack left UNGATED — her base SG fires all fight, so an ungated encoding parks the whole team at +45% crit permanently; the assertion 'no value-15 buffApply between burstCast+10s and her next burst' is the single most load-bearing test. (2) The burst swap's pierce tag omitted — this silently inerts ALL FOUR Pierce-Damage lines on her own shots; conversely the whole pierce package must be provably ZERO on a non-pierce carry (inertness pair). (3) 'for 1 round(s)' encoded as seconds on both skill1 round-count lines — the in-FB 24.99% stack line especially, where durationShots:1 vs durationSec is the difference between ~1 buffed ally round per zwei shot and near-permanent 3-stack uptime. (4) Cover-HP restore encoded as a `heal` — with crown in the control comp this would pump her on-recovery consumers every 5 zwei rounds; whether cover repair counts as 'recovery' is a HYPOTHESIS needing measurement, so the safe test is crown-recovery-count invariance. (5) burstCast vs fullBurstEnter: the kit deliberately mixes both (skill1/skill2 FB-enter lines vs the burst-block PA101/swap) — assert apply-timing relative to fullBurstStart to distinguish. ⚑ fields the driver MUST have flagged: swap duration (kit-silent; 10s-match recipe), swap shot economy/cadence, swap weapon class for range-band/core eligibility (charge weapon on an SG base — SR-like banding is a guess), base SG cadence tuple. Whole-picture check: ammo 1 + 111-frame reload + 1.2s charge → ~3 swapped shots per 10s window, which is also the ramp ceiling for both 3-stack lines (they reach cap only at window end, if at all) — any test asserting instant 3-stack uptime contradicts the shot economy and is wrong.",

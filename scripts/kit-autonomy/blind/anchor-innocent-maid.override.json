@@ -38,11 +38,7 @@
         "kind": "allies"
       },
       "teamHas": {
-        "slugs": [
-          "anchor",
-          "poli",
-          "neve"
-        ]
+        "slugs": ["anchor", "poli", "neve"]
       },
       "effects": [
         {
@@ -113,9 +109,7 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "Three times: Stack count of debuffs ▼ 1."
-    ],
+    "skill1": ["Three times: Stack count of debuffs ▼ 1."],
     "skill2": [],
     "burst": [
       "Storage: Stores excess healing received by the skill user, up to 60.19% of their Max HP. Lasts for 25 sec."

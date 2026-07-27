@@ -25,9 +25,7 @@
       "slot": "skill1",
       "trigger": { "kind": "interval", "sec": 1 },
       "target": { "kind": "selfAndAdjacent", "sides": 2 },
-      "effects": [
-        { "kind": "heal" }
-      ]
+      "effects": [{ "kind": "heal" }]
     }
   ],
   "skill2": [],
@@ -38,8 +36,18 @@
       "target": { "kind": "allies" },
       "effects": [
         { "kind": "heal" },
-        { "kind": "buff", "stat": "trueDamagePct", "value": 42.39, "durationSec": 10 },
-        { "kind": "buff", "stat": "casterAtkPct", "value": 85.86, "durationSec": 10 }
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 42.39,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 85.86,
+          "durationSec": 10
+        }
       ]
     }
   ]

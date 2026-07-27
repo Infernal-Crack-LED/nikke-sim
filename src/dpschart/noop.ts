@@ -40,7 +40,7 @@ function noop(
   burst: BurstType,
   burstCooldownSec: number,
   weapon: Weapon,
-  w: WeaponModal,
+  w: WeaponModal
 ): NoopCharacter {
   return {
     slug,
@@ -50,7 +50,7 @@ function noop(
     burst,
     burstCooldownSec,
     class: 'Supporter', // only feeds gear ATK/HP — inert at 0 damage
-    element: 'Fire',    // never elementally relevant at 0 damage
+    element: 'Fire', // never elementally relevant at 0 damage
     manufacturer: null, // no relationship bonus on a synthetic control unit
     normalAttackMultiplier: 0, // ZERO damage — the control contributes gauge + stages only
     coreAttackMultiplier: 200,
@@ -76,10 +76,25 @@ export const NOOP_B2 = 'noop-b2-sr';
 export const NOOP_B3 = 'noop-b3-rl';
 
 export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
-  [NOOP_B1]: noop(NOOP_B1, 'No-op B1 (AR)', 'I', 20, 'AR',
-    { ammo: 60, reloadFrames: 81, chargeFrames: 0, chargeMultiplier: 0, rl3: 7.6 }),
-  [NOOP_B2]: noop(NOOP_B2, 'No-op B2 (SR)', 'II', 20, 'SR',
-    { ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, rl3: 8.4 }),
-  [NOOP_B3]: noop(NOOP_B3, 'No-op B3 (RL)', 'III', 40, 'RL',
-    { ammo: 6, reloadFrames: 141, chargeFrames: 60, chargeMultiplier: 250, rl3: 16.8 }),
+  [NOOP_B1]: noop(NOOP_B1, 'No-op B1 (AR)', 'I', 20, 'AR', {
+    ammo: 60,
+    reloadFrames: 81,
+    chargeFrames: 0,
+    chargeMultiplier: 0,
+    rl3: 7.6,
+  }),
+  [NOOP_B2]: noop(NOOP_B2, 'No-op B2 (SR)', 'II', 20, 'SR', {
+    ammo: 6,
+    reloadFrames: 141,
+    chargeFrames: 60,
+    chargeMultiplier: 250,
+    rl3: 8.4,
+  }),
+  [NOOP_B3]: noop(NOOP_B3, 'No-op B3 (RL)', 'III', 40, 'RL', {
+    ammo: 6,
+    reloadFrames: 141,
+    chargeFrames: 60,
+    chargeMultiplier: 250,
+    rl3: 16.8,
+  }),
 };

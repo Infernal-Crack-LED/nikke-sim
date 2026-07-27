@@ -28,7 +28,7 @@ function navClick(e: MouseEvent, route: Route) {
     e.shiftKey ||
     e.altKey
   )
-    return;
+    {return;}
   e.preventDefault();
   navigate(hrefFor(route));
 }
@@ -58,7 +58,7 @@ export function SiteNav({
   // The beta toast dismisses on Escape or a click anywhere outside it (the
   // Okay button is the third exit) — same pattern as the hamburger menu.
   useEffect(() => {
-    if (!betaToastOpen) return;
+    if (!betaToastOpen) {return;}
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (
         betaToastRef.current &&
@@ -68,7 +68,7 @@ export function SiteNav({
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setBetaToastOpen(false);
+      if (e.key === 'Escape') {setBetaToastOpen(false);}
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -80,14 +80,14 @@ export function SiteNav({
 
   // Close the menu on an outside click or Escape.
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!menuOpen) {return;}
     const onDocDown = (e: globalThis.MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setMenuOpen(false);
       }
     };
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setMenuOpen(false);
+      if (e.key === 'Escape') {setMenuOpen(false);}
     };
     document.addEventListener('mousedown', onDocDown);
     document.addEventListener('keydown', onKey);
@@ -104,12 +104,12 @@ export function SiteNav({
   };
 
   return (
-    <nav className='site-nav'>
-      <div className='site-nav-inner'>
-        <div className='site-nav-left'>
+    <nav className="site-nav">
+      <div className="site-nav-inner">
+        <div className="site-nav-left">
           {mobile ? (
             <TabDropdown
-              label='Page'
+              label="Page"
               items={NAV.map((n) => ({
                 key: n.route,
                 label: n.label,
@@ -133,59 +133,59 @@ export function SiteNav({
           {/* Beta flag — sits inline after Mechanics on every breakpoint and
               pops the status toast instead of navigating anywhere. */}
           <button
-            type='button'
-            className='nav-beta-chip'
+            type="button"
+            className="nav-beta-chip"
             onClick={() => setBetaToastOpen(true)}
-            aria-haspopup='dialog'
+            aria-haspopup="dialog"
           >
-            <span className='nav-beta-sign' aria-hidden='true'>
+            <span className="nav-beta-sign" aria-hidden="true">
               ⚠
             </span>
             Beta
           </button>
         </div>
-        <div className='site-nav-right'>
+        <div className="site-nav-right">
           {/* Discord auth stays visible — team saving and roster sync depend
               on it; icon-only on mobile to save width */}
           {user ? (
-            <div className='nav-user'>
-              <span className='nav-user-name' title='logged in'>
+            <div className="nav-user">
+              <span className="nav-user-name" title="logged in">
                 {user.username}
               </span>
-              <button className='nav-btn nav-logout' onClick={onLogout}>
+              <button className="nav-btn nav-logout" onClick={onLogout}>
                 Log out
               </button>
             </div>
           ) : (
             <button
-              className='nav-btn discord nav-login'
+              className="nav-btn discord nav-login"
               onClick={onLogin}
-              title='save teams to your Discord account'
+              title="save teams to your Discord account"
             >
-              <span className='discord-icon' aria-hidden='true'>
-                <BrandIcon name='discord' />
+              <span className="discord-icon" aria-hidden="true">
+                <BrandIcon name="discord" />
               </span>
               {!mobile && <span>Log in with Discord</span>}
             </button>
           )}
-          <div className='nav-menu' ref={menuRef}>
+          <div className="nav-menu" ref={menuRef}>
             <button
               className={'nav-btn nav-menu-btn' + (menuOpen ? ' on' : '')}
-              aria-label='More'
-              aria-haspopup='true'
+              aria-label="More"
+              aria-haspopup="true"
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((o) => !o)}
             >
-              <span aria-hidden='true'>☰</span>
+              <span aria-hidden="true">☰</span>
             </button>
             {menuOpen && (
-              <div className='nav-menu-panel' role='menu'>
+              <div className="nav-menu-panel" role="menu">
                 <a
                   className={
                     'nav-menu-item' +
                     (current === 'testing-requests' ? ' on' : '')
                   }
-                  role='menuitem'
+                  role="menuitem"
                   href={hrefFor('testing-requests')}
                   onClick={(e) => menuNav(e, 'testing-requests')}
                 >
@@ -195,7 +195,7 @@ export function SiteNav({
                   className={
                     'nav-menu-item' + (current === 'roster-sync' ? ' on' : '')
                   }
-                  role='menuitem'
+                  role="menuitem"
                   href={hrefFor('roster-sync')}
                   onClick={(e) => menuNav(e, 'roster-sync')}
                 >
@@ -205,7 +205,7 @@ export function SiteNav({
                   className={
                     'nav-menu-item' + (current === 'patch-notes' ? ' on' : '')
                   }
-                  role='menuitem'
+                  role="menuitem"
                   href={hrefFor('patch-notes')}
                   onClick={(e) => menuNav(e, 'patch-notes')}
                 >
@@ -213,7 +213,7 @@ export function SiteNav({
                 </a>
                 <a
                   className={'nav-menu-item' + (current === 'dev' ? ' on' : '')}
-                  role='menuitem'
+                  role="menuitem"
                   href={hrefFor('dev')}
                   onClick={(e) => menuNav(e, 'dev')}
                 >
@@ -223,7 +223,7 @@ export function SiteNav({
                   className={
                     'nav-menu-item' + (current === 'credits' ? ' on' : '')
                   }
-                  role='menuitem'
+                  role="menuitem"
                   href={hrefFor('credits')}
                   onClick={(e) => menuNav(e, 'credits')}
                 >
@@ -236,21 +236,21 @@ export function SiteNav({
       </div>
       {betaToastOpen && (
         <div
-          className='beta-toast'
-          role='alertdialog'
-          aria-label='Beta status'
+          className="beta-toast"
+          role="alertdialog"
+          aria-label="Beta status"
           ref={betaToastRef}
         >
-          <span className='beta-toast-sign' aria-hidden='true'>
+          <span className="beta-toast-sign" aria-hidden="true">
             ⚠
           </span>
-          <p className='beta-toast-msg'>
+          <p className="beta-toast-msg">
             Exact sim calculations and character kits are still under
             development
           </p>
           <button
-            type='button'
-            className='beta-toast-ok'
+            type="button"
+            className="beta-toast-ok"
             autoFocus
             onClick={() => setBetaToastOpen(false)}
           >
@@ -265,8 +265,8 @@ export function SiteNav({
 // Shared social footer rendered on every page — brand tiles, rounded corners.
 export function SiteFooter() {
   return (
-    <footer className='site-footer'>
-      <div className='social-row'>
+    <footer className="site-footer">
+      <div className="social-row">
         {socials.map((s) => (
           <a
             key={s.label}
@@ -275,8 +275,8 @@ export function SiteFooter() {
               (s.icon.kind === 'img' && s.icon.round ? ' round' : '')
             }
             href={s.href}
-            target='_blank'
-            rel='noreferrer'
+            target="_blank"
+            rel="noreferrer"
             aria-label={s.label}
             title={s.label}
             style={{ background: s.brand }}
@@ -284,13 +284,13 @@ export function SiteFooter() {
             {s.icon.kind === 'brand' ? (
               <BrandIcon name={s.icon.name} />
             ) : (
-              <img src={s.icon.src} alt='' />
+              <img src={s.icon.src} alt="" />
             )}
-            <span className='sr-only'>{s.label}</span>
+            <span className="sr-only">{s.label}</span>
           </a>
         ))}
       </div>
-      <div className='site-footer-by'>
+      <div className="site-footer-by">
         made by{' '}
         <a href={hrefFor('dev')} onClick={(e) => navClick(e, 'dev')}>
           Max

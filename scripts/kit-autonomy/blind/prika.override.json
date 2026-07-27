@@ -90,9 +90,7 @@
     }
   ],
   "unmodeled": {
-    "skill1": [
-      "Outgoing healing ▲ 49.92% continuously."
-    ],
+    "skill1": ["Outgoing healing ▲ 49.92% continuously."],
     "skill2": [
       "■ Activates when Sing Along takes effect while Prika is in Performance status.",
       "Encore",

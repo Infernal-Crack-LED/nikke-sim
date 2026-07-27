@@ -19,9 +19,7 @@
     "rl3": 5.7,
     "burstGaugePerShot": 0.1,
     "treasure": false,
-    "nicknames": [
-      "awb"
-    ],
+    "nicknames": ["awb"],
     "skills": {
       "skill1": "■ Activates after landing 60 normal attack(s). Affects all allies.\nRecovers 7.4% of the skill user's final Max HP as HP.\nCarrot Party: Damage to Interruption Parts ▲2%, stacks up to 5 time(s) and lasts for 5 sec.\n■ Activates after 90 normal attack(s). Affects all Water Code allies.\nStack count of buffs ▲ 1.",
       "skill2": "■ Activates after Full Burst ends. Affects all allies.\nBurst Gauge filling speed ▲ 10% for 5 sec.\n■ Activates when entering Full Burst. Affects all allies.\nMax Ammunition Capacity ▲ 40% for 15 sec.\nReload 40%.",
@@ -71,13 +69,9 @@
           "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
           "maintain_fire_stance": 0,
           "spot_explosion_range": 0,
-          "use_function_id_list": [
-            0
-          ],
+          "use_function_id_list": [0],
           "accuracy_change_speed": 0,
-          "hurt_function_id_list": [
-            0
-          ],
+          "hurt_function_id_list": [0],
           "spot_projectile_speed": 0,
           "accuracy_change_pershot": 0,
           "prefer_target_condition": "None",
@@ -351,16 +345,7 @@
             }
           ],
           "skill_cooltime_list": [
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000,
-            4000
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
           ],
           "description_localkey": "■ Affects all allies.\n<color=#00AEFF><word_group=10002>Re-enters Burst</word_group> Stage 1.\nRestores {description_value_01}% of the skill user's <word_group=10025>final</word_group> Max HP as HP.</color>\n■ Activates when Carrot Party is at max stacks. Affects all allies.\n<color=#00AEFF>Incoming healing ▲ {description_value_02}% for {description_value_03} sec.</color>",
           "description_value_list": [
@@ -417,19 +402,10 @@
           ],
           "prefer_target_condition": "None",
           "info_description_localkey": "Burst Skill",
-          "after_use_function_id_list": [
-            119530101,
-            119530102
-          ],
-          "after_hurt_function_id_list": [
-            0
-          ],
-          "before_use_function_id_list": [
-            0
-          ],
-          "before_hurt_function_id_list": [
-            0
-          ]
+          "after_use_function_id_list": [119530101, 119530102],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [0]
         }
       },
       "statScaling": {
@@ -454,9 +430,7 @@
         }
       },
       "element": {
-        "element_id": [
-          200001
-        ],
+        "element_id": [200001],
         "element_details": [
           {
             "id": 200001,
@@ -487,9 +461,7 @@
           "item_sub_type": "CharacterPiece",
           "name_localkey": "Alice: Wonderland Bunny's Spare Body",
           "use_limit_count": false,
-          "inventory_filter": [
-            "etc"
-          ],
+          "inventory_filter": ["etc"],
           "description_localkey": "Can be used for Nikkes' Limit Breaks.\nIf a Nikke's Limit Break has reached the max level, any additional Spare Bodies for that Nikke will be converted to Body Labels."
         }
       },

@@ -59,10 +59,10 @@ function aliceIdx(evs: SimEvent[]): number {
     (b) =>
       b.stat === 'atkPct' &&
       Math.abs(b.value - 55.12) < 1 &&
-      b.casterIdx === b.targetIdx,
+      b.casterIdx === b.targetIdx
   );
   if (self == null || self.casterIdx == null)
-    throw new Error('alice self ATK 55.12 buff not found');
+    {throw new Error('alice self ATK 55.12 buff not found');}
   return self.casterIdx;
 }
 
@@ -80,10 +80,10 @@ beforeAll(() => {
           e.kind === 'buff' &&
           e.stat === 'atkPct' &&
           Math.abs(e.value - 55.12) < 1
-        ),
+        )
     );
     if (ov.burst[0].effects.length === before)
-      throw new Error('burst atkPct 55.12 missing — stale');
+      {throw new Error('burst atkPct 55.12 missing — stale');}
   });
   noBurstAtk = collect({ alice: patched });
 });
@@ -91,7 +91,7 @@ beforeAll(() => {
 describe('alice (S5 blind) — fixture non-vacuity', () => {
   it('the team actually enters Full Burst (a lone B3 makes zero)', () => {
     expect(
-      base.events.filter((e) => e.kind === 'fullBurstStart').length,
+      base.events.filter((e) => e.kind === 'fullBurstStart').length
     ).toBeGreaterThan(0);
   });
   it('alice deals nonzero damage', () => {
@@ -103,18 +103,18 @@ describe('alice (S5 blind) — burst ATK ▲55.12% self /10s', () => {
   it('is applied to alice herself (self-scoped), never to a teammate', () => {
     const idx = aliceIdx(base.events);
     const applies = buffs(base.events).filter(
-      (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1,
+      (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1
     );
     expect(applies.length).toBeGreaterThan(0);
-    for (const a of applies) expect(a.targetIdx).toBe(idx);
+    for (const a of applies) {expect(a.targetIdx).toBe(idx);}
   });
 
   it('raises alice damage vs the nearest-wrong inert model; teammates byte-identical', () => {
     expect(base.totals.alice).toBeGreaterThan(noBurstAtk.totals.alice);
     for (const slug of ['liter', 'crown', 'helm'])
-      expect(noBurstAtk.totals[slug]).toBe(base.totals[slug]);
+      {expect(noBurstAtk.totals[slug]).toBe(base.totals[slug]);}
     const cf = buffs(noBurstAtk.events).filter(
-      (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1,
+      (b) => b.stat === 'atkPct' && Math.abs(b.value - 55.12) < 1
     );
     expect(cf.length).toBe(0);
   });
@@ -127,16 +127,16 @@ describe('alice (S5 blind) — skill1 Charge Damage ▲7% to 2 highest-ATK allie
       (b) =>
         b.stat === 'chargeDamagePct' &&
         b.casterIdx === idx &&
-        Math.abs(b.value - 7) < 1,
+        Math.abs(b.value - 7) < 1
     );
     expect(applies.length).toBeGreaterThan(0);
     // per-firing count === 2 (the top-2 rotates across firings as final ATK is re-ranked).
     const perFrame = new Map<number, Set<number | null>>();
     for (const b of applies)
-      (
+      {(
         perFrame.get(b.frame) ?? perFrame.set(b.frame, new Set()).get(b.frame)!
-      ).add(b.targetIdx);
-    for (const [, holders] of perFrame) expect(holders.size).toBe(2);
+      ).add(b.targetIdx);}
+    for (const [, holders] of perFrame) {expect(holders.size).toBe(2);}
   });
 
   it('fires at Full Burst enter, never before the first Full Burst window opens', () => {
@@ -147,7 +147,7 @@ describe('alice (S5 blind) — skill1 Charge Damage ▲7% to 2 highest-ATK allie
         b.stat === 'chargeDamagePct' &&
         b.casterIdx === idx &&
         Math.abs(b.value - 7) < 1 &&
-        b.frame < firstFb.frame,
+        b.frame < firstFb.frame
     );
     expect(early.length).toBe(0);
   });

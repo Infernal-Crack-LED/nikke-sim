@@ -19,6 +19,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -29,12 +30,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -60,26 +63,54 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
@@ -113,7 +144,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -151,29 +182,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -254,9 +285,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -292,7 +323,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -350,7 +381,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -493,12 +524,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -589,15 +620,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -1217,10 +1248,7 @@ The 2026-07-16 finding CONFIRMED: she makes 0 bursts in graded comp N5 (Privaty/
       "when an ally or self destroys an enemy",
       "Sustained Damage ▲ 68.04% for 15 sec (part-gated)"
     ],
-    "burst": [
-      "Noise Pollution: Hit Rate ▼ 100% for 1 sec",
-      "Mute stacks ▼ 1."
-    ]
+    "burst": ["Noise Pollution: Hit Rate ▼ 100% for 1 sec", "Mute stacks ▼ 1."]
   },
   "notes": "Expected shared-prior misreads, in descending danger: (1) STATUS LATCH vs PER-ROTATION GATE — 'for the first time' makes Intro/Highlight a once-per-battle permanent latch decided at the FIRST FB; the obvious encoding (fullBurstEnter + ownBurstGate re-checked every FB) flips the tier per rotation in a two-B3 controlComp (diesel + helm) and is WRONG. The killer assertion: after diesel casts into the first FB, a later FB chained by the OTHER B3 must still apply 60.19, never 235.03. If the driver encoded this via top-level `modes` (intro/highlight as user-selectable), the test must pin the DEFAULT mode to the graded comp's actual first-rotation caster and assert the non-selected tier is fully inert. (2) SUSTAINED SCOPE — all three big buffs (60.19/235.03/318.14/68.04) are 'Sustained damage ▲': they must be stat sustainedDamagePct feeding only sustained-FLAVORED damage (her four DoT/tick lines), NOT attackDamagePct; the kit gives NO license to flavor her RL normal shots 'sustained', so the buffs must not move the normal/charge buckets — assert bucket isolation. (3) burstCast vs fullBurstEnter on the burst debuff+DoTs — the 25.09% Damage Taken is team-wide leverage and over-fires 2x if keyed to FB entry in a two-B3 comp. (4) The two burst DoTs BOTH hit the solo boss (all-enemies + stage-target rider are additive, ~199.63%/s total) — either/or reading under-credits. (5) The 3s/2-stack full-charge buff LAPSES across every reload (gap ≈ 141f+60f ≈ 3.35s > 3s) — a permanent encoding hides a real duty-cycle haircut. (6) Highlight's hidden COST (ally Hit Rate ▼100% 1s, unmitigated because Mute is part-gated and parts don't exist in v1) must not be silently dropped if any Highlight-mode comp is ever graded — granting 235.03 without the ally cost is asymmetric fudging. All magnitudes are kit-literal (DATAMINED); the only ⚑ fields are the RL cadence tuple (chargeFrames/reloadFrames datamine-unreliable) driving the stack-lapse and shot-cadence assertions. Burst-cast DoT ticks take FB +50% by landing timing (default ON) — no per-kit noFb without measurement.",
   "model": "claude-fable-5"
@@ -1312,7 +1340,7 @@ type Blk = Record<string, any>;
 const near = (a: number, b: number, tol = 0.05) => Math.abs(a - b) <= tol;
 
 function allBlocks(ov: any): Blk[] {
-  return SLOTS.flatMap((s) => ((ov?.[s] ?? []) as Blk[]));
+  return SLOTS.flatMap((s) => (ov?.[s] ?? []) as Blk[]);
 }
 function blocksWith(ov: any, pred: (e: Eff) => boolean): Blk[] {
   return allBlocks(ov).filter((b) => ((b.effects ?? []) as Eff[]).some(pred));
@@ -1342,7 +1370,7 @@ function patchZero(pred: (e: Eff) => boolean) {
   let n = 0;
   const ov = withPatchedOverride(SLUG, (o: any) => {
     for (const b of allBlocks(o)) {
-      for (const e of ((b.effects ?? []) as Eff[])) {
+      for (const e of (b.effects ?? []) as Eff[]) {
         if (!pred(e)) continue;
         if ('value' in e) e.value = 0;
         if ('atkPct' in e) e.atkPct = 0;
@@ -1379,12 +1407,14 @@ function run(patched?: any, helm = false) {
   return { res, evs, t: totals(res) };
 }
 
-const evsOf = (evs: SimEvent[], k: string) => evs.filter((e: any) => e.kind === k);
+const evsOf = (evs: SimEvent[], k: string) =>
+  evs.filter((e: any) => e.kind === k);
 const applied = (evs: SimEvent[], stat: string, mag: number) =>
   evsOf(evs, 'buffApply').filter(
-    (e: any) => e.stat === stat && near(Math.abs(e.value), mag),
+    (e: any) => e.stat === stat && near(Math.abs(e.value), mag)
   );
-const mentions = (ev: any, slug: string) => Object.values(ev).some((v) => v === slug);
+const mentions = (ev: any, slug: string) =>
+  Object.values(ev).some((v) => v === slug);
 function shotCount(evs: SimEvent[], slug: string) {
   const all = evsOf(evs, 'shot');
   const mine = all.filter((e) => mentions(e, slug));
@@ -1498,11 +1528,15 @@ describe('S1 - Intro / Highlight status and its two payloads', () => {
     const blks = blocksWith(OV, isHighlightSus);
     expect(blks.length).toBeGreaterThan(0);
     // it must carry SOME gate - an ungated 235.03% would fire on every FB and massively over-credit
-    expect(blks.every((b) => GATE_KEYS.some((k) => b[k] !== undefined))).toBe(true);
+    expect(blks.every((b) => GATE_KEYS.some((k) => b[k] !== undefined))).toBe(
+      true
+    );
     // non-vacuity: strip the gate and it fires, proving the base run is gate-inert not code-dead
     expect(uHighlight.n).toBeGreaterThan(0);
     expect(runHighlight).not.toBeNull();
-    expect(applied(runHighlight!.evs, 'sustainedDamagePct', 235.03).length).toBeGreaterThan(0);
+    expect(
+      applied(runHighlight!.evs, 'sustainedDamagePct', 235.03).length
+    ).toBeGreaterThan(0);
     expect(runHighlight!.t[SLUG]).toBeGreaterThan(base.t[SLUG]);
   });
 });
@@ -1534,7 +1568,9 @@ describe('S2 - part destruction, full charge, FB DoT', () => {
   });
 
   it('S2d: 63.33% sustained DoT is ONE FB-enter instance, 9s at 1s ticks, on the enemy', () => {
-    const blks = allBlocks(OV).filter((b) => ((b.effects ?? []) as Eff[]).some(isFbDot));
+    const blks = allBlocks(OV).filter((b) =>
+      ((b.effects ?? []) as Eff[]).some(isFbDot)
+    );
     expect(blks.length).toBe(1);
     const eff = ((blks[0].effects ?? []) as Eff[]).find(isFbDot)!;
     expect(eff.durationSec).toBe(9);
@@ -1554,8 +1590,12 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
     const ap = applied(base.evs, 'damageTakenPct', 25.09);
     expect(ap.length).toBeGreaterThan(0);
     // boss-held debuffs carry null caster AND null target indices
-    expect(ap.every((e: any) => e.casterIdx === null && e.targetIdx === null)).toBe(true);
-    const effs = ((OV.burst ?? []) as Blk[]).flatMap((b) => ((b.effects ?? []) as Eff[])).filter(isDmgTaken);
+    expect(
+      ap.every((e: any) => e.casterIdx === null && e.targetIdx === null)
+    ).toBe(true);
+    const effs = ((OV.burst ?? []) as Blk[])
+      .flatMap((b) => (b.effects ?? []) as Eff[])
+      .filter(isDmgTaken);
     expect(effs.length).toBeGreaterThan(0);
     expect(effs.every((e) => e.durationSec === 10)).toBe(true);
     // Nearest-wrong: encoded as a self atkPct buff. Then teammates would be untouched here.
@@ -1564,13 +1604,13 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
     expect(runNoDmgTaken.t.crown).toBeLessThan(base.t.crown);
     expect(runNoDmgTaken.t[SLUG]).toBeLessThan(base.t[SLUG]);
     expect(unitOf(runNoDmgTaken.res, 'liter').totalDamage).toBeLessThan(
-      unitOf(base.res, 'liter').totalDamage,
+      unitOf(base.res, 'liter').totalDamage
     );
   });
 
   it('B1/B2: the burst sustained DoTs total 199.63% of final ATK, 9s at 1s ticks', () => {
     const dots = ((OV.burst ?? []) as Blk[])
-      .flatMap((b) => ((b.effects ?? []) as Eff[]))
+      .flatMap((b) => (b.effects ?? []) as Eff[])
       .filter((e) => e.kind === 'dot');
     expect(dots.length).toBeGreaterThan(0);
     // sum-based so either encoding passes: two instances (18.43 + 181.2) or one merged 199.63.
@@ -1617,7 +1657,6 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
 
   it.skip('B4 Mute stacks -1 - GAP: Mute itself has no primitive (a per-ally status-immunity counter), so there is nothing to decrement; it is inert either way on the partless boss where Mute can never be gained', () => {});
 });
-
 ```
 
 ### 4c. The two mechanical adaptations (`blind/diesel-winter-sweets.adapted.test.ts`)
@@ -1625,41 +1664,39 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
 (1) harness import path `../lib/harness.js` -> `../../tests/lib/harness.js` (hallucinated location; no harness API hallucinated). (2) S1c/S1d mutual-exclusivity rewritten from per-fight-in-both-fixtures to per-fight(sole-B3)+per-FB-entry(two-B3), reflecting the engine's per-rotation ownBurstGate (no latch primitive). S1d's documented-fallback adaptation is now dead code (the Highlight block EXISTS, so the modeled-gated branch is taken). The adapted mutual-exclusivity block:
 
 ```typescript
-  // MECHANICAL ADAPTATION (driver, S5): the blind writer asserted PER-FIGHT mutual exclusivity in
-  // BOTH fixtures. That holds for a true once-per-battle LATCH, but the engine has NO latch
-  // primitive — ownBurstGate (types.ts:368, the canonical encoding for this exact line) is a
-  // PER-ROTATION gate. In the sole-B3 fixture she casts into every FB -> Intro every FB, Highlight
-  // never (per-fight exclusivity holds). In the artificial two-B3 fixture she ALTERNATES casters
-  // with helm, so the tiers alternate per FB entry (Intro on her casts, Highlight on helm's) — still
-  // exclusive PER FB ENTRY (no entry grants both), just not per-fight. The graded comps are clean
-  // (always-burst -> Intro; never-burst comp N5 -> Highlight), so per-entry exclusivity is the
-  // faithful invariant. (The 2026-07-16 finding's comp N5 is exactly the never-burst case.)
-  it('S1c/S1d: Intro 60.19% and Highlight 235.03% are mutually exclusive (per-fight sole-B3; per-FB-entry two-B3)', () => {
-    // sole-B3: per-fight exclusivity — Intro only, Highlight never.
-    const intro = applied(base.evs, 'sustainedDamagePct', 60.19);
-    const high = applied(base.evs, 'sustainedDamagePct', 235.03);
-    expect(intro.length).toBeGreaterThan(0);
-    expect(high.length).toBe(0);
-    // two-B3: per-FB-entry exclusivity — every FB entry grants exactly ONE tier (no entry grants
-    // both), so total tier grants == FB entries and no frame carries both magnitudes.
-    const introH = applied(baseHelm.evs, 'sustainedDamagePct', 60.19);
-    const highH = applied(baseHelm.evs, 'sustainedDamagePct', 235.03);
-    expect(introH.length).toBeGreaterThan(0);
-    expect(highH.length).toBeGreaterThan(0);
-    const fbH = evsOf(baseHelm.evs, 'fullBurstStart').length;
-    expect(introH.length + highH.length).toBeLessThanOrEqual(fbH);
-    const byFrame = new Map<number, Set<number>>();
-    for (const e of [...introH, ...highH]) {
-      (
-        byFrame.get(e.frame) ?? byFrame.set(e.frame, new Set()).get(e.frame)!
-      ).add(e.value);
-    }
-    for (const [frame, vals] of byFrame) {
-      expect(vals.size, `FB entry at frame ${frame} granted both tiers`).toBe(
-        1,
-      );
-    }
-  });
+// MECHANICAL ADAPTATION (driver, S5): the blind writer asserted PER-FIGHT mutual exclusivity in
+// BOTH fixtures. That holds for a true once-per-battle LATCH, but the engine has NO latch
+// primitive — ownBurstGate (types.ts:368, the canonical encoding for this exact line) is a
+// PER-ROTATION gate. In the sole-B3 fixture she casts into every FB -> Intro every FB, Highlight
+// never (per-fight exclusivity holds). In the artificial two-B3 fixture she ALTERNATES casters
+// with helm, so the tiers alternate per FB entry (Intro on her casts, Highlight on helm's) — still
+// exclusive PER FB ENTRY (no entry grants both), just not per-fight. The graded comps are clean
+// (always-burst -> Intro; never-burst comp N5 -> Highlight), so per-entry exclusivity is the
+// faithful invariant. (The 2026-07-16 finding's comp N5 is exactly the never-burst case.)
+it('S1c/S1d: Intro 60.19% and Highlight 235.03% are mutually exclusive (per-fight sole-B3; per-FB-entry two-B3)', () => {
+  // sole-B3: per-fight exclusivity — Intro only, Highlight never.
+  const intro = applied(base.evs, 'sustainedDamagePct', 60.19);
+  const high = applied(base.evs, 'sustainedDamagePct', 235.03);
+  expect(intro.length).toBeGreaterThan(0);
+  expect(high.length).toBe(0);
+  // two-B3: per-FB-entry exclusivity — every FB entry grants exactly ONE tier (no entry grants
+  // both), so total tier grants == FB entries and no frame carries both magnitudes.
+  const introH = applied(baseHelm.evs, 'sustainedDamagePct', 60.19);
+  const highH = applied(baseHelm.evs, 'sustainedDamagePct', 235.03);
+  expect(introH.length).toBeGreaterThan(0);
+  expect(highH.length).toBeGreaterThan(0);
+  const fbH = evsOf(baseHelm.evs, 'fullBurstStart').length;
+  expect(introH.length + highH.length).toBeLessThanOrEqual(fbH);
+  const byFrame = new Map<number, Set<number>>();
+  for (const e of [...introH, ...highH]) {
+    (byFrame.get(e.frame) ?? byFrame.set(e.frame, new Set()).get(e.frame)!).add(
+      e.value
+    );
+  }
+  for (const [frame, vals] of byFrame) {
+    expect(vals.size, `FB entry at frame ${frame} granted both tiers`).toBe(1);
+  }
+});
 ```
 
 ---
@@ -1669,6 +1706,7 @@ describe('burst - boss debuff, sustained DoTs, Highlight-only ally penalty', () 
 ### 5a. Diff vs the shipped override (UPDATED — the driver now CONVERGES with the blind's both-branches model)
 
 The driver REVISED S1 to model BOTH tiers via ownBurstGate (Intro 60.19 'cast', Highlight 235.03 'notCast'), converging with the S6 blind override (which used top-level modes:[Intro,Highlight] + ownBurstGate). Remaining differences:
+
 - **Intro/Highlight mechanism:** blind used a user-selectable `mode` (default Intro) PLUS ownBurstGate; driver uses ownBurstGate ALONE (per-rotation gate, no static mode). Both are engine-supported; ownBurstGate is the automatic, calibration-friendly encoding the 2026-07-16 finding recommended ('chainGate selfCast/selfNotCast') and handles the never-burst comp N5 WITHOUT a manual mode flag. The crit 20.28 is a single ungated block in both (same value in either status).
 - **Highlight Noise-Pollution cost:** blind modeled it as `hitRatePct -100` under mode Highlight; driver DOCUMENTS it (engine-gap). The S7 judge (prior run) confirmed hitRatePct drives the accuracy-circle radius R(hr)=(K*scale/2)(1-hr/100), so -100 merely doubles the circle rather than 'miss everything' — a fudge. Inert in the clean never-burst Highlight case (comp N5) because she never casts her burst there, so the burst-gated Noise Pollution never fires. Both agents agree it is Highlight-gated and inert in the Intro domain.
 - **S2 Full-Charge trigger:** blind chargeCounter count:1, driver shotFired — behavior-identical for RL (every pull charged).
@@ -1679,10 +1717,7 @@ The driver REVISED S1 to model BOTH tiers via ownBurstGate (Intro 60.19 'cast', 
 ```json
 {
   "slug": "diesel-winter-sweets",
-  "modes": [
-    "Intro",
-    "Highlight"
-  ],
+  "modes": ["Intro", "Highlight"],
   "skill1": [
     {
       "slot": "skill1",
@@ -2301,7 +2336,7 @@ const dwsHighlightSustained = withPatchedOverride(SLUG, (ov) => {
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 60.19);
   if (!e)
     throw new Error(
-      'dws S1 Intro sustainedDamagePct 60.19 missing — fixture is stale',
+      'dws S1 Intro sustainedDamagePct 60.19 missing — fixture is stale'
     );
   e.value = 235.03;
 });
@@ -2312,7 +2347,7 @@ const dwsNoStackSustained = withPatchedOverride(SLUG, (ov) => {
     .find((x: any) => x.stat === 'sustainedDamagePct' && x.value === 318.14);
   if (!e)
     throw new Error(
-      'dws S2 sustainedDamagePct 318.14 missing — fixture is stale',
+      'dws S2 sustainedDamagePct 318.14 missing — fixture is stale'
     );
   e.maxStacks = 1;
 });
@@ -2329,7 +2364,7 @@ const dwsNoDamageTaken = withPatchedOverride(SLUG, (ov) => {
   ov.burst = ov.burst.filter((b: any) => !hasStat(b, 'damageTakenPct'));
   if (ov.burst.length === before)
     throw new Error(
-      'dws burst damageTakenPct block missing — fixture is stale',
+      'dws burst damageTakenPct block missing — fixture is stale'
     );
 });
 /** D6 reference: her burst 18.43%/s all-enemy DoT removed. */
@@ -2381,11 +2416,11 @@ const dwsBuffs = (evs: SimEvent[], stat: string, value?: number) =>
     (b) =>
       b.casterIdx === DWS &&
       b.stat === stat &&
-      (value === undefined || b.value === value),
+      (value === undefined || b.value === value)
   );
 const dwsDots = (evs: SimEvent[], srcSlot: Damage['srcSlot'], atkPct: number) =>
   dmg(evs).filter(
-    (d) => d.slug === SLUG && d.srcSlot === srcSlot && d.atkPct === atkPct,
+    (d) => d.slug === SLUG && d.srcSlot === srcSlot && d.atkPct === atkPct
   );
 const dwsBursts = (evs: SimEvent[]) =>
   evs.filter((e): e is BurstCast => e.kind === 'burstCast' && e.slug === SLUG);
@@ -2401,7 +2436,7 @@ const dwsNormalSum = (evs: SimEvent[]) =>
 const dwsSustainedSum = (evs: SimEvent[]) =>
   dmg(evs)
     .filter(
-      (d) => d.slug === SLUG && (d.bucket === 'skill' || d.bucket === 'burst'),
+      (d) => d.slug === SLUG && (d.bucket === 'skill' || d.bucket === 'burst')
     )
     .reduce((s, d) => s + d.amount, 0);
 
@@ -2416,12 +2451,12 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('is exactly 20.28%, held by her alone, re-applied each Full Burst entry', () => {
       expect(
         applied.length,
-        'no FB-entry critDamagePct buff was applied',
+        'no FB-entry critDamagePct buff was applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([20.28]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'self-scoped',
+        'self-scoped'
       ).toEqual([DWS]);
     });
 
@@ -2429,17 +2464,17 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect([...new Set(applied.map((b) => b.stacks))]).toEqual([1]);
       expect(
         [...new Set(applied.map((b) => b.expiresFrame))],
-        'a "continuously" buff must have no wall-clock expiry',
+        'a "continuously" buff must have no wall-clock expiry'
       ).toEqual([null]);
     });
 
     it('DISCRIMINATING: a stackable crit buff would grow per Full Burst', () => {
       const grown = dwsBuffs(stackingCrit.events, 'critDamagePct').map(
-        (b) => b.stacks,
+        (b) => b.stacks
       );
       expect(
         Math.max(...grown),
-        'counterfactual must exceed 1 stack or this gates nothing',
+        'counterfactual must exceed 1 stack or this gates nothing'
       ).toBeGreaterThan(1);
     });
 
@@ -2466,7 +2501,7 @@ describe('diesel-winter-sweets — kit spec', () => {
 
     it('DISCRIMINATING: the Highlight branch would deal materially more', () => {
       expect(highlightSustained.totals[SLUG]).toBeGreaterThan(
-        base.totals[SLUG],
+        base.totals[SLUG]
       );
     });
   });
@@ -2479,7 +2514,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     // chain (dws does NOT cast) -> ownBurstGate 'notCast' passes -> the Highlight 235.03 tier fires.
     it('sole-B3: Intro 60.19 on every FB she casts, Highlight 235.03 never', () => {
       expect(
-        dwsBuffs(base.events, 'sustainedDamagePct', 60.19).length,
+        dwsBuffs(base.events, 'sustainedDamagePct', 60.19).length
       ).toBeGreaterThan(0);
       expect(dwsBuffs(base.events, 'sustainedDamagePct', 235.03)).toEqual([]);
     });
@@ -2487,11 +2522,11 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('two-B3: the Highlight 235.03 tier fires on the Full Bursts she does NOT cast', () => {
       // helm completes some chains (dws sits out) -> those FB entries grant 235.03, not 60.19.
       expect(
-        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 235.03).length,
+        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 235.03).length
       ).toBeGreaterThan(0);
       // and the Intro tier still fires on the FBs she DOES cast — the two partition the FB entries.
       expect(
-        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 60.19).length,
+        dwsBuffs(baseHelm.events, 'sustainedDamagePct', 60.19).length
       ).toBeGreaterThan(0);
     });
   });
@@ -2502,7 +2537,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('fires on her shot cadence (RL: every pull is a full charge), self-scoped, 3s window', () => {
       expect(
         applied.length,
-        'no Full-Charge sustained buff applied',
+        'no Full-Charge sustained buff applied'
       ).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([DWS]);
       expect([...new Set(applied.map((b) => b.maxStacks))]).toEqual([2]);
@@ -2521,7 +2556,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       const ones = applied.filter((b) => b.stacks === 1).length;
       expect(
         ones,
-        'a permanent 2-stack model yields stacks==1 exactly once',
+        'a permanent 2-stack model yields stacks==1 exactly once'
       ).toBeGreaterThanOrEqual(Math.ceil(dwsReloads(base.events).length / 2));
       expect(ones).toBeGreaterThan(1);
     });
@@ -2529,8 +2564,8 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('DISCRIMINATING: capping at 1 stack under-counts her sustained damage', () => {
       const maxStack = Math.max(
         ...dwsBuffs(noStackSustained.events, 'sustainedDamagePct', 318.14).map(
-          (b) => b.stacks,
-        ),
+          (b) => b.stacks
+        )
       );
       expect(maxStack).toBe(1);
       expect(noStackSustained.totals[SLUG]).toBeLessThan(base.totals[SLUG]);
@@ -2549,7 +2584,7 @@ describe('diesel-winter-sweets — kit spec', () => {
 
     it('…but drops her sustained DoT damage (the buffs feed the DoTs, not the normals)', () => {
       expect(dwsSustainedSum(noSustained.events)).toBeLessThan(
-        dwsSustainedSum(base.events),
+        dwsSustainedSum(base.events)
       );
     });
   });
@@ -2561,7 +2596,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect(ticks.length).toBeGreaterThan(0);
       expect([...new Set(ticks.map((d) => d.bucket))]).toEqual(['skill']);
       expect(ticks.length).toBeGreaterThanOrEqual(
-        dwsBursts(base.events).length,
+        dwsBursts(base.events).length
       );
     });
 
@@ -2575,9 +2610,7 @@ describe('diesel-winter-sweets — kit spec', () => {
     // targetIdx null (the boss) — so key on her specific value + the boss target, not casterIdx.
     const applied = buffs(base.events).filter(
       (b) =>
-        b.stat === 'damageTakenPct' &&
-        b.value === 25.09 &&
-        b.targetIdx === null,
+        b.stat === 'damageTakenPct' && b.value === 25.09 && b.targetIdx === null
     );
 
     it('is 25.09% on the boss (targetIdx null) for a 10-second window', () => {
@@ -2585,7 +2618,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect([...new Set(applied.map((b) => b.value))]).toEqual([25.09]);
       expect(
         [...new Set(applied.map((b) => b.targetIdx))],
-        'a debuff on the boss',
+        'a debuff on the boss'
       ).toEqual([null]);
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
     });
@@ -2594,7 +2627,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       for (const slug of Object.keys(base.totals)) {
         expect(
           noDamageTaken.totals[slug],
-          `${slug} loses the Damage Taken amp`,
+          `${slug} loses the Damage Taken amp`
         ).toBeLessThan(base.totals[slug]);
       }
     });
@@ -2608,7 +2641,7 @@ describe('diesel-winter-sweets — kit spec', () => {
       expect(dot18.length, '18.43%/s all-enemy DoT missing').toBeGreaterThan(0);
       expect(
         dot181.length,
-        '181.2%/s stage-target DoT missing',
+        '181.2%/s stage-target DoT missing'
       ).toBeGreaterThan(0);
       expect([...new Set([...dot18, ...dot181].map((d) => d.bucket))]).toEqual([
         'burst',
@@ -2618,11 +2651,11 @@ describe('diesel-winter-sweets — kit spec', () => {
     it('DISCRIMINATING: each is independently removable', () => {
       expect(dwsDots(noBurstDot18.events, 'burst', 18.43)).toEqual([]);
       expect(
-        dwsDots(noBurstDot18.events, 'burst', 181.2).length,
+        dwsDots(noBurstDot18.events, 'burst', 181.2).length
       ).toBeGreaterThan(0);
       expect(dwsDots(noBurstDot181.events, 'burst', 181.2)).toEqual([]);
       expect(
-        dwsDots(noBurstDot181.events, 'burst', 18.43).length,
+        dwsDots(noBurstDot181.events, 'burst', 18.43).length
       ).toBeGreaterThan(0);
     });
   });
@@ -2635,41 +2668,41 @@ describe('diesel-winter-sweets — kit spec', () => {
     const OV: any = withPatchedOverride(SLUG, () => {});
     const blockWith = (
       slot: 'skill1' | 'skill2' | 'burst',
-      pred: (e: any) => boolean,
+      pred: (e: any) => boolean
     ) => (OV[slot] as any[]).find((b) => b.effects.some(pred));
 
     it('the burst debuff + both burst DoTs key on burstCast (NOT fullBurstEnter)', () => {
       expect(
-        blockWith('burst', (e) => e.stat === 'damageTakenPct')?.trigger.kind,
+        blockWith('burst', (e) => e.stat === 'damageTakenPct')?.trigger.kind
       ).toBe('burstCast');
       expect(
         blockWith('burst', (e) => e.kind === 'dot' && e.atkPct === 18.43)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('burstCast');
       expect(
         blockWith('burst', (e) => e.kind === 'dot' && e.atkPct === 181.2)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('burstCast');
     });
 
     it('the FB-entry 63.33%/s DoT and the S1 Intro buffs key on fullBurstEnter', () => {
       expect(
         blockWith('skill2', (e) => e.kind === 'dot' && e.atkPct === 63.33)
-          ?.trigger.kind,
+          ?.trigger.kind
       ).toBe('fullBurstEnter');
       expect(
-        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.trigger.kind,
+        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.trigger.kind
       ).toBe('fullBurstEnter');
       expect(
         blockWith('skill1', (e) => e.stat === 'sustainedDamagePct')?.trigger
-          .kind,
+          .kind
       ).toBe('fullBurstEnter');
     });
 
     it('the Full-Charge 318.14% sustained buff keys on shotFired (every RL pull is a full charge)', () => {
       expect(
         blockWith('skill2', (e) => e.stat === 'sustainedDamagePct')?.trigger
-          .kind,
+          .kind
       ).toBe('shotFired');
     });
 
@@ -2678,19 +2711,19 @@ describe('diesel-winter-sweets — kit spec', () => {
       // tier COMP-DEPENDENT (sole burster -> Intro; never-bursts -> Highlight), fixing the prior
       // Intro-only hard-coding that under-counted graded comp N5 (2026-07-16 finding).
       const sus = (OV.skill1 as any[]).filter((b) =>
-        b.effects.some((e: any) => e.stat === 'sustainedDamagePct'),
+        b.effects.some((e: any) => e.stat === 'sustainedDamagePct')
       );
       const intro = sus.find((b) =>
-        b.effects.some((e: any) => e.value === 60.19),
+        b.effects.some((e: any) => e.value === 60.19)
       );
       const highlight = sus.find((b) =>
-        b.effects.some((e: any) => e.value === 235.03),
+        b.effects.some((e: any) => e.value === 235.03)
       );
       expect(intro?.ownBurstGate).toBe('cast');
       expect(highlight?.ownBurstGate).toBe('notCast');
       // the permanent Crit Damage is shared by both statuses -> a single ungated block.
       expect(
-        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.ownBurstGate,
+        blockWith('skill1', (e) => e.stat === 'critDamagePct')?.ownBurstGate
       ).toBeUndefined();
     });
   });

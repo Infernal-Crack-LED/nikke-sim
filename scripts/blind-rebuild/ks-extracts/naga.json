@@ -29,9 +29,7 @@
       "skill2": [
         "Activates after landing 5 normal attack(s). Affects 2 ally unit(s) with the lowest HP percentage. Recovers 9.58% of the skill user's final Max HP as HP."
       ],
-      "burst": [
-        "Affects self. Gains Pierce for 10 sec."
-      ]
+      "burst": ["Affects self. Gains Pierce for 10 sec."]
     },
     "board": {
       "records": [

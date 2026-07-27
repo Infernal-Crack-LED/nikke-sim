@@ -14,6 +14,7 @@ The forcing function is the writing, not the running. `expect(buff active on rou
 reload, gone on round 11)` is **unwritable from a vague reading** of the kit. That is the whole point.
 
 ## When to use
+
 - A dedicated session to model / re-model / re-tune ONE unit from its kit text.
 - A unit's board reading is HOT/COLD and the suspicion is kit encoding, not calibration.
 - A kit-parse or audit-kit finding is about to be enacted — enact it through this flow, not directly.
@@ -23,7 +24,7 @@ reload, gone on round 11)` is **unwritable from a vague reading** of the kit. Th
 ## Non-negotiables
 
 1. **The OWNER drives the spec.** Step 1 is a conversation, not a subagent. A test written from a wrong
-   reading passes wrongly and then *certifies* the misread forever — strictly worse than no test. Never
+   reading passes wrongly and then _certifies_ the misread forever — strictly worse than no test. Never
    auto-generate the spec table and proceed; put it in front of the owner and get each line dispositioned.
 2. **Exact slug, first.** `helm` ≠ `helm-aquamarine`; `snow-white` ≠ `snow-white-heavy-arms`. Run
    `npx tsx scripts/lint-slug-disambiguation.ts` and state the full name + slug + weapon/class/element
@@ -49,8 +50,9 @@ npx tsx scripts/board-read.ts | grep -i <slug>                 # the accuracy ba
 ```
 
 Gather, and put in front of the owner in one message:
+
 - the **kit text** (`data/characters.json` → `characters.<slug>.skills` — blablalink-synced, the prose SSOT),
-- the **current model** (`src/skills/overrides/<slug>.json` in full — blocks *and* `note`/`caveats`/`unmodeled`),
+- the **current model** (`src/skills/overrides/<slug>.json` in full — blocks _and_ `note`/`caveats`/`unmodeled`),
 - the unit's row in `data/kit-status.json` (tier + open findings) and any hit in
   `docs/engine-modeling-gaps.md` / `docs/handoffs/kit-parse-reconciliation-backlog.md`,
 - the current board/control-regression reading.
@@ -63,17 +65,19 @@ sentence = one effect line). For each, propose a disposition and let the owner c
 | # | Slot | Kit line (verbatim) | Trigger / Target / Scope | Current model | Disposition |
 
 Disposition vocabulary — every line gets exactly one:
+
 - **FAITHFUL** — already modeled correctly ⇒ still gets an assertion (that is the regression value).
 - **FIX** — modeled, but trigger/target/scope/magnitude/duration is wrong ⇒ test written RED.
 - **MISSING** — not modeled at all, primitive exists ⇒ test written RED.
 - **GAP** — needs an engine primitive that doesn't exist ⇒ test written and `it.skip`ped with the reason,
   entry added to `docs/engine-modeling-gaps.md`; the build is its own gated change.
 - **UNMODELED** — deliberately out of scope (defensive/HP/shield/arena-only, unmeasurable) ⇒ **verbatim**
-  into the override's `unmodeled` array. A skipped line is a *decision, recorded*, never an omission.
+  into the override's `unmodeled` array. A skipped line is a _decision, recorded_, never an omission.
 - **MEASUREMENT-GATED** — cannot be resolved from prose (a magnitude only footage can settle) ⇒ record in
   `docs/open-questions.md` UNANSWERED; do not guess a number into a test.
 
 Four questions per line, because these are the errors calibration hides:
+
 1. **Scope** — "of normal attacks" / "charge damage" / crit-only? (the `helm` S1 miss: a generic buff for a
    `critRateNormalPct` line).
 2. **Duration semantics** — seconds vs **rounds** (`durationShots`) vs stacks vs until-reload vs permanent.
@@ -94,16 +98,23 @@ Import the shared harness; a spec should be ~20 lines, not ~80 of setup:
 ```ts
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, unitOf, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  unitOf,
+  withPatchedOverride,
+} from '../lib/harness.js';
 ```
 
 **The rule that makes a step-3 test different from a step-2 primitive test:**
 
 > The **assertion runs against the SHIPPED override loaded from disk** (unpatched). `withPatchedOverride`
-> is only for the *counterfactual* — the nearest-approximation model the real encoding must beat. A unit
+> is only for the _counterfactual_ — the nearest-approximation model the real encoding must beat. A unit
 > spec built entirely on a synthetic patch tests the engine, not the kit, and gates nothing.
 
 Patterns that work here:
+
 - **Fixture: `controlComp(<slug>)`** (liter B1 / crown B2 / carry B3 / helm) — bursts actually get CAST. A
   lone Burst III unit makes **ZERO Full Bursts**, so a solo fixture can never exercise a burst-gated line.
   Pass `helm=false` if helm's buffs confound the reading; put the unit in the carry slot so it is focused.
@@ -111,11 +122,11 @@ Patterns that work here:
 - **Event log over totals** wherever the claim is structural. `cfg: { onEvent: (e) => events.push(e) }` —
   kinds `shot` / `damage` / `buffApply` / `buffRemove` / `reload` / `burstCast` / `fullBurstStart` /
   `fullBurstEnd`; `damage` carries `srcSlot`, resolved crit/core rates and the full multiplier
-  decomposition. Assert *the buff appeared, on these targets, with this value, in this window* — a total
+  decomposition. Assert _the buff appeared, on these targets, with this value, in this window_ — a total
   can be right for the wrong reason. (Payload gaps are listed in the plan doc §1d; they are additive —
   extend the emit if a spec needs it, via the isolated-worktree flow.)
 - **Discriminating assertion, per line.** Not "damage > 0" — the assertion must FAIL under the nearest
-  wrong model. Rounds-vs-seconds: assert the round count *beats* `durationSec` because it survives the
+  wrong model. Rounds-vs-seconds: assert the round count _beats_ `durationSec` because it survives the
   reload. Normal-attacks-only-vs-generic: assert charge/burst damage is UNMOVED while normals move.
   Self-vs-allies: assert teammates are byte-identical across the ladder.
 - **Inertness assertions are load-bearing** — what a line must NOT move is as much of the spec as what it
@@ -132,7 +143,7 @@ Tight loop: `npx vitest run scripts/tests/units/<slug>.test.ts` (or `npm run tes
 - **Override edit** (`src/skills/overrides/<slug>.json`) — attempt it and approve the guard prompt. Minimum
   change that turns the test green; no opportunistic retuning of untested lines in the same pass.
 - **Engine primitive missing** → STOP. Isolated worktree (`git worktree add ../nikke-sim-wt-<topic> -b
-  <topic>`, or `Agent(isolation:"worktree")`), build there, `bash scripts/verify.sh` there,
+<topic>`, or `Agent(isolation:"worktree")`), build there, `bash scripts/verify.sh` there,
   `/scientific-method` step 7 review, then merge back. Never edit `src/engine/**` in the shared tree.
 - Keep the `it.skip`ped GAP tests skipped with their reason — they are the worklist.
 
@@ -152,6 +163,7 @@ npx tsx scripts/control-regression.ts               # if the unit is in the supp
 ```
 
 Movement is **expected** and is not a failure. Classify it:
+
 - board moves toward 1.0 ⇒ the misencoding was the error; say so.
 - board moves away ⇒ **fit-exposure** — the old wrong encoding was absorbing a calibration. Record it as a
   per-unit localization thread; do NOT restore the unfaithful model or shave datamined coefficients.
@@ -188,12 +200,14 @@ Movement is **expected** and is not a failure. Classify it:
   open-questions, and enactment is a separate gated pass (`/scientific-method`).
 
 ## Verify
+
 ```sh
 npx vitest run scripts/tests/units/<slug>.test.ts
 bash scripts/verify.sh
 ```
 
 ## References
+
 - Plan of record: [docs/handoffs/2026-07-23-tdd-transition-plan.md](../../../docs/handoffs/2026-07-23-tdd-transition-plan.md) (§ step 3; §1d event payloads; step-2 checklist)
 - Harness: [scripts/tests/lib/harness.ts](../../../scripts/tests/lib/harness.ts)
 - Exemplars: `scripts/tests/engine/duration-shots.test.ts` (round-count discrimination, in-memory patch),

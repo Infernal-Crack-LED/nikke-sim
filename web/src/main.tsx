@@ -21,27 +21,27 @@ import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
 // the shell paints immediately while the page chunk streams in.
 const App = lazy(() => import('./App').then((m) => ({ default: m.App })));
 const HowToPage = lazy(() =>
-  import('./HowToPage').then((m) => ({ default: m.HowToPage })),
+  import('./HowToPage').then((m) => ({ default: m.HowToPage }))
 );
 const MechanicsPage = lazy(() =>
-  import('./MechanicsPage').then((m) => ({ default: m.MechanicsPage })),
+  import('./MechanicsPage').then((m) => ({ default: m.MechanicsPage }))
 );
 const DevPage = lazy(() =>
-  import('./DevPage').then((m) => ({ default: m.DevPage })),
+  import('./DevPage').then((m) => ({ default: m.DevPage }))
 );
 const PatchNotesPage = lazy(() =>
-  import('./PatchNotesPage').then((m) => ({ default: m.PatchNotesPage })),
+  import('./PatchNotesPage').then((m) => ({ default: m.PatchNotesPage }))
 );
 const TestingRequestsPage = lazy(() =>
   import('./TestingRequestsPage').then((m) => ({
     default: m.TestingRequestsPage,
-  })),
+  }))
 );
 const RosterSyncPage = lazy(() =>
-  import('./RosterSyncPage').then((m) => ({ default: m.RosterSyncPage })),
+  import('./RosterSyncPage').then((m) => ({ default: m.RosterSyncPage }))
 );
 const CreditsPage = lazy(() =>
-  import('./CreditsPage').then((m) => ({ default: m.CreditsPage })),
+  import('./CreditsPage').then((m) => ({ default: m.CreditsPage }))
 );
 
 // Feed the shared portrait-crop constant into CSS as `--portrait-crop-top` (a
@@ -49,13 +49,13 @@ const CreditsPage = lazy(() =>
 // the canvas crops. Set before React renders any portrait, so no reframe flash.
 document.documentElement.style.setProperty(
   '--portrait-crop-top',
-  `${PORTRAIT_CROP_TOP * 100}%`,
+  `${PORTRAIT_CROP_TOP * 100}%`
 );
 
 function PageFallback() {
   return (
-    <div className='page-fallback'>
-      <span className='page-fallback-spin' aria-hidden='true' />
+    <div className="page-fallback">
+      <span className="page-fallback-spin" aria-hidden="true" />
       Loading…
     </div>
   );
@@ -71,9 +71,9 @@ function Root() {
   useEffect(() => {
     captureTokenFromUrl();
     if (getToken())
-      fetchMe()
+      {fetchMe()
         .then(setUser)
-        .catch(() => setUser(null));
+        .catch(() => setUser(null));}
   }, []);
   const onLogin = () => {
     window.location.href = loginUrl();
@@ -118,5 +118,5 @@ function Root() {
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <Root />
-  </React.StrictMode>,
+  </React.StrictMode>
 );

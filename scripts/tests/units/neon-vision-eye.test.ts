@@ -112,10 +112,10 @@ const nveNoBaseRider = withPatchedOverride(SLUG, (ov) => {
       !(
         b.trigger?.kind === 'shotFired' &&
         b.effects.some((e: any) => e.atkPct === 437.98)
-      ),
+      )
   );
   if (ov.skill1.length === before)
-    throw new Error('nve S1 437.98 shotFired block missing — fixture is stale');
+    {throw new Error('nve S1 437.98 shotFired block missing — fixture is stale');}
 });
 /** N2/N4/N5 counterfactual: the Super block with its everyN gate REMOVED — Super Firepower treated
  *  as ALWAYS-ON (the nearest wrong reading of the kit prose, which lists the Super riders without
@@ -123,7 +123,7 @@ const nveNoBaseRider = withPatchedOverride(SLUG, (ov) => {
 const nveSuperEveryCast = withPatchedOverride(SLUG, (ov) => {
   const blk = ov.skill1.find((b: any) => b.everyN != null);
   if (!blk)
-    throw new Error('nve S1 everyN Super block missing — fixture is stale');
+    {throw new Error('nve S1 everyN Super block missing — fixture is stale');}
   delete blk.everyN;
   delete blk.everyNOffset;
 });
@@ -132,10 +132,10 @@ const nveNoFbAtk = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter(
     (b: any) =>
-      !b.effects.some((e: any) => e.stat === 'atkPct' && e.value === 80.04),
+      !b.effects.some((e: any) => e.stat === 'atkPct' && e.value === 80.04)
   );
   if (ov.skill2.length === before)
-    throw new Error('nve S2 80.04 atkPct block missing — fixture is stale');
+    {throw new Error('nve S2 80.04 atkPct block missing — fixture is stale');}
 });
 /** N6 reference: her burst unconditional Attack Damage (110.21%) removed. */
 const nveNoBurstAd = withPatchedOverride(SLUG, (ov) => {
@@ -143,13 +143,13 @@ const nveNoBurstAd = withPatchedOverride(SLUG, (ov) => {
   ov.burst = ov.burst.filter(
     (b: any) =>
       !b.effects.some(
-        (e: any) => e.stat === 'attackDamagePct' && e.value === 110.21,
-      ),
+        (e: any) => e.stat === 'attackDamagePct' && e.value === 110.21
+      )
   );
   if (ov.burst.length === before)
-    throw new Error(
-      'nve burst 110.21 attackDamagePct block missing — fixture is stale',
-    );
+    {throw new Error(
+      'nve burst 110.21 attackDamagePct block missing — fixture is stale'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -172,7 +172,7 @@ const neonBuffs = (evs: SimEvent[], stat: string, value?: number) =>
       e.kind === 'buffApply' &&
       e.casterIdx === NVE &&
       e.stat === stat &&
-      (value == null || e.value === value),
+      (value == null || e.value === value)
   );
 
 /** The everyN 3 / offset 1 cadence: Super Firepower fires on casts 1, 4, 7, … → for `n` burst
@@ -186,24 +186,24 @@ describe('neon-vision-eye — kit spec', () => {
   it('fixture sanity: neon is the sole B3 and casts a real rotation', () => {
     expect(
       burstCount,
-      'neon must cast her burst to exercise any burst-gated line',
+      'neon must cast her burst to exercise any burst-gated line'
     ).toBeGreaterThanOrEqual(4);
     expect(
       neonShots(base).length,
-      'RL charge-attacker fires charged rockets',
+      'RL charge-attacker fires charged rockets'
     ).toBeGreaterThan(0);
     expect(
       neonShots(base).every((s) => s.charged),
-      'every neon shot is a full charge',
+      'every neon shot is a full charge'
     ).toBe(true);
     // The cadence math needs at least one Super and at least one non-Super cast to discriminate.
     expect(
       superCountBase,
-      'expected Super on casts 1,4,… over the fixture',
+      'expected Super on casts 1,4,… over the fixture'
     ).toBeGreaterThanOrEqual(1);
     expect(
       superCountBase,
-      'Super must be STRICTLY rarer than every cast',
+      'Super must be STRICTLY rarer than every cast'
     ).toBeLessThan(burstCount);
   });
 
@@ -224,7 +224,7 @@ describe('neon-vision-eye — kit spec', () => {
 
     it('DISCRIMINATING: removing the block zeroes the rider (it is live, not vestigial)', () => {
       const gone = neonDamage(noBaseRider).filter(
-        (d) => d.srcSlot === 'skill1' && d.atkPct === 437.98,
+        (d) => d.srcSlot === 'skill1' && d.atkPct === 437.98
       );
       expect(gone.length).toBe(0);
     });
@@ -234,7 +234,7 @@ describe('neon-vision-eye — kit spec', () => {
     const superBuff = (evs: SimEvent[]) =>
       neonBuffs(evs, 'extraHitDamagePct', 262.79);
     const rider = neonDamage(base).filter(
-      (d) => d.srcSlot === null && d.atkPct === 262.79,
+      (d) => d.srcSlot === null && d.atkPct === 262.79
     );
     /** Burst-cast frames that SHOULD open a Super window: cast indices ≡ 0 (mod 3) — i.e. her
      *  1st, 4th, 7th casts (0-based 0,3,6). Pins BOTH the period (3) AND the phase (offset 1: the
@@ -254,21 +254,21 @@ describe('neon-vision-eye — kit spec', () => {
       expect(
         superBuff(base)
           .map((b) => b.frame)
-          .sort((a, b) => a - b),
+          .sort((a, b) => a - b)
       ).toEqual(expectedSuperFrames);
       expect(
         expectedSuperFrames[0],
-        'the FIRST burst cast must be a Super cast',
+        'the FIRST burst cast must be a Super cast'
       ).toBe(neonBursts(base)[0].frame);
     });
 
     it('DISCRIMINATING (cadence): an always-on Super over-fires the buff on EVERY cast', () => {
       // The nearest wrong model (everyN removed) applies the Super buff on all `burstCount` casts.
       expect(superBuff(superEveryCast).length).toBe(
-        neonBursts(superEveryCast).length,
+        neonBursts(superEveryCast).length
       );
       expect(superBuff(superEveryCast).length).toBeGreaterThan(
-        superBuff(base).length,
+        superBuff(base).length
       );
     });
 
@@ -276,13 +276,13 @@ describe('neon-vision-eye — kit spec', () => {
       const applied = superBuff(base);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([262.79]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NVE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('while live, every shot deals a burst-bucket rider (srcSlot null, the summed-stat convention)', () => {
       expect(
         rider.length,
-        'Super windows must produce additional-damage riders',
+        'Super windows must produce additional-damage riders'
       ).toBeGreaterThan(0);
       expect([...new Set(rider.map((d) => d.bucket))]).toEqual(['burst']);
       // Function additional damage: crits at caster rate, never cores (SSOT §2b / U1).
@@ -298,7 +298,7 @@ describe('neon-vision-eye — kit spec', () => {
       expect(
         neonDamage(base)
           .filter((d) => d.srcSlot === null)
-          .every((d) => d.atkPct === 262.79),
+          .every((d) => d.atkPct === 262.79)
       ).toBe(true);
     });
   });
@@ -313,7 +313,7 @@ describe('neon-vision-eye — kit spec', () => {
 
     it('is 10 sec, self-scoped', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NVE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: removing the block zeroes it (and it is NOT the 35.05% Super rider)', () => {
@@ -337,15 +337,15 @@ describe('neon-vision-eye — kit spec', () => {
         .map((b) => b.frame)
         .sort((a, b) => a - b);
       expect(applied.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        superFrames,
+        superFrames
       );
     });
 
     it('is 10 sec, self-scoped; an always-on Super would fire it every cast', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NVE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       expect(neonBuffs(superEveryCast, 'atkPct', 35.05).length).toBe(
-        neonBursts(superEveryCast).length,
+        neonBursts(superEveryCast).length
       );
     });
   });
@@ -363,15 +363,15 @@ describe('neon-vision-eye — kit spec', () => {
         .map((b) => b.frame)
         .sort((a, b) => a - b);
       expect(applied.map((b) => b.frame).sort((a, b) => a - b)).toEqual(
-        superFrames,
+        superFrames
       );
     });
 
     it('is 10 sec, self-scoped; an always-on Super would fire it every cast', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NVE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
       expect(neonBuffs(superEveryCast, 'attackDamagePct', 45.03).length).toBe(
-        neonBursts(superEveryCast).length,
+        neonBursts(superEveryCast).length
       );
     });
   });
@@ -386,14 +386,14 @@ describe('neon-vision-eye — kit spec', () => {
 
     it('is 10 sec, self-scoped', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([NVE]);
-      for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
 
     it('DISCRIMINATING: removing the block zeroes it (and it is NOT the 45.03% Super rider)', () => {
       expect(neonBuffs(noBurstAd, 'attackDamagePct', 110.21).length).toBe(0);
       // 110.21 fires every cast; 45.03 only every 3rd — distinct value AND cadence.
       expect(neonBuffs(base, 'attackDamagePct', 45.03).length).toBe(
-        superCountBase,
+        superCountBase
       );
     });
   });

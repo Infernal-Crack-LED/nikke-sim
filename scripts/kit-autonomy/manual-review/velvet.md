@@ -34,15 +34,15 @@ certifies STRUCTURE only and deliberately leaves `tier: VALIDATED` / `tuned: tru
 ## 2. What the code does (the faithful override, line by line)
 
 - **S1 Bullet Snatch (pouch fill + enemy ammo removal)** **UNMODELED** (documented verbatim in `unmodeled.skill1`
-  + note). The ammo pouch is derivably **NEVER-BINDING**: max drain per 20s rotation ≈ 7 outFb charges×100 + 7
-  inFb charges×300 + ≤1 proc×300 ≈ 3.1k « the 6000 cap, refilled to cap at every Burst-Stage-2 entry — so every
-  ammo-gated effect fires at full uptime and the pouch bookkeeping is dropped (model-or-omit is damage-neutral).
-  The enemy bullet-steal is inert in v1 (no enemy entity — `resolveTargets({enemy})` is empty). **V1 actively PINS
-  the inertness** (Velvet emits ZERO maxAmmo buffs; stripping her whole skill1 leaves liter/helm totals
-  byte-identical) and discriminates the nearest-wrong (a sign-flipped `consumeAmmo` on ALLIES forces ally reloads,
-  53>33). NOT a silent drop, NOT a bare `it.skip`. All four agents converged (driver, fable UNMODELED, opus S5
-  `it.skip`/GAP, opus S6 — which modeled the pouch explicitly with gates but its OWN ⚑#1 says delete-if-continuous,
-  converging on the drop).
+  - note). The ammo pouch is derivably **NEVER-BINDING**: max drain per 20s rotation ≈ 7 outFb charges×100 + 7
+    inFb charges×300 + ≤1 proc×300 ≈ 3.1k « the 6000 cap, refilled to cap at every Burst-Stage-2 entry — so every
+    ammo-gated effect fires at full uptime and the pouch bookkeeping is dropped (model-or-omit is damage-neutral).
+    The enemy bullet-steal is inert in v1 (no enemy entity — `resolveTargets({enemy})` is empty). **V1 actively PINS
+    the inertness** (Velvet emits ZERO maxAmmo buffs; stripping her whole skill1 leaves liter/helm totals
+    byte-identical) and discriminates the nearest-wrong (a sign-flipped `consumeAmmo` on ALLIES forces ally reloads,
+    53>33). NOT a silent drop, NOT a bare `it.skip`. All four agents converged (driver, fable UNMODELED, opus S5
+    `it.skip`/GAP, opus S6 — which modeled the pouch explicitly with gates but its OWN ⚑#1 says delete-if-continuous,
+    converging on the drop).
 - **S1 out-of-FB self buff** `shotFired → self → atkPct 30.5 + attackDamagePct 30.5 (3s), fbGate:outFb` — "Full
   Charge while NOT in Full Burst". For an SR in auto-play every trigger pull IS a full charge, so `shotFired` is
   the faithful proxy for "Full Charge attack"; the `outFb` gate is the load-bearing clause (the schema's canonical

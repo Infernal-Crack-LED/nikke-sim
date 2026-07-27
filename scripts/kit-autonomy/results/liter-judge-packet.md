@@ -1,11 +1,17 @@
 # S7 RECONCILING-JUDGE PACKET — unit `liter` (Liter)
+
 # Assembled by the gauntlet driver. You are the BINDING cross-family judge (kimi-code/k3).
+
 # Grade the DRIVER's implementation against the kit prose + the mechanics SSOT, reconciling the two blind re-derivations.
+
 # Return the binding verdict JSON per the contract in section 1.
 
 ================================================================================
+
 ## SECTION 1 — RECONCILING-JUDGE CONTRACT (your role + return JSON shape)
+
 ================================================================================
+
 # kit-autonomy — S7 RECONCILING JUDGE (binding go/no-go)
 
 Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md` AND the mechanics
@@ -18,6 +24,7 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
 > **Content gate:** inspect kit prose STRUCTURALLY; quote ≤ ~40 chars; clinical output.
 
 ## You are given
+
 1. **Ground truth:** the real kit prose (`data/characters.json → characters.<slug>.skills`) + base stats, and
    the damage-formula/mechanics SSOT (the multiplicative buckets; crit/core/FB majors; procs/DoT/flavors).
 2. **Pre-op review (S2b):** the adversarial test-faithfulness reviewer's independent spec (per-line
@@ -28,12 +35,14 @@ reasoning; you are not "blind" to it, you simply don't take its word for it).
    engine change. (Plus the S2d independent verification matrix if provided.)
 
 ## Method
+
 **A. Convergence is MECHANICAL (do this first).** Run the S5 blind tests, UNMODIFIED, against the driver's
 SHIPPED override (mentally trace, or note what a run would show): **GREEN = convergence; any RED = a
 divergence to classify.** A divergence the blind caught is the REAL signal; mere same-model agreement is WEAK
 evidence (every agent is the same model — convergence proves stability, not correctness).
 
 **B. Per kit line, classify** the driver's encoding against prose + formula, using S2b/S6 to attribute:
+
 - `FAITHFUL` — encoding matches prose AND the formula SSOT agrees the routing is correct (right bucket,
   trigger timing, stacking rule, scope, duration semantics, target set).
 - `DOCUMENTED-GAP` — deliberately `unmodeled` (reason in `note`), a `GAP` (missing primitive, `it.skip`), or a
@@ -59,34 +68,65 @@ prose + formula (a fresh find) or spurious? Undocumented + formula-confirmed = t
 a gotcha unless it contradicts the prose's own number; tag each with its evidence tier.
 
 ## Also produce: `kitDescription`
+
 A plain-English 3–6 sentence description of what the kit DOES in game terms (grounded in the real kit text,
 not audit jargon) — for owner sanity-check. No gotcha subkinds, no citations, no severity.
 
 ## Return ONLY this JSON
+
 ```json
 {
   "slug": "<exact slug>",
   "kitDescription": "<plain-English 3-6 sentences>",
-  "convergence": { "s5TestsVsDriverOverride": "GREEN|RED", "redAssertions": [ "<which S5 assertions fail vs the driver's override>" ] },
-  "lineFindings": {
-    "skill1": [ { "kitLine": "<≤40 chars>", "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR", "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null", "driverSaid": "...", "blindSaid": "...", "formulaCheck": "...", "fireRateOk": true, "explanation": "..." } ],
-    "skill2": [ ], "burst": [ ]
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN|RED",
+    "redAssertions": ["<which S5 assertions fail vs the driver's override>"]
   },
-  "gotchas": [ { "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING", "slot": "...", "summary": "...", "evidence": "<real kit line + formula citation + driver vs blind>", "documentedByDriver": true, "severity": "high|med|low", "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>" } ],
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "<≤40 chars>",
+        "category": "FAITHFUL|DOCUMENTED_GAP|REAL-GOTCHA|RECON_ERROR",
+        "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING|null",
+        "driverSaid": "...",
+        "blindSaid": "...",
+        "formulaCheck": "...",
+        "fireRateOk": true,
+        "explanation": "..."
+      }
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "gotchas": [
+    {
+      "subkind": "SILENT_DROP|ENGINE|FIDELITY|ENCODING",
+      "slot": "...",
+      "summary": "...",
+      "evidence": "<real kit line + formula citation + driver vs blind>",
+      "documentedByDriver": true,
+      "severity": "high|med|low",
+      "suggestedFix": "<faithful representation, or 'needs measurement' + recipe — NEVER a fudge>"
+    }
+  ],
   "discriminationOk": true,
   "faithfulnessScore": "<0..1 fraction of kit lines FAITHFUL or DOCUMENTED_GAP>",
   "verdict": "GO|NO-GO(faithfulness)|NO-GO(engine-core)",
   "verdictRationale": "<one paragraph: which gotchas are real + ranked; whether the blind re-derivations converged; what must change for GO; the same-model residual the owner should spot-check>"
 }
 ```
+
 Save to `scripts/kit-autonomy/results/<slug>.json`. `suggestedFix` is a faithful representation or a flagged
 measurement, NEVER a number chosen to hit the board. Tight structured JSON, not an essay.
 
+================================================================================
+
+## SECTION 2 — MECHANICS SOURCE-OF-TRUTH (grade faithfulness against these)
 
 ================================================================================
-## SECTION 2 — MECHANICS SOURCE-OF-TRUTH (grade faithfulness against these)
-================================================================================
+
 ### 2a. docs/data/damage-calculation.md
+
 # Damage calculation — the exact math the sim computes
 
 Companion source-of-truth to [game-mechanics.md](game-mechanics.md): that doc says what the game
@@ -111,7 +151,7 @@ hit — is computed independently at the frame it lands (`dealDamage()`):
 damage = FinalATK × (rate% / 100) × Major × Element × Charge × DamageUp × Projectile × Taken × Distributed
 ```
 
-Buffs *inside* a bucket add; buckets *multiply*. `rate%` is the instance's skill/attack
+Buffs _inside_ a bucket add; buckets _multiply_. `rate%` is the instance's skill/attack
 multiplier (e.g. a normal attack's `normalAttackMultiplier`, a proc's "deals X% of final ATK"
 value), after any per-unit override corrections.
 
@@ -149,29 +189,29 @@ dmg = (max(0, finalATK − enemyDEF) × weaponOrSkillCoef)   ← DEF subtracts I
     × taken   [1 + damageTaken(enemy) + distributed]
 ```
 
-- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits *inside*
+- **Enemy DEF is a small FLAT, subtractive term inside the base** (min-1 floor). +ATK% sits _inside_
   the paren (applies before DEF); the skill coefficient, charge, and every other bucket apply
-  *after* (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
+  _after_ (ginmy atkbuff/atkdamagebuff/def tests). Engine: `baseAtk = max(0, effectiveAtk − bossDef)`
   then `× atkPct × …` ✓. Measured boss-type DEF ≈140 (mobs 100) → **negligible** at scope-lock ATK
   (≤0.12% board shift); we run `bossDef:0`. See DECISIONS + `scripts/battery/boss-def.ts`.
 - **Defense-Ignore ("true damage")** drops the `− enemyDEF` term entirely (`ATK × coef × …`). A
   separate **"Defense-Ignore Damage Increase"** bucket multiplies ONLY def-ignore hits and is
-  *additive with Attack Damage* (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
-  is already near-zero; only the def-ignore-damage *multiplier* would matter (units: Jill, Ada) — not
+  _additive with Attack Damage_ (ginmy /nikke_truedamage_test). Negligible on our board since DEF≈140
+  is already near-zero; only the def-ignore-damage _multiplier_ would matter (units: Jill, Ada) — not
   yet modeled, low priority.
 - **+ATK% and +Attack Damage% are DIFFERENT buckets → multiply** (×1.5×1.3 = ×1.95, not +80%).
-- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT *outside* the recipient's
+- **"X% of caster's ATK" = caster's BASE (static) ATK**, added FLAT _outside_ the recipient's
   `(1+ATK%)` (NOT buffed; the "final" keyword toggles buffs in — KR 기준/JP 基準 = base). Engine uses
   `owner.staticAtk` ✓. "% of **final** ATK" skill damage uses the actor's LIVE buffed ATK ✓.
 - **Distributed groups with Damage-Taken, NOT Attack Damage** (naming trap). Engine ✓.
 
-| damage type | crit | core | range | Attack-Dmg | full-burst | element | charge |
-|---|---|---|---|---|---|---|---|
-| normal / charged | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | charged-only |
-| skill / function "% of final ATK" | ✅ | ❌ (unless "as core dmg") | ❌ | ✅ | ✅ | ✅ | ❌ |
-| DoT / sustained | ✅ | ❌* | ❌ | ✅ | ✅ (JP: not on 1st tick) | ✅ | ❌ |
-| distributed | ⚠️ disputed | ❌ | ❌ | own calc (Taken) | ⚠️ | ⚠️ | ❌ |
-| burst nuke | ✅ | only if "as core dmg" | ❌ | ✅ | ✅ | ✅ | ❌ |
+| damage type                       | crit        | core                      | range | Attack-Dmg       | full-burst               | element | charge       |
+| --------------------------------- | ----------- | ------------------------- | ----- | ---------------- | ------------------------ | ------- | ------------ |
+| normal / charged                  | ✅          | ✅                        | ✅    | ✅               | ✅                       | ✅      | charged-only |
+| skill / function "% of final ATK" | ✅          | ❌ (unless "as core dmg") | ❌    | ✅               | ✅                       | ✅      | ❌           |
+| DoT / sustained                   | ✅          | ❌*                       | ❌    | ✅               | ✅ (JP: not on 1st tick) | ✅      | ❌           |
+| distributed                       | ⚠️ disputed | ❌                        | ❌    | own calc (Taken) | ⚠️                       | ⚠️      | ❌           |
+| burst nuke                        | ✅          | only if "as core dmg"     | ❌    | ✅               | ✅                       | ✅      | ❌           |
 
 \* DoT-core is kit-dependent (weapon-fire "sustained" cores; a function-tick like LM's "63.36%/s"
 does not). **Attack Damage APPLIES to DoT** (empirical) — the "DoT is AD-exempt" suspicion was DISPROVEN.
@@ -252,9 +292,9 @@ Core  = coreExposure × ACR × coreBonus    (expected-value mode)
 ```
 
 **Full Burst timing rule (MEASURED, twice popup-verified + JP-corroborated):** damage dealt BY a
-burst skill at its cast lands *before* Full Burst begins — it gets neither the +0.5 nor any
+burst skill at its cast lands _before_ Full Burst begins — it gets neither the +0.5 nor any
 "when entering Full Burst" aura. Buffs granted by earlier casts in the same rotation do apply to
-it. Burst-originated damage that lands *during* the window (dot ticks, stored-hit releases,
+it. Burst-originated damage that lands _during_ the window (dot ticks, stored-hit releases,
 per-shot procs) gets both. Engine: `noFb` forced for burst-cast direct damage; burst-cast blocks
 resolve before full-burst-entry triggers.
 
@@ -290,7 +330,7 @@ damage lump.
 
 **Popup math note:** an on-screen popup is a single resolved instance — non-crit body, non-crit
 core, crit body, or crit core — so to compare a popup against the sim, recompute Major with the
-crit/core *outcomes* (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
+crit/core _outcomes_ (0 or the full bonus), not the expectations. A crit popup is ×1.5 of its
 non-crit sibling at base crit damage; a core popup adds the full coreBonus.
 
 ### 1c. Element bucket
@@ -348,7 +388,7 @@ The flavor gates mean a "Sustained Damage ▲" buff does nothing for a unit with
 Projectile = 1 + (Projectile Explosion ▲ % | Projectile Attachment ▲ %) / 100
 ```
 
-Applies to explosion/attachment-*flavored* hits (Rapi: Red Hood's projectiles, Anis: Star's
+Applies to explosion/attachment-_flavored_ hits (Rapi: Red Hood's projectiles, Anis: Star's
 stars) as its own multiplier. For plain rocket-launcher NORMAL attacks the Projectile Explosion
 buff applies too, but through the DamageUp bucket (1e) — MEASURED exactly (the buff-independent
 rocket/proc popup ratio test, 1.2491 = prediction to four digits).
@@ -492,12 +532,12 @@ FinalATK = 137,059 (staticAtk 120,143 Attacker × her passive ATK stack at fight
 rate% = 92.4 (71.09 base × her Magnum-Ammo 1.3 multiplier). Element = 1.1. Charge = 1.
 DamageUp = 1.0 pre-buffs. AR in range at mid band → Range 0.3.
 
-| popup class | Major | formula result | measured popup |
-|---|---|---|---|
-| non-crit body | 1 + 0.3 = 1.3 | 181,131 | 180,633 |
-| non-crit core | 1.3 + 1.0 = 2.3 | 320,464 | 319,582 |
-| crit body | 1.3 + 0.5 = 1.8 | 250,796 | 250,107 |
-| acid tick (192%, no core/range/crit) | 1.0 | 289,469 | 288,662 |
+| popup class                          | Major           | formula result | measured popup |
+| ------------------------------------ | --------------- | -------------- | -------------- |
+| non-crit body                        | 1 + 0.3 = 1.3   | 181,131        | 180,633        |
+| non-crit core                        | 1.3 + 1.0 = 2.3 | 320,464        | 319,582        |
+| crit body                            | 1.3 + 0.5 = 1.8 | 250,796        | 250,107        |
+| acid tick (192%, no core/range/crit) | 1.0             | 289,469        | 288,662        |
 
 ### 5b. Cinderella's nuke (the Full Burst boundary rule)
 
@@ -532,8 +572,8 @@ uniform damage-side deficit under the corrected rotation model, per-unit kit-gen
 not yet modeled (U11c), and the four kit-level outliers (ein, eunhwa-TU, quency-EQ,
 guillotine-WS).
 
-
 ### 2b. docs/data/game-mechanics.md
+
 # NIKKE combat mechanics — single source of truth (2026-07-13)
 
 Every game mechanic the simulator's logic references, with where it's implemented and how we
@@ -588,15 +628,15 @@ Engine: `dealDamage()` in `src/engine/sim.ts`.
 
 Per trigger pull, 60 fps frame-quantized (COMMUNITY base rates, MEASURED refinements):
 
-| Weapon | Cadence                 | Notes                     |
-| ------ | ----------------------- | ------------------------- |
-| AR     | 12/s                    | 5 frames exactly          |
+| Weapon | Cadence                  | Notes                                 |
+| ------ | ------------------------ | ------------------------------------- |
+| AR     | 12/s                     | 5 frames exactly                      |
 | SMG    | 24/s ⚠ **measured 20/s** | see the frame-quantization note below |
-| SG     | 1.5/s                   | 10 pellets/shot; 40 frames exactly |
-| MG     | 60 rounds/s cap         | after wind-up ladder — §3 |
-| Pistol | 4/s                     |                           |
-| SR     | charge cycle + 22f bolt | §4                        |
-| RL     | charge cycle            | no bolt recovery          |
+| SG     | 1.5/s                    | 10 pellets/shot; 40 frames exactly    |
+| MG     | 60 rounds/s cap          | after wind-up ladder — §3             |
+| Pistol | 4/s                      |                                       |
+| SR     | charge cycle + 22f bolt  | §4                                    |
+| RL     | charge cycle             | no bolt recovery                      |
 
 **⚠ SMG CADENCE IS CONTESTED — the sim ships 24/s, but a direct measurement says 20.0/s
 (2026-07-23).** The ammo counter (the shot clock) on
@@ -941,9 +981,10 @@ Electric→Water→Fire. No hidden bonus beyond the base 1.1
   ([arca.live/b/nikketgv/79367873](https://arca.live/b/nikketgv/79367873),
   [dcinside 3902276](https://gall.dcinside.com/mgallery/board/view/?id=gov&no=3902276)).
 
-
 ================================================================================
+
 ## SECTION 3 — GROUND TRUTH: kit prose + base stats (data/characters.json -> characters.liter)
+
 ================================================================================
 Unit: Liter (liter) — SMG / Supporter / Iron / Burst I
 baseStats: hp 15000 / atk 500 / def 86; critRate 15 / critDamage 150
@@ -971,62 +1012,66 @@ burst:
 ATK ▲ 66% for 5 sec.
 
 ================================================================================
+
 ## SECTION 4 — S2b cross-family test-faithfulness REVIEW (claude-fable-5) + driver reconciliation
+
 ================================================================================
 {
-  "slug": "liter",
-  "stage": "S2c-reconciliation",
-  "date": "2026-07-26",
-  "reviewerModel": "claude-fable-5",
-  "driverModel": "qwen",
-  "leakDetected": null,
-  "reconciliation": {
-    "converged": true,
-    "summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, cumulative-ladder semantics, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: non-cumulative 3.17s-vs-8.21s CDR misread, burstCast-vs-fullBurstEnter timing (count-coincident in the 4-unit controlComp because liter is the sole B1, separable only by frame-level assertion), the maxAmmo weapon-state line that must not be dropped as defensive, the 5s-vs-10s duration inflation trap, and the skill2 cover-restore-must-not-be-a-heal trap (would fire crown's on-recovery consumers).",
-    "lineByLine": [
-      {
-        "line": "S1 block A — FB-enter burst-CD ladder 2.34/2.7/3.17s cumulative",
-        "driver": "FAITHFUL (escalating burstCdr [2.34,2.7,3.17], trigger fullBurstEnter, target allies, cumulative-with-cap min(N,3) -> 8.21s from 3rd FB)",
-        "reviewer": "FAITHFUL, load-bearing (cumulative 2.34/5.04/8.21s, fullBurstEnter, all allies incl. self, saturates at tier 3 but keeps firing every FB)",
-        "agree": true
-      },
-      {
-        "line": "S1 block B — burstCast escalating buffs maxAmmo 45.17% / critDmg 12.46% / atk 14.42%, 5s",
-        "driver": "FAITHFUL (escalating buff steps, trigger burstCast, target allies, each 5s, cumulative; ramps to all three by 3rd cast)",
-        "reviewer": "FAITHFUL, load-bearing (burstCast, all allies, 5s durationSec, cumulative; 3rd cast emits all three in the same frame; atkPct raw % not caster-flat)",
-        "agree": true
-      },
-      {
-        "line": "S2 — 2 lowest cover-HP allies restore 52.5% cover",
-        "driver": "UNMODELED NO-OP (owner ruling 2026-07-21: cover HP not unit HP, no sim HP pool, must not fire recovery consumers; recorded verbatim in unmodeled)",
-        "reviewer": "UNMODELED (cover durability only, no cover-HP pool in v1, must NOT be encoded as a heal — would fire crown's on-recovery consumers; no activation clause in prose so any modeled trigger would be invented)",
-        "agree": true
-      },
-      {
-        "line": "Burst — all allies ATK ▲ 66% for 5s",
-        "driver": "FAITHFUL (buff atkPct 66, 5s, trigger burstCast, target allies)",
-        "reviewer": "FAITHFUL, load-bearing (atkPct 66 raw %, burstCast stage 1, all allies, durationSec 5 NOT the 10s FB window — lapses mid-FB)",
-        "agree": true
-      }
-    ],
-    "blindFixtureSizeSlip": "Reviewer guessed 'all 5 units' / '5 targets' in two distinguishingAssertions; the harness controlComp is 4 units (liter/crown/carry/helm). A blind fixture-size guess, NOT a kit-faithfulness divergence — the driver's test correctly uses TEAM_SIZE=4 and asserts all 4 allies. No action.",
-    "verdict": "GO",
-    "verdictBasis": "All lines accounted for (7 FAITHFUL pinned + 1 UNMODELED-with-ruling), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test is GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named)."
-  }
+"slug": "liter",
+"stage": "S2c-reconciliation",
+"date": "2026-07-26",
+"reviewerModel": "claude-fable-5",
+"driverModel": "qwen",
+"leakDetected": null,
+"reconciliation": {
+"converged": true,
+"summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, durations, cumulative-ladder semantics, and the nearest-wrong counterfactuals all match. No REAL-GOTCHA. The reviewer independently named the same traps the driver's test pins: non-cumulative 3.17s-vs-8.21s CDR misread, burstCast-vs-fullBurstEnter timing (count-coincident in the 4-unit controlComp because liter is the sole B1, separable only by frame-level assertion), the maxAmmo weapon-state line that must not be dropped as defensive, the 5s-vs-10s duration inflation trap, and the skill2 cover-restore-must-not-be-a-heal trap (would fire crown's on-recovery consumers).",
+"lineByLine": [
+{
+"line": "S1 block A — FB-enter burst-CD ladder 2.34/2.7/3.17s cumulative",
+"driver": "FAITHFUL (escalating burstCdr [2.34,2.7,3.17], trigger fullBurstEnter, target allies, cumulative-with-cap min(N,3) -> 8.21s from 3rd FB)",
+"reviewer": "FAITHFUL, load-bearing (cumulative 2.34/5.04/8.21s, fullBurstEnter, all allies incl. self, saturates at tier 3 but keeps firing every FB)",
+"agree": true
+},
+{
+"line": "S1 block B — burstCast escalating buffs maxAmmo 45.17% / critDmg 12.46% / atk 14.42%, 5s",
+"driver": "FAITHFUL (escalating buff steps, trigger burstCast, target allies, each 5s, cumulative; ramps to all three by 3rd cast)",
+"reviewer": "FAITHFUL, load-bearing (burstCast, all allies, 5s durationSec, cumulative; 3rd cast emits all three in the same frame; atkPct raw % not caster-flat)",
+"agree": true
+},
+{
+"line": "S2 — 2 lowest cover-HP allies restore 52.5% cover",
+"driver": "UNMODELED NO-OP (owner ruling 2026-07-21: cover HP not unit HP, no sim HP pool, must not fire recovery consumers; recorded verbatim in unmodeled)",
+"reviewer": "UNMODELED (cover durability only, no cover-HP pool in v1, must NOT be encoded as a heal — would fire crown's on-recovery consumers; no activation clause in prose so any modeled trigger would be invented)",
+"agree": true
+},
+{
+"line": "Burst — all allies ATK ▲ 66% for 5s",
+"driver": "FAITHFUL (buff atkPct 66, 5s, trigger burstCast, target allies)",
+"reviewer": "FAITHFUL, load-bearing (atkPct 66 raw %, burstCast stage 1, all allies, durationSec 5 NOT the 10s FB window — lapses mid-FB)",
+"agree": true
+}
+],
+"blindFixtureSizeSlip": "Reviewer guessed 'all 5 units' / '5 targets' in two distinguishingAssertions; the harness controlComp is 4 units (liter/crown/carry/helm). A blind fixture-size guess, NOT a kit-faithfulness divergence — the driver's test correctly uses TEAM_SIZE=4 and asserts all 4 allies. No action.",
+"verdict": "GO",
+"verdictBasis": "All lines accounted for (7 FAITHFUL pinned + 1 UNMODELED-with-ruling), dispositions converge cross-family, no REAL-GOTCHA, leak check clean, discrimination strong (driver test is GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named)."
+}
 }
 
-
 ================================================================================
+
 ## SECTION 5 — S5 BLIND TEST (claude-opus-5) + its green/red count vs the driver override + reconciliation
+
 ================================================================================
 S5 blind test (scripts/kit-autonomy/blind/liter.test.ts) run vs the DRIVER override: 21 tests = 10 passed / 8 failed / 3 skipped.
 RECONCILIATION (full detail in scripts/kit-autonomy/reviews/liter.s5-reconciliation.json): ALL 8 failures are de-contamination / event-shape artifacts, NOT faithfulness divergences:
-  [1][2][5] structural assertions search TOP-LEVEL block.effects for burstCdr/buff and find 0 carriers, because the driver nests both ladders inside {kind:'escalating', steps:[...]} and the blind traversal never descends into e.steps (escalating was redacted from the blind schema).
-  [3][4][6] patch-counterfactuals (strip CDR / retarget self / zero tier-3 ATK) filter/zero TOP-LEVEL effects, so they are NO-OPS against the escalating wrapper -> patched run is byte-identical to base -> strict-inequality assertions tie (11==11 FB count; identical carry total).
-  [7][8] expect(durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs (event-shape convention guess; the companion finite-expiresFrame assertions hold and the 'permanent encoding over-credits' test PASSES).
+[1][2][5] structural assertions search TOP-LEVEL block.effects for burstCdr/buff and find 0 carriers, because the driver nests both ladders inside {kind:'escalating', steps:[...]} and the blind traversal never descends into e.steps (escalating was redacted from the blind schema).
+[3][4][6] patch-counterfactuals (strip CDR / retarget self / zero tier-3 ATK) filter/zero TOP-LEVEL effects, so they are NO-OPS against the escalating wrapper -> patched run is byte-identical to base -> strict-inequality assertions tie (11==11 FB count; identical carry total).
+[7][8] expect(durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs (event-shape convention guess; the companion finite-expiresFrame assertions hold and the 'permanent encoding over-credits' test PASSES).
 CORROBORATING PASSES (event-stream, structure-independent — these independently confirm the driver override): cumulative tier1 maxAmmo 45.17% fires EVERY cast to all allies incl self; tier2 critDmg 12.46% starts one cast later and never stops; tier3 atkPct 14.42% starts two casts later and never stops; burst 66% ATK moves BOTH teammate and self damage; narrowing burst to self costs the carry but leaves liter byte-identical; the 5s window is real (permanent over-credits); skill2 is offensively inert (totals byte-identical with/without -> no recovery consumer fired).
 
 ### 5b. S5 blind test source (scripts/kit-autonomy/blind/liter.test.ts)
+
 ```ts
 /**
  * liter - BLIND kit-spec test (S5 post-op author). Written from the kit prose ALONE:
@@ -1080,7 +1125,8 @@ const CARRY = 'rapi-red-hood';
 
 const SLOTS = ['skill1', 'skill2', 'burst'] as const;
 
-const near = (a: number, b: number) => typeof a === 'number' && Math.abs(a - b) < 0.005;
+const near = (a: number, b: number) =>
+  typeof a === 'number' && Math.abs(a - b) < 0.005;
 
 const blocksOf = (ov: any, slot: string): any[] => {
   const s = ov?.[slot];
@@ -1116,7 +1162,8 @@ function run(patch?: Record<string, any>): Run {
   return { res, events: viaCfg.length ? viaCfg : viaTop };
 }
 
-const evOf = (r: Run, kind: string) => r.events.filter((e: any) => e.kind === kind);
+const evOf = (r: Run, kind: string) =>
+  r.events.filter((e: any) => e.kind === kind);
 const buffsOf = (r: Run) => evOf(r, 'buffApply');
 const fbStarts = (r: Run) => evOf(r, 'fullBurstStart');
 
@@ -1128,28 +1175,32 @@ const literOv: any = withPatchedOverride(LITER, () => {});
 // s1-A: strip every burst-cooldown reduction.
 const ovNoCdr = withPatchedOverride(LITER, (ov: any) => {
   eachBlock(ov, (b) => {
-    if (Array.isArray(b?.effects)) b.effects = b.effects.filter((e: any) => e.kind !== 'burstCdr');
+    if (Array.isArray(b?.effects))
+      b.effects = b.effects.filter((e: any) => e.kind !== 'burstCdr');
   });
 });
 
 // s1-A nearest-wrong: 'Affects all allies' narrowed to the caster.
 const ovCdrSelfOnly = withPatchedOverride(LITER, (ov: any) => {
   eachBlock(ov, (b) => {
-    if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr')) b.target = { kind: 'self' };
+    if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr'))
+      b.target = { kind: 'self' };
   });
 });
 
 // burst: neutralise the 66% ATK.
 const ovBurstAtkZero = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66)) e.value = 0;
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66))
+      e.value = 0;
   });
 });
 
 // burst nearest-wrong: 'all allies' narrowed to self.
 const ovBurstAtkSelfOnly = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any, b: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66)) b.target = { kind: 'self' };
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 66))
+      b.target = { kind: 'self' };
   });
 });
 
@@ -1166,7 +1217,8 @@ const ovBurstAtkPermanent = withPatchedOverride(LITER, (ov: any) => {
 // s1-B tier 3: neutralise the 14.42% ATK.
 const ovTierAtkZero = withPatchedOverride(LITER, (ov: any) => {
   eachEffect(ov, (e: any) => {
-    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 14.42)) e.value = 0;
+    if (e.kind === 'buff' && e.stat === 'atkPct' && near(e.value, 14.42))
+      e.value = 0;
   });
 });
 
@@ -1189,12 +1241,20 @@ const rNoS2 = run({ [LITER]: ovNoSkill2 });
 
 const teamSize = Object.keys(totals(base.res)).length;
 const baseBuffs = buffsOf(base);
-const ammoEvents = baseBuffs.filter((e: any) => e.stat === 'maxAmmoPct' && near(e.value, 45.17));
+const ammoEvents = baseBuffs.filter(
+  (e: any) => e.stat === 'maxAmmoPct' && near(e.value, 45.17)
+);
 const literIdx = ammoEvents[0]?.casterIdx;
 const literBuffs = baseBuffs.filter((e: any) => e.casterIdx === literIdx);
-const critEvents = literBuffs.filter((e: any) => e.stat === 'critDamagePct' && near(e.value, 12.46));
-const tierAtkEvents = literBuffs.filter((e: any) => e.stat === 'atkPct' && near(e.value, 14.42));
-const burstAtkEvents = literBuffs.filter((e: any) => e.stat === 'atkPct' && near(e.value, 66));
+const critEvents = literBuffs.filter(
+  (e: any) => e.stat === 'critDamagePct' && near(e.value, 12.46)
+);
+const tierAtkEvents = literBuffs.filter(
+  (e: any) => e.stat === 'atkPct' && near(e.value, 14.42)
+);
+const burstAtkEvents = literBuffs.filter(
+  (e: any) => e.stat === 'atkPct' && near(e.value, 66)
+);
 const literCasts = teamSize > 0 ? ammoEvents.length / teamSize : 0;
 
 describe('liter - fixture sanity (non-vacuity guards)', () => {
@@ -1226,7 +1286,8 @@ describe("liter s1-A - 'Activates when entering Full Burst' burst-cooldown reduc
     // therefore asserted structurally: 'entering Full Burst' has exactly one right trigger.
     const carriers: any[] = [];
     eachBlock(literOv, (b) => {
-      if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr')) carriers.push(b);
+      if ((b?.effects ?? []).some((e: any) => e.kind === 'burstCdr'))
+        carriers.push(b);
     });
     expect(carriers.length).toBeGreaterThan(0);
     for (const b of carriers) {
@@ -1286,7 +1347,7 @@ describe("liter s1-B - 'Activates when using Burst Skill' cumulative 5s buffs, a
           e.kind === 'buff' &&
           ((e.stat === 'maxAmmoPct' && near(e.value, 45.17)) ||
             (e.stat === 'critDamagePct' && near(e.value, 12.46)) ||
-            (e.stat === 'atkPct' && near(e.value, 14.42))),
+            (e.stat === 'atkPct' && near(e.value, 14.42)))
       );
       if (hit) carriers.push(b);
     });
@@ -1331,11 +1392,13 @@ describe("liter s1-B - 'Activates when using Burst Skill' cumulative 5s buffs, a
     // Nearest-wrong 1: casterAtkPct/highestAllyAtkPct, which would re-emit as a FLAT ATK number
     // (thousands), not 14.42. Nearest-wrong 2: authored but inert.
     for (const e of tierAtkEvents) expect(e.value).toBeCloseTo(14.42, 3);
-    expect(literBuffs.filter((e: any) => e.stat === 'casterAtkPct')).toHaveLength(0);
+    expect(
+      literBuffs.filter((e: any) => e.stat === 'casterAtkPct')
+    ).toHaveLength(0);
     expect(totals(rTierZero.res)[CARRY]).toBeLessThan(totals(base.res)[CARRY]);
   });
 
-  it("all three tiers are second-based windows, not round-count windows", () => {
+  it('all three tiers are second-based windows, not round-count windows', () => {
     // Taxonomy trap 2: 'for 5 sec' is wall-clock. durationShots must be absent, and a finite
     // expiry must exist (a permanent encoding would carry no finite expiresFrame).
     for (const e of [...ammoEvents, ...critEvents, ...tierAtkEvents]) {
@@ -1399,72 +1462,77 @@ describe("liter burst - 'ATK 66% for 5 sec' to all allies", () => {
     expect(totals(rBurstSelf.res)[LITER]).toBe(totals(base.res)[LITER]);
   });
 
-  it("the 5s window is real - a permanent encoding over-credits", () => {
+  it('the 5s window is real - a permanent encoding over-credits', () => {
     // Duration semantics. RED if 'for 5 sec' were dropped (buff already permanent => no delta).
-    expect(totals(rBurstPerm.res)[CARRY]).toBeGreaterThan(totals(base.res)[CARRY]);
+    expect(totals(rBurstPerm.res)[CARRY]).toBeGreaterThan(
+      totals(base.res)[CARRY]
+    );
   });
 });
-
 ```
 
 ### 5c. S5 per-failure reconciliation (scripts/kit-autonomy/reviews/liter.s5-reconciliation.json)
+
 {
-  "slug": "liter",
-  "stage": "S5-blind-test-reconciliation",
-  "date": "2026-07-26",
-  "blindModel": "claude-opus-5",
-  "blindTestPath": "scripts/kit-autonomy/blind/liter.test.ts",
-  "runVs": "driver override (src/skills/overrides/liter.json)",
-  "tally": { "passed": 10, "failed": 8, "skipped": 3, "total": 21 },
-  "leakDetected": null,
-  "verdict": "NO-REAL-GOTCHA",
-  "rootCause": "The driver wraps BOTH ladders (the S1-block-A burstCdr ladder and the S1-block-B buff ladder) inside a {kind:'escalating', steps:[...]} effect. The 'escalating' union arm in types.ts is commented '// Liter-style \"Once:/Twice:/…\"' — a genuine target-naming line that the de-contamination protocol MUST strip from this unit's blind schema. The blind writer therefore never learned the 'escalating' kind exists, and its override traversal helpers (blocksOf/eachBlock/eachEffect) iterate ONLY top-level block.effects and never descend into e.steps. Every STRUCTURAL assertion that searches top-level effects for burstCdr/buff finds 0 carriers, and every patch-counterfactual that filters/zeroes top-level burstCdr/buff effects is a NO-OP (the escalating wrapper is left untouched), so the patched run is byte-identical to base and the strict-inequality assertions tie.",
-  "failureClassification": [
-    { "n": 1, "test": "s1-A: modelled as burstCdr on fullBurstEnter targeting all allies", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock collects blocks whose TOP-LEVEL effects include kind==='burstCdr'; the burstCdr lives in escalating.steps, so 0 carriers found. Driver override IS burstCdr-on-fullBurstEnter-allies (nested in escalating.steps) — confirmed by driver green test + S2b." },
-    { "n": 2, "test": "s1-A: uses only kit-ladder magnitudes, not once-per-battle", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachEffect finds no top-level burstCdr → secs[] empty → 0. Driver's nested seconds are exactly 2.34/2.7/3.17." },
-    { "n": 3, "test": "s1-A: stripping CDR costs Full Bursts", "error": "expected 11 > 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovNoCdr filters top-level effects kind!=='burstCdr'; the escalating wrapper is kept, so nothing is removed → rNoCdr ≡ base → 11==11 tie. The CDR was never actually stripped." },
-    { "n": 4, "test": "s1-A: reaches teammates, not self alone", "error": "expected 11 < 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovCdrSelfOnly retargets blocks whose top-level effects include burstCdr; never true (nested) → patch no-op → rCdrSelf ≡ base → tie." },
-    { "n": 5, "test": "s1-B: keyed to owner's own burstCast not fullBurstEnter", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock searches top-level effects for kind==='buff' with the ladder stats; the buffs are nested in escalating.steps → 0 carriers. The blind test's OWN event-stream assertions confirm burstCast timing behaviourally (tier 1 every cast / tier 2 from cast 2 / tier 3 from cast 3 all PASS)." },
-    { "n": 6, "test": "s1-B: tier-3 ATK is a plain % that moves teammate damage", "error": "expected 916908652.208 < 916908652.208 (identical)", "class": "escalating-redaction artifact (no-op patch)", "why": "ovTierAtkZero zeroes top-level buff atkPct~14.42; nested → never found → rTierZero ≡ base → identical carry total. Within the same test, expect(value).toBeCloseTo(14.42) PASSES and casterAtkPct count is 0 (plain %, not caster-flat) — the buff IS a faithful plain-percentage atkPct 14.42; only the damage-differential line ties because the patch is a no-op." },
-    { "n": 7, "test": "s1-B: all three tiers are second-based windows", "error": "expected null to be undefined", "class": "event-shape guess", "why": "expect(e.durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs. The companion assertion Number.isFinite(e.expiresFrame) holds, and the burst 'permanent encoding over-credits' test PASSES — the 5s time-based window IS real." },
-    { "n": 8, "test": "burst: applies ATK 66% once per cast to every ally, plain %", "error": "expected null to be undefined", "class": "event-shape guess", "why": "Same durationShots null-vs-undefined. All OTHER assertions in this test PASS: burstAtkEvents.length===ammoEvents.length (same cast), value≈66, targets===teamSize, includes literIdx. The burst 66% ATK is faithful." }
-  ],
-  "corroboratingPasses": [
-    "fixture sanity (3 guards): event sink wired; liter casts ≥3; team FB ≥3",
-    "s1-B tier 1 maxAmmo 45.17% fires on EVERY cast, to every ally including liter, stat is maxAmmoPct (plain %, not maxAmmoFlat)",
-    "s1-B tier 2 critDmg 12.46% starts one cast LATER and then never stops (cumulative count = ammo − teamSize)",
-    "s1-B tier 3 atkPct 14.42% starts two casts later and then never stops (cumulative count = ammo − 2·teamSize)",
-    "s2 offensively inert: totals byte-identical with/without skill2 → no recovery consumer fired (matches owner ruling 2026-07-21)",
-    "burst moves BOTH teammate and self damage (all allies includes the caster)",
-    "narrowing burst to self costs the carry but leaves liter byte-identical (target = all allies)",
-    "the 5s burst window is real — a permanent encoding over-credits"
-  ],
-  "conclusion": "The blind test's event-stream (structure-independent) assertions independently corroborate the driver's faithful override on every kit line. Its 8 failures are fully explained by (a) the escalating-redaction de-contamination artifact — the blind traversal/patches cannot see effects nested in escalating.steps, so structural searches find 0 and patch-counterfactuals tie base-vs-base — and (b) a durationShots null-vs-undefined event-shape convention guess. None reflects a faithfulness divergence in the driver override. Recommend the S7 judge rule NOT-REAL-GOTCHA and grade faithfulness on the kit prose + event-stream behaviour, not on the structurally-blind patch assertions."
+"slug": "liter",
+"stage": "S5-blind-test-reconciliation",
+"date": "2026-07-26",
+"blindModel": "claude-opus-5",
+"blindTestPath": "scripts/kit-autonomy/blind/liter.test.ts",
+"runVs": "driver override (src/skills/overrides/liter.json)",
+"tally": { "passed": 10, "failed": 8, "skipped": 3, "total": 21 },
+"leakDetected": null,
+"verdict": "NO-REAL-GOTCHA",
+"rootCause": "The driver wraps BOTH ladders (the S1-block-A burstCdr ladder and the S1-block-B buff ladder) inside a {kind:'escalating', steps:[...]} effect. The 'escalating' union arm in types.ts is commented '// Liter-style \"Once:/Twice:/…\"' — a genuine target-naming line that the de-contamination protocol MUST strip from this unit's blind schema. The blind writer therefore never learned the 'escalating' kind exists, and its override traversal helpers (blocksOf/eachBlock/eachEffect) iterate ONLY top-level block.effects and never descend into e.steps. Every STRUCTURAL assertion that searches top-level effects for burstCdr/buff finds 0 carriers, and every patch-counterfactual that filters/zeroes top-level burstCdr/buff effects is a NO-OP (the escalating wrapper is left untouched), so the patched run is byte-identical to base and the strict-inequality assertions tie.",
+"failureClassification": [
+{ "n": 1, "test": "s1-A: modelled as burstCdr on fullBurstEnter targeting all allies", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock collects blocks whose TOP-LEVEL effects include kind==='burstCdr'; the burstCdr lives in escalating.steps, so 0 carriers found. Driver override IS burstCdr-on-fullBurstEnter-allies (nested in escalating.steps) — confirmed by driver green test + S2b." },
+{ "n": 2, "test": "s1-A: uses only kit-ladder magnitudes, not once-per-battle", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachEffect finds no top-level burstCdr → secs[] empty → 0. Driver's nested seconds are exactly 2.34/2.7/3.17." },
+{ "n": 3, "test": "s1-A: stripping CDR costs Full Bursts", "error": "expected 11 > 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovNoCdr filters top-level effects kind!=='burstCdr'; the escalating wrapper is kept, so nothing is removed → rNoCdr ≡ base → 11==11 tie. The CDR was never actually stripped." },
+{ "n": 4, "test": "s1-A: reaches teammates, not self alone", "error": "expected 11 < 11", "class": "escalating-redaction artifact (no-op patch)", "why": "ovCdrSelfOnly retargets blocks whose top-level effects include burstCdr; never true (nested) → patch no-op → rCdrSelf ≡ base → tie." },
+{ "n": 5, "test": "s1-B: keyed to owner's own burstCast not fullBurstEnter", "error": "expected 0 > 0", "class": "escalating-redaction artifact", "why": "eachBlock searches top-level effects for kind==='buff' with the ladder stats; the buffs are nested in escalating.steps → 0 carriers. The blind test's OWN event-stream assertions confirm burstCast timing behaviourally (tier 1 every cast / tier 2 from cast 2 / tier 3 from cast 3 all PASS)." },
+{ "n": 6, "test": "s1-B: tier-3 ATK is a plain % that moves teammate damage", "error": "expected 916908652.208 < 916908652.208 (identical)", "class": "escalating-redaction artifact (no-op patch)", "why": "ovTierAtkZero zeroes top-level buff atkPct~14.42; nested → never found → rTierZero ≡ base → identical carry total. Within the same test, expect(value).toBeCloseTo(14.42) PASSES and casterAtkPct count is 0 (plain %, not caster-flat) — the buff IS a faithful plain-percentage atkPct 14.42; only the damage-differential line ties because the patch is a no-op." },
+{ "n": 7, "test": "s1-B: all three tiers are second-based windows", "error": "expected null to be undefined", "class": "event-shape guess", "why": "expect(e.durationShots).toBeUndefined() but the engine emits durationShots:null for time-based buffs. The companion assertion Number.isFinite(e.expiresFrame) holds, and the burst 'permanent encoding over-credits' test PASSES — the 5s time-based window IS real." },
+{ "n": 8, "test": "burst: applies ATK 66% once per cast to every ally, plain %", "error": "expected null to be undefined", "class": "event-shape guess", "why": "Same durationShots null-vs-undefined. All OTHER assertions in this test PASS: burstAtkEvents.length===ammoEvents.length (same cast), value≈66, targets===teamSize, includes literIdx. The burst 66% ATK is faithful." }
+],
+"corroboratingPasses": [
+"fixture sanity (3 guards): event sink wired; liter casts ≥3; team FB ≥3",
+"s1-B tier 1 maxAmmo 45.17% fires on EVERY cast, to every ally including liter, stat is maxAmmoPct (plain %, not maxAmmoFlat)",
+"s1-B tier 2 critDmg 12.46% starts one cast LATER and then never stops (cumulative count = ammo − teamSize)",
+"s1-B tier 3 atkPct 14.42% starts two casts later and then never stops (cumulative count = ammo − 2·teamSize)",
+"s2 offensively inert: totals byte-identical with/without skill2 → no recovery consumer fired (matches owner ruling 2026-07-21)",
+"burst moves BOTH teammate and self damage (all allies includes the caster)",
+"narrowing burst to self costs the carry but leaves liter byte-identical (target = all allies)",
+"the 5s burst window is real — a permanent encoding over-credits"
+],
+"conclusion": "The blind test's event-stream (structure-independent) assertions independently corroborate the driver's faithful override on every kit line. Its 8 failures are fully explained by (a) the escalating-redaction de-contamination artifact — the blind traversal/patches cannot see effects nested in escalating.steps, so structural searches find 0 and patch-counterfactuals tie base-vs-base — and (b) a durationShots null-vs-undefined event-shape convention guess. None reflects a faithfulness divergence in the driver override. Recommend the S7 judge rule NOT-REAL-GOTCHA and grade faithfulness on the kit prose + event-stream behaviour, not on the structurally-blind patch assertions."
 }
 
-
 ================================================================================
+
 ## SECTION 6 — S6 BLIND OVERRIDE (claude-opus-5) + diff vs the driver override
+
 ================================================================================
 DRIVER override (src/skills/overrides/liter.json):
-  skill1[0]: trigger fullBurstEnter, target allies, effects=[ {kind:'escalating', steps:[burstCdr 2.34, burstCdr 2.7, burstCdr 3.17]} ]  (cumulative-with-cap min(N,3) -> 2.34 / 5.04 / 8.21 by entry)
-  skill1[1]: trigger burstCast, target allies, effects=[ {kind:'escalating', steps:[buff maxAmmoPct 45.17 5s, buff critDamagePct 12.46 5s, buff atkPct 14.42 5s]} ]  (cumulative; all three from 3rd cast)
-  skill2: []  (NO-OP; cover-HP restore recorded verbatim in unmodeled.skill2 per OWNER RULING 2026-07-21 — cover HP is not unit HP, emits NO recovery event, must not fire recovery consumers e.g. Crown)
-  burst[0]: trigger burstCast, target allies, effects=[ buff atkPct 66 5s ]
+skill1[0]: trigger fullBurstEnter, target allies, effects=[ {kind:'escalating', steps:[burstCdr 2.34, burstCdr 2.7, burstCdr 3.17]} ] (cumulative-with-cap min(N,3) -> 2.34 / 5.04 / 8.21 by entry)
+skill1[1]: trigger burstCast, target allies, effects=[ {kind:'escalating', steps:[buff maxAmmoPct 45.17 5s, buff critDamagePct 12.46 5s, buff atkPct 14.42 5s]} ] (cumulative; all three from 3rd cast)
+skill2: [] (NO-OP; cover-HP restore recorded verbatim in unmodeled.skill2 per OWNER RULING 2026-07-21 — cover HP is not unit HP, emits NO recovery event, must not fire recovery consumers e.g. Crown)
+burst[0]: trigger burstCast, target allies, effects=[ buff atkPct 66 5s ]
 
 BLIND override (scripts/kit-autonomy/blind/liter.override.json):
-  skill1[0]: trigger fullBurstEnter, target allies, effects=[ burstCdr seconds:8.21 ]  (FLAT steady-state sum; escalation NOT modeled)
-  skill1[1]: trigger burstCast, target allies, effects=[ buff maxAmmoPct 45.17 5s, buff critDamagePct 12.46 5s, buff atkPct 14.42 5s ]  (ALL THREE from cast 1; escalation NOT modeled)
-  skill2[0]: trigger interval sec:20, target alliesLowestHp count:2, effects=[ heal ticks:1 ]  (modeled as heal, but flagged ⚑ as the load-bearing risk)
-  burst[0]: trigger burstCast, target allies, effects=[ buff atkPct 66 5s ]  (IDENTICAL to driver)
+skill1[0]: trigger fullBurstEnter, target allies, effects=[ burstCdr seconds:8.21 ] (FLAT steady-state sum; escalation NOT modeled)
+skill1[1]: trigger burstCast, target allies, effects=[ buff maxAmmoPct 45.17 5s, buff critDamagePct 12.46 5s, buff atkPct 14.42 5s ] (ALL THREE from cast 1; escalation NOT modeled)
+skill2[0]: trigger interval sec:20, target alliesLowestHp count:2, effects=[ heal ticks:1 ] (modeled as heal, but flagged ⚑ as the load-bearing risk)
+burst[0]: trigger burstCast, target allies, effects=[ buff atkPct 66 5s ] (IDENTICAL to driver)
 
 DIFF SUMMARY:
-  * Triggers IDENTICAL (fullBurstEnter / burstCast / burstCast). Targets IDENTICAL (allies x3). Buff magnitudes IDENTICAL (45.17/12.46/14.42 + burst 66). Durations IDENTICAL (5s).
-  * DIVERGENCE 1 — S1-A CDR ladder: driver = escalating exact ladder [2.34,2.7,3.17] (cumulative 2.34/5.04/8.21); blind = flat 8.21 steady-state. CAUSE: the 'escalating' EffectDef union arm in types.ts is commented "// Liter-style Once:/Twice:/…" — a genuine target-naming line the de-contamination protocol MUST strip for this unit, so the blind writer never learned 'escalating' exists and believed the schema had no Nth-activation gate. The blind writer flagged this as a ⚑ with estimate 8.21 and recipe "add a fromNthActivation gate (or activation-count resource + resourceGate) and split into three blocks at 2.34/2.70/3.17" — i.e. it independently prescribed EXACTLY the 'escalating' encoding the driver implements. The driver is the MORE faithful of the two; the blind flat-8.21 is precisely the nearest-wrong the driver's test discriminates against.
-  * DIVERGENCE 2 — S1-B buff ladder: driver = escalating cumulative (ammo only cast1 / +critDmg cast2 / +atk cast3+); blind = all three from cast 1. SAME root cause (escalating redacted). Blind flagged ⚑ with the same recipe.
-  * CONVERGENCE on skill2 — driver = NO-OP (owner ruling 2026-07-21); blind = modeled heal BUT flagged as "the single most consequential unknown in this file" and prescribed: "if the consumer's on-recovery buff never applies, remove the heal effect and record the line in unmodeled.skill2 instead." The blind writer independently arrived at the owner ruling as a hypothesis and named the exact discriminator the driver's L3 test pins (no recovery consumer fires with liter as the only source).
+
+- Triggers IDENTICAL (fullBurstEnter / burstCast / burstCast). Targets IDENTICAL (allies x3). Buff magnitudes IDENTICAL (45.17/12.46/14.42 + burst 66). Durations IDENTICAL (5s).
+- DIVERGENCE 1 — S1-A CDR ladder: driver = escalating exact ladder [2.34,2.7,3.17] (cumulative 2.34/5.04/8.21); blind = flat 8.21 steady-state. CAUSE: the 'escalating' EffectDef union arm in types.ts is commented "// Liter-style Once:/Twice:/…" — a genuine target-naming line the de-contamination protocol MUST strip for this unit, so the blind writer never learned 'escalating' exists and believed the schema had no Nth-activation gate. The blind writer flagged this as a ⚑ with estimate 8.21 and recipe "add a fromNthActivation gate (or activation-count resource + resourceGate) and split into three blocks at 2.34/2.70/3.17" — i.e. it independently prescribed EXACTLY the 'escalating' encoding the driver implements. The driver is the MORE faithful of the two; the blind flat-8.21 is precisely the nearest-wrong the driver's test discriminates against.
+- DIVERGENCE 2 — S1-B buff ladder: driver = escalating cumulative (ammo only cast1 / +critDmg cast2 / +atk cast3+); blind = all three from cast 1. SAME root cause (escalating redacted). Blind flagged ⚑ with the same recipe.
+- CONVERGENCE on skill2 — driver = NO-OP (owner ruling 2026-07-21); blind = modeled heal BUT flagged as "the single most consequential unknown in this file" and prescribed: "if the consumer's on-recovery buff never applies, remove the heal effect and record the line in unmodeled.skill2 instead." The blind writer independently arrived at the owner ruling as a hypothesis and named the exact discriminator the driver's L3 test pins (no recovery consumer fires with liter as the only source).
 
 ### 6b. S6 blind override source (scripts/kit-autonomy/blind/liter.override.json)
+
 ```json
 {
   "slug": "liter",
@@ -1575,135 +1643,140 @@ DIFF SUMMARY:
 ```
 
 ### 6c. S6 blind audit + flags (the blind writer's own per-line status + ⚑ estimates/recipes)
+
 [
- {
-  "slot": "skill1",
-  "kitLine": "■ Activates when entering Full Burst.",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "Block 1 trigger {kind:'fullBurstEnter'} + target {kind:'allies'} (team event, fires on ANY team Full Burst; 'all allies' includes self)"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Effects vary according to the number",
-  "status": "SKIPPED",
-  "effectOrReason": "Activation-count escalation is not expressible: no 'Nth-activation-onward' gate exists (everyN/everyNOffset is periodic, not monotone-step). Steady-state tier used; verbatim in unmodeled.skill1"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Once: Cooldown of Burst Skill ▼ 2.34 sec",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "Summed into burstCdr seconds 8.21 (cumulative tier 3)"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Twice: Cooldown ▼ 2.7 sec",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "Summed into burstCdr seconds 8.21"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Three times: Cooldown ▼ 3.17 sec",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "Summed into burstCdr seconds 8.21"
- },
- {
-  "slot": "skill1",
-  "kitLine": "■ Activates when using Burst Skill.",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "Block 2 trigger {kind:'burstCast'} (owner-scoped, no stage gate) + target {kind:'allies'}"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Effects vary according to times used",
-  "status": "SKIPPED",
-  "effectOrReason": "Same count-ladder limitation as above; all three buffs granted from the 1st cast. Verbatim in unmodeled.skill1"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Once: Max Ammunition ▲ 45.17%, 5 sec",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "buff maxAmmoPct 45.17 durationSec 5 — weapon-state modifier, gates shots fired (NOT skipped as defensive)"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Twice: Critical Damage ▲ 12.46%, 5s",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "buff critDamagePct 12.46 durationSec 5 (unscoped — kit text carries no normal-attack scope)"
- },
- {
-  "slot": "skill1",
-  "kitLine": "Three times: ATK ▲ 14.42% for 5 sec",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "buff atkPct 14.42 durationSec 5 (plain 'ATK ▲ x%' → target's own ATK, not casterAtkPct)"
- },
- {
-  "slot": "skill2",
-  "kitLine": "■ Affects 2 allies, lowest cover HP",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "target {kind:'alliesLowestHp', count:2} as the documented stand-in (no cover/HP pool in v1); trigger {kind:'interval', sec:20} ⚑ — kit gives no activation clause"
- },
- {
-  "slot": "skill2",
-  "kitLine": "Restores 52.5% of Cover HP.",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "effect {kind:'heal', ticks:1} — emits a recovery event to fire teammates' 'recovery' triggers (heal/shield lines are never skipped on isolation); the 52.5% amount is inert with no pool modeled ⚑ cover-HP-vs-HP recovery coupling unverified"
- },
- {
-  "slot": "burst",
-  "kitLine": "■ Affects all allies.",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "target {kind:'allies'}, trigger {kind:'burstCast'}"
- },
- {
-  "slot": "burst",
-  "kitLine": "ATK ▲ 66% for 5 sec.",
-  "status": "IMPLEMENTED",
-  "effectOrReason": "buff atkPct 66 durationSec 5"
- }
+{
+"slot": "skill1",
+"kitLine": "■ Activates when entering Full Burst.",
+"status": "IMPLEMENTED",
+"effectOrReason": "Block 1 trigger {kind:'fullBurstEnter'} + target {kind:'allies'} (team event, fires on ANY team Full Burst; 'all allies' includes self)"
+},
+{
+"slot": "skill1",
+"kitLine": "Effects vary according to the number",
+"status": "SKIPPED",
+"effectOrReason": "Activation-count escalation is not expressible: no 'Nth-activation-onward' gate exists (everyN/everyNOffset is periodic, not monotone-step). Steady-state tier used; verbatim in unmodeled.skill1"
+},
+{
+"slot": "skill1",
+"kitLine": "Once: Cooldown of Burst Skill ▼ 2.34 sec",
+"status": "IMPLEMENTED",
+"effectOrReason": "Summed into burstCdr seconds 8.21 (cumulative tier 3)"
+},
+{
+"slot": "skill1",
+"kitLine": "Twice: Cooldown ▼ 2.7 sec",
+"status": "IMPLEMENTED",
+"effectOrReason": "Summed into burstCdr seconds 8.21"
+},
+{
+"slot": "skill1",
+"kitLine": "Three times: Cooldown ▼ 3.17 sec",
+"status": "IMPLEMENTED",
+"effectOrReason": "Summed into burstCdr seconds 8.21"
+},
+{
+"slot": "skill1",
+"kitLine": "■ Activates when using Burst Skill.",
+"status": "IMPLEMENTED",
+"effectOrReason": "Block 2 trigger {kind:'burstCast'} (owner-scoped, no stage gate) + target {kind:'allies'}"
+},
+{
+"slot": "skill1",
+"kitLine": "Effects vary according to times used",
+"status": "SKIPPED",
+"effectOrReason": "Same count-ladder limitation as above; all three buffs granted from the 1st cast. Verbatim in unmodeled.skill1"
+},
+{
+"slot": "skill1",
+"kitLine": "Once: Max Ammunition ▲ 45.17%, 5 sec",
+"status": "IMPLEMENTED",
+"effectOrReason": "buff maxAmmoPct 45.17 durationSec 5 — weapon-state modifier, gates shots fired (NOT skipped as defensive)"
+},
+{
+"slot": "skill1",
+"kitLine": "Twice: Critical Damage ▲ 12.46%, 5s",
+"status": "IMPLEMENTED",
+"effectOrReason": "buff critDamagePct 12.46 durationSec 5 (unscoped — kit text carries no normal-attack scope)"
+},
+{
+"slot": "skill1",
+"kitLine": "Three times: ATK ▲ 14.42% for 5 sec",
+"status": "IMPLEMENTED",
+"effectOrReason": "buff atkPct 14.42 durationSec 5 (plain 'ATK ▲ x%' → target's own ATK, not casterAtkPct)"
+},
+{
+"slot": "skill2",
+"kitLine": "■ Affects 2 allies, lowest cover HP",
+"status": "IMPLEMENTED",
+"effectOrReason": "target {kind:'alliesLowestHp', count:2} as the documented stand-in (no cover/HP pool in v1); trigger {kind:'interval', sec:20} ⚑ — kit gives no activation clause"
+},
+{
+"slot": "skill2",
+"kitLine": "Restores 52.5% of Cover HP.",
+"status": "IMPLEMENTED",
+"effectOrReason": "effect {kind:'heal', ticks:1} — emits a recovery event to fire teammates' 'recovery' triggers (heal/shield lines are never skipped on isolation); the 52.5% amount is inert with no pool modeled ⚑ cover-HP-vs-HP recovery coupling unverified"
+},
+{
+"slot": "burst",
+"kitLine": "■ Affects all allies.",
+"status": "IMPLEMENTED",
+"effectOrReason": "target {kind:'allies'}, trigger {kind:'burstCast'}"
+},
+{
+"slot": "burst",
+"kitLine": "ATK ▲ 66% for 5 sec.",
+"status": "IMPLEMENTED",
+"effectOrReason": "buff atkPct 66 durationSec 5"
+}
 ]
 [
- {
-  "field": "skill1[0].effects[0].seconds",
-  "estimate": "8.21 (= 2.34 + 2.70 + 3.17, the 3rd-entry-onward cumulative tier)",
-  "reasoning": "The kit ladder is monotone-stepped by cumulative Full-Burst-entry count (2.34 / 5.04 / 8.21), but the Block schema offers only periodic gates (everyN/everyNOffset) — there is no 'from the Nth activation onward' gate, so no encoding reproduces the step. Steady state is the correct single value because entries 3..N dominate a 180 s fight, but it over-grants 5.87 s on entry 1 and 3.17 s on entry 2 (9.04 s of team burst CDR total), which lands squarely on the early rotation and can manufacture a Full Burst.",
-  "recipe": "Add a `fromNthActivation?: number` block gate (or an activation-count resource + resourceGate) and split into three blocks at 2.34 / 2.70 / 3.17. Validate by MEASURED full-burst count preservation on the graded comps in scripts/regression.ts (rotation changes are judged by FB count, not aggregate ratio) — an FB-count shift on a Liter comp between flat-8.21 and the true ladder is the discriminator."
- },
- {
-  "field": "skill1[1].effects[0..2]",
-  "estimate": "All three buffs (maxAmmoPct 45.17 / critDamagePct 12.46 / atkPct 14.42) active from her 1st burst cast",
-  "reasoning": "Identical count-ladder limitation: the true grant is ammo-only on cast 1, ammo+crit-damage on cast 2, all three on cast 3+. As a Burst I unit she casts every rotation, so casts 1–2 occur in the first ~40 s; the over-credit is a real early-fight ATK/crit-damage inflation on every ally, not a rounding detail.",
-  "recipe": "Same gate as the flag above, keyed to her own burstCast count. Pending that, quantify the error by A/B-ing this override against one whose ATK/crit-damage buffs are suppressed for the first two casts, and read the per-unit delta on a Liter-led graded comp."
- },
- {
-  "field": "skill2[0].trigger",
-  "estimate": "{kind:'interval', sec:20}, first fire at t=20 s",
-  "reasoning": "ALWAYS-⚑ class: the kit text gives S2 NO activation clause ('Affects 2 ally unit(s)…' with no '■ Activates when…' header), so the trigger identity is inferred, not read. Per the classification rule, absence of an activation clause ⇒ interval trigger with first fire at t=sec (a force-cast 'Forcefully uses Skill N' line would first-fire at t=0; there is none). The 20 s period is a guess anchored to nothing in the prose — her listed 20 s cooldown is the BURST cooldown, a different quantity, and must not be borrowed for it.",
-  "recipe": "Read liter's skill-2 cooldown from the datamined skillCooldownsSec table in data/ and set sec to it; if absent, the cadence is unresolvable from files and needs a recording (count cover-heal popups on the two lowest-cover allies over a full fight). Note the block is damage-inert on isolation, so this only matters via the recovery coupling below."
- },
- {
-  "field": "skill2[0].effects[0] (kind:'heal')",
-  "estimate": "Modeled as emitting a recovery event (ticks:1) per activation",
-  "reasoning": "Load-bearing tandem risk and the single most consequential unknown in this file. The kit restores COVER HP, which is a distinct resource from unit HP. The engine's `heal` effect exists to fire teammates' `recovery` triggers (the Helm→Crown channel); if an in-game Cover-HP restore does NOT satisfy an on-recovery consumer, this block silently pumps a teammate's damage buff on a Liter team. I cannot resolve cover-HP-vs-HP recovery semantics from the kit text alone, and the honest position is HYPOTHESIS, not fact. The inverse error (dropping the line for being 'defensive') is also forbidden — heal/shield/DEF/HP/lifesteal lines are never skipped on isolation.",
-  "recipe": "Independent-method check first (reuse before derive): grep scripts/tests/units/ and docs/probe-data/ for an existing recovery-trigger fixture pairing a cover-heal carrier with an on-recovery consumer — if one exists, run it and you are DONE. If none exists, the discriminator is a recorded fight of Liter + an on-recovery consumer with NO other heal source in the comp: if the consumer's on-recovery buff never applies, remove the heal effect and record the line in unmodeled.skill2 instead."
- },
- {
-  "field": "skill2[0].target",
-  "estimate": "{kind:'alliesLowestHp', count:2}",
-  "reasoning": "'lowest remaining cover HP' has no sim analogue — v1 has an immortal boss, no incoming damage, and no cover pool, so the ranking is indeterminate and resolves to the leftmost 2 allies. Which 2 allies receive the event is arbitrary today, and becomes load-bearing the moment the recovery coupling above is confirmed live (it decides WHICH teammate's on-recovery buff fires).",
-  "recipe": "Only resolvable alongside a cover-damage model. Until then, if the recovery coupling is confirmed, sanity-check whether the choice of recipients moves the board by A/B-ing count:2 leftmost vs an all-allies target on a Liter + on-recovery-consumer comp; if the delta is non-zero, the stand-in is no longer damage-neutral and must be documented as such."
- },
- {
-  "field": "n/a — engine cadence (not an override field)",
-  "estimate": "SMG base weapon; effective pulls/s = 60/ceil(60/nominal), not the raw datamined rate_of_fire",
-  "reasoning": "ALWAYS-⚑ cadence tuple. A datamined rate_of_fire is NOMINAL; shots resolve on 60 fps frame boundaries, so the effective rate is floored (e.g. a nominal 24/s at 2.5 frames becomes 3 frames = 20/s). Liter's own damage contribution is negligible for a Supporter, but her cadence drives her burst-gauge generation and therefore team rotation timing — the same channel her S1 CDR feeds.",
-  "recipe": "Do not refit from Full-Burst counts (that instrument measures gauge/s, downstream of cadence). Measure shots/sec directly off the ammo counter in footage, or confirm the frame-floored value against data/gauge-per-shot.json."
- }
+{
+"field": "skill1[0].effects[0].seconds",
+"estimate": "8.21 (= 2.34 + 2.70 + 3.17, the 3rd-entry-onward cumulative tier)",
+"reasoning": "The kit ladder is monotone-stepped by cumulative Full-Burst-entry count (2.34 / 5.04 / 8.21), but the Block schema offers only periodic gates (everyN/everyNOffset) — there is no 'from the Nth activation onward' gate, so no encoding reproduces the step. Steady state is the correct single value because entries 3..N dominate a 180 s fight, but it over-grants 5.87 s on entry 1 and 3.17 s on entry 2 (9.04 s of team burst CDR total), which lands squarely on the early rotation and can manufacture a Full Burst.",
+"recipe": "Add a `fromNthActivation?: number` block gate (or an activation-count resource + resourceGate) and split into three blocks at 2.34 / 2.70 / 3.17. Validate by MEASURED full-burst count preservation on the graded comps in scripts/regression.ts (rotation changes are judged by FB count, not aggregate ratio) — an FB-count shift on a Liter comp between flat-8.21 and the true ladder is the discriminator."
+},
+{
+"field": "skill1[1].effects[0..2]",
+"estimate": "All three buffs (maxAmmoPct 45.17 / critDamagePct 12.46 / atkPct 14.42) active from her 1st burst cast",
+"reasoning": "Identical count-ladder limitation: the true grant is ammo-only on cast 1, ammo+crit-damage on cast 2, all three on cast 3+. As a Burst I unit she casts every rotation, so casts 1–2 occur in the first ~40 s; the over-credit is a real early-fight ATK/crit-damage inflation on every ally, not a rounding detail.",
+"recipe": "Same gate as the flag above, keyed to her own burstCast count. Pending that, quantify the error by A/B-ing this override against one whose ATK/crit-damage buffs are suppressed for the first two casts, and read the per-unit delta on a Liter-led graded comp."
+},
+{
+"field": "skill2[0].trigger",
+"estimate": "{kind:'interval', sec:20}, first fire at t=20 s",
+"reasoning": "ALWAYS-⚑ class: the kit text gives S2 NO activation clause ('Affects 2 ally unit(s)…' with no '■ Activates when…' header), so the trigger identity is inferred, not read. Per the classification rule, absence of an activation clause ⇒ interval trigger with first fire at t=sec (a force-cast 'Forcefully uses Skill N' line would first-fire at t=0; there is none). The 20 s period is a guess anchored to nothing in the prose — her listed 20 s cooldown is the BURST cooldown, a different quantity, and must not be borrowed for it.",
+"recipe": "Read liter's skill-2 cooldown from the datamined skillCooldownsSec table in data/ and set sec to it; if absent, the cadence is unresolvable from files and needs a recording (count cover-heal popups on the two lowest-cover allies over a full fight). Note the block is damage-inert on isolation, so this only matters via the recovery coupling below."
+},
+{
+"field": "skill2[0].effects[0] (kind:'heal')",
+"estimate": "Modeled as emitting a recovery event (ticks:1) per activation",
+"reasoning": "Load-bearing tandem risk and the single most consequential unknown in this file. The kit restores COVER HP, which is a distinct resource from unit HP. The engine's `heal` effect exists to fire teammates' `recovery` triggers (the Helm→Crown channel); if an in-game Cover-HP restore does NOT satisfy an on-recovery consumer, this block silently pumps a teammate's damage buff on a Liter team. I cannot resolve cover-HP-vs-HP recovery semantics from the kit text alone, and the honest position is HYPOTHESIS, not fact. The inverse error (dropping the line for being 'defensive') is also forbidden — heal/shield/DEF/HP/lifesteal lines are never skipped on isolation.",
+"recipe": "Independent-method check first (reuse before derive): grep scripts/tests/units/ and docs/probe-data/ for an existing recovery-trigger fixture pairing a cover-heal carrier with an on-recovery consumer — if one exists, run it and you are DONE. If none exists, the discriminator is a recorded fight of Liter + an on-recovery consumer with NO other heal source in the comp: if the consumer's on-recovery buff never applies, remove the heal effect and record the line in unmodeled.skill2 instead."
+},
+{
+"field": "skill2[0].target",
+"estimate": "{kind:'alliesLowestHp', count:2}",
+"reasoning": "'lowest remaining cover HP' has no sim analogue — v1 has an immortal boss, no incoming damage, and no cover pool, so the ranking is indeterminate and resolves to the leftmost 2 allies. Which 2 allies receive the event is arbitrary today, and becomes load-bearing the moment the recovery coupling above is confirmed live (it decides WHICH teammate's on-recovery buff fires).",
+"recipe": "Only resolvable alongside a cover-damage model. Until then, if the recovery coupling is confirmed, sanity-check whether the choice of recipients moves the board by A/B-ing count:2 leftmost vs an all-allies target on a Liter + on-recovery-consumer comp; if the delta is non-zero, the stand-in is no longer damage-neutral and must be documented as such."
+},
+{
+"field": "n/a — engine cadence (not an override field)",
+"estimate": "SMG base weapon; effective pulls/s = 60/ceil(60/nominal), not the raw datamined rate_of_fire",
+"reasoning": "ALWAYS-⚑ cadence tuple. A datamined rate_of_fire is NOMINAL; shots resolve on 60 fps frame boundaries, so the effective rate is floored (e.g. a nominal 24/s at 2.5 frames becomes 3 frames = 20/s). Liter's own damage contribution is negligible for a Supporter, but her cadence drives her burst-gauge generation and therefore team rotation timing — the same channel her S1 CDR feeds.",
+"recipe": "Do not refit from Full-Burst counts (that instrument measures gauge/s, downstream of cadence). Measure shots/sec directly off the ammo counter in footage, or confirm the frame-floored value against data/gauge-per-shot.json."
+}
 ]
 
 ================================================================================
+
 ## SECTION 7 — DRIVER IMPLEMENTATION (what you are grading)
+
 ================================================================================
+
 ### 7a. driver test (scripts/tests/units/liter.test.ts) — GREEN vs shipped, RED vs counterfactuals
+
 ```ts
 // PER-UNIT KIT SPEC — `liter` (Liter, Supporter/SMG/Iron, Burst I, cd 20s, ammo 120,
 // reloadFrames 111). TDD transition step 3; owner-driven spec review 2026-07-23.
@@ -1752,7 +1825,12 @@ DIFF SUMMARY:
 import { describe, expect, it } from 'vitest';
 import type { CompOptions } from '../lib/harness.js';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, data, runComp, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  data,
+  runComp,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 const CARRY = 'ada';
@@ -1768,7 +1846,8 @@ function runOn(comp: CompOptions, overrides: Record<string, any> = {}) {
   runComp({ ...comp, overrides, cfg: { onEvent: (e) => events.push(e) } });
   return events;
 }
-const run = (overrides: Record<string, any> = {}) => runOn(controlComp(CARRY), overrides);
+const run = (overrides: Record<string, any> = {}) =>
+  runOn(controlComp(CARRY), overrides);
 
 // Gauge-rich, SMG-cadence-robust vehicle for the two rotation-count discriminations (see header):
 // liter B1 / blanc B2 / maiden-ice-rose B3 (focus, ×2.5 charge gauge) / helm B3. No claim about
@@ -1784,12 +1863,20 @@ const cdrLadder = (seconds: number | null) =>
   withPatchedOverride('liter', (ov) => {
     const before = ov.skill1.length;
     if (seconds === null) {
-      ov.skill1 = ov.skill1.filter((b: any) => b.trigger.kind !== 'fullBurstEnter');
-      if (ov.skill1.length === before) throw new Error('liter S1 fullBurstEnter block missing — fixture is stale');
+      ov.skill1 = ov.skill1.filter(
+        (b: any) => b.trigger.kind !== 'fullBurstEnter'
+      );
+      if (ov.skill1.length === before)
+        throw new Error(
+          'liter S1 fullBurstEnter block missing — fixture is stale'
+        );
       return;
     }
     const blk = ov.skill1.find((b: any) => b.trigger.kind === 'fullBurstEnter');
-    if (!blk) throw new Error('liter S1 fullBurstEnter block missing — fixture is stale');
+    if (!blk)
+      throw new Error(
+        'liter S1 fullBurstEnter block missing — fixture is stale'
+      );
     blk.effects = [{ kind: 'burstCdr', seconds }];
   });
 
@@ -1798,31 +1885,40 @@ const cdrLadder = (seconds: number | null) =>
 const stripHeals = (slug: string) =>
   withPatchedOverride(slug, (ov) => {
     for (const slot of ['skill1', 'skill2', 'burst'] as const) {
-      ov[slot] = (ov[slot] ?? []).filter((b: any) => !b.effects.some((e: any) => e.kind === 'heal'));
+      ov[slot] = (ov[slot] ?? []).filter(
+        (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
+      );
     }
   });
 
 const base = run();
 const noCdr = run({ liter: cdrLadder(null) });
 const flatTier1 = run({ liter: cdrLadder(2.34) });
-const noOtherHeals = run({ helm: stripHeals('helm'), crown: stripHeals('crown') });
+const noOtherHeals = run({
+  helm: stripHeals('helm'),
+  crown: stripHeals('crown'),
+});
 
 // The two rotation-count discriminations run on the gauge-rich vehicle (see LADDER_COMP).
 const ladderBase = runOn(LADDER_COMP);
 const ladderNonCumulative = runOn(LADDER_COMP, { liter: cdrLadder(3.17) }); // 3rd tier REPLACES, not adds
 const ladderSaturated = runOn(LADDER_COMP, { liter: cdrLadder(8.21) }); // instantly at max from entry 1
 
-const fbCount = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
-const fbFrames = (evs: SimEvent[]) => evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
-const allCasts = (evs: SimEvent[]) => evs.filter((e): e is BurstCast => e.kind === 'burstCast');
-const literCasts = (evs: SimEvent[]) => allCasts(evs).filter((c) => c.slug === 'liter');
+const fbCount = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fbFrames = (evs: SimEvent[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').map((e) => e.frame);
+const allCasts = (evs: SimEvent[]) =>
+  evs.filter((e): e is BurstCast => e.kind === 'burstCast');
+const literCasts = (evs: SimEvent[]) =>
+  allCasts(evs).filter((c) => c.slug === 'liter');
 const literBuffs = (evs: SimEvent[], stat: string, value?: number) =>
   evs.filter(
     (e): e is BuffApply =>
       e.kind === 'buffApply' &&
       e.casterIdx === LITER &&
       e.stat === stat &&
-      (value === undefined || e.value === value),
+      (value === undefined || e.value === value)
   );
 
 describe('liter — kit spec', () => {
@@ -1837,7 +1933,7 @@ describe('liter — kit spec', () => {
       expect(
         gapFrames,
         `first cooldown ran ${(gapFrames / FPS).toFixed(3)}s; kit says ${data.characters.liter.burstCooldownSec}s ` +
-          `− 2.34s = ${((baseCd - tier1) / FPS).toFixed(3)}s (the cumulative sum 5.04/8.21 would be shorter)`,
+          `− 2.34s = ${((baseCd - tier1) / FPS).toFixed(3)}s (the cumulative sum 5.04/8.21 would be shorter)`
       ).toBe(baseCd - tier1);
     });
 
@@ -1853,7 +1949,7 @@ describe('liter — kit spec', () => {
       // burst casts over the fight (margin 3 — robust to the SMG cadence, see header).
       expect(
         allCasts(ladderBase).length,
-        'a non-cumulative reading would deliver strictly less cooldown reduction over the fight',
+        'a non-cumulative reading would deliver strictly less cooldown reduction over the fight'
       ).toBeGreaterThan(allCasts(ladderNonCumulative).length);
     });
 
@@ -1869,11 +1965,11 @@ describe('liter — kit spec', () => {
       expect(k, 'no Full Bursts to compare').toBeGreaterThan(2);
       expect(
         satFbs.slice(0, k).every((f, i) => f <= rampFbs[i]),
-        'a saturated ladder must never reach a Full Burst LATER than the real ramp',
+        'a saturated ladder must never reach a Full Burst LATER than the real ramp'
       ).toBe(true);
       expect(
         satFbs.slice(0, k).some((f, i) => f < rampFbs[i]),
-        'the real ramp delivers less early cooldown reduction, so some Full Burst must arrive later than under instant saturation',
+        'the real ramp delivers less early cooldown reduction, so some Full Burst must arrive later than under instant saturation'
       ).toBe(true);
     });
   });
@@ -1887,36 +1983,52 @@ describe('liter — kit spec', () => {
 
     it('unlocks one more step per cast, cumulatively, and holds all three from the 3rd on', () => {
       const castFrames = literCasts(base).map((c) => c.frame);
-      expect(castFrames.length, 'need at least 3 liter casts').toBeGreaterThanOrEqual(3);
+      expect(
+        castFrames.length,
+        'need at least 3 liter casts'
+      ).toBeGreaterThanOrEqual(3);
       for (const [i, frame] of castFrames.entries()) {
         const live = STEPS.filter(([stat, value]) =>
-          literBuffs(base, stat, value).some((b) => b.frame === frame),
+          literBuffs(base, stat, value).some((b) => b.frame === frame)
         ).map(([stat]) => stat);
-        const expected = STEPS.slice(0, Math.min(i + 1, 3)).map(([stat]) => stat);
-        expect(live, `cast #${i + 1} at ${(frame / FPS).toFixed(2)}s`).toEqual(expected);
+        const expected = STEPS.slice(0, Math.min(i + 1, 3)).map(
+          ([stat]) => stat
+        );
+        expect(live, `cast #${i + 1} at ${(frame / FPS).toFixed(2)}s`).toEqual(
+          expected
+        );
       }
     });
 
-    it('fires on HER OWN casts only, never on an ally\'s burst', () => {
-      const applyFrames = new Set(literBuffs(base, 'maxAmmoPct', 45.17).map((b) => b.frame));
-      expect([...applyFrames].sort((a, b) => a - b)).toEqual(literCasts(base).map((c) => c.frame));
-      expect(applyFrames.size, 'the whole team bursts far more often than liter alone').toBeLessThan(
-        allCasts(base).length,
+    it("fires on HER OWN casts only, never on an ally's burst", () => {
+      const applyFrames = new Set(
+        literBuffs(base, 'maxAmmoPct', 45.17).map((b) => b.frame)
       );
+      expect([...applyFrames].sort((a, b) => a - b)).toEqual(
+        literCasts(base).map((c) => c.frame)
+      );
+      expect(
+        applyFrames.size,
+        'the whole team bursts far more often than liter alone'
+      ).toBeLessThan(allCasts(base).length);
     });
 
     it('reaches all four allies for exactly 5 sec', () => {
       for (const [stat, value] of STEPS) {
         const applied = literBuffs(base, stat, value);
         expect(applied.length, `${stat} never applied`).toBeGreaterThan(0);
-        for (const b of applied) expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);
+        for (const b of applied)
+          expect(b.expiresFrame! - b.frame, `${stat} duration`).toBe(5 * FPS);
         const perFrame = new Map<number, Set<number | null>>();
         for (const b of applied) {
           if (!perFrame.has(b.frame)) perFrame.set(b.frame, new Set());
           perFrame.get(b.frame)!.add(b.targetIdx);
         }
         for (const [frame, holders] of perFrame) {
-          expect(holders.size, `${stat} at frame ${frame} reached ${holders.size} allies`).toBe(TEAM_SIZE);
+          expect(
+            holders.size,
+            `${stat} at frame ${frame} reached ${holders.size} allies`
+          ).toBe(TEAM_SIZE);
         }
       }
     });
@@ -1928,17 +2040,19 @@ describe('liter — kit spec', () => {
       // Damage ▲20.99%" on every Full Burst and inflated the whole team (owner ruling 2026-07-21).
       const fired = noOtherHeals.filter(
         (e): e is BuffApply =>
-          e.kind === 'buffApply' && e.stat === 'attackDamagePct' && e.value === 20.99,
+          e.kind === 'buffApply' &&
+          e.stat === 'attackDamagePct' &&
+          e.value === 20.99
       );
       expect(
         fired.map((b) => (b.frame / FPS).toFixed(2)),
-        'a recovery consumer fired with liter as the only possible source',
+        'a recovery consumer fired with liter as the only possible source'
       ).toEqual([]);
     });
 
     it('has the cover-HP line recorded as a deliberate omission, not silently dropped', () => {
       const unmodeled = JSON.stringify(
-        (withPatchedOverride('liter', () => {}) as any).unmodeled.skill2,
+        (withPatchedOverride('liter', () => {}) as any).unmodeled.skill2
       );
       expect(unmodeled).toContain('Cover HP');
     });
@@ -1948,7 +2062,9 @@ describe('liter — kit spec', () => {
     it('grants exactly 66% to all four allies for 5 sec, once per cast', () => {
       const applied = literBuffs(base, 'atkPct', 66);
       const frames = new Set(applied.map((b) => b.frame));
-      expect([...frames].sort((a, b) => a - b)).toEqual(literCasts(base).map((c) => c.frame));
+      expect([...frames].sort((a, b) => a - b)).toEqual(
+        literCasts(base).map((c) => c.frame)
+      );
       for (const b of applied) expect(b.expiresFrame! - b.frame).toBe(5 * FPS);
       expect(new Set(applied.map((b) => b.targetIdx)).size).toBe(TEAM_SIZE);
     });
@@ -1959,14 +2075,17 @@ describe('liter — kit spec', () => {
         ...literBuffs(base, 'atkPct', 66).map((b) => b.key),
         ...literBuffs(base, 'atkPct', 14.42).map((b) => b.key),
       ]);
-      expect(keys.size, 'the two ATK buffs must not share a buff key').toBeGreaterThan(1);
+      expect(
+        keys.size,
+        'the two ATK buffs must not share a buff key'
+      ).toBeGreaterThan(1);
     });
   });
 });
-
 ```
 
 ### 7b. driver override (src/skills/overrides/liter.json)
+
 ```json
 {
   "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Remove this banner only when the unit has been measured/hand-tuned. — Liter (`liter`, SMG B1 Supporter Iron, ammo 120 / reloadFrames 111): the canonical B1 CDR/enabler; her own SMG damage is minor, her value is TEAM-WIDE (burst-CDR + escalating buffs + 66% burst ATK), so blast radius is the real check (/sim-battery diff), not a self-sim. S1 block A ('Activates when entering Full Burst', all allies) = escalating team burstCdr steps [2.34, 2.7, 3.17]s — trigger is fullBurstEnter per the literal text (hard rule 6; fires on EVERY team FB regardless of who bursted), and the engine's escalating case (sim.ts:1818) applies steps 1..min(N,3) on the Nth activation, so from the 3rd FB on every FB-enter grants the full 2.34+2.7+3.17=8.21s CDR, exactly matching 'Each subsequent effect triggers all effects before it'. S1 block B ('Activates when using Burst Skill', all allies) = burstCast (literal text — fires ONLY on rotations LITER bursts, never on another B1's) with escalating buff steps [maxAmmoPct 45.17% / critDamagePct 12.46% / atkPct 14.42%], each 5s; ramps to all three by her 3rd burst cast. maxAmmoPct is a WEAPON-STATE modifier (hard rule 1 / prior 9 — team ammo ▲ = more shots before reload on every teammate), NOT skippable as defensive. The two 'Effects vary according to the number of times…' header lines are IMPLEMENTED by the `escalating` kind. The escalating ladder is cumulative-with-cap — Once v01 → Twice v01+v02 → 3rd+ v01+v02+v03, capping at min(N,3) — matching 'Each subsequent effect triggers all effects before it', so from the 3rd Full Burst on she grants the full 8.21s to every ally. PINNED END-TO-END by scripts/tests/units/liter.test.ts (L1): the one cooldown-bound interval in the fight gives the tier-1 value as exact arithmetic (baseCD − 2.34s), and three counterfactual ladders (no CDR / flat 2.34 / flat 3.17 non-cumulative / flat 8.21 saturated) bracket the shipped behaviour on Full Burst count and total burst casts. Burst = team ATK ▲ 66% for 5s on burstCast. The 5s durations on a ~20s B1 cycle → low buff uptime is KIT-FAITHFUL (Liter's known short-buff character); do not extend without measurement. S2 ('Affects 2 ally unit(s) with the lowest remaining cover HP. Restores 52.5% of Cover HP.') is a NO-OP in the sim [OWNER RULING 2026-07-21]: skill2's icon is `icn_skill_healcover_01` and the text restores COVER HP, NOT a unit's HP. It does NOT emit a unit-RECOVERY event, so it must NOT trigger recovery-consumer teammates. Modeling it as a `heal`→allies on fullBurstEnter was SPURIOUSLY firing Crown's S2 ('when recovery takes effect' → all allies Attack Damage ▲ 20.99%) every Full Burst, inflating the WHOLE team's damage (the uniform ~1.3 HOT on the Liter/Crown/Chisato/Helm 720-kit-audit comp — liter 1.36 / crown 1.16 / chisato 1.30 / helm 1.27, on scope-lock). Cover-HP has no sim representation (v1 models no HP pools) and no recovery-consumer should key off it, so skill2 is dropped to unmodeled. (If a Liter+consumer recording ever shows a cover-repair proc firing a recovery consumer in-game, revisit.) ⚑1 cadence tuple is Liter's BASE SMG WEAPON cadence — the datamined SMG rate_of_fire 1440 + reloadFrames 111, an unverified blind ⚑ — NOT a skill1 concern (skill1 is burst-CDR + team buffs and has nothing to do with rate of fire; the caveat is the kit-parse boilerplate blind-cadence flag, conventionally slot-tagged skill1 by position). Low impact: her own SMG damage is minor. ⚑2 blast radius: team burstCdr accelerates the WHOLE team's rotation and can add full bursts board-wide — reviewer must run the /sim-battery diff before any board-level claim. Kit-autonomy gauntlet 2026-07-26: cross-family corroborated (S2b claude-fable-5 blind re-derivation converged on all 4 kit lines — L1 FB-enter cumulative CDR ladder 2.34/5.04/8.21s, L2 burstCast escalating buffs 45.17/12.46/14.42 5s, skill2 cover-HP NO-OP, burst atkPct 66 5s — same counterfactuals, no REAL-GOTCHA); no fix enacted, the shipped model is faithful, the landed TDD spec (scripts/tests/units/liter.test.ts) is the regression PIN.",
@@ -2041,5 +2160,4 @@ describe('liter — kit spec', () => {
     }
   ]
 }
-
 ```

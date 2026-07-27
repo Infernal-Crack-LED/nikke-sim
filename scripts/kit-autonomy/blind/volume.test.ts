@@ -33,7 +33,12 @@
 //   - skill2a: burst-CD reduction can only add or keep Full Bursts vs zeroed CDR (safe invariant);
 //     strict-greater is the expected outcome when the rotation is cooldown-bound.
 
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness';
 
 type Ev = any;
 
@@ -41,18 +46,21 @@ type Ev = any;
 function walk(effects: any[], fn: (e: any) => void) {
   for (const e of effects) {
     fn(e);
-    if (e && e.kind === 'escalating' && Array.isArray(e.steps)) walk(e.steps, fn);
+    if (e && e.kind === 'escalating' && Array.isArray(e.steps))
+      {walk(e.steps, fn);}
   }
 }
 function zeroStat(ov: any, stat: string) {
-  for (const b of ov.blocks) walk(b.effects, (e) => {
-    if (e.kind === 'buff' && e.stat === stat) e.value = 0;
-  });
+  for (const b of ov.blocks)
+    {walk(b.effects, (e) => {
+      if (e.kind === 'buff' && e.stat === stat) {e.value = 0;}
+    });}
 }
 function zeroBurstCdr(ov: any) {
-  for (const b of ov.blocks) walk(b.effects, (e) => {
-    if (e.kind === 'burstCdr') e.seconds = 0;
-  });
+  for (const b of ov.blocks)
+    {walk(b.effects, (e) => {
+      if (e.kind === 'burstCdr') {e.seconds = 0;}
+    });}
 }
 
 // Each withPatchedOverride re-clones from the pristine committed JSON, so patches never stack;
@@ -69,7 +77,8 @@ function capture(patch: (ov: any) => void = () => {}) {
 const near = (a: number, b: number, tol = 0.2) => Math.abs(a - b) <= tol;
 const buffApplies = (evs: Ev[], stat: string) =>
   evs.filter((e) => e.kind === 'buffApply' && e.stat === stat);
-const fbCount = (evs: Ev[]) => evs.filter((e) => e.kind === 'fullBurstStart').length;
+const fbCount = (evs: Ev[]) =>
+  evs.filter((e) => e.kind === 'fullBurstStart').length;
 
 // ---- hoisted runs (each is a full 180s sim) --------------------------------
 const base = capture();
@@ -98,8 +107,9 @@ describe('volume skill2b — escalating Critical DAMAGE to allies on burst-cast'
   it('zeroing crit-DAMAGE removes the buff, lowers team total, inert on crit-RATE', () => {
     expect(buffApplies(noCritDmg.events, 'critDamagePct').length).toBe(0);
     expect(totals(base.res)).toBeGreaterThan(totals(noCritDmg.res));
-    expect(buffApplies(noCritDmg.events, 'critRatePct').length)
-      .toBe(buffApplies(base.events, 'critRatePct').length);
+    expect(buffApplies(noCritDmg.events, 'critRatePct').length).toBe(
+      buffApplies(base.events, 'critRatePct').length
+    );
   });
 });
 
@@ -114,8 +124,9 @@ describe('volume burst — Critical RATE ▲31.9% to all allies (constant)', () 
   it('zeroing crit-RATE lowers team total and is inert on crit-DAMAGE', () => {
     expect(buffApplies(noCritRate.events, 'critRatePct').length).toBe(0);
     expect(totals(base.res)).toBeGreaterThan(totals(noCritRate.res));
-    expect(buffApplies(noCritRate.events, 'critDamagePct').length)
-      .toBe(buffApplies(base.events, 'critDamagePct').length);
+    expect(buffApplies(noCritRate.events, 'critDamagePct').length).toBe(
+      buffApplies(base.events, 'critDamagePct').length
+    );
   });
 });
 
@@ -131,4 +142,3 @@ describe('volume skill2a — escalating ally Burst-Skill cooldown reduction on F
 // skill1: ATK ▲12.6% for 5s "when killing an enemy". The v1 boss is immortal/partless — no kill
 // events ever fire — and no on-kill trigger primitive exists in the schema. Unmodelable in v1.
 it.skip('volume skill1 — on-kill ATK ▲12.6%/5s (no kill events on immortal v1 boss; no on-kill trigger)', () => {});
-

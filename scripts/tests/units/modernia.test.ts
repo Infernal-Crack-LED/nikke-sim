@@ -51,7 +51,12 @@
 // discriminations observable. Deterministic (no seed).
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '../../../src/types.js';
-import { controlComp, runComp, totals, withPatchedOverride } from '../lib/harness.js';
+import {
+  controlComp,
+  runComp,
+  totals,
+  withPatchedOverride,
+} from '../lib/harness.js';
 
 const FPS = 60;
 /** controlComp slot order: liter 0 / crown 1 / modernia 2 / helm 3. */
@@ -74,55 +79,75 @@ function run(overrides: Record<string, any> = {}) {
 }
 
 // ---- counterfactual patches (nearest wrong model per line) ---------------------------------
-const hasStat = (b: any, stat: string) => b.effects.some((e: any) => e.stat === stat);
-const hasKind = (b: any, kind: string) => b.effects.some((e: any) => e.kind === kind);
+const hasStat = (b: any, stat: string) =>
+  b.effects.some((e: any) => e.stat === stat);
+const hasKind = (b: any, kind: string) =>
+  b.effects.some((e: any) => e.kind === kind);
 
 /** M1 reference: the per-hit rider removed entirely. */
 const modNoS1Rider = withPatchedOverride('modernia', (ov) => {
   const before = ov.skill1.length;
-  ov.skill1 = ov.skill1.filter((b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage'));
-  if (ov.skill1.length === before) throw new Error('modernia S1 flatDamage rider missing — fixture is stale');
+  ov.skill1 = ov.skill1.filter(
+    (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
+  );
+  if (ov.skill1.length === before)
+    {throw new Error('modernia S1 flatDamage rider missing — fixture is stale');}
 });
 /** M1 counterfactual: the rider as a per-PULL proc (count 2) instead of per-HIT (count 1). */
 const modS1PerPull = withPatchedOverride('modernia', (ov) => {
-  const b = ov.skill1.find((x: any) => x.effects.some((e: any) => e.kind === 'flatDamage'));
-  if (!b) throw new Error('modernia S1 flatDamage rider missing — fixture is stale');
+  const b = ov.skill1.find((x: any) =>
+    x.effects.some((e: any) => e.kind === 'flatDamage')
+  );
+  if (!b)
+    {throw new Error('modernia S1 flatDamage rider missing — fixture is stale');}
   b.trigger.count = 2;
 });
 /** M2 reference: the 200-hit self stacker (crit-dmg + ammo-down) removed. */
 const modNoStacks = withPatchedOverride('modernia', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critDamagePct'));
-  if (ov.skill1.length === before) throw new Error('modernia S1 critDamagePct stacker missing — fixture is stale');
+  if (ov.skill1.length === before)
+    {throw new Error(
+      'modernia S1 critDamagePct stacker missing — fixture is stale'
+    );}
 });
 /** M3 counterfactual: Hit Rate on burstCast (her own casts only) instead of fullBurstEnter. */
 const modHitRateOnCast = withPatchedOverride('modernia', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'hitRatePct'));
-  if (!b) throw new Error('modernia S2 hitRatePct block missing — fixture is stale');
+  if (!b)
+    {throw new Error('modernia S2 hitRatePct block missing — fixture is stale');}
   b.trigger = { kind: 'burstCast' };
 });
 /** M4 counterfactual: the ATK▲ gate removed (counter accrues/fires ungated, pre-FB). */
 const modAtkUngated = withPatchedOverride('modernia', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'atkPct'));
-  if (!b) throw new Error('modernia S2 atkPct block missing — fixture is stale');
+  if (!b)
+    {throw new Error('modernia S2 atkPct block missing — fixture is stale');}
   delete b.fbGate;
 });
 /** M5 reference: the team Full Burst Duration ▲5s removed. */
 const modNoFbExtend = withPatchedOverride('modernia', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasKind(b, 'fullBurstExtend'));
-  if (ov.burst.length === before) throw new Error('modernia burst fullBurstExtend missing — fixture is stale');
+  if (ov.burst.length === before)
+    {throw new Error(
+      'modernia burst fullBurstExtend missing — fixture is stale'
+    );}
 });
 /** M6 reference: the unlimited-ammo effect removed (Destroy Mode keeps the rider). */
 const modNoUnlimited = withPatchedOverride('modernia', (ov) => {
   const b = ov.burst.find((x: any) => hasKind(x, 'unlimitedAmmo'));
-  if (!b) throw new Error('modernia burst unlimitedAmmo missing — fixture is stale');
+  if (!b)
+    {throw new Error('modernia burst unlimitedAmmo missing — fixture is stale');}
   b.effects = b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo');
 });
 /** M7 reference: the Destroy Mode extraHitDamagePct rider removed (unlimited ammo stays). */
 const modNoDestroyRider = withPatchedOverride('modernia', (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'extraHitDamagePct'));
-  if (!b) throw new Error('modernia burst extraHitDamagePct rider missing — fixture is stale');
+  if (!b)
+    {throw new Error(
+      'modernia burst extraHitDamagePct rider missing — fixture is stale'
+    );}
   b.effects = b.effects.filter((e: any) => e.stat !== 'extraHitDamagePct');
 });
 
@@ -138,8 +163,10 @@ const noUnlimited = run({ modernia: modNoUnlimited });
 const noDestroyRider = run({ modernia: modNoDestroyRider });
 
 // ---- readers --------------------------------------------------------------------------------
-const dmg = (evs: SimEvent[]) => evs.filter((e): e is Damage => e.kind === 'damage');
-const buffs = (evs: SimEvent[]) => evs.filter((e): e is BuffApply => e.kind === 'buffApply');
+const dmg = (evs: SimEvent[]) =>
+  evs.filter((e): e is Damage => e.kind === 'damage');
+const buffs = (evs: SimEvent[]) =>
+  evs.filter((e): e is BuffApply => e.kind === 'buffApply');
 const modShots = (evs: SimEvent[]) =>
   evs.filter((e): e is Shot => e.kind === 'shot' && e.slug === 'modernia');
 const fbWindows = (evs: SimEvent[]) =>
@@ -150,10 +177,14 @@ const modCasts = (evs: SimEvent[]) =>
 /** Buffs applied BY modernia (casterIdx). */
 const modBuffs = (evs: SimEvent[], stat: string, value?: number) =>
   buffs(evs).filter(
-    (b) => b.casterIdx === MODERNIA && b.stat === stat && (value === undefined || b.value === value),
+    (b) =>
+      b.casterIdx === MODERNIA &&
+      b.stat === stat &&
+      (value === undefined || b.value === value)
   );
 /** Full Burst windows as [startFrame, endFrame] pairs. */
-const windows = (evs: SimEvent[]) => fbWindows(evs).map((f) => [f.frame, f.endFrame] as const);
+const windows = (evs: SimEvent[]) =>
+  fbWindows(evs).map((f) => [f.frame, f.endFrame] as const);
 const inAnyWindow = (evs: SimEvent[], frame: number) =>
   windows(evs).some(([s, e]) => frame >= s && frame < e);
 
@@ -188,8 +219,13 @@ describe('modernia — kit spec', () => {
       expect(apps.length).toBeGreaterThan(0);
       expect([...new Set(apps.map((b) => b.maxStacks))]).toEqual([5]);
       expect([...new Set(apps.map((b) => b.targetIdx))]).toEqual([MODERNIA]);
-      expect([...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS))]).toEqual([10]);
-      expect(Math.max(...apps.map((b) => b.stacks)), 'stacks must actually reach the 5 cap').toBe(5);
+      expect([
+        ...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS)),
+      ]).toEqual([10]);
+      expect(
+        Math.max(...apps.map((b) => b.stacks)),
+        'stacks must actually reach the 5 cap'
+      ).toBe(5);
     });
 
     it('carries the Max Ammo ▼5.04% companion at the same cadence', () => {
@@ -211,26 +247,39 @@ describe('modernia — kit spec', () => {
       const apps = modBuffs(base.events, 'hitRatePct', 8.56);
       expect(apps.length).toBeGreaterThan(0);
       expect([...new Set(apps.map((b) => b.value))]).toEqual([8.56]);
-      expect([...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS))]).toEqual([15]);
+      expect([
+        ...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS)),
+      ]).toEqual([15]);
       const perFrame = new Map<number, Set<number>>();
       for (const b of apps) {
-        if (!perFrame.has(b.frame)) perFrame.set(b.frame, new Set());
+        if (!perFrame.has(b.frame)) {perFrame.set(b.frame, new Set());}
         perFrame.get(b.frame)!.add(b.targetIdx!);
       }
       for (const holders of perFrame.values()) {
-        expect([...holders].sort(), 'each FB entry must reach all 4 allies').toEqual(ALL_ALLIES);
+        expect(
+          [...holders].sort(),
+          'each FB entry must reach all 4 allies'
+        ).toEqual(ALL_ALLIES);
       }
     });
 
-    it('fires on EVERY team Full Burst, not only Modernia\'s own casts', () => {
-      const baseFrames = new Set(modBuffs(base.events, 'hitRatePct').map((b) => b.frame));
-      expect(baseFrames.size, 'one application-frame per FB window').toBe(fbWindows(base.events).length);
+    it("fires on EVERY team Full Burst, not only Modernia's own casts", () => {
+      const baseFrames = new Set(
+        modBuffs(base.events, 'hitRatePct').map((b) => b.frame)
+      );
+      expect(baseFrames.size, 'one application-frame per FB window').toBe(
+        fbWindows(base.events).length
+      );
     });
 
     it('DISCRIMINATING: a burstCast trigger fires only on her own casts (fewer frames)', () => {
-      const castFrames = new Set(modBuffs(hitRateOnCast.events, 'hitRatePct').map((b) => b.frame));
+      const castFrames = new Set(
+        modBuffs(hitRateOnCast.events, 'hitRatePct').map((b) => b.frame)
+      );
       expect(castFrames.size).toBe(modCasts(hitRateOnCast.events));
-      expect(castFrames.size).toBeLessThan(fbWindows(hitRateOnCast.events).length);
+      expect(castFrames.size).toBeLessThan(
+        fbWindows(hitRateOnCast.events).length
+      );
     });
   });
 
@@ -239,20 +288,32 @@ describe('modernia — kit spec', () => {
       const apps = modBuffs(base.events, 'atkPct', 29.38);
       expect(apps.length).toBeGreaterThan(0);
       expect([...new Set(apps.map((b) => b.targetIdx))]).toEqual([MODERNIA]);
-      expect([...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS))]).toEqual([10]);
+      expect([
+        ...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS)),
+      ]).toEqual([10]);
     });
 
     it('EVERY application lands inside a Full Burst window (the gate is live)', () => {
       const apps = modBuffs(base.events, 'atkPct', 29.38);
       const outOfFb = apps.filter((b) => !inAnyWindow(base.events, b.frame));
-      expect(outOfFb.map((b) => b.sec), 'gated ATK buff must never fire outside FB').toEqual([]);
+      expect(
+        outOfFb.map((b) => b.sec),
+        'gated ATK buff must never fire outside FB'
+      ).toEqual([]);
     });
 
     it('DISCRIMINATING: ungated, the counter fires pre-FB / out-of-window (over-credit)', () => {
       const apps = modBuffs(atkUngated.events, 'atkPct', 29.38);
-      const outOfFb = apps.filter((b) => !inAnyWindow(atkUngated.events, b.frame));
-      expect(outOfFb.length, 'ungated must produce at least one out-of-FB application').toBeGreaterThan(0);
-      expect(apps.length).toBeGreaterThan(modBuffs(base.events, 'atkPct', 29.38).length);
+      const outOfFb = apps.filter(
+        (b) => !inAnyWindow(atkUngated.events, b.frame)
+      );
+      expect(
+        outOfFb.length,
+        'ungated must produce at least one out-of-FB application'
+      ).toBeGreaterThan(0);
+      expect(apps.length).toBeGreaterThan(
+        modBuffs(base.events, 'atkPct', 29.38).length
+      );
     });
   });
 
@@ -262,13 +323,19 @@ describe('modernia — kit spec', () => {
 
     it('Modernia-cast windows run 15s (base 10 + 5); the longest window is 15s', () => {
       expect(Math.max(...winDurs(base.events))).toBe(15);
-      expect(Math.min(...winDurs(base.events)), 'helm-cast windows stay at the 10s base').toBe(10);
+      expect(
+        Math.min(...winDurs(base.events)),
+        'helm-cast windows stay at the 10s base'
+      ).toBe(10);
     });
 
     it('DISCRIMINATING: removing the extend collapses the long windows by exactly 5s', () => {
       const baseMax = Math.max(...winDurs(base.events));
       const noExtMax = Math.max(...winDurs(noFbExtend.events));
-      expect(baseMax - noExtMax, 'the extend magnitude is exactly 5s (300 frames)').toBe(5);
+      expect(
+        baseMax - noExtMax,
+        'the extend magnitude is exactly 5s (300 frames)'
+      ).toBe(5);
       expect(noExtMax).toBe(10);
     });
   });
@@ -281,14 +348,18 @@ describe('modernia — kit spec', () => {
 
     it('is a 15s self window', () => {
       const apps = buffs(base.events).filter(
-        (b) => b.stat === 'unlimitedAmmo' && b.targetIdx === MODERNIA,
+        (b) => b.stat === 'unlimitedAmmo' && b.targetIdx === MODERNIA
       );
       expect(apps.length).toBeGreaterThan(0);
-      expect([...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS))]).toEqual([15]);
+      expect([
+        ...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS)),
+      ]).toEqual([15]);
     });
 
     it('DISCRIMINATING: removing the effect zeroes unlimited-ammo fire', () => {
-      expect(modShots(noUnlimited.events).filter((s) => s.unlimitedAmmo).length).toBe(0);
+      expect(
+        modShots(noUnlimited.events).filter((s) => s.unlimitedAmmo).length
+      ).toBe(0);
     });
   });
 
@@ -300,13 +371,18 @@ describe('modernia — kit spec', () => {
       const r = rider(base.events);
       expect(r.length).toBeGreaterThan(0);
       expect([...new Set(r.map((d) => d.atkPct))]).toEqual([4.48]);
-      expect(r.every((d) => d.critEligible), 'function additional damage crits (RIDERCRIT ON)').toBe(true);
+      expect(
+        r.every((d) => d.critEligible),
+        'function additional damage crits (RIDERCRIT ON)'
+      ).toBe(true);
     });
 
     it('is driven by a 2.24% extraHitDamagePct self buff, 15s, one per burst cast', () => {
       const apps = modBuffs(base.events, 'extraHitDamagePct', 2.24);
       expect(apps.length).toBe(modCasts(base.events));
-      expect([...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS))]).toEqual([15]);
+      expect([
+        ...new Set(apps.map((b) => (b.expiresFrame! - b.frame) / FPS)),
+      ]).toEqual([15]);
       expect([...new Set(apps.map((b) => b.targetIdx))]).toEqual([MODERNIA]);
     });
 

@@ -71,7 +71,7 @@ type BurstCast = Extract<SimEvent, { kind: 'burstCast' }>;
 function run(
   slugs: readonly string[],
   focus: string,
-  overrides: Record<string, any> = {},
+  overrides: Record<string, any> = {}
 ) {
   const events: SimEvent[] = [];
   runComp({
@@ -91,7 +91,7 @@ const arcanaBuffs = (evs: SimEvent[], slot: number) =>
   buffs(evs).filter((b) => b.casterIdx === slot);
 const arcanaCasts = (evs: SimEvent[]) =>
   evs.filter(
-    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'arcana',
+    (e): e is BurstCast => e.kind === 'burstCast' && e.slug === 'arcana'
   );
 const fbEnds = (evs: SimEvent[]) =>
   evs.filter((e) => e.kind === 'fullBurstEnd');
@@ -122,30 +122,30 @@ const patch = (mutate: (ov: any) => void) =>
 /** A1: Wheel of Fortune retargeted to ALL allies (drops Electric-only scoping). */
 const wheelAllies = patch((ov) => {
   if (ov.burst[0]?.effects?.[0]?.stat !== 'attackDamagePct')
-    throw new Error('arcana burst[0] Wheel missing — stale fixture');
+    {throw new Error('arcana burst[0] Wheel missing — stale fixture');}
   ov.burst[0].target = { kind: 'allies' };
 });
 /** A2: burst nuke halved (300% → 150%, the lvl-1 magnitude). */
 const nukeHalf = patch((ov) => {
   const fd = ov.burst[1]?.effects?.find((e: any) => e.kind === 'flatDamage');
-  if (!fd) throw new Error('arcana burst flatDamage missing — stale fixture');
+  if (!fd) {throw new Error('arcana burst flatDamage missing — stale fixture');}
   fd.atkPct = 150;
 });
 /** A3: Judgement (damage-taken debuff) removed from the burst. */
 const noJudgement = patch((ov) => {
   const before = ov.burst[1].effects.length;
   ov.burst[1].effects = ov.burst[1].effects.filter(
-    (e: any) => e.stat !== 'damageTakenPct',
+    (e: any) => e.stat !== 'damageTakenPct'
   );
   if (ov.burst[1].effects.length === before)
-    throw new Error('arcana Judgement missing — stale fixture');
+    {throw new Error('arcana Judgement missing — stale fixture');}
 });
 /** A4/A5: the two 180-grants retargeted from "B3 Electric casters" to ALL allies. */
 const grantsAllies = patch((ov) => {
   if (ov.skill1[0]?.effects?.[0]?.stat !== 'attackDamagePct')
-    throw new Error('arcana S1 180AD missing — stale fixture');
+    {throw new Error('arcana S1 180AD missing — stale fixture');}
   if (ov.skill2[0]?.effects?.[0]?.stat !== 'casterAtkPct')
-    throw new Error('arcana S2 Strength missing — stale fixture');
+    {throw new Error('arcana S2 Strength missing — stale fixture');}
   ov.skill1[0].target = { kind: 'allies' };
   ov.skill2[0].target = { kind: 'allies' };
 });
@@ -160,9 +160,9 @@ const gateUngated = patch((ov) => {
     }
   }
   if (n !== 3)
-    throw new Error(
-      'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture',
-    );
+    {throw new Error(
+      'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture'
+    );}
 });
 /** GATE→old proxy: replace ownBurstGate with the parser-baseline everyN:2 offset:1 round-count,
  *  which fires on odd FB-ends regardless of whether arcana burst. */
@@ -177,9 +177,9 @@ const gateEveryN = patch((ov) => {
     }
   }
   if (n !== 3)
-    throw new Error(
-      'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture',
-    );
+    {throw new Error(
+      'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture'
+    );}
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -204,35 +204,35 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     expect(B_CASTS).toBeGreaterThanOrEqual(B_FB);
     expect(
       A_FB,
-      'fixture A: Full Bursts should still happen (crown closes the chain)',
+      'fixture A: Full Bursts should still happen (crown closes the chain)'
     ).toBeGreaterThan(1);
     expect(
       A_CASTS,
-      'fixture A: crown must contest the B2 slot so arcana never bursts',
+      'fixture A: crown must contest the B2 slot so arcana never bursts'
     ).toBe(0);
   });
 
   describe('A1 — burst: Wheel of Fortune grants 10% Attack Damage to ELECTRIC allies only, per cast', () => {
     const wheel = arcanaBuffs(B, B_ARCANA).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 10,
+      (b) => b.stat === 'attackDamagePct' && b.value === 10
     );
     it('is 10% for 10s, once per cast per Electric ally', () => {
       expect([...new Set(wheel.map((b) => b.value))]).toEqual([10]);
       expect(wheel.length).toBe(B_CASTS * B_ELECTRIC.length);
-      for (const b of wheel) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of wheel) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('reaches exactly the Electric allies (arcana/ada), never the Iron ally (liter)', () => {
       expect(
-        [...new Set(wheel.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(wheel.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual(B_ELECTRIC);
     });
     it('DISCRIMINATING: an all-allies retarget would also reach liter', () => {
       const cf = arcanaBuffs(rWheelAllies, B_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 10,
+        (b) => b.stat === 'attackDamagePct' && b.value === 10
       );
       expect(
         new Set(cf.map((b) => b.targetIdx)).has(0),
-        'liter (Iron) must NOT get Wheel under the shipped scoping',
+        'liter (Iron) must NOT get Wheel under the shipped scoping'
       ).toBe(true);
       expect(cf.length).toBe(B_CASTS * B_SLUGS.length);
     });
@@ -252,67 +252,67 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
 
   describe('A3 — burst: Judgement raises enemy Damage Taken 10% for 10s, per cast', () => {
     const judge = enemyDebuffs(B).filter(
-      (b) => b.stat === 'damageTakenPct' && b.value === 10,
+      (b) => b.stat === 'damageTakenPct' && b.value === 10
     );
     it('applies a 10% damage-taken debuff to the boss once per cast', () => {
       expect(judge.length).toBe(B_CASTS);
-      for (const b of judge) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of judge) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('DISCRIMINATING: removing Judgement leaves no 10% damage-taken debuff', () => {
       expect(
         enemyDebuffs(rNoJudgement).filter(
-          (b) => b.stat === 'damageTakenPct' && b.value === 10,
-        ).length,
+          (b) => b.stat === 'damageTakenPct' && b.value === 10
+        ).length
       ).toBe(0);
     });
   });
 
   describe('A4 — S1: 180% Attack Damage to B3 Electric casters, ownBurstGate (fires iff arcana cast)', () => {
     const ad180B = arcanaBuffs(B, B_ARCANA).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 180,
+      (b) => b.stat === 'attackDamagePct' && b.value === 180
     );
     const ad180A = arcanaBuffs(A, A_ARCANA).filter(
-      (b) => b.stat === 'attackDamagePct' && b.value === 180,
+      (b) => b.stat === 'attackDamagePct' && b.value === 180
     );
     it('fixture B (arcana bursts): 180% for 15s on the B3 Electric caster (ada), every FB-end', () => {
       expect([...new Set(ad180B.map((b) => b.value))]).toEqual([180]);
       expect(
         firings(ad180B).length,
-        'gate satisfied every rotation → fires every FB-end',
+        'gate satisfied every rotation → fires every FB-end'
       ).toBe(B_FB);
       expect([...new Set(ad180B.map((b) => b.targetIdx))]).toEqual([B_ADA]);
-      for (const b of ad180B) expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      for (const b of ad180B) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
     });
     it('fixture A (arcana never bursts): perfectly INERT — she is never in Wheel of Fortune', () => {
       expect(
         ad180A.length,
-        'ownBurstGate must hold the 180% AD when arcana did not cast',
+        'ownBurstGate must hold the 180% AD when arcana did not cast'
       ).toBe(0);
     });
     it('DISCRIMINATING: an all-allies retarget leaks 180% AD onto liter & arcana in fixture B', () => {
       const cf = arcanaBuffs(rGrantsAllies, B_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 180,
+        (b) => b.stat === 'attackDamagePct' && b.value === 180
       );
       expect(
-        [...new Set(cf.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(cf.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
     });
     it('DISCRIMINATING: the ungated model over-fires in fixture A (shipped stays inert)', () => {
       const cf = arcanaBuffs(rGateUngatedA, A_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 180,
+        (b) => b.stat === 'attackDamagePct' && b.value === 180
       );
       expect(
         cf.length,
-        'ungated 180% AD fires in A despite 0 arcana casts',
+        'ungated 180% AD fires in A despite 0 arcana casts'
       ).toBeGreaterThan(0);
     });
     it('DISCRIMINATING: the old everyN:2 proxy also over-fires in fixture A (shipped stays inert)', () => {
       const cf = arcanaBuffs(rGateEveryNA, A_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 180,
+        (b) => b.stat === 'attackDamagePct' && b.value === 180
       );
       expect(
         cf.length,
-        'everyN proxy fires on odd FB-ends in A despite 0 arcana casts',
+        'everyN proxy fires on odd FB-ends in A despite 0 arcana casts'
       ).toBeGreaterThan(0);
     });
   });
@@ -333,7 +333,7 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     it('DISCRIMINATING: an all-allies retarget leaks Strength onto all three in fixture B', () => {
       const cf = casterAtkByDuration(rGrantsAllies, B_ARCANA).get(15 * FPS)!;
       expect(
-        [...new Set(cf.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(cf.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
     });
   });
@@ -346,7 +346,7 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     const line = gB.get(5 * FPS)!;
     it('fixture B: 50% casterATK (10× the 5% line), all allies, every FB-end, 5s', () => {
       expect(
-        [...new Set(line.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(line.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
       expect(firings(line).length).toBe(B_FB);
       expect(line[0].value / v5).toBeCloseTo(10, 6); // 50 / 5
@@ -358,7 +358,7 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     it('DISCRIMINATING: un-gating Death makes it fire in fixture A (shipped stays inert)', () => {
       const gAcf = casterAtkByDuration(rGateUngatedA, A_ARCANA);
       expect(gAcf.has(5 * FPS) && firings(gAcf.get(5 * FPS)!).length > 0).toBe(
-        true,
+        true
       );
     });
   });
@@ -367,7 +367,7 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     it('fixture B: all three allies on every FB-end, 10s', () => {
       const line = casterAtkByDuration(B, B_ARCANA).get(10 * FPS)!;
       expect(
-        [...new Set(line.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(line.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
       expect(firings(line).length).toBe(B_FB);
     });
@@ -375,7 +375,7 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
       const line = casterAtkByDuration(A, A_ARCANA).get(10 * FPS)!;
       expect(
         firings(line).length,
-        'ungated 5% must fire on every FB-end even though arcana never bursts',
+        'ungated 5% must fire on every FB-end even though arcana never bursts'
       ).toBe(A_FB);
     });
   });
@@ -383,18 +383,18 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
   describe('A8 — S2: 7.5% Attack Damage to all allies, UNGATED (every FB-end whether or not arcana burst)', () => {
     it('fixture B: 7.5% for 10s on all three allies, every FB-end', () => {
       const g = arcanaBuffs(B, B_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 7.5,
+        (b) => b.stat === 'attackDamagePct' && b.value === 7.5
       );
       expect([...new Set(g.map((b) => b.value))]).toEqual([7.5]);
       expect(
-        [...new Set(g.map((b) => b.targetIdx))].sort((a, b) => a! - b!),
+        [...new Set(g.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
       expect(firings(g).length).toBe(B_FB);
-      for (const b of g) expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      for (const b of g) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
     });
     it('fixture A: STILL fires every FB-end (ungated)', () => {
       const g = arcanaBuffs(A, A_ARCANA).filter(
-        (b) => b.stat === 'attackDamagePct' && b.value === 7.5,
+        (b) => b.stat === 'attackDamagePct' && b.value === 7.5
       );
       expect(firings(g).length).toBe(A_FB);
     });
@@ -406,15 +406,15 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
       const ov = JSON.parse(
         readFileSync(
           new URL('../../../src/skills/overrides/arcana.json', import.meta.url),
-          'utf8',
-        ),
+          'utf8'
+        )
       );
       expect(ov.unmodeled.skill1.join(' ')).toMatch(
-        /Cooldown of Skill 2 ▼ 75% for 15 sec/,
+        /Cooldown of Skill 2 ▼ 75% for 15 sec/
       );
       expect(
         JSON.stringify(ov),
-        'validator forbids ignored-effect blocks',
+        'validator forbids ignored-effect blocks'
       ).not.toMatch(/"ignored"/);
     });
   });

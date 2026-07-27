@@ -16,7 +16,7 @@
 import { readFileSync } from 'node:fs';
 
 const raw = JSON.parse(
-  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8'),
+  readFileSync(new URL('../data/characters.json', import.meta.url), 'utf8')
 );
 const chars: Record<string, any> = raw.characters || raw;
 
@@ -28,7 +28,7 @@ const byBase = new Map<
 const nicknames: string[] = [];
 for (const [slug, c] of Object.entries(chars)) {
   const name: string = (c as any)?.name;
-  if (!name) continue;
+  if (!name) {continue;}
   const nicks: string[] = (c as any).nicknames ?? [];
   nicknames.push(...nicks);
   // " (Treasure)" is a favorite-item marker, not part of the name — strip it so
@@ -49,7 +49,7 @@ const ambiguous = [...byBase.entries()].filter(([, v]) => v.length >= 2);
 // or pass a file arg — a bare pipe with no EOF blocks the same way, so always pipe.
 if (!process.argv[2] && process.stdin.isTTY) {
   console.error(
-    'lint-slug-disambiguation: no input — pipe text via stdin or pass a file arg (running bare blocks on stdin).',
+    'lint-slug-disambiguation: no input — pipe text via stdin or pass a file arg (running bare blocks on stdin).'
   );
   process.exit(0);
 }
@@ -65,7 +65,7 @@ let scan = text;
 for (const n of [...new Set(nicknames)].sort((a, b) => b.length - a.length)) {
   scan = scan.replace(
     new RegExp(`(^|[^\\w])${escRe(n)}(?![\\w])`, 'gi'),
-    '$1§',
+    '$1§'
   );
 }
 
@@ -79,7 +79,7 @@ for (const [base, variants] of ambiguous) {
     const opts = variants
       .map(
         (v) =>
-          `${v.slug} (${v.w}/${v.el}${v.nicks.length ? `, aka ${v.nicks.map((n) => `"${n}"`).join('/')}` : ''})`,
+          `${v.slug} (${v.w}/${v.el}${v.nicks.length ? `, aka ${v.nicks.map((n) => `"${n}"`).join('/')}` : ''})`
       )
       .join('  |  ');
     console.log(`AMBIGUOUS BASE "${base}" used bare → which one? ${opts}`);
@@ -87,7 +87,7 @@ for (const [base, variants] of ambiguous) {
 }
 if (hits > 0) {
   console.log(
-    `(${hits} ambiguous base-name${hits > 1 ? 's' : ''} — confirm the exact slug before this lands; conflating base/variant is P0. Refer to units by FULL name/slug or an APPROVED nickname — the "aka" list above.)`,
+    `(${hits} ambiguous base-name${hits > 1 ? 's' : ''} — confirm the exact slug before this lands; conflating base/variant is P0. Refer to units by FULL name/slug or an APPROVED nickname — the "aka" list above.)`
   );
 }
 process.exit(0);

@@ -20,6 +20,7 @@ which unmodeled units survive.
 ## Which units get a request
 
 A unit belongs on this page when BOTH hold:
+
 1. **Owner doesn't own it** — see the unowned-units memory (kept current as the
    owner names more).
 2. **It survives the roster methodology** — enikk-proven OR already has a
@@ -42,7 +43,7 @@ Follow `/hand-tune-batches` for team sourcing + the focus/slot rules, then:
   with ` (T)`. If a unit's treasure isn't flagged in Bakery Bot yet, it won't
   show `(T)` — the data is the source of truth.
 - **Note format**: `Focus <Unit> (middle slot = default focus[, main-burst B3]) ·
-  full-fight recording for hand-tuning · vs <Boss> (<element>-weak)`.
+full-fight recording for hand-tuning · vs <Boss> (<element>-weak)`.
 - Sim the team first (valid rotation + prediction to grade against).
 
 ### JSON shape
@@ -78,4 +79,5 @@ the owner builds the form and pastes its `viewform` URL into `testingFormUrl`.
 ```sh
 npm run web:build && node scripts/web-smoke.mjs   # page renders the JSON
 ```
+
 Then eyeball `#testing-requests`.

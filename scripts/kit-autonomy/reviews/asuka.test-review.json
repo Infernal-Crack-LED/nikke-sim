@@ -125,9 +125,7 @@
     "burst:hitRatePct 101.37 10s"
   ],
   "unmodeledVerbatim": {
-    "skill1": [
-      "Damage dealt to Shield ▲ 601.01% continuously."
-    ],
+    "skill1": ["Damage dealt to Shield ▲ 601.01% continuously."],
     "skill2": [],
     "burst": []
   },

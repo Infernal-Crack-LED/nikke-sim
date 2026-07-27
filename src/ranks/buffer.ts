@@ -34,18 +34,33 @@ import type { CharacterData, Element, SimConfig, Weapon } from '../types.js';
 import { prepareTeam, type UnitOptions } from '../prepare.js';
 import { runSim } from '../engine/sim.js';
 import type { RanksCtx } from './burstgen.js';
-import { CARRY_MG, CARRY_RL, carryWithWeapon, syntheticFor, type SyntheticCharacter } from './synthetics.js';
-import { NOOP_B1, NOOP_B2, NOOP_B3, NOOP_CHARACTERS } from '../dpschart/noop.js';
+import {
+  CARRY_MG,
+  CARRY_RL,
+  carryWithWeapon,
+  syntheticFor,
+  type SyntheticCharacter,
+} from './synthetics.js';
+import {
+  NOOP_B1,
+  NOOP_B2,
+  NOOP_B3,
+  NOOP_CHARACTERS,
+} from '../dpschart/noop.js';
 
 const BEATS: Record<Element, Element> = {
-  Electric: 'Water', Iron: 'Electric', Wind: 'Iron', Fire: 'Wind', Water: 'Fire',
+  Electric: 'Water',
+  Iron: 'Electric',
+  Wind: 'Iron',
+  Fire: 'Wind',
+  Water: 'Fire',
 };
 
 // ---- typed-board carry adaptation -------------------------------------------
 
 export interface CarrySpec {
-  weapon: Weapon | null;   // both carries become this weapon (null = keep MG+RL)
-  pierce: boolean;         // both carries gain Pierce
+  weapon: Weapon | null; // both carries become this weapon (null = keep MG+RL)
+  pierce: boolean; // both carries gain Pierce
   element: Element | null; // both carries become this element (null = Iron)
 }
 const PLAIN_SPEC: CarrySpec = { weapon: null, pierce: false, element: null };
@@ -64,7 +79,7 @@ export const BUFFER_PROFILES: Record<string, Partial<CarrySpec>> = {};
 // ways — the `profile` field on each entry tells the frontend which is which.
 export interface BufferCompProfile {
   id: string;
-  note: string;        // player-facing, in the artifact's profiles map
+  note: string; // player-facing, in the artifact's profiles map
   noopSkill1: object[]; // synthetic skill1 blocks injected on the no-op fillers
 }
 export const COMP_PROFILES: Record<string, BufferCompProfile> = {
@@ -101,25 +116,40 @@ export const BUFFER_COMP_PROFILES: Record<string, string> = {
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
 // ALLY-FACING typed buffs to apply. Returns the spec + an audit trail.
-export function deriveCarrySpec(override: unknown): { spec: CarrySpec; rules: string[] } {
+export function deriveCarrySpec(override: unknown): {
+  spec: CarrySpec;
+  rules: string[];
+} {
   const spec: CarrySpec = { ...PLAIN_SPEC };
   const rules: string[] = [];
   const visit = (node: unknown) => {
-    if (Array.isArray(node)) return node.forEach(visit);
-    if (!node || typeof node !== 'object') return;
+    if (Array.isArray(node)) {return node.forEach(visit);}
+    if (!node || typeof node !== 'object') {return;}
     const block = node as { target?: any; effects?: any[] };
     const target = block.target;
     if (target && Array.isArray(block.effects) && target.kind !== 'self') {
       if (target.kind === 'alliesOfWeapon' && target.weapon && !spec.weapon) {
         spec.weapon = target.weapon as Weapon;
-        rules.push(`alliesOfWeapon ${target.weapon} → carries become ${target.weapon}`);
+        rules.push(
+          `alliesOfWeapon ${target.weapon} → carries become ${target.weapon}`
+        );
       }
-      if (target.kind === 'alliesOfElement' && target.element && !spec.element) {
+      if (
+        target.kind === 'alliesOfElement' &&
+        target.element &&
+        !spec.element
+      ) {
         spec.element = target.element as Element;
-        rules.push(`alliesOfElement ${target.element} → carries become ${target.element}`);
+        rules.push(
+          `alliesOfElement ${target.element} → carries become ${target.element}`
+        );
       }
       for (const e of block.effects) {
-        if (e?.kind === 'buff' && e.stat === 'pierceDamagePct' && !spec.pierce) {
+        if (
+          e?.kind === 'buff' &&
+          e.stat === 'pierceDamagePct' &&
+          !spec.pierce
+        ) {
           spec.pierce = true;
           rules.push('pierceDamagePct on allies → carries gain Pierce');
         }
@@ -127,13 +157,19 @@ export function deriveCarrySpec(override: unknown): { spec: CarrySpec; rules: st
           spec.pierce = true;
           rules.push('gainPierce on allies → carries gain Pierce');
         }
-        if (e?.kind === 'buff' && e.stat === 'projectileExplosionPct' && !spec.weapon) {
+        if (
+          e?.kind === 'buff' &&
+          e.stat === 'projectileExplosionPct' &&
+          !spec.weapon
+        ) {
           spec.weapon = 'RL';
-          rules.push('projectileExplosionPct on allies → carries become RL (proj-explosion normals)');
+          rules.push(
+            'projectileExplosionPct on allies → carries become RL (proj-explosion normals)'
+          );
         }
       }
     }
-    for (const v of Object.values(node)) visit(v);
+    for (const v of Object.values(node)) {visit(v);}
   };
   visit(override);
   const manual = BUFFER_PROFILES[(override as { slug?: string })?.slug ?? ''];
@@ -157,8 +193,14 @@ interface AssembledBufferTeam {
 
 // The two carry records for one board arm (typed adapts both).
 function carriesFor(board: BufferBoard, spec: CarrySpec): SyntheticCharacter[] {
-  const mg = board === 'typed' && spec.weapon ? carryWithWeapon(spec.weapon) : syntheticFor(CARRY_MG)!;
-  const rl = board === 'typed' && spec.weapon ? carryWithWeapon(spec.weapon) : syntheticFor(CARRY_RL)!;
+  const mg =
+    board === 'typed' && spec.weapon
+      ? carryWithWeapon(spec.weapon)
+      : syntheticFor(CARRY_MG)!;
+  const rl =
+    board === 'typed' && spec.weapon
+      ? carryWithWeapon(spec.weapon)
+      : syntheticFor(CARRY_RL)!;
   const element = (board === 'typed' ? spec.element : null) ?? 'Iron';
   return [
     { ...mg, element },
@@ -166,7 +208,12 @@ function carriesFor(board: BufferBoard, spec: CarrySpec): SyntheticCharacter[] {
   ];
 }
 
-function assemble(slug: string, burst: string, board: BufferBoard, spec: CarrySpec): AssembledBufferTeam {
+function assemble(
+  slug: string,
+  burst: string,
+  board: BufferBoard,
+  spec: CarrySpec
+): AssembledBufferTeam {
   const [c1, c2] = carriesFor(board, spec);
   let slugs: string[];
   let noopSlot: string;
@@ -200,12 +247,12 @@ function charFor(ctx: RanksCtx, slug: string, carries: SyntheticCharacter[]) {
 
 export interface BufferValue {
   slug: string;
-  value: number;      // added carry DPS vs the no-op baseline
-  carryDps: number;   // Σ carry DPS with the buffer
+  value: number; // added carry DPS vs the no-op baseline
+  carryDps: number; // Σ carry DPS with the buffer
   baselineDps: number;
   testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
-  profile: string | null;   // comp profile id (with-healer/with-shielder); null = plain
-  rules: string[];    // typed-board adaptation audit trail ([] on generic)
+  profile: string | null; // comp profile id (with-healer/with-shielder); null = plain
+  rules: string[]; // typed-board adaptation audit trail ([] on generic)
   rank: number;
 }
 
@@ -219,12 +266,15 @@ function carryDpsSum(
   spec: CarrySpec,
   pierceOverride: boolean,
   testedSlug?: string,
-  profile?: string | null,
+  profile?: string | null
 ): { sum: number; testedBurstCasts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
-  const element = (chars[team.carryIdxs[0]] as CharacterData).element as Element;
+  const element = (chars[team.carryIdxs[0]] as CharacterData)
+    .element as Element;
   const unitOpts: UnitOptions[] = team.slugs.map((s) =>
-    (NOOP_CHARACTERS as any)[s] ? {} : { ol: 'base5' as const, stars: 3, core: 7 },
+    (NOOP_CHARACTERS as any)[s]
+      ? {}
+      : { ol: 'base5' as const, stars: 3, core: 7 }
   );
   const cfg: SimConfig = {
     slugs: team.slugs,
@@ -243,14 +293,23 @@ function carryDpsSum(
   const extraOverrides: Record<string, any> = {};
   if (pierceOverride) {
     for (const i of team.carryIdxs)
-      extraOverrides[team.slugs[i]] = {
-        slug: team.slugs[i], hasPierce: true, skill1: [], skill2: [], burst: [],
-      };
+      {extraOverrides[team.slugs[i]] = {
+        slug: team.slugs[i],
+        hasPierce: true,
+        skill1: [],
+        skill2: [],
+        burst: [],
+      };}
   }
   if (compProfile) {
     for (const s of team.slugs) {
-      if (!(NOOP_CHARACTERS as any)[s]) continue; // no-op fillers only
-      extraOverrides[s] = { slug: s, skill1: compProfile.noopSkill1, skill2: [], burst: [] };
+      if (!(NOOP_CHARACTERS as any)[s]) {continue;} // no-op fillers only
+      extraOverrides[s] = {
+        slug: s,
+        skill1: compProfile.noopSkill1,
+        skill2: [],
+        burst: [],
+      };
     }
   }
   const deps = Object.keys(extraOverrides).length
@@ -274,25 +333,41 @@ export function bufferValueFor(
   board: BufferBoard,
   ctx: RanksCtx,
   baselineMemo: Map<string, number> = new Map(),
-  profile?: string | null,
+  profile?: string | null
 ): Omit<BufferValue, 'rank'> {
   const char = ctx.characters[slug];
-  if (!char) throw new Error(`${slug}: not in characters.json`);
+  if (!char) {throw new Error(`${slug}: not in characters.json`);}
   const burst = char.burst === 'Λ' ? 'III' : char.burst;
-  const activeProfile = profile === undefined ? (BUFFER_COMP_PROFILES[slug] ?? null) : profile;
-  const { spec, rules } = board === 'typed'
-    ? deriveCarrySpec(ctx.deps.overrides[slug])
-    : { spec: { ...PLAIN_SPEC }, rules: [] };
+  const activeProfile =
+    profile === undefined ? (BUFFER_COMP_PROFILES[slug] ?? null) : profile;
+  const { spec, rules } =
+    board === 'typed'
+      ? deriveCarrySpec(ctx.deps.overrides[slug])
+      : { spec: { ...PLAIN_SPEC }, rules: [] };
 
   const team = assemble(slug, burst, board, spec);
   const baselineTeam = assemble(team.noopSlot, burst, board, spec);
   const baselineKey = `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
   let baseline = baselineMemo.get(baselineKey);
   if (baseline === undefined) {
-    baseline = carryDpsSum(baselineTeam, ctx, spec, board === 'typed' && spec.pierce, undefined, activeProfile).sum;
+    baseline = carryDpsSum(
+      baselineTeam,
+      ctx,
+      spec,
+      board === 'typed' && spec.pierce,
+      undefined,
+      activeProfile
+    ).sum;
     baselineMemo.set(baselineKey, baseline);
   }
-  const run = carryDpsSum(team, ctx, spec, board === 'typed' && spec.pierce, slug, activeProfile);
+  const run = carryDpsSum(
+    team,
+    ctx,
+    spec,
+    board === 'typed' && spec.pierce,
+    slug,
+    activeProfile
+  );
   return {
     slug,
     value: run.sum - baseline,
@@ -310,12 +385,15 @@ export function bufferValueFor(
 export function rankBuffers(
   population: string[],
   board: BufferBoard,
-  ctx: RanksCtx,
+  ctx: RanksCtx
 ): BufferValue[] {
   const memo = new Map<string, number>();
   const results = population.flatMap((slug) => {
     const rows = [bufferValueFor(slug, board, ctx, memo, null)];
-    if (BUFFER_COMP_PROFILES[slug]) rows.push(bufferValueFor(slug, board, ctx, memo, BUFFER_COMP_PROFILES[slug]));
+    if (BUFFER_COMP_PROFILES[slug])
+      {rows.push(
+        bufferValueFor(slug, board, ctx, memo, BUFFER_COMP_PROFILES[slug])
+      );}
     return rows;
   });
   results.sort((a, b) => b.value - a.value);
