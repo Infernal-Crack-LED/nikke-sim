@@ -5,11 +5,15 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import sharp from 'sharp';
 import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const PORTRAIT_DIR = new URL(
-  '../../../web/public/img/portraits/',
-  import.meta.url
-);
+// NIKKESIM_PORTRAIT_DIR lets a deployed server point at the static tree's copy
+// (dist/img/portraits) instead of the source tree — same files, but dist/ is
+// what the deploy artifact guarantees.
+const PORTRAIT_DIR =
+  process.env.NIKKESIM_PORTRAIT_DIR ??
+  fileURLToPath(new URL('../../../web/public/img/portraits/', import.meta.url));
 
 // ⚠ WHY NOT `new Image()`: @napi-rs/canvas's Image rasterization is BROKEN on
 // the owner's Mac (macOS 26 arm64, node 22) in both 1.0.2 and 0.1.x — src
@@ -43,7 +47,7 @@ const portraitCache = new Map<string, Promise<Canvas | null>>();
 export function loadPortrait(slug: string): Promise<Canvas | null> {
   let hit = portraitCache.get(slug);
   if (!hit) {
-    hit = decodeToCanvas(new URL(`${slug}-128.webp`, PORTRAIT_DIR));
+    hit = decodeToCanvas(pathToFileURL(join(PORTRAIT_DIR, `${slug}-128.webp`)));
     portraitCache.set(slug, hit);
   }
   return hit;
