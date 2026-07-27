@@ -1,0 +1,17 @@
+sugar — S2d verification (npx vitest run scripts/tests/units/sugar.test.ts)
+date: 2026-07-26
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-treasure[39m
+
+ [32m✓[39m scripts/tests/units/sugar.test.ts [2m([22m[2m26 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m26 passed[39m[22m[90m (26)[39m
+[2m   Start at [22m 16:48:13
+[2m   Duration [22m 773ms[2m (transform 85ms, setup 0ms, import 674ms, tests 12ms, environment 0ms)[22m
+
+
+Fixture: controlComp(sugar) = liter/crown/sugar/helm, boss Fire, focus sugar. 11 Full Bursts / 6 sugar casts.
+Per-line RED-vs-removed deltas (sugar total, Fire): advantageVs +89.59%, S1L4 atkDmg +11.27%, S2 critRate +3.21%, S2 maxAmmo +10.21%, S2 elemAdv +24.79%, B atkSpd +36.90%, B hitRate +12.10%, B atk +8.20%, B elemAdv +28.39%. All substantial (none hairline).
+G2 inert state: vs Iron boss, shipped vs advantageVs-removed totals BYTE-IDENTICAL (Fire-specific conversion proven).

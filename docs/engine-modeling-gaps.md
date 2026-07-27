@@ -23,13 +23,13 @@
 
 | Primitive | Users | Enacted on |
 | --- | --- | --- |
-| `advantageVs` | 1 | rapi-red-hood |
+| `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 2 | blanc, naga |
 | `alliesOfClass` | 0 | _none_ |
 | `alliesOfElement` | 8 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, guillotine-winter-slayer, guilty, maiden-ice-rose, rei-ayanami |
-| `alliesOfElementWeapon` | 2 | ark-ranger-black, trina |
-| `alliesOfWeapon` | 7 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, tove |
+| `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
+| `alliesOfWeapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, sugar, tove |
 | `alliesTopAtk` | 5 | alice, maxwell, miranda, naga, soda-twinkling-bunny |
 | `atkOfMaxHpPct` | 2 | cinderella, maiden-ice-rose |
 | `bossElement` | 1 | eve |
@@ -64,7 +64,7 @@
 | `hasPierce` | 4 | alice, laplace, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 34 | ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, crown, … |
-| `hitRatePct` | 12 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
+| `hitRatePct` | 13 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
@@ -112,7 +112,7 @@
 | `trueNormals` | 3 | chisato, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 1 | laplace |
-| `weapon` | 10 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
+| `weapon` | 11 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
 | `whileSwapped` | 0 | _none_ |
 

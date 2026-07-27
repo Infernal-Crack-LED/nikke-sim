@@ -1,0 +1,79 @@
+{
+  "slug": "sugar",
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 13.02,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "SG"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 83.8,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackSpeedPct",
+          "value": 66,
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "hitRatePct",
+          "value": 33,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "20% chance of activating when cover is attacked. Affects self. Critical Damage ▲ 16.39% for 10 sec. Reload Speed ▲ 12.12% for 10 sec."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "Hit Rate ▲33% in burst is an unmeasured core-hit lift; tune against core footage.",
+    "Cover-attacked skill1 is entirely unmodeled pending a defensive-damage trigger.",
+    "Skill2 SG Max Ammo buff includes Sugar (self) as an SG ally."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Sugar's skill1 cover-attacked trigger has no sim representation and was dropped to unmodeled. Skill2 SG ammo buff targets all SG allies including self. Burst Hit Rate ▲33% is emitted as hitRatePct but the conversion to core-hit chance is engine-estimated and must be measured."
+}

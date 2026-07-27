@@ -3914,6 +3914,46 @@
       ],
       "board": null
     },
+    "sugar": {
+      "name": "Sugar",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-26",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-26: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/sugar.json + scripts/kit-autonomy/manual-review/sugar.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when cover is attacked (20% chance). Affects self. Critical Damage ▲ 16.39% for 10 sec. (no cover-attacked trigger primitive; the v1 boss never attacks so cover is never hit)",
+          "Activates when cover is attacked (20% chance). Affects self. Reload Speed ▲ 12.12% for 10 sec. (no cover-attacked trigger primitive)",
+          "Activates when cover is attacked. Restores Cover HP an amount equal to 1.5% of the skill user's final Max HP. (defensive; offensively inert on the immortal-boss basis)"
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 19.98% Attack Damage line is gated on 'cover still intact' in kit; the v1 boss deals no damage so cover is never destroyed and the buff is modeled always-on (passive). If cover destruction is ever modeled, gate it on a cover-intact state.",
+        "skill1: the battle-start Fire elemental-advantage conversion (advantageVs:Fire) is self-gating — live vs a Fire boss, exactly inert vs every other boss.",
+        "skill1: the cover-attacked Critical Damage ▲16.39% / Reload Speed ▲12.12% procs and the Cover HP restore are UNMODELED (no cover-attacked trigger; defensive line inert) — see unmodeled.skill1.",
+        "skill2/burst: the Water/Iron-shotgun Elemental Advantage Attack Damage buffs are encoded as TWO alliesOfElementWeapon blocks (Water/SG + Iron/SG) because the target carries a single element; no unit is both codes, so there is no double-application.",
+        "skill2/burst: elemAdvantageDamagePct only pays damage for recipients that are elementally advantaged vs the boss (engine ELEMENT bucket gate), faithful to 'Elemental Advantage Attack Damage'."
+      ],
+      "board": null,
+      "date": "2026-07-26",
+      "evidence": "kit-autonomy gauntlet 2026-07-26; GO faithfulness 1.0; cross-family S2b(kimi-k3)/S5(kimi-k2.7)/S6(kimi-k2.7)/S7(kimi-k3) converged (Claude unavailable, owner routing override)",
+      "residual": "cover-intact Attack Damage modeled always-on under immortal-boss (⚑1); count99 alliesOfElementWeapon Water/Iron-SG union idiom; cover-attacked crit-dmg/reload procs + cover-HP restore unmodeled (no cover-damage primitive); hit-rate core-yield derived (⚑3)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "takina": {
       "name": "Takina",
       "burst": "II",
