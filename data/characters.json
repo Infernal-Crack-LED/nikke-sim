@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-07-26T21:47:04.233Z",
+  "syncedAt": "2026-07-27T05:44:08.948Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -9991,7 +9991,7 @@
     },
     "bay": {
       "slug": "bay",
-      "name": "Bay",
+      "name": "Bay (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/nr-51/ih-98/dbf0f95b26f99563ebfeb3a95b1fb728.png",
       "weapon": "RL",
       "burst": "II",
@@ -13312,7 +13312,7 @@
     },
     "centi": {
       "slug": "centi",
-      "name": "Centi",
+      "name": "Centi (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/se-27/bi-02/cf6cd78275212d5f21cb76e9607dff15.png",
       "weapon": "RL",
       "burst": "II",
@@ -20209,7 +20209,7 @@
     },
     "diesel": {
       "slug": "diesel",
-      "name": "Diesel",
+      "name": "Diesel (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ws-38/mk-03/ab9d85101b02b5226b0762d2f6efb76b.png",
       "weapon": "MG",
       "burst": "II",
@@ -23221,7 +23221,7 @@
     },
     "drake": {
       "slug": "drake",
-      "name": "Drake",
+      "name": "Drake (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/hh-89/qf-36/b733ab6690f46366f9d661f66f2e3a38.png",
       "weapon": "SG",
       "burst": "III",
@@ -29346,7 +29346,7 @@
     },
     "exia": {
       "slug": "exia",
-      "name": "Exia",
+      "name": "Exia (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/uu-02/wd-67/d34467565fa787ae564bda70a54643be.png",
       "weapon": "SR",
       "burst": "I",
@@ -29818,7 +29818,7 @@
     },
     "flora": {
       "slug": "flora",
-      "name": "Flora",
+      "name": "Flora (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/gn-95/lf-83/934eebd5adee7a56a0e6c919dfe6f4f5.png",
       "weapon": "MG",
       "burst": "II",
@@ -30775,7 +30775,7 @@
     },
     "frima": {
       "slug": "frima",
-      "name": "Frima",
+      "name": "Frima (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/wt-65/zl-49/91053f7dcd374f9d10bb72f870484700.png",
       "weapon": "SR",
       "burst": "I",
@@ -37825,7 +37825,7 @@
     },
     "julia": {
       "slug": "julia",
-      "name": "Julia",
+      "name": "Julia (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/uv-85/um-94/a4cdaa6dfb9db79c22f04bd26ee37ad3.png",
       "weapon": "AR",
       "burst": "III",
@@ -51796,7 +51796,7 @@
     },
     "milk": {
       "slug": "milk",
-      "name": "Milk",
+      "name": "Milk (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ge-61/ca-69/baa734e6d1a5c3425b66ba9d9ab96480.png",
       "weapon": "SR",
       "burst": "I",
@@ -53218,7 +53218,7 @@
     },
     "miranda": {
       "slug": "miranda",
-      "name": "Miranda",
+      "name": "Miranda (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/xv-66/wc-38/6202adb5b62786c389c4612cde9008ea.png",
       "weapon": "SMG",
       "burst": "I",
@@ -54670,7 +54670,7 @@
     },
     "moran": {
       "slug": "moran",
-      "name": "Moran",
+      "name": "Moran (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dx-21/qk-18/b2f826193bf792796a96ff007489effe.png",
       "weapon": "AR",
       "burst": "I",
@@ -63247,7 +63247,7 @@
     },
     "phantom": {
       "slug": "phantom",
-      "name": "Phantom",
+      "name": "Phantom (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/yf-19/ti-36/3acf749fd25325f44d1d5c088ab44829.png",
       "weapon": "AR",
       "burst": "III",
@@ -63771,7 +63771,7 @@
     },
     "poli": {
       "slug": "poli",
-      "name": "Poli",
+      "name": "Poli (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ob-27/vd-32/ef0e7474c6e08869264020b7bc528c92.png",
       "weapon": "SG",
       "burst": "II",
@@ -65228,7 +65228,7 @@
     },
     "privaty": {
       "slug": "privaty",
-      "name": "Privaty",
+      "name": "Privaty (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ok-18/pq-27/5fb49df1b75a3a5262547d1ab12665e5.png",
       "weapon": "AR",
       "burst": "III",
@@ -73797,7 +73797,7 @@
     },
     "rosanna": {
       "slug": "rosanna",
-      "name": "Rosanna",
+      "name": "Rosanna (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/ni-17/sz-38/a224614313510d62f655f3a6f64be84e.png",
       "weapon": "MG",
       "burst": "I",
@@ -85719,7 +85719,7 @@
     },
     "sugar": {
       "slug": "sugar",
-      "name": "Sugar",
+      "name": "Sugar (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dw-50/ep-89/2d46168e088d0f8fa53fd98f58d22011.png",
       "weapon": "SG",
       "burst": "III",
@@ -86200,7 +86200,8 @@
         "maxLevel": 1200,
         "critDamage": 150,
         "resourceId": 140
-      }
+      },
+      "countsAsElements": ["Iron", "Water"]
     },
     "takina": {
       "slug": "takina",
@@ -87227,7 +87228,7 @@
     },
     "tove": {
       "slug": "tove",
-      "name": "Tove",
+      "name": "Tove (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/aw-65/fq-19/9aa2ae516daa9ce6083744b217656746.png",
       "weapon": "AR",
       "burst": "I",
@@ -90433,7 +90434,7 @@
     },
     "viper": {
       "slug": "viper",
-      "name": "Viper",
+      "name": "Viper (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dc-22/za-89/ee6875b41f559d45f11145a9b3749c6d.png",
       "weapon": "SG",
       "burst": "II",
@@ -92665,7 +92666,7 @@
     },
     "zwei": {
       "slug": "zwei",
-      "name": "Zwei",
+      "name": "Zwei (Treasure)",
       "imageUrl": "https://sg-tools-cdn.blablalink.com/dd-40/cl-95/bb6c711944734b85bc8a61bb72f94908.png",
       "weapon": "SG",
       "burst": "I",
