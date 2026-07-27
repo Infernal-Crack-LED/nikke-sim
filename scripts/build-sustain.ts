@@ -41,9 +41,9 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-// Synthetic no-op B3 (RL) is not in characters.json; load its mock-B3 override so
-// sustain sims (which use no-op teammates) apply its 3× full-burst damage profile.
-overrides['noop-b3-rl'] = loadOverride('noop-b3-rl');
+// Synthetic no-op B3 (MG) is not in characters.json; load its mock-B3 override so
+// sustain sims (which use no-op teammates) apply its full-burst damage profile.
+overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };

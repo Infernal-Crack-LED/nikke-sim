@@ -432,11 +432,11 @@
     "source": "class-modal-SR (synthetic Solo-framework no-op control)",
     "targetPerTrigger": 560.0
   },
-  "noop-b3-rl": {
-    "basePerTrigger": 140.0,
-    "fullChargeBonus": 250.0,
-    "source": "class-modal-RL (synthetic Solo-framework no-op control)",
-    "targetPerTrigger": 280.0
+  "noop-b3-mg": {
+    "basePerTrigger": 5.0,
+    "fullChargeBonus": 0.0,
+    "source": "class-modal-MG (synthetic Solo-framework no-op control)",
+    "targetPerTrigger": 10.0
   },
   "noop-mg": {
     "basePerTrigger": 5.0,

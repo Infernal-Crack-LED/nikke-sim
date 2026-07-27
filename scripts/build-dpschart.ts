@@ -57,10 +57,10 @@ const overrides: Record<string, OverrideFile | undefined> = {};
 for (const slug of Object.keys(data.characters)) {
   overrides[slug] = loadOverride(slug);
 }
-// The no-op B3 (RL) is a synthetic control, not a roster entry, so it is not in
+// The no-op B3 (MG) is a synthetic control, not a roster entry, so it is not in
 // characters.json. Load its mock-B3 override explicitly so the Solo framework
 // gives it a damage profile during its stage-3 casts.
-overrides['noop-b3-rl'] = loadOverride('noop-b3-rl');
+overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RunCtx = { characters: data.characters as any, mult, deps };
