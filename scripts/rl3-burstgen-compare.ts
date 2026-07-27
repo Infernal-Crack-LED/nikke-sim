@@ -53,7 +53,9 @@ for (const [slug, c] of Object.entries(data.characters)) {
 
 const simRanked = rankBurstGen(population, ctx);
 const simRankBySlug = new Map(simRanked.map((r) => [r.slug, r.rank]));
-const simGaugeBySlug = new Map(simRanked.map((r) => [r.slug, r.gaugeTotal]));
+const simGaugePerSecBySlug = new Map(
+  simRanked.map((r) => [r.slug, r.gaugePerSec])
+);
 
 const rl3Ranked = [...population]
   .map((slug) => {
@@ -75,7 +77,7 @@ const divergences = population
   .map((slug) => {
     const simRank = simRankBySlug.get(slug)!;
     const rl3Rank = rl3RankBySlug.get(slug)!;
-    const simGauge = simGaugeBySlug.get(slug)!;
+    const simGaugePerSec = simGaugePerSecBySlug.get(slug)!;
     const c = data.characters[slug];
     return {
       slug,
@@ -86,7 +88,7 @@ const divergences = population
       rl3Rank,
       simRank,
       rankDelta: rl3Rank - simRank, // positive = rl3 ranks them lower than sim
-      simGauge,
+      simGaugePerSec,
     };
   })
   .filter((r) => Math.abs(r.rankDelta) >= 10)
@@ -109,9 +111,13 @@ lines.push('');
 lines.push(`Generated: ${new Date().toISOString()}`);
 lines.push('');
 lines.push(
-  'The simulated board (`src/ranks/burstgen.ts`) runs each sim-supported unit solo ' +
-    'for 180s with bursts disabled and the camera focused on the unit (charge weapons ×2.5). ' +
-    'Kit gauge effects, skill-generation procs, and team-ammo-scaling profiles are included.'
+  'The simulated board (`src/ranks/burstgen.ts`) runs each sim-supported unit in a ' +
+    'standard no-op team for 180s with bursts enabled, the unit placed as the leftmost ' +
+    'member of its burst category and measured UNFOCUSED (camera focus is parked on a ' +
+    'non-charge no-op teammate, so charge weapons generate at ×1.0 — the ×2.5 focus ' +
+    'bonus is not applied on this board). Kit gauge effects, skill-generation procs, and ' +
+    'team-ammo-scaling profiles are included. The reported value is gauge-percent ' +
+    'contributed per second of active gauge-building time.'
 );
 lines.push('');
 lines.push(
@@ -123,20 +129,20 @@ lines.push('');
 lines.push(
   'This file ranks sim-supported units by `rl3` alone and lists the largest rank ' +
     'divergences against the simulated board. Big jumps usually mean kit gauge effects, ' +
-    'focus/charge scaling, or the 180s window matter more than the raw 3s opener.'
+    'charge-weapon generation, rotation teammates, or the 180s window matter more than the raw 3s opener.'
 );
 lines.push('');
 
 lines.push('## Top 30 by simulated burst-gen board');
 lines.push('');
-lines.push('| rank | slug | name | weapon | burst | profile | bars/180s |');
-lines.push('|---:|---|---|---|---|---:|---|');
+lines.push('| rank | slug | name | weapon | burst | profile | gauge%/s |');
+lines.push('|---:|---|---|---|---|---:|---:|');
 for (const r of topSim) {
   const c = data.characters[r.slug];
   lines.push(
     `| ${r.rank} | ${r.slug} | ${c.name} | ${c.weapon} | ${c.burst} | ${
       r.profile ?? ''
-    } | ${r.barsPerFight.toFixed(1)} |`
+    } | ${r.gaugePerSec.toFixed(2)} |`
   );
 }
 lines.push('');
@@ -144,17 +150,17 @@ lines.push('');
 lines.push('## Top 30 by raw `rl3` (3-second opener, base/unfocused)');
 lines.push('');
 lines.push(
-  '| rank | slug | name | weapon | burst | rl3 | sim rank | sim bars/180s |'
+  '| rank | slug | name | weapon | burst | rl3 | sim rank | sim gauge%/s |'
 );
 lines.push('|---:|---|---|---|---:|---:|---:|---:|');
 for (let i = 0; i < topRl3.length; i++) {
   const r = topRl3[i];
   const simRank = simRankBySlug.get(r.slug)!;
-  const simGauge = simGaugeBySlug.get(r.slug)!;
+  const simGaugePerSec = simGaugePerSecBySlug.get(r.slug)!;
   lines.push(
     `| ${i + 1} | ${r.slug} | ${r.name} | ${r.weapon} | ${r.burst} | ${
       r.rl3
-    } | ${simRank} | ${(simGauge / 100).toFixed(1)} |`
+    } | ${simRank} | ${simGaugePerSec.toFixed(2)} |`
   );
 }
 lines.push('');
@@ -162,31 +168,31 @@ lines.push('');
 lines.push('## Full raw `rl3` ranking (all sim-supported units)');
 lines.push('');
 lines.push(
-  '| rank | slug | name | weapon | burst | rl3 | sim rank | sim bars/180s |'
+  '| rank | slug | name | weapon | burst | rl3 | sim rank | sim gauge%/s |'
 );
 lines.push('|---:|---|---|---|---:|---:|---:|---:|');
 for (let i = 0; i < rl3Ranked.length; i++) {
   const r = rl3Ranked[i];
   const simRank = simRankBySlug.get(r.slug)!;
-  const simGauge = simGaugeBySlug.get(r.slug)!;
+  const simGaugePerSec = simGaugePerSecBySlug.get(r.slug)!;
   lines.push(
     `| ${i + 1} | ${r.slug} | ${r.name} | ${r.weapon} | ${r.burst} | ${
       r.rl3
-    } | ${simRank} | ${(simGauge / 100).toFixed(1)} |`
+    } | ${simRank} | ${simGaugePerSec.toFixed(2)} |`
   );
 }
 lines.push('');
 lines.push('## Largest rank divergences (|Δrank| ≥ 10)');
 lines.push('');
 lines.push(
-  '| rl3 rank | slug | name | weapon | burst | sim rank | Δrank | rl3 | sim bars/180s | notes |'
+  '| rl3 rank | slug | name | weapon | burst | sim rank | Δrank | rl3 | sim gauge%/s | notes |'
 );
 lines.push('|---:|---|---|---|---:|---:|---:|---:|---:|---|');
 for (const r of divergences) {
   const notes: string[] = [];
   if (BURSTGEN_PROFILES[r.slug]) {
     notes.push(
-      `profiled: ${BURSTGEN_PROFILES[r.slug].partners.length} MG partner(s)`
+      `profiled: ${BURSTGEN_PROFILES[r.slug].teammates.length} MG teammate(s)`
     );
   }
   if (r.rl3 === 0) {
@@ -195,10 +201,10 @@ for (const r of divergences) {
   const noteStr = notes.join('; ') || '';
   lines.push(
     `| ${r.rl3Rank} | ${r.slug} | ${r.name} | ${r.weapon} | ${r.burst} | ${
-      r.rl3Rank
-    } | ${r.simRank} | ${r.rankDelta > 0 ? '+' : ''}${r.rankDelta} | ${
-      r.rl3
-    } | ${(r.simGauge / 100).toFixed(1)} | ${noteStr} |`
+      r.simRank
+    } | ${r.rankDelta > 0 ? '+' : ''}${r.rankDelta} | ${r.rl3} | ${r.simGaugePerSec.toFixed(
+      2
+    )} | ${noteStr} |`
   );
 }
 lines.push('');

@@ -221,6 +221,12 @@
     "source": "datamined",
     "targetPerTrigger": 560.0
   },
+  "flora": {
+    "basePerTrigger": 5.0,
+    "fullChargeBonus": 0.0,
+    "source": "class-modal-MG",
+    "targetPerTrigger": 10.0
+  },
   "grave": {
     "basePerTrigger": 45.0,
     "fullChargeBonus": 0.0,
@@ -438,6 +444,12 @@
     "source": "class-modal-MG (synthetic Solo-framework no-op control)",
     "targetPerTrigger": 10.0
   },
+  "noop-b3-rl": {
+    "basePerTrigger": 140.0,
+    "fullChargeBonus": 250.0,
+    "source": "class-modal-RL (synthetic Solo-framework no-op control)",
+    "targetPerTrigger": 280.0
+  },
   "noop-mg": {
     "basePerTrigger": 5.0,
     "fullChargeBonus": 0.0,
@@ -546,6 +558,12 @@
     "source": "datamined",
     "targetPerTrigger": 10.0
   },
+  "rosanna": {
+    "basePerTrigger": 5.0,
+    "fullChargeBonus": 0.0,
+    "source": "class-modal-MG",
+    "targetPerTrigger": 10.0
+  },
   "rosanna-chic-ocean": {
     "basePerTrigger": 20.0,
     "fullChargeBonus": 0.0,
@@ -604,6 +622,12 @@
     "basePerTrigger": 200.0,
     "fullChargeBonus": 0.0,
     "source": "datamined",
+    "targetPerTrigger": 400.0
+  },
+  "sugar": {
+    "basePerTrigger": 200.0,
+    "fullChargeBonus": 0.0,
+    "source": "class-modal-SG",
     "targetPerTrigger": 400.0
   },
   "takina": {

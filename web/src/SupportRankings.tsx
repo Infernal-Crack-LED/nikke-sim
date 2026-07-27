@@ -49,6 +49,7 @@ const BOARDS: { id: BoardId; label: string; title: string }[] = [
 const PROFILE_LABELS: Record<string, string> = {
   'with-2mg': 'w/ 2 MG',
   'with-1mg': 'w/ 1 MG',
+  'with-mg': 'w/ MG',
   'with-mint': 'w/ Mint',
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
@@ -101,7 +102,7 @@ function Methodology({
   );
 }
 
-// burstcdr ramp ladder → "1st FB 2.0 · 2nd 4.5 · 3rd+ 7.2" (last value is
+// burstcdr ramp ladder → "1st FB 2.3 · 2nd 5.0 · 3rd+ 8.2" (last value is
 // the capped steady-state, hence the "+")
 const ORDINALS = ['1st', '2nd', '3rd', '4th', '5th'];
 function rampText(ramp: number[]): string {
@@ -163,19 +164,21 @@ export function SupportRankings() {
       bars = burstGenBars(art as BurstGenArtifact).map((b) => ({
         ...b,
         key: `${b.slug}:${b.profile ?? ''}`,
-        value: b.gaugeTotal,
-        valueText: `${(b.gaugeTotal / 100).toFixed(1)} bars`,
-        valueSub: `${Math.round(b.gaugeTotal)} gauge`,
-        valueTitle: 'uncapped total burst gauge over 180s (100 = one bar)',
+        value: b.gaugePerSec,
+        valueText: `${b.gaugePerSec.toFixed(2)}%/s`,
+        valueSub: `${(b.gaugeTotal / 100).toFixed(1)} bars · ${b.fullBursts.toFixed(1)} FB`,
+        valueTitle:
+          'gauge-percent per second contributed while the team bar is building (100 = one bar)',
         ...badge(b),
       }));
     } else if (board === 'burstcdr') {
       bars = burstCdrBars(art as BurstCdrArtifact).map((b) => ({
         ...b,
         key: `${b.slug}:${b.profile ?? ''}`,
-        value: b.cdrPer40s,
-        valueText: `${b.cdrPer40s.toFixed(1)}s/40s`,
-        valueTitle: 'nominal team CDR seconds per 40s of fight',
+        value: b.cdrPer20s,
+        valueText: `${b.cdrPer20s.toFixed(1)}s/20s`,
+        valueTitle:
+          'nominal team CDR seconds per 20s Full Burst, averaged over 180s',
         condition: b.condition,
         sub:
           [

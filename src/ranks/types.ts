@@ -16,10 +16,13 @@ export interface RankUnitMeta {
   imageUrl: string | null;
 }
 
-// [slug, gaugeTotal, profile] — sorted desc by gaugeTotal; 100 = one full bar.
+// [slug, gaugePerSec, gaugeTotal, fullBursts, profile] — sorted desc by gaugePerSec;
+// 100 = one full bar.
 export type BurstGenRow = [
   slug: string,
+  gaugePerSec: number,
   gaugeTotal: number,
+  fullBursts: number,
   profile: string | null,
 ];
 export interface BurstGenArtifact {
@@ -30,12 +33,13 @@ export interface BurstGenArtifact {
   entries: BurstGenRow[];
 }
 
-// [slug, cdrPer40s, ramp, condition, selfCdr, profile] — fixed arity 6 (pad
-// with nulls). ramp = per-cycle values for escalating ladders; condition =
-// conditional-CDR caveat; selfCdr = self-only CDR note (seconds).
+// [slug, cdrPer20s, ramp, condition, selfCdr, profile] — fixed arity 6 (pad
+// with nulls). cdrPer20s = average team CDR seconds per 20s Full Burst over a
+// 180s fight. ramp = per-FB cumulative values for escalating ladders; condition
+// = conditional-CDR caveat; selfCdr = self-only CDR note (seconds).
 export type BurstCdrRow = [
   slug: string,
-  cdrPer40s: number,
+  cdrPer20s: number,
   ramp: number[] | null,
   condition: string | null,
   selfCdr: number | null,

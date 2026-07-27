@@ -2404,13 +2404,6 @@ footer {
 .ranks-track {
   position: relative;
 }
-.ranks-zero {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: var(--muted);
-}
 
 /* sustain heal/shield/lifesteal split — stacked segments inside the fill.
    Colors (owner 2026-07-26): green heal / blue shield / yellow lifesteal. */

@@ -86,26 +86,32 @@ function base(
 
 // ---- per-board rows ---------------------------------------------------------
 export interface BurstGenBar extends RowBase {
+  gaugePerSec: number; // gauge-percent per second while the bar is building
   gaugeTotal: number; // uncapped 180s gauge (100 = one full bar)
+  fullBursts: number; // full bursts completed by the team
 }
 export function burstGenBars(art: BurstGenArtifact): BurstGenBar[] {
-  return art.entries.map(([slug, gaugeTotal, profile], i) => ({
-    ...base(art.units, slug, i + 1, profile),
-    gaugeTotal,
-  }));
+  return art.entries.map(
+    ([slug, gaugePerSec, gaugeTotal, fullBursts, profile], i) => ({
+      ...base(art.units, slug, i + 1, profile),
+      gaugePerSec,
+      gaugeTotal,
+      fullBursts,
+    })
+  );
 }
 
 export interface BurstCdrBar extends RowBase {
-  cdrPer40s: number; // nominal team CDR seconds per 40s of fight
-  ramp: number[] | null; // per-cycle values on escalating ladders (1st, 2nd, …capped)
+  cdrPer20s: number; // nominal team CDR seconds per 20s Full Burst, averaged over 180s
+  ramp: number[] | null; // per-FB cumulative values on escalating ladders (1st, 2nd, 3rd+)
   condition: string | null; // conditional-CDR caveat (asterisk tooltip)
   selfCdr: number | null; // self-only CDR seconds (muted note)
 }
 export function burstCdrBars(art: BurstCdrArtifact): BurstCdrBar[] {
   return art.entries.map(
-    ([slug, cdrPer40s, ramp, condition, selfCdr, profile], i) => ({
+    ([slug, cdrPer20s, ramp, condition, selfCdr, profile], i) => ({
       ...base(art.units, slug, i + 1, profile),
-      cdrPer40s,
+      cdrPer20s,
       ramp,
       condition,
       selfCdr,

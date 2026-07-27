@@ -596,6 +596,7 @@ export interface SimResult {
   fullBursts: number;
   fullBurstUptime: number; // 0..1
   rotationStallSec: number; // time spent gauge-full waiting on cooldowns
+  gaugeBuildTimeSec: number; // time the gauge bar was actively accepting energy (not full, not locked)
   rotationLog: string[];
 }
 
@@ -641,6 +642,7 @@ export function meanSimResults(runs: SimResult[]): SimResult {
     fullBursts: mean((r) => r.fullBursts),
     fullBurstUptime: mean((r) => r.fullBurstUptime),
     rotationStallSec: mean((r) => r.rotationStallSec),
+    gaugeBuildTimeSec: mean((r) => r.gaugeBuildTimeSec),
     rotationLog: base.rotationLog,
   };
 }
@@ -1271,6 +1273,19 @@ export function runSim(
   // per-trigger gen vs the stage target, in gauge-percent units (JSON is energy/100).
   // flatPerTrigger = per-unit kit generation per shot (helm's S2 +14.31: synergy
   // fixed_add + rl3 arithmetic, twice-confirmed) — flat, no boss doubling, no focus.
+  // Weapon-class modal per-trigger gauge (energy units), the fallback when a unit
+  // has NO datamined row in gauge-per-shot.json. Values = the class-modal-* rows /
+  // the datamine modal per class (MG is universally 10, SR 560, SG 400). The prior
+  // flat fallback (40, the AR modal) silently mis-valued any missing-row unit by
+  // its class ratio — 4x over for MG (flora/rosanna), 10x under for SG (sugar).
+  const GAUGE_MODAL_BY_WEAPON: Record<string, number> = {
+    AR: 40,
+    SMG: 20,
+    SG: 400,
+    SR: 560,
+    RL: 280,
+    MG: 10,
+  };
   const gaugePerShot = (u: UnitState) => {
     const entry = (
       gaugeTable as Record<
@@ -1278,7 +1293,9 @@ export function runSim(
         { targetPerTrigger?: number; flatPerTrigger?: number }
       >
     )[u.char.slug];
-    const per = (entry?.targetPerTrigger ?? 40) / 100;
+    const per =
+      (entry?.targetPerTrigger ?? GAUGE_MODAL_BY_WEAPON[u.char.weapon] ?? 40) /
+      100;
     const flat = (entry?.flatPerTrigger ?? 0) / 100;
     const isCharge =
       (u.char.weapon === 'SR' || u.char.weapon === 'RL') && !u.swap;
@@ -1336,7 +1353,9 @@ export function runSim(
     const entry = (gaugeTable as Record<string, { targetPerTrigger?: number }>)[
       u.char.slug
     ];
-    const per = (entry?.targetPerTrigger ?? 40) / 100;
+    const per =
+      (entry?.targetPerTrigger ?? GAUGE_MODAL_BY_WEAPON[u.char.weapon] ?? 40) /
+      100;
     addGauge(
       u,
       frame,
@@ -1408,6 +1427,7 @@ export function runSim(
   let fullBursts = 0;
   let fbFrames = 0;
   let stallFrames = 0;
+  let gaugeBuildFrames = 0;
 
   const sum = (list: BuffInstance[], stat: string, frame: number) =>
     list.reduce((s, b) => {
@@ -2664,6 +2684,9 @@ export function runSim(
     if (fbActive) {
       fbFrames++;
     }
+    if (stage === 0 && !fbActive && gauge < 100) {
+      gaugeBuildFrames++;
+    }
 
     // ---- internal-cooldown ('interval') skills ----
     for (const ib of intervalBlocks) {
@@ -3673,6 +3696,7 @@ export function runSim(
     fullBursts,
     fullBurstUptime: fbFrames / totalFrames,
     rotationStallSec: stallFrames / FPS,
+    gaugeBuildTimeSec: gaugeBuildFrames / FPS,
     rotationLog,
   };
 }

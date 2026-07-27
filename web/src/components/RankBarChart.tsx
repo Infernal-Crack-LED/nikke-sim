@@ -46,7 +46,6 @@ export function RankBarChart({
   const min = Math.min(...bars.map((b) => b.value), 0);
   const span = max - min || 1;
   // zero-axis position (% from the left) — only meaningful when min < 0
-  const zeroPct = min < 0 ? (max / span) * 100 : 0;
   const thumbs = usePortraitThumbs(
     bars.map((b) => b.imageUrl),
     PORTRAIT_CSS
@@ -116,12 +115,6 @@ export function RankBarChart({
                   className="dpschart-track ranks-track"
                   title={b.splitTitle}
                 >
-                  {min < 0 && (
-                    <span
-                      className="ranks-zero"
-                      style={{ left: `${zeroPct}%` }}
-                    />
-                  )}
                   <span
                     className="dpschart-fill"
                     style={{

@@ -20,12 +20,21 @@ const artifacts = {
 const bufferTop = artifacts['bufferchart.json'].cells.generic[0][0];
 const bufferTopName = artifacts['bufferchart.json'].units[bufferTop].name;
 const profiledEntry = artifacts['bufferchart.json'].cells.generic.find(
-  (e) => e[4]
+  (e) => e[3]
 );
-const profileBadge =
-  { 'with-healer': 'w/ Healer', 'with-shielder': 'w/ Shielder' }[
-    profiledEntry?.[4]
-  ] ?? null;
+// Map buffer comp-profile ids to the badge text rendered by the frontend's
+// profileLabel(). Keep in sync with web/src/SupportRankings.tsx.
+const PROFILE_LABELS = {
+  'with-healer': 'w/ Healer',
+  'with-shielder': 'w/ Shielder',
+  'w/ Prika': 'w/ Prika',
+  'w/ Mint': 'w/ Mint',
+  'w/ Anchor': 'w/ Anchor',
+  'w/ Bunny': 'w/ Bunny',
+};
+const profileBadge = profiledEntry?.[3]
+  ? (PROFILE_LABELS[profiledEntry[3]] ?? null)
+  : null;
 const burstgenTop = artifacts['burstgen.json'].entries[0][0];
 const burstgenTopName = artifacts['burstgen.json'].units[burstgenTop].name;
 const typedTop = artifacts['bufferchart.json'].cells.typed[0][0];

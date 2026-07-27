@@ -7,11 +7,12 @@
 // being a synthetic control. All three still fire on their weapon class's canon
 // cadence so they generate burst gauge exactly like a default unit of that weapon
 // (data/gauge-per-shot.json carries matching class-modal noop-* entries) and take
-// their burst-chain stages.
+// their burst-chain stages. The B1 control additionally gets a 7 s team burst-cooldown
+// reduction via the `noop-b1-ar` override, so the no-op team is normalized for the CDR
+// a real B1 enabler would contribute even though the placeholder has no other skills.
 // Weapon data = the weapon-class MODAL values from data/characters.json (2026-07-26:
 // MG 300 ammo / 171f reload; AR 60 ammo / 81f reload; SR + RL 6 ammo / 141f reload /
-// 60f charge ×250%; burst cooldown 20s B1/B2, 40s B3 — the Solo framework then
-// applies its 7s burst CDR).
+// 60f charge ×250%; burst cooldown 20s B1/B2, 40s B3).
 // Pure module — no fs — runs in node (precompute) and the browser alike.
 import type { BaseStats, BurstType, CharacterData, Weapon } from '../types.js';
 
@@ -81,6 +82,7 @@ function noop(
 export const NOOP_B1 = 'noop-b1-ar';
 export const NOOP_B2 = 'noop-b2-sr';
 export const NOOP_B3 = 'noop-b3-mg';
+export const NOOP_B3_RL = 'noop-b3-rl';
 export const NOOP_BUNNY_B2 = 'noop-bunny-b2';
 
 // Class-modal MG normal-attack multiplier for the synthetic B3 mock.
@@ -131,6 +133,21 @@ export const NOOP_CHARACTERS: Record<string, NoopCharacter> = {
       rl3: 3.55,
     },
     MG_NORMAL_ATTACK_MULT
+  ),
+  [NOOP_B3_RL]: noop(
+    NOOP_B3_RL,
+    'No-op B3 (RL)',
+    'III',
+    40,
+    'RL',
+    {
+      ammo: 6,
+      reloadFrames: 141,
+      chargeFrames: 60,
+      chargeMultiplier: 250,
+      rl3: 16.8,
+    },
+    0
   ),
   [NOOP_BUNNY_B2]: noop(
     NOOP_BUNNY_B2,

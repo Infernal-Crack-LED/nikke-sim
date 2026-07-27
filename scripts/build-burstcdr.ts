@@ -16,7 +16,12 @@ import type {
   PrepareDeps,
   SkillLevelData,
 } from '../src/prepare.js';
-import { CDR_TABLE, rankCdr, FB_CYCLE_SEC } from '../src/ranks/burstcdr.js';
+import {
+  CDR_TABLE,
+  rankCdr,
+  FB_CYCLE_SEC,
+  FIGHT_SEC,
+} from '../src/ranks/burstcdr.js';
 import type { RanksCtx } from '../src/ranks/burstgen.js';
 import type { BurstCdrArtifact, BurstCdrRow } from '../src/ranks/types.js';
 
@@ -66,11 +71,12 @@ const ranked = rankCdr(population, ctx);
 const artifact: BurstCdrArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
-    `Nominal team Burst Skill cooldown reduction (seconds) per 40s of fight. ` +
-    `Full-Burst-triggered CDR counted at a standard ${FB_CYCLE_SEC}s full-burst cycle ` +
-    `(2 procs per 40s); escalating ladders ranked at their capped value with the ` +
-    `ramp shown. Shot-triggered CDR (dorothy, d-killer-wife, rouge, milk) uses the ` +
-    `unit's own sim cadence. Nominal, not effective: CDR landing on a target ` +
+    `Nominal team Burst Skill cooldown reduction (seconds) per ${FB_CYCLE_SEC}s ` +
+    `Full Burst, averaged over a ${FIGHT_SEC}s fight. Full-Burst-triggered CDR is ` +
+    `counted once per ${FB_CYCLE_SEC}s cycle; escalating ladders are averaged ` +
+    `across the full fight so ramp-up drags the headline below the capped ` +
+    `steady-state. Shot-triggered CDR (dorothy, d-killer-wife, rouge, milk) uses ` +
+    `the unit's own sim cadence. Nominal, not effective: CDR landing on a target ` +
     `already off cooldown is wasted in real rotations. Conditional lines are ` +
     `noted, not deducted. Self-only CDR is a note column.`,
   units: Object.fromEntries(
@@ -91,7 +97,7 @@ const artifact: BurstCdrArtifact = {
   ),
   entries: ranked.map((e): BurstCdrRow => [
     e.slug,
-    Math.round(e.cdrPer40s * 100) / 100,
+    Math.round(e.cdrPer20s * 100) / 100,
     e.ramp ? e.ramp.map((v) => Math.round(v * 100) / 100) : null,
     e.condition ?? null,
     e.selfCdr ?? null,
@@ -112,7 +118,7 @@ process.stderr.write(
     ranked
       .map(
         (e) =>
-          `  #${e.rank} ${e.slug} ${e.cdrPer40s.toFixed(2)}s/40s${e.condition ? ' *' : ''}`
+          `  #${e.rank} ${e.slug} ${e.cdrPer20s.toFixed(2)}s/20s${e.condition ? ' *' : ''}`
       )
       .join('\n') +
     '\n'

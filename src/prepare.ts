@@ -232,7 +232,7 @@ export function prepareUnit(
     char.burstCooldownSec;
   const burstCooldownSec = opts?.burstCdrSec
     ? Math.max(1, cdBase - opts.burstCdrSec)
-    : deps.overrides[char.slug]?.charFixes?.burstCooldownSec;
+    : cdBase;
   if (opts?.burstCdrSec) {
     loadout.push(`burst CDR ${opts.burstCdrSec}s (→${burstCooldownSec}s)`);
   }
