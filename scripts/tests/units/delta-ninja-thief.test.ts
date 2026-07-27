@@ -96,10 +96,11 @@ const dntNoAcidFB = withPatchedOverride('delta-ninja-thief', (ov) => {
     (b: any) =>
       !(b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct'))
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** H1 counterfactual: the same 12% line re-triggered on burstCast (the nearest wrong trigger). */
 const dntAcidFBAsBurstCast = withPatchedOverride('delta-ninja-thief', (ov) => {
@@ -107,10 +108,11 @@ const dntAcidFBAsBurstCast = withPatchedOverride('delta-ninja-thief', (ov) => {
     (b: any) =>
       b.trigger.kind === 'fullBurstEnter' && hasStat(b, 'damageTakenPct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'dnt S1 fullBurstEnter damageTakenPct missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger.kind = 'burstCast';
 });
 /** H2 reference: her self ATK buff removed. */
@@ -119,8 +121,9 @@ const dntNoSelfAtk = withPatchedOverride('delta-ninja-thief', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !(b.target.kind === 'self' && hasStat(b, 'atkPct'))
   );
-  if (ov.skill1.length === before)
-    {throw new Error('dnt S1 self atkPct missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('dnt S1 self atkPct missing — fixture is stale');
+  }
 });
 /** H3 reference: the 8% burst-cast Acid Bomb removed. */
 const dntNoAcidCast = withPatchedOverride('delta-ninja-thief', (ov) => {
@@ -133,24 +136,28 @@ const dntNoAcidCast = withPatchedOverride('delta-ninja-thief', (ov) => {
         hasStat(b, 'damageTakenPct')
       )
   );
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'dnt S1 burstCast damageTakenPct missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** H4 reference: the +20% distributed-damage team buff removed. */
 const dntNoDistBuff = withPatchedOverride('delta-ninja-thief', (ov) => {
   const b = ov.burst.find((b: any) => hasStat(b, 'distributedDamagePct'));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'dnt burst distributedDamagePct missing — fixture is stale'
-    );}
+    );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'distributedDamagePct');
 });
 /** H5 counterfactual: the nuke's distributed flavor stripped (nearest wrong flavor). */
 const dntNukeNotDist = withPatchedOverride('delta-ninja-thief', (ov) => {
   const b = ov.burst.find((b: any) => hasKind(b, 'flatDamage'));
-  if (!b) {throw new Error('dnt burst flatDamage missing — fixture is stale');}
+  if (!b) {
+    throw new Error('dnt burst flatDamage missing — fixture is stale');
+  }
   const e = b.effects.find((e: any) => e.kind === 'flatDamage');
   delete e.flavor;
 });
@@ -196,7 +203,9 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     it('applies a 12% damage-taken debuff to the boss for exactly 15s, once per FB', () => {
       expect(taken12.length).toBe(fbStartFrames(base.events).size);
       expect(taken12.length).toBeGreaterThan(0);
-      for (const b of taken12) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of taken12) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
     });
 
     it('fires on Full Burst ENTRY (its frame is a fullBurstStart frame, not her cast frame)', () => {
@@ -248,7 +257,9 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       expect(selfAtk.length).toBe(dntBursts(base.events).length);
       expect(selfAtk.length).toBeGreaterThan(0);
       expect([...new Set(selfAtk.map((b) => b.value))]).toEqual([15.04]);
-      for (const b of selfAtk) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of selfAtk) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing it lowers ONLY her own total (liter/helm byte-identical)', () => {
@@ -266,16 +277,19 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
     it('applies an 8% damage-taken debuff to the boss for exactly 10s', () => {
       expect(taken8.length).toBe(dntBursts(base.events).length);
       expect(taken8.length).toBeGreaterThan(0);
-      for (const b of taken8) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of taken8) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('fires on her BURST CAST (its frame is a cast frame), distinct from the 12% FB-entry debuff', () => {
       const casts = castFrames(base.events);
-      for (const b of taken8)
-        {expect(
+      for (const b of taken8) {
+        expect(
           casts.has(b.frame),
           `8% debuff at ${b.frame} is not a cast frame`
-        ).toBe(true);}
+        ).toBe(true);
+      }
     });
 
     it("DISCRIMINATING: removing it collapses the burst nuke's taken multiplier 1.08 → 1.0", () => {
@@ -303,7 +317,9 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
       expect(dist.length).toBe(perCast);
       expect([...new Set(dist.map((b) => b.value))]).toEqual([20]);
       expect(new Set(dist.map((b) => b.targetIdx))).toEqual(ALLIES);
-      for (const b of dist) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of dist) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('grants a FLAT caster-ATK add (casterAtkPct, not a % atkPct) to all allies for 10s', () => {
@@ -318,8 +334,9 @@ describe('delta-ninja-thief (Delta: Ninja Thief) — kit spec', () => {
         vals[0],
         'a flat ATK magnitude (15% of her ATK), not the 15 percentage'
       ).toBeGreaterThan(1000);
-      for (const b of casterAtk)
-        {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of casterAtk) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: the +20% is live — her distributed nuke picks it up same cast (1.2 → 1.0 without)', () => {

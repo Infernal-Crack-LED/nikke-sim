@@ -71,8 +71,9 @@ const marcianaBurstCastTrigger = withPatchedOverride(
     const blk = ov.skill1.find(
       (b: any) => b.trigger?.kind === 'fullBurstEnter'
     );
-    if (!blk)
-      {throw new Error('S1 fullBurstEnter block missing — fixture is stale');}
+    if (!blk) {
+      throw new Error('S1 fullBurstEnter block missing — fixture is stale');
+    }
     blk.trigger = { kind: 'burstCast' };
     delete blk.ownBurstGate;
   }
@@ -85,8 +86,9 @@ const marcianaNoStatusGate = withPatchedOverride(
     const blk = ov.skill1.find(
       (b: any) => b.requiresTargetStatus === 'High-Risk Target'
     );
-    if (!blk)
-      {throw new Error('S1 High-Risk Target rider missing — fixture is stale');}
+    if (!blk) {
+      throw new Error('S1 High-Risk Target rider missing — fixture is stale');
+    }
     delete blk.requiresTargetStatus;
   }
 );
@@ -98,10 +100,11 @@ const marcianaFlatWhistle = withPatchedOverride(
     const blk = ov.skill2.find((b: any) =>
       b.effects?.some((e: any) => e.perResource?.name === 'whistle')
     );
-    if (!blk)
-      {throw new Error(
+    if (!blk) {
+      throw new Error(
         'S2 whistle perResource block missing — fixture is stale'
-      );}
+      );
+    }
     blk.effects = [{ kind: 'buff', stat: 'atkPct', value: 163.65 }];
   }
 );
@@ -113,8 +116,9 @@ const marcianaNoOwnBurstGate = withPatchedOverride(
     const blk = ov.skill1.find(
       (b: any) => b.trigger?.kind === 'fullBurstEnter'
     );
-    if (!blk)
-      {throw new Error('S1 fullBurstEnter block missing — fixture is stale');}
+    if (!blk) {
+      throw new Error('S1 fullBurstEnter block missing — fixture is stale');
+    }
     delete blk.ownBurstGate;
   }
 );
@@ -128,10 +132,11 @@ const marcianaIntervalElemAdv = withPatchedOverride(
         (e: any) => e.stat === 'elemAdvantageDamagePct' && e.value === 20.41
       )
     );
-    if (!blk)
-      {throw new Error(
+    if (!blk) {
+      throw new Error(
         'S2 elemAdvantageDamagePct 20.41 block missing — fixture is stale'
-      );}
+      );
+    }
     blk.trigger = { kind: 'interval', sec: 5 };
   }
 );

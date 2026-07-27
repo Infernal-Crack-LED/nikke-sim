@@ -121,14 +121,17 @@ const patch = (mutate: (ov: any) => void) =>
 
 /** A1: Wheel of Fortune retargeted to ALL allies (drops Electric-only scoping). */
 const wheelAllies = patch((ov) => {
-  if (ov.burst[0]?.effects?.[0]?.stat !== 'attackDamagePct')
-    {throw new Error('arcana burst[0] Wheel missing — stale fixture');}
+  if (ov.burst[0]?.effects?.[0]?.stat !== 'attackDamagePct') {
+    throw new Error('arcana burst[0] Wheel missing — stale fixture');
+  }
   ov.burst[0].target = { kind: 'allies' };
 });
 /** A2: burst nuke halved (300% → 150%, the lvl-1 magnitude). */
 const nukeHalf = patch((ov) => {
   const fd = ov.burst[1]?.effects?.find((e: any) => e.kind === 'flatDamage');
-  if (!fd) {throw new Error('arcana burst flatDamage missing — stale fixture');}
+  if (!fd) {
+    throw new Error('arcana burst flatDamage missing — stale fixture');
+  }
   fd.atkPct = 150;
 });
 /** A3: Judgement (damage-taken debuff) removed from the burst. */
@@ -137,15 +140,18 @@ const noJudgement = patch((ov) => {
   ov.burst[1].effects = ov.burst[1].effects.filter(
     (e: any) => e.stat !== 'damageTakenPct'
   );
-  if (ov.burst[1].effects.length === before)
-    {throw new Error('arcana Judgement missing — stale fixture');}
+  if (ov.burst[1].effects.length === before) {
+    throw new Error('arcana Judgement missing — stale fixture');
+  }
 });
 /** A4/A5: the two 180-grants retargeted from "B3 Electric casters" to ALL allies. */
 const grantsAllies = patch((ov) => {
-  if (ov.skill1[0]?.effects?.[0]?.stat !== 'attackDamagePct')
-    {throw new Error('arcana S1 180AD missing — stale fixture');}
-  if (ov.skill2[0]?.effects?.[0]?.stat !== 'casterAtkPct')
-    {throw new Error('arcana S2 Strength missing — stale fixture');}
+  if (ov.skill1[0]?.effects?.[0]?.stat !== 'attackDamagePct') {
+    throw new Error('arcana S1 180AD missing — stale fixture');
+  }
+  if (ov.skill2[0]?.effects?.[0]?.stat !== 'casterAtkPct') {
+    throw new Error('arcana S2 Strength missing — stale fixture');
+  }
   ov.skill1[0].target = { kind: 'allies' };
   ov.skill2[0].target = { kind: 'allies' };
 });
@@ -159,10 +165,11 @@ const gateUngated = patch((ov) => {
       n++;
     }
   }
-  if (n !== 3)
-    {throw new Error(
+  if (n !== 3) {
+    throw new Error(
       'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture'
-    );}
+    );
+  }
 });
 /** GATE→old proxy: replace ownBurstGate with the parser-baseline everyN:2 offset:1 round-count,
  *  which fires on odd FB-ends regardless of whether arcana burst. */
@@ -176,10 +183,11 @@ const gateEveryN = patch((ov) => {
       n++;
     }
   }
-  if (n !== 3)
-    {throw new Error(
+  if (n !== 3) {
+    throw new Error(
       'arcana: expected 3 ownBurstGate blocks, found ' + n + ' — stale fixture'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -219,7 +227,9 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     it('is 10% for 10s, once per cast per Electric ally', () => {
       expect([...new Set(wheel.map((b) => b.value))]).toEqual([10]);
       expect(wheel.length).toBe(B_CASTS * B_ELECTRIC.length);
-      for (const b of wheel) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of wheel) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
     it('reaches exactly the Electric allies (arcana/ada), never the Iron ally (liter)', () => {
       expect(
@@ -256,7 +266,9 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
     );
     it('applies a 10% damage-taken debuff to the boss once per cast', () => {
       expect(judge.length).toBe(B_CASTS);
-      for (const b of judge) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of judge) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
     it('DISCRIMINATING: removing Judgement leaves no 10% damage-taken debuff', () => {
       expect(
@@ -281,7 +293,9 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
         'gate satisfied every rotation → fires every FB-end'
       ).toBe(B_FB);
       expect([...new Set(ad180B.map((b) => b.targetIdx))]).toEqual([B_ADA]);
-      for (const b of ad180B) {expect(b.expiresFrame! - b.frame).toBe(15 * FPS);}
+      for (const b of ad180B) {
+        expect(b.expiresFrame! - b.frame).toBe(15 * FPS);
+      }
     });
     it('fixture A (arcana never bursts): perfectly INERT — she is never in Wheel of Fortune', () => {
       expect(
@@ -390,7 +404,9 @@ describe('arcana (BASE, RL/Electric/B2) — kit spec', () => {
         [...new Set(g.map((b) => b.targetIdx))].sort((a, b) => a! - b!)
       ).toEqual([0, 1, 2]);
       expect(firings(g).length).toBe(B_FB);
-      for (const b of g) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of g) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
     it('fixture A: STILL fires every FB-end (ungated)', () => {
       const g = arcanaBuffs(A, A_ARCANA).filter(

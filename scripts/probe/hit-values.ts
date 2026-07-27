@@ -23,7 +23,9 @@ const pos: string[] = [];
 for (let i = 0; i < argv.length; i++) {
   if (argv[i].startsWith('--')) {
     flags[argv[i].slice(2)] = argv[++i];
-  } else {pos.push(argv[i]);}
+  } else {
+    pos.push(argv[i]);
+  }
 }
 const focus = pos[0];
 const team = pos.length > 1 ? pos.slice(1) : pos; // if only focus given, treat as solo

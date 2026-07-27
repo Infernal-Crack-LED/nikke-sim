@@ -134,28 +134,40 @@ export function prepareUnit(
 
   const extraStats: ExtraStat[] = [];
   const loadout: string[] = [];
-  if (opts?.gearStats)
-    {loadout.push(`synced gear (ATK ${Math.round(opts.gearStats.atk)})`);}
-  else if (opts?.ol !== undefined)
-    {loadout.push(opts.ol === 'base5' ? 'Base 5 gear' : `OL${opts.ol} gear`);}
+  if (opts?.gearStats) {
+    loadout.push(`synced gear (ATK ${Math.round(opts.gearStats.atk)})`);
+  } else if (opts?.ol !== undefined) {
+    loadout.push(opts.ol === 'base5' ? 'Base 5 gear' : `OL${opts.ol} gear`);
+  }
   const dollOpt = opts?.doll;
-  if (dollOpt === true) {loadout.push('Doll 15');}
-  else if (dollOpt && typeof dollOpt === 'object')
-    {loadout.push(`Doll ${dollOpt.rarity} ${dollOpt.level}`);}
-  if (opts?.lambdaStage) {loadout.push(`bursts as B${opts.lambdaStage}`);}
+  if (dollOpt === true) {
+    loadout.push('Doll 15');
+  } else if (dollOpt && typeof dollOpt === 'object') {
+    loadout.push(`Doll ${dollOpt.rarity} ${dollOpt.level}`);
+  }
+  if (opts?.lambdaStage) {
+    loadout.push(`bursts as B${opts.lambdaStage}`);
+  }
   const mode = skills.modes?.length
     ? opts?.mode && skills.modes.includes(opts.mode)
       ? opts.mode
       : skills.modes[0]
     : undefined;
-  if (mode) {loadout.push(`mode: ${mode}`);}
-  if (opts?.mpPriority) {loadout.push('bursts at max MP');}
-  if (opts?.burstGate === 'syncWithFocus')
-    {loadout.push('bursts in sync with focus');}
-  if (opts?.burstGate === 'everyOther')
-    {loadout.push('bursts every other full burst');}
-  if (opts?.stars !== undefined || opts?.core !== undefined)
-    {loadout.push(`${opts?.stars ?? 0}★ · core ${opts?.core ?? 0}`);}
+  if (mode) {
+    loadout.push(`mode: ${mode}`);
+  }
+  if (opts?.mpPriority) {
+    loadout.push('bursts at max MP');
+  }
+  if (opts?.burstGate === 'syncWithFocus') {
+    loadout.push('bursts in sync with focus');
+  }
+  if (opts?.burstGate === 'everyOther') {
+    loadout.push('bursts every other full burst');
+  }
+  if (opts?.stars !== undefined || opts?.core !== undefined) {
+    loadout.push(`${opts?.stars ?? 0}★ · core ${opts?.core ?? 0}`);
+  }
   if (
     levels !== MAX_SKILL_LEVELS &&
     (levels.skill1 < 10 || levels.skill2 < 10 || levels.burst < 10)
@@ -165,12 +177,15 @@ export function prepareUnit(
 
   if (opts?.cube) {
     const cube = deps.cubes.cubes[opts.cube.id];
-    if (!cube)
-      {throw new Error(`unknown cube "${opts.cube.id}" (see data/cubes.json)`);}
+    if (!cube) {
+      throw new Error(`unknown cube "${opts.cube.id}" (see data/cubes.json)`);
+    }
     const lvl = Math.min(Math.max(1, opts.cube.level), 15);
     extraStats.push({ stat: 'flatAtk', value: deps.cubes.atkByLevel[lvl - 1] });
     const elem = deps.cubes.elemByLevel[lvl - 1];
-    if (elem > 0) {extraStats.push({ stat: 'elementDamagePct', value: elem });}
+    if (elem > 0) {
+      extraStats.push({ stat: 'elementDamagePct', value: elem });
+    }
     if (cube.effectStat && cube.effectByLevel.length) {
       extraStats.push({
         stat: cube.effectStat,
@@ -182,8 +197,9 @@ export function prepareUnit(
 
   for (const sel of opts?.lines ?? []) {
     const line = deps.olLines.lines[sel.type];
-    if (!line)
-      {throw new Error(`unknown OL line "${sel.type}" (see data/ol-lines.json)`);}
+    if (!line) {
+      throw new Error(`unknown OL line "${sel.type}" (see data/ol-lines.json)`);
+    }
     const value = sel.value ?? line.max;
     extraStats.push({ stat: line.stat, value: value * sel.count });
     loadout.push(`${line.name} ×${sel.count} @ ${value}%`);
@@ -216,9 +232,10 @@ export function prepareUnit(
     char.burstCooldownSec;
   const burstCooldownSec = opts?.burstCdrSec
     ? Math.max(1, cdBase - opts.burstCdrSec)
-    : deps.overrides[char.slug]?.charFixes?.burstCooldownSec;
-  if (opts?.burstCdrSec)
-    {loadout.push(`burst CDR ${opts.burstCdrSec}s (→${burstCooldownSec}s)`);}
+    : cdBase;
+  if (opts?.burstCdrSec) {
+    loadout.push(`burst CDR ${opts.burstCdrSec}s (→${burstCooldownSec}s)`);
+  }
 
   return {
     skills,

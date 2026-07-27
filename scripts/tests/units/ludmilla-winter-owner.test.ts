@@ -83,15 +83,18 @@ const noInstantReload = withPatchedOverride(CARRY, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'instantReload')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('lwo S1 instantReload block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('lwo S1 instantReload block missing — fixture is stale');
+  }
 });
 /** L3 counterfactual: the NAIVE reading "60 core hits = hitCount 60" (drops the ÷0.95 proxy). */
 const naiveS2Count = withPatchedOverride(CARRY, (ov) => {
   const b = ov.skill2.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b) {throw new Error('lwo S2 flatDamage block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('lwo S2 flatDamage block missing — fixture is stale');
+  }
   b.trigger.count = 60;
 });
 /** L4 reference: her FB-entry crit-rate line removed. */
@@ -100,8 +103,9 @@ const noCrit = withPatchedOverride(CARRY, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'critRatePct')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('lwo S2 critRatePct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('lwo S2 critRatePct block missing — fixture is stale');
+  }
 });
 /** L5 reference: her burst Reload Speed half removed (ATK half kept). */
 const noReloadSpeed = withPatchedOverride(CARRY, (ov) => {
@@ -111,10 +115,11 @@ const noReloadSpeed = withPatchedOverride(CARRY, (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'reloadSpeedPct');
     removed += before - b.effects.length;
   }
-  if (removed === 0)
-    {throw new Error(
+  if (removed === 0) {
+    throw new Error(
       'lwo burst reloadSpeedPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

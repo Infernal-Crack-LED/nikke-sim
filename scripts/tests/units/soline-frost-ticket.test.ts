@@ -146,10 +146,11 @@ const cfMaxHp10 = withPatchedOverride(SFT, (ov: any) => {
   const e = ov.skill1
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterMaxHpPct');
-  if (!e)
-    {throw new Error(
+  if (!e) {
+    throw new Error(
       'soline S1 casterMaxHpPct effect missing — fixture is stale'
-    );}
+    );
+  }
   e.value = 10;
 });
 // F1 nearest-wrong (target): all allies → self only.
@@ -157,10 +158,11 @@ const cfMaxHpSelf = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'casterMaxHpPct')
   );
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'soline S1 casterMaxHpPct block missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'self' };
 });
 // F2 nearest-wrong (presence): the burstCdr block removed → no team CDR → fewer Full Bursts.
@@ -169,15 +171,18 @@ const cfNoCdr = withPatchedOverride(SFT, (ov: any) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'burstCdr')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('soline S1 burstCdr block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('soline S1 burstCdr block missing — fixture is stale');
+  }
 });
 // F6 nearest-wrong (trigger): the burst heal keyed to fullBurstEnter (FB-start frames) instead of burstCast.
 const cfHealFbEnter = withPatchedOverride(SFT, (ov: any) => {
   const b = ov.burst.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'heal')
   );
-  if (!b) {throw new Error('soline burst heal block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('soline burst heal block missing — fixture is stale');
+  }
   b.trigger = { kind: 'fullBurstEnter' };
 });
 // F6 nearest-wrong (presence): the burst heal block removed → no recovery source → crown's recovery never fires.
@@ -186,8 +191,9 @@ const cfNoHeal = withPatchedOverride(SFT, (ov: any) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
-  if (ov.burst.length === before)
-    {throw new Error('soline burst heal block missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('soline burst heal block missing — fixture is stale');
+  }
 });
 // Isolation: remove crown's own Relax self-heal so soline's burst heal is the ONLY recovery source in the fight.
 const crownNoHeal = withPatchedOverride('crown', (ov: any) => {
@@ -195,8 +201,9 @@ const crownNoHeal = withPatchedOverride('crown', (ov: any) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('crown S2 heal block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('crown S2 heal block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------

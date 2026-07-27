@@ -96,18 +96,21 @@ function applyEffect(
           Math.max(cfg?.min ?? 0, cur + e.delta)
         );
         owner.resources.set(e.name, next);
-        if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0)
-          {console.log(
+        if (ENV.DBG_UNIT === owner.char.slug && e.delta !== 0) {
+          console.log(
             `[res ${owner.char.slug}] t=${(frame / FPS).toFixed(2)} ${e.name} ` +
               `${cur}${e.delta > 0 ? '+' : ''}${e.delta} → ${next}`
-          );}
+          );
+        }
         break;
       }
       case 'flatDamage': {
         // pull-count gate (MEASURED 2026-07-14): rapi-red-hood's burst nuke fires only
         // with >=1 sticky charge banked (>=120 shots at cast — her fire-weak banner 1 at
         // ~68 shots had NO nuke; all >=120 banners did)
-        if (e.requiresPulls != null && owner.pulls < e.requiresPulls) {break;}
+        if (e.requiresPulls != null && owner.pulls < e.requiresPulls) {
+          break;
+        }
         // per-battle-elapsed ramp: a burst component that scales with a stack resource
         // accruing from battle start (cinderella's Beautiful-mirror). Snapshotted at cast.
         const fdRampMul =
@@ -215,14 +218,18 @@ function applyEffect(
         break;
       case 'fillGauge':
         // gauge is locked during full burst — fills landing then are wasted
-        if (fbEndFrame <= frame) {gauge = Math.min(100, gauge + e.pct);}
+        if (fbEndFrame <= frame) {
+          gauge = Math.min(100, gauge + e.pct);
+        }
         break;
       case 'heal': {
         // a heal has no modeled HP value; it emits a RECOVERY event to its targets,
         // firing their 'recovery'-triggered blocks (heal-synergy kits — Helm's
         // full-charge heal drives Crown's "when recovery takes effect → team ATK ▲").
         const healTargets = resolveTargets(block.target, ownerIdx);
-        for (const t of healTargets) {fireRecovery(t.idx, frame);}
+        for (const t of healTargets) {
+          fireRecovery(t.idx, frame);
+        }
         // heal-over-time: "Recovers X% every 1 sec for N sec" = N ticks. The first tick fired
         // above; schedule the remaining N-1 so on-recovery consumers stay refreshed across the
         // whole window (default ticks 1 → no scheduling, back-compatible with instant heals).
@@ -247,8 +254,9 @@ function applyEffect(
         // blocks (shield-synergy kits — e.g. naga's shield-gated lines).
         for (const t of resolveTargets(block.target, ownerIdx)) {
           t.blocks.forEach((rb, ri) => {
-            if (rb.trigger.kind === 'shielded')
-              {applyBlock(t.idx, rb, ri, frame);}
+            if (rb.trigger.kind === 'shielded') {
+              applyBlock(t.idx, rb, ri, frame);
+            }
           });
         }
         break;
@@ -283,22 +291,27 @@ function applyEffect(
         break;
       }
       case 'burstEligibility':
-        for (const t of resolveTargets(block.target, ownerIdx))
-          {t.extraStages.add(e.stage);}
+        for (const t of resolveTargets(block.target, ownerIdx)) {
+          t.extraStages.add(e.stage);
+        }
         break;
       case 'burstFirst':
-        for (const t of resolveTargets(block.target, ownerIdx))
-          {t.burstFirstPending = true;}
+        for (const t of resolveTargets(block.target, ownerIdx)) {
+          t.burstFirstPending = true;
+        }
         break;
       case 'reenterStage':
         break; // handled by the rotation (stage hold) after the cast resolves
       case 'advantageVs':
-        for (const t of resolveTargets(block.target, ownerIdx))
-          {t.advantageVs.add(e.element);}
+        for (const t of resolveTargets(block.target, ownerIdx)) {
+          t.advantageVs.add(e.element);
+        }
         break;
       case 'burstCdr':
         if (e.oncePerBattle) {
-          if (usedOncePerBattle.has(key)) {break;}
+          if (usedOncePerBattle.has(key)) {
+            break;
+          }
           usedOncePerBattle.add(key);
         }
         for (const t of resolveTargets(block.target, ownerIdx)) {
@@ -325,8 +338,11 @@ function applyEffect(
         break;
       }
       case 'fullBurstExtend':
-        if (fbEndFrame > frame) {fbEndFrame += Math.round(e.seconds * FPS);}
-        else {pendingFbExtendSec += e.seconds;}
+        if (fbEndFrame > frame) {
+          fbEndFrame += Math.round(e.seconds * FPS);
+        } else {
+          pendingFbExtendSec += e.seconds;
+        }
         break;
       case 'unlimitedAmmo':
         for (const t of resolveTargets(block.target, ownerIdx)) {

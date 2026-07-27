@@ -16,7 +16,7 @@ the Vite build exactly like `dpschart.json`):
 | Artifact           | npm script       | Content                                               |
 | ------------------ | ---------------- | ----------------------------------------------------- |
 | `burstgen.json`    | `ranks:burstgen` | all sim-supported units, uncapped 180s gauge          |
-| `burstcdr.json`    | `ranks:burstcdr` | 15 CDR units, nominal CDR sec/40s                     |
+| `burstcdr.json`    | `ranks:burstcdr` | 15 CDR units, nominal CDR sec/20s averaged over 180s  |
 | `sustain.json`     | `ranks:sustain`  | 50 sustain units, team-total HP                       |
 | `bufferchart.json` | `ranks:buffer`   | 74 buffers × {generic, typed} boards, added carry DPS |
 
@@ -41,7 +41,7 @@ and their player-facing notes are in the artifact's `profiles` map
   "profiles": { "with-2mg": "…", "with-1mg": "…" } }
 
 // burstcdr.json
-{ "entries": [[slug, cdrPer40s, ramp|null, condition|null, selfCdr|null, profile], ...] }
+{ "entries": [[slug, cdrPer20s, ramp|null, condition|null, selfCdr|null, profile], ...] }
 
 // sustain.json
 { "entries": [[slug, totalHp, totalPct, healPct, shieldPct, lifestealPct, profile], ...],
@@ -76,7 +76,7 @@ audit strings — good tooltip material ("why did the carries change?").
    Do NOT collapse them into one row without asking.
 4. **Board-specific columns**:
    - burstgen: value in bars (gaugeTotal/100, 1 decimal) + raw gauge.
-   - burstcdr: seconds per 40s; `condition` as an asterisk tooltip; `ramp` as
+   - burstcdr: seconds per 20s Full Burst (averaged over 180s); `condition` as an asterisk tooltip; `ramp` as
      "1st/2nd/3rd+ FB" sub-line on escalating units; `selfCdr` as a muted note.
    - sustain: absolute HP as the bar value; the heal/shield/lifesteal split as
      a mini stacked breakdown or tooltip; `% of max HP` secondary.

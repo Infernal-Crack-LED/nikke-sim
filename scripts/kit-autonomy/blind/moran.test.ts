@@ -50,9 +50,13 @@ function forEachEffect(
   ov: any,
   cb: (eff: any, block: any, slot: string) => void
 ) {
-  for (const slot of SLOTS)
-    {for (const b of ov[slot] ?? [])
-      {for (const e of b.effects ?? []) {cb(e, b, slot);}}}
+  for (const slot of SLOTS) {
+    for (const b of ov[slot] ?? []) {
+      for (const e of b.effects ?? []) {
+        cb(e, b, slot);
+      }
+    }
+  }
 }
 
 function dropEffects(
@@ -61,8 +65,9 @@ function dropEffects(
 ) {
   for (const slot of SLOTS) {
     const blocks = ov[slot] ?? [];
-    for (const b of blocks)
-      {b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b, slot));}
+    for (const b of blocks) {
+      b.effects = (b.effects ?? []).filter((e: any) => !pred(e, b, slot));
+    }
     ov[slot] = blocks.filter((b: any) => (b.effects ?? []).length > 0);
   }
 }
@@ -94,9 +99,13 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 function findAll(pred: (eff: any, block: any, slot: string) => boolean) {
   const out: { slot: string; block: any; eff: any }[] = [];
   for (const slot of SLOTS) {
-    for (const b of OV[slot] ?? [])
-      {for (const e of b.effects ?? [])
-        {if (pred(e, b, slot)) {out.push({ slot, block: b, eff: e });}}}
+    for (const b of OV[slot] ?? []) {
+      for (const e of b.effects ?? []) {
+        if (pred(e, b, slot)) {
+          out.push({ slot, block: b, eff: e });
+        }
+      }
+    }
   }
   return out;
 }
@@ -145,14 +154,16 @@ const noBurstAtk = run((ov) =>
 );
 const atkPctModel = run((ov) =>
   forEachEffect(ov, (e, _b, slot) => {
-    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57))
-      {e.stat = 'atkPct';}
+    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)) {
+      e.stat = 'atkPct';
+    }
   })
 );
 const dur20 = run((ov) =>
   forEachEffect(ov, (e, _b, slot) => {
-    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57))
-      {e.durationSec = 20;}
+    if (slot === 'burst' && e.kind === 'buff' && near(e.value, 42.57)) {
+      e.durationSec = 20;
+    }
   })
 );
 const noUnlimited = run((ov) =>
@@ -166,13 +177,23 @@ const noRider = run((ov) =>
   )
 );
 const riderUngated = run((ov) => {
-  for (const b of ov.skill1 ?? []) {if (isRiderBlock(b)) {delete b.swapGate;}}
+  for (const b of ov.skill1 ?? []) {
+    if (isRiderBlock(b)) {
+      delete b.swapGate;
+    }
+  }
 });
 const riderEvery1 = run((ov) => {
   for (const b of ov.skill1 ?? []) {
-    if (!isRiderBlock(b)) {continue;}
-    if (b.trigger?.kind === 'hitCount') {b.trigger.count = 1;}
-    if (b.everyN) {b.everyN = 1;}
+    if (!isRiderBlock(b)) {
+      continue;
+    }
+    if (b.trigger?.kind === 'hitCount') {
+      b.trigger.count = 1;
+    }
+    if (b.everyN) {
+      b.everyN = 1;
+    }
   }
 });
 const noFbCdr = run((ov) =>
@@ -202,8 +223,9 @@ const stripDefensive = run((ov) =>
 const casterAtkEv = (e: AnyEv[]) =>
   e.filter((x) => x.kind === 'buffApply' && x.stat === 'casterAtkPct');
 const diffVals = new Set(casterAtkEv(base.events).map((e) => e.value));
-for (const v of casterAtkEv(noBurstAtk.events).map((e) => e.value))
-  {diffVals.delete(v);}
+for (const v of casterAtkEv(noBurstAtk.events).map((e) => e.value)) {
+  diffVals.delete(v);
+}
 const MORAN_ATK_VALUES = [...diffVals];
 const V = MORAN_ATK_VALUES[0];
 const atkApplies = (e: AnyEv[]) =>

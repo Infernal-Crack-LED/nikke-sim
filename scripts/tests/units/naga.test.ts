@@ -85,62 +85,75 @@ const NAGA_NS = 1; // slot in NO_SHIELD_COMP
 /** N4 scaffold: extend blanc's shield window so it covers every naga burst (isolates the gate). */
 const blancLongShield = withPatchedOverride('blanc', (ov) => {
   let hit = 0;
-  for (const block of (ov as any).skill1)
-    {for (const eff of block.effects)
-      {if (eff.kind === 'shield') {
+  for (const block of (ov as any).skill1) {
+    for (const eff of block.effects) {
+      if (eff.kind === 'shield') {
         eff.durationSec = 120;
         hit++;
-      }}}
-  if (!hit) {throw new Error('blanc S1 shield block missing — fixture is stale');}
+      }
+    }
+  }
+  if (!hit) {
+    throw new Error('blanc S1 shield block missing — fixture is stale');
+  }
 });
 /** N4 counterfactual: delete the requiresShielded gate (the 31.02 line becomes unconditional). */
 const nagaUngated = withPatchedOverride('naga', (ov) => {
   let had = false;
-  for (const block of (ov as any).burst)
-    {if (block.requiresShielded) {
+  for (const block of (ov as any).burst) {
+    if (block.requiresShielded) {
       delete block.requiresShielded;
       had = true;
-    }}
-  if (!had)
-    {throw new Error(
+    }
+  }
+  if (!had) {
+    throw new Error(
       'naga burst requiresShielded block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** N1 counterfactual: the shield-gated core-dmg line re-triggered off naga's OWN burstCast. */
 const nagaS1BurstCast = withPatchedOverride('naga', (ov) => {
   let hit = 0;
-  for (const block of (ov as any).skill1)
-    {if (block.trigger?.kind === 'shielded') {
+  for (const block of (ov as any).skill1) {
+    if (block.trigger?.kind === 'shielded') {
       block.trigger = { kind: 'burstCast' };
       hit++;
-    }}
-  if (!hit)
-    {throw new Error('naga S1 shielded block missing — fixture is stale');}
+    }
+  }
+  if (!hit) {
+    throw new Error('naga S1 shielded block missing — fixture is stale');
+  }
 });
 /** N2 counterfactual: the top-2-ATK core-dmg line retargeted to ALL allies. */
 const nagaS2AllAllies = withPatchedOverride('naga', (ov) => {
   let hit = 0;
-  for (const block of (ov as any).skill2)
-    {if (block.target?.kind === 'alliesTopAtk') {
+  for (const block of (ov as any).skill2) {
+    if (block.target?.kind === 'alliesTopAtk') {
       block.target = { kind: 'allies' };
       hit++;
-    }}
-  if (!hit)
-    {throw new Error('naga S2 alliesTopAtk block missing — fixture is stale');}
+    }
+  }
+  if (!hit) {
+    throw new Error('naga S2 alliesTopAtk block missing — fixture is stale');
+  }
 });
 /** N3 counterfactual: casterAtkPct (% of NAGA's ATK) swapped for generic atkPct (% of target's OWN). */
 const nagaGenericAtk = withPatchedOverride('naga', (ov) => {
   let hit = 0;
-  for (const block of (ov as any).burst)
-    {for (const eff of block.effects)
-      {if (eff.stat === 'casterAtkPct') {
+  for (const block of (ov as any).burst) {
+    for (const eff of block.effects) {
+      if (eff.stat === 'casterAtkPct') {
         eff.stat = 'atkPct';
         hit++;
-      }}}
-  if (!hit)
-    {throw new Error(
+      }
+    }
+  }
+  if (!hit) {
+    throw new Error(
       'naga burst casterAtkPct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** Damage reference: every naga block removed (her whole kit contribution zeroed). */
 const nagaDead = withPatchedOverride('naga', (ov) => {
@@ -154,8 +167,9 @@ const nagaNoS2Heal = withPatchedOverride('naga', (ov) => {
   (ov as any).skill2 = (ov as any).skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'heal')
   );
-  if ((ov as any).skill2.length === before)
-    {throw new Error('naga S2 heal block missing — fixture is stale');}
+  if ((ov as any).skill2.length === before) {
+    throw new Error('naga S2 heal block missing — fixture is stale');
+  }
 });
 /** N6 inertness reference: naga's self-Pierce block removed. */
 const nagaNoPierce = withPatchedOverride('naga', (ov) => {
@@ -163,8 +177,9 @@ const nagaNoPierce = withPatchedOverride('naga', (ov) => {
   (ov as any).burst = (ov as any).burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'gainPierce')
   );
-  if ((ov as any).burst.length === before)
-    {throw new Error('naga burst gainPierce block missing — fixture is stale');}
+  if ((ov as any).burst.length === before) {
+    throw new Error('naga burst gainPierce block missing — fixture is stale');
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -401,7 +416,9 @@ describe('naga — kit spec', () => {
 
     it('is damage-INERT at scope lock (no pierceDamagePct source lands on SG naga)', () => {
       // SHIELD_COMP has no Pierce Damage ▲ buffer reaching naga → removing the tag moves nothing.
-      for (const s of SHIELD_COMP) {expect(noPierce.t[s]).toBe(base.t[s]);}
+      for (const s of SHIELD_COMP) {
+        expect(noPierce.t[s]).toBe(base.t[s]);
+      }
     });
   });
 

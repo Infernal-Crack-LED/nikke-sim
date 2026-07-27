@@ -110,9 +110,13 @@ export function bestOlAtTier(
         ...freeExtra,
         { stat: STAT_BY_KEY[key], value: tv[key] },
       ]);
-      if (!best || dmg > best.dmg) {best = { key, dmg };}
+      if (!best || dmg > best.dmg) {
+        best = { key, dmg };
+      }
     }
-    if (!best) {break;}
+    if (!best) {
+      break;
+    }
     freeCounts[best.key] = (freeCounts[best.key] ?? 0) + 1;
     freeExtra.push({ stat: STAT_BY_KEY[best.key], value: tv[best.key] });
     prev = best.dmg;

@@ -58,14 +58,16 @@ function run(overrides: Record<string, any> = {}) {
 // ---- counterfactual patches ----------------------------------------------------------------
 /** G1 reference: S1 removed entirely (no ATK stacks). */
 const guiltyNoS1 = withPatchedOverride('guilty', (ov) => {
-  if (!ov.skill1.length)
-    {throw new Error('guilty S1 missing — fixture is stale');}
+  if (!ov.skill1.length) {
+    throw new Error('guilty S1 missing — fixture is stale');
+  }
   ov.skill1 = [];
 });
 /** G3 reference: S2 removed entirely (no Wind-ally ATK buff). */
 const guiltyNoS2 = withPatchedOverride('guilty', (ov) => {
-  if (!ov.skill2.length)
-    {throw new Error('guilty S2 missing — fixture is stale');}
+  if (!ov.skill2.length) {
+    throw new Error('guilty S2 missing — fixture is stale');
+  }
   ov.skill2 = [];
 });
 /** G5 isolation: remove ONLY the defPct effect from the burst block, keeping the 277.71% rider. */
@@ -73,8 +75,9 @@ const guiltyNoDefDebuff = withPatchedOverride('guilty', (ov) => {
   const block = ov.burst.find((b: any) =>
     b.effects.some((e: any) => e.stat === 'defPct')
   );
-  if (!block)
-    {throw new Error('guilty burst defPct block missing — fixture is stale');}
+  if (!block) {
+    throw new Error('guilty burst defPct block missing — fixture is stale');
+  }
   block.effects = block.effects.filter((e: any) => e.stat !== 'defPct');
 });
 /** G6 isolation: remove ONLY the 277.71% additional damage, keeping the defPct debuff. */
@@ -82,8 +85,9 @@ const guiltyNoAdditional = withPatchedOverride('guilty', (ov) => {
   const block = ov.burst.find((b: any) =>
     b.effects.some((e: any) => e.kind === 'flatDamage' && e.atkPct === 277.71)
   );
-  if (!block)
-    {throw new Error('guilty burst 277.71% block missing — fixture is stale');}
+  if (!block) {
+    throw new Error('guilty burst 277.71% block missing — fixture is stale');
+  }
   block.effects = block.effects.filter(
     (e: any) => !(e.kind === 'flatDamage' && e.atkPct === 277.71)
   );

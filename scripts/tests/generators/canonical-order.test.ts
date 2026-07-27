@@ -30,7 +30,9 @@ describe('canonicalTeamOrder (pure)', () => {
       [SET[2], SET[0], SET[4], SET[1], SET[3]],
     ];
     const canon = perms.map((p) => canonicalTeamOrder(p, chars as any, SET[2]));
-    for (const c of canon) {expect(c).toEqual(canon[0]);}
+    for (const c of canon) {
+      expect(c).toEqual(canon[0]);
+    }
   });
 
   it('places the focus unit at the camera-focus slot (index 2)', () => {
@@ -49,17 +51,19 @@ describe('canonicalTeamOrder (pure)', () => {
           ? 'III'
           : ((chars as any)[s].burst as 'I' | 'II' | 'III' | 'Λ')
       ]!;
-    for (let i = 1; i < ord.length; i++)
-      {expect(rank(ord[i]) >= rank(ord[i - 1]), 'not burst-ordered').toBe(true);}
+    for (let i = 1; i < ord.length; i++) {
+      expect(rank(ord[i]) >= rank(ord[i - 1]), 'not burst-ordered').toBe(true);
+    }
   });
 });
 
 describe('isChargeWeapon', () => {
   it('is true exactly for SR/RL', () => {
-    for (const c of genChars)
-      {expect(isChargeWeapon(chars as any, c.slug)).toBe(
+    for (const c of genChars) {
+      expect(isChargeWeapon(chars as any, c.slug)).toBe(
         c.weapon === 'SR' || c.weapon === 'RL'
-      );}
+      );
+    }
   });
 });
 
@@ -100,10 +104,11 @@ describe('set-keyed sim (permutations collapse, focus post-pass ≥ pre-pass)', 
     const hasCharge = best!.units.some((u) =>
       isChargeWeapon(chars as any, u.slug)
     );
-    if (hasCharge)
-      {expect(
+    if (hasCharge) {
+      expect(
         isChargeWeapon(chars as any, best!.slugs[2]),
         'focus slot is not a charge unit'
-      ).toBe(true);}
+      ).toBe(true);
+    }
   });
 });

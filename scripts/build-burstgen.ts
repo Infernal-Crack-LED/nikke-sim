@@ -1,9 +1,9 @@
 // Precompute the burst-generation ranking board into web/public/burstgen.json
 // (vite's publicDir → served at /burstgen.json and copied into dist).
 //
-// Ranks every sim-supported unit by uncapped total burst gauge generated over a
-// 180s solo fight (kit effects included; cfg.disableBursts — see
-// src/ranks/burstgen.ts). BUILD OUTPUT — gitignored, not part of verify.sh.
+// Ranks every sim-supported unit by gauge-per-second contributed in a standard
+// no-op team with bursts enabled (see src/ranks/burstgen.ts). BUILD OUTPUT —
+// gitignored, not part of verify.sh.
 //
 //   npx tsx scripts/build-burstgen.ts [--out <path>]
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -23,6 +23,7 @@ import {
   BURSTGEN_PROFILES,
   type RanksCtx,
 } from '../src/ranks/burstgen.js';
+import type { BurstGenArtifact, BurstGenRow } from '../src/ranks/types.js';
 
 const load = <T>(rel: string): T =>
   JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8')) as T;
@@ -39,8 +40,14 @@ try {
 }
 
 const overrides: Record<string, OverrideFile | undefined> = {};
-for (const slug of Object.keys(data.characters))
-  {overrides[slug] = loadOverride(slug);}
+for (const slug of Object.keys(data.characters)) {
+  overrides[slug] = loadOverride(slug);
+}
+// Synthetic no-op controls are not roster entries, but their overrides carry
+// framework effects (no-op B1 team burst CDR, no-op B3 mock burst damage).
+for (const slug of ['noop-b1-ar', 'noop-b3-mg']) {
+  overrides[slug] = loadOverride(slug);
+}
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
@@ -50,20 +57,29 @@ const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
 // misses, e.g. trina/jill/mana).
 const population: string[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (!c.simSupported) {continue;}
+  if (!c.simSupported) {
+    continue;
+  }
   population.push(slug);
 }
 
 const ranked = rankBurstGen(population, ctx);
 
-const artifact = {
+const artifact: BurstGenArtifact = {
   generatedAt: new Date().toISOString(),
   methodology:
-    'Solo 180s fight, bursts disabled (bar pinned at 100): uncapped total burst ' +
-    'gauge generated, kit effects included, camera focus on the tested unit ' +
-    '(charge weapons ×2.5). 100 = one full bar. Profiles: little-mermaid runs ' +
-    'with two MG partners, cinderella-crystal-wave with one (their fills scale ' +
-    'with team ammo burn). Scope-lock loadout (Base-5, 3★/core 7, 10/10/10).',
+    'No-op team 180s fight, bursts enabled: unit tested in a standard no-op team ' +
+    '(B1/B2/B3 slots filled by weapon-modal controls), leftmost in its burst ' +
+    'category so it bursts first. The unit is measured UNFOCUSED — camera focus ' +
+    'is parked on a non-charge no-op teammate, so charge weapons generate at ×1.0 ' +
+    '(the ×2.5 focus bonus is a camera artifact not applied on this board). ' +
+    'The no-op B1 control provides a 7 s team burst-cooldown reduction to normalize ' +
+    'for the baseline CDR a real B1 enabler would contribute. ' +
+    "Ranked by the unit's gauge contribution divided by the time the team bar was " +
+    'actively building gauge (gaugeBuildTimeSec). 100 = one full bar. Profiles: ' +
+    'little-mermaid runs with two MG B3 partners, cinderella-crystal-wave with one ' +
+    'MG B3 partner (their team-ammo fills scale with team ammunition burn). ' +
+    'Scope-lock loadout (Base-5, 3★/core 7, 10/10/10).',
   units: Object.fromEntries(
     population.map((slug) => {
       const c = data.characters[slug];
@@ -83,10 +99,12 @@ const artifact = {
   profiles: Object.fromEntries(
     Object.values(BURSTGEN_PROFILES).map((p) => [p.id, p.note])
   ),
-  entries: ranked.map((r) => [
+  entries: ranked.map((r): BurstGenRow => [
     r.slug,
+    Math.round(r.gaugePerSec * 100) / 100,
     Math.round(r.gaugeTotal * 100) / 100,
-    r.profile, // null = plain solo run
+    r.fullBursts,
+    r.profile, // null = plain base-team run
   ]),
 };
 
@@ -103,7 +121,7 @@ process.stderr.write(
       .slice(0, 10)
       .map(
         (r) =>
-          `  #${r.rank} ${r.slug} ${r.barsPerFight.toFixed(1)} bars${r.profile ? ` [${r.profile}]` : ''}`
+          `  #${r.rank} ${r.slug} ${r.gaugePerSec.toFixed(2)}%/s ${r.gaugeTotal.toFixed(1)} bars ${r.fullBursts.toFixed(1)} FB${r.profile ? ` [${r.profile}]` : ''}`
       )
       .join('\n') +
     '\n'

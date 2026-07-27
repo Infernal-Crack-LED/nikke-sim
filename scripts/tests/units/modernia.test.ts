@@ -90,64 +90,72 @@ const modNoS1Rider = withPatchedOverride('modernia', (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('modernia S1 flatDamage rider missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('modernia S1 flatDamage rider missing — fixture is stale');
+  }
 });
 /** M1 counterfactual: the rider as a per-PULL proc (count 2) instead of per-HIT (count 1). */
 const modS1PerPull = withPatchedOverride('modernia', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (!b)
-    {throw new Error('modernia S1 flatDamage rider missing — fixture is stale');}
+  if (!b) {
+    throw new Error('modernia S1 flatDamage rider missing — fixture is stale');
+  }
   b.trigger.count = 2;
 });
 /** M2 reference: the 200-hit self stacker (crit-dmg + ammo-down) removed. */
 const modNoStacks = withPatchedOverride('modernia', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'critDamagePct'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'modernia S1 critDamagePct stacker missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** M3 counterfactual: Hit Rate on burstCast (her own casts only) instead of fullBurstEnter. */
 const modHitRateOnCast = withPatchedOverride('modernia', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'hitRatePct'));
-  if (!b)
-    {throw new Error('modernia S2 hitRatePct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('modernia S2 hitRatePct block missing — fixture is stale');
+  }
   b.trigger = { kind: 'burstCast' };
 });
 /** M4 counterfactual: the ATK▲ gate removed (counter accrues/fires ungated, pre-FB). */
 const modAtkUngated = withPatchedOverride('modernia', (ov) => {
   const b = ov.skill2.find((x: any) => hasStat(x, 'atkPct'));
-  if (!b)
-    {throw new Error('modernia S2 atkPct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('modernia S2 atkPct block missing — fixture is stale');
+  }
   delete b.fbGate;
 });
 /** M5 reference: the team Full Burst Duration ▲5s removed. */
 const modNoFbExtend = withPatchedOverride('modernia', (ov) => {
   const before = ov.burst.length;
   ov.burst = ov.burst.filter((b: any) => !hasKind(b, 'fullBurstExtend'));
-  if (ov.burst.length === before)
-    {throw new Error(
+  if (ov.burst.length === before) {
+    throw new Error(
       'modernia burst fullBurstExtend missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** M6 reference: the unlimited-ammo effect removed (Destroy Mode keeps the rider). */
 const modNoUnlimited = withPatchedOverride('modernia', (ov) => {
   const b = ov.burst.find((x: any) => hasKind(x, 'unlimitedAmmo'));
-  if (!b)
-    {throw new Error('modernia burst unlimitedAmmo missing — fixture is stale');}
+  if (!b) {
+    throw new Error('modernia burst unlimitedAmmo missing — fixture is stale');
+  }
   b.effects = b.effects.filter((e: any) => e.kind !== 'unlimitedAmmo');
 });
 /** M7 reference: the Destroy Mode extraHitDamagePct rider removed (unlimited ammo stays). */
 const modNoDestroyRider = withPatchedOverride('modernia', (ov) => {
   const b = ov.burst.find((x: any) => hasStat(x, 'extraHitDamagePct'));
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'modernia burst extraHitDamagePct rider missing — fixture is stale'
-    );}
+    );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'extraHitDamagePct');
 });
 
@@ -252,7 +260,9 @@ describe('modernia — kit spec', () => {
       ]).toEqual([15]);
       const perFrame = new Map<number, Set<number>>();
       for (const b of apps) {
-        if (!perFrame.has(b.frame)) {perFrame.set(b.frame, new Set());}
+        if (!perFrame.has(b.frame)) {
+          perFrame.set(b.frame, new Set());
+        }
         perFrame.get(b.frame)!.add(b.targetIdx!);
       }
       for (const holders of perFrame.values()) {

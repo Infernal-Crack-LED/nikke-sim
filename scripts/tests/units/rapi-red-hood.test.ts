@@ -93,33 +93,43 @@ const NOB1_RRH = 1; // crown 0 / rrh 1 / ada 2
 const rrhNoAtk = withPatchedOverride(SLUG, (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => b.formation !== 'hasB1');
-  if (ov.skill1.length === before)
-    {throw new Error('rrh S1 hasB1 block missing — fixture stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('rrh S1 hasB1 block missing — fixture stale');
+  }
 });
 /** RRH3: her S2 passive projectile Attachment/Explosion buffs removed. */
 const rrhNoProj = withPatchedOverride(SLUG, (ov) => {
   let n = 0;
-  for (const b of ov.skill2)
-    {b.effects = b.effects.filter((e: any) => {
+  for (const b of ov.skill2) {
+    b.effects = b.effects.filter((e: any) => {
       const drop =
         e.stat === 'projectileAttachmentPct' ||
         e.stat === 'projectileExplosionPct';
-      if (drop) {n++;}
+      if (drop) {
+        n++;
+      }
       return !drop;
-    });}
-  if (n !== 2)
-    {throw new Error('rrh S2 projectile buffs missing — fixture stale');}
+    });
+  }
+  if (n !== 2) {
+    throw new Error('rrh S2 projectile buffs missing — fixture stale');
+  }
 });
 /** RRH4: her S2 stored explosion (storedHit) removed — the attachment flatDamage stays. */
 const rrhNoExpl = withPatchedOverride(SLUG, (ov) => {
   let n = 0;
-  for (const b of ov.skill2)
-    {b.effects = b.effects.filter((e: any) => {
-      if (e.kind !== 'storedHit') {return true;}
+  for (const b of ov.skill2) {
+    b.effects = b.effects.filter((e: any) => {
+      if (e.kind !== 'storedHit') {
+        return true;
+      }
       n++;
       return false;
-    });}
-  if (n !== 1) {throw new Error('rrh S2 storedHit missing — fixture stale');}
+    });
+  }
+  if (n !== 1) {
+    throw new Error('rrh S2 storedHit missing — fixture stale');
+  }
 });
 /** RRH5: her Stage-3 burst nuke removed. */
 const rrhNoNuke = withPatchedOverride(SLUG, (ov) => {
@@ -127,8 +137,9 @@ const rrhNoNuke = withPatchedOverride(SLUG, (ov) => {
   ov.burst = ov.burst.filter(
     (b: any) => !(b.trigger.kind === 'burstCast' && b.trigger.stage === 3)
   );
-  if (ov.burst.length === before)
-    {throw new Error('rrh burst stage-3 nuke missing — fixture stale');}
+  if (ov.burst.length === before) {
+    throw new Error('rrh burst stage-3 nuke missing — fixture stale');
+  }
 });
 /** RRH2: her noB1 Full-Burst-enter team block removed. */
 const rrhNoAssist = withPatchedOverride(SLUG, (ov) => {
@@ -136,15 +147,18 @@ const rrhNoAssist = withPatchedOverride(SLUG, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !(b.formation === 'noB1' && b.trigger.kind === 'fullBurstEnter')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('rrh S1 noB1 FB-enter block missing — fixture stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('rrh S1 noB1 FB-enter block missing — fixture stale');
+  }
 });
 /** RRH6: her Stage-1 casterAtkPct magnitude knocked to the level-1 value (11.16 vs 18.01). */
 const rrhCasterWrong = withPatchedOverride(SLUG, (ov) => {
   const e = ov.burst
     .flatMap((b: any) => b.effects)
     .find((x: any) => x.stat === 'casterAtkPct');
-  if (!e) {throw new Error('rrh burst casterAtkPct missing — fixture stale');}
+  if (!e) {
+    throw new Error('rrh burst casterAtkPct missing — fixture stale');
+  }
   e.value = 11.16;
 });
 
@@ -176,10 +190,11 @@ const rrhBursts = (evs: SimEvent[]) =>
 /** Distinct holders a buff reached, per frame — for all-allies assertions. */
 function holdersPerFrame(bs: BuffApply[]): Map<number, Set<number | null>> {
   const m = new Map<number, Set<number | null>>();
-  for (const b of bs)
-    {(m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+  for (const b of bs) {
+    (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
       b.targetIdx
-    );}
+    );
+  }
   return m;
 }
 
@@ -201,7 +216,9 @@ describe('rapi-red-hood — kit spec', () => {
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([
         HASB1_RRH,
       ]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is LIVE (removing it drops her total)', () => {
@@ -246,7 +263,9 @@ describe('rapi-red-hood — kit spec', () => {
           3
         );
       }
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing the noB1 FB-enter block erases the team buff', () => {
@@ -311,11 +330,12 @@ describe('rapi-red-hood — kit spec', () => {
 
     it('every rocket instance is an integer multiple of 88.11% of final ATK', () => {
       expect(s2.length).toBeGreaterThan(0);
-      for (const d of s2)
-        {expect(
+      for (const d of s2) {
+        expect(
           isMultipleOf8811(d.atkPct),
           `atkPct ${d.atkPct} not ×88.11`
-        ).toBe(true);}
+        ).toBe(true);
+      }
     });
 
     it('the attachment is immediate and does NOT core; the explosion cores at ×0.33', () => {
@@ -383,7 +403,9 @@ describe('rapi-red-hood — kit spec', () => {
           3
         );
       }
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('is 18.01% of caster ATK (magnitude pinned vs the 11.16 counterfactual)', () => {

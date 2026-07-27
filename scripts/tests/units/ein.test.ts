@@ -99,8 +99,9 @@ const hasKind = (b: any, k: string) => b.effects.some((e: any) => e.kind === k);
 const einNoS1Atk = withPatchedOverride('ein', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasStat(b, 'atkPct'));
-  if (ov.skill1.length === before)
-    {throw new Error('ein S1 atkPct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('ein S1 atkPct block missing — fixture is stale');
+  }
 });
 /** E2 reference: her burst True Damage buff removed. */
 const einNoTrue = withPatchedOverride('ein', (ov) => {
@@ -110,10 +111,11 @@ const einNoTrue = withPatchedOverride('ein', (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'trueDamagePct');
     removed += n - b.effects.length;
   }
-  if (!removed)
-    {throw new Error(
+  if (!removed) {
+    throw new Error(
       'ein burst trueDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** E3 reference: her burst Charge Damage buff removed. */
 const einNoChargeBurst = withPatchedOverride('ein', (ov) => {
@@ -123,40 +125,45 @@ const einNoChargeBurst = withPatchedOverride('ein', (ov) => {
     b.effects = b.effects.filter((e: any) => e.stat !== 'chargeDamagePct');
     removed += n - b.effects.length;
   }
-  if (!removed)
-    {throw new Error(
+  if (!removed) {
+    throw new Error(
       'ein burst chargeDamagePct effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** E5 reference: her Near Feather lumps (skill2 flatDamage) removed. */
 const einNoFeathers = withPatchedOverride('ein', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasKind(b, 'flatDamage'));
-  if (ov.skill2.length === before)
-    {throw new Error('ein S2 feather flatDamage missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ein S2 feather flatDamage missing — fixture is stale');
+  }
 });
 /** E6 reference: her S2 passive Charge Damage 80% removed. */
 const einNoS2Charge = withPatchedOverride('ein', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasStat(b, 'chargeDamagePct'));
-  if (ov.skill2.length === before)
-    {throw new Error('ein S2 chargeDamagePct block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ein S2 chargeDamagePct block missing — fixture is stale');
+  }
 });
 /** E7 reference: her orb-gauge zero-damage dot removed. */
 const einNoOrb = withPatchedOverride('ein', (ov) => {
   const before = ov.skill2.length;
   ov.skill2 = ov.skill2.filter((b: any) => !hasKind(b, 'dot'));
-  if (ov.skill2.length === before)
-    {throw new Error('ein S2 orb-gauge dot missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('ein S2 orb-gauge dot missing — fixture is stale');
+  }
 });
 /** E8 reference: her battle-start 4-feather lump (skill1 passive flatDamage) removed. */
 const einNoStartFeathers = withPatchedOverride('ein', (ov) => {
   const before = ov.skill1.length;
   ov.skill1 = ov.skill1.filter((b: any) => !hasKind(b, 'flatDamage'));
-  if (ov.skill1.length === before)
-    {throw new Error(
+  if (ov.skill1.length === before) {
+    throw new Error(
       'ein S1 battle-start feather lump missing — fixture is stale'
-    );}
+    );
+  }
 });
 
 // ---- runs (hoisted: each is a full 180s sim) --------------------------------------------------
@@ -192,7 +199,9 @@ describe('ein — kit spec', () => {
       expect(applied.length).toBeGreaterThan(0);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([70.12]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([EIN]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('fires on MORE stage-3 entries than ein casts herself (helm is a co-B3)', () => {
@@ -224,7 +233,9 @@ describe('ein — kit spec', () => {
       expect(applied.length).toBe(einBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([55.3]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([EIN]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing it drops her true-damage output (live, not inert)', () => {
@@ -244,7 +255,9 @@ describe('ein — kit spec', () => {
       expect(applied.length).toBe(einBursts(base.events).length);
       expect([...new Set(applied.map((b) => b.value))]).toEqual([140.68]);
       expect([...new Set(applied.map((b) => b.targetIdx))]).toEqual([EIN]);
-      for (const b of applied) {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+      for (const b of applied) {
+        expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+      }
     });
 
     it('DISCRIMINATING: removing it drops her charge output', () => {
@@ -288,14 +301,16 @@ describe('ein — kit spec', () => {
 
     it('the burstCast lump is exactly 34 × 90.81 (kit per-instance magnitude)', () => {
       expect(burstLump.length).toBeGreaterThan(0);
-      for (const d of burstLump)
-        {expect(d.atkPct / FEATHER).toBeCloseTo(BURST_FEATHERS, 6);}
+      for (const d of burstLump) {
+        expect(d.atkPct / FEATHER).toBeCloseTo(BURST_FEATHERS, 6);
+      }
     });
 
     it('the fullBurstEnd trickle lump is exactly 6 × 90.81', () => {
       expect(trickleLump.length).toBeGreaterThan(0);
-      for (const d of trickleLump)
-        {expect(d.atkPct / FEATHER).toBeCloseTo(TRICKLE_FEATHERS, 6);}
+      for (const d of trickleLump) {
+        expect(d.atkPct / FEATHER).toBeCloseTo(TRICKLE_FEATHERS, 6);
+      }
     });
 
     it('feathers are true-flavored riders: crit-eligible and range-excluded', () => {

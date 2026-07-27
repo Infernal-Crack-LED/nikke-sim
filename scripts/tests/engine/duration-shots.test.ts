@@ -47,14 +47,18 @@ function run(
     const buff = ov.burst
       .flatMap((b: any) => b.effects)
       .find((e: any) => e.stat === 'chargeDamageMultPct');
-    if (!buff)
-      {throw new Error(
+    if (!buff) {
+      throw new Error(
         'helm burst chargeDamageMultPct block missing — fixture is stale'
-      );}
+      );
+    }
     delete buff.durationShots;
     delete buff.durationSec;
-    if ('shots' in window) {buff.durationShots = window.shots;}
-    else {buff.durationSec = window.sec;}
+    if ('shots' in window) {
+      buff.durationShots = window.shots;
+    } else {
+      buff.durationSec = window.sec;
+    }
   });
   return totals(runComp({ ...controlComp(CARRY), overrides: { helm } }));
 }

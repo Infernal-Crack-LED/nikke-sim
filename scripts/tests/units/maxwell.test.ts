@@ -83,41 +83,46 @@ function run(overrides: Record<string, any> = {}) {
 /** M1 counterfactual: her S1 keyed to her OWN burst casts, not Full Burst entry. */
 const maxwellBurstCastTrigger = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
-  if (!b || b.trigger?.kind !== 'fullBurstEnter')
-    {throw new Error(
+  if (!b || b.trigger?.kind !== 'fullBurstEnter') {
+    throw new Error(
       'maxwell S1 fullBurstEnter block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger.kind = 'burstCast';
 });
 /** M2 counterfactual: the same buffs to ALL allies instead of the top-2. */
 const maxwellAllAllies = withPatchedOverride('maxwell', (ov) => {
   const b = ov.skill1[0];
-  if (!b || b.target?.kind !== 'alliesTopAtk')
-    {throw new Error(
+  if (!b || b.target?.kind !== 'alliesTopAtk') {
+    throw new Error(
       'maxwell S1 alliesTopAtk target missing — fixture is stale'
-    );}
+    );
+  }
   b.target = { kind: 'allies' };
 });
 /** M7 counterfactual: the kit-literal FULL-CHARGE magnitude (813.42 × 3 = 2440.26). */
 const maxwellFullCharge = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
+  if (!e) {
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  }
   e.atkPct = 2440.26;
 });
 /** M6 counterfactual: a second shot in the burst window (the old multi-shot weaponSwap shape). */
 const maxwellMultiShot = withPatchedOverride('maxwell', (ov) => {
   const b = ov.burst[0];
   const e = b?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
+  if (!e) {
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  }
   b.effects.push({ kind: 'flatDamage', atkPct: 813.42 });
 });
 /** M8 counterfactual: flip the eligibility — strip crit, add core. */
 const maxwellCritCoreFlip = withPatchedOverride('maxwell', (ov) => {
   const e = ov.burst[0]?.effects?.find((x: any) => x.kind === 'flatDamage');
-  if (!e)
-    {throw new Error('maxwell burst flatDamage missing — fixture is stale');}
+  if (!e) {
+    throw new Error('maxwell burst flatDamage missing — fixture is stale');
+  }
   e.crit = false;
   e.core = true;
 });
@@ -156,10 +161,11 @@ const s1Frames = (evs: SimEvent[]) => [
 /** Distinct holder slots reached, per apply-frame. */
 const holdersPerFrame = (evs: SimEvent[]): Set<number | null>[] => {
   const m = new Map<number, Set<number | null>>();
-  for (const b of s1Atk(evs))
-    {(m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
+  for (const b of s1Atk(evs)) {
+    (m.get(b.frame) ?? m.set(b.frame, new Set()).get(b.frame)!).add(
       b.targetIdx
-    );}
+    );
+  }
   return [...m.values()];
 };
 

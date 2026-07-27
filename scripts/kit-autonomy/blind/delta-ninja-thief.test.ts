@@ -123,7 +123,9 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
     const fbEnters = baseEvents.filter((e) => e.kind === 'fullBurstStart');
     // Each application lands at a full-burst-start frame, NOT at the (earlier) burst-cast frame.
     const fbFrames = new Set(fbEnters.map((e) => e.frame));
-    for (const e of dt12) {expect(fbFrames.has(e.frame)).toBe(true);}
+    for (const e of dt12) {
+      expect(fbFrames.has(e.frame)).toBe(true);
+    }
 
     // Counterfactual: re-key S1a to burstCast — the debuff would move OFF the FB-start frames.
     const patched = withPatchedOverride(SLUG, (ov) => {
@@ -160,8 +162,9 @@ describe('S1a — FB-enter: enemy Damage Taken ▲12% for 15s', () => {
             e.kind === 'buff' &&
             e.stat === 'damageTakenPct' &&
             e.value === 12
-          )
-            {e.durationSec = 10;}
+          ) {
+            e.durationSec = 10;
+          }
         }
       }
     });
@@ -205,7 +208,9 @@ describe('S1b — own burst cast: self ATK ▲15.04% for 10s', () => {
       (e) => e.kind === 'burstCast' && (e as any).slug === SLUG
     );
     expect(atk.length).toBe(ownCasts.length);
-    for (const e of atk) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of atk) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('does NOT fire on team full bursts this unit did not cast (nearest-wrong: fullBurstEnter)', () => {
@@ -372,8 +377,9 @@ describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster
     );
     expect(dd.length).toBeGreaterThan(0);
     const targets = new Set(dd.map((e) => e.targetSlug));
-    for (const mate of [SLUG, 'liter', 'helm'])
-      {expect(targets.has(mate)).toBe(true);}
+    for (const mate of [SLUG, 'liter', 'helm']) {
+      expect(targets.has(mate)).toBe(true);
+    }
   });
 
   it('the ATK grant is CASTER-scaled (flat), not a 15% self-scaling atkPct (scope)', () => {
@@ -381,7 +387,9 @@ describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster
     expect(ca.length).toBeGreaterThan(0);
     // Flat-resolved: the emitted value is 0.15 × caster staticAtk — a large flat ATK number,
     // never the raw 15. Nearest-wrong (atkPct 15) would emit value===15 under stat 'atkPct'.
-    for (const e of ca) {expect(e.value).not.toBe(15);}
+    for (const e of ca) {
+      expect(e.value).not.toBe(15);
+    }
     expect(Math.max(...ca.map((e) => e.value))).toBeGreaterThan(100);
     const wrong = buffs(baseEvents, 'atkPct').filter((e) => e.value === 15);
     expect(wrong.length).toBe(0);
@@ -391,7 +399,9 @@ describe('burst — all allies: Distributed Damage ▲20% + ATK ▲15% of caster
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.burst as any[]) {
         for (const e of b.effects as any[]) {
-          if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+          if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+            e.stat = 'atkPct';
+          }
         }
       }
     });
@@ -427,7 +437,9 @@ describe('burst — all enemies: 170% of final ATK as distributed damage', () =>
     ) as any[];
     expect(burstHits.length).toBeGreaterThanOrEqual(ownCasts);
     // burst-cast instant damage lands before the FB window opens
-    for (const h of burstHits) {expect(h.fbMajorApplied).toBeFalsy();}
+    for (const h of burstHits) {
+      expect(h.fbMajorApplied).toBeFalsy();
+    }
   });
 
   it("removing the 170% line lowers ONLY this unit's damage (inertness)", () => {
@@ -444,8 +456,9 @@ describe('burst — all enemies: 170% of final ATK as distributed damage', () =>
     });
     const altTotals = totals(alt.res);
     expect(altTotals[SLUG]).toBeLessThan(baseTotals[SLUG]);
-    for (const mate of ['liter', 'helm'])
-      {expect(altTotals[mate]).toBe(baseTotals[mate]);}
+    for (const mate of ['liter', 'helm']) {
+      expect(altTotals[mate]).toBe(baseTotals[mate]);
+    }
   });
 
   it('its own Distributed Damage ▲20% self-buff feeds this hit (bucket check)', () => {

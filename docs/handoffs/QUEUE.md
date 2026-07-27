@@ -52,6 +52,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
+  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
+  hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
+  `full_charge_burst_energy` column (`fullChargeBonus` in `data/gauge-per-shot.json`), which equals
+  `chargeMultiplier` for every unit and IS the focus multiplier ×100 (measured anchor: takina/maiden
+  250 → focused base×2.5; additive reading ruled out by TB3 A1/A2). Four units deviate from 250:
+  **alice 350 → 3.5× (currently 40% under-credited)**, cinderella + vesti-tactical-upgrade 200 → 2.0×,
+  scarlet-black-shadow 150 → 1.5×. Burst-gen board UNAFFECTED (measured unfocused as of 2026-07-27);
+  only focused sim fights move (DPS chart / probes / team sim). **Gated:** `/scientific-method`
+  (engine default change) + the four non-250 values are datamine-derived not recorded → owner picks
+  measure-`alice`-first vs land-as-⚑-hypothesis; overturns the 2026-07-13 "full_charge_burst_energy
+  unused" ruling (needs DECISIONS entry + `burst-gauge.md` §4 rewrite).
+
+- **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
+  `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
+  outliers in `docs/rl3-burstgen-rank-comparison.md` (regenerate: `npx tsx scripts/rl3-burstgen-compare.ts`)
+  into legitimate kit/rotation effect vs comparison artifact vs modeling gap. Seeded clusters: **(A)** the
+  RL clip-reload family (arcana/anchor/diesel/mint/ada) sits at the sim board's BOTTOM (1.65–2.2%/s,
+  Δ≈−61..−70) — possible RL cadence datamine gap vs the rl3 4-shot-opener artifact; **(B)** SG units
+  under-generate in sim (landing-fraction `sgGaugeFrac` × the no-op range script; overlaps the SG-landing
+  geometry thread); **(C)** catalogued unmodeled skill-gen (anis-star battery+aura, ein orb, trina/laplace
+  battle-start fill — `burst-gauge.md` §2); **(D)** sim-over-performers with real kit gauge (bready DoT,
+  red-hood, neon — mostly legitimate). flora/rosanna/sugar already resolved 2026-07-27. Findings-only;
+  per-unit enactments gated via `/kit-tdd` / `/scientific-method`.
+
 - **⇒ PROBE READER BUILD-OUT — P0/P1/P2/P4 BUILT 2026-07-24 on branch `probe-readers`, AWAITING
   OWNER MERGE** (DECISIONS 2026-07-24; validation record `docs/probe-runs.md`; instrument registry
   `docs/STATE.md` §7; plan `docs/handoffs/2026-07-24-probe-reader-buildout-plan.md`).
@@ -313,7 +338,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   plan written: `docs/handoffs/2026-07-26-rank-boards-frontend.md` (one `/ranks` page, pill-switched
   boards, profile badges; artifacts carry a `profile` flag with plain+profiled dual entries); (2) DPS ranks for B1/B2 →
   `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
-  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same). Known caveats to
+  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same); **(4) Mint/Prika duo
+  profiles on the buffer rank — plan written 2026-07-26:
+  `docs/handoffs/2026-07-26-buffer-rank-mint-prika-plan.md`. The pair's duet modes already encode the
+  rotation; the buffer-rank team assembler just needs a partner-unit profile path (Sustain already
+  ships pair profiles). Known caveats to
   carry into any owner review: buffer board under-reads trigger-gated kits (crown's recovery-gated
   lines fire only with a healer present); `soline-frost-ticket` reads NEGATIVE (−32k) on the buffer
   board — unexamined sim interaction; sustain lifesteal lines valued on own damage only.
@@ -327,6 +356,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   (owner-chosen, not measured). dorothy-serendipity PH-water (766M) vs N9-redhood (328M) already DISAGREE on
   best fit (small vs medium), so profiles are plausibly per-boss — needs real per-boss SG footage to map boss
   silhouette → profile before any board use.
+
+- **⇒ ENGINE REGRESSION FULL-BURST COUNT FAILURES — four comps disabled in `scripts/regression.ts`.**
+  `iron sweep (run G)`, `T5 wind-weak`, `T1 wind-weak`, and `N3 scarlet/liberalio iron` all read 1–3 Full
+  Bursts short of their video-measured counts on clean `HEAD`. They are temporarily skipped with a
+  `disabled` flag so `bash scripts/verify.sh` stays green. Likely related to the open burst-generation
+  timing increment family (`U29`/`U31`); re-enable once the underlying shortfall is fixed.
 
 ### Tier-0 open threads
 
@@ -389,3 +424,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 - **Per-unit rotation re-tunes (answered-questions U16)** — RESOLVED 2026-07-26: the rotation
   over-generation is settled (DECISIONS 2026-07-21); the per-unit over-models (chisato, trina, naga,
   soda-twinkling-bunny) are rotation-independent and tracked as standard hand-tune queue items.
+- **Blanc same-squad CDR override cleanup** — `src/skills/overrides/blanc.json` currently models the
+  S2 "ally from the same squad still on the battlefield" CDR (40.76s) as unconditional because nobody
+  dies at scope lock. The buffer-rank `w/ Bunny` profile works around this by suppressing the CDR in
+  Blanc's plain row and keeping it active when the synthetic Bunny partner is present. The engine/
+  override should instead gate the CDR with a `teamHas` slug condition (or a proper squad primitive)
+  so the plain row is naturally inert without the partner and active with the partner. Out of scope for
+  the current rank-board PR; the buffer-code workaround (`blancNoCdrOverride` in
+  `src/ranks/buffer.ts`) should be removed once the override/engine is fixed.

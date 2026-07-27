@@ -51,13 +51,19 @@ const shotRow = (u: any): ShotRow | null => {
     if (Array.isArray(o)) {
       for (const v of o) {
         const r = walk(v);
-        if (r) {return r;}
+        if (r) {
+          return r;
+        }
       }
     } else if (o && typeof o === 'object') {
-      if ('reload_bullet' in o) {return o as ShotRow;}
+      if ('reload_bullet' in o) {
+        return o as ShotRow;
+      }
       for (const v of Object.values(o)) {
         const r = walk(v);
-        if (r) {return r;}
+        if (r) {
+          return r;
+        }
       }
     }
     return null;
@@ -85,7 +91,9 @@ const rows: Array<{
 
 for (const u of units) {
   const s = shotRow(u);
-  if (!s || s.reload_time == null || u.reloadFrames == null) {continue;}
+  if (!s || s.reload_time == null || u.reloadFrames == null) {
+    continue;
+  }
   const chunks = reloadChunks(s.reload_bullet);
   const want = expectedReloadFrames(s.reload_time, chunks);
   rows.push({
@@ -163,10 +171,11 @@ const describe = (r: (typeof rows)[number]) =>
     ? `SHIPPED UN-MULTIPLIED (×1 of a ${r.chunks}-part reload)`
     : 'off-convention');
 
-for (const r of bad.filter(pinnedOk))
-  {console.log(
+for (const r of bad.filter(pinnedOk)) {
+  console.log(
     `  pinned — ${r.slug}: reloadFrames ${r.have} (convention says ${r.want}) — ${PINNED[r.slug].why}`
-  );}
+  );
+}
 
 if (!unexpected.length) {
   console.log(
@@ -176,7 +185,9 @@ if (!unexpected.length) {
 }
 
 console.log(`\nreload chunks: ${unexpected.length} NEW unexplained unit(s):`);
-for (const r of unexpected) {console.log(`  ✗ ${describe(r)}`);}
+for (const r of unexpected) {
+  console.log(`  ✗ ${describe(r)}`);
+}
 console.log(
   '\nA UN-MULTIPLIED unit reloads chunks× too fast unless a charFixes override masks it — which is\n' +
     'the silent upstream regression this gate exists to catch. A pinned unit whose value DRIFTS also\n' +

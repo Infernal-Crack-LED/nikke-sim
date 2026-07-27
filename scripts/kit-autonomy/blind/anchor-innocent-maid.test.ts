@@ -72,7 +72,9 @@ function totalDamage(res: any): number {
 function slotOf(res: any, slug: string): number {
   const u: any = unitOf(res, slug);
   const i = u?.slot ?? u?.slotIdx ?? u?.index;
-  if (typeof i === 'number') {return i;}
+  if (typeof i === 'number') {
+    return i;
+  }
   const arr: any[] = res.units ?? res.perUnit ?? [];
   return arr.findIndex((x: any) => x?.slug === slug);
 }
@@ -105,7 +107,11 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
   for (const b of o.blocks ?? []) {
     for (const e of b.effects ?? []) {
       fn(e, b);
-      if (e.kind === 'escalating') {for (const s of e.steps ?? []) {fn(s, b);}}
+      if (e.kind === 'escalating') {
+        for (const s of e.steps ?? []) {
+          fn(s, b);
+        }
+      }
     }
   }
 }
@@ -113,7 +119,9 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
 /** Nearest-wrong for an "Once:/Twice:/Three times:" line — every tier fires on activation #1. */
 function flattenEscalating(o: any, slot: string) {
   for (const b of o.blocks ?? []) {
-    if (b.slot !== slot) {continue;}
+    if (b.slot !== slot) {
+      continue;
+    }
     b.effects = (b.effects ?? []).flatMap((e: any) =>
       e.kind === 'escalating' ? (e.steps ?? []) : [e]
     );
@@ -123,8 +131,9 @@ function flattenEscalating(o: any, slot: string) {
 function stepWithStat(o: any, slot: string, stat: string): any {
   let found: any = null;
   walkEffects(o, (e, b) => {
-    if (!found && b.slot === slot && e.kind === 'buff' && e.stat === stat)
-      {found = e;}
+    if (!found && b.slot === slot && e.kind === 'buff' && e.stat === stat) {
+      found = e;
+    }
   });
   return found;
 }
@@ -168,18 +177,23 @@ const FLAT_S1 = runWith((o) => flattenEscalating(o, 'skill1'));
 const FLAT_S2 = runWith((o) => flattenEscalating(o, 'skill2'));
 const ATK_SELF = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+      e.stat = 'atkPct';
+    }
   })
 );
 const RELOAD_0 = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {e.value = 0;}
+    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {
+      e.value = 0;
+    }
   })
 );
 const DIST_GENERIC = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'distributedDamagePct')
-      {e.stat = 'attackDamagePct';}
+    if (e.kind === 'buff' && e.stat === 'distributedDamagePct') {
+      e.stat = 'attackDamagePct';
+    }
   })
 );
 const NO_SQUAD_GATE = runWith((o) => {
@@ -192,8 +206,9 @@ const NO_SQUAD_GATE = runWith((o) => {
 });
 const NO_BURST_HEAL = runWith((o) => {
   for (const b of o.blocks ?? []) {
-    if (b.slot === 'burst')
-      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');}
+    if (b.slot === 'burst') {
+      b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');
+    }
   }
 });
 
@@ -316,7 +331,9 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
   it('trigger identity is fullBurstEnd, not fullBurstEnter', () => {
     const blocks = (OV.blocks ?? []).filter((b: any) => b.slot === 'skill2');
     expect(blocks.length).toBeGreaterThan(0);
-    for (const b of blocks) {expect(b.trigger?.kind).toBe('fullBurstEnd');}
+    for (const b of blocks) {
+      expect(b.trigger?.kind).toBe('fullBurstEnd');
+    }
     const hr = appliesBy(BASE.events, 'hitRatePct', ANCHOR);
     expect(hr.length).toBeGreaterThan(0);
     // Every apply must sit AFTER at least one fullBurstEnd (an FB-enter model would apply before any).
@@ -456,7 +473,9 @@ describe('anchor-innocent-maid — audit', () => {
   it('no `ignored`-kind effects (validator-rejected) anywhere in the override', () => {
     let bad = 0;
     walkEffects(OV, (e) => {
-      if (e.kind === 'ignored' || e.kind === 'unsupported') {bad++;}
+      if (e.kind === 'ignored' || e.kind === 'unsupported') {
+        bad++;
+      }
     });
     expect(bad).toBe(0);
   });

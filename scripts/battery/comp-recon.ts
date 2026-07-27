@@ -63,7 +63,9 @@ for (const c of CASES) {
   for (let i = 0; i < N; i++) {
     const r = runOnce(w, c.team, c.boss, 1, 1000 + i);
     fb += r.fullBursts;
-    for (const u of r.units) {(acc[u.slug] ??= []).push(u.totalDamage);}
+    for (const u of r.units) {
+      (acc[u.slug] ??= []).push(u.totalDamage);
+    }
   }
   console.log(
     `\n=== ${c.team.name} ===  FB sim=${(fb / N).toFixed(1)} real=${c.realFb}`

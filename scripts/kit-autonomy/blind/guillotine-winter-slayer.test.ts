@@ -87,7 +87,9 @@ const DMG_KINDS = new Set(['dot', 'flatDamage', 'storedHit', 'stackedNuke']);
 // never masquerade as a unit-level divergence.
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : Array.isArray(s.blocks) ? s.blocks : [];
 }
 function allBlocks(ov: any): any[] {
@@ -99,23 +101,32 @@ function allEffects(ov: any): any[] {
 function auditText(ov: any): string {
   const parts: string[] = [String(ov?.note ?? '')];
   const push = (u: any) => {
-    if (!u) {return;}
-    for (const k of Object.keys(u)) {parts.push(...((u as any)[k] ?? []));}
+    if (!u) {
+      return;
+    }
+    for (const k of Object.keys(u)) {
+      parts.push(...((u as any)[k] ?? []));
+    }
   };
   push(ov?.unmodeled);
   for (const s of SLOTS) {
     const v = ov?.[s];
-    if (v && !Array.isArray(v)) {push(v.unmodeled);}
+    if (v && !Array.isArray(v)) {
+      push(v.unmodeled);
+    }
   }
   return parts.join(' | ').toLowerCase();
 }
 function resourcePools(ov: any): any[] {
   const out: any[] = [];
-  if (Array.isArray(ov?.resources)) {out.push(...ov.resources);}
+  if (Array.isArray(ov?.resources)) {
+    out.push(...ov.resources);
+  }
   for (const s of SLOTS) {
     const v = ov?.[s];
-    if (v && !Array.isArray(v) && Array.isArray(v.resources))
-      {out.push(...v.resources);}
+    if (v && !Array.isArray(v) && Array.isArray(v.resources)) {
+      out.push(...v.resources);
+    }
   }
   return out;
 }
@@ -137,7 +148,9 @@ function run(overrides?: Record<string, unknown>): Run {
     ...(opts.cfg ?? {}),
     onEvent: (ev: SimEvent) => events.push(ev),
   };
-  if (overrides) {opts.overrides = { ...(opts.overrides ?? {}), ...overrides };}
+  if (overrides) {
+    opts.overrides = { ...(opts.overrides ?? {}), ...overrides };
+  }
   return { res: runComp(opts), events };
 }
 
@@ -161,8 +174,11 @@ const base = run();
 // i.e. exactly the Water-Code-ally level-up grants.
 const noTeamS1 = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of slotBlocks(ov, 'skill1'))
-      {if (b?.target?.kind !== 'self') {b.effects = [];}}
+    for (const b of slotBlocks(ov, 'skill1')) {
+      if (b?.target?.kind !== 'self') {
+        b.effects = [];
+      }
+    }
   }),
 });
 
@@ -170,11 +186,13 @@ const noTeamS1 = run({
 // in any slot and under either encoding (stacked buff or perResource pool).
 const noExpAtk = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const s of SLOTS)
-      {for (const b of slotBlocks(ov, s))
-        {b.effects = (b.effects ?? []).filter(
+    for (const s of SLOTS) {
+      for (const b of slotBlocks(ov, s)) {
+        b.effects = (b.effects ?? []).filter(
           (e: any) => !(e.kind === 'buff' && near(perValue(e), EXP_ATK))
-        );}}
+        );
+      }
+    }
   }),
 });
 
@@ -182,8 +200,9 @@ const noExpAtk = run({
 // (kind-agnostic, so it fires whether the continuous damage is a dot or flatDamage).
 const noBurstDmg = run({
   [SLUG]: withPatchedOverride(SLUG, (ov: any) => {
-    for (const b of slotBlocks(ov, 'burst'))
-      {b.effects = (b.effects ?? []).filter((e: any) => !DMG_KINDS.has(e.kind));}
+    for (const b of slotBlocks(ov, 'burst')) {
+      b.effects = (b.effects ?? []).filter((e: any) => !DMG_KINDS.has(e.kind));
+    }
   }),
 });
 
@@ -203,7 +222,9 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
 
   // ---- 2. override shape / validator hygiene --------------------------------
   it('override carries all three slots and no ignored-effect blocks', () => {
-    for (const s of SLOTS) {expect(slotBlocks(OV, s).length).toBeGreaterThan(0);}
+    for (const s of SLOTS) {
+      expect(slotBlocks(OV, s).length).toBeGreaterThan(0);
+    }
     expect(allEffects(OV).some((e: any) => e.kind === 'ignored')).toBe(false);
   });
 
@@ -326,7 +347,9 @@ describe('guillotine-winter-slayer - blind kit spec', () => {
     const groups = new Map<string, Set<string>>();
     for (const e of cs) {
       const k = String(Math.round(e.value * 1e4));
-      if (!groups.has(k)) {groups.set(k, new Set());}
+      if (!groups.has(k)) {
+        groups.set(k, new Set());
+      }
       groups.get(k)!.add(e.targetSlug);
     }
     const waterOnly = [...groups.values()].filter(

@@ -50,7 +50,9 @@ export function unigeoCircleR(r0: number, hr: number): number {
 // the range-scaled silhouette — linear interpolation on the generated per-band radial table.
 export function unigeoCoverage(band: string, R: number): number {
   const tab = UNIGEO_COVERAGE[band];
-  if (!tab || R <= 0) {return 1;}
+  if (!tab || R <= 0) {
+    return 1;
+  }
   const pos = R / UNIGEO_COV_R_STEP - 1; // tab[i] is coverage at R = (i+1)·step
   if (pos <= 0) {
     // below the first grid point interpolate to coverage(0) = 1 (circle centred on the core)
@@ -74,15 +76,21 @@ export function unigeoSgLanding(band: string, hr: number): number {
 export function unigeoSgCorePerLanded(band: string, hr: number): number {
   const R = unigeoCircleR(UNIGEO_SG_R0, hr);
   const rc = (UNIGEO_CORE_PX[band] ?? UNIGEO_CORE_PX.near) / 2;
-  if (R <= rc) {return 1;}
+  if (R <= rc) {
+    return 1;
+  }
   const cov = unigeoCoverage(band, R);
-  if (cov <= 0) {return 1;}
+  if (cov <= 0) {
+    return 1;
+  }
   return Math.min(1, ((rc / R) * (rc / R)) / cov);
 }
 
 // Area of intersection of two discs (radii R and r, centres d apart) — the analytic lens.
 export function lensArea(R: number, r: number, d: number): number {
-  if (d >= R + r) {return 0;}
+  if (d >= R + r) {
+    return 0;
+  }
   if (d <= Math.abs(R - r)) {
     const m = Math.min(R, r);
     return Math.PI * m * m;
@@ -108,10 +116,14 @@ export function unigeoSingleCoreProb(
   const d0 = UNIGEO_DELTA0[weapon];
   const fb = UNIGEO_FBLOOM[weapon];
   const scale = ACCURACY_CIRCLE_SCALE[weapon];
-  if (d0 === undefined || fb === undefined || scale === undefined) {return null;}
+  if (d0 === undefined || fb === undefined || scale === undefined) {
+    return null;
+  }
   const rc = (UNIGEO_CORE_PX[band] ?? UNIGEO_CORE_PX.near) / 2;
   const Reff = fb * unigeoCircleR((CIRCLE_PX_K * scale) / 2, hr);
   const delta = d0 * Math.max(0, 1 - Math.max(0, hr) / UNIGEO_DELTA_H);
-  if (Reff <= 0) {return delta <= rc ? 1 : 0;}
+  if (Reff <= 0) {
+    return delta <= rc ? 1 : 0;
+  }
   return Math.min(1, lensArea(Reff, rc, delta) / (Math.PI * Reff * Reff));
 }

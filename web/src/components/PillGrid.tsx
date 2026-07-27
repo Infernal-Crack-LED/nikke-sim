@@ -11,16 +11,22 @@ function useBalancedCols(count: number) {
   const [cols, setCols] = useState(count);
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el) {return;}
+    if (!el) {
+      return;
+    }
     const compute = () => {
       const items = Array.from(el.children) as HTMLElement[];
-      if (items.length < 2) {return setCols(Math.max(1, items.length));}
+      if (items.length < 2) {
+        return setCols(Math.max(1, items.length));
+      }
       const cs = getComputedStyle(el);
       const gap = parseFloat(cs.columnGap || '0') || 0;
       const W = el.clientWidth;
       const widths = items.map((c) => c.scrollWidth); // content widths (justify-items: start)
       const total = widths.reduce((s, w) => s + w, 0) + gap * (count - 1);
-      if (total <= W) {return setCols(count);} // they all fit on one row — keep it
+      if (total <= W) {
+        return setCols(count);
+      } // they all fit on one row — keep it
       // else split into the fewest rows that fit (by the widest item), evened out
       const perRow = Math.max(
         1,
@@ -30,7 +36,9 @@ function useBalancedCols(count: number) {
       setCols(Math.max(1, Math.ceil(count / rows)));
     };
     compute();
-    if (typeof ResizeObserver === 'undefined') {return;} // jsdom / SSR: no reflow
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    } // jsdom / SSR: no reflow
     const ro = new ResizeObserver(compute);
     ro.observe(el);
     return () => ro.disconnect();

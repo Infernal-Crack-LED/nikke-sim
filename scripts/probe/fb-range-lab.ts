@@ -29,7 +29,9 @@ function ratiosFor(rule: string): Map<string, number[]> {
   for (const line of out.split('\n')) {
     const mm = line.match(/^(\S+)\s+shots.*ratio\s+([\d.]+)/);
     if (mm) {
-      if (!m.has(mm[1])) {m.set(mm[1], []);}
+      if (!m.has(mm[1])) {
+        m.set(mm[1], []);
+      }
       m.get(mm[1])!.push(Number(mm[2]));
     }
   }
@@ -44,12 +46,15 @@ function mae(m: Map<string, number[]>): {
   let s = 0,
     n = 0,
     w = 0;
-  for (const arr of m.values())
-    {for (const r of arr) {
+  for (const arr of m.values()) {
+    for (const r of arr) {
       s += Math.abs(r - 1);
       n++;
-      if (r >= 0.9 && r <= 1.1) {w++;}
-    }}
+      if (r >= 0.9 && r <= 1.1) {
+        w++;
+      }
+    }
+  }
   return { mae: s / n, n, within10: w / n };
 }
 
@@ -57,7 +62,9 @@ console.log(
   'FB HEURISTIC LAB — board fit per candidate rule (range is settled: skills never get +30%)\n'
 );
 const byRule = new Map<string, Map<string, number[]>>();
-for (const rule of RULES) {byRule.set(rule, ratiosFor(rule));}
+for (const rule of RULES) {
+  byRule.set(rule, ratiosFor(rule));
+}
 
 console.log(
   'rule'.padEnd(12) +
@@ -92,7 +99,9 @@ for (const rule of RULES.slice(1)) {
     const d = arr
       .map((r, i) => r - (b[i] ?? r))
       .reduce((a, c) => (Math.abs(c) > 0.005 ? a + 1 : a), 0);
-    if (d) {moved.push(slug);}
+    if (d) {
+      moved.push(slug);
+    }
   }
   console.log(
     `\n[${rule}] moves ${moved.length} units vs perkit: ${moved.join(', ') || '(none)'}`
@@ -157,10 +166,11 @@ const GROUND: {
       'KR dcinside (measured): same burst, additional dmg GETS +50% (ticks during FB) — proves TIMING not type',
   },
 ];
-for (const g of GROUND)
-  {console.log(
+for (const g of GROUND) {
+  console.log(
     `  ${g.fb.padEnd(4)} ${g.unit} — ${g.instance}\n       ${g.evidence}`
-  );}
+  );
+}
 console.log(`
   THE RULE (JP research 2026-07-14, well-sourced, one measured): FB +50% is a TIMING/SNAPSHOT gate in
   the Boost bucket, NOT a damage-type whitelist. Each type gets it by WHEN it snapshots buffs:

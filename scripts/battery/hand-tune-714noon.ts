@@ -125,14 +125,17 @@ for (const t of TEAMS) {
       ? t.target
       : 'crown'
     : t.target;
-  if (focus !== wantFocus)
-    {throw new Error(`[${t.name}] focus ${focus} ≠ expected ${wantFocus}`);}
+  if (focus !== wantFocus) {
+    throw new Error(`[${t.name}] focus ${focus} ≠ expected ${wantFocus}`);
+  }
   const bad = t.slugs.filter((s) => s !== t.target && !TUNED.has(s));
-  if (bad.length)
-    {throw new Error(`[${t.name}] non-hand-tuned support(s): ${bad.join(', ')}`);}
+  if (bad.length) {
+    throw new Error(`[${t.name}] non-hand-tuned support(s): ${bad.join(', ')}`);
+  }
   const unsup = t.slugs.filter((s) => !isSupported(s));
-  if (unsup.length)
-    {throw new Error(`[${t.name}] non-enikk-supported: ${unsup.join(', ')}`);}
+  if (unsup.length) {
+    throw new Error(`[${t.name}] non-enikk-supported: ${unsup.join(', ')}`);
+  }
 }
 
 const carryTot: Record<string, number> = {};
@@ -145,7 +148,9 @@ for (const t of TEAMS) {
   const warns = autoWire(w, bt);
   const chars = t.slugs.map((s) => w.data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of t.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of t.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = t.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -178,7 +183,9 @@ for (const t of TEAMS) {
     `\n=== ${t.name}  |  boss ${t.boss}  |  FOCUS ${focus}  |  FBs ${res.fullBursts}  |  team ${(total / 1e6).toFixed(0)}M`
   );
   console.log(`    slots(1-4): ${t.slugs.join(' · ')}`);
-  if (warns.length) {console.log(`    ⚠ ${warns.join('; ')}`);}
+  if (warns.length) {
+    console.log(`    ⚠ ${warns.join('; ')}`);
+  }
   for (const u of res.units) {
     const tag =
       u.slug === focus
@@ -190,13 +197,15 @@ for (const t of TEAMS) {
       `      ${u.slug.padEnd(24)} ${(u.totalDamage / 1e6).toFixed(0).padStart(5)}M${tag}`
     );
   }
-  if (t.pair && t.carry)
-    {carryTot[t.name] = res.units.find((u) => u.slug === t.carry)!.totalDamage;}
+  if (t.pair && t.carry) {
+    carryTot[t.name] = res.units.find((u) => u.slug === t.carry)!.totalDamage;
+  }
 }
 
 const pairs = [...new Set(TEAMS.filter((t) => t.pair).map((t) => t.pair!))];
-if (pairs.length)
-  {console.log('\n=== A/B predicted carry lift (support buff isolated) ===');}
+if (pairs.length) {
+  console.log('\n=== A/B predicted carry lift (support buff isolated) ===');
+}
 for (const p of pairs) {
   const A = TEAMS.find((t) => t.pair === p && t.name.includes('· A'))!;
   const B = TEAMS.find((t) => t.pair === p && t.name.includes('· B'))!;

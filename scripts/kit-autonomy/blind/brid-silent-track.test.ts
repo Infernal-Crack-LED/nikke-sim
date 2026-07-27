@@ -63,7 +63,9 @@ function run(opts: any): { res: any; events: Ev[] } {
 // CharacterSkills carrying its own blocks[]. Handle both; there is no top-level ov.blocks.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
+  if (!s) {
+    return [];
+  }
   return Array.isArray(s) ? s : (s.blocks ?? []);
 }
 const eff = (b: any): any[] => b?.effects ?? [];
@@ -83,8 +85,9 @@ function pickBlock(
   label: string
 ): any {
   const b = slotBlocks(ov, slot).find(pred);
-  if (!b)
-    {throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);}
+  if (!b) {
+    throw new Error('[' + SLUG + '] no ' + slot + ' block matching ' + label);
+  }
   return b;
 }
 
@@ -98,14 +101,20 @@ function removeEffect(
   let hit = false;
   for (let i = arr.length - 1; i >= 0; i--) {
     const b = arr[i];
-    if (!eff(b).some(pred)) {continue;}
+    if (!eff(b).some(pred)) {
+      continue;
+    }
     hit = true;
     const rest = eff(b).filter((e: any) => !pred(e));
-    if (rest.length === 0) {arr.splice(i, 1);}
-    else {b.effects = rest;}
+    if (rest.length === 0) {
+      arr.splice(i, 1);
+    } else {
+      b.effects = rest;
+    }
   }
-  if (!hit)
-    {throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);}
+  if (!hit) {
+    throw new Error('[' + SLUG + '] no ' + slot + ' effect matching ' + label);
+  }
 }
 
 function ungateElement(
@@ -116,7 +125,9 @@ function ungateElement(
 ): void {
   const b = pickBlock(ov, slot, pred, 'element-gated Damage Taken block');
   delete b.bossElementGate;
-  if (b.trigger?.kind === 'bossElement') {b.trigger = fallback;}
+  if (b.trigger?.kind === 'bossElement') {
+    b.trigger = fallback;
+  }
 }
 
 // ---- event helpers ----------------------------------------------------------
@@ -155,8 +166,11 @@ function multisetDiff(a: Ev[], b: Ev[]): Ev[] {
   for (const e of a) {
     const k = sigOf(e);
     const c = counts.get(k) ?? 0;
-    if (c > 0) {counts.set(k, c - 1);}
-    else {out.push(e);}
+    if (c > 0) {
+      counts.set(k, c - 1);
+    } else {
+      out.push(e);
+    }
   }
   return out;
 }
@@ -166,7 +180,9 @@ const AMOUNT_FIELDS = ['amount', 'damage', 'dmg', 'total'];
 function amountOf(e: Ev): number | undefined {
   for (const f of AMOUNT_FIELDS) {
     const v = e[f];
-    if (typeof v === 'number' && Number.isFinite(v)) {return v;}
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      return v;
+    }
   }
   return undefined;
 }
@@ -203,7 +219,11 @@ const s1RiderHalf = run(
         (bl: any) => eff(bl).some(isFlat),
         'skill1 flatDamage'
       );
-      for (const e of eff(b)) {if (isFlat(e)) {e.atkPct = e.atkPct / 2;}}
+      for (const e of eff(b)) {
+        if (isFlat(e)) {
+          e.atkPct = e.atkPct / 2;
+        }
+      }
     })
   )
 );
@@ -236,7 +256,11 @@ const s2RiderHalf = run(
         (bl: any) => eff(bl).some(isFlat),
         'skill2 flatDamage'
       );
-      for (const e of eff(b)) {if (isFlat(e)) {e.atkPct = e.atkPct / 2;}}
+      for (const e of eff(b)) {
+        if (isFlat(e)) {
+          e.atkPct = e.atkPct / 2;
+        }
+      }
     })
   )
 );
@@ -333,7 +357,9 @@ describe(SLUG + ' - blind kit spec', () => {
       expect(e.srcSlot).toBe('skill1');
       expect(e.inFullBurst).toBe(true); // FB-enter timing: the rider takes the FB major
       const coreish = e.coreRate ?? e.core;
-      if (typeof coreish === 'number') {expect(coreish).toBe(0);} // no core strike text in the kit
+      if (typeof coreish === 'number') {
+        expect(coreish).toBe(0);
+      } // no core strike text in the kit
     }
   });
 
@@ -379,7 +405,9 @@ describe(SLUG + ' - blind kit spec', () => {
   // --- skill2 b) 675% of final ATK after 5 normal attacks ---------------------
   it('skill2 675% rider runs off a 5-attack counter, not a full-burst or per-shot trigger', () => {
     expect(bridS2Riders.length).toBeGreaterThan(fbStarts); // not FB-keyed
-    for (const e of bridS2Riders) {expect(e.srcSlot).toBe('skill2');}
+    for (const e of bridS2Riders) {
+      expect(e.srcSlot).toBe('skill2');
+    }
     // Nearest-wrong: threshold 10 (or a per-shot trigger). Doubling the threshold must halve
     // the fire count; a shotFired encoding would land near 0.1 and fail this band.
     const ratio = bridS2Riders10.length / bridS2Riders.length;

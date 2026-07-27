@@ -55,11 +55,11 @@ npx tsx scripts/doll-regression.ts
 # Tiers:
 #   verify.sh          fast  — typecheck + validation + regressions. The everyday gate.
 #   verify.sh full     +web  — adds the web build + client smoke. Use this LOCALLY.
-#   verify.sh deploy   +DPS  — adds the DPS-chart artifact build + chart-tab smoke. CI/deploy only.
+#   verify.sh deploy   +DPS  — adds the DPS-chart + rank-board artifact builds and their smokes. CI/deploy only.
 #
-# Why the DPS-chart smoke sits in `deploy` and not in `full`: it needs dist/dpschart.json, which
-# comes from web/public/dpschart.json — a gitignored BUILD OUTPUT that build-dpschart.ts documents
-# in place as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh". A fresh
+# Why the chart smokes sit in `deploy` and not in `full`: they need dist/{dpschart,burstgen,burstcdr,
+# sustain,bufferchart}.json, which come from web/public/ — gitignored BUILD OUTPUTS that the builders
+# document in place as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh". A fresh
 # git worktree has no such file, so having it in `full` failed every isolated engine worktree
 # (CLAUDE.md constraint 8) until a multi-minute build-dpschart run. The deploy box regenerates the
 # artifact anyway, so there the smoke is nearly free.
@@ -68,10 +68,11 @@ npx tsx scripts/doll-regression.ts
 # committed copy would let the smoke assert against an OLDER engine's output while reporting green.
 MODE="${1:-}"
 if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
-  # the artifact must exist BEFORE vite build, which copies publicDir -> dist
+  # the artifacts must exist BEFORE vite build, which copies publicDir -> dist
   if [ "$MODE" = "deploy" ]; then
-    say "DPS-chart artifact (gitignored build output — deploy tier only)"
+    say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy tier only)"
     npm run dpschart
+    npm run ranks:all
   fi
   say "web build + smoke"
   npm run web:build
@@ -79,6 +80,8 @@ if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
   if [ "$MODE" = "deploy" ]; then
     say "DPS-chart tab smoke (headliners, bars, matrix, compare)"
     node scripts/web-smoke-dpschart.mjs
+    say "rank-boards smoke (pills, bars, profile badges, methodology, buffer boards)"
+    node scripts/web-smoke-ranks.mjs
   fi
 fi
 

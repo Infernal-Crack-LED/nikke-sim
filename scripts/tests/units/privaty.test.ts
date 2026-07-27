@@ -80,15 +80,20 @@ const flatAtkPct = (b: any, pct: number) =>
 /** P1 counterfactual: the ungated 256.17 rider fires on EVERY pull, not just the last bullet. */
 const privatyShotFired = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill2.find((x: any) => flatAtkPct(x, 256.17));
-  if (!b) {throw new Error('privaty S2 256.17 block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('privaty S2 256.17 block missing — fixture is stale');
+  }
   b.trigger = { kind: 'shotFired' };
 });
 /** P2 counterfactual: the 1687 rider is UNGATED (fires on every last bullet, in- or out-of-window). */
 const privatyUngated1687 = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill2.find((x: any) => flatAtkPct(x, 1687));
-  if (!b) {throw new Error('privaty S2 1687 block missing — fixture is stale');}
-  if (!b.requiresTargetStatus)
-    {throw new Error('privaty 1687 block has no gate — fixture is stale');}
+  if (!b) {
+    throw new Error('privaty S2 1687 block missing — fixture is stale');
+  }
+  if (!b.requiresTargetStatus) {
+    throw new Error('privaty 1687 block has no gate — fixture is stale');
+  }
   delete b.requiresTargetStatus;
 });
 /** P5b counterfactual: the Max Ammo ▼50.66% debuff removed — the "it's just a penalty" misread. */
@@ -96,8 +101,9 @@ const privatyNoMaxAmmo = withPatchedOverride('privaty', (ov) => {
   const b = ov.skill1.find((x: any) =>
     x.effects.some((e: any) => e.stat === 'maxAmmoPct')
   );
-  if (!b)
-    {throw new Error('privaty S1 maxAmmoPct block missing — fixture is stale');}
+  if (!b) {
+    throw new Error('privaty S1 maxAmmoPct block missing — fixture is stale');
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'maxAmmoPct');
 });
 // NOTE (engine finding, surfaced by this test): `noFb` in an override is INERT under the default
@@ -267,8 +273,9 @@ describe('privaty — kit spec (faithful override; pins beat named counterfactua
             `frame ${frame} reached ${holders.size} allies, expected ${N_ALLIES}`
           ).toBe(N_ALLIES);
         }
-        for (const b of applied)
-          {expect(b.expiresFrame! - b.frame).toBe(10 * FPS);}
+        for (const b of applied) {
+          expect(b.expiresFrame! - b.frame).toBe(10 * FPS);
+        }
       });
     }
   });

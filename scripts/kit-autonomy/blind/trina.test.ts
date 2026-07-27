@@ -64,14 +64,17 @@ function goPatched(mutate: (o: any) => void): { events: Ev[]; tot: number } {
 // Locate trina's all-ally burst Attack-Damage effect by VALUE (index-agnostic; blind to authoring).
 function findBurstAtk(o: any): { block: any; eff: any } | null {
   for (const b of o.blocks ?? []) {
-    if (b.slot !== 'burst') {continue;}
+    if (b.slot !== 'burst') {
+      continue;
+    }
     for (const e of b.effects ?? []) {
       if (
         e.kind === 'buff' &&
         e.stat === 'attackDamagePct' &&
         near(e.value, 20.9)
-      )
-        {return { block: b, eff: e };}
+      ) {
+        return { block: b, eff: e };
+      }
     }
   }
   return null;
@@ -81,16 +84,19 @@ function findBurstAtk(o: any): { block: any; eff: any } | null {
 const base = go(); // committed behaviour, FIRST
 const zeroed = goPatched((o) => {
   const f = findBurstAtk(o);
-  if (f) {f.eff.value = 0;}
+  if (f) {
+    f.eff.value = 0;
+  }
 }); // value-off counterfactual
 const scoped = goPatched((o) => {
   const f = findBurstAtk(o);
-  if (f)
-    {f.block.target = {
+  if (f) {
+    f.block.target = {
       kind: 'alliesOfElementWeapon',
       element: 'Electric',
       weapon: 'AR',
-    };}
+    };
+  }
 }); // wrong-scope counterfactual
 
 const atkHits = (evs: Ev[], v: number) =>

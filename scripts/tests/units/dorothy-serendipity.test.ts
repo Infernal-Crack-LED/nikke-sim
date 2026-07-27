@@ -128,7 +128,9 @@ function consolDmgUpDelta(base: SimEvent[], other: SimEvent[]): number[] {
   const out: number[] = [];
   for (const d of consol(base)) {
     const m = byFrame.get(d.frame);
-    if (m) {out.push(Math.round((d.mult.dmgUp - m.mult.dmgUp) * 1e4) / 1e4);}
+    if (m) {
+      out.push(Math.round((d.mult.dmgUp - m.mult.dmgUp) * 1e4) / 1e4);
+    }
   }
   return out;
 }
@@ -136,10 +138,11 @@ function consolDmgUpDelta(base: SimEvent[], other: SimEvent[]): number[] {
 // ---- counterfactual / isolation patches -------------------------------------------------------
 /** D1: the whole consolidation mechanic removed. */
 const dsNoConsol = withPatchedOverride(DS, (ov) => {
-  if (!ov.consolidation)
-    {throw new Error(
+  if (!ov.consolidation) {
+    throw new Error(
       'dorothy-serendipity consolidation block missing — fixture is stale'
-    );}
+    );
+  }
   delete ov.consolidation;
 });
 /** D2: the nearest wrong model — the consolidated bullet carries ONE pellet (1/10 shot), not the
@@ -157,27 +160,30 @@ const dsNoPierce = withPatchedOverride(DS, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'pierceDamagePct')
   );
-  if (ov.skill2.length === before)
-    {throw new Error(
+  if (ov.skill2.length === before) {
+    throw new Error(
       'dorothy-serendipity S2 pierceDamagePct block missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** D5: the S2 FB block re-triggered on burstCast (the nearest wrong gate). */
 const dsFbToCast = withPatchedOverride(DS, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale'
-    );}
+    );
+  }
   b.trigger.kind = 'burstCast';
 });
 /** D6: the S2 FB Hit Rate removed. */
 const dsNoHitRate = withPatchedOverride(DS, (ov) => {
   const b = ov.skill2.find((x: any) => x.trigger.kind === 'fullBurstEnter');
-  if (!b)
-    {throw new Error(
+  if (!b) {
+    throw new Error(
       'dorothy-serendipity S2 fullBurstEnter block missing — fixture is stale'
-    );}
+    );
+  }
   b.effects = b.effects.filter((e: any) => e.stat !== 'hitRatePct');
 });
 /** Remove ONE effect from the burst block (D7/D8/D9 isolation). */
@@ -186,10 +192,11 @@ const rmBurstEffect = (stat: string) =>
     const b = ov.burst.find((x: any) =>
       x.effects.some((e: any) => e.stat === stat)
     );
-    if (!b)
-      {throw new Error(
+    if (!b) {
+      throw new Error(
         `dorothy-serendipity burst ${stat} effect missing — fixture is stale`
-      );}
+      );
+    }
     b.effects = b.effects.filter((e: any) => e.stat !== stat);
   });
 const dsNoAtkSpd = rmBurstEffect('attackSpeedPct');

@@ -84,7 +84,9 @@ export function loadParsed(slug: string): ParsedProbe {
 }
 
 export function listParsed(): string[] {
-  if (!existsSync(DIR)) {return [];}
+  if (!existsSync(DIR)) {
+    return [];
+  }
   return readdirSync(DIR)
     .filter((f) => f.endsWith('.json') && f !== 'catalog.json') // catalog.json is the index, not a parse
     .map((f) => f.replace(/\.json$/, ''));
@@ -93,24 +95,38 @@ export function listParsed(): string[] {
 // Minimal structural validation — catches the mistakes that make a file useless later.
 export function validateParsed(p: ParsedProbe): void {
   const errs: string[] = [];
-  if (!p.video) {errs.push('missing video path');}
-  if (!p.focus) {errs.push('missing focus slug');}
-  if (!Array.isArray(p.comp) || p.comp.length === 0) {errs.push('missing comp');}
-  if (!p.params || !p.params.basis)
-    {errs.push('missing params.basis (testing conditions map is required)');}
-  if (!p.extractedOn || !/^\d{4}-\d{2}-\d{2}$/.test(p.extractedOn))
-    {errs.push('extractedOn must be YYYY-MM-DD');}
-  if (!Array.isArray(p.popups)) {errs.push('popups must be an array');}
-  else
-    {p.popups.forEach((u, i) => {
-      if (typeof u.t !== 'number' || u.t < 0) {errs.push(`popup[${i}] bad t`);}
-      if (typeof u.value !== 'number' || u.value <= 0)
-        {errs.push(`popup[${i}] bad value`);}
-    });}
-  if (errs.length)
-    {throw new Error(
+  if (!p.video) {
+    errs.push('missing video path');
+  }
+  if (!p.focus) {
+    errs.push('missing focus slug');
+  }
+  if (!Array.isArray(p.comp) || p.comp.length === 0) {
+    errs.push('missing comp');
+  }
+  if (!p.params || !p.params.basis) {
+    errs.push('missing params.basis (testing conditions map is required)');
+  }
+  if (!p.extractedOn || !/^\d{4}-\d{2}-\d{2}$/.test(p.extractedOn)) {
+    errs.push('extractedOn must be YYYY-MM-DD');
+  }
+  if (!Array.isArray(p.popups)) {
+    errs.push('popups must be an array');
+  } else {
+    p.popups.forEach((u, i) => {
+      if (typeof u.t !== 'number' || u.t < 0) {
+        errs.push(`popup[${i}] bad t`);
+      }
+      if (typeof u.value !== 'number' || u.value <= 0) {
+        errs.push(`popup[${i}] bad value`);
+      }
+    });
+  }
+  if (errs.length) {
+    throw new Error(
       `invalid ParsedProbe (${p.focus}):\n  - ${errs.join('\n  - ')}`
-    );}
+    );
+  }
 }
 
 // CLI: `npx tsx scripts/probe/parsed.ts` lists + validates every parsed file.

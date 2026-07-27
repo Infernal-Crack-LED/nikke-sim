@@ -62,15 +62,21 @@ const SLOTS: Slot[] = ['skill1', 'skill2', 'burst'];
 // ---------------------------------------------------------------- override walkers (shape-agnostic)
 const blocksOf = (ov: any, slot: Slot): any[] => {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
   return Array.isArray(s.blocks) ? s.blocks : [];
 };
 
 const walk = (effects: any[], out: any[]): any[] => {
   for (const e of effects ?? []) {
     out.push(e);
-    if (e?.kind === 'escalating' && Array.isArray(e.steps)) {walk(e.steps, out);}
+    if (e?.kind === 'escalating' && Array.isArray(e.steps)) {
+      walk(e.steps, out);
+    }
   }
   return out;
 };
@@ -78,8 +84,11 @@ const walk = (effects: any[], out: any[]): any[] => {
 const effectsOf = (ov: any, slot: Slot | 'all'): any[] => {
   const slots = slot === 'all' ? SLOTS : [slot];
   const out: any[] = [];
-  for (const s of slots)
-    {for (const b of blocksOf(ov, s)) {walk(b.effects ?? [], out);}}
+  for (const s of slots) {
+    for (const b of blocksOf(ov, s)) {
+      walk(b.effects ?? [], out);
+    }
+  }
   return out;
 };
 
@@ -117,23 +126,34 @@ const zeroRank = (rank: number) => (ov: any) => {
   const sorted = chargePayloads(ov)
     .slice()
     .sort((a, b) => (a.atkPct ?? 0) - (b.atkPct ?? 0));
-  if (sorted[rank]) {sorted[rank].atkPct = 0;}
+  if (sorted[rank]) {
+    sorted[rank].atkPct = 0;
+  }
 };
 const zeroAllPayloads = (ov: any) => {
-  for (const e of chargePayloads(ov)) {e.atkPct = 0;}
+  for (const e of chargePayloads(ov)) {
+    e.atkPct = 0;
+  }
 };
 const setBuffValue = (stat: string, value: number) => (ov: any) => {
-  for (const e of effectsOf(ov, 'all'))
-    {if (e.kind === 'buff' && e.stat === stat) {e.value = value;}}
+  for (const e of effectsOf(ov, 'all')) {
+    if (e.kind === 'buff' && e.stat === stat) {
+      e.value = value;
+    }
+  }
 };
 const restatBuff = (from: string, to: string) => (ov: any) => {
-  for (const e of effectsOf(ov, 'all'))
-    {if (e.kind === 'buff' && e.stat === from) {e.stat = to;}}
+  for (const e of effectsOf(ov, 'all')) {
+    if (e.kind === 'buff' && e.stat === from) {
+      e.stat = to;
+    }
+  }
 };
 const dropKind = (kind: string) => (ov: any) => {
   for (const s of SLOTS) {
-    for (const b of blocksOf(ov, s))
-      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== kind);}
+    for (const b of blocksOf(ov, s)) {
+      b.effects = (b.effects ?? []).filter((e: any) => e.kind !== kind);
+    }
   }
 };
 
@@ -155,7 +175,9 @@ const myDamage = (r: Run): any[] => {
   const row: any = unitOf(r.res, SLUG);
   const rowEv: any[] = Array.isArray(row?.events) ? row.events : [];
   const fromRow = rowEv.filter((e) => e?.kind === 'damage');
-  if (fromRow.length) {return fromRow;}
+  if (fromRow.length) {
+    return fromRow;
+  }
   const keys = [
     'slug',
     'unit',
@@ -213,7 +235,9 @@ describe('scarlet-black-shadow / skill1 — Full Charge phase ladder (structure)
     // RED under core:true (which would multiply by the 200% core multiplier) or a dot encoding.
     const eff = chargePayloads(OV);
     expect(eff.length).toBe(3);
-    for (const e of eff) {expect(e.core ?? false).toBe(false);}
+    for (const e of eff) {
+      expect(e.core ?? false).toBe(false);
+    }
     expect(effectsOf(OV, 'skill1').some((e) => e.kind === 'dot')).toBe(false);
   });
 });
@@ -306,7 +330,9 @@ describe('scarlet-black-shadow / burst — self ATK +115.12% and Charge Damage +
   it('both buffs land on herself, at the kit magnitudes, on the same activations', () => {
     expect(atk.length).toBeGreaterThanOrEqual(3);
     expect(chg.length).toBe(atk.length);
-    for (const e of [...atk, ...chg]) {expect(e.targetSlug).toBe(SLUG);}
+    for (const e of [...atk, ...chg]) {
+      expect(e.targetSlug).toBe(SLUG);
+    }
   });
 
   it('they are 10-second windows, not round-counted and not permanent', () => {

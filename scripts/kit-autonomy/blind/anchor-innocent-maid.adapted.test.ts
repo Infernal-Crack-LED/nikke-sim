@@ -98,7 +98,9 @@ function overrideClone(slug: string, mutate: (o: any) => void): any {
 function totalDamage(res: any): number {
   // ADAPTED [P3]: totals() returns Record<slug,number>; sum the per-unit values.
   const t: any = totals(res);
-  if (typeof t === 'number') {return t;}
+  if (typeof t === 'number') {
+    return t;
+  }
   return Object.values(t).reduce(
     (a: number, b: any) => a + (typeof b === 'number' ? b : 0),
     0
@@ -114,7 +116,9 @@ function allBlocks(o: any): any[] {
 function slotOf(res: any, slug: string): number {
   const u: any = unitOf(res, slug);
   const i = u?.slot ?? u?.slotIdx ?? u?.index;
-  if (typeof i === 'number') {return i;}
+  if (typeof i === 'number') {
+    return i;
+  }
   const arr: any[] = res.units ?? res.perUnit ?? [];
   return arr.findIndex((x: any) => x?.slug === slug);
 }
@@ -160,7 +164,11 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
     // ADAPTED [P2]: iterate the real slot-grouped blocks (was `o.blocks`).
     for (const e of b.effects ?? []) {
       fn(e, b);
-      if (e.kind === 'escalating') {for (const s of e.steps ?? []) {fn(s, b);}}
+      if (e.kind === 'escalating') {
+        for (const s of e.steps ?? []) {
+          fn(s, b);
+        }
+      }
     }
   }
 }
@@ -169,7 +177,9 @@ function walkEffects(o: any, fn: (e: any, b: any) => void) {
 function flattenEscalating(o: any, slot: string) {
   for (const b of allBlocks(o)) {
     // ADAPTED [P2]: iterate the real slot-grouped blocks (was `o.blocks`).
-    if (b.slot !== slot) {continue;}
+    if (b.slot !== slot) {
+      continue;
+    }
     b.effects = (b.effects ?? []).flatMap((e: any) =>
       e.kind === 'escalating' ? (e.steps ?? []) : [e]
     );
@@ -179,8 +189,9 @@ function flattenEscalating(o: any, slot: string) {
 function stepWithStat(o: any, slot: string, stat: string): any {
   let found: any = null;
   walkEffects(o, (e, b) => {
-    if (!found && b.slot === slot && e.kind === 'buff' && e.stat === stat)
-      {found = e;}
+    if (!found && b.slot === slot && e.kind === 'buff' && e.stat === stat) {
+      found = e;
+    }
   });
   return found;
 }
@@ -224,18 +235,23 @@ const FLAT_S1 = runWith((o) => flattenEscalating(o, 'skill1'));
 const FLAT_S2 = runWith((o) => flattenEscalating(o, 'skill2'));
 const ATK_SELF = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+      e.stat = 'atkPct';
+    }
   })
 );
 const RELOAD_0 = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {e.value = 0;}
+    if (e.kind === 'buff' && e.stat === 'reloadSpeedPct') {
+      e.value = 0;
+    }
   })
 );
 const DIST_GENERIC = runWith((o) =>
   walkEffects(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'distributedDamagePct')
-      {e.stat = 'attackDamagePct';}
+    if (e.kind === 'buff' && e.stat === 'distributedDamagePct') {
+      e.stat = 'attackDamagePct';
+    }
   })
 );
 // ADAPTED [P7]: the blind removed a same-squad GATE it assumed existed; the driver documents
@@ -244,15 +260,17 @@ const DIST_GENERIC = runWith((o) =>
 // block) — this preserves the blind's discrimination (RED if the driver dropped the heal).
 const NO_S1_HEAL = runWith((o) => {
   for (const b of allBlocks(o)) {
-    if (b.slot === 'skill1')
-      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');}
+    if (b.slot === 'skill1') {
+      b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');
+    }
   }
 });
 const NO_BURST_HEAL = runWith((o) => {
   for (const b of allBlocks(o)) {
     // ADAPTED [P2]: iterate the real slot-grouped blocks (was `o.blocks`).
-    if (b.slot === 'burst')
-      {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');}
+    if (b.slot === 'burst') {
+      b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');
+    }
   }
 });
 
@@ -376,7 +394,9 @@ describe('anchor-innocent-maid — skill2 (Full Burst ENDS, all allies, escalati
   it('trigger identity is fullBurstEnd, not fullBurstEnter', () => {
     const blocks = allBlocks(OV).filter((b: any) => b.slot === 'skill2'); // ADAPTED [P2]
     expect(blocks.length).toBeGreaterThan(0);
-    for (const b of blocks) {expect(b.trigger?.kind).toBe('fullBurstEnd');}
+    for (const b of blocks) {
+      expect(b.trigger?.kind).toBe('fullBurstEnd');
+    }
     const hr = appliesBy(BASE.events, 'hitRatePct', ANCHOR);
     expect(hr.length).toBeGreaterThan(0);
     // Every apply must sit AFTER at least one fullBurstEnd (an FB-enter model would apply before any).
@@ -528,7 +548,9 @@ describe('anchor-innocent-maid — audit', () => {
   it('no `ignored`-kind effects (validator-rejected) anywhere in the override', () => {
     let bad = 0;
     walkEffects(OV, (e) => {
-      if (e.kind === 'ignored' || e.kind === 'unsupported') {bad++;}
+      if (e.kind === 'ignored' || e.kind === 'unsupported') {
+        bad++;
+      }
     });
     expect(bad).toBe(0);
   });

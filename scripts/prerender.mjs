@@ -15,6 +15,9 @@ const ROUTES = [
   { path: '/', key: 'sim' },
   { path: '/dpschart', key: 'dpschart' },
   { path: '/dps', key: 'dps' },
+  { path: '/ranks', key: 'ranks' },
+  { path: '/ranks/support', key: 'ranks' },
+  { path: '/ranks/compare', key: 'ranks' },
   { path: '/overload', key: 'overload' },
   { path: '/team', key: 'team' },
   { path: '/roster', key: 'roster' },
@@ -46,6 +49,10 @@ const META = {
   dps: {
     title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
     desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
+  },
+  ranks: {
+    title: 'NIKKE Rankings — DPS Chart, Support Boards & Unit Comparison',
+    desc: 'NIKKE rankings hub: ranked DPS of every B3 carry under standardized solo-raid frameworks, support boards (burst gen, burst CDR, sustain, buffer value), and head-to-head unit comparison.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
@@ -146,7 +153,9 @@ async function main() {
   const baseHtml = await readFile(join(DIST, 'index.html'), 'utf8');
 
   for (const route of ROUTES) {
-    if (route.path === '/') {continue;} // dist/index.html already has the base meta
+    if (route.path === '/') {
+      continue;
+    } // dist/index.html already has the base meta
     const html = injectMeta(baseHtml, route);
     const dir = join(DIST, route.path);
     await mkdir(dir, { recursive: true });

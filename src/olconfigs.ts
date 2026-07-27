@@ -54,7 +54,9 @@ function multisets(pool: string[], k: number): string[][] {
       out.push([...cur]);
       return;
     }
-    for (let i = start; i < pool.length; i++) {rec(i, [...cur, pool[i]]);}
+    for (let i = start; i < pool.length; i++) {
+      rec(i, [...cur, pool[i]]);
+    }
   };
   rec(0, []);
   return out;
@@ -62,7 +64,9 @@ function multisets(pool: string[], k: number): string[][] {
 
 function counts(combo: string[]): Record<string, number> {
   const c: Record<string, number> = {};
-  for (const k of combo) {c[k] = (c[k] ?? 0) + 1;}
+  for (const k of combo) {
+    c[k] = (c[k] ?? 0) + 1;
+  }
   return c;
 }
 function comboToLines(combo: string[]): LineSelection[] {

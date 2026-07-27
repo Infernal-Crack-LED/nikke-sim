@@ -26,7 +26,9 @@ export function InlineNameField({
 
   const commit = () => {
     const name = val.trim();
-    if (name) {onCommit(name);}
+    if (name) {
+      onCommit(name);
+    }
   };
 
   return (
@@ -39,8 +41,11 @@ export function InlineNameField({
         aria-label={placeholder}
         onChange={(e) => setVal(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') {commit();}
-          else if (e.key === 'Escape') {onCancel();}
+          if (e.key === 'Enter') {
+            commit();
+          } else if (e.key === 'Escape') {
+            onCancel();
+          }
         }}
       />
       <button

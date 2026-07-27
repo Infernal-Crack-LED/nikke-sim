@@ -46,12 +46,14 @@ import {
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 if (!video || !existsSync(video)) {
   console.error(
     'usage: read-total-damage.ts <video> [--fps 1] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--total-crop "..."] [--timer-crop "..."] [--total-zoom 4] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]'
@@ -88,10 +90,16 @@ mkdirSync(timerFramesDir, { recursive: true });
 // ---- extract frames (two passes — one per crop) ----
 function extract(crop: string, zoom: number, dir: string, label: string) {
   const vf = [`fps=${fps}`, crop];
-  if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
+  if (zoom !== 1) {
+    vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+  }
   const args = ['-y', '-loglevel', 'error'];
-  if (at) {args.push('-ss', String(at));}
-  if (dur) {args.push('-t', String(dur));}
+  if (at) {
+    args.push('-ss', String(at));
+  }
+  if (dur) {
+    args.push('-t', String(dur));
+  }
   args.push('-i', video, '-vf', vf.join(','), '-q:v', '3', `${dir}/f_%05d.jpg`);
   execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });
   const files = readdirSync(dir)
@@ -150,7 +158,9 @@ async function vlmRead(
     temperature: 0,
     max_tokens: maxTokens,
   };
-  if (jsonMode) {body.response_format = { type: 'json_object' };}
+  if (jsonMode) {
+    body.response_format = { type: 'json_object' };
+  }
   const res = await fetch(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -159,22 +169,28 @@ async function vlmRead(
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok)
-    {throw new Error(
+  if (!res.ok) {
+    throw new Error(
       `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
-    );}
+    );
+  }
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
-  if (Array.isArray(content))
-    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
+  if (Array.isArray(content)) {
+    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+  }
   let s = String(content).trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) {s = fence[1].trim();}
+  if (fence) {
+    s = fence[1].trim();
+  }
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
+  if (a >= 0 && b > a) {
+    s = s.slice(a, b + 1);
+  }
   try {
     return (JSON.parse(s) ?? {}) as Record<string, unknown>;
   } catch {
@@ -235,20 +251,23 @@ for (let i = 0; i < frameCount; i++) {
         ]);
         break;
       } catch (e) {
-        if (attempt === 2)
-          {console.error(
+        if (attempt === 2) {
+          console.error(
             `  frame ${totalFiles[i]}: FAILED — ${(e as Error).message}`
-          );}
-        else {await new Promise((r) => setTimeout(r, 1000));}
+          );
+        } else {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
       }
     }
   }
   totalMs += Date.now() - t0;
   reads.push({ videoT, timerSec, totalDamage });
-  if (++n % 10 === 0 || n === frameCount)
-    {console.log(
+  if (++n % 10 === 0 || n === frameCount) {
+    console.log(
       `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  total=${totalDamage}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`
-    );}
+    );
+  }
 }
 
 // ---- timer correction: the countdown is perfectly linear (-1/frame at 1fps). The VLM
@@ -283,7 +302,9 @@ function correctTimer(
     bestStart = runStart;
     bestLen = runLen;
   }
-  if (bestLen < 3) {return 0;} // no reliable spine — don't guess
+  if (bestLen < 3) {
+    return 0;
+  } // no reliable spine — don't guess
 
   // Extrapolate from the spine: timer[i] = spineTimer - (i - spineIndex) * step
   const spineIdx = bestStart + Math.floor(bestLen / 2); // use the middle of the spine
@@ -303,20 +324,24 @@ function correctTimer(
   return corrected;
 }
 const timerCorrections = correctTimer(reads, fps);
-if (timerCorrections)
-  {console.log(
+if (timerCorrections) {
+  console.log(
     `  timer: corrected ${timerCorrections} read(s) from linear spine`
-  );}
+  );
+}
 
 // ---- sanity: total damage must be monotonically non-decreasing ----
 const warnings: string[] = [];
 let prev: number | null = null;
 for (const r of reads) {
-  if (r.totalDamage == null) {continue;}
-  if (prev != null && r.totalDamage < prev)
-    {warnings.push(
+  if (r.totalDamage == null) {
+    continue;
+  }
+  if (prev != null && r.totalDamage < prev) {
+    warnings.push(
       `t=${r.videoT.toFixed(1)}s: total ${r.totalDamage} < previous ${prev} (misread?)`
-    );}
+    );
+  }
   prev = r.totalDamage;
 }
 
@@ -344,7 +369,10 @@ console.log(
 );
 if (warnings.length) {
   console.log(`  ⚠ ${warnings.length} monotonicity warning(s):`);
-  for (const w of warnings.slice(0, 5)) {console.log(`    ${w}`);}
-  if (warnings.length > 5)
-    {console.log(`    ... and ${warnings.length - 5} more`);}
+  for (const w of warnings.slice(0, 5)) {
+    console.log(`    ${w}`);
+  }
+  if (warnings.length > 5) {
+    console.log(`    ... and ${warnings.length - 5} more`);
+  }
 }

@@ -81,12 +81,14 @@ import {
 const argv = process.argv.slice(2);
 const video = argv[0];
 const flags: Record<string, string> = {};
-for (let i = 1; i < argv.length; i++)
-  {if (argv[i].startsWith('--'))
-    {flags[argv[i].slice(2)] =
+for (let i = 1; i < argv.length; i++) {
+  if (argv[i].startsWith('--')) {
+    flags[argv[i].slice(2)] =
       argv[i + 1]?.startsWith('--') || argv[i + 1] === undefined
         ? 'true'
-        : argv[++i];}}
+        : argv[++i];
+  }
+}
 if (!video || !existsSync(video)) {
   console.error(
     'usage: read-burst-gauge.ts <video> [--fps 2] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--gauge-crop "..."] [--timer-crop "..."] [--gauge-zoom 6] [--timer-zoom 8] [--max-tokens 128] [--json-mode] [--mock] [--out DIR]'
@@ -135,10 +137,16 @@ const timerFramesDir = `${outDir}/frames-timer`;
 // ---- extract frames (two passes — one per crop) ----
 function extract(crop: string, zoom: number, dir: string, label: string) {
   const vf = [`fps=${fps}`, crop];
-  if (zoom !== 1) {vf.push(`scale=iw*${zoom}:ih*${zoom}`);}
+  if (zoom !== 1) {
+    vf.push(`scale=iw*${zoom}:ih*${zoom}`);
+  }
   const args = ['-y', '-loglevel', 'error'];
-  if (at) {args.push('-ss', String(at));}
-  if (dur) {args.push('-t', String(dur));}
+  if (at) {
+    args.push('-ss', String(at));
+  }
+  if (dur) {
+    args.push('-t', String(dur));
+  }
   args.push('-i', video, '-vf', vf.join(','), '-q:v', '3', `${dir}/f_%05d.jpg`);
   execFileSync('ffmpeg', args, { stdio: ['ignore', 'ignore', 'ignore'] });
   const files = readdirSync(dir)
@@ -219,7 +227,9 @@ async function vlmRead(
     temperature: 0,
     max_tokens: maxTokens,
   };
-  if (jsonMode) {body.response_format = { type: 'json_object' };}
+  if (jsonMode) {
+    body.response_format = { type: 'json_object' };
+  }
   const res = await fetch(`${endpoint}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -228,22 +238,28 @@ async function vlmRead(
     },
     body: JSON.stringify(body),
   });
-  if (!res.ok)
-    {throw new Error(
+  if (!res.ok) {
+    throw new Error(
       `VLM HTTP ${res.status}: ${(await res.text()).slice(0, 300)}`
-    );}
+    );
+  }
   const j = (await res.json()) as {
     choices?: { message?: { content?: unknown } }[];
   };
   let content = j?.choices?.[0]?.message?.content ?? '';
-  if (Array.isArray(content))
-    {content = content.map((c) => (c as { text?: string }).text ?? '').join('');}
+  if (Array.isArray(content)) {
+    content = content.map((c) => (c as { text?: string }).text ?? '').join('');
+  }
   let s = String(content).trim();
   const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (fence) {s = fence[1].trim();}
+  if (fence) {
+    s = fence[1].trim();
+  }
   const a = s.indexOf('{'),
     b = s.lastIndexOf('}');
-  if (a >= 0 && b > a) {s = s.slice(a, b + 1);}
+  if (a >= 0 && b > a) {
+    s = s.slice(a, b + 1);
+  }
   try {
     return (JSON.parse(s) ?? {}) as Record<string, unknown>;
   } catch {
@@ -297,9 +313,15 @@ function runCvScan(): CvScan {
     '--gauge-crop',
     gaugeCrop,
   ];
-  if (at) {a.push('--at', String(at));}
-  if (dur) {a.push('--dur', String(dur));}
-  if (t0Flag != null) {a.push('--t0', String(t0Flag));}
+  if (at) {
+    a.push('--at', String(at));
+  }
+  if (dur) {
+    a.push('--dur', String(dur));
+  }
+  if (t0Flag != null) {
+    a.push('--t0', String(t0Flag));
+  }
   console.log('running deterministic CV scan (scripts/probe/scan.ts) ...');
   execFileSync('npx', ['tsx', ...a], {
     stdio: ['ignore', 'inherit', 'inherit'],
@@ -310,10 +332,18 @@ function runCvScan(): CvScan {
 // ---- mock (synthetic burst rotation) ----
 function mockGauge(idx: number): BurstState {
   const cycle = idx % 20;
-  if (cycle < 8) {return 'filling';}
-  if (cycle < 11) {return 'stage1';}
-  if (cycle < 14) {return 'stage2';}
-  if (cycle < 17) {return 'stage3';}
+  if (cycle < 8) {
+    return 'filling';
+  }
+  if (cycle < 11) {
+    return 'stage1';
+  }
+  if (cycle < 14) {
+    return 'stage2';
+  }
+  if (cycle < 17) {
+    return 'stage3';
+  }
   return 'full';
 }
 function mockTimer(idx: number): number {
@@ -344,11 +374,12 @@ if (classifier === 'cv') {
       `(${cvScan.summary.corroborated}/${cvScan.summary.fullBursts} corroborated), ` +
       `${reads.length} frames`
   );
-  if (t0Flag == null)
-    {console.log(
+  if (t0Flag == null) {
+    console.log(
       '  note: no --t0, so timerSec/fightT are null. Pin game t0 with ONE sheet:\n' +
         `        npx tsx scripts/probe/frames.ts "${video}" --at 3 --dur 10 --fps 2 --region timer --sheet 5 --zoom 3`
-    );}
+    );
+  }
 }
 
 const frameCount =
@@ -381,20 +412,23 @@ for (let i = 0; classifier === 'vlm' && i < frameCount; i++) {
         ]);
         break;
       } catch (e) {
-        if (attempt === 2)
-          {console.error(
+        if (attempt === 2) {
+          console.error(
             `  frame ${gaugeFiles[i]}: FAILED — ${(e as Error).message}`
-          );}
-        else {await new Promise((r) => setTimeout(r, 1000));}
+          );
+        } else {
+          await new Promise((r) => setTimeout(r, 1000));
+        }
       }
     }
   }
   totalMs += Date.now() - t0;
   reads.push({ videoT, timerSec, burstState });
-  if (++n % 10 === 0 || n === frameCount)
-    {console.log(
+  if (++n % 10 === 0 || n === frameCount) {
+    console.log(
       `  ${n}/${frameCount}  t=${videoT.toFixed(1)}s  burst=${burstState ?? '?'}  timer=${timerSec}  ~${Math.round(totalMs / n)}ms/frame`
-    );}
+    );
+  }
 }
 
 // ---- timer correction (spine-based — same as read-total-damage.ts) ----
@@ -425,7 +459,9 @@ function correctTimer(
     bestStart = runStart;
     bestLen = runLen;
   }
-  if (bestLen < 3) {return 0;}
+  if (bestLen < 3) {
+    return 0;
+  }
   const spineIdx = bestStart + Math.floor(bestLen / 2);
   const spineVal = reads[spineIdx].timerSec!;
   let corrected = 0;
@@ -445,28 +481,31 @@ function correctTimer(
 // The VLM path infers the timer per frame and then straightens it against a linear spine; the CV
 // path has no digit reader, so it takes t0 as an argument and the arithmetic is exact.
 const timerCorrections = classifier === 'vlm' ? correctTimer(reads, fps) : 0;
-if (timerCorrections)
-  {console.log(
+if (timerCorrections) {
+  console.log(
     `  timer: corrected ${timerCorrections} read(s) from linear spine`
-  );}
+  );
+}
 
 // ---- fight-start offset: videoT where the fight timer reads 180 (3:00) ----
 // From any corrected read: fightStartVideoT = videoT + timerSec - 180.
 let fightStartVideoT: number | null = t0Flag;
-if (fightStartVideoT == null)
-  {for (const r of reads) {
+if (fightStartVideoT == null) {
+  for (const r of reads) {
     if (r.timerSec != null) {
       fightStartVideoT = Math.round((r.videoT + r.timerSec - 180) * 100) / 100;
       break;
     }
-  }}
-if (fightStartVideoT != null)
-  {console.log(
+  }
+}
+if (fightStartVideoT != null) {
+  console.log(
     `  fight starts at videoT=${fightStartVideoT}s (timer=180)` +
       (t0Flag != null
         ? ' [--t0, exact]'
         : ' [inferred from ONE VLM timer read — cross-check it]')
-  );}
+  );
+}
 
 // ---- extract transitions (debounced: require 2 consecutive frames of the new state) ----
 const transitions: {
@@ -490,7 +529,9 @@ for (const raw0 of reads) {
     classifier === 'cv' && raw0.burstState == null
       ? { ...raw0, burstState: IDLE }
       : raw0;
-  if (r.burstState == null) {continue;}
+  if (r.burstState == null) {
+    continue;
+  }
   if (r.burstState === confirmedState) {
     pendingState = null;
     pendingCount = 0;
@@ -538,7 +579,9 @@ if (simSlugs) {
   );
   const chars = simSlugs.map((s) => {
     const c = data.characters[s];
-    if (!c) {throw new Error(`unknown slug "${s}"`);}
+    if (!c) {
+      throw new Error(`unknown slug "${s}"`);
+    }
     return c;
   });
   const overrides = Object.fromEntries(
@@ -585,7 +628,9 @@ if (simSlugs) {
   simTransitions = [];
   for (const line of simResult.rotationLog) {
     const m = line.match(/^([\d.]+)s\s+(.+)$/);
-    if (!m) {continue;}
+    if (!m) {
+      continue;
+    }
     const fightT = parseFloat(m[1]);
     const label = m[2].trim();
     if (label.startsWith('FULL BURST')) {
@@ -594,11 +639,12 @@ if (simSlugs) {
         fightT,
         label: `full (until ${until?.[1] ?? '?'})`,
       });
-      if (until)
-        {simTransitions.push({
+      if (until) {
+        simTransitions.push({
           fightT: parseFloat(until[1]),
           label: 'filling (FB ended)',
-        });}
+        });
+      }
     } else if (/^B\d/.test(label)) {
       simTransitions.push({ fightT, label });
     }
@@ -612,7 +658,9 @@ if (simSlugs) {
   if (fightStartVideoT != null && transitions.length) {
     console.log('\n  observed vs sim (nearest match):');
     for (const t of transitions) {
-      if (t.fightT == null) {continue;}
+      if (t.fightT == null) {
+        continue;
+      }
       // Find the nearest sim event within 3s
       let best: SimTransition | null = null;
       let bestDelta = Infinity;
@@ -690,10 +738,12 @@ console.log(
 );
 if (transitions.length) {
   console.log('  transitions (debounced):');
-  for (const t of transitions.slice(0, 15))
-    {console.log(
+  for (const t of transitions.slice(0, 15)) {
+    console.log(
       `    fight=${t.fightT != null ? t.fightT.toFixed(1) + 's' : '?'}  ${t.from ?? '(start)'} -> ${t.to}  (video=${t.videoT.toFixed(1)}s timer=${t.timerSec})`
-    );}
-  if (transitions.length > 15)
-    {console.log(`    ... and ${transitions.length - 15} more`);}
+    );
+  }
+  if (transitions.length > 15) {
+    console.log(`    ... and ${transitions.length - 15} more`);
+  }
 }

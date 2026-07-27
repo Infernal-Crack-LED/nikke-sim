@@ -18,7 +18,9 @@ const SLUG_BY_NAME_CODE: Record<number, string> = (() => {
   const chars = (charactersJson as any).characters as Record<string, any>;
   for (const [slug, c] of Object.entries(chars)) {
     const code = c?.role?.meta?.name_code;
-    if (code != null) {map[code] = slug;}
+    if (code != null) {
+      map[code] = slug;
+    }
   }
   return map;
 })();
@@ -27,7 +29,9 @@ const SLUG_BY_NAME_CODE: Record<number, string> = (() => {
 const OL_KEY_BY_LABEL: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   const lines = (olLinesJson as any).lines as Record<string, { name: string }>;
-  for (const [key, def] of Object.entries(lines)) {map[def.name] = key;}
+  for (const [key, def] of Object.entries(lines)) {
+    map[def.name] = key;
+  }
   return map;
 })();
 
@@ -44,7 +48,9 @@ const OL_LABEL_ALIASES: Record<string, string> = {
 const CUBE_ID_BY_NAME: Record<string, string> = (() => {
   const map: Record<string, string> = {};
   const cubes = (cubesJson as any).cubes as Record<string, { name: string }>;
-  for (const [id, def] of Object.entries(cubes)) {map[def.name] = id;}
+  for (const [id, def] of Object.entries(cubes)) {
+    map[def.name] = id;
+  }
   return map;
 })();
 
@@ -89,7 +95,9 @@ export interface SlotLoadout {
 // isn't modeled by the sim (no slug for its name_code) — the caller skips it.
 export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
   const slug = SLUG_BY_NAME_CODE[l.nameCode];
-  if (!slug) {return null;}
+  if (!slug) {
+    return null;
+  }
 
   // OL lines: group by sim key, summing values (the sim buckets stats anyway).
   const summed: Record<string, number> = {};
@@ -97,11 +105,15 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
   for (const line of l.ol ?? []) {
     const key = OL_KEY_BY_LABEL[line.label] ?? OL_LABEL_ALIASES[line.label];
     if (!key) {
-      if (!unmappedLines.includes(line.label)) {unmappedLines.push(line.label);}
+      if (!unmappedLines.includes(line.label)) {
+        unmappedLines.push(line.label);
+      }
       continue;
     }
     const value = olTierValue(key, line.tier); // (label, tier) → % via ol-tiers.json
-    if (value > 0) {summed[key] = (summed[key] ?? 0) + value;}
+    if (value > 0) {
+      summed[key] = (summed[key] ?? 0) + value;
+    }
   }
   const round2 = (n: number) => Number(n.toFixed(2));
   const olElem = round2(summed.elem ?? 0);
@@ -119,7 +131,9 @@ export function resolveSyncedLoadout(l: SyncedUnitLoadout): SlotLoadout | null {
   if (l.cube && l.cube.name) {
     const mapped = CUBE_ID_BY_NAME[l.cube.name];
     cubeId = mapped ?? 'other';
-    if (!mapped) {unmappedCube = l.cube.name;}
+    if (!mapped) {
+      unmappedCube = l.cube.name;
+    }
     cubeLevel = clamp(l.cube.level || 15, 1, 15);
   }
 
@@ -174,10 +188,17 @@ export function slotLoadoutToUnitOptions(
   opts: { zeroGear?: boolean } = {}
 ): UnitOptions {
   const lines: LineSelection[] = [];
-  if (L.olElem > 0) {lines.push({ type: 'elem', count: 1, value: L.olElem });}
-  if (L.olAtk > 0) {lines.push({ type: 'atk', count: 1, value: L.olAtk });}
-  for (const e of L.olExtra)
-    {if (e.value > 0) {lines.push({ type: e.type, count: 1, value: e.value });}}
+  if (L.olElem > 0) {
+    lines.push({ type: 'elem', count: 1, value: L.olElem });
+  }
+  if (L.olAtk > 0) {
+    lines.push({ type: 'atk', count: 1, value: L.olAtk });
+  }
+  for (const e of L.olExtra) {
+    if (e.value > 0) {
+      lines.push({ type: e.type, count: 1, value: e.value });
+    }
+  }
   return {
     ol: L.ol,
     gearStats: opts.zeroGear ? { atk: 0, hp: 0 } : (L.gearStats ?? undefined),
@@ -204,7 +225,9 @@ export function indexBySlug(
   const out = new Map<string, SlotLoadout>();
   for (const l of loadouts ?? []) {
     const resolved = resolveSyncedLoadout(l);
-    if (resolved) {out.set(resolved.slug, resolved);}
+    if (resolved) {
+      out.set(resolved.slug, resolved);
+    }
   }
   return out;
 }

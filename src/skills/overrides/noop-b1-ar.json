@@ -1,0 +1,18 @@
+{
+  "note": "Synthetic no-op B1 (AR): provides the standard 7s team burst cooldown reduction that a real B1 enabler would contribute, so no-op control teams are normalized for CDR even though the no-op has no other skills.",
+  "skill1": [],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 7
+        }
+      ]
+    }
+  ]
+}

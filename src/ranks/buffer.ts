@@ -4,16 +4,16 @@
 //   Comp: the tested buffer + synthetic no-op stage fillers + two standard
 //   damage-dealing carries (src/ranks/synthetics.ts), at scope lock, both
 //   carries elementally advantaged.
-//     tested B1 → [tested, no-op B2, carry, carry]
+//     tested B1 → [tested, no-op B2, carry, carry] (no-op B1 if B1 CD > 20s)
 //     tested B2 → [no-op B1, tested, carry, carry]
 //     tested B3 → [no-op B1, no-op B2, carry, carry, tested-rightmost]
 //   A tested B3 sits RIGHTMOST so the two carries always win the stage-3 cast
 //   and it never bursts (pinned in tests) — its value must come through
 //   passives and cast-free lines.
-//   Value = Σ carry DPS with the buffer − Σ carry DPS with a stage-matched
-//   no-op in its slot (baseline). The buffer's own weapon damage is NOT
-//   counted. Rotation-driven value (gauge batteries, CDR) IS captured — the
-//   whole fight is simmed.
+//   Value = % team damage increase = (Σ carry DPS with the buffer − Σ carry
+//   DPS with a stage-matched no-op baseline) / Σ carry DPS with the baseline.
+//   The buffer's own weapon damage is NOT counted. Rotation-driven value
+//   (gauge batteries, CDR) IS captured — the whole fight is simmed.
 //
 //   TWO BOARDS:
 //     generic — carries are the plain MG + RL pair; only buffs that need no
@@ -55,6 +55,17 @@ const BEATS: Record<Element, Element> = {
   Fire: 'Wind',
   Water: 'Fire',
 };
+const BEATS_INVERSE: Record<Element, Element> = {
+  Water: 'Electric',
+  Electric: 'Iron',
+  Iron: 'Wind',
+  Wind: 'Fire',
+  Fire: 'Water',
+};
+
+// A B1 with cooldown above this cannot solo-sustain a standard 1-B1/1-B2 rotation
+// (matches CD_SHORT in src/teamcalc.ts), so the buffer comp gives it a second B1.
+const B1_SOLO_CD_THRESHOLD = 20;
 
 // ---- typed-board carry adaptation -------------------------------------------
 
@@ -113,6 +124,54 @@ export const BUFFER_COMP_PROFILES: Record<string, string> = {
   naga: 'with-shielder', // S1/burst: coreDamagePct 85.17 + casterAtkPct 31.02 require a shield on her
 };
 
+// Duo profiles: a real (or synthetic) partner unit is added to the team so the
+// tested B2's value with its canonical partner can be ranked. The pair's
+// overrides implement the rotation (e.g. Prika's duet mode makes her burst
+// first then never again). Value is the tested buffer's marginal added team
+// damage % versus a baseline where the tested slot is a no-op B2 but the
+// partner is still present in solo/default mode.
+export const DUO_BUFFER_PROFILES: Record<
+  string,
+  {
+    partner: string;
+    id: string;
+    note: string;
+    mode?: string;
+    partnerMode?: string;
+    synthetic?: boolean;
+  }
+> = {
+  mint: {
+    partner: 'prika',
+    id: 'w/ Prika',
+    note: 'paired with Prika — Prika takes the first B2, Mint every B2 after',
+    mode: 'duet (w/ Prika)',
+    partnerMode: 'duet (w/ Mint)',
+  },
+  prika: {
+    partner: 'mint',
+    id: 'w/ Mint',
+    note: 'paired with Mint — Prika takes the first B2, Mint every B2 after',
+    mode: 'duet (w/ Mint)',
+    partnerMode: 'duet (w/ Prika)',
+  },
+  'mast-romantic-maid': {
+    partner: 'anchor-innocent-maid',
+    id: 'w/ Anchor',
+    note: 'paired with Anchor: Innocent Maid as the second B2',
+  },
+  blanc: {
+    partner: 'noop-bunny-b2',
+    id: 'w/ Bunny',
+    note: 'synthetic Bunny squadmate keeps the same-squad CDR gate active',
+    synthetic: true,
+  },
+};
+
+// Slugs excluded from the buffer population: kits whose net effect is to reduce
+// team damage in the standard comp produce a misleadingly negative % increase.
+export const EXCLUDED_BUFFER_SLUGS = new Set(['blanc']);
+
 // Walk every {target, effects} block in the override JSON (any nesting — skill
 // slots, modes, steps) and derive what the carries must provide for the unit's
 // ALLY-FACING typed buffs to apply. Returns the spec + an audit trail.
@@ -123,9 +182,17 @@ export function deriveCarrySpec(override: unknown): {
   const spec: CarrySpec = { ...PLAIN_SPEC };
   const rules: string[] = [];
   const visit = (node: unknown) => {
-    if (Array.isArray(node)) {return node.forEach(visit);}
-    if (!node || typeof node !== 'object') {return;}
-    const block = node as { target?: any; effects?: any[] };
+    if (Array.isArray(node)) {
+      return node.forEach(visit);
+    }
+    if (!node || typeof node !== 'object') {
+      return;
+    }
+    const block = node as {
+      target?: any;
+      effects?: any[];
+      bossElementGate?: any;
+    };
     const target = block.target;
     if (target && Array.isArray(block.effects) && target.kind !== 'self') {
       if (target.kind === 'alliesOfWeapon' && target.weapon && !spec.weapon) {
@@ -143,6 +210,16 @@ export function deriveCarrySpec(override: unknown): {
         rules.push(
           `alliesOfElement ${target.element} → carries become ${target.element}`
         );
+      }
+      if (block.bossElementGate && !spec.element) {
+        const gate = block.bossElementGate as Element;
+        const counter = BEATS_INVERSE[gate];
+        if (counter) {
+          spec.element = counter;
+          rules.push(
+            `bossElementGate ${gate} → carries become ${counter} (advantaged vs ${gate} boss, debuff active)`
+          );
+        }
       }
       for (const e of block.effects) {
         if (
@@ -169,7 +246,9 @@ export function deriveCarrySpec(override: unknown): {
         }
       }
     }
-    for (const v of Object.values(node)) {visit(v);}
+    for (const v of Object.values(node)) {
+      visit(v);
+    }
   };
   visit(override);
   const manual = BUFFER_PROFILES[(override as { slug?: string })?.slug ?? ''];
@@ -191,6 +270,16 @@ interface AssembledBufferTeam {
   noopSlot: string; // stage-matched no-op for the baseline
 }
 
+// Effective burst cooldown for a real unit, honoring override charFixes.
+function effectiveBurstCooldownSec(ctx: RanksCtx, slug: string): number {
+  const char = ctx.characters[slug];
+  return (
+    ctx.deps.overrides[slug]?.charFixes?.burstCooldownSec ??
+    char?.burstCooldownSec ??
+    40
+  );
+}
+
 // The two carry records for one board arm (typed adapts both).
 function carriesFor(board: BufferBoard, spec: CarrySpec): SyntheticCharacter[] {
   const mg =
@@ -208,24 +297,36 @@ function carriesFor(board: BufferBoard, spec: CarrySpec): SyntheticCharacter[] {
   ];
 }
 
-function assemble(
+export function assemble(
   slug: string,
   burst: string,
   board: BufferBoard,
-  spec: CarrySpec
+  spec: CarrySpec,
+  partner?: string,
+  b1CdSec?: number
 ): AssembledBufferTeam {
   const [c1, c2] = carriesFor(board, spec);
   let slugs: string[];
   let noopSlot: string;
   if (burst === 'I') {
-    slugs = [slug, NOOP_B2, c1.slug, c2.slug];
+    // A B1 with >20s cooldown cannot solo-sustain a standard rotation; give it
+    // a second B1 filler instead of a B2 so the team can still full-burst.
+    const needsSecondB1 =
+      b1CdSec !== undefined && b1CdSec > B1_SOLO_CD_THRESHOLD;
+    slugs = partner
+      ? [slug, partner, c1.slug, c2.slug]
+      : [slug, needsSecondB1 ? NOOP_B1 : NOOP_B2, c1.slug, c2.slug];
     noopSlot = NOOP_B1;
   } else if (burst === 'II') {
-    slugs = [NOOP_B1, slug, c1.slug, c2.slug];
+    slugs = partner
+      ? [NOOP_B1, slug, partner, c1.slug, c2.slug]
+      : [NOOP_B1, slug, c1.slug, c2.slug];
     noopSlot = NOOP_B2;
   } else {
     // B3 (or Λ): tested rightmost so the carries always win the stage-3 cast.
-    slugs = [NOOP_B1, NOOP_B2, c1.slug, c2.slug, slug];
+    slugs = partner
+      ? [NOOP_B1, NOOP_B2, slug, partner, c1.slug, c2.slug]
+      : [NOOP_B1, NOOP_B2, c1.slug, c2.slug, slug];
     noopSlot = NOOP_B3;
   }
   return {
@@ -247,11 +348,11 @@ function charFor(ctx: RanksCtx, slug: string, carries: SyntheticCharacter[]) {
 
 export interface BufferValue {
   slug: string;
-  value: number; // added carry DPS vs the no-op baseline
-  carryDps: number; // Σ carry DPS with the buffer
-  baselineDps: number;
+  valuePct: number; // total % team damage increase vs the no-op baseline (CAN BE NEGATIVE)
+  carryDps: number; // Σ carry DPS with the buffer (internal context, not emitted)
+  baselineDps: number; // Σ carry DPS with the no-op baseline (internal context, not emitted)
   testedBurstCasts: number; // pin: a tested B3 must be 0 (rightmost rule)
-  profile: string | null; // comp profile id (with-healer/with-shielder); null = plain
+  profile: string | null; // comp profile id (with-healer/with-shielder/duo); null = plain
   rules: string[]; // typed-board adaptation audit trail ([] on generic)
   rank: number;
 }
@@ -260,22 +361,30 @@ export interface BufferValue {
 // count; the baseline swaps the tested unit for its stage-matched no-op (same
 // carries). When `profile` is set, every no-op filler also carries the
 // profile's synthetic kit (the with-healer/with-shielder gate opener).
+// `characterOverrides` lets per-profile runs temporarily mutate a real unit's
+// override without editing the source file (e.g. Blanc's same-squad CDR is
+// suppressed in her plain row so the w/ Bunny profile can show the difference).
 function carryDpsSum(
   team: AssembledBufferTeam,
   ctx: RanksCtx,
   spec: CarrySpec,
   pierceOverride: boolean,
   testedSlug?: string,
-  profile?: string | null
+  profile?: string | null,
+  unitOptsMap: Record<string, UnitOptions> = {},
+  characterOverrides: Record<string, any> = {}
 ): { sum: number; testedBurstCasts: number } {
   const chars = team.slugs.map((s) => charFor(ctx, s, team.chars as any));
   const element = (chars[team.carryIdxs[0]] as CharacterData)
     .element as Element;
-  const unitOpts: UnitOptions[] = team.slugs.map((s) =>
-    (NOOP_CHARACTERS as any)[s]
-      ? {}
-      : { ol: 'base5' as const, stars: 3, core: 7 }
-  );
+  const defaultOpts: UnitOptions = { ol: 'base5' as const, stars: 3, core: 7 };
+  const unitOpts: UnitOptions[] = team.slugs.map((s) => {
+    if ((NOOP_CHARACTERS as any)[s]) {
+      return {};
+    }
+    const extra = unitOptsMap[s];
+    return extra ? { ...defaultOpts, ...extra } : defaultOpts;
+  });
   const cfg: SimConfig = {
     slugs: team.slugs,
     bossElement: BEATS[element], // both carries advantaged
@@ -292,18 +401,21 @@ function carryDpsSum(
   const compProfile = profile ? COMP_PROFILES[profile] : undefined;
   const extraOverrides: Record<string, any> = {};
   if (pierceOverride) {
-    for (const i of team.carryIdxs)
-      {extraOverrides[team.slugs[i]] = {
+    for (const i of team.carryIdxs) {
+      extraOverrides[team.slugs[i]] = {
         slug: team.slugs[i],
         hasPierce: true,
         skill1: [],
         skill2: [],
         burst: [],
-      };}
+      };
+    }
   }
   if (compProfile) {
     for (const s of team.slugs) {
-      if (!(NOOP_CHARACTERS as any)[s]) {continue;} // no-op fillers only
+      if (!(NOOP_CHARACTERS as any)[s]) {
+        continue;
+      } // no-op fillers only
       extraOverrides[s] = {
         slug: s,
         skill1: compProfile.noopSkill1,
@@ -311,6 +423,13 @@ function carryDpsSum(
         burst: [],
       };
     }
+  }
+  for (const [s, ovr] of Object.entries(characterOverrides)) {
+    extraOverrides[s] = {
+      ...(extraOverrides[s] ?? ctx.deps.overrides[s] ?? {}),
+      ...ovr,
+      slug: s,
+    };
   }
   const deps = Object.keys(extraOverrides).length
     ? { ...ctx.deps, overrides: { ...ctx.deps.overrides, ...extraOverrides } }
@@ -336,7 +455,9 @@ export function bufferValueFor(
   profile?: string | null
 ): Omit<BufferValue, 'rank'> {
   const char = ctx.characters[slug];
-  if (!char) {throw new Error(`${slug}: not in characters.json`);}
+  if (!char) {
+    throw new Error(`${slug}: not in characters.json`);
+  }
   const burst = char.burst === 'Λ' ? 'III' : char.burst;
   const activeProfile =
     profile === undefined ? (BUFFER_COMP_PROFILES[slug] ?? null) : profile;
@@ -344,21 +465,68 @@ export function bufferValueFor(
     board === 'typed'
       ? deriveCarrySpec(ctx.deps.overrides[slug])
       : { spec: { ...PLAIN_SPEC }, rules: [] };
+  const duoProfile =
+    activeProfile && DUO_BUFFER_PROFILES[slug]?.id === activeProfile
+      ? DUO_BUFFER_PROFILES[slug]
+      : undefined;
 
-  const team = assemble(slug, burst, board, spec);
-  const baselineTeam = assemble(team.noopSlot, burst, board, spec);
-  const baselineKey = `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}`;
+  function blancNoCdrOverride(ctx: RanksCtx): any {
+    const ovr = ctx.deps.overrides.blanc ?? {};
+    return {
+      ...ovr,
+      skill2: (ovr.skill2 ?? []).filter(
+        (b: any) => !b.effects?.some((e: any) => e.kind === 'burstCdr')
+      ),
+      slug: 'blanc',
+    };
+  }
+
+  const b1CdSec =
+    burst === 'I' ? effectiveBurstCooldownSec(ctx, slug) : undefined;
+  const team = assemble(slug, burst, board, spec, duoProfile?.partner, b1CdSec);
+  const baselineTeam = assemble(
+    team.noopSlot,
+    burst,
+    board,
+    spec,
+    duoProfile?.partner,
+    b1CdSec
+  );
+  const b1Filler =
+    burst === 'I' && b1CdSec !== undefined && b1CdSec > B1_SOLO_CD_THRESHOLD
+      ? 'b1'
+      : 'b2';
+  const baselineKey = duoProfile
+    ? `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile}|partner=${duoProfile.partner}|partnerMode=solo|b1filler=${b1Filler}`
+    : `${burst}|${spec.weapon ?? 'plain'}|${spec.pierce}|${spec.element ?? 'Iron'}|${activeProfile ?? 'plain'}|b1filler=${b1Filler}`;
   let baseline = baselineMemo.get(baselineKey);
+  const characterOverrides: Record<string, any> = {};
+  if (slug === 'blanc' && activeProfile === null) {
+    characterOverrides.blanc = blancNoCdrOverride(ctx);
+  }
   if (baseline === undefined) {
+    const baselineOpts: Record<string, UnitOptions> = {};
+    if (duoProfile) {
+      baselineOpts[duoProfile.partner] = {
+        mode: duoProfile.partnerMode ?? 'solo',
+      };
+    }
     baseline = carryDpsSum(
       baselineTeam,
       ctx,
       spec,
       board === 'typed' && spec.pierce,
       undefined,
-      activeProfile
+      activeProfile,
+      baselineOpts,
+      characterOverrides
     ).sum;
     baselineMemo.set(baselineKey, baseline);
+  }
+  const testedOpts: Record<string, UnitOptions> = {};
+  if (duoProfile) {
+    testedOpts[slug] = { mode: duoProfile.mode ?? 'solo' };
+    testedOpts[duoProfile.partner] = { mode: duoProfile.partnerMode ?? 'solo' };
   }
   const run = carryDpsSum(
     team,
@@ -366,11 +534,13 @@ export function bufferValueFor(
     spec,
     board === 'typed' && spec.pierce,
     slug,
-    activeProfile
+    activeProfile,
+    testedOpts,
+    characterOverrides
   );
   return {
     slug,
-    value: run.sum - baseline,
+    valuePct: baseline > 0 ? ((run.sum - baseline) / baseline) * 100 : 0,
     carryDps: run.sum,
     baselineDps: baseline,
     testedBurstCasts: run.testedBurstCasts,
@@ -390,12 +560,17 @@ export function rankBuffers(
   const memo = new Map<string, number>();
   const results = population.flatMap((slug) => {
     const rows = [bufferValueFor(slug, board, ctx, memo, null)];
-    if (BUFFER_COMP_PROFILES[slug])
-      {rows.push(
+    if (BUFFER_COMP_PROFILES[slug]) {
+      rows.push(
         bufferValueFor(slug, board, ctx, memo, BUFFER_COMP_PROFILES[slug])
-      );}
+      );
+    }
+    const duo = DUO_BUFFER_PROFILES[slug];
+    if (duo) {
+      rows.push(bufferValueFor(slug, board, ctx, memo, duo.id));
+    }
     return rows;
   });
-  results.sort((a, b) => b.value - a.value);
+  results.sort((a, b) => b.valuePct - a.valuePct);
   return results.map((r, i) => ({ ...r, rank: i + 1 }));
 }

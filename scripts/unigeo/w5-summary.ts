@@ -45,7 +45,9 @@ function runComp(comp: (typeof COMPS)[number], mode: string) {
   process.env.UNIGEO = mode === 'off' ? '' : mode;
   const chars = comp.slugs.map((s) => data.characters[s]);
   const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of comp.slugs) {overrides[s] = loadOverride(s);}
+  for (const s of comp.slugs) {
+    overrides[s] = loadOverride(s);
+  }
   const unitOpts: UnitOptions[] = comp.slugs.map((slug) => ({
     doll: false,
     ol: 'base5',
@@ -70,7 +72,9 @@ for (const comp of COMPS) {
     for (const u of res.units) {
       const e = Math.abs(u.totalDamage / comp.real[u.slug] - 1);
       errs[mode].push(e);
-      if (data.characters[u.slug].weapon === 'SG') {errsSg[mode].push(e);}
+      if (data.characters[u.slug].weapon === 'SG') {
+        errsSg[mode].push(e);
+      }
     }
   }
 }

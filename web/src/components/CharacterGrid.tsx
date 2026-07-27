@@ -28,7 +28,9 @@ const ARCHETYPE_GROUPS: { group: string; options: ArchetypeOption[] }[] =
   (() => {
     const byGroup = new Map<string, ArchetypeOption[]>();
     for (const [id, v] of Object.entries(archetypeData.vocabulary)) {
-      if (!byGroup.has(v.group)) {byGroup.set(v.group, []);}
+      if (!byGroup.has(v.group)) {
+        byGroup.set(v.group, []);
+      }
       byGroup.get(v.group)!.push({ id, label: v.label, blurb: v.blurb });
     }
     return [...byGroup.entries()].map(([group, options]) => ({
@@ -241,8 +243,11 @@ export function CharacterGrid({
   const toggle = (current: Set<string>, setter: (s: Set<string>) => void) => {
     return (id: string) => {
       const next = new Set(current);
-      if (next.has(id)) {next.delete(id);}
-      else {next.add(id);}
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
       setter(next);
     };
   };
@@ -258,29 +263,43 @@ export function CharacterGrid({
     const q = search.toLowerCase();
     return all.filter((c) => {
       // Already placed — removed from the list entirely
-      if (exclude.has(c.slug)) {return false;}
+      if (exclude.has(c.slug)) {
+        return false;
+      }
       // Text search — slug, name, or approved community nickname
       if (q) {
         const textMatch =
           c.slug.includes(q) ||
           c.name.toLowerCase().includes(q) ||
           (c.nicknames ?? []).some((n) => n.includes(q));
-        if (!textMatch) {return false;}
+        if (!textMatch) {
+          return false;
+        }
       }
       // Weapon filter
-      if (weaponFilter.size > 0 && !weaponFilter.has(c.weapon)) {return false;}
+      if (weaponFilter.size > 0 && !weaponFilter.has(c.weapon)) {
+        return false;
+      }
       // Burst filter — Λ burst characters are always included (no dedicated filter)
-      if (burstFilter.size > 0 && c.burst !== 'Λ' && !burstFilter.has(c.burst))
-        {return false;}
+      if (
+        burstFilter.size > 0 &&
+        c.burst !== 'Λ' &&
+        !burstFilter.has(c.burst)
+      ) {
+        return false;
+      }
       // Class filter
-      if (classFilter.size > 0 && !classFilter.has(c.class)) {return false;}
+      if (classFilter.size > 0 && !classFilter.has(c.class)) {
+        return false;
+      }
       // Element filter — matches EVERY element the unit counts as, so a kit that grants a second
       // code's advantage (Rapi: Red Hood is Fire + Iron) shows under both filters. See src/elements.ts.
       if (
         elementFilter.size > 0 &&
         !unitElements(c).some((e) => elementFilter.has(e))
-      )
-        {return false;}
+      ) {
+        return false;
+      }
       // Manufacturer filter — use the match function if present, else exact match
       if (manufacturerFilter.size > 0) {
         const matched = MANUFACTURER_OPTIONS.some(
@@ -290,14 +309,18 @@ export function CharacterGrid({
               ? opt.match(c.manufacturer ?? '')
               : c.manufacturer === opt.id)
         );
-        if (!matched) {return false;}
+        if (!matched) {
+          return false;
+        }
       }
       // Archetype filter — OR within the row (a unit passes if it carries ANY
       // selected tag), AND with the other rows. Units with no tags only pass
       // while the row is inactive.
       if (archetypeFilter.size > 0) {
         const unitTags = archetypeData.tags[c.slug] ?? [];
-        if (!unitTags.some((t) => archetypeFilter.has(t))) {return false;}
+        if (!unitTags.some((t) => archetypeFilter.has(t))) {
+          return false;
+        }
       }
       return true;
     });

@@ -26,6 +26,11 @@ const META: Record<string, HeadMeta> = {
     description:
       'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
+  ranks: {
+    title: 'NIKKE Rankings — DPS Chart, Support Boards & Unit Comparison',
+    description:
+      'NIKKE rankings hub: ranked DPS of every B3 carry under standardized solo-raid frameworks, support boards (burst gen, burst CDR, sustain, buffer value), and head-to-head unit comparison.',
+  },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
     description:
@@ -144,7 +149,9 @@ function setCanonical(href: string) {
 // in App.tsx but without importing the full sim state).
 function tabKey(): string {
   const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && META[seg]) {return seg;}
+  if (seg && META[seg]) {
+    return seg;
+  }
   return 'sim';
 }
 

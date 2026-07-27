@@ -72,8 +72,9 @@ describe('enumerateTeams (item 3b)', () => {
     // b2dead (60s) only ever appears beside a ≤20s B2 partner
     for (const { team } of out) {
       const b2 = b2sOf(team);
-      if (team.includes('b2dead'))
-        {expect(b2.some((s) => CD[s] <= 20)).toBe(true);}
+      if (team.includes('b2dead')) {
+        expect(b2.some((s) => CD[s] <= 20)).toBe(true);
+      }
     }
   });
 
@@ -104,7 +105,9 @@ describe('enumerateTeams (item 3b)', () => {
   it('requires an advantaged unit on every team when the element rule is active', () => {
     const out = enumerateTeams({ ...base(), advantaged: (s) => s === 'd4' });
     expect(out.length).toBeGreaterThan(0);
-    for (const { team } of out) {expect(team).toContain('d4');}
+    for (const { team } of out) {
+      expect(team).toContain('d4');
+    }
   });
 
   it('applies the synergy multiplier (a satisfied pair outranks equal raw value)', () => {
@@ -158,7 +161,9 @@ describe('enumerateTeams (item 3b)', () => {
     for (const { team } of out) {
       const n = (team.includes('b2a') ? 1 : 0) + (team.includes('d4') ? 1 : 0);
       expect(n === 0 || n === 2).toBe(true);
-      if (n === 2) {both++;}
+      if (n === 2) {
+        both++;
+      }
     }
     expect(both).toBeGreaterThan(0); // the pair is still reachable, just atomic
   });
@@ -171,7 +176,9 @@ describe('enumerateTeams (item 3b)', () => {
     expect(out.length).toBeGreaterThan(0);
     let fielded = 0;
     for (const { team } of out) {
-      if (!team.includes('d1')) {continue;}
+      if (!team.includes('d1')) {
+        continue;
+      }
       fielded++;
       expect(team.includes('b2b') || team.includes('d5')).toBe(true);
     }

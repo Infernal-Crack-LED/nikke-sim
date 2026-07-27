@@ -113,8 +113,9 @@ const noCrit = withPatchedOverride(SODA, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'critDamagePct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('stb S1 critDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('stb S1 critDamagePct block missing — fixture is stale');
+  }
 });
 /** STB3 reference: the +1 chip generation removed (pool never rebuilds). */
 const noGen = withPatchedOverride(SODA, (ov) => {
@@ -126,10 +127,11 @@ const noGen = withPatchedOverride(SODA, (ov) => {
     );
     removed += before - blk.effects.length;
   }
-  if (!removed)
-    {throw new Error(
+  if (!removed) {
+    throw new Error(
       'stb S1 +chip generation effect missing — fixture is stale'
-    );}
+    );
+  }
 });
 /** STB4 reference: her AD self+ally blocks removed. */
 const noAd = withPatchedOverride(SODA, (ov) => {
@@ -137,19 +139,22 @@ const noAd = withPatchedOverride(SODA, (ov) => {
   ov.skill1 = ov.skill1.filter(
     (b: any) => !b.effects.some((e: any) => e.stat === 'attackDamagePct')
   );
-  if (ov.skill1.length === before)
-    {throw new Error('stb S1 attackDamagePct block missing — fixture is stale');}
+  if (ov.skill1.length === before) {
+    throw new Error('stb S1 attackDamagePct block missing — fixture is stale');
+  }
 });
 /** STB4 counterfactual: the ally block WITHOUT excludeSelf (double-targets Soda if she is top ATK). */
 const noExclude = withPatchedOverride(SODA, (ov) => {
   let hit = 0;
-  for (const blk of ov.skill1)
-    {if (blk.target?.kind === 'alliesTopAtk') {
+  for (const blk of ov.skill1) {
+    if (blk.target?.kind === 'alliesTopAtk') {
       delete blk.target.excludeSelf;
       hit++;
-    }}
-  if (!hit)
-    {throw new Error('stb S1 alliesTopAtk block missing — fixture is stale');}
+    }
+  }
+  if (!hit) {
+    throw new Error('stb S1 alliesTopAtk block missing — fixture is stale');
+  }
 });
 /** STB5 reference: the Full-Burst-extension ladder removed. */
 const noFbExt = withPatchedOverride(SODA, (ov) => {
@@ -157,20 +162,24 @@ const noFbExt = withPatchedOverride(SODA, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'fullBurstExtend')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
+  }
 });
 /** STB5 counterfactual: a FLAT +2 ladder (wrong shape — the kit is cumulative +2/+3 = +5 at ≥20). */
 const flatLadder = withPatchedOverride(SODA, (ov) => {
   let hit = 0;
-  for (const blk of ov.skill2)
-    {for (const e of blk.effects)
-      {if (e.kind === 'fullBurstExtend') {
+  for (const blk of ov.skill2) {
+    for (const e of blk.effects) {
+      if (e.kind === 'fullBurstExtend') {
         e.seconds = 2;
         hit++;
-      }}}
-  if (!hit)
-    {throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');}
+      }
+    }
+  }
+  if (!hit) {
+    throw new Error('stb S2 fullBurstExtend block missing — fixture is stale');
+  }
 });
 /** STB6 reference: the in-FB rider removed. */
 const noRider = withPatchedOverride(SODA, (ov) => {
@@ -178,8 +187,9 @@ const noRider = withPatchedOverride(SODA, (ov) => {
   ov.skill2 = ov.skill2.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (ov.skill2.length === before)
-    {throw new Error('stb S2 flatDamage rider missing — fixture is stale');}
+  if (ov.skill2.length === before) {
+    throw new Error('stb S2 flatDamage rider missing — fixture is stale');
+  }
 });
 /** STB7 reference: the burst nuke removed. */
 const noBurstDmg = withPatchedOverride(SODA, (ov) => {
@@ -187,23 +197,26 @@ const noBurstDmg = withPatchedOverride(SODA, (ov) => {
   ov.burst = ov.burst.filter(
     (b: any) => !b.effects.some((e: any) => e.kind === 'flatDamage')
   );
-  if (ov.burst.length === before)
-    {throw new Error('stb burst flatDamage missing — fixture is stale');}
+  if (ov.burst.length === before) {
+    throw new Error('stb burst flatDamage missing — fixture is stale');
+  }
 });
 /** STB7 counterfactual: the −17 chip spend moved BEFORE the gates (violates "▼17 after applied"). */
 const spendFirst = withPatchedOverride(SODA, (ov) => {
   const i = ov.burst.findIndex((b: any) =>
     b.effects.some((e: any) => e.kind === 'resource')
   );
-  if (i < 0)
-    {throw new Error('stb burst chip-spend block missing — fixture is stale');}
+  if (i < 0) {
+    throw new Error('stb burst chip-spend block missing — fixture is stale');
+  }
   const [spend] = ov.burst.splice(i, 1);
   ov.burst.unshift(spend);
 });
 /** STB1/STB8 counterfactual: the pool opens at 0 instead of 50. */
 const pool0 = withPatchedOverride(SODA, (ov) => {
-  if (!ov.resources?.[0])
-    {throw new Error('stb goldenChip resource missing — fixture is stale');}
+  if (!ov.resources?.[0]) {
+    throw new Error('stb goldenChip resource missing — fixture is stale');
+  }
   ov.resources[0].initial = 0;
 });
 
@@ -324,8 +337,9 @@ describe('soda-twinkling-bunny — kit spec', () => {
     const ad = (evs: SimEvent[]) => sodaBuffs(evs, 'attackDamagePct', 10.51);
     const byTarget = (evs: SimEvent[]) => {
       const m = new Map<number, number>();
-      for (const b of ad(evs))
-        {m.set(b.targetIdx ?? -1, (m.get(b.targetIdx ?? -1) ?? 0) + 1);}
+      for (const b of ad(evs)) {
+        m.set(b.targetIdx ?? -1, (m.get(b.targetIdx ?? -1) ?? 0) + 1);
+      }
       return m;
     };
 

@@ -60,9 +60,15 @@ const OV: any = withPatchedOverride(SLUG, () => {});
 
 function slotBlocks(ov: any, slot: string): any[] {
   const s = ov?.[slot];
-  if (!s) {return [];}
-  if (Array.isArray(s)) {return s;}
-  if (Array.isArray(s.blocks)) {return s.blocks;}
+  if (!s) {
+    return [];
+  }
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   return [];
 }
 function slotEffects(ov: any, slot: string): any[] {
@@ -117,7 +123,9 @@ function run(ov?: any, helm = true) {
   opts.onEvent = (ev: SimEvent) => {
     evs.push(ev as Ev);
   };
-  if (ov) {opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };}
+  if (ov) {
+    opts.overrides = { ...(opts.overrides ?? {}), [SLUG]: ov };
+  }
   const res = runComp(opts);
   return { res, evs, total: totals(res)[SLUG] ?? 0 };
 }
@@ -129,7 +137,9 @@ const CF_ATK_ZERO = patch((ov) =>
 );
 const CF_ATK_BURSTCAST = patch((ov) => {
   const b = blockFor(ov, 'skill1', isAtkBuff);
-  if (!b) {return 0;}
+  if (!b) {
+    return 0;
+  }
   b.trigger = { kind: 'burstCast' };
   return 1;
 });
@@ -220,11 +230,18 @@ const IDX_FIELDS = [
   'idx',
 ];
 function fromHer(e: any): boolean {
-  for (const f of SLUG_FIELDS)
-    {if (typeof e[f] === 'string') {return e[f] === SLUG;}}
-  if (IDX >= 0)
-    {for (const f of IDX_FIELDS)
-      {if (typeof e[f] === 'number') {return e[f] === IDX;}}}
+  for (const f of SLUG_FIELDS) {
+    if (typeof e[f] === 'string') {
+      return e[f] === SLUG;
+    }
+  }
+  if (IDX >= 0) {
+    for (const f of IDX_FIELDS) {
+      if (typeof e[f] === 'number') {
+        return e[f] === IDX;
+      }
+    }
+  }
   return false;
 }
 const herDamage = (evs: Ev[]) =>
@@ -321,7 +338,9 @@ describe('S1b — full-charge attack, self: Charge Speed +100%, removed on reloa
     expect(fx[0].durationSec).toBeUndefined();
     const b = blockFor(OV, 'skill1', isChargeSpeed);
     expect(['shotFired', 'hitCount']).toContain(b.trigger?.kind);
-    if (b.trigger?.kind === 'hitCount') {expect(b.trigger.count).toBe(1);}
+    if (b.trigger?.kind === 'hitCount') {
+      expect(b.trigger.count).toBe(1);
+    }
     expect(b.target?.kind).toBe('self');
   });
 

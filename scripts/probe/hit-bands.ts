@@ -70,15 +70,20 @@ export function computeHitBands(
   const realLog = console.log;
   console.log = (...a: unknown[]) => {
     const s = a.join(' ');
-    if (s.includes(`[dbg ${focus}]`)) {lines.push(s);}
-    else {realLog(...a);}
+    if (s.includes(`[dbg ${focus}]`)) {
+      lines.push(s);
+    } else {
+      realLog(...a);
+    }
   };
 
   let res;
   try {
     const chars = bt.slugs.map((s) => w.data.characters[s]);
     const overrides: Record<string, ReturnType<typeof loadOverride>> = {};
-    for (const s of bt.slugs) {overrides[s] = loadOverride(s);}
+    for (const s of bt.slugs) {
+      overrides[s] = loadOverride(s);
+    }
     const unitOpts: UnitOptions[] = bt.slugs.map((slug) => ({
       doll: false,
       ol: 'base5',
@@ -108,10 +113,16 @@ export function computeHitBands(
     res = runSim(chars, w.mult, cfg, prepared);
   } finally {
     console.log = realLog;
-    if (prevUnit === undefined) {delete process.env.DBG_UNIT;}
-    else {process.env.DBG_UNIT = prevUnit;}
-    if (prevN === undefined) {delete process.env.DBG_N;}
-    else {process.env.DBG_N = prevN;}
+    if (prevUnit === undefined) {
+      delete process.env.DBG_UNIT;
+    } else {
+      process.env.DBG_UNIT = prevUnit;
+    }
+    if (prevN === undefined) {
+      delete process.env.DBG_N;
+    } else {
+      process.env.DBG_N = prevN;
+    }
   }
 
   const insts: Inst[] = [];
@@ -119,12 +130,16 @@ export function computeHitBands(
     const m = l.match(
       /\] t=[\d.]+ (\w+) atkPct=([\d.]+) baseAtk=\d+ major=([\d.]+) .* dmg=(\d+)/
     );
-    if (m) {insts.push({ cat: m[1], atkPct: +m[2], major: +m[3], dmg: +m[4] });}
+    if (m) {
+      insts.push({ cat: m[1], atkPct: +m[2], major: +m[3], dmg: +m[4] });
+    }
   }
   const groups = new Map<string, Inst[]>();
   for (const i of insts) {
     const key = `${i.cat}|${i.atkPct.toFixed(1)}`;
-    if (!groups.has(key)) {groups.set(key, []);}
+    if (!groups.has(key)) {
+      groups.set(key, []);
+    }
     groups.get(key)!.push(i);
   }
 
@@ -198,9 +213,11 @@ export function matchBands(
       ['core', b.coreLo, b.coreHi],
       ['crit+core', b.critCoreLo, b.critCoreHi],
     ];
-    for (const [variant, lo, hi] of variants)
-      {if (value >= lo * (1 - f) && value <= hi * (1 + f))
-        {out.push({ cat: b.cat, coefPct: b.coefPct, variant });}}
+    for (const [variant, lo, hi] of variants) {
+      if (value >= lo * (1 - f) && value <= hi * (1 + f)) {
+        out.push({ cat: b.cat, coefPct: b.coefPct, variant });
+      }
+    }
   }
   return out;
 }

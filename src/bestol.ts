@@ -55,9 +55,13 @@ export function bestOl(
     let best: { type: string; result: { unit: number; team: number } } | null =
       null;
     for (const [type, line] of Object.entries(olLines.lines)) {
-      if ((counts[type] ?? 0) >= 4) {continue;}
+      if ((counts[type] ?? 0) >= 4) {
+        continue;
+      }
       const result = simWith([...added, { stat: line.stat, value: line.max }]);
-      if (!best || result.unit > best.result.unit) {best = { type, result };}
+      if (!best || result.unit > best.result.unit) {
+        best = { type, result };
+      }
       if (step === 0) {
         rejected.push({
           type,
@@ -68,9 +72,13 @@ export function bestOl(
         });
       }
     }
-    if (!best) {break;}
+    if (!best) {
+      break;
+    }
     const gain = best.result.unit - prev.unit;
-    if (gain <= prev.unit * 0.0005) {break;} // < 0.05% marginal gain — stop
+    if (gain <= prev.unit * 0.0005) {
+      break;
+    } // < 0.05% marginal gain — stop
     const line = olLines.lines[best.type];
     picks.push({
       type: best.type,

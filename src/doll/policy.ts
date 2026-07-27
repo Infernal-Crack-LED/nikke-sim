@@ -67,7 +67,9 @@ export function costFrom(
   L: number,
   xp = 0
 ): number {
-  if (L >= model.maxPhase) {return 0;}
+  if (L >= model.maxPhase) {
+    return 0;
+  }
   return dp.cost[L][Math.min(dp.nXp - 1, Math.floor(xp / XP_STEP))];
 }
 
@@ -148,11 +150,14 @@ function pct(sorted: number[], q: number) {
 function density(xs: number[], upper: number, bins = 22) {
   const w = Math.max(1, Math.ceil(upper / bins));
   const out: Array<{ lo: number; hi: number; mid: number; count: number }> = [];
-  for (let b = 0; b < bins; b++)
-    {out.push({ lo: b * w, hi: (b + 1) * w, mid: (b + 0.5) * w, count: 0 });}
+  for (let b = 0; b < bins; b++) {
+    out.push({ lo: b * w, hi: (b + 1) * w, mid: (b + 0.5) * w, count: 0 });
+  }
   for (const v of xs) {
     const b = Math.floor(v / w);
-    if (b >= 0 && b < bins) {out[b].count++;}
+    if (b >= 0 && b < bins) {
+      out[b].count++;
+    }
   }
   return out;
 }
@@ -214,22 +219,30 @@ export function expectedConsumption(
   const maxP = model.maxPhase,
     nXp = dp.nXp;
   const v: number[][] = [];
-  for (let L = 0; L <= maxP; L++) {v[L] = new Array(nXp).fill(0);}
+  for (let L = 0; L <= maxP; L++) {
+    v[L] = new Array(nXp).fill(0);
+  }
   v[startL][Math.min(nXp - 1, Math.floor(startXp / XP_STEP))] = 1;
   const cons: Record<ToolboxTier, number> = { R: 0, SR: 0, SSR: 0 };
   let feeds = 0;
   for (let L = startL; L < maxP; L++) {
     for (let xi = 0; xi < nXp; xi++) {
       const prob = v[L][xi];
-      if (prob <= 1e-15) {continue;}
+      if (prob <= 1e-15) {
+        continue;
+      }
       const t = dp.tier[L][xi] ?? 'R';
       cons[t] += prob;
       feeds += prob;
       const p = procChance(model, rarity, t, L);
       const cp = nextCheckpoint(model, L);
-      if (cp < maxP) {v[cp][0] += prob * p;} // proc → checkpoint (cp==maxP absorbs = done)
+      if (cp < maxP) {
+        v[cp][0] += prob * p;
+      } // proc → checkpoint (cp==maxP absorbs = done)
       const m = applyMiss(model, rarity, L, xi * XP_STEP, t);
-      if (m.L < maxP) {v[m.L][m.xp / XP_STEP] += prob * (1 - p);}
+      if (m.L < maxP) {
+        v[m.L][m.xp / XP_STEP] += prob * (1 - p);
+      }
     }
   }
   return { ...cons, feeds };
@@ -307,9 +320,10 @@ export function calibrateWeights(
   const dollsPure = 1000 / Math.max(c.R / s.R, c.SR / s.SR, c.SSR / s.SSR);
   const dollsMixed = 1000 / bestZ;
   const wasteFrac: Record<ToolboxTier, number> = { R: 0, SR: 0, SSR: 0 };
-  for (const t of TIERS)
-    {wasteFrac[t] =
-      s[t] > 0 ? Math.max(0, 1 - (dollsPure * c[t]) / (1000 * s[t])) : 0;}
+  for (const t of TIERS) {
+    wasteFrac[t] =
+      s[t] > 0 ? Math.max(0, 1 - (dollsPure * c[t]) / (1000 * s[t])) : 0;
+  }
   const bottleneck = TIERS.reduce(
     (a, t) => (c[t] / s[t] > c[a] / s[a] ? t : a),
     'R' as ToolboxTier

@@ -68,8 +68,11 @@ function rotation(
   const casts: Record<string, number> = {};
   let fullBursts = 0;
   for (const e of events) {
-    if (e.kind === 'burstCast') {casts[e.slug] = (casts[e.slug] ?? 0) + 1;}
-    else if (e.kind === 'fullBurstStart') {fullBursts++;}
+    if (e.kind === 'burstCast') {
+      casts[e.slug] = (casts[e.slug] ?? 0) + 1;
+    } else if (e.kind === 'fullBurstStart') {
+      fullBursts++;
+    }
   }
   return { casts, fullBursts };
 }

@@ -535,13 +535,18 @@ for (const [slug, c] of Object.entries(data.characters)) {
   const prose = proseOf(c);
   const blocks = parseBlocks(prose);
   const hits = TAG_DEFS.filter((t) => t.test(blocks, prose)).map((t) => t.id);
-  if (hits.length) {tagsBySlug[slug] = hits;}
+  if (hits.length) {
+    tagsBySlug[slug] = hits;
+  }
 }
 
 // stats (always printed) — validate the rules against the real roster before --write.
 const counts = new Map<string, number>();
-for (const ids of Object.values(tagsBySlug))
-  {for (const id of ids) {counts.set(id, (counts.get(id) ?? 0) + 1);}}
+for (const ids of Object.values(tagsBySlug)) {
+  for (const id of ids) {
+    counts.set(id, (counts.get(id) ?? 0) + 1);
+  }
+}
 const total = Object.keys(data.characters).length;
 const tagged = Object.keys(tagsBySlug).length;
 console.log(`archetype tags — ${tagged}/${total} characters tagged\n`);
@@ -552,7 +557,9 @@ for (const def of TAG_DEFS) {
     .slice(0, 6)
     .map(([slug]) => slug);
   console.log(`${String(n).padStart(4)}  ${def.id.padEnd(20)} ${def.label}`);
-  if (examples.length) {console.log(`        e.g. ${examples.join(', ')}`);}
+  if (examples.length) {
+    console.log(`        e.g. ${examples.join(', ')}`);
+  }
 }
 const untagged = Object.keys(data.characters).filter((s) => !tagsBySlug[s]);
 console.log(`\n${untagged.length} untagged:`);
@@ -568,8 +575,9 @@ const vocabulary: Record<
   string,
   { label: string; blurb: string; group: string }
 > = {};
-for (const def of TAG_DEFS)
-  {vocabulary[def.id] = { label: def.label, blurb: def.blurb, group: def.group };}
+for (const def of TAG_DEFS) {
+  vocabulary[def.id] = { label: def.label, blurb: def.blurb, group: def.group };
+}
 
 // sort slugs + each tag list for a stable, diff-friendly file.
 const tags: Record<string, string[]> = {};

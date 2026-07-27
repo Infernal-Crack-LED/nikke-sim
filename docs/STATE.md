@@ -326,10 +326,13 @@ verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/
 Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b2.md`,
 `docs/handoffs/2026-07-26-support-rank-composite.md`.
 
-- **burstgen** — all sim-supported units, solo, `cfg.disableBursts`, ranked by UNCAPPED total gauge
-  over 180s via the engine's additive `UnitResult.gaugeGenerated` counter (pre-clamp in
-  `addGauge`/`fillGauge`; nothing branches on it → byte-identical damage). Profiles: little-mermaid
-  +2MG, cinderella-crystal-wave +1MG (the only two team-ammo-scaling kits).
+- **burstgen** — all sim-supported units, standard no-op team, bursting enabled, unit focused and
+  leftmost in its burst category. Ranked by `gaugePerSec` = `gaugeGenerated` / `gaugeBuildTimeSec`
+  (the engine's new active-gauge-building-time counter). The no-op B1 is a synthetic AR with a
+  7 s team burst-cooldown reduction on its burst cast, so control teams are normalized for the CDR
+  a real B1 enabler would provide even though the placeholder has no other skills. Artifact also
+  reports `fullBursts`. Profiles: little-mermaid `with-2mg`, cinderella-crystal-wave `with-mg` (B3
+  slots swapped to MG for the two team-ammo-scaling kits).
 - **burstcdr** — the 15 burst-cdr-tagged units, nominal team CDR sec per 40s (static table in
   `src/ranks/burstcdr.ts`; shot-triggered rows use solo sim cadence).
 - **sustain** — 50 candidates (healer/shield tags + nayuta), team-total HP restored+shielded: thin
@@ -341,7 +344,7 @@ Handoffs for the two planned follow-ups: `docs/handoffs/2026-07-26-dps-ranks-b1b
 
 **Comp profiles (all boards, 2026-07-26):** profiled units are ranked BOTH plain and profiled, each
 entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: little-mermaid
-`with-2mg`, cinderella-crystal-wave `with-1mg`. sustain: prika `with-mint`, anchor-innocent-maid
+`with-2mg`, cinderella-crystal-wave `with-mg`. sustain: prika `with-mint`, anchor-innocent-maid
 `with-mast-rm`. buffer: crown `with-healer` (recovery-triggered AD buff at ~100% uptime vs ~27% off
 her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live vs inert) — both
 via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).

@@ -30,7 +30,9 @@ for (const line of out.split('\n')) {
     continue;
   }
   const m = line.match(/^([a-z0-9-]+)\s+shots.*ratio\s+([0-9.]+)/);
-  if (m && cur) {cur.u[m[1]] = parseFloat(m[2]);}
+  if (m && cur) {
+    cur.u[m[1]] = parseFloat(m[2]);
+  }
 }
 
 // dedup by unit set (same five units = same team); mean the reruns
@@ -52,11 +54,14 @@ for (const cs of byset.values()) {
 // per-unit distinct-team counts
 const graded: Record<string, number> = {};
 const within: Record<string, number> = {};
-for (const t of teams)
-  {for (const [u, r] of Object.entries(t)) {
+for (const t of teams) {
+  for (const [u, r] of Object.entries(t)) {
     graded[u] = (graded[u] ?? 0) + 1;
-    if (WITHIN(r)) {within[u] = (within[u] ?? 0) + 1;}
-  }}
+    if (WITHIN(r)) {
+      within[u] = (within[u] ?? 0) + 1;
+    }
+  }
+}
 
 const path = new URL('../data/kit-status.json', import.meta.url);
 const ht = JSON.parse(readFileSync(path, 'utf8'));
@@ -70,7 +75,9 @@ for (const [slug, unit] of Object.entries<any>(ht.units)) {
   const w = within[slug] ?? 0;
   unit.graded = { teams: g, within3pct: w };
   unit.reference = unit.tuned && w >= MIN_TEAMS;
-  if (unit.reference) {refs.push(slug);}
+  if (unit.reference) {
+    refs.push(slug);
+  }
 }
 ht.reference_grade = {
   definition: `tuned=true AND final-total ratio within 0.97-1.03 on >=${MIN_TEAMS} distinct teams (dedup by unit set; focus not required). Recompute with scripts/refgrade.ts when graded comps change.`,
@@ -90,10 +97,11 @@ for (const u of htUnits
       b.graded.within3pct - a.graded.within3pct ||
       b.graded.teams - a.graded.teams
   )
-  .slice(0, 12))
-  {console.log(
+  .slice(0, 12)) {
+  console.log(
     `  ${u.slug.padEnd(24)} teams=${String(u.graded.teams).padStart(2)}  within=${String(u.graded.within3pct).padStart(2)}${u.reference ? '  ◀REFERENCE' : ''}`
-  );}
+  );
+}
 
 if (!process.argv.includes('--dry')) {
   writeFileSync(path, JSON.stringify(ht, null, 2) + '\n');

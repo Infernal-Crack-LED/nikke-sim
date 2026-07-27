@@ -28,7 +28,9 @@ const ok = (name: string, cond: boolean, detail = '') => {
   console.log(
     cond ? `  ✓ ${name}` : `  ✗ ${name}${detail ? ` — ${detail}` : ''}`
   );
-  if (!cond) {fails++;}
+  if (!cond) {
+    fails++;
+  }
 };
 const near = (a: number, b: number, tol: number) => Math.abs(a - b) <= tol;
 

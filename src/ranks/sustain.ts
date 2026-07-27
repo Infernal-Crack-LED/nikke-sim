@@ -104,8 +104,12 @@ export function sustainTeam(
   withProfile = true
 ): string[] {
   const partners = withProfile ? (SUSTAIN_PROFILES[slug]?.partners ?? []) : [];
-  if (burst === 'I') {return [slug, ...partners, NOOP_B2, NOOP_B3, NOOP_B3];}
-  if (burst === 'II') {return [NOOP_B1, slug, ...partners, NOOP_B3, NOOP_B3];}
+  if (burst === 'I') {
+    return [slug, ...partners, NOOP_B2, NOOP_B3, NOOP_B3];
+  }
+  if (burst === 'II') {
+    return [NOOP_B1, slug, ...partners, NOOP_B3, NOOP_B3];
+  }
   return [NOOP_B1, NOOP_B2, slug, NOOP_B3]; // B3 tested alternates with the no-op B3
 }
 
@@ -118,7 +122,9 @@ export function sustainFor(
   withProfile = true
 ): SustainResult {
   const char = ctx.characters[slug];
-  if (!char) {throw new Error(`${slug}: not in characters.json`);}
+  if (!char) {
+    throw new Error(`${slug}: not in characters.json`);
+  }
   const slugs = sustainTeam(slug, char.burst, withProfile);
   const chars = slugs.map((s) => charFor(ctx, s));
   const profile = withProfile ? SUSTAIN_PROFILES[slug] : undefined;
@@ -154,15 +160,21 @@ export function sustainFor(
         tl.fbEnds.push(ev.sec);
         break;
       case 'shot':
-        if (ev.unitIdx !== testedIdx) {break;}
+        if (ev.unitIdx !== testedIdx) {
+          break;
+        }
         tl.shots.push(ev.sec);
-        if (ev.charged) {tl.fcShots.push(ev.sec);}
-        if (ev.ammoAfter === 0 && !ev.unlimitedAmmo)
-          {tl.lastBullets.push(ev.sec);}
+        if (ev.charged) {
+          tl.fcShots.push(ev.sec);
+        }
+        if (ev.ammoAfter === 0 && !ev.unlimitedAmmo) {
+          tl.lastBullets.push(ev.sec);
+        }
         break;
       case 'damage':
-        if (ev.unitIdx === testedIdx)
-          {tl.damage.push({ sec: ev.sec, amount: ev.amount });}
+        if (ev.unitIdx === testedIdx) {
+          tl.damage.push({ sec: ev.sec, amount: ev.amount });
+        }
         break;
     }
   };
@@ -223,7 +235,9 @@ export function sustainFor(
 export function sustainRank(slugs: string[], ctx: RanksCtx): SustainResult[] {
   const results = slugs.flatMap((slug) => {
     const rows = [sustainFor(slug, ctx, false)];
-    if (SUSTAIN_PROFILES[slug]) {rows.push(sustainFor(slug, ctx, true));}
+    if (SUSTAIN_PROFILES[slug]) {
+      rows.push(sustainFor(slug, ctx, true));
+    }
     return rows;
   });
   results.sort((a, b) => b.totalHp - a.totalHp);
@@ -248,10 +262,16 @@ function evaluateLines(
 ): Parts {
   const parts: Parts = { heal: 0, shield: 0, lifesteal: 0 };
   for (const line of lines) {
-    if (line.zero) {continue;}
-    if (line.requiresProfile && !withProfile) {continue;}
+    if (line.zero) {
+      continue;
+    }
+    if (line.requiresProfile && !withProfile) {
+      continue;
+    }
     const procs = procTimes(line, tl);
-    if (procs.length === 0) {continue;}
+    if (procs.length === 0) {
+      continue;
+    }
     const pct = line.maxHpPct ?? 0;
     const targets = line.targets ?? 5;
 
@@ -277,20 +297,26 @@ function evaluateLines(
       let value = 0;
       for (let k = 0; k < ticks; k++) {
         const tickSec = t + k; // 1-per-second regen, first tick at proc time
-        if (tickSec > tl.durationSec) {break;}
+        if (tickSec > tl.durationSec) {
+          break;
+        }
         let mult = 1;
         if (line.potency) {
           const windowStart = line.potency.procs === 'first' ? procs[0] : t;
           if (
             tickSec >= windowStart &&
             tickSec <= windowStart + line.potency.windowSec
-          )
-            {mult = line.potency.mult;}
+          ) {
+            mult = line.potency.mult;
+          }
         }
         value += rampSum * mult;
       }
-      if (line.kind === 'shield') {parts.shield += value * targets;}
-      else {parts.heal += value * targets;}
+      if (line.kind === 'shield') {
+        parts.shield += value * targets;
+      } else {
+        parts.heal += value * targets;
+      }
     });
   }
   return parts;
@@ -326,15 +352,18 @@ function procTimes(line: SustainLine, tl: Timeline): number[] {
         let t = line.intervalSec ?? 1;
         t <= tl.durationSec;
         t += line.intervalSec ?? 1
-      )
-        {base.push(t);}
+      ) {
+        base.push(t);
+      }
       break;
     }
     case 'battleStart':
       base = [0];
       break;
   }
-  if (div === 1) {return base;}
+  if (div === 1) {
+    return base;
+  }
   return base.filter((_, i) => (i + 1) % div === 0);
 }
 
@@ -344,20 +373,31 @@ function damageInWindows(
   damage: { sec: number; amount: number }[],
   windows: readonly (readonly [number, number])[]
 ): number {
-  if (windows.length === 0) {return 0;}
+  if (windows.length === 0) {
+    return 0;
+  }
   const sorted = [...windows].sort((a, b) => a[0] - b[0]);
   const merged: [number, number][] = [];
   for (const [s, e] of sorted) {
     const last = merged[merged.length - 1];
-    if (last && s <= last[1]) {last[1] = Math.max(last[1], e);}
-    else {merged.push([s, e]);}
+    if (last && s <= last[1]) {
+      last[1] = Math.max(last[1], e);
+    } else {
+      merged.push([s, e]);
+    }
   }
   let total = 0;
   let wi = 0;
   for (const d of damage) {
-    while (wi < merged.length && d.sec > merged[wi][1]) {wi++;}
-    if (wi >= merged.length) {break;}
-    if (d.sec >= merged[wi][0]) {total += d.amount;}
+    while (wi < merged.length && d.sec > merged[wi][1]) {
+      wi++;
+    }
+    if (wi >= merged.length) {
+      break;
+    }
+    if (d.sec >= merged[wi][0]) {
+      total += d.amount;
+    }
   }
   return total;
 }
@@ -376,7 +416,9 @@ const PER_UNIT: Record<string, (tl: Timeline, withProfile: boolean) => Parts> =
       const casts = tl.burstCasts
         .filter((c) => c.slug === 'prika')
         .map((c) => c.sec);
-      if (casts.length === 0) {return { heal: 0, shield: 0, lifesteal: 0 };}
+      if (casts.length === 0) {
+        return { heal: 0, shield: 0, lifesteal: 0 };
+      }
       if (withProfile) {
         const ticks = Math.floor(tl.durationSec - casts[0]) + 1;
         return { heal: ticks * 3.04 * 1.4992 * 5, shield: 0, lifesteal: 0 };
@@ -385,7 +427,9 @@ const PER_UNIT: Record<string, (tl: Timeline, withProfile: boolean) => Parts> =
       for (const cast of casts) {
         for (let k = 0; k < 25; k++) {
           const t = cast + k;
-          if (t > tl.durationSec) {break;}
+          if (t > tl.durationSec) {
+            break;
+          }
           heal += 3.04 * 1.4992 * 5; // the HoT runs inside its own Performance window
         }
       }

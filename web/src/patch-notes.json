@@ -1,5 +1,14 @@
 [
   {
+    "date": "2026-07-27",
+    "title": "New: Support Rankings — four boards to rank your supports",
+    "notes": [
+      "The Rankings section has a new Support Rankings tab with four boards: Buffer (how much damage each support adds to the team), Burst Generation, Sustain, and Burst Cooldown Reduction.",
+      "Units whose kits scale with specific teammates are ranked both ways — plain and alongside their ideal partners (Little Mermaid with Machine Gun allies, Prika with Mint, Crown with a healer, and more) — so you can compare like with like.",
+      "Burst Generation now compares charge weapons fairly: Snipers and Rocket Launchers are measured without the camera-focus bonus, since only one unit can be focused in a real fight."
+    ]
+  },
+  {
     "date": "2026-07-24",
     "title": "Roster & Team Generators — smarter search, faster runs",
     "notes": [

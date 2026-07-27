@@ -65,19 +65,29 @@ type Mut = (o: any) => void;
 // authoring order, so the counterfactuals survive any faithful encoding.
 const blocksOf = (o: any): any[] => o?.blocks ?? o?.skills?.blocks ?? [];
 function eachEffect(o: any, fn: (e: any, b: any) => void) {
-  for (const b of blocksOf(o)) {for (const e of b.effects ?? []) {fn(e, b);}}
+  for (const b of blocksOf(o)) {
+    for (const e of b.effects ?? []) {
+      fn(e, b);
+    }
+  }
 }
 const near = (a: number, b: number, eps = 0.5) =>
   Math.abs((a ?? NaN) - b) <= eps;
 const compose =
   (...ms: Mut[]): Mut =>
   (o) => {
-    for (const m of ms) {m(o);}
+    for (const m of ms) {
+      m(o);
+    }
   };
 
 /** drop the 'no other Burst 1 allies' gate -> the My Own Star branch goes live in a liter comp */
 const ungateNoB1: Mut = (o) => {
-  for (const b of blocksOf(o)) {if (b.formation === 'noB1') {delete b.formation;}}
+  for (const b of blocksOf(o)) {
+    if (b.formation === 'noB1') {
+      delete b.formation;
+    }
+  }
 };
 const zeroBuff =
   (stat: string, value?: number): Mut =>
@@ -87,36 +97,50 @@ const zeroBuff =
         e.kind === 'buff' &&
         e.stat === stat &&
         (value === undefined || near(e.value, value))
-      )
-        {e.value = 0;}
+      ) {
+        e.value = 0;
+      }
     });
 const zeroRider: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) {e.atkPct = 0;}
+    if (e.kind === 'flatDamage' && near(e.atkPct, 120.13, 5)) {
+      e.atkPct = 0;
+    }
   });
 const zeroStars: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'dot') {e.atkPct = 0;}
+    if (e.kind === 'dot') {
+      e.atkPct = 0;
+    }
   });
 const zeroCdr: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'burstCdr') {e.seconds = 0;}
+    if (e.kind === 'burstCdr') {
+      e.seconds = 0;
+    }
   });
 const cdrOncePerBattle: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'burstCdr') {e.oncePerBattle = true;}
+    if (e.kind === 'burstCdr') {
+      e.oncePerBattle = true;
+    }
   });
 const casterAtkToOwnAtk: Mut = (o) =>
   eachEffect(o, (e) => {
-    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {e.stat = 'atkPct';}
+    if (e.kind === 'buff' && e.stat === 'casterAtkPct') {
+      e.stat = 'atkPct';
+    }
   });
 const dropHeals: Mut = (o) => {
   const bs = blocksOf(o);
-  for (const b of bs)
-    {b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');}
+  for (const b of bs) {
+    b.effects = (b.effects ?? []).filter((e: any) => e.kind !== 'heal');
+  }
   const keep = bs.filter((b: any) => (b.effects ?? []).length > 0);
   bs.length = 0;
-  for (const b of keep) {bs.push(b);}
+  for (const b of keep) {
+    bs.push(b);
+  }
 };
 /** make anis win the Burst-I slot over liter so her own burst block is exercised at all */
 const takeBurstFirst: Mut = (o) => {

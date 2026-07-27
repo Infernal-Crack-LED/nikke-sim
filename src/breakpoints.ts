@@ -21,7 +21,9 @@ export function ammoBreakpoints(base: number, perLinePct: number) {
   for (let v = base + 1; v <= maxAmmo; v++) {
     const minPct = (v / base - 1) * 100;
     const linesNeeded = Math.ceil(minPct / perLinePct - 1e-9);
-    if (linesNeeded <= 4) {out.push({ ammo: v, minPct, linesNeeded });}
+    if (linesNeeded <= 4) {
+      out.push({ ammo: v, minPct, linesNeeded });
+    }
   }
   return out;
 }

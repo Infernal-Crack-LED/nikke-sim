@@ -159,7 +159,9 @@ describe('sakura-bloom-in-summer — skill1', () => {
         e.stat === 'attackDamagePct' && Math.abs((e.value ?? 0) - 15.64) < 1e-6
     );
     for (const ev of dancing) {
-      if (ev.expiresFrame == null) {continue;}
+      if (ev.expiresFrame == null) {
+        continue;
+      }
       const durSec = (ev.expiresFrame - ev.frame) / FPS;
       expect(durSec).toBeLessThan(20); // 15s, not 25.02s
     }
@@ -206,7 +208,9 @@ describe('sakura-bloom-in-summer — skill2', () => {
     const patched = withPatchedOverride(SLUG, (ov) => {
       for (const b of ov.skill2?.blocks ?? []) {
         for (const e of b.effects) {
-          if (e.kind === 'buff' && e.stat === 'attackDamagePct') {e.value = 0;}
+          if (e.kind === 'buff' && e.stat === 'attackDamagePct') {
+            e.value = 0;
+          }
         }
       }
     });
@@ -214,7 +218,9 @@ describe('sakura-bloom-in-summer — skill2', () => {
 
     expect(totals(res)[SLUG]).toBeLessThan(totals(BASE.res)[SLUG]);
     for (const slug of Object.keys(totals(BASE.res))) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(totals(res)[slug]).toBeCloseTo(totals(BASE.res)[slug], 6);
     }
   });
@@ -353,7 +359,9 @@ describe('sakura-bloom-in-summer — burst', () => {
 
     expect(totals(res)[SLUG]).toBeLessThan(totals(BASE.res)[SLUG]);
     for (const slug of Object.keys(totals(BASE.res))) {
-      if (slug === SLUG) {continue;}
+      if (slug === SLUG) {
+        continue;
+      }
       expect(totals(res)[slug]).toBeCloseTo(totals(BASE.res)[slug], 6);
     }
 
@@ -392,12 +400,16 @@ describe('sakura-bloom-in-summer — whole-unit sanity', () => {
 /** Match a damage event to a kit percentage via its multiplier decomposition. */
 function nearPct(ev: Ev, pct: number): boolean {
   const m = ev.mult ?? ev.atkPct ?? ev.multiplier;
-  if (m == null) {return false;}
+  if (m == null) {
+    return false;
+  }
   return Math.abs(m - pct) < 0.01;
 }
 
 function casterIsSakura(ev: Ev, res: any): boolean {
-  if (ev.casterSlug != null) {return ev.casterSlug === SLUG;}
+  if (ev.casterSlug != null) {
+    return ev.casterSlug === SLUG;
+  }
   const idx = res.units?.findIndex?.((u: any) => u.slug === SLUG);
   return idx != null && idx >= 0 && ev.casterIdx === idx;
 }

@@ -43,7 +43,9 @@ function simFrame(boss: Element, focus: string) {
   autoWire(w, bt);
   const chars = FRAME.map((s) => w.data.characters[s]);
   const ov: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of FRAME) {ov[s] = loadOverride(s);}
+  for (const s of FRAME) {
+    ov[s] = loadOverride(s);
+  }
   const uo: UnitOptions[] = FRAME.map(() => ({ doll: false, ol: 'base5' }));
   const cfg: SimConfig = {
     slugs: FRAME,
@@ -84,10 +86,11 @@ for (const focus of FRAME) {
   console.log(
     `=== FOCUS ${focus}  |  boss ${NEUTRAL_BOSS}  |  FBs ${res.fullBursts} ===`
   );
-  for (const u of res.units)
-    {console.log(
+  for (const u of res.units) {
+    console.log(
       `      ${u.slug.padEnd(22)} ${(u.totalDamage / 1e6).toFixed(0).padStart(4)}M${u.slug === focus ? ' ◀FOCUS' : ''}`
-    );}
+    );
+  }
   console.log('');
 }
 
@@ -127,7 +130,9 @@ for (let i = 0; i < N; i++) {
   autoWire(w, bt);
   const chars = FRAME.map((s) => w.data.characters[s]);
   const ov: Record<string, ReturnType<typeof loadOverride>> = {};
-  for (const s of FRAME) {ov[s] = loadOverride(s);}
+  for (const s of FRAME) {
+    ov[s] = loadOverride(s);
+  }
   const uo: UnitOptions[] = FRAME.map(() => ({ doll: false, ol: 'base5' }));
   const cfg: SimConfig = {
     slugs: FRAME,
@@ -155,7 +160,9 @@ for (let i = 0; i < N; i++) {
     })
   );
   fbDist[res.fullBursts] = (fbDist[res.fullBursts] ?? 0) + 1;
-  for (const u of res.units) {(mc[u.slug] ??= []).push(u.totalDamage);}
+  for (const u of res.units) {
+    (mc[u.slug] ??= []).push(u.totalDamage);
+  }
 }
 console.log(
   `\n=== expected run-to-run variance (Monte Carlo, n=${N}, crown focus) — the jitter noise floor ===`

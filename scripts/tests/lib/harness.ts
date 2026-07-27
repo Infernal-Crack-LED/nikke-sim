@@ -67,7 +67,9 @@ export function withPatchedOverride(
   mutate: (ov: any) => void
 ): OverrideFile {
   const base = loadOverride(slug);
-  if (!base) {throw new Error(`${slug}: no override on disk — fixture is stale`);}
+  if (!base) {
+    throw new Error(`${slug}: no override on disk — fixture is stale`);
+  }
   const clone = JSON.parse(JSON.stringify(base));
   mutate(clone);
   return clone as OverrideFile;
@@ -106,10 +108,14 @@ export interface CompOptions {
 /** Run a scope-lock comp. Deterministic (no seed) unless `cfg.seed` is passed. */
 export function runComp(o: CompOptions): SimResult {
   const overrides: Record<string, OverrideFile | undefined> = {};
-  for (const s of o.slugs) {overrides[s] = o.overrides?.[s] ?? loadOverride(s);}
+  for (const s of o.slugs) {
+    overrides[s] = o.overrides?.[s] ?? loadOverride(s);
+  }
   const chars = o.slugs.map((s) => {
     const c = data.characters[s];
-    if (!c) {throw new Error(`${s}: not in characters.json — fixture is stale`);}
+    if (!c) {
+      throw new Error(`${s}: not in characters.json — fixture is stale`);
+    }
     return c;
   });
   const prepared = prepareTeam(
@@ -138,7 +144,9 @@ export function totals(res: SimResult): Record<string, number> {
 /** A unit's result row, by slug. Throws if the unit was not in the comp. */
 export function unitOf(res: SimResult, slug: string) {
   const u = res.units.find((x) => x.slug === slug);
-  if (!u) {throw new Error(`${slug} not in this comp`);}
+  if (!u) {
+    throw new Error(`${slug} not in this comp`);
+  }
   return u;
 }
 
@@ -266,7 +274,9 @@ export function generatorPool(): GeneratorPool {
   );
   const chars = Object.fromEntries(genChars.map((c) => [c.slug, c]));
   const overrides: Record<string, OverrideFile | undefined> = {};
-  for (const c of genChars) {overrides[c.slug] = loadOverride(c.slug);}
+  for (const c of genChars) {
+    overrides[c.slug] = loadOverride(c.slug);
+  }
   return { genChars, chars, overrides };
 }
 
@@ -285,10 +295,15 @@ export function stageCovered(
   let short = 0;
   let pair = 0;
   for (const s of slugs) {
-    if (effBurst(chars, s) !== stage) {continue;}
+    if (effBurst(chars, s) !== stage) {
+      continue;
+    }
     const cd = chars[s].burstCooldownSec;
-    if (cd <= 20) {short++;}
-    else if (cd <= 40) {pair++;}
+    if (cd <= 20) {
+      short++;
+    } else if (cd <= 40) {
+      pair++;
+    }
   }
   return short >= 1 || short + pair >= 2;
 }

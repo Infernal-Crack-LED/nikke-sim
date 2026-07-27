@@ -58,8 +58,12 @@ type Ev = SimEvent & Record<string, any>;
 // a no-op patch would make the discriminating assertions vacuously green.
 function slotBlocks(ov: any, slot: 'skill1' | 'skill2' | 'burst'): any[] {
   const s = ov?.[slot];
-  if (Array.isArray(s)) {return s;}
-  if (s && Array.isArray(s.blocks)) {return s.blocks;}
+  if (Array.isArray(s)) {
+    return s;
+  }
+  if (s && Array.isArray(s.blocks)) {
+    return s.blocks;
+  }
   return [];
 }
 function setSlotBlocks(
@@ -68,13 +72,19 @@ function setSlotBlocks(
   blocks: any[]
 ): void {
   const s = ov?.[slot];
-  if (s && !Array.isArray(s) && Array.isArray(s.blocks)) {s.blocks = blocks;}
-  else {ov[slot] = blocks;}
+  if (s && !Array.isArray(s) && Array.isArray(s.blocks)) {
+    s.blocks = blocks;
+  } else {
+    ov[slot] = blocks;
+  }
 }
 function findSwap(ov: any): { block: any; eff: any } | null {
   for (const b of slotBlocks(ov, 'burst')) {
-    for (const e of b.effects ?? [])
-      {if (e.kind === 'weaponSwap') {return { block: b, eff: e };}}
+    for (const e of b.effects ?? []) {
+      if (e.kind === 'weaponSwap') {
+        return { block: b, eff: e };
+      }
+    }
   }
   return null;
 }
@@ -85,8 +95,9 @@ function findS1Block(ov: any): any {
         e.kind === 'buff' &&
         e.stat === 'atkPct' &&
         Math.abs(e.value - 43.1) < 1e-6
-      )
-        {return b;}
+      ) {
+        return b;
+      }
     }
   }
   return null;
@@ -142,8 +153,11 @@ const S1_LONG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      for (const e of b?.effects ?? [])
-        {if (e.kind === 'buff') {e.durationSec = 30;}}
+      for (const e of b?.effects ?? []) {
+        if (e.kind === 'buff') {
+          e.durationSec = 30;
+        }
+      }
     })
   )
 );
@@ -151,7 +165,9 @@ const S1_ALL = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      if (b) {b.target = { kind: 'allies' };}
+      if (b) {
+        b.target = { kind: 'allies' };
+      }
     })
   )
 );
@@ -159,7 +175,9 @@ const S1_ONCAST = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const b = findS1Block(ov);
-      if (b) {b.trigger = { kind: 'burstCast' };}
+      if (b) {
+        b.trigger = { kind: 'burstCast' };
+      }
     })
   )
 );
@@ -191,7 +209,9 @@ const B_AMMO6 = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) {s.eff.maxAmmo = 6;}
+      if (s) {
+        s.eff.maxAmmo = 6;
+      }
     })
   )
 );
@@ -199,7 +219,9 @@ const B_FASTCHG = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) {s.eff.chargeTimeSec = 0.5;}
+      if (s) {
+        s.eff.chargeTimeSec = 0.5;
+      }
     })
   )
 );
@@ -207,7 +229,9 @@ const B_NOFC = run(
   compWith(
     withPatchedOverride(SLUG, (ov: any) => {
       const s = findSwap(ov);
-      if (s) {s.eff.chargeMultPct = 100;}
+      if (s) {
+        s.eff.chargeMultPct = 100;
+      }
     })
   )
 );

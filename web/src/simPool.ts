@@ -42,8 +42,12 @@ class SimPool {
   private pending = new Map<number, (r: (TeamResult | null)[]) => void>();
 
   private ensureWorkers(): boolean {
-    if (!this.available) {return false;}
-    if (this.workers.length) {return true;}
+    if (!this.available) {
+      return false;
+    }
+    if (this.workers.length) {
+      return true;
+    }
     // Test/diagnostic hook: force the in-process fallback (used by the browser
     // pool-vs-fallback parity + wall-clock check, scripts/pool-browser-check.mjs).
     if (
@@ -78,22 +82,29 @@ class SimPool {
   }
 
   private teardown(): void {
-    for (const w of this.workers) {w.terminate();}
+    for (const w of this.workers) {
+      w.terminate();
+    }
     this.workers = [];
     this.initedKey = null;
     this.available = false;
-    for (const [, cb] of this.pending) {cb([]);} // unblock any waiters
+    for (const [, cb] of this.pending) {
+      cb([]);
+    } // unblock any waiters
     this.pending.clear();
   }
 
   /** Ensure the pool exists and is initialized with `params`. Returns false when
    *  workers are unavailable — the caller then runs the search in-process. */
   init(params: GenCalcParams): boolean {
-    if (!this.ensureWorkers()) {return false;}
+    if (!this.ensureWorkers()) {
+      return false;
+    }
     const key = paramsKey(params);
     if (key !== this.initedKey) {
-      for (const w of this.workers)
-        {w.postMessage({ type: 'init', params } satisfies PoolRequest);}
+      for (const w of this.workers) {
+        w.postMessage({ type: 'init', params } satisfies PoolRequest);
+      }
       this.initedKey = key;
     }
     return true;
@@ -113,14 +124,18 @@ class SimPool {
     onBatch?: (done: number) => void
   ): Promise<(TeamResult | null)[]> {
     const n = this.workers.length;
-    if (!n) {return teams.map(() => null);}
+    if (!n) {
+      return teams.map(() => null);
+    }
     const out: (TeamResult | null)[] = new Array(teams.length);
     const buckets: number[][] = Array.from({ length: n }, () => []);
     teams.forEach((_, i) => buckets[i % n].push(i));
     let done = 0;
     await Promise.all(
       buckets.map(async (idxs, wi) => {
-        if (!idxs.length) {return;}
+        if (!idxs.length) {
+          return;
+        }
         const res = await this.send(
           this.workers[wi],
           idxs.map((i) => teams[i])
