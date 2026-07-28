@@ -40,6 +40,30 @@ The current card is an identity card only: portrait, name, `class · manufacture
    workflow drops in without a redesign.
 8. Writing to `data/**` is approved for this work.
 
+**Second round (2026-07-28):**
+
+9. **WebP approved** (§12).
+10. **Red Hood (slug `red-hood` — SR/Iron Attacker, the only `Λ` unit) is treated as B3** for tile/bar
+    selection. ⚠ **NOT `rapi-red-hood`** (Rapi: Red Hood, MG/Fire), which is a different unit and is
+    already `burst: "III"` — verified against `data/characters.json` 2026-07-28. This retires open
+    decision 1.
+11. **Burst CDR needs no icon** — render as text (`20s`, `40s`, …).
+12. **Rank colours apply to the rank NUMERAL ONLY**, in the top-right rankings tiles. **Bars keep the
+    nikkesim.app colours** — which are **element-coloured** (`ELEMENT_COLORS[element] ?? '#9aa3b2'`,
+    `web/src/components/RankBarChart.tsx:79` and `DpsBarChart.tsx:101`). `core/theme.ts` already
+    exports the identical `ELEMENT_COLORS` map, so the renderer needs no new palette for bars.
+    ⇒ This **retires open decision 2** (the rank-blue vs Water-element collision): the two colour
+    systems now live on different elements of the card and never touch.
+13. **Bar charts are a closed set** (fewer than §7's tiles):
+    - **B3** → neutral DPS, advantaged DPS.
+    - **B1/B2** → buffer, then sustain if present, else burst CDR if present, else **no second bar
+      chart set at all**.
+    - Burst gen is a **tile only** — it has no bar chart.
+    - Fallbacks are explicitly **second-class**: units outside these categories are, per the owner,
+      "usually aren't characters people care about". Design first-class for units that fit.
+14. **Comp profiles (§8a)** — bar charts render the **profiled** variant in place; the **default
+    (no-profile)** bar is appended *below the last nearby-unit row*. Rank tiles show **both** ranks.
+
 ## 3. The advertising goal is a design constraint
 
 The owner intends to post these cards to Twitter when a new character is announced — *"no one else
@@ -167,10 +191,15 @@ Three tiles, always three, chosen by burst stage (owner's note):
 
 | Burst | Tile 1 | Tile 2 | Tile 3 |
 | --- | --- | --- | --- |
-| **B3** | Neutral DPS rank | Ele-advantaged DPS rank | Burst gen |
+| **B3** (incl. `red-hood`, ruling 10) | Neutral DPS rank | Ele-advantaged DPS rank | Burst gen |
 | **B1 / B2** | Buffer rank | Sustain → else Burst CDR → else n/a | Burst gen |
 
-`Λ` (1 unit, `burst: "Λ"`) has no rule yet — see §11 open decisions.
+**Bar charts are a strict subset of the tiles** (ruling 13) — burst gen is a tile with no bar chart:
+
+| Burst | Bar chart set |
+| --- | --- |
+| **B3** | neutral DPS, advantaged DPS |
+| **B1 / B2** | buffer; then sustain if present, else burst CDR if present, else **omit the second set** |
 
 **Absence rule (ruling 2).** A tile whose board does not rank the unit is still **drawn at full size**,
 greyed, reading `—` with a small `Unranked` sublabel. Never omit, never reflow. Same for the notes
@@ -190,12 +219,53 @@ Confirmed against `web/src/SupportRankings.tsx`:
 | Sustain | `totalHp` | compact `K/M/B` | `X% of max HP` |
 | Burst CDR | `cdrPer20s` | `X.Xs/20s` | ramp / conditional / self-only caveat |
 
-**Buffer needs a zero axis** — `addedPct` is documented as negative-capable in `src/ranks/types.ts`
-(`soline-frost-ticket` is the precedent). A left-anchored bar would render a negative buffer as a
-positive one. This is a real correctness trap, not a polish item.
+**Bar fill colour is the unit's ELEMENT colour** (ruling 12), not a rank colour —
+`ELEMENT_COLORS[element] ?? '#9aa3b2'`, already exported by `core/theme.ts` with hexes identical to
+the web components. Rank colours (§9) are for the tile numerals only.
 
-Burst-CDR rows carry three qualifier fields (`ramp`, `condition`, `selfCdr`). At card scale these
-cannot all render; propose a single `*` marker on the bar with the qualifier text in the notes panel.
+**Buffer needs a zero axis** — `addedPct` is negative-capable (`src/ranks/types.ts`;
+`soline-frost-ticket` is the precedent). The site already solves this and the card must mirror the
+same geometry rather than reinvent it (`RankBarChart.tsx:80-87`): when `min < 0`, a bar spans
+`value ↔ 0` on either side of the axis (`leftPct` from `min`, width `|value|/span`); when all values
+are positive it fills `0 → value` from the left.
+
+**Sustain bars are 3-segment split** (heal / shield / lifesteal) — the site renders `background:
+transparent` on the fill and draws the three segments inside it. Mirror this; a single-colour sustain
+bar loses the composition that makes the board useful.
+
+Burst-CDR rows carry three qualifier fields (`ramp`, `condition`, `selfCdr`). The site's convention is
+a `*` marker after the name with the detail in the tooltip (`ranks-cond`); the card should reuse `*`
+and put the qualifier text in the notes panel, since a card has no hover.
+
+### 8a. Comp profiles (ruling 14)
+
+A profiled unit appears **twice** in an artifact's `entries`: one row carrying `profile: <id>` and one
+with `profile: null`. **Only three boards have profiles**, and only six unit/board pairs exist today
+(verified against the live artifacts 2026-07-28):
+
+| Board | Profiled units | Surface on the card |
+| --- | --- | --- |
+| `bufferchart` | `crown` (`with-healer`), `naga` (`with-shielder`) | bar chart **+** tile |
+| `sustain` | `prika` (`with-mint`), `anchor-innocent-maid` (`with-mast-rm`) | bar chart **+** tile |
+| ↳ ⚠ profile-partner slugs | `with-mast-rm` = **`mast-romantic-maid`** (Mast: Romantic Maid, MG/Water) — **NOT `mast`** (SMG/Electric). The sustain artifact's own note says "mast" bare; do not resolve it by base name. | |
+| `burstgen` | `little-mermaid` (`with-2mg`), `cinderella-crystal-wave` (`with-1mg`) | **tile only** (no bar chart) |
+| `burstcdr` | none — `profiles: {}` | — |
+| `dpschart` | **no profile concept at all** (no `profiles` key) | — |
+
+⇒ The profile rules therefore touch the **B1/B2 bar charts only**, plus the burst-gen tile. **The B3
+card (neutral/advantaged DPS bars) can never show a profile** — worth stating, since it means the
+headline DPS cards need none of this machinery.
+
+**Bar chart:** render the **profiled** row in its ranked position among the neighbours, then append the
+**default (no-profile)** row as an extra bar *below the last nearby-unit row*, visually separated and
+labelled (e.g. `default` / no chip). It is out of rank order by construction — that is intended.
+
+**Tile:** show both ranks. The §3 legibility constraint (one number readable at 45% scale) argues
+against `#3 w/ Healer (#7 default)` on one line — two numerals of equal weight compete and neither
+reads. **Recommended:** keep the **profiled rank as the single large numeral** (it is the headline
+number, coloured per §9), put the profile chip (`w/ Healer`, from `PROFILE_LABELS` in
+`SupportRankings.tsx:56`) under the tile title, and render the default rank as a small muted sub-line
+`#7 default`. Reuse `PROFILE_LABELS` rather than re-deriving the chip text.
 
 ## 9. Rank colours
 
@@ -211,10 +281,11 @@ export const RANK_COLORS = [
 ];
 ```
 
-Caution: blue `#0070ff` sits very close to the Water element colour `#0075f8` in `ELEMENT_COLORS`. On a
-Water unit's card a 21+ rank numeral and the element chip will read as the same colour. Recommend
-nudging the rank blue (e.g. `#3b8cff`) or relying on the size/placement difference — flagged, not
-decided.
+**Scope: the rank NUMERAL in the top-right tiles only** (ruling 12). Bars are element-coloured (§8);
+no other element of the card uses this palette. The earlier concern about rank-blue `#0070ff`
+colliding with Water `#0075f8` is therefore **retired** — the two palettes never appear on the same
+element. (They can still co-occur on one card — a Water unit's 21+ tile numeral beside its element
+chip — but at different sizes and positions, which the site already lives with.)
 
 ## 10. Icons
 
@@ -229,8 +300,11 @@ Work required:
    (lines ~282–312). The icons are additionally **checked into git** (30 files tracked), unlike the
    gitignored `web/public/{dpschart,…}.json` build outputs — so they are present on a clean checkout
    and need no build ordering. Load them via the existing `decodeToCanvas` path; no network fetch.
-2. **Three gaps.** (a) No **burst-CDR** icon exists anywhere — needs sourcing or a text label.
-   (b) No **`Λ` burst** icon (1 unit). (c) Manufacturer values include `"Tetra Overspec"`,
+2. **Gaps.** (a) **Burst CDR — no icon, by ruling 11: render as text** (`20s`, `40s`, …). Resolved.
+   (b) No **`Λ` burst** icon for `red-hood`. Ruling 10 makes it *behave* as B3 for tile/bar selection,
+   but its title-bar icon must still read `Λ` — drawing `burst_3.svg` there would misstate the unit.
+   Needs a `Λ` glyph or a text chip. **Still open.**
+   (c) Manufacturer values include `"Tetra Overspec"`,
    `"Missilis Overspec"`, `"Elysion Overspec"` (4 units) — the icon map must strip the `" Overspec"`
    suffix to resolve, and ideally add an overspec badge rather than silently dropping the distinction.
 3. Prefer the `.svg`/`.png` variants over `.webp` for `@napi-rs/canvas` decode reliability; the class
@@ -282,9 +356,9 @@ unit set, which is the only ~200-file kind.
 
 ## 13. Open decisions
 
-1. **`Λ` burst** — which tile set? (Reads as "operates as any stage"; probably B3's, since it can fill
-   the B3 slot.) 1 unit affected.
-2. **Rank-blue vs Water-element colour collision** (§9).
+1. ~~`Λ` tile set~~ — **SETTLED (ruling 10): `red-hood` uses the B3 set.** Residual: its title-bar
+   `Λ` *icon* still has no asset (§10.2b).
+2. ~~Rank-blue vs Water collision~~ — **RETIRED by ruling 12** (§9): rank colours are numeral-only.
 3. ~~Output format / size~~ — **SETTLED by measurement (§12): emit unit cards as WebP q90.** Owner
    sign-off still wanted, but the evidence is in and the alternative (PNG at ~150 MB) is untenable.
 4. **Burst-CDR icon** — source one, or use a text chip (§10).
@@ -323,3 +397,12 @@ the spec cache, but the bump keeps the two consistent.
   smaller** than PNG. Do not re-derive these; re-measure only if the renderer changes.
 - `build-infographics.ts` reads `web/public/` directly and `emptyOutDir` wipes only `dist/`;
   `web/public/nikke-icons/` is **tracked in git** (30 files), so icons need no vendoring step.
+- **`Λ` burst is `red-hood`** (Red Hood, SR/Iron, Attacker) — exactly 1 unit. `rapi-red-hood`
+  (Rapi: Red Hood, MG/Fire) is a DIFFERENT unit and is already `burst: "III"`. Verified against
+  `data/characters.json` 2026-07-28; do not conflate.
+- **Profiles exist on 3 boards only** (`bufferchart`, `sustain`, `burstgen` — 6 unit/board pairs).
+  `burstcdr.profiles` is `{}` and `dpschart` has **no profile concept at all**, so the B3 DPS bars can
+  never carry one. A profiled unit occupies TWO rows in `entries` (one `profile: <id>`, one `null`).
+- Site bar colours are **element colours**, not rank colours (`RankBarChart.tsx:79`,
+  `DpsBarChart.tsx:101`); negative-capable boards span `value ↔ 0` about an axis
+  (`RankBarChart.tsx:80-87`); sustain fills are 3-segment splits with a transparent track.
