@@ -265,7 +265,13 @@ export async function sendFile(
     : !!ifModifiedSince &&
       Date.parse(ifModifiedSince) >= Math.floor(s.mtimeMs / 1000) * 1000;
   if (notModified) {
-    res.writeHead(304, { etag, 'cache-control': cacheControl });
+    // last-modified rides the 304 so an IMS-driven client can re-anchor its
+    // next conditional request
+    res.writeHead(304, {
+      etag,
+      'cache-control': cacheControl,
+      'last-modified': s.mtime.toUTCString(),
+    });
     res.end();
     return;
   }

@@ -86,9 +86,9 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   starting at rank 30 renders rank 30 as `relScore 1.000`, silently making the score mean something
   different in every shared image (`src/share/dpsChart.ts:19-20`).
 
-- **⇒ INFOGRAPHIC PHASE-3 REVIEW FOLLOW-UPS (branch `infographics-centralization`; opus cross-family
-  reviews 2026-07-27 — blocker + fixes landed, review packets in
-  `scratchpad/gates/2026-07-27-infographics-review-fixes/`):** (1) **startCommand flip is
+- **⇒ INFOGRAPHIC PHASE-3 REVIEW FOLLOW-UPS (branch `infographics-centralization`; three opus
+  cross-family review rounds 2026-07-27 — blocker + fixes landed, packets under the gitignored
+  `scratchpad/gates/`):** (1) **startCommand flip is
   owner-gated** — `railway.json` still starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod
   until the owner flips to `npm run start:server` (dist-server/ now builds in the `verify.sh deploy`
   tier); (2) **API surface gaps vs Phase 4** — `/ol`, `/max-ammo`, `/charge-speed` render

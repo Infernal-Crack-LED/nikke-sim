@@ -6,16 +6,15 @@
 // pattern would silently degrade real units to placeholder boxes on every
 // card, and nothing else tests that.
 //
-// NIKKESIM_PORTRAIT_DIR is set BEFORE the dynamic import — portraits.ts reads
-// it once at module load.
+// NIKKESIM_PORTRAIT_DIR is set in beforeAll and read LAZILY by portraits.ts
+// (per call, not at import) — the dynamic import below is belt-and-braces.
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import type { Canvas } from '@napi-rs/canvas';
-
-const SLUG = /^[a-z0-9][a-z0-9_-]{0,63}$/; // mirror of portraits.ts
+import { PORTRAIT_SLUG_RE } from '../../../src/infographics/node/portraits.js';
 
 let dir: string;
 let outsideFile: string;
@@ -72,7 +71,9 @@ describe('loadPortrait slug validation', () => {
         'utf8'
       )
     ) as { characters: Record<string, unknown> };
-    const bad = Object.keys(chars.characters).filter((s) => !SLUG.test(s));
+    const bad = Object.keys(chars.characters).filter(
+      (s) => !PORTRAIT_SLUG_RE.test(s)
+    );
     expect(bad, `slugs degraded to placeholder boxes: ${bad}`).toEqual([]);
   });
 });

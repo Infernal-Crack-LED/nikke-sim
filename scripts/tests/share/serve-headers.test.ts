@@ -110,6 +110,23 @@ describe('serve.mjs cache-control classes', () => {
       headers: { 'if-modified-since': lastMod! },
     });
     expect(ims.status).toBe(304);
+    // negative cases — without these, `!!header → 304` passes too:
+    // a date strictly older than mtime must re-serve in full (pins the
+    // direction of the >= comparison)
+    const stale = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-modified-since': 'Thu, 01 Jan 1970 00:00:00 GMT' },
+    });
+    expect(stale.status).toBe(200);
+    expect((await stale.arrayBuffer()).byteLength).toBeGreaterThan(0);
+    // a NON-matching etag must re-serve even with a valid IMS alongside —
+    // the only case that pins RFC 7232 precedence (INM beats IMS)
+    const miss = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: {
+        'if-none-match': 'W/"0-0"',
+        'if-modified-since': lastMod!,
+      },
+    });
+    expect(miss.status).toBe(200);
   });
 
   it('index.html and the SPA fallback are no-cache with OG injection intact', async () => {

@@ -10,10 +10,14 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // NIKKESIM_PORTRAIT_DIR lets a deployed server point at the static tree's copy
 // (dist/img/portraits) instead of the source tree — same files, but dist/ is
-// what the deploy artifact guarantees.
-const PORTRAIT_DIR =
-  process.env.NIKKESIM_PORTRAIT_DIR ??
-  fileURLToPath(new URL('../../../web/public/img/portraits/', import.meta.url));
+// what the deploy artifact guarantees. Read LAZILY (per call, not at import)
+// so importing the regex/loader doesn't freeze the env before a deploy shim
+// (env-defaults.ts) or a test has set it.
+const DEFAULT_PORTRAIT_DIR = fileURLToPath(
+  new URL('../../../web/public/img/portraits/', import.meta.url)
+);
+const portraitDir = (): string =>
+  process.env.NIKKESIM_PORTRAIT_DIR ?? DEFAULT_PORTRAIT_DIR;
 
 // ⚠ WHY NOT `new Image()`: @napi-rs/canvas's Image rasterization is BROKEN on
 // the owner's Mac (macOS 26 arm64, node 22) in both 1.0.2 and 0.1.x — src
@@ -50,11 +54,12 @@ export async function decodeToCanvas(file: URL): Promise<Canvas | null> {
 // the portrait dir (limited to files named `<target>-128.webp`, but still).
 // The cache is a bounded LRU: keyed on raw slugs it would otherwise grow
 // forever on a long-lived server (every garbage slug caches a null).
-const SLUG = /^[a-z0-9][a-z0-9_-]{0,63}$/;
+// Exported so tests pin characters.json against the REAL regex, not a copy.
+export const PORTRAIT_SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const PORTRAIT_CACHE_MAX = 512; // 128×128 RGBA ≈ 64 KB each → ≤ ~32 MB
 const portraitCache = new Map<string, Promise<Canvas | null>>();
 export function loadPortrait(slug: string): Promise<Canvas | null> {
-  if (!SLUG.test(slug)) {
+  if (!PORTRAIT_SLUG_RE.test(slug)) {
     return Promise.resolve(null); // placeholder box, never a path
   }
   let hit = portraitCache.get(slug);
@@ -64,7 +69,7 @@ export function loadPortrait(slug: string): Promise<Canvas | null> {
     portraitCache.set(slug, hit);
     return hit;
   }
-  hit = decodeToCanvas(pathToFileURL(join(PORTRAIT_DIR, `${slug}-128.webp`)));
+  hit = decodeToCanvas(pathToFileURL(join(portraitDir(), `${slug}-128.webp`)));
   portraitCache.set(slug, hit);
   if (portraitCache.size > PORTRAIT_CACHE_MAX) {
     portraitCache.delete(portraitCache.keys().next().value!); // oldest

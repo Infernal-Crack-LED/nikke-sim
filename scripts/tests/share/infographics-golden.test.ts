@@ -80,8 +80,15 @@ describe('infographic golden images', () => {
 // Regression for the vacuous-guard bug the ink regions fixed: a region that
 // starts at padX passes on ICON PIXELS alone with zero glyphs. Each ink region
 // used by the harness/build script must THROW on an icon-only canvas (icon
-// drawn at its exact card position, no text). If PAD_X/ICON in a core card
-// changes, the matching region here and at both call sites must move with it.
+// drawn at its exact card position, no text).
+//
+// ⚠ WHAT THIS PROVES — and what it does NOT: the icon draw geometry below is
+// HARD-CODED to match today's core cards (teamCard 40/24/36, dpsChart
+// 36/20/34, tableCard 32/16/32), and the regions are the same hand-computed
+// constants as the call sites. So this suite proves the regions are
+// icon-immune FOR THIS frozen geometry only. Drift in a card module's
+// PAD_X/ICON is NOT detected here — that pin is QUEUE follow-up (5) (export
+// TITLE_TEXT_X/icon rect from the card modules and derive both sides).
 describe('assertTitleInk regions are not satisfiable by the site icon alone', () => {
   const SITE_ICON = new URL(
     '../../../src/infographics/assets/nikkesim-icon.png',

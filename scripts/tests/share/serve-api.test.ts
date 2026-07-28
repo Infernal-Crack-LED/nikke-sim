@@ -12,8 +12,8 @@ import {
   existsSync,
   mkdtempSync,
   mkdirSync,
+  readFileSync,
   rmSync,
-  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -262,8 +262,15 @@ describe('api/v1/img dynamic render routes', () => {
     expect(loc).toMatch(/^\/api\/v1\/img\/cache\/team\.[0-9a-f]{16}\.png$/);
     const file = join(cacheDir, loc.split('/').pop()!);
     expect(existsSync(file)).toBe(true);
-    const png = statSync(file);
-    expect(png.size).toBeGreaterThan(10_000); // a real card, not an error page
+    const original = readFileSync(file);
+    expect(original.length).toBeGreaterThan(10_000); // a real card, not an error page
+    // the renderer emits a real PNG (magic bytes), not just a blob behind an
+    // image/png content-type
+    expect(
+      original
+        .subarray(0, 8)
+        .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+    ).toBe(true);
 
     // second request: same Location, and NO re-render. The renderer is
     // deterministic, so identical bytes/size prove nothing — POISON the cached
@@ -285,6 +292,10 @@ describe('api/v1/img dynamic render routes', () => {
     expect(res3.headers.get('content-type')).toBe('image/png');
     const body = Buffer.from(await res3.arrayBuffer());
     expect(body.equals(sentinel)).toBe(true); // a re-render would have overwritten it
+
+    // restore the real render — the poisoned file is shared cache state and
+    // must not leak into later tests
+    writeFileSync(file, original);
   });
 
   it('roster.png renders a roster build to its own cache entry', async () => {
@@ -334,5 +345,21 @@ describe('static port parity with serve.mjs', () => {
       headers: { 'if-modified-since': lastMod! },
     });
     expect(ims.status).toBe(304);
+    // negative cases — without these, `!!header → 304` passes too:
+    // a strictly-older IMS must re-serve in full (pins the >= direction)
+    const stale = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-modified-since': 'Thu, 01 Jan 1970 00:00:00 GMT' },
+    });
+    expect(stale.status).toBe(200);
+    expect((await stale.arrayBuffer()).byteLength).toBeGreaterThan(0);
+    // a NON-matching etag must re-serve even with a valid IMS alongside —
+    // the only case that pins RFC 7232 precedence (INM beats IMS)
+    const miss = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: {
+        'if-none-match': 'W/"0-0"',
+        'if-modified-since': lastMod!,
+      },
+    });
+    expect(miss.status).toBe(200);
   });
 });
