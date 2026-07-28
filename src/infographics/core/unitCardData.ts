@@ -212,6 +212,14 @@ function findHits<R extends unknown[]>(
 // The headline row: the profiled one when it exists, else the plain one.
 const headline = <R>(h: BoardHits<R>): Hit<R> | null => h.profiled ?? h.plain;
 
+// The headline row's value at `col`, or 0 when the unit isn't on the board —
+// so "absent" and "present at zero" are one case for chart selection, which is
+// what they amount to visually.
+const boardValue = <R extends unknown[]>(
+  hits: BoardHits<R>,
+  col: number
+): number => (headline(hits)?.row[col] as number | undefined) ?? 0;
+
 // ---- tile builders -----------------------------------------------------------
 
 const unrankedTile = (title: string): RankTile => ({
@@ -624,11 +632,17 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
       )
     );
   } else {
-    const hasSustain = !!findHits(src.sustain?.entries, slug, 6).plain ||
-      !!findHits(src.sustain?.entries, slug, 6).profiled;
-    const hasCdr =
-      !!findHits(src.burstcdr?.entries, slug, 5).plain ||
-      !!findHits(src.burstcdr?.entries, slug, 5).profiled;
+    // "Present" for CHART purposes means present with a NON-ZERO value.
+    //
+    // A board lists plenty of units at exactly 0 — Liter sits on the sustain
+    // board at 0, as do her neighbours — and an all-zero chart is three empty
+    // tracks that say nothing, while the unit may have a real burst-CDR figure
+    // one fallback down. Ruling 13's "sustain if present, else burst CDR if
+    // present" is about having something to SHOW, so a zero entry falls through.
+    // The tile still reports the honest 0 with its real rank; only chart
+    // SELECTION is affected.
+    const hasSustain = boardValue(findHits(src.sustain?.entries, slug, 6), 1) > 0;
+    const hasCdr = boardValue(findHits(src.burstcdr?.entries, slug, 5), 1) > 0;
     // No second chart → spend the freed height on more neighbours in the
     // surviving one, never on whitespace (§6c lever 1).
     const each = hasSustain || hasCdr ? NEIGHBOUR_ROWS : NEIGHBOUR_ROWS_SOLO_CHART;
@@ -652,7 +666,11 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
       footnotes.push(`* self-only CDR: ${selfCdr}s`);
     }
     if (ramp?.length) {
-      footnotes.push(`* ramps per FB: ${ramp.join(' → ')}`);
+      // ASCII '->' , not '→' (U+2192): Roboto has no arrow glyph, so it renders
+      // as a tofu box on the Node host. Verified by the font-glyph test rather
+      // than assumed — U+2212 MINUS and U+039B LAMBDA, which the card also uses,
+      // ARE present, so "non-ASCII" alone is not the rule.
+      footnotes.push(`* ramps per FB: ${ramp.join(' -> ')}`);
     }
   }
 

@@ -74,10 +74,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      `burst_*` + `code_*`, verified across this repo, the main worktree and bakery-bot). The
      loader is already SVG-first, so **dropping the missing SVGs in needs no code change**, and
      every build prints the remaining raster-bound icons.
-  4. **A unit on no board renders two large empty plates** (e.g. `red-hood`, off both DPS
+  4. **Zero-value chart fallback (confirm the rule).** A board entry of exactly 0 now counts as
+     "not present" for CHART SELECTION only — Liter sat on the sustain board at 0 with all her
+     neighbours at 0, producing three empty tracks, while she has a real burst-CDR figure one
+     fallback down. The TILE still reports the honest 0 and its real rank. Rule lives in
+     `unitCardData.ts` (`boardValue(...) > 0`); confirm it is what ruling 13 intended.
+  5. **A unit on no board renders two large empty plates** (e.g. `red-hood`, off both DPS
      boards). Honest and fixed-geometry, but it is a lot of dead space — worth deciding whether
      those units get a different second-class layout (ruling 13 explicitly deprioritizes them).
-  5. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
+  6. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
      the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
      (that fallback is tested).
 
