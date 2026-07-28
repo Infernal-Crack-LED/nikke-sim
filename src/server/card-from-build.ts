@@ -20,9 +20,9 @@
 import { createCanvas, type Canvas } from '../infographics/node/render.js';
 import {
   CARD_W,
-  cardHeight,
+  compositionCardHeight,
+  drawTeamCompositionCard,
   rosterCardHeight,
-  drawTeamCard,
   drawRosterCard,
   loadPortrait,
   type Canvas2DLike,
@@ -88,10 +88,7 @@ export function cardBuildError(
     if (!build.s.some((s) => s.slug)) {
       return 'build has no units';
     }
-    return checkPixels(
-      CARD_W * SCALE,
-      cardHeight(build.s.filter((s) => s.slug).length) * SCALE
-    );
+    return checkPixels(CARD_W * SCALE, compositionCardHeight() * SCALE);
   }
   const roster = build.roster;
   if (!Array.isArray(roster) || roster.length === 0) {
@@ -185,7 +182,7 @@ export async function renderTeamCardPng(
       })
   );
   const w = CARD_W * SCALE;
-  const h = cardHeight(units.length) * SCALE;
+  const h = compositionCardHeight() * SCALE;
   // Hard backstop — cardBuildError already checked this, but a renderer must
   // never size a canvas from input that didn't pass through it.
   if (w * h > MAX_CANVAS_PIXELS) {
@@ -196,9 +193,12 @@ export async function renderTeamCardPng(
   ctx.scale(SCALE, SCALE);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  drawTeamCard(
+  // The COMPOSITION layout: a team builder output has no sim behind it, so the
+  // card shows the picks and the boss/level/core selection — never a zeroed
+  // damage/DPS/full-burst line (owner ruling 2026-07-28).
+  drawTeamCompositionCard(
     ctx as unknown as Canvas2DLike,
-    { teamDamage: 0, teamDps: 0, fullBursts: 0, fullBurstUptime: 0, units },
+    { units },
     metaFor(build, icon, 'nikkesim.app/teambuilder')
   );
   return canvas.toBuffer('image/png');

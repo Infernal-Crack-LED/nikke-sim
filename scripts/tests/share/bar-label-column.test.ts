@@ -11,6 +11,7 @@ import {
 } from '../../../src/infographics/core/dpsChart.js';
 import {
   drawTeamCard,
+  drawTeamCompositionCard,
   type TeamCardData,
   type TeamCardMeta,
 } from '../../../src/infographics/core/teamCard.js';
@@ -29,6 +30,7 @@ function mockCtx() {
   const paths: { moveX: number; firstArcX: number }[] = [];
   // drawAdvantageMark's two lineTo calls per marker (canvas2d.ts)
   const tris: { x: number; y: number }[] = [];
+  const images: { dx: number; dy: number; dw: number; dh: number }[] = [];
   let cur: { moveX: number; firstArcX: number } | null = null;
   let arcs = 0;
   const ctx: Canvas2DLike = {
@@ -64,14 +66,24 @@ function mockCtx() {
     save: () => {},
     restore: () => {},
     clip: () => {},
-    drawImage: (() => {}) as unknown as Canvas2DLike['drawImage'],
+    drawImage: ((...args: unknown[]) => {
+      // 5-arg form (img, dx, dy, dw, dh) — the composition card's portraits
+      if (args.length === 5) {
+        images.push({
+          dx: args[1] as number,
+          dy: args[2] as number,
+          dw: args[3] as number,
+          dh: args[4] as number,
+        });
+      }
+    }) as unknown as Canvas2DLike['drawImage'],
   };
   // bar track x, given the roundRect radius the renderer used. Only roundRect
   // paths count: the advantage marker is a moveTo/lineTo triangle (no arcTo),
   // so it must not be mistaken for a bar.
   const trackX = (r: number) =>
     paths.filter((p) => p.firstArcX !== 0).map((p) => p.moveX - r);
-  return { ctx, texts, trackX, tris };
+  return { ctx, texts, trackX, tris, images };
 }
 
 const chart = (names: string[]): DpsChartData => ({
@@ -209,5 +221,54 @@ describe('elemental-advantage marker (drawn, not typed)', () => {
     expect(marked.trackX(10)[0] - plain.trackX(10)[0]).toBe(
       ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W
     );
+  });
+});
+
+// The team COMPOSITION card (the /teambuilder + bot `/teams` image): picks and
+// settings only. A team builder output has no sim behind it, so a damage/DPS/
+// full-burst line there could only ever be zeros (owner ruling 2026-07-28).
+describe('drawTeamCompositionCard', () => {
+  const units = ['Liter', 'Crown', 'Naga', 'Red Hood', 'Alice'].map((name) => ({
+    name,
+    burst: '1',
+    weapon: 'SMG',
+    element: 'Iron',
+    advantaged: false,
+    share: 0.2,
+    totalDamage: 2_000_000_000,
+  }));
+
+  it('draws no damage / DPS / full-burst / share numbers', () => {
+    const { ctx, texts } = mockCtx();
+    drawTeamCompositionCard(ctx, { units }, teamMeta);
+    const all = texts.map((t) => t.t).join(' | ');
+    expect(all).not.toMatch(/DPS|full burst|FB uptime/);
+    expect(all).not.toMatch(/\d+\.\d+%/); // the per-unit damage share
+    expect(all).not.toMatch(/\d+(\.\d+)?[KMB]\b/); // the fmt() magnitudes
+    // (the "100% core" SELECTION line is not a metric — it stays, below)
+  });
+
+  it('keeps the selection line (what the user picked)', () => {
+    const { ctx, texts } = mockCtx();
+    drawTeamCompositionCard(ctx, { units }, teamMeta);
+    expect(texts.some((t) => t.t.includes('Iron-weak boss'))).toBe(true);
+    expect(texts.some((t) => t.t.includes('lvl 801'))).toBe(true);
+    expect(texts.some((t) => t.t.includes('100% core'))).toBe(true);
+  });
+
+  it('lays the portraits out in ONE row of five, not a column', () => {
+    const { ctx, images } = mockCtx();
+    drawTeamCompositionCard(
+      ctx,
+      { units: units.map((u) => ({ ...u, img: {} })) },
+      teamMeta
+    );
+    const portraits = images.filter((im) => im.dw === im.dh && im.dw > 100);
+    expect(portraits.length).toBe(5);
+    expect(new Set(portraits.map((p) => p.dy)).size).toBe(1); // one row
+    expect(new Set(portraits.map((p) => p.dx)).size).toBe(5); // five columns
+    // …and they advance left-to-right
+    const xs = portraits.map((p) => p.dx);
+    expect([...xs].sort((a, b) => a - b)).toEqual(xs);
   });
 });

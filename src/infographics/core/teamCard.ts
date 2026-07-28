@@ -232,6 +232,126 @@ export function drawTeamCard(
 }
 
 // ---------------------------------------------------------------------------
+// Team COMPOSITION card — the /teambuilder + bot `/teams` card. A team builder
+// output has no sim behind it, so this card states only what the user actually
+// chose: the 5 portraits in one row with their names, and the boss/level/core
+// line. Deliberately NO damage, DPS, full-burst or share numbers (owner ruling
+// 2026-07-28) — drawTeamCard above keeps those, because the SIM RESULTS share
+// card on the web genuinely has them.
+// ---------------------------------------------------------------------------
+const C_HEAD_H = 132;
+const C_PS = 160; // portrait square — 5 across CARD_W
+const C_GAP = 40;
+const C_NAME_H = 62; // name + tag block under each portrait
+const C_FOOT_H = 58;
+
+export const compositionCardHeight = (): number =>
+  C_HEAD_H + C_PS + C_NAME_H + C_FOOT_H;
+
+export function drawTeamCompositionCard(
+  ctx: Canvas2DLike,
+  data: { units: TeamCardUnit[] },
+  meta: TeamCardMeta
+): void {
+  const W = CARD_W;
+  const padX = PAD_X;
+  const H = compositionCardHeight();
+
+  ctx.fillStyle = '#101216';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#5b9dff';
+  ctx.fillRect(0, 0, W, 5);
+
+  // title + the settings line (what was SELECTED — not a result)
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
+  ctx.fillStyle = '#e7eaf0';
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillText('NIKKE Solo Raid Sim', textX, 56);
+  ctx.fillStyle = '#8b93a3';
+  ctx.font = `400 18px ${FONT}`;
+  ctx.fillText(
+    `${meta.weakness ? `${meta.weakness}-weak boss` : 'no element'}  ·  lvl ${
+      meta.level
+    }  ·  ${meta.coreLabel}`,
+    padX,
+    94
+  );
+
+  // one row of up to 5 portraits, centred as a group
+  const n = Math.min(data.units.length, 5);
+  const stripW = n * C_PS + Math.max(0, n - 1) * C_GAP;
+  const startX = Math.max(padX, (W - stripW) / 2);
+  data.units.slice(0, 5).forEach((u, i) => {
+    const x = startX + i * (C_PS + C_GAP);
+    const y = C_HEAD_H;
+    const col = ELEMENT_COLORS[u.element] ?? '#9aa3b2';
+    if (u.img) {
+      ctx.save();
+      roundRect(ctx, x, y, C_PS, C_PS, 16);
+      ctx.clip();
+      ctx.fillStyle = '#1f232d';
+      ctx.fillRect(x, y, C_PS, C_PS);
+      ctx.drawImage(u.img, x, y, C_PS, C_PS);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#1f232d';
+      roundRect(ctx, x, y, C_PS, C_PS, 16);
+      ctx.fill();
+      ctx.fillStyle = col;
+      roundRect(ctx, x, y, C_PS, C_PS, 16);
+      ctx.globalAlpha = 0.22;
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = col;
+      ctx.font = `700 56px ${FONT}`;
+      ctx.textAlign = 'center';
+      ctx.fillText(
+        (u.name[0] ?? '?').toUpperCase(),
+        x + C_PS / 2,
+        y + C_PS / 2 + 20
+      );
+      ctx.textAlign = 'left';
+    }
+    // element strip under the portrait, then name + tag, all centred on it
+    ctx.fillStyle = col;
+    ctx.fillRect(x, y + C_PS - 4, C_PS, 4);
+
+    ctx.textAlign = 'center';
+    const mid = x + C_PS / 2;
+    ctx.fillStyle = '#e7eaf0';
+    ctx.font = `600 18px ${FONT}`;
+    // the advantage marker is drawn, so it takes room out of the name's box
+    const mark = u.advantaged ? ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W : 0;
+    const name = fitText(ctx, u.name, C_PS + C_GAP - 12 - mark);
+    const nameW = ctx.measureText(name).width;
+    ctx.fillText(name, mid - mark / 2, y + C_PS + 30);
+    if (u.advantaged) {
+      drawAdvantageMark(
+        ctx,
+        mid - mark / 2 + nameW / 2 + ADVANTAGE_MARK_GAP,
+        y + C_PS + 30
+      );
+    }
+    ctx.fillStyle = '#8b93a3';
+    ctx.font = `400 14px ${FONT}`;
+    ctx.fillText(
+      `B${u.burst} · ${u.weapon} · ${u.element}`,
+      mid,
+      y + C_PS + 52
+    );
+    ctx.textAlign = 'left';
+  });
+
+  drawWatermark(ctx, padX, H - 22, 13, meta.footer, 'nikke-sim');
+}
+
+// ---------------------------------------------------------------------------
 // Roster card — a simplified 5-team summary (Solo-Raid Roster Generator). Per
 // team: the 5 portraits + a total-team-damage bar. No per-unit rows, no DPS/FB.
 // ---------------------------------------------------------------------------
