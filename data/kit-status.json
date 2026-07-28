@@ -1424,6 +1424,41 @@
         "temp": "COLD ▼"
       }
     },
+    "emma-tactical-upgrade": {
+      "name": "Emma: Tactical Upgrade",
+      "burst": "I",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-27",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-27: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/emma-tactical-upgrade.json + scripts/kit-autonomy/manual-review/emma-tactical-upgrade.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Exposure (Cannot be removed) — Effect: Attract: Taunt all enemies continuously."
+        ],
+        "skill2": [
+          "Bonus effects when applying AS Formation to self — Effect 3: Affects self. Exposure activation disabled continuously."
+        ],
+        "burst": [
+          "Enhanced Environment Setup — Effect 2: Incoming healing ▲ 29.04%. Effect 2 Target(s): All allies"
+        ]
+      },
+      "board": null,
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "date": "2026-07-27",
+      "evidence": "kit-autonomy gauntlet 2026-07-27; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: (a) eunhwa-tactical-upgrade AS-Formation applier verification (off-board assumption behind the default-OFF mode); (b) same-squad→allies target read (AIM precedent vs S2b self-only); (c) T6 enhanced-window full-10s semantics measurement-gated (<1% impact, popup recipe on file)"
+    },
     "eve": {
       "name": "EVE",
       "burst": "III",

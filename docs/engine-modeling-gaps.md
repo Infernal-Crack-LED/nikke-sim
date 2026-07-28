@@ -69,13 +69,13 @@
 | `inFb` | 4 | modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
 | `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
-| `interval` | 10 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, flora, helm-aquamarine, isabel, marciana-marine-study, rosanna-chic-ocean, … |
+| `interval` | 11 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, emma-tactical-upgrade, flora, helm-aquamarine, isabel, marciana-marine-study, … |
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 4 | grave, noir, tove, trina |
 | `maxShots` | 2 | e-h, snow-white-heavy-arms |
-| `mode` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
-| `modes` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
+| `mode` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
+| `modes` | 7 | bready, cinderella-crystal-wave, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
 | `nonBurstCasters` | 1 | crown |
 | `normalAttackPct` | 4 | arcana-fortune-mate, asuka-wille, jill, mast-romantic-maid |
@@ -93,7 +93,7 @@
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
-| `requiresTargetStatus` | 5 | asuka-wille, d-killer-wife, marciana-marine-study, phantom, privaty |
+| `requiresTargetStatus` | 6 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty |
 | `resourceGate` | 6 | e-h, elegg-boom-and-shock, guillotine-winter-slayer, mana, phantom, soda-twinkling-bunny |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -106,7 +106,7 @@
 | `swapGate` | 5 | laplace, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 5 | laplace, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 2 | blanc, maiden-ice-rose |
-| `targetStatus` | 5 | asuka-wille, d-killer-wife, marciana-marine-study, phantom, privaty |
+| `targetStatus` | 6 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 1 | noir |
 | `trueNormals` | 3 | chisato, laplace, takina |

@@ -1,0 +1,182 @@
+{
+  "slug": "emma-tactical-upgrade",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 10
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 23.51
+        },
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 2.32
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "trueDamagePct",
+          "value": 30.97
+        },
+        {
+          "kind": "buff",
+          "stat": "projectileExplosionPct",
+          "value": 3.09
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 40.07,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Effect 2: Environment Setup: Continuously recovers 2.32% of the skill user's final Max HP every 1 sec for 10 sec. — HP amount not modeled (no HP pool in v1); the recovery EVENTS are modeled via the heal effect so on-recovery consumers fire.",
+      "■ Activates when the enemy appears. Affects self. Exposure (Cannot be removed) Effect: Attract: Taunt all enemies continuously. — taunt/aggro is defensive; the v1 boss deals no damage and aggro does not change any damage value."
+    ],
+    "skill2": [
+      "Effect 1: Affects all allies from the same squad. Critical Damage ▲ 23.51% continuously. — the 'same squad' restriction is not modeled (no squad axis in the data); modeled as all allies.",
+      "Effect 3: Affects self. Exposure activation disabled continuously. — disables an unmodeled defensive taunt; damage-inert either way.",
+      "Effect 4: Affects self. Recurring interval of Environment Setup ▼ 20 sec continuously. — MODELED as the 10s interval on the skill1 blocks (30s − 20s = 10s), NOT as a separate effect; the schema has no cooldown-reduction primitive for a recurring interval, so the reduced value is baked in under the AS-Formation assumption. ⚑ If AS Formation is not applied to self, the true interval is 30 sec."
+    ],
+    "burst": [
+      "Effect 1: Damage taken multiplier of Environment Setup is scaled by 100%. — MODELED as a second 3.9pp damageTaken debuff block on burst cast (a 100% scale of the 3.9% base = +3.9pp), for 10 sec. ⚑ 'scaled by 100%' read as doubling the multiplier; an alternative reading is that the enhanced value replaces rather than adds.",
+      "Effect 2: Incoming healing ▲ 29.04%. — heal magnitudes are not modeled (no HP pool); no damage consequence."
+    ],
+    "note": ""
+  },
+  "caveats": [
+    "⚑ ALL values are UNMEASURED kit-text reads. Nothing here is validated against a fight.",
+    "⚑ skill1 Environment Setup recurring interval is authored at 10 sec (kit 30 sec, reduced 20 sec by skill2's AS-Formation self-bonus). This ASSUMES AS Formation is applied to self — which the kit presents as a conditional ('Bonus effects when applying AS Formation to self'). If the sim's formation is not AS, the interval is 30 sec AND the whole skill2 second block (True Damage 30.97%, Projectile Explosion 3.09%) is INACTIVE. Both are authored ON; there is no `formation` gate value in the schema for AS/LT, so this is an assumption, not a gate.",
+    "⚑ The Environment Setup 10s Damage-Taken debuff + 10s heal are authored as a t=0 passive PLUS a 10s interval trigger, i.e. effectively ~100% uptime under the AS assumption (10s effect on a 10s cycle). If the real interval is 30s, uptime is 1/3 and this over-credits the whole team by ~2.6pp of boss damage-taken for 2/3 of the fight.",
+    "⚑ Burst Effect 1 ('Damage taken multiplier … scaled by 100%') is authored as an ADDITIVE second 3.9pp debuff on burst cast. Keyed to burstCast (not fullBurstEnter) because it is this unit's OWN burst block; it is FB-timing-exempt as a burst-cast effect by convention.",
+    "⚑ Burst Effect 1 is gated in the kit on 'while in Environment Setup status'. With the interval authored at 10s the status is ~always live, so no gate is authored; under a 30s interval the enhancement would only land on bursts that fall inside a 10s window.",
+    "⚑ Damage Taken ▲ is authored as a boss debuff (damageTakenPct) benefiting the WHOLE team, not a self buff.",
+    "⚑ 'Battlefield Formation: ATK ▲ 40.07% of the skill user's ATK' is caster-scaled (casterAtkPct → flat ATK add), not the target's own ATK.",
+    "⚑ Projectile Explosion Damage ▲ is authored on all allies; it is only consumed by RL kits, so it is inert on non-RL teammates.",
+    "⚑ Cadence tuple (MG, 300 ammo, 171 reloadFrames, hitsPerShot 1) is datamined and UNRELIABLE — not authored here (engine-side), flagged for the record.",
+    "⚑ noFb is NOT set anywhere (default OFF/FB-by-timing). Measured-only."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Emma: Tactical Upgrade is a Fire/MG/Supporter Burst I whose damage contribution is almost entirely TEAM-FACING: a recurring boss Damage-Taken debuff (Environment Setup), continuous Critical Damage + True Damage + Projectile Explosion team buffs, and a burst-window caster-scaled ATK grant. Self-damage is a plain MG normal attack with no self-scaling lines. Two structural reads drive everything: (1) skill2's 'AS Formation to self' bonus block is authored ACTIVE, which both enables the True Damage 30.97% / Projectile Explosion 3.09% grants and cuts the Environment Setup recurring interval 30s → 10s; (2) with a 10s interval and a 10s effect duration, the Damage-Taken debuff and the heal-over-time run at ~100% uptime, authored as a t=0 passive plus a 10s interval re-trigger. If AS Formation is NOT the sim's assumption, BOTH the second skill2 block and the 10s interval are wrong — that single premise is the largest lever in this file. The heal lines emit recovery EVENTS (ticks:10, 1s interval) with no HP amount, so on-recovery consumers on teammates fire correctly; incoming-healing ▲ and the Exposure taunt are damage-inert and unmodeled. The burst's 'Environment Setup damage taken multiplier scaled by 100%' is authored as an additive second 3.9pp boss debuff for 10s on burst cast."
+}
