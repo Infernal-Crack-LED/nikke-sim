@@ -16,6 +16,8 @@ import {
 } from '../../../src/infographics/core/teamCard.js';
 import {
   BAR_LABEL_GAP,
+  ADVANTAGE_MARK_GAP,
+  ADVANTAGE_MARK_W,
   type Canvas2DLike,
 } from '../../../src/infographics/core/canvas2d.js';
 
@@ -25,6 +27,8 @@ import {
 function mockCtx() {
   const texts: { t: string; x: number }[] = [];
   const paths: { moveX: number; firstArcX: number }[] = [];
+  // drawAdvantageMark's two lineTo calls per marker (canvas2d.ts)
+  const tris: { x: number; y: number }[] = [];
   let cur: { moveX: number; firstArcX: number } | null = null;
   let arcs = 0;
   const ctx: Canvas2DLike = {
@@ -43,6 +47,7 @@ function mockCtx() {
     moveTo: (x) => {
       cur = { moveX: x, firstArcX: 0 };
     },
+    lineTo: (x, y) => tris.push({ x, y }),
     arcTo: (x1) => {
       if (cur && arcs === 0) {
         cur.firstArcX = x1;
@@ -61,9 +66,12 @@ function mockCtx() {
     clip: () => {},
     drawImage: (() => {}) as unknown as Canvas2DLike['drawImage'],
   };
-  // bar track x, given the roundRect radius the renderer used
-  const trackX = (r: number) => paths.map((p) => p.moveX - r);
-  return { ctx, texts, trackX };
+  // bar track x, given the roundRect radius the renderer used. Only roundRect
+  // paths count: the advantage marker is a moveTo/lineTo triangle (no arcTo),
+  // so it must not be mistaken for a bar.
+  const trackX = (r: number) =>
+    paths.filter((p) => p.firstArcX !== 0).map((p) => p.moveX - r);
+  return { ctx, texts, trackX, tris };
 }
 
 const chart = (names: string[]): DpsChartData => ({
@@ -166,5 +174,40 @@ describe('drawTeamCard share bar label column', () => {
     const track = 118 + long.length * 8 + BAR_LABEL_GAP;
     expect(trackX(8)).toContain(track);
     expect(texts.find((t) => t.t.startsWith('Long Syn'))!.t).toBe(long);
+  });
+});
+
+describe('elemental-advantage marker (drawn, not typed)', () => {
+  it('draws a triangle path and reserves room for it in the label column', () => {
+    const { ctx, texts, trackX, tris } = mockCtx();
+    const data = chart(['Naga', 'Crown']);
+    data.bars[0].advantaged = true;
+    drawDpsChart(ctx, data);
+    // U+25B2 must never be TYPED — Roboto has no such glyph and the Node
+    // renderer has no fallback face, so it came out as a tofu box.
+    expect(texts.some((t) => t.t.includes('▲'))).toBe(false);
+    // two lineTo calls = the one marker's triangle
+    expect(tris.length).toBe(2);
+    // it sits after the name, inside the label column (never under the bars)
+    const name = texts.find((t) => t.t === 'Naga')!;
+    const markLeft = Math.min(...tris.map((p) => p.x)) - ADVANTAGE_MARK_W / 2;
+    expect(markLeft).toBeGreaterThanOrEqual(name.x + name.t.length * 8);
+    expect(Math.max(...tris.map((p) => p.x))).toBeLessThanOrEqual(
+      trackX(10)[0]
+    );
+  });
+
+  it('an advantaged name reserves the marker width in the column', () => {
+    const plain = mockCtx();
+    const marked = mockCtx();
+    const a = chart(['Long Synthetic Label 30 Chars.']);
+    const b = chart(['Long Synthetic Label 30 Chars.']);
+    b.bars[0].advantaged = true;
+    drawDpsChart(plain.ctx, a);
+    drawDpsChart(marked.ctx, b);
+    // the marked chart's track sits exactly gap + width further right
+    expect(marked.trackX(10)[0] - plain.trackX(10)[0]).toBe(
+      ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W
+    );
   });
 });

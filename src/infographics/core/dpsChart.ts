@@ -14,6 +14,9 @@ import {
   roundRect,
   fitText,
   barTrackX,
+  drawAdvantageMark,
+  ADVANTAGE_MARK_GAP,
+  ADVANTAGE_MARK_W,
   BAR_LABEL_GAP,
   PORTRAIT_CROP_TOP,
 } from './canvas2d.js';
@@ -184,10 +187,13 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   // when it has one, so the reach is measured per row.
   const nameX = (b: DpsBar): number =>
     b.img ? portraitX + PORTRAIT + 12 : padX + 30;
-  const nameLabel = (b: DpsBar): string => b.name + (b.advantaged ? '  ▲' : '');
+  // The advantage marker is a drawn triangle, not a glyph (canvas2d.ts), so it
+  // costs a fixed gap + width of label reach rather than measuring as text.
+  const markW = (b: DpsBar): number =>
+    b.advantaged ? ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W : 0;
   ctx.font = `600 17px ${FONT}`;
   const nameEnd = Math.max(
-    ...bars.map((b) => nameX(b) + ctx.measureText(nameLabel(b)).width),
+    ...bars.map((b) => nameX(b) + ctx.measureText(b.name).width + markW(b)),
     0
   );
   const barX = barTrackX(nameEnd, padX + MIN_LABEL_W, padX + MAX_LABEL_W);
@@ -229,11 +235,16 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     }
     ctx.fillStyle = '#e7eaf0';
     ctx.font = `600 17px ${FONT}`;
-    ctx.fillText(
-      fitText(ctx, nameLabel(b), barX - nameX(b) - BAR_LABEL_GAP),
-      nameX(b),
-      y + 30
-    );
+    const nameRoom = barX - nameX(b) - BAR_LABEL_GAP - markW(b);
+    const name = fitText(ctx, b.name, nameRoom);
+    ctx.fillText(name, nameX(b), y + 30);
+    if (b.advantaged) {
+      drawAdvantageMark(
+        ctx,
+        nameX(b) + ctx.measureText(name).width + ADVANTAGE_MARK_GAP,
+        y + 30
+      );
+    }
 
     // track + bar
     ctx.fillStyle = '#2a2f3b';

@@ -16,6 +16,7 @@ export interface Canvas2DLike {
   measureText(text: string): { width: number };
   beginPath(): void;
   moveTo(x: number, y: number): void;
+  lineTo(x: number, y: number): void;
   arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
   closePath(): void;
   fill(): void;
@@ -67,6 +68,37 @@ export function fitText(ctx: Canvas2DLike, text: string, maxW: number): string {
     s = s.slice(0, -1);
   }
   return `${s}…`;
+}
+
+// ---- elemental-advantage marker ---------------------------------------------
+
+// The ▲ that marks elemental advantage is DRAWN, not typed. Roboto has no
+// U+25B2 and the Node renderer registers only the bundled Roboto faces, so the
+// character rendered as a tofu box (□) on every pre-rendered card while the
+// browser silently fell back to a system face — two hosts, two pictures, which
+// is exactly what these renderers exist to prevent. A path has no font
+// dependency and is pixel-identical on both.
+//
+// Callers lay it out as `gap + width` of extra label reach and draw it with the
+// fillStyle already set for the name.
+export const ADVANTAGE_MARK_GAP = 8; // space between the name and the mark
+export const ADVANTAGE_MARK_W = 10;
+
+// Draw the marker with its left edge at `x`, sitting on the text baseline.
+export function drawAdvantageMark(
+  ctx: Canvas2DLike,
+  x: number,
+  baselineY: number,
+  w: number = ADVANTAGE_MARK_W
+): void {
+  const h = w * 0.88;
+  const bottom = baselineY - 1; // just off the baseline, like a cap-height glyph
+  ctx.beginPath();
+  ctx.moveTo(x + w / 2, bottom - h);
+  ctx.lineTo(x + w, bottom);
+  ctx.lineTo(x, bottom);
+  ctx.closePath();
+  ctx.fill();
 }
 
 // ---- bar-chart label column (one rule for every bar image) -------------------

@@ -12,6 +12,9 @@ import {
   roundRect,
   fitText,
   barTrackX,
+  drawAdvantageMark,
+  ADVANTAGE_MARK_GAP,
+  ADVANTAGE_MARK_W,
   BAR_LABEL_GAP,
 } from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
@@ -135,12 +138,13 @@ export function drawTeamCard(
   // short names is unchanged; 620 caps it so the bars stay readable and a
   // longer name ellipsizes instead.
   const NAME_X = padX + 78;
+  // the advantage marker is a drawn triangle (canvas2d.ts), so it costs a
+  // fixed gap + width rather than measuring as text
+  const markW = (u: { advantaged: boolean }): number =>
+    u.advantaged ? ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W : 0;
   ctx.font = `600 20px ${FONT}`;
   const nameEnd = Math.max(
-    ...data.units.map(
-      (u) =>
-        NAME_X + ctx.measureText(u.name + (u.advantaged ? '  ▲' : '')).width
-    ),
+    ...data.units.map((u) => NAME_X + ctx.measureText(u.name).width + markW(u)),
     0
   );
   const barX = barTrackX(nameEnd, 430, 620);
@@ -179,11 +183,15 @@ export function drawTeamCard(
     // name + tag
     ctx.fillStyle = '#e7eaf0';
     ctx.font = `600 20px ${FONT}`;
-    ctx.fillText(
-      fitText(ctx, u.name + (u.advantaged ? '  ▲' : ''), nameMaxW),
-      NAME_X,
-      y + 36
-    );
+    const name = fitText(ctx, u.name, nameMaxW - markW(u));
+    ctx.fillText(name, NAME_X, y + 36);
+    if (u.advantaged) {
+      drawAdvantageMark(
+        ctx,
+        NAME_X + ctx.measureText(name).width + ADVANTAGE_MARK_GAP,
+        y + 36
+      );
+    }
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
     ctx.fillText(

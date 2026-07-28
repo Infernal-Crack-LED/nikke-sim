@@ -55,6 +55,7 @@ function mockCtx() {
     measureText: (t) => ({ width: t.length * 8 }),
     beginPath: () => {},
     moveTo: () => {},
+    lineTo: () => {},
     arcTo: () => {},
     closePath: () => {},
     fill: () => {},
