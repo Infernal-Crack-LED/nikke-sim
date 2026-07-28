@@ -5,7 +5,7 @@
     "buildCommand": "bash scripts/verify.sh deploy"
   },
   "deploy": {
-    "startCommand": "npm run start",
+    "startCommand": "npm run start:server",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10
   }

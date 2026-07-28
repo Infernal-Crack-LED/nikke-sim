@@ -37,6 +37,11 @@ const PAD = 36;
 const PORTRAIT = 240;
 const PORTRAIT_Y = 124;
 
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. The
+// unit card has no icon; the region covers the name text (fitName starts at
+// 32px, baseline y 64, x = PAD).
+export const UNIT_TITLE_INK_REGION = { x: PAD, y: 34, w: 400, h: 34 } as const;
+
 // Fit the name to the card width: step down through sizes, then truncate.
 // Longest roster names today are ~24 chars and fit at 32px; the fallback
 // protects future longer names.

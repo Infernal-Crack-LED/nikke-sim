@@ -52,8 +52,10 @@ export async function decodeToCanvas(file: URL): Promise<Canvas | null> {
 // decoded build code), so it is validated before it ever touches a path —
 // otherwise `../../../../etc/hosts` reaches join(PORTRAIT_DIR, …) and escapes
 // the portrait dir (limited to files named `<target>-128.webp`, but still).
-// The cache is a bounded LRU: keyed on raw slugs it would otherwise grow
-// forever on a long-lived server (every garbage slug caches a null).
+// The cache is a bounded LRU keyed on dir + slug: keyed on raw slugs it would
+// grow forever on a long-lived server (every garbage slug caches a null), and
+// freezing the dir into the key means a NIKKESIM_PORTRAIT_DIR change can't be
+// silently served the OLD dir's entries.
 // Exported so tests pin characters.json against the REAL regex, not a copy.
 export const PORTRAIT_SLUG_RE = /^[a-z0-9][a-z0-9_-]{0,63}$/;
 const PORTRAIT_CACHE_MAX = 512; // 128×128 RGBA ≈ 64 KB each → ≤ ~32 MB
@@ -62,15 +64,17 @@ export function loadPortrait(slug: string): Promise<Canvas | null> {
   if (!PORTRAIT_SLUG_RE.test(slug)) {
     return Promise.resolve(null); // placeholder box, never a path
   }
-  let hit = portraitCache.get(slug);
+  const dir = portraitDir(); // resolved once per lookup — see the header
+  const key = `${dir}\0${slug}`;
+  let hit = portraitCache.get(key);
   if (hit) {
     // LRU recency: re-insert so the entry ages to the back of the Map.
-    portraitCache.delete(slug);
-    portraitCache.set(slug, hit);
+    portraitCache.delete(key);
+    portraitCache.set(key, hit);
     return hit;
   }
-  hit = decodeToCanvas(pathToFileURL(join(portraitDir(), `${slug}-128.webp`)));
-  portraitCache.set(slug, hit);
+  hit = decodeToCanvas(pathToFileURL(join(dir, `${slug}-128.webp`)));
+  portraitCache.set(key, hit);
   if (portraitCache.size > PORTRAIT_CACHE_MAX) {
     portraitCache.delete(portraitCache.keys().next().value!); // oldest
   }

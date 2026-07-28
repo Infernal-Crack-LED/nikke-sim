@@ -33,6 +33,7 @@ const ROUTES = [
   { path: '/patch-notes', key: 'patch-notes' },
   { path: '/testing-requests', key: 'testing-requests' },
   { path: '/roster-sync', key: 'roster-sync' },
+  { path: '/builder', key: 'builder' },
   { path: '/credits', key: 'credits' },
 ];
 
@@ -113,6 +114,10 @@ const META = {
   'roster-sync': {
     title: 'Sync Your NIKKE Roster — Import from blablalink',
     desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
+  },
+  builder: {
+    title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
+    desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',

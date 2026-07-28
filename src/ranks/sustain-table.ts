@@ -117,6 +117,43 @@ export const SUSTAIN_TABLE: Record<string, SustainLine[]> = {
       note: "requires Everyone's Star (no other B1 ally) — true in the board comp",
     },
   ],
+  'anne-miracle-fairy': [
+    {
+      slot: 'skill1',
+      kind: 'lifesteal',
+      trigger: 'shot',
+      divisor: 3,
+      maxHpPct: 6.07,
+      windowSec: 5,
+      targets: 1,
+      note: 'Fairy Dance, every 3 normal attacks — "all Supporter allies" includes herself (she is Supporter class), so her own damage carries the line; the no-op teammates deal 0',
+    },
+    {
+      slot: 'skill2',
+      kind: 'heal',
+      trigger: 'interval',
+      intervalSec: 1,
+      maxHpPct: 0,
+      targets: 5,
+      zero: 'Incoming Healing ▲23.46% (allies) / ▼78.93% (enemies) — healing-potency modifiers, not recovery or shield',
+    },
+    {
+      slot: 'burst',
+      kind: 'heal',
+      trigger: 'burstCast',
+      maxHpPct: 38.61,
+      targets: 0,
+      zero: 'Attacker allies only — the board comp fields Supporter-class no-ops and she is a Supporter herself, so no target qualifies; class-restricted lines read low on this board (documented)',
+    },
+    {
+      slot: 'burst',
+      kind: 'heal',
+      trigger: 'burstCast',
+      maxHpPct: 0,
+      targets: 1,
+      zero: 'revives 1 incapacitated Attacker ally — nobody is ever incapacitated at scope lock',
+    },
+  ],
   aria: [
     {
       slot: 'burst',

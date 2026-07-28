@@ -52,70 +52,64 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PLAN ONLY, NOT STARTED →
-  `docs/handoffs/2026-07-27-infographics-centralization-plan.md`.** Renderer logic is forked across
-  nikke-sim `src/share/` and bakery-bot `apps/bot/src/lib/nikke-sim/` (1,113 lines) and the two copies
-  already produce different images (different `FONT`, bot-only `icon`/`footer`/`tableCard.ts`, stale
-  `bossRange`). **Fonts are a hard requirement with a silent failure mode (§1a):** bakery-bot's cards
-  once rendered with NO TEXT because the font wasn't packaged with the render — Railway Linux has no
-  system fonts, `@napi-rs/canvas` draws nothing, and the PNG is still valid, so no smoke test catches
-  it. Copy bakery-bot's `fonts.ts` + 3 Roboto TTFs + the `copy-assets.mjs` step over wholesale (all
-  three are load-bearing), and note the proposed `core/`+`node/` split BREAKS the current
-  registration-before-draw guarantee (a side-effect `import './fonts.js'` in `teamCard.ts`) — it must
-  be rebuilt in `node/render.ts`. Plan: reconcile the fork + golden-image tests (Phase 0, blocking) → extract
-  `src/infographics/{core,node}` → build-time pre-generation + `manifest.json` → `/api/v1/img/*` →
-  bakery-bot becomes a URL-only client (−1,100 lines, −2 MB, drops `@napi-rs/canvas`). **Side bug
-  found, fixable independently:** `scripts/serve.mjs:183-185` serves every non-`index.html` file
-  `immutable, max-age=1y`, including the unversioned data JSONs (`/dpschart.json` etc., verified
-  live) — that is the layer under the bot's 6 h TTL and the likely cache-race root. Hosting verdict:
-  self-host the renderer on Railway (Workers can't run `@napi-rs/canvas`), Cloudflare proxy at
-  Phase 2, R2 for the static set once it outgrows the deploy artifact. Gate: `/logic-gate` pre-op
-  before Phase 1 (structural change, not a damage-model surface). **All five §6 decisions are now
-  made (owner, 2026-07-27):** bundle Roboto on the browser path too (+ mandatory
-  `await document.fonts.ready`); URL-reference to Discord by default; Cloudflare proxy at Phase 2;
-  **no framework at Phase 3** — the real work is a server compile step (`serve.mjs` is `.mjs` and
-  typechecked by nothing today, yet must import TS render code), then two hand-rolled GET routes with
-  rate limiting pushed to Cloudflare, hono deferred to Phase 6; **pre-generate head-only** (~208
-  images / ~25–40 MB, derived from real link surfaces) vs. 165 MB + ~2 min per deploy for the full
-  540-chart cartesian; **§6.6 row windowing — top 10 by default, and 4-above/5-below when a specific
-  unit is requested** (`start = min(max(i-4,0), max(0,n-10))`, verified on all edge cases). Windowing
-  fixes the board-as-one-image problem (burstgen at 79 rows = 1 : 4.7 aspect, ~1 MB, an unreadable
-  sliver in a Discord embed) and gives a 1.32 : 1 / ~170 KB card that suits social. **Two Phase 0
-  renderer changes it forces:** implement windowing on every row-based card, and pass the population
-  `#1` dps into `drawDpsChart` explicitly instead of inferring it from `bars[0]` — otherwise a window
-  starting at rank 30 renders rank 30 as `relScore 1.000`, silently making the score mean something
-  different in every shared image (`src/share/dpsChart.ts:19-20`).
+- **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PHASES 0–3 LANDED (PR #32), PHASE 6 LANDED on
+  branch `infographics-phase6` (unpushed), PHASE 4 PR-READY on bakery-bot branch
+  `infographics-centralization` (worktree `../bakery-bot-wt-infographics`, unpushed) →
+  `docs/handoffs/2026-07-27-infographics-centralization-plan.md`.** One renderer
+  (`src/infographics/{core,node}`) now serves the web tabs, the build-time pre-rendered head
+  (208+ images + manifest.json), and the `/api/v1/img/*` routes. **Phase 6 landed 2026-07-28:**
+  share-image buttons on every remaining tab (ranks, charge, overload, olsim, doll, resources —
+  `web/src/tableShare.ts` host + core `rankTables.ts` builders + tableCard `rowColors`), olsim
+  before/after OL card, unit-comparison cards (RenderSpec `units[]`, `dps.png?units=a,b,c`,
+  DPS Rankings "Compare units…" picker), and the `/builder` public card-builder page (client-side
+  preview + manifest URL / POST `/api/v1/img/render` for a hosted link). **Phase 4 (bakery-bot thin
+  client) is code-complete but MUST NOT merge/deploy until the new server is live in prod** — the
+  six commands now `setImage()` nikkesim.app URLs (manifest-hashed or 302→content-addressed), the
+  1,113-line fork + 192 portraits + Roboto TTFs + `@napi-rs/canvas` are deleted (−2 MB), `sharp`
+  stays for `/nikke`. **Remaining owner gates, in order:** (1) merge/push `infographics-phase6`
+  (this branch also contains the hono server — first deploy runs the new build); (2) flip
+  `railway.json` startCommand `npm run start` → `npm run start:server` and deploy — `/api/v1/img/*`
+  is dark until this happens (item (1) of the follow-ups bullet below); (3) add the Cloudflare
+  rate-limit rule on `POST /api/v1/img/render` (rate limiting lives at the edge by decision 6.3);
+  (4) merge/deploy bakery-bot `infographics-centralization`; (5) R2 for the static set only once
+  it outgrows the deploy artifact or Railway egress becomes visible. Historical plan detail
+  (fork drift, §1a font guarantees, §6 decisions, §6.6 windowing math) is in the plan doc.
 
 - **⇒ INFOGRAPHIC PHASE-3 REVIEW FOLLOW-UPS (branch `infographics-centralization`; three opus
   cross-family review rounds 2026-07-27 — blocker + fixes landed, packets under the gitignored
   `scratchpad/gates/`):** (1) **startCommand flip is
   owner-gated** — `railway.json` still starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod
   until the owner flips to `npm run start:server` (dist-server/ now builds in the `verify.sh deploy`
-  tier); (2) **API surface gaps vs Phase 4** — `/ol`, `/max-ammo`, `/charge-speed` render
-  `drawTableCard` with no route, no on-demand route for non-headline DPS cells or §6.6 per-unit
-  windows (the bot fork can't be deleted until these exist); (3) **no test boots the compiled
-  bundle** — serve-api.test.ts runs the server from source; env-defaults.ts asset resolution is
-  exercised only at deploy; (4) **golden drift off-Mac** — the byte-exact golden compare now runs
-  only on darwin-arm64, so renderer drift from a non-Mac session ships green; either commit
-  per-platform fixture hash sets or switch to a decoded-pixel compare at small tolerance;
-  (5) **ink-region geometry is hand-duplicated** (harness ×6, build-infographics ×2, golden test ×3)
-  from core cards' PAD_X/ICON — export a per-card `TITLE_TEXT_X` from the card modules and compute
-  regions from it so a layout change can't silently re-vacate the guard; (6) **RenderCache sweep is
-  O(cache size) per put** — track bytes in memory and readdir only when the total crosses maxBytes;
-  (7) review NOTEs unaddressed: Matrix-tab share PNG silently gained portraits + a wider label
-  column (unrequested, untested path); committed woff2 subsets have no generation script/glyph
-  manifest and declare the bare family `Roboto` (overrides body text on Linux/Android).
-  **Filed from the CLEAN loop-3 review (non-blocking):** (8) **portraitCache vs lazy portraitDir()**
-  — the cache is keyed on raw slug, so the first call freezes a slug's resolution against whatever
-  `NIKKESIM_PORTRAIT_DIR` held then; a later env change silently serves the old dir's result (latent,
-  not reachable today: env-defaults.ts sets the var before any render). Fix by keying the cache on
-  dir+slug OR pinning the dir once on first use AND — same finding — consider extracting
-  `PORTRAIT_SLUG_RE` into a side-effect-free module and reverting the lazy dir (a test's import
-  order drove the prod-code shape change); (9) **poison-restore is not in a `finally`**
-  (serve-api.test.ts) — an assertion failure between poison and restore leaks the sentinel into the
-  shared cacheDir for the rest of the file; (10) **304 test symmetry** — assert last-modified is
-  byte-identical between the 200 and 304 paths in both serve test files, and add the missing
-  `byteLength > 0` on the wrong-etag case.
+  tier).
+  **LANDED 2026-07-28 on branch `infographics-phase6`:** (2) API surface gaps — on-demand
+  `/api/v1/img/dps.png?cell&element&unit`, `/api/v1/img/table/{max-ammo,charge-speed}.png`, and the
+  static `table/{ol,charge-speed}.png` pre-renders (shared `src/infographics/core/tableData.ts`);
+  (3) compiled-bundle boot test (`scripts/tests/share/serve-bundle.test.ts`); (5) ink-region
+  geometry dedupe (core cards export `*_TITLE_ICON` / `*_TITLE_INK_REGION`); (6) RenderCache
+  in-memory byte tracking (readdir only across the cap / on boot); (8) portrait LRU keyed on
+  dir+slug; (9) poison-restore in a `finally`; (10) 304 last-modified symmetry + wrong-etag
+  body assertions; (4) golden drift off-Mac — decoded-pixel compare (sharp RGBA, ≥99.9% of
+  pixels within channel delta 2, exact dimensions) now runs on EVERY platform; byte-exact sha256
+  stays as a stronger darwin-arm64 gate; (7a) Matrix-tab portrait share card made deliberate —
+  draw-call-level test of the `hasPortraits`/`labelW=210` branch in `windowed-render.test.ts` +
+  a `dpsChart.ts` module-header note; (7b) reproducible woff2 subsets — `npm run fonts:subsets`
+  (`scripts/subset-fonts.ts`) rebuilds them from the TTFs + a checked-in glyph manifest
+  (`src/infographics/assets/fonts/subset-ranges.json`), and `@font-face` now declares the matching
+  `unicode-range` so out-of-subset glyphs fall through the stack.
+
+- **⇒ LANDED 2026-07-28 (branch `infographics-phase6`): hono migration + `POST /api/v1/img/render`
+  — the §6.4 trigger fired (owner-approved).** `src/server/` now builds a Hono app (`hono` +
+  `@hono/node-server`, bundled into dist-server) served over node:http via `getRequestListener`;
+  the behavior contract is unchanged (serve-api/serve-bundle pass, serve-headers untouched against
+  the old serve.mjs, static handler kept hand-rolled for exact ETag/304/OG parity). New
+  `src/infographics/spec.ts` is the shared request contract — `RenderSpec` union, `parseRenderSpec`,
+  `specCacheKey` (the `v1|...` key strings are pinned byte-for-byte in
+  `scripts/tests/share/render-spec.test.ts`; drift orphans every cached render) — used by BOTH the
+  GET query routes and POST /render, so the two can never drift (parity asserted in
+  `serve-render.test.ts`). POST answers 200 `{"url":"/api/v1/img/cache/<file>"}`; guards: 16 KB
+  body cap → 413 (content-length AND stream), 415 non-JSON, 400 bad JSON/spec; rate limiting stays
+  at Cloudflare, `REQUIRE_RENDER_SECRET` (env-off) gates it when flipped. **Still owner-gated:**
+  the `railway.json` startCommand flip (item (1) above) — POST /render is dark in prod until then.
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is

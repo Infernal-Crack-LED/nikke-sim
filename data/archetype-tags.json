@@ -277,6 +277,14 @@
       "burst-stage",
       "healer"
     ],
+    "anne-miracle-fairy": [
+      "buffer",
+      "attack-buffer",
+      "incoming-healing-buffer",
+      "attacker-buffer",
+      "supporter-buffer",
+      "healer"
+    ],
     "arcana": ["buffer", "attack-buffer", "burst-cdr", "debuffer"],
     "arcana-fortune-mate": ["buffer", "attack-buffer", "shotgun-buffer"],
     "aria": ["buffer", "hit-rate-buffer", "shield"],
@@ -514,6 +522,12 @@
     "kurumi": ["debuffer", "sustained-damage"],
     "label": ["buffer", "attack-buffer", "hp-buffer"],
     "laplace": ["pierce"],
+    "laplace-ultimate-hero": [
+      "attack-buffer",
+      "hp-buffer",
+      "charge-buffer",
+      "pierce"
+    ],
     "leona": ["buffer", "hit-rate-buffer", "shotgun-buffer"],
     "liberalio": ["attack-buffer", "charge-buffer"],
     "lily": ["buffer", "attack-buffer", "healer"],

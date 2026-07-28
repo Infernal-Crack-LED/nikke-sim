@@ -110,6 +110,10 @@ const TAB_META = {
     title: 'Sync Your NIKKE Roster — Import from blablalink',
     desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
+  builder: {
+    title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
+    desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+  },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
     desc: 'The community research, datamines, and tools the NIKKE Solo Raid Sim is built on.',
