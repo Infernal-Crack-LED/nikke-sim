@@ -9,7 +9,17 @@
 // DPS-rankings tab and the Matrix tab (MatrixChart.toChartData passes per-bar
 // `imageUrl`, shareImage.ts loads it into `img`) — matrix share PNGs match the
 // rankings-tab share card. Draw-call-level coverage: windowed-render.test.ts.
-import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
+import {
+  type Canvas2DLike,
+  roundRect,
+  fitText,
+  barTrackX,
+  drawAdvantageMark,
+  ADVANTAGE_MARK_GAP,
+  ADVANTAGE_MARK_W,
+  BAR_LABEL_GAP,
+  PORTRAIT_CROP_TOP,
+} from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
 
@@ -153,11 +163,12 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   // every image. For an unwindowed chart the window max IS the population max.
   const maxDps = Math.max(...bars.map((b) => b.dps), 1);
   const hasPortraits = bars.some((b) => b.img);
-  const labelW = hasPortraits ? 210 : 168; // rank (+ portrait) + name column
-  const barX = padX + labelW;
+  const MIN_LABEL_W = hasPortraits ? 210 : 168; // rank (+ portrait) + name column
   const valueW = 96;
-  const barW = W - barX - valueW - padX;
   const PORTRAIT = 40;
+  // Cap on the label column: past this the bars stop being readable, so a
+  // name that long ellipsizes instead (canvas2d.ts barTrackX/fitText).
+  const MAX_LABEL_W = 420;
 
   // Rank-column width: two-digit absolute ranks (windowed boards) are wider than
   // the single-digit ranks the fixed +20 offset assumed — measure the widest
@@ -167,6 +178,26 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
     ...bars.map((_, i) => ctx.measureText(`#${win.start + i + 1}`).width)
   );
   const portraitX = padX + Math.max(rankW + 6, 20);
+
+  // Name column: the bar track starts after the LONGEST name + BAR_LABEL_GAP,
+  // never at a fixed x a long NIKKE name can overrun (owner style ruling — the
+  // bars give up the width, not the names). Clamped to [MIN_LABEL_W,
+  // MAX_LABEL_W]; a short roster therefore keeps the original proportions, and
+  // a name past the cap ellipsizes. A row's name starts after its portrait
+  // when it has one, so the reach is measured per row.
+  const nameX = (b: DpsBar): number =>
+    b.img ? portraitX + PORTRAIT + 12 : padX + 30;
+  // The advantage marker is a drawn triangle, not a glyph (canvas2d.ts), so it
+  // costs a fixed gap + width of label reach rather than measuring as text.
+  const markW = (b: DpsBar): number =>
+    b.advantaged ? ADVANTAGE_MARK_GAP + ADVANTAGE_MARK_W : 0;
+  ctx.font = `600 17px ${FONT}`;
+  const nameEnd = Math.max(
+    ...bars.map((b) => nameX(b) + ctx.measureText(b.name).width + markW(b)),
+    0
+  );
+  const barX = barTrackX(nameEnd, padX + MIN_LABEL_W, padX + MAX_LABEL_W);
+  const barW = W - barX - valueW - padX;
 
   bars.forEach((b, i) => {
     const y = HEAD_H + i * ROW_H;
@@ -202,10 +233,18 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
       ctx.drawImage(b.img, sx, sy, side, side, px, py, PORTRAIT, PORTRAIT);
       ctx.restore();
     }
-    const nameX = b.img ? portraitX + PORTRAIT + 12 : padX + 30;
     ctx.fillStyle = '#e7eaf0';
     ctx.font = `600 17px ${FONT}`;
-    ctx.fillText(b.name + (b.advantaged ? '  ▲' : ''), nameX, y + 30);
+    const nameRoom = barX - nameX(b) - BAR_LABEL_GAP - markW(b);
+    const name = fitText(ctx, b.name, nameRoom);
+    ctx.fillText(name, nameX(b), y + 30);
+    if (b.advantaged) {
+      drawAdvantageMark(
+        ctx,
+        nameX(b) + ctx.measureText(name).width + ADVANTAGE_MARK_GAP,
+        y + 30
+      );
+    }
 
     // track + bar
     ctx.fillStyle = '#2a2f3b';

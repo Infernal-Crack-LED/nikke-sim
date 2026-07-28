@@ -10,12 +10,23 @@
 // already on disk (and already handed to Discord's URL-keyed CDN). The key
 // STRINGS below must stay byte-identical — changing one orphans every cached
 // render. scripts/tests/share/render-spec.test.ts pins them.
-import { decodeBuild } from '../share/build-code.js';
+import { decodeBuild, type Build } from '../share/build-code.js';
+import {
+  normalizeSharedResults,
+  simmedDay,
+  type SharedResults,
+} from '../share/shared-config.js';
 
 // Bump when the card renderers change in a way that should re-render existing
 // specs — it is part of the cache key, so old files simply age out via LRU
 // instead of serving stale pixels.
-export const RENDERER_VERSION = 'v1';
+// v2 (2026-07-28): the bar-label column rule (a long NIKKE name now shortens
+// the bars instead of being clipped by them), the table-card flex widths +
+// ellipsize backstop, and the autofire charge-latency fix — every one of them
+// changes the pixels a v1 key already has a file for. v2 also reshapes the
+// team/roster key: it now hashes the render-relevant PROJECTION of the build
+// rather than the raw code (renderRelevantBuild below).
+export const RENDERER_VERSION = 'v2';
 
 // Build codes are compact (a 5-slot build is ~300-600 chars; a union roster
 // with loadouts is still well under 2 KB). Anything beyond this is garbage.
@@ -35,9 +46,15 @@ export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
 // window) and is mutually exclusive with `unit` (the window target). The
 // static pre-rendered kinds (unit cards, rank boards, the OL table) are NOT
 // here: this union covers the dynamic, render-on-demand surface only.
+// `results` is the stored sim snapshot from a shared config
+// (src/share/shared-config.ts). Absent → the no-numbers COMPOSITION card;
+// present → the full damage/DPS card. It is part of the spec (not a side
+// channel) precisely so it lands in the cache key and in the spec sidecar: two
+// configs with the same team and different numbers MUST be different content
+// addresses, and an evicted card must re-render with the numbers it had.
 export type RenderSpec =
-  | { kind: 'team'; build: string }
-  | { kind: 'roster'; build: string }
+  | { kind: 'team'; build: string; results?: SharedResults }
+  | { kind: 'roster'; build: string; results?: SharedResults }
   | {
       kind: 'dps';
       cell: string;
@@ -88,7 +105,14 @@ export function parseRenderSpec(
       if (!code || code.length > BUILD_CODE_MAX_LEN || !decodeBuild(code)) {
         return { ok: false, error: 'invalid build code' };
       }
-      return { ok: true, spec: { kind: raw.kind, build: code } };
+      // Normalized through the shared-config codec's own validator, so a spec
+      // recalled from a sidecar and a spec built from a freshly-read config
+      // are the same object — and so no NaN/negative can reach a renderer.
+      const results = normalizeSharedResults(raw.results);
+      return {
+        ok: true,
+        spec: { kind: raw.kind, build: code, ...(results ? { results } : {}) },
+      };
     }
     case 'dps': {
       const cell = trimmed(raw.cell) ?? DEFAULT_DPS_CELL;
@@ -179,14 +203,109 @@ export function parseRenderSpec(
   }
 }
 
-// The content-address key string for a spec — the EXISTING `v1|...` format
-// (see the module header: never change these strings). sha256(key)[:16] is
-// the hash in the cache filename.
+// ---- the render-relevant projection of a build ---------------------------------
+
+// A build code carries the whole sim state; the team/roster CARDS draw a small
+// slice of it. Hashing the raw code therefore fragments the cache on fields no
+// pixel depends on — two builds differing only in `blocked` (the don't-own
+// list) render byte-identical PNGs under two different content addresses
+// (reported by the bakery-bot integration 2026-07-28).
+//
+// This projects a decoded build down to EXACTLY the fields the renderers read
+// (src/server/card-from-build.ts):
+//   team   — the non-null slot slugs in order, + g.weakness (element marker
+//            and the meta line), g.level, and the coreLabel inputs.
+//   roster — the per-team non-null slugs, union mode + the per-team boss
+//            fields unionBossLabel reads, + the same g.* meta inputs. The
+//            roster card never reads `s` (the shared loadout) at all.
+// Everything else is dropped: `blocked`, `v`, `g.bossDef`, `g.bossRange`, and
+// every SlotBuild field except `slug`.
+//
+// ⚠ The projection must stay a SUPERSET of what the renderers read — dropping
+// a field a renderer draws makes two different cards collide on one address
+// and serve the wrong picture. Add the field here the moment a renderer starts
+// reading it; scripts/tests/share/build-render-key.test.ts pins the direction
+// both ways (a kept field moves the PNG, a dropped field never does). Raw
+// values are used rather than the rendered strings (level, coreLabel, the
+// union boss label) so this file can't drift from the renderers' formatting:
+// the failure mode is then only ever an under-dedupe, never a mis-serve.
+// ⚠ TOTAL on any decodable build. decodeBuild only checks the envelope, so
+// every field below is attacker-shaped until cardBuildError has run — and the
+// key is computed BEFORE that (a request must reach its 400, never a 500).
+function renderRelevantBuild(
+  build: Build,
+  kind: 'team' | 'roster'
+): Record<string, unknown> {
+  const slugsOf = (v: unknown): string[] =>
+    Array.isArray(v)
+      ? v.filter((x): x is string => typeof x === 'string' && x !== '')
+      : [];
+  const g = (build.g ?? {}) as Partial<Build['g']>;
+  const meta = {
+    w: g.weakness ?? null,
+    l: g.level ?? null,
+    c: g.core ?? null,
+    cc: g.coreCustom ?? null,
+    cv: g.coreCustomVal ?? null,
+  };
+  if (kind === 'team') {
+    const slots = Array.isArray(build.s) ? build.s : [];
+    return { u: slugsOf(slots.map((s) => s?.slug)), ...meta };
+  }
+  const union = build.rosterMode === 'union';
+  const roster = Array.isArray(build.roster) ? build.roster : [];
+  const unionBoss = Array.isArray(build.unionBoss) ? build.unionBoss : [];
+  return {
+    r: roster.map(slugsOf),
+    un: union,
+    ub: union
+      ? unionBoss.map((o) => [
+          o?.weakness ?? null,
+          o?.bossDef ?? null,
+          o?.core ?? null,
+          o?.coreCustom ?? null,
+          o?.coreCustomVal ?? null,
+          o?.bossRange ?? null,
+        ])
+      : null,
+    ...meta,
+  };
+}
+
+// The content-address key string for a spec. sha256(key)[:16] is the hash in
+// the cache filename, so these strings are load-bearing: changing one orphans
+// every cached render (that is what RENDERER_VERSION is for — bump it, don't
+// reshape a key silently). scripts/tests/share/render-spec.test.ts pins them.
 export function specCacheKey(spec: RenderSpec): string {
   switch (spec.kind) {
     case 'team':
-    case 'roster':
-      return `${RENDERER_VERSION}|${spec.kind}|${spec.build}`;
+    case 'roster': {
+      // The NORMALIZED projection, not the raw code — see renderRelevantBuild.
+      // An undecodable code can't reach a render, but specCacheKey is exported:
+      // fall back to the raw string rather than throwing.
+      const build = decodeBuild(spec.build);
+      const key = build
+        ? JSON.stringify(renderRelevantBuild(build, spec.kind))
+        : spec.build;
+      // The results snapshot is appended ONLY when present, so every key for a
+      // no-results card stays byte-identical to the one that already addresses
+      // its file on disk (a reshape here orphans the cache — that is what
+      // RENDERER_VERSION is for). Every NUMBER in the snapshot goes in whole:
+      // unlike the build, each one is printed on the card, and over-keying only
+      // costs a dedupe while under-keying serves one config's picture at
+      // another's address.
+      //
+      // `at` is the exception, and it goes the other way: the card draws only
+      // its DAY (card-from-build.ts simmedStamp), so keying the full ISO
+      // timestamp would mint a fresh content address for a pixel-identical
+      // card on every re-share. It is normalized through `simmedDay` — the
+      // very function the footer renders with, so the two cannot drift into
+      // the dangerous direction (same address, different picture).
+      const stamp = spec.results
+        ? `|${JSON.stringify({ ...spec.results, at: simmedDay(spec.results.at) ?? '' })}`
+        : '';
+      return `${RENDERER_VERSION}|${spec.kind}|${key}${stamp}`;
+    }
     case 'dps':
       // The 5-field `v1|dps|cell|element|unit` string is pinned for every
       // pre-units spec (cache compatibility). A comparison appends a 6th

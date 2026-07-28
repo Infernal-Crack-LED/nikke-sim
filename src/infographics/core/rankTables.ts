@@ -61,8 +61,8 @@ export function buildBurstGenTable(art: BurstGenArtifact): TableCardData {
     title: 'Burst Generation Ranking',
     subtitle: 'no-op team · 180s · unfocused · scope-lock loadout',
     columns: [
-      { header: '#' },
-      { header: 'Unit' },
+      { header: '#', flex: 0.5 },
+      { header: 'Unit', flex: 2 },
       { header: 'Gauge %/s', align: 'right' },
       { header: 'Bars (180s)', align: 'right' },
     ],
@@ -82,8 +82,8 @@ export function buildBurstCdrTable(art: BurstCdrArtifact): TableCardData {
     title: 'Burst CDR Ranking',
     subtitle: 'team CDR seconds per 20s Full Burst · 180s average',
     columns: [
-      { header: '#' },
-      { header: 'Unit' },
+      { header: '#', flex: 0.5 },
+      { header: 'Unit', flex: 2 },
       { header: 'CDR s/20s', align: 'right' },
     ],
     rows: art.entries.map(([slug, cdr, , , , profile], i) => [
@@ -101,8 +101,8 @@ export function buildSustainTable(art: SustainArtifact): TableCardData {
     title: 'Sustain Ranking',
     subtitle: 'effective HP restored + shielded · 180s team total',
     columns: [
-      { header: '#' },
-      { header: 'Unit' },
+      { header: '#', flex: 0.5 },
+      { header: 'Unit', flex: 2 },
       { header: 'Sustain', align: 'right' },
       { header: '% max HP', align: 'right' },
     ],
@@ -127,8 +127,8 @@ export function buildBufferTable(
     title: `Buffer Ranking — ${board === 'generic' ? 'Generic' : 'Typed'}`,
     subtitle: 'team damage increase vs the no-op baseline',
     columns: [
-      { header: '#' },
-      { header: 'Unit' },
+      { header: '#', flex: 0.5 },
+      { header: 'Unit', flex: 2 },
       { header: 'Added DMG', align: 'right' },
     ],
     rows: art.cells[board].map(([slug, addedPct, , profile], i) => [

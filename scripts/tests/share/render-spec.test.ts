@@ -41,26 +41,89 @@ const TEAM_BUILD: Build = {
 const TEAM_CODE = encodeBuild(TEAM_BUILD);
 
 describe('specCacheKey — pinned key strings (cache compatibility)', () => {
-  it('produces the exact v1|… keys the on-disk cache was written with', () => {
-    expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v1|team|abc');
-    expect(specCacheKey({ kind: 'roster', build: 'abc' })).toBe(
-      'v1|roster|abc'
+  it('produces the exact v2|… keys the on-disk cache was written with', () => {
+    // team/roster hash the render-relevant PROJECTION of the decoded build
+    // (spec.ts renderRelevantBuild) — NOT the raw code, so a field no pixel
+    // depends on can't fork the cache. build-render-key.test.ts pins the
+    // projection against the renderers; this pins the STRING it produces.
+    expect(specCacheKey({ kind: 'team', build: TEAM_CODE })).toBe(
+      'v2|team|{"u":["liter","crown","naga","modernia","alice"],' +
+        '"w":"Water","l":"400","c":1,"cc":false,"cv":"10"}'
     );
-    expect(specCacheKey({ kind: 'dps', cell: 'c1' })).toBe('v1|dps|c1|-|-');
+    // A stored sim snapshot (a shared config) APPENDS a field and never
+    // reshapes the ones above it — so every card already on disk keeps its
+    // address while a card that prints numbers gets its own.
+    const results = {
+      at: '2026-07-28T12:00:00.000Z',
+      total: 2,
+      teams: [
+        {
+          damage: 2,
+          dps: 1,
+          fullBursts: 1,
+          fullBurstUptime: 0,
+          units: [{ slug: 'liter', damage: 2, share: 1 }],
+        },
+      ],
+    };
+    const withResults = specCacheKey({
+      kind: 'team',
+      build: TEAM_CODE,
+      results,
+    });
+    expect(withResults).toBe(
+      `${specCacheKey({ kind: 'team', build: TEAM_CODE })}|` +
+        `${JSON.stringify({ ...results, at: '2026-07-28' })}`
+    );
+    // different numbers on the same team MUST be a different content address —
+    // otherwise one config's card is served at another's URL, forever
+    // (the cache files are immutable).
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, total: 3 },
+      })
+    ).not.toBe(withResults);
+    // …but a re-share LATER THE SAME DAY is the same picture: the card prints
+    // only the day, so keying the full ISO stamp would mint a new content
+    // address per click for pixel-identical output.
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, at: '2026-07-28T23:59:59.000Z' },
+      })
+    ).toBe(withResults);
+    // a different DAY does draw a different footer, so it must fork.
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, at: '2026-07-29T00:00:01.000Z' },
+      })
+    ).not.toBe(withResults);
+    // an undecodable code can't reach a render; the key falls back to the raw
+    // string rather than throwing (specCacheKey is exported and must be total)
+    expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v2|team|abc');
+    expect(specCacheKey({ kind: 'roster', build: 'abc' })).toBe(
+      'v2|roster|abc'
+    );
+    expect(specCacheKey({ kind: 'dps', cell: 'c1' })).toBe('v2|dps|c1|-|-');
     expect(specCacheKey({ kind: 'dps', cell: 'c1', element: 'fire' })).toBe(
-      'v1|dps|c1|fire|-'
+      'v2|dps|c1|fire|-'
     );
     expect(specCacheKey({ kind: 'dps', cell: 'c1', unit: 'alice' })).toBe(
-      'v1|dps|c1|-|alice'
+      'v2|dps|c1|-|alice'
     );
     expect(
       specCacheKey({ kind: 'dps', cell: 'c1', element: 'iron', unit: 'liter' })
-    ).toBe('v1|dps|c1|iron|liter');
+    ).toBe('v2|dps|c1|iron|liter');
     // comparison variant: a 6th field, the SORTED slug list (request order
     // must not fork the content address)
     expect(
       specCacheKey({ kind: 'dps', cell: 'c1', units: ['liter', 'alice'] })
-    ).toBe('v1|dps|c1|-|-|alice,liter');
+    ).toBe('v2|dps|c1|-|-|alice,liter');
     expect(
       specCacheKey({
         kind: 'dps',
@@ -68,16 +131,16 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
         element: 'fire',
         units: ['modernia', 'alice'],
       })
-    ).toBe('v1|dps|c1|fire|-|alice,modernia');
+    ).toBe('v2|dps|c1|fire|-|alice,modernia');
     expect(
       specCacheKey({ kind: 'table', table: 'max-ammo', unit: 'alice' })
-    ).toBe('v1|table|max-ammo|alice');
+    ).toBe('v2|table|max-ammo|alice');
     expect(specCacheKey({ kind: 'table', table: 'charge-speed' })).toBe(
-      'v1|table|charge-speed|generic'
+      'v2|table|charge-speed|generic'
     );
     expect(
       specCacheKey({ kind: 'table', table: 'charge-speed', unit: 'alice' })
-    ).toBe('v1|table|charge-speed|alice');
+    ).toBe('v2|table|charge-speed|alice');
   });
 
   it('maps kinds to the existing cache filename prefixes', () => {

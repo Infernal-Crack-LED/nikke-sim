@@ -2,13 +2,23 @@
 // context. Matches the visual style of dpsChart.ts / teamCard.ts (dark bg,
 // blue accent, same font). Ported from bakery-bot (used by its /ol, /max-ammo,
 // /charge-speed commands) so the site and the bot render identical tables.
-import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
+import {
+  type Canvas2DLike,
+  roundRect,
+  fitText,
+  PORTRAIT_CROP_TOP,
+} from './canvas2d.js';
 import { FONT, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
 
 export interface TableColumn {
   header: string;
   align?: 'left' | 'right';
+  // Share of the table width this column gets, relative to its siblings
+  // (default 1 = the even split). A column whose content is much wider than
+  // the rest — a unit name beside three numeric columns — takes a bigger
+  // flex so it is not the one that gets ellipsized.
+  flex?: number;
 }
 // §6.6 window request for rank boards (burstgen / sustain / burstcdr / buffer).
 // Rows are plain strings, so the target is the unit's 0-indexed row position —
@@ -59,6 +69,12 @@ export const TABLE_TITLE_INK_REGION = {
 
 export const tableHeight = (rowCount: number): number =>
   HEAD_H + COL_HEADER_H + rowCount * ROW_H + FOOT_H;
+
+// Horizontal padding inside a cell, both sides — the text box is the column
+// width minus this twice. Every header/cell is fitText'd to it (canvas2d.ts):
+// a 7-column card leaves ~94px per column and "Module fragments/day" is ~130px,
+// which without a fit simply overdraws the neighbouring column.
+const CELL_PAD = 8;
 
 // The rows a card renders after §6.6 windowing — callers need this to size the
 // canvas (tableHeight(visibleRows(...).length)).
@@ -130,10 +146,25 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
     ctx.restore();
   }
 
-  // column layout: distribute width evenly, first column left-aligned
-  const colCount = data.columns.length;
-  const colW = (W - padX * 2) / colCount;
-  const colX = (i: number): number => padX + i * colW;
+  // column layout: distribute width by flex weight (default 1 each = the even
+  // split), first column left-aligned. Every draw below fits its text to the
+  // column's own width, so no cell can overdraw its neighbour.
+  const weights = data.columns.map((c) => c.flex ?? 1);
+  const perFlex = (W - padX * 2) / (weights.reduce((a, b) => a + b, 0) || 1);
+  const colWs = weights.map((w) => w * perFlex);
+  const colXs = colWs.reduce<number[]>(
+    (xs, w, i) => [...xs, xs[i] + w],
+    [padX]
+  );
+  const colW = (i: number): number => colWs[i] ?? 0;
+  const colX = (i: number): number => colXs[i] ?? padX;
+  // Where a cell's text starts (left-aligned) or ends (right-aligned), and how
+  // wide it may be before fitText ellipsizes it.
+  const cellTextX = (i: number): number =>
+    data.columns[i]?.align === 'right'
+      ? colX(i) + colW(i) - CELL_PAD
+      : colX(i) + CELL_PAD;
+  const cellTextW = (i: number): number => colW(i) - CELL_PAD * 2;
 
   // column headers
   const headerY = HEAD_H + 22;
@@ -141,8 +172,7 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.font = `600 13px ${FONT}`;
   data.columns.forEach((col, i) => {
     ctx.textAlign = col.align === 'right' ? 'right' : 'left';
-    const x = col.align === 'right' ? colX(i) + colW - 8 : colX(i) + 8;
-    ctx.fillText(col.header, x, headerY);
+    ctx.fillText(fitText(ctx, col.header, cellTextW(i)), cellTextX(i), headerY);
   });
 
   // separator line
@@ -172,12 +202,11 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
     row.forEach((cell, ci) => {
       const col = data.columns[ci];
       ctx.textAlign = col?.align === 'right' ? 'right' : 'left';
-      const x = col?.align === 'right' ? colX(ci) + colW - 8 : colX(ci) + 8;
       // first column is the label — brighter; rest are data — unless the row
       // carries an explicit color (changed-line marking)
       ctx.fillStyle = rowColor ?? (ci === 0 ? '#e7eaf0' : '#c9cede');
       ctx.font = ci === 0 ? `600 15px ${FONT}` : `400 15px ${FONT}`;
-      ctx.fillText(cell, x, y);
+      ctx.fillText(fitText(ctx, cell, cellTextW(ci)), cellTextX(ci), y);
     });
   });
 

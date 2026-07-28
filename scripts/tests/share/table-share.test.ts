@@ -7,11 +7,21 @@
 //   3. core/rankTables.ts builders (extracted from build-infographics.ts, now
 //      shared with the web share cards): columns, absolute ranks, windowing
 //      and footers per board, profile chip labels, typed-vs-generic buffer.
+//   4. column fitting: flex-weighted widths + the ellipsize backstop, so a
+//      wide header/cell can never overdraw its neighbour.
+//   5. buildChargeTable's release latency — 0 for autofire units.
 import { describe, expect, it } from 'vitest';
 import {
   drawTableCard,
   type TableCardData,
 } from '../../../src/infographics/core/tableCard.js';
+import {
+  buildChargeTable,
+  chargeLatencyFrames,
+  isAutofireCharge,
+  RELEASE_LATENCY_FRAMES,
+  FULL_BURST_FRAMES,
+} from '../../../src/infographics/core/tableData.js';
 import {
   buildBurstGenTable,
   buildBurstCdrTable,
@@ -31,7 +41,7 @@ const ACCENT = '#5b9dff';
 // Recording Canvas2DLike: captures (text, fillStyle) per fillText so row
 // colors are assertable.
 function mockCtx() {
-  const texts: { t: string; style: string }[] = [];
+  const texts: { t: string; style: string; x: number }[] = [];
   const ctx: Canvas2DLike = {
     fillStyle: '',
     font: '',
@@ -39,12 +49,13 @@ function mockCtx() {
     textBaseline: '',
     globalAlpha: 1,
     fillRect: () => {},
-    fillText: (t) => {
-      texts.push({ t, style: ctx.fillStyle });
+    fillText: (t, x) => {
+      texts.push({ t, style: ctx.fillStyle, x });
     },
     measureText: (t) => ({ width: t.length * 8 }),
     beginPath: () => {},
     moveTo: () => {},
+    lineTo: () => {},
     arcTo: () => {},
     closePath: () => {},
     fill: () => {},
@@ -220,5 +231,88 @@ describe('core/rankTables builders (shared server pre-render + web share)', () =
     const t = buildBufferTable(art, 'typed');
     expect(t.title).toBe('Buffer Ranking — Typed');
     expect(t.rows).toEqual([['#1', 'Unit B', '+20.5%']]);
+  });
+});
+
+// The mock ruler is 8px/char, so column geometry is exact arithmetic here:
+// TABLE_W 720 − 2×PAD_X 32 = 656 usable; CELL_PAD is 8 on each side.
+describe('drawTableCard column widths + ellipsize backstop', () => {
+  it('ellipsizes a cell that would overdraw its neighbour', () => {
+    const { ctx, texts } = mockCtx();
+    // 2 even columns → 328 each → 312 of text room → 39 chars at 8px.
+    const long = 'x'.repeat(60);
+    drawTableCard(ctx, tableData([[long, 'ok']]));
+    const drawn = texts.find((t) => t.t.startsWith('xxx'))!.t;
+    expect(drawn.endsWith('…')).toBe(true);
+    expect(drawn.length * 8).toBeLessThanOrEqual(312);
+    // a cell that FITS is drawn verbatim — no gratuitous truncation
+    expect(texts.some((t) => t.t === 'ok')).toBe(true);
+  });
+
+  it('flex weights the column widths (and the text anchors with them)', () => {
+    const { ctx, texts } = mockCtx();
+    const data = tableData([['label', 'v']], {
+      columns: [
+        { header: 'A', flex: 3 },
+        { header: 'B', align: 'right' },
+      ],
+    });
+    drawTableCard(ctx, data);
+    // weights 3+1 → 492 / 164. Column 0 starts at padX + CELL_PAD; the
+    // right-aligned column 1 ends at padX + 656 − CELL_PAD.
+    expect(texts.find((t) => t.t === 'label')!.x).toBe(32 + 8);
+    expect(texts.find((t) => t.t === 'v')!.x).toBe(32 + 656 - 8);
+    // …and the wide column now fits what the even split would have cut: 55
+    // chars = 440px, over the even split's 312 but inside this column's 476.
+    const { ctx: ctx2, texts: t2 } = mockCtx();
+    drawTableCard(
+      ctx2,
+      tableData([['y'.repeat(55), 'v']], { columns: data.columns })
+    );
+    expect(t2.find((t) => t.t.startsWith('yyy'))!.t).toBe('y'.repeat(55));
+  });
+});
+
+describe('buildChargeTable release latency (autofire units)', () => {
+  const shotsFbCell = (t: ReturnType<typeof buildChargeTable>, row: number) =>
+    Number(t.rows[row][4]);
+  const framesCell = (t: ReturnType<typeof buildChargeTable>, row: number) =>
+    Number(t.rows[row][2].replace('f', ''));
+
+  it('defaults to the 22f release latency (old-style charge weapons)', () => {
+    const t = buildChargeTable(60, 'Generic (1.0s)');
+    expect(shotsFbCell(t, 0)).toBeCloseTo(
+      FULL_BURST_FRAMES / (framesCell(t, 0) + RELEASE_LATENCY_FRAMES),
+      2
+    );
+    expect(t.subtitle).toContain('+22f release');
+  });
+
+  it('an autofire unit fires with NO release latency', () => {
+    // liberalio's real base: 90 frames, input_type DOWN_Charge.
+    const auto = buildChargeTable(90, 'Liberalio', 0);
+    const latent = buildChargeTable(90, 'Liberalio');
+    expect(shotsFbCell(auto, 0)).toBeCloseTo(
+      FULL_BURST_FRAMES / framesCell(auto, 0),
+      2
+    );
+    // the bug this pins: the latent number is ~25-30% lower on every row
+    expect(shotsFbCell(auto, 0)).toBeGreaterThan(shotsFbCell(latent, 0));
+    expect(auto.subtitle).toContain('autofire');
+  });
+
+  it('chargeLatencyFrames reads the datamined input_type', () => {
+    const autofire = {
+      role: { weapon: { shot_detail: { input_type: 'DOWN_Charge' } } },
+    };
+    const released = {
+      role: { weapon: { shot_detail: { input_type: 'UP' } } },
+    };
+    expect(isAutofireCharge(autofire)).toBe(true);
+    expect(chargeLatencyFrames(autofire)).toBe(0);
+    expect(chargeLatencyFrames(released)).toBe(RELEASE_LATENCY_FRAMES);
+    // an absent//unknown role is release-fired — the safe SR/RL default
+    expect(chargeLatencyFrames({})).toBe(RELEASE_LATENCY_FRAMES);
+    expect(chargeLatencyFrames(null)).toBe(RELEASE_LATENCY_FRAMES);
   });
 });

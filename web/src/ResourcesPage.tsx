@@ -74,14 +74,19 @@ function CustomModulesTab() {
     const ACCENT = '#5b9dff'; // the theme accent (tableCard's bar color)
     const card: TableCardData = {
       title: `Daily income — ${table.fullName}`,
-      subtitle: `${RUNS_PER_DAY} runs/day · selected tier T${stage.stage} in blue`,
+      // The fragment kind rides the subtitle: at 6-7 columns the header row
+      // has ~95px per column, so "Module fragments/day" belongs here, not in
+      // a column header (tableCard would ellipsize it).
+      subtitle:
+        `${RUNS_PER_DAY} runs/day · selected tier T${stage.stage} in blue · ` +
+        `frags = ${table.fragmentLabel.toLowerCase()}`,
       columns: [
-        { header: 'Tier' },
+        { header: 'Tier', flex: 0.6 },
         { header: 'Chance/run', align: 'right' },
         { header: 'Mod/run', align: 'right' },
         { header: 'Mod/day', align: 'right' },
         ...(hasGear ? [{ header: 'Gear/day', align: 'right' as const }] : []),
-        { header: `${table.fragmentLabel}/day`, align: 'right' },
+        { header: 'Frags/day', align: 'right' },
         { header: 'Locks/day', align: 'right' },
       ],
       rows: table.stages.map((s) => {

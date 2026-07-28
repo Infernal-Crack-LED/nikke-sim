@@ -75,6 +75,31 @@ const CHARS: Record<string, CardCharacter> = {
     ammo: 6,
     chargeFrames: 90,
   },
+  // The autofire pair for the charge-speed latency check. BOTH are
+  // FIXTURE-ONLY slugs (a real slug would resolve a real portrait from
+  // web/public and confound the byte compare — the difference has to be the
+  // latency alone): identical in every field except the datamined tell
+  // role.weapon.shot_detail.input_type === 'DOWN_Charge', which means "fires
+  // on press, NO 22f release latency".
+  'zz-charge-autofire': {
+    slug: 'zz-charge-autofire',
+    name: 'Charge Unit',
+    element: 'Electric',
+    weapon: 'RL',
+    burst: 'III',
+    ammo: 6,
+    chargeFrames: 60,
+    role: { weapon: { shot_detail: { input_type: 'DOWN_Charge' } } },
+  },
+  'zz-charge-control': {
+    slug: 'zz-charge-control',
+    name: 'Charge Unit',
+    element: 'Electric',
+    weapon: 'RL',
+    burst: 'III',
+    ammo: 6,
+    chargeFrames: 60,
+  },
 };
 
 // A minimal dpschart.json fixture for the dps.png route: two cells, four
@@ -538,6 +563,73 @@ describe('api/v1/img/table/*.png (breakpoint tables)', () => {
       (await fetch(`${base}/api/v1/img/table/charge-speed.png?unit=bogus`))
         .status
     ).toBe(400);
+  });
+
+  it('an autofire unit renders a DIFFERENT card than a release-fired one', async () => {
+    // Same base frames, same displayed name — the ONLY difference is the
+    // datamined input_type, which zeroes the 22f release latency in the
+    // Shots/FB column. Identical bytes would mean the latency never reached
+    // the render (the bug this pins: every autofire unit's card understated
+    // shots per Full Burst by ~25-30%).
+    const png = async (slug: string): Promise<Buffer> => {
+      const loc = await expectRenderedPng(
+        `/api/v1/img/table/charge-speed.png?unit=${slug}`,
+        'table'
+      );
+      return Buffer.from(await (await fetch(`${base}${loc}`)).arrayBuffer());
+    };
+    const autofire = await png('zz-charge-autofire');
+    const released = await png('zz-charge-control');
+    expect(autofire.length).toBeGreaterThan(0);
+    expect(autofire.equals(released)).toBe(false);
+  });
+});
+
+describe('api/v1/img/cache/<file> durability (spec sidecar)', () => {
+  // The short cache URL is the only form that fits a Discord embed, so an LRU
+  // eviction must not break an already-posted image: the miss re-renders from
+  // the remembered spec (src/server/spec-store.ts).
+  it('an evicted entry re-renders and serves the SAME bytes', async () => {
+    const loc = await expectRenderedPng(
+      `/api/v1/img/team.png?b=${TEAM_CODE}`,
+      'team'
+    );
+    const file = loc.split('/').pop()!;
+    const before = Buffer.from(
+      await (await fetch(`${base}${loc}`)).arrayBuffer()
+    );
+    rmSync(join(cacheDir, file)); // simulate the LRU sweep evicting it
+    expect(existsSync(join(cacheDir, file))).toBe(false);
+
+    const res = await fetch(`${base}${loc}`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/png');
+    const after = Buffer.from(await res.arrayBuffer());
+    // content-addressed: the re-render is the same picture, and it is back on
+    // disk for the next request
+    expect(after.equals(before)).toBe(true);
+    expect(existsSync(join(cacheDir, file))).toBe(true);
+  });
+
+  it('a hash with no remembered spec is still an honest 404', async () => {
+    const res = await fetch(
+      `${base}/api/v1/img/cache/team.${'0'.repeat(16)}.png`
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get('content-type')).toContain('text/plain');
+  });
+
+  it('a sidecar that resolves to a DIFFERENT hash is refused', async () => {
+    // hand-written/stale sidecar: the spec is valid but does not address this
+    // file (e.g. it was written under an older RENDERER_VERSION). Serving it
+    // would break the content-address promise, so the answer is the 404.
+    const bogus = `team.${'a'.repeat(16)}.png`;
+    mkdirSync(join(cacheDir, 'specs'), { recursive: true });
+    writeFileSync(
+      join(cacheDir, 'specs', `${bogus}.json`),
+      JSON.stringify({ kind: 'team', build: TEAM_CODE })
+    );
+    expect((await fetch(`${base}/api/v1/img/cache/${bogus}`)).status).toBe(404);
   });
 });
 

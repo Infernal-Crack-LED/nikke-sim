@@ -245,6 +245,16 @@ export const saveProfile = (kind: string, name: string, code: string) =>
 export const deleteProfile = (id: string) =>
   api<void>(`/api/profiles/${encodeURIComponent(id)}`, { method: 'DELETE' });
 
+// One profile read WITHOUT auth, by id. The backend serves this only for the
+// kinds on its share allowlist (`sim-share` — bakery-bot
+// api/profiles/[id]/public), so it opens a config someone shared and never a
+// private profile. This is what makes an id-based share link work for a
+// stranger: `nikkesim.app/?id=<id>` (a team) or `/rostersim?id=<id>` resolves
+// the build + stored sim results through here, in place of a ~3.3 KB `?b=`
+// build code in the URL.
+export const fetchPublicProfile = (id: string) =>
+  api<SavedProfile>(`/api/profiles/${encodeURIComponent(id)}/public`);
+
 // Versioned codec for a flat Nikke list (the include/exclude profile payload).
 // base64url of UTF-8 JSON — same URL/DB-safe shape as the build-code format.
 const NIKKE_LIST_VERSION = 1;

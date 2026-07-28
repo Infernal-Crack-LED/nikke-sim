@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createHash } from 'node:crypto';
+import { specCacheKey } from '../../../src/infographics/spec.js';
 import {
   existsSync,
   mkdtempSync,
@@ -241,10 +242,13 @@ describe('POST /api/v1/img/render — happy paths + GET parity', () => {
       `/api/v1/img/team.png?b=${TEAM_CODE}`,
       'team'
     );
-    // the URL hash is exactly sha256(specCacheKey(spec))[:16] — the key the
-    // pre-migration GET routes produced (cache compatibility, byte-for-byte)
+    // the URL hash is exactly sha256(specCacheKey(spec))[:16] — the content
+    // address, derived through the shared key function rather than re-spelled
+    // here (the key STRINGS themselves are pinned in render-spec.test.ts,
+    // which is where a RENDERER_VERSION bump or a key reshape must be
+    // noticed). This asserts the URL ↔ key relationship, not the format.
     const expectHash = createHash('sha256')
-      .update(`v1|team|${TEAM_CODE}`)
+      .update(specCacheKey({ kind: 'team', build: TEAM_CODE }))
       .digest('hex')
       .slice(0, 16);
     expect(url).toBe(`/api/v1/img/cache/team.${expectHash}.png`);

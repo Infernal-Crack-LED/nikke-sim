@@ -286,6 +286,11 @@ noted.
   and `simSupported` (has an override).
 - **Commit freely, never push.** Local commits are encouraged; `git push` / PRs are owner-gated (both
   repos). `bash scripts/verify.sh` green before anything leaves the machine. → CLAUDE.md hard constraints.
+- **The render server NEVER sims.** A card's damage/DPS is either absent (the composition card) or a
+  browser-computed SNAPSHOT the request carried, stamped with its `at` date and footed "simmed
+  &lt;date&gt;". `src/engine/**` stays out of `dist-server`. A shared config id is a HANDLE only: it is
+  expanded to `{build, results}` BEFORE the cache key, so every image URL stays content-addressed.
+  → DECISIONS 2026-07-28.
 
 ## 7. Probe reader instruments (what measures what, and how far it is trusted)
 

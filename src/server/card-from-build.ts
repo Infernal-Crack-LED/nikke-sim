@@ -1,28 +1,34 @@
 // Build code → card data mapping for the dynamic render routes.
 //
-// DECISION (Phase 3, documented per the handoff's task 3): the card is rendered
-// from BUILD DATA ALONE — units, portraits, element-advantage markers, and the
-// boss/meta line — with the damage fields at ZERO. This matches BOTH existing
-// no-sim consumers exactly:
-//   - the web Team Builder's own "copy image" path (web/src/App.tsx onTbCopyImage,
-//     ~line 2796: `teamDamage: 0, teamDps: 0, ...` when no sim has run), and
-//   - bakery-bot's /teams and /roster commands (render with damage 0 from the
-//     decoded build + character metadata).
-// Driving src/engine/ for real numbers was rejected: faithfully mapping a
-// SlotBuild (OL line strings, doll rarity/level, gear stats, cores, lambda
+// DECISION (Phase 3): a build code carries a SELECTION, not a result, so a card
+// rendered from one alone shows the picks and the boss/level/core line and no
+// damage numbers — the COMPOSITION card. Driving src/engine/ server-side for
+// real numbers was rejected then and again on 2026-07-28 (question 1): mapping
+// a SlotBuild (OL line strings, doll rarity/level, gear stats, cores, lambda
 // stages, modes) into an engine config means replicating several hundred lines
 // of App.tsx build→sim plumbing against a PROTECTED engine — high divergence
-// risk, and wrong damage numbers on a watermarked, content-addressed,
-// immutable-cached image are far worse than the established no-numbers
-// composition card. If real numbers are wanted later, add them as a NEW card
-// variant (and bump RENDERER_VERSION in api.ts) rather than changing what an
-// existing cached URL means.
+// risk — and it would put the whole engine in the server bundle and seconds of
+// cold render on one instance.
+//
+// WHAT CHANGED (2026-07-28, owner ruling question 1(a)): the numbers can now
+// arrive WITH the request, as a snapshot the browser computed and a shared
+// config stored (src/share/shared-config.ts). So there are two cards, chosen by
+// whether the caller supplied results — never by a server-side sim:
+//   results absent  → the composition card (drawTeamCompositionCard / a roster
+//                     card with zeroed bars), exactly as before.
+//   results present → the full card (drawTeamCard: total, DPS, full bursts,
+//                     per-unit bars / drawRosterCard with real team bars), the
+//                     SAME renderers the web's own results share card uses.
+// The snapshot is stamped into the watermark footer ("simmed <date>") because a
+// stored number does not track engine changes — see the shared-config header.
 import { createCanvas, type Canvas } from '../infographics/node/render.js';
 import {
   CARD_W,
   cardHeight,
-  rosterCardHeight,
+  compositionCardHeight,
   drawTeamCard,
+  drawTeamCompositionCard,
+  rosterCardHeight,
   drawRosterCard,
   loadPortrait,
   type Canvas2DLike,
@@ -31,6 +37,7 @@ import {
   type RosterCardTeam,
 } from '../infographics/node/render.js';
 import type { Build, UnionBossBuild } from '../share/build-code.js';
+import { simmedDay, type SharedResults } from '../share/shared-config.js';
 import { unitHasElement } from '../elements.js';
 import type { Element } from '../types.js';
 
@@ -45,6 +52,10 @@ export interface CardCharacter {
   // Table routes only (data/characters.json flat fields):
   ammo?: number; // base magazine (bot: roleWeapon.shot_detail.max_ammo)
   chargeFrames?: number; // = round(charge_time/100*60) — the bot's baseFrames
+  // The datamined role blob, read ONLY for role.weapon.shot_detail.input_type
+  // (tableData's chargeLatencyFrames — autofire charge weapons fire on press
+  // and take no release latency).
+  role?: { weapon?: unknown } | null;
 }
 
 const SCALE = 2; // retina, same as build-infographics.ts
@@ -73,7 +84,11 @@ const checkPixels = (w: number, h: number): string | null =>
 // case is handled by the caller; this covers everything decodeBuild doesn't.
 export function cardBuildError(
   build: Build,
-  type: 'team' | 'roster'
+  type: 'team' | 'roster',
+  // Which team card the build will render as — the two layouts have different
+  // heights, so the pixel backstop must check the one that will actually be
+  // allocated (see the module header).
+  hasResults = false
 ): string | null {
   for (const s of build.s) {
     if (!s || typeof s !== 'object' || !isSlug(s.slug)) {
@@ -81,12 +96,13 @@ export function cardBuildError(
     }
   }
   if (type === 'team') {
-    if (!build.s.some((s) => s.slug)) {
+    const units = build.s.filter((s) => s.slug).length;
+    if (units === 0) {
       return 'build has no units';
     }
     return checkPixels(
       CARD_W * SCALE,
-      cardHeight(build.s.filter((s) => s.slug).length) * SCALE
+      (hasResults ? cardHeight(units) : compositionCardHeight()) * SCALE
     );
   }
   const roster = build.roster;
@@ -122,17 +138,28 @@ function coreLabel(g: {
     : `${Math.round(g.core * 100)}% core`;
 }
 
+// The date a stored snapshot was simmed, as it appears in the footer. A stored
+// number does not follow engine changes, so every card drawn from one says when
+// it was produced (shared-config.ts header). The day comes from `simmedDay` —
+// the SAME function the render cache key normalizes with, so the key can never
+// dedupe two snapshots that would draw different footers.
+function simmedStamp(results?: SharedResults): string {
+  const day = simmedDay(results?.at);
+  return day ? ` · simmed ${day}` : '';
+}
+
 function metaFor(
   build: Build,
   icon: Canvas | null,
-  footer: string
+  footer: string,
+  results?: SharedResults
 ): TeamCardMeta {
   return {
     weakness: build.g.weakness,
     level: Number(build.g.level) || 400,
     coreLabel: coreLabel(build.g),
     icon: icon ?? undefined,
-    footer,
+    footer: `${footer}${simmedStamp(results)}`,
   };
 }
 
@@ -157,31 +184,43 @@ function unionBossLabel(o: UnionBossBuild): string {
 export async function renderTeamCardPng(
   build: Build,
   chars: Record<string, CardCharacter>,
-  icon: Canvas | null
+  icon: Canvas | null,
+  // The stored sim snapshot, when the request carried one (a shared config).
+  // Its `teams[0]` is this team; per-unit entries line up with the build's
+  // non-null slots IN SLOT ORDER, which is how the web writes them.
+  results?: SharedResults
 ): Promise<Buffer> {
+  const slots = build.s.filter((s) => s.slug);
+  const perUnit = results?.teams[0]?.units ?? [];
   const units: TeamCardUnit[] = await Promise.all(
-    build.s
-      .filter((s) => s.slug)
-      .map(async (s) => {
-        const c = (s.slug && chars[s.slug]) || FALLBACK_CHAR(s.slug);
-        return {
-          name: c.name,
-          burst: c.burst,
-          weapon: c.weapon,
-          element: c.element,
-          // every element the unit counts as (a kit can grant a second code's
-          // advantage — src/elements.ts), matching the web's marker logic
-          advantaged: build.g.weakness
-            ? unitHasElement(c, build.g.weakness)
-            : false,
-          share: 0, // no sim — see the module header for the decision
-          totalDamage: 0,
-          img: s.slug ? ((await loadPortrait(s.slug)) ?? undefined) : undefined,
-        };
-      })
+    slots.map(async (s, i) => {
+      const c = (s.slug && chars[s.slug]) || FALLBACK_CHAR(s.slug);
+      // Positional by default, but prefer a slug match when the snapshot
+      // carries one: a saved config outlives the roster it was saved from, and
+      // silently attributing one unit's damage to another is the worst
+      // failure this card has.
+      const r =
+        perUnit.find((u) => u.slug && u.slug === s.slug) ??
+        (perUnit[i]?.slug ? undefined : perUnit[i]);
+      return {
+        name: c.name,
+        burst: c.burst,
+        weapon: c.weapon,
+        element: c.element,
+        // every element the unit counts as (a kit can grant a second code's
+        // advantage — src/elements.ts), matching the web's marker logic
+        advantaged: build.g.weakness
+          ? unitHasElement(c, build.g.weakness)
+          : false,
+        share: r?.share ?? 0,
+        totalDamage: r?.damage ?? 0,
+        img: s.slug ? ((await loadPortrait(s.slug)) ?? undefined) : undefined,
+      };
+    })
   );
+  const team = results?.teams[0];
   const w = CARD_W * SCALE;
-  const h = cardHeight(units.length) * SCALE;
+  const h = (team ? cardHeight(units.length) : compositionCardHeight()) * SCALE;
   // Hard backstop — cardBuildError already checked this, but a renderer must
   // never size a canvas from input that didn't pass through it.
   if (w * h > MAX_CANVAS_PIXELS) {
@@ -192,11 +231,27 @@ export async function renderTeamCardPng(
   ctx.scale(SCALE, SCALE);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  drawTeamCard(
-    ctx as unknown as Canvas2DLike,
-    { teamDamage: 0, teamDps: 0, fullBursts: 0, fullBurstUptime: 0, units },
-    metaFor(build, icon, 'nikkesim.app/teambuilder')
-  );
+  const meta = metaFor(build, icon, 'nikkesim.app/teambuilder', results);
+  if (team) {
+    // A shared config HAS a sim behind it — the same full card the web's own
+    // results share button renders.
+    drawTeamCard(
+      ctx as unknown as Canvas2DLike,
+      {
+        teamDamage: team.damage,
+        teamDps: team.dps,
+        fullBursts: team.fullBursts,
+        fullBurstUptime: team.fullBurstUptime,
+        units,
+      },
+      meta
+    );
+  } else {
+    // The COMPOSITION layout: a team builder output has no sim behind it, so
+    // the card shows the picks and the boss/level/core selection — never a
+    // zeroed damage/DPS/full-burst line (owner ruling 2026-07-28).
+    drawTeamCompositionCard(ctx as unknown as Canvas2DLike, { units }, meta);
+  }
   return canvas.toBuffer('image/png');
 }
 
@@ -206,13 +261,18 @@ export async function renderTeamCardPng(
 export async function renderRosterCardPng(
   build: Build,
   chars: Record<string, CardCharacter>,
-  icon: Canvas | null
+  icon: Canvas | null,
+  // Stored snapshot; `teams[i]` is roster row i (the web writes them in grid
+  // order). A shorter snapshot than the roster leaves the extra rows at zero
+  // rather than mis-attributing — the bars are scaled to the max, so a wrong
+  // row would visibly rank teams wrongly.
+  results?: SharedResults
 ): Promise<Buffer> {
   const roster = build.roster ?? [];
   const union = build.rosterMode === 'union';
   const teams: RosterCardTeam[] = await Promise.all(
     roster.map(async (teamSlugs, i) => ({
-      teamDamage: 0, // no sim — see the module header for the decision
+      teamDamage: results?.teams[i]?.damage ?? 0,
       bossLabel: union
         ? unionBossLabel(
             build.unionBoss?.[i] ?? {
@@ -252,11 +312,14 @@ export async function renderRosterCardPng(
   drawRosterCard(
     ctx as unknown as Canvas2DLike,
     {
-      totalDamage: 0,
+      // The stored grand total is not trusted over the rows it is a total of —
+      // the rendered bars and the headline number must agree, and only the
+      // rows above reached the card.
+      totalDamage: teams.reduce((sum, t) => sum + t.teamDamage, 0),
       teams,
       title: union ? 'NIKKE Solo Raid Sim · Union Raid' : undefined,
     },
-    metaFor(build, icon, 'nikkesim.app/roster')
+    metaFor(build, icon, 'nikkesim.app/roster', results)
   );
   return canvas.toBuffer('image/png');
 }

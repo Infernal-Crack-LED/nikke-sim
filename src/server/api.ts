@@ -6,12 +6,18 @@
 //   GET /api/v1/img/manifest.json            → dist/img/manifest.json, no-cache
 //   GET /api/v1/img/{dps,unit,rank,table}/<file> → dist/img/..., immutable (hashed)
 //   GET /api/v1/img/cache/<file>             → the dynamic-render cache, immutable
-//   GET /api/v1/img/team.png?b=<buildcode>   → 302 to /api/v1/img/cache/team.<hash>.png
-//   GET /api/v1/img/roster.png?b=<buildcode> → 302 to .../roster.<hash>.png
+//   GET /api/v1/img/team.png?b=<buildcode>|?id=<config> → 302 to /api/v1/img/cache/team.<hash>.png
+//   GET /api/v1/img/roster.png?b=<buildcode>|?id=<config> → 302 to .../roster.<hash>.png
 //   GET /api/v1/img/dps.png?cell&element&unit|units → 302 to .../dps.<hash>.png
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
-//   POST /api/v1/img/render                  → 200 {"url":"/api/v1/img/cache/<file>"}
+//   POST /api/v1/img/render                  → 200 {"url","imageUrl","pageUrl"?}
+//
+// `?id=` is a SHARED CONFIG id (src/server/config-store.ts): the server reads
+// {build, results} out of bakery-bot's profile store and renders the card WITH
+// the sim numbers the browser stored. It is the short-URL answer to a ~3.3 KB
+// `?b=` link, and the only request form that can also name a PAGE url — see
+// handleRenderPost.
 //
 // Every dynamic route (GET or POST) funnels through the SAME pipe: query
 // params / JSON body → parseRenderSpec → specCacheKey → resolveRender →
@@ -30,6 +36,7 @@ import { loadPortrait } from '../infographics/node/render.js';
 import {
   buildAmmoTable,
   buildChargeTable,
+  chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
 } from '../infographics/core/tableData.js';
 import {
@@ -42,6 +49,8 @@ import {
 import { decodeBuild } from '../share/build-code.js';
 import { IMMUTABLE, NO_CACHE, mimeFor } from './static.js';
 import type { RenderCache } from './render-cache.js';
+import type { SpecStore } from './spec-store.js';
+import { configPageUrl, type ConfigStore } from './config-store.js';
 import {
   renderTeamCardPng,
   renderRosterCardPng,
@@ -64,6 +73,13 @@ export const API_PREFIX = '/api/v1/img/';
 export interface ApiContext {
   distDir: string;
   cache: RenderCache;
+  // Cache filename → the spec that produced it, so an evicted entry can be
+  // re-rendered instead of 404ing (spec-store.ts: what makes the short
+  // /cache/<file> URL safe to embed).
+  specs: SpecStore;
+  // Config id → the saved {build, results} payload (config-store.ts). Backs
+  // every `?id=` request and the page URL POST /render hands back.
+  configs: ConfigStore;
   chars: Record<string, CardCharacter>;
   icon: Canvas | null;
   renderSecret?: string;
@@ -124,36 +140,34 @@ function renderOnce(
   return p;
 }
 
-// The shared tail of every dynamic route: render on a cache miss.
-async function ensureCached(
-  ctx: ApiContext,
-  file: string,
-  render: () => Promise<Buffer>
-): Promise<boolean> {
-  if (!(await ctx.cache.has(file))) {
+// The shared tail of every dynamic route: render on a cache miss, and
+// remember the spec behind the file so a LATER eviction can re-render it
+// rather than 404 an embedded URL (spec-store.ts).
+async function ensureCached(ctx: ApiContext, r: Resolved): Promise<boolean> {
+  if (!(await ctx.cache.has(r.file))) {
     try {
-      await ctx.cache.put(file, await renderOnce(file, render));
+      await ctx.cache.put(r.file, await renderOnce(r.file, r.render));
     } catch (err) {
-      console.error(`render ${file} failed:`, err);
+      console.error(`render ${r.file} failed:`, err);
       return false;
     }
   }
+  await ctx.specs.remember(r.file, r.spec);
   return true;
 }
 
 // …then 302 to the content-addressed cache URL (the GET contract).
 async function renderAndRedirect(
   ctx: ApiContext,
-  file: string,
-  render: () => Promise<Buffer>
+  r: Resolved
 ): Promise<Response> {
-  if (!(await ensureCached(ctx, file, render))) {
+  if (!(await ensureCached(ctx, r))) {
     return text(500, 'render failed');
   }
   return new Response(null, {
     status: 302,
     headers: {
-      location: `${API_PREFIX}cache/${file}`,
+      location: `${API_PREFIX}cache/${r.file}`,
       'cache-control': NO_CACHE,
     },
   });
@@ -193,6 +207,10 @@ function loadDpsChart(ctx: ApiContext): Promise<DpsArtifact | null> {
 interface Resolved {
   file: string;
   render: () => Promise<Buffer>;
+  spec: RenderSpec; // remembered by the caller — see ApiContext.specs
+  // The nikkesim.app page this card opens on, when the request named a config
+  // id. Only POST /render returns it (a GET's answer is the image itself).
+  pageUrl?: string;
 }
 interface ResolveFailure {
   error: string;
@@ -220,16 +238,17 @@ async function resolveRender(
       // decodeBuild checks only the envelope — the roster/slot contents are
       // attacker-controlled and size the canvas, so validate BEFORE rendering
       // (an unvalidated roster was a one-request ~1.6 GB canvas allocation).
-      const invalid = cardBuildError(build, spec.kind);
+      const invalid = cardBuildError(build, spec.kind, !!spec.results);
       if (invalid) {
         return { error: invalid, status: 400 };
       }
       return {
         file,
+        spec,
         render: () =>
           spec.kind === 'team'
-            ? renderTeamCardPng(build, ctx.chars, ctx.icon)
-            : renderRosterCardPng(build, ctx.chars, ctx.icon),
+            ? renderTeamCardPng(build, ctx.chars, ctx.icon, spec.results)
+            : renderRosterCardPng(build, ctx.chars, ctx.icon, spec.results),
       };
     }
     case 'dps': {
@@ -247,7 +266,7 @@ async function resolveRender(
       if ('error' in built) {
         return { error: built.error, status: 400 };
       }
-      return { file, render: () => renderDpsChartPng(built.data) };
+      return { file, spec, render: () => renderDpsChartPng(built.data) };
     }
     case 'table': {
       let data: TableCardData;
@@ -278,7 +297,9 @@ async function resolveRender(
             status: 400,
           };
         }
-        data = buildChargeTable(baseFrames, ch.name);
+        // Autofire units take no release latency — resolved from the datamined
+        // input_type, the same SSOT the site's /charge panel reads.
+        data = buildChargeTable(baseFrames, ch.name, chargeLatencyFrames(ch));
       } else {
         data = buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)');
       }
@@ -286,7 +307,11 @@ async function resolveRender(
       if (spec.unit) {
         data.portrait = (await loadPortrait(spec.unit)) ?? undefined;
       }
-      return { file, render: () => Promise.resolve(renderTableCardPng(data)) };
+      return {
+        file,
+        spec,
+        render: () => Promise.resolve(renderTableCardPng(data)),
+      };
     }
   }
 }
@@ -296,10 +321,68 @@ async function resolveRender(
 // parseRenderSpec (with the data it needs for existence checks) →
 // resolveRender. GET wraps the result in a 302, POST in JSON — the cache
 // file/render can never differ between them.
+// Replace a `{kind?, id}` request with the shared config it names, so
+// everything downstream sees an ordinary `{kind, build, results}` spec. Doing
+// the expansion HERE (before parse, before hashing) is what keeps the whole
+// design content-addressed: the cache key, the cache file and the spec sidecar
+// all describe the CONTENT, never the id — so a re-saved config mints a new
+// image instead of mutating an old one, and an evicted card re-renders from
+// its sidecar without a network call.
+//
+// The kind may be omitted: the config knows what it is, which is the one-call
+// shape bakery-bot wants. When a kind IS given it must match — a team.png URL
+// that quietly renders a roster is a lie the URL can't be read out of.
+async function expandConfigId(
+  raw: Record<string, unknown>,
+  ctx: ApiContext
+): Promise<{ input: unknown; pageUrl: string } | ResolveFailure> {
+  const id = String(raw.id);
+  const cfg = await ctx.configs.get(id);
+  if (!cfg) {
+    return { error: 'unknown config id', status: 404 };
+  }
+  if (raw.kind !== undefined && raw.kind !== cfg.kind) {
+    return {
+      error: `config id is a ${cfg.kind} config, not ${String(raw.kind)}`,
+      status: 400,
+    };
+  }
+  return {
+    input: {
+      kind: cfg.kind,
+      build: cfg.build,
+      ...(cfg.results ? { results: cfg.results } : {}),
+    },
+    pageUrl: configPageUrl(cfg.kind, id),
+  };
+}
+
 async function resolveSpec(
   input: unknown,
   ctx: ApiContext
 ): Promise<Resolved | ResolveFailure> {
+  const raw =
+    input && typeof input === 'object' && !Array.isArray(input)
+      ? (input as Record<string, unknown>)
+      : {};
+  // `?id=` / `{id}` — resolve it to a build + results before anything else.
+  // `b`/`build` wins when both are present (an explicit build code is not
+  // ambiguous), which also keeps the GET routes' `id` param optional.
+  let pageUrl: string | undefined;
+  if (
+    raw.id !== undefined &&
+    raw.id !== null &&
+    raw.id !== '' &&
+    !raw.build &&
+    (raw.kind === undefined || raw.kind === 'team' || raw.kind === 'roster')
+  ) {
+    const expanded = await expandConfigId(raw, ctx);
+    if ('error' in expanded) {
+      return expanded;
+    }
+    input = expanded.input;
+    pageUrl = expanded.pageUrl;
+  }
   const kind =
     input && typeof input === 'object'
       ? (input as Record<string, unknown>).kind
@@ -322,7 +405,26 @@ async function resolveSpec(
   if (!parsed.ok) {
     return { error: parsed.error, status: 400 };
   }
-  return resolveRender(parsed.spec, ctx, art);
+  const resolved = await resolveRender(parsed.spec, ctx, art);
+  return 'error' in resolved || !pageUrl ? resolved : { ...resolved, pageUrl };
+}
+
+// Rebuild an evicted cache entry from its remembered spec. The recalled spec
+// goes back through the SAME parse → resolve pipe as a fresh request (it is
+// untrusted data on disk, not a shortcut past validation), and the resolved
+// filename must come back EQUAL to the one asked for — otherwise the sidecar
+// and the URL disagree (a renderer-version bump, a hand-edited file) and the
+// honest answer is the 404. Returns true when the file is on disk afterwards.
+async function rerender(ctx: ApiContext, file: string): Promise<boolean> {
+  const spec = await ctx.specs.recall(file);
+  if (!spec) {
+    return false;
+  }
+  const r = await resolveSpec(spec, ctx);
+  if ('error' in r || r.file !== file) {
+    return false;
+  }
+  return ensureCached(ctx, r);
 }
 
 function handleDynamicGet(
@@ -337,7 +439,7 @@ function handleDynamicGet(
     if ('error' in r) {
       return text(r.status, r.error);
     }
-    return renderAndRedirect(ctx, r.file, r.render);
+    return renderAndRedirect(ctx, r);
   };
 }
 
@@ -414,10 +516,24 @@ async function handleRenderPost(
   if ('error' in r) {
     return c.json({ error: r.error }, r.status as 400 | 404);
   }
-  if (!(await ensureCached(ctx, r.file, r.render))) {
+  if (!(await ensureCached(ctx, r))) {
     return c.json({ error: 'render failed' }, 500);
   }
-  return c.json({ url: `${API_PREFIX}cache/${r.file}` }, 200);
+  // TWO urls, not one (owner ruling 2026-07-28, question 3): a Discord embed
+  // needs an IMAGE url for the picture and a PAGE url for the clickable title,
+  // and only the caller knows which slot each belongs in. `url` is kept as an
+  // alias of `imageUrl` so the existing bakery-bot client keeps working
+  // untouched. `pageUrl` appears only for a request that named a config id —
+  // a bare build code has no short page to link to.
+  const imageUrl = `${API_PREFIX}cache/${r.file}`;
+  return c.json(
+    {
+      url: imageUrl,
+      imageUrl,
+      ...(r.pageUrl ? { pageUrl: r.pageUrl } : {}),
+    },
+    200
+  );
 }
 
 // Register every /api/v1/img/* route on the hono app. Static routes (exact
@@ -426,11 +542,25 @@ async function handleRenderPost(
 export function registerImgApi(app: Hono, ctx: ApiContext): void {
   app.get(
     '/api/v1/img/team.png',
-    handleDynamicGet((c) => ({ kind: 'team', build: c.req.query('b') }), ctx)
+    handleDynamicGet(
+      (c) => ({
+        kind: 'team',
+        build: c.req.query('b'),
+        id: c.req.query('id'),
+      }),
+      ctx
+    )
   );
   app.get(
     '/api/v1/img/roster.png',
-    handleDynamicGet((c) => ({ kind: 'roster', build: c.req.query('b') }), ctx)
+    handleDynamicGet(
+      (c) => ({
+        kind: 'roster',
+        build: c.req.query('b'),
+        id: c.req.query('id'),
+      }),
+      ctx
+    )
   );
   app.get(
     '/api/v1/img/dps.png',
@@ -479,7 +609,14 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
 
   app.get('/api/v1/img/cache/:file', async (c) => {
     const name = c.req.param('file');
-    if (!CACHE_FILE.test(name) || !(await ctx.cache.has(name))) {
+    if (!CACHE_FILE.test(name)) {
+      return apiMiss();
+    }
+    // A miss is not automatically a 404: this URL is what the 302s and POST
+    // /render hand out, and it is the only form short enough for a Discord
+    // embed — so an LRU eviction must not break an already-posted image.
+    // Re-render from the remembered spec (spec-store.ts) when we have one.
+    if (!(await ctx.cache.has(name)) && !(await rerender(ctx, name))) {
       return apiMiss();
     }
     return sendRaw(ctx.cache.pathFor(name), IMMUTABLE);

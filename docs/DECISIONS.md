@@ -1627,6 +1627,41 @@ campaign-findings.md`), the refit + Fable pre-registration (`…-cone-param-free
 
 ## Engine/data-architecture decisions
 
+- **(2026-07-28) SHAREABLE SAVED CONFIGS — three owner rulings on how a shared card gets its
+  numbers, its id, and its URLs.** A card rendered server-side from a build code alone can only
+  show a SELECTION, so the roster/team cards printed literal zeros; and a `?b=` share link for a
+  populated roster is ~3.3 KB, too long for a Discord embed.
+  **(1) The numbers are a browser-computed SNAPSHOT stored with the config — the server never
+  sims.** The alternative (run the sim on a cache miss) was rejected: it pulls the PROTECTED
+  `src/engine/**` into the server bundle, makes a cold render seconds long on one Railway
+  instance, and would need the render-concurrency cap first. The accepted cost is staleness — an
+  engine change does not move a stored number — so a snapshot's `at` timestamp is REQUIRED, and a
+  card drawn from one prints "simmed &lt;date&gt;" in its footer, making a pre-patch card
+  self-identifying instead of silently wrong. Results with no timestamp are DISCARDED (they
+  degrade to the no-numbers composition card) rather than printed undated.
+  **(2) The config id lives in bakery-bot's existing `user_profiles` store, behind a public read
+  that is ALLOWLISTED BY KIND (`sim-share`).** A `shared_configs` table owned by nikke-sim's own
+  server was rejected: that process has no database layer at all (only `src/data/sync.ts` uses
+  `pg`). Kind-scoping is the whole safety argument — the same store holds genuinely private rows
+  (a user's include/exclude Nikke lists), and a per-row `shared` flag would have needed a
+  migration. Any non-allowlisted kind 404s exactly like a nonexistent id, so the route cannot be
+  used to probe which profiles exist, and `discord_id` is never returned. Within the share kind
+  the model is "anyone with the link" — which is already what posting the card to Discord means.
+  **(3) `POST /api/v1/img/render` returns BOTH urls, `{url, imageUrl, pageUrl}`.** A Discord embed
+  needs an image URL for the picture and a separate page URL for the clickable title, and only the
+  caller knows which slot each fills. `url` is kept as an alias of `imageUrl` so the existing bot
+  client is unbroken; `pageUrl` appears only for a request that named a config id, because a bare
+  build code has no short page to link to.
+  **The load-bearing invariant behind all three: the id is a HANDLE, never part of the content
+  address.** `?id=` is expanded to `{build, results}` BEFORE the cache key is computed, so a
+  re-saved config mints a NEW image rather than mutating one already posted, an evicted card
+  re-renders from its spec sidecar with no network call, and `?id=<X>` lands on the same cache
+  file as the equivalent `?b=<code>` request. `RENDERER_VERSION` was deliberately NOT bumped: the
+  results field is APPENDED to the key only when present, so every existing no-results key stays
+  byte-identical and nothing on disk was orphaned (the pinned key strings in
+  `scripts/tests/share/render-spec.test.ts` passing unchanged is the check).
+  Landed: nikke-sim `f025cc8` (branch `infographics-card-fixes`), bakery-bot `f2f9af1`.
+
 - **(2026-07-26) DOCS + AGENT-AUDIT WORKFLOW SLIMMING — nine owner rulings on the review doc
   `docs/handoffs/2026-07-26-docs-and-audit-workflow-review.md` (CLOSED, in `docs/handoffs/closed/`).**
   The review mapped the documentation/audit apparatus and priced its duplication (one model-routing

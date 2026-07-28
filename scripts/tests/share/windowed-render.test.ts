@@ -41,6 +41,7 @@ function mockCtx() {
     moveTo: (x) => {
       path = { moveX: x, firstArcX: 0 };
     },
+    lineTo: () => {},
     arcTo: (x1) => {
       if (path && arcCount === 0) {
         path.firstArcX = x1;

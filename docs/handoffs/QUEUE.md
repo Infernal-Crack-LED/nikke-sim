@@ -52,6 +52,102 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
+  Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
+  `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three
+  owner questions were answered 2026-07-28 — **(1a)** the numbers are a browser-computed
+  SNAPSHOT stored with the config (no engine in `dist-server`), **(2a)** the id lives in
+  bakery-bot `user_profiles` behind a kind-allowlisted public read, **(3)** `POST /render`
+  returns `{url, imageUrl, pageUrl}` — and all four asks are implemented. What is left is
+  deployment and two things only the owner can decide:
+  1. **GATE — deploy order.** The bakery-bot public read (`GET /api/profiles/:id/public`) must be
+     live BEFORE any `?id=` link is minted, or every shared link 404s. It is an additive route,
+     no schema change, so it can ship independently and ahead of the sim.
+  2. **GATE — the 100-profiles-per-kind cap.** `POST /api/profiles` refuses a genuinely new name
+     past 100 rows per (user, kind). Shares are named by a content hash, so re-sharing an
+     unchanged config is idempotent and costs nothing, but a user who shares 100 DISTINCT configs
+     hits `limit_reached` and silently falls back to the long `?b=` link. Options: raise the cap
+     for the share kind, evict oldest, or accept the fallback. **Accepted for now** — nothing
+     breaks, links just get long again.
+  - **Tell the bot:** `POST /api/v1/img/render` now answers `{url, imageUrl, pageUrl}`; `url`
+    is an alias of `imageUrl` so nothing existing breaks, and `pageUrl` is present only for a
+    request that named a config id. `{id}` alone is accepted (kind inferred from the config), as
+    is `{kind, id}` (mismatched kind → 400).
+  - **Known limit, unchanged from the earlier integration report:** a `characters.json` change (a
+    unit rename) moves pixels without moving the cache hash. The key covers renderer changes, not
+    data changes; if it bites, add a data stamp to the key.
+  - **Follow-up worth doing:** `NIKKESIM_CONFIG_API` / `NIKKESIM_SITE_ORIGIN` default to the prod
+    bakery-bot origin and `https://nikkesim.app`. Set them explicitly in Railway rather than
+    relying on the defaults baked into `src/server/config-store.ts`.
+  - **Cross-family code review (kimi-code/k3) ran on the branch: round 1 FIX-BEFORE-MERGE → all
+    four findings fixed (`b86e42f`) → round 2 CLEAN.** Packets + result JSONs in
+    `scratchpad/gates/2026-07-28-shared-configs/`. The FIX was real and is the one worth
+    remembering: `shareName` hashed the ENCODED payload, which carries a click-time `at`, so
+    every press minted a new profile row — the code carried a comment promising precisely the
+    idempotency it did not deliver. Split into `sharedConfigIdentity` (name from this) vs the
+    stored payload; the same root also fed the render cache key, now normalized through the
+    shared `simmedDay`. Round 2's two NOTEs (orphaned old-shape cache entries; pre-fix share rows
+    surviving against the cap) are both **empirically empty** — this branch has never been pushed
+    or deployed, so no `sim-share` row and no with-results cache entry has ever existed. Nothing
+    to migrate; do NOT file migration work for them.
+
+  **Other decisions already made, don't relitigate:** the composition card keeps the boss/level/
+  core line (a SELECTION, not a metric); a card renders the FULL `drawTeamCard` layout only when
+  the request carries a results snapshot, the composition card otherwise; `RENDERER_VERSION` is
+  `v2` and must be bumped by any further renderer change (the shared-config work deliberately did
+  NOT bump it — results are APPENDED to the cache key, so every existing no-results key is
+  byte-identical and nothing on disk was orphaned).
+
+- **⇒ BAKERY-BOT INTEGRATION REPORT (2026-07-28) — BOTH ITEMS ANSWERED on branch
+  `infographics-card-fixes`.** (1) _"the cache hash is derived from the request, not the output"_ —
+  half already handled, half was real. `specCacheKey` has ALWAYS carried `RENDERER_VERSION`
+  (`src/infographics/spec.ts`), which is exactly the "version stamp" the report asks for, and it is
+  now `v2`; the real defect was hashing the RAW build code, so `blocked` (and every other field no
+  pixel depends on) forked the content address — fixed by hashing a render-relevant PROJECTION of
+  the decoded build (`renderRelevantBuild`), pinned BOTH ways against the actual renderers in
+  `scripts/tests/share/build-render-key.test.ts` (dropped field ⇒ byte-identical PNG; drawn field
+  ⇒ different PNG). (2) _URL length_ — no new addressing mode was needed: the short
+  `/api/v1/img/cache/<type>.<hash>.png` (~45 chars) is already what the 302's `location` header
+  carries and what `POST /api/v1/img/render` returns as `{url}`, so the bot can embed that instead
+  of uploading bytes. What was MISSING is what made it unsafe: the PNG cache is byte-bounded
+  (200 MB ≈ 570 cards) with LRU eviction, so an embedded cache URL would eventually 404 an old
+  Discord post. `src/server/spec-store.ts` now remembers each cache filename's spec in a sidecar,
+  and a miss RE-RENDERS through the same parse→resolve pipe (refusing any sidecar that resolves to
+  a different hash) — the short URL is now as durable as the long one. **Still open / to tell the
+  bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
+  covers renderer changes, not data changes; if that bites, add a data stamp to the key.
+- **⇒ POST-MERGE CODE REVIEW OF PR #33 (`9526dad`) — 2 FIXES LANDED on branch
+  `infographics-card-fixes`, 4 FOLLOW-UPS OPEN.** The review ran after the merge (owner ask).
+  No blockers; the two FIX-level defects are fixed on that branch (worktree
+  `../nikke-sim-wt-cardfix`, unpushed, `verify.sh` green): (a) `buildChargeTable` hardcoded the
+  22f release latency, so every AUTOFIRE charge unit (anis-star, cinderella, liberalio,
+  neon-vision-eye, vesti-tactical-upgrade — datamined `input_type: 'DOWN_Charge'`) published a
+  shots-per-Full-Burst ~25–30% below the site's own /charge panel, on the tab share button, the
+  /builder card AND the hosted `table/charge-speed?unit=` route; (b) `drawTableCard` distributed
+  width evenly with no truncation, so the 6–7-column resources card overdrew its neighbouring
+  column. Also landed there: the owner's bar-label style ruling (a bar track never clips a NIKKE
+  name — `canvas2d.ts` `barTrackX`/`fitText`, applied to `dpsChart.ts` + `teamCard.ts`) and
+  `RENDERER_VERSION` → `v2` (the renderers changed, so v1 cache files must age out). **Open
+  follow-ups, none blocking a deploy:**
+  1. **Memoized REJECTED promises** — `BuilderPage.loadImgManifest` and
+     `tableShare.loadOlDefaultTable` cache the promise including its rejection, so one transient
+     fetch failure permanently breaks "Get hosted URL" / the OL share until a page reload. Clear
+     the memo in a `.catch` that rethrows.
+  2. **No in-process render concurrency cap** — `api.ts ensureCached` single-flights identical
+     specs only; N distinct concurrent specs run N renders, each up to `MAX_CANVAS_PIXELS`
+     (12M px ≈ 48 MB RGBA) on one instance, with the routes anonymous by design. A 4–8 slot
+     semaphore turns a burst into latency instead of RSS. Do this before bakery-bot points
+     production traffic at `POST /render`.
+  3. **Breakpoint-panel tier vs card tier** — the /charge panel computes rows at the selected OL
+     tier (`olTierValues(bpTier)`), the share card always renders the T11 constants. Self-
+     consistent (the subtitle names T11) but it disagrees with the table it was copied from at
+     any other tier: pass the tier's per-line value into `buildAmmoTable`/`buildChargeTable`.
+  4. **▲ renders as tofu in every NODE card** — Roboto has no U+25B2 and the Node font stack has
+     no fallback face, so the advantaged-element marker is a □ box on the pre-rendered images
+     (the browser falls back per-glyph, so the site is fine). Pre-existing, cosmetic, visible on
+     every DPS/team card: either register a fallback face for the Node renderer or swap the
+     marker for a Roboto-covered glyph.
+
 - **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PHASES 0–3 LANDED (PR #32), PHASE 6 LANDED on
   branch `infographics-phase6` (unpushed), PHASE 4 PR-READY on bakery-bot branch
   `infographics-centralization` (worktree `../bakery-bot-wt-infographics`, unpushed) →
