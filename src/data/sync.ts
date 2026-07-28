@@ -5,7 +5,7 @@
 import 'dotenv/config';
 import pg from 'pg';
 import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
-import type { CharacterData, DataFile } from '../types.js';
+import type { CharacterData, DataFile, TsareenaBuild } from '../types.js';
 import type { OverrideFile } from '../skills/index.js';
 import { countsAsElements } from '../elements.js';
 import { deriveNicknames } from './nicknames.js';
@@ -68,6 +68,17 @@ const BURST_STEP_BY_STAGE: Record<string, string> = {
 
 const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
 
+// Shape of the DB's nikke_characters.sheet_data jsonb (the community Tsareena build sheet), as
+// measured against the live table 2026-07-28: top-level keys are exactly {build, priority,
+// annotations}; `build` carries 9 keys on all 88 populated rows plus the sparse `notes` (37) and
+// `pairWith` (20). Typed loosely on purpose — it is a hand-maintained sheet, so the mapper below
+// coalesces every field rather than trusting presence.
+interface RawSheetData {
+  priority?: string | null;
+  annotations?: string[] | null;
+  build?: Partial<Record<keyof TsareenaBuild['build'], string | null>> | null;
+}
+
 function loadSupportPolicy() {
   const proven = new Set<string>(
     (
@@ -118,8 +129,11 @@ async function main() {
     // skills source (accurate to the game). The engine never parses this prose at runtime (2026-07-16
     // prose-free migration) — after syncing a NEW unit, run scripts/materialize-overrides.ts --write
     // to seed its override, or the verify gate / runtime will fail loudly on the missing file.
+    // sheet_data = the community Tsareena build sheet (editorial, display-only). It does NOT go
+    // into characters.json — it is written to its own data/tsareena-build.json so an editorial
+    // sheet edit never churns the sim's deterministic input. See TsareenaBuildFile in types.ts.
     `select id, name, synergy_id, image_url, attributes, base_stats, prydwen_tiers, prydwen_slug, aliases,
-            skill_descriptions, favorite_item_id,
+            skill_descriptions, favorite_item_id, sheet_data,
             role_weapon, role_burst_meta, role_skill_details, role_stat_scaling, role_element, role_piece, role_meta
        from nikke_characters order by id`
   );
@@ -148,6 +162,7 @@ async function main() {
   const characters: DataFile['characters'] = {};
   const skipped: string[] = [];
   const bossingTiers: Record<string, string> = {};
+  const tsareena: Record<string, TsareenaBuild> = {};
   for (const row of rows) {
     const tier = row.prydwen_tiers?.bossing ?? '?';
     bossingTiers[row.id] = tier;
@@ -261,6 +276,9 @@ async function main() {
       // maiden-ice-rose 2→1, stale synergy value with no muzzle/shot backing).
       hitsPerShot: wf?.hitsPerShot ?? api?.hits_per_shot ?? 1,
       rl3: a.rl3 ?? null,
+      // Global release date (YYYY-MM-DD) — display-only, for the unit-card infographic. The engine
+      // never reads it. Null for the 2 units whose `attributes` blob upstream isn't curated yet.
+      releaseDate: a.releaseDate ?? null,
       // Clean datamined burst gauge — reference only; the engine reads data/gauge-per-shot.json.
       burstGaugePerShot: wf
         ? wf.burstGaugePerShot
@@ -318,6 +336,31 @@ async function main() {
       baseStats: row.base_stats,
     };
     characters[row.id] = char;
+    // Tsareena sheet → its own artifact (see the select-list note). Collected HERE, after the skip
+    // checks, so the two files always agree on the roster: a slug in tsareena-build.json is always
+    // a slug in characters.json. Sparse by nature (88/196 upstream), so a consumer must handle a
+    // missing entry, not just a missing field.
+    const sheet = row.sheet_data as RawSheetData | null;
+    if (sheet) {
+      const b = sheet.build ?? {};
+      tsareena[row.id] = {
+        priority: sheet.priority ?? null,
+        annotations: sheet.annotations ?? [],
+        build: {
+          skillLevels: b.skillLevels ?? null,
+          cube: b.cube ?? null,
+          overloadMinimum: b.overloadMinimum ?? null,
+          overloadIdeal: b.overloadIdeal ?? null,
+          overloadGear: b.overloadGear ?? null,
+          overloadLevelFive: b.overloadLevelFive ?? null,
+          levelDoll: b.levelDoll ?? null,
+          endgameUses: b.endgameUses ?? null,
+          burstGen: b.burstGen ?? null,
+          pairWith: b.pairWith ?? null,
+          notes: b.notes ?? null,
+        },
+      };
+    }
   }
 
   // Second stage: TAG (never drop) with the two support booleans.
@@ -371,6 +414,21 @@ async function main() {
     new URL('../../data/level-multiplier.json', import.meta.url),
     JSON.stringify(levelMultiplier)
   );
+  // Editorial build guidance, kept OUT of characters.json on purpose (see TsareenaBuildFile).
+  // Insertion order follows the query's `order by id`, so this diffs cleanly like the others.
+  writeFileSync(
+    new URL('../../data/tsareena-build.json', import.meta.url),
+    JSON.stringify(
+      {
+        syncedAt: new Date().toISOString(),
+        source:
+          'bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)',
+        units: tsareena,
+      },
+      null,
+      1
+    )
+  );
 
   const total = Object.keys(characters).length;
   const noStats = Object.values(characters).filter((c) => !c.baseStats).length;
@@ -385,6 +443,16 @@ async function main() {
   );
   console.log(
     `counts-as elements: ${multiElement.length ? multiElement.join(', ') : 'none'}`
+  );
+  // Both fields are sparse upstream and display-only, so a drop in coverage is invisible to the
+  // sim's gates — print it so a future sync surfaces the regression instead of silently thinning
+  // the unit cards. Baseline 2026-07-28: releaseDate 194/196 rows, tsareena 88/196.
+  const noRelease = Object.values(characters).filter(
+    (c) => !c.releaseDate
+  ).length;
+  console.log(
+    `releaseDate: ${total - noRelease}/${total} characters (${noRelease} missing); ` +
+      `tsareena build sheet: ${Object.keys(tsareena).length}/${total}`
   );
   const nickKept = Object.values(characters).filter(
     (c) => c.nicknames?.length
