@@ -1,0 +1,92 @@
+{
+  "slug": "2b",
+  "kitDescription": "2B is a Fire AR Defender whose offense scales with how often she personally bursts. Each of her own burst casts permanently raises her Max HP in escalating cumulative steps — 10.03% on the first, adding 20.06% on the second, adding 57.76% on the third, capping at 87.85% total. A passive converts 6.16% of her current (final) Max HP into ATK, so every Max HP stack makes every hit she deals harder; this conversion is her real damage engine. Every 300 rounds she fires, she deals an extra 167.45% of final ATK to the enemy. Her burst fires two instant hits at cast time — a 2439.36% distributed hit against all enemies plus a separate 792% hit against the highest-HP enemy — both landing before the Full Burst window opens.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Activates when using Burst Skill",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> self (own cast, not team FB)",
+        "blindSaid": "S2b: burstCast, divergent from fullBurstEnter in co-B3 fixture; S5 co-B3 re-key test over-applies under fullBurstEnter and passes as shipped",
+        "formulaCheck": "Rotation SSOT: burst-cast trigger is own-cast; helm shares B3 so team FBs outnumber her casts — discrimination is live and was exercised",
+        "fireRateOk": true,
+        "explanation": "Own-cast keying verified behaviourally by the blind co-B3 counterfactual (re-keying to fullBurstEnter inflates grant count) and by the driver's step-0 count == own burstCast count assertion."
+      },
+      {
+        "kitLine": "Max HP 10.03/20.06/57.76 continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "escalating steps [10.03, 20.06, 57.76], cumulative to 87.85% cap, permanent, self maxHpFlat grants",
+        "blindSaid": "S2b: cumulative 87.85% cap, not 57.76% replace, not double-count; S6: byte-identical encoding; S5: 3 distinct tiers in ratio ~5.76, first grant smallest, tier-1 applications outnumber tier-3",
+        "formulaCheck": "'Each subsequent effect triggers all effects before it' + 'continuously' = permanent additive ladder; matches Liter-validated escalating precedent; magnitudes are kit-literal (DATAMINED)",
+        "fireRateOk": true,
+        "explanation": "Three independent derivations (S2b, S5, S6) and the driver converge on the cumulative 87.85% reading; grants are self-scoped (caster===target) so the e3 rule feeds her conversion. The one S5 over-strict assertion (cumulative must out-damage tier3-only on TOTAL) was a blind-side ramp artifact, reconciled — not a driver divergence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after firing 300 time(s): 167.45%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:300 -> enemy flatDamage 167.45, recurring; one-time-vs-recurring flagged (caveat 1) with a popup-count discriminator recipe",
+        "blindSaid": "S2b: hitCount not interval, recurring every 300; S6: identical encoding; S5: proc count == floor(shots/300), halving threshold ~doubles output (ratio 1.6-2.5)",
+        "formulaCheck": "Kit gives an explicit fire-count clause so no invented cadence; engine hitCount is recurring; proc cadence spans reloads correctly vs the interval nearest-wrong",
+        "fireRateOk": true,
+        "explanation": "Recurring counter proven by the threshold-halving counterfactual (~2x output) and exact floor(shots/300) count; ~6 procs per 180s at AR cadence. The recurring-vs-one-time reading is a shared convention documented with a measurement recipe on both sides."
+      },
+      {
+        "kitLine": "ATK 6.16% of user's final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive -> self atkOfMaxHpPct 6.16, reads live final Max HP per-frame",
+        "blindSaid": "S2b: must re-read live HP not base snapshot; S6: identical; S5: removing conversion costs damage, and with conversion removed S1 removal costs exactly zero (coupling direction proven)",
+        "formulaCheck": "SSOT: HP->ATK conversions use the unit's OWN Max HP and own-kit stacks count — caster===target self-grant satisfies the rule; 'final' = live HP, matches the per-frame read",
+        "fireRateOk": true,
+        "explanation": "The kit's central synergy is modeled correctly: nuke amounts grow cast-to-cast (14.7M->22.0M plateau at cap) and collapse under the generic-atkPct counterfactual, discriminating the HP-scaling read from a plain ATK buff."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "2439.36% as distributed damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 2439.36 flavor distributed, FB-exempt by cast timing",
+        "blindSaid": "S2b: distributed flavor mandatory, fbMajorApplied false; S6: identical encoding; S5: ratio to 792 hit in 2.9-3.3 band, no fbMajorApplied on any burst event",
+        "formulaCheck": "Boundary rule (MEASURED, Cinderella nuke): burst-cast damage lands before FB opens — no +50%, no entry auras; Distributed is its own bucket/flavor per SSOT 1g",
+        "fireRateOk": true,
+        "explanation": "Flavor encoding proven non-vacuously by the synthetic +50% distributedDamagePct discriminator (mult.distributed 1.5 on this hit only); FB-exemption asserted on every burst event; fires exactly once per own cast."
+      },
+      {
+        "kitLine": "792% to highest-HP enemy",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast flatDamage 792, separate plain hit, FB-exempt",
+        "blindSaid": "S2b: must stay separate so distributedDamagePct never touches it; S6: identical; S5: additivity check (whole == parts within 2%) proves nothing else lives in the slot",
+        "formulaCheck": "Same cast-timing FB-exemption; 'additional damage' is plain skill/burst flavor, correctly NOT distributed; targeting clause degenerate on the single partless boss (documented)",
+        "fireRateOk": true,
+        "explanation": "Separate-hit structure discriminated (mult.distributed stays 1.0 under the synthetic buff); count == own cast count; the highest-HP selection clause is untestable in v1 scope and correctly noted rather than dropped."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2+burst",
+      "summary": "All three damage lines encoded non-crit (flatDamage default); blind S6 encodes crit:true. Structurally the only divergence in the entire gauntlet, documented with a measurement recipe on BOTH sides — but the SSOT leans toward the blind: function/burst damage 'CRIT at the caster's rate (default on)', and the popup-verified Cinderella worked example shows a burst nuke critting (x1.5 pair exact). Non-crit under-credits these hits by ~7.5% expected value if the game crits them.",
+      "evidence": "Kit prose is silent on crit (no contradiction — rule F respected). Formula SSOT damage-type table: skill '% of final ATK' crit ON, burst nuke crit ON; damage-calculation.md 5b crit pair measured. Driver cites helm/exia non-crit precedent + flags it (caveat 3 / note flag2); S6 sets crit:true flagged as an unmeasured reversible prior.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement, not a fudge: focus-2B recording, read popup colours/values on the 167.45% rider and the 2439.36/792 burst hits (a crit popup is exactly x1.5 its non-crit sibling at base crit damage). If crits observed, set crit:true on all three flatDamage lines; if never observed across a full fight, keep the default and close the flag."
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergence exists: all six kit lines are FAITHFUL with byte-identical structural convergence between the driver and the S6 blind override, and the S5 blind suite runs GREEN unmodified apart from two over-strict assertions that were reconciled as blind-side defects (a ramp-sensitive total-damage ordering that is not a property of cumulativity, and an exact teammate-equality demand broken by a 0.03-0.04% second-order sim artifact with identical FB counts) — neither is a driver divergence. The single real residual is the crit encoding on the three damage lines: driver defaults non-crit, blind opts crit:true, both flag it measurement-gated; the formula SSOT's default-on crit for function/burst damage plus the Cinderella popup-verified crit pair lean toward the blind's direction, so this is the one item the owner should resolve with a popup-colour read before locking magnitudes (med severity, documented, not blocking). Two shared-prior conventions survive as the same-family residual the owner should spot-check against footage: the cumulative 87.85% escalation reading (corroborated by the Liter validated precedent but originating from claude-family blind agents) and the recurring-every-300 vs one-time rider reading (both flagged with discriminator recipes). The S1-feeds-conversion coupling, own-burstCast keying, distributed-flavor separation, and FB-exempt cast timing — the four load-bearing claims — are each proven by independent discriminating counterfactuals that fail under their named nearest-wrong models. Verdict GO; the crit measurement is the recommended follow-up, not a gate.",
+  "model": "kimi-code/k3"
+}

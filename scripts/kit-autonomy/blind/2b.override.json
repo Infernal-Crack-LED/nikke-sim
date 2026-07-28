@@ -1,0 +1,122 @@
+{
+  "slug": "2b",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 10.03
+            },
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 20.06
+            },
+            {
+              "kind": "buff",
+              "stat": "targetMaxHpPct",
+              "value": 57.76
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 300
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 167.45,
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkOfMaxHpPct",
+          "value": 6.16
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 2439.36,
+          "flavor": "distributed",
+          "crit": true
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 792,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 CADENCE: the 300-round S2 threshold is kit-exact, but how OFTEN it fires rides the datamined AR cadence + ammo 90 / reloadFrames 81 \u2014 proc count per fight is datamine-derived, not measured.",
+    "\u2691 ESCALATION CAP: assumed to stop at the 3rd own burst cast (kit lists exactly three tiers); 4th+ casts are modeled as re-applying the same 3-step total (87.85%), not a 4th tier.",
+    "\u2691 SPLIT-VS-MERGE: the 2439.36% distributed hit is modeled as ONE merged hit against the sole partless boss; the real popup split is kit-silent and unread.",
+    "crit:true on all three damage lines is the rider-crit prior (riders crit at the caster's sheet rate), NOT a measurement \u2014 reversible on popup-colour evidence.",
+    "'1 enemy unit(s) with the highest remaining HP' resolves to the sole boss; the ranking clause is untestable in v1 and moves no damage.",
+    "The unit's whole offense depends on the self targetMaxHpPct grants feeding atkOfMaxHpPct (legal only because caster===target). If the engine does not re-read live Max HP for that conversion, S1 is silently inert and the unit is under-modeled \u2014 verify the feed path before trusting any total.",
+    "noFb is unset on every damage line (FB-by-timing default ON). The burst-cast hits are expected FB-exempt by cast timing (burst damage lands before the FB window opens), which is engine timing, not a per-kit flag.",
+    "noRange is left to the engine (automatic on riders); hasPierce not set \u2014 the kit carries no Pierce line."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. 2B (2b), AR/Fire/Defender/Burst III, cd 40s, ammo 90 \u2014 an HP\u2192ATK converter with no team-facing effects. S1: burst-cast (own-burst) escalating self Max HP ladder, 10.03% \u2192 +20.06% \u2192 +57.76%, cumulative per the 'each subsequent effect triggers all effects before it' clause (87.85% total after her 3rd own cast), 'continuously' = no expiry. S2b: passive from battle start, ATK \u25b2 6.16% of her OWN final Max HP (atkOfMaxHpPct) \u2014 this is the sole channel through which S1 produces damage. S2a: cumulative-300-rounds-fired rider, 167.45% of final ATK to the enemy (hitCount trigger; 'firing N times' counts rounds, not trigger pulls). Burst: two enemy hits resolved on cast \u2014 2439.36% distributed + 792% additional. No weapon swap, no stacks/resources, no pierce, no Hit Rate, no heal/shield/DEF line, no ally-targeted effect; every effect is self- or enemy-scoped, so this unit contributes nothing to a teammate's buffs. All kit lines are implemented \u2014 unmodeled is empty by audit, not by omission."
+}

@@ -1,0 +1,116 @@
+{
+  "slug": "exia",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 95,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 28,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "alliesOfElement",
+        "element": "Electric"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 5.8,
+          "durationSec": 15,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 122.32
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 122.32
+        },
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 18.04,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code.",
+      "ATK \u25bc 13.77% for 5 sec.",
+      "DEF \u25bc 13.77% for 5 sec."
+    ],
+    "skill2": [],
+    "burst": ["DEF \u25bc 2.71% for 5 sec."]
+  },
+  "caveats": [
+    "\u2691 Enemy DEF \u25bc (skill1 13.77%, burst 2.71%) has NO StatKey \u2014 the schema's defPct is self-DEF (inert in v1) and there is no boss-DEF-reduction channel. Both are REAL damage levers against the boss-DEF subtraction and are currently dropped, so the model is BIASED LOW on every comp she is in. Enemy ATK \u25bc 13.77% is genuinely inert (boss deals no modeled damage).",
+    "\u2691 skill1 reload line is a stat CLAMP (\"fixed at a 95% increase\"), modeled as an additive reloadSpeedPct buff. Identical while Exia is the only reload source; DIVERGES (over-credits) the moment a teammate also buffs her reload, because a clamp would pin the total at +95% rather than stack.",
+    "\u2691 burst block 2 (the 122.32% additional hit + Damage Taken \u25b2 18.04%) is authored UNGATED. Its kit gate is \"Collect Hacking Code at max stacks\" (5), and the engine has no per-buff-stack gate primitive; a monotonic resourceGate would be permanently true after 5 shots and merely hide the assumption. Whether she is at 5/5 at the cast frame is genuinely uncertain \u2014 see flags. If she is not, this over-credits a 122.32% nuke AND a team-wide 18.04% Damage Taken debuff.",
+    "burst flatDamage leaves crit unset (rider crit-eligibility is engine-global, RIDERCRIT) and noFb unset (per-kit noFb is measured-only; burst-cast damage is engine-handled FB-exempt \u2014 it lands before the Full Burst window opens).",
+    "noRange is engine-automatic and deliberately not set anywhere."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Exia (exia) SR/Electric/Supporter/Burst I, ammo 6, chargeFrames 60, reloadFrames 141. Modeled: (skill1) FB-enter self reload-speed window; (skill2) self stacking ATK \u25b228%\u00d75 off full-charge shots, and a last-bullet caster-ATK-scaled ATK grant to all Electric allies (self included \u2014 Exia is Electric); (burst) a burst-cast 122.32% hit plus the max-stack branch's second 122.32% hit and the team-wide Damage Taken \u25b218.04% boss debuff. Her offensive value is almost entirely SUPPORT \u2014 the casterAtkPct grant and the Damage Taken debuff \u2014 so her own damage total is a poor validation signal; grade her on the Electric allies' deltas and on the 10s Damage-Taken window. Deliberately unmodeled: both enemy DEF \u25bc lines (no schema channel) and the enemy ATK \u25bc (inert). The \"if the skill user is in Collect Hacking Code\" gate on the skill2 last-bullet grant is treated as always satisfied (a charge weapon full-charges every shot, so 1+ stack is live by the 6th round); the burst's max-stack gate is NOT safely assumable and is flagged."
+}

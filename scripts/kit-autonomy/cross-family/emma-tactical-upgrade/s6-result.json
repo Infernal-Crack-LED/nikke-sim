@@ -1,0 +1,347 @@
+{
+  "slug": "emma-tactical-upgrade",
+  "leakDetected": null,
+  "override": {
+    "slug": "emma-tactical-upgrade",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 3.9,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 3.9,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 10
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 23.51
+          },
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 2.32
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 30.97
+          },
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 3.09
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 40.07,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 3.9,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Effect 2: Environment Setup: Continuously recovers 2.32% of the skill user's final Max HP every 1 sec for 10 sec. — HP amount not modeled (no HP pool in v1); the recovery EVENTS are modeled via the heal effect so on-recovery consumers fire.",
+        "■ Activates when the enemy appears. Affects self. Exposure (Cannot be removed) Effect: Attract: Taunt all enemies continuously. — taunt/aggro is defensive; the v1 boss deals no damage and aggro does not change any damage value."
+      ],
+      "skill2": [
+        "Effect 1: Affects all allies from the same squad. Critical Damage ▲ 23.51% continuously. — the 'same squad' restriction is not modeled (no squad axis in the data); modeled as all allies.",
+        "Effect 3: Affects self. Exposure activation disabled continuously. — disables an unmodeled defensive taunt; damage-inert either way.",
+        "Effect 4: Affects self. Recurring interval of Environment Setup ▼ 20 sec continuously. — MODELED as the 10s interval on the skill1 blocks (30s − 20s = 10s), NOT as a separate effect; the schema has no cooldown-reduction primitive for a recurring interval, so the reduced value is baked in under the AS-Formation assumption. ⚑ If AS Formation is not applied to self, the true interval is 30 sec."
+      ],
+      "burst": [
+        "Effect 1: Damage taken multiplier of Environment Setup is scaled by 100%. — MODELED as a second 3.9pp damageTaken debuff block on burst cast (a 100% scale of the 3.9% base = +3.9pp), for 10 sec. ⚑ 'scaled by 100%' read as doubling the multiplier; an alternative reading is that the enhanced value replaces rather than adds.",
+        "Effect 2: Incoming healing ▲ 29.04%. — heal magnitudes are not modeled (no HP pool); no damage consequence."
+      ],
+      "note": ""
+    },
+    "caveats": [
+      "⚑ ALL values are UNMEASURED kit-text reads. Nothing here is validated against a fight.",
+      "⚑ skill1 Environment Setup recurring interval is authored at 10 sec (kit 30 sec, reduced 20 sec by skill2's AS-Formation self-bonus). This ASSUMES AS Formation is applied to self — which the kit presents as a conditional ('Bonus effects when applying AS Formation to self'). If the sim's formation is not AS, the interval is 30 sec AND the whole skill2 second block (True Damage 30.97%, Projectile Explosion 3.09%) is INACTIVE. Both are authored ON; there is no `formation` gate value in the schema for AS/LT, so this is an assumption, not a gate.",
+      "⚑ The Environment Setup 10s Damage-Taken debuff + 10s heal are authored as a t=0 passive PLUS a 10s interval trigger, i.e. effectively ~100% uptime under the AS assumption (10s effect on a 10s cycle). If the real interval is 30s, uptime is 1/3 and this over-credits the whole team by ~2.6pp of boss damage-taken for 2/3 of the fight.",
+      "⚑ Burst Effect 1 ('Damage taken multiplier … scaled by 100%') is authored as an ADDITIVE second 3.9pp debuff on burst cast. Keyed to burstCast (not fullBurstEnter) because it is this unit's OWN burst block; it is FB-timing-exempt as a burst-cast effect by convention.",
+      "⚑ Burst Effect 1 is gated in the kit on 'while in Environment Setup status'. With the interval authored at 10s the status is ~always live, so no gate is authored; under a 30s interval the enhancement would only land on bursts that fall inside a 10s window.",
+      "⚑ Damage Taken ▲ is authored as a boss debuff (damageTakenPct) benefiting the WHOLE team, not a self buff.",
+      "⚑ 'Battlefield Formation: ATK ▲ 40.07% of the skill user's ATK' is caster-scaled (casterAtkPct → flat ATK add), not the target's own ATK.",
+      "⚑ Projectile Explosion Damage ▲ is authored on all allies; it is only consumed by RL kits, so it is inert on non-RL teammates.",
+      "⚑ Cadence tuple (MG, 300 ammo, 171 reloadFrames, hitsPerShot 1) is datamined and UNRELIABLE — not authored here (engine-side), flagged for the record.",
+      "⚑ noFb is NOT set anywhere (default OFF/FB-by-timing). Measured-only."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Emma: Tactical Upgrade is a Fire/MG/Supporter Burst I whose damage contribution is almost entirely TEAM-FACING: a recurring boss Damage-Taken debuff (Environment Setup), continuous Critical Damage + True Damage + Projectile Explosion team buffs, and a burst-window caster-scaled ATK grant. Self-damage is a plain MG normal attack with no self-scaling lines. Two structural reads drive everything: (1) skill2's 'AS Formation to self' bonus block is authored ACTIVE, which both enables the True Damage 30.97% / Projectile Explosion 3.09% grants and cuts the Environment Setup recurring interval 30s → 10s; (2) with a 10s interval and a 10s effect duration, the Damage-Taken debuff and the heal-over-time run at ~100% uptime, authored as a t=0 passive plus a 10s interval re-trigger. If AS Formation is NOT the sim's assumption, BOTH the second skill2 block and the 10s interval are wrong — that single premise is the largest lever in this file. The heal lines emit recovery EVENTS (ticks:10, 1s interval) with no HP amount, so on-recovery consumers on teammates fire correctly; incoming-healing ▲ and the Exposure taunt are damage-inert and unmodeled. The burst's 'Environment Setup damage taken multiplier scaled by 100%' is authored as an additive second 3.9pp boss debuff for 10s on burst cast."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive (t=0) for the first Environment Setup instance"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▲ 3.9% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 3.9, durationSec 10, target enemy (boss debuff — whole-team benefit)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "All enemies (incl. those appearing)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy; single-boss scope makes the 'appearing' clause moot"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 2.32% Max HP /1s for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:10 intervalSec:1 on allies — emits 10 recovery events so teammates' on-recovery triggers fire; HP amount unmodeled (v1 has no HP pool) → also listed in unmodeled"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recurring interval: 30 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "interval trigger — authored at sec:10 (30 − skill2's 20s reduction under the AS-Formation assumption). ⚑ premise-dependent"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Exposure / Attract: Taunt all enemies",
+      "status": "SKIPPED",
+      "effectOrReason": "defensive aggro; the v1 boss deals no damage and hit LOCATION never changes a damage value — damage-inert"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates only if self is alive",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive — nobody dies in v1, so 'alive' is unconditionally true"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Critical Damage ▲ 23.51% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 23.51, no duration (continuous), target allies. 'Same squad' restriction dropped (no squad axis) → listed in unmodeled"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Projectile Explosion Dmg ▲ 2.32%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 2.32, continuous, allies (RL-only consumer)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "AS Formation bonus: True Dmg ▲30.97%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 30.97, continuous, allies — authored ACTIVE (AS-Formation assumption, no schema gate exists for AS/LT)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "AS bonus: Proj. Explosion ▲ 3.09%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 3.09, continuous, allies (second block = separate stacking source)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "AS bonus: Exposure disabled",
+      "status": "SKIPPED",
+      "effectOrReason": "disables an already-unmodeled defensive taunt — damage-inert either way"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "AS bonus: Env. Setup interval ▼20 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "baked into skill1's interval trigger as sec:10 (30 − 20); the schema has no cooldown-reduction primitive, so it is folded rather than authored as its own effect. Also recorded in unmodeled for auditability"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲40.07% of skill user's ATK 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 40.07, durationSec 10, target allies, trigger burstCast (this unit's own burst)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "while in Environment Setup status",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "no explicit gate authored — under the 10s interval the status is ~always live; ⚑ recorded in caveats"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Env. Setup dmg-taken mult scaled 100%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second damageTakenPct 3.9 block (100% scale of the 3.9pp base = +3.9pp), durationSec 10, burstCast, target enemy. ⚑ additive-vs-replace reading"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "durationSec 10 on the enhanced-debuff block"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Incoming healing ▲ 29.04%",
+      "status": "SKIPPED",
+      "effectOrReason": "heal magnitudes are not modeled (no HP pool in v1); scales an amount the sim never computes — no damage consequence"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[1].trigger.sec / skill1[3].trigger.sec",
+      "estimate": "10 sec (kit 30 sec − 20 sec AS-Formation reduction)",
+      "reasoning": "The kit states 'Recurring interval: 30 sec' on skill1 and skill2's AS-Formation self-bonus states 'Recurring interval of Environment Setup ▼ 20 sec continuously'. Authoring the reduced value assumes AS Formation is applied to self. The schema has no formation primitive for AS/LT (the `formation` gate is noB1/hasB1 only), so the assumption is baked in rather than gated. With a 10s effect duration on a 10s interval, Environment Setup runs at ~100% uptime; at 30s it runs at 1/3 uptime and the team loses ~2.6pp of average boss Damage-Taken.",
+      "recipe": "Record a fight with this unit and read the boss Damage-Taken debuff icon (or a teammate's popup magnitude) at t≈12s and t≈25s. If the debuff is live at both, the interval is 10s; if it is absent at t≈12s and returns near t≈30s, revert to sec:30 AND drop the second skill2 block (True Damage 30.97% / Projectile Explosion 3.09%), since both hinge on the same AS-Formation premise."
+    },
+    {
+      "field": "skill1[0] + skill1[2] (passive t=0 duplicate of the interval blocks)",
+      "estimate": "first-fire at t=0 (kit: 'Activates at the start of battle')",
+      "reasoning": "The `interval` trigger fires first at t=sec, not t=0, but the kit explicitly says the skill activates at the START of battle. A passive block paired with the interval block reproduces t=0 + t=10 + t=20 …; without it the opening 10s would have no debuff and no heal. This is the skill-CD first-fire convention (force-cast-shaped line → first-fire t=0).",
+      "recipe": "Confirm from footage that the boss carries the Damage-Taken debuff within the first second of the fight. If the first application is instead at t≈10s (or t≈30s), delete the two passive blocks."
+    },
+    {
+      "field": "burst[1] (Enhanced Environment Setup damage-taken scaling)",
+      "estimate": "additive second 3.9pp damageTakenPct block for 10s",
+      "reasoning": "'Damage taken multiplier of Environment Setup is scaled by 100%' most plausibly doubles the base 3.9% to 7.8% for the 10s enhancement window. The schema has no primitive to SCALE an existing buff, so the doubling is expressed as a second, independently-applied 3.9pp debuff that coexists with the base one. An alternative reading is that the enhanced value REPLACES the base (net identical here, since 3.9 + 3.9 = 2 × 3.9 only if the engine sums debuff sources — which it does within the damageTaken bucket).",
+      "recipe": "With a hand-tune fight, compare team popup magnitudes inside vs outside this unit's burst window with no other buffs changing; a ~3.75% lift (7.8/103.9 vs 3.9) confirms the doubling. If the lift is zero, the enhancement is not a damage-taken doubling at all and the block should be deleted."
+    },
+    {
+      "field": "burst[1].trigger + burst[0].trigger (burstCast vs fullBurstEnter)",
+      "estimate": "burstCast for both burst blocks",
+      "reasoning": "Both lines live in THIS unit's own burst block with no 'entering Full Burst' language, so they are burst-cast-keyed per the trigger-identity rule. This unit is Burst I, so in a standard rotation she casts every chain and the two triggers rarely diverge — but keying to fullBurstEnter would OVER-CREDIT any rotation where another Burst I unit takes the stage instead.",
+      "recipe": "No measurement needed for the trigger identity itself (kit-text-literal). If a rotation log ever shows this unit skipping a chain while the buffs still apply, the trigger is wrong."
+    },
+    {
+      "field": "skill2[1] (AS-Formation bonus block, authored ACTIVE)",
+      "estimate": "active (True Damage ▲30.97%, Projectile Explosion ▲3.09% on all allies)",
+      "reasoning": "The kit frames these as 'Bonus effects when applying AS Formation to self' — a conditional the schema cannot express (no AS/LT formation gate exists; `formation` is noB1/hasB1). Authored ON because a supporter's AS-Formation self-application is the normal in-game configuration, but this is an ASSUMPTION and it is the single largest lever in this file: True Damage ▲30.97% is a large Damage-Up-bucket contribution to the entire team.",
+      "recipe": "Confirm from a fight whether the AS Formation buff icon is present on this unit from t=0. If it is conditional on a player action or team setup that the scope-lock preset does not satisfy, delete this block and revert skill1's interval to 30s. If AS Formation turns out to be a selectable configuration, promote it to a `modes` entry with the LT-only and AS blocks gated by `mode`."
+    },
+    {
+      "field": "skill2[0] target ('all allies from the same squad')",
+      "estimate": "all allies (squad restriction dropped)",
+      "reasoning": "The Critical Damage ▲23.51% line is scoped to 'allies from the same squad' while the Projectile Explosion line on the same block says plain 'all allies'. The data has no squad axis (the `teamHas.slugs` facet exists for named squad-mates but there is no squad membership field), so the restriction cannot be evaluated. Modeling it as all-allies OVER-CREDITS if the graded comp contains off-squad units.",
+      "recipe": "If squad membership becomes available in data/characters.json, gate this block; until then check whether real fights show the Critical Damage icon on every teammate or only some. Splitting the block is required if only some carry it (the two effects have different target sets)."
+    },
+    {
+      "field": "cadence tuple (base weapon)",
+      "estimate": "MG, ammo 300, reloadFrames 171, hitsPerShot 1 — as datamined",
+      "reasoning": "ALWAYS-⚑ per the taxonomy: rate_of_fire / reloadFrames are known-unreliable datamine fields, and the effective rate is quantized to 60fps frame boundaries. Nothing in this override authors cadence (it is engine-side from the base stats), but the flag is recorded so a downstream reader does not treat the self-damage magnitude as trustworthy.",
+      "recipe": "Read shots/sec directly off the ammo counter in footage (the instrument that measures the disputed quantity), not off full-burst counts."
+    },
+    {
+      "field": "noFb (not set)",
+      "estimate": "unset — Full Burst by timing, default ON",
+      "reasoning": "Per the ALWAYS-⚑ taxonomy, per-kit noFb is measured-only and defaults OFF. This unit has no flat-damage riders anyway (all effects are buffs/debuffs/heals), so noFb has no surface here; recorded for completeness.",
+      "recipe": "N/A unless a damage rider is later added to this override."
+    }
+  ],
+  "model": "claude-opus-5"
+}

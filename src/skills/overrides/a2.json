@@ -1,0 +1,75 @@
+{
+  "note": "BASELINE AUTHORING (kit-autonomy gauntlet 2026-07-28) — A2 (`a2`, RL/Attacker/Fire/Burst III, cd 40s, ammo 6 / reloadFrames 111 / chargeFrames 60 / chargeMultiplier 250, NieR:Automata collab, no base counterpart). First modeling; ground truth is the top-level prose (data/characters.json → characters['a2'].skills). Her damage identity is a charge RL whose BURST IS A PURE SELF STATE (Mode B) — it deals NO damage; it grants ATK + Charge Speed while it drains her HP, and the drain self-terminates the state once HP < 40%. SKILL1 ('Activates when using Burst Skill. Affects self. Charge Damage ▲ 110.44% for 15 sec. Explosion Radius ▲ 100.74% for 15 sec.') = burstCast → self chargeDamagePct 110.44 / 15s. 'Charge Damage ▲' is the ADDITIVE flat-points stat (chargeDamagePct): an RL full-charge shot's charge mult lifts from the bare baseCharge = chargeMultiplier/100 = 2.5 to 2.5 + 110.44/100 = 3.6044 during the window (sim.ts charge case: baseCharge + baseCharge×(chargeDamageMultPct)/100 + chargeDamagePct/100). It is NOT chargeDamageMultPct (the collection-item/Helm-treasure stat that scales BASE charge: 2.5 × (1 + 1.1044) = 5.261) — the literal 'Charge Damage ▲' wording is the additive reading. Keyed to her OWN burstCast (not fullBurstEnter — helm is co-B3 in the control fixture and takes some rotations). The 'Explosion Radius ▲ 100.74%' line is UNMODELED: it is pure AoE-splash geometry, has no per-hit damage effect against the single partless scope-lock boss, and must NOT be mapped onto projectileExplosionPct (an RL Damage-Up stat) — a radius increase moves zero damage vs one boss. SKILL2 ('Activates when hitting a target with Full Charge.') block A ('Affects the target. Deals 30.1% of final ATK as additional damage.') = shotFired → enemy flatDamage 30.1 — every RL trigger pull IS a full charge (the RL charge model fires firePull(charged=true) once the 60-frame charge completes, sim.ts:~3110), so shotFired == per-full-charge; the rider is crit-eligible (engine rider convention), noRange (riders force noRange), non-core (kit lacks 'core strike'), FB +50% by landing timing. Block B ('Affects self. Damage to Parts ▲ 40.88% for 3 sec.') = shotFired → self partsDamagePct 40.88 / 3s — parsed but INERT in v1 (partless boss; kept for kit completeness, moves nothing). BURST ('Mode B') = burstCast → self atkPct 15.19 + chargeSpeedPct 35.88, both on a DERIVED finite duration of 22.5s. Mode B has NO 'for N sec' in the kit — it lasts until 'own HP dips below 40%'; the sim models no HP pool, so the removal is captured as the effective uptime derived from the kit's OWN drain constant: Effect 1 'Current HP ▼ 3.99% every 1 sec' is a compound decay (CURRENT HP), HP(t) = (1-0.0399)^t = 0.9601^t, crossing 40% at t = ln(0.4)/ln(0.9601) = 22.5s (discrete game removes at the 23rd tick ≈ 23s; immaterial to DPS). This is a closed-form consequence of the kit constants, NOT a board fit. With a 40s burst CD the state is up ~22.5s/cycle (~56% uptime) with a ~17.5s dead gap each cycle — a PERMANENT encoding would roughly double uptime and over-credit both ATK and shot cadence. chargeSpeedPct is shot-count-bearing on a chargeFrames-60 RL (subtractive on charge time, sim.ts:~3107), so it is damage, never a skip-as-utility line; it shares the one Mode B window with the ATK buff (same applyFrame/expiresFrame). Kit-autonomy gauntlet 2026-07-28: cross-family S2b (claude-fable-5) review converged FAITHFUL on all 4 load-bearing lines (leakDetected null); see results/a2.json.",
+  "unmodeled": {
+    "skill1": ["Explosion Radius ▲ 100.74% for 15 sec."],
+    "skill2": [],
+    "burst": [
+      "Effect 1: Current HP ▼ 3.99% every 1 sec.",
+      "If own HP dips below 40%, Mode B is removed."
+    ]
+  },
+  "caveats": [
+    "burst: Mode B ATK ▲15.19% + Charge Speed ▲35.88% use a DERIVED 22.5s duration = ln(0.4)/ln(1-0.0399), the compound (CURRENT-HP) reading of the 3.99%/s drain crossing the 40% removal floor — ⚑ if the drain is %-of-MAX-HP (linear) the lifetime is 60/3.99 = 15.04s instead; pin from footage (burst banner → visible Mode B drop). The sim has no HP pool, so the removal gate is expressed only as this finite durationSec.",
+    "burst: the derived 22.5s assumes A2 is at full HP at each burst cast — ⚑ real fights with boss damage (or healing that offsets the drain) shorten/extend Mode B; healing-based extension (crown heals in the control fixture) is out of scope with no HP pool and is NOT modeled.",
+    "skill1: 'Explosion Radius ▲ 100.74%' is unmodeled AoE-splash geometry (single-target sim) — deliberately NOT mapped to projectileExplosionPct, which would invent ~100% Damage Up out of a pure radius line.",
+    "skill2: the 30.1% full-charge rider is modeled on shotFired (every RL pull = one full charge); if a focus video shows it not firing every charged shot, retune the trigger.",
+    "skill2: Damage to Parts ▲40.88% is encoded but exactly inert vs the partless scope-lock boss (kept for kit completeness)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 110.44,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 30.1 }]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "shotFired" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 40.88,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.19,
+          "durationSec": 22.5
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 35.88,
+          "durationSec": 22.5
+        }
+      ]
+    }
+  ]
+}

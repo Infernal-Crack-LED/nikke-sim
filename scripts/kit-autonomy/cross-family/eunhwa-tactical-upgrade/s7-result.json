@@ -1,0 +1,184 @@
+{
+  "slug": "eunhwa-tactical-upgrade",
+  "kitDescription": "Eunhwa: Tactical Upgrade is a Fire SR Attacker whose burst swaps her rifle for a single-round true-damage cannon (0.3s charge, 300% full-charge multiplier) that she fires and reloads repeatedly for the swap window. Each cannon shot that lands puts a 27.87% Damage Taken debuff on the boss for 10 seconds, refreshing with every hit, so the whole team hits harder while she cycles the cannon. Her Skill 1 grants Camouflage on burst use and on full charges during Full Burst; while Camouflaged her normal attacks become true damage and she gains a 42.24% True Damage buff (in the sim the buff is windowed to the Camouflage uptime and pays off on her true-flavored cannon shots; the base-rifle flavor change is unmodeled). Her Skill 2 is a passive formation: 8.16% Crit Rate to her squad (modeled as the whole deployed team), 41.81% Charge Damage to all allies, and 42.24% ATK to herself. If Emma: Tactical Upgrade is also fielded, two bonus buffs activate for all allies: 5.11% Projectile Explosion Damage and 30.97% True Damage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "(a) 'is load-bearing: zeroing the magnitude strictly lowers HER damage' — blind-fixture artifact: controlComp seats crown at B2 ahead of SLUG, so SLUG never casts her burst in that fixture and her only damage is non-true base SR normals on which trueDamagePct is correctly inert; the driver's sole-B2 fixture shows the 0.4224 dmgUp drop per cannon shot. Not an encoding error.",
+      "(b) 'Critical Rate 8.16% is SQUAD-scoped' — convention divergence: blind reads same-squad as self-only in a squad-less comp; driver encodes allies per the documented project convention (one deployed squad ⇒ same-squad ≡ team; anchor-innocent-maid / emma-tu precedent). Ruled FAITHFUL-by-convention; flagged for owner spot-check.",
+      "(c) 'the Explosive Round debuff actually lands on the boss' — blind-reader bug: the blind applies() helper filters casterIdx === SLUG slot, but boss debuffs carry casterIdx === null && targetIdx === null (the exact trap S2b named). Driver evidence: apps count === cannon-shot count, mult.taken 1.2787 across >90% of damage instances. Not an encoding error."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Burst use → Camouflage 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Defensive payload unmodeled verbatim (no targeting model); the 5s window is represented co-extensively by the windowed trueDamagePct buff on her own burstCast",
+        "blindSaid": "S5: window must open at HER burstCast, never at FB entry (passes vs driver). S6: folded into always-on, trigger unrecorded in blocks",
+        "formulaCheck": "Defensive line moves no damage in v1; gate semantics preserved via the burstCast-triggered 5s window",
+        "fireRateOk": true,
+        "explanation": "Acceptable skip; the load-bearing part (the status window that gates block 3) is encoded with the correct trigger identity (own burstCast, not fullBurstEnter — diverges from S6, matches S2b)."
+      },
+      {
+        "kitLine": "FC during FB → Camouflage 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Refresh path encoded: shotFired + fbGate:'inFb' re-applies the 42.24 buff for 5s per in-FB full charge (every SR shot is a full charge under auto)",
+        "blindSaid": "S5: per-FC refresh must exceed FB-window count (passes). S6: unencoded, used only as uptime justification",
+        "formulaCheck": "fbGate correctly prevents out-of-FB SR full charges from refreshing — the ungated model would make the buff permanent, S2b's named nearest-wrong",
+        "fireRateOk": true,
+        "explanation": "Defensive payload skipped with reason; the refresh cadence is live and pinned (duringFB applications > fbStarts)."
+      },
+      {
+        "kitLine": "In Camouflage: true-damage normals",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled + ⚑ tier 2: no base-weapon true-flavor primitive; weaponSwap.trueNormals is windowed and single-slot (clobbered by the cannon swap); no self-status channel. Residual is an UNDER-count, estimate + recipe recorded",
+        "blindSaid": "S5: declared GAP, skipped. S6: same GAP, ⚑ caveat",
+        "formulaCheck": "True Damage ▲ is flavor-scoped Damage-Up; without the conversion the 42.24 buff is correctly inert on base normals — no always-on over-credit results",
+        "fireRateOk": true,
+        "explanation": "All three agents agree the primitive does not exist; the driver documents the consequence direction (under-credit) and a measurement recipe. Honest flag, correctly not fudged."
+      },
+      {
+        "kitLine": "In Camouflage: True Damage ▲42.24%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Windowed self buff: 5s on own burstCast, refreshed per in-FB full charge — co-extensive with representable Camouflage uptime; pays off on the true-flavored cannon (dmgUp floor 1.4224, −0.4224 when stripped)",
+        "blindSaid": "S5: windowed, self, per-FC refresh (passes). S6: RECON_ERROR — collapsed to a permanent frame-0 passive, exactly S2b's named nearest-wrong model",
+        "formulaCheck": "trueDamagePct sits in DamageUp, gated to true-flavored hits; cannon shots are true (trueNormals) so routing is correct; S6's always-on reading is refuted by the prose's 'only when in Camouflage status'",
+        "fireRateOk": true,
+        "explanation": "Driver's windowed construction is the most faithful of the three encodings and is discriminating-pinned (multiple finite-expiry applications, not one frame-0 passive)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "E1: same-squad Crit Rate ▲8.16%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRatePct 8.16, target allies, frame 0, unscoped (not critRateNormalPct) — same-squad ≡ whole deployed team per documented project convention (anchor-innocent-maid / emma-tu precedent)",
+        "blindSaid": "S5 + S2b: read as self-only in a squad-less comp (divergence); S6: allies with ⚑ on the squad widening",
+        "formulaCheck": "Unscoped critRatePct is correct (no normal-attack qualifier in the prose; driver discriminates against critRateNormalPct via skill/burst-bucket crit rates). The target-set question is convention-resolved, not test-resolved",
+        "fireRateOk": true,
+        "explanation": "Ruled faithful under the repo's stated convention; this is the one genuine same-model-residual reading (two blind agents read self-only) and is listed for owner spot-check rather than treated as a gotcha — the driver recorded the reasoning and precedent in the note."
+      },
+      {
+        "kitLine": "E2: all allies Charge Damage ▲41.81%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeDamagePct 41.81, allies, frame 0; additive-ppt proven on the cannon (mult.charge 3.4181 = 3.0 + 0.4181, drops to 3.0 stripped)",
+        "blindSaid": "All three agree: additive ppt, all allies, passive",
+        "formulaCheck": "Charge bucket is additive percentage points; the multiplicative chargeDamageMultPct reading (3.0×1.4181 = 4.2543) is discriminated against and excluded",
+        "fireRateOk": true,
+        "explanation": "Full convergence, correct bucket, correct scope, exact magnitude."
+      },
+      {
+        "kitLine": "E3: self ATK ▲42.24%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 42.24, self only, frame 0; removal lowers ETU total with allies byte-identical",
+        "blindSaid": "All three agree: atkPct (not casterAtkPct), self",
+        "formulaCheck": "Plain ATK ▲ dilutes into (1+ΣATK%) on her staticAtk — correct; no 'of caster's ATK' wording exists",
+        "fireRateOk": true,
+        "explanation": "Full convergence."
+      },
+      {
+        "kitLine": "LT bonus: Proj Explosion ▲5.11%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Gated teamHas.slugs:['emma-tactical-upgrade'] — LT Formation is applied by emma-tu; presence ≡ formation applied per the emma-tu override note's own recommendation. Absent in main fixture, live in gate fixture (frame 0, all four allies)",
+        "blindSaid": "S2b: GAP — must be dead without the applier. S5: only asserts both-bonuses-consistent (passes). S6: RECON_ERROR-adjacent — modeled always-on ungated, self-flagged as its top magnitude risk",
+        "formulaCheck": "projectileExplosionPct feeds explosion-flavored hits / RL normals only; inert on her SR — correctly scoped stat",
+        "fireRateOk": true,
+        "explanation": "Driver supplies exactly the gate S2b demanded; S6's ungated model is the over-credit trap, avoided. The 'presence ≡ applied' assumption is documented in the note (and the emma-tu mirror-mode asymmetry is reported, not acted on — correct scope discipline)."
+      },
+      {
+        "kitLine": "LT bonus: True Damage ▲30.97%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Same teamHas gate; proven live-not-inert by the ungated counterfactual lifting every cannon dmgUp by exactly 0.3097 (floor 1.7321 = 1 + 0.4224 + 0.3097)",
+        "blindSaid": "S2b: the single largest over-credit risk if ungated. S6: modeled ungated (wrong), flagged",
+        "formulaCheck": "Stacks additively with the S1 42.24 in DamageUp on true-flavored hits — driver's tier-diff confirms both keys coexist (no same-caster overwrite)",
+        "fireRateOk": true,
+        "explanation": "Gated correctly; S2b's highest-stakes gating line resolved in the driver's favor with a discriminating payoff assertion."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Swap: 105.6% true, 0.3s charge, 1 rd",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 105.6 / chargeTimeSec 0.3 / maxAmmo 1 / trueNormals:true / durationSec 10 (⚑ kit-silent, tier 2, estimate + popup-count recipe). 1-round magazine CYCLES (~6 shots/burst) — kit lacks e-h's 'deactivates when rounds fired'; probe 175.9M → 353.7M vs the maxShots:1 misread",
+        "blindSaid": "S5: structural assertions on the literal numbers all pass; multi-shot vs flatDamage discriminated. S6: identical swap encoding",
+        "formulaCheck": "Swap shots are normal-bucket, crit-eligible, FB-by-timing (fire inside the window — legitimately take the +0.5); no cast-instant damage so the boundary rule is not engaged. durationSec is the one genuinely kit-silent value and is ⚑-flagged with a recipe, never silently shipped",
+        "fireRateOk": true,
+        "explanation": "Correct mechanic class (live swap, not a flatDamage lump), correct flavor, disciplined ⚑ on the only un-derivable quantity. Multi-shot reading is argued from the kit's own silence vs the e-h contrast — reasonable and documented."
+      },
+      {
+        "kitLine": "Full Charge damage: 300% of damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeMultPct 300 = ×3 on the 105.6 (~316.8% ATK per full charge), not +300 additive, not 300% of ATK",
+        "blindSaid": "All three agree",
+        "formulaCheck": "Observed mult.charge 3.4181 = 3.0 (FC mult) + 0.4181 (S2 additive charge damage) — exactly the charge-bucket arithmetic in the SSOT",
+        "fireRateOk": true,
+        "explanation": "Correct read, arithmetically pinned."
+      },
+      {
+        "kitLine": "Exploding Bullet, AoE",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Splash radius inert vs single partless boss; merged into the swap shot; verbatim in unmodeled",
+        "blindSaid": "S5: GAP skipped (no flavor field on weaponSwap). S6: skipped, ⚑ split-vs-merge with popup-count recipe",
+        "formulaCheck": "No splash targets exist at scope lock; merged-vs-split is kit-silent (no separate percentage printed) — merged is the defensible default",
+        "fireRateOk": true,
+        "explanation": "Acceptable documented skip; the split-vs-merge ⚑ belongs to the swap-economy measurement recipe."
+      },
+      {
+        "kitLine": "Dmg Taken ▲27.87% 10s (on hit)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired + swapGate:'swapped', enemy target, 27.87/10s — lands on the first cannon shot, refreshes per shot (apps === cannon-shot count), ~96% team uptime; first shot of each burst does not benefit (faithful to 'Target(s) hit')",
+        "blindSaid": "S2b: on-hit refresh required, cast-once under-counts (driver adopted). S5: debuff-lands assertion failed only via its own casterIdx filter bug. S6: weaker — burstCast-triggered, self-flagged as early-application ⚑",
+        "formulaCheck": "damageTakenPct is the Taken bucket (boss-side), multiplies the whole team's damage; positive value = boss takes more — taxonomy correct, not a self buff; channel discrimination proven (atkPct-on-enemy counterfactual never moves mult.taken)",
+        "fireRateOk": true,
+        "explanation": "The most faithful of the three encodings; on-hit refresh is what the prose scopes and what S2b demanded."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "ENCODING",
+      "slot": "skill2",
+      "summary": "'Same squad' Crit Rate 8.16% encoded as plain allies under the one-deployed-squad convention; both blind agents read self-only in a squad-less comp",
+      "evidence": "Prose: 'Affects all allies from the same squad' vs E2's plain 'all allies' — the deliberate contrast implies the qualifier is meaningful. Driver: target allies with note citing anchor-innocent-maid / emma-tu precedent. S5/S2b: self-only reading. Convention-resolved, not test-resolved — no shipped counterfactual discriminates the two",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "Owner ruling: if squad affiliation is ever added to characters.json, re-scope via an explicit squad/slug target set; until then the convention encoding stands (effect is 8.16 crit on ≤4 teammates — small)"
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "'Normal attacks deal true damage' flavor conversion unmodeled — base SR normals stay non-true, so the Camouflage-window true-damage payoff on her sustained rifle DPS is under-counted",
+      "evidence": "Prose: 'Normal attacks deal true damage continuously' gated on Camouflage. Engine has no base-weapon true-flavor primitive (weaponSwap.trueNormals is single-slot and clobbered by the cannon swap; no self-status channel). Driver: documented in unmodeled + ⚑ tier-2 caveat with recipe; consequence direction stated (under-count, not over-credit)",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement + an engine primitive, not a fudge: a swap-coexisting trueNormals channel or a Camouflage-windowed flavor gate, then popup-read true-damage frequency on eunhwa-tu footage to size the residual (roughly the camouflage-uptime fraction of her base SR DPS)"
+    },
+    {
+      "subkind": "ENCODING",
+      "slot": "burst",
+      "summary": "Cannon swap duration kit-silent — durationSec 10 (FB-window convention) drives ~6 shots/burst; damage is roughly linear in the real window length",
+      "evidence": "Prose states neither 'for N sec' nor 'deactivates when rounds fired' (unlike e-h). Driver: ⚑ tier-2 measurement-gated, estimate + recipe in caveats. All three agents independently flagged this exact field",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "Needs measurement: count cannon popups per burst and the base-SR-resume frame on an eunhwa-tu recording; rescale durationSec (or set maxShots if the swap is shot-counted). Do not tune to a board number"
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "GO. Convergence is RED on paper (13/3/5) but all three red assertions resolve against the blind side: (a) is a controlComp fixture artifact (crown shadows SLUG at B2 so she never bursts — the driver's sole-B2 fixture shows the 0.4224-per-cannon-shot payoff), (c) is the exact casterIdx===null boss-debuff reader bug S2b pre-named, and (b) is a convention divergence the driver documented with repo precedent (same-squad ≡ the single deployed squad). The genuinely divergent blind claims are all refuted by the prose: S6 fell into S2b's #1 named nearest-wrong (permanent Camouflage passive) and shipped the LT bonus ungated (S2b's highest-stakes over-credit), while the driver encoded the windowed co-extensive construction and the teamHas.slugs gate S2b demanded; S6's cast-triggered debuff is also weaker than the driver's on-hit refresh. Every kit line is FAITHFUL or DOCUMENTED_GAP (score 1.0); every FAITHFUL block provably fires at prose cadence (cannon shots ≥2/full window, debuff apps === shot count, in-FB refreshes > FB count); discrimination holds via exact-arithmetic counterfactuals (3.4181 vs 4.2543 charge, 1.4224/1.7321 dmgUp floors, maxShots:1 shot-count, wrong-stat debuff). The three gotchas are all documented by the driver and none is silent: the squad-scope convention (low), the unmodeled true-flavor normals (med, under-count with ⚑ + recipe), and the kit-silent swap duration (med, ⚑ measurement-gated by all three agents). Same-model residual for the owner to spot-check: the same-squad ≡ whole-team convention — two independent blind reads both took 'from the same squad' as a real filter (self-only here), so if squad data ever lands, re-scope; secondary: the 'emma-tu presence ≡ LT Formation applied' assumption behind the auto-gate (and its asymmetry with emma-tu's manual mirror mode), which the driver reported correctly without expanding scope.",
+  "model": "kimi-code/k3"
+}

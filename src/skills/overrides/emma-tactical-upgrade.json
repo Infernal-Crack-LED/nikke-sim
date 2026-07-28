@@ -1,0 +1,154 @@
+{
+  "note": "Emma: Tactical Upgrade (slug emma-tactical-upgrade, aka emmatu — variant of base emma; never the bare base name) — Elysion Fire MG Supporter, Burst I, 20s CD. FROM-SCRATCH kit-autonomy build 2026-07-27 (no prior override; baseline was bare weapon). S1 ENVIRONMENT SETUP: boss damageTakenPct 3.9 for 10s windows recurring every 30s FROM t=0 — the kit's 'Activates at the start of battle' overrides the interval first-fire-at-t=sec convention, encoded as a passive@0 leading block + interval:30 recurrence (same KR slot key, refresh semantics). Each activation also opens a name-keyed 'Environment Setup' boss status window (targetStatus, same 10s) that the burst enhancement gate reads — the kit's 'Affects self WHILE IN Environment Setup status' condition, expressed through the engine's sole name-keyed status channel (d-killer-wife precedent; the status is keyed per NAME so no unrelated kit status can open the gate). S1 HoT (2.32% of HER final Max HP every 1s for 10s, all allies): modeled as heal ticks:10 — a recovery-EVENT cadence (10 events/window) that keeps Crown-type on-recovery consumers refreshed across the window; the heal AMOUNT is genuinely unmodeled (no HP pool; blanc HoT precedent). S2 LT FORMATION: critDamagePct 23.51 + projectileExplosionPct 2.32, continuous passives. 'All allies from the same squad' (E1) is encoded as plain allies: the sim fields exactly ONE deployed squad, so same-squad ≡ the whole team (anchor-innocent-maid precedent for same-squad lines; distinct from noir's teamHas.slugs gate on NAMED lore-mates, owner-ruled 2026-07-20 — that is a gate on specific units, not a target set). projectileExplosionPct feeds only explosion-flavored hits and (Q9 A/B projExplOnRlNormals default ON, Prydwen-confirmed) RL NORMAL attacks — inert on MG normals; the unit test pins both directions. BURST: casterAtkPct 40.07 — a FLAT add of (40.07/100)×HER staticAtk to every ally for 10s (crown precedent), on her OWN burstCast. ENHANCED ENVIRONMENT SETUP (burst, gated on Environment Setup live at cast via requiresTargetStatus): a SECOND co-stacking damageTakenPct 3.9 boss instance — distinct KR slot key (0:burst:… vs 0:skill1:…) so the overlap sums to 7.8% taken. ⚑ RULING (measurement-gated): the enhanced instance runs its OWN full 10s (the kit gives Enhanced Environment Setup 'Duration: 10 sec') rather than clipping when the base window expires mid-enhancement. Estimate: the strict-scale reading differs by +3.9% damage-taken for ~7s per in-window burst (<1% of fight damage). Recipe: popup-read the vulnerability icon's duration/stack count right after her burst in any recording. Tier 2. MODES: the 'Bonus effects when applying AS Formation to self' lines (True Damage ▲30.97%, Projectile Explosion ▲3.09% additive, Environment Setup recurring interval ▼20s = interval:10 mode-keyed skill1 variants) sit behind the second mode, DEFAULT OFF — AS Formation is applied by eunhwa-tactical-upgrade (SR/Fire/B2), who is NOT simSupported, so no board team can ever have the formation; the mode is kit-SSOT completeness (mint-duet precedent), not board behavior. When eunhwa-tactical-upgrade is modeled, prefer a teamHas.slugs auto-gate over the manual mode (her AS Formation is an unconditional passive in-game, so presence ≡ formation applied). Bonus E3 (Exposure activation disabled) is a no-op on the unmodeled taunt, unmodeled even under the mode. UNMODELED: Exposure taunt (single immortal boss, no targeting model — every unit already attacks it); Incoming healing ▲29.04% (no heal amounts / no HP pool; the recovery-event channel is untouched by healing-taken scaling). 'Activates only if self is alive' (S2) = unconditional (no death in v1). Cross-family: S2b claude-fable-5 converged (casterIdx-null filter fix + modes[] encoding adopted from the review; same-squad allies + RL-fixture projExpl held by driver, concurred). Kit-autonomy gauntlet 2026-07-27.",
+  "modes": ["no AS Formation", "AS Formation (w/ eunhwa-tactical-upgrade)"],
+  "unmodeled": {
+    "skill1": [
+      "Exposure (Cannot be removed) — Effect: Attract: Taunt all enemies continuously."
+    ],
+    "skill2": [
+      "Bonus effects when applying AS Formation to self — Effect 3: Affects self. Exposure activation disabled continuously."
+    ],
+    "burst": [
+      "Enhanced Environment Setup — Effect 2: Incoming healing ▲ 29.04%. Effect 2 Target(s): All allies"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Environment Setup",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 30 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Environment Setup",
+          "durationSec": 10
+        }
+      ],
+      "mode": "no AS Formation"
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 10 },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "targetStatus",
+          "name": "Environment Setup",
+          "durationSec": 10
+        }
+      ],
+      "mode": "AS Formation (w/ eunhwa-tactical-upgrade)"
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "heal", "ticks": 10, "intervalSec": 1 }]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 30 },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "heal", "ticks": 10, "intervalSec": 1 }],
+      "mode": "no AS Formation"
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 10 },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "heal", "ticks": 10, "intervalSec": 1 }],
+      "mode": "AS Formation (w/ eunhwa-tactical-upgrade)"
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "buff", "stat": "critDamagePct", "value": 23.51 }]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "projectileExplosionPct", "value": 2.32 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [{ "kind": "buff", "stat": "trueDamagePct", "value": 30.97 }],
+      "mode": "AS Formation (w/ eunhwa-tactical-upgrade)"
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "passive" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "projectileExplosionPct", "value": 3.09 }
+      ],
+      "mode": "AS Formation (w/ eunhwa-tactical-upgrade)"
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 40.07,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "damageTakenPct",
+          "value": 3.9,
+          "durationSec": 10
+        }
+      ],
+      "requiresTargetStatus": "Environment Setup"
+    }
+  ]
+}

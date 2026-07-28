@@ -1,0 +1,126 @@
+{
+  "slug": "exia",
+  "kitDescription": "Exia (Treasure) is an Electric Supporter sniper (Burst I, 20s) whose value is mostly team support. Each full-charge shot builds a Collect Hacking Code stack, raising her own ATK by 28% per stack up to five. When her magazine's last round lands while she holds a code, all Electric allies (herself included) gain an ATK buff equal to 5.8% of her ATK, stacking to five. On entering any Full Burst her reload speed is fixed at +95% for 10 seconds, and her last bullet also debuffs the boss's ATK and DEF (both inert on the sim's no-boss-damage, DEF=0 basis and recorded as unmodeled). Her burst hits the boss for 122.32% of final ATK with a small DEF shred, and when fired at max Hacking Code stacks it lands a second 122.32% hit and makes the boss take +18.04% damage from the whole team for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S1A 'emits BOTH debuffs 13.77 boss-held' — engine-channel: enemy ATK/DEF debuffs emit no buffApply under any encoding (blind's own skips corroborate)",
+      "S1B 'keys to fullBurstEnter not burstCast' — fixture contamination: liter's own reload buff lands on exia (no caster filter), count 12 != fbStarts; the named trigger IS the driver's",
+      "S1B 'applies +95 to SELF only' — fixture contamination: assertion iterates liter's reloadSpeedPct events",
+      "S1B 'is DAMAGE-RELEVANT' — broken counterfactual: ov[slot].blocks writes a stray property (slots are flat arrays), patch is a no-op",
+      "S2A 'grants atkPct 28 to SELF maxStacks 5' — encoding-shape: driver uses resource pool + perResource, semantically identical, event shape differs",
+      "S2A 'count tracks her shots' — same encoding-shape mismatch (0 atkPct-28 events under pool encoding)",
+      "S2A 'materially moves exia's own damage' — broken counterfactual (no-op .blocks patch)",
+      "S2B 'casterAtkPct FLAT-RESOLVED maxStacks 5' — fixture contamination: matches crown's 64.51% maxStacks-1 grant (no caster filter)",
+      "S2B 'targets ELECTRIC allies only' — fixture contamination: crown's grant recipients inflate the set to 4",
+      "BurstA 'emits the DEF 2.71% boss debuff' — engine-channel, same as S1A",
+      "BurstB 'Damage Taken lifts TEAMMATES' — broken counterfactual (no-op .blocks patch)",
+      "BurstB 'rider is MAX-STACK gated' — two-B1 fixture: liter contests the opener, exia's first cast lands ~24s post-max so gate closure cannot appear; counterfactual also no-op",
+      "Cross-cutting 'no ROUND-count duration' — fixture contamination: helm's burst chargeDamageMultPct durationShots 10 hits exia (no caster filter)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet… ATK ▼ 13.77% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; boss deals no modeled damage, no sim channel",
+        "blindSaid": "S6 unmodeled identically; S5 asserted boss-held buffApply events the engine never emits under any encoding",
+        "formulaCheck": "v1 boss deals no damage → enemy ATK▼ moves nothing; genuinely inert",
+        "fireRateOk": true,
+        "explanation": "Deliberate, recorded skip with the correct reason; blind RED is an artifact of asserting an event the engine cannot emit."
+      },
+      {
+        "kitLine": "last bullet… DEF ▼ 13.77% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; enemy DEF▼ dropped at dispatch on the DEF=0 basis",
+        "blindSaid": "S6 unmodeled with the same ⚑; S5's own skip ('DEF ▼ magnitude unobservable in v1') corroborates",
+        "formulaCheck": "SSOT §1a: sim runs bossDef:0, measured boss DEF ≈140 is negligible; no boss-DEF-reduction channel exists",
+        "fireRateOk": true,
+        "explanation": "S2b's FIX/load-bearing call is reconciled: the lever is real in game but unenactable at the DEF=0 basis; recorded verbatim so a future DEF basis re-arms it. Not a silent drop."
+      },
+      {
+        "kitLine": "entering FB… reload fixed +95% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → self reloadSpeedPct 95/10s; clamp semantics documented as caveat",
+        "blindSaid": "S6 identical encoding; S5's failing assertions are liter-contamination, not divergence",
+        "formulaCheck": "Reload subtractive formula accepts the buff; 'fixed at' clamp is inert with no second reload buffer (noted)",
+        "fireRateOk": true,
+        "explanation": "Fires at every Full Burst (applied count == fullBurstStart count) and is proven load-bearing by shot-count delta when removed. Correct team-wide trigger, not burstCast."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge… CHC ATK ▲28% ×5 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource pool hackingCode [0..5] + passive perResource atkPct ×28; ramp pinned at 2.4× shot-6/shot-1, plateau after",
+        "blindSaid": "S6: atkPct 28 maxStacks 5 — semantically the same mechanic, different event shape; S5's shape assertions miss it",
+        "formulaCheck": "ATK▲% sums inside the (1+ATK%) paren per SSOT §1a; perResource does exactly that per frame",
+        "fireRateOk": true,
+        "explanation": "shotFired-for-full-charge is the helm/liberalio SR precedent (auto full-charges every pull). Missing 5s per-stack decay is a documented ⚑ — at 1.37s cadence stacks never lapse, so ramp and steady state are identical to refresh semantics."
+      },
+      {
+        "kitLine": "last round… ATK ▲5.8% of user ATK ×5 15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → alliesOfElement Electric (self-inclusive), resourceGate {min:1}, casterAtkPct 5.8 maxStacks 5/15s, flat-resolved off exia staticAtk",
+        "blindSaid": "S6 same encoding minus the gate (treated as always satisfied — reasonable since every magazine banks a code); S5's scope/value assertions were contaminated by crown",
+        "formulaCheck": "SSOT: '% of caster's ATK' = caster BASE ATK added flat outside the recipient's (1+ATK%); engine flat-resolves at apply ✓; Electric-only scope and 15s/5-stack cap match prose",
+        "fireRateOk": true,
+        "explanation": "Scope (exia+ada only, never crown/helm), gate (zero applications with pool removed), and flat value (0.058×staticAtk) all discriminated by the driver's suite. Refresh-vs-independent-timer steady state (~5 vs ~2 stacks) is a documented ⚑ with board A/B as the outer check."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "10 highest-DEF enemies… 122.32% dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 122.32, no +50% FB major; multi-target selection collapses on single boss (caveat)",
+        "blindSaid": "S6 identical; S5 burst-cast and FB-exemption assertions PASS vs driver",
+        "formulaCheck": "SSOT boundary rule: burst-cast damage lands before FB opens, noFb engine-handled ✓",
+        "fireRateOk": true,
+        "explanation": "Magnitude kit-literal, bucket 'burst', fbMajorApplied false on every hit; 9 casts in 180s is correct cadence for a focused-SR 20s B1."
+      },
+      {
+        "kitLine": "DEF ▼ 2.71% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; same no-channel reason as the skill1 DEF line",
+        "blindSaid": "S6 unmodeled identically; S5's assertion is the second engine-channel artifact",
+        "formulaCheck": "DEF=0 basis; unenactable, recorded",
+        "fireRateOk": true,
+        "explanation": "Same reconciliation as skill1 DEF▼ — documented, not dropped."
+      },
+      {
+        "kitLine": "max stacks… +122.32% additional dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second burstCast flatDamage 122.32 under resourceGate {min:5}",
+        "blindSaid": "S6 shipped this UNGATED (its own ⚑ admits the assumption); S5's gate test could not discriminate in its two-B1 fixture",
+        "formulaCheck": "Prose: 'Activates when Collect Hacking Code is at max stacks' — gate at ==5 is the literal reading",
+        "fireRateOk": true,
+        "explanation": "The driver fixture makes the gate observable: focused-SR opener casts at 4.37s, stacks max at 6.58s → exactly one hit on the opener, two on every later cast; no-stacks counterfactual lands one on all. The driver corrected a real blind mis-model here."
+      },
+      {
+        "kitLine": "Damage Taken ▲ 18.04% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast damageTakenPct 18.04/10s on the boss under resourceGate {min:5}",
+        "blindSaid": "S6 same value/duration but ungated; S5's boss-debuff assertion PASSES vs driver",
+        "formulaCheck": "Damage Taken ▲ lives in the Taken bucket boss-side, benefits the whole team ✓ (enemy debuff emits with null caster/target — the one enemy-buff channel the engine admits)",
+        "fireRateOk": true,
+        "explanation": "One application per post-max cast (casts−1 in fixture), 10s window; removing it drops the team total, proving it is load-bearing and boss-scoped, not self-scoped."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All nine kit lines are FAITHFUL (6) or DOCUMENTED_GAP (3: the enemy ATK▼/DEF▼ lines, unenactable at the sim's DEF=0 no-boss-damage basis and carried verbatim in unmodeled with the correct reason — S2b's load-bearing DEF▼ call is reconciled, and S5's own skips plus S6's identical dispositions corroborate). The S5 blind suite runs RED (13/20), but every failure classifies as a blind-side artifact, not a driver divergence: two engine-channel assertions demanding buffApply events the enemy-debuff path never emits, two encoding-shape mismatches (the driver's resource-pool + perResource Collect Hacking Code is semantically the blind's atkPct maxStacks-5, and the driver pins the ramp behaviorally at the exact 2.4× ratio), three no-op counterfactuals (ov[slot].blocks on flat-array slots), and six fixture contaminations/dynamics (liter's reload, crown's casterAtkPct, helm's durationShots, and a two-B1 comp where the max-stack gate closure can never appear). Convergence here is the weak kind — same-model agreement — so the meaningful signals are the divergences, and the real one runs in the driver's favor: S6 shipped the burst rider UNGATED while the prose says 'at max stacks', and the driver's fixture proves its gate (pre-max opener lands one hit, post-max casts land two). The driver's own suite discriminates under every named nearest-wrong model (no-stacks, instant-max, all-allies, no-reload, no-taken) with correctly-shaped patches. Residual same-model risks for owner spot-check, all documented ⚑ rather than gotchas: (a) stack-duration refresh-vs-independent-timer semantics on both stacking lines (driver holds 5 stacks; an independent-timer game would settle near ~2 on the 15s share — board A/B is the outer check); (b) the never-decaying hackingCode pool (identical at continuous 1.37s cadence, diverges only after >5s of not firing); (c) the additive encoding of the 'fixed at 95%' reload clamp (inert without a second reload buffer). Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

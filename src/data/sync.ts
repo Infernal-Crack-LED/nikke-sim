@@ -58,6 +58,16 @@ const OVERSPEC_SLUGS = new Set<string>([
 // EVERY character (including unsupported) on the Team Builder page.
 const normalizeName = (n: string) => n.replace(' (Treasure)', '').trim();
 
+// role_burst_meta.use_burst_skill -> the sim's BurstType. Confirmed byte-identical to
+// attributes.burst across every unit sampled where both exist (2026-07-27).
+const BURST_STEP_BY_STAGE: Record<string, string> = {
+  Step1: 'I',
+  Step2: 'II',
+  Step3: 'III',
+};
+
+const titleCase = (s: string) => s.charAt(0) + s.slice(1).toLowerCase();
+
 function loadSupportPolicy() {
   const proven = new Set<string>(
     (
@@ -160,7 +170,30 @@ async function main() {
         a.burstCooldown = api.burst_cooltime / 60;
       }
     }
-    if (!a.weapon || !a.burst) {
+    // Weapon-timing fields now derive from the raw datamined WeaponTable (role.weapon.shot_detail),
+    // the source-of-truth UPSTREAM of the lossy synergy weapon columns (audit A+B, 2026-07-17).
+    // Synergy stays only as a fallback for a unit whose roledata hasn't been fetched.
+    const shot = (row.role_weapon as { shot_detail?: WeaponShotDetail } | null)
+      ?.shot_detail;
+    const wf = shot ? deriveWeaponFields(row.id, shot, api) : null;
+    // Fallback identity fields sourced from the raw roledata (role_weapon/role_burst_meta/
+    // role_meta/role_element), for a unit bakery-bot hasn't finished curating into `attributes`
+    // yet (attributes NULL, e.g. laplace-ultimate-hero/anne-miracle-fairy 2026-07-27) — role_*
+    // is populated ahead of the curated blob, so without this the unit was silently dropped as
+    // "missing weapon/burst" even though its roledata was complete. `attributes`, when present,
+    // still wins (it's the hand-curated value).
+    const roleWeapon = shot?.weapon_type;
+    const roleBurst = BURST_STEP_BY_STAGE[row.role_burst_meta?.use_burst_skill];
+    const roleClass = row.role_meta?.class;
+    const roleElement = (
+      row.role_element as {
+        element_details?: { element_name_localekey?: string }[];
+      } | null
+    )?.element_details?.[0]?.element_name_localekey;
+    const roleManufacturer = row.role_meta?.corporation
+      ? titleCase(row.role_meta.corporation)
+      : undefined;
+    if (!(a.weapon ?? roleWeapon) || !(a.burst ?? roleBurst)) {
       skipped.push(`${row.id} (missing weapon/burst)`);
       continue;
     }
@@ -170,12 +203,6 @@ async function main() {
       skipped.push(`${row.id} (missing base_stats)`);
       continue;
     }
-    // Weapon-timing fields now derive from the raw datamined WeaponTable (role.weapon.shot_detail),
-    // the source-of-truth UPSTREAM of the lossy synergy weapon columns (audit A+B, 2026-07-17).
-    // Synergy stays only as a fallback for a unit whose roledata hasn't been fetched.
-    const shot = (row.role_weapon as { shot_detail?: WeaponShotDetail } | null)
-      ?.shot_detail;
-    const wf = shot ? deriveWeaponFields(row.id, shot, api) : null;
     // Treasure (favorite-item upgrade) status: favorite_item_id (stamped by
     // bakery-bot's CDN derivation) is the authoritative signal; prydwen_slug
     // "-treasure" is a fallback for units Prydwen flags but bakery hasn't
@@ -190,22 +217,27 @@ async function main() {
           ? `${row.name} (Treasure)`
           : row.name,
       imageUrl: a.imageUrl ?? row.image_url ?? api?.image_public_url ?? null,
-      weapon: a.weapon,
-      burst: a.burst,
+      weapon: a.weapon ?? roleWeapon,
+      burst: a.burst ?? roleBurst,
       burstCooldownSec:
-        a.burstCooldown ?? (api?.burst_cooltime ? api.burst_cooltime / 60 : 40),
-      class: a.class ?? 'Attacker',
-      element: a.element ?? 'Fire',
-      // Manufacturer (Elysion/Missilis/Tetra/Pilgrim/Abnormal) — from the DB attributes blob.
-      // Drives the relationship (bond) ATK bonus, which is a class×manufacturer stat the owner
-      // maintains as a matrix (Pilgrims cap higher). Was previously unmodeled → the ~1.5-2% "cold"
-      // read across scope-lock units (open-questions U18). Overspec units get " Overspec" appended
-      // so the matrix can bucket them separately.
-      manufacturer: a.manufacturer
-        ? OVERSPEC_SLUGS.has(row.id)
-          ? `${a.manufacturer} Overspec`
-          : a.manufacturer
-        : null,
+        a.burstCooldown ??
+        (api?.burst_cooltime
+          ? api.burst_cooltime / 60
+          : (row.skill_descriptions?.cooldowns?.burst ?? 40)),
+      class: a.class ?? roleClass ?? 'Attacker',
+      element: a.element ?? roleElement ?? 'Fire',
+      // Manufacturer (Elysion/Missilis/Tetra/Pilgrim/Abnormal) — from the DB attributes blob,
+      // falling back to role_meta.corporation when attributes is unset. Drives the relationship
+      // (bond) ATK bonus, which is a class×manufacturer stat the owner maintains as a matrix
+      // (Pilgrims cap higher). Was previously unmodeled → the ~1.5-2% "cold" read across
+      // scope-lock units (open-questions U18). Overspec units get " Overspec" appended so the
+      // matrix can bucket them separately.
+      manufacturer:
+        (a.manufacturer ?? roleManufacturer)
+          ? OVERSPEC_SLUGS.has(row.id)
+            ? `${a.manufacturer ?? roleManufacturer} Overspec`
+            : (a.manufacturer ?? roleManufacturer)
+          : null,
       normalAttackMultiplier:
         wf?.normalAttackMultiplier ??
         a.normalAttackMultiplier ??

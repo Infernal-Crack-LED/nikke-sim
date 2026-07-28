@@ -1,0 +1,111 @@
+{
+  "slug": "alice-wonderland-bunny",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 60
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 2,
+          "durationSec": 5,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnd"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 10,
+          "durationSec": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 40,
+          "durationSec": 15
+        },
+        {
+          "kind": "instantReload",
+          "fraction": 0.4
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "reenterStage",
+          "stage": 1
+        },
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "■ Activates after 90 normal attack(s). Affects all Water Code allies.",
+      "Stack count of buffs ▲ 1."
+    ],
+    "skill2": [],
+    "burst": [
+      "■ Activates when Carrot Party is at max stacks. Affects all allies.",
+      "Incoming healing ▲ 150% for 15 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill1 hitCount:60 — 'after landing 60 normal attack(s)' is read as a RECURRING every-60-hits trigger (the standard kit shape); a one-shot-at-60 reading is not excluded by the text. SMG hitsPerShot=1, so hits==trigger pulls here.",
+    "⚑ skill2 'Reload 40%.' modeled as instantReload fraction 0.4 (instant partial magazine refill), NOT reloadSpeedPct 40. The prose carries no 'Speed' token; the ▲/▼ arrow that marks every stat line in this kit is absent, which reads as an action line rather than a stat buff. This is the single highest-leverage ambiguity in the kit — the two readings differ in sign of effect on shots fired.",
+    "⚑ Carrot Party is modeled as partsDamagePct — INERT in v1 (partless boss). It is retained because it is the named stack currency the burst's second block gates on; its damage contribution here is zero by construction, not by estimate.",
+    "⚑ 'Stack count of buffs ▲ 1' (skill1, Water Code allies, 90 hits) has no schema primitive — it is a stack-count amplifier over other buffs, not a stat. Unmodeled. If it applies to Carrot Party it would shift the burst's max-stack gate earlier; if it applies to teammates' own stacking buffs it is a real cross-unit damage lever the sim does not represent.",
+    "⚑ 'Incoming healing ▲ 150%' is unmodeled: the engine has no HP pool and heal amounts are not tracked (only recovery EVENTS are emitted). The line is offensively inert unless a teammate scales off healing MAGNITUDE, which no modeled consumer does.",
+    "⚑ Cadence tuple (SMG pullsPerSec, reloadFrames 81, ammo 120) comes from the datamine and is known-unreliable; the maxAmmoPct 40% window's damage value is fully downstream of it.",
+    "noFb deliberately NOT set anywhere (default FB-by-timing ON) — this kit has no function-damage riders at all, so the question is moot; noRange is engine-automatic and untouched.",
+    "This unit deals NO kit damage: every modeled effect is a buff, a heal, an ammo/gauge economy lever, or a rotation effect. Her whole sim contribution is (a) maxAmmoPct + instantReload on the team, (b) burstGenPct after FB, (c) the Burst-Stage-1 re-entry, (d) recovery events feeding on-heal consumers."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Alice: Wonderland Bunny (SMG/Water/Supporter/Burst I) is a pure support with zero kit damage lines. Modeled: S1 every-60-hits team heal + a 5-stack/5s Carrot Party parts-damage buff (v1-inert, partless boss, retained as the named stack currency); S2 full-burst-end team Burst Gauge filling speed +10%/5s and full-burst-enter team Max Ammunition +40%/15s plus a 40% instant partial reload; burst re-enters Burst Stage 1 (letting a second Burst I also cast) and heals all allies. Deliberately unmodeled: the 90-hit Water-Code 'Stack count of buffs ▲ 1' (no schema primitive for a stack-count amplifier) and the burst's max-Carrot-Party 'Incoming healing ▲ 150%' (no HP pool; heal magnitude is not tracked). Her measurable board footprint should be almost entirely rotation (the Stage-1 re-entry) and shots-fired (the ammo/reload economy) — grade her against full-burst counts and teammate shot counts, not a damage total."
+}

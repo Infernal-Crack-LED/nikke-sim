@@ -1,0 +1,579 @@
+{
+  "rei-ayanami-tentative-name": {
+    "slug": "rei-ayanami-tentative-name",
+    "name": "Rei Ayanami (Tentative Name)",
+    "imageUrl": "https://sg-tools-cdn.blablalink.com/fa-44/de-83/43e6e158314bd4be719c225f37cf2f04.png",
+    "weapon": "AR",
+    "burst": "III",
+    "burstCooldownSec": 40,
+    "class": "Attacker",
+    "element": "Wind",
+    "manufacturer": "Abnormal",
+    "normalAttackMultiplier": 14.71,
+    "coreAttackMultiplier": 200,
+    "ammo": 60,
+    "reloadFrames": 111,
+    "chargeFrames": 0,
+    "chargeMultiplier": 0,
+    "hitsPerShot": 1,
+    "rl3": 9.5,
+    "burstGaugePerShot": 0.25,
+    "treasure": false,
+    "nicknames": ["reitn"],
+    "skills": {
+      "skill1": "■ Activates after landing 18 normal attack(s) against a target in Anti A.T. Field status. Affects the target.\nDeals 590.64% of final ATK as additional damage.\nAnti A.T. Field stacks ▲ 10.\n■ Activates after landing 7 normal attack(s) while in Attack State status. Affects the target.\nDeals 286.37% of final ATK as additional damage.\n■ Activates when entering Full Burst. Affects all allies in Annihilation State status.\nUnits affected by Annihilation State's additional effect ▲ 1 for 9 sec.\nAttack range of Annihilation State's additional effect ▲ 500% for 9 sec.\nATK ▲ 17.6% of the skill user's ATK for 9 sec.",
+      "skill2": "■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.\nMachine Gun Ramp-Up Speed ▲ 100% for 13 sec.\n■ Activates when entering Full Burst. Affects all allies.\nATK ▲ 11.61% of the skill user's ATK for 10 sec.",
+      "burst": "■ Affects self.\nAttack State:\nAttack Damage ▲ 35.9% for 10 sec.\nATK ▲ 63.36% of the skill user's ATK for 10 sec.\n■ Affects all enemies.\nDeals 990.2% of final ATK as Burst Skill damage."
+    },
+    "skillCooldownsSec": {
+      "skill1": null,
+      "skill2": null,
+      "burst": 40
+    },
+    "role": {
+      "weapon": {
+        "shot_id": 1083401,
+        "shot_detail": {
+          "id": 1083401,
+          "damage": 1471,
+          "max_ammo": 60,
+          "shake_id": 2,
+          "ShakeType": "Fire_AR",
+          "fire_type": "Instant",
+          "zoom_rate": 0,
+          "input_type": "DOWN",
+          "shot_count": 1,
+          "ShakeWeight": 120,
+          "attack_type": "Metal",
+          "camera_work": "camera_work_01",
+          "charge_time": 0,
+          "penetration": 0,
+          "reload_time": 150,
+          "shot_timing": "Concurrence",
+          "spot_radius": 0,
+          "weapon_type": "AR",
+          "is_targeting": true,
+          "muzzle_count": 1,
+          "rate_of_fire": 720,
+          "name_localkey": "Assault Rifle",
+          "prefer_target": "TargetAR",
+          "reload_bullet": 10000,
+          "counter_enermy": "Metal_Type",
+          "multi_aim_range": 0,
+          "spot_last_delay": 20,
+          "core_damage_rate": 20000,
+          "end_rate_of_fire": 720,
+          "spot_first_delay": 20,
+          "center_shot_count": 0,
+          "reload_start_ammo": 59,
+          "full_charge_damage": 10000,
+          "multi_target_count": 0,
+          "spot_radius_object": 0,
+          "uptype_fire_timing": 0,
+          "burst_energy_pershot": 2500,
+          "description_localkey": "■ Affects target(s).\n<color=#00AEFF>Deals {damage}% of ATK as damage.\nDeals {core_damage_rate}% damage when attacking core.</color>",
+          "maintain_fire_stance": 0,
+          "spot_explosion_range": 0,
+          "use_function_id_list": [0],
+          "accuracy_change_speed": 0,
+          "hurt_function_id_list": [0],
+          "spot_projectile_speed": 0,
+          "accuracy_change_pershot": 0,
+          "prefer_target_condition": "None",
+          "rate_of_fire_reset_time": 0,
+          "full_charge_burst_energy": 0,
+          "end_accuracy_circle_scale": 75,
+          "auto_accuracy_change_speed": 0,
+          "rate_of_fire_change_pershot": 0,
+          "start_accuracy_circle_scale": 75,
+          "target_burst_energy_pershot": 5000,
+          "auto_accuracy_change_pershot": 0,
+          "auto_end_accuracy_circle_scale": 75,
+          "auto_start_accuracy_circle_scale": 75
+        },
+        "bonusrange_max": 45,
+        "bonusrange_min": 25
+      },
+      "burstMeta": {
+        "burst_duration": 1000,
+        "use_burst_skill": "Step3",
+        "burst_apply_delay": 1,
+        "change_burst_step": "StepFull"
+      },
+      "skillDetails": {
+        "skill1_id": 2834101,
+        "skill2_id": 2834201,
+        "skill1_table": "StateEffect",
+        "skill2_table": "StateEffect",
+        "skill1_detail": {
+          "id": 2834101,
+          "icon": "icn_skill_damage_01",
+          "group_id": 28341,
+          "skill_level": 1,
+          "name_localkey": "Annihilation Support",
+          "next_level_id": 2834102,
+          "level_up_cost_id": 30102,
+          "description_localkey": "■ Activates after landing {description_value_01} normal attack(s) against a target in Anti A.T. Field status. Affects the target.\n<color=#00AEFF>Deals {description_value_02}% of <word_group=10025>final</word_group> ATK as additional damage.\nAnti A.T. Field stacks ▲ {description_value_03}.</color>\n■ Activates after landing {description_value_04} normal attack(s) while in Attack State status. Affects the target.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as additional damage.</color>\n■ Activates when entering Full Burst. Affects all allies in Annihilation State status.\n<color=#00AEFF><word_group=10071>Units affected</word_group> by Annihilation State's additional effect ▲ {description_value_06} for {description_value_07} sec.\n<word_group=10072>Attack range</word_group> of Annihilation State's additional effect ▲ {description_value_08}% for {description_value_09} sec.\nATK ▲ {description_value_10}% of the skill user's ATK for {description_value_11} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "18",
+                "18",
+                "18",
+                "18",
+                "18",
+                "18",
+                "18",
+                "18",
+                "18",
+                "18"
+              ]
+            },
+            {
+              "description_value": [
+                "349.01",
+                "375.86",
+                "402.71",
+                "429.55",
+                "456.4",
+                "483.25",
+                "510.1",
+                "536.94",
+                "563.79",
+                "590.64"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7",
+                "7"
+              ]
+            },
+            {
+              "description_value": [
+                "169.22",
+                "182.23",
+                "195.25",
+                "208.27",
+                "221.28",
+                "234.3",
+                "247.32",
+                "260.33",
+                "273.35",
+                "286.37"
+              ]
+            },
+            {
+              "description_value": [
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1",
+                "1"
+              ]
+            },
+            {
+              "description_value": [
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9"
+              ]
+            },
+            {
+              "description_value": [
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500",
+                "500"
+              ]
+            },
+            {
+              "description_value": [
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9"
+              ]
+            },
+            {
+              "description_value": [
+                "10.4",
+                "11.2",
+                "12",
+                "12.8",
+                "13.6",
+                "14.4",
+                "15.2",
+                "16",
+                "16.8",
+                "17.6"
+              ]
+            },
+            {
+              "description_value": [
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9",
+                "9"
+              ]
+            }
+          ],
+          "info_description_localkey": "Skill 1"
+        },
+        "skill2_detail": {
+          "id": 2834201,
+          "icon": "icn_skill_atkup_01",
+          "group_id": 28342,
+          "skill_level": 1,
+          "name_localkey": "Maintenance and Resupply",
+          "next_level_id": 2834202,
+          "level_up_cost_id": 30202,
+          "description_localkey": "■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.\n<color=#00AEFF><word_group=10073>Machine Gun Ramp-Up Speed</word_group> ▲ {description_value_01}% for {description_value_02} sec.</color>\n■ Activates when entering Full Burst. Affects all allies.\n<color=#00AEFF>ATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100",
+                "100"
+              ]
+            },
+            {
+              "description_value": [
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13",
+                "13"
+              ]
+            },
+            {
+              "description_value": [
+                "6.86",
+                "7.39",
+                "7.92",
+                "8.44",
+                "8.97",
+                "9.5",
+                "10.03",
+                "10.56",
+                "11.08",
+                "11.61"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "info_description_localkey": "Skill 2"
+        },
+        "ulti_skill_id": 1834301,
+        "ulti_skill_detail": {
+          "id": 1834301,
+          "icon": "icn_skill_c834_ult",
+          "group_id": 18343,
+          "shake_id": 1,
+          "skill_type": "InstantAll",
+          "attack_type": "Wind",
+          "skill_level": 1,
+          "counter_type": "Metal_Type",
+          "duration_type": "TimeSec",
+          "name_localkey": "Attack State",
+          "next_level_id": 1834302,
+          "prefer_target": "Random",
+          "resource_name": "c834_ulti",
+          "duration_value": 0,
+          "skill_cooltime": 4000,
+          "level_up_cost_id": 30302,
+          "skill_value_data": [
+            {
+              "skill_value": 65454,
+              "skill_value_type": "Percent"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            },
+            {
+              "skill_value": 0,
+              "skill_value_type": "None"
+            }
+          ],
+          "skill_cooltime_list": [
+            4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000, 4000
+          ],
+          "description_localkey": "■ Affects self.\n<color=#00AEFF>Attack State:\nAttack Damage ▲ {description_value_01}% for {description_value_02} sec.\nATK ▲ {description_value_03}% of the skill user's ATK for {description_value_04} sec.</color>\n■ Affects all enemies.\n<color=#00AEFF>Deals {description_value_05}% of <word_group=10025>final</word_group> ATK as Burst Skill damage.</color>",
+          "description_value_list": [
+            {
+              "description_value": [
+                "21.21",
+                "22.84",
+                "24.48",
+                "26.11",
+                "27.74",
+                "29.37",
+                "31",
+                "32.64",
+                "34.27",
+                "35.9"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "37.44",
+                "40.32",
+                "43.2",
+                "46.08",
+                "48.96",
+                "51.84",
+                "54.72",
+                "57.6",
+                "60.48",
+                "63.36"
+              ]
+            },
+            {
+              "description_value": [
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10",
+                "10"
+              ]
+            },
+            {
+              "description_value": [
+                "654.54",
+                "691.84",
+                "729.13",
+                "766.43",
+                "803.72",
+                "841.02",
+                "878.32",
+                "915.61",
+                "952.91",
+                "990.2"
+              ]
+            },
+            {},
+            {},
+            {},
+            {},
+            {},
+            {}
+          ],
+          "prefer_target_condition": "None",
+          "info_description_localkey": "Burst Skill",
+          "after_use_function_id_list": [0],
+          "after_hurt_function_id_list": [0],
+          "before_use_function_id_list": [0],
+          "before_hurt_function_id_list": [183430101, 183430102, 183430103]
+        }
+      },
+      "statScaling": {
+        "grow_grade": 583402,
+        "grade_core_id": 1,
+        "stat_enhance_id": 5101,
+        "stat_enhance_detail": {
+          "id": 5101,
+          "core_hp": 200,
+          "grade_hp": 3000,
+          "core_attack": 200,
+          "grade_ratio": 200,
+          "core_defence": 200,
+          "grade_attack": 20,
+          "grade_defence": 100,
+          "core_bio_resist": 0,
+          "grade_bio_resist": 0,
+          "core_metal_resist": 0,
+          "core_energy_resist": 0,
+          "grade_metal_resist": 0,
+          "grade_energy_resist": 0
+        }
+      },
+      "element": {
+        "element_id": [300001],
+        "element_details": [
+          {
+            "id": 300001,
+            "element": "Wind",
+            "group_id": 5000003,
+            "element_icon": "icn_element_wind",
+            "weak_element_id": 100001,
+            "element_desc_localekey": "Injects Code: A.N.M.I. to all iron-type enemies, dealing 10% additional damage.",
+            "element_name_localekey": "Wind",
+            "element_code_name_localekey": "Code: A.N.M.I."
+          }
+        ]
+      },
+      "piece": {
+        "piece_id": 5100834,
+        "piece_detail": {
+          "id": 5100834,
+          "class": "Attacker",
+          "order": 83400,
+          "use_id": 0,
+          "use_type": "None",
+          "item_rare": "SSR",
+          "item_type": "Piece",
+          "stack_max": 9999999,
+          "use_value": 0,
+          "corporation": "ABNORMAL",
+          "resource_id": 834,
+          "item_sub_type": "CharacterPiece",
+          "name_localkey": "Rei (Tentative Name)'s Spare Body",
+          "use_limit_count": false,
+          "inventory_filter": ["etc"],
+          "description_localkey": "Used for a Nikke's Limit Break.\nSpare Bodies for a fully enhanced Nikke will be converted into Body Labels."
+        }
+      },
+      "meta": {
+        "id": 583401,
+        "class": "Attacker",
+        "order": 10173,
+        "name_code": 5132,
+        "corporation": "ABNORMAL",
+        "resource_id": 834,
+        "name_localkey": "Rei (Tentative Name)",
+        "original_rare": "SSR",
+        "critical_ratio": 1500,
+        "category_type_1": "None",
+        "category_type_2": "None",
+        "category_type_3": "None",
+        "critical_damage": 15000,
+        "eff_category_type": "Walk",
+        "eff_category_value": 0
+      }
+    },
+    "generatorSupported": false,
+    "simSupported": false,
+    "baseStats": {
+      "hp": 13500,
+      "atk": 600,
+      "def": 90,
+      "core": {
+        "hp": 200,
+        "atk": 200,
+        "def": 200
+      },
+      "grade": {
+        "hp": 3000,
+        "atk": 20,
+        "def": 100,
+        "ratio": 200
+      },
+      "critRate": 15,
+      "maxLevel": 1400,
+      "critDamage": 150,
+      "resourceId": 834
+    }
+  }
+}

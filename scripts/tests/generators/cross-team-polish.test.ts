@@ -28,10 +28,23 @@ const byBurst = (b: string) =>
 // pass hands team 2 the team greedy found at index 3, refines from there, and
 // the cascade behind it frees a legal fourth team (+13% roster damage).
 const N = 4;
+// RECALIBRATED 2026-07-27 (emma-tactical-upgrade gauntlet landing): the stall-at-three inversion
+// this fixture demonstrates is calibrated to EXACT pool membership, and the positional slices had
+// drifted — the 2026-07-27 characters re-sync (5e53e9d) reordered the generator pool, then the
+// e-h (B3) and emma-tactical-upgrade (B1) gauntlet landings inserted two units into the sliced
+// ranges (the breakage was verified PRE-EXISTING at HEAD with the emma-tactical-upgrade flip
+// reverted, so the e-h landing carried it in). Both new units are excluded (they belong to no
+// calibrated pool) and the B1/B3 windows re-scanned on the current pool: b1@1/b2@2/b3@14 measures
+// greedy=3 / polished=4 / ratio 1.1543 (>1.09 floor) — the same scenario, re-measured. Same class
+// of fixture maintenance as the laplace floor note below; the next pool addition re-opens it.
 const POOL = new Set([
-  ...byBurst('I').slice(0, 4),
+  ...byBurst('I')
+    .filter((s) => s !== 'emma-tactical-upgrade')
+    .slice(1, 5),
   ...byBurst('II').slice(2, 8),
-  ...byBurst('III').slice(12, 22),
+  ...byBurst('III')
+    .filter((s) => s !== 'e-h')
+    .slice(14, 24),
 ]);
 
 // One instance for the whole file: the calc memoizes sims, so both A/B arms and

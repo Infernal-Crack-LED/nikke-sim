@@ -1,0 +1,88 @@
+{
+  "note": "Tia — Missilis RL Defender, Burst I (40s datamined CD), standalone unit (no base counterpart). The cover tank: her whole kit keys off Cover HP, which the sim does not model (v1 boss deals no damage; no cover pool). TRIGGER PROXY (the load-bearing judgment, independently re-derived by the S2b blind reviewer): both skill1 lines activate 'when recovering Cover's HP'. The ONLY deterministic cover-HP recovery in the sim is her own skill2 'when using Burst Skill → Restores Cover HP by 21.41% of final Max HP' — so skill1 is keyed to burstCast, once per own burst. Deliberately NOT the engine's generic `recovery` trigger: recovery fires on ANY heal the unit receives (helm full-charge heals, a healer teammate), and teammate Nikke-HP heals are NOT cover-HP recovery — that would over-proc both the team Attack Damage buff and her own CDR (the shared-prior trap the blind reviewer flagged first). skill1: (1) self burstCdr 13s per proc — 'Cooldown of Burst Skill ▼ 13 sec, stacks up to 2 time(s), lasts 12 sec': the engine primitive is instant-seconds per activation, so each burst proc buys −13s (effective CD 27s). The SECOND stack + the 12s stack window need an external cover-regen proc the sim cannot produce → documented COLD residual (in-game effective CD is the observed ~20s, anis-star probe note 2026-07-13; the sim's 27s under-credits cadence, but team FB cadence in standard comps is gated by the B2/B3 40s CDs anyway, so the damage impact is ~nil outside double-B1 reentry comps). (2) all allies (self included) attackDamagePct 32.11 for 10s (Damage-Up bucket) — uptime 10s per burst cadence; passive cover-regen procs would raise real uptime → same COLD residual. skill2: UNMODELED except its trigger-anchor ROLE — the cover-restore NUMBER (21.41%) has no pool to land in; the cover-Max-HP/taunt hitCount-5 block and the 21.96% lifesteal are defensive/inert (carried verbatim). Burst: two shield EVENTS (no HP pool at scope; they fire 'shielded' triggers for shield-synergy teammates and open requiresShielded windows): self 35.07% + allies-except-self 10.21% of HER final Max HP, 10s; plus reenterStage stage 1 — 'Re-enters Burst Stage 1': the rotation HOLDS stage 1 after her cast so a second Burst-I unit can also cast this chain (the Tia + Anis:Star pairing; engine rotation stage-hold, sim.ts reenterStage handling). When no second B1 is eligible the stage advances — the real-kit no-op case. Kit-autonomy gauntlet 2026-07-28.",
+  "unmodeled": {
+    "skill1": [
+      "stacks up to 2 time(s) and lasts for 12 sec (the second CDR stack + 12s stack window need a passive cover-regen proc — environmental: requires boss damage on cover + cover HP regeneration, unmodelable at the v1 damage-only scope; COLD: sim grants one −13s stack per burst, effective CD 27s vs the observed in-game ~20s)"
+    ],
+    "skill2": [
+      "■ Activates after landing 5 normal attack(s). Affects self.\nMax HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.\nAttract: Taunts all enemies for 5 sec.",
+      "Restores Cover HP by 21.41% of the skill user's final Max HP (the restore AMOUNT — no Cover HP pool at scope; the line's trigger-anchor role for skill1 IS enacted via the burstCast proxy)",
+      "Recovers 21.96% of attack damage as HP over 10 sec."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 13
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 32.11,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 35.07,
+          "durationSec": 10
+        },
+        {
+          "kind": "reenterStage",
+          "stage": 1
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 10.21,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

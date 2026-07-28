@@ -21,23 +21,7 @@
 
 ---
 
-## Batch 1 — S / A / ? / B (11 units)
-
-| #   | Slug                      | Tier |
-| --- | ------------------------- | ---- |
-| 1   | `ark-ranger-black`        | S    |
-| 2   | `e-h`                     | A    |
-| 3   | `emma-tactical-upgrade`   | A    |
-| 4   | `eunhwa-tactical-upgrade` | A    |
-| 5   | `exia`                    | A    |
-| 6   | `rei-ayanami`             | A    |
-| 7   | `tia`                     | A    |
-| 8   | `marciana-marine-study`   | ?    |
-| 9   | `2b`                      | B    |
-| 10  | `a2`                      | B    |
-| 11  | `alice-wonderland-bunny`  | B    |
-
-## Batch 2 — B (10 units)
+# # Batch 2 — B (10 units)
 
 | #   | Slug              | Tier |
 | --- | ----------------- | ---- |

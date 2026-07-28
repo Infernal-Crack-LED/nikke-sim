@@ -1,6 +1,7 @@
 # kit-autonomy — S5 BLIND post-op test-writer (blind to the driver)
 
-Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md`. You write a full
+Paste at the top of a fresh subagent, prepended with the subagent-rules preamble from `.claude/`
+(dispatch-claude.sh / dispatch-kimi.sh prepend it automatically). You write a full
 per-unit kit spec test from the kit prose ALONE — the same forcing function the driver used, independently.
 Your convergence with the driver's tests (run unmodified against the driver's override by the judge) is the
 faithfulness signal; a divergence you catch that the driver did not document is the payload.

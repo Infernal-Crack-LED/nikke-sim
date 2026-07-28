@@ -1,0 +1,123 @@
+{
+  "slug": "rei-ayanami-tentative-name",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 18
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresTargetStatus": "Anti A.T. Field",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 590.64
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 7
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "fbGate": "inFb",
+      "ownBurstGate": "cast",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 286.37
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 11.61,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 35.9,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 63.36,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 990.2
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Anti A.T. Field stacks ▲ 10.",
+      "■ Activates when entering Full Burst. Affects all allies in Annihilation State status.",
+      "Units affected by Annihilation State's additional effect ▲ 1 for 9 sec.",
+      "Attack range of Annihilation State's additional effect ▲ 500% for 9 sec.",
+      "ATK ▲ 17.6% of the skill user's ATK for 9 sec."
+    ],
+    "skill2": [
+      "■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.",
+      "Machine Gun Ramp-Up Speed ▲ 100% for 13 sec."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ S1 18-hit rider (590.64%) is gated on the ENEMY status 'Anti A.T. Field', which this kit never inflicts — it is a cross-unit status. The block is therefore DEAD (zero fires) in every comp modelable today; it goes live only if a teammate that applies that status is modeled with a targetStatus effect of the identical name.",
+    "⚑ S1 7-hit rider (286.37%) is gated on the SELF status 'Attack State' (granted only by her own burst, 10 s). The schema has no self-status gate, so it is proxied by fbGate:'inFb' + ownBurstGate:'cast' — the ~10 s Full-Burst window following HER OWN burst cast. The proxy diverges from the kit in two directions: it loses the ~0.37 s of Attack State that precedes FB entry, and it would fire during a Full Burst she entered on her own burst but after the 10 s state lapsed (near-zero overlap). UNMEASURED.",
+    "⚑ S1 FB-enter ally block targets 'all allies in Annihilation State status'. There is no ally-status target kind and no ally-status block gate in the schema, and no in-scope unit carries Annihilation State — so all three of its lines (the +1 affected-unit and +500% range riders on ANOTHER unit's effect, and the ATK ▲17.6% of caster ATK / 9 s) are unmodeled. Modeling it as a plain {kind:'allies'} grant would OVER-CREDIT the whole team by a caster-ATK-scaled buff that the kit does not give them; zero is the faithful value until an ally-status channel exists.",
+    "⚑ S2 'Machine Gun Ramp-Up Speed ▲ 100%' has no StatKey (the MG wind-up ladder is a measured engine constant, not a buffable stat) — unmodeled. Its target set ('MG allies who have used their Burst Skills') is also inexpressible: target kinds are exclusive, so alliesOfWeapon:'MG' ∧ burstCasters cannot be composed.",
+    "Burst-cast damage (990.2%) is FB-exempt by the engine's burst-cast timing rule (a burst cast lands before the Full Burst window opens); noFb is NOT set here — per-kit noFb is measured-only.",
+    "noRange is engine-automatic on riders and is not set. Rider crit follows the engine's default rider-crit behaviour; no per-effect crit flag is set (measured-only).",
+    "Damage blocks are authored with target {kind:'enemy'} to mirror the kit's 'Affects the target' / 'Affects all enemies' wording; flatDamage magnitude is caster-ATK-scaled and does not depend on the resolved target set."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. AR / Wind / Attacker / Burst III, cd 40 s, ammo 60, hitsPerShot 1 (so a 'landed normal attack' = one round = one trigger pull). S1 carries two hit-count damage riders: 18 hits → 590.64% gated on the enemy status 'Anti A.T. Field' (requiresTargetStatus; no carrier exists today, so the block is inert), and 7 hits → 286.37% gated on her own burst's 'Attack State' self-status, proxied by fbGate:'inFb' + ownBurstGate:'cast' ⚑. S1's third block buffs only allies already in 'Annihilation State' — an ally-status target set the schema cannot express and no modelable ally carries — so its three lines are unmodeled rather than broadened to all allies. S2 grants the whole team ATK ▲ 11.61% of the caster's ATK for 10 s on Full Burst entry (implemented); its MG ramp-up-speed grant has no stat channel. Burst: self 'Attack State' = Attack Damage ▲ 35.9% + ATK ▲ 63.36% of own ATK, both 10 s on burst cast, plus a 990.2% burst-cast nuke that resolves pre-Full-Burst. Base cadence/reload come from the datamine and are ⚑ unreliable."
+}

@@ -1,6 +1,7 @@
 # kit-autonomy — S6 BLIND post-op override-writer (kit-parse BLIND-STUDY mode)
 
-Paste at the top of a fresh subagent, prepended with `.claude/subagent-non-negotiables.md`. You author a
+Paste at the top of a fresh subagent, prepended with the subagent-rules preamble from `.claude/`
+(dispatch-claude.sh / dispatch-kimi.sh prepend it automatically). You author a
 baseline `OverrideFile` for ONE unit from its raw kit text + methodology ONLY — a second, independent
 prose→JSON read. The judge diffs your override against the driver's; where you agree, confidence is high;
 where you disagree, the judge adjudicates against the prose + formula.
@@ -11,7 +12,7 @@ where you disagree, the judge adjudicates against the prose + formula.
 ## Prime directive (never violate)
 
 Model REAL OBSERVED mechanics. **Faithful > fit. Measured > fudge.** NEVER fabricate a calibrated value to
-hit a target — if a value isn't derivable from the kit text, FLAG it (⚑) with an initial estimate + recipe.
+hit a target — if a value isn't derivable from the kit text, FLAG it (⚑) with a first estimate + recipe.
 A blind parser that honestly flags what it can't know is CORRECT; one that guesses a precise ⚑ value is WRONG.
 
 ## You are given

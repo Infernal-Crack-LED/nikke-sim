@@ -1,0 +1,168 @@
+{
+  "slug": "rei-ayanami-tentative-name",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "18 normal attacks vs Anti A.T. Field",
+      "disposition": "FAITHFUL",
+      "scope": "Normal-attack landed-hit counter only; the 590.64% proc is skill flat damage (no core unless stated; crits only if engine default for riders says so — text is silent).",
+      "durationSemantics": "Instant proc, no duration; counter accumulates across reloads.",
+      "triggerIdentity": "hitCount count:18 (counts ROUNDS; AR hitsPerShot 1 so rounds == pulls) AND gated on the boss holding the named status 'Anti A.T. Field' (requiresTargetStatus). NOTHING in this kit applies that status — it is externally sourced (collab peer), so the block is inert in any comp without an external applier.",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Ungated hitCount:18 dealing 590.64% of final ATK every 18 rounds all fight — a massive standing over-credit (~+45% of her normal-attack output) in comps where the status never exists.",
+      "distinguishingAssertion": "In the standard controlComp (no Anti A.T. Field applier present), the event log contains ZERO damage events with mult ≈ 590.64 for the entire fight; her total is unchanged when this block is deleted via withPatchedOverride.",
+      "inertness": "Must move NOTHING in every comp lacking an external Anti A.T. Field inflictor — i.e. every current fixture.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Anti A.T. Field stacks ▲ 10",
+      "disposition": "UNMODELED",
+      "scope": "Stack-ledger mutation of an externally-sourced named status.",
+      "durationSemantics": "Stack count, not a timed buff.",
+      "triggerIdentity": "Same 18-hit status-gated trigger as the proc above.",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Inventing a resource pool + damage scaling for a status the sim has no carrier or consumer for.",
+      "distinguishingAssertion": "No buffApply / resource activity attributable to this line; belongs verbatim in unmodeled.skill1.",
+      "inertness": "Must move nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "7 normal attacks while in Attack State",
+      "disposition": "FAITHFUL",
+      "scope": "Normal-attack landed-hit counter, live ONLY while the OWNER holds the 'Attack State' self-status — which this kit grants exclusively via HER OWN burst (10 s).",
+      "durationSemantics": "Instant 286.37% proc; the eligibility window is the 10 s Attack State, i.e. roughly her own-burst FB windows.",
+      "triggerIdentity": "hitCount count:7 gated to the Attack State window. The engine has no self-status gate primitive, so the faithful encoding is hitCount:7 + fbGate:'inFb' + ownBurstGate:'cast' (window ≈ her burst's 10 s; the ~0.4 s cast→FB offset is an accepted approximation). Counter should count hits landed IN the window, not carry from outside it.",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Two plausible misreads: (a) ungated hitCount:7 running all fight (~+28% of normal output over-credit); (b) window keyed to ANY team Full Burst (plain fbGate with no ownBurstGate) — over-fires on rotations where the co-B3 bursts instead.",
+      "distinguishingAssertion": "controlComp includes helm as a second Burst III, so rotations split. Assert: every damage event with mult ≈ 286.37 falls inside a ≤10 s window opened by HER burstCast; on rotations where helm bursts (her Attack State absent), ZERO 286.37 events; outside all FB windows, zero events.",
+      "inertness": "Zero procs outside her own Attack State windows; zero procs on co-B3 rotations she sits out.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Annihilation State units ▲1 / range ▲500%",
+      "disposition": "UNMODELED",
+      "scope": "Meta-modifiers ('units affected', 'attack range') of an externally-sourced ally status the engine does not represent.",
+      "durationSemantics": "9 sec, but on an unrepresentable mechanic.",
+      "triggerIdentity": "fullBurstEnter (any team FB).",
+      "targetSet": "allies currently in Annihilation State — no in-sim source, so the target set is always empty.",
+      "nearestWrongModel": "Encoding the range line as a rangeOk/range-bonus buff or the units-affected line as a generic team buff.",
+      "distinguishingAssertion": "No buffApply attributable to these lines on any FB enter; verbatim in unmodeled.skill1.",
+      "inertness": "Must move nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 17.6% of user's ATK for 9 sec",
+      "disposition": "GAP",
+      "scope": "casterAtkPct ATK grant — but ONLY to allies holding Annihilation State. The engine has no ally-held-named-status target filter (requiresTargetStatus is boss-only), and no roster unit sources the status, so the faithful in-sim value of this line is zero.",
+      "durationSemantics": "9 sec (note: distinct from skill2's 10 sec — do not merge the two team ATK lines).",
+      "triggerIdentity": "fullBurstEnter.",
+      "targetSet": "allies in Annihilation State status — empty in every current comp.",
+      "nearestWrongModel": "Applying casterAtkPct 17.6% (flat ≈ 0.176 × 118,027 ≈ 20,773) to ALL allies on every FB enter, stacking on top of skill2's 11.61% — a standing team-wide over-credit.",
+      "distinguishingAssertion": "On each fullBurstStart, exactly ONE team-wide casterAtkPct buffApply from her kit (value ≈ 13,703, durationSec 10); assert NO buffApply with value ≈ 20,773 ever appears.",
+      "inertness": "Must contribute zero team ATK in all current fixtures.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "MG Ramp-Up Speed ▲ 100% for 13 sec",
+      "disposition": "GAP",
+      "scope": "MG wind-up ramp speed — no StatKey exists for it (the MG wind-up ladder is a measured engine constant; attackSpeedPct/fireRatePct are different mechanics).",
+      "durationSemantics": "13 sec (distinct from the 9 s and 10 s windows elsewhere in the kit).",
+      "triggerIdentity": "fullBurstEnter, with a COMPOUND target gate: MG weapon AND 'have used their Burst Skills' (burst-casters this rotation) — alliesOfWeapon ∩ burstCasters.",
+      "targetSet": "MG-wielding allies who cast a burst this rotation — empty in controlComp (no MG present).",
+      "nearestWrongModel": "Encoding as fireRatePct or attackSpeedPct +100% to all allies (or to all MG allies regardless of burst-cast) — a huge over-credit; or silently dropping the burst-caster half of the target gate.",
+      "distinguishingAssertion": "In controlComp: zero buffApply events with any fire-rate-family stat sourced from her skill2 block 1 on FB enter; her removal of this line moves no unit's total. If ever modeled: only an MG ally that ALSO cast its burst that rotation receives it.",
+      "inertness": "Fully inert on all non-MG comps, including the control fixture.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 11.61% of user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK grant, caster-scaled ('of the skill user's ATK' → casterAtkPct, a FLAT add), team-wide.",
+      "durationSemantics": "durationSec 10, refreshed each Full Burst entry.",
+      "triggerIdentity": "fullBurstEnter — any team FB, regardless of who bursts (correctly fires on helm's rotations too, unlike the burst self-block).",
+      "targetSet": "all allies (including self).",
+      "nearestWrongModel": "stat 'atkPct' 11.61 (scaling each TARGET's own ATK) instead of casterAtkPct — wrong semantics and wrong magnitude on the Supporter/Defender slots; or target excludeSelf.",
+      "distinguishingAssertion": "On every fullBurstStart, all 5 units (including B1/B2 supports and herself) receive buffApply stat 'casterAtkPct' with FLAT value ≈ 0.1161 × 118,027 ≈ 13,703 (NOT raw 11.61), durationSec 10.",
+      "inertness": "No application outside FB entries; value must not vary per target (flat, caster-resolved).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack State: Attack Damage ▲ 35.9%",
+      "disposition": "FAITHFUL",
+      "scope": "'Attack Damage' = the Damage-Up bucket (attackDamagePct), self only. This block also DEFINES the Attack State window that gates skill1's 7-hit rider.",
+      "durationSemantics": "durationSec 10 from her burst cast.",
+      "triggerIdentity": "burstCast — a self mode inside her OWN burst block, NOT fullBurstEnter. With helm as co-B3 in controlComp these genuinely diverge: it must fire only on rotations SHE bursts.",
+      "targetSet": "self.",
+      "nearestWrongModel": "fullBurstEnter self-buff — applies Attack State on every team FB including helm's rotations, doubling her buffed uptime AND wrongly enabling the 286.37% rider every rotation.",
+      "distinguishingAssertion": "count(buffApply stat 'attackDamagePct' value 35.9 on her) === count(her burstCast events), which in controlComp is strictly LESS than count(fullBurstStart events).",
+      "inertness": "No application on FBs she did not burst into.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 63.36% of user's ATK for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK add to self (casterAtkPct; self-target so caster==target).",
+      "durationSemantics": "durationSec 10 from her burst cast.",
+      "triggerIdentity": "burstCast (same self-mode block as the 35.9% line).",
+      "targetSet": "self.",
+      "nearestWrongModel": "atkPct 63.36 (buffApply carries raw 63.36 instead of the flat-resolved value), or keying to fullBurstEnter.",
+      "distinguishingAssertion": "Her burstCast emits buffApply stat 'casterAtkPct' with FLAT value ≈ 0.6336 × 118,027 ≈ 74,782 targeting only her slot, paired 1:1 with her burstCast events.",
+      "inertness": "Never applied to allies; never applied on co-B3 rotations.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 990.2% … Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant flatDamage hit of 990.2% final ATK per burst cast (single boss ⇒ 'all enemies' = one hit). Snapshots her just-applied burst self-buffs (self-mode block precedes the damage block in the same cast).",
+      "durationSemantics": "Instant, once per her burst cast (~every 40 s cd as rotation allows).",
+      "triggerIdentity": "burstCast. Burst-cast damage lands BEFORE the Full Burst window opens — always FB-exempt (no +50% major, no FB-entry auras), per the established engine timing rule.",
+      "targetSet": "enemy.",
+      "nearestWrongModel": "The nuke receiving the +50% Full Burst major and FB-entry team buffs (fbMajorApplied true), or firing on every fullBurstStart instead of only her casts.",
+      "distinguishingAssertion": "Each of her burstCast events is followed by exactly one damage event with mult ≈ 990.2, srcSlot 'burst', inFullBurst false and fbMajorApplied false; total count == her burstCast count.",
+      "inertness": "Zero nuke events on rotations where the co-B3 bursts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:590.64% @18 hits (inertness — Anti A.T. Field gate)",
+    "skill1:286.37% @7 hits (Attack-State-windowed rider)",
+    "skill2:ATK ▲11.61% caster-ATK team buff on FB enter",
+    "burst:Attack Damage ▲35.9% self (burstCast-keyed)",
+    "burst:ATK ▲63.36% caster-ATK self (burstCast-keyed)",
+    "burst:990.2% nuke (FB-exempt, per-own-cast)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Anti A.T. Field stacks ▲ 10.",
+      "Units affected by Annihilation State's additional effect ▲ 1 for 9 sec.",
+      "Attack range of Annihilation State's additional effect ▲ 500% for 9 sec.",
+      "ATK ▲ 17.6% of the skill user's ATK for 9 sec. (allies in Annihilation State — no in-sim status source or ally-status gate primitive)"
+    ],
+    "skill2": [
+      "Machine Gun Ramp-Up Speed ▲ 100% for 13 sec. (no MG ramp-speed StatKey; inert on non-MG comps regardless)"
+    ],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads to check the driver against: (1) TRIGGER SPLIT — the burst self-mode (Attack State) is burstCast-keyed while skill2's team buff is fullBurstEnter-keyed; controlComp's helm co-B3 makes these observably diverge, so any test that only counts per-FB applications without distinguishing WHO burst is blind to the over-credit. (2) BOTH skill1 damage riders are status-gated (boss-held 'Anti A.T. Field' / self-held 'Attack State') — an encoding where either hitCount rider free-runs all fight is the single largest plausible over-credit in this kit. (3) The 17.6% Annihilation-gated ATK must NOT be folded into the unconditional 11.61% team buff — assert exactly one team-wide casterAtkPct apply per FB with flat value ≈13,703 (0.1161×118,027) and none ≈20,773. (4) All three 'of the skill user's ATK' lines are casterAtkPct and flat-resolve at apply time (11.61%→≈13,703; 63.36%→≈74,782 self; buffApply values are flat ATK, never the raw kit percentage). (5) The 990.2% nuke is FB-exempt by cast timing — inFullBurst/fbMajorApplied must be false. (6) Durations are all distinct (9 s / 10 s / 13 s) — a copy-paste 10 s across blocks is detectable. (7) skill2 block 1's target is a COMPOUND gate (MG weapon AND burst-casters this rotation); if the driver modeled it at all, dropping the burst-caster half is the likely miss. (8) hitCount counts ROUNDS; AR hitsPerShot=1 makes rounds==pulls here, so no divergence to test on this unit. All magnitudes are kit-text (DATAMINED); nothing in this kit requires a ⚑ calibrated value — a shipped ⚑ would itself be a finding.",
+  "model": "claude-fable-5"
+}

@@ -1,0 +1,132 @@
+{
+  "slug": "e-h",
+  "kitDescription": "E.H. is a Wind-element SMG Attacker whose Burst III swaps her weapon. She accumulates Scrap — 10 granted at battle start, plus income when her team destroys projectiles, destroys enemy parts, or neutralizes enemies — and whenever she holds 10 Scrap while below the cap, she crafts a homemade magazine (up to 4), permanently gaining 7.5% ATK per magazine held. Each time she obtains Scrap she also gains 16.36% elemental advantage attack damage for 15 seconds. Her burst swaps her SMG for a 0.4-second charge weapon dealing 61% of final ATK per shot (250% of that on full charge), loaded with one round per homemade magazine and ending early once those rounds are fired, while also granting her 430.05% ATK for 10 seconds. On the scope-lock partless solo boss only the battle-start Scrap grant exists, so she fights with exactly one magazine: +7.5% ATK all fight and one charged shot per burst.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "obtaining 10 Scrap(s) while <4 mags",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resourceGate scrap>=10 on the craft block; magazine-side '<4' carried by the pool clamp (max 4)",
+        "blindSaid": "S6 resolved statically to magazine=1; S2b/S5 pin the 1-magazine steady state on the control comp",
+        "formulaCheck": "N/A (resource machinery); behaviorally exact at scope — one craft at frame 0, scrap pool to 0",
+        "fireRateOk": true,
+        "explanation": "Trigger identity preserved at scope; the one-resourceGate-per-block simplification is documented in caveats and damage-inert at scope (the only scrap source is the seed, so the cap state is unreachable). Not a gotcha."
+      },
+      {
+        "kitLine": "Effect 1: Removes Scrap(s).",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource scrap delta -10 in the craft block",
+        "blindSaid": "S6 listed it in unmodeled; S2b expected consumption on fire",
+        "formulaCheck": "N/A",
+        "fireRateOk": true,
+        "explanation": "Driver models the removal S6 skipped; exact."
+      },
+      {
+        "kitLine": "Crafts 1 homemade magazine, max 4",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resource magazine delta +1, pool max 4",
+        "blindSaid": "S6 hardcoded magazine=1 (no pool); S5 asserts exactly one craft all fight",
+        "formulaCheck": "N/A",
+        "fireRateOk": true,
+        "explanation": "Driver's live pool is strictly more expressive than S6's static resolution and behaviorally identical at scope; keeps out-of-scope scrap income expressible, as S2b preferred."
+      },
+      {
+        "kitLine": "ATK ▲ 7.5% continuously x magazines",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "perResource buff on magazine pool, mult 7.5, no expiry",
+        "blindSaid": "S6 flat 7.5 maxStacks 4; S5 asserts live magnitude exactly 7.5 and no 30% over-credit",
+        "formulaCheck": "atkPct sits inside the (1+ΣATK%) term on staticAtk per SSOT 1a — correct bucket",
+        "fireRateOk": true,
+        "explanation": "Continuous (no durationSec), self-scoped, reads the live pool each frame; driver's exact-diff pin (staticAtk×0.075 vs chain-broken, persisting at t≈70s) and the 0/4-magazine counterfactuals prove both magnitude and persistence."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "start of battle. Scraps ▲10, max 10",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "resources[].initial 10 (soda precedent: a battle-start grant is a pool seed, not a block)",
+        "blindSaid": "S2b: one-shot t=0 grant, not an interval; S5 asserts exactly one craft/EAD chain",
+        "formulaCheck": "N/A",
+        "fireRateOk": true,
+        "explanation": "Seeded once, never recurring — the periodic-income misread is excluded by the resource model itself."
+      },
+      {
+        "kitLine": "destroys a destructible projectile. Scr",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled: no projectile entities/events in v1",
+        "blindSaid": "S2b UNMODELED; S5 it.skip (GAP); S6 same verbatim",
+        "formulaCheck": "Inert on the scope-lock boss; no interval drip substituted (correctly)",
+        "fireRateOk": true,
+        "explanation": "All three parties agree; no fabricated income. Recorded decision."
+      },
+      {
+        "kitLine": "destroys an enemy's part. Scraps ▲ 5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled: partless boss, no part entities",
+        "blindSaid": "S2b UNMODELED; S5 it.skip; S6 same verbatim",
+        "formulaCheck": "Inert at scope",
+        "fireRateOk": true,
+        "explanation": "Unanimous, recorded."
+      },
+      {
+        "kitLine": "enemy is neutralized. Scraps ▲ 2",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "verbatim in unmodeled: immortal solo boss never neutralized",
+        "blindSaid": "S2b UNMODELED; S5 it.skip; S6 same verbatim",
+        "formulaCheck": "Inert at scope",
+        "fireRateOk": true,
+        "explanation": "Unanimous, recorded."
+      },
+      {
+        "kitLine": "Elemental Advantage Attack Damage ▲16.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "elemAdvantageDamagePct 16.36, durationSec 15, fused passive at frame 0",
+        "blindSaid": "S6 used elementDamagePct + bossElementGate 'Water' (wrong — Wind has no advantage vs Water); S5 asserts element-scoped, 15s expiry, zero contribution vs a non-advantaged boss",
+        "formulaCheck": "SSOT 1c: elemAdvantageDamagePct lives in the Element bucket, applies only with advantage (MEASURED 2026-07-14 battery 5, privaty 2.8244). Driver's elem mult reads exactly 1.2636 for t<15s and 1.1 after; Fire-boss run byte-identical with the line removed.",
+        "fireRateOk": true,
+        "explanation": "Fused passive is exact at scope (scraps obtained exactly once, at t=0) and the refresh-on-later-gain limitation is documented in caveats. Driver's stat choice is the measured exact-phrase carrier; S6's Water gate is a blind-agent error, not a driver finding. Driver converged with the formula where S6 did not."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Changes the weapon in use. (61%/250%)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 61, chargeMultPct 250, chargeTimeSec 0.4, maxAmmo 1, durationSec 10, maxShots 1",
+        "blindSaid": "S6 shipped the swap WITHOUT maxShots (would refire ~5× per window — S6's own caveat flags it as its largest uncertainty); S5 asserts one round per cast and the 152.5% full-charge product",
+        "formulaCheck": "SSOT 2b/1d: maxShots uses-based deactivation is the MEASURED primitive (SWHA 2026-07-14); 61×2.5=152.5% is the correct 'of damage' reading; charge bucket ×2.5 verified via the no-chargeMult counterfactual reading 1",
+        "fireRateOk": true,
+        "explanation": "Exactly one full-charge shot per cast, landing <1s after the cast inside the FB window (fbMajorApplied true) — the driver test proves the cadence, not just the block's presence. Static maxAmmo/maxShots 1 (vs the dynamic magazine link) is documented ⚑ tier 2 with a recipe; exact at scope."
+      },
+      {
+        "kitLine": "ATK ▲ 430.05% for 10 sec.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 430.05, durationSec 10, trigger burstCast, self",
+        "blindSaid": "S2b/S5: must key to her own cast, not fullBurstEnter; S6 agreed burstCast/self/10s",
+        "formulaCheck": "SSOT 1a: atkPct dilutes inside (1+ΣATK%) — correct; application count == her casts, strictly < team Full Burst count (helm co-B3 fixture exposes the misread); exact staticAtk×4.3005 diff in-window, 0 outside",
+        "fireRateOk": true,
+        "explanation": "Trigger identity, scope, magnitude, and the 10s wall-clock expiry all pinned against counterfactuals."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 11 kit lines are FAITHFUL or DOCUMENTED_GAP; zero REAL-GOTCHAs. The blind S5 suite runs GREEN (20 passed / 3 skipped) against the shipped override once its own harness-wiring artifacts are repaired — the pristine 11 failures were observable-shape bugs in the blind test, not faithfulness divergences, and the 3 skips are the same three scrap-source lines the driver records verbatim in unmodeled. Convergence is strong where it matters: driver and both blind agents independently derived the load-bearing 1-magazine steady state (start 10 / consume 10 / rebuild 0), killing the 30%-ATK and 4-round-swap over-credit traps. Where the blind agents diverged from the driver, the prose + formula side with the driver: S6's bossElementGate 'Water' is a blind-agent misread (Wind beats Iron; the gate would silence the line on the advantaged boss) and S6's missing maxShots would refire the swap ~5× per window — both are RECON_ERROR-class findings against S6, not the driver. The driver's documented approximations (fused-passive E5, static maxAmmo/maxShots 1, pool-clamp carrying the '<4 magazines' gate half, ⚑ swap-exit reload) are exact at scope and carry recipes, never fudges. Discrimination holds: every load-bearing assertion has a named counterfactual that moves the observable (0/4-magazine worlds, Damage-Up-bucket stat, Fire-boss byte-identity, no-chargeMult, noMaxShots, fullBurstEnter re-key). Same-model residual for the owner to spot-check: the magazine-persistence judgment call (kit never states the burst consumes a magazine; driver + S2b concurred on persist, so every cast loads 1 round) and the static-at-scope maxAmmo link are shared-prior readings no blind party independently challenged from footage — a real E.H. recording confirming one swap shot on her SECOND burst cast would close the loop.",
+  "model": "kimi-code/k3"
+}

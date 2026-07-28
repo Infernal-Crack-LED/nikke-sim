@@ -1,0 +1,251 @@
+{
+  "slug": "2b",
+  "leakDetected": null,
+  "override": {
+    "slug": "2b",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 10.03
+              },
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 20.06
+              },
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 57.76
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 300
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 167.45,
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkOfMaxHpPct",
+            "value": 6.16
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 2439.36,
+            "flavor": "distributed",
+            "crit": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 792,
+            "crit": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ CADENCE: the 300-round S2 threshold is kit-exact, but how OFTEN it fires rides the datamined AR cadence + ammo 90 / reloadFrames 81 — proc count per fight is datamine-derived, not measured.",
+      "⚑ ESCALATION CAP: assumed to stop at the 3rd own burst cast (kit lists exactly three tiers); 4th+ casts are modeled as re-applying the same 3-step total (87.85%), not a 4th tier.",
+      "⚑ SPLIT-VS-MERGE: the 2439.36% distributed hit is modeled as ONE merged hit against the sole partless boss; the real popup split is kit-silent and unread.",
+      "crit:true on all three damage lines is the rider-crit prior (riders crit at the caster's sheet rate), NOT a measurement — reversible on popup-colour evidence.",
+      "'1 enemy unit(s) with the highest remaining HP' resolves to the sole boss; the ranking clause is untestable in v1 and moves no damage.",
+      "The unit's whole offense depends on the self targetMaxHpPct grants feeding atkOfMaxHpPct (legal only because caster===target). If the engine does not re-read live Max HP for that conversion, S1 is silently inert and the unit is under-modeled — verify the feed path before trusting any total.",
+      "noFb is unset on every damage line (FB-by-timing default ON). The burst-cast hits are expected FB-exempt by cast timing (burst damage lands before the FB window opens), which is engine timing, not a per-kit flag.",
+      "noRange is left to the engine (automatic on riders); hasPierce not set — the kit carries no Pierce line."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. 2B (2b), AR/Fire/Defender/Burst III, cd 40s, ammo 90 — an HP→ATK converter with no team-facing effects. S1: burst-cast (own-burst) escalating self Max HP ladder, 10.03% → +20.06% → +57.76%, cumulative per the 'each subsequent effect triggers all effects before it' clause (87.85% total after her 3rd own cast), 'continuously' = no expiry. S2b: passive from battle start, ATK ▲ 6.16% of her OWN final Max HP (atkOfMaxHpPct) — this is the sole channel through which S1 produces damage. S2a: cumulative-300-rounds-fired rider, 167.45% of final ATK to the enemy (hitCount trigger; 'firing N times' counts rounds, not trigger pulls). Burst: two enemy hits resolved on cast — 2439.36% distributed + 792% additional. No weapon swap, no stacks/resources, no pierce, no Hit Rate, no heal/shield/DEF line, no ally-targeted effect; every effect is self- or enemy-scoped, so this unit contributes nothing to a teammate's buffs. All kit lines are implemented — unmodeled is empty by audit, not by omission."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — literal 'when using Burst Skill' = own burst cast, NOT fullBurstEnter (would over-fire on a teammate B3's rotation)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} — required for the Max HP grants to feed her own atkOfMaxHpPct (e3 caster===target rule)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effects vary according to the number",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'escalating'} wrapper — Nth activation applies steps 1..N, matching 'each subsequent effect triggers all effects before it'"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once: Max HP ▲ 10.03% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1: buff targetMaxHpPct 10.03, no durationSec ('continuously')"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Twice: Max HP ▲ 20.06% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2: buff targetMaxHpPct 20.06, no durationSec"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Three times: Max HP ▲ 57.76%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3: buff targetMaxHpPct 57.76, no durationSec; cumulative total 87.85%"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after firing 300 time(s).",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:300} — cumulative ROUNDS fired (hitCount counts rounds, not pulls); no 'every N hits' wording but the counter recurs per kit convention"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single partless boss in v1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 167.45% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 167.45, crit:true (rider-crit prior); no core (text does not say 'core strike damage'); noRange left engine-automatic; noFb unset (FB by timing)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'} — always-on from frame 0"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 6.16% of ... final Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkOfMaxHpPct 6.16 on self, no durationSec — counts her OWN Max HP only (ally-granted HP does not feed the conversion)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 1 target {kind:'enemy'}, trigger burstCast (burst-slot damage resolves on cast)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 2439.36% ... distributed damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 2439.36, flavor 'distributed' (feeds distributedDamagePct consumers), crit:true; modeled as one merged hit vs the sole boss"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects 1 enemy w/ highest remaining HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "separate block, target {kind:'enemy'} — the highest-remaining-HP ranking degenerates to the sole boss; kept as its own block to mirror the second ■ header"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 792% of final ATK as additional",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 792, no flavor ('additional damage' is not a named flavor bucket), crit:true"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger (hitCount 300) — effective procs per fight",
+      "estimate": "~5-7 procs over a 180s fight (one roughly every ~28-33s)",
+      "reasoning": "Threshold is kit-exact, but proc COUNT is a function of the datamined AR cadence (rate_of_fire is a known-unreliable field and the effective rate is 60/ceil(60/nominal), not nominal) plus ammo 90 and reloadFrames 81. At ~12 effective pulls/s: 90 rounds ≈ 7.5s fire + ~1.35s reload ≈ 8.9s/magazine → ~20 magazines → ~1800 rounds → 6 procs. A ±20% cadence error moves the proc count by a whole proc.",
+      "recipe": "Count 167.45%-magnitude popups in a recorded 2b fight and compare to the sim's proc count; independently pin the cadence by reading the ammo counter (rounds/sec) rather than any downstream FB-count measure."
+    },
+    {
+      "field": "skill1[0].effects[0] (escalating) — cap behaviour past 3 activations",
+      "estimate": "Caps at the 3rd own burst cast; total 87.85% Max HP thereafter",
+      "reasoning": "The kit enumerates exactly three tiers and gives no wrap/reset clause. With cd 40s she can cast 3-4 times in 180s, so the 4th cast is inside the observable window and the assumption is load-bearing for late-fight ATK.",
+      "recipe": "Record a fight where 2b casts her burst 4+ times; read the HP bar (or her normal-attack popup magnitudes, which scale via atkOfMaxHpPct) across casts 3 and 4 — a flat step means the cap holds."
+    },
+    {
+      "field": "burst[0].effects[0] — distributed split-vs-merge",
+      "estimate": "One merged hit of 2439.36% (no split)",
+      "reasoning": "'Distributed damage' is a split across enemies; with a single partless boss the sim total is identical either way, but the popup shape (and any per-hit crit roll) differs — kit-silent, and crit resolution on N split hits is not the same variance as on 1.",
+      "recipe": "Read the burst-cast popups frame-by-frame: one large number vs N smaller ones summing to the same total."
+    },
+    {
+      "field": "skill2[0].effects[0].crit / burst[*].effects[*].crit",
+      "estimate": "true (riders and burst hits crit at the caster's sheet rate)",
+      "reasoning": "Applied from the rider-crit prior, not from this kit's text — the kit says nothing about crit on any line. If the engine's rider-crit gate is off or these hits are measured non-crit, all three values are over-credited by the crit contribution.",
+      "recipe": "Popup colour on the 167.45% / 2439.36% / 792% hits — orange + crit icon = crit, plain white = non-crit (NIKKE popup colour convention); n≥5 popups per line."
+    },
+    {
+      "field": "noFb (all damage lines) — left unset",
+      "estimate": "unset (Full Burst applies by landing timing; burst-cast hits are FB-exempt by cast timing)",
+      "reasoning": "Per-kit noFb is measured-only and defaults OFF. Her burst hits resolve at cast, which lands before the FB window opens, so they should take no +50% — that is engine cast-timing, not an override flag. The S2 300-round rider takes FB by whenever it happens to land.",
+      "recipe": "Compare a burst-cast popup's magnitude against the same-buff-state non-FB expectation; a 1.5x gap means the hit is being credited FB and needs the timing (not a flag) corrected."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,119 @@
+{
+  "slug": "exia",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ last bullet hits… ATK ▼ 13.77% 5s",
+      "disposition": "UNMODELED",
+      "scope": "Boss (enemy) offensive stat — boss ATK does not feed any damage the sim models (v1 boss deals no damage)",
+      "durationSemantics": "5 sec wall-clock, refreshed per trigger",
+      "triggerIdentity": "lastBullet (per-magazine, on-hit), gated on self being in Collect Hacking Code (self-status/resource gate, NOT requiresTargetStatus — that gate reads a boss status)",
+      "targetSet": "enemy (the boss)",
+      "nearestWrongModel": "Encoding boss ATK ▼ as an ally/self debuff, or spending effort modeling it as live damage-relevant",
+      "distinguishingAssertion": "No damage delta with the line present vs absent (withPatchedOverride removing it): totals(res)['exia'] and all teammates identical",
+      "inertness": "Must move ZERO damage for every unit; belongs in unmodeled/note, not a live block",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ last bullet hits… DEF ▼ 13.77% 5s",
+      "disposition": "FIX",
+      "scope": "Boss DEF debuff — reduces boss DEF in the damage formula, benefits the WHOLE team's hits while live",
+      "durationSemantics": "5 sec wall-clock; ammo 6 + ~1s charge cadence + 141f reload gives a magazine cycle ~8-9s, so the debuff has real DOWNTIME (~35-45% uptime), it is NOT permanent",
+      "triggerIdentity": "lastBullet, gated on self holding ≥1 Collect Hacking Code stack (shot 1 is a full charge, so the gate is satisfied by every natural last bullet — but the gate must still be authored: model Hacking Code as a resource pool + resourceGate {min:1}, or equivalent)",
+      "targetSet": "enemy (boss-held debuff: buffApply with casterIdx===null && targetIdx===null)",
+      "nearestWrongModel": "(a) treating it as permanent uptime (durationSec omitted / passive), or (b) applying defPct to allies where the schema marks it inert, silently dropping a real team-wide damage lever, or (c) shotFired instead of lastBullet (6× over-application)",
+      "distinguishingAssertion": "Filter buffApply by stat+value 13.77 with casterIdx===null: exactly ONE application per magazine cycle, at last-bullet frames, expiresFrame = apply+300; team damage drops when the line is patched out. RED under shotFired (6 applies/mag) and under permanent encoding (no expiry gaps). NOTE: if the engine has no boss-DEF-reduction channel (defPct comment covers self-DEF only), this line is a GAP that must be flagged, never silently dropped",
+      "inertness": "Must not apply before exia's magazine cycle completes; must not fire on non-last-bullet shots",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ entering Full Burst… Reload fixed +95% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Self weapon-state modifier — reload speed gates shots fired, this IS damage (taxonomy #6); never 'skip as defensive'",
+      "durationSemantics": "10 sec wall-clock. 'Fixed at a 95% increase' is a stat CLAMP primitive (engine-modeling-gaps §1b); with no other reload buff in exia's kit, reloadSpeedPct 95 / durationSec 10 is behaviorally equivalent — note the approximation",
+      "triggerIdentity": "fullBurstEnter — 'when entering Full Burst' fires on ANY team FB, not only rotations exia casts B1 (she is B1; in a multi-B1 comp like the liter fixture the distinction is live)",
+      "targetSet": "self",
+      "nearestWrongModel": "(a) keyed to burstCast — misses FBs where the other B1 (liter) wins the cast; (b) skipped as 'defensive, no damage'; (c) durationShots instead of durationSec",
+      "distinguishingAssertion": "buffApply {stat: reloadSpeedPct, value: 95, target exia, expiresFrame = fbStart+600} at EVERY fullBurstStart including FBs where exia did not cast her burst; exia's reload count / shots fired over 180s exceeds the patched-out baseline. RED under burstCast keying on any FB liter opens",
+      "inertness": "Must not apply outside FB windows; must not touch teammates' reloads",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Full Charge lands… Hacking Code ATK ▲28% x5",
+      "disposition": "FAITHFUL",
+      "scope": "Self ATK, generic (scales own damage incl. burst); this stack pool is ALSO the named status three other lines gate on — model it as a queryable resource, not just a buff",
+      "durationSemantics": "5 sec per application, stacks to 5, refreshed each full-charge hit (~1.2s cadence keeps it near-capped while firing; reload 2.35s does not lapse it). Ramp: ~5-6s from t=0 to max stacks — a rampSec haircut or honest stack accrual, not instant-max at t=0 (⚑ trajectory)",
+      "triggerIdentity": "per full-charge HIT (on-hit, not on-fire) — chargeCounter count:1 or the SR every-shot-is-full-charge equivalent; NOT hitCount over all hits, NOT fullBurstEnter",
+      "targetSet": "self",
+      "nearestWrongModel": "(a) authored at max magnitude (140%) as an instant passive — over-credits t=0 and breaks the max-stacks burst gate; (b) no maxStacks cap; (c) permanent duration",
+      "distinguishingAssertion": "buffApply {stat: atkPct, value: 28, target self} sequence with stacks incrementing 1..5 across the first ~5 full-charge landings, stacks never >5, expiresFrame = each apply+300. RED under instant-max (stacks 5 at first apply) and under permanent (no expiry after a firing gap)",
+      "inertness": "Must not apply on a shot that is not a full-charge landing; must not buff allies",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ last round hits… ATK ▲5.8% of user's ATK x5",
+      "disposition": "FAITHFUL",
+      "scope": "Team buff to Electric Code allies ONLY (element-typed target); 'of the skill user's ATK' = caster-scaled FLAT add, not a % of each target's own ATK",
+      "durationSemantics": "15 sec per stack, stacks to 5; lastBullet fires ~every 8-9s so steady-state is ~2 concurrent stacks, NOT 5 — a max-stacks static encoding over-credits ~2.5×",
+      "triggerIdentity": "lastBullet, gated on self in Collect Hacking Code (same self-status gate as S1a; satisfied by every natural magazine but must be authored)",
+      "targetSet": "alliesOfElement Electric — includes exia herself (no 'except self' clause); non-Electric teammates get NOTHING",
+      "nearestWrongModel": "(a) stat atkPct 5.8 scaling each target's OWN buffed ATK instead of casterAtkPct flat off exia's supporter-class static ATK — over-credits every high-ATK carry; (b) target 'allies' unfiltered — credits non-Electric units; (c) durationSec 5 copied from the sibling line",
+      "distinguishingAssertion": "buffApply {stat: 'casterAtkPct'} with FLAT value ≈ 0.058 × exia.staticAtk (the harness flat-resolves caster-scaled stats at apply time — the raw 5.8 must NOT appear as the value), targetSlug set == exactly the comp's Electric members, at last-bullet frames, maxStacks 5, expiresFrame = apply+900. RED under atkPct encoding (value 5.8, per-target scaling) and under unfiltered targeting (buffApply on a non-Electric slug)",
+      "inertness": "Non-Electric teammates' damage must not move when this line is patched out",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ 10 highest-DEF enemies… 122.32% dmg, DEF ▼2.71%",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-cast instant damage vs the single boss (the 10-enemy clause collapses to one target on a partless single boss) + a second, independent boss DEF debuff (different slot key than S1's 13.77% — they coexist, no overwrite)",
+      "durationSemantics": "Damage instant on cast; DEF ▼ 5 sec per cast (cd 20s → low uptime)",
+      "triggerIdentity": "burstCast (exia's OWN burst, stage 1) — fires only on rotations SHE wins the B1 cast; in the liter fixture the two B1s alternate/compete, so burstCast vs stageEnter/fullBurstEnter is live",
+      "targetSet": "enemy (boss); DEF ▼ as a boss-held debuff",
+      "nearestWrongModel": "(a) damage given the +50% FB major — burst-cast damage lands BEFORE the FB window opens (taxonomy #9: burst-cast damage is always FB-exempt); (b) keyed to stageEnter:1 so it fires on liter's B1 casts too",
+      "distinguishingAssertion": "One damage event (bucket burst, mult 122.32) per exia burstCast event only — count matches her actual casts in the rotation log, with inFullBurst===false / fbMajorApplied===false; DEF ▼ 2.71 buffApply (casterIdx null) with expiresFrame cast+300. RED under FB-major application and under stageEnter keying (fires on liter's casts)",
+      "inertness": "Must not fire on Full Bursts exia did not cast; no +50% FB, no range bonus on the hit",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ at max stacks… +122.32% dmg, DT ▲18.04% 10s",
+      "disposition": "FAITHFUL",
+      "scope": "Conditional rider on the burst: a SECOND 122.32% hit (total 244.64% when gated in) plus Damage Taken ▲ on the BOSS — a team-wide debuff benefiting every unit's damage for 10s (taxonomy #4), emphatically NOT a self buff",
+      "durationSemantics": "Damage instant; damageTakenPct 18.04 for 10 sec per gated cast",
+      "triggerIdentity": "burstCast composed with a max-stacks gate: fires ONLY when Collect Hacking Code is at 5 stacks at cast time (resourceGate {min:5} on the Hacking Code pool). The FIRST burst of the fight is the discriminator — B1 casts within the opening seconds, likely before 5 full charges have landed, so the rider must be able to NOT fire",
+      "targetSet": "'the same target(s)' — the boss; DT ▲ as boss-held debuff (casterIdx===null)",
+      "nearestWrongModel": "(a) ungated — every burst deals 244.64% and applies DT ▲, over-crediting the whole team every rotation; (b) gate at ≥1 stack instead of ==max(5); (c) damageTakenPct mis-scoped as a self/team ATK-side buff instead of a boss debuff",
+      "distinguishingAssertion": "withPatchedOverride removing skill2's stack-grant block: faithful → rider damage event and damageTakenPct buffApply NEVER appear while the base 122.32% still fires every cast; nearest-wrong (ungated) → still present. Unpatched: rider present exactly on casts where pre-cast stack count is 5, absent on any earlier-than-5-stacks cast; damageTakenPct 18.04 buffApply has casterIdx===null and expiresFrame cast+600, and patching it out drops EVERY unit's damage, not only exia's",
+      "inertness": "No rider damage and no DT ▲ on any cast below max stacks; DT ▲ must not appear as a unit-targeted buff",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:DEF ▼ 13.77% boss debuff (lastBullet, status-gated)",
+    "skill1:Reload speed fixed +95% 10s (fullBurstEnter, self)",
+    "skill2:Collect Hacking Code ATK ▲28% x5 (full-charge hit, self)",
+    "skill2:ATK ▲5.8% of user's ATK x5 (lastBullet, Electric allies)",
+    "burst:122.32% damage + DEF ▼2.71% (burstCast, boss)",
+    "burst:max-stacks rider +122.32% + Damage Taken ▲18.04% (gated)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": ["ATK ▼ 13.77% for 5 sec."],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of damage risk: (1) S2b encoded as atkPct (per-target %) instead of casterAtkPct flat off exia's supporter static ATK — the harness flat-resolves caster-scaled values at apply time, so the assertion on the emitted value (≈0.058×staticAtk, not 5.8) is the clean discriminator; also its Electric-only target filter and 15s/steady-state ~2-stack (not 5) uptime. (2) Burst rider left ungated or gated ≥1 stack — patch out the S2a stack source and assert the rider goes silent; also Damage Taken ▲ must be a boss-held debuff (casterIdx null) benefiting the whole team. (3) S1 reload keyed to burstCast instead of fullBurstEnter — live in the liter fixture where two B1s compete; and it must not be skipped as 'defensive' (reload = shots fired = damage). (4) Boss DEF ▼ lines (13.77% S1, 2.71% burst): the schema's defPct is documented self-inert; if the engine lacks a boss-DEF-reduction channel these are a declared GAP, not a silent drop — the driver must reconcile which channel (if any) carries them, and the S1 one has real downtime (~8-9s magazine cycle vs 5s duration), so a permanent encoding over-credits. (5) Collect Hacking Code is load-bearing STATE read by three other lines (S1a gate, S2b gate, burst rider gate) — it should be modeled as a queryable resource pool, not only an atkPct buff, or the gates cannot be expressed. (6) Burst-cast damage is FB-exempt by timing (verified project fact); fbMajorApplied must be false. All magnitudes are kit-literal (DATAMINED); the stack-ramp trajectory and the clamp-vs-additive reload approximation are the only ⚑ judgment calls. Could not write scripts/kit-autonomy/reviews/exia.test-review.json — no file tools available in this run; this JSON is the deliverable.",
+  "model": "claude-fable-5"
+}

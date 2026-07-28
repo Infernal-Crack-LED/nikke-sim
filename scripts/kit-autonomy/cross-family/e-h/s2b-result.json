@@ -1,0 +1,151 @@
+{
+  "slug": "e-h",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Crafts 1 homemade magazine, up to a max",
+      "disposition": "FAITHFUL",
+      "scope": "resource machinery (Scrap pool -> magazine counter), self only",
+      "durationSemantics": "continuous/permanent — magazines persist once crafted; kit never states they are consumed",
+      "triggerIdentity": "resource-threshold: fires when Scrap pool reaches 10 AND magazines < 4 (pre-consume check); consumes the 10 Scraps on fire. On the control comp this fires exactly once, at t=0, off skill2's start-of-battle +10",
+      "targetSet": "self",
+      "nearestWrongModel": "Magazines assumed at the 4-stack cap (or ramping to 4 over the fight) — 'up to a maximum of 4' read as the steady state instead of the ceiling. With no scrap income on a partless solo boss, 4 is unreachable",
+      "distinguishingAssertion": "On controlComp('e-h'), the magazine count (resource pool or atkPct stack count) equals 1 for the ENTIRE 180s — no buffApply for the skill1 ATK line ever shows stacks>1 or a second application after t~0",
+      "inertness": "No re-craft events after t=0; magazine count must never exceed 1 on the control comp",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 7.5% continuously x the number",
+      "disposition": "FAITHFUL",
+      "scope": "generic self ATK (atkPct — scales own ATK), no attack-type scoping",
+      "durationSemantics": "'continuously' = permanent while magazines are held — NO durationSec; value scales linearly with magazine count",
+      "triggerIdentity": "applied on craft (skill1 activation); effectively a passive from t~0 at 1 magazine on this boss",
+      "targetSet": "self",
+      "nearestWrongModel": "Authored at max-stacks magnitude: atkPct 30 (7.5 x 4) as a flat passive, or 7.5 with maxStacks:4 assumed filled — over-credits ATK by ~22.5 points all fight. Secondary misread: giving it a durationSec so it lapses",
+      "distinguishingAssertion": "Event log shows buffApply stat 'atkPct' value 7.5 (stacks 1) on e-h with no expiresFrame (or expiry >= fight length), and NO buffApply at value 30 / stacks 4 anywhere in the run",
+      "inertness": "Must not exceed one 7.5% stack on the control comp; must not expire mid-fight",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle. Scrap",
+      "disposition": "FAITHFUL",
+      "scope": "resource grant: +10 Scrap at t=0, pool cap 10",
+      "durationSemantics": "one-shot grant at battle start; 'continuously' modifies the pool's persistence, not a periodic income",
+      "triggerIdentity": "battle-start (t=0), once — NOT an interval. This grant is what chains skill1's first (and only) craft and skill2 E5's first (and only) EAD proc",
+      "targetSet": "self",
+      "nearestWrongModel": "Read as periodic scrap income ('continuously' -> interval trigger regenerating scraps), which would re-craft magazines toward 4 and re-proc the EAD buff all fight",
+      "distinguishingAssertion": "Exactly ONE scrap-obtain chain in the whole run: one skill1 craft, one EAD buffApply, both at t~0; no scrap-driven event at any t>0 on the control comp",
+      "inertness": "No recurring scrap gains; skill2 E5's buff must NOT re-refresh after its first 15s window lapses",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "destroys a destructible projectile. Scr",
+      "disposition": "UNMODELED",
+      "scope": "team-wide event listener (ally or self), scrap +1",
+      "durationSemantics": "per-event grant, pool cap 10",
+      "triggerIdentity": "destructible-projectile destruction — an event class the sim does not emit (no projectile entities on the scope-lock boss)",
+      "targetSet": "self (pool owner)",
+      "nearestWrongModel": "Approximating it with an interval scrap drip 'to be fair to the kit' — invents magazine ramp and EAD refreshes the real fight never has",
+      "distinguishingAssertion": "Zero scrap-gain events after t=0; totals identical with this line present vs absent on the control comp",
+      "inertness": "Must contribute nothing on the partless, projectile-free scope-lock boss",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "destroys an enemy's part. Scraps ▲ 5",
+      "disposition": "UNMODELED",
+      "scope": "team-wide event listener, scrap +5",
+      "durationSemantics": "per-event grant, pool cap 10",
+      "triggerIdentity": "enemy-part destruction — the scope-lock boss is partless; the sim has no part entities",
+      "targetSet": "self (pool owner)",
+      "nearestWrongModel": "Crediting part-destruction scrap income on the partless boss (or folding it into an assumed magazine ramp)",
+      "distinguishingAssertion": "Same as E2: no scrap events after t=0; line is verbatim-recorded, not blocked",
+      "inertness": "Zero contribution on the partless boss",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when an enemy is neutralized. Scraps ▲",
+      "disposition": "UNMODELED",
+      "scope": "team-wide event listener, scrap +2",
+      "durationSemantics": "per-event grant, pool cap 10",
+      "triggerIdentity": "enemy neutralized — the raid boss is never killed inside the 180s sim and no adds exist",
+      "targetSet": "self (pool owner)",
+      "nearestWrongModel": "Any modeled kill-credit income",
+      "distinguishingAssertion": "No scrap events after t=0; line verbatim-recorded in unmodeled",
+      "inertness": "Zero contribution in v1 scope",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Elemental Advantage Attack Damage ▲ 16.",
+      "disposition": "FAITHFUL",
+      "scope": "elemental-advantage-scoped damage buff (elementDamagePct) — live ONLY when e-h (Wind) is advantaged vs the boss element (Iron); NOT a generic Damage-Up",
+      "durationSemantics": "15 s per proc, refresh on re-proc; on the control comp it procs once at t=0 and lapses at t=15s, never refreshing",
+      "triggerIdentity": "on scrap-obtain (any of E1-E4 firing) — here only the t=0 start-of-battle grant",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoded as generic attackDamagePct (live vs ANY boss element, e.g. the harness Fire boss) and/or as a permanent passive instead of a 15s window off scrap gains",
+      "distinguishingAssertion": "buffApply stat 'elementDamagePct' value 16.36 at t~0 with expiresFrame ~900 (15s), no re-application; AND on the default (Fire-boss) controlComp, withPatchedOverride zeroing this value changes totals(res)['e-h'] by 0 — green under advantage-gated elementDamagePct, red under attackDamagePct",
+      "inertness": "Must move ZERO damage vs a non-Iron boss; must not persist past 15s",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon in use.",
+      "disposition": "FAITHFUL",
+      "scope": "self weapon swap: charge weapon, per-shot 61% of final ATK, full-charge 250% OF THAT DAMAGE (=152.5% per full-charge shot), chargeTime 0.4s, maxAmmo = 1 x magazines (=1 on control comp), 10s window",
+      "durationSemantics": "10 s hard cap OR all rounds fired, whichever first — with 1 round the swap ends after ONE shot and e-h resumes her base SMG for the rest of the window",
+      "triggerIdentity": "burstCast (her own burst) — the swap exists only on rotations SHE bursts; shots land inside the FB window so they take the +50% FB major by timing",
+      "targetSet": "self",
+      "nearestWrongModel": "Two stacked misreads: (a) maxAmmo fixed at 4 (cap-assumed magazines) -> 4 charged shots per burst instead of 1; (b) 'Full Charge Damage: 250% of damage' read as 250% of ATK instead of 61%x2.5=152.5%. Also plausible: ignoring the all-rounds-fired deactivation so the swap fires at SMG cadence for the full 10s at 61%/shot",
+      "distinguishingAssertion": "Per e-h burstCast on controlComp, the event log contains EXACTLY ONE swap/charge-bucket damage event from her, with mult consistent with 61x2.5 (~152.5% of final ATK, under the live 430.05% buff), followed by resumed normal-bucket SMG shots inside the same 10s",
+      "inertness": "Never more than 1 swap round per cast on the control comp; no swap damage on rotations where helm (not e-h) casts the B3",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 430.05% for 10 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "generic self ATK (atkPct), applies to swap shot AND her SMG fire inside the window",
+      "durationSemantics": "durationSec 10 from her cast — wall-clock, not rounds",
+      "triggerIdentity": "burstCast (self burst block) — NOT fullBurstEnter. This is the divergence the control comp is built to expose: helm is a co-B3, so team FBs occur on rotations e-h did not cast",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter, granting +430.05% ATK on EVERY team Full Burst including helm's rotations — massive over-credit in any multi-B3 comp",
+      "distinguishingAssertion": "count(buffApply atkPct value 430.05 on e-h) == count(her own burstCast events) and is STRICTLY LESS than count(fullBurstStart events) on controlComp('e-h') with helm=true — green under burstCast, red under fullBurstEnter",
+      "inertness": "No 430.05% application on FBs chained by helm's burst; buff gone 10s after her cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:craft-magazine-machinery",
+    "skill1:atk-7.5-per-magazine",
+    "skill2:start-of-battle-scraps-10",
+    "skill2:elemental-advantage-16.36-15s",
+    "burst:weapon-swap-1-round-per-magazine",
+    "burst:atk-430.05-10s-burstcast"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+      "Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+      "Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+    ],
+    "burst": []
+  },
+  "notes": "EXPECTED SHARED-PRIOR MISREADS, in order of damage moved: (1) THE MAGAZINE-CAP TRAP — 'up to a maximum of 4' invites steady-state-4, but on the scope-lock partless solo boss the ONLY scrap event is the t=0 +10, so exactly 1 magazine exists all fight; that pins skill1 ATK at 7.5% (not 30%) and the burst swap at 1 round (not 4). Every assertion above leans on this derivation — it follows taxonomy rule 10 (derive the trajectory from the kit-stated start/consume/rebuild: start 10, consume 10, rebuild 0). (2) burstCast vs fullBurstEnter on the 430.05% — the harness control comp deliberately carries helm as co-B3, so this misread is directly observable as extra buffApply events. (3) 'Full Charge Damage: 250% of damage' is 250% OF the 61% line (152.5% total), not 250% of ATK. (4) The EAD line must be advantage-gated (elementDamagePct), hence INERT vs the harness's Fire boss and expiring at t=15s — a generic attackDamagePct or permanent encoding fails the zero-delta patch assertion. OPEN AMBIGUITY THE DRIVER MUST RECONCILE: the kit never states magazines are CONSUMED by the burst; the literal read (persist, each cast gets ammo = magazine count) is what I asserted. If the driver assumed consumption + re-craft, that is a divergence to surface — though on this boss both readings still yield 1 round on the first cast, consumption would yield 0 rounds on later casts (no scrap income to re-craft), making the swap fire on only the FIRST burst. A distinguishing check: whether the SECOND e-h burst cast produces a swap shot. Prefer encoding the scrap/magazine machinery as engine resources over hardcoding 1 stack, so non-scope-lock bosses with parts/adds stay expressible — but all control-comp assertions must pin the 1-magazine steady state.",
+  "model": "claude-fable-5"
+}
