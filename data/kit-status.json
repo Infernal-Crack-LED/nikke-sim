@@ -32,6 +32,43 @@
     }
   },
   "units": {
+    "2b": {
+      "name": "2B",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-28",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-28: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/2b.json + scripts/kit-autonomy/manual-review/2b.md.",
+          "med ENCODING (skill2+burst): All three damage lines encoded non-crit (flatDamage default); blind S6 encodes crit:true. Structurally the only divergence in the entire gauntlet, documented with a measurement recipe on BOTH sides — but the SSOT leans toward the blind: function/burst damage 'CRIT at the caster's rate (default on)', and the popup-verified Cinderella worked example shows a burst nuke critting (x1.5 pair exact). Non-crit under-credits these hits by ~7.5% expected value if the game crits them."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-07-28",
+      "evidence": "kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0 (binding judge kimi-code/k3); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged; S6 blind override byte-identical to driver on all 5 lines (burstCast escalating targetMaxHpPct 10.03/20.06/57.76 cumulative 87.85%, hitCount:300 167.45 recurring, passive atkOfMaxHpPct 6.16 live final Max HP, burst 2439.36 distributed + 792 plain, both FB-exempt); S5 blind 20/20 green vs driver (2 over-strict assertions reconciled as blind-side defects); 4 load-bearing claims proven by independent counterfactuals",
+      "residual": "crit encoding on the 3 damage lines (driver non-crit default vs blind crit:true rider-prior) — SSOT leans crit-on for function/burst damage; resolve with a focus-2B popup-colour read (med, documented, not blocking)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill2: cluster bomb is encoded RECURRING (every 300 shots, engine hitCount convention) — ⚑ if the real kit is a one-time 300-shot trigger, a focus-video popup count or board A/B is the discriminator",
+        "skill1: escalating Max HP ladder is additive (10.03+20.06+57.76 = 87.85% at 3 stacks) per the Liter-validated 'each subsequent effect triggers all effects before it' reading — ⚑ a latest-line-only game (57.76% cap) would shrink her ATK conversion ~30%",
+        "burst/skill2: all damage hits are non-crit (flatDamage default, helm/exia burst-nuke precedent) — ⚑ opt in via crit:true if a measurement shows 2B's procs crit",
+        "burst: 'all enemies' (2439.36% distributed) and '1 enemy with highest remaining HP' (792% additional) both collapse to the single immortal boss — multi-target selection is out of domain for the single-target sim",
+        "burst/skill1: same-frame ordering convention — the engine applies the Nth burst's S1 Max HP tier BEFORE that cast's 2439.36/792 hits snapshot ATK, so cast N's nuke already benefits from tier N (observed cast amounts 14.7M→17.1M→22.0M, plateau at the 3-stack cap). ⚑ whether the game applies the tier before or after the same cast's damage is an unmeasured ordering convention; the test pins only the ordering-robust GROWTH (last cast > first cast), not the exact tier index"
+      ]
+    },
     "ada": {
       "name": "Ada",
       "burst": "III",
