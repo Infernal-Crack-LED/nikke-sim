@@ -22,6 +22,7 @@ import {
   type TableCardData,
 } from '../infographics/node/render.js';
 import { cellLabel, parseCellId } from '../dpschart/matrix.js';
+import { ELEMENT_FILTERS } from '../infographics/spec.js';
 import { MAX_CANVAS_PIXELS } from './card-from-build.js';
 
 const SCALE = 2; // retina, same as build-infographics.ts and card-from-build.ts
@@ -46,7 +47,8 @@ export interface DpsArtifact {
 
 // The element filter set both link surfaces expose (web DpsChartTab
 // ELEMENT_FILTERS pills, bot /dps choices) — query params are lowercase.
-export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
+// Canonical home: src/infographics/spec.ts (the render request contract).
+export { ELEMENT_FILTERS };
 const canonicalElement = (el: string): string =>
   el[0].toUpperCase() + el.slice(1);
 

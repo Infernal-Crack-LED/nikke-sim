@@ -12,10 +12,14 @@
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
 //
-// Every image URL the API hands out is content-addressed, so the 302s and the
-// cached files are safe for Discord's hard URL-keyed CDN caching (plan §2).
-// The 302 responses themselves are no-cache: the hash embeds RENDERER_VERSION,
-// so a renderer change must be free to point the same build code at a new file.
+// Every dynamic route (GET or POST) funnels through the SAME pipe: query
+// params / JSON body → parseRenderSpec → specCacheKey → resolveRender →
+// ensureCached (src/infographics/spec.ts is the single contract, so the entry
+// points can never drift). Every image URL the API hands out is
+// content-addressed, so the 302s and the cached files are safe for Discord's
+// hard URL-keyed CDN caching (plan §2). The 302 responses themselves are
+// no-cache: the hash embeds RENDERER_VERSION, so a renderer change must be
+// free to point the same build code at a new file.
 import type { Context, Hono } from 'hono';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
@@ -27,6 +31,13 @@ import {
   buildChargeTable,
   GENERIC_BASE_FRAMES,
 } from '../infographics/core/tableData.js';
+import {
+  parseRenderSpec,
+  specCacheKey,
+  specCacheType,
+  type RenderSpec,
+  type RenderSpecData,
+} from '../infographics/spec.js';
 import { decodeBuild } from '../share/build-code.js';
 import { IMMUTABLE, NO_CACHE, mimeFor } from './static.js';
 import type { RenderCache } from './render-cache.js';
@@ -42,15 +53,6 @@ import {
   renderTableCardPng,
   type DpsArtifact,
 } from './dps-table-cards.js';
-
-// Bump when the card renderers change in a way that should re-render existing
-// build codes — it is part of the cache key, so old files simply age out via
-// LRU instead of serving stale pixels.
-const RENDERER_VERSION = 'v1';
-
-// Build codes are compact (a 5-slot build is ~300-600 chars; a union roster
-// with loadouts is still well under 2 KB). Anything beyond this is garbage.
-const BUILD_CODE_MAX_LEN = 4096;
 
 // Cached dynamic renders: `<type>.<hash16>.png` — nothing else is servable
 // from the cache dir.
@@ -74,7 +76,7 @@ export interface ApiContext {
 // across instances and restarts). When NIKKESIM_RENDER_SECRET is configured,
 // bakery-bot sends it as `x-render-secret`; anonymous callers are still served
 // (Cloudflare rate-limits them). To make the secret mandatory later, flip this
-// one constant to true.
+// one constant to true — it gates every dynamic route, POST /render included.
 const REQUIRE_RENDER_SECRET = false;
 
 function text(status: number, body: string): Response {
@@ -101,11 +103,9 @@ async function sendRaw(file: string, cacheControl: string): Promise<Response> {
   });
 }
 
-const hashKey = (type: string, code: string): string =>
-  createHash('sha256')
-    .update(`${RENDERER_VERSION}|${type}|${code}`)
-    .digest('hex')
-    .slice(0, 16);
+// sha256 of the spec cache key — the hash in `<type>.<hash16>.png`.
+const hashKey = (key: string): string =>
+  createHash('sha256').update(key).digest('hex').slice(0, 16);
 
 // Single-flight: concurrent misses for the same card share one render. Keyed
 // on the cache FILENAME (which already embeds type + content hash).
@@ -167,41 +167,7 @@ function secretOk(req: Request, ctx: ApiContext): boolean {
   return req.headers.get('x-render-secret') === ctx.renderSecret;
 }
 
-function handleDynamic(
-  c: Context,
-  type: 'team' | 'roster',
-  ctx: ApiContext
-): Promise<Response> | Response {
-  if (!secretOk(c.req.raw, ctx)) {
-    return text(401, 'missing or invalid x-render-secret');
-  }
-  const code = (c.req.query('b') ?? '').trim();
-  if (!code || code.length > BUILD_CODE_MAX_LEN) {
-    return text(400, 'invalid build code');
-  }
-  const build = decodeBuild(code);
-  if (!build) {
-    return text(400, 'invalid build code');
-  }
-  // decodeBuild checks only the envelope — the roster/slot contents are
-  // attacker-controlled and size the canvas, so validate BEFORE rendering
-  // (an unvalidated roster was a one-request ~1.6 GB canvas allocation).
-  const invalid = cardBuildError(build, type);
-  if (invalid) {
-    return text(400, invalid);
-  }
-
-  const file = `${type}.${hashKey(type, code)}.png`;
-  return renderAndRedirect(ctx, file, () =>
-    type === 'team'
-      ? renderTeamCardPng(build, ctx.chars, ctx.icon)
-      : renderRosterCardPng(build, ctx.chars, ctx.icon)
-  );
-}
-
-// ---- dps.png -----------------------------------------------------------------
-
-const DEFAULT_DPS_CELL = 'solo.eleweak.c100.8of12';
+// ---- dpschart.json -------------------------------------------------------------
 
 // dpschart.json is built into dist/ at deploy. Read lazily, cached in memory
 // keyed by path — the server restarts every deploy, so read-once is fine (a
@@ -221,104 +187,199 @@ function loadDpsChart(ctx: ApiContext): Promise<DpsArtifact | null> {
   return p;
 }
 
-async function handleDpsChart(c: Context, ctx: ApiContext): Promise<Response> {
-  if (!secretOk(c.req.raw, ctx)) {
-    return text(401, 'missing or invalid x-render-secret');
-  }
-  const art = await loadDpsChart(ctx);
-  if (!art) {
-    return text(404, 'dps chart data unavailable');
-  }
-  const params = {
-    cell: (c.req.query('cell') ?? '').trim() || DEFAULT_DPS_CELL,
-    element: c.req.query('element')?.trim().toLowerCase() || null,
-    unit: c.req.query('unit')?.trim() || null,
-  };
-  const built = dpsChartData(art, params, ctx.icon);
-  if ('error' in built) {
-    return text(400, built.error);
-  }
-  const file = `dps.${hashKey('dps', `${params.cell}|${params.element ?? '-'}|${params.unit ?? '-'}`)}.png`;
-  return renderAndRedirect(ctx, file, () => renderDpsChartPng(built.data));
+// ---- the shared render pipeline -------------------------------------------------
+
+interface Resolved {
+  file: string;
+  render: () => Promise<Buffer>;
+}
+interface ResolveFailure {
+  error: string;
+  status: number;
 }
 
-// ---- table/*.png ---------------------------------------------------------------
-
-// Per-unit tables validate the slug against the SAME character metadata the
-// build-code cards use (data/characters.json at boot, injectable in tests).
-async function handleTable(
-  c: Context,
+// A validated spec → its cache filename + render closure, or the 4xx the
+// request deserves. Semantic checks that the spec parser can't do alone live
+// here: cardBuildError (canvas-size safety), the dps population filter, and
+// the per-unit ammo/charge metadata checks.
+async function resolveRender(
+  spec: RenderSpec,
   ctx: ApiContext,
-  kind: 'max-ammo' | 'charge-speed'
-): Promise<Response> {
-  if (!secretOk(c.req.raw, ctx)) {
-    return text(401, 'missing or invalid x-render-secret');
-  }
-  const slug = c.req.query('unit')?.trim() || null;
-
-  let key: string;
-  let data: TableCardData;
-  if (kind === 'max-ammo') {
-    if (!slug) {
-      return text(400, 'unit is required');
-    }
-    const ch = ctx.chars[slug];
-    if (!ch) {
-      return text(400, `unknown unit '${slug}'`);
-    }
-    const base = ch.ammo;
-    if (!base || base <= 0) {
-      return text(400, `${ch.name} has no ammo data`);
-    }
-    key = `max-ammo|${slug}`;
-    data = buildAmmoTable(base, ch.name);
-  } else {
-    if (slug) {
-      const ch = ctx.chars[slug];
-      if (!ch) {
-        return text(400, `unknown unit '${slug}'`);
+  art: DpsArtifact | null
+): Promise<Resolved | ResolveFailure> {
+  const file = `${specCacheType(spec)}.${hashKey(specCacheKey(spec))}.png`;
+  switch (spec.kind) {
+    case 'team':
+    case 'roster': {
+      // parseRenderSpec already decoded this code once — decodeBuild is pure.
+      const build = decodeBuild(spec.build);
+      if (!build) {
+        return { error: 'invalid build code', status: 400 };
       }
-      // Charge weapons only (SR/RL). characters.json carries the charge
-      // directly in frames (= round(charge_time/100*60), the bot's formula).
-      const baseFrames = ch.chargeFrames ?? 0;
-      if (baseFrames <= 0 || (ch.weapon !== 'SR' && ch.weapon !== 'RL')) {
-        return text(
-          400,
-          ch.weapon === 'SR' || ch.weapon === 'RL'
-            ? `${ch.name} has no charge data`
-            : `${ch.name} (${ch.weapon}) is not a charge weapon`
-        );
+      // decodeBuild checks only the envelope — the roster/slot contents are
+      // attacker-controlled and size the canvas, so validate BEFORE rendering
+      // (an unvalidated roster was a one-request ~1.6 GB canvas allocation).
+      const invalid = cardBuildError(build, spec.kind);
+      if (invalid) {
+        return { error: invalid, status: 400 };
       }
-      key = `charge-speed|${slug}`;
-      data = buildChargeTable(baseFrames, ch.name);
-    } else {
-      key = 'charge-speed|generic';
-      data = buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)');
+      return {
+        file,
+        render: () =>
+          spec.kind === 'team'
+            ? renderTeamCardPng(build, ctx.chars, ctx.icon)
+            : renderRosterCardPng(build, ctx.chars, ctx.icon),
+      };
+    }
+    case 'dps': {
+      // resolveSpec 404s before this when the artifact is missing.
+      const built = dpsChartData(
+        art as DpsArtifact,
+        {
+          cell: spec.cell,
+          element: spec.element ?? null,
+          unit: spec.unit ?? null,
+        },
+        ctx.icon
+      );
+      if ('error' in built) {
+        return { error: built.error, status: 400 };
+      }
+      return { file, render: () => renderDpsChartPng(built.data) };
+    }
+    case 'table': {
+      let data: TableCardData;
+      if (spec.table === 'max-ammo') {
+        const ch = ctx.chars[spec.unit];
+        if (!ch) {
+          return { error: `unknown unit '${spec.unit}'`, status: 400 };
+        }
+        const base = ch.ammo;
+        if (!base || base <= 0) {
+          return { error: `${ch.name} has no ammo data`, status: 400 };
+        }
+        data = buildAmmoTable(base, ch.name);
+      } else if (spec.unit) {
+        const ch = ctx.chars[spec.unit];
+        if (!ch) {
+          return { error: `unknown unit '${spec.unit}'`, status: 400 };
+        }
+        // Charge weapons only (SR/RL). characters.json carries the charge
+        // directly in frames (= round(charge_time/100*60), the bot's formula).
+        const baseFrames = ch.chargeFrames ?? 0;
+        if (baseFrames <= 0 || (ch.weapon !== 'SR' && ch.weapon !== 'RL')) {
+          return {
+            error:
+              ch.weapon === 'SR' || ch.weapon === 'RL'
+                ? `${ch.name} has no charge data`
+                : `${ch.name} (${ch.weapon}) is not a charge weapon`,
+            status: 400,
+          };
+        }
+        data = buildChargeTable(baseFrames, ch.name);
+      } else {
+        data = buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)');
+      }
+      data.icon = ctx.icon ?? undefined;
+      if (spec.unit) {
+        data.portrait = (await loadPortrait(spec.unit)) ?? undefined;
+      }
+      return { file, render: () => Promise.resolve(renderTableCardPng(data)) };
     }
   }
+}
 
-  data.icon = ctx.icon ?? undefined;
-  if (slug) {
-    data.portrait = (await loadPortrait(slug)) ?? undefined;
+// The ONE request pipeline every dynamic route shares: request-shaped input
+// (GET query params mapped to an object, or the POST body verbatim) →
+// parseRenderSpec (with the data it needs for existence checks) →
+// resolveRender. GET wraps the result in a 302, POST in JSON — the cache
+// file/render can never differ between them.
+async function resolveSpec(
+  input: unknown,
+  ctx: ApiContext
+): Promise<Resolved | ResolveFailure> {
+  const kind =
+    input && typeof input === 'object'
+      ? (input as Record<string, unknown>).kind
+      : undefined;
+  // Load the existence-check data BEFORE parsing, so unknown cells/units
+  // 400 identically from GET and POST. The dps artifact miss stays a 404
+  // (a server-side gap, not a request error) ahead of param validation.
+  let data: RenderSpecData | undefined;
+  let art: DpsArtifact | null = null;
+  if (kind === 'dps') {
+    art = await loadDpsChart(ctx);
+    if (!art) {
+      return { error: 'dps chart data unavailable', status: 404 };
+    }
+    data = { cells: Object.keys(art.cells), units: Object.keys(art.units) };
+  } else if (kind === 'table') {
+    data = { units: Object.keys(ctx.chars) };
   }
-  const file = `table.${hashKey('table', key)}.png`;
-  return renderAndRedirect(ctx, file, () =>
-    Promise.resolve(renderTableCardPng(data))
-  );
+  const parsed = parseRenderSpec(input, data);
+  if (!parsed.ok) {
+    return { error: parsed.error, status: 400 };
+  }
+  return resolveRender(parsed.spec, ctx, art);
+}
+
+function handleDynamicGet(
+  input: (c: Context) => unknown,
+  ctx: ApiContext
+): (c: Context) => Promise<Response> {
+  return async (c) => {
+    if (!secretOk(c.req.raw, ctx)) {
+      return text(401, 'missing or invalid x-render-secret');
+    }
+    const r = await resolveSpec(input(c), ctx);
+    if ('error' in r) {
+      return text(r.status, r.error);
+    }
+    return renderAndRedirect(ctx, r.file, r.render);
+  };
 }
 
 // Register every /api/v1/img/* route on the hono app. Static routes (exact
 // paths) outrank the trailing wildcard in hono's router, so registration
 // order here is readability, not correctness.
 export function registerImgApi(app: Hono, ctx: ApiContext): void {
-  app.get('/api/v1/img/team.png', (c) => handleDynamic(c, 'team', ctx));
-  app.get('/api/v1/img/roster.png', (c) => handleDynamic(c, 'roster', ctx));
-  app.get('/api/v1/img/dps.png', (c) => handleDpsChart(c, ctx));
-  app.get('/api/v1/img/table/max-ammo.png', (c) =>
-    handleTable(c, ctx, 'max-ammo')
+  app.get(
+    '/api/v1/img/team.png',
+    handleDynamicGet((c) => ({ kind: 'team', build: c.req.query('b') }), ctx)
   );
-  app.get('/api/v1/img/table/charge-speed.png', (c) =>
-    handleTable(c, ctx, 'charge-speed')
+  app.get(
+    '/api/v1/img/roster.png',
+    handleDynamicGet((c) => ({ kind: 'roster', build: c.req.query('b') }), ctx)
+  );
+  app.get(
+    '/api/v1/img/dps.png',
+    handleDynamicGet(
+      (c) => ({
+        kind: 'dps',
+        cell: c.req.query('cell'),
+        element: c.req.query('element'),
+        unit: c.req.query('unit'),
+      }),
+      ctx
+    )
+  );
+  app.get(
+    '/api/v1/img/table/max-ammo.png',
+    handleDynamicGet(
+      (c) => ({ kind: 'table', table: 'max-ammo', unit: c.req.query('unit') }),
+      ctx
+    )
+  );
+  app.get(
+    '/api/v1/img/table/charge-speed.png',
+    handleDynamicGet(
+      (c) => ({
+        kind: 'table',
+        table: 'charge-speed',
+        unit: c.req.query('unit'),
+      }),
+      ctx
+    )
   );
 
   app.get('/api/v1/img/manifest.json', async () => {
