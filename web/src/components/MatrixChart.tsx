@@ -14,7 +14,7 @@ import {
 } from '../dpschartData';
 import { cellId, cellLabel, type Cell } from '../../../src/dpschart/matrix';
 import { copyDpsChartImage } from '../shareImage';
-import type { DpsChartData } from '../../../src/share/dpsChart';
+import type { DpsChartData } from '../../../src/infographics/core/dpsChart';
 
 const DEFAULT_CELL: Cell = {
   framework: 'standard',
@@ -23,14 +23,24 @@ const DEFAULT_CELL: Cell = {
   invest: 'scope',
 };
 
+// Shared-image payload: the FULL ranked population with an explicit §6.6 top-10
+// window request (mirrors DpsChartTab.toChartData).
 function toChartData(
   title: string,
-  bars: BarEntry[],
+  population: BarEntry[],
   compare: (BarEntry & { total: number }) | null
 ): DpsChartData {
   return {
     title,
-    bars: bars.map((b) => ({ name: b.name, element: b.element, dps: b.dps })),
+    topDps: population[0]?.dps ?? 0,
+    bars: population.map((b) => ({
+      name: b.name,
+      element: b.element,
+      dps: b.dps,
+      slug: b.slug,
+      imageUrl: b.imageUrl,
+    })),
+    window: {},
     compare: compare
       ? {
           name: compare.name,
@@ -68,6 +78,8 @@ export function MatrixChart({ initialCell }: { initialCell?: Cell }) {
   }
 
   const bars = chartBars(art, cell);
+  // full ranked population for the shared image (the inline chart keeps top-10)
+  const population = chartBars(art, cell, null, Infinity);
   const cmp = compareSlug ? compareIn(art, cell, compareSlug) : null;
   const shareLink = () => {
     const u = new URL(window.location.href);
@@ -104,7 +116,9 @@ export function MatrixChart({ initialCell }: { initialCell?: Cell }) {
           compare={cmp}
           onShareLink={shareLink}
           onShareImage={() =>
-            void copyDpsChartImage(toChartData(cellLabel(cell), bars, cmp))
+            void copyDpsChartImage(
+              toChartData(cellLabel(cell), population, cmp)
+            )
           }
         />
       </div>

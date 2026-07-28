@@ -5166,6 +5166,12 @@ export function App({ user }: { user: AuthUser | null }) {
                     onShareImage={() =>
                       void copyDpsChartImage({
                         title: 'Unit Comparison — variable groups',
+                        // synthetic comparison, not a ranked population: no
+                        // window — every row renders; topDps = the top group.
+                        topDps: Math.max(
+                          ...dpsResults.map((res) => res.varDamage),
+                          1
+                        ),
                         bars: dpsResults.map((res) => ({
                           name: res.varUnits.map((u) => u.name).join(' + '),
                           element:

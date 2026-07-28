@@ -4,7 +4,7 @@
 // DpsBarChart can't do — profile badges, muted sub-lines, sustain split bars,
 // and NEGATIVE bars extending left of a zero axis (buffer board).
 // Presentational only: the page maps each board's typed rows into RankChartBar.
-import { ELEMENT_COLORS } from '../../../src/share/teamCard';
+import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css

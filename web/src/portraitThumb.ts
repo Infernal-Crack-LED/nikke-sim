@@ -9,7 +9,7 @@
 // crossOrigin loading, and a data-URL cache. The CDN sends
 // `access-control-allow-origin: *` and we request with `crossOrigin='anonymous'`,
 // so the canvas is untainted and toDataURL is allowed.
-import { PORTRAIT_CROP_TOP } from '../../src/share/teamCard';
+import { PORTRAIT_CROP_TOP } from '../../src/infographics/core/canvas2d';
 import { steppedDownscale } from './imageDownscale';
 
 const cache = new Map<string, string>();

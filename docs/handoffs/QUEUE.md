@@ -86,6 +86,37 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   starting at rank 30 renders rank 30 as `relScore 1.000`, silently making the score mean something
   different in every shared image (`src/share/dpsChart.ts:19-20`).
 
+- **⇒ INFOGRAPHIC PHASE-3 REVIEW FOLLOW-UPS (branch `infographics-centralization`; three opus
+  cross-family review rounds 2026-07-27 — blocker + fixes landed, packets under the gitignored
+  `scratchpad/gates/`):** (1) **startCommand flip is
+  owner-gated** — `railway.json` still starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod
+  until the owner flips to `npm run start:server` (dist-server/ now builds in the `verify.sh deploy`
+  tier); (2) **API surface gaps vs Phase 4** — `/ol`, `/max-ammo`, `/charge-speed` render
+  `drawTableCard` with no route, no on-demand route for non-headline DPS cells or §6.6 per-unit
+  windows (the bot fork can't be deleted until these exist); (3) **no test boots the compiled
+  bundle** — serve-api.test.ts runs the server from source; env-defaults.ts asset resolution is
+  exercised only at deploy; (4) **golden drift off-Mac** — the byte-exact golden compare now runs
+  only on darwin-arm64, so renderer drift from a non-Mac session ships green; either commit
+  per-platform fixture hash sets or switch to a decoded-pixel compare at small tolerance;
+  (5) **ink-region geometry is hand-duplicated** (harness ×6, build-infographics ×2, golden test ×3)
+  from core cards' PAD_X/ICON — export a per-card `TITLE_TEXT_X` from the card modules and compute
+  regions from it so a layout change can't silently re-vacate the guard; (6) **RenderCache sweep is
+  O(cache size) per put** — track bytes in memory and readdir only when the total crosses maxBytes;
+  (7) review NOTEs unaddressed: Matrix-tab share PNG silently gained portraits + a wider label
+  column (unrequested, untested path); committed woff2 subsets have no generation script/glyph
+  manifest and declare the bare family `Roboto` (overrides body text on Linux/Android).
+  **Filed from the CLEAN loop-3 review (non-blocking):** (8) **portraitCache vs lazy portraitDir()**
+  — the cache is keyed on raw slug, so the first call freezes a slug's resolution against whatever
+  `NIKKESIM_PORTRAIT_DIR` held then; a later env change silently serves the old dir's result (latent,
+  not reachable today: env-defaults.ts sets the var before any render). Fix by keying the cache on
+  dir+slug OR pinning the dir once on first use AND — same finding — consider extracting
+  `PORTRAIT_SLUG_RE` into a side-effect-free module and reverting the lazy dir (a test's import
+  order drove the prod-code shape change); (9) **poison-restore is not in a `finally`**
+  (serve-api.test.ts) — an assertion failure between poison and restore leaks the sentinel into the
+  shared cacheDir for the rest of the file; (10) **304 test symmetry** — assert last-modified is
+  byte-identical between the 200 and 304 paths in both serve test files, and add the missing
+  `byteLength > 0` on the wrong-etag case.
+
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
   hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined

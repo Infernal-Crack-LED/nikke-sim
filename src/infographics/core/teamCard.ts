@@ -7,66 +7,8 @@
 // unit (`TeamCardUnit.img`) which is drawn (rounded-clipped) into the 60x60 slot;
 // units without an image degrade to an element-tinted box + name initial. The bot
 // has no CORS constraint, the browser loads CDN art with crossOrigin='anonymous'.
-
-// Structural subset of CanvasRenderingContext2D we use — keeps this compilable
-// without the DOM lib (root tsconfig) and works with node canvas contexts.
-export interface Canvas2DLike {
-  fillStyle: string;
-  font: string;
-  textAlign: string;
-  textBaseline: string;
-  globalAlpha: number;
-  fillRect(x: number, y: number, w: number, h: number): void;
-  fillText(text: string, x: number, y: number): void;
-  measureText(text: string): { width: number };
-  beginPath(): void;
-  moveTo(x: number, y: number): void;
-  arcTo(x1: number, y1: number, x2: number, y2: number, radius: number): void;
-  closePath(): void;
-  fill(): void;
-  // portrait drawing (optional feature — callers that never pass images can omit
-  // these; both browser Canvas2D and @napi-rs/canvas provide them).
-  save(): void;
-  restore(): void;
-  clip(): void;
-  drawImage(
-    image: unknown,
-    dx: number,
-    dy: number,
-    dw: number,
-    dh: number
-  ): void;
-  // source-cropping form (sx,sy,sw,sh → dx,dy,dw,dh): lets us crop a square out of a
-  // tall portrait instead of squishing its aspect ratio into the destination box.
-  drawImage(
-    image: unknown,
-    sx: number,
-    sy: number,
-    sw: number,
-    sh: number,
-    dx: number,
-    dy: number,
-    dw: number,
-    dh: number
-  ): void;
-}
-
-export const FONT = `-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif`;
-
-// Portrait square-crop framing — the single source of truth for how far down a
-// square is anchored when cropped out of a tall portrait (fraction of the vertical
-// overflow; 0 = top, 0.5 = center). Used by BOTH canvas crops (portraitThumb,
-// dpsChart) and, via the `--portrait-crop-top` CSS var that main.tsx sets from it,
-// the `object-position` on the sim-tab / chart <img>s. Change here to move all of
-// them together.
-export const PORTRAIT_CROP_TOP = 0.16;
-export const ELEMENT_COLORS: Record<string, string> = {
-  Fire: '#d92d38',
-  Water: '#0075f8',
-  Wind: '#00e554',
-  Electric: '#bc1eb1',
-  Iron: '#ff8321',
-};
+import { type Canvas2DLike, roundRect } from './canvas2d.js';
+import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 
 export interface TeamCardUnit {
   name: string;
@@ -91,6 +33,8 @@ export interface TeamCardMeta {
   weakness: string | null; // boss weakness element
   level: number; // synchro
   coreLabel: string; // e.g. "100% core"
+  icon?: unknown; // optional canvas-drawable image drawn beside the title
+  footer?: string; // descriptor added to the watermark footer (theme.ts)
 }
 
 // layout constants (logical px; caller scales for device pixel ratio)
@@ -112,23 +56,6 @@ const fmt = (n: number) =>
         ? `${(n / 1e3).toFixed(1)}K`
         : n.toFixed(0);
 
-export function roundRect(
-  ctx: Canvas2DLike,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-  r: number
-) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-}
-
 // Draw the card at logical (unscaled) coordinates. The caller must have created
 // a canvas of CARD_W x cardHeight(units.length) (times dpr) and pre-scaled ctx.
 export function drawTeamCard(
@@ -146,11 +73,17 @@ export function drawTeamCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // title + summary
+  // icon + title + summary
   ctx.textBaseline = 'alphabetic';
+  const ICON = 36;
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 30px ${FONT}`;
-  ctx.fillText('NIKKE Solo Raid Sim', padX, 56);
+  ctx.fillText('NIKKE Solo Raid Sim', textX, 56);
   ctx.font = `700 40px ${FONT}`;
   ctx.fillText(fmt(data.teamDamage), padX, 108);
   const bigW = ctx.measureText(fmt(data.teamDamage)).width;
@@ -231,13 +164,15 @@ export function drawTeamCard(
     ctx.textAlign = 'left';
   });
 
-  // footer
-  ctx.fillStyle = '#8b93a3';
-  ctx.font = `400 13px ${FONT}`;
-  ctx.fillText(
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
+  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
+  // a descriptor; it can never remove or replace the nikkesim.app mark.
+  drawWatermark(
+    ctx,
     padX,
-    H - 22
+    H - 22,
+    13,
+    meta.footer,
+    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
   );
 }
 
@@ -291,14 +226,20 @@ export function drawRosterCard(
   ctx.fillStyle = '#5b9dff';
   ctx.fillRect(0, 0, W, 5);
 
-  // title + summary (total only — no DPS/FB, per the roster card spec)
+  // icon + title + summary (total only — no DPS/FB, per the roster card spec)
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
+  const ICON = 36;
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 30px ${FONT}`;
   ctx.fillText(
     data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
-    padX,
+    textX,
     56
   );
   ctx.font = `700 40px ${FONT}`;
@@ -397,12 +338,14 @@ export function drawRosterCard(
     ctx.textAlign = 'left';
   });
 
-  // footer
-  ctx.fillStyle = '#8b93a3';
-  ctx.font = `400 13px ${FONT}`;
-  ctx.fillText(
-    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs',
+  // footer — the mandatory watermark final pass (theme.ts): `footer` only adds
+  // a descriptor; it can never remove or replace the nikkesim.app mark.
+  drawWatermark(
+    ctx,
     padX,
-    H - 22
+    H - 22,
+    13,
+    meta.footer,
+    'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
   );
 }

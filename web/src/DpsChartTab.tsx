@@ -27,7 +27,7 @@ import {
   type Cell,
 } from '../../src/dpschart/matrix';
 import { copyDpsChartImage } from './shareImage';
-import type { DpsChartData } from '../../src/share/dpsChart';
+import type { DpsChartData } from '../../src/infographics/core/dpsChart';
 
 const DEFAULT_CELL: Cell = {
   framework: 'solo',
@@ -51,19 +51,25 @@ const coerceEleFilter = (v: string | null): EleFilter =>
     ? (v as EleFilter)
     : null;
 
+// Shared-image payload: the FULL ranked population (not the inline top-10) with
+// an explicit §6.6 top-10 window request — shared images are windowed; the
+// population #1's dps anchors every label (topDps), not the window max.
 function toChartData(
   title: string,
-  bars: BarEntry[],
+  population: BarEntry[],
   compare: (BarEntry & { total: number }) | null
 ): DpsChartData {
   return {
     title,
-    bars: bars.map((b) => ({
+    topDps: population[0]?.dps ?? 0,
+    bars: population.map((b) => ({
       name: b.name,
       element: b.element,
       dps: b.dps,
+      slug: b.slug,
       imageUrl: b.imageUrl,
     })),
+    window: {},
     compare: compare
       ? {
           name: compare.name,
@@ -145,6 +151,8 @@ export function DpsChartTab() {
 
   const renderChart = (c: Cell, pageTitle: string, pageSubtitle?: string) => {
     const bars = chartBars(art, c, eleFilter);
+    // full ranked population for the shared image (the inline chart keeps top-10)
+    const population = chartBars(art, c, eleFilter, Infinity);
     const cmp = compareSlug ? compareIn(art, c, compareSlug, eleFilter) : null;
     const shareTitle = eleFilter
       ? `${cellLabel(c)} · ${eleFilter} only`
@@ -158,7 +166,7 @@ export function DpsChartTab() {
         compare={cmp}
         onShareLink={() => shareLink(c)}
         onShareImage={() =>
-          void copyDpsChartImage(toChartData(shareTitle, bars, cmp))
+          void copyDpsChartImage(toChartData(shareTitle, population, cmp))
         }
       />
     );

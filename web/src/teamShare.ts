@@ -8,12 +8,30 @@ import {
   drawTeamCard,
   drawRosterCard,
   rosterCardHeight,
-  type Canvas2DLike,
   type TeamCardMeta,
   type TeamCardUnit,
-} from '../../src/share/teamCard';
+} from '../../src/infographics/core/teamCard';
+import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { portraitThumb } from './portraitThumb';
 import { manifestThumbUrl } from './portraitManifest';
+
+// Roboto is self-hosted via @font-face (web/public/fonts, decision 6.1) so the
+// browser card is pixel-identical to the Node-rendered one. A @font-face font
+// is NOT usable by canvas until loaded — drawing before it resolves silently
+// yields fallback-metric text on the FIRST copy-image click, then works on the
+// second (the blank-text bug's browser twin). Await the exact weights the
+// renderers request before ANY canvas draw.
+let robotoReady: Promise<unknown> | null = null;
+export function ensureRoboto(): Promise<unknown> {
+  robotoReady ??= Promise.all([
+    document.fonts.load('400 16px Roboto'),
+    document.fonts.load('500 16px Roboto'),
+    document.fonts.load('600 16px Roboto'),
+    document.fonts.load('700 16px Roboto'),
+    document.fonts.ready,
+  ]);
+  return robotoReady;
+}
 
 // One share-card unit as the callers know it: the drawn fields (minus the loaded
 // `img`, which this module fills in) plus the slug used to find its portrait.
@@ -66,12 +84,15 @@ export async function buildTeamCardBlob(
   meta: TeamCardMeta,
   imageUrlFor: (slug: string) => string | undefined
 ): Promise<Blob | null> {
-  const imgs = await Promise.all(
-    data.units.map(async (u) => {
-      const url = imageUrlFor(u.slug);
-      return url ? await loadPortrait(url) : null;
-    })
-  );
+  const [imgs] = await Promise.all([
+    Promise.all(
+      data.units.map(async (u) => {
+        const url = imageUrlFor(u.slug);
+        return url ? await loadPortrait(url) : null;
+      })
+    ),
+    ensureRoboto(),
+  ]);
   const units: TeamCardUnit[] = data.units.map((u, i) => ({
     name: u.name,
     burst: u.burst,
@@ -170,6 +191,7 @@ export async function buildRosterCardBlob(
 ): Promise<Blob | null> {
   // dedupe portrait loads across teams (roster teams share no units, but this is
   // cheap and future-proofs a mode that does)
+  const roboto = ensureRoboto(); // overlaps the portrait loads below
   const cache = new Map<string, Promise<HTMLImageElement | null>>();
   const load = (slug: string) => {
     const url = imageUrlFor(slug);
@@ -196,6 +218,7 @@ export async function buildRosterCardBlob(
   );
 
   const dpr = 2;
+  await roboto; // fonts must be live before the first draw (decision 6.1)
   const cv = document.createElement('canvas');
   cv.width = CARD_W * dpr;
   cv.height = rosterCardHeight(teams.length) * dpr;

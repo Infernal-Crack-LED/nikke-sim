@@ -5,17 +5,17 @@
 
 ## 1. Architecture
 
-| Concern   | Approach                                                                                                       |
-| --------- | -------------------------------------------------------------------------------------------------------------- |
-| Framework | React 18, functional components only, hooks only                                                               |
-| Build     | Vite 5 (`@vitejs/plugin-react`)                                                                                |
-| Routing   | Custom SPA router (`web/src/router.ts`) — `pushState` + `popstate` listener. No React Router.                  |
-| State     | `useState` / `useReducer` + prop drilling. No global store, no context API for state.                          |
-| Styling   | Single CSS file (`web/src/styles.css`). No CSS modules, no styled-components, no Tailwind.                     |
-| Types     | TypeScript strict. Types imported from engine (`src/types.ts`, `src/prepare.ts`, etc.)                         |
-| Data      | JSON files imported directly (`import charactersJson from '../../data/characters.json'`)                       |
-| API       | Bearer-token auth via `web/src/auth.ts`. Dev proxy in `vite.config.ts` forwards `/api` to backend.             |
-| Images    | Canvas-rendered share cards (`src/share/teamCard.ts`), stepped-halving downscale (`web/src/imageDownscale.ts`) |
+| Concern   | Approach                                                                                                                   |
+| --------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Framework | React 18, functional components only, hooks only                                                                           |
+| Build     | Vite 5 (`@vitejs/plugin-react`)                                                                                            |
+| Routing   | Custom SPA router (`web/src/router.ts`) — `pushState` + `popstate` listener. No React Router.                              |
+| State     | `useState` / `useReducer` + prop drilling. No global store, no context API for state.                                      |
+| Styling   | Single CSS file (`web/src/styles.css`). No CSS modules, no styled-components, no Tailwind.                                 |
+| Types     | TypeScript strict. Types imported from engine (`src/types.ts`, `src/prepare.ts`, etc.)                                     |
+| Data      | JSON files imported directly (`import charactersJson from '../../data/characters.json'`)                                   |
+| API       | Bearer-token auth via `web/src/auth.ts`. Dev proxy in `vite.config.ts` forwards `/api` to backend.                         |
+| Images    | Canvas-rendered share cards (`src/infographics/core/teamCard.ts`), stepped-halving downscale (`web/src/imageDownscale.ts`) |
 
 ### Static assets
 
@@ -178,7 +178,7 @@ Comments are **extensive and explanatory**. They document:
 }
 ```
 
-All colors reference these tokens. Element-specific colors come from `ELEMENT_COLORS` in `src/share/teamCard.ts` (used inline via `style={{ background: ELEMENT_COLORS[element] }}`).
+All colors reference these tokens. Element-specific colors come from `ELEMENT_COLORS` in `src/infographics/core/theme.ts` (used inline via `style={{ background: ELEMENT_COLORS[element] }}`).
 
 ### Typography
 
