@@ -34,15 +34,15 @@ const ENDPOINT = 'https://enikk.app/api/webapp';
 // Extend when a new raid lands (query `soloraids { raid_number monster_obj }`,
 // read weak_element_id). label = the community's "<element>-weak" shorthand.
 const RAID_META: Record<number, { label: string; boss: string }> = {
-  31: { label: 'wind-weak', boss: 'Iron' },
-  34: { label: 'iron-weak', boss: 'Electric' },
+  38: { label: 'wind-weak', boss: 'Iron' },
+  39: { label: 'iron-weak', boss: 'Electric' },
   35: { label: 'fire-weak', boss: 'Wind' },
   36: { label: 'elec-weak', boss: 'Water' },
   37: { label: 'water-weak', boss: 'Fire' },
 };
 
 const TOP = Number(process.env.TOP ?? 100);
-const RAIDS = (process.env.RAIDS ?? '37,36,35,34,31')
+const RAIDS = (process.env.RAIDS ?? '39,38,37,36,35')
   .split(',')
   .map((s) => Number(s.trim()));
 const CACHE = process.env.ENIKK_CACHE;
@@ -104,6 +104,17 @@ const nameToSlug: Record<string, string> = {};
 for (const [slug, c] of Object.entries(data.characters)) {
   nameToSlug[c.name.replace(' (Treasure)', '')] = slug;
 }
+// Hardcoded overrides for enikk display names that collide with/diverge from the
+// characters.json `name` field derived above. "Rei" (enikk's name for the unit whose
+// characters.json entry is "Rei Ayanami") would otherwise auto-map to slug "rei" — a
+// distinct, unrelated character — instead of her actual slug "rei-ayanami".
+// "Rei (Tentative Name)" is an alt form with no characters.json entry yet; the slug
+// is reserved here so the audit reports her correctly once she's synced in.
+const NAME_TO_SLUG_OVERRIDES: Record<string, string> = {
+  Rei: 'rei-ayanami',
+  'Rei (Tentative Name)': 'rei-ayanami-tentative-name',
+};
+Object.assign(nameToSlug, NAME_TO_SLUG_OVERRIDES);
 const isModeled = (name: string) => {
   const s = nameToSlug[name];
   return s !== undefined && modeled.has(s);
