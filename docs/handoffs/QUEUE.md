@@ -79,6 +79,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   - **Follow-up worth doing:** `NIKKESIM_CONFIG_API` / `NIKKESIM_SITE_ORIGIN` default to the prod
     bakery-bot origin and `https://nikkesim.app`. Set them explicitly in Railway rather than
     relying on the defaults baked into `src/server/config-store.ts`.
+  - **Cross-family code review (kimi-code/k3) ran on the branch: round 1 FIX-BEFORE-MERGE → all
+    four findings fixed (`b86e42f`) → round 2 CLEAN.** Packets + result JSONs in
+    `scratchpad/gates/2026-07-28-shared-configs/`. The FIX was real and is the one worth
+    remembering: `shareName` hashed the ENCODED payload, which carries a click-time `at`, so
+    every press minted a new profile row — the code carried a comment promising precisely the
+    idempotency it did not deliver. Split into `sharedConfigIdentity` (name from this) vs the
+    stored payload; the same root also fed the render cache key, now normalized through the
+    shared `simmedDay`. Round 2's two NOTEs (orphaned old-shape cache entries; pre-fix share rows
+    surviving against the cap) are both **empirically empty** — this branch has never been pushed
+    or deployed, so no `sim-share` row and no with-results cache entry has ever existed. Nothing
+    to migrate; do NOT file migration work for them.
 
   **Other decisions already made, don't relitigate:** the composition card keeps the boss/level/
   core line (a SELECTION, not a metric); a card renders the FULL `drawTeamCard` layout only when
