@@ -514,7 +514,7 @@ the projection it stays under today's 53 MB PNG set.
 
 | # | Phase | Deliverable | Gate |
 | --- | --- | --- | --- |
-| 1 | Sync | `releaseDate` in `characters.json`; `data/tsareena-build.json` + `src/types.ts` types | `verify.sh` green; re-sync diff reviewed |
+| ~~1~~ | ~~Sync~~ | ✅ **DONE 2026-07-28** (`446f276`) — `releaseDate` on 195 characters; `data/tsareena-build.json` (88 units) + `CharacterData.releaseDate` / `TsareenaBuild` / `TsareenaBuildFile` types | ✅ `verify.sh` green (2091 passed); re-sync diff reviewed semantically — footprint is exactly +`releaseDate` ×195 |
 | 2 | Assets | icons vendored into `src/infographics/assets/icons/` + decode test | build-time font-gate equivalent for icons |
 | 3 | Card data builder | pure `buildUnitCardData(slug)` — joins characters + 5 boards + tags + OL + Tsareena, all nullable | unit tests incl. a zero-board unit |
 | ~~3.5~~ | ~~X crop test~~ | ✅ **DONE 2026-07-28** — 4:5 uncropped (§6a) | — |
@@ -536,9 +536,25 @@ the spec cache, but the bump keeps the two consistent.
 
 - Unit cards are **already** pre-rendered + hosted + content-addressed; the pipeline is **deployed to
   prod** (owner, 2026-07-28 — this corrects an earlier session note that called it dark).
-- `src/data/sync.ts` reads bakery-bot Postgres directly; `attributes` is already in the select,
-  `sheet_data` is not.
-- DB coverage measured 2026-07-28: `releaseDate` 194/196, `sheet_data` 88/196.
+- `src/data/sync.ts` reads bakery-bot Postgres directly. **Phase 1 landed** (`446f276`): both
+  `sheet_data` and `releaseDate` are now synced.
+- DB coverage measured 2026-07-28: `releaseDate` 194/196 rows, `sheet_data` 88/196. **After sync:**
+  193/195 and 88/195 characters (the shortfall is the one row sync skips, 水着マルチャーナ, missing
+  `base_stats`). The 2 units with no `releaseDate` are `anne-miracle-fairy` and
+  `laplace-ultimate-hero` — ⚠ NOT `laplace` (RL/Iron), a different unit.
+- **`sheet_data` shape, confirmed against the live table 2026-07-28** — top level is exactly
+  `{build, priority, annotations}`. `build` carries 9 keys on all 88 rows (`skillLevels`, `cube`,
+  `overloadMinimum`, `overloadIdeal`, `overloadGear`, `overloadLevelFive`, `levelDoll`,
+  `endgameUses`, `burstGen`) plus sparse `notes` (37/88) and `pairWith` (20/88). `priority` is a
+  free-form string with 10 observed values (`Highest Priority` … `PvP Low Priority`) — do NOT
+  narrow it to a union. `annotations` is `C` | `L` | `T`, empty on 55 of 88.
+- **A re-sync's `git diff` is ~100% FORMATTING NOISE — review it semantically.** `sync.ts` writes
+  `JSON.stringify(…, null, 1)` (1-space) and the pre-commit prettier hook rewrites the file to
+  2-space, so *every* sync shows a whole-file ~194k-line diff on `characters.json` regardless of
+  what changed. A baseline sync run against unmodified code came back **semantically identical to
+  HEAD except `syncedAt`** — there is no upstream drift hiding in that diff. To review a sync,
+  snapshot `data/*.json` before the change and compare parsed objects field-by-field; `git diff`
+  cannot answer the question. (Same applies to the identical uncommitted diff in the main tree.)
 - Board populations measured 2026-07-28: dpschart 40 units / 90 cells, burstgen 77, buffer 74,
   sustain 50, burstcdr 15.
 - `bufferchart.addedPct` can be negative — bars need a zero axis.
