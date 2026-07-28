@@ -22,6 +22,12 @@ import {
   assertTitleInk,
   createCanvas,
   decodeToCanvas,
+  TEAM_TITLE_ICON,
+  TEAM_TITLE_INK_REGION,
+  DPS_TITLE_ICON,
+  DPS_TITLE_INK_REGION,
+  TABLE_TITLE_ICON,
+  TABLE_TITLE_INK_REGION,
 } from '../../../src/infographics/node/render.js';
 import { renderAll, type FixtureRender } from './infographics-harness.js';
 
@@ -82,31 +88,26 @@ describe('infographic golden images', () => {
 // used by the harness/build script must THROW on an icon-only canvas (icon
 // drawn at its exact card position, no text).
 //
-// ⚠ WHAT THIS PROVES — and what it does NOT: the icon draw geometry below is
-// HARD-CODED to match today's core cards (teamCard 40/24/36, dpsChart
-// 36/20/34, tableCard 32/16/32), and the regions are the same hand-computed
-// constants as the call sites. So this suite proves the regions are
-// icon-immune FOR THIS frozen geometry only. Drift in a card module's
-// PAD_X/ICON is NOT detected here — that pin is QUEUE follow-up (5) (export
-// TITLE_TEXT_X/icon rect from the card modules and derive both sides).
+// Both sides — the icon draw rect and the ink region — come from the card
+// modules' *_TITLE_ICON / *_TITLE_INK_REGION exports, so a layout change moves
+// the guard AND this test together (the hand-copied constants this replaced
+// could drift from the core cards and silently re-vacate the guard).
 describe('assertTitleInk regions are not satisfiable by the site icon alone', () => {
   const SITE_ICON = new URL(
     '../../../src/infographics/assets/nikkesim-icon.png',
     import.meta.url
   );
-  // [card, icon draw x/y/size, ink region] — mirrors the core card layouts
+  // [card, icon draw rect, ink region] — derived from the core card modules
   const cases: [
     string,
-    number,
-    number,
-    number,
+    { x: number; y: number; size: number },
     { x: number; y: number; w: number; h: number },
   ][] = [
-    ['teamCard', 40, 24, 36, { x: 88, y: 26, w: 400, h: 40 }],
-    ['dpsChart', 36, 20, 34, { x: 82, y: 24, w: 420, h: 36 }],
-    ['tableCard', 32, 16, 32, { x: 76, y: 16, w: 340, h: 34 }],
+    ['teamCard', TEAM_TITLE_ICON, TEAM_TITLE_INK_REGION],
+    ['dpsChart', DPS_TITLE_ICON, DPS_TITLE_INK_REGION],
+    ['tableCard', TABLE_TITLE_ICON, TABLE_TITLE_INK_REGION],
   ];
-  for (const [card, ix, iy, isize, region] of cases) {
+  for (const [card, iconRect, region] of cases) {
     it(`${card}: icon-only canvas fails the ink guard`, async () => {
       const icon = await decodeToCanvas(SITE_ICON);
       expect(icon, 'site icon must decode for this test').not.toBeNull();
@@ -114,7 +115,13 @@ describe('assertTitleInk regions are not satisfiable by the site icon alone', ()
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = '#101216';
       ctx.fillRect(0, 0, 600, 120);
-      ctx.drawImage(icon!, ix, iy, isize, isize); // icon, ZERO text
+      ctx.drawImage(
+        icon!,
+        iconRect.x,
+        iconRect.y,
+        iconRect.size,
+        iconRect.size
+      ); // icon, ZERO text
       expect(() => assertTitleInk(ctx, card, region)).toThrow(/ZERO/);
     });
   }

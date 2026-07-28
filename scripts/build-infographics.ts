@@ -48,6 +48,9 @@ import {
   drawUnitCard,
   UNIT_CARD_W,
   UNIT_CARD_H,
+  DPS_TITLE_INK_REGION,
+  TABLE_TITLE_INK_REGION,
+  UNIT_TITLE_INK_REGION,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
@@ -199,6 +202,16 @@ function scaledCanvas(w: number, h: number): Canvas {
   return canvas;
 }
 
+// The ink regions come from the card modules' *_TITLE_INK_REGION exports
+// (logical px, starting at the title's textX — never padX, or the site icon
+// alone satisfies the guard). Scale them to physical pixels here.
+const scaledRegion = (r: { x: number; y: number; w: number; h: number }) => ({
+  x: r.x * SCALE,
+  y: r.y * SCALE,
+  w: r.w * SCALE,
+  h: r.h * SCALE,
+});
+
 const SITE_ICON_PATH = new URL(
   '../src/infographics/assets/nikkesim-icon.png',
   import.meta.url
@@ -272,14 +285,7 @@ function dpsJobs(art: DpsArtifact): Job[] {
             width: canvas.width,
             height: canvas.height,
             canvas,
-            // starts at the title's textX (padX 36 + ICON 34 + 12), never at
-            // padX — the site icon alone must not satisfy the ink guard
-            inkRegion: {
-              x: 82 * SCALE,
-              y: 24 * SCALE,
-              w: 420 * SCALE,
-              h: 36 * SCALE,
-            },
+            inkRegion: scaledRegion(DPS_TITLE_INK_REGION),
           };
         },
       });
@@ -413,13 +419,7 @@ function rankJobs(): Job[] {
         width: canvas.width,
         height: canvas.height,
         canvas,
-        // starts at the title's textX (padX 32 + ICON 32 + 12) — see above
-        inkRegion: {
-          x: 76 * SCALE,
-          y: 16 * SCALE,
-          w: 340 * SCALE,
-          h: 34 * SCALE,
-        },
+        inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
       };
     },
   }));
@@ -450,12 +450,7 @@ function unitJobs(chars: CharacterRow[], limit: number | null): Job[] {
         width: canvas.width,
         height: canvas.height,
         canvas,
-        inkRegion: {
-          x: 36 * SCALE,
-          y: 34 * SCALE,
-          w: 400 * SCALE,
-          h: 34 * SCALE,
-        },
+        inkRegion: scaledRegion(UNIT_TITLE_INK_REGION),
       };
     },
   }));

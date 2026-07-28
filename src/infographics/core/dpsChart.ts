@@ -57,6 +57,21 @@ const HEAD_H = 118;
 const ROW_H = 52;
 const FOOT_H = 44;
 const COMPARE_H = 52;
+const ICON = 34; // site icon square, drawn beside the title
+
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
+// the title's textX (padX + ICON + 12; 26px title, baseline y 50).
+export const DPS_TITLE_ICON = {
+  x: PAD_X,
+  y: 50 - ICON + 4,
+  size: ICON,
+} as const;
+export const DPS_TITLE_INK_REGION = {
+  x: PAD_X + ICON + 12,
+  y: 24,
+  w: 420,
+  h: 36,
+} as const;
 
 export const chartHeight = (barCount: number, hasCompare: boolean) =>
   HEAD_H + barCount * ROW_H + (hasCompare ? COMPARE_H : 0) + FOOT_H;
@@ -94,7 +109,6 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   // icon + title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const ICON = 34;
   let textX = padX;
   if (data.icon) {
     ctx.drawImage(data.icon, padX, 50 - ICON + 4, ICON, ICON);

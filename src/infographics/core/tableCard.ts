@@ -37,6 +37,21 @@ const HEAD_H = 96;
 const COL_HEADER_H = 36;
 const ROW_H = 38;
 const FOOT_H = 40;
+const ICON = 32; // site icon square, drawn beside the title
+
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
+// the title's textX (padX + ICON + 12; 24px title, baseline y 44).
+export const TABLE_TITLE_ICON = {
+  x: PAD_X,
+  y: 44 - ICON + 4,
+  size: ICON,
+} as const;
+export const TABLE_TITLE_INK_REGION = {
+  x: PAD_X + ICON + 12,
+  y: 16,
+  w: 340,
+  h: 34,
+} as const;
 
 export const tableHeight = (rowCount: number): number =>
   HEAD_H + COL_HEADER_H + rowCount * ROW_H + FOOT_H;
@@ -71,7 +86,6 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   // icon + title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const ICON = 32;
   let textX = padX;
   if (data.icon) {
     const iy = 44 - ICON + 4;
