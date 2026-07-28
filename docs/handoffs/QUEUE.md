@@ -52,6 +52,74 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🔴 NEXT SESSION STARTS HERE — SHAREABLE SAVED CONFIGS + CARD REWORK (owner batch,
+  2026-07-28 night). Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix`,
+  5 commits on top of `9526dad`, `verify.sh` green, NOTHING PUSHED.** Two of the five asks are
+  DONE (below); the remaining three need OWNER DECISIONS first — do not start coding them until
+  the three questions at the end are answered.
+
+  **Landed this session (review it, then keep going):**
+  - `f068a53` team builder card → COMPOSITION card: 5 portraits in ONE row, names + B/weapon/
+    element tags, element strips, advantage markers, boss/level/core selection line, and NO
+    damage/DPS/full-burst/share numbers (a team-builder team has no sim behind it — the old card
+    printed literal zeros). `drawTeamCard` is untouched; the web's SIM RESULTS share card keeps
+    its real numbers. Only `renderTeamCardPng` moved.
+  - `81face1` the ▲ advantage marker is now a drawn triangle path, not a Roboto glyph (it was a
+    tofu box □ on every Node-rendered card).
+  - Earlier in the session: the PR #33 review fixes + the bakery-bot cache-key/durability work —
+    see the two bullets below this one.
+
+  **Still to build — ask 2: ROSTER CARDS SHOW DPS.** The blocker is that the SERVER never sims:
+  `src/server/card-from-build.ts` passes `teamDamage: 0` because a build code carries the
+  loadout, not results. The web roster share card already shows real numbers (the browser sims —
+  `App.tsx shareRoster` reads `TeamResult.teamDamage`). So the numbers must either be STORED with
+  the config or COMPUTED server-side — see question (1).
+
+  **Still to build — ask 3: SAVE stores boss/stats/etc, so the generated card reflects the
+  selections.** The saved-config store already exists and is `kind`-tagged and payload-opaque:
+  `web/src/auth.ts` → bakery-bot `GET/POST /api/profiles` (`{kind, name, code}`, `code` = an
+  opaque base64url blob the SIM owns, per `packages/db user_profiles`). A new kind + codec needs
+  NO backend change — that is the cheap path. What the payload must carry beyond today's build
+  code: the boss options, the stat/level/core selections, and (if question (1) says so) the
+  computed per-team damage/DPS.
+
+  **Still to build — ask 4: ID-BASED URLS instead of `?b=<3.3KB>`.** Note the two halves are
+  already half-solved and must not be re-derived:
+  - The IMAGE url is ALREADY short and durable: `/api/v1/img/cache/<type>.<hash>.png` (~45 chars)
+    is what the 302 `location` and `POST /api/v1/img/render` `{url}` hand back, and `ad5d05f`
+    made an evicted entry re-render instead of 404. The bot can embed that TODAY.
+  - What is genuinely missing is a **page** URL — ask 5: _"the URL returned to bakery-bot must be
+    the one a user can click to open that team/roster on nikkesim.app"_. That needs an id the web
+    app can load a config from, i.e. `nikkesim.app/teambuilder?id=<id>` +
+    `/api/v1/img/team.png?id=<id>`, and the API returning BOTH urls (image + page) so the bot can
+    set the embed image and the embed link.
+  - Where the id lives is question (2). Sketch if it reuses `/api/profiles`: saving returns a
+    profile `id` today, but profiles are PER-USER and private — a public card needs a public read
+    path in bakery-bot (`GET /api/profiles/:id/public`, or a `shared` flag), which is a
+    cross-repo change on the bakery-bot side.
+
+  **⚠ Three questions the owner must answer before coding (asked, not yet answered):**
+  1. **Where do a roster card's DPS numbers come from?** (a) The client stores its computed
+     results in the saved payload and the card renders those — cheap, no engine in `dist-server`,
+     matches "save the configuration … so the card shows those dps numbers", but the numbers are
+     a snapshot that an engine change makes stale (stamp them with a date + engine version).
+     (b) The server runs the sim on a cache miss — always current, but pulls `src/engine/**` into
+     the server bundle and makes a cold render seconds long on one Railway instance (and the
+     open "no render concurrency cap" follow-up below becomes urgent). **Recommendation: (a).**
+  2. **Where does the config id live?** (a) Reuse bakery-bot `/api/profiles` + add a public read
+     endpoint there (one store, one auth story, but a cross-repo change + deploy). (b) A small
+     `shared_configs` table owned by nikke-sim's own server (self-contained, no bakery-bot
+     dependency, but nikke-sim's server has NO database layer today — only `src/data/sync.ts`
+     uses `pg`, and no `DATABASE_URL` is wired into the server). **Recommendation: (a)** — the
+     store, the auth and the save UI all exist; only the public-read endpoint is new.
+  3. **Does the bot get one URL or two?** The Discord embed needs an IMAGE url and (for a
+     clickable title) a PAGE url. Assume TWO (`{imageUrl, pageUrl}` from `POST /render`) unless
+     told otherwise.
+
+  **Other decisions already made, don't relitigate:** the composition card keeps the boss/level/
+  core line (a SELECTION, not a metric); `drawTeamCard` stays as-is for the web results card;
+  `RENDERER_VERSION` is `v2` and must be bumped again by any further renderer change.
+
 - **⇒ BAKERY-BOT INTEGRATION REPORT (2026-07-28) — BOTH ITEMS ANSWERED on branch
   `infographics-card-fixes`.** (1) _"the cache hash is derived from the request, not the output"_ —
   half already handled, half was real. `specCacheKey` has ALWAYS carried `RENDERER_VERSION`
