@@ -1501,6 +1501,47 @@
       ],
       "board": null
     },
+    "exia": {
+      "name": "Exia (Treasure)",
+      "burst": "I",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-27",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-27: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/exia.json + scripts/kit-autonomy/manual-review/exia.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-07-27",
+      "evidence": "kit-autonomy gauntlet 2026-07-27; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "enemy ATK▼/DEF▼ lines unenactable at DEF=0 (verbatim unmodeled); stack-duration refresh semantics; fixed-reload clamp; shotFired-as-full-charge trigger",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code. ATK ▼ 13.77% for 5 sec. — no sim channel: the enemy-buff path admits only damageTakenPct/distributedDamagePct and the boss deals no damage, so an enemy ATK▼ moves nothing (sim.ts, DEF=0 basis)",
+          "DEF ▼ 13.77% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (sim.ts 'other enemy debuffs (ATK▼, DEF▼) don't affect our damage with DEF=0')"
+        ],
+        "skill2": [],
+        "burst": [
+          "DEF ▼ 2.71% for 5 sec. — no sim channel: enemy DEF▼ is dropped at dispatch on the DEF=0 basis (same as the skill1 DEF▼ line)"
+        ]
+      },
+      "caveats": [
+        "skill1: 'Reload speed is FIXED at a 95% increase' is encoded as an additive reloadSpeedPct buff — the clamp ('fixed') semantics need a stat-clamp primitive the engine lacks; identical to the clamp on any team without a second reload buffer",
+        "skill2: the hackingCode pool has no time decay (kit: 5s per-stack duration) — at her 1.37s full-charge cadence stacks never lapse before refresh, so ramp + steady state match duration-refresh semantics; diverges only if she stops firing >5s",
+        "skill2: stack-duration semantics ⚑ — the engine refreshes the whole buffer on re-application (stacks cap at 5 in sustained fire); if the game runs independent per-stack timers the real steady state is ~2 stacks; board A/B is the outer check",
+        "skill2: the full-charge trigger is shotFired (every SR pull is one full charge — helm/liberalio precedent); verify against an exia focus video if uncharged SR shots ever exist",
+        "burst: 'the 10 enemy unit(s) with the highest final DEF' collapses to the single immortal boss — multi-target selection is out of domain for the single-target sim",
+        "burst: the enemy ATK▼/DEF▼ lines (skill1 13.77%/13.77%, burst 2.71%) are game-real but unenactable — the sim's DEF=0 basis drops enemy ATK▼/DEF▼ at dispatch; they are recorded verbatim in unmodeled"
+      ]
+    },
     "flora": {
       "name": "Flora",
       "burst": "II",
