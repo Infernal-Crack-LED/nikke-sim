@@ -46,6 +46,14 @@ export class SpecStore {
   // so it must not fail the render that triggered it.
   async remember(file: string, spec: unknown): Promise<void> {
     try {
+      // Content-addressed: a filename's spec never changes, so an existing
+      // sidecar is already correct. ensureCached calls this on every request
+      // (not just on a render) so entries written before this store existed
+      // pick one up on their next hit — a stat is the cheap way to keep that
+      // idempotent instead of rewriting a hot card's sidecar every time.
+      if (await stat(this.pathFor(file)).catch(() => null)) {
+        return;
+      }
       await mkdir(this.dir, { recursive: true });
       const tmp = join(this.dir, `.${file}.${process.pid}.tmp`);
       await writeFile(tmp, JSON.stringify(spec));
