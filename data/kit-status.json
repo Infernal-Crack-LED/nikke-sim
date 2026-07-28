@@ -4424,6 +4424,53 @@
         "burst: on swap exit (durationSec expiry) the engine forces an empty-belt reload before SR fire resumes — the shared weaponSwap exit convention (e-h / snow-white-heavy-arms), not an ETU-specific choice; the in-game weapon-restore timing at swap deactivation is unmeasured.",
         "skill2: the S2 bonus 'when applying LT Formation to self' is gated on emma-tactical-upgrade presence via teamHas.slugs (auto, presence ≡ formation applied). emma-tu's MIRROR bonus ('when applying AS Formation to self') is behind a manual mode on emma-tu (default OFF) — an asymmetry in the landed encodings: ETU's bonus auto-fires with emma-tu present, emma-tu's requires selecting its AS mode. Reconcile to a single auto-gate convention if both sisters grade a team together."
       ]
+    },
+    "rei-ayanami-tentative-name": {
+      "name": "Rei Ayanami (Tentative Name)",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-28",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-28: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rei-ayanami-tentative-name.json + scripts/kit-autonomy/manual-review/rei-ayanami-tentative-name.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Anti A.T. Field stacks ▲ 10.",
+          "■ Activates when entering Full Burst. Affects all allies in Annihilation State status.",
+          "Units affected by Annihilation State's additional effect ▲ 1 for 9 sec.",
+          "Attack range of Annihilation State's additional effect ▲ 500% for 9 sec.",
+          "ATK ▲ 17.6% of the skill user's ATK for 9 sec."
+        ],
+        "skill2": [
+          "■ Activates when entering Full Burst. Affects all allies with machine guns who have used their Burst Skills.",
+          "Machine Gun Ramp-Up Speed ▲ 100% for 13 sec."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the every-7-hits 286.37% proc is GATED to the 10s Attack-State window via requiresTargetStatus 'Attack State' (the hit counter is cumulative across the fight, not reset at window start — the same approximation asuka-wille's S1 uses)",
+        "skill1/burst: 'Attack State' is a SELF mode proxied as a boss targetStatus (the engine has no self-status gate — the asuka-wille pattern); the 10s status duration matches the self-buff window so the S1 proc gate is faithful, but the name is a side channel any future requiresTargetStatus 'Attack State' could read (inert today; a requiresOwnBuff primitive would replace the proxy, ⚑5)",
+        "skill1: the 18-hit Anti A.T. Field proc (590.64%) IS encoded but faithfully INERT (gated on requiresTargetStatus 'Anti A.T. Field', which no in-scope unit applies as a name-keyed targetStatus); the 'stacks ▲10' sub-effect is UNMODELED (⚑1, no add-stacks primitive); 0% damage outside an Eva team",
+        "skill1: the Full-Burst Annihilation-State ally buff (+1 unit / +500% range / casterAtkPct 17.6) is UNMODELED (⚑2) — needs an ally-self-mode gate + cross-unit param modulation; 0% outside an Eva team",
+        "skill2: 'Machine Gun Ramp-Up Speed ▲100%' is UNMODELED (⚑3) — no MG wind-up primitive (asuka-wille ⚑2); 0% v1 damage",
+        "skill2: the Full-Burst-entry team ATK buff is a FLAT casterAtkPct 11.61 (identical add per ally = 11.61% of Rei's static ATK), NOT a % of each target's own ATK",
+        "cadence: the AR fire-rate datamine (720 rpm / 60 ammo / reloadFrames 111 / instant charge) is unverified for this collab AR (⚑4)"
+      ],
+      "board": null,
+      "date": "2026-07-28",
+      "evidence": "kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "Attack-State boss-targetStatus side channel (inert today; a requiresOwnBuff primitive would replace the proxy); hitCount:7 counter cumulative across windows not window-reset (asuka-wille approximation); cadence tuple unverified datamine (720rpm/60ammo/reloadFrames111/instant)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }
