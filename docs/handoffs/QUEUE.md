@@ -108,6 +108,20 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   (`src/infographics/assets/fonts/subset-ranges.json`), and `@font-face` now declares the matching
   `unicode-range` so out-of-subset glyphs fall through the stack.
 
+- **⇒ LANDED 2026-07-28 (branch `infographics-phase6`): hono migration + `POST /api/v1/img/render`
+  — the §6.4 trigger fired (owner-approved).** `src/server/` now builds a Hono app (`hono` +
+  `@hono/node-server`, bundled into dist-server) served over node:http via `getRequestListener`;
+  the behavior contract is unchanged (serve-api/serve-bundle pass, serve-headers untouched against
+  the old serve.mjs, static handler kept hand-rolled for exact ETag/304/OG parity). New
+  `src/infographics/spec.ts` is the shared request contract — `RenderSpec` union, `parseRenderSpec`,
+  `specCacheKey` (the `v1|...` key strings are pinned byte-for-byte in
+  `scripts/tests/share/render-spec.test.ts`; drift orphans every cached render) — used by BOTH the
+  GET query routes and POST /render, so the two can never drift (parity asserted in
+  `serve-render.test.ts`). POST answers 200 `{"url":"/api/v1/img/cache/<file>"}`; guards: 16 KB
+  body cap → 413 (content-length AND stream), 415 non-JSON, 400 bad JSON/spec; rate limiting stays
+  at Cloudflare, `REQUIRE_RENDER_SECRET` (env-off) gates it when flipped. **Still owner-gated:**
+  the `railway.json` startCommand flip (item (1) above) — POST /render is dark in prod until then.
+
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
   hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
