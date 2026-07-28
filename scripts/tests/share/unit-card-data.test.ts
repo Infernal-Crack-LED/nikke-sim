@@ -112,7 +112,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       expect(model.burstIsLambda).toBe(true);
       expect(model.tiles.map((t) => t.title)).toEqual([
         'Neutral DPS',
-        'Ele. Advantage DPS',
+        'Ele. Adv. DPS',
         'Burst Gen',
       ]);
     }
@@ -122,7 +122,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
     const model = build('red-hood');
     expect(model.charts.map((c) => c.title)).toEqual([
       'Neutral DPS',
-      'Ele. Advantage DPS',
+      'Ele. Adv. DPS',
     ]);
   });
 
@@ -391,9 +391,24 @@ describe('buildUnitCardData — nullable externals (§11)', () => {
       tagLabels: { 'tag-0': { label: 'ATK ▲' } },
     });
     expect(model.tags.length).toBeLessThanOrEqual(6);
-    expect(model.tags[0]).toBe('ATK ▲'); // vocabulary label wins
+    // The vocabulary label wins over the raw id — but the ▲ is normalized to
+    // ASCII first: Roboto has no U+25B2, so the bundled-font Node renderer draws
+    // it as a TOFU BOX while a browser falls back to a system face. Two hosts,
+    // two pictures, which is the exact failure these renderers exist to prevent
+    // (canvas2d.ts documents the same trap for the advantage marker).
+    expect(model.tags[0]).toBe('ATK+');
     expect(model.tags[1]).toBe('tag-1'); // raw id when unmapped
     expect(model.tagsOverflow).toBe(12 - model.tags.length);
+  });
+
+  it('leaves no un-renderable glyph in any real tag label', () => {
+    // Guards the whole vocabulary, not just the one label above: any non-ASCII
+    // character that reaches a tag pill is a tofu box on the Node host.
+    for (const slug of Object.keys(characters.characters)) {
+      for (const tag of build(slug).tags) {
+        expect(/^[\x20-\x7E]*$/.test(tag), `${slug}: ${tag}`).toBe(true);
+      }
+    }
   });
 
   it('renders burst-CDR qualifiers as footnotes (a card has no hover)', () => {

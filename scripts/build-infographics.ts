@@ -46,9 +46,8 @@ import {
   tableHeight,
   drawTableCard,
   TABLE_W,
-  drawUnitCard,
-  UNIT_CARD_W,
-  UNIT_CARD_H,
+  drawUnitCardVariant,
+  unitCardSize,
   buildOlTable,
   buildChargeTable,
   GENERIC_BASE_FRAMES,
@@ -60,12 +59,19 @@ import {
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_INK_REGION,
   UNIT_TITLE_INK_REGION,
+  UNIT_PORTRAIT_TITLE_INK_REGION,
+  assertIconsLive,
+  iconUpscaleAudit,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
   type TableCardData,
-  type UnitCardData,
 } from '../src/infographics/node/render.js';
+import {
+  loadUnitCardSources,
+  buildUnitCardRender,
+  type UnitCardSourceSet,
+} from './lib/unit-card-sources.js';
 import { parseCellId, cellLabel } from '../src/dpschart/matrix.js';
 import type {
   BurstGenArtifact,
@@ -85,6 +91,9 @@ const LIMIT = argValue('--limit') ? Number(argValue('--limit')) : null;
 const OUT_DIR = argValue('--out')
   ? resolve(argValue('--out')!)
   : fileURLToPath(new URL('../dist/img/', import.meta.url));
+
+// Both variants are pre-rendered for every unit (ruling 15).
+const UNIT_CARD_VARIANTS = ['discord', 'twitter'] as const;
 
 const SCALE = 2; // retina — the manifest's width/height are physical pixels
 const CONCURRENCY = 8; // CPU-bound canvas work; overlaps portrait decode only
@@ -156,12 +165,28 @@ const DATA_HINT =
 
 interface Rendered {
   key: string; // logical key, e.g. 'dps/solo.eleweak.c100.8of12.fire'
-  png: Buffer;
+  png: Buffer; // encoded bytes — PNG or WebP, per `ext`
+  ext: 'png' | 'webp';
   width: number; // physical pixels (logical × SCALE)
   height: number;
   canvas: Canvas; // kept for the first card's ink assertion
   inkRegion: { x: number; y: number; w: number; h: number }; // physical px
 }
+
+// UNIT CARDS EMIT WEBP; every other kind stays PNG (§12).
+//
+// Measured 2026-07-28: today's PNG unit card is 284 KB at 1280×960, so the ~195
+// card set already costs ~53 MB — and the new card is 2x bigger and far denser.
+// Re-encoding real rendered cards through sharp gave WebP q90 at −86% vs PNG, so
+// the two-variant set lands near the size of the single-variant PNG set instead
+// of ~150 MB, which would force the R2 migration immediately. Both Discord
+// embeds and Twitter uploads accept WebP.
+//
+// Scoped to the unit set deliberately: it is the only ~200-file kind, and the
+// other kinds' sizes were never measured.
+const UNIT_CARD_WEBP_QUALITY = 90;
+const encodeCard = (canvas: Canvas): Buffer =>
+  canvas.toBuffer('image/webp', UNIT_CARD_WEBP_QUALITY);
 interface Job {
   key: string;
   render: () => Promise<Rendered>;
@@ -178,12 +203,19 @@ function scaledCanvas(w: number, h: number): Canvas {
 // The ink regions come from the card modules' *_TITLE_INK_REGION exports
 // (logical px, starting at the title's textX — never padX, or the site icon
 // alone satisfies the guard). Scale them to physical pixels here.
-const scaledRegion = (r: { x: number; y: number; w: number; h: number }) => ({
-  x: r.x * SCALE,
-  y: r.y * SCALE,
-  w: r.w * SCALE,
-  h: r.h * SCALE,
+const scaleRegionBy = (
+  r: { x: number; y: number; w: number; h: number },
+  scale: number
+) => ({
+  x: r.x * scale,
+  y: r.y * scale,
+  w: r.w * scale,
+  h: r.h * scale,
 });
+// Most jobs render at the module-wide SCALE; the portrait unit card renders at
+// dpr 1, so its region scales by its own dpr (see unitJobs).
+const scaledRegion = (r: { x: number; y: number; w: number; h: number }) =>
+  scaleRegionBy(r, SCALE);
 
 const SITE_ICON_PATH = new URL(
   '../src/infographics/assets/nikkesim-icon.png',
@@ -255,6 +287,7 @@ function dpsJobs(art: DpsArtifact): Job[] {
           return {
             key,
             png: canvas.toBuffer('image/png'),
+            ext: 'png' as const,
             width: canvas.width,
             height: canvas.height,
             canvas,
@@ -326,6 +359,7 @@ function rankJobs(): Job[] {
       return {
         key: `rank/${board}`,
         png: canvas.toBuffer('image/png'),
+        ext: 'png' as const,
         width: canvas.width,
         height: canvas.height,
         canvas,
@@ -364,6 +398,7 @@ function tableJobs(): Job[] {
       return {
         key,
         png: canvas.toBuffer('image/png'),
+        ext: 'png' as const,
         width: canvas.width,
         height: canvas.height,
         canvas,
@@ -373,35 +408,56 @@ function tableJobs(): Job[] {
   }));
 }
 
-// One identity card per character in data/characters.json (READ-only source).
-function unitJobs(chars: CharacterRow[], limit: number | null): Job[] {
+// TWO cards per character (ruling 15): `discord` 2:1 landscape for the bot embed
+// and the site, `twitter` 3:4 portrait for the X launch post. Both come from the
+// same buildUnitCardData join, so they can never disagree about a rank.
+//
+// Keys carry the variant (`unit/<slug>.<variant>`) — a shared key would serve
+// the landscape card to a portrait request out of an immutable cache.
+function unitJobs(
+  chars: CharacterRow[],
+  sources: UnitCardSourceSet,
+  limit: number | null
+): Job[] {
   const sorted = [...chars].sort((a, b) => a.slug.localeCompare(b.slug));
   const picked = limit === null ? sorted : sorted.slice(0, limit);
-  return picked.map((c) => ({
-    key: `unit/${c.slug}`,
-    render: async (): Promise<Rendered> => {
-      const data: UnitCardData = {
-        name: c.name,
-        element: c.element,
-        weapon: c.weapon,
-        burst: c.burst,
-        class: c.class,
-        manufacturer: c.manufacturer,
-        burstCooldownSec: c.burstCooldownSec,
-        img: (await loadPortrait(c.slug)) ?? undefined,
-      };
-      const canvas = scaledCanvas(UNIT_CARD_W, UNIT_CARD_H);
-      drawUnitCard(canvas.getContext('2d') as unknown as Canvas2DLike, data);
-      return {
-        key: `unit/${c.slug}`,
-        png: canvas.toBuffer('image/png'),
-        width: canvas.width,
-        height: canvas.height,
-        canvas,
-        inkRegion: scaledRegion(UNIT_TITLE_INK_REGION),
-      };
-    },
-  }));
+  const jobs: Job[] = [];
+  for (const c of picked) {
+    for (const variant of UNIT_CARD_VARIANTS) {
+      const key = `unit/${c.slug}.${variant}`;
+      jobs.push({
+        key,
+        render: async (): Promise<Rendered> => {
+          const data = await buildUnitCardRender(sources, c.slug, variant);
+          const { w, h, dpr } = unitCardSize(variant);
+          // Portrait is deliberately NOT dpr-2: X shows it ~500-600px wide, so
+          // 1200×1600 is already ~2x the display width (§12).
+          const canvas = createCanvas(w * dpr, h * dpr);
+          canvas.getContext('2d').scale(dpr, dpr);
+          drawUnitCardVariant(
+            canvas.getContext('2d') as unknown as Canvas2DLike,
+            data,
+            variant
+          );
+          return {
+            key,
+            png: encodeCard(canvas),
+            ext: 'webp' as const,
+            width: canvas.width,
+            height: canvas.height,
+            canvas,
+            inkRegion: scaleRegionBy(
+              variant === 'twitter'
+                ? UNIT_PORTRAIT_TITLE_INK_REGION
+                : UNIT_TITLE_INK_REGION,
+              dpr
+            ),
+          };
+        },
+      });
+    }
+  }
+  return jobs;
 }
 
 // ---- main ---------------------------------------------------------------------
@@ -438,11 +494,24 @@ async function main(): Promise<void> {
 
   // FONT GATE, part 1: registration must be live before any render.
   assertFontsLive();
+  // ICON GATE: the same contract for the unit card's icon strip. A missing icon
+  // degrades to a blank slot in an immutable, content-hashed image that nothing
+  // will re-render — so fail the build instead.
+  await assertIconsLive();
 
   const chars = loadJson<{ characters: Record<string, CharacterRow> }>(
     new URL('../data/characters.json', import.meta.url)
   );
-  const jobs: Job[] = unitJobs(Object.values(chars.characters), LIMIT);
+  const sources = loadUnitCardSources();
+  if (sources.missing.length) {
+    // Not fatal — every field is nullable and the card draws an absent-state —
+    // but it silently THINS every card, which is invisible in the output.
+    console.warn(
+      `infographics: ${sources.missing.length} board artifact(s) missing, unit cards will ` +
+        `render 'Unranked' for them: ${sources.missing.join(', ')} (${DATA_HINT})`
+    );
+  }
+  const jobs: Job[] = unitJobs(Object.values(chars.characters), sources, LIMIT);
   if (LIMIT === null) {
     // full set: DPS charts + rank boards (needs the web/public artifacts)
     const dpschart = loadJson<DpsArtifact>(
@@ -469,7 +538,7 @@ async function main(): Promise<void> {
 
   const emit = (r: Rendered): void => {
     const hash = hash8(r.png);
-    const file = `${r.key}.${hash}.png`;
+    const file = `${r.key}.${hash}.${r.ext}`;
     const dest = join(OUT_DIR, file);
     mkdirSync(dirname(dest), { recursive: true });
     writeFileSync(dest, r.png);
@@ -513,6 +582,35 @@ async function main(): Promise<void> {
     `infographics: ${jobs.length} images, ${(totalBytes / 1e6).toFixed(1)} MB ` +
       `(${(totalBytes / totalPx).toFixed(3)} B/px avg) in ${secs}s → ${OUT_DIR}`
   );
+  // Per-kind sizes: the WebP ruling (§12) was made on a MEASUREMENT, so the
+  // build reports the number that justified it rather than leaving a projection
+  // in a doc to rot.
+  const byKind: Record<string, { n: number; bytes: number }> = {};
+  for (const [key, img] of Object.entries(manifest.images)) {
+    const kind = key.split('/')[0];
+    byKind[kind] ??= { n: 0, bytes: 0 };
+    byKind[kind].n++;
+    byKind[kind].bytes += img.bytes;
+  }
+  for (const [kind, v] of Object.entries(byKind).sort()) {
+    console.log(
+      `  ${kind}: ${v.n} images, ${(v.bytes / 1e6).toFixed(1)} MB ` +
+        `(${Math.round(v.bytes / v.n / 1024)} KB avg)`
+    );
+  }
+  // Which icons are still raster-bound, and how hard they are being upscaled.
+  // Visible every build so the quality gap can't quietly become permanent;
+  // empties out once the missing SVGs land.
+  const audit = await iconUpscaleAudit(unitCardSize('discord').dpr * 44);
+  if (audit.length) {
+    console.log(
+      `  icons: ${audit.length} raster-bound (no vector source) — worst ` +
+        audit
+          .slice(0, 3)
+          .map((a) => `${a.name} ${a.native}px→${a.factor}x`)
+          .join(', ')
+    );
+  }
 }
 
 await main();

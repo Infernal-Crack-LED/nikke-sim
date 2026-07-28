@@ -1,6 +1,8 @@
 # Unit-card infographic — design plan (2026-07-28)
 
-> **Status:** DESIGN, owner-reviewed rulings captured; not yet implemented.
+> **Status:** ✅ **ALL 6 PHASES IMPLEMENTED 2026-07-28.** `verify.sh` + `web:build` + `web-smoke`
+> green; NOTHING PUSHED. Remaining work is an owner POLISH pass over the tunable consts and three
+> open questions — see `docs/handoffs/QUEUE.md` (the live item), not this section.
 > **Branch/worktree:** `unit-card-infographic` @ `../nikke-sim-wt-unitcard` (off `origin/main`).
 > **Goal:** replace bakery-bot's `/nikke` embed with a rendered character card, and make that same
 > card the **Twitter launch asset for unreleased characters**.
@@ -96,16 +98,21 @@ Queried against bakery-bot Postgres 2026-07-28 (`DATABASE_PUBLIC_URL`, 196 rows)
 | `rl3` | `data/characters.json` | 193/195 | already synced |
 | **`releaseDate`** | DB `attributes->>'releaseDate'` | **194/196** | **NOT synced yet — §5** |
 | **Tsareena build/priority** | DB `sheet_data` | **88/196 (45%)** | **NOT synced yet — §5** |
-| Neutral DPS rank | `dpschart.json` cell `solo.neutral.c100.8of12` | 40 units | 90 cells total |
-| Ele-advantaged DPS rank | `dpschart.json` cell `solo.eleweak.c100.8of12` | 40 units | |
-| Burst gen | `burstgen.json` | 77 units | |
-| Buffer | `bufferchart.json` | 74 units | `addedPct` can be **negative** |
-| Sustain | `sustain.json` | 50 units | |
+| Neutral DPS rank | `dpschart.json` cell `solo.neutral.c100.8of12` | **43** units | 90 cells total |
+| Ele-advantaged DPS rank | `dpschart.json` cell `solo.eleweak.c100.8of12` | **43** units | |
+| Burst gen | `burstgen.json` | **92** entries | |
+| Buffer | `bufferchart.json` | **59** generic entries | `addedPct` can be **negative** |
+| Sustain | `sustain.json` | **53** entries | |
 | Burst CDR | `burstcdr.json` | **15 units** | thinnest board |
 | Tags | `data/archetype-tags.json` | all | Team Builder archetypes |
 | Sim-optimal 12/12 OL | `data/ol-optimal.json` | 74 units | `generatorSupported` |
 
-**Coverage is the dominant design problem.** 192 cards are drawn against a 40-unit DPS chart and a
+> ⚠ **Board populations re-measured from the LIVE artifacts 2026-07-28** (the figures above are the
+> current ones; the original plan recorded 40/77/74/50, which the boards have since outgrown). Entry
+> counts include profiled duplicate rows, so they exceed the unit count on profiled boards. Nothing in
+> the implementation hardcodes these — re-measure rather than trust any number written here.
+
+**Coverage is the dominant design problem.** ~195 cards are drawn against a 43-unit DPS chart and a
 15-unit CDR board. "Non-sim-supported units have no DPS rank" is not an edge case — *most cards will
 be missing several boards*, and 55% will have no Tsareena panel. Ruling 2 (fixed size) means the
 layout must be designed around absence, not patched for it.
@@ -547,13 +554,13 @@ the projection it stays under today's 53 MB PNG set.
 | # | Phase | Deliverable | Gate |
 | --- | --- | --- | --- |
 | ~~1~~ | ~~Sync~~ | ✅ **DONE 2026-07-28** (`446f276`) — `releaseDate` on 195 characters; `data/tsareena-build.json` (88 units) + `CharacterData.releaseDate` / `TsareenaBuild` / `TsareenaBuildFile` types | ✅ `verify.sh` green (2091 passed); re-sync diff reviewed semantically — footprint is exactly +`releaseDate` ×195 |
-| 2 | Assets | icons vendored into `src/infographics/assets/icons/` + decode test | build-time font-gate equivalent for icons |
-| 3 | Card data builder | pure `buildUnitCardData(slug)` — joins characters + 5 boards + tags + OL + Tsareena, all nullable | unit tests incl. a zero-board unit |
-| ~~3.5~~ | ~~X crop test~~ | ✅ **DONE 2026-07-28** — 4:5 uncropped (§6a) | — |
-| 4a | Renderer (landscape) | rewrite `core/unitCard.ts` to the §6b layout, fixed geometry | golden-image test (existing decoded-pixel harness) |
-| 4b | Renderer (portrait) | `twitter` layout sharing phase-3 data, **full height**, corner-safe | golden-image test |
-| 5 | Pre-render | both variants in `build-infographics.ts`, `RENDERER_VERSION` bump | full 384-image build, size **measured** (§12) |
-| 6 | Consumers | bakery-bot `/nikke` → landscape URL + fallback (§13.5); `/builder` preview | bot tests |
+| ~~2~~ | ~~Assets~~ | ✅ **DONE** — `node/icons.ts` (sharp, SVG-first rasterization) + `core/iconNames.ts` (pure mapping, shared with the browser). **No vendoring**: `web/public/nikke-icons/` is read directly | ✅ `assertIconsLive()` runs in the build, counts non-transparent pixels |
+| ~~3~~ | ~~Card data builder~~ | ✅ **DONE** — `core/unitCardData.ts`, pure, every field nullable | ✅ 22 tests, mostly against the REAL artifacts; incl. a zero-board unit |
+| ~~3.5~~ | ~~X crop test~~ | ✅ **DONE 2026-07-28** — 4:5 uncropped (§6a); owner then approved **3:4** | — |
+| ~~4a~~ | ~~Renderer (landscape)~~ | ✅ **DONE** — `drawUnitCard`, 1200×600 @dpr2 | ✅ golden `unit-card.discord.png` |
+| ~~4b~~ | ~~Renderer (portrait)~~ | ✅ **DONE** — `drawUnitCardPortrait`, **1200×1600 (3:4)** @dpr1 | ✅ golden `unit-card.twitter.png` |
+| ~~5~~ | ~~Pre-render~~ | ✅ **DONE** — both variants, WebP, `unit/<slug>.<variant>` keys | ✅ **MEASURED: 408 images / 25.8 MB; 390 unit cards @ 55 KB avg** |
+| ~~6~~ | ~~Consumers~~ | ✅ **DONE** — bakery-bot `/nikke` embeds the landscape card w/ fallback; `/builder` gets a shape toggle | ✅ 7 manifest tests (incl. every fallback path) + 10 existing `/nikke` tests |
 
 **Variant plumbing.** Manifest keys go from `unit/<slug>` to `unit/<slug>.<variant>` (paths
 `unit/<slug>.<variant>.<hash>.webp`). With the crop question settled, **no phase is blocked** — 4a and
@@ -590,6 +597,24 @@ the spec cache, but the bump keeps the two consistent.
 - Board populations measured 2026-07-28: dpschart 40 units / 90 cells, burstgen 77, buffer 74,
   sustain 50, burstcdr 15.
 - `bufferchart.addedPct` can be negative — bars need a zero axis.
+- **MEASURED AT THE PHASE-5 GATE 2026-07-28 (full build, 408 images): 25.8 MB total.** Unit cards
+  are **390 images (195 units x 2 variants) at 21.9 MB / 55 KB avg**, in WebP q90 — comfortably
+  under the ~27 MB the projection below expected, and about HALF today's 53 MB single-variant PNG
+  set, despite being two denser cards per unit. `@napi-rs/canvas` encodes WebP natively, so no sharp
+  round-trip is needed. Other kinds stay PNG: dps 12 images / 3.2 MB, rank 4 / 0.5 MB, table 2 /
+  0.2 MB. The build now PRINTS this per-kind breakdown every run, so the number can't go stale.
+- **Profiles as of 2026-07-28 (live artifacts): 9 profiled unit/board pairs, not 6** — bufferchart
+  carries `crown`/`with-healer`, `mint`/`w/ Prika`, `prika`/`w/ Mint`, `mast-romantic-maid`/`w/
+  Anchor`, `naga`/`with-shielder`; sustain `prika`/`with-mint`, `anchor-innocent-maid`/`with-mast-rm`;
+  burstgen `little-mermaid`/`with-2mg`, `cinderella-crystal-wave`/`with-mg`. `burstcdr.profiles` is
+  still `{}` and dpschart still has no profile concept. **Verified that every profiled unit does have
+  BOTH rows and that the profiled row always outranks its default** — the assumption the
+  headline/appendix split rests on. Handling is generic; nothing is hardcoded to this list.
+- **Archetype tag labels contain `▲` (U+25B2), which ROBOTO DOES NOT HAVE.** Left as-is it renders a
+  tofu box on the Node host while a browser falls back to a system face — two hosts, two pictures.
+  The data builder normalizes `▲`→`+` and `▼`→`−`; a test asserts every real tag label is pure ASCII.
+  (canvas2d.ts's `drawAdvantageMark` documents the same trap and solves it with a drawn path, which
+  is not an option inside a measured pill label.)
 - **Measured 2026-07-28 (real pipeline render, 12 cards):** today's unit card is **284 KB** at
   1280×960 (0.237 B/px) → the current 192-card PNG set is **~53 MB**, not the 19 MB the
   centralization plan §6.5 projected. Re-encoding real cards through `sharp`: **WebP q90 is 86%

@@ -563,6 +563,19 @@ const olLine = (
         .join(' · ')
     : null;
 
+// ---- tags --------------------------------------------------------------------
+
+// The archetype vocabulary spells "buffs this stat" as a trailing ▲ (U+25B2) —
+// e.g. 'ATK ▲'. Roboto HAS NO U+25B2, and the Node renderer registers only the
+// bundled Roboto faces, so that character renders as a TOFU BOX (□) on every
+// pre-rendered card while a browser silently falls back to a system face: two
+// hosts, two pictures, which is exactly what these renderers exist to prevent.
+// (canvas2d.ts's drawAdvantageMark documents the same trap and solves it with a
+// drawn path — but a path can't sit inside a measured pill label, so the tag
+// text is normalized to ASCII instead.)
+const tagLabel = (label: string): string =>
+  label.replace(/\s*▲/g, '+').replace(/\s*▼/g, '−');
+
 // ---- main builder ------------------------------------------------------------
 
 // Burst stage → the tile/bar SET (§7). `Λ` is treated as B3 per ruling 10:
@@ -582,7 +595,7 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   if (dpsSet) {
     tiles = [
       dpsTile('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug),
-      dpsTile('Ele. Advantage DPS', src.dpschart, ELEWEAK_CELL, slug),
+      dpsTile('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug),
       burstGenTile(src.burstgen, slug),
     ];
   } else {
@@ -603,7 +616,7 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
     charts.push(
       dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, NEIGHBOUR_ROWS),
       dpsChartRows(
-        'Ele. Advantage DPS',
+        'Ele. Adv. DPS',
         src.dpschart,
         ELEWEAK_CELL,
         slug,
@@ -647,7 +660,7 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   const allTags = src.tags ?? [];
   const tags = allTags
     .slice(0, MAX_TAGS)
-    .map((t) => src.tagLabels?.[t]?.label ?? t);
+    .map((t) => tagLabel(src.tagLabels?.[t]?.label ?? t));
 
   const mfr = c.manufacturer;
   return {

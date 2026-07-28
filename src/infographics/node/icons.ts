@@ -30,6 +30,7 @@
 import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import sharp from 'sharp';
 import { existsSync, readFileSync } from 'node:fs';
+import { ALL_ICON_NAMES } from '../core/iconNames.js';
 import { fileURLToPath } from 'node:url';
 
 const ICON_DIR = new URL('../../../web/public/nikke-icons/', import.meta.url);
@@ -112,86 +113,20 @@ async function rasterizeIcon(
 
 // ---- logical name mapping ----------------------------------------------------
 
-const ELEMENT_ICON: Record<string, string> = {
-  Fire: 'code_fire',
-  Water: 'code_water',
-  Wind: 'code_wind',
-  Electric: 'code_electric',
-  Iron: 'code_iron',
-};
-
-const CLASS_ICON: Record<string, string> = {
-  Attacker: 'class_attacker',
-  Defender: 'class_defender',
-  // The asset is `class_support`, the data says "Supporter" — the mismatch is
-  // why this map exists rather than a lowercase() call.
-  Supporter: 'class_support',
-};
-
-// Burst stage → icon. `Λ` has NO asset of its own; ruling 10 treats red-hood
-// (Red Hood, SR/Iron Attacker — NOT rapi-red-hood, a different unit) as B3 for
-// tile/bar selection, and the owner approved reusing burst_3 as the icon
-// PLACEHOLDER until a Λ glyph exists (2026-07-28). Tracked in QUEUE.md.
-const BURST_ICON: Record<string, string> = {
-  I: 'burst_1',
-  II: 'burst_2',
-  III: 'burst_3',
-  'Λ': 'burst_3',
-};
-
-export const iconNameForElement = (element: string): string | null =>
-  ELEMENT_ICON[element] ?? null;
-export const iconNameForClass = (cls: string): string | null =>
-  CLASS_ICON[cls] ?? null;
-export const iconNameForBurst = (burst: string): string | null =>
-  BURST_ICON[burst] ?? null;
-export const iconNameForWeapon = (weapon: string): string | null => {
-  const w = weapon.toLowerCase();
-  // Pistol is a valid Weapon in the type union but has no icon asset (the
-  // roster has no Pistol unit today). Resolve to null rather than a 404 path.
-  return ['ar', 'mg', 'rl', 'sg', 'smg', 'sr'].includes(w)
-    ? `weapon_${w}`
-    : null;
-};
-
-// Manufacturer → icon. The synced value carries an " Overspec" suffix for the 4
-// overspec units (sync.ts OVERSPEC_SLUGS) because their bond bonus follows a
-// different class tier — that is a STAT bucket, not a different company, so the
-// suffix is stripped to resolve the icon. Callers that want to surface the
-// distinction should draw a badge; silently dropping it is the thing to avoid.
-export const iconNameForManufacturer = (mfr: string): string | null => {
-  const base = mfr.replace(/ Overspec$/, '').toLowerCase();
-  return ['elysion', 'missilis', 'tetra', 'pilgrim', 'abnormal'].includes(base)
-    ? `man_${base}`
-    : null;
-};
-
-export const isOverspec = (mfr: string | null): boolean =>
-  !!mfr && / Overspec$/.test(mfr);
+// The field-value → file-name mapping lives in core/iconNames.ts (pure), so the
+// Node build and the browser resolve the SAME asset for the same unit. This
+// module only adds the Node-side rasterization.
+export {
+  iconNameForElement,
+  iconNameForClass,
+  iconNameForBurst,
+  iconNameForWeapon,
+  iconNameForManufacturer,
+  isOverspec,
+  ALL_ICON_NAMES,
+} from '../core/iconNames.js';
 
 // ---- build-time guards -------------------------------------------------------
-
-// Every logical icon the card can ask for. The build gate asserts each one
-// resolves AND rasterizes with visible pixels — the icon equivalent of
-// assertFontsLive/assertTitleInk. A silently-missing icon is exactly the failure
-// these guards exist for: it degrades to a blank slot in an immutable,
-// content-hashed image that nothing will re-render.
-export const ALL_ICON_NAMES: string[] = [
-  ...Object.values(ELEMENT_ICON),
-  ...new Set(Object.values(BURST_ICON)),
-  ...Object.values(CLASS_ICON),
-  'man_elysion',
-  'man_missilis',
-  'man_tetra',
-  'man_pilgrim',
-  'man_abnormal',
-  'weapon_ar',
-  'weapon_mg',
-  'weapon_rl',
-  'weapon_sg',
-  'weapon_smg',
-  'weapon_sr',
-];
 
 // Assert every icon rasterizes to visible pixels at `size`. Mirrors
 // assertFontsLive's contract: a decode that returns a blank canvas is the real

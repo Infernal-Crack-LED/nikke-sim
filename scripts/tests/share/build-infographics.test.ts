@@ -3,7 +3,7 @@
 // suite must NOT render the full ~208-image set, and the DPS/rank jobs need
 // gitignored web/public artifacts a fresh worktree doesn't have) into a temp
 // dir, then asserts:
-//   - content-hashed filenames: <logical-key>.<sha256(png)[0:8]>.png
+//   - content-hashed filenames: <logical-key>.<sha256(bytes)[0:8]>.<ext>
 //   - manifest.json schema: { generatedAt, images[key] = { file, hash, bytes,
 //     width, height } } matching the bytes on disk
 //   - determinism: a second run reproduces identical hashes
@@ -19,7 +19,10 @@ const run = promisify(execFile);
 const SCRIPT = new URL('../../build-infographics.ts', import.meta.url);
 
 const LIMIT = 3;
-const HASHED_NAME = /^unit\/.+\.[0-9a-f]{8}\.png$/;
+// Unit cards emit WEBP (plan §12 — measured: q90 is ~86% smaller than PNG, the
+// difference between a ~25 MB and a ~150 MB deploy artifact). Every other kind
+// stays PNG.
+const HASHED_NAME = /^unit\/.+\.[0-9a-f]{8}\.webp$/;
 
 interface Manifest {
   generatedAt: string;
@@ -44,7 +47,7 @@ async function build(outDir: string): Promise<Manifest> {
 }
 
 describe('build-infographics manifest + content hashing', () => {
-  it('writes hashed PNGs and a manifest that matches the bytes on disk', async () => {
+  it('writes hashed WebP cards and a manifest that matches the bytes on disk', async () => {
     const out = mkdtempSync(join(tmpdir(), 'infographics-'));
     try {
       const manifest = await build(out);
@@ -53,15 +56,21 @@ describe('build-infographics manifest + content hashing', () => {
         /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/
       );
       const keys = Object.keys(manifest.images);
-      expect(keys.length).toBe(LIMIT);
+      // TWO variants per unit (ruling 15): the 2:1 landscape `discord` card and
+      // the 3:4 portrait `twitter` launch asset.
+      expect(keys.length).toBe(LIMIT * 2);
       expect(keys.every((k) => k.startsWith('unit/'))).toBe(true);
 
       const onDisk = readdirSync(join(out, 'unit'));
-      expect(onDisk.length).toBe(LIMIT);
+      expect(onDisk.length).toBe(LIMIT * 2);
+      // keys carry the variant — a shared key would serve the landscape card to
+      // a portrait request out of an immutable cache
+      expect(keys.filter((k) => k.endsWith('.discord')).length).toBe(LIMIT);
+      expect(keys.filter((k) => k.endsWith('.twitter')).length).toBe(LIMIT);
 
       for (const [key, entry] of Object.entries(manifest.images)) {
-        // filename embeds the content hash: <key>.<hash8>.png
-        expect(entry.file).toBe(`${key}.${entry.hash}.png`);
+        // filename embeds the content hash: <key>.<hash8>.webp
+        expect(entry.file).toBe(`${key}.${entry.hash}.webp`);
         expect(entry.file).toMatch(HASHED_NAME);
         expect(onDisk).toContain(entry.file.split('/')[1]);
 
@@ -71,11 +80,19 @@ describe('build-infographics manifest + content hashing', () => {
           createHash('sha256').update(png).digest('hex').slice(0, 8)
         );
         expect(entry.bytes).toBe(png.length);
-        // PNG magic bytes
-        expect(png.subarray(0, 4).toString('hex')).toBe('89504e47');
-        // scale-2 unit card
-        expect(entry.width).toBe(1280);
-        expect(entry.height).toBe(960);
+        // RIFF....WEBP magic
+        expect(png.subarray(0, 4).toString('ascii')).toBe('RIFF');
+        expect(png.subarray(8, 12).toString('ascii')).toBe('WEBP');
+        // Landscape renders at dpr 2 (2400x1200); portrait deliberately does
+        // NOT — X shows it ~500-600px wide, so 1200x1600 is already ~2x the
+        // display width and dpr 2 would buy pixels nothing consumes (§12).
+        if (key.endsWith('.twitter')) {
+          expect(entry.width).toBe(1200);
+          expect(entry.height).toBe(1600);
+        } else {
+          expect(entry.width).toBe(2400);
+          expect(entry.height).toBe(1200);
+        }
       }
     } finally {
       rmSync(out, { recursive: true, force: true });

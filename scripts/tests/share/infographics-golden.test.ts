@@ -116,7 +116,8 @@ describe('infographic golden images', () => {
     'dps-chart-window.png',
     'table-card.png',
     'table-card-window.png',
-    'unit-card.png',
+    'unit-card.discord.png',
+    'unit-card.twitter.png',
   ]) {
     it(name, async () => {
       const render = renders.find((r) => r.name === name);

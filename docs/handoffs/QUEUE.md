@@ -52,6 +52,35 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — ALL 6 PHASES BUILT, NEEDS AN OWNER POLISH PASS.**
+  Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
+  `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
+  landed-state: `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`.
+  Measured at the phase-5 gate: **408 images, 25.8 MB** (390 unit cards across 2 variants at
+  **55 KB avg**, WebP q90) — under the ~27 MB projection and half today's 53 MB PNG set.
+  The owner asked for uncertain values to be parked as tunable consts and settled in ONE polish
+  pass rather than guessed at mid-build. They are:
+  1. **Layout/behaviour tunables** — `src/infographics/core/unitCardData.ts`: `NEIGHBOUR_ROWS` (1),
+     `NEIGHBOUR_ROWS_SOLO_CHART` (3), `MAX_TAGS` (6); `core/unitCard.ts`: `PAD`/`PAD_P`,
+     `PORTRAIT_ART`/`_P`, `ICON_SIZE`/`_P`, `BAR_ROW_H`/`_P`, `LEFT_COL_FRAC` (0.62),
+     `X_CORNER_RADIUS_PCT`; `scripts/build-infographics.ts`: `UNIT_CARD_WEBP_QUALITY` (90).
+     Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
+  2. **`Λ` burst icon is a PLACEHOLDER.** `red-hood` (Red Hood, SR/Iron — NOT `rapi-red-hood`) is
+     the only Λ unit and currently draws `burst_3`, per the owner's "use b3 for now". Needs a real
+     Λ glyph or a text chip (`core/iconNames.ts` `ICON_BY_BURST`).
+  3. **`class_*` icons are 25×25 and `man_missilis` is 32×32, with no vector source**, against a
+     64px icon strip (128px physical on the landscape card) — a 2.6–5.1× upscale on an
+     advertising asset. The owner expected a full SVG set in-repo; it is NOT there (only
+     `burst_*` + `code_*`, verified across this repo, the main worktree and bakery-bot). The
+     loader is already SVG-first, so **dropping the missing SVGs in needs no code change**, and
+     every build prints the remaining raster-bound icons.
+  4. **A unit on no board renders two large empty plates** (e.g. `red-hood`, off both DPS
+     boards). Honest and fixed-geometry, but it is a lot of dead space — worth deciding whether
+     those units get a different second-class layout (ruling 13 explicitly deprioritizes them).
+  5. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
+     the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
+     (that fallback is tested).
+
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
   `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three
