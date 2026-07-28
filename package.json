@@ -36,7 +36,8 @@
     "ranks:burstcdr": "tsx scripts/build-burstcdr.ts",
     "ranks:sustain": "tsx scripts/build-sustain.ts",
     "ranks:buffer": "tsx scripts/build-bufferchart.ts",
-    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer"
+    "ranks:all": "npm run ranks:burstgen && npm run ranks:burstcdr && npm run ranks:sustain && npm run ranks:buffer",
+    "fonts:subsets": "tsx scripts/subset-fonts.ts"
   },
   "dependencies": {
     "@napi-rs/canvas": "^1.0.2",
@@ -66,12 +67,14 @@
     "esbuild": "^0.28.1",
     "eslint": "^10.8.0",
     "eslint-plugin-react-hooks": "^7.1.1",
+    "fonteditor-core": "^2.6.3",
     "globals": "^17.8.0",
     "husky": "^9.1.7",
     "jsdom": "^29.1.1",
     "lint-staged": "^17.2.0",
     "playwright": "^1.61.1",
     "prettier": "^3.9.6",
+    "subset-font": "^2.5.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.65.0",

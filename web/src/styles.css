@@ -10,19 +10,31 @@
   --warn: #e0b04b;
 }
 
-/* Self-hosted Roboto (subset, ~13 KB/face) — the infographic renderers draw
+/* Self-hosted Roboto (subset, ~20 KB/face) — the infographic renderers draw
    every string with family 'Roboto' (src/infographics/core/theme.ts FONT), and
    decision 6.1 makes the browser card pixel-match the Node-rendered one. The
    canvas hosts MUST await the faces before drawing (ensureRoboto in
    web/src/teamShare.ts) or the first copy-image click renders fallback-metric
    text. Glyphs Roboto lacks (▲ → ✓ …) fall back per-glyph, same as the Node
-   path. */
+   path.
+
+   The subsets are reproducible: scripts/subset-fonts.ts (`npm run
+   fonts:subsets`) rebuilds them from the full TTFs in
+   src/infographics/assets/fonts/ + the checked-in glyph manifest
+   (subset-ranges.json there), and fails unless this file carries the
+   manifest's unicode-range. The unicode-range pins each face to exactly its
+   subset coverage, so glyphs OUTSIDE the subset fall through to the next
+   family in the stack instead of the subset silently overriding body text
+   with missing glyphs. */
 @font-face {
   font-family: 'Roboto';
   src: url('/fonts/Roboto-Regular.woff2') format('woff2');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
+    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
+    U+2260, U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -30,6 +42,9 @@
   font-weight: 500;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
+    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
+    U+2260, U+2264-2265, U+25CA;
 }
 @font-face {
   font-family: 'Roboto';
@@ -37,6 +52,9 @@
   font-weight: 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+20-7E, U+A0-FF, U+391-3A1, U+3A3-3A9, U+3B1-3C9, U+2010-2027,
+    U+2030, U+2202, U+2206, U+220F, U+2211-2212, U+221A, U+221E, U+222B, U+2248,
+    U+2260, U+2264-2265, U+25CA;
 }
 
 * {
