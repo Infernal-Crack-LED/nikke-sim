@@ -4338,6 +4338,51 @@
         "burst: swap weapon range-band/core eligibility (charge cannon on an SG base) is an SR-like guess ⚑; base SG cadence tuple is datamine-unreliable ⚑"
       ],
       "board": null
+    },
+    "eunhwa-tactical-upgrade": {
+      "name": "Eunhwa: Tactical Upgrade",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-27",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-27: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/eunhwa-tactical-upgrade.json + scripts/kit-autonomy/manual-review/eunhwa-tactical-upgrade.md.",
+          "low ENCODING (skill2): 'Same squad' Crit Rate 8.16% encoded as plain allies under the one-deployed-squad convention; both blind agents read self-only in a squad-less comp",
+          "med FIDELITY (skill1): 'Normal attacks deal true damage' flavor conversion unmodeled — base SR normals stay non-true, so the Camouflage-window true-damage payoff on her sustained rifle DPS is under-counted",
+          "med ENCODING (burst): Cannon swap duration kit-silent — durationSec 10 (FB-window convention) drives ~6 shots/burst; damage is roughly linear in the real window length"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-07-27",
+      "evidence": "kit-autonomy gauntlet 2026-07-27; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; windowed camouflage trueDamage + multi-shot true-damage cannon + on-hit vulnerability debuff + teamHas-gated LT-formation bonus",
+      "residual": "same-squad==whole-team convention (two blind reads took 'from the same squad' as a real filter; re-scope if squad data lands); emma-tu presence == LT Formation applied auto-gate assumption + asymmetry vs emma-tu manual mirror mode; true-flavor base normals unmodeled (under-count FLAG); kit-silent cannon swap duration (10s FB-window convention FLAG)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when using Burst Skill. Affects self.)",
+          "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Activates when attacking with Full Charge during Full Burst. Affects self.)",
+          "Activates only when in Camouflage status. Affects self. Normal attacks deal true damage continuously. (the FLAVOR-CHANGE half of S1-L3; the 'True Damage ▲ 42.24% continuously' half IS modeled as self trueDamagePct 42.24 — see caveats)"
+        ],
+        "skill2": [],
+        "burst": [
+          "Special note: Fires an Exploding Bullet dealing area-of-effect damage. (splash radius inert vs the single partless boss; the cannon HIT itself is modeled as the weaponSwap shot)"
+        ]
+      },
+      "caveats": [
+        "⚑ MEASUREMENT-GATED (tier 2): S1-L3 'Normal attacks deal true damage continuously' — the FLAVOR CHANGE of her sustained SR normals to true damage is UNMODELED. The engine's only true-normal mechanism is weaponSwap.trueNormals, which is (a) windowed (needs a durationSec) and (b) cannot coexist with her burst cannon swap (the engine holds a single swap slot — a fight-length trueNormals swap would be clobbered by the cannon swap on every burst and never restore). There is also no camouflage SELF-status to gate it (the engine has no self-status channel). Estimate: as shipped, her sustained SR normals stay NON-true, so the self trueDamagePct 42.24 buff is near-inert outside the burst cannon shot (it pays off fully on the cannon, which IS true-flavored); the kit intends ~camouflage-uptime fraction of her main SR DPS to be true-flavored and amplified. Camouflage uptime is partial (5s per 20s burst + Full-Charge-during-Full-Burst refreshes, roughly half the fight). Recipe: a permanent trueNormals flag that survives weapon-swap coexistence + a camouflage-uptime model (or a targetStatus-proxied camouflage window driving a windowed trueNormals swap), then popup-read the true-damage popup count / camouflage uptime in an eunhwa-tu recording. The trueDamagePct 42.24 buff itself is encoded and exact for the cannon payoff.",
+        "⚑ MEASUREMENT-GATED (tier 2): the burst cannon swap DURATION is kit-silent — the kit gives 'Max Ammunition Capacity: 1 round' but states neither a 'for N sec' window nor 'deactivates when all rounds fired'. Estimate: durationSec 10 (the Full-Burst-window convention shared with e-h / red-hood); the 1-round magazine cycles over that window (fire / 141f reload / fire …) for ~6 true-damage cannon shots per burst. A shorter real window fires fewer shots (damage is roughly linear in shot count: 10s ≈ 6 shots ≈ double the single-shot reading). Recipe: an eunhwa-tu recording — count cannon popups per burst and the frame her base SR fire resumes; rescale durationSec to match.",
+        "burst: 'Damage Taken ▲27.87% for 10s' is an ON-HIT rider of the cannon shots (shotFired + swapGate:'swapped'), so it lands on the first cannon shot (~0.3s after cast) and refreshes per subsequent shot — ~96% team uptime across the fight. The first cannon shot of each burst does NOT benefit (the debuff applies AFTER that shot's damage resolves, the shotFired convention), faithful to 'target(s) hit'.",
+        "burst: on swap exit (durationSec expiry) the engine forces an empty-belt reload before SR fire resumes — the shared weaponSwap exit convention (e-h / snow-white-heavy-arms), not an ETU-specific choice; the in-game weapon-restore timing at swap deactivation is unmeasured.",
+        "skill2: the S2 bonus 'when applying LT Formation to self' is gated on emma-tactical-upgrade presence via teamHas.slugs (auto, presence ≡ formation applied). emma-tu's MIRROR bonus ('when applying AS Formation to self') is behind a manual mode on emma-tu (default OFF) — an asymmetry in the landed encodings: ETU's bonus auto-fires with emma-tu present, emma-tu's requires selecting its AS mode. Reconcile to a single auto-gate convention if both sisters grade a team together."
+      ]
     }
   }
 }

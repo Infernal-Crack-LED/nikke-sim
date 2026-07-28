@@ -1,0 +1,334 @@
+{
+  "slug": "eunhwa-tactical-upgrade",
+  "leakDetected": null,
+  "override": {
+    "slug": "eunhwa-tactical-upgrade",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 42.24
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 8.16
+          },
+          {
+            "kind": "buff",
+            "stat": "chargeDamagePct",
+            "value": 41.81
+          },
+          {
+            "kind": "buff",
+            "stat": "projectileExplosionPct",
+            "value": 5.11
+          },
+          {
+            "kind": "buff",
+            "stat": "trueDamagePct",
+            "value": 30.97
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 42.24
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 105.6,
+            "chargeTimeSec": 0.3,
+            "chargeMultPct": 300,
+            "maxAmmo": 1,
+            "durationSec": 10,
+            "trueNormals": true
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 27.87,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Burst-Skill trigger)",
+        "Camouflage: Prevents being targeted by single-target attacks for 5 sec. This effect is removed upon taking a direct hit. (Full-Charge-during-Full-Burst trigger)",
+        "Normal attacks deal true damage continuously."
+      ],
+      "skill2": [
+        "AS Formation / Function: Issues a battle-advantageous tactic to target(s).",
+        "\"Affects all allies from the same squad\" (Effect 1) — no squad axis in data; modeled as all allies (⚑ over-credit if a real squad filter applies).",
+        "\"Bonus effects when applying LT Formation to self\" — formation-mode condition not modeled as a gate; both bonus effects modeled as always-on (⚑)."
+      ],
+      "burst": [
+        "Special note: Fires an Exploding Bullet dealing area-of-effect damage."
+      ]
+    },
+    "caveats": [
+      "⚑ Camouflage (skill1, both triggers) is a defensive targeting-immunity status with no damage term of its own — the sim has no enemy targeting model, so it is inert. BUT it is the GATE for the skill1 block-3 True Damage ▲42.24%, which the kit says applies 'only when in Camouflage status'. Modeled here as an always-on self passive (optimistic upper bound): Camouflage is re-applied on every burst cast AND on every full-charge attack during Full Burst, and nothing in the sim breaks it (the boss deals no modeled damage), so in-sim uptime is near-continuous once the fight is running. Real uptime is lower in the pre-first-burst window and whenever a direct hit strips it. Recipe: gate the block on a modeled Camouflage status (targetStatus-style self status opened by burstCast + by full-charge-in-FB, 5s duration) and A/B the damage delta.",
+      "⚑ 'Normal attacks deal true damage continuously' (skill1 block 3, first line) — this re-flavors the unit's BASE normal attacks as true damage. The override models the accompanying True Damage ▲42.24% buff but does NOT re-flavor base normals to 'true', because the engine's normal-attack flavor is not settable from an override effect (only weaponSwap.trueNormals re-flavors, and only for swap shots). If a Damage-Up 'true' bucket only credits true-flavored hits, this buff is UNDER-credited on her normals. Recipe: check whether trueDamagePct feeds the Damage Up bucket unconditionally or only for flavor:'true' hits; if conditional, an engine-side normal-flavor override is needed.",
+      "⚑ Squad scoping: skill2 Effect 1 says 'all allies from the same squad' while Effects 2/3 say 'all allies' / 'self'. There is no squad axis in the roster data, so Effect 1 is modeled at full ally scope — this OVER-credits crit rate if the real fixture team is not all one squad. Recipe: owner ruling on whether the scope-lock team counts as one squad; otherwise gate via teamHas.slugs.",
+      "⚑ LT Formation: the kit's bonus block is conditional on 'applying LT Formation to self', and the primary block is headed 'AS Formation'. This looks like a two-mode kit (AS vs LT). Modeled as ALL FIVE effects always-on, which is the maximal reading and is WRONG if the two formations are mutually exclusive. Recipe: confirm in-game whether AS and LT can be held simultaneously; if not, declare modes:['AS','LT'] and put the bonus block behind mode:'LT'.",
+      "⚑ 'Activates only when self survives' (skill2 header) — no HP pool in v1 and the boss deals no modeled damage, so the survival condition is permanently true; modeled as an unconditional passive.",
+      "⚑ Burst weaponSwap durationSec: 10s assumed (the standard Full Burst window). The kit text states NO duration or shot count for the weapon change. If the swap instead lasts a fixed number of shots or a different window, shot economy is wrong. Recipe: count her burst-window shots on footage against the sim's shot events.",
+      "⚑ Burst swap shot economy (ALWAYS-⚑, kit-silent): maxAmmo 1 + chargeTime 0.3s means fire→reload every round, and the reload cadence is taken from her base reloadFrames (141 ≈ 2.35s), which is a datamine-unreliable field. That reload dominates her burst-window DPS — a wrong reloadFrames changes her burst damage by a large factor. Estimate: ~3-4 full-charge rounds in a 10s window. Recipe: count popups in her burst window on a recording.",
+      "⚑ Burst swap pullsPerSec / weapon class not set — the swap is assumed to keep her SR base cadence and class (so SR range-band + auto-core behavior carries over). The kit gives no cadence for the swapped weapon. Recipe: datamine the swap shot_id, or read shot spacing off footage.",
+      "⚑ 'Exploding Bullet dealing area-of-effect damage' — AoE is unmodeled (single-target boss, no splash targets). Split-vs-merge (does the explosion register as a SEPARATE popup from the bullet, or one merged number?) is kit-silent: modeled as ONE merged hit via the weaponSwap damage. Recipe: read popups per shot in her burst window — two popups per round means the explosion is a separate flatDamage/projectileExplosion rider that must be added.",
+      "⚑ The burst's 105.6% is authored as weaponSwap.damagePct with trueNormals:true, since the kit says 'as true damage'. If the engine's true flavor on swap shots does not pick up her own True Damage ▲ buffs, the two skill lines double-flag; verify the bucket wiring before trusting the magnitude.",
+      "⚑ Damage Taken ▲27.87% is authored on trigger burstCast (it lands with the burst shot, per the kit's 'Target(s) hit'). Strictly it should apply ON HIT of the exploding bullet, not on cast — so the sim opens the debuff slightly EARLY (by the 0.3s charge + travel). Modeled at cast for simplicity; the error is sub-second inside a 10s window. Recipe: if a hit-gated model is wanted, move it to a flatDamage-adjacent rider on the swap shot.",
+      "Camouflage is retained in `unmodeled` verbatim rather than as an `ignored` effect (validator rejects `ignored` blocks)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of eunhwa-tactical-upgrade (SR/Fire/Attacker/Burst II) from kit text only. Skill1: two Camouflage-granting triggers (burst-cast, and full-charge-during-Full-Burst) that are defensively inert in v1, plus a Camouflage-gated True Damage ▲42.24% self buff modeled as an always-on passive (near-continuous in-sim uptime — see caveats). Skill2 is a formation passive: Critical Rate ▲8.16% (kit says same-squad; no squad axis exists, modeled all-allies), Charge Damage ▲41.81% to all allies, ATK ▲42.24% self, plus the LT-Formation bonus pair (Projectile Explosion Damage ▲5.11%, True Damage ▲30.97%, all allies) modeled unconditionally — the AS-vs-LT mode question is the single biggest open magnitude risk here. Burst is a weapon swap: 105.6% true-damage rounds, 0.3s charge, 300% full-charge multiplier, 1-round magazine, plus a 27.87%/10s Damage Taken ▲ boss debuff that benefits the whole team. Swap duration (10s) and shot economy are kit-silent and flagged. No noFb set anywhere (FB-by-timing default ON); noRange left engine-automatic."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger identity recorded: burstCast (own burst), NOT fullBurstEnter — 'when using Burst Skill' is literal. Its only payload is Camouflage, which is defensively inert, so no block is emitted for the trigger itself; it is folded into the always-on modeling of the Camouflage-gated true-damage buff. Logged in unmodeled + caveats."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Camouflage: Prevents being targeted",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive targeting immunity — the sim models no enemy targeting and the boss deals no modeled damage, so there is nothing to prevent. NOT skipped on isolation grounds: it is retained because it GATES the skill1 true-damage buff (see next rows). Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacking with Full Ch",
+      "status": "SKIPPED",
+      "effectOrReason": "Second Camouflage source, gated on full-charge attacks during Full Burst (fbGate:'inFb' shape). Same inert payload as the first source. Its significance is uptime: two independent refresh sources make Camouflage near-continuous, which is the justification for modeling the gated true-damage buff as always-on. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates only when in Camouflage sta",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Status gate on the true-damage buff. No modeled Camouflage status exists, so the gate is collapsed to always-on (optimistic upper bound) rather than dropped. ⚑ flagged."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal attacks deal true damage cont.",
+      "status": "SKIPPED",
+      "effectOrReason": "Re-flavors BASE normal attacks as true damage. No override-level primitive exists to re-flavor base normals (only weaponSwap.trueNormals, which scopes to swap shots). Verbatim in unmodeled.skill1; ⚑ caveat on possible under-credit of the accompanying True Damage ▲."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "True Damage ▲ 42.24% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 42.24, target self, trigger passive, no durationSec ('continuously')."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates only when self survives.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Permanently true in v1 (no HP pool, boss deals no modeled damage) → collapsed into trigger passive. Noted in caveats."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "AS Formation / Function: Issues a ...",
+      "status": "SKIPPED",
+      "effectOrReason": "Flavor/function header, no mechanical term. Verbatim in unmodeled.skill2. But see the LT-Formation row — the AS/LT pairing is a possible mode axis."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: same squad. Crit Rate ▲8.16",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 8.16, target allies (all — squad axis does not exist in data), trigger passive. Scope is UNSCOPED crit (kit says plain 'Critical Rate', not 'Critical Rate of normal attacks'), so critRatePct not critRateNormalPct. ⚑ on the squad widening."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: all allies. Charge Damage ▲",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeDamagePct 41.81, target allies, trigger passive. Additive percentage points in the charge bucket (chargeDamagePct, NOT chargeDamageMultPct — the kit says plain 'Charge Damage ▲', not a multiplier line)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: self. ATK ▲ 42.24%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 42.24, target self, trigger passive. Separate block from the ally block because the target set differs. atkPct (scales own ATK), not casterAtkPct — the kit gives no 'of the skill user's ATK' wording."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Bonus effects when applying LT Format",
+      "status": "SKIPPED",
+      "effectOrReason": "Formation-selection condition. Modeled as unconditional (both bonus effects always live) rather than behind a mode gate, because the kit text does not state whether AS and LT are mutually exclusive. Verbatim in unmodeled.skill2; ⚑ — this is the largest single magnitude risk in the override."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: Projectile Explosion Dmg ▲5",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff projectileExplosionPct 5.11, target allies, trigger passive. Damage Up bucket; only live for RL kits and for her own burst's exploding bullet if that hit is projectileExplosion-flavored (it is not, in this baseline — see burst caveat)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: all allies. True Damage ▲30",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff trueDamagePct 30.97, target allies, trigger passive. Stacks additively in the Damage Up bucket with her own skill1 42.24% on herself (both are trueDamagePct from the same caster slot — ⚑ note: same-caster-slot overwrite semantics may collapse these two if the engine keys buffs by caster+stat; they are authored in DIFFERENT slots/blocks, so verify both land)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon in use:",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap on trigger burstCast, target self. HARD RULE: a weapon-state change IS damage — never skipped."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge time: 0.3 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeTimeSec 0.3 (vs her base chargeFrames 60 = 1.0s — a large charge-speed upgrade during burst)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 105.6% of final ATK true dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 105.6 + trueNormals true (kit says 'as true damage')."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge damage: 300% of damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 300."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity: 1 round(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 1. Weapon-state modifier that gates shot count (fire→reload each round); dominates burst-window output. ⚑ on the resulting shot economy."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Fires an Exploding Bullet, AoE damage",
+      "status": "SKIPPED",
+      "effectOrReason": "AoE has no meaning against a single partless boss. Split-vs-merge (separate explosion popup vs one merged number) is kit-silent — modeled as merged into the swap shot. Verbatim in unmodeled.burst; ⚑ flagged."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Explosive Round: Dmg Taken ▲27.87%/10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 27.87, durationSec 10, target enemy, trigger burstCast. HARD RULE: 'Damage Taken ▲' is a boss DEBUFF benefiting the whole team, not a self buff. ⚑ on cast-vs-hit timing."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0] (trueDamagePct 42.24 — the Camouflage gate)",
+      "estimate": "Modeled as an always-on self passive (100% uptime). Realistic uptime once the fight is running: high (two refresh sources, nothing in-sim strips it); realistic uptime over the FULL 180s including the pre-first-burst window: lower, perhaps 80-90%.",
+      "reasoning": "The kit gates this buff on 'only when in Camouflage status'. Camouflage is granted by (a) using her Burst Skill and (b) any full-charge attack during Full Burst, for 5s, and is removed only by taking a direct hit. The sim models no incoming damage, so removal never fires; and source (b) refreshes on every full charge inside every Full Burst. That makes uptime near-continuous AFTER the first burst, but zero before it. Modeling it always-on is the optimistic upper bound and is stated as such rather than guessed at a precise haircut — a blind parser inventing e.g. '×0.85' would be fabricating a calibrated value.",
+      "recipe": "Model Camouflage as a real 5s self status (a targetStatus-style self-scoped window opened by a burstCast block AND by a full-charge-in-FB block with fbGate:'inFb'), gate this buff behind it, and A/B her total damage against the always-on model. If the delta is under ~2% the always-on simplification is safe to keep; if larger, the gate must be modeled. Cross-check against a recording by looking for the true-damage magnitude change on her pre-first-burst normals."
+    },
+    {
+      "field": "override.skill2 — the LT Formation bonus pair (projectileExplosionPct 5.11, trueDamagePct 30.97)",
+      "estimate": "Modeled always-on. Alternative: mutually exclusive with the AS Formation block, in which case one of the two blocks must be inert at any time and this override over-credits by the whole LT pair (up to ~31 percentage points of Damage Up on every ally).",
+      "reasoning": "The kit presents 'AS Formation' as the primary block and then 'Bonus effects when applying LT Formation to self'. Two named formations in one skill strongly suggests a selectable mode axis, but the text never says they are exclusive, nor whether LT is a default. A blind read cannot resolve it. Always-on is the maximal reading and is the larger error if exclusivity is real — so it is flagged as the top risk rather than silently chosen.",
+      "recipe": "Owner/in-game check: can a unit hold AS and LT simultaneously, and which is default? If exclusive, declare modes:['AS','LT'] on the override and put the bonus block behind mode:'LT'; if LT is applied to self by default per the wording 'when applying LT Formation to self', keep always-on and delete this flag."
+    },
+    {
+      "field": "override.skill2[0] critRatePct 8.16 — target scope",
+      "estimate": "Modeled at full ally scope (all 5). If 'same squad' is a real filter, effective scope could be as low as self-only.",
+      "reasoning": "Effect 1 says 'all allies from the same squad' while Effect 2 says plain 'all allies' — the deliberate contrast means the squad qualifier is meaningful, not decorative. The roster data has no squad axis, so the filter cannot be evaluated. Widening to all allies over-credits team crit.",
+      "recipe": "Determine each roster unit's squad affiliation (Counters/Matis/etc.) and add it to characters.json, or approximate with teamHas.slugs / an explicit ally slug list on the block. Until then, A/B the block at self-only vs all-allies to bound the magnitude."
+    },
+    {
+      "field": "override.burst[0].durationSec (10)",
+      "estimate": "10s (assumed = the standard Full Burst window).",
+      "reasoning": "ALWAYS-⚑ class: the kit text states NO duration and no shot count for the weapon change. 10s matches the Full Burst window and matches the 10s duration the kit DOES state for the Explosive Round debuff, which is weak corroboration only — the debuff duration is a separate quantity.",
+      "recipe": "Read her burst window on footage: timestamp the first swapped shot and the return to her base SR animation/ammo counter. If the swap ends on a shot count instead, set maxShots and drop durationSec to the observed bound."
+    },
+    {
+      "field": "override.burst[0] — swap shot economy (shots landed per burst window)",
+      "estimate": "~3-4 full-charge rounds in a 10s window: 0.3s charge + ~2.35s reload (base reloadFrames 141) per round ≈ 2.65s/round.",
+      "reasoning": "ALWAYS-⚑ class (weapon-swap shot economy is kit-silent) AND it stands on reloadFrames, a known-unreliable datamine field. With maxAmmo 1 the unit reloads after every single round, so reload time — not charge time — sets her burst DPS almost entirely. A wrong reloadFrames moves her burst damage proportionally. The estimate is deliberately given as a range with the arithmetic shown, not as a precise number.",
+      "recipe": "Count damage popups inside her burst window on a recording and compare to the sim's shot events for her slot; that directly measures rounds-per-window and back-solves the effective reload. Also check whether the swap weapon carries its OWN reload spec (set weaponSwap.pullsPerSec / a swap reload if so)."
+    },
+    {
+      "field": "override.burst[0] — pullsPerSec / weapon class not set",
+      "estimate": "Assumed to inherit her base SR cadence and SR class (SR range-band eligibility + SR auto-core rate carry over to swap shots).",
+      "reasoning": "ALWAYS-⚑ cadence tuple. The kit gives the swap's charge time and ammo but no fire rate and no weapon type. Inheriting the base weapon is the schema default (omitting pullsPerSec/weapon), so this flag documents an omission rather than a guess. If the swap loads a different shot_id with its own cadence or class, both the shot count and the core rate are wrong.",
+      "recipe": "Datamine the burst swap's shot_id and compare rate_of_fire / weapon type against her base SR; or read shot spacing and core-hit frequency off footage inside her burst window."
+    },
+    {
+      "field": "override.burst — exploding bullet: split vs merge",
+      "estimate": "Modeled MERGED (one hit, the 105.6% swap shot). Alternative: a separate explosion component that would need its own flatDamage rider, plausibly flavor:'projectileExplosion'.",
+      "reasoning": "ALWAYS-⚑ class (multi-projectile split-vs-merge is kit-silent — read popups). The kit says the bullet 'Fires an Exploding Bullet dealing area-of-effect damage' but assigns the explosion NO separate percentage, which is weak evidence for merged. Note the interaction: her own skill2 grants Projectile Explosion Damage ▲5.11%, which is dead weight under the merged model and only becomes live if the explosion is a real projectileExplosion-flavored hit. That the kit pairs the buff with an exploding-bullet burst is suggestive but not conclusive.",
+      "recipe": "Count popups per swapped round on a recording: one popup = merged (keep as authored); two = split, add a flatDamage rider with flavor:'projectileExplosion' and derive its atkPct from the popup ratio."
+    },
+    {
+      "field": "override.skill1[0] + override.skill2[0] — trueDamagePct stacking, and whether it reaches her normals",
+      "estimate": "Both buffs assumed to land and sum additively in the Damage Up bucket (42.24 + 30.97 = 73.21 pp on herself).",
+      "reasoning": "Two risks, both structural rather than numeric. (1) Same-caster-slot overwrite: the buff engine overwrites by caster slot, and both trueDamagePct buffs come from her own slot — if the key is caster+stat, one silently replaces the other and roughly 31-42 pp vanishes. They are authored in different slots/blocks, which SHOULD key them apart, but a blind parser cannot confirm the engine's key. (2) If trueDamagePct only credits hits already flavored 'true', then because the base-normal re-flavor line is unmodeled, this whole buff is inert on her normal attacks and live only on her burst swap shots (which do carry trueNormals:true).",
+      "recipe": "Assert on buffApply events filtered by stat 'trueDamagePct' for her targetIdx — expect TWO distinct apply events with distinct keys and both live simultaneously. Then read a normal-attack damage event's mult with the buffs on vs off to confirm the Damage Up bucket actually picks them up on normals."
+    },
+    {
+      "field": "override.burst[1] damageTakenPct — trigger timing (burstCast vs on-hit)",
+      "estimate": "Authored on burstCast; true application is on the exploding bullet's HIT, roughly 0.3s (charge) plus travel later.",
+      "reasoning": "The kit scopes the debuff to 'Target: Target(s) hit', which is an on-hit application, but the schema's cleanest expression of a burst-window boss debuff is a burstCast-triggered enemy-targeted buff. The sim therefore opens the 27.87% window sub-second EARLY inside a 10s duration — a small over-credit, and it also means the debuff is live for any teammate damage landing in that first fraction of a second.",
+      "recipe": "If a hit-gated model is wanted, attach the debuff to the swap shot's landing rather than the cast. Bound the error first: A/B cast-triggered vs a 0.3s-delayed application and check whether team damage moves measurably; if under noise, keep as authored."
+    },
+    {
+      "field": "override — noFb not set anywhere",
+      "estimate": "FB-by-timing default ON for every effect in this override (no noFb flags authored).",
+      "reasoning": "Per-kit noFb is an ALWAYS-⚑ field with a MEASURED-ONLY bar, and the default is OFF (i.e. effects DO take the Full Burst major by landing timing). Nothing in this kit's text claims FB exemption. Her burst weaponSwap shots fire DURING the Full Burst window, so they legitimately take the +50%; note separately that burst-CAST instant damage is always FB-exempt, but this burst has no instant-damage component — it is a weapon swap, so that exemption does not apply here.",
+      "recipe": "Only set noFb from a measurement: compare a swapped-shot popup landing inside Full Burst against one outside (if the swap ever extends past the window) and check for the 1.5x step. Do not set it speculatively."
+    }
+  ],
+  "model": "claude-opus-5"
+}
