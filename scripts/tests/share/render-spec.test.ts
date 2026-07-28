@@ -42,6 +42,16 @@ const TEAM_CODE = encodeBuild(TEAM_BUILD);
 
 describe('specCacheKey — pinned key strings (cache compatibility)', () => {
   it('produces the exact v2|… keys the on-disk cache was written with', () => {
+    // team/roster hash the render-relevant PROJECTION of the decoded build
+    // (spec.ts renderRelevantBuild) — NOT the raw code, so a field no pixel
+    // depends on can't fork the cache. build-render-key.test.ts pins the
+    // projection against the renderers; this pins the STRING it produces.
+    expect(specCacheKey({ kind: 'team', build: TEAM_CODE })).toBe(
+      'v2|team|{"u":["liter","crown","naga","modernia","alice"],' +
+        '"w":"Water","l":"400","c":1,"cc":false,"cv":"10"}'
+    );
+    // an undecodable code can't reach a render; the key falls back to the raw
+    // string rather than throwing (specCacheKey is exported and must be total)
     expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v2|team|abc');
     expect(specCacheKey({ kind: 'roster', build: 'abc' })).toBe(
       'v2|roster|abc'

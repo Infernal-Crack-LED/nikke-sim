@@ -585,6 +585,54 @@ describe('api/v1/img/table/*.png (breakpoint tables)', () => {
   });
 });
 
+describe('api/v1/img/cache/<file> durability (spec sidecar)', () => {
+  // The short cache URL is the only form that fits a Discord embed, so an LRU
+  // eviction must not break an already-posted image: the miss re-renders from
+  // the remembered spec (src/server/spec-store.ts).
+  it('an evicted entry re-renders and serves the SAME bytes', async () => {
+    const loc = await expectRenderedPng(
+      `/api/v1/img/team.png?b=${TEAM_CODE}`,
+      'team'
+    );
+    const file = loc.split('/').pop()!;
+    const before = Buffer.from(
+      await (await fetch(`${base}${loc}`)).arrayBuffer()
+    );
+    rmSync(join(cacheDir, file)); // simulate the LRU sweep evicting it
+    expect(existsSync(join(cacheDir, file))).toBe(false);
+
+    const res = await fetch(`${base}${loc}`);
+    expect(res.status).toBe(200);
+    expect(res.headers.get('content-type')).toBe('image/png');
+    const after = Buffer.from(await res.arrayBuffer());
+    // content-addressed: the re-render is the same picture, and it is back on
+    // disk for the next request
+    expect(after.equals(before)).toBe(true);
+    expect(existsSync(join(cacheDir, file))).toBe(true);
+  });
+
+  it('a hash with no remembered spec is still an honest 404', async () => {
+    const res = await fetch(
+      `${base}/api/v1/img/cache/team.${'0'.repeat(16)}.png`
+    );
+    expect(res.status).toBe(404);
+    expect(res.headers.get('content-type')).toContain('text/plain');
+  });
+
+  it('a sidecar that resolves to a DIFFERENT hash is refused', async () => {
+    // hand-written/stale sidecar: the spec is valid but does not address this
+    // file (e.g. it was written under an older RENDERER_VERSION). Serving it
+    // would break the content-address promise, so the answer is the 404.
+    const bogus = `team.${'a'.repeat(16)}.png`;
+    mkdirSync(join(cacheDir, 'specs'), { recursive: true });
+    writeFileSync(
+      join(cacheDir, 'specs', `${bogus}.json`),
+      JSON.stringify({ kind: 'team', build: TEAM_CODE })
+    );
+    expect((await fetch(`${base}/api/v1/img/cache/${bogus}`)).status).toBe(404);
+  });
+});
+
 describe('static port parity with serve.mjs', () => {
   it('OG injection still works on a tab route', async () => {
     const res = await fetch(`${base}/dpschart`);

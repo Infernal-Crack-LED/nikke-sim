@@ -14,6 +14,7 @@ import { decodeToCanvas, type Canvas } from '../infographics/node/render.js';
 import { handleStatic } from './static.js';
 import { API_PREFIX, apiMiss, registerImgApi, type ApiContext } from './api.js';
 import { RenderCache } from './render-cache.js';
+import { SpecStore } from './spec-store.js';
 import type { CardCharacter } from './card-from-build.js';
 
 // The repo root, found from THIS module so both layouts work: running from
@@ -72,10 +73,15 @@ export async function createNikkesimServer(
       (Number(env.NIKKESIM_RENDER_CACHE_MAX_BYTES) || DEFAULT_CACHE_MAX_BYTES)
   );
   await cache.sweep(); // boot sweep — the cap applies even after config shrinks
+  // Spec sidecars live under the cache dir (RenderCache.sweep only looks at
+  // files, so the subdir is invisible to it). They outlive the PNGs they
+  // describe: an evicted card re-renders instead of 404ing an embedded URL.
+  const specs = new SpecStore(join(cacheDir, 'specs'));
 
   const ctx: ApiContext = {
     distDir,
     cache,
+    specs,
     chars: opts.characters ?? loadCharacters(),
     icon: await loadIcon(),
     renderSecret: opts.renderSecret ?? env.NIKKESIM_RENDER_SECRET,

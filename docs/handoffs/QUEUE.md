@@ -52,6 +52,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ BAKERY-BOT INTEGRATION REPORT (2026-07-28) — BOTH ITEMS ANSWERED on branch
+  `infographics-card-fixes`.** (1) _"the cache hash is derived from the request, not the output"_ —
+  half already handled, half was real. `specCacheKey` has ALWAYS carried `RENDERER_VERSION`
+  (`src/infographics/spec.ts`), which is exactly the "version stamp" the report asks for, and it is
+  now `v2`; the real defect was hashing the RAW build code, so `blocked` (and every other field no
+  pixel depends on) forked the content address — fixed by hashing a render-relevant PROJECTION of
+  the decoded build (`renderRelevantBuild`), pinned BOTH ways against the actual renderers in
+  `scripts/tests/share/build-render-key.test.ts` (dropped field ⇒ byte-identical PNG; drawn field
+  ⇒ different PNG). (2) _URL length_ — no new addressing mode was needed: the short
+  `/api/v1/img/cache/<type>.<hash>.png` (~45 chars) is already what the 302's `location` header
+  carries and what `POST /api/v1/img/render` returns as `{url}`, so the bot can embed that instead
+  of uploading bytes. What was MISSING is what made it unsafe: the PNG cache is byte-bounded
+  (200 MB ≈ 570 cards) with LRU eviction, so an embedded cache URL would eventually 404 an old
+  Discord post. `src/server/spec-store.ts` now remembers each cache filename's spec in a sidecar,
+  and a miss RE-RENDERS through the same parse→resolve pipe (refusing any sidecar that resolves to
+  a different hash) — the short URL is now as durable as the long one. **Still open / to tell the
+  bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
+  covers renderer changes, not data changes; if that bites, add a data stamp to the key.
 - **⇒ POST-MERGE CODE REVIEW OF PR #33 (`9526dad`) — 2 FIXES LANDED on branch
   `infographics-card-fixes`, 4 FOLLOW-UPS OPEN.** The review ran after the merge (owner ask).
   No blockers; the two FIX-level defects are fixed on that branch (worktree

@@ -43,6 +43,7 @@ import {
 import { decodeBuild } from '../share/build-code.js';
 import { IMMUTABLE, NO_CACHE, mimeFor } from './static.js';
 import type { RenderCache } from './render-cache.js';
+import type { SpecStore } from './spec-store.js';
 import {
   renderTeamCardPng,
   renderRosterCardPng,
@@ -65,6 +66,10 @@ export const API_PREFIX = '/api/v1/img/';
 export interface ApiContext {
   distDir: string;
   cache: RenderCache;
+  // Cache filename → the spec that produced it, so an evicted entry can be
+  // re-rendered instead of 404ing (spec-store.ts: what makes the short
+  // /cache/<file> URL safe to embed).
+  specs: SpecStore;
   chars: Record<string, CardCharacter>;
   icon: Canvas | null;
   renderSecret?: string;
@@ -125,36 +130,34 @@ function renderOnce(
   return p;
 }
 
-// The shared tail of every dynamic route: render on a cache miss.
-async function ensureCached(
-  ctx: ApiContext,
-  file: string,
-  render: () => Promise<Buffer>
-): Promise<boolean> {
-  if (!(await ctx.cache.has(file))) {
+// The shared tail of every dynamic route: render on a cache miss, and
+// remember the spec behind the file so a LATER eviction can re-render it
+// rather than 404 an embedded URL (spec-store.ts).
+async function ensureCached(ctx: ApiContext, r: Resolved): Promise<boolean> {
+  if (!(await ctx.cache.has(r.file))) {
     try {
-      await ctx.cache.put(file, await renderOnce(file, render));
+      await ctx.cache.put(r.file, await renderOnce(r.file, r.render));
     } catch (err) {
-      console.error(`render ${file} failed:`, err);
+      console.error(`render ${r.file} failed:`, err);
       return false;
     }
   }
+  await ctx.specs.remember(r.file, r.spec);
   return true;
 }
 
 // …then 302 to the content-addressed cache URL (the GET contract).
 async function renderAndRedirect(
   ctx: ApiContext,
-  file: string,
-  render: () => Promise<Buffer>
+  r: Resolved
 ): Promise<Response> {
-  if (!(await ensureCached(ctx, file, render))) {
+  if (!(await ensureCached(ctx, r))) {
     return text(500, 'render failed');
   }
   return new Response(null, {
     status: 302,
     headers: {
-      location: `${API_PREFIX}cache/${file}`,
+      location: `${API_PREFIX}cache/${r.file}`,
       'cache-control': NO_CACHE,
     },
   });
@@ -194,6 +197,7 @@ function loadDpsChart(ctx: ApiContext): Promise<DpsArtifact | null> {
 interface Resolved {
   file: string;
   render: () => Promise<Buffer>;
+  spec: RenderSpec; // remembered by the caller — see ApiContext.specs
 }
 interface ResolveFailure {
   error: string;
@@ -227,6 +231,7 @@ async function resolveRender(
       }
       return {
         file,
+        spec,
         render: () =>
           spec.kind === 'team'
             ? renderTeamCardPng(build, ctx.chars, ctx.icon)
@@ -248,7 +253,7 @@ async function resolveRender(
       if ('error' in built) {
         return { error: built.error, status: 400 };
       }
-      return { file, render: () => renderDpsChartPng(built.data) };
+      return { file, spec, render: () => renderDpsChartPng(built.data) };
     }
     case 'table': {
       let data: TableCardData;
@@ -289,7 +294,11 @@ async function resolveRender(
       if (spec.unit) {
         data.portrait = (await loadPortrait(spec.unit)) ?? undefined;
       }
-      return { file, render: () => Promise.resolve(renderTableCardPng(data)) };
+      return {
+        file,
+        spec,
+        render: () => Promise.resolve(renderTableCardPng(data)),
+      };
     }
   }
 }
@@ -328,6 +337,24 @@ async function resolveSpec(
   return resolveRender(parsed.spec, ctx, art);
 }
 
+// Rebuild an evicted cache entry from its remembered spec. The recalled spec
+// goes back through the SAME parse → resolve pipe as a fresh request (it is
+// untrusted data on disk, not a shortcut past validation), and the resolved
+// filename must come back EQUAL to the one asked for — otherwise the sidecar
+// and the URL disagree (a renderer-version bump, a hand-edited file) and the
+// honest answer is the 404. Returns true when the file is on disk afterwards.
+async function rerender(ctx: ApiContext, file: string): Promise<boolean> {
+  const spec = await ctx.specs.recall(file);
+  if (!spec) {
+    return false;
+  }
+  const r = await resolveSpec(spec, ctx);
+  if ('error' in r || r.file !== file) {
+    return false;
+  }
+  return ensureCached(ctx, r);
+}
+
 function handleDynamicGet(
   input: (c: Context) => unknown,
   ctx: ApiContext
@@ -340,7 +367,7 @@ function handleDynamicGet(
     if ('error' in r) {
       return text(r.status, r.error);
     }
-    return renderAndRedirect(ctx, r.file, r.render);
+    return renderAndRedirect(ctx, r);
   };
 }
 
@@ -417,7 +444,7 @@ async function handleRenderPost(
   if ('error' in r) {
     return c.json({ error: r.error }, r.status as 400 | 404);
   }
-  if (!(await ensureCached(ctx, r.file, r.render))) {
+  if (!(await ensureCached(ctx, r))) {
     return c.json({ error: 'render failed' }, 500);
   }
   return c.json({ url: `${API_PREFIX}cache/${r.file}` }, 200);
@@ -482,7 +509,14 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
 
   app.get('/api/v1/img/cache/:file', async (c) => {
     const name = c.req.param('file');
-    if (!CACHE_FILE.test(name) || !(await ctx.cache.has(name))) {
+    if (!CACHE_FILE.test(name)) {
+      return apiMiss();
+    }
+    // A miss is not automatically a 404: this URL is what the 302s and POST
+    // /render hand out, and it is the only form short enough for a Discord
+    // embed — so an LRU eviction must not break an already-posted image.
+    // Re-render from the remembered spec (spec-store.ts) when we have one.
+    if (!(await ctx.cache.has(name)) && !(await rerender(ctx, name))) {
       return apiMiss();
     }
     return sendRaw(ctx.cache.pathFor(name), IMMUTABLE);
