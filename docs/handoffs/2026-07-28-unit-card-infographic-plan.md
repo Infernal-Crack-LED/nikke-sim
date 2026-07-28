@@ -430,8 +430,36 @@ Work required:
    (c) Manufacturer values include `"Tetra Overspec"`,
    `"Missilis Overspec"`, `"Elysion Overspec"` (4 units) — the icon map must strip the `" Overspec"`
    suffix to resolve, and ideally add an overspec badge rather than silently dropping the distinction.
-3. Prefer the `.svg`/`.png` variants over `.webp` for `@napi-rs/canvas` decode reliability; the class
-   and manufacturer icons are currently **`.webp` only** — verify decode or convert.
+3. ~~Prefer `.svg`/`.png` over `.webp` for decode reliability~~ — **RESOLVED BY MEASUREMENT
+   2026-07-28: all 30 icons decode, `.webp` included. No conversion needed.** The premise was
+   wrong: `decodeToCanvas` does not use skia's `Image` at all, it decodes with **sharp**
+   (`node/portraits.ts:29`, and the comment there explains why) — and the shipping portrait path
+   already loads `.webp` (`<slug>-128.webp`) on every card in prod, so WebP decode was never in
+   doubt. Verified anyway by decoding all 30 files and counting non-transparent pixels (a decode
+   that returns a blank canvas is the real failure mode, not a thrown error): **30/30 decoded with
+   visible pixels, 0 failures.**
+
+4. **⚠ NEW — the icons are at wildly different native resolutions, and two families are too small
+   for the card.** Measured 2026-07-28:
+
+   | Family | Native px | Vector source? | Upscale @64 logical | @128 (landscape dpr2) |
+   | --- | --- | --- | --- | --- |
+   | `weapon_*` | 80×80 | no | 0.8× ✅ | 1.6× ⚠ |
+   | `man_*` | 50×50 (**`man_missilis` 32×32**) | no | 1.3× / **2.0×** | 2.6× / **4.0×** ❌ |
+   | `class_*` | **25×25** | no | **2.6×** ❌ | **5.1×** ❌ |
+   | `code_*` | 63×73 | **yes (.svg)** | ✅ | ✅ |
+   | `burst_*` | 17–40×37 | **yes (.svg)** | ✅ | ✅ |
+
+   **`code_*` and `burst_*` are solved — rasterize the `.svg` at the target size via sharp**, which
+   is true vector rasterization, not upscaling (verified: opaque-pixel ratio holds steady at 64 /
+   128 / 256 px, which an upscale would not do). ⇒ For these two families the plan's "prefer .png"
+   guidance is exactly backwards: **prefer the `.svg`.**
+
+   `class_*` at 25×25 is the binding constraint, with `man_missilis` at 32×32 second, and neither
+   has a vector source. At the §6c icon-strip size of 64 px they are a visible-quality problem on an
+   asset whose whole purpose is advertising. **Owner decision needed** — re-source at higher
+   resolution, render the class/manufacturer slots smaller than the rest of the strip, or accept the
+   softness. Do not silently ship a 5× upscale.
 
 ## 11. Nullability + the unreleased path (ruling 7)
 
@@ -505,7 +533,11 @@ the projection it stays under today's 53 MB PNG set.
 2. ~~Rank-blue vs Water collision~~ — **RETIRED by ruling 12** (§9): rank colours are numeral-only.
 3. ~~Output format / size~~ — **SETTLED by measurement (§12): emit unit cards as WebP q90.** Owner
    sign-off still wanted, but the evidence is in and the alternative (PNG at ~150 MB) is untenable.
-4. **Burst-CDR icon** — source one, or use a text chip (§10).
+4. **Burst-CDR icon** — source one, or use a text chip (§10). (Ruling 11 already says render burst
+   CDR as text, so this is only about whether a chip wants an icon at all.)
+6. **⚠ NEW (2026-07-28) — `class_*` icons are 25×25 and `man_missilis` is 32×32**, with no vector
+   source, against a §6c icon strip of 64 px (128 px physical on the landscape card). Re-source,
+   render those slots smaller, or accept the softness — owner call (§10.4).
 5. **`/nikke` fallback** when a slug has no pre-rendered card (a unit synced after the last deploy):
    fall back to today's embed, or render on demand? The pre-render set is build-time-frozen, so this
    is a real window. Recommend: keep the current embed as the fallback path in bakery-bot.
@@ -564,6 +596,15 @@ the spec cache, but the bump keeps the two consistent.
   smaller** than PNG. Do not re-derive these; re-measure only if the renderer changes.
 - `build-infographics.ts` reads `web/public/` directly and `emptyOutDir` wipes only `dist/`;
   `web/public/nikke-icons/` is **tracked in git** (30 files), so icons need no vendoring step.
+- **Measured 2026-07-28 — all 30 icons decode through `decodeToCanvas`, `.webp` included** (30/30
+  with non-transparent pixels). `decodeToCanvas` decodes via **sharp**, not skia's `Image`, and the
+  prod portrait path already reads `.webp`; the "webp may not decode" worry was a false premise. Do
+  not re-derive or convert the assets.
+- **Icon native resolutions (measured 2026-07-28):** `weapon_*` 80×80, `man_*` 50×50 except
+  `man_missilis` 32×32, `class_*` **25×25**, `code_*` 63×73, `burst_*` 17–40×37. `code_*` and
+  `burst_*` ship `.svg` twins that sharp rasterizes crisply at any target size (opaque ratio steady
+  across 64/128/256 px) — **use the `.svg` for those two families**. `class_*` and `man_missilis`
+  have no vector source and are the open quality risk (§10.4).
 - **`Λ` burst is `red-hood`** (Red Hood, SR/Iron, Attacker) — exactly 1 unit. `rapi-red-hood`
   (Rapi: Red Hood, MG/Fire) is a DIFFERENT unit and is already `burst: "III"`. Verified against
   `data/characters.json` 2026-07-28; do not conflate.
