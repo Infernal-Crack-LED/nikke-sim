@@ -170,7 +170,7 @@ from one data builder:
 | Variant | Aspect | Logical | @dpr2 | Target |
 | --- | --- | --- | --- | --- |
 | `discord` | 2:1 landscape | 1200 × 600 | 2400 × 1200 | `/nikke` embed, the site, general sharing |
-| `twitter` | portrait (see §6a) | 1200 × 1500 *(provisional 4:5)* | 2400 × 3000 | X timeline, new-character launch posts |
+| `twitter` | **4:5 portrait** (confirmed §6a) | 1200 × 1500 | 1200 × 1500 native | X timeline, new-character launch posts |
 
 Same `buildUnitCardData(slug)` (§14 phase 3) feeds both; only the layout function differs. The
 landscape variant is the canonical one and is specified in §6b.
@@ -208,16 +208,82 @@ measuring: the two readings implied completely different layouts.
 3. Portrait is now unambiguously the better X format: full height shown, ~2× the timeline real estate
    of the 2:1 landscape card at the same width.
 
-**Residuals (low risk, do not block):** the test covered the **iOS app** only — desktop web is
-unverified, though it is historically no more aggressive than mobile. And **3:4 (1.333) may also be
-uncropped** — one cited source puts the boundary there, which would buy ~6.7% more height than 4:5.
-Re-runnable with the same script if that height is ever wanted.
+**Confirmed on desktop web too** (owner, same day): *"it looked the same on desktop"*. Android is
+unverified — the owner has no device — but it renders through the same layout as web and no source
+suggests a platform-specific crop. Accepted risk; not a blocker.
+
+**Residual:** **3:4 (1.333) may also be uncropped** — one cited source puts the boundary there, which
+would buy ~6.7% more height (1200 × 1600). Relevant because the portrait vertical budget is tight
+(§6c). Settle with a second `x-crop-test.ts` run before adopting; do not take the blog source's word.
 
 ### 6b. Landscape (`discord`) layout
 
-Logical **1200 × 600** (2:1), rendered at `dpr 2` → **2400 × 1200**. 2:1 is the widest ratio X
-displays uncropped under *either* source above, so this variant is also the safe fallback for X if
-the portrait test comes back badly.
+Logical **1200 × 600** (2:1), rendered at `dpr 2` → **2400 × 1200**. 2:1 is comfortably inside X's
+uncropped window too, so this variant remains a valid X fallback; the portrait variant is preferred
+there purely for timeline real estate.
+
+### 6c. Portrait (`twitter`) layout — owner-specified stack order
+
+Single column, 1200 × 1500, in this order (owner, 2026-07-28):
+
+```
+┌──────────────────────────────────────┐
+│ 1  TITLE BAR   logo · portrait ·     │
+│                name · release date   │
+├──────────────────────────────────────┤
+│ 2  ICON STRIP  burst · CDR(text) ·   │
+│                elem · weapon ·       │
+│                class · mfr · RL3     │
+├──────────────────────────────────────┤
+│ 3  RANKS       three tiles (§7)      │
+├──────────────────────────────────────┤
+│ 4  BAR CHARTS  §7 closed set         │
+├──────────────────────────────────────┤
+│ 5  NOTES       Tsareena + optimal OL │
+├──────────────────────────────────────┤
+│ 6  TAGS                              │
+├──────────────────────────────────────┤
+│ 7  FOOTER      nikkesim.app mark     │
+└──────────────────────────────────────┘
+```
+
+Note this **splits title and icons into two rows**, where the landscape card combines them — portrait
+has the vertical room and the icon strip reads better full-width.
+
+**First-order vertical budget** (owner: *"if it doesn't all fit well we'll figure something out"* —
+so here is where the tension actually is):
+
+| # | Section | Est. height |
+| --- | --- | --- |
+| — | card padding, top + bottom | 96 |
+| 1 | title bar (200 px portrait art + name + date) | 230 |
+| 2 | icon strip (64 px icons + labels) | 100 |
+| 3 | three rank tiles (big numeral + chip + default sub-line) | 200 |
+| 4 | two bar charts (3 rows × 54 + 34 header, each) | 392 |
+| 5 | notes panel | 260 |
+| 6 | tags | 60 |
+| 7 | footer | 40 |
+| — | 6 inter-section gaps @ 24 | 144 |
+| | **total** | **~1522** vs 1500 available |
+
+**⇒ It fits, but with ~0 slack** — roughly one 24 px gap over budget at 3 bar rows per chart. It is
+not a redesign problem, it is a tuning problem, and three levers each buy more than the shortfall:
+
+1. **Bar rows are the elastic element.** 3 rows per chart (unit + one neighbour each side) is the
+   mockup's ask; dropping to 2 saves 108 px. Conversely a B1/B2 unit with **no second chart** (§7
+   fallback: no sustain *and* no CDR) frees ~200 px — spend it on **more neighbour rows in the
+   surviving chart**, never on whitespace. Same rule for the landscape card. This is what keeps the
+   fixed-geometry guarantee from producing holes.
+2. **Portrait art size** — 200 px is generous; 160 px saves 40 px.
+3. **3:4 instead of 4:5** would make the card 1200 × 1600, buying exactly 100 px. §6a flags 3:4 as
+   *possibly* also uncropped but **unverified** — a second `x-crop-test.ts` run settles it. Do not
+   adopt 3:4 on the strength of the blog source alone.
+
+**The notes panel is the only genuinely variable-height content** (free prose, and absent for 55% of
+the roster per §4). Fixed card size therefore requires it to be a **fixed-height box with fitted
+text** — wrap, clamp to N lines, ellipsize — never a box that grows. Precedent exists in-repo:
+`fitName` in `core/unitCard.ts` and the table card's ellipsize backstop (the `RENDERER_VERSION = v2`
+note). Reuse rather than invent.
 
 ```
 ┌────────────────────────────────────────────────┬──────────────────────────┐
@@ -239,8 +305,8 @@ the portrait test comes back badly.
 ```
 
 Left column carries the detail (neighbour context + bars); right column carries the three headline
-tiles and the notes panel. This matches the mockup and puts the two must-be-legible-at-45% elements
-(name, tiles) on opposite corners where they read as the image's anchors.
+tiles and the notes panel. This matches the mockup and puts the two elements that must survive a
+downscale (name, tiles) on opposite corners, where they read as the image's anchors.
 
 ## 7. Rank tiles — selection + the absence rule
 
