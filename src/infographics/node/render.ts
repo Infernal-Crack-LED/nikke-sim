@@ -19,6 +19,7 @@ export * from '../core/teamCard.js';
 export * from '../core/dpsChart.js';
 export * from '../core/tableCard.js';
 export * from '../core/tableData.js';
+export * from '../core/rankTables.js';
 export * from '../core/unitCard.js';
 export * from '../core/window.js';
 

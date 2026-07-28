@@ -52,6 +52,10 @@ import {
   buildOlTable,
   buildChargeTable,
   GENERIC_BASE_FRAMES,
+  buildBurstGenTable,
+  buildBurstCdrTable,
+  buildSustainTable,
+  buildBufferTable,
   type OlDefaultArtifact,
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_INK_REGION,
@@ -142,47 +146,11 @@ const DATA_HINT =
   'run the data builders first (npm run dpschart && npm run ranks:all) — ' +
   'build-infographics reads their web/public outputs (build:deploy orders this)';
 
-// ---- small formatting helpers (ported from the web boards) -------------------
+// ---- small formatting helpers ------------------------------------------------
 
-// K/M/B magnitude formatting, same shape as SupportRankings.tsx's fmt.
-const fmt = (n: number): string =>
-  n >= 1e9
-    ? `${(n / 1e9).toFixed(2)}B`
-    : n >= 1e6
-      ? `${(n / 1e6).toFixed(2)}M`
-      : n >= 1e3
-        ? `${(n / 1e3).toFixed(1)}K`
-        : n.toFixed(0);
-
-// Comp-profile chip labels — ported from SupportRankings.tsx PROFILE_LABELS
-// (keep in sync; tooltip text stays on the site, the card needs the short tag).
-const PROFILE_LABELS: Record<string, string> = {
-  'with-2mg': 'w/ 2 MG',
-  'with-1mg': 'w/ 1 MG',
-  'with-mg': 'w/ MG',
-  'with-mint': 'w/ Mint',
-  'with-healer': 'w/ Healer',
-  'with-mast-rm': 'w/ Mast RM',
-  'with-shielder': 'w/ Shielder',
-};
-function profileLabel(id: string): string {
-  if (PROFILE_LABELS[id]) {
-    return PROFILE_LABELS[id];
-  }
-  if (id.startsWith('w/ ')) {
-    return id;
-  }
-  const rest = id.startsWith('with-') ? id.slice(5) : id;
-  return `w/ ${rest.replace(/-/g, ' ')}`;
-}
-const unitName = (
-  units: Record<string, { name: string }>,
-  slug: string,
-  profile: string | null
-): string => {
-  const name = units[slug]?.name ?? slug;
-  return profile ? `${name} (${profileLabel(profile)})` : name;
-};
+// The rank-board row formatting (fmt magnitudes, profile chip labels,
+// unitName) lives in src/infographics/core/rankTables.ts — ONE source shared
+// with the web share cards, so this script only loads artifacts + renders.
 
 // ---- render jobs --------------------------------------------------------------
 
@@ -301,113 +269,50 @@ function dpsJobs(art: DpsArtifact): Job[] {
 
 // The 4 rank boards from the same web/public/*.json the site serves, rendered
 // via drawTableCard, §6.6 top-10 windowed, ABSOLUTE ranks written by the
-// caller. Buffer uses the generic board — the site's default view
-// (SupportRankings.tsx useState('generic')); the typed board is tail/on-demand.
+// core/rankTables.ts builders (shared with the web share cards). Buffer uses
+// the generic board — the site's default view (SupportRankings.tsx
+// useState('generic')); the typed board is tail/on-demand.
 function rankJobs(): Job[] {
   const specs: { board: string; build: () => TableCardData }[] = [
     {
       board: 'burstgen',
-      build: () => {
-        const art = loadJson<BurstGenArtifact>(
-          new URL('../web/public/burstgen.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Burst Generation Ranking',
-          subtitle: 'no-op team · 180s · unfocused · scope-lock loadout',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Gauge %/s', align: 'right' },
-            { header: 'Bars (180s)', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, gps, gtotal, , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${gps.toFixed(2)}%/s`,
-            (gtotal / 100).toFixed(1),
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBurstGenTable(
+          loadJson<BurstGenArtifact>(
+            new URL('../web/public/burstgen.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'burstcdr',
-      build: () => {
-        const art = loadJson<BurstCdrArtifact>(
-          new URL('../web/public/burstcdr.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Burst CDR Ranking',
-          subtitle: 'team CDR seconds per 20s Full Burst · 180s average',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'CDR s/20s', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, cdr, , , , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${cdr.toFixed(1)}s`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBurstCdrTable(
+          loadJson<BurstCdrArtifact>(
+            new URL('../web/public/burstcdr.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'sustain',
-      build: () => {
-        const art = loadJson<SustainArtifact>(
-          new URL('../web/public/sustain.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Sustain Ranking',
-          subtitle: 'effective HP restored + shielded · 180s team total',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Sustain', align: 'right' },
-            { header: '% max HP', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, totalHp, totalPct, , , , p], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, p),
-            fmt(totalHp),
-            `${totalPct.toFixed(0)}%`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildSustainTable(
+          loadJson<SustainArtifact>(
+            new URL('../web/public/sustain.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'buffer',
-      build: () => {
-        const art = loadJson<BufferChartArtifact>(
-          new URL('../web/public/bufferchart.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Buffer Ranking — Generic',
-          subtitle: 'team damage increase vs the no-op baseline',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Added DMG', align: 'right' },
-          ],
-          rows: art.cells.generic.map(([slug, addedPct, , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${addedPct >= 0 ? '+' : '-'}${Math.abs(addedPct).toFixed(1)}%`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBufferTable(
+          loadJson<BufferChartArtifact>(
+            new URL('../web/public/bufferchart.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
   ];
   return specs.map(({ board, build }) => ({

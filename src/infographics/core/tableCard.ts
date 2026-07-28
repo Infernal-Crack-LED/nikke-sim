@@ -26,6 +26,10 @@ export interface TableCardData {
   columns: TableColumn[];
   rows: string[][];
   window?: TableWindow;
+  // Optional per-row text color, PARALLEL to `rows` (population-indexed, so it
+  // slices with the §6.6 window): a row carrying a color draws every cell in
+  // it. The olsim before/after card marks changed lines with the accent.
+  rowColors?: (string | null)[];
   footer?: string; // descriptor added to the watermark footer (theme.ts)
   icon?: unknown; // optional canvas-drawable image drawn beside the title
   portrait?: unknown; // optional character portrait drawn top-right
@@ -147,6 +151,9 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.fillRect(padX, sepY, W - padX * 2, 1);
 
   // rows
+  const rowColors = data.rowColors
+    ? data.rowColors.slice(win.start, win.start + rows.length)
+    : null;
   rows.forEach((row, ri) => {
     const y = HEAD_H + COL_HEADER_H + ri * ROW_H + 26;
 
@@ -161,12 +168,14 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
       );
     }
 
+    const rowColor = rowColors?.[ri] ?? null;
     row.forEach((cell, ci) => {
       const col = data.columns[ci];
       ctx.textAlign = col?.align === 'right' ? 'right' : 'left';
       const x = col?.align === 'right' ? colX(ci) + colW - 8 : colX(ci) + 8;
-      // first column is the label — brighter; rest are data
-      ctx.fillStyle = ci === 0 ? '#e7eaf0' : '#c9cede';
+      // first column is the label — brighter; rest are data — unless the row
+      // carries an explicit color (changed-line marking)
+      ctx.fillStyle = rowColor ?? (ci === 0 ? '#e7eaf0' : '#c9cede');
       ctx.font = ci === 0 ? `600 15px ${FONT}` : `400 15px ${FONT}`;
       ctx.fillText(cell, x, y);
     });
