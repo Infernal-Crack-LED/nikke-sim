@@ -2,6 +2,13 @@
 // Canvas2D-compatible context, so the web app (browser canvas) and the bakery-bot
 // (@napi-rs/canvas / node-canvas) produce a pixel-identical image. DOM-free — the
 // caller creates and sizes the canvas and hands us the ctx. Mirrors teamCard.ts.
+//
+// PORTRAIT LAYOUT: when any rendered bar carries `img`, every row gets a portrait
+// column and the name/bar columns widen (labelW 168 → 210, the `hasPortraits`
+// branch below). This is deliberate and shared by BOTH share-Image callers: the
+// DPS-rankings tab and the Matrix tab (MatrixChart.toChartData passes per-bar
+// `imageUrl`, shareImage.ts loads it into `img`) — matrix share PNGs match the
+// rankings-tab share card. Draw-call-level coverage: windowed-render.test.ts.
 import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
