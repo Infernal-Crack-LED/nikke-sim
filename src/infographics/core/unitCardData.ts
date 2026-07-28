@@ -1,0 +1,675 @@
+// PURE data builder for the unit-card infographic — joins a character with the
+// five ranking boards, its archetype tags, the sim-optimal overload, and the
+// community Tsareena build sheet into ONE fixed-shape structure that both card
+// variants (discord landscape, twitter portrait) render.
+//
+// Phase 3 of docs/handoffs/2026-07-28-unit-card-infographic-plan.md.
+//
+// ── Two contracts this module exists to enforce ──────────────────────────────
+//
+// 1. EVERY EXTERNAL FIELD IS NULLABLE, AND ABSENCE IS A DRAWN STATE (ruling 2).
+//    Coverage is the dominant design problem, not an edge case: the DPS chart
+//    ranks 40 units and the CDR board 15, against ~195 cards, and 55% of the
+//    roster has no Tsareena entry. So a missing board produces a tile with
+//    `rank: null` that the renderer draws AT FULL SIZE, greyed — never an
+//    omitted tile and never a reflow. Fixed geometry is what lets the whole set
+//    be posted as a consistent-looking series.
+//
+// 2. IT MIRRORS nikkesim.app, IT DOES NOT INVENT A SCALE (ruling 1). Every
+//    number here is the one the site already displays for that board, formatted
+//    the same way (fmtMagnitude and profileLabel are imported from
+//    rankTables.ts rather than re-written, so a card can't drift from the board
+//    it is quoting).
+//
+// Pure and DOM-free like the rest of core/: it takes already-parsed artifacts
+// and returns plain data. The caller loads the JSON and attaches images.
+import type {
+  BurstGenArtifact,
+  BurstCdrArtifact,
+  SustainArtifact,
+  BufferChartArtifact,
+  RankUnitMeta,
+} from '../../ranks/types.js';
+import type { TsareenaBuild } from '../../types.js';
+import { fmtMagnitude, profileLabel } from './rankTables.js';
+
+// ---- tunables (owner polish pass — see docs/handoffs/QUEUE.md) --------------
+//
+// Values chosen by judgement rather than measurement, parked as named constants
+// so the polish pass can tune them without hunting through layout code.
+
+// Neighbour rows drawn each side of the unit in a bar chart. The mockup asks for
+// one above and one below (3 rows total).
+export const NEIGHBOUR_ROWS = 1;
+
+// When a B1/B2 unit has no second bar chart (no sustain AND no burst CDR), the
+// freed vertical space goes into MORE neighbour rows in the surviving chart —
+// never into whitespace (plan §6c lever 1). This is what keeps the fixed-geometry
+// guarantee from producing holes.
+export const NEIGHBOUR_ROWS_SOLO_CHART = 3;
+
+// Archetype tags are uncapped upstream (some units carry many); the card has one
+// tag row. Extras are dropped, and `tagsOverflow` reports how many.
+export const MAX_TAGS = 6;
+
+// ---- inputs ------------------------------------------------------------------
+
+// The character fields the card draws. A structural subset of CharacterData so
+// this module doesn't drag the engine's type surface into the renderers.
+export interface UnitCardCharacter {
+  slug: string;
+  name: string;
+  element: string;
+  weapon: string;
+  burst: string; // 'I' | 'II' | 'III' | 'Λ'
+  class: string;
+  manufacturer: string | null;
+  burstCooldownSec: number | null;
+  releaseDate?: string | null;
+}
+
+// dpschart.json's shape (mirrored, not imported — web/src/dpschartData.ts uses
+// import.meta.env and can't be imported by a script or a core renderer).
+export interface DpsArtifactLike {
+  units: Record<string, { name: string; element: string; elements?: string[] }>;
+  cells: Record<string, [string, number][]>;
+}
+
+// The two headline DPS cells, matching the pre-rendered chart set
+// (build-infographics.ts HEADLINE_CELL_IDS).
+export const NEUTRAL_CELL = 'solo.neutral.c100.8of12';
+export const ELEWEAK_CELL = 'solo.eleweak.c100.8of12';
+
+export interface UnitCardSources {
+  character: UnitCardCharacter;
+  dpschart?: DpsArtifactLike | null;
+  burstgen?: BurstGenArtifact | null;
+  bufferchart?: BufferChartArtifact | null;
+  sustain?: SustainArtifact | null;
+  burstcdr?: BurstCdrArtifact | null;
+  tags?: string[] | null;
+  tagLabels?: Record<string, { label: string }> | null; // archetype vocabulary
+  olOptimal?: { type: string; count: number }[] | null;
+  tsareena?: TsareenaBuild | null;
+  prerelease?: boolean;
+}
+
+// ---- outputs -----------------------------------------------------------------
+
+export interface RankTile {
+  title: string; // 'Neutral DPS'
+  rank: number | null; // null = this board does not rank the unit
+  population: number | null; // board size, for a '#3 of 40' reading
+  value: string | null; // the board's own displayed number, formatted
+  sub: string | null; // sub-label under the value
+  // Comp profile (plan §8a). When set, `rank` is the PROFILED rank (the headline
+  // number) and `defaultRank` is the same unit's no-profile rank, rendered as a
+  // muted sub-line. Only bufferchart / sustain / burstgen carry profiles at all.
+  profileChip: string | null;
+  defaultRank: number | null;
+}
+
+export interface BarRow {
+  slug: string;
+  name: string;
+  element: string;
+  value: number; // raw, for bar geometry
+  label: string; // the board's formatted value
+  rank: number | null;
+  isUnit: boolean; // this card's unit — drawn highlighted
+  // The appended no-profile row (plan §8a): out of rank order BY CONSTRUCTION,
+  // drawn below the last neighbour and visually separated.
+  isDefaultAppendix: boolean;
+  profileChip: string | null;
+  qualified: boolean; // burst CDR: '*' marker, detail goes to the notes panel
+  // Sustain only — the heal/shield/lifesteal split the site draws as three
+  // segments inside one track. A single-colour sustain bar loses the
+  // composition that makes the board useful.
+  segments?: { heal: number; shield: number; lifesteal: number };
+}
+
+export interface BarChart {
+  title: string;
+  rows: BarRow[];
+  // Axis bounds over the DRAWN rows. `min < 0` puts a zero axis in the middle
+  // and bars span value↔0 on either side — bufferchart's addedPct is
+  // negative-capable (soline-frost-ticket is the precedent) and the site already
+  // solves it this way (RankBarChart.tsx:80-87); the card mirrors that geometry
+  // rather than reinventing it.
+  min: number;
+  max: number;
+  // The unit isn't on this board: the chart still draws its header at full
+  // height with a muted 'Unranked' line, preserving fixed geometry.
+  unranked: boolean;
+}
+
+export interface UnitCardModel {
+  slug: string;
+  name: string;
+  element: string;
+  weapon: string;
+  burst: string;
+  burstIsLambda: boolean; // Λ — no icon asset of its own (see node/icons.ts)
+  class: string;
+  manufacturer: string | null;
+  manufacturerBase: string | null; // ' Overspec' stripped
+  overspec: boolean;
+  burstCooldownSec: number | null;
+  releaseDate: string | null;
+  tiles: [RankTile, RankTile, RankTile]; // always exactly three
+  charts: BarChart[]; // 0-2; a closed set per ruling 13
+  tags: string[]; // display labels, capped at MAX_TAGS
+  tagsOverflow: number;
+  olOptimal: string | null; // 'Sim-optimal 12/12' line, null when uncomputed
+  tsareena: TsareenaBuild | null;
+  // Burst-CDR qualifiers ('*' rows) plus any other footnote the panel must
+  // carry, since a card has no hover to put them in.
+  footnotes: string[];
+  prerelease: boolean;
+}
+
+// ---- board lookup helpers ----------------------------------------------------
+
+// A unit occupies TWO rows in a profiled board (one `profile: <id>`, one null),
+// so every lookup returns both. `profiled` is the headline; `plain` is the
+// default-comp row appended below the neighbours.
+interface Hit<R> {
+  row: R;
+  index: number;
+  profile: string | null;
+}
+interface BoardHits<R> {
+  profiled: Hit<R> | null;
+  plain: Hit<R> | null;
+  entries: R[];
+}
+
+function findHits<R extends unknown[]>(
+  entries: R[] | undefined,
+  slug: string,
+  profileIdx: number
+): BoardHits<R> {
+  const out: BoardHits<R> = { profiled: null, plain: null, entries: [] };
+  if (!entries) {
+    return out;
+  }
+  out.entries = entries;
+  entries.forEach((row, index) => {
+    if (row[0] !== slug) {
+      return;
+    }
+    const profile = (row[profileIdx] as string | null) ?? null;
+    const hit: Hit<R> = { row, index, profile };
+    if (profile) {
+      out.profiled ??= hit;
+    } else {
+      out.plain ??= hit;
+    }
+  });
+  return out;
+}
+
+// The headline row: the profiled one when it exists, else the plain one.
+const headline = <R>(h: BoardHits<R>): Hit<R> | null => h.profiled ?? h.plain;
+
+// ---- tile builders -----------------------------------------------------------
+
+const unrankedTile = (title: string): RankTile => ({
+  title,
+  rank: null,
+  population: null,
+  value: null,
+  sub: null,
+  profileChip: null,
+  defaultRank: null,
+});
+
+function dpsTile(
+  title: string,
+  art: DpsArtifactLike | null | undefined,
+  cellId: string,
+  slug: string
+): RankTile {
+  const cell = art?.cells?.[cellId];
+  if (!cell?.length) {
+    return unrankedTile(title);
+  }
+  const index = cell.findIndex(([s]) => s === slug);
+  if (index < 0) {
+    return unrankedTile(title);
+  }
+  const top = cell[0][1];
+  return {
+    title,
+    rank: index + 1,
+    population: cell.length,
+    // rel-score vs the population #1 — the site's own DPS label (dpsChart.ts
+    // relScore). NOT a raw DPS number: the boards are normalized, and a raw
+    // number would imply a precision the card can't stand behind.
+    value: (top > 0 ? cell[index][1] / top : 0).toFixed(3),
+    sub: 'rel. to #1',
+    profileChip: null, // dpschart has no profile concept at all
+    defaultRank: null,
+  };
+}
+
+function burstGenTile(
+  art: BurstGenArtifact | null | undefined,
+  slug: string
+): RankTile {
+  const hits = findHits(art?.entries, slug, 4);
+  const hit = headline(hits);
+  if (!hit) {
+    return unrankedTile('Burst Gen');
+  }
+  const [, gaugePerSec, gaugeTotal, fullBursts] = hit.row;
+  return {
+    title: 'Burst Gen',
+    rank: hit.index + 1,
+    population: hits.entries.length,
+    value: `${gaugePerSec.toFixed(2)}%/s`,
+    sub: `${(gaugeTotal / 100).toFixed(1)} bars · ${fullBursts.toFixed(1)} FB`,
+    profileChip: hit.profile ? profileLabel(hit.profile) : null,
+    defaultRank:
+      hit.profile && hits.plain ? hits.plain.index + 1 : null,
+  };
+}
+
+function bufferTile(
+  art: BufferChartArtifact | null | undefined,
+  slug: string
+): RankTile {
+  // The site's default view is the generic board (SupportRankings.tsx
+  // useState('generic')); the card mirrors that default.
+  const hits = findHits(art?.cells?.generic, slug, 3);
+  const hit = headline(hits);
+  if (!hit) {
+    return unrankedTile('Buffer');
+  }
+  const added = hit.row[1];
+  return {
+    title: 'Buffer',
+    rank: hit.index + 1,
+    population: hits.entries.length,
+    value: `${added >= 0 ? '+' : '−'}${Math.abs(added).toFixed(1)}%`,
+    sub: 'team DMG',
+    profileChip: hit.profile ? profileLabel(hit.profile) : null,
+    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
+  };
+}
+
+function sustainTile(
+  art: SustainArtifact | null | undefined,
+  slug: string
+): RankTile {
+  const hits = findHits(art?.entries, slug, 6);
+  const hit = headline(hits);
+  if (!hit) {
+    return unrankedTile('Sustain');
+  }
+  const [, totalHp, totalPct] = hit.row;
+  return {
+    title: 'Sustain',
+    rank: hit.index + 1,
+    population: hits.entries.length,
+    value: fmtMagnitude(totalHp),
+    sub: `${totalPct.toFixed(0)}% of max HP`,
+    profileChip: hit.profile ? profileLabel(hit.profile) : null,
+    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
+  };
+}
+
+function burstCdrTile(
+  art: BurstCdrArtifact | null | undefined,
+  slug: string
+): RankTile {
+  const hits = findHits(art?.entries, slug, 5);
+  const hit = headline(hits);
+  if (!hit) {
+    return unrankedTile('Burst CDR');
+  }
+  const [, cdr, ramp, condition, selfCdr] = hit.row;
+  const qualified = !!(ramp || condition || selfCdr != null);
+  return {
+    title: 'Burst CDR',
+    rank: hit.index + 1,
+    population: hits.entries.length,
+    value: `${cdr.toFixed(1)}s`,
+    sub: `per 20s FB${qualified ? ' *' : ''}`,
+    profileChip: hit.profile ? profileLabel(hit.profile) : null,
+    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
+  };
+}
+
+// ---- bar-chart builders ------------------------------------------------------
+
+// Slice `rows` to the unit's neighbourhood. The window is CLAMPED to the board
+// edges and then re-expanded, so a #1 unit still gets a full-height chart
+// (window [0..2] rather than [-1..1] collapsed to 2 rows) — fixed geometry
+// again: a chart that shrinks at the top of a board would make the #1 card, the
+// most likely thing to be posted, the one that looks broken.
+function neighbourhood<T>(rows: T[], index: number, each: number): T[] {
+  const span = each * 2 + 1;
+  if (rows.length <= span) {
+    return rows;
+  }
+  let start = index - each;
+  if (start < 0) {
+    start = 0;
+  }
+  if (start + span > rows.length) {
+    start = rows.length - span;
+  }
+  return rows.slice(start, start + span);
+}
+
+const axis = (values: number[]): { min: number; max: number } => {
+  const min = Math.min(0, ...values); // never a floating baseline
+  const max = Math.max(0, ...values);
+  return { min, max };
+};
+
+const emptyChart = (title: string): BarChart => ({
+  title,
+  rows: [],
+  min: 0,
+  max: 1,
+  unranked: true,
+});
+
+function dpsChartRows(
+  title: string,
+  art: DpsArtifactLike | null | undefined,
+  cellId: string,
+  slug: string,
+  each: number
+): BarChart {
+  const cell = art?.cells?.[cellId];
+  if (!cell?.length) {
+    return emptyChart(title);
+  }
+  const index = cell.findIndex(([s]) => s === slug);
+  if (index < 0) {
+    return emptyChart(title);
+  }
+  const top = cell[0][1];
+  const all = cell.map(([s, dps], i) => ({ s, dps, i }));
+  const rows: BarRow[] = neighbourhood(all, index, each).map((r) => {
+    const meta = art?.units?.[r.s];
+    const rel = top > 0 ? r.dps / top : 0;
+    return {
+      slug: r.s,
+      name: meta?.name ?? r.s,
+      element: meta?.element ?? '',
+      value: rel,
+      label: rel.toFixed(3),
+      rank: r.i + 1,
+      isUnit: r.s === slug,
+      isDefaultAppendix: false,
+      profileChip: null,
+      qualified: false,
+    };
+  });
+  return { title, rows, ...axis(rows.map((r) => r.value)), unranked: false };
+}
+
+// Shared shape for the three profiled boards: build the neighbourhood around the
+// HEADLINE row, then append the unit's default (no-profile) row below the last
+// neighbour if it exists and isn't already in the window (plan §8a — it is out
+// of rank order by construction, and that is intended).
+function boardChart<R extends unknown[]>(
+  title: string,
+  hits: BoardHits<R>,
+  each: number,
+  toRow: (row: R, index: number, isUnit: boolean) => BarRow
+): BarChart {
+  const hit = headline(hits);
+  if (!hit) {
+    return emptyChart(title);
+  }
+  const indexed = hits.entries.map((row, i) => ({ row, i }));
+  const window = neighbourhood(indexed, hit.index, each);
+  const rows = window.map((w) => toRow(w.row, w.i, w.i === hit.index));
+  if (hits.profiled && hits.plain) {
+    const already = window.some((w) => w.i === hits.plain!.index);
+    if (!already) {
+      const appendix = toRow(hits.plain.row, hits.plain.index, false);
+      appendix.isDefaultAppendix = true;
+      appendix.profileChip = null;
+      rows.push(appendix);
+    }
+  }
+  return { title, rows, ...axis(rows.map((r) => r.value)), unranked: false };
+}
+
+const nameOf = (
+  units: Record<string, RankUnitMeta> | undefined,
+  slug: string
+): { name: string; element: string } => ({
+  name: units?.[slug]?.name ?? slug,
+  element: units?.[slug]?.element ?? '',
+});
+
+function bufferChart(
+  art: BufferChartArtifact | null | undefined,
+  slug: string,
+  each: number
+): BarChart {
+  const hits = findHits(art?.cells?.generic, slug, 3);
+  return boardChart('Buffer — team DMG', hits, each, (row, i, isUnit) => {
+    const [s, added, , profile] = row as [
+      string,
+      number,
+      string[] | null,
+      string | null,
+    ];
+    return {
+      slug: s,
+      ...nameOf(art?.units, s),
+      value: added,
+      label: `${added >= 0 ? '+' : '−'}${Math.abs(added).toFixed(1)}%`,
+      rank: i + 1,
+      isUnit: isUnit && s === slug,
+      isDefaultAppendix: false,
+      profileChip: profile ? profileLabel(profile) : null,
+      qualified: false,
+    };
+  });
+}
+
+function sustainChart(
+  art: SustainArtifact | null | undefined,
+  slug: string,
+  each: number
+): BarChart {
+  const hits = findHits(art?.entries, slug, 6);
+  return boardChart('Sustain', hits, each, (row, i, isUnit) => {
+    const [s, totalHp, totalPct, healPct, shieldPct, lifestealPct, profile] =
+      row as [string, number, number, number, number, number, string | null];
+    return {
+      slug: s,
+      ...nameOf(art?.units, s),
+      value: totalHp,
+      label: fmtMagnitude(totalHp),
+      rank: i + 1,
+      isUnit: isUnit && s === slug,
+      isDefaultAppendix: false,
+      profileChip: profile ? profileLabel(profile) : null,
+      qualified: false,
+      // Split as FRACTIONS of the row's own total, so the renderer can lay the
+      // three segments out inside one track without re-deriving proportions.
+      segments:
+        totalPct > 0
+          ? {
+              heal: healPct / totalPct,
+              shield: shieldPct / totalPct,
+              lifesteal: lifestealPct / totalPct,
+            }
+          : { heal: 1, shield: 0, lifesteal: 0 },
+    };
+  });
+}
+
+function burstCdrChart(
+  art: BurstCdrArtifact | null | undefined,
+  slug: string,
+  each: number
+): BarChart {
+  const hits = findHits(art?.entries, slug, 5);
+  return boardChart('Burst CDR', hits, each, (row, i, isUnit) => {
+    const [s, cdr, ramp, condition, selfCdr, profile] = row as [
+      string,
+      number,
+      number[] | null,
+      string | null,
+      number | null,
+      string | null,
+    ];
+    return {
+      slug: s,
+      ...nameOf(art?.units, s),
+      value: cdr,
+      label: `${cdr.toFixed(1)}s`,
+      rank: i + 1,
+      isUnit: isUnit && s === slug,
+      isDefaultAppendix: false,
+      profileChip: profile ? profileLabel(profile) : null,
+      qualified: !!(ramp || condition || selfCdr != null),
+    };
+  });
+}
+
+// ---- overload ----------------------------------------------------------------
+
+// Line-type labels, matching src/olcalc.ts's LABEL map (kept local rather than
+// imported: olcalc pulls in the overload model, and core/ renderers must stay
+// dependency-light enough for the web bundle).
+const OL_LABEL: Record<string, string> = {
+  elem: 'Elemental DMG',
+  atk: 'ATK',
+  ammo: 'Max Ammo',
+  chargedmg: 'Charge DMG',
+  chargespd: 'Charge Speed',
+  critrate: 'Crit Rate',
+  critdmg: 'Crit DMG',
+};
+
+const olLine = (
+  lines: { type: string; count: number }[] | null | undefined
+): string | null =>
+  lines?.length
+    ? lines
+        .map((l) => `${l.count}× ${OL_LABEL[l.type] ?? l.type}`)
+        .join(' · ')
+    : null;
+
+// ---- main builder ------------------------------------------------------------
+
+// Burst stage → the tile/bar SET (§7). `Λ` is treated as B3 per ruling 10:
+// red-hood (Red Hood, SR/Iron Attacker) is the only Λ unit, and NOT
+// rapi-red-hood (Rapi: Red Hood, MG/Fire), which is a different unit already
+// typed 'III'.
+export const isDpsSet = (burst: string): boolean =>
+  burst === 'III' || burst === 'Λ';
+
+export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
+  const c = src.character;
+  const slug = c.slug;
+  const dpsSet = isDpsSet(c.burst);
+
+  // --- tiles: always exactly three (§7) ---
+  let tiles: [RankTile, RankTile, RankTile];
+  if (dpsSet) {
+    tiles = [
+      dpsTile('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug),
+      dpsTile('Ele. Advantage DPS', src.dpschart, ELEWEAK_CELL, slug),
+      burstGenTile(src.burstgen, slug),
+    ];
+  } else {
+    // B1/B2: buffer, then sustain → else burst CDR → else an unranked tile
+    // (never an omitted one).
+    const sus = sustainTile(src.sustain, slug);
+    const cdr = burstCdrTile(src.burstcdr, slug);
+    const second = sus.rank != null ? sus : cdr.rank != null ? cdr : sus;
+    tiles = [bufferTile(src.bufferchart, slug), second, burstGenTile(src.burstgen, slug)];
+  }
+
+  // --- bar charts: a strict SUBSET of the tiles (ruling 13) ---
+  // Burst gen is a tile only — it never gets a chart.
+  const charts: BarChart[] = [];
+  if (dpsSet) {
+    // The B3 DPS bars can never carry a profile: dpschart has no profile
+    // concept at all. Worth knowing — the headline cards need none of §8a.
+    charts.push(
+      dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, NEIGHBOUR_ROWS),
+      dpsChartRows(
+        'Ele. Advantage DPS',
+        src.dpschart,
+        ELEWEAK_CELL,
+        slug,
+        NEIGHBOUR_ROWS
+      )
+    );
+  } else {
+    const hasSustain = !!findHits(src.sustain?.entries, slug, 6).plain ||
+      !!findHits(src.sustain?.entries, slug, 6).profiled;
+    const hasCdr =
+      !!findHits(src.burstcdr?.entries, slug, 5).plain ||
+      !!findHits(src.burstcdr?.entries, slug, 5).profiled;
+    // No second chart → spend the freed height on more neighbours in the
+    // surviving one, never on whitespace (§6c lever 1).
+    const each = hasSustain || hasCdr ? NEIGHBOUR_ROWS : NEIGHBOUR_ROWS_SOLO_CHART;
+    charts.push(bufferChart(src.bufferchart, slug, each));
+    if (hasSustain) {
+      charts.push(sustainChart(src.sustain, slug, NEIGHBOUR_ROWS));
+    } else if (hasCdr) {
+      charts.push(burstCdrChart(src.burstcdr, slug, NEIGHBOUR_ROWS));
+    }
+  }
+
+  // --- footnotes: qualifier detail, since a card has no hover (§8) ---
+  const footnotes: string[] = [];
+  const cdrHit = headline(findHits(src.burstcdr?.entries, slug, 5));
+  if (cdrHit) {
+    const [, , ramp, condition, selfCdr] = cdrHit.row;
+    if (condition) {
+      footnotes.push(`* ${condition}`);
+    }
+    if (selfCdr != null) {
+      footnotes.push(`* self-only CDR: ${selfCdr}s`);
+    }
+    if (ramp?.length) {
+      footnotes.push(`* ramps per FB: ${ramp.join(' → ')}`);
+    }
+  }
+
+  // --- tags ---
+  const allTags = src.tags ?? [];
+  const tags = allTags
+    .slice(0, MAX_TAGS)
+    .map((t) => src.tagLabels?.[t]?.label ?? t);
+
+  const mfr = c.manufacturer;
+  return {
+    slug,
+    name: c.name,
+    element: c.element,
+    weapon: c.weapon,
+    burst: c.burst,
+    burstIsLambda: c.burst === 'Λ',
+    class: c.class,
+    manufacturer: mfr,
+    manufacturerBase: mfr ? mfr.replace(/ Overspec$/, '') : null,
+    overspec: !!mfr && / Overspec$/.test(mfr),
+    burstCooldownSec: c.burstCooldownSec,
+    releaseDate: c.releaseDate ?? null,
+    tiles,
+    charts,
+    tags,
+    tagsOverflow: Math.max(0, allTags.length - tags.length),
+    olOptimal: olLine(src.olOptimal),
+    tsareena: src.tsareena ?? null,
+    footnotes,
+    prerelease: !!src.prerelease,
+  };
+}

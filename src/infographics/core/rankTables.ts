@@ -17,7 +17,10 @@ import type {
 export type BufferBoardId = 'generic' | 'typed';
 
 // K/M/B magnitude formatting, same shape as SupportRankings.tsx's fmt.
-const fmt = (n: number): string =>
+// Exported so the unit card formats sustain magnitudes identically to the board
+// it is quoting — a card that disagrees with the site it advertises is worse
+// than one with no number at all.
+export const fmtMagnitude = (n: number): string =>
   n >= 1e9
     ? `${(n / 1e9).toFixed(2)}B`
     : n >= 1e6
@@ -37,7 +40,10 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
 };
-function profileLabel(id: string): string {
+// Exported for the unit card's profile chips (plan §8a: reuse this rather than
+// re-deriving the chip text — two spellings of "w/ Healer" on one page is the
+// failure mode).
+export function profileLabel(id: string): string {
   if (PROFILE_LABELS[id]) {
     return PROFILE_LABELS[id];
   }
@@ -109,7 +115,7 @@ export function buildSustainTable(art: SustainArtifact): TableCardData {
     rows: art.entries.map(([slug, totalHp, totalPct, , , , p], i) => [
       `#${i + 1}`,
       unitName(art.units, slug, p),
-      fmt(totalHp),
+      fmtMagnitude(totalHp),
       `${totalPct.toFixed(0)}%`,
     ]),
     window: {},
