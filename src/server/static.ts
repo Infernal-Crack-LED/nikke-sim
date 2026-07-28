@@ -5,11 +5,15 @@
 // no-cache), same SPA fallback. The API surface lives in api.ts; anything not
 // under /api/v1/img/ comes here.
 //
-// Every behavior here is covered by scripts/tests/share/serve-headers.test.ts
-// (which still runs against the .mjs original) AND serve-api.test.ts (which
-// runs against this port) — keep the two servers' behavior in lockstep until
-// serve.mjs is retired.
-import type { IncomingMessage, ServerResponse } from 'node:http';
+// The handlers are hono-shaped (Context in, Response out) since the hono
+// migration (plan §6.4 trigger: POST /render shipped) — but the logic stays
+// hand-rolled rather than hono's serve-static middleware, because the exact
+// ETag/304/OG-injection behavior is the contract and hono's builtins don't
+// reproduce it. Every behavior here is covered by
+// scripts/tests/share/serve-headers.test.ts (which still runs against the
+// .mjs original) AND serve-api.test.ts (which runs against this port) — keep
+// the two servers' behavior in lockstep until serve.mjs is retired.
+import type { Context } from 'hono';
 import { readFile, stat } from 'node:fs/promises';
 import { join, normalize, extname } from 'node:path';
 
@@ -176,10 +180,9 @@ function injectMeta(html: string, reqUrl: string): string {
 }
 
 async function sendIndex(
-  res: ServerResponse,
   reqUrl: string,
   opts: StaticOptions
-): Promise<void> {
+): Promise<Response> {
   const html = injectUmami(
     injectMeta(
       await readFile(join(opts.distDir, 'index.html'), 'utf8'),
@@ -187,11 +190,12 @@ async function sendIndex(
     ),
     opts
   );
-  res.writeHead(200, {
-    'content-type': MIME['.html'],
-    'cache-control': 'no-cache',
+  return new Response(html, {
+    headers: {
+      'content-type': MIME['.html'],
+      'cache-control': 'no-cache',
+    },
   });
-  res.end(html);
 }
 
 // ---- cache policy -------------------------------------------------------------
@@ -242,24 +246,20 @@ function etagFor(s: { size: number; mtimeMs: number }): string {
 }
 
 export async function sendFile(
-  res: ServerResponse,
   file: string,
   urlPath: string,
   status = 200,
-  ifNoneMatch?: string | string[],
+  ifNoneMatch?: string,
   ifModifiedSince?: string
-): Promise<void> {
+): Promise<Response> {
   const s = await stat(file);
   const etag = etagFor(s);
   const cacheControl = cacheControlFor(urlPath);
   // RFC 7232: If-None-Match (incl. `*`) wins; If-Modified-Since applies only
-  // when If-None-Match is absent, at HTTP-date (second) granularity.
-  const inm =
-    ifNoneMatch &&
-    [ifNoneMatch]
-      .flat()
-      .flatMap((v) => v.split(','))
-      .map((v) => v.trim());
+  // when If-None-Match is absent, at HTTP-date (second) granularity. (Multiple
+  // If-None-Match headers arrive comma-joined on a fetch Request, which is the
+  // same list syntax the header itself uses.)
+  const inm = ifNoneMatch?.split(',').map((v) => v.trim());
   const notModified = inm
     ? inm.includes(etag) || inm.includes('*')
     : !!ifModifiedSince &&
@@ -267,33 +267,39 @@ export async function sendFile(
   if (notModified) {
     // last-modified rides the 304 so an IMS-driven client can re-anchor its
     // next conditional request
-    res.writeHead(304, {
-      etag,
-      'cache-control': cacheControl,
-      'last-modified': s.mtime.toUTCString(),
+    return new Response(null, {
+      status: 304,
+      headers: {
+        etag,
+        'cache-control': cacheControl,
+        'last-modified': s.mtime.toUTCString(),
+      },
     });
-    res.end();
-    return;
   }
   const body = await readFile(file);
-  res.writeHead(status, {
-    'content-type': mimeFor(file),
-    'cache-control': cacheControl,
-    etag,
-    'last-modified': s.mtime.toUTCString(),
+  return new Response(body, {
+    status,
+    headers: {
+      'content-type': mimeFor(file),
+      'cache-control': cacheControl,
+      etag,
+      'last-modified': s.mtime.toUTCString(),
+    },
   });
-  res.end(body);
 }
 
 // Serve a non-API request: dist/ static, index.html for directories and the
 // SPA fallback, per-tab meta injected into every index.html send.
 export async function handleStatic(
-  req: IncomingMessage,
-  res: ServerResponse,
+  c: Context,
   opts: StaticOptions
-): Promise<void> {
+): Promise<Response> {
+  // path + query, the same shape node:http's req.url carried (injectMeta
+  // anchors it against SITE and bakes it into the canonical/og:url tags).
+  const u = new URL(c.req.url);
+  const reqUrl = u.pathname + u.search;
   try {
-    const url = decodeURIComponent((req.url ?? '/').split('?')[0]);
+    const url = decodeURIComponent(u.pathname);
     // block path traversal, then resolve within dist/
     const rel = normalize(url).replace(/^(\.\.[/\\])+/, '');
     let file = join(opts.distDir, rel);
@@ -312,23 +318,21 @@ export async function handleStatic(
     // index.html carries per-tab embed metadata injected per request; everything
     // else is a static asset served as-is.
     if (file.endsWith('index.html')) {
-      await sendIndex(res, req.url ?? '/', opts);
-      return;
+      return await sendIndex(reqUrl, opts);
     }
-    await sendFile(
-      res,
+    return await sendFile(
       file,
       rel,
       200,
-      req.headers['if-none-match'],
-      req.headers['if-modified-since']
+      c.req.header('if-none-match'),
+      c.req.header('if-modified-since')
     );
   } catch {
     // last-resort fallback
     try {
-      await sendIndex(res, req.url ?? '/', opts);
+      return await sendIndex(reqUrl, opts);
     } catch {
-      res.writeHead(500).end('server error');
+      return new Response('server error', { status: 500 });
     }
   }
 }

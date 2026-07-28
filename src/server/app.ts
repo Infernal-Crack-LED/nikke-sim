@@ -1,14 +1,18 @@
 // Server factory — wires the static site handler and the /api/v1/img/* API
-// onto one node:http server. Kept separate from index.ts (the process entry)
-// so tests can boot the REAL server in-process on an ephemeral port against a
-// temp dist/cache (scripts/tests/share/serve-api.test.ts).
+// onto one hono app (the §6.4 hono trigger fired when POST /render shipped),
+// served over node:http via @hono/node-server's getRequestListener so tests
+// keep booting a real Server on an ephemeral port
+// (scripts/tests/share/serve-api.test.ts). Kept separate from index.ts (the
+// process entry) so tests can inject a temp dist/cache/characters.
+import { Hono } from 'hono';
+import { getRequestListener } from '@hono/node-server';
 import { createServer, type Server } from 'node:http';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { decodeToCanvas, type Canvas } from '../infographics/node/render.js';
 import { handleStatic } from './static.js';
-import { handleImgApi, type ApiContext } from './api.js';
+import { API_PREFIX, apiMiss, registerImgApi, type ApiContext } from './api.js';
 import { RenderCache } from './render-cache.js';
 import type { CardCharacter } from './card-from-build.js';
 
@@ -84,21 +88,23 @@ export async function createNikkesimServer(
     umamiWebsiteId: opts.umamiWebsiteId ?? env.UMAMI_WEBSITE_ID,
   };
 
-  return createServer(async (req, res) => {
-    try {
-      const u = new URL(req.url ?? '/', 'http://localhost');
-      if (u.pathname.startsWith('/api/v1/img/')) {
-        await handleImgApi(req, res, u, ctx);
-        return;
-      }
-      await handleStatic(req, res, staticOpts);
-    } catch (err) {
-      console.error('unhandled request error:', err);
-      if (!res.headersSent) {
-        res.writeHead(500).end('server error');
-      } else {
-        res.end();
-      }
-    }
+  const app = new Hono();
+  app.onError((err) => {
+    console.error('unhandled request error:', err);
+    return new Response('server error', { status: 500 });
   });
+  registerImgApi(app, ctx);
+  // Everything the API routes don't claim: API misses are honest 404s, all
+  // other paths go to the static handler (dist/ + SPA fallback).
+  app.notFound((c) => {
+    if (new URL(c.req.url).pathname.startsWith(API_PREFIX)) {
+      return apiMiss();
+    }
+    return handleStatic(c, staticOpts);
+  });
+
+  // hono maps HEAD onto the GET handlers with a null body (same externally
+  // observable behavior as the old node:http handler, whose body node
+  // suppressed for HEAD).
+  return createServer(getRequestListener(app.fetch));
 }
