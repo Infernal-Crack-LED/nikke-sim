@@ -7,6 +7,8 @@ import {
   expectedModulesPerRun,
   type ModuleBoss,
 } from './resources-data';
+import type { TableCardData } from '../../src/infographics/core/tableCard';
+import { copyTableCardImage } from './tableShare';
 
 // Resource calculators, one pill per resource family. Anomaly Interception is
 // the first; new families join RES_TABS as they land.
@@ -65,6 +67,48 @@ function CustomModulesTab() {
     table.key === 'kraken'
       ? modulesPerDay + (stage.fragments * RUNS_PER_DAY) / 100
       : null;
+
+  // Share the tier ladder as a table card — the same rows the on-screen
+  // ladder shows, with the selected tier marked in the accent color.
+  const onShareImage = () => {
+    const ACCENT = '#5b9dff'; // the theme accent (tableCard's bar color)
+    const card: TableCardData = {
+      title: `Daily income — ${table.fullName}`,
+      subtitle: `${RUNS_PER_DAY} runs/day · selected tier T${stage.stage} in blue`,
+      columns: [
+        { header: 'Tier' },
+        { header: 'Chance/run', align: 'right' },
+        { header: 'Mod/run', align: 'right' },
+        { header: 'Mod/day', align: 'right' },
+        ...(hasGear ? [{ header: 'Gear/day', align: 'right' as const }] : []),
+        { header: `${table.fragmentLabel}/day`, align: 'right' },
+        { header: 'Locks/day', align: 'right' },
+      ],
+      rows: table.stages.map((s) => {
+        const e = expectedModulesPerRun(s);
+        return [
+          `T${s.stage}`,
+          pct(s.moduleDropRate),
+          e.toFixed(2),
+          (e * RUNS_PER_DAY).toFixed(2),
+          ...(hasGear
+            ? [
+                s.gearRate === null
+                  ? '—'
+                  : (s.gearRate * RUNS_PER_DAY).toFixed(2),
+              ]
+            : []),
+          `${s.fragments * RUNS_PER_DAY}`,
+          `${s.locks * RUNS_PER_DAY}`,
+        ];
+      }),
+      rowColors: table.stages.map((s) =>
+        s.stage === stage.stage ? ACCENT : null
+      ),
+      footer: 'nikkesim.app/resources',
+    };
+    void copyTableCardImage(card, 'nikke-resources.png');
+  };
 
   // The drop pool is boss-dependent: modules + locks + fodder are shared, but
   // Kraken pays module fragments while other bosses pay T10 fragments plus a
@@ -145,6 +189,13 @@ function CustomModulesTab() {
             ))}
           </select>
         </label>
+        <button
+          className="share-btn"
+          title="copy the tier ladder as an image"
+          onClick={onShareImage}
+        >
+          🖼 Copy image
+        </button>
       </div>
 
       <h3 className="res-heading">

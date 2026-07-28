@@ -82,6 +82,30 @@ function toChartData(
   };
 }
 
+// Multi-unit comparison card: exactly the picked units' bars in population
+// rank order (the population is sorted desc), NO §6.6 window — the draw shows
+// the subset as-is. topDps stays the FULL population #1 so relScore labels
+// are comparable with every other image of the same cell (mirrors the API's
+// ?units= variant; the subtitle states the comparison).
+function toComparisonChartData(
+  title: string,
+  population: BarEntry[],
+  picked: BarEntry[]
+): DpsChartData {
+  return {
+    title,
+    subtitle: `${picked.length}-unit comparison`,
+    topDps: population[0]?.dps ?? 0,
+    bars: picked.map((b) => ({
+      name: b.name,
+      element: b.element,
+      dps: b.dps,
+      slug: b.slug,
+      imageUrl: b.imageUrl,
+    })),
+  };
+}
+
 export function DpsChartTab() {
   const [art, setArt] = useState<DpsArtifact | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -98,12 +122,31 @@ export function DpsChartTab() {
   const [fwMode, setFwMode] = useState<FwMode>(
     params.get('fw') === 'team' ? 'team' : 'solo'
   );
+  // Multi-unit comparison selection (slugs) for the full-matrix chart — the
+  // same picks drive the "Share comparison" card (subset of the population,
+  // no §6.6 window; mirrors the API's ?units= dps.png variant).
+  const [cmpUnits, setCmpUnits] = useState<string[]>([]);
 
   useEffect(() => {
     loadDpsChart()
       .then(setArt)
       .catch((e) => setErr(String(e?.message ?? e)));
   }, []);
+
+  // A cell/element change swaps the population — drop picks that are no
+  // longer charted so the selection count and the share card stay honest.
+  useEffect(() => {
+    if (!art || cmpUnits.length === 0) {
+      return;
+    }
+    const pop = new Set(
+      chartBars(art, cell, eleFilter, Infinity).map((b) => b.slug)
+    );
+    const kept = cmpUnits.filter((s) => pop.has(s));
+    if (kept.length !== cmpUnits.length) {
+      setCmpUnits(kept);
+    }
+  }, [art, cell, eleFilter, cmpUnits]);
 
   if (err) {
     // dev note: if this persists locally, regenerate the artifact with `npm run dpschart`
@@ -321,6 +364,65 @@ export function DpsChartTab() {
       <div className="dpschart-matrix">
         <h3>Full matrix</h3>
         <MatrixFilter cell={cell} onChange={setCell} />
+        <details className="dpschart-compare-units">
+          <summary>Compare units…</summary>
+          {(() => {
+            const population = chartBars(art, cell, eleFilter, Infinity);
+            const picked = population.filter((b) => cmpUnits.includes(b.slug));
+            const toggle = (slug: string) =>
+              setCmpUnits((cur) =>
+                cur.includes(slug)
+                  ? cur.filter((s) => s !== slug)
+                  : cur.length < 10
+                    ? [...cur, slug]
+                    : cur
+              );
+            return (
+              <>
+                <p className="muted">
+                  Pick up to 10 units from this chart to share as a head-to-head
+                  card ({cmpUnits.length}/10 selected).
+                </p>
+                <div className="pills">
+                  {population.map((b) => (
+                    <button
+                      key={b.slug}
+                      className={cmpUnits.includes(b.slug) ? 'on' : ''}
+                      onClick={() => toggle(b.slug)}
+                    >
+                      {b.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="dpschart-compare-actions">
+                  <button
+                    className="chip"
+                    disabled={picked.length === 0}
+                    title="Copy the comparison card as a PNG"
+                    onClick={() =>
+                      void copyDpsChartImage(
+                        toComparisonChartData(
+                          eleFilter
+                            ? `${cellLabel(cell)} · ${eleFilter} only`
+                            : cellLabel(cell),
+                          population,
+                          picked
+                        )
+                      )
+                    }
+                  >
+                    🖼 Share comparison
+                  </button>
+                  {cmpUnits.length > 0 && (
+                    <button className="chip" onClick={() => setCmpUnits([])}>
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </details>
         <div className="dpschart-grid one">
           {renderChart(cell, cellLabel(cell))}
         </div>

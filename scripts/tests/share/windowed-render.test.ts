@@ -17,7 +17,9 @@ import type { Canvas2DLike } from '../../../src/infographics/core/canvas2d.js';
 // assertable.
 function mockCtx() {
   const texts: string[] = [];
-  const rects: { w: number; h: number }[] = [];
+  const textAt: { t: string; x: number }[] = [];
+  const rects: { x: number; w: number; h: number }[] = [];
+  const images: { dx: number; dy: number; dw: number; dh: number }[] = [];
   let path: { moveX: number; firstArcX: number } | null = null;
   let arcCount = 0;
   const ctx: Canvas2DLike = {
@@ -27,8 +29,9 @@ function mockCtx() {
     textBaseline: '',
     globalAlpha: 1,
     fillRect: () => {},
-    fillText: (t) => {
+    fillText: (t, x) => {
       texts.push(t);
+      textAt.push({ t, x });
     },
     measureText: (t) => ({ width: t.length * 8 }),
     beginPath: () => {
@@ -49,16 +52,30 @@ function mockCtx() {
       if (path) {
         // roundRect: moveTo(x+r,y) then arcTo(x+w,y,…) ⇒ w = arcX − moveX + r;
         // every roundRect here uses r = 10 (bars) or 8 (portrait clip, unused)
-        rects.push({ w: path.firstArcX - path.moveX + 10, h: 0 });
+        rects.push({
+          x: path.moveX - 10,
+          w: path.firstArcX - path.moveX + 10,
+          h: 0,
+        });
       }
       path = null;
     },
     save: () => {},
     restore: () => {},
     clip: () => {},
-    drawImage: (() => {}) as Canvas2DLike['drawImage'],
+    drawImage: ((...args: unknown[]) => {
+      // 9-arg (crop) form: img, sx, sy, sw, sh, dx, dy, dw, dh
+      if (args.length === 9) {
+        images.push({
+          dx: args[5] as number,
+          dy: args[6] as number,
+          dw: args[7] as number,
+          dh: args[8] as number,
+        });
+      }
+    }) as Canvas2DLike['drawImage'],
   };
-  return { ctx, texts, rects };
+  return { ctx, texts, textAt, rects, images };
 }
 
 // 15-bar population, dps = 150M − 10M·(rank−1); window on slug 'u12' (index 11,
@@ -136,5 +153,56 @@ describe('drawDpsChart windowing (§6.6)', () => {
     drawDpsChart(ctx, populationData({}));
     expect(texts).toContain('ranks 1–10 of 15');
     expect(texts).toContain('1.000'); // population #1 is IN this window
+  });
+});
+
+// Portrait layout branch (hasPortraits → labelW 210 + portrait column): the
+// Matrix tab's share PNG passes per-bar imageUrl (MatrixChart.toChartData →
+// shareImage.ts loads img), so its share cards deliberately match the
+// DPS-rankings tab's portrait layout. Pin the branch at the draw-call level.
+describe('drawDpsChart portrait layout (matrix + rankings share cards)', () => {
+  // Geometry constants mirrored from core/dpsChart.ts (PAD_X/HEAD_H/ROW_H/
+  // PORTRAIT are module-private; a layout change moves these with it).
+  const PAD_X = 36;
+  const PORTRAIT = 40;
+  const PORTRAIT_X = PAD_X + Math.max('#10'.length * 8 + 6, 20); // rankW+6
+  const fakeImg = () => ({ naturalWidth: 256, naturalHeight: 512 });
+  const dataWithPortraits = (): DpsChartData => ({
+    title: 'T',
+    topDps: 100_000_000,
+    bars: Array.from({ length: 10 }, (_, i) => ({
+      name: `Unit ${i + 1}`,
+      element: 'Fire',
+      dps: (10 - i) * 10_000_000,
+      slug: `u${i + 1}`,
+      img: fakeImg(),
+    })),
+  });
+
+  it('portraits: wider label column, portrait drawn per bar, name shifted right', () => {
+    const { ctx, rects, images, textAt } = mockCtx();
+    drawDpsChart(ctx, dataWithPortraits());
+    // one cropped portrait drawImage per bar, 40×40 at the portrait column
+    expect(images).toHaveLength(10);
+    expect(images[0]).toEqual({
+      dx: PORTRAIT_X,
+      dy: 118 + (52 - 40) / 2,
+      dw: PORTRAIT,
+      dh: PORTRAIT,
+    });
+    // labelW 210 → track starts at PAD_X + 210 (first roundRect = row 1 track)
+    expect(rects[0].x).toBe(PAD_X + 210);
+    // name sits right of the portrait: portraitX + PORTRAIT + 12
+    const name = textAt.find((t) => t.t === 'Unit 1');
+    expect(name?.x).toBe(PORTRAIT_X + PORTRAIT + 12);
+  });
+
+  it('no portraits: narrow label column, no drawImage, name at the fixed offset', () => {
+    const { ctx, rects, images, textAt } = mockCtx();
+    drawDpsChart(ctx, populationData()); // 15 img-less bars, unwindowed
+    expect(images).toHaveLength(0);
+    expect(rects[0].x).toBe(PAD_X + 168); // labelW 168
+    const name = textAt.find((t) => t.t === 'Unit 1');
+    expect(name?.x).toBe(PAD_X + 30);
   });
 });

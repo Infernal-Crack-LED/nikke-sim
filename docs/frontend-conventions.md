@@ -61,6 +61,7 @@ web/
     TabDropdown.tsx          # Mobile dropdown tab replacement + useMediaQuery hook
     teamShare.ts             # Canvas team-card image pipeline
     shareImage.ts            # Canvas DPS-chart image pipeline
+    tableShare.ts            # Canvas table-card image pipeline (+ OL-default loader)
     portraitThumb.ts         # Square portrait thumbnail generator (cached)
     usePortraitThumbs.ts     # React hook for batch portrait thumbnails
     imageDownscale.ts        # Stepped-halving downscale utility

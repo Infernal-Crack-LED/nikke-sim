@@ -106,6 +106,11 @@ const META: Record<string, HeadMeta> = {
     description:
       'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
+  builder: {
+    title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
+    description:
+      'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+  },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
     description:

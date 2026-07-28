@@ -2,6 +2,13 @@
 // Canvas2D-compatible context, so the web app (browser canvas) and the bakery-bot
 // (@napi-rs/canvas / node-canvas) produce a pixel-identical image. DOM-free — the
 // caller creates and sizes the canvas and hands us the ctx. Mirrors teamCard.ts.
+//
+// PORTRAIT LAYOUT: when any rendered bar carries `img`, every row gets a portrait
+// column and the name/bar columns widen (labelW 168 → 210, the `hasPortraits`
+// branch below). This is deliberate and shared by BOTH share-Image callers: the
+// DPS-rankings tab and the Matrix tab (MatrixChart.toChartData passes per-bar
+// `imageUrl`, shareImage.ts loads it into `img`) — matrix share PNGs match the
+// rankings-tab share card. Draw-call-level coverage: windowed-render.test.ts.
 import { type Canvas2DLike, roundRect, PORTRAIT_CROP_TOP } from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
@@ -57,6 +64,21 @@ const HEAD_H = 118;
 const ROW_H = 52;
 const FOOT_H = 44;
 const COMPARE_H = 52;
+const ICON = 34; // site icon square, drawn beside the title
+
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
+// the title's textX (padX + ICON + 12; 26px title, baseline y 50).
+export const DPS_TITLE_ICON = {
+  x: PAD_X,
+  y: 50 - ICON + 4,
+  size: ICON,
+} as const;
+export const DPS_TITLE_INK_REGION = {
+  x: PAD_X + ICON + 12,
+  y: 24,
+  w: 420,
+  h: 36,
+} as const;
 
 export const chartHeight = (barCount: number, hasCompare: boolean) =>
   HEAD_H + barCount * ROW_H + (hasCompare ? COMPARE_H : 0) + FOOT_H;
@@ -94,7 +116,6 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   // icon + title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const ICON = 34;
   let textX = padX;
   if (data.icon) {
     ctx.drawImage(data.icon, padX, 50 - ICON + 4, ICON, ICON);

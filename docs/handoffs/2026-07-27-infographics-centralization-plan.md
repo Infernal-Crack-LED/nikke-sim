@@ -1,7 +1,13 @@
 # Handoff — centralize infographic generation into nikke-sim + expose an image API
 
 **Date:** 2026-07-27
-**Status:** PLAN — not started, nothing enacted
+**Status:** COMPLETE except deploy gates — Phases 0–3 landed via PR #32 (2026-07-27); Phase 6 +
+all review follow-ups + hono/POST-render landed 2026-07-28 on branch `infographics-phase6`
+(unpushed); Phase 4 (bakery-bot thin client) PR-ready on bakery-bot branch
+`infographics-centralization` (unpushed), blocked on deploy; Phase 5 Cloudflare proxy done
+(owner), R2 deferred until the static set outgrows the deploy artifact. Remaining owner gates
+are enumerated in `docs/handoffs/QUEUE.md` (the centralization bullet). The text below is the
+original plan, kept as the design record.
 **Owner ask:** move all infographic logic to one place (nikke-sim), expose an API bakery-bot
 consumes, pre-generate the static images so there is no latency and no cache races, and make this
 the base for an expanded infographic surface whose real payoff is the `nikkesim.app` watermark on
