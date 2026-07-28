@@ -7,7 +7,13 @@
 // unit (`TeamCardUnit.img`) which is drawn (rounded-clipped) into the 60x60 slot;
 // units without an image degrade to an element-tinted box + name initial. The bot
 // has no CORS constraint, the browser loads CDN art with crossOrigin='anonymous'.
-import { type Canvas2DLike, roundRect } from './canvas2d.js';
+import {
+  type Canvas2DLike,
+  roundRect,
+  fitText,
+  barTrackX,
+  BAR_LABEL_GAP,
+} from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 
 export interface TeamCardUnit {
@@ -123,8 +129,23 @@ export function drawTeamCard(
   );
 
   const maxShare = Math.max(...data.units.map((u) => u.share), 0.0001);
-  const barX = 430;
+  // The share bar starts after the LONGEST unit label + BAR_LABEL_GAP, never
+  // at a fixed x a long NIKKE name can overrun (canvas2d.ts barTrackX — the
+  // same rule dpsChart.ts uses). 430 is the designed minimum, so a card of
+  // short names is unchanged; 620 caps it so the bars stay readable and a
+  // longer name ellipsizes instead.
+  const NAME_X = padX + 78;
+  ctx.font = `600 20px ${FONT}`;
+  const nameEnd = Math.max(
+    ...data.units.map(
+      (u) =>
+        NAME_X + ctx.measureText(u.name + (u.advantaged ? '  ▲' : '')).width
+    ),
+    0
+  );
+  const barX = barTrackX(nameEnd, 430, 620);
   const barW = W - barX - 250;
+  const nameMaxW = barX - NAME_X - BAR_LABEL_GAP;
   data.units.forEach((u, i) => {
     const y = HEAD_H + i * ROW_H;
     const col = ELEMENT_COLORS[u.element] ?? '#9aa3b2';
@@ -158,10 +179,18 @@ export function drawTeamCard(
     // name + tag
     ctx.fillStyle = '#e7eaf0';
     ctx.font = `600 20px ${FONT}`;
-    ctx.fillText(u.name + (u.advantaged ? '  ▲' : ''), padX + 78, y + 36);
+    ctx.fillText(
+      fitText(ctx, u.name + (u.advantaged ? '  ▲' : ''), nameMaxW),
+      NAME_X,
+      y + 36
+    );
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
-    ctx.fillText(`B${u.burst} · ${u.weapon} · ${u.element}`, padX + 78, y + 58);
+    ctx.fillText(
+      fitText(ctx, `B${u.burst} · ${u.weapon} · ${u.element}`, nameMaxW),
+      NAME_X,
+      y + 58
+    );
 
     // share bar
     ctx.fillStyle = '#2a2f3b';

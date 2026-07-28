@@ -54,6 +54,38 @@ export interface Canvas2DLike {
 // them together.
 export const PORTRAIT_CROP_TOP = 0.16;
 
+// Fit a string into `maxW`, ellipsizing when it doesn't. Layout geometry is
+// fixed but string widths are font metrics, so measureText is the only honest
+// ruler — without this a long label simply overdraws whatever sits beside it.
+// The caller sets ctx.font BEFORE calling (the measurement is font-dependent).
+export function fitText(ctx: Canvas2DLike, text: string, maxW: number): string {
+  if (maxW <= 0 || ctx.measureText(text).width <= maxW) {
+    return text;
+  }
+  let s = text;
+  while (s.length > 1 && ctx.measureText(`${s}…`).width > maxW) {
+    s = s.slice(0, -1);
+  }
+  return `${s}…`;
+}
+
+// ---- bar-chart label column (one rule for every bar image) -------------------
+
+// Gap between the longest label and the start of the bar track. Owner style
+// ruling (2026-07-28): a bar never clips a NIKKE's name — the bars shrink to
+// make room, and a little air is left between the longest name and the track.
+export const BAR_LABEL_GAP = 16;
+
+// Where a bar track starts, given the x each label ENDS at (label start +
+// measured width). Grows to clear the longest label + BAR_LABEL_GAP, clamped
+// to [min, max]: `min` keeps a short roster at the card's designed proportions,
+// `max` stops one very long name from squeezing the bars away (names past it
+// ellipsize via fitText). Shared by dpsChart.ts and teamCard.ts so every bar
+// image obeys the same rule.
+export function barTrackX(labelEndX: number, min: number, max: number): number {
+  return Math.min(Math.max(labelEndX + BAR_LABEL_GAP, min), max);
+}
+
 export function roundRect(
   ctx: Canvas2DLike,
   x: number,

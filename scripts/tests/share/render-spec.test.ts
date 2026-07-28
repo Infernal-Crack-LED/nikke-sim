@@ -41,26 +41,26 @@ const TEAM_BUILD: Build = {
 const TEAM_CODE = encodeBuild(TEAM_BUILD);
 
 describe('specCacheKey — pinned key strings (cache compatibility)', () => {
-  it('produces the exact v1|… keys the on-disk cache was written with', () => {
-    expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v1|team|abc');
+  it('produces the exact v2|… keys the on-disk cache was written with', () => {
+    expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v2|team|abc');
     expect(specCacheKey({ kind: 'roster', build: 'abc' })).toBe(
-      'v1|roster|abc'
+      'v2|roster|abc'
     );
-    expect(specCacheKey({ kind: 'dps', cell: 'c1' })).toBe('v1|dps|c1|-|-');
+    expect(specCacheKey({ kind: 'dps', cell: 'c1' })).toBe('v2|dps|c1|-|-');
     expect(specCacheKey({ kind: 'dps', cell: 'c1', element: 'fire' })).toBe(
-      'v1|dps|c1|fire|-'
+      'v2|dps|c1|fire|-'
     );
     expect(specCacheKey({ kind: 'dps', cell: 'c1', unit: 'alice' })).toBe(
-      'v1|dps|c1|-|alice'
+      'v2|dps|c1|-|alice'
     );
     expect(
       specCacheKey({ kind: 'dps', cell: 'c1', element: 'iron', unit: 'liter' })
-    ).toBe('v1|dps|c1|iron|liter');
+    ).toBe('v2|dps|c1|iron|liter');
     // comparison variant: a 6th field, the SORTED slug list (request order
     // must not fork the content address)
     expect(
       specCacheKey({ kind: 'dps', cell: 'c1', units: ['liter', 'alice'] })
-    ).toBe('v1|dps|c1|-|-|alice,liter');
+    ).toBe('v2|dps|c1|-|-|alice,liter');
     expect(
       specCacheKey({
         kind: 'dps',
@@ -68,16 +68,16 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
         element: 'fire',
         units: ['modernia', 'alice'],
       })
-    ).toBe('v1|dps|c1|fire|-|alice,modernia');
+    ).toBe('v2|dps|c1|fire|-|alice,modernia');
     expect(
       specCacheKey({ kind: 'table', table: 'max-ammo', unit: 'alice' })
-    ).toBe('v1|table|max-ammo|alice');
+    ).toBe('v2|table|max-ammo|alice');
     expect(specCacheKey({ kind: 'table', table: 'charge-speed' })).toBe(
-      'v1|table|charge-speed|generic'
+      'v2|table|charge-speed|generic'
     );
     expect(
       specCacheKey({ kind: 'table', table: 'charge-speed', unit: 'alice' })
-    ).toBe('v1|table|charge-speed|alice');
+    ).toBe('v2|table|charge-speed|alice');
   });
 
   it('maps kinds to the existing cache filename prefixes', () => {

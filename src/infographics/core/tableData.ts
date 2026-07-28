@@ -49,6 +49,24 @@ export const FULL_BURST_FRAMES = 600;
 export const GENERIC_BASE_FRAMES = 60;
 const FRAME_MS = 1000 / 60;
 
+// Release latency is NOT universal: "new-style" AUTOFIRING charge weapons fire
+// on press at a baked cadence with no latency, and the split is datamined per
+// unit via role.weapon.shot_detail.input_type ('UP' = release-fired, +22f;
+// 'DOWN_Charge' = autofire, 0f). This mirrors the engine's isAutofireCharge
+// (src/engine/sim.ts) — the same SSOT the site's /charge panel reads — so a
+// card can never state a shots-per-Full-Burst the panel it was copied from
+// contradicts. An absent role is release-fired (the safe SR/RL default).
+// Autofire units in data/characters.json today: anis-star, cinderella,
+// liberalio, neon-vision-eye, vesti-tactical-upgrade.
+export interface ChargeWeaponRow {
+  role?: { weapon?: unknown } | null;
+}
+export const isAutofireCharge = (char: ChargeWeaponRow | null): boolean =>
+  (char?.role?.weapon as { shot_detail?: { input_type?: string } } | undefined)
+    ?.shot_detail?.input_type === 'DOWN_Charge';
+export const chargeLatencyFrames = (char: ChargeWeaponRow | null): number =>
+  isAutofireCharge(char) ? 0 : RELEASE_LATENCY_FRAMES;
+
 // Every reachable charge-frame count below base, with the infimum CS% that
 // reaches it (charge is continuous; frames quantize). Mirrors the bot's
 // chargeFrameBreakpoints, including the 1e-9 epsilon + ceil-to-cent rounding.
@@ -82,9 +100,12 @@ function bestPerLine(
 
 // Mirrors the bot's buildChargeTable: rows are the best breakpoint per OL line
 // count (skipped when 1–5 lines reach nothing — only degenerate tiny bases).
+// `latencyFrames` is the per-shot release latency (chargeLatencyFrames above —
+// 0 for autofire units); it only feeds the Shots/FB column.
 export function buildChargeTable(
   baseFrames: number,
-  label: string
+  label: string,
+  latencyFrames: number = RELEASE_LATENCY_FRAMES
 ): TableCardData {
   const rows: string[][] = [];
   for (let lines = 1; lines <= 5; lines++) {
@@ -93,7 +114,7 @@ export function buildChargeTable(
       continue;
     }
     const ms = bp.frames * FRAME_MS;
-    const shotsFb = FULL_BURST_FRAMES / (bp.frames + RELEASE_LATENCY_FRAMES);
+    const shotsFb = FULL_BURST_FRAMES / (bp.frames + latencyFrames);
     rows.push([
       `${lines}`,
       `≥ ${bp.csNeeded.toFixed(2)}%`,
@@ -104,7 +125,9 @@ export function buildChargeTable(
   }
   return {
     title: `Charge Speed — ${label}`,
-    subtitle: `Base ${baseFrames}f (${(baseFrames / 60).toFixed(2)}s) · T11 = ${CS_PER_LINE_T11}% CS/line · shots per Full Burst (10s)`,
+    subtitle:
+      `Base ${baseFrames}f (${(baseFrames / 60).toFixed(2)}s) · T11 = ${CS_PER_LINE_T11}% CS/line · ` +
+      `shots per Full Burst (10s${latencyFrames === 0 ? ', autofire — no release latency' : `, +${latencyFrames}f release`})`,
     columns: [
       { header: 'OL Lines' },
       { header: 'CS Needed', align: 'right' },

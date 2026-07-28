@@ -45,6 +45,10 @@ export interface CardCharacter {
   // Table routes only (data/characters.json flat fields):
   ammo?: number; // base magazine (bot: roleWeapon.shot_detail.max_ammo)
   chargeFrames?: number; // = round(charge_time/100*60) — the bot's baseFrames
+  // The datamined role blob, read ONLY for role.weapon.shot_detail.input_type
+  // (tableData's chargeLatencyFrames — autofire charge weapons fire on press
+  // and take no release latency).
+  role?: { weapon?: unknown } | null;
 }
 
 const SCALE = 2; // retina, same as build-infographics.ts

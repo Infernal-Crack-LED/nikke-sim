@@ -52,6 +52,38 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ POST-MERGE CODE REVIEW OF PR #33 (`9526dad`) — 2 FIXES LANDED on branch
+  `infographics-card-fixes`, 4 FOLLOW-UPS OPEN.** The review ran after the merge (owner ask).
+  No blockers; the two FIX-level defects are fixed on that branch (worktree
+  `../nikke-sim-wt-cardfix`, unpushed, `verify.sh` green): (a) `buildChargeTable` hardcoded the
+  22f release latency, so every AUTOFIRE charge unit (anis-star, cinderella, liberalio,
+  neon-vision-eye, vesti-tactical-upgrade — datamined `input_type: 'DOWN_Charge'`) published a
+  shots-per-Full-Burst ~25–30% below the site's own /charge panel, on the tab share button, the
+  /builder card AND the hosted `table/charge-speed?unit=` route; (b) `drawTableCard` distributed
+  width evenly with no truncation, so the 6–7-column resources card overdrew its neighbouring
+  column. Also landed there: the owner's bar-label style ruling (a bar track never clips a NIKKE
+  name — `canvas2d.ts` `barTrackX`/`fitText`, applied to `dpsChart.ts` + `teamCard.ts`) and
+  `RENDERER_VERSION` → `v2` (the renderers changed, so v1 cache files must age out). **Open
+  follow-ups, none blocking a deploy:**
+  1. **Memoized REJECTED promises** — `BuilderPage.loadImgManifest` and
+     `tableShare.loadOlDefaultTable` cache the promise including its rejection, so one transient
+     fetch failure permanently breaks "Get hosted URL" / the OL share until a page reload. Clear
+     the memo in a `.catch` that rethrows.
+  2. **No in-process render concurrency cap** — `api.ts ensureCached` single-flights identical
+     specs only; N distinct concurrent specs run N renders, each up to `MAX_CANVAS_PIXELS`
+     (12M px ≈ 48 MB RGBA) on one instance, with the routes anonymous by design. A 4–8 slot
+     semaphore turns a burst into latency instead of RSS. Do this before bakery-bot points
+     production traffic at `POST /render`.
+  3. **Breakpoint-panel tier vs card tier** — the /charge panel computes rows at the selected OL
+     tier (`olTierValues(bpTier)`), the share card always renders the T11 constants. Self-
+     consistent (the subtitle names T11) but it disagrees with the table it was copied from at
+     any other tier: pass the tier's per-line value into `buildAmmoTable`/`buildChargeTable`.
+  4. **▲ renders as tofu in every NODE card** — Roboto has no U+25B2 and the Node font stack has
+     no fallback face, so the advantaged-element marker is a □ box on the pre-rendered images
+     (the browser falls back per-glyph, so the site is fine). Pre-existing, cosmetic, visible on
+     every DPS/team card: either register a fallback face for the Node renderer or swap the
+     marker for a Roboto-covered glyph.
+
 - **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PHASES 0–3 LANDED (PR #32), PHASE 6 LANDED on
   branch `infographics-phase6` (unpushed), PHASE 4 PR-READY on bakery-bot branch
   `infographics-centralization` (worktree `../bakery-bot-wt-infographics`, unpushed) →

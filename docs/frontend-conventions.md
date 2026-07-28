@@ -181,6 +181,22 @@ Comments are **extensive and explanatory**. They document:
 
 All colors reference these tokens. Element-specific colors come from `ELEMENT_COLORS` in `src/infographics/core/theme.ts` (used inline via `style={{ background: ELEMENT_COLORS[element] }}`).
 
+### Canvas card layout — text never collides
+
+Two rules, both enforced in `src/infographics/core/canvas2d.ts` so every card
+renderer (and both hosts, browser + Node) obeys them identically:
+
+- **Bar images** (`dpsChart.ts`, `teamCard.ts`): a bar track starts after the
+  **longest** label plus `BAR_LABEL_GAP` (`barTrackX`) — a long NIKKE name
+  shortens the bars, never the other way round. The per-card minimum keeps a
+  short roster at its designed proportions; past the maximum the name
+  ellipsizes rather than squeezing the bars away.
+- **Table cards** (`tableCard.ts`): columns are flex-weighted
+  (`TableColumn.flex`, default 1 = the even split) and every header/cell is
+  fitted to its own column with `fitText`. Give the wide column (a unit name
+  beside numeric columns) the bigger flex; long prose belongs in the subtitle,
+  not in a column header.
+
 ### Typography
 
 ```css

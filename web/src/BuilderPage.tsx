@@ -37,6 +37,7 @@ import type {
 import {
   buildAmmoTable,
   buildChargeTable,
+  chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
 } from '../../src/infographics/core/tableData';
 import {
@@ -307,7 +308,8 @@ export function BuilderPage() {
         const table: TableCardData =
           state.card === 'charge'
             ? c
-              ? buildChargeTable(c.chargeFrames, c.name)
+              ? // autofire units take no release latency (datamined input_type)
+                buildChargeTable(c.chargeFrames, c.name, chargeLatencyFrames(c))
               : buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)')
             : c
               ? buildAmmoTable(c.ammo, c.name)

@@ -30,6 +30,7 @@ import { loadPortrait } from '../infographics/node/render.js';
 import {
   buildAmmoTable,
   buildChargeTable,
+  chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
 } from '../infographics/core/tableData.js';
 import {
@@ -278,7 +279,9 @@ async function resolveRender(
             status: 400,
           };
         }
-        data = buildChargeTable(baseFrames, ch.name);
+        // Autofire units take no release latency — resolved from the datamined
+        // input_type, the same SSOT the site's /charge panel reads.
+        data = buildChargeTable(baseFrames, ch.name, chargeLatencyFrames(ch));
       } else {
         data = buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)');
       }

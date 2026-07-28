@@ -15,7 +15,11 @@ import { decodeBuild } from '../share/build-code.js';
 // Bump when the card renderers change in a way that should re-render existing
 // specs — it is part of the cache key, so old files simply age out via LRU
 // instead of serving stale pixels.
-export const RENDERER_VERSION = 'v1';
+// v2 (2026-07-28): the bar-label column rule (a long NIKKE name now shortens
+// the bars instead of being clipped by them), the table-card flex widths +
+// ellipsize backstop, and the autofire charge-latency fix — every one of them
+// changes the pixels a v1 key already has a file for.
+export const RENDERER_VERSION = 'v2';
 
 // Build codes are compact (a 5-slot build is ~300-600 chars; a union roster
 // with loadouts is still well under 2 KB). Anything beyond this is garbage.

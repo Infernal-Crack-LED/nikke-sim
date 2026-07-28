@@ -5280,14 +5280,18 @@ export function App({ user }: { user: AuthUser | null }) {
       // (core/tableData.ts builders): the charge-speed table for the picked
       // unit or the generic 1.0s reference, or the max-ammo table for the
       // ammo panel (needs a picked unit — a generic 1-round base yields no
-      // rows). The picked unit's portrait sits top-right.
+      // rows). The picked unit's portrait sits top-right. The card's Shots/FB
+      // column takes the SAME chargeLatency the panel above uses (0 for
+      // autofire units), so the image can't contradict the table it was
+      // copied from.
       const onBpShareImage = async () => {
         let card: TableCardData;
         let slug: string | null;
         if (bpView === 'charge') {
           card = buildChargeTable(
             baseFrames,
-            chc ? chc.name : 'Generic (1.0s)'
+            chc ? chc.name : 'Generic (1.0s)',
+            chargeLatency
           );
           slug = chargeChar;
         } else {
@@ -5644,8 +5648,10 @@ export function App({ user }: { user: AuthUser | null }) {
           title: `${carry?.name ?? carrySlug} — free OL lines`,
           subtitle,
           columns: [
-            { header: '#' },
-            { header: 'Free 4 lines' },
+            // the line-combination label is far wider than the numeric
+            // columns, so it takes the flex (tableCard.ts TableColumn.flex)
+            { header: '#', flex: 0.4 },
+            { header: 'Free 4 lines', flex: 2 },
             { header: 'Nikke dmg', align: 'right' },
             { header: 'vs 8/12', align: 'right' },
           ],

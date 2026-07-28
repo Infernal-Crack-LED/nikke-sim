@@ -75,6 +75,31 @@ const CHARS: Record<string, CardCharacter> = {
     ammo: 6,
     chargeFrames: 90,
   },
+  // The autofire pair for the charge-speed latency check. BOTH are
+  // FIXTURE-ONLY slugs (a real slug would resolve a real portrait from
+  // web/public and confound the byte compare — the difference has to be the
+  // latency alone): identical in every field except the datamined tell
+  // role.weapon.shot_detail.input_type === 'DOWN_Charge', which means "fires
+  // on press, NO 22f release latency".
+  'zz-charge-autofire': {
+    slug: 'zz-charge-autofire',
+    name: 'Charge Unit',
+    element: 'Electric',
+    weapon: 'RL',
+    burst: 'III',
+    ammo: 6,
+    chargeFrames: 60,
+    role: { weapon: { shot_detail: { input_type: 'DOWN_Charge' } } },
+  },
+  'zz-charge-control': {
+    slug: 'zz-charge-control',
+    name: 'Charge Unit',
+    element: 'Electric',
+    weapon: 'RL',
+    burst: 'III',
+    ammo: 6,
+    chargeFrames: 60,
+  },
 };
 
 // A minimal dpschart.json fixture for the dps.png route: two cells, four
@@ -538,6 +563,25 @@ describe('api/v1/img/table/*.png (breakpoint tables)', () => {
       (await fetch(`${base}/api/v1/img/table/charge-speed.png?unit=bogus`))
         .status
     ).toBe(400);
+  });
+
+  it('an autofire unit renders a DIFFERENT card than a release-fired one', async () => {
+    // Same base frames, same displayed name — the ONLY difference is the
+    // datamined input_type, which zeroes the 22f release latency in the
+    // Shots/FB column. Identical bytes would mean the latency never reached
+    // the render (the bug this pins: every autofire unit's card understated
+    // shots per Full Burst by ~25-30%).
+    const png = async (slug: string): Promise<Buffer> => {
+      const loc = await expectRenderedPng(
+        `/api/v1/img/table/charge-speed.png?unit=${slug}`,
+        'table'
+      );
+      return Buffer.from(await (await fetch(`${base}${loc}`)).arrayBuffer());
+    };
+    const autofire = await png('zz-charge-autofire');
+    const released = await png('zz-charge-control');
+    expect(autofire.length).toBeGreaterThan(0);
+    expect(autofire.equals(released)).toBe(false);
   });
 });
 

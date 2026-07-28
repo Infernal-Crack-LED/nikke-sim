@@ -9,6 +9,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { createHash } from 'node:crypto';
+import { RENDERER_VERSION } from '../../../src/infographics/spec.js';
 import {
   existsSync,
   mkdtempSync,
@@ -242,9 +243,12 @@ describe('POST /api/v1/img/render — happy paths + GET parity', () => {
       'team'
     );
     // the URL hash is exactly sha256(specCacheKey(spec))[:16] — the key the
-    // pre-migration GET routes produced (cache compatibility, byte-for-byte)
+    // pre-migration GET routes produced (cache compatibility, byte-for-byte).
+    // The version prefix comes from RENDERER_VERSION so a deliberate bump
+    // moves this with it; the exact key STRINGS are pinned in
+    // render-spec.test.ts, which is where a bump must be noticed.
     const expectHash = createHash('sha256')
-      .update(`v1|team|${TEAM_CODE}`)
+      .update(`${RENDERER_VERSION}|team|${TEAM_CODE}`)
       .digest('hex')
       .slice(0, 16);
     expect(url).toBe(`/api/v1/img/cache/team.${expectHash}.png`);
