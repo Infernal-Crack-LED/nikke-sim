@@ -30,6 +30,8 @@ export interface NikkesimServerOptions {
   umamiWebsiteId?: string; // UMAMI_WEBSITE_ID
   // Test hook: inject character metadata instead of loading data/characters.json.
   characters?: Record<string, CardCharacter>;
+  // dpschart.json for the dps.png route (default <distDir>/dpschart.json).
+  dpsChartPath?: string;
 }
 
 function loadCharacters(): Record<string, CardCharacter> {
@@ -73,6 +75,7 @@ export async function createNikkesimServer(
     chars: opts.characters ?? loadCharacters(),
     icon: await loadIcon(),
     renderSecret: opts.renderSecret ?? env.NIKKESIM_RENDER_SECRET,
+    dpsChartPath: opts.dpsChartPath,
   };
 
   const staticOpts = {

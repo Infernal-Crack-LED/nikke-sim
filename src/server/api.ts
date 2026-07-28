@@ -3,10 +3,13 @@
 // contract" + §6.4): hand-rolled GET routes on node:http, no framework.
 //
 //   GET /api/v1/img/manifest.json            → dist/img/manifest.json, no-cache
-//   GET /api/v1/img/{dps,unit,rank}/<file>   → dist/img/..., immutable (hashed)
+//   GET /api/v1/img/{dps,unit,rank,table}/<file> → dist/img/..., immutable (hashed)
 //   GET /api/v1/img/cache/<file>             → the dynamic-render cache, immutable
 //   GET /api/v1/img/team.png?b=<buildcode>   → 302 to /api/v1/img/cache/team.<hash>.png
 //   GET /api/v1/img/roster.png?b=<buildcode> → 302 to .../roster.<hash>.png
+//   GET /api/v1/img/dps.png?cell&element&unit → 302 to .../dps.<hash>.png
+//   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
+//   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
 //
 // Every image URL the API hands out is content-addressed, so the 302s and the
 // cached files are safe for Discord's hard URL-keyed CDN caching (plan §2).
@@ -16,7 +19,13 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { basename, join, normalize } from 'node:path';
-import type { Canvas } from '../infographics/node/render.js';
+import type { Canvas, TableCardData } from '../infographics/node/render.js';
+import { loadPortrait } from '../infographics/node/render.js';
+import {
+  buildAmmoTable,
+  buildChargeTable,
+  GENERIC_BASE_FRAMES,
+} from '../infographics/core/tableData.js';
 import { decodeBuild } from '../share/build-code.js';
 import { IMMUTABLE, NO_CACHE, mimeFor } from './static.js';
 import type { RenderCache } from './render-cache.js';
@@ -26,6 +35,12 @@ import {
   cardBuildError,
   type CardCharacter,
 } from './card-from-build.js';
+import {
+  dpsChartData,
+  renderDpsChartPng,
+  renderTableCardPng,
+  type DpsArtifact,
+} from './dps-table-cards.js';
 
 // Bump when the card renderers change in a way that should re-render existing
 // build codes — it is part of the cache key, so old files simply age out via
@@ -38,7 +53,7 @@ const BUILD_CODE_MAX_LEN = 4096;
 
 // Cached dynamic renders: `<type>.<hash16>.png` — nothing else is servable
 // from the cache dir.
-const CACHE_FILE = /^(team|roster)\.[0-9a-f]{16}\.png$/;
+const CACHE_FILE = /^(team|roster|dps|table)\.[0-9a-f]{16}\.png$/;
 
 export interface ApiContext {
   distDir: string;
@@ -46,6 +61,9 @@ export interface ApiContext {
   chars: Record<string, CardCharacter>;
   icon: Canvas | null;
   renderSecret?: string;
+  // dpschart.json location for the dps.png route (default <distDir>/dpschart.json).
+  // Injectable for tests, like distDir/cacheDir.
+  dpsChartPath?: string;
 }
 
 // Rate limiting lives in CLOUDFLARE, not in this process (plan §6.3/§6.4: edge
@@ -80,26 +98,53 @@ const hashKey = (type: string, code: string): string =>
     .digest('hex')
     .slice(0, 16);
 
-// Single-flight: concurrent misses for the same card share one render.
+// Single-flight: concurrent misses for the same card share one render. Keyed
+// on the cache FILENAME (which already embeds type + content hash).
 const inflight = new Map<string, Promise<Buffer>>();
 
 function renderOnce(
-  type: 'team' | 'roster',
-  code: string,
-  ctx: ApiContext
+  file: string,
+  render: () => Promise<Buffer>
 ): Promise<Buffer> {
-  const key = `${type}:${hashKey(type, code)}`;
-  let p = inflight.get(key);
+  let p = inflight.get(file);
   if (!p) {
-    const build = decodeBuild(code)!; // validated by the caller
-    p = (
-      type === 'team'
-        ? renderTeamCardPng(build, ctx.chars, ctx.icon)
-        : renderRosterCardPng(build, ctx.chars, ctx.icon)
-    ).finally(() => inflight.delete(key));
-    inflight.set(key, p);
+    p = render().finally(() => inflight.delete(file));
+    inflight.set(file, p);
   }
   return p;
+}
+
+// The shared tail of every dynamic route: render on a cache miss, then 302 to
+// the content-addressed cache URL.
+async function renderAndRedirect(
+  res: ServerResponse,
+  ctx: ApiContext,
+  file: string,
+  render: () => Promise<Buffer>
+): Promise<void> {
+  if (!(await ctx.cache.has(file))) {
+    try {
+      await ctx.cache.put(file, await renderOnce(file, render));
+    } catch (err) {
+      console.error(`render ${file} failed:`, err);
+      text(res, 500, 'render failed');
+      return;
+    }
+  }
+  res.writeHead(302, {
+    location: `/api/v1/img/cache/${file}`,
+    'cache-control': NO_CACHE,
+  });
+  res.end();
+}
+
+// See the constant's comment on REQUIRE_RENDER_SECRET: unreachable while it is
+// false; when flipped, every dynamic route gates on the shared secret.
+function secretOk(req: IncomingMessage, ctx: ApiContext): boolean {
+  if (!REQUIRE_RENDER_SECRET || !ctx.renderSecret) {
+    return true;
+  }
+  return req.headers['x-render-secret'] === ctx.renderSecret;
 }
 
 async function handleDynamic(
@@ -109,13 +154,9 @@ async function handleDynamic(
   u: URL,
   ctx: ApiContext
 ): Promise<void> {
-  if (REQUIRE_RENDER_SECRET && ctx.renderSecret) {
-    // See the constant's comment: Cloudflare rate-limits anonymous callers, so
-    // for now this branch is unreachable (REQUIRE_RENDER_SECRET = false).
-    if (req.headers['x-render-secret'] !== ctx.renderSecret) {
-      text(res, 401, 'missing or invalid x-render-secret');
-      return;
-    }
+  if (!secretOk(req, ctx)) {
+    text(res, 401, 'missing or invalid x-render-secret');
+    return;
   }
   const code = (u.searchParams.get('b') ?? '').trim();
   if (!code || code.length > BUILD_CODE_MAX_LEN) {
@@ -137,18 +178,136 @@ async function handleDynamic(
   }
 
   const file = `${type}.${hashKey(type, code)}.png`;
-  const location = `/api/v1/img/cache/${file}`;
-  if (!(await ctx.cache.has(file))) {
-    try {
-      await ctx.cache.put(file, await renderOnce(type, code, ctx));
-    } catch (err) {
-      console.error(`render ${type}.png failed:`, err);
-      text(res, 500, 'render failed');
+  await renderAndRedirect(res, ctx, file, () =>
+    type === 'team'
+      ? renderTeamCardPng(build, ctx.chars, ctx.icon)
+      : renderRosterCardPng(build, ctx.chars, ctx.icon)
+  );
+}
+
+// ---- dps.png -----------------------------------------------------------------
+
+const DEFAULT_DPS_CELL = 'solo.eleweak.c100.8of12';
+
+// dpschart.json is built into dist/ at deploy. Read lazily, cached in memory
+// keyed by path — the server restarts every deploy, so read-once is fine (a
+// deploy that regenerates the artifact restarts this process too).
+const dpsChartCache = new Map<string, Promise<DpsArtifact | null>>();
+
+function loadDpsChart(ctx: ApiContext): Promise<DpsArtifact | null> {
+  const path = ctx.dpsChartPath ?? join(ctx.distDir, 'dpschart.json');
+  let p = dpsChartCache.get(path);
+  if (!p) {
+    p = readFile(path, 'utf8').then(
+      (raw) => JSON.parse(raw) as DpsArtifact,
+      () => null
+    );
+    dpsChartCache.set(path, p);
+  }
+  return p;
+}
+
+async function handleDpsChart(
+  req: IncomingMessage,
+  res: ServerResponse,
+  u: URL,
+  ctx: ApiContext
+): Promise<void> {
+  if (!secretOk(req, ctx)) {
+    text(res, 401, 'missing or invalid x-render-secret');
+    return;
+  }
+  const art = await loadDpsChart(ctx);
+  if (!art) {
+    text(res, 404, 'dps chart data unavailable');
+    return;
+  }
+  const params = {
+    cell: (u.searchParams.get('cell') ?? '').trim() || DEFAULT_DPS_CELL,
+    element: u.searchParams.get('element')?.trim().toLowerCase() || null,
+    unit: u.searchParams.get('unit')?.trim() || null,
+  };
+  const built = dpsChartData(art, params, ctx.icon);
+  if ('error' in built) {
+    text(res, 400, built.error);
+    return;
+  }
+  const file = `dps.${hashKey('dps', `${params.cell}|${params.element ?? '-'}|${params.unit ?? '-'}`)}.png`;
+  await renderAndRedirect(res, ctx, file, () => renderDpsChartPng(built.data));
+}
+
+// ---- table/*.png ---------------------------------------------------------------
+
+// Per-unit tables validate the slug against the SAME character metadata the
+// build-code cards use (data/characters.json at boot, injectable in tests).
+async function handleTable(
+  req: IncomingMessage,
+  res: ServerResponse,
+  u: URL,
+  ctx: ApiContext,
+  kind: 'max-ammo' | 'charge-speed'
+): Promise<void> {
+  if (!secretOk(req, ctx)) {
+    text(res, 401, 'missing or invalid x-render-secret');
+    return;
+  }
+  const slug = u.searchParams.get('unit')?.trim() || null;
+
+  let key: string;
+  let data: TableCardData;
+  if (kind === 'max-ammo') {
+    if (!slug) {
+      text(res, 400, 'unit is required');
       return;
     }
+    const c = ctx.chars[slug];
+    if (!c) {
+      text(res, 400, `unknown unit '${slug}'`);
+      return;
+    }
+    const base = c.ammo;
+    if (!base || base <= 0) {
+      text(res, 400, `${c.name} has no ammo data`);
+      return;
+    }
+    key = `max-ammo|${slug}`;
+    data = buildAmmoTable(base, c.name);
+  } else {
+    if (slug) {
+      const c = ctx.chars[slug];
+      if (!c) {
+        text(res, 400, `unknown unit '${slug}'`);
+        return;
+      }
+      // Charge weapons only (SR/RL). characters.json carries the charge
+      // directly in frames (= round(charge_time/100*60), the bot's formula).
+      const baseFrames = c.chargeFrames ?? 0;
+      if (baseFrames <= 0 || (c.weapon !== 'SR' && c.weapon !== 'RL')) {
+        text(
+          res,
+          400,
+          c.weapon === 'SR' || c.weapon === 'RL'
+            ? `${c.name} has no charge data`
+            : `${c.name} (${c.weapon}) is not a charge weapon`
+        );
+        return;
+      }
+      key = `charge-speed|${slug}`;
+      data = buildChargeTable(baseFrames, c.name);
+    } else {
+      key = 'charge-speed|generic';
+      data = buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)');
+    }
   }
-  res.writeHead(302, { location, 'cache-control': NO_CACHE });
-  res.end();
+
+  data.icon = ctx.icon ?? undefined;
+  if (slug) {
+    data.portrait = (await loadPortrait(slug)) ?? undefined;
+  }
+  const file = `table.${hashKey('table', key)}.png`;
+  await renderAndRedirect(res, ctx, file, () =>
+    Promise.resolve(renderTableCardPng(data))
+  );
 }
 
 // Handle a /api/v1/img/* request. API misses are honest 404s — never the SPA
@@ -168,6 +327,25 @@ export async function handleImgApi(
       path.includes('team') ? 'team' : 'roster',
       u,
       ctx
+    );
+    return;
+  }
+
+  if (path === '/api/v1/img/dps.png') {
+    await handleDpsChart(req, res, u, ctx);
+    return;
+  }
+
+  if (
+    path === '/api/v1/img/table/max-ammo.png' ||
+    path === '/api/v1/img/table/charge-speed.png'
+  ) {
+    await handleTable(
+      req,
+      res,
+      u,
+      ctx,
+      path.includes('max-ammo') ? 'max-ammo' : 'charge-speed'
     );
     return;
   }
@@ -192,10 +370,10 @@ export async function handleImgApi(
   }
 
   // Pre-rendered set: /api/v1/img/<rest> maps onto dist/img/<rest>. Only the
-  // three published kinds are servable; all carry content hashes → immutable.
+  // published kinds are servable; all carry content hashes → immutable.
   const rest = path.slice('/api/v1/img/'.length);
   const kind = rest.split('/')[0];
-  if (!['dps', 'unit', 'rank'].includes(kind)) {
+  if (!['dps', 'unit', 'rank', 'table'].includes(kind)) {
     text(res, 404, 'not found');
     return;
   }

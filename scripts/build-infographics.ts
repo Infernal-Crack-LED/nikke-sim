@@ -1,7 +1,8 @@
 // Build-time pre-generation of the static infographic set (Phase 2 of
 // docs/handoffs/2026-07-27-infographics-centralization-plan.md): renders the
-// head-only set (~208 images — 2 headline DPS cells × 6 element variants, 4
-// rank boards, 192 unit cards) through src/infographics/node/render.ts ONLY,
+// head-only set (~210 images — 2 headline DPS cells × 6 element variants, 4
+// rank boards, 2 utility tables, 192 unit cards) through
+// src/infographics/node/render.ts ONLY,
 // at scale 2, writing CONTENT-HASHED filenames into dist/img/ plus a mutable
 // manifest.json that maps each logical key to its immutable file.
 //
@@ -48,6 +49,10 @@ import {
   drawUnitCard,
   UNIT_CARD_W,
   UNIT_CARD_H,
+  buildOlTable,
+  buildChargeTable,
+  GENERIC_BASE_FRAMES,
+  type OlDefaultArtifact,
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_INK_REGION,
   UNIT_TITLE_INK_REGION,
@@ -425,6 +430,44 @@ function rankJobs(): Job[] {
   }));
 }
 
+// The two fully-static utility tables (bot /ol and the no-param /charge-speed)
+// — same core/tableData.ts builders the API's dynamic table routes use, so the
+// pre-rendered files and the on-demand renders can't drift.
+function tableJobs(): Job[] {
+  const specs: { key: string; build: () => TableCardData }[] = [
+    {
+      key: 'table/ol',
+      build: () =>
+        buildOlTable(
+          loadJson<OlDefaultArtifact>(
+            new URL('../web/public/ol-default.json', import.meta.url)
+          )
+        ),
+    },
+    {
+      key: 'table/charge-speed',
+      build: () => buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)'),
+    },
+  ];
+  return specs.map(({ key, build }) => ({
+    key,
+    render: async (): Promise<Rendered> => {
+      const data = build();
+      data.icon = (await loadSiteIcon()) ?? undefined;
+      const canvas = scaledCanvas(TABLE_W, tableHeight(data.rows.length));
+      drawTableCard(canvas.getContext('2d') as unknown as Canvas2DLike, data);
+      return {
+        key,
+        png: canvas.toBuffer('image/png'),
+        width: canvas.width,
+        height: canvas.height,
+        canvas,
+        inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
+      };
+    },
+  }));
+}
+
 // One identity card per character in data/characters.json (READ-only source).
 function unitJobs(chars: CharacterRow[], limit: number | null): Job[] {
   const sorted = [...chars].sort((a, b) => a.slug.localeCompare(b.slug));
@@ -501,7 +544,7 @@ async function main(): Promise<void> {
       new URL('../web/public/dpschart.json', import.meta.url),
       DATA_HINT
     );
-    jobs.unshift(...dpsJobs(dpschart), ...rankJobs());
+    jobs.unshift(...dpsJobs(dpschart), ...rankJobs(), ...tableJobs());
   }
   if (jobs.length === 0) {
     throw new Error('build-infographics: empty job list');
