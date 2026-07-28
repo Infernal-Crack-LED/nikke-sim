@@ -59,18 +59,26 @@ export class RenderCache {
   // .tmp files. Runs on boot and after every write — cheap at this scale (a
   // 200 MB cap ≈ a few thousand PNGs).
   async sweep(): Promise<void> {
-    let entries: { name: string; size: number; mtimeMs: number }[];
+    let names: string[];
     try {
-      const names = await readdir(this.dir);
-      entries = await Promise.all(
-        names.map(async (name) => {
-          const s = await stat(this.pathFor(name));
-          return { name, size: s.size, mtimeMs: s.mtimeMs };
-        })
-      );
+      names = await readdir(this.dir);
     } catch {
       return; // cache dir doesn't exist yet — nothing to sweep
     }
+    // Per-entry stat is FALLIBLE: a concurrent put() can rename its .tmp away
+    // (or an eviction unlink a .png) between our readdir and stat. One stale
+    // entry must not abort the whole sweep — under load that correlates with
+    // .tmp churn, skipping eviction exactly when the byte cap matters.
+    const entries = (
+      await Promise.all(
+        names.map(async (name) => {
+          const s = await stat(this.pathFor(name)).catch(() => null);
+          return s?.isFile()
+            ? { name, size: s.size, mtimeMs: s.mtimeMs }
+            : null;
+        })
+      )
+    ).filter((e): e is NonNullable<typeof e> => e !== null);
     const now = Date.now();
     const pngs: typeof entries = [];
     for (const e of entries) {

@@ -246,19 +246,25 @@ export async function sendFile(
   file: string,
   urlPath: string,
   status = 200,
-  ifNoneMatch?: string | string[]
+  ifNoneMatch?: string | string[],
+  ifModifiedSince?: string
 ): Promise<void> {
   const s = await stat(file);
   const etag = etagFor(s);
   const cacheControl = cacheControlFor(urlPath);
-  if (
+  // RFC 7232: If-None-Match (incl. `*`) wins; If-Modified-Since applies only
+  // when If-None-Match is absent, at HTTP-date (second) granularity.
+  const inm =
     ifNoneMatch &&
     [ifNoneMatch]
       .flat()
       .flatMap((v) => v.split(','))
-      .map((v) => v.trim())
-      .includes(etag)
-  ) {
+      .map((v) => v.trim());
+  const notModified = inm
+    ? inm.includes(etag) || inm.includes('*')
+    : !!ifModifiedSince &&
+      Date.parse(ifModifiedSince) >= Math.floor(s.mtimeMs / 1000) * 1000;
+  if (notModified) {
     res.writeHead(304, { etag, 'cache-control': cacheControl });
     res.end();
     return;
@@ -303,7 +309,14 @@ export async function handleStatic(
       await sendIndex(res, req.url ?? '/', opts);
       return;
     }
-    await sendFile(res, file, rel, 200, req.headers['if-none-match']);
+    await sendFile(
+      res,
+      file,
+      rel,
+      200,
+      req.headers['if-none-match'],
+      req.headers['if-modified-since']
+    );
   } catch {
     // last-resort fallback
     try {

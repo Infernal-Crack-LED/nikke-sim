@@ -199,44 +199,48 @@ describe('api/v1/img dynamic render routes', () => {
   // The render routes are UNAUTHENTICATED — the decoded build must be
   // validated before it sizes a canvas (the pre-fix DoS: 1000 empty teams in
   // a 4055-char code demanded a ~1.6 GB canvas from ONE anonymous GET).
+  // The asserted BODY is the proof each case reaches cardBuildError: an
+  // envelope rejection says 'invalid build code', so a status-only assertion
+  // would pass even if the payload never reached the new validator.
   it('rejects unvalidated-but-decodable builds with 400, never 500', async () => {
     const encode = (b: unknown) =>
       Buffer.from(JSON.stringify(b)).toString('base64url');
+    const body = async (path: string, b: string) => {
+      const res = await fetch(`${base}/api/v1/img/${path}?b=${b}`);
+      expect(res.status).toBe(400);
+      return res.text();
+    };
     // null slots (threw → 500 pre-fix)
     const nullSlots = encode({
       v: 1,
       g: {},
       s: [null, null, null, null, null],
     });
-    expect(
-      (await fetch(`${base}/api/v1/img/team.png?b=${nullSlots}`)).status
-    ).toBe(400);
+    expect(await body('team.png', nullSlots)).toBe('invalid slot');
     // oversized roster — the canvas DoS
     const bigRoster = encode({
       ...TEAM_BUILD,
       roster: Array.from({ length: 150 }, () => []),
     });
-    expect(
-      (await fetch(`${base}/api/v1/img/roster.png?b=${bigRoster}`)).status
-    ).toBe(400);
+    expect(await body('roster.png', bigRoster)).toBe(
+      'roster has 150 teams (max 5)'
+    );
     // roster team wider than the 5-slot grid
     const wideTeam = encode({
       ...TEAM_BUILD,
       roster: [['liter', 'crown', 'naga', 'modernia', 'alice', 'liter']],
     });
-    expect(
-      (await fetch(`${base}/api/v1/img/roster.png?b=${wideTeam}`)).status
-    ).toBe(400);
+    expect(await body('roster.png', wideTeam)).toBe('invalid roster team');
     // non-string slugs in the roster
     const badSlug = encode({ ...TEAM_BUILD, roster: [[42, 'liter']] });
-    expect(
-      (await fetch(`${base}/api/v1/img/roster.png?b=${badSlug}`)).status
-    ).toBe(400);
+    expect(await body('roster.png', badSlug)).toBe('invalid roster team');
   });
 
-  it('hostile slugs degrade to placeholder boxes, never a path lookup', async () => {
-    // a traversal-shaped slug must NOT reach join(PORTRAIT_DIR, …) — the card
-    // renders with a placeholder (302), and nothing outside the dir is read
+  it('hostile slugs degrade to placeholder boxes (end-to-end smoke)', async () => {
+    // the traversal PROOF is the loadPortrait unit test in
+    // portrait-security.test.ts (a 302 alone passes against the unfixed
+    // code); this is the end-to-end smoke that a traversal-shaped slug still
+    // renders a card instead of erroring
     const evil = encodeBuild({
       ...TEAM_BUILD,
       s: TEAM_BUILD.s.map((slot, i) =>
@@ -261,28 +265,26 @@ describe('api/v1/img dynamic render routes', () => {
     const png = statSync(file);
     expect(png.size).toBeGreaterThan(10_000); // a real card, not an error page
 
-    // second request: same Location, same BYTES (no re-render). mtime is NOT
-    // the proof — the LRU cache deliberately refreshes it on every read
-    // (render-cache.ts has()), so hot cards evict last.
+    // second request: same Location, and NO re-render. The renderer is
+    // deterministic, so identical bytes/size prove nothing — POISON the cached
+    // file with a sentinel and assert the sentinel is what the second request
+    // serves back. (mtime is not the proof either: the LRU cache deliberately
+    // refreshes it on every read — render-cache.ts has().)
+    const sentinel = Buffer.from('poisoned-cache-entry');
+    writeFileSync(file, sentinel);
     const res2 = await fetch(`${base}/api/v1/img/team.png?b=${TEAM_CODE}`, {
       redirect: 'manual',
     });
     expect(res2.status).toBe(302);
     expect(res2.headers.get('location')).toBe(loc);
-    expect(statSync(file).size).toBe(png.size);
 
-    // the cached URL serves the PNG immutable
+    // the cached URL serves whatever is in the cache, immutable
     const res3 = await fetch(`${base}${loc}`);
     expect(res3.status).toBe(200);
     expect(res3.headers.get('cache-control')).toBe(IMMUTABLE);
     expect(res3.headers.get('content-type')).toBe('image/png');
     const body = Buffer.from(await res3.arrayBuffer());
-    expect(
-      body
-        .subarray(0, 8)
-        .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
-    ).toBe(true);
-    expect(body.length).toBe(png.size);
+    expect(body.equals(sentinel)).toBe(true); // a re-render would have overwritten it
   });
 
   it('roster.png renders a roster build to its own cache entry', async () => {
@@ -320,9 +322,17 @@ describe('static port parity with serve.mjs', () => {
     expect(res.headers.get('cache-control')).toBe(NO_CACHE);
     const etag = res.headers.get('etag');
     expect(etag).toBeTruthy();
-    const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
-      headers: { 'if-none-match': etag! },
+    const lastMod = res.headers.get('last-modified');
+    expect(lastMod).toBeTruthy();
+    for (const inm of [etag!, '*']) {
+      const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
+        headers: { 'if-none-match': inm },
+      });
+      expect(re.status).toBe(304);
+    }
+    const ims = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-modified-since': lastMod! },
     });
-    expect(re.status).toBe(304);
+    expect(ims.status).toBe(304);
   });
 });

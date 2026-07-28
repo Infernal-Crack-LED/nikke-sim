@@ -18,6 +18,11 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
+import {
+  assertTitleInk,
+  createCanvas,
+  decodeToCanvas,
+} from '../../../src/infographics/node/render.js';
 import { renderAll, type FixtureRender } from './infographics-harness.js';
 
 const FIXTURE_DIR = new URL('../fixtures/infographics/', import.meta.url);
@@ -68,6 +73,42 @@ describe('infographic golden images', () => {
           `${sha(fixture).slice(0, 12)}… — ${REGEN_HINT}`
       ).toBe(sha(fixture));
       expect(render!.png.equals(fixture), `${name}: ${REGEN_HINT}`).toBe(true);
+    });
+  }
+});
+
+// Regression for the vacuous-guard bug the ink regions fixed: a region that
+// starts at padX passes on ICON PIXELS alone with zero glyphs. Each ink region
+// used by the harness/build script must THROW on an icon-only canvas (icon
+// drawn at its exact card position, no text). If PAD_X/ICON in a core card
+// changes, the matching region here and at both call sites must move with it.
+describe('assertTitleInk regions are not satisfiable by the site icon alone', () => {
+  const SITE_ICON = new URL(
+    '../../../src/infographics/assets/nikkesim-icon.png',
+    import.meta.url
+  );
+  // [card, icon draw x/y/size, ink region] — mirrors the core card layouts
+  const cases: [
+    string,
+    number,
+    number,
+    number,
+    { x: number; y: number; w: number; h: number },
+  ][] = [
+    ['teamCard', 40, 24, 36, { x: 88, y: 26, w: 400, h: 40 }],
+    ['dpsChart', 36, 20, 34, { x: 82, y: 24, w: 420, h: 36 }],
+    ['tableCard', 32, 16, 32, { x: 76, y: 16, w: 340, h: 34 }],
+  ];
+  for (const [card, ix, iy, isize, region] of cases) {
+    it(`${card}: icon-only canvas fails the ink guard`, async () => {
+      const icon = await decodeToCanvas(SITE_ICON);
+      expect(icon, 'site icon must decode for this test').not.toBeNull();
+      const canvas = createCanvas(600, 120);
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#101216';
+      ctx.fillRect(0, 0, 600, 120);
+      ctx.drawImage(icon!, ix, iy, isize, isize); // icon, ZERO text
+      expect(() => assertTitleInk(ctx, card, region)).toThrow(/ZERO/);
     });
   }
 });

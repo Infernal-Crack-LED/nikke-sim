@@ -96,11 +96,20 @@ describe('serve.mjs cache-control classes', () => {
     expect(res.status).toBe(200);
     const etag = res.headers.get('etag');
     expect(etag).toBeTruthy();
-    expect(res.headers.get('last-modified')).toBeTruthy();
-    const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
-      headers: { 'if-none-match': etag! },
+    const lastMod = res.headers.get('last-modified');
+    expect(lastMod).toBeTruthy();
+    // If-None-Match: exact etag, and the RFC 7232 wildcard
+    for (const inm of [etag!, '*']) {
+      const re = await fetch(`${base}/img/portraits/liter-128.webp`, {
+        headers: { 'if-none-match': inm },
+      });
+      expect(re.status).toBe(304);
+    }
+    // If-Modified-Since (applies when If-None-Match is absent)
+    const ims = await fetch(`${base}/img/portraits/liter-128.webp`, {
+      headers: { 'if-modified-since': lastMod! },
     });
-    expect(re.status).toBe(304);
+    expect(ims.status).toBe(304);
   });
 
   it('index.html and the SPA fallback are no-cache with OG injection intact', async () => {

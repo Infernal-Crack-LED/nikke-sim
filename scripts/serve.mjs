@@ -225,17 +225,29 @@ function etagFor(s) {
   return `W/"${s.size}-${Math.floor(s.mtimeMs)}"`;
 }
 
-async function send(res, file, urlPath, status = 200, ifNoneMatch) {
+async function send(
+  res,
+  file,
+  urlPath,
+  status = 200,
+  ifNoneMatch,
+  ifModifiedSince
+) {
   const s = await stat(file);
   const etag = etagFor(s);
   const cacheControl = cacheControlFor(urlPath);
-  if (
+  // RFC 7232: If-None-Match (incl. `*`) wins; If-Modified-Since applies only
+  // when If-None-Match is absent, at HTTP-date (second) granularity.
+  const inm =
     ifNoneMatch &&
     String(ifNoneMatch)
       .split(',')
-      .map((v) => v.trim())
-      .includes(etag)
-  ) {
+      .map((v) => v.trim());
+  const notModified = inm
+    ? inm.includes(etag) || inm.includes('*')
+    : !!ifModifiedSince &&
+      Date.parse(ifModifiedSince) >= Math.floor(s.mtimeMs / 1000) * 1000;
+  if (notModified) {
     res.writeHead(304, { etag, 'cache-control': cacheControl });
     res.end();
     return;
@@ -275,7 +287,14 @@ const server = createServer(async (req, res) => {
       await sendIndex(res, req.url ?? '/');
       return;
     }
-    await send(res, file, rel, 200, req.headers['if-none-match']);
+    await send(
+      res,
+      file,
+      rel,
+      200,
+      req.headers['if-none-match'],
+      req.headers['if-modified-since']
+    );
   } catch {
     // last-resort fallback
     try {
