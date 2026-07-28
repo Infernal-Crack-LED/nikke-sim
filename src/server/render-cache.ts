@@ -4,6 +4,11 @@
 // immutable; the cache is bounded by bytes with LRU eviction by mtime.
 // LRU recency is maintained by READS (has() touches mtime), so a hot card
 // never evicts ahead of a cold one — eviction is by last-READ, not last-write.
+//
+// Byte accounting: the total is tracked IN MEMORY (adjusted on every put and
+// eviction); the expensive readdir+stat pass runs only when the tracked total
+// crosses maxBytes, and on boot (the explicit sweep() in app.ts) to reconcile
+// the tracked total with whatever the dir actually holds.
 import {
   mkdir,
   readdir,
@@ -20,6 +25,11 @@ import { join } from 'node:path';
 const TMP_MAX_AGE_MS = 10 * 60 * 1000;
 
 export class RenderCache {
+  // null = not yet reconciled with the dir (first put or explicit sweep fixes
+  // it). Only this process writes the dir, so the tracked total stays exact
+  // between reconciliations.
+  private trackedBytes: number | null = null;
+
   constructor(
     readonly dir: string,
     readonly maxBytes: number
@@ -46,24 +56,36 @@ export class RenderCache {
   }
 
   // Atomic write (tmp + rename — a concurrent reader never sees a partial PNG),
-  // then an LRU sweep so the cache stays under its byte cap.
+  // then an LRU sweep ONLY when the tracked byte total crosses the cap (or has
+  // never been reconciled) — the O(cache size) readdir no longer runs per put.
   async put(name: string, body: Buffer): Promise<void> {
     await mkdir(this.dir, { recursive: true });
+    // A same-name put replaces the file: charge the tracker the DELTA so
+    // repeat renders of one card don't grow the total forever.
+    const prev = await stat(this.pathFor(name))
+      .then((s) => (s.isFile() ? s.size : 0))
+      .catch(() => 0);
     const tmp = join(this.dir, `.${name}.${process.pid}.${Date.now()}.tmp`);
     await writeFile(tmp, body);
     await rename(tmp, this.pathFor(name));
-    await this.sweep();
+    if (this.trackedBytes !== null) {
+      this.trackedBytes += body.length - prev;
+    }
+    if (this.trackedBytes === null || this.trackedBytes > this.maxBytes) {
+      await this.sweep();
+    }
   }
 
-  // Evict least-recently-READ files until the cache fits, and reap orphaned
-  // .tmp files. Runs on boot and after every write — cheap at this scale (a
-  // 200 MB cap ≈ a few thousand PNGs).
+  // Evict least-recently-READ files until the cache fits, reap orphaned .tmp
+  // files, and reconcile the in-memory byte total with the dir. Runs on boot
+  // (app.ts) and whenever put() crosses the cap.
   async sweep(): Promise<void> {
     let names: string[];
     try {
       names = await readdir(this.dir);
     } catch {
-      return; // cache dir doesn't exist yet — nothing to sweep
+      this.trackedBytes = 0; // cache dir doesn't exist yet — it holds nothing
+      return;
     }
     // Per-entry stat is FALLIBLE: a concurrent put() can rename its .tmp away
     // (or an eviction unlink a .png) between our readdir and stat. One stale
@@ -97,5 +119,6 @@ export class RenderCache {
       await unlink(this.pathFor(e.name)).catch(() => {});
       total -= e.size;
     }
+    this.trackedBytes = total;
   }
 }

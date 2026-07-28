@@ -53,4 +53,52 @@ describe('RenderCache', () => {
     expect(existsSync(fresh)).toBe(true);
     rmSync(fresh, { force: true });
   });
+
+  it('skips the readdir sweep while the tracked byte total fits the cap', async () => {
+    // A stale .tmp is the OBSERVABLE of a sweep: it can only disappear via a
+    // readdir pass. Under the cap it must survive puts; crossing the cap must
+    // reap it (and evict LRU) — proving put() no longer scans the dir per write.
+    const dir2 = mkdtempSync(join(tmpdir(), 'render-cache-bytes-'));
+    try {
+      const cache = new RenderCache(dir2, 300);
+      await cache.put('team.xxxxxxxx00000000.png', body(100)); // first put reconciles
+      // age x so LRU order is deterministic (equal mtimes would be racy)
+      const aged = new Date(Date.now() - 60_000);
+      await utimes(join(dir2, 'team.xxxxxxxx00000000.png'), aged, aged);
+      const stale = join(dir2, '.team.z.1.1.tmp');
+      writeFileSync(stale, body(10));
+      const old = new Date(Date.now() - 60 * 60 * 1000);
+      await utimes(stale, old, old);
+
+      await cache.put('team.yyyyyyyy00000000.png', body(100)); // 200 ≤ 300: no sweep
+      await cache.put('team.zzzzzzzz00000000.png', body(100)); // 300 ≤ 300: no sweep
+      expect(existsSync(stale)).toBe(true); // no readdir happened
+
+      await cache.put('team.wwwwwwww00000000.png', body(100)); // 400 > 300: sweep
+      expect(existsSync(stale)).toBe(false); // reaped by the crossing sweep
+      // …which also evicted LRU-by-read: x is the oldest-read
+      expect(existsSync(join(dir2, 'team.xxxxxxxx00000000.png'))).toBe(false);
+      expect(existsSync(join(dir2, 'team.yyyyyyyy00000000.png'))).toBe(true);
+      expect(existsSync(join(dir2, 'team.zzzzzzzz00000000.png'))).toBe(true);
+      expect(existsSync(join(dir2, 'team.wwwwwwww00000000.png'))).toBe(true);
+    } finally {
+      rmSync(dir2, { recursive: true, force: true });
+    }
+  });
+
+  it('charges a same-name put the byte delta, not the full size', async () => {
+    const dir3 = mkdtempSync(join(tmpdir(), 'render-cache-delta-'));
+    try {
+      const cache = new RenderCache(dir3, 250);
+      await cache.put('team.aaaaaaaa00000000.png', body(100)); // reconcile → 100
+      await cache.put('team.bbbbbbbb00000000.png', body(100)); // 200 ≤ 250
+      // re-put the SAME name at the same size: tracked total must stay 200,
+      // so no sweep and no eviction
+      await cache.put('team.aaaaaaaa00000000.png', body(100));
+      expect(existsSync(join(dir3, 'team.aaaaaaaa00000000.png'))).toBe(true);
+      expect(existsSync(join(dir3, 'team.bbbbbbbb00000000.png'))).toBe(true);
+    } finally {
+      rmSync(dir3, { recursive: true, force: true });
+    }
+  });
 });
