@@ -85,6 +85,17 @@ describe('sustain board', () => {
     expect(blanc.healPct).toBeGreaterThan(0);
   });
 
+  it('anne-miracle-fairy: Fairy Dance lifesteal only; her burst heals nobody at scope lock', () => {
+    const r = sustainFor('anne-miracle-fairy', ctx);
+    // 38.61% burst restore is Attacker-only and she is a Supporter — the board
+    // comp's no-op teammates are Supporters too, so no target qualifies.
+    expect(r.healPct).toBe(0);
+    expect(r.shieldPct).toBe(0);
+    // 6.07% of her own damage, every-3-shots windows nearly covering the fight
+    expect(r.lifestealPct).toBeGreaterThan(10);
+    expect(r.lifestealPct).toBeLessThan(60);
+  });
+
   it('table covers every healer/shield candidate (+nayuta)', () => {
     const HOOKS = new Set(['prika', 'mint', 'mana', 'pepper']);
     const cands = new Set([
@@ -98,7 +109,7 @@ describe('sustain board', () => {
     for (const slug of cands) {
       expect(slug in SUSTAIN_TABLE || HOOKS.has(slug), slug).toBe(true);
     }
-    expect(cands.size).toBe(50);
+    expect(cands.size).toBe(51);
   });
 
   it('sustainRank dual-enters profiled units with the flag', () => {
