@@ -91,12 +91,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `scratchpad/gates/`):** (1) **startCommand flip is
   owner-gated** — `railway.json` still starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod
   until the owner flips to `npm run start:server` (dist-server/ now builds in the `verify.sh deploy`
-  tier); (4) **golden drift off-Mac** — the byte-exact golden compare now runs
-  only on darwin-arm64, so renderer drift from a non-Mac session ships green; either commit
-  per-platform fixture hash sets or switch to a decoded-pixel compare at small tolerance;
-  (7) review NOTEs unaddressed: Matrix-tab share PNG silently gained portraits + a wider label
-  column (unrequested, untested path); committed woff2 subsets have no generation script/glyph
-  manifest and declare the bare family `Roboto` (overrides body text on Linux/Android).
+  tier).
   **LANDED 2026-07-28 on branch `infographics-phase6`:** (2) API surface gaps — on-demand
   `/api/v1/img/dps.png?cell&element&unit`, `/api/v1/img/table/{max-ammo,charge-speed}.png`, and the
   static `table/{ol,charge-speed}.png` pre-renders (shared `src/infographics/core/tableData.ts`);
@@ -104,7 +99,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   geometry dedupe (core cards export `*_TITLE_ICON` / `*_TITLE_INK_REGION`); (6) RenderCache
   in-memory byte tracking (readdir only across the cap / on boot); (8) portrait LRU keyed on
   dir+slug; (9) poison-restore in a `finally`; (10) 304 last-modified symmetry + wrong-etag
-  body assertions.
+  body assertions; (4) golden drift off-Mac — decoded-pixel compare (sharp RGBA, ≥99.9% of
+  pixels within channel delta 2, exact dimensions) now runs on EVERY platform; byte-exact sha256
+  stays as a stronger darwin-arm64 gate; (7a) Matrix-tab portrait share card made deliberate —
+  draw-call-level test of the `hasPortraits`/`labelW=210` branch in `windowed-render.test.ts` +
+  a `dpsChart.ts` module-header note; (7b) reproducible woff2 subsets — `npm run fonts:subsets`
+  (`scripts/subset-fonts.ts`) rebuilds them from the TTFs + a checked-in glyph manifest
+  (`src/infographics/assets/fonts/subset-ranges.json`), and `@font-face` now declares the matching
+  `unicode-range` so out-of-subset glyphs fall through the stack.
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
