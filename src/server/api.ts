@@ -11,6 +11,7 @@
 //   GET /api/v1/img/dps.png?cell&element&unit → 302 to .../dps.<hash>.png
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
+//   POST /api/v1/img/render                  → 200 {"url":"/api/v1/img/cache/<file>"}
 //
 // Every dynamic route (GET or POST) funnels through the SAME pipe: query
 // params / JSON body → parseRenderSpec → specCacheKey → resolveRender →
@@ -339,6 +340,85 @@ function handleDynamicGet(
   };
 }
 
+// ---- POST /render ---------------------------------------------------------------
+
+// Hard body cap (plan §6.4: skipping the cap is a DoS — a RenderSpec is a few
+// hundred bytes; the biggest legit one, a union-roster build code, is ~2 KB).
+const RENDER_BODY_MAX_BYTES = 16 * 1024;
+
+// Read a JSON body with a byte ceiling — content-length is checked first but
+// is attacker-controlled, so the stream itself is capped too (a lying header
+// must not land an unbounded body in memory).
+async function readBodyCapped(
+  req: Request,
+  maxBytes: number
+): Promise<string | null> {
+  const stream = req.body;
+  if (!stream) {
+    return '';
+  }
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) {
+      break;
+    }
+    total += value.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel().catch(() => {});
+      return null;
+    }
+    chunks.push(value);
+  }
+  return Buffer.concat(chunks).toString('utf8');
+}
+
+// POST /api/v1/img/render — the RenderSpec JSON contract (plan §2). Same
+// parse → resolve → single-flight → RenderCache path as the GETs (resolveSpec
+// IS the GET path), but answers 200 JSON instead of a 302: POST clients want
+// the URL, not a redirect. Rate limiting stays at CLOUDFLARE (see the
+// REQUIRE_RENDER_SECRET comment) — this process never rate-limits; when the
+// secret is enabled it gates this route like every other dynamic one.
+async function handleRenderPost(
+  c: Context,
+  ctx: ApiContext
+): Promise<Response> {
+  if (!secretOk(c.req.raw, ctx)) {
+    return c.json({ error: 'missing or invalid x-render-secret' }, 401);
+  }
+  const contentType = (c.req.header('content-type') ?? '')
+    .split(';')[0]
+    .trim()
+    .toLowerCase();
+  if (contentType !== 'application/json') {
+    return c.json({ error: 'content-type must be application/json' }, 415);
+  }
+  const declared = Number(c.req.header('content-length') ?? 0);
+  if (declared > RENDER_BODY_MAX_BYTES) {
+    return c.json({ error: 'request body too large' }, 413);
+  }
+  const body = await readBodyCapped(c.req.raw, RENDER_BODY_MAX_BYTES);
+  if (body === null) {
+    return c.json({ error: 'request body too large' }, 413);
+  }
+  let input: unknown;
+  try {
+    input = JSON.parse(body);
+  } catch {
+    return c.json({ error: 'invalid JSON body' }, 400);
+  }
+  const r = await resolveSpec(input, ctx);
+  if ('error' in r) {
+    return c.json({ error: r.error }, r.status as 400 | 404);
+  }
+  if (!(await ensureCached(ctx, r.file, r.render))) {
+    return c.json({ error: 'render failed' }, 500);
+  }
+  return c.json({ url: `${API_PREFIX}cache/${r.file}` }, 200);
+}
+
 // Register every /api/v1/img/* route on the hono app. Static routes (exact
 // paths) outrank the trailing wildcard in hono's router, so registration
 // order here is readability, not correctness.
@@ -381,6 +461,9 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
       ctx
     )
   );
+
+  // The JSON-spec entry point — same renders as the GETs above, 200 + {url}.
+  app.post('/api/v1/img/render', (c) => handleRenderPost(c, ctx));
 
   app.get('/api/v1/img/manifest.json', async () => {
     try {
