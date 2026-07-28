@@ -11,6 +11,10 @@
 // STRINGS below must stay byte-identical — changing one orphans every cached
 // render. scripts/tests/share/render-spec.test.ts pins them.
 import { decodeBuild, type Build } from '../share/build-code.js';
+import {
+  normalizeSharedResults,
+  type SharedResults,
+} from '../share/shared-config.js';
 
 // Bump when the card renderers change in a way that should re-render existing
 // specs — it is part of the cache key, so old files simply age out via LRU
@@ -41,9 +45,15 @@ export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
 // window) and is mutually exclusive with `unit` (the window target). The
 // static pre-rendered kinds (unit cards, rank boards, the OL table) are NOT
 // here: this union covers the dynamic, render-on-demand surface only.
+// `results` is the stored sim snapshot from a shared config
+// (src/share/shared-config.ts). Absent → the no-numbers COMPOSITION card;
+// present → the full damage/DPS card. It is part of the spec (not a side
+// channel) precisely so it lands in the cache key and in the spec sidecar: two
+// configs with the same team and different numbers MUST be different content
+// addresses, and an evicted card must re-render with the numbers it had.
 export type RenderSpec =
-  | { kind: 'team'; build: string }
-  | { kind: 'roster'; build: string }
+  | { kind: 'team'; build: string; results?: SharedResults }
+  | { kind: 'roster'; build: string; results?: SharedResults }
   | {
       kind: 'dps';
       cell: string;
@@ -94,7 +104,14 @@ export function parseRenderSpec(
       if (!code || code.length > BUILD_CODE_MAX_LEN || !decodeBuild(code)) {
         return { ok: false, error: 'invalid build code' };
       }
-      return { ok: true, spec: { kind: raw.kind, build: code } };
+      // Normalized through the shared-config codec's own validator, so a spec
+      // recalled from a sidecar and a spec built from a freshly-read config
+      // are the same object — and so no NaN/negative can reach a renderer.
+      const results = normalizeSharedResults(raw.results);
+      return {
+        ok: true,
+        spec: { kind: raw.kind, build: code, ...(results ? { results } : {}) },
+      };
     }
     case 'dps': {
       const cell = trimmed(raw.cell) ?? DEFAULT_DPS_CELL;
@@ -269,7 +286,15 @@ export function specCacheKey(spec: RenderSpec): string {
       const key = build
         ? JSON.stringify(renderRelevantBuild(build, spec.kind))
         : spec.build;
-      return `${RENDERER_VERSION}|${spec.kind}|${key}`;
+      // The results snapshot is appended ONLY when present, so every key for a
+      // no-results card stays byte-identical to the one that already addresses
+      // its file on disk (a reshape here orphans the cache — that is what
+      // RENDERER_VERSION is for). The whole normalized snapshot goes in rather
+      // than a projection of it: unlike the build, every field here is a number
+      // the card prints, and over-keying only costs a dedupe while under-keying
+      // serves one config's picture at another's address.
+      const stamp = spec.results ? `|${JSON.stringify(spec.results)}` : '';
+      return `${RENDERER_VERSION}|${spec.kind}|${key}${stamp}`;
     }
     case 'dps':
       // The 5-field `v1|dps|cell|element|unit` string is pinned for every

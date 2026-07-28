@@ -50,6 +50,40 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
       'v2|team|{"u":["liter","crown","naga","modernia","alice"],' +
         '"w":"Water","l":"400","c":1,"cc":false,"cv":"10"}'
     );
+    // A stored sim snapshot (a shared config) APPENDS a field and never
+    // reshapes the ones above it — so every card already on disk keeps its
+    // address while a card that prints numbers gets its own.
+    const results = {
+      at: '2026-07-28T12:00:00.000Z',
+      total: 2,
+      teams: [
+        {
+          damage: 2,
+          dps: 1,
+          fullBursts: 1,
+          fullBurstUptime: 0,
+          units: [{ slug: 'liter', damage: 2, share: 1 }],
+        },
+      ],
+    };
+    const withResults = specCacheKey({
+      kind: 'team',
+      build: TEAM_CODE,
+      results,
+    });
+    expect(withResults).toBe(
+      `${specCacheKey({ kind: 'team', build: TEAM_CODE })}|${JSON.stringify(results)}`
+    );
+    // different numbers on the same team MUST be a different content address —
+    // otherwise one config's card is served at another's URL, forever
+    // (the cache files are immutable).
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, total: 3 },
+      })
+    ).not.toBe(withResults);
     // an undecodable code can't reach a render; the key falls back to the raw
     // string rather than throwing (specCacheKey is exported and must be total)
     expect(specCacheKey({ kind: 'team', build: 'abc' })).toBe('v2|team|abc');

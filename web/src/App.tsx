@@ -94,12 +94,22 @@ import {
   type Build,
 } from '../../src/share/build-code';
 import {
+  encodeSharedConfig,
+  decodeSharedConfig,
+  SHARED_CONFIG_PROFILE_KIND,
+  SHARED_CONFIG_VERSION,
+  type SharedConfigKind,
+  type SharedResults,
+} from '../../src/share/shared-config';
+import {
   ApiError,
   deleteTeam,
   decodeNikkeList,
   encodeNikkeList,
   fetchCurrentSyncedRoster,
+  fetchPublicProfile,
   fetchTeams,
+  saveProfile,
   saveTeam,
   type AuthUser,
   type SavedTeam,
@@ -1075,6 +1085,72 @@ function slotFromBuild(sb: any): SlotState {
 function bootBuild(): Build | null {
   const b = new URLSearchParams(window.location.search).get('b');
   return b ? decodeBuild(b) : null;
+}
+
+// ---- shared configs (`?id=`) ------------------------------------------------
+// The short-link half of the share story: instead of putting a ~3.3 KB build
+// code in the URL, a share saves the build AND the sim numbers it produced as
+// a `sim-share` profile and puts that row's id in the URL. The same id is what
+// the render API reads to draw a card with real damage on it
+// (src/server/config-store.ts).
+
+// The `?id=` handle, if this page load carries a valid-looking one. Shape-
+// checked here so a junk param never becomes a request.
+function bootConfigId(): string | null {
+  const id = new URLSearchParams(window.location.search).get('id');
+  return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+}
+
+// A CONTENT-DERIVED name for the share row. The profile store upserts by
+// (user, kind, name), so naming a share after its content makes re-sharing an
+// unchanged config idempotent — it reuses the one row and the one link instead
+// of minting another every click. That matters: the store caps a user at 100
+// profiles per kind, and sharing is the kind of thing people do repeatedly.
+// Two 32-bit lanes (≈2^64 space) — a collision would silently repoint someone
+// else's existing link, so a single 32-bit lane is not enough here.
+function shareName(code: string): string {
+  let a = 0x811c9dc5;
+  let b = 0x01000193;
+  for (let i = 0; i < code.length; i++) {
+    const c = code.charCodeAt(i);
+    a = Math.imul(a ^ c, 0x01000193) >>> 0;
+    b = Math.imul(b + c, 0x85ebca6b) >>> 0;
+  }
+  const hex = (n: number) => n.toString(16).padStart(8, '0');
+  return `share-${hex(a)}${hex(b)}`;
+}
+
+// Exactly the fields a snapshot reads, so both result shapes qualify without a
+// conversion: the Sim tab holds a `SimResult`, the roster surfaces hold
+// `TeamResult[]`, and they differ only in the `slugs` field nothing here wants.
+interface SnapshotSource {
+  teamDamage: number;
+  teamDps: number;
+  fullBursts: number;
+  fullBurstUptime: number;
+  units: { slug: string; share: number; totalDamage: number }[];
+}
+
+// The sim output a share stores. Snapshot semantics (owner ruling 2026-07-28,
+// question 1(a)): the browser has already run the sim, so it records what it
+// computed and the server draws exactly that — nothing re-sims later, which is
+// why `at` is stamped and printed on the card.
+function resultsSnapshot(teams: SnapshotSource[]): SharedResults {
+  return {
+    at: new Date().toISOString(),
+    total: teams.reduce((sum, t) => sum + t.teamDamage, 0),
+    teams: teams.map((t) => ({
+      damage: t.teamDamage,
+      dps: t.teamDps,
+      fullBursts: t.fullBursts,
+      fullBurstUptime: t.fullBurstUptime,
+      units: t.units.map((u) => ({
+        slug: u.slug,
+        damage: u.totalDamage,
+        share: u.share,
+      })),
+    })),
+  };
 }
 
 const fmt = (n: number) =>
@@ -2226,17 +2302,16 @@ export function App({ user }: { user: AuthUser | null }) {
       window.alert(`Save failed: ${(e as Error).message ?? e}`);
     }
   };
-  const onLoadTeam = (t: SavedTeam) => {
-    const b = decodeBuild(t.code);
-    if (!b) {
-      window.alert('This saved team is in an unrecognized format.');
-      return;
-    }
+  // Restore a decoded build into the live sim state: globals + shared loadout,
+  // then whichever roster grid it carries, then the tab that shows it. Shared
+  // by the saved-teams list and by a `?id=` share link (which has no saved
+  // name of its own — hence the nullable `name`).
+  const applySavedBuild = (b: Build, name: string | null) => {
     applyBuild(b); // restores globals + the shared loadout (slot 1)
     setShowTeams(false);
     if (b.roster) {
       if (b.rosterMode === 'union') {
-        setLoadedUnionRosterName(t.name);
+        setLoadedUnionRosterName(name);
         setUnionRosterSim(normalizeUnionRoster(b.roster));
         if (b.unionBoss?.length) {
           setUnionBossOpts(
@@ -2260,7 +2335,7 @@ export function App({ user }: { user: AuthUser | null }) {
         setUnionRosterSimResults(null);
         setUnionRosterActive(null);
       } else {
-        setLoadedRosterName(t.name);
+        setLoadedRosterName(name);
         setRosterSim(normalizeRoster(b.roster));
         setRosterSimMode('solo');
         setRosterSimResults(null);
@@ -2268,8 +2343,16 @@ export function App({ user }: { user: AuthUser | null }) {
       }
       selectTab('rostersim');
     } else {
-      setLoadedTeamName(t.name);
+      setLoadedTeamName(name);
     }
+  };
+  const onLoadTeam = (t: SavedTeam) => {
+    const b = decodeBuild(t.code);
+    if (!b) {
+      window.alert('This saved team is in an unrecognized format.');
+      return;
+    }
+    applySavedBuild(b, t.name);
   };
   const onDeleteTeam = async (t: SavedTeam) => {
     if (!window.confirm(`Delete "${t.name}"?`)) {
@@ -2296,6 +2379,41 @@ export function App({ user }: { user: AuthUser | null }) {
   const onShare = async () => {
     await copyLink(buildShareUrl());
   };
+
+  // `?id=<config>` — the short share link. Unlike `?b=`, the payload is not in
+  // the URL, so it can only be applied after a round trip; the effect runs once
+  // on mount and needs no login (the read path is public for share-kind
+  // profiles). A dead or unrecognized id leaves the page on whatever state it
+  // booted with rather than erroring — an old link is a stale link, not a
+  // broken app. The id stays in the URL so a refresh still resolves it.
+  const bootedConfig = useRef(false);
+  useEffect(() => {
+    const id = bootConfigId();
+    if (!id || bootedConfig.current) {
+      return;
+    }
+    bootedConfig.current = true;
+    let live = true;
+    void (async () => {
+      try {
+        const profile = await fetchPublicProfile(id);
+        const cfg = decodeSharedConfig(profile.code);
+        const build = cfg && decodeBuild(cfg.build);
+        if (live && build) {
+          applySavedBuild(
+            build,
+            profile.name.startsWith('share-') ? null : profile.name
+          );
+        }
+      } catch {
+        /* unknown / unreachable id — see the comment above */
+      }
+    })();
+    return () => {
+      live = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // persist the team + loadout so it survives a refresh
   useEffect(() => {
@@ -2688,6 +2806,45 @@ export function App({ user }: { user: AuthUser | null }) {
     }
   };
 
+  // Mint a SHORT, id-based link for the current configuration plus the sim
+  // results it produced: save both as a `sim-share` profile and put that row's
+  // id in the URL. The same id is what the render API reads to draw a card with
+  // real damage on it, and what a stranger's browser reads to open the team.
+  //
+  // Returns null whenever the short form isn't available — not logged in (the
+  // profile store is per-user), the 100-per-kind cap reached, backend down. No
+  // caller treats that as an error: they fall back to the `?b=` link, so
+  // sharing never breaks, it only gets longer.
+  const shareConfigLink = async (
+    kind: SharedConfigKind,
+    build: Build,
+    teams: SnapshotSource[] | null
+  ): Promise<string | null> => {
+    if (!user) {
+      return null;
+    }
+    try {
+      const code = encodeSharedConfig({
+        v: SHARED_CONFIG_VERSION,
+        kind,
+        build: encodeBuild(build),
+        ...(teams?.length ? { results: resultsSnapshot(teams) } : {}),
+      });
+      const saved = await saveProfile(
+        SHARED_CONFIG_PROFILE_KIND,
+        shareName(code),
+        code
+      );
+      const u = new URL(window.location.href);
+      u.pathname = kind === 'roster' ? '/rostersim' : '/';
+      u.search = '';
+      u.searchParams.set('id', saved.id);
+      return u.toString();
+    } catch {
+      return null;
+    }
+  };
+
   // Deterministic "Generate link": encode the full build (loadout + globals +
   // blocked) into a ?b= link on the generator's tab path with run=1, so opening
   // it restores the inputs and auto-runs — reproducing the identical result.
@@ -2697,6 +2854,52 @@ export function App({ user }: { user: AuthUser | null }) {
     u.search = '';
     u.searchParams.set('b', encodeBuild(buildFromState()));
     u.searchParams.set('run', '1');
+    await copyLink(u.toString());
+  };
+
+  // The Sim / Roster Sim share link. Prefers the short id form — which also
+  // carries the numbers on screen, so the card the link renders shows them —
+  // and falls back to the self-contained ?b= code (see shareConfigLink).
+  const onSimShareLink = async (kind: SharedConfigKind) => {
+    const build =
+      kind === 'roster'
+        ? {
+            ...buildFromState(),
+            roster: rosterSimMode === 'union' ? unionRosterSim : rosterSim,
+            ...(rosterSimMode === 'union'
+              ? {
+                  rosterMode: 'union' as const,
+                  unionBoss: unionBossOpts.map((o) => ({
+                    weakness: o.weakness,
+                    bossDef: o.bossDef,
+                    core: o.core,
+                    coreCustom: o.coreCustom,
+                    coreCustomVal: o.coreCustomVal,
+                    bossRange: o.bossRange,
+                  })),
+                }
+              : {}),
+          }
+        : buildFromState();
+    const short = await shareConfigLink(
+      kind,
+      build,
+      kind === 'roster'
+        ? rosterSimMode === 'union'
+          ? unionRosterSimResults
+          : rosterSimResults
+        : r
+          ? [r]
+          : null
+    );
+    if (short) {
+      await copyLink(short);
+      return;
+    }
+    const u = new URL(window.location.href);
+    u.pathname = kind === 'roster' ? '/rostersim' : '/';
+    u.search = '';
+    u.searchParams.set('b', encodeBuild(build));
     await copyLink(u.toString());
   };
 
@@ -7119,6 +7322,14 @@ export function App({ user }: { user: AuthUser | null }) {
                 >
                   {shared ? '✓ Copied' : '🔗 Share team'}
                 </button>
+                <button
+                  className={'share-btn' + (shared ? ' copied' : '')}
+                  onClick={() => void onSimShareLink('team')}
+                  disabled={!r}
+                  title="copy a short link to this exact setup and its results"
+                >
+                  {shared ? '✓ Copied' : '🔗 Share result'}
+                </button>
                 {renderLinkFallback()}
                 <button
                   className={'share-btn' + (imaged ? ' copied' : '')}
@@ -7141,6 +7352,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 title="copy a link that prefills this roster"
               >
                 {shared ? '✓ Copied' : '🔗 Generate link'}
+              </button>
+              <button
+                className={'share-btn' + (shared ? ' copied' : '')}
+                onClick={() => void onSimShareLink('roster')}
+                disabled={
+                  !(rosterSimMode === 'union'
+                    ? unionRosterSimResults
+                    : rosterSimResults)
+                }
+                title="copy a short link to this exact roster and its results"
+              >
+                {shared ? '✓ Copied' : '🔗 Share result'}
               </button>
               {renderLinkFallback()}
               <button

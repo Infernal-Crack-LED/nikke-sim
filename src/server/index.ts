@@ -8,6 +8,8 @@
 //   NIKKESIM_RENDER_CACHE_DIR      dynamic-render cache (default <repo>/.cache/infographics)
 //   NIKKESIM_RENDER_CACHE_MAX_BYTES LRU cap (default 200 MB)
 //   NIKKESIM_RENDER_SECRET   optional shared secret for bakery-bot (x-render-secret)
+//   NIKKESIM_CONFIG_API      bakery-bot origin serving `?id=` shared configs
+//   NIKKESIM_SITE_ORIGIN     public site origin used in the returned pageUrl
 //   UMAMI_URL / UMAMI_WEBSITE_ID   analytics injection (omit to disable)
 //
 // env-defaults MUST stay the first import: it points the render host at the
