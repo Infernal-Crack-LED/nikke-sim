@@ -72,11 +72,18 @@ import type {
   DollSummary,
 } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
+import { copyTableCardImage, loadOlDefaultTable } from './tableShare';
+import {
+  buildChargeTable,
+  buildAmmoTable,
+} from '../../src/infographics/core/tableData';
+import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { TabDropdown, useMediaQuery } from './TabDropdown';
 import { usePortraitThumbs } from './usePortraitThumbs';
 import {
   shareTeamCard,
   shareRosterCard,
+  loadPortrait,
   type ShareTeamData,
   type ShareRosterData,
 } from './teamShare';
@@ -5269,6 +5276,37 @@ export function App({ user }: { user: AuthUser | null }) {
       const ammoBase = amc ? amc.ammo : 1;
       const ammoRows = ammoBreakpoints(ammoBase, bpTv.ammo);
 
+      // Share the visible panel as the same table card the API pre-renders
+      // (core/tableData.ts builders): the charge-speed table for the picked
+      // unit or the generic 1.0s reference, or the max-ammo table for the
+      // ammo panel (needs a picked unit — a generic 1-round base yields no
+      // rows). The picked unit's portrait sits top-right.
+      const onBpShareImage = async () => {
+        let card: TableCardData;
+        let slug: string | null;
+        if (bpView === 'charge') {
+          card = buildChargeTable(
+            baseFrames,
+            chc ? chc.name : 'Generic (1.0s)'
+          );
+          slug = chargeChar;
+        } else {
+          if (!amc) {
+            return;
+          }
+          card = buildAmmoTable(ammoBase, amc.name);
+          slug = ammoChar;
+        }
+        const url = slug ? data.characters[slug]?.imageUrl : null;
+        if (url) {
+          card.portrait = (await loadPortrait(url)) ?? undefined;
+        }
+        await copyTableCardImage(
+          card,
+          `nikke-${bpView === 'charge' ? 'charge-speed' : 'max-ammo'}.png`
+        );
+      };
+
       const chargePanel = (
         <div className="bp-panel">
           <p className="muted">
@@ -5538,6 +5576,18 @@ export function App({ user }: { user: AuthUser | null }) {
                 ))}
               </select>
             </label>
+            <button
+              className="share-btn"
+              onClick={() => void onBpShareImage()}
+              disabled={bpView === 'ammo' && !amc}
+              title={
+                bpView === 'ammo' && !amc
+                  ? 'pick a nikke first — the ammo table is per-unit'
+                  : 'copy this table as an image'
+              }
+            >
+              🖼 Copy image
+            </button>
           </div>
           {bpView === 'charge' ? chargePanel : ammoPanel}
         </section>
@@ -5580,6 +5630,38 @@ export function App({ user }: { user: AuthUser | null }) {
       const editSupport = (fn: (ts: string[][]) => string[][]) => {
         setOlSupportTeams(fn);
         setOlCustomResults(null);
+      };
+      // Share the optimizer's ranked free-line recommendation as a windowed
+      // table card (top 10 per §6.6) — the same rows the "full line ranking"
+      // details list shows, with the carry's portrait top-right.
+      const onOlShareImage = async (
+        carrySlug: string,
+        subtitle: string,
+        results: OlConfigResult[]
+      ) => {
+        const carry = data.characters[carrySlug];
+        const card: TableCardData = {
+          title: `${carry?.name ?? carrySlug} — free OL lines`,
+          subtitle,
+          columns: [
+            { header: '#' },
+            { header: 'Free 4 lines' },
+            { header: 'Nikke dmg', align: 'right' },
+            { header: 'vs 8/12', align: 'right' },
+          ],
+          rows: results.map((res, i) => [
+            `#${i + 1}`,
+            res.label,
+            fmt(res.damage),
+            `+${res.gainPct.toFixed(1)}%`,
+          ]),
+          window: {},
+          footer: 'nikkesim.app/overload',
+        };
+        if (carry?.imageUrl) {
+          card.portrait = (await loadPortrait(carry.imageUrl)) ?? undefined;
+        }
+        await copyTableCardImage(card, 'nikke-overload.png');
       };
       return (
         <section className="calc-tab">
@@ -5676,6 +5758,19 @@ export function App({ user }: { user: AuthUser | null }) {
                     onClick={() => goToOlSim(olMatrixResult.results)}
                   >
                     Calculate chance to roll →
+                  </button>{' '}
+                  <button
+                    className="share-btn"
+                    title="copy the ranked lines as an image"
+                    onClick={() =>
+                      void onOlShareImage(
+                        olMatrixResult.carrySlug,
+                        `${cellLabel({ ...olCell, invest: '8of12' })} · 180s`,
+                        olMatrixResult.results
+                      )
+                    }
+                  >
+                    🖼 Copy image
                   </button>
                 </div>
               )}
@@ -5808,6 +5903,22 @@ export function App({ user }: { user: AuthUser | null }) {
                     onClick={() => goToOlSim(res.results)}
                   >
                     Calculate chance to roll →
+                  </button>{' '}
+                  <button
+                    className="share-btn"
+                    title="copy the ranked lines as an image"
+                    onClick={() =>
+                      olCustomCarry &&
+                      void onOlShareImage(
+                        olCustomCarry,
+                        res.teamSlugs
+                          .map((s) => data.characters[s]?.name ?? s)
+                          .join(' · '),
+                        res.results
+                      )
+                    }
+                  >
+                    🖼 Copy image
                   </button>
                 </div>
               ))}
@@ -6077,10 +6188,64 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
           <button className="calc-run" onClick={runOlSim} disabled={calcBusy}>
             {calcBusy ? 'Running…' : 'Run roll sim'}
+          </button>{' '}
+          {/* the static default 8/12 roll-cost table — the same card the API
+              pre-renders as table/ol */}
+          <button
+            className="share-btn"
+            title="copy the default 8/12 roll-cost table as an image"
+            onClick={() =>
+              void loadOlDefaultTable().then((card) =>
+                copyTableCardImage(card, 'nikke-ol-default.png')
+              )
+            }
+          >
+            🖼 Copy image
           </button>
           {olSimResult && resultsBlock(olSimResult)}
         </>
       );
+
+      // Before/after share card (Roll from Current): every piece's 3 slots as
+      // Slot | Before | After — Before = the lines you hold, After = the
+      // reroll target. Rows still needing work (target not already met) draw
+      // in the accent color via tableCard's rowColors. The olsim tab is
+      // unit-agnostic (no unit picker), so the header names no unit.
+      const olBeforeAfterTable = (): TableCardData => {
+        const ACCENT = '#5b9dff'; // the theme accent (tableCard's bar color)
+        const lineText = (l: OlSimLine) =>
+          l.key ? `${OL_KEY_LABEL[l.key as OlKey]} · T${l.tier}` : '—';
+        const met = (cur: OlSimLine, des: OlSimLine) =>
+          des.key === ''
+            ? cur.key === ''
+            : cur.key === des.key && cur.tier >= des.tier;
+        const rows: string[][] = [];
+        const rowColors: (string | null)[] = [];
+        olSimCurrent.forEach((card, pi) => {
+          for (let li = 0; li < 3; li++) {
+            const cur = card.current[li] ?? blankLine();
+            const des = card.desired[li] ?? blankLine();
+            rows.push([
+              `P${pi + 1} · L${li + 1}`,
+              lineText(cur),
+              lineText(des),
+            ]);
+            rowColors.push(met(cur, des) ? null : ACCENT);
+          }
+        });
+        return {
+          title: 'Overload — Before / After',
+          subtitle: 'current lines → reroll target · lines to work on in blue',
+          columns: [
+            { header: 'Slot' },
+            { header: 'Before', align: 'right' },
+            { header: 'After', align: 'right' },
+          ],
+          rows,
+          rowColors,
+          footer: 'nikkesim.app/olsim',
+        };
+      };
 
       const currentPanel = (
         <>
@@ -6133,6 +6298,23 @@ export function App({ user }: { user: AuthUser | null }) {
             disabled={calcBusy}
           >
             {calcBusy ? 'Running…' : 'Run from current'}
+          </button>{' '}
+          <button
+            className="share-btn"
+            disabled={!olSimCurrentResult}
+            title={
+              olSimCurrentResult
+                ? 'copy a before/after image of your lines vs the target'
+                : 'run the sim first'
+            }
+            onClick={() =>
+              void copyTableCardImage(
+                olBeforeAfterTable(),
+                'nikke-ol-before-after.png'
+              )
+            }
+          >
+            🖼 Share before/after
           </button>
           {olSimCurrentResult && resultsBlock(olSimCurrentResult)}
         </>
@@ -6477,6 +6659,31 @@ export function App({ user }: { user: AuthUser | null }) {
           </svg>
         );
       };
+      // Share the computed plan as a table card: one row per phase with the
+      // kit tier to feed (the same rows the usage guide shows), with the
+      // expected kit costs in the subtitle.
+      const onDollShareImage = (
+        rarity: DollRarity,
+        from: number,
+        dp: DollDp,
+        mc: DollSummary
+      ) => {
+        const rows: string[][] = [];
+        for (let L = from; L < 15; L++) {
+          const t = (dp.tier[L]?.[0] ?? 'R') as DollTier;
+          rows.push([`${L} → ${L + 1}`, DOLL_TIER_LABEL[t]]);
+        }
+        void copyTableCardImage(
+          {
+            title: `Doll Leveling — ${rarity} doll ${from}→15`,
+            subtitle: `expected kits: ${mc.byTier.R.toFixed(1)} Blue · ${mc.byTier.SR.toFixed(1)} Purple · ${mc.byTier.SSR.toFixed(1)} Gold`,
+            columns: [{ header: 'Phase' }, { header: 'Feed', align: 'right' }],
+            rows,
+            footer: 'nikkesim.app/doll',
+          },
+          'nikke-doll.png'
+        );
+      };
       const resultBlock = (
         rarity: DollRarity,
         from: number,
@@ -6501,6 +6708,15 @@ export function App({ user }: { user: AuthUser | null }) {
             Distribution of total cost (median {fmtN(mc.cost.p50)}):
           </p>
           {dollBell(mc)}
+          <div style={{ marginTop: 10 }}>
+            <button
+              className="share-btn"
+              title="copy this plan as an image"
+              onClick={() => onDollShareImage(rarity, from, dp, mc)}
+            >
+              🖼 Copy image
+            </button>
+          </div>
         </div>
       );
       const rarityPills = (val: DollRarity, set: (r: DollRarity) => void) => (
