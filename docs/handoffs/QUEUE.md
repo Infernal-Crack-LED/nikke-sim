@@ -105,6 +105,17 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   (7) review NOTEs unaddressed: Matrix-tab share PNG silently gained portraits + a wider label
   column (unrequested, untested path); committed woff2 subsets have no generation script/glyph
   manifest and declare the bare family `Roboto` (overrides body text on Linux/Android).
+  **Filed from the CLEAN loop-3 review (non-blocking):** (8) **portraitCache vs lazy portraitDir()**
+  — the cache is keyed on raw slug, so the first call freezes a slug's resolution against whatever
+  `NIKKESIM_PORTRAIT_DIR` held then; a later env change silently serves the old dir's result (latent,
+  not reachable today: env-defaults.ts sets the var before any render). Fix by keying the cache on
+  dir+slug OR pinning the dir once on first use AND — same finding — consider extracting
+  `PORTRAIT_SLUG_RE` into a side-effect-free module and reverting the lazy dir (a test's import
+  order drove the prod-code shape change); (9) **poison-restore is not in a `finally`**
+  (serve-api.test.ts) — an assertion failure between poison and restore leaks the sentinel into the
+  shared cacheDir for the rest of the file; (10) **304 test symmetry** — assert last-modified is
+  byte-identical between the 200 and 304 paths in both serve test files, and add the missing
+  `byteLength > 0` on the wrong-etag case.
 
 - **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
   `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
