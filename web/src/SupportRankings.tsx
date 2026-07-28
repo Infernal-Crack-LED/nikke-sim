@@ -10,6 +10,13 @@
 import { useEffect, useState } from 'react';
 import { RankBarChart, type RankChartBar } from './components/RankBarChart';
 import {
+  buildBurstGenTable,
+  buildBurstCdrTable,
+  buildSustainTable,
+  buildBufferTable,
+} from '../../src/infographics/core/rankTables';
+import { copyTableCardImage } from './tableShare';
+import {
   loadBurstGen,
   loadBurstCdr,
   loadSustain,
@@ -151,6 +158,25 @@ export function SupportRankings() {
   const art = arts[board];
   const meta = BOARDS.find((b) => b.id === board)!;
 
+  // Share the ACTIVE board as the same windowed table card the server
+  // pre-renders (core/rankTables.ts builders — top-10 §6.6 window; the tab
+  // has no selected unit to center on). The buffer board shares whichever
+  // sub-board (generic/typed) is on screen.
+  const onShareImage = () => {
+    if (!art) {
+      return;
+    }
+    const data =
+      board === 'burstgen'
+        ? buildBurstGenTable(art as BurstGenArtifact)
+        : board === 'burstcdr'
+          ? buildBurstCdrTable(art as BurstCdrArtifact)
+          : board === 'sustain'
+            ? buildSustainTable(art as SustainArtifact)
+            : buildBufferTable(art as BufferChartArtifact, bufferBoard);
+    void copyTableCardImage(data, `nikke-ranks-${board}.png`);
+  };
+
   // Map the active board's typed rows into the chart's uniform bar shape.
   let bars: RankChartBar[] = [];
   let profiles: Record<string, string> = {};
@@ -279,6 +305,7 @@ export function SupportRankings() {
               art.generatedAt
             ).toLocaleDateString()}`}
             bars={bars}
+            onShareImage={onShareImage}
           />
           <Methodology methodology={art.methodology} profiles={profiles} />
         </>

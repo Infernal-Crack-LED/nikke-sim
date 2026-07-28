@@ -62,6 +62,32 @@ describe('loadPortrait slug validation', () => {
     expect(await loadPortrait('')).toBeNull();
   });
 
+  it('a NIKKESIM_PORTRAIT_DIR change is not served the old dir’s cached entries', async () => {
+    // The LRU is keyed on dir+slug: caching a MISS under dir A must not shadow
+    // the same slug existing under dir B after the env var moves.
+    const dirB = mkdtempSync(join(tmpdir(), 'portrait-sec-b-'));
+    try {
+      const sharp = (await import('sharp')).default;
+      const webp = await sharp({
+        create: { width: 8, height: 8, channels: 4, background: '#aabbcc' },
+      })
+        .webp()
+        .toBuffer();
+      writeFileSync(join(dirB, 'moved-128.webp'), webp);
+
+      process.env.NIKKESIM_PORTRAIT_DIR = dir;
+      expect(await loadPortrait('moved')).toBeNull(); // cached miss under dir A
+      process.env.NIKKESIM_PORTRAIT_DIR = dirB;
+      expect(await loadPortrait('moved')).not.toBeNull(); // found under dir B
+      // …and the reverse: dir B's entries don't leak into dir A lookups
+      process.env.NIKKESIM_PORTRAIT_DIR = dir;
+      expect(await loadPortrait('moved')).toBeNull();
+    } finally {
+      process.env.NIKKESIM_PORTRAIT_DIR = dir;
+      rmSync(dirB, { recursive: true, force: true });
+    }
+  });
+
   it('every characters.json slug passes the portrait regex', () => {
     const chars = JSON.parse(
       readFileSync(

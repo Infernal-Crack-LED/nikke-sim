@@ -42,6 +42,9 @@ export interface CardCharacter {
   weapon: string;
   burst: string;
   countsAsElements?: Element[];
+  // Table routes only (data/characters.json flat fields):
+  ammo?: number; // base magazine (bot: roleWeapon.shot_detail.max_ammo)
+  chargeFrames?: number; // = round(charge_time/100*60) — the bot's baseFrames
 }
 
 const SCALE = 2; // retina, same as build-infographics.ts

@@ -1,7 +1,8 @@
 // Build-time pre-generation of the static infographic set (Phase 2 of
 // docs/handoffs/2026-07-27-infographics-centralization-plan.md): renders the
-// head-only set (~208 images — 2 headline DPS cells × 6 element variants, 4
-// rank boards, 192 unit cards) through src/infographics/node/render.ts ONLY,
+// head-only set (~210 images — 2 headline DPS cells × 6 element variants, 4
+// rank boards, 2 utility tables, 192 unit cards) through
+// src/infographics/node/render.ts ONLY,
 // at scale 2, writing CONTENT-HASHED filenames into dist/img/ plus a mutable
 // manifest.json that maps each logical key to its immutable file.
 //
@@ -48,6 +49,17 @@ import {
   drawUnitCard,
   UNIT_CARD_W,
   UNIT_CARD_H,
+  buildOlTable,
+  buildChargeTable,
+  GENERIC_BASE_FRAMES,
+  buildBurstGenTable,
+  buildBurstCdrTable,
+  buildSustainTable,
+  buildBufferTable,
+  type OlDefaultArtifact,
+  DPS_TITLE_INK_REGION,
+  TABLE_TITLE_INK_REGION,
+  UNIT_TITLE_INK_REGION,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
@@ -134,47 +146,11 @@ const DATA_HINT =
   'run the data builders first (npm run dpschart && npm run ranks:all) — ' +
   'build-infographics reads their web/public outputs (build:deploy orders this)';
 
-// ---- small formatting helpers (ported from the web boards) -------------------
+// ---- small formatting helpers ------------------------------------------------
 
-// K/M/B magnitude formatting, same shape as SupportRankings.tsx's fmt.
-const fmt = (n: number): string =>
-  n >= 1e9
-    ? `${(n / 1e9).toFixed(2)}B`
-    : n >= 1e6
-      ? `${(n / 1e6).toFixed(2)}M`
-      : n >= 1e3
-        ? `${(n / 1e3).toFixed(1)}K`
-        : n.toFixed(0);
-
-// Comp-profile chip labels — ported from SupportRankings.tsx PROFILE_LABELS
-// (keep in sync; tooltip text stays on the site, the card needs the short tag).
-const PROFILE_LABELS: Record<string, string> = {
-  'with-2mg': 'w/ 2 MG',
-  'with-1mg': 'w/ 1 MG',
-  'with-mg': 'w/ MG',
-  'with-mint': 'w/ Mint',
-  'with-healer': 'w/ Healer',
-  'with-mast-rm': 'w/ Mast RM',
-  'with-shielder': 'w/ Shielder',
-};
-function profileLabel(id: string): string {
-  if (PROFILE_LABELS[id]) {
-    return PROFILE_LABELS[id];
-  }
-  if (id.startsWith('w/ ')) {
-    return id;
-  }
-  const rest = id.startsWith('with-') ? id.slice(5) : id;
-  return `w/ ${rest.replace(/-/g, ' ')}`;
-}
-const unitName = (
-  units: Record<string, { name: string }>,
-  slug: string,
-  profile: string | null
-): string => {
-  const name = units[slug]?.name ?? slug;
-  return profile ? `${name} (${profileLabel(profile)})` : name;
-};
+// The rank-board row formatting (fmt magnitudes, profile chip labels,
+// unitName) lives in src/infographics/core/rankTables.ts — ONE source shared
+// with the web share cards, so this script only loads artifacts + renders.
 
 // ---- render jobs --------------------------------------------------------------
 
@@ -198,6 +174,16 @@ function scaledCanvas(w: number, h: number): Canvas {
   canvas.getContext('2d').scale(SCALE, SCALE);
   return canvas;
 }
+
+// The ink regions come from the card modules' *_TITLE_INK_REGION exports
+// (logical px, starting at the title's textX — never padX, or the site icon
+// alone satisfies the guard). Scale them to physical pixels here.
+const scaledRegion = (r: { x: number; y: number; w: number; h: number }) => ({
+  x: r.x * SCALE,
+  y: r.y * SCALE,
+  w: r.w * SCALE,
+  h: r.h * SCALE,
+});
 
 const SITE_ICON_PATH = new URL(
   '../src/infographics/assets/nikkesim-icon.png',
@@ -272,14 +258,7 @@ function dpsJobs(art: DpsArtifact): Job[] {
             width: canvas.width,
             height: canvas.height,
             canvas,
-            // starts at the title's textX (padX 36 + ICON 34 + 12), never at
-            // padX — the site icon alone must not satisfy the ink guard
-            inkRegion: {
-              x: 82 * SCALE,
-              y: 24 * SCALE,
-              w: 420 * SCALE,
-              h: 36 * SCALE,
-            },
+            inkRegion: scaledRegion(DPS_TITLE_INK_REGION),
           };
         },
       });
@@ -290,113 +269,50 @@ function dpsJobs(art: DpsArtifact): Job[] {
 
 // The 4 rank boards from the same web/public/*.json the site serves, rendered
 // via drawTableCard, §6.6 top-10 windowed, ABSOLUTE ranks written by the
-// caller. Buffer uses the generic board — the site's default view
-// (SupportRankings.tsx useState('generic')); the typed board is tail/on-demand.
+// core/rankTables.ts builders (shared with the web share cards). Buffer uses
+// the generic board — the site's default view (SupportRankings.tsx
+// useState('generic')); the typed board is tail/on-demand.
 function rankJobs(): Job[] {
   const specs: { board: string; build: () => TableCardData }[] = [
     {
       board: 'burstgen',
-      build: () => {
-        const art = loadJson<BurstGenArtifact>(
-          new URL('../web/public/burstgen.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Burst Generation Ranking',
-          subtitle: 'no-op team · 180s · unfocused · scope-lock loadout',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Gauge %/s', align: 'right' },
-            { header: 'Bars (180s)', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, gps, gtotal, , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${gps.toFixed(2)}%/s`,
-            (gtotal / 100).toFixed(1),
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBurstGenTable(
+          loadJson<BurstGenArtifact>(
+            new URL('../web/public/burstgen.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'burstcdr',
-      build: () => {
-        const art = loadJson<BurstCdrArtifact>(
-          new URL('../web/public/burstcdr.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Burst CDR Ranking',
-          subtitle: 'team CDR seconds per 20s Full Burst · 180s average',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'CDR s/20s', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, cdr, , , , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${cdr.toFixed(1)}s`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBurstCdrTable(
+          loadJson<BurstCdrArtifact>(
+            new URL('../web/public/burstcdr.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'sustain',
-      build: () => {
-        const art = loadJson<SustainArtifact>(
-          new URL('../web/public/sustain.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Sustain Ranking',
-          subtitle: 'effective HP restored + shielded · 180s team total',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Sustain', align: 'right' },
-            { header: '% max HP', align: 'right' },
-          ],
-          rows: art.entries.map(([slug, totalHp, totalPct, , , , p], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, p),
-            fmt(totalHp),
-            `${totalPct.toFixed(0)}%`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildSustainTable(
+          loadJson<SustainArtifact>(
+            new URL('../web/public/sustain.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
     {
       board: 'buffer',
-      build: () => {
-        const art = loadJson<BufferChartArtifact>(
-          new URL('../web/public/bufferchart.json', import.meta.url),
-          DATA_HINT
-        );
-        return {
-          title: 'Buffer Ranking — Generic',
-          subtitle: 'team damage increase vs the no-op baseline',
-          columns: [
-            { header: '#' },
-            { header: 'Unit' },
-            { header: 'Added DMG', align: 'right' },
-          ],
-          rows: art.cells.generic.map(([slug, addedPct, , profile], i) => [
-            `#${i + 1}`,
-            unitName(art.units, slug, profile),
-            `${addedPct >= 0 ? '+' : '-'}${Math.abs(addedPct).toFixed(1)}%`,
-          ]),
-          window: {},
-          footer: 'nikkesim.app/ranks',
-        };
-      },
+      build: () =>
+        buildBufferTable(
+          loadJson<BufferChartArtifact>(
+            new URL('../web/public/bufferchart.json', import.meta.url),
+            DATA_HINT
+          )
+        ),
     },
   ];
   return specs.map(({ board, build }) => ({
@@ -413,13 +329,45 @@ function rankJobs(): Job[] {
         width: canvas.width,
         height: canvas.height,
         canvas,
-        // starts at the title's textX (padX 32 + ICON 32 + 12) — see above
-        inkRegion: {
-          x: 76 * SCALE,
-          y: 16 * SCALE,
-          w: 340 * SCALE,
-          h: 34 * SCALE,
-        },
+        inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
+      };
+    },
+  }));
+}
+
+// The two fully-static utility tables (bot /ol and the no-param /charge-speed)
+// — same core/tableData.ts builders the API's dynamic table routes use, so the
+// pre-rendered files and the on-demand renders can't drift.
+function tableJobs(): Job[] {
+  const specs: { key: string; build: () => TableCardData }[] = [
+    {
+      key: 'table/ol',
+      build: () =>
+        buildOlTable(
+          loadJson<OlDefaultArtifact>(
+            new URL('../web/public/ol-default.json', import.meta.url)
+          )
+        ),
+    },
+    {
+      key: 'table/charge-speed',
+      build: () => buildChargeTable(GENERIC_BASE_FRAMES, 'Generic (1.0s)'),
+    },
+  ];
+  return specs.map(({ key, build }) => ({
+    key,
+    render: async (): Promise<Rendered> => {
+      const data = build();
+      data.icon = (await loadSiteIcon()) ?? undefined;
+      const canvas = scaledCanvas(TABLE_W, tableHeight(data.rows.length));
+      drawTableCard(canvas.getContext('2d') as unknown as Canvas2DLike, data);
+      return {
+        key,
+        png: canvas.toBuffer('image/png'),
+        width: canvas.width,
+        height: canvas.height,
+        canvas,
+        inkRegion: scaledRegion(TABLE_TITLE_INK_REGION),
       };
     },
   }));
@@ -450,12 +398,7 @@ function unitJobs(chars: CharacterRow[], limit: number | null): Job[] {
         width: canvas.width,
         height: canvas.height,
         canvas,
-        inkRegion: {
-          x: 36 * SCALE,
-          y: 34 * SCALE,
-          w: 400 * SCALE,
-          h: 34 * SCALE,
-        },
+        inkRegion: scaledRegion(UNIT_TITLE_INK_REGION),
       };
     },
   }));
@@ -506,7 +449,7 @@ async function main(): Promise<void> {
       new URL('../web/public/dpschart.json', import.meta.url),
       DATA_HINT
     );
-    jobs.unshift(...dpsJobs(dpschart), ...rankJobs());
+    jobs.unshift(...dpsJobs(dpschart), ...rankJobs(), ...tableJobs());
   }
   if (jobs.length === 0) {
     throw new Error('build-infographics: empty job list');

@@ -26,6 +26,10 @@ export interface TableCardData {
   columns: TableColumn[];
   rows: string[][];
   window?: TableWindow;
+  // Optional per-row text color, PARALLEL to `rows` (population-indexed, so it
+  // slices with the §6.6 window): a row carrying a color draws every cell in
+  // it. The olsim before/after card marks changed lines with the accent.
+  rowColors?: (string | null)[];
   footer?: string; // descriptor added to the watermark footer (theme.ts)
   icon?: unknown; // optional canvas-drawable image drawn beside the title
   portrait?: unknown; // optional character portrait drawn top-right
@@ -37,6 +41,21 @@ const HEAD_H = 96;
 const COL_HEADER_H = 36;
 const ROW_H = 38;
 const FOOT_H = 40;
+const ICON = 32; // site icon square, drawn beside the title
+
+// Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
+// the title's textX (padX + ICON + 12; 24px title, baseline y 44).
+export const TABLE_TITLE_ICON = {
+  x: PAD_X,
+  y: 44 - ICON + 4,
+  size: ICON,
+} as const;
+export const TABLE_TITLE_INK_REGION = {
+  x: PAD_X + ICON + 12,
+  y: 16,
+  w: 340,
+  h: 34,
+} as const;
 
 export const tableHeight = (rowCount: number): number =>
   HEAD_H + COL_HEADER_H + rowCount * ROW_H + FOOT_H;
@@ -71,7 +90,6 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   // icon + title + subtitle
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const ICON = 32;
   let textX = padX;
   if (data.icon) {
     const iy = 44 - ICON + 4;
@@ -133,6 +151,9 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.fillRect(padX, sepY, W - padX * 2, 1);
 
   // rows
+  const rowColors = data.rowColors
+    ? data.rowColors.slice(win.start, win.start + rows.length)
+    : null;
   rows.forEach((row, ri) => {
     const y = HEAD_H + COL_HEADER_H + ri * ROW_H + 26;
 
@@ -147,12 +168,14 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
       );
     }
 
+    const rowColor = rowColors?.[ri] ?? null;
     row.forEach((cell, ci) => {
       const col = data.columns[ci];
       ctx.textAlign = col?.align === 'right' ? 'right' : 'left';
       const x = col?.align === 'right' ? colX(ci) + colW - 8 : colX(ci) + 8;
-      // first column is the label — brighter; rest are data
-      ctx.fillStyle = ci === 0 ? '#e7eaf0' : '#c9cede';
+      // first column is the label — brighter; rest are data — unless the row
+      // carries an explicit color (changed-line marking)
+      ctx.fillStyle = rowColor ?? (ci === 0 ? '#e7eaf0' : '#c9cede');
       ctx.font = ci === 0 ? `600 15px ${FONT}` : `400 15px ${FONT}`;
       ctx.fillText(cell, x, y);
     });

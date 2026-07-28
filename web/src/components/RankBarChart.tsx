@@ -37,10 +37,12 @@ export function RankBarChart({
   title,
   subtitle,
   bars,
+  onShareImage,
 }: {
   title: string;
   subtitle?: string;
   bars: RankChartBar[];
+  onShareImage?: () => void; // share-image chip, same UX as DpsBarChart
 }) {
   const max = Math.max(...bars.map((b) => b.value), 0);
   const min = Math.min(...bars.map((b) => b.value), 0);
@@ -57,6 +59,17 @@ export function RankBarChart({
           <div className="dpschart-title">{title}</div>
           {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
+        {onShareImage && (
+          <div className="dpschart-share">
+            <button
+              className="chip"
+              title="copy chart image"
+              onClick={onShareImage}
+            >
+              🖼
+            </button>
+          </div>
+        )}
       </div>
       {bars.length === 0 ? (
         <div className="dpschart-empty">no data</div>

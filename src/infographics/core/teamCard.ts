@@ -43,6 +43,25 @@ const PAD_X = 40;
 const HEAD_H = 156;
 const ROW_H = 84;
 const FOOT_H = 58;
+const ICON = 36; // site icon square, drawn beside the title
+
+// Ink-guard geometry, exported so every assertTitleInk caller (golden harness,
+// build-infographics, the golden test's icon-immunity cases) derives from the
+// same numbers a layout change would move — a hand-copied region can silently
+// re-vacate the guard (it once passed on icon pixels alone, zero glyphs).
+// TITLE_ICON is the icon's draw rect; TITLE_INK_REGION starts at the title's
+// textX (padX + ICON + 12) so the icon alone can never satisfy the guard.
+export const TEAM_TITLE_ICON = {
+  x: PAD_X,
+  y: 56 - ICON + 4,
+  size: ICON,
+} as const;
+export const TEAM_TITLE_INK_REGION = {
+  x: PAD_X + ICON + 12, // title textX (30px title, baseline y 56)
+  y: 26,
+  w: 400,
+  h: 40,
+} as const;
 
 export const cardHeight = (unitCount: number) =>
   HEAD_H + unitCount * ROW_H + FOOT_H;
@@ -75,7 +94,6 @@ export function drawTeamCard(
 
   // icon + title + summary
   ctx.textBaseline = 'alphabetic';
-  const ICON = 36;
   let textX = padX;
   if (meta.icon) {
     ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
@@ -229,7 +247,6 @@ export function drawRosterCard(
   // icon + title + summary (total only — no DPS/FB, per the roster card spec)
   ctx.textBaseline = 'alphabetic';
   ctx.textAlign = 'left';
-  const ICON = 36;
   let textX = padX;
   if (meta.icon) {
     ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);

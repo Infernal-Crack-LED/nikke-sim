@@ -11,13 +11,17 @@ import {
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ensureRoboto, loadPortrait } from './teamShare';
 
-export async function copyDpsChartImage(
+// Render a DPS-chart card to a canvas (portraits preloaded into the shown
+// bars, Roboto awaited before the first draw — decision 6.1: a @font-face
+// font is unusable by canvas until loaded, so drawing early silently yields
+// fallback-metric text on the FIRST render). Null where canvas is
+// unavailable (JSDOM). The /builder page previews and copies from this same
+// canvas; copyDpsChartImage is the copy/download wrapper.
+export async function buildDpsChartCanvas(
   data: DpsChartData
-): Promise<'copied' | 'downloaded' | 'unsupported'> {
+): Promise<HTMLCanvasElement | null> {
   // preload each SHOWN bar's portrait into `img` so the isomorphic renderer can
-  // draw it (on a windowed chart, bars outside the window never render); the
-  // Roboto @font-face must be live before the first draw (decision 6.1 — else
-  // the first copy-image click renders fallback-metric text)
+  // draw it (on a windowed chart, bars outside the window never render)
   const win = chartWindow(data);
   const shown = data.bars.slice(win.start, win.end);
   await Promise.all([
@@ -35,12 +39,22 @@ export async function copyDpsChartImage(
   cv.height = chartHeight(shown.length, !!data.compare) * dpr;
   const ctx = cv.getContext('2d');
   if (!ctx) {
-    return 'unsupported';
+    return null;
   }
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high'; // crisp portrait downscale
   drawDpsChart(ctx as unknown as Canvas2DLike, data);
+  return cv;
+}
+
+export async function copyDpsChartImage(
+  data: DpsChartData
+): Promise<'copied' | 'downloaded' | 'unsupported'> {
+  const cv = await buildDpsChartCanvas(data);
+  if (!cv) {
+    return 'unsupported';
+  }
   const blob = await new Promise<Blob | null>((res) =>
     cv.toBlob((b) => res(b), 'image/png')
   );

@@ -42,6 +42,8 @@ const CHARS: Record<string, CardCharacter> = {
     element: 'Iron',
     weapon: 'SMG',
     burst: 'I',
+    ammo: 120,
+    chargeFrames: 0,
   },
   crown: {
     slug: 'crown',
@@ -70,6 +72,66 @@ const CHARS: Record<string, CardCharacter> = {
     element: 'Fire',
     weapon: 'SR',
     burst: 'III',
+    ammo: 6,
+    chargeFrames: 90,
+  },
+};
+
+// A minimal dpschart.json fixture for the dps.png route: two cells, four
+// units (liter is chartPop:false — selector-only on the site, so she is only
+// reachable through an element filter).
+const DPSCHART = {
+  generatedAt: 't',
+  meta: {},
+  units: {
+    'red-hood': {
+      name: 'Red Hood',
+      element: 'Iron',
+      elements: ['Iron'],
+      weapon: 'SR',
+      tier: 'SSS',
+      chartPop: true,
+      imageUrl: null,
+    },
+    alice: {
+      name: 'Alice',
+      element: 'Fire',
+      elements: ['Fire'],
+      weapon: 'SR',
+      tier: 'SSS',
+      chartPop: true,
+      imageUrl: null,
+    },
+    modernia: {
+      name: 'Modernia',
+      element: 'Fire',
+      elements: ['Fire'],
+      weapon: 'MG',
+      tier: 'SS',
+      chartPop: true,
+      imageUrl: null,
+    },
+    liter: {
+      name: 'Liter',
+      element: 'Iron',
+      elements: ['Iron'],
+      weapon: 'SMG',
+      tier: 'S',
+      chartPop: false,
+      imageUrl: null,
+    },
+  },
+  cells: {
+    'solo.eleweak.c100.8of12': [
+      ['red-hood', 46_120_000],
+      ['alice', 41_980_000],
+      ['modernia', 35_870_000],
+      ['liter', 8_910_000],
+    ],
+    'solo.neutral.c100.8of12': [
+      ['red-hood', 30_000_000],
+      ['alice', 27_000_000],
+    ],
   },
 };
 
@@ -120,10 +182,11 @@ beforeAll(async () => {
   };
   put('index.html', INDEX);
   put('assets/App-AbCd1234.js', 'js');
-  put('dpschart.json', '{}');
+  put('dpschart.json', JSON.stringify(DPSCHART));
   put('img/manifest.json', '{"generatedAt":"t","images":{}}');
   put('img/dps/solo.eleweak.c100.8of12.all.deadbeef.png', 'png');
   put('img/unit/liter.0123abcd.png', 'png');
+  put('img/table/ol.c0ffee00.png', 'png');
   put('img/portraits/liter-128.webp', 'webp');
 
   server = await createNikkesimServer({
@@ -158,6 +221,7 @@ describe('api/v1/img static routes', () => {
     for (const p of [
       '/api/v1/img/dps/solo.eleweak.c100.8of12.all.deadbeef.png',
       '/api/v1/img/unit/liter.0123abcd.png',
+      '/api/v1/img/table/ol.c0ffee00.png',
     ]) {
       const res = await fetch(`${base}${p}`);
       expect(res.status).toBe(200);
@@ -277,25 +341,27 @@ describe('api/v1/img dynamic render routes', () => {
     // file with a sentinel and assert the sentinel is what the second request
     // serves back. (mtime is not the proof either: the LRU cache deliberately
     // refreshes it on every read — render-cache.ts has().)
+    // The restore lives in a `finally`: the poisoned file is shared cache
+    // state and must not leak into later tests even when an assertion fails.
     const sentinel = Buffer.from('poisoned-cache-entry');
     writeFileSync(file, sentinel);
-    const res2 = await fetch(`${base}/api/v1/img/team.png?b=${TEAM_CODE}`, {
-      redirect: 'manual',
-    });
-    expect(res2.status).toBe(302);
-    expect(res2.headers.get('location')).toBe(loc);
+    try {
+      const res2 = await fetch(`${base}/api/v1/img/team.png?b=${TEAM_CODE}`, {
+        redirect: 'manual',
+      });
+      expect(res2.status).toBe(302);
+      expect(res2.headers.get('location')).toBe(loc);
 
-    // the cached URL serves whatever is in the cache, immutable
-    const res3 = await fetch(`${base}${loc}`);
-    expect(res3.status).toBe(200);
-    expect(res3.headers.get('cache-control')).toBe(IMMUTABLE);
-    expect(res3.headers.get('content-type')).toBe('image/png');
-    const body = Buffer.from(await res3.arrayBuffer());
-    expect(body.equals(sentinel)).toBe(true); // a re-render would have overwritten it
-
-    // restore the real render — the poisoned file is shared cache state and
-    // must not leak into later tests
-    writeFileSync(file, original);
+      // the cached URL serves whatever is in the cache, immutable
+      const res3 = await fetch(`${base}${loc}`);
+      expect(res3.status).toBe(200);
+      expect(res3.headers.get('cache-control')).toBe(IMMUTABLE);
+      expect(res3.headers.get('content-type')).toBe('image/png');
+      const body = Buffer.from(await res3.arrayBuffer());
+      expect(body.equals(sentinel)).toBe(true); // a re-render would have overwritten it
+    } finally {
+      writeFileSync(file, original);
+    }
   });
 
   it('roster.png renders a roster build to its own cache entry', async () => {
@@ -306,6 +372,172 @@ describe('api/v1/img dynamic render routes', () => {
     expect(res.headers.get('location')).toMatch(
       /^\/api\/v1\/img\/cache\/roster\.[0-9a-f]{16}\.png$/
     );
+  });
+});
+
+// Follow a 302 and assert the cached URL serves a real PNG (magic bytes), and
+// that a second request 302s to the SAME content-addressed location.
+const expectRenderedPng = async (
+  path: string,
+  kind: string
+): Promise<string> => {
+  const res1 = await fetch(`${base}${path}`, { redirect: 'manual' });
+  expect(res1.status).toBe(302);
+  const loc = res1.headers.get('location')!;
+  expect(loc).toMatch(
+    new RegExp(`^/api/v1/img/cache/${kind}\\.[0-9a-f]{16}\\.png$`)
+  );
+  const res2 = await fetch(`${base}${loc}`);
+  expect(res2.status).toBe(200);
+  expect(res2.headers.get('cache-control')).toBe(IMMUTABLE);
+  const body = Buffer.from(await res2.arrayBuffer());
+  expect(
+    body
+      .subarray(0, 8)
+      .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]))
+  ).toBe(true);
+  expect(body.length).toBeGreaterThan(1_000); // a real card, not an error page
+  // second request: same location, served from the cache
+  const res3 = await fetch(`${base}${path}`, { redirect: 'manual' });
+  expect(res3.status).toBe(302);
+  expect(res3.headers.get('location')).toBe(loc);
+  return loc;
+};
+
+describe('api/v1/img/dps.png (on-demand chart)', () => {
+  it('renders the default cell and caches it', async () => {
+    const loc = await expectRenderedPng('/api/v1/img/dps.png', 'dps');
+    expect(existsSync(join(cacheDir, loc.split('/').pop()!))).toBe(true);
+  });
+
+  it('renders explicit cell / element / unit-window variants to distinct URLs', async () => {
+    const all = await expectRenderedPng(
+      '/api/v1/img/dps.png?cell=solo.neutral.c100.8of12',
+      'dps'
+    );
+    const fire = await expectRenderedPng(
+      '/api/v1/img/dps.png?element=fire',
+      'dps'
+    );
+    const windowed = await expectRenderedPng(
+      '/api/v1/img/dps.png?unit=modernia',
+      'dps'
+    );
+    expect(new Set([all, fire, windowed]).size).toBe(3);
+  });
+
+  it('element filter reaches non-chartPop units; a bad combo is a 400', async () => {
+    // liter is chartPop:false — selectable only through an element filter
+    await expectRenderedPng(
+      '/api/v1/img/dps.png?element=iron&unit=liter',
+      'dps'
+    );
+    // …but not through the unfiltered population
+    expect((await fetch(`${base}/api/v1/img/dps.png?unit=liter`)).status).toBe(
+      400
+    );
+    // alice is Fire — excluded by the iron filter
+    expect(
+      (await fetch(`${base}/api/v1/img/dps.png?element=iron&unit=alice`)).status
+    ).toBe(400);
+  });
+
+  it('400s on unknown cell / element / unit', async () => {
+    for (const p of [
+      '/api/v1/img/dps.png?cell=bogus',
+      '/api/v1/img/dps.png?element=bogus',
+      '/api/v1/img/dps.png?unit=bogus',
+    ]) {
+      expect((await fetch(`${base}${p}`)).status).toBe(400);
+    }
+  });
+
+  it('units= renders a comparison card (order-insensitive, distinct from window)', async () => {
+    const cmp = await expectRenderedPng(
+      '/api/v1/img/dps.png?units=alice,modernia',
+      'dps'
+    );
+    // the sorted cache key makes request order irrelevant — SAME url
+    const res = await fetch(`${base}/api/v1/img/dps.png?units=modernia,alice`, {
+      redirect: 'manual',
+    });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe(cmp);
+    // …and a comparison never collides with the §6.6 window of one of its units
+    const windowed = await expectRenderedPng(
+      '/api/v1/img/dps.png?unit=modernia',
+      'dps'
+    );
+    expect(cmp).not.toBe(windowed);
+    // element filter composes (both picks are Fire)
+    await expectRenderedPng(
+      '/api/v1/img/dps.png?element=fire&units=alice,modernia',
+      'dps'
+    );
+  });
+
+  it('units= 400s: with unit, unknown slug, off-population slug, >10', async () => {
+    const both = await fetch(
+      `${base}/api/v1/img/dps.png?unit=alice&units=modernia`
+    );
+    expect(both.status).toBe(400);
+    expect(await both.text()).toContain('mutually exclusive');
+    expect(
+      (await fetch(`${base}/api/v1/img/dps.png?units=alice,bogus`)).status
+    ).toBe(400);
+    // liter is chartPop:false — not in the unfiltered population
+    const offPop = await fetch(`${base}/api/v1/img/dps.png?units=alice,liter`);
+    expect(offPop.status).toBe(400);
+    expect(await offPop.text()).toContain('not in this chart');
+    // alice is Fire — excluded by the iron filter
+    expect(
+      (await fetch(`${base}/api/v1/img/dps.png?element=iron&units=alice`))
+        .status
+    ).toBe(400);
+    const eleven = Array.from({ length: 11 }, (_, i) => `u${i}`).join(',');
+    const tooMany = await fetch(`${base}/api/v1/img/dps.png?units=${eleven}`);
+    expect(tooMany.status).toBe(400);
+    expect(await tooMany.text()).toContain('capped at 10');
+  });
+});
+
+describe('api/v1/img/table/*.png (breakpoint tables)', () => {
+  it('max-ammo requires a unit and 400s on unknown slugs', async () => {
+    expect((await fetch(`${base}/api/v1/img/table/max-ammo.png`)).status).toBe(
+      400
+    );
+    expect(
+      (await fetch(`${base}/api/v1/img/table/max-ammo.png?unit=bogus`)).status
+    ).toBe(400);
+  });
+
+  it('max-ammo renders for a unit with ammo data and caches it', async () => {
+    const loc = await expectRenderedPng(
+      '/api/v1/img/table/max-ammo.png?unit=alice',
+      'table'
+    );
+    expect(existsSync(join(cacheDir, loc.split('/').pop()!))).toBe(true);
+  });
+
+  it('charge-speed renders the generic table without a unit', async () => {
+    await expectRenderedPng('/api/v1/img/table/charge-speed.png', 'table');
+  });
+
+  it('charge-speed renders for SR/RL units, 400s on non-charge weapons', async () => {
+    await expectRenderedPng(
+      '/api/v1/img/table/charge-speed.png?unit=alice',
+      'table'
+    );
+    // liter is an SMG — not a charge weapon
+    const res = await fetch(
+      `${base}/api/v1/img/table/charge-speed.png?unit=liter`
+    );
+    expect(res.status).toBe(400);
+    expect(await res.text()).toContain('not a charge weapon');
+    expect(
+      (await fetch(`${base}/api/v1/img/table/charge-speed.png?unit=bogus`))
+        .status
+    ).toBe(400);
   });
 });
 
@@ -340,11 +572,14 @@ describe('static port parity with serve.mjs', () => {
         headers: { 'if-none-match': inm },
       });
       expect(re.status).toBe(304);
+      // the 304 must carry the SAME validators as the 200 it validates
+      expect(re.headers.get('last-modified')).toBe(lastMod);
     }
     const ims = await fetch(`${base}/img/portraits/liter-128.webp`, {
       headers: { 'if-modified-since': lastMod! },
     });
     expect(ims.status).toBe(304);
+    expect(ims.headers.get('last-modified')).toBe(lastMod);
     // negative cases — without these, `!!header → 304` passes too:
     // a strictly-older IMS must re-serve in full (pins the >= direction)
     const stale = await fetch(`${base}/img/portraits/liter-128.webp`, {
@@ -361,5 +596,6 @@ describe('static port parity with serve.mjs', () => {
       },
     });
     expect(miss.status).toBe(200);
+    expect((await miss.arrayBuffer()).byteLength).toBeGreaterThan(0);
   });
 });

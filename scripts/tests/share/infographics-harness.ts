@@ -30,6 +30,10 @@ import {
   UNIT_CARD_W,
   UNIT_CARD_H,
   drawUnitCard,
+  TEAM_TITLE_INK_REGION,
+  DPS_TITLE_INK_REGION,
+  TABLE_TITLE_INK_REGION,
+  UNIT_TITLE_INK_REGION,
   type Canvas,
   type Canvas2DLike,
   type TeamCardData,
@@ -340,8 +344,10 @@ export async function renderAll(): Promise<FixtureRender[]> {
     out.push({ name, png: canvas.toBuffer('image/png') });
   };
 
-  // Ink regions start at the title's textX (padX + ICON + 12) — NEVER at padX,
-  // or the site icon alone satisfies the guard with zero glyphs (render.ts).
+  // Ink regions come from the card modules' TEAM/DPS/TABLE/UNIT_TITLE_INK_REGION
+  // exports — they start at the title's textX (padX + ICON + 12) — NEVER at
+  // padX, or the site icon alone satisfies the guard with zero glyphs
+  // (render.ts). A core layout change moves the guard with it.
   const team = await buildTeamCard();
   const teamCanvas = createCanvas(CARD_W, cardHeight(team.data.units.length));
   drawTeamCard(
@@ -349,7 +355,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     team.data,
     team.meta
   );
-  finish('team-card.png', teamCanvas, { x: 88, y: 26, w: 400, h: 40 });
+  finish('team-card.png', teamCanvas, TEAM_TITLE_INK_REGION);
 
   const roster = await buildRosterCard();
   const rosterCanvas = createCanvas(
@@ -361,7 +367,8 @@ export async function renderAll(): Promise<FixtureRender[]> {
     roster.data,
     roster.meta
   );
-  finish('roster-card.png', rosterCanvas, { x: 88, y: 26, w: 500, h: 40 });
+  // the roster card shares the team card's title geometry (teamCard.ts)
+  finish('roster-card.png', rosterCanvas, TEAM_TITLE_INK_REGION);
 
   const chart = await buildDpsChart();
   const chartWin = chartWindow(chart);
@@ -370,7 +377,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     chartHeight(chartWin.end - chartWin.start, !!chart.compare)
   );
   drawDpsChart(chartCanvas.getContext('2d') as unknown as Canvas2DLike, chart);
-  finish('dps-chart.png', chartCanvas, { x: 82, y: 24, w: 420, h: 36 });
+  finish('dps-chart.png', chartCanvas, DPS_TITLE_INK_REGION);
 
   const chartWindowed = await buildDpsChartWindow();
   const chartWindowedWin = chartWindow(chartWindowed);
@@ -385,12 +392,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     chartWindowedCanvas.getContext('2d') as unknown as Canvas2DLike,
     chartWindowed
   );
-  finish('dps-chart-window.png', chartWindowedCanvas, {
-    x: 82,
-    y: 24,
-    w: 420,
-    h: 36,
-  });
+  finish('dps-chart-window.png', chartWindowedCanvas, DPS_TITLE_INK_REGION);
 
   const table = await buildTableCard();
   const tableCanvas = createCanvas(
@@ -398,7 +400,7 @@ export async function renderAll(): Promise<FixtureRender[]> {
     tableHeight(visibleRows(table.rows, table.window).rows.length)
   );
   drawTableCard(tableCanvas.getContext('2d') as unknown as Canvas2DLike, table);
-  finish('table-card.png', tableCanvas, { x: 76, y: 16, w: 340, h: 34 });
+  finish('table-card.png', tableCanvas, TABLE_TITLE_INK_REGION);
 
   const tableWindowed = await buildTableCardWindow();
   const tableWindowedCanvas = createCanvas(
@@ -411,17 +413,12 @@ export async function renderAll(): Promise<FixtureRender[]> {
     tableWindowedCanvas.getContext('2d') as unknown as Canvas2DLike,
     tableWindowed
   );
-  finish('table-card-window.png', tableWindowedCanvas, {
-    x: 76,
-    y: 16,
-    w: 340,
-    h: 34,
-  });
+  finish('table-card-window.png', tableWindowedCanvas, TABLE_TITLE_INK_REGION);
 
   const unit = await buildUnitCard();
   const unitCanvas = createCanvas(UNIT_CARD_W, UNIT_CARD_H);
   drawUnitCard(unitCanvas.getContext('2d') as unknown as Canvas2DLike, unit);
-  finish('unit-card.png', unitCanvas, { x: 36, y: 34, w: 400, h: 34 });
+  finish('unit-card.png', unitCanvas, UNIT_TITLE_INK_REGION);
 
   return out;
 }

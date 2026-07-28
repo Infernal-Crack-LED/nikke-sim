@@ -18,6 +18,7 @@ export type Route =
   | 'patch-notes'
   | 'testing-requests'
   | 'roster-sync'
+  | 'builder'
   | 'credits';
 
 export const ROUTES: Route[] = [
@@ -31,6 +32,7 @@ export const ROUTES: Route[] = [
   'patch-notes',
   'testing-requests',
   'roster-sync',
+  'builder',
   'credits',
 ];
 
@@ -44,6 +46,7 @@ const PAGE_ROUTES: Route[] = [
   'patch-notes',
   'testing-requests',
   'roster-sync',
+  'builder',
   'credits',
 ];
 // The App hosts four tool SECTIONS — Sim, Rankings, Overload, Tools. Each sub-tab
