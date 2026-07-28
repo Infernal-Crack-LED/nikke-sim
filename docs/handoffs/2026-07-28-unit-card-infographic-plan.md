@@ -62,7 +62,12 @@ The current card is an identity card only: portrait, name, `class · manufacture
     - Fallbacks are explicitly **second-class**: units outside these categories are, per the owner,
       "usually aren't characters people care about". Design first-class for units that fit.
 14. **Comp profiles (§8a)** — bar charts render the **profiled** variant in place; the **default
-    (no-profile)** bar is appended *below the last nearby-unit row*. Rank tiles show **both** ranks.
+    (no-profile)** bar is appended *below the last nearby-unit row*. Rank tiles show **both** ranks;
+    the recommended dual-rank treatment (large profiled numeral + muted `#N default` sub-line) is
+    **approved**.
+15. **Two card variants** — `discord` (2:1 landscape) and `twitter` (portrait), from one data builder.
+    Explicitly *"I don't want it to degrade the card as a whole"*: the landscape card is NOT to be
+    compromised to survive X's crop. See §6/§6a.
 
 ## 3. The advertising goal is a design constraint
 
@@ -157,10 +162,55 @@ Note `build.overloadIdeal` is **Tsareena's** recommendation and is editorially d
 and label them as different things — that contrast is itself a selling point for the site, and for an
 unreleased character only ours will exist.
 
-## 6. Card layout
+## 6. Card layout — TWO VARIANTS (ruling 15)
 
-Logical **1200 × 600** (2:1), rendered at `dpr 2` → **2400 × 1200**. That downsamples to Twitter's
-1200×600 in-timeline slot at exactly 2×, which is the cleanest possible resampling.
+The owner's ruling: **do not compromise the card to survive X's timeline crop.** Ship two variants
+from one data builder:
+
+| Variant | Aspect | Logical | @dpr2 | Target |
+| --- | --- | --- | --- | --- |
+| `discord` | 2:1 landscape | 1200 × 600 | 2400 × 1200 | `/nikke` embed, the site, general sharing |
+| `twitter` | portrait (see §6a) | 1200 × 1500 *(provisional 4:5)* | 2400 × 3000 | X timeline, new-character launch posts |
+
+Same `buildUnitCardData(slug)` (§14 phase 3) feeds both; only the layout function differs. The
+landscape variant is the canonical one and is specified in §6b.
+
+### 6a. ⚠ X's timeline crop is an UNVERIFIED premise — do not design on it yet
+
+The whole point of a portrait variant is how X crops single images in-timeline. **Web sources
+directly contradict each other on this**, and none is authoritative (all are SEO social-media-size
+blogs; X publishes no current spec):
+
+- *"A single image shows uncropped between roughly 16:9 and 3:4 … X shows essentially the full frame
+  between 16:9 and 4:5, so the safe zone is generous"* — [SocialKit](https://socialk.it/en/sizes/x-post-size),
+  [aspectratiocalculator](https://aspectratiocalculator.com/twitter-aspect-ratios/)
+- *"Very tall images (taller than 1:1) are center-cropped to roughly a 16:9 preview in the timeline …
+  4:5 takes up more space but **will be center-cropped**"* —
+  [viraly.io](https://viraly.io/blog/twitter-x-image-size-guide),
+  [Image for Post](https://imageforpost.com/guides/twitter-x-image-sizes-dimensions-guide-2025)
+
+These cannot both be true, and the difference decides the entire layout. **Resolution is cheap and
+empirical: post one test image from the owner's own account** (a 1200×1500 4:5 card with visible
+markers at the extreme top and bottom) and observe the timeline render on web + mobile. That is
+2 minutes of owner time and settles it definitively. Do not build the portrait layout before it runs.
+
+**Robust-either-way design rule (applies now, regardless of the outcome):** if a 4:5 image *is*
+center-cropped to ~16:9, the visible band is the middle **45%** of the height (a 16:9 crop of a 4:5
+frame is `0.5625W` of `1.25W`), cutting the top ~27.5% and bottom ~27.5%. So:
+
+> **Everything load-bearing — character name, portrait, and the three rank tiles — must sit inside the
+> vertical middle 45% of the portrait card.** Top and bottom bands carry the logo, tags, notes and
+> watermark: material that is a bonus when shown uncropped and no loss when cut.
+
+Designed that way, the portrait variant is correct under *both* behaviours: uncropped it reads as a
+full portrait infographic; cropped it degrades to a well-composed landscape headline. This is the
+only design that does not gamble on the unresolved premise.
+
+### 6b. Landscape (`discord`) layout
+
+Logical **1200 × 600** (2:1), rendered at `dpr 2` → **2400 × 1200**. 2:1 is the widest ratio X
+displays uncropped under *either* source above, so this variant is also the safe fallback for X if
+the portrait test comes back badly.
 
 ```
 ┌────────────────────────────────────────────────┬──────────────────────────┐
@@ -354,8 +404,29 @@ per-extension; the golden-image tests decode via `sharp` already, so the decoded
 still works. Keep PNG for the other card kinds unless separately measured — this ruling covers the
 unit set, which is the only ~200-file kind.
 
+**Two variants (ruling 15) double the file count to 384.** Projecting from the measured WebP rate
+(37 KB ÷ 1.2288 Mpx = **~30 KB/Mpx**):
+
+| Variant | Physical px | Mpx | projected WebP | ×192 |
+| --- | --- | --- | --- | --- |
+| `discord` | 2400 × 1200 | 2.88 | ~87 KB | ~16 MB |
+| `twitter` | 1200 × 1500 | 1.80 | ~54 KB | ~10 MB |
+| **both** | | | **~141 KB/unit** | **~27 MB** |
+
+Note the portrait variant is deliberately **not** rendered at `dpr 2` of its logical size — X displays
+it at ~500–600 px wide in-timeline, so 1200×1500 physical is already ~2× the display width and
+matches the commonly-cited 1080×1350 target. Rendering it at 2400×3000 would cost ~222 KB each
+(~43 MB) for pixels nothing consumes.
+
+Both figures are **projections from a measured rate**, not measurements — the new cards are denser
+than the one measured, so **re-measure at phase 5** before treating ~28 MB as settled. Even at 2×
+the projection it stays under today's 53 MB PNG set.
+
 ## 13. Open decisions
 
+0. **⛔ TOP ITEM — X in-timeline crop behaviour is UNRESOLVED (§6a).** Public sources contradict each
+   other; this decides the portrait layout. Settle it with one owner test post before phase 4b. Until
+   then the §6a safe-band rule is what makes the design robust either way.
 1. ~~`Λ` tile set~~ — **SETTLED (ruling 10): `red-hood` uses the B3 set.** Residual: its title-bar
    `Λ` *icon* still has no asset (§10.2b).
 2. ~~Rank-blue vs Water collision~~ — **RETIRED by ruling 12** (§9): rank colours are numeral-only.
@@ -373,9 +444,16 @@ unit set, which is the only ~200-file kind.
 | 1 | Sync | `releaseDate` in `characters.json`; `data/tsareena-build.json` + `src/types.ts` types | `verify.sh` green; re-sync diff reviewed |
 | 2 | Assets | icons vendored into `src/infographics/assets/icons/` + decode test | build-time font-gate equivalent for icons |
 | 3 | Card data builder | pure `buildUnitCardData(slug)` — joins characters + 5 boards + tags + OL + Tsareena, all nullable | unit tests incl. a zero-board unit |
-| 4 | Renderer | rewrite `core/unitCard.ts` to §6 layout, fixed geometry | golden-image test (existing decoded-pixel harness) |
-| 5 | Pre-render | new dimensions/keys in `build-infographics.ts`, `RENDERER_VERSION` bump | full 192-card build, size measured (§12) |
-| 6 | Consumers | bakery-bot `/nikke` → card URL + fallback (§13.5); `/builder` preview | bot tests |
+| 3.5 | **X crop test** | owner posts one 1200×1500 marker image; record the observed crop | **blocks phase 4b only** (§6a) |
+| 4a | Renderer (landscape) | rewrite `core/unitCard.ts` to the §6b layout, fixed geometry | golden-image test (existing decoded-pixel harness) |
+| 4b | Renderer (portrait) | `twitter` layout sharing phase-3 data + §6a safe-band rule | golden-image test; needs 3.5 |
+| 5 | Pre-render | both variants in `build-infographics.ts`, `RENDERER_VERSION` bump | full 384-image build, size **measured** (§12) |
+| 6 | Consumers | bakery-bot `/nikke` → landscape URL + fallback (§13.5); `/builder` preview | bot tests |
+
+**Variant plumbing.** Manifest keys go from `unit/<slug>` to `unit/<slug>.<variant>` (paths
+`unit/<slug>.<variant>.<hash>.webp`). Phases 1–3 and 4a are **not blocked** by the X crop test — only
+4b is. Build 4a first; it is the variant `/nikke` consumes and the safe fallback for X if the portrait
+test comes back badly.
 
 `RENDERER_VERSION` in `src/infographics/spec.ts` **must** bump (currently `v2`) — the comment there is
 explicit that stale keys otherwise serve old pixels. Unit cards are in the static manifest rather than
@@ -403,6 +481,11 @@ the spec cache, but the bump keeps the two consistent.
 - **Profiles exist on 3 boards only** (`bufferchart`, `sustain`, `burstgen` — 6 unit/board pairs).
   `burstcdr.profiles` is `{}` and `dpschart` has **no profile concept at all**, so the B3 DPS bars can
   never carry one. A profiled unit occupies TWO rows in `entries` (one `profile: <id>`, one `null`).
+- **NOT a verified fact — X's in-timeline crop.** Two independent web sources assert *opposite*
+  behaviours for a 4:5 single image (uncropped vs centre-cropped to ~16:9); see §6a for both
+  citations. Treat as UNRESOLVED until the owner's test post. Arithmetic that IS solid: a 16:9 crop
+  of a 4:5 frame shows the middle **45%** of the height (0.5625W of 1.25W), cutting 27.5% top and
+  bottom.
 - Site bar colours are **element colours**, not rank colours (`RankBarChart.tsx:79`,
   `DpsBarChart.tsx:101`); negative-capable boards span `value ↔ 0` about an axis
   (`RankBarChart.tsx:80-87`); sustain fills are 3-segment splits with a transparent track.
