@@ -18,15 +18,15 @@ import {
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ensureRoboto, copyOrDownloadPng } from './teamShare';
 
-// Copy a table infographic to the clipboard as a PNG (download fallback via
-// copyOrDownloadPng). The Roboto @font-face must be live before the first
-// draw (decision 6.1) — awaited here like the other hosts. Callers attach an
-// already-loaded icon/portrait (teamShare's loadPortrait) when the card
-// wants one.
-export async function copyTableCardImage(
-  data: TableCardData,
-  filename = 'nikke-table.png'
-): Promise<'copied' | 'downloaded' | 'unsupported'> {
+// Render a table card to a canvas (Roboto awaited before the first draw,
+// decision 6.1 — same font-gate reason as shareImage/teamShare). Null where
+// canvas is unavailable (JSDOM). The /builder page previews and copies from
+// this same canvas; copyTableCardImage is the copy/download wrapper. Callers
+// attach an already-loaded icon/portrait (teamShare's loadPortrait) when the
+// card wants one.
+export async function buildTableCardCanvas(
+  data: TableCardData
+): Promise<HTMLCanvasElement | null> {
   await ensureRoboto();
   const dpr = 2;
   const cv = document.createElement('canvas');
@@ -35,12 +35,25 @@ export async function copyTableCardImage(
     tableHeight(visibleRows(data.rows, data.window).rows.length) * dpr;
   const ctx = cv.getContext('2d');
   if (!ctx) {
-    return 'unsupported';
+    return null;
   }
   ctx.scale(dpr, dpr);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
   drawTableCard(ctx as unknown as Canvas2DLike, data);
+  return cv;
+}
+
+// Copy a table infographic to the clipboard as a PNG (download fallback via
+// copyOrDownloadPng).
+export async function copyTableCardImage(
+  data: TableCardData,
+  filename = 'nikke-table.png'
+): Promise<'copied' | 'downloaded' | 'unsupported'> {
+  const cv = await buildTableCardCanvas(data);
+  if (!cv) {
+    return 'unsupported';
+  }
   const blob = await new Promise<Blob | null>((res) =>
     cv.toBlob((b) => res(b), 'image/png')
   );

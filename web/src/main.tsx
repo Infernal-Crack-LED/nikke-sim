@@ -40,6 +40,9 @@ const TestingRequestsPage = lazy(() =>
 const RosterSyncPage = lazy(() =>
   import('./RosterSyncPage').then((m) => ({ default: m.RosterSyncPage }))
 );
+const BuilderPage = lazy(() =>
+  import('./BuilderPage').then((m) => ({ default: m.BuilderPage }))
+);
 const CreditsPage = lazy(() =>
   import('./CreditsPage').then((m) => ({ default: m.CreditsPage }))
 );
@@ -105,6 +108,8 @@ function Root() {
           <TestingRequestsPage />
         ) : route === 'roster-sync' ? (
           <RosterSyncPage user={user} onLogin={onLogin} />
+        ) : route === 'builder' ? (
+          <BuilderPage />
         ) : route === 'credits' ? (
           <CreditsPage />
         ) : (

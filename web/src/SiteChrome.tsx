@@ -212,6 +212,16 @@ export function SiteNav({
                 </a>
                 <a
                   className={
+                    'nav-menu-item' + (current === 'builder' ? ' on' : '')
+                  }
+                  role="menuitem"
+                  href={hrefFor('builder')}
+                  onClick={(e) => menuNav(e, 'builder')}
+                >
+                  Card Builder
+                </a>
+                <a
+                  className={
                     'nav-menu-item' + (current === 'patch-notes' ? ' on' : '')
                   }
                   role="menuitem"
