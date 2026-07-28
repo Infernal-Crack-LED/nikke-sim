@@ -249,8 +249,9 @@ export const deleteProfile = (id: string) =>
 // kinds on its share allowlist (`sim-share` — bakery-bot
 // api/profiles/[id]/public), so it opens a config someone shared and never a
 // private profile. This is what makes an id-based share link work for a
-// stranger: `nikkesim.app/sim?id=<id>` resolves the build + stored sim results
-// through here, in place of a ~3.3 KB `?b=` build code in the URL.
+// stranger: `nikkesim.app/?id=<id>` (a team) or `/rostersim?id=<id>` resolves
+// the build + stored sim results through here, in place of a ~3.3 KB `?b=`
+// build code in the URL.
 export const fetchPublicProfile = (id: string) =>
   api<SavedProfile>(`/api/profiles/${encodeURIComponent(id)}/public`);
 

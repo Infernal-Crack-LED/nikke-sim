@@ -1,5 +1,6 @@
 // Shareable saved-config codec — the payload behind an id-based share link
-// (`nikkesim.app/sim?id=<id>`, `/api/v1/img/team.png?id=<id>`).
+// (`nikkesim.app/?id=<id>` for a team, `/rostersim?id=<id>` for a roster;
+// `/api/v1/img/team.png?id=<id>` for the card).
 //
 // WHY IT WRAPS A BUILD CODE RATHER THAN REPLACING IT: a build code already
 // carries the whole SELECTION — `g` holds the boss options (weakness, DEF,
@@ -28,7 +29,8 @@ import { b64urlDecode, b64urlEncode } from './build-code.js';
 export const SHARED_CONFIG_VERSION = 1;
 
 // Which surface the config was saved from — decides the page URL the render
-// API hands back (`/sim` vs `/rostersim`) and which card renderer runs.
+// API hands back (`/` vs `/rostersim`, the app's canonical tab paths) and
+// which card renderer runs.
 export type SharedConfigKind = 'team' | 'roster';
 
 // One unit's contribution within a team. `slug` is informational (the card
@@ -75,10 +77,16 @@ export function encodeSharedConfig(cfg: SharedConfig): string {
 const num = (v: unknown): number =>
   typeof v === 'number' && Number.isFinite(v) && v >= 0 ? v : 0;
 
+// Real slugs are short kebab-case. The bound matters because a slug flows
+// verbatim into the render cache KEY and the on-disk spec sidecar, so an
+// unbounded one is unbounded key material — the structural caps below already
+// limit the count, this limits the size.
+const MAX_SLUG_LEN = 64;
+
 const unit = (v: unknown): SharedUnitResult => {
   const o = (v ?? {}) as Record<string, unknown>;
   return {
-    slug: typeof o.slug === 'string' ? o.slug : null,
+    slug: typeof o.slug === 'string' ? o.slug.slice(0, MAX_SLUG_LEN) : null,
     damage: num(o.damage),
     share: Math.min(1, num(o.share)),
   };
@@ -154,6 +162,63 @@ export function decodeSharedConfig(code: string): SharedConfig | null {
   } catch {
     return null;
   }
+}
+
+// ---- the two derived views of a snapshot ------------------------------------
+
+// The DAY a snapshot was simmed — the only part of `at` that is ever drawn
+// (the card footers "simmed <date>"). Exported so the renderer and the render
+// CACHE KEY derive it from one place: if the key normalized `at` differently
+// from the way the footer renders it, two snapshots could share a content
+// address and draw different footers, which is the one failure direction a
+// content address must never have. Returns null for an unparseable stamp — the
+// payload is public and untrusted, so a bad date is dropped, not printed.
+//
+// ⚠ If a renderer ever starts drawing more of `at` than the day (a time, a
+// timezone), this function must widen with it — it IS the contract.
+export function simmedDay(at: string | undefined): string | null {
+  const t = at ? Date.parse(at) : Number.NaN;
+  return Number.isFinite(t) ? new Date(t).toISOString().slice(0, 10) : null;
+}
+
+// The IDENTITY of a share — everything that makes two shares "the same share",
+// which is deliberately NOT the encoded payload: `at` moves on every click, so
+// hashing the payload would make a re-share of an unchanged config look new.
+// The web names its share rows after this (web/src/App.tsx shareName), and the
+// profile store upserts by name, so a stable identity is what keeps re-sharing
+// idempotent instead of burning a row (and a slot against the store's
+// 100-per-kind cap) every time the button is pressed.
+//
+// The day IS part of the identity — it is drawn on the card, so two shares that
+// differ only by day are genuinely different pictures.
+export function sharedConfigIdentity(cfg: SharedConfig): string {
+  const r = cfg.results;
+  return JSON.stringify({
+    k: cfg.kind,
+    b: cfg.build,
+    r: r ? { ...r, at: simmedDay(r.at) ?? '' } : null,
+  });
+}
+
+// The profile NAME a share is stored under, from its identity above. The
+// profile store upserts by (user, kind, name), so naming a share after its
+// content is what makes re-sharing an unchanged config idempotent: it reuses
+// the one row and the one link instead of minting another on every press. That
+// matters because the store caps a user at 100 profiles per kind, and sharing
+// is exactly the kind of thing people do repeatedly.
+//
+// Two 32-bit lanes (≈2^64 of space) — a collision would silently repoint
+// someone else's existing link, so one 32-bit lane is not enough here.
+export function shareProfileName(identity: string): string {
+  let a = 0x811c9dc5;
+  let b = 0x01000193;
+  for (let i = 0; i < identity.length; i++) {
+    const c = identity.charCodeAt(i);
+    a = Math.imul(a ^ c, 0x01000193) >>> 0;
+    b = Math.imul(b + c, 0x85ebca6b) >>> 0;
+  }
+  const hex = (n: number) => n.toString(16).padStart(8, '0');
+  return `share-${hex(a)}${hex(b)}`;
 }
 
 // The bakery-bot `user_profiles.kind` this codec owns. Kind-scoping is what

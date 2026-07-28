@@ -11,6 +11,9 @@ import {
   decodeSharedConfig,
   encodeSharedConfig,
   normalizeSharedResults,
+  sharedConfigIdentity,
+  shareProfileName,
+  simmedDay,
   SHARED_CONFIG_VERSION,
   type SharedConfig,
 } from '../../../src/share/shared-config.js';
@@ -84,6 +87,73 @@ describe('shared-config codec', () => {
   });
 });
 
+// The defect this suite exists to prevent from coming back: `at` moves on every
+// click, so a share NAME derived from the encoded payload is different every
+// time — every press mints a fresh profile row and marches the user toward the
+// store's 100-per-kind cap on a config that never changed. Found in
+// cross-family review 2026-07-28, when the code carried a comment promising an
+// idempotency the hash did not deliver.
+describe('share identity — re-sharing an unchanged config is idempotent', () => {
+  const laterSameDay: SharedConfig = {
+    ...CFG,
+    results: { ...CFG.results!, at: '2026-07-28T23:59:59.000Z' },
+  };
+
+  it('gives the same profile name to two clicks on the same config and day', () => {
+    expect(sharedConfigIdentity(laterSameDay)).toBe(sharedConfigIdentity(CFG));
+    expect(shareProfileName(sharedConfigIdentity(laterSameDay))).toBe(
+      shareProfileName(sharedConfigIdentity(CFG))
+    );
+  });
+
+  it('does NOT collapse configs that differ in anything the card draws', () => {
+    const differentNumbers: SharedConfig = {
+      ...CFG,
+      results: {
+        ...CFG.results!,
+        teams: [{ ...CFG.results!.teams[0], damage: 999 }],
+      },
+    };
+    const differentBuild: SharedConfig = { ...CFG, build: 'OTHERCODE' };
+    const differentKind: SharedConfig = { ...CFG, kind: 'roster' };
+    // the day IS drawn on the card, so it is part of the identity
+    const nextDay: SharedConfig = {
+      ...CFG,
+      results: { ...CFG.results!, at: '2026-07-29T00:00:01.000Z' },
+    };
+    const base = sharedConfigIdentity(CFG);
+    for (const other of [
+      differentNumbers,
+      differentBuild,
+      differentKind,
+      nextDay,
+    ]) {
+      expect(sharedConfigIdentity(other)).not.toBe(base);
+    }
+  });
+
+  it('separates a config with results from the same config without them', () => {
+    const bare: SharedConfig = { v: 1, kind: 'team', build: CFG.build };
+    expect(sharedConfigIdentity(bare)).not.toBe(sharedConfigIdentity(CFG));
+  });
+});
+
+describe('simmedDay — the one derivation of the drawn date', () => {
+  it('reports the UTC day, whatever offset the stamp carries', () => {
+    // A payload is public and hand-craftable, so an offset stamp must resolve
+    // the same way the footer renders it — the renderer and the cache key both
+    // call THIS function precisely so they cannot disagree.
+    expect(simmedDay('2026-07-28T12:00:00.000Z')).toBe('2026-07-28');
+    expect(simmedDay('2026-07-28T23:00:00-05:00')).toBe('2026-07-29');
+  });
+
+  it('returns null for a stamp it cannot parse, rather than a bogus date', () => {
+    expect(simmedDay(undefined)).toBeNull();
+    expect(simmedDay('')).toBeNull();
+    expect(simmedDay('yesterday')).toBeNull();
+  });
+});
+
 describe('shared-config decoder hardening', () => {
   it('clamps non-finite and negative numbers to 0', () => {
     const r = normalizeSharedResults({
@@ -116,6 +186,14 @@ describe('shared-config decoder hardening', () => {
       teams: [{ damage: 1, units: [{ slug: 'liter', damage: 1, share: 99 }] }],
     })!;
     expect(r.teams[0].units[0].share).toBe(1);
+  });
+
+  it('bounds a slug — it becomes cache-key material and a sidecar entry', () => {
+    const r = normalizeSharedResults({
+      at: 'x',
+      teams: [{ damage: 1, units: [{ slug: 'x'.repeat(5000), damage: 1 }] }],
+    })!;
+    expect(r.teams[0].units[0].slug!.length).toBe(64);
   });
 
   it('caps the team and unit counts a hostile payload can request', () => {

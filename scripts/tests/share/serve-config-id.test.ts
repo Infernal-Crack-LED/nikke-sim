@@ -230,6 +230,34 @@ describe('GET team.png?id=', () => {
     expect(height(full)).toBeGreaterThan(height(composition));
   });
 
+  it('draws the stored numbers — two configs differing ONLY in damage render different pixels', async () => {
+    // The height compare above proves the LAYOUT switched; it would still pass
+    // if every number were dropped on the floor. Same team, same day, same
+    // everything except the damage figures ⇒ the bytes must differ, which they
+    // can only do if the numbers reached the canvas.
+    const other = ID(5);
+    PROFILES[other] = {
+      kind: SHARED_CONFIG_PROFILE_KIND,
+      code: encodeSharedConfig({
+        ...TEAM_CONFIG,
+        results: {
+          ...RESULTS,
+          total: 2_000_000,
+          teams: [{ ...RESULTS.teams[0], damage: 2_000_000, dps: 11_111 }],
+        },
+      }),
+    };
+    const png = async (id: string) => {
+      const r = await get(`/api/v1/img/team.png?id=${id}`);
+      return Buffer.from(
+        await (await fetch(base + r.headers.get('location')!)).arrayBuffer()
+      );
+    };
+    const [a, b] = [await png(WITH_RESULTS), await png(other)];
+    expect(a.readUInt32BE(20)).toBe(b.readUInt32BE(20)); // same layout/height
+    expect(a.equals(b)).toBe(false); // different ink
+  });
+
   it('404s an unknown id, and refuses a profile of a non-share kind', async () => {
     expect((await get(`/api/v1/img/team.png?id=${ID(9)}`)).status).toBe(404);
     expect((await get(`/api/v1/img/team.png?id=${WRONG_KIND}`)).status).toBe(

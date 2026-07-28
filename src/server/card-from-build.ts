@@ -37,7 +37,7 @@ import {
   type RosterCardTeam,
 } from '../infographics/node/render.js';
 import type { Build, UnionBossBuild } from '../share/build-code.js';
-import type { SharedResults } from '../share/shared-config.js';
+import { simmedDay, type SharedResults } from '../share/shared-config.js';
 import { unitHasElement } from '../elements.js';
 import type { Element } from '../types.js';
 
@@ -140,13 +140,12 @@ function coreLabel(g: {
 
 // The date a stored snapshot was simmed, as it appears in the footer. A stored
 // number does not follow engine changes, so every card drawn from one says when
-// it was produced (shared-config.ts header). An unparseable `at` is dropped
-// rather than printed — the payload is public/untrusted.
+// it was produced (shared-config.ts header). The day comes from `simmedDay` —
+// the SAME function the render cache key normalizes with, so the key can never
+// dedupe two snapshots that would draw different footers.
 function simmedStamp(results?: SharedResults): string {
-  const t = results ? Date.parse(results.at) : NaN;
-  return Number.isFinite(t)
-    ? ` · simmed ${new Date(t).toISOString().slice(0, 10)}`
-    : '';
+  const day = simmedDay(results?.at);
+  return day ? ` · simmed ${day}` : '';
 }
 
 function metaFor(

@@ -96,8 +96,11 @@ import {
 import {
   encodeSharedConfig,
   decodeSharedConfig,
+  sharedConfigIdentity,
+  shareProfileName,
   SHARED_CONFIG_PROFILE_KIND,
   SHARED_CONFIG_VERSION,
+  type SharedConfig,
   type SharedConfigKind,
   type SharedResults,
 } from '../../src/share/shared-config';
@@ -1099,25 +1102,6 @@ function bootBuild(): Build | null {
 function bootConfigId(): string | null {
   const id = new URLSearchParams(window.location.search).get('id');
   return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
-}
-
-// A CONTENT-DERIVED name for the share row. The profile store upserts by
-// (user, kind, name), so naming a share after its content makes re-sharing an
-// unchanged config idempotent — it reuses the one row and the one link instead
-// of minting another every click. That matters: the store caps a user at 100
-// profiles per kind, and sharing is the kind of thing people do repeatedly.
-// Two 32-bit lanes (≈2^64 space) — a collision would silently repoint someone
-// else's existing link, so a single 32-bit lane is not enough here.
-function shareName(code: string): string {
-  let a = 0x811c9dc5;
-  let b = 0x01000193;
-  for (let i = 0; i < code.length; i++) {
-    const c = code.charCodeAt(i);
-    a = Math.imul(a ^ c, 0x01000193) >>> 0;
-    b = Math.imul(b + c, 0x85ebca6b) >>> 0;
-  }
-  const hex = (n: number) => n.toString(16).padStart(8, '0');
-  return `share-${hex(a)}${hex(b)}`;
 }
 
 // Exactly the fields a snapshot reads, so both result shapes qualify without a
@@ -2824,16 +2808,20 @@ export function App({ user }: { user: AuthUser | null }) {
       return null;
     }
     try {
-      const code = encodeSharedConfig({
+      const cfg: SharedConfig = {
         v: SHARED_CONFIG_VERSION,
         kind,
         build: encodeBuild(build),
         ...(teams?.length ? { results: resultsSnapshot(teams) } : {}),
-      });
+      };
+      // Name from the IDENTITY, store the full payload. They differ by `at`,
+      // which moves on every click — naming from the payload would mint a new
+      // row per press and walk the user into the store's 100-per-kind cap on a
+      // config that never changed (shared-config.ts sharedConfigIdentity).
       const saved = await saveProfile(
         SHARED_CONFIG_PROFILE_KIND,
-        shareName(code),
-        code
+        shareProfileName(sharedConfigIdentity(cfg)),
+        encodeSharedConfig(cfg)
       );
       const u = new URL(window.location.href);
       u.pathname = kind === 'roster' ? '/rostersim' : '/';

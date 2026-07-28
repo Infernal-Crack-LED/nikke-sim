@@ -13,6 +13,7 @@
 import { decodeBuild, type Build } from '../share/build-code.js';
 import {
   normalizeSharedResults,
+  simmedDay,
   type SharedResults,
 } from '../share/shared-config.js';
 
@@ -289,11 +290,20 @@ export function specCacheKey(spec: RenderSpec): string {
       // The results snapshot is appended ONLY when present, so every key for a
       // no-results card stays byte-identical to the one that already addresses
       // its file on disk (a reshape here orphans the cache — that is what
-      // RENDERER_VERSION is for). The whole normalized snapshot goes in rather
-      // than a projection of it: unlike the build, every field here is a number
-      // the card prints, and over-keying only costs a dedupe while under-keying
-      // serves one config's picture at another's address.
-      const stamp = spec.results ? `|${JSON.stringify(spec.results)}` : '';
+      // RENDERER_VERSION is for). Every NUMBER in the snapshot goes in whole:
+      // unlike the build, each one is printed on the card, and over-keying only
+      // costs a dedupe while under-keying serves one config's picture at
+      // another's address.
+      //
+      // `at` is the exception, and it goes the other way: the card draws only
+      // its DAY (card-from-build.ts simmedStamp), so keying the full ISO
+      // timestamp would mint a fresh content address for a pixel-identical
+      // card on every re-share. It is normalized through `simmedDay` — the
+      // very function the footer renders with, so the two cannot drift into
+      // the dangerous direction (same address, different picture).
+      const stamp = spec.results
+        ? `|${JSON.stringify({ ...spec.results, at: simmedDay(spec.results.at) ?? '' })}`
+        : '';
       return `${RENDERER_VERSION}|${spec.kind}|${key}${stamp}`;
     }
     case 'dps':

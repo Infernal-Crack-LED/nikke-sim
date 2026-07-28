@@ -72,7 +72,8 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
       results,
     });
     expect(withResults).toBe(
-      `${specCacheKey({ kind: 'team', build: TEAM_CODE })}|${JSON.stringify(results)}`
+      `${specCacheKey({ kind: 'team', build: TEAM_CODE })}|` +
+        `${JSON.stringify({ ...results, at: '2026-07-28' })}`
     );
     // different numbers on the same team MUST be a different content address —
     // otherwise one config's card is served at another's URL, forever
@@ -82,6 +83,24 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
         kind: 'team',
         build: TEAM_CODE,
         results: { ...results, total: 3 },
+      })
+    ).not.toBe(withResults);
+    // …but a re-share LATER THE SAME DAY is the same picture: the card prints
+    // only the day, so keying the full ISO stamp would mint a new content
+    // address per click for pixel-identical output.
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, at: '2026-07-28T23:59:59.000Z' },
+      })
+    ).toBe(withResults);
+    // a different DAY does draw a different footer, so it must fork.
+    expect(
+      specCacheKey({
+        kind: 'team',
+        build: TEAM_CODE,
+        results: { ...results, at: '2026-07-29T00:00:01.000Z' },
       })
     ).not.toBe(withResults);
     // an undecodable code can't reach a render; the key falls back to the raw

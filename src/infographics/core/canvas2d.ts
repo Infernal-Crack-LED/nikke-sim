@@ -60,7 +60,16 @@ export const PORTRAIT_CROP_TOP = 0.16;
 // ruler — without this a long label simply overdraws whatever sits beside it.
 // The caller sets ctx.font BEFORE calling (the measurement is font-dependent).
 export function fitText(ctx: Canvas2DLike, text: string, maxW: number): string {
-  if (maxW <= 0 || ctx.measureText(text).width <= maxW) {
+  // A non-positive budget used to return the FULL string — the exact overdraw
+  // this helper exists to prevent, in the one regime where it is guaranteed to
+  // happen. No current caller can reach it (every call site derives maxW from
+  // a positive column), so this is a latent guard rather than a live fix; it
+  // is here because the old failure mode was silent. (Cross-family review
+  // 2026-07-28.)
+  if (maxW <= 0) {
+    return '…';
+  }
+  if (ctx.measureText(text).width <= maxW) {
     return text;
   }
   let s = text;
