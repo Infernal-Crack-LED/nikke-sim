@@ -1,0 +1,120 @@
+{
+  "slug": "a2",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Charge Damage ▲ 110.44% for 15 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Charge-bucket damage on the owner's own charged RL shots only; additive percentage points in the charge bucket (chargeDamagePct), NOT a base-charge multiplier (chargeDamageMultPct) and NOT generic attackDamagePct",
+      "durationSemantics": "15 s wall-clock (durationSec: 15 = 900 frames); refreshed on each own-burst cast",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' is the unit's OWN burst cast, NOT fullBurstEnter. Fires only on rotations a2 herself bursts",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter so the buff applies on EVERY team Full Burst — in the control fixture helm is a co-B3, so rotations helm takes would wrongly re-grant a2's buff. Secondary misread: encoding as chargeDamageMultPct (base-charge multiplier) instead of additive chargeDamagePct",
+      "distinguishingAssertion": "Count buffApply events with stat 'chargeDamagePct', value 110.44, caster/target = a2's slot: the count must EQUAL the number of burstCast events with a2 as caster and be STRICTLY LESS than the fullBurstStart count in controlComp(a2) (helm co-B3 takes some rotations). Each apply's expiresFrame = applyFrame + 900",
+      "inertness": "No chargeDamagePct apply on Full Bursts where helm (not a2) cast the stage-3 burst",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Explosion Radius ▲ 100.74% for 15 sec",
+      "disposition": "UNMODELED",
+      "scope": "AoE radius geometry — no damage-per-hit effect against the single partless scope-lock boss",
+      "durationSemantics": "15 s wall-clock (irrelevant once unmodeled)",
+      "triggerIdentity": "burstCast (same header as the charge-damage line)",
+      "targetSet": "self",
+      "nearestWrongModel": "Mapping 'Explosion Radius ▲' onto projectileExplosionPct — a Damage-Up-bucket stat carried by RL kits — because the words pattern-match; that invents ~100% Damage Up out of a pure radius line. A radius increase moves zero damage vs one boss",
+      "distinguishingAssertion": "No buffApply with stat 'projectileExplosionPct' (or any Damage-Up stat) attributable to this line; totals(res)['a2'] unchanged when the line is absent (withPatchedOverride stripping any such block)",
+      "inertness": "a2 total damage and every teammate's total must not move from this line; it belongs verbatim in unmodeled.skill1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 30.1% of final ATK as additional",
+      "disposition": "FAITHFUL",
+      "scope": "Fires per FULL-CHARGE hit only (a2's RL shots are full charges under the charge model; a non-full-charge hit must NOT proc). Rider takes Full Burst +50% by landing timing (default ON), NO range bonus (engine force-sets noRange on riders), crits at the caster's sheet rate, NO core (text lacks 'core strike')",
+      "durationSemantics": "Instant flatDamage per proc — no duration",
+      "triggerIdentity": "On-HIT per full charge ('when hitting a target with Full Charge'), i.e. a per-shot trigger on the charged shot, not on-cast, not hitCount-gated, not lastBullet",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Encoding as an every-N or hitCount-gated proc (under-fires ~N×), or granting the rider core/range eligibility, or making it a self buff instead of enemy-directed flatDamage",
+      "distinguishingAssertion": "damage events from a2's srcSlot in the rider bucket occur exactly once per a2 charged shot (count === a2 shot count), each with mult 30.1, rangeApplied === false, and fbMajorApplied true exactly when the shot lands inside Full Burst",
+      "inertness": "Zero rider events on frames with no a2 full-charge hit; rider count never exceeds shot count",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Damage to Parts ▲ 40.88% for 3 sec",
+      "disposition": "FAITHFUL",
+      "scope": "partsDamagePct — parsed but INERT in v1 (scope-lock boss is partless and hit location never changes damage). Model it for kit completeness; it must move nothing",
+      "durationSemantics": "3 s wall-clock, refreshed per full-charge hit (effectively continuous while firing; window lapses across the 111-frame reload only if reload+charge exceeds 3 s)",
+      "triggerIdentity": "Same per-full-charge-hit trigger as the rider; second ■ header — Affects SELF (a self buff, not a boss debuff)",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding as attackDamagePct or as a boss damageTakenPct debuff — either invents ~40% real damage (for the whole team, in the debuff case) out of a parts-only line",
+      "distinguishingAssertion": "buffApply carries stat 'partsDamagePct' value 40.88 targeting a2's own slot; totals for ALL five units identical with the block present vs stripped (withPatchedOverride)",
+      "inertness": "a2 and teammate totals must NOT move; no damageTakenPct/attackDamagePct apply from this line",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 2: ATK ▲ 15.19%",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self atkPct while Mode B holds",
+      "durationSemantics": "NOT permanent and NOT a fixed kit-stated window: Mode B lasts until own HP dips below 40% under a 3.99%/s drain. Derived lifetime is a ⚑ CALIBRATED value: ~15–16 s if the drain is % of MAX HP (60/3.99), ~22–23 s if % of CURRENT HP (ln0.4/ln0.9601). The sim has no HP pool, so this MUST land as a derived finite durationSec with the reading stated; healing extending Mode B (crown heals in the fixture) is a documented unmodeled caveat",
+      "triggerIdentity": "burstCast — a self mode declared in the unit's OWN burst block; fires only when a2 casts, never on helm's rotations",
+      "targetSet": "self",
+      "nearestWrongModel": "Permanent/whole-fight Mode B (no HP-gate expiry) — with a 40 s burst CD and ~15–23 s real lifetime, a permanent buff roughly doubles uptime and over-credits both ATK and cadence. Second misread: keying to fullBurstEnter, or defaulting the duration to the 10 s FB window",
+      "distinguishingAssertion": "buffApply stat 'atkPct' value 15.19 self-targeted occurs only following a2 burstCast events; its expiresFrame is FINITE, ≈ applyFrame + derived-duration×60, strictly less than the frame of a2's next burst cast (a buff-free gap must exist each 40 s cycle). No time-lapse buffRemove is emitted — assert on expiresFrame, not on a remove event",
+      "inertness": "No Mode B applies on helm-cast rotations; no atkPct contribution in the gap between Mode B expiry and a2's next cast",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 3: Charge Speed ▲ 35.88%",
+      "disposition": "FAITHFUL",
+      "scope": "chargeSpeedPct self — a WEAPON-STATE modifier that shortens the 60-frame charge and therefore raises shots fired; it is damage, never a skip-as-utility line. Same Mode B lifetime/trigger as Effect 2",
+      "durationSemantics": "Same ⚑ derived Mode B duration as Effect 2 (the two effects share one window and must expire together)",
+      "triggerIdentity": "burstCast (own burst), same block as Effect 2",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping the line as 'defensive/utility, no damage' — it gates shot count on a charge weapon; or giving it a duration different from Effect 2's (the mode is one window)",
+      "distinguishingAssertion": "buffApply stat 'chargeSpeedPct' value 35.88 with the SAME applyFrame and expiresFrame as the atkPct apply from the same cast; a2's shot events per second inside the Mode B window exceed her outside-window cadence, and stripping only this effect (withPatchedOverride) reduces a2's shot count",
+      "inertness": "Cadence outside the Mode B window must match the base 60-frame charge + release-latency + reload cycle",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Effect 1: Current HP ▼ 3.99% every 1 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Self HP drain — no offensive effect of its own in a sim with no HP pool; its ONLY sim-relevant consequence is the derived Mode B lifetime consumed by Effects 2–3 (and the 'below 40% → removed' clause). a2 has no HP-scaling ATK conversion, so the lost HP feeds nothing else",
+      "durationSemantics": "Every 1 s while Mode B holds; the %-of-current vs %-of-max ambiguity is exactly what gates the derived duration (⚑ — pin from footage: time from burst banner to visible Mode B drop)",
+      "triggerIdentity": "Tick inside the burstCast-opened Mode B window",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeling the drain as a DoT/damage effect, or ignoring the 40%-removal clause entirely (which is the permanent-Mode-B misread on Effects 2–3)",
+      "distinguishingAssertion": "No damage events attributable to this line (it is not boss damage); the clause's footprint appears ONLY as the finite expiresFrame asserted on Effects 2–3",
+      "inertness": "Boss-directed damage totals unaffected by this line directly",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Charge Damage ▲ 110.44% for 15 sec",
+    "skill2:Deals 30.1% of final ATK as additional damage",
+    "burst:Effect 2: ATK ▲ 15.19%",
+    "burst:Effect 3: Charge Speed ▲ 35.88%"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": ["Explosion Radius ▲ 100.74% for 15 sec."],
+    "skill2": [],
+    "burst": [
+      "Effect 1: Current HP ▼ 3.99% every 1 sec. (drain itself — consumed only as the derived Mode B duration)",
+      "If own HP dips below 40%, Mode B is removed. (no HP pool — expressed as the derived finite durationSec; healing-based extension unmodeled)"
+    ]
+  },
+  "notes": "Expected shared-prior misreads, in order of damage moved: (1) Mode B modeled PERMANENT — the kit gives no 'for N sec', so a parser defaults to no-expiry; the HP-drain + 40% floor makes it finitely self-terminating (~15–16 s max-HP reading vs ~22–23 s current-HP reading; both must be stated as ⚑ with the chosen reading, and the tests must assert a finite expiresFrame with a dead gap before the next 40 s-CD cast). (2) burstCast vs fullBurstEnter on BOTH skill1 and burst — the control fixture deliberately carries helm as co-B3, so the two triggers measurably diverge; assert apply-count === a2's burstCast count < fullBurstStart count. (3) 'Explosion Radius' pattern-matched onto projectileExplosionPct (an RL Damage-Up stat) — a pure geometry line that must stay unmodeled/inert. (4) 'Damage to Parts' upgraded to attackDamagePct or a boss debuff — must stay partsDamagePct and provably move zero total. (5) skill1's 15 s window and Mode B's derived window start on the SAME cast but have DIFFERENT lengths — tests must not conflate the two expiries. Also: Charge Speed is shot-count-bearing on a chargeFrames-60 RL (ammo 6, reloadFrames 111) — whole-picture cadence math should confirm the with-buff cycle time; and the rider count === shot count assertion doubles as a guard against a chargeCounter/hitCount mis-encode. Crown in the fixture emits heals — real-game Mode B extension via healing is out of scope with no HP pool; record it as a caveat, don't model it.",
+  "model": "claude-fable-5"
+}
