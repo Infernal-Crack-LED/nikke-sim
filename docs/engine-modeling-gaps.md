@@ -63,12 +63,12 @@
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 4 | alice, laplace, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 37 | 2b, ade-agent-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, chisato, … |
+| `hitCount` | 38 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 14 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 5 | eunhwa-tactical-upgrade, modernia, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 7 | asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
+| `instantReload` | 8 | alice-wonderland-bunny, asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
 | `interval` | 11 | cinderella-crystal-wave, delta-ninja-thief, elegg-boom-and-shock, emma-tactical-upgrade, flora, helm-aquamarine, isabel, marciana-marine-study, … |
 | `lastBullet` | 4 | anis-sparkling-summer, exia, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
@@ -88,7 +88,7 @@
 | `pullsPerSec` | 1 | jill |
 | `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
 | `recovery` | 2 | asuka, crown |
-| `reenterStage` | 2 | anis-star, tia |
+| `reenterStage` | 3 | alice-wonderland-bunny, anis-star, tia |
 | `removeOnReload` | 0 | _none_ |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
