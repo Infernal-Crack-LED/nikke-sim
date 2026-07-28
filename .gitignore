@@ -43,6 +43,11 @@ scripts/blind-rebuild/results/
 
 scripts/probe/__pycache__
 scripts/probe/.venv
+# cross-family dispatch scratch (packets, redacted types, REQUEST.md) stays untracked;
+# the s*-result.json evidence is committable (owner ruling 2026-07-26) — un-ignored so
+# lint-staged's post-task `git add` (no -f) does not refuse the force-added results.
 scripts/kit-autonomy/cross-family/**/*
+!scripts/kit-autonomy/cross-family/*/
+!scripts/kit-autonomy/cross-family/*/*-result.json
 
 .kimi-code/local.toml

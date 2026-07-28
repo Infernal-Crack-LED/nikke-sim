@@ -1,0 +1,117 @@
+{
+  "slug": "tia",
+  "kitDescription": "Tia is a Burst-I rocket-launcher Defender whose whole kit revolves around her cover. Whenever her cover's HP is restored — in practice each time she uses her burst, which restores cover HP on cast — she shaves 13 seconds off her own burst cooldown and grants the entire team (herself included) +32.11% attack damage for 10 seconds. Her burst puts a 10-second shield on herself (35.07% of her max HP) and a separate smaller shield on her four allies (10.21%, excluding herself), then re-opens Burst Stage 1 so a second Burst-I unit can also cast inside the same chain. After every five normal attacks she briefly raises her cover's max HP and taunts all enemies, and her burst additionally gives her lifesteal over 10 seconds. In a damage sim her offensive footprint is the team attack-damage buff plus the rotation effects of her cooldown reduction and stage re-entry; the shields, taunt, cover HP, and lifesteal are defensive.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "R1 'DISCRIMINATOR: removing the heal silences skill1 entirely' — S5 keyed skill1 to the engine's generic `recovery` trigger chained off an emitted heal; the driver (and S2b, and S6) key skill1 to burstCast because `recovery` over-fires on any unit-HP heal (helm/crown), which is not Cover-HP recovery. RECON_ERROR by S5; its own blind-family override (S6) fails these two assertions identically.",
+      "R2 'the whole team loses damage when the heal is cut' — same root cause as R1 (driver skill2 is empty, so the NO_HEAL patch is a no-op). RECON_ERROR by S5.",
+      "R3 'lasts 10 sec (seconds, not rounds)' — test artifact: engine emits durationShots: null, not undefined; the seconds-based expiry (expiresFrame > 0) the test actually wants holds. RECON_ERROR, no faithfulness content.",
+      "R4 'the cdr is self-scoped: teammate cadence byte-identical' — over-tight: in the double-B1 fixture, tia's CDR legitimately re-interleaves the shared first-ready rotation + reenterStage stage-hold (10 vs 9 liter casts over 180s). The CD reduction itself is applied to tia alone. RECON_ERROR."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Cooldown of Burst Skill ▼ 13 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self burstCdr 13s; trigger-proxy note: the only in-sim deterministic cover-HP recovery is her own S2 on burst cast; generic `recovery` would over-fire on ally unit-HP heals; second stack + 12s window need environmental cover regen → unmodeled COLD residual",
+        "blindSaid": "S2b and S6 independently derived the identical burstCast proxy and rejected `recovery` for the same over-fire reason; S5 alone chained off `recovery` (its two discriminator REDs are the artifact)",
+        "formulaCheck": "SSOT §8 burst cooldowns are per-unit; engine burstCdr is instant-seconds per activation — per-proc −13s is the documented approximation of a 12s timed stat, not a CD rewrite. Effective CD 27s vs in-game ~20s (passive cover regen) is documented with direction in note + unmodeled",
+        "fireRateOk": true,
+        "explanation": "Fires exactly once per own burst cast; driver T4 pins the stage-1 cadence in the no-B3 isolation [tia, crown] at 20<gap<35s (≈27s), with the no-CDR counterfactual >35s — discriminates both omission (40s) and double-stack over-credit (14s). The stacking clause is carried verbatim in unmodeled with the environmental reason."
+      },
+      {
+        "kitLine": "Attack damage ▲ 32.11% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies (self included) attackDamagePct 32.11, durationSec 10",
+        "blindSaid": "S6 byte-identical; S2b spec matches on bucket, scope, duration, and trigger; S5 agreed on bucket/scope/magnitude (its REDs are the trigger-mechanism artifact, not this line)",
+        "formulaCheck": "attackDamagePct sits in the DamageUp bucket (§1e) and multiplies ATK — the S5 bucket discriminator (no atkPct at 32.11) is GREEN; 'Affects all allies' has no except-self clause, driver T1 pins the 4-target set per cast",
+        "fireRateOk": true,
+        "explanation": "One apply per ally per burstCast, frame-exact with the cast (T2 discriminates the fullBurstEnter nearest-wrong, which lands ~1s late for a B1); 10s wall-clock expiry; removal drops the team total (T3). Bucket, value, scope, duration, and cadence all match the prose."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Max HP of Cover ▲ 32.75% of the skill",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no Cover entity in the sim; defensive; carried in unmodeled.skill2",
+        "blindSaid": "S2b UNMODELED with the explicit warning not to misread it as cover recovery (would perma-proc skill1) or as own-maxHP (would contaminate HP scalers); S6 unmodeled with the same caveat",
+        "formulaCheck": "SSOT has no cover HP pool; encoding it as casterMaxHpPct would feed atkOfMaxHpPct-style conversions wrongly — skip is the faithful representation",
+        "fireRateOk": true,
+        "explanation": "Inert and correctly inert: S5's negative assertions (no offensive payload on a hitCount block, no 32.75 ATK leak) are GREEN against the driver."
+      },
+      {
+        "kitLine": "Attract: Taunts all enemies for 5 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no aggro model, one boss, boss deals no damage",
+        "blindSaid": "S2b UNMODELED; S6 unmodeled; S5 skipped by agreement (no aggro model)",
+        "formulaCheck": "No enemy-targeting/aggro channel exists in v1; nothing to route",
+        "fireRateOk": true,
+        "explanation": "Documented inert; no boss-side event is emitted (S5 boss-side inertness GREEN)."
+      },
+      {
+        "kitLine": "Restores Cover HP by 21.41% of the skill",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "restore AMOUNT unmodeled (no cover pool); the line's trigger-anchor ROLE for skill1 is enacted via the burstCast proxy — stated in note and unmodeled",
+        "blindSaid": "S2b: the load-bearing content is the trigger chain, keyed burstCast; S6 emitted a ceremonial 1-tick heal (nothing consumes it — damage-identical to the driver's empty skill2)",
+        "formulaCheck": "No HP pool at scope (v1 boss deals no damage) — the 21.41% magnitude has nowhere to land; the once-per-cast timing is what matters and is preserved",
+        "fireRateOk": true,
+        "explanation": "Magnitude honestly dropped with reason; activation timing preserved through the proxy. S5's chained-heal reading is the one RECON_ERROR here and is contradicted by both the other blind agents and the engine's `recovery` semantics."
+      },
+      {
+        "kitLine": "Recovers 21.96% of attack damage as HP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — self lifesteal HoT, no HP-loss channel; deliberately NOT emitted as heal events (unit-HP ≠ cover-HP)",
+        "blindSaid": "S2b flagged the exact trap (heal ticks:10 + generic recovery trigger → 10 spurious skill1 procs); S6 same; both converge with the driver",
+        "formulaCheck": "No HP pool; emitting it would only risk mis-feeding recovery consumers — omission documented is correct",
+        "fireRateOk": true,
+        "explanation": "S5's once-per-restore ratio bound (skill1 applies ≤ casts × allies) is GREEN against the driver — no per-tick multiplication exists."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Shield with 35.07% of the skill user's",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self shield maxHpPct 35.07 / 10s; event-only at scope (no HP pool), fires 'shielded' triggers",
+        "blindSaid": "S6 byte-identical; S2b FAITHFUL with the probe-teammate distinguishing assertion; S5 structural shield test GREEN",
+        "formulaCheck": "SSOT §2b/§9: shield events feed 'shielded' triggers and requiresShielded windows for shield-synergy teammates — the driver's T5 0.73-atkPct probes make each application observable without touching the shield blocks",
+        "fireRateOk": true,
+        "explanation": "Exactly one self-shield application per tia cast (probe count == cast count); removal silences the probe; damage-inertness pinned byte-identical by S5."
+      },
+      {
+        "kitLine": "Shield with 10.21% ... (except self)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies excludeSelf:true shield maxHpPct 10.21 / 10s",
+        "blindSaid": "S6 byte-identical; S2b FAITHFUL (per-target counts: exactly the 4 non-tia slots); S5 structure test GREEN",
+        "formulaCheck": "Target set matches the prose's explicit except-self; T5's nearest-wrong counterfactual (excludeSelf dropped) double-fires tia's probe and is discriminated",
+        "fireRateOk": true,
+        "explanation": "One ally-shield application per cast reaching crown's probe; tia receives only her 35.07% event. Scope and magnitude literal."
+      },
+      {
+        "kitLine": "Re-enters Burst Stage 1.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burst block effect { kind: 'reenterStage', stage: 1 } — rotation holds stage 1 so a second B1 casts in the same chain; no-op when no second B1 is eligible",
+        "blindSaid": "S2b called it a rotation-critical GAP only because its schema view lacked the primitive; S6 left it unmodeled for the same reason — both artifacts of the de-contamination stripping the types.ts line whose comment names Tia. The primitive EXISTS (types.ts:304) and is SSOT-sanctioned",
+        "formulaCheck": "SSOT §8 explicitly: 'reenterStage (Tia, Anis Everyone's Star) re-opens stage 1 mid-rotation' — the driver's encoding IS the named mechanic, not a downstream approximation; T6 pins liter's chain-1 stage-1 cast exactly 30f (STAGE_CAST_GAP) after tia's and its absence in the no-reenter counterfactual",
+        "fireRateOk": true,
+        "explanation": "The largest single term in the kit is modeled with the real engine primitive and discriminatingly tested. The blind family's 'GAP' labels are RECON_ERRORs of the redaction, not of the driver."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": 1,
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found. All nine kit lines are FAITHFUL (6) or DOCUMENTED_GAP (3, all defensive channels with no v1 representation, carried verbatim). The one genuine modeling judgment — keying skill1 to burstCast instead of the engine's generic `recovery` trigger — was independently derived by three of the four agents (driver, S2b, S6) for the same reason (`recovery` over-fires on ally unit-HP heals, which are not Cover-HP recovery), and S5's contrary chained-heal reading is refuted intra-family: its own blind-family override fails S5's two discriminator assertions identically. The remaining S5 REDs are a null-vs-undefined test artifact and an over-tight byte-equality assertion that ignores legitimate rotation coupling through reenterStage + first-ready. The driver's reenterStage modeling is the SSOT-named mechanic with a frame-exact discriminating test (T6), and the 'missing primitive' the blind agents reported is a redaction artifact (types.ts:304 was stripped because its comment names Tia). The one real residual is fully documented with direction: passive environmental cover regen would proc skill1 between bursts (in-game effective CD ~20s vs the sim's 27s, plus higher buff uptime) — COLD, unmodelable without boss damage on cover, and near-nil in standard comps where B2/B3 40s cooldowns gate FB cadence. Same-model residual for the owner to spot-check: all four agents are same-family, so the burstCast-proxy convergence proves stability, not correctness — the one thing no artifact here can confirm is the real in-game cover-regen proc cadence behind the ~20s effective-CD claim; a single footage read of tia's inter-burst gap in a live fight would settle it and is the only measurement worth queuing.",
+  "model": "kimi-code/k3"
+}

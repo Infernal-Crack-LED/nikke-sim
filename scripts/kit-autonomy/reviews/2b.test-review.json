@@ -1,0 +1,104 @@
+{
+  "slug": "2b",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when using Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Max HP stat buff (no attack-type scoping); its damage relevance is indirect — it feeds skill2's HP→ATK conversion",
+      "durationSemantics": "'continuously' = permanent, no durationSec and no durationShots; escalation tier persists and only grows",
+      "triggerIdentity": "burstCast (this unit's OWN burst — 'when using Burst Skill'), NOT fullBurstEnter. Critical: the control fixture has a second Burst III unit (helm), so team Full Bursts occur on rotations where 2b does NOT cast; the two triggers genuinely diverge here",
+      "targetSet": "self only",
+      "nearestWrongModel": "Keyed to fullBurstEnter (stacks accrue on EVERY team FB, over-crediting whenever helm carries the rotation); second-nearest: treating the Max HP lines as defensive/skippable, which silently deletes the kit's entire ATK ramp via skill2",
+      "distinguishingAssertion": "Count buffApply events with stat 'maxHpFlat', casterIdx === 2b's index, target self: the count must equal the number of 2b burstCast events in the event log, and must be STRICTLY LESS than the number of fullBurstStart events in a run where helm also bursts. Green under burstCast, red under fullBurstEnter",
+      "inertness": "No maxHpFlat buffApply from this block on a Full Burst that 2b did not personally cast; no application at t=0",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Once/Twice/Three times: Max HP ▲ …",
+      "disposition": "FAITHFUL",
+      "scope": "Escalating self Max HP: 10.03% / 20.06% / 57.76% — 'Each subsequent effect triggers all effects before it' = CUMULATIVE tiers (escalating steps 1..N per activation, same-caster-slot overwrite prevents double-count)",
+      "durationSemantics": "Permanent ('continuously'); tier ceiling at three uses — 4th+ own burst re-applies the max tier with no further growth",
+      "triggerIdentity": "Same burstCast block; encode as kind:'escalating' with three targetMaxHpPct steps (emitted as flat HP under stat 'maxHpFlat')",
+      "targetSet": "self (caster === target, so the granted Max HP DOES feed atkOfMaxHpPct per the e3 self-grant rule)",
+      "nearestWrongModel": "Replace-only reading: after 3 bursts total bonus = 57.76% (the tier value alone) instead of 10.03+20.06+57.76 = 87.85%. Also plausible: naive re-stacking that double-counts earlier steps (cast2 adds 10.03 AGAIN on top of cast1's) → 118%+; or a 10s burst-window durationSec on a 'continuously' line",
+      "distinguishingAssertion": "After 2b's third burstCast event, the live cumulative Max HP bonus (sum of active maxHpFlat buff values from this caster-slot, i.e. total granted HP / base HP) equals 87.85% ±0.01 — red at 57.76% (replace), red at ≥118% (double-count). After a fourth burst, the cumulative value is UNCHANGED at 87.85%",
+      "inertness": "Skill1 grants no ATK/damage stat directly; with skill2's conversion patched out (withPatchedOverride), removing skill1 must move 2b's totalDamage by ZERO",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after firing 300 time(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Flat damage proc, 167.45% of final ATK, plain flavor ('as damage' — no distributed/sustained wording). Rider rules: noRange forced (engine default for riders), crits only if modeled crit-eligible (default OFF), takes the +50% FB major by LANDING TIMING (default ON for function damage)",
+      "durationSemantics": "Instant hit, recurring — the counter is cumulative and repeats every 300 rounds, not once-per-battle",
+      "triggerIdentity": "hitCount count:300 (counts ROUNDS fired by the owner; AR hitsPerShot=1 so rounds == trigger pulls here). NOT interval — the kit gives an explicit fire-count clause, so no invented cadence ⚑ is needed",
+      "targetSet": "enemy ('Affects all enemies' — single partless boss, full value lands once)",
+      "nearestWrongModel": "interval trigger with a hand-converted period (~27s from assumed fire rate) — drifts from the true cadence across reloads and any fire-rate buff; second-nearest: fires only ONCE at shot 300 instead of every 300",
+      "distinguishingAssertion": "In the event log, damage events with 2b's srcSlot skill2 and mult 167.45 number exactly floor(totalRoundsFired/300), where totalRoundsFired = count of 2b 'shot' events; and the Nth proc's frame coincides with (within one frame of) her 300N-th shot event, NOT a fixed wall-clock multiple. Red under interval (proc frames decouple from shot indices across the 81-frame reloads) and red under once-only (count 1)",
+      "inertness": "No skill2 damage event before her 300th shot event; the proc count must not change when only wall-clock-affecting-but-not-shot-count factors change",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 6.16% of the skill user's final Max HP",
+      "disposition": "FAITHFUL",
+      "scope": "ATK gained as a % of the unit's OWN FINAL (live, buffed) Max HP — the atkOfMaxHpPct primitive, a flat ATK add. This is the kit's damage engine: skill1's permanent self Max HP stacks grow this ATK after every own burst",
+      "durationSemantics": "'at the start of battle … continuously' = passive, always-on, whole fight; the conversion must re-read live Max HP (or be re-applied on each HP change), not snapshot base HP at t=0",
+      "triggerIdentity": "passive (start-of-battle with no other activation clause)",
+      "targetSet": "self",
+      "nearestWrongModel": "Converting BASE Max HP only (t=0 snapshot) — the model looks right in the opening seconds but misses the entire skill1 ramp, under-crediting late-fight ATK by up to ~87.85% of the conversion; also plausible: mis-keying as plain atkPct 6.16 (% of ATK — wrong magnitude and wrong source stat) or as casterMaxHpPct (an HP grant, not an ATK grant)",
+      "distinguishingAssertion": "A/B via withPatchedOverride: with skill1's Max HP steps zeroed, 2b's totalDamage must DROP versus the shipped override (green: skill1 feeds the conversion; red under base-HP-snapshot: the two runs are identical). Additionally, per-shot damage-event magnitudes for 2b's normal attacks strictly increase across her 1st/2nd/3rd burst boundaries in the faithful model",
+      "inertness": "The conversion reads only 2b's OWN Max HP: an ally-granted Max HP buff (if any were patched onto a teammate targeting 2b — ally grants don't feed conversion) and teammates' HP must not move it; removing the skill1 feed must not change any OTHER unit's totalDamage",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 2439.36% … as distributed damage",
+      "disposition": "FAITHFUL",
+      "scope": "One burst-cast hit, 2439.36% of final ATK, flavor 'distributed' (eligible for distributedDamagePct boosts, and MUST carry the flavor so a plain-damage encoding can't dodge/absorb that bucket). Single boss → full amount on the one target",
+      "durationSemantics": "Instant, once per own burst cast",
+      "triggerIdentity": "burstCast; per rule 9 burst-cast damage lands BEFORE the Full Burst window opens → FB-exempt (no +50% major), no entry auras, noRange",
+      "targetSet": "enemy ('all enemies')",
+      "nearestWrongModel": "Applying the +50% Full-Burst major to the burst hit (landing it 'inside' FB) — a flat ~50% over-credit on the kit's largest single number; second-nearest: dropping the 'distributed' flavor (merging both burst lines into one 3231.36% plain hit)",
+      "distinguishingAssertion": "The damage event for the 2439.36 mult has fbMajorApplied === false and inFullBurst === false (it precedes the fullBurstStart event of that rotation), and carries the distributed bucket/flavor. Red if fbMajorApplied is true or the flavor is plain",
+      "inertness": "Exactly ONE 2439.36-mult damage event per 2b burstCast event — never on rotations where helm bursts instead; no +30% range bonus applied (rangeApplied false)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "1 enemy … highest remaining HP: 792%",
+      "disposition": "FAITHFUL",
+      "scope": "Second burst-cast hit, 792% of final ATK, plain flavor ('additional damage' — NOT distributed; must be a SEPARATE effect so distributedDamagePct buffs never touch it). 'Highest remaining HP' is determinate on the single boss",
+      "durationSemantics": "Instant, once per own burst cast",
+      "triggerIdentity": "burstCast, same block/timing as the main hit — FB-exempt, noRange, same landing rules",
+      "targetSet": "enemy (the single boss)",
+      "nearestWrongModel": "Dropping the line as 'targeting indeterminate' (single boss makes it fully determinate — a silent -792% per cast), or folding it into the distributed hit (wrong flavor → distributedDamagePct would over-boost it)",
+      "distinguishingAssertion": "Every 2b burstCast event is followed by TWO distinct damage events from her burst slot — mult 2439.36 (distributed) AND mult 792 (plain) — both with fbMajorApplied false. Red if only one combined event appears or the 792 hit carries the distributed flavor",
+      "inertness": "Zero 792-mult events on helm-cast rotations; count of 792-mult events === count of 2b burstCast events exactly",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:burstCast escalating Max HP steps (cumulative 10.03/20.06/57.76 → 87.85% cap)",
+    "skill2:hitCount-300 flat damage 167.45% (recurring)",
+    "skill2:passive atkOfMaxHpPct 6.16 (live final Max HP)",
+    "burst:2439.36% distributed hit (FB-exempt)",
+    "burst:792% plain additional hit (FB-exempt, separate effect)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Expected shared-prior misreads, in order of likelihood: (1) SKILL1 IS NOT DEFENSIVE — the Max HP tiers are the kit's ATK ramp because skill2 converts FINAL Max HP to ATK at 6.16%; a driver who marks skill1 UNMODELED/'no damage relevance' or whose conversion snapshots base HP at t=0 deletes up to +87.85%-of-conversion late-fight ATK. The withPatchedOverride A/B (skill1 zeroed → totalDamage must drop) is the single highest-leverage test. (2) burstCast vs fullBurstEnter on skill1 is LIVE in this fixture: controlComp includes helm as a second Burst III, so team FBs occur without 2b casting — count stacks against 2b's burstCast events, not fullBurstStart events. (3) Escalation arithmetic: 'Each subsequent effect triggers all effects before it' → cumulative 87.85% after three uses (assert not 57.76% replace-only, not ≥118% double-count), plateau thereafter; 'continuously' = permanent, never a 10s window. (4) Both burst hits are burst-cast-timed → fbMajorApplied false; the 792% hit must stay a separate plain-flavor effect, not merged into the distributed 2439.36%. (5) skill2's 300-count is a hitCount trigger tied to her shot events (spans reloads), not an interval; it repeats every 300 rounds. Ordering caveat worth a note in the override (not an assertion): whether the Nth burst's OWN 2439.36/792 hits already benefit from the Nth skill1 HP tier via the conversion is a same-frame ordering convention — flag ⚑ if the driver pins it either way without a measurement. All magnitudes are kit-literal (DATAMINED); the only ALWAYS-⚑ field in play is the base cadence tuple, which is fixture-level, not a spec line.",
+  "model": "claude-fable-5"
+}

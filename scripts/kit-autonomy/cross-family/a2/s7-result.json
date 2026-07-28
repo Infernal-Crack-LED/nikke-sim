@@ -1,0 +1,114 @@
+{
+  "slug": "a2",
+  "kitDescription": "A2 is a charge-shot rocket launcher whose burst, Mode B, is a pure self-buff state with no burst damage of its own: while it lasts she gains ATK and Charge Speed, but it drains 3.99% of her current HP every second and switches itself off once she falls below 40% HP, giving the buffs a bounded uptime each 40-second burst cycle. Casting her burst also briefly boosts her Charge Damage and Explosion Radius for 15 seconds. Every full-charge shot — which for her is every shot — splashes an extra 30.1% of her final ATK onto the target and gives her a short 3-second Damage-to-Parts buff. In game terms she is a self-sufficient charge-RL carry: her burst makes her charge faster and hit harder for a window, then goes quiet until her next cast.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill2 rider group: allies(noRider.res)).toEqual(allies(base.res)) — 'the 30.1% rider touches no teammate (byte-identical teammate totals)' (1 of 15 non-skipped assertions)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Charge Damage ▲ 110.44% for 15 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self chargeDamagePct 110.44 / 15s (additive flat points: 2.5 → 3.6044, NOT chargeDamageMultPct)",
+        "blindSaid": "S6 identical encoding; S5 green incl. behavioural burstCast-vs-fullBurstEnter discrimination",
+        "formulaCheck": "Charge bucket (§1d): 'Charge Damage ▲' adds flat points — Charge = chargeMult/100 + … + Charge Damage ▲%/100. Driver matches; multiplier reading excluded numerically (5.261 vs 3.6044). burstCast trigger matches 'when using Burst Skill'; engine ordering gives post-window-open resolution for skill-slot blocks, consistent with SSOT scope clarification.",
+        "fireRateOk": true,
+        "explanation": "Buff applies exactly once per a2 burst cast (6 casts = 6 applies), expiresFrame = applyFrame + 900, self-only, offensively live (removal drops her total). Correct stat, trigger, scope, duration."
+      },
+      {
+        "kitLine": "Explosion Radius ▲ 100.74% for 15 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; caveat states it is pure AoE geometry, explicitly NOT projectileExplosionPct",
+        "blindSaid": "S6 identical unmodeled entry; S5 GAP-skip + negative assertion (no 100.74 value, no projectileExplosionPct anywhere) — green",
+        "formulaCheck": "No radius primitive exists; vs the single partless scope-lock boss a radius change moves zero damage (§1e/1f: projectileExplosionPct is a Damage-Up stat, a different mechanic). The nearest-wrong laundering is provably absent.",
+        "fireRateOk": true,
+        "explanation": "Deliberate, documented, and guarded against the nearest-wrong fudge. Acceptable."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Deals 30.1% of final ATK as additional damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → enemy flatDamage 30.1; rider fires once per shot (139 riders = 139 shots); crit-eligible, noRange, no core, FB by landing timing",
+        "blindSaid": "S6 identical magnitude+trigger (target:'self' + explicit noRange is cosmetic — flatDamage resolves to the single boss regardless); S5 cadence/bucket assertions green",
+        "formulaCheck": "§2b/§9 function-type rules: crit at caster rate, never core, never range, FB +50% by landing timing, no charge bucket — all match. shotFired is the correct per-full-charge proxy for an RL whose every pull is a 60f full charge (auto always full-charges, §2a). The one S5 red (teammate byte-inertness) is an over-strict blind assertion, not a driver defect: skill hits legitimately generate burst gauge (§6, MEASURED maiden precedent), so removing the rider shifts cast-frame alignment team-wide while FB count (11) and cast count (6) are unchanged. Gauge feedback from a real damage instance is faithful engine behaviour.",
+        "fireRateOk": true,
+        "explanation": "Fires at prose cadence (every full-charge hit), correct bucket treatment. The failed blind assertion is classified RECON_ERROR (see below), not a gotcha."
+      },
+      {
+        "kitLine": "Damage to Parts ▲ 40.88% for 3 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → self partsDamagePct 40.88 / 3s; applied per shot, byte-identical totals with the block stripped",
+        "blindSaid": "S6 identical; S5 green (stat, value, duration, self-target, provable inertness)",
+        "formulaCheck": "Scope-lock boss is partless; parts damage is inert by construction. Correctly NOT encoded as attackDamagePct/damageTakenPct (the nearest-wrong readings, both excluded behaviourally).",
+        "fireRateOk": true,
+        "explanation": "Present, correctly scoped (self, not a boss debuff), correctly timed (3s), provably moves nothing. Kept for kit completeness per the no-silent-drop rule."
+      },
+      {
+        "kitLine": "(S5 red assertion — rider teammate inertness)",
+        "category": "RECON_ERROR",
+        "subkind": null,
+        "driverSaid": "Rider is flatDamage; engine skillGauge gives each skill-damage impact one target-base hit of burst-gauge generation (MEASURED maiden precedent)",
+        "blindSaid": "S5 asserted byte-identical teammate totals with/without the rider",
+        "formulaCheck": "§6: 'Skill hits and DoT ticks contribute the flat target value.' The rider is a skill hit → it must generate gauge → removing it shifts cast frames (counts identical: 11 FBs, 6 a2 casts). The blind assertion assumed a proc is gauge-free; the SSOT says otherwise. Driver + formula agree; the blind read is spurious.",
+        "fireRateOk": true,
+        "explanation": "Over-strict inertness claim by the blind test. Not a faithfulness finding against the driver; flagged so the S5 spec's inertness template is tightened for gauge-generating procs."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Effect 2: ATK ▲ 15.19%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 15.19, durationSec 22.5 = ln(0.4)/ln(0.9601), the closed-form of the kit's own drain constant crossing the stated 40% removal floor; ⚑ alternative 15.04s max-HP reading stated in caveats with a footage-pin recipe",
+        "blindSaid": "S6 same stat/trigger/target; sole divergence is durationSec 15 (a deliberate conservative stand-in — the blind's own flag derives the same 22.5s ceiling). S5 finite-window band [10,30]s green; S2b dispositions FAITHFUL/CALIBRATED",
+        "formulaCheck": "atkPct sums into the (1 + ΣATK%) term on staticAtk (§1a) ✓. Mode B duration is magnitude/measurement-gated (out of scope per F): 22.5s is derived from kit constants, the ⚑ is honest and documented, and the permanent-encoding nearest-wrong is excluded by the driver's discriminating counterfactual.",
+        "fireRateOk": true,
+        "explanation": "Correct stat, trigger (own cast, 6 applies < 11 team FBs), self scope, finite derived window with a documented ⚑. Buff-free gap each 40s cycle exists as the prose's HP-gate implies."
+      },
+      {
+        "kitLine": "Effect 3: Charge Speed ▲ 35.88%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self chargeSpeedPct 35.88, same 22.5s derived window; shot-count-bearing (noModeB run fires fewer shots)",
+        "blindSaid": "S6 identical; S5 green incl. the shots-gated behavioural check",
+        "formulaCheck": "§4: Charge Speed subtractive on charge time, capped +100% — 35.88% is well inside the cap; on a 60f-charge RL it raises fire cadence, so it is correctly modeled as damage, not skipped as utility. Same-window co-expiry with Effect 2 matches the single-mode prose.",
+        "fireRateOk": true,
+        "explanation": "Fires at prose cadence and materially changes cadence while up. FAITHFUL with the same documented ⚑ duration."
+      },
+      {
+        "kitLine": "Effect 1: Current HP ▼ 3.99% every 1 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim; consumed only as the derived Mode B duration; caveat gives the footage-pin recipe (burst banner → visible Mode B drop)",
+        "blindSaid": "S6 identical unmodeled entry; S5 GAP-skip; S2b MEASUREMENT-GATED",
+        "formulaCheck": "The sim has no HP pool; the drain has no independent damage payload (a2 has no HP→ATK conversion). Its sole sim-relevant consequence — the window length — is captured and flagged. Not modeled as a DoT (the nearest-wrong), correctly.",
+        "fireRateOk": true,
+        "explanation": "Honest, documented, measurement-gated gap. Acceptable."
+      },
+      {
+        "kitLine": "If own HP dips below 40%, Mode B is removed",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim; expressed as the finite 22.5s expiresFrame; healing-based extension (crown in fixture) explicitly documented as out of scope",
+        "blindSaid": "S6 identical unmodeled entry; S2b unmodeledVerbatim matches",
+        "formulaCheck": "No HP pool → the state-gate cannot be simulated directly; the finite-duration stand-in is the sanctioned representation and the permanent-mode misread is excluded by test.",
+        "fireRateOk": true,
+        "explanation": "Documented and consumed; the removal clause's footprint is exactly the asserted finite expiry."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: every kit line is either faithfully encoded or a documented, formula-sanctioned gap, and the blind re-derivations converged with the driver on every stat, trigger, target, and the unmodeled set. The single RED blind assertion (teammate byte-inertness of the 30.1% rider) is a RECON_ERROR, not a driver defect — the SSOT (§6, MEASURED maiden precedent) requires skill hits to generate burst gauge, so removing the rider legitimately perturbs cast-frame alignment team-wide while Full Burst count (11) and a2 cast count (6) are provably unchanged; the S5 inertness template should be tightened for gauge-generating procs. The sole material S5/S6 divergence, Mode B durationSec 22.5 (driver) vs 15 (blind), is measurement-gated magnitude, out of gotcha scope: both authors independently derived the same 22.5s ceiling from the kit's own drain constant, the driver enacted it with an honest ⚑ naming the 15.04s max-HP alternative and a footage-pin recipe, and both values pass the blind test's finite band while the permanent-encoding nearest-wrong is behaviourally excluded. Discrimination holds on all four load-bearing lines (additive-vs-multiplicative charge stat numerically separated, burstCast-vs-fullBurstEnter behaviourally separated by the helm co-B3 fixture, lastBullet counterfactual under-fires, permanent Mode B over-credits). Same-model residuals the owner should spot-check: (1) the 22.5s Mode B derivation rests on the shared 'current-HP compound' reading of 'Current HP ▼3.99%' — a banner-to-drop footage pin would settle it against the 15.04s linear reading; (2) shotFired-as-full-charge-proxy assumes every RL pull is a full charge under auto — true per §2a but worth one cadence sanity check against real footage if this unit is ever board-graded.",
+  "model": "kimi-code/k3"
+}

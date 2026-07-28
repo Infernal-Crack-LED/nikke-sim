@@ -1,0 +1,257 @@
+{
+  "slug": "exia",
+  "leakDetected": null,
+  "override": {
+    "slug": "exia",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "reloadSpeedPct",
+            "value": 95,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 28,
+            "durationSec": 5,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "alliesOfElement",
+          "element": "Electric"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 5.8,
+            "durationSec": 15,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 122.32
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 122.32
+          },
+          {
+            "kind": "buff",
+            "stat": "damageTakenPct",
+            "value": 18.04,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when the last bullet hits the target. Affects the target if the skill user is in Collect Hacking Code.",
+        "ATK ▼ 13.77% for 5 sec.",
+        "DEF ▼ 13.77% for 5 sec."
+      ],
+      "skill2": [],
+      "burst": ["DEF ▼ 2.71% for 5 sec."]
+    },
+    "caveats": [
+      "⚑ Enemy DEF ▼ (skill1 13.77%, burst 2.71%) has NO StatKey — the schema's defPct is self-DEF (inert in v1) and there is no boss-DEF-reduction channel. Both are REAL damage levers against the boss-DEF subtraction and are currently dropped, so the model is BIASED LOW on every comp she is in. Enemy ATK ▼ 13.77% is genuinely inert (boss deals no modeled damage).",
+      "⚑ skill1 reload line is a stat CLAMP (\"fixed at a 95% increase\"), modeled as an additive reloadSpeedPct buff. Identical while Exia is the only reload source; DIVERGES (over-credits) the moment a teammate also buffs her reload, because a clamp would pin the total at +95% rather than stack.",
+      "⚑ burst block 2 (the 122.32% additional hit + Damage Taken ▲ 18.04%) is authored UNGATED. Its kit gate is \"Collect Hacking Code at max stacks\" (5), and the engine has no per-buff-stack gate primitive; a monotonic resourceGate would be permanently true after 5 shots and merely hide the assumption. Whether she is at 5/5 at the cast frame is genuinely uncertain — see flags. If she is not, this over-credits a 122.32% nuke AND a team-wide 18.04% Damage Taken debuff.",
+      "burst flatDamage leaves crit unset (rider crit-eligibility is engine-global, RIDERCRIT) and noFb unset (per-kit noFb is measured-only; burst-cast damage is engine-handled FB-exempt — it lands before the Full Burst window opens).",
+      "noRange is engine-automatic and deliberately not set anywhere."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Exia (exia) SR/Electric/Supporter/Burst I, ammo 6, chargeFrames 60, reloadFrames 141. Modeled: (skill1) FB-enter self reload-speed window; (skill2) self stacking ATK ▲28%×5 off full-charge shots, and a last-bullet caster-ATK-scaled ATK grant to all Electric allies (self included — Exia is Electric); (burst) a burst-cast 122.32% hit plus the max-stack branch's second 122.32% hit and the team-wide Damage Taken ▲18.04% boss debuff. Her offensive value is almost entirely SUPPORT — the casterAtkPct grant and the Damage Taken debuff — so her own damage total is a poor validation signal; grade her on the Electric allies' deltas and on the 10s Damage-Taken window. Deliberately unmodeled: both enemy DEF ▼ lines (no schema channel) and the enemy ATK ▼ (inert). The \"if the skill user is in Collect Hacking Code\" gate on the skill2 last-bullet grant is treated as always satisfied (a charge weapon full-charges every shot, so 1+ stack is live by the 6th round); the burst's max-stack gate is NOT safely assumable and is flagged."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits…",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger/target header for the enemy ATK▼/DEF▼ pair; both riders are unmodelable (below), so the whole block is dropped. Trigger would be lastBullet + target enemy + a Collect-Hacking-Code gate."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▼ 13.77% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy ATK debuff — genuinely inert in v1 (the boss deals no modeled damage, nothing reads enemy ATK)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "DEF ▼ 13.77% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy DEF debuff — NOT inert (feeds the boss-DEF subtraction) but no StatKey expresses it; defPct is self-DEF. Dropped and flagged as a known low bias."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Full Burst…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger fullBurstEnter, target self — team-wide FB entry, not her own burst cast (she is Burst I; keying to burstCast would under-fire on rotations she does not open)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Reload speed is fixed at 95%…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff reloadSpeedPct 95, durationSec 10. Weapon-state modifier = damage (141-frame reload on a 6-round magazine gates shot count). Clamp-vs-additive divergence flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when landing an attack…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired, target self — the sim's SR always fires at full charge, so every trigger pull is a full-charge landing. ⚑ mapping flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Collect Hacking Code: ATK ▲ 28%…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 28, durationSec 5, maxStacks 5, self. Engine stacking + per-stack expiry reproduces the sawtooth natively, so no rampSec is authored."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "When the last round of ammunition…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet, target alliesOfElement {element:'Electric'} (self included). The 'if in Collect Hacking Code' gate is dropped as always-true by the 6th round; flagged."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 5.8% of the skill user's ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 5.8, durationSec 15, maxStacks 5. Resolves flat off Exia's STATIC ATK, so her own skill2 self-ATK buff does not compound into it."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the 10 enemy unit(s)…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Header → target enemy; the scope-lock boss is a single partless target so the 10-target clause collapses to one."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 122.32% of final ATK…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 122.32 on trigger burstCast. No 'core strike' wording → no core. crit/noFb left to engine defaults."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▼ 2.71% for 5 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "Enemy DEF debuff — same missing channel as the skill1 line. Real but unmodelable."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Collect Hacking…",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Second burstCast block carrying the conditional branch. Gate authored as ALWAYS-TRUE (no stack-gate primitive exists); flagged as the largest single uncertainty in this override."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 122.32% … additional damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 122.32 on the conditional block — doubles her burst hit whenever the ungated assumption holds."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage Taken ▲ 18.04% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff damageTakenPct 18.04, durationSec 10, target enemy — a boss debuff benefiting the WHOLE team, not a self buff. Her single largest contribution."
+    }
+  ],
+  "flags": [
+    {
+      "field": "burst[1] (conditional block gate)",
+      "estimate": "Authored ungated ⇒ assumed 5/5 stacks at every burst cast. Confidence LOW-MEDIUM.",
+      "reasoning": "Reaching 5 stacks requires 5 full-charge landings inside a rolling 5s window, i.e. ≤1.0s per shot. Base cadence is ~1.0s charge (chargeFrames 60) + the measured 22-frame release latency ≈ 1.37s/shot, which does NOT clear the bar — stack 1 expires before stack 5 lands. Reload gaps (141 frames, every 6 rounds) make it worse outside Full Burst and better inside it (the skill1 +95% reload window). So the max-stack condition is plausibly reached only intermittently, most likely mid-magazine during Full Burst — yet the block is authored as if always satisfied, which over-credits a 122.32% hit AND the team-wide 18.04% Damage Taken debuff.",
+      "recipe": "Record a fight with Exia and count her burst-damage popups: two 122.32%-magnitude hits per cast = gate satisfied, one = not. Cross-check by watching whether allied popups rise ~18% for the 10s after her cast. If the gate proves intermittent, model it with a `resourceGate` over a declared collectHackingCode resource plus an explicit decay approximation, or gate on `fbGate:'inFb'` if it only lands during Full Burst."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "shotFired (every trigger pull counts as a full-charge landing). Confidence MEDIUM-HIGH.",
+      "reasoning": "Kit says \"landing an attack with Full Charge\"; the sim always fires charge weapons at full charge, so shotFired is exact in-sim. Two residual mismatches: shotFired fires at the pull, not the hit (a ~22-frame offset), and a real player can tap-fire an SR below full charge, which the sim never does.",
+      "recipe": "No independent measurement needed unless the 22-frame on-cast-vs-on-hit offset proves load-bearing; if it does, compare buffApply frames against the shot's damage-event frame in the harness event stream."
+    },
+    {
+      "field": "skill2[1] steady-state stack count",
+      "estimate": "~1.4 stacks sustained (of a cap of 5); ~2 during a Full Burst window. NOT near cap.",
+      "reasoning": "The grant refreshes once per magazine (lastBullet). Magazine cycle ≈ 6 shots × ~1.37s + ~2.35s reload ≈ 10.6s; the buff lasts 15s ⇒ 15/10.6 ≈ 1.4 concurrent stacks. The +95% reload window shortens the cycle to ≈ 9.4s ⇒ ~1.6. The kit's cap of 5 is unreachable at this cadence, so the ALLY-FACING support value is roughly 1.4 × 5.8% ≈ 8% of Exia's static ATK, not the 29% a cap-reading would suggest. The engine derives this itself from the trigger, so no haircut is hand-authored — but any reviewer comparing against the cap will read this override as generous when it is not.",
+      "recipe": "Assert on the harness buffApply stream: filter stat 'casterAtkPct' targeting an Electric ally and check the observed max `stacks` over a 180s run. Pin the number in scripts/tests/units/exia.test.ts."
+    },
+    {
+      "field": "skill1[0].effects[0] (reloadSpeedPct 95)",
+      "estimate": "Additive +95% used as a stand-in for the kit's \"fixed at\" clamp.",
+      "reasoning": "The engine has no stat-clamp primitive (docs/engine-modeling-gaps.md §1b, the asuka-wille case). With Exia as the sole reload source the two are numerically identical; with any co-active reload buff the clamp would PIN the total at +95% while the additive model stacks past it, over-crediting her shot count.",
+      "recipe": "Only matters on comps carrying another reload buffer. Build such a comp and compare her reload-event spacing against 141/(1+0.95) frames; if the spacing stays pinned, the clamp is real and needs a primitive."
+    },
+    {
+      "field": "skill2[1] dropped \"if the skill user is in Collect Hacking Code\" gate",
+      "estimate": "Gate treated as always satisfied. Confidence HIGH.",
+      "reasoning": "Collect Hacking Code is applied by her own skill2 on every full-charge landing and lasts 5s; the last-bullet trigger fires on the 6th round of a magazine, ~1.4s after the 5th. At least one stack is therefore always live at that moment. This is derivable from the kit text alone (ammo 6, charge weapon), not an assumption of convenience.",
+      "recipe": "Confirm in the event stream that no lastBullet fires while the atkPct/self stack count is 0. Cheap vitest assertion; no footage needed."
+    },
+    {
+      "field": "cadence tuple (chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "Used as given from the datamine.",
+      "reasoning": "ALWAYS-⚑ per the taxonomy: datamined cadence fields are known-unreliable, and every derived quantity above (stack steady state, magazine cycle, max-stack reachability) is a direct function of them. An error here propagates to all three of the flags above simultaneously.",
+      "recipe": "Read shot spacing and reload duration off the ammo counter in a recording; compare against 60+22 frames per shot and 141 frames per reload."
+    },
+    {
+      "field": "unmodeled enemy DEF ▼ (13.77% skill1 + 2.71% burst)",
+      "estimate": "Dropped entirely ⇒ Exia's team-wide contribution is modeled LOW by an unknown amount.",
+      "reasoning": "Boss DEF is subtracted in the damage formula, so a DEF reduction lifts every ally's damage — the same class of team-wide lever as the Damage Taken debuff that IS modeled. No StatKey exists for it, so this is an engine gap, not a parsing choice. The skill1 line is also the larger of the two and is refreshed every magazine.",
+      "recipe": "Requires a new enemy-DEF StatKey + a boss-DEF path in the formula. Until then, quantify the gap analytically: recompute a graded comp's damage with bossDef × (1 − 0.1377) and report the delta, so the size of the omission is on record rather than merely acknowledged."
+    }
+  ],
+  "model": "claude-opus-5"
+}

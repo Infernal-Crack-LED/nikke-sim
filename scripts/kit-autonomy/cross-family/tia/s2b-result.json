@@ -1,0 +1,151 @@
+{
+  "slug": "tia",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 13 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldown only (rotation); no damage stat, no ally CD",
+      "durationSemantics": "12 sec timed buff, maxStacks 2 (stacking, refreshable); engine burstCdr is instant-seconds — per-proc −13s is the approximation, NOT a permanent CD rewrite",
+      "triggerIdentity": "cover-HP-recovery event. In-sim the SOLE kit-internal source is her own skill2 burst-cast 'Restores Cover HP' — effectively once per tia burstCast. NOT generic ally-heal recovery, NOT per-HoT-tick, NOT hitCount",
+      "targetSet": "self",
+      "nearestWrongModel": "keyed to generic `recovery` so EVERY heal targeting tia (a healer teammate's heals, her own S2 lifesteal ticks) grants −13s repeatedly — perma-capped CDR; or targeted at allies (Liter-style team CDR)",
+      "distinguishingAssertion": "count of burstCdr applications == count of tia burstCast events (exactly 1 per cast, even in a comp containing an ally healer); tia's inter-burst interval drops below her 40s base CD while every OTHER unit's burst cadence is byte-identical to a no-tia-S1 control",
+      "inertness": "no other unit's burst CD moves; zero direct damage delta from this line in a comp with no FB-count change",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack damage ▲ 32.11% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "generic Attack Damage (Damage Up bucket) on all attacks — attackDamagePct, NOT an ATK stat buff",
+      "durationSemantics": "10 sec wall-clock (durationSec), refresh-on-reapply; NOT rounds",
+      "triggerIdentity": "same cover-HP-recovery trigger as the CDR line — once per tia burstCast in-sim",
+      "targetSet": "all allies including self",
+      "nearestWrongModel": "stat atkPct instead of attackDamagePct (wrong bucket, wrong composition); or trigger keyed to generic recovery / heal ticks giving ~100% uptime; or keyed to fullBurstEnter (fires on rotations tia never burst)",
+      "distinguishingAssertion": "buffApply events with stat 'attackDamagePct' value 32.11 appear exactly once per tia burstCast, targeting all 5 units, expiresFrame = applyFrame + 600; total apply count is UNCHANGED when a healer teammate's heal events to tia are present",
+      "inertness": "must NOT re-apply or refresh on ally heals, on tia's own lifesteal HoT ticks, or on team FBs where tia did not cast",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP of Cover ▲ 32.75% of the skill",
+      "disposition": "UNMODELED",
+      "scope": "Cover entity's MAX HP (no cover exists in sim; defensive)",
+      "durationSemantics": "5 sec timed",
+      "triggerIdentity": "hitCount count:5 (counts ROUNDS — RL, 1 round per trigger pull, spans reloads)",
+      "targetSet": "self (her cover)",
+      "nearestWrongModel": "read as cover-HP RECOVERY → fires skill1 every 5 shots (perma 32.11% + CDR cap — massive over-credit); or encoded as tia's own maxHpFlat, contaminating her final-Max-HP shield scalers",
+      "distinguishingAssertion": "the skill1 payload (32.11% applies, burstCdr) count is INDEPENDENT of tia's cumulative shot count — raising fight shot volume does not add applies; no buff/recovery event is sourced from this block",
+      "inertness": "zero events, zero damage; Max-HP-of-Cover is NOT a cover-recovery event",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attract: Taunts all enemies for 5 sec",
+      "disposition": "UNMODELED",
+      "scope": "boss aggro (defensive; boss deals no damage in v1)",
+      "durationSemantics": "5 sec",
+      "triggerIdentity": "same hitCount:5 block",
+      "targetSet": "enemy",
+      "nearestWrongModel": "modeled as a targetStatus that some gate consumes, or as a damageTakenPct debuff",
+      "distinguishingAssertion": "no buffApply/targetStatus event from this line; boss-side event stream identical with and without it",
+      "inertness": "moves nothing; record verbatim in unmodeled",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores Cover HP by 21.41% of the skill",
+      "disposition": "FAITHFUL",
+      "scope": "cover-HP restore — the heal AMOUNT is defensive/inert; the load-bearing content is the TRIGGER CHAIN: this event is what fires both skill1 blocks",
+      "durationSemantics": "instant, once per cast",
+      "triggerIdentity": "burstCast (her OWN Burst Skill — 'when using Burst Skill'), NOT fullBurstEnter, NOT stageEnter",
+      "targetSet": "self (her cover)",
+      "nearestWrongModel": "keyed to fullBurstEnter → skill1 payloads fire on ANY team Full Burst including rotations tia sat out (CD not ready / other B1 cast) — over-credits both the team 32.11% and her CDR",
+      "distinguishingAssertion": "skill1 payload applications coincide frame-wise with tia burstCast events only; in a rotation where a DIFFERENT Burst-I unit casts (tia CD not ready), that FB produces ZERO 32.11% applies and zero burstCdr",
+      "inertness": "the 21.41% magnitude itself moves no damage; must not emit a generic self-heal that other consumers misread",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 21.96% of attack damage as HP",
+      "disposition": "UNMODELED",
+      "scope": "self lifesteal over 10 sec (no HP pool in v1)",
+      "durationSemantics": "over 10 sec — a HoT, i.e. ~10 tick events if encoded as heal ticks",
+      "triggerIdentity": "same burstCast block",
+      "targetSet": "self",
+      "nearestWrongModel": "encoded as heal {ticks:10} to self while skill1 is keyed to a generic recovery trigger → 10 spurious 'cover-recovery' procs per burst: CDR stack-capped and 32.11% at ~100% uptime",
+      "distinguishingAssertion": "per tia burst there is exactly ONE skill1 proc cluster (one 32.11% apply set, one CDR grant), not ~11; skill1 apply count == tia burstCast count",
+      "inertness": "unit-HP recovery is NOT cover-HP recovery — this line must never satisfy skill1's trigger",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield with 35.07% of the skill user's",
+      "disposition": "FAITHFUL",
+      "scope": "shield event, magnitude 35.07% of TIA's final Max HP; no HP pool — value recorded for completeness, event fires 'shielded' triggers",
+      "durationSemantics": "10 sec (durationSec on the shield window, feeds requiresShielded gates)",
+      "triggerIdentity": "burstCast (cast-time, pre-FB)",
+      "targetSet": "self",
+      "nearestWrongModel": "skipped as 'defensive, inert' → any shield-synergy teammate ('shielded' trigger / requiresShielded gate) silently loses its activation; or merged with the ally line into one all-allies shield",
+      "distinguishingAssertion": "a shield event targeting tia is emitted at each tia burstCast; a probe teammate patched with a 'shielded'-triggered buff fires when teamed with tia and not in the tia-less control",
+      "inertness": "adds zero damage of its own; must not open requiresShielded on units it does not target",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Shield with 10.21% ... (except self)",
+      "disposition": "FAITHFUL",
+      "scope": "shield event to teammates, 10.21% of TIA's (caster's) final Max HP",
+      "durationSemantics": "10 sec",
+      "triggerIdentity": "burstCast",
+      "targetSet": "allies excludeSelf:true — exactly the 4 non-tia units",
+      "nearestWrongModel": "target all-including-self (tia double-shielded: both 35.07 and 10.21 events on her) or excludeSelf dropped; or maxHpPct read as % of each TARGET's own Max HP",
+      "distinguishingAssertion": "per tia burstCast, shield events target exactly the 4 non-tia slots (tia receives only the 35.07% self event) — assert per-target shield event counts",
+      "inertness": "no damage of its own; tia must not receive this event",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1.",
+      "disposition": "GAP",
+      "scope": "team burst-rotation state: after her cast the stage machine returns to Stage 1 instead of advancing to Stage 2 — a SECOND Burst-I cast is required to reach Stage 2",
+      "durationSemantics": "instant state transition, every cast",
+      "triggerIdentity": "on tia's own burst cast",
+      "targetSet": "all allies (team-wide rotation state)",
+      "nearestWrongModel": "omitted → tia's cast advances 1→2 directly and FB arrives one B1-cast earlier every rotation (wrong FB count/timing); or mis-modeled as fullBurstExtend",
+      "distinguishingAssertion": "in a comp with tia PLUS a second Burst-I unit, each rotation's event log shows TWO stage-1 burstCast events before the stage-2 cast; with tia as the SOLE B1, FB cadence is throttled by her (CDR-reduced) cooldown — vs nearest-wrong where one stage-1 cast per rotation suffices",
+      "inertness": "must NOT lengthen the Full Burst window itself (it is not an extend) and must not change FB duration",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:burst-cdr-13s-x2",
+    "skill1:attack-damage-32.11-team",
+    "skill2:burst-cast-cover-restore-feeder",
+    "burst:self-shield-35.07",
+    "burst:ally-shield-10.21-exself",
+    "burst:re-enters-stage-1"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [
+      "Max HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.",
+      "Attract: Taunts all enemies for 5 sec.",
+      "Recovers 21.96% of attack damage as HP over 10 sec."
+    ],
+    "burst": []
+  },
+  "notes": "FIXTURE MISMATCH IS THE FIRST TRAP: tia is Burst I, but controlComp(carry) seats the carry in the B3 slot with liter fixed at B1 — controlComp(tia) either mis-slots her or creates an undocumented dual-B1 comp. Tests MUST build an explicit comp with tia as the (or a) B1; the re-enter assertion additionally needs the dual-B1 variant (tia + liter) to show two stage-1 casts per rotation. SHARED-PRIOR MISREAD I EXPECT: 'Activates when recovering Cover's HP' encoded as the engine's generic `recovery` trigger — that trigger fires on ANY heal effect targeting tia, so (a) a healer teammate's heals and (b) her own S2 lifesteal-HoT (if encoded as heal ticks:10) each spuriously proc the CDR + team 32.11%, inflating both rotation and damage; the discriminating count is skill1-applies == tia-burstCast-count, asserted in a comp that CONTAINS a heal emitter. Cover-recovery is name-specific: 'Max HP of Cover ▲' (S2 hitCount block) raises max and must NOT proc skill1. Stacking caveat: with only one in-kit cover-recovery per cast and a 12s stack life vs her CDR-reduced cadence, 2 CDR stacks rarely coexist in-sim — in-game the 2nd stack needs an external cover healer; do not hard-code a permanent 2-stack (−26s) assumption. The burstCdr primitive is instant-seconds while the kit line is a 12s timed stat — assert the per-proc −13s approximation explicitly rather than a CD rewrite. 'Re-enters Burst Stage 1' has NO EffectDef primitive in the provided schema — rotation-critical GAP; I include it in the load-bearing set deliberately (the objective rule bars declaring a divergent rotation line non-load-bearing) and the driver must reconcile how the engine expresses it. All magnitudes are kit-literal (DATAMINED); no ALWAYS-⚑ field is exercised except any cadence assumption behind hitCount:5 timing, which tests should avoid pinning.",
+  "model": "claude-fable-5"
+}

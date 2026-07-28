@@ -1,0 +1,127 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-07-27 (cross-family: S2b claude-fable-5, S5/S6 claude-opus-5, S7 kimi-code/k3). E.H. — SMG Attacker, Wind, Burst III (standalone unit, no base counterpart). Scrap→magazine crafting chain modeled on the engine resource-counter primitive (soda-twinkling-bunny precedent): battle-start +10 Scrap is the pool SEED (kit S2 E1 'Activates at the start of battle. Scraps ▲10'), skill1's passive craft block gates on scrap≥10, spends 10 Scrap and crafts 1 magazine (pool cap 4); the ATK ▲7.5%×magazines buff is a perResource live read of the magazine pool. In the v1 single-target scope the battle-start seed is the ONLY scrap source, so exactly ONE magazine exists all fight: ATK sits at +7.5% (not the 30% cap) and the burst weapon loads exactly 1 round (not 4) — driver and fable S2b derived this independently from the kit-stated start/consume/rebuild trajectory. JUDGMENT CALL (driver, concurred by S2b): the kit never states the burst CONSUMES a magazine — 'Max Ammunition Capacity: 1 x the number of homemade magazines' reads as the live count, so magazines PERSIST and every cast loads 1 round; the unit test pins one swap shot per cast on EVERY cast (the consumption reading would leave later casts with 0 rounds). S2 E5 'when obtaining Scraps → Elemental Advantage Attack Damage ▲16.36% for 15s' is a fused passive (frame 0, 15s expiry): in scope scraps are obtained exactly once (battle start), so the activation is exact; it sits in the ELEMENT bucket via elemAdvantageDamagePct (MEASURED placement 2026-07-14 battery 5) and is advantage-gated — byte-identical totals with the line removed vs a Fire boss (Wind has no advantage there). The burst swap is one full-charge shot: 61% of final ATK × 250% full-charge = 152.5%, chargeTime 0.4s, maxShots 1 ends the swap right after the round fires ('deactivates when all rounds have been fired'), and the ATK ▲430.05% rider is keyed to HER burstCast (not fullBurstEnter — the co-B3 fixture proves her rotations only) for 10s, covering both the swap shot and her resumed SMG fire.",
+  "resources": [
+    {
+      "name": "scrap",
+      "initial": 10,
+      "min": 0,
+      "max": 10
+    },
+    {
+      "name": "magazine",
+      "initial": 0,
+      "min": 0,
+      "max": 4
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+      "Effect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+      "Effect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+    ],
+    "burst": []
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "resourceGate": {
+        "name": "scrap",
+        "min": 10
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "scrap",
+          "delta": -10
+        },
+        {
+          "kind": "resource",
+          "name": "magazine",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 0,
+          "perResource": {
+            "name": "magazine",
+            "mult": 7.5
+          }
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elemAdvantageDamagePct",
+          "value": 16.36,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 61,
+          "chargeTimeSec": 0.4,
+          "chargeMultPct": 250,
+          "maxAmmo": 1,
+          "durationSec": 10,
+          "maxShots": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 430.05,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "caveats": [
+    "skill1: the 'fewer than 4 homemade magazines' craft gate is encoded as the scrap≥10 resourceGate plus the magazine pool clamp (max 4) — the engine allows ONE resourceGate per block, so the magazine-side half of the condition is carried by the pool ceiling. The only misbehavior this simplification could produce is spending 10 Scrap for no magazine when magazines are already at cap; that state is unreachable in v1 scope (the battle-start seed is the sole scrap source, so exactly one craft ever fires) — damage-inert, re-encode the explicit gate if out-of-scope scrap income (projectile/part/neutralize events) is ever modeled.",
+    "burst: 'Max Ammunition Capacity: 1 x the number of homemade magazines' is encoded at its in-scope value (maxAmmo 1 / maxShots 1) — magazines are fixed at 1 in v1 (see note). The DYNAMIC magazine→ammo link is out of scope, not dropped. ⚑ tier 2; estimate: exact at scope, wrong only on a boss with scrap-yielding parts/projectiles/adds (would under-count swap rounds: 1 vs magazine count); recipe: a resource-scaled swap-ammo engine primitive (weaponSwap.maxAmmo/maxShots read from a named resource pool at cast) — one shared primitive serves any future counter-fed weapon.",
+    "skill2: E5 'Activates when obtaining Scraps' is encoded as a fused passive (frame 0, 15s window) — in scope scraps are obtained exactly once (the battle-start seed), so the activation time and the single 15s expiry are exact. Refresh-on-later-gain awaits the same out-of-scope scrap events (projectile/part/neutralize); the elemAdvantageDamagePct stat is advantage-gated by construction (sim.ts elem bucket: counted only when BEATS[unit element] === boss element), verified byte-identical with the line removed vs a Fire boss.",
+    "skill2: E2/E3/E4 scrap sources (destructible projectile +1, enemy part +5, enemy neutralized +2) are VERBATIM in unmodeled — the v1 sim has no projectile entities, no destructible parts, and the single immortal boss is never neutralized inside the fight, so these triggers never fire; encoding them would require event classes the engine does not emit. Inert at scope (the scrap pool sits at 0 after the frame-0 craft).",
+    "burst: on swap exit ('all rounds fired') the engine forces an empty-belt reload before SMG fire resumes (~1.35s at the datamined 81 reload frames) — the in-game weapon-restore behavior at swap deactivation is unmeasured; this is the shared weaponSwap exit convention (snow-white-heavy-arms et al.), not an E.H.-specific encoding choice. ⚑ low: one reload per cast inside the 430.05% window; refine against an E.H. recording."
+  ]
+}

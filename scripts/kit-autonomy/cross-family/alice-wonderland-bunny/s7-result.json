@@ -1,0 +1,112 @@
+{
+  "slug": "alice-wonderland-bunny",
+  "kitDescription": "Alice: Wonderland Bunny is a pure team-support Burst I unit whose personal damage contribution is effectively zero. Every 60 normal attacks she heals the whole team and applies Carrot Party, a stacking buff that raises allies' damage to Interruption Parts (up to 5 stacks, 5 seconds each). When Full Burst ends she speeds up the team's burst gauge refill for 5 seconds, and when Full Burst begins she raises everyone's magazine capacity by 40% for 15 seconds and instantly refills 40% of each ally's magazine. Her burst heals the team and re-opens Burst Stage 1 so a second Burst I unit can also cast in the same rotation; a separate 90-hit line raises Water allies' buff stack caps, and at max Carrot Party stacks her burst would amplify incoming healing — neither of those last two effects is representable in the current engine.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "after 60 attacks: heal 7.4% Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:60 → heal effect to all allies; amount unmodeled by engine design (recovery event, no HP pool); cadence pinned at floor(shots/60) non-burst firings",
+        "blindSaid": "S6 identical encoding (heal ticks:1 default); S5 asserted 60:1 cadence vs shot count via crown's recovery consumer",
+        "formulaCheck": "Team-targeted heal event is the correct routing; heal amount is engine-inert by design and documented, not a magnitude fudge",
+        "fireRateOk": true,
+        "explanation": "Recurring-every-60-hits reading is the standard bare-threshold shape and is ⚑-flagged by S6 with a footage recipe (count recovery popups); amount scaling off her Max HP is engine-inert and recorded. Both blind agents and the driver converged; counterfactual (burst-keyed heal) provably fails the driver's A1."
+      },
+      {
+        "kitLine": "Carrot Party: Parts ▲2%, 5 stacks, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "partsDamagePct 2 / maxStacks 5 / 5s on the same hitCount:60, all allies; explicitly documented INERT in v1 (partless boss) and retained as the burst gate's stack currency",
+        "blindSaid": "S6 identical stat/value/stacks/duration; S5 asserted literal stat, stack cap, 300-frame window, all-ally targets, and byte-identical totals when stripped",
+        "formulaCheck": "partsDamagePct is the literal stat in the schema; inertness on the partless boss is engine scope, correctly not re-routed to attackDamagePct (the nearest-wrong model both blinds named)",
+        "fireRateOk": true,
+        "explanation": "Frame-exact pinning to 60th-hit frames plus the inertness byte-equality check satisfy both the fire-rate and the no-over-credit requirements. Encoding matches prose; the zero damage contribution is by engine construction and documented."
+      },
+      {
+        "kitLine": "90 attacks: Stack count of buffs ▲1",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim with note: stack-CAP raise (not a +1 stack grant), no engine primitive, double inert (only stackable buff in play is the inert Carrot Party)",
+        "blindSaid": "S2b GAP with identical cap-raise reading; S6 unmodeled verbatim with the same reasoning and a cross-unit-lever caveat; S5 it.skip",
+        "formulaCheck": "No EffectDef kind raises another buff's maxStacks — the gap is real, and the driver correctly refused to invent a +1-stack grant (which would spuriously accelerate the burst gate)",
+        "fireRateOk": true,
+        "explanation": "All three agents independently read this as a cap-raise and recorded it verbatim; the decision is documented with reasoning. Acceptable documented gap."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "after Full Burst ends: gauge ▲10%/5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstGenPct 10 / 5s on fullBurstEnd, all allies; applies asserted frame-exact with fullBurstEnd events and count == ends × 3",
+        "blindSaid": "S6 identical; S5 asserted applies land on fullBurstEnd frames and never on fullBurstStart frames",
+        "formulaCheck": "burstGenPct scales burstGaugePerShot — correct bucket; fullBurstEnd is the post-FB refill window, matching 'after Full Burst ends'",
+        "fireRateOk": true,
+        "explanation": "Trigger identity discriminated against fullBurstEnter by both the blind suite and the driver's counterfactual (awbGaugeOnFbEnter lands on start frames and fails). Converged across all three agents."
+      },
+      {
+        "kitLine": "entering FB: Max Ammo ▲40%/15s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoPct 40 / 15s on fullBurstEnter, all allies; frame-exact with fullBurstStart, count == starts × 3; damage-moving counterfactual (value→0 lowers team totals) passes",
+        "blindSaid": "S6 identical; S5 asserted percent-not-flat, all-5 targets, every-FB cadence, and a damage-lowering counterfactual",
+        "formulaCheck": "maxAmmoPct is the correct weapon-state stat (percent of capacity, not maxAmmoFlat rounds); damage relevance flows through reload economy — correct routing",
+        "fireRateOk": true,
+        "explanation": "The one real damage lever in the kit is modeled, cadence-verified, and proven load-bearing (zeroing it measurably lowers team damage in both suites). Self-only nearest-wrong model fails the driver's counterfactual."
+      },
+      {
+        "kitLine": "Reload 40%.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "instantReload fraction 0.4 on fullBurstEnter; block ordered AFTER the maxAmmoPct block so the refill reads raised capacity; ⚑-flagged in note (ordering unmeasured; swap if footage shows 40% of base capacity); negative pin: zero reloadSpeedPct sourced from her",
+        "blindSaid": "S6 identical encoding, same order, ⚑ with a one-recording recipe (ammo-counter jump vs shorter reload animation), tier low; S5 asserted no reloadSpeedPct from her and fewer natural reloads with the line present",
+        "formulaCheck": "instantReload tops the magazine by a fraction of max capacity and emits no reload event — matches SSOT; the reloadSpeedPct misread is the named nearest-wrong and is negatively pinned in both suites",
+        "fireRateOk": true,
+        "explanation": "Both blinds and the driver resolved the two-word line the same way via the structural signal (no ▲ arrow, no duration, no Speed token), and the reading is ⚑-flagged with a cheap measurement recipe rather than asserted as measured fact. This is the kit's highest-leverage ambiguity and it is honestly labeled."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Re-enters Burst Stage 1.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "reenterStage stage 1 on burstCast; proven by the two-B1 fixture: liter casts stage 1 exactly 30 frames (STAGE_CAST_GAP) after her in chain 1; stripping the effect removes liter's chain-1 stage-1 window",
+        "blindSaid": "S6 identical; S5 asserted stage-1 burstCast count drops without the effect",
+        "formulaCheck": "Matches the SSOT rotation semantics (reenterStage:1 holds the rotation at stage 1 for a second eligible B1) and is corroborated by datamined burstMeta use_burst_skill/change_burst_step = Step1",
+        "fireRateOk": true,
+        "explanation": "Datamine + two independent encodings + a frame-pinned discriminating counterfactual; the strongest-verified line in the kit."
+      },
+      {
+        "kitLine": "Restores 27% of user's Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal effect to all allies on burstCast; amount engine-inert (documented); crown's recovery consumer asserted firing on every one of her cast frames; self-only counterfactual fails",
+        "blindSaid": "S6 identical (heal ticks:1 default); S5 asserted casts > 0 and heal inertness on totals",
+        "formulaCheck": "Team-targeted recovery event is correct; the 'skill user's Max HP' phrasing scales the amount, not the target set — both blinds named self-only as nearest-wrong and the driver pinned against it",
+        "fireRateOk": true,
+        "explanation": "Fixture positively asserts she casts (≥3 casts in fixture A, sole B1) — the S2b vacuity hazard (liter winning every leftmost-ready tie) is engineered around in both suites, not papered over."
+      },
+      {
+        "kitLine": "max stacks: Incoming healing ▲150%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim with note: no healing-received channel (no HP pool) and the gate references the inert Carrot Party stack count",
+        "blindSaid": "S2b UNMODELED (no StatKey, no stack-count gate primitive); S6 unmodeled verbatim; S5 it.skip",
+        "formulaCheck": "Heal effects emit recovery events with no HP amount — an incoming-healing multiplier has nothing to scale, and resourceGate cannot express a buff-stack-count gate; both gaps are real",
+        "fireRateOk": true,
+        "explanation": "Correctly not shoehorned into a damage-adjacent stat (the nearest-wrong model); recorded verbatim with the reason. Acceptable documented gap."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs found: all 9 kit lines are either FAITHFUL encodings (7) or verbatim DOCUMENTED_GAPs with sound no-primitive reasoning (2), giving a faithfulness score of 1.0. Convergence is strong and multi-shaped: the S5 blind suite runs 16 PASS / 0 FAIL against the shipped override, the S6 blind override is semantically identical to the driver's (same triggers, targets, stats, values, durations, maxStacks, fraction, stage, effect ordering, and the same unmodeled set), and the driver's own suite carries a discriminating counterfactual for every load-bearing assertion (burst-keyed heal, burst-keyed Carrot Party, fullBurstEnter-keyed gauge buff, self-only max ammo, stripped instantReload, stripped reenterStage, self-only burst heal) — each of which would fail under its named nearest-wrong model, so discriminationOk holds. The S2b vacuity hazard (a Burst-I audited unit never casting beside liter) was independently anticipated and neutralized in both suites via fixtures where she is the casting B1 with positive cast-count assertions. The same-model residual the owner should spot-check is the trio of shared-prior readings every agent landed on identically: (1) 'Reload 40%.' as instantReload fraction 0.4 rather than reloadSpeedPct — structurally justified (no arrow/duration/Speed token) but one recording of the ammo counter at FB entry settles it definitively; (2) hitCount:60 as recurring rather than one-shot — count recovery popups in footage; (3) the capacity-buff-before-refill block ordering (0.4 × 168 vs 0.4 × 120 rounds) — the driver already ⚑-flagged it with a swap recipe. All three are honestly flagged with measurement recipes, none is a fudge, and none blocks GO.",
+  "model": "kimi-code/k3"
+}

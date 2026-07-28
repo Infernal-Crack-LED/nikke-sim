@@ -1,0 +1,122 @@
+{
+  "slug": "rei-ayanami-tentative-name",
+  "kitDescription": "Rei is a Wind AR Attacker whose burst puts her into a 10-second 'Attack State': she gains Attack Damage ▲35.9% plus a large flat ATK grant (63.36% of her own ATK), and deals a 990.2% ATK nuke to all enemies at cast. While Attack State is up, every 7 normal attacks she lands fires a 286.37% ATK bonus hit. Whenever any Full Burst begins, she grants the whole team a flat ATK buff equal to 11.61% of her ATK for 10 seconds. The rest of her kit is collab-coupled: an every-18-hits 590.64% rider that only works on targets holding the externally-applied 'Anti A.T. Field' status (inert without an Eva teammate), a team buff that only reaches allies in 'Annihilation State' (no in-scope carrier), and a Machine-Gun ramp-up speed buff for MG allies who have burst. In any non-Evangelion comp her effective kit is the burst self-buffs, the nuke, the team ATK buff, and the burst-windowed 7-hit rider.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "18 hits vs Anti A.T. Field → 590.64%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:18 + requiresTargetStatus 'Anti A.T. Field' → flatDamage 590.64; faithfully INERT (no in-scope applier), pinned by H5",
+        "blindSaid": "S2b: FAITHFUL-inert, load-bearing inertness pin; S6: identical encoding; S5: inertness + removal-neutral assertions GREEN",
+        "formulaCheck": "Skill-proc rules (crit on, no core/range, FB by landing time) are engine defaults; gate matches prose 'against a target in Anti A.T. Field status'",
+        "fireRateOk": true,
+        "explanation": "Encoded and correctly inert: zero 590.64 events in the control comp and deleting the block moves no total (H5 + S5 removal-delta). Goes live only if an Eva teammate ever applies the status as a name-keyed targetStatus — documented."
+      },
+      {
+        "kitLine": "Anti A.T. Field stacks ▲ 10",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim + ⚑1 (no add-stacks-to-existing-debuff primitive), Tier 2 recipe",
+        "blindSaid": "S2b: UNMODELED; S5: it.skip; S6: unmodeled verbatim",
+        "formulaCheck": "No stack-ledger primitive exists; no consumer in-scope; faithful value is zero",
+        "fireRateOk": true,
+        "explanation": "Deliberately unmodeled with reason, estimate, and recipe recorded. All three agents converged."
+      },
+      {
+        "kitLine": "7 hits in Attack State → 286.37%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount:7 + requiresTargetStatus 'Attack State', fed by a burstCast boss-targetStatus proxy (10s, matching the self-buff window exactly); cumulative-counter approximation ⚑-flagged in caveats",
+        "blindSaid": "S6: fbGate:'inFb' + ownBurstGate:'cast' proxy (FB-window, not exact-10s); S2b: hitCount:7 + fbGate + ownBurstGate 'accepted approximation'; S5: gated-vs-ungated delta discriminator GREEN vs driver",
+        "formulaCheck": "Proc is function-type skill damage (crit default, no core/range); gating to the 10s post-cast window matches the prose's 'while in Attack State status' + burst's 10s Attack State definition",
+        "fireRateOk": true,
+        "explanation": "The one encoding divergence among the agents. Both are proxies for the missing self-status gate; the driver's targetStatus version matches the kit's stated 10s duration precisely (S6's FB-window version loses the pre-FB ~0.37s and any post-10s tail), and S5's blind assertions — every proc inside a ≤10s post-cast window, ungated counterfactual strictly more frequent — all pass against it. The divergence is benign: driver's encoding is the more faithful of the two, and the proxy + side-channel name are documented in caveats. No gotcha."
+      },
+      {
+        "kitLine": "Annihilation State: units ▲1 / range ▲500%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim + ⚑2 (no ally-self-mode gate, no cross-unit param modification), Tier 2",
+        "blindSaid": "S2b: UNMODELED; S5: it.skip; S6: unmodeled verbatim",
+        "formulaCheck": "Meta-modifiers of a foreign unit's effect; no primitive; target set empty in every modelable comp",
+        "fireRateOk": true,
+        "explanation": "Correctly not broadened into a generic team buff; zero is the faithful value in-scope. Full convergence."
+      },
+      {
+        "kitLine": "ATK ▲ 17.6% of user's ATK, 9 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled (rides the un-expressible Annihilation-State ally gate); H2 explicitly asserts NO casterAtkPct buffApply at flatAtk(17.6) ever appears",
+        "blindSaid": "S2b: GAP (assert exactly one team casterAtkPct ≈13,703, none ≈20,773); S5: ratio-based absence + non-vacuity counterfactual GREEN; S6: unmodeled verbatim",
+        "formulaCheck": "casterAtkPct flat-add semantics confirmed; the leak test is the key guard against folding it into the 11.61% line",
+        "fireRateOk": true,
+        "explanation": "Real buff on an un-expressible target set; faithfully zero in-scope, and both driver and blind tests pin the absence of the 17.6/11.61-ratio magnitude."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "MG Ramp-Up Speed ▲ 100%, 13 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim + ⚑3 (no MG wind-up StatKey; compound MG∧burst-caster target inexpressible), Tier 3",
+        "blindSaid": "S2b: GAP; S5: it.skip (two blockers named); S6: unmodeled verbatim",
+        "formulaCheck": "MG wind-up ladder is a measured engine constant with no buff channel (game-mechanics §3); inert on non-MG comps regardless",
+        "fireRateOk": true,
+        "explanation": "Missing primitive, documented with recipe; control comp has no MG so the line is observationally inert. Converged."
+      },
+      {
+        "kitLine": "ATK ▲ 11.61% of user's ATK, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter → all allies casterAtkPct 11.61 dur 10; H2 pins flat value, 10s expiry, 4-ally reach per FB, and the atkPct counterfactual",
+        "blindSaid": "S2b: FAITHFUL (flat ≈13,703, all 5 units, every FB); S6: identical block; S5: per-FB count == allies × fbStarts, ratio-identified magnitude, atkPct counterfactual RED — all GREEN vs driver",
+        "formulaCheck": "'of the skill user's ATK' → caster-scaled FLAT add outside the (1+ATK%) sum per SSOT §1a/§11 ✓; fullBurstEnter (any team FB) matches prose 'when entering Full Burst' ✓",
+        "fireRateOk": true,
+        "explanation": "The highest-damage-risk line in the kit (casterAtkPct vs atkPct) is encoded correctly and discriminated by both suites. Fires on every FB entry as prose requires."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack State: Attack Damage ▲ 35.9%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self attackDamagePct 35.9 dur 10; H3 pins count == her cast count (< FB count) with a fullBurstEnter counterfactual",
+        "blindSaid": "S2b: FAITHFUL (burstCast-keyed, defines the Attack State window); S6: identical; S5: self-only, 1:1 with casts — GREEN",
+        "formulaCheck": "'Attack Damage' = DamageUp bucket ✓; burstCast (not fullBurstEnter) matches 'Affects self' inside her own burst ✓; dual-B3 fixture makes the trigger identity observable",
+        "fireRateOk": true,
+        "explanation": "Correct bucket, correct trigger, correct target; discrimination proven by the helm co-B3 rotation split."
+      },
+      {
+        "kitLine": "ATK ▲ 63.36% of user's ATK, 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self casterAtkPct 63.36 dur 10; H3 pins flat value flatAtk(63.36), self-only, per-cast",
+        "blindSaid": "S2b: FAITHFUL (flat ≈74,782, self); S6: identical; S5: ratio 63.36/11.61 identification, self-only target — GREEN",
+        "formulaCheck": "Self-target casterAtkPct resolves to a flat add of her static ATK ✓ (SSOT §1a)",
+        "fireRateOk": true,
+        "explanation": "Correct scaling semantics and target; ratio-based blind identification independently confirms both caster-scaled magnitudes."
+      },
+      {
+        "kitLine": "Deals 990.2% … Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 990.2; H4 pins per-cast count, burst bucket, fbMajorApplied false",
+        "blindSaid": "S2b: FAITHFUL (FB-exempt by cast timing); S6: identical, noFb deliberately unset (engine-automatic); S5: nuke removal delta + fbMajorApplied falsy — GREEN",
+        "formulaCheck": "Burst-cast damage lands before FB opens → no +0.5 major, no entry auras (SSOT §1b/§8, Cinderella-anchored) ✓; snapshots her same-cast self-buffs (self block precedes damage block) ✓",
+        "fireRateOk": true,
+        "explanation": "Timing rule correctly inherited from the engine; the boundary exemption is asserted, not assumed."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All 11 kit lines are FAITHFUL (6) or DOCUMENTED_GAP (5) with reasons, ⚑ tiers, and recipes recorded; no undocumented divergence exists. The single cross-agent encoding difference — the Attack-State gate on the 7-hit rider (driver: burst-applied boss targetStatus proxy matching the exact 10s window; S6: fbGate+ownBurstGate FB-window proxy) — is benign: both are sanctioned proxies for the missing self-status primitive, the driver's is duration-exact, the S5 blind suite's gated-vs-ungated discriminator passes against it unmodified, and the proxy plus its name side-channel are documented in the override caveats. Convergence is strong where it matters: the two highest-risk misreads (casterAtkPct vs atkPct on the team buff; burstCast vs fullBurstEnter on the self-mode) are pinned by independent blind assertions with working counterfactuals in both suites, and the collab-gated lines are proven inert by removal-delta rather than assumed. Residual for owner spot-check (same-model caveat): (a) the 'Attack State' boss-targetStatus is a side channel any future requiresTargetStatus 'Attack State' on another unit could read — inert today but worth replacing with a requiresOwnBuff primitive if one lands; (b) the hitCount:7 counter is cumulative across windows rather than reset at each window start (⚑-flagged, same approximation as asuka-wille); (c) the shipped cadence tuple (720 rpm / 60 ammo / reloadFrames 111) is unverified datamine for this collab AR (⚑4) — a focus-video rounds-per-minute read is the cheapest outstanding measurement. None of these block GO.",
+  "model": "kimi-code/k3"
+}

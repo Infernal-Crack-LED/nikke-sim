@@ -1,0 +1,246 @@
+{
+  "slug": "alice-wonderland-bunny",
+  "leakDetected": null,
+  "override": {
+    "slug": "alice-wonderland-bunny",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 60
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 2,
+            "durationSec": 5,
+            "maxStacks": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "burstGenPct",
+            "value": 10,
+            "durationSec": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 40,
+            "durationSec": 15
+          },
+          {
+            "kind": "instantReload",
+            "fraction": 0.4
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "reenterStage",
+            "stage": 1
+          },
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "■ Activates after 90 normal attack(s). Affects all Water Code allies.",
+        "Stack count of buffs ▲ 1."
+      ],
+      "skill2": [],
+      "burst": [
+        "■ Activates when Carrot Party is at max stacks. Affects all allies.",
+        "Incoming healing ▲ 150% for 15 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1 hitCount:60 — 'after landing 60 normal attack(s)' is read as a RECURRING every-60-hits trigger (the standard kit shape); a one-shot-at-60 reading is not excluded by the text. SMG hitsPerShot=1, so hits==trigger pulls here.",
+      "⚑ skill2 'Reload 40%.' modeled as instantReload fraction 0.4 (instant partial magazine refill), NOT reloadSpeedPct 40. The prose carries no 'Speed' token; the ▲/▼ arrow that marks every stat line in this kit is absent, which reads as an action line rather than a stat buff. This is the single highest-leverage ambiguity in the kit — the two readings differ in sign of effect on shots fired.",
+      "⚑ Carrot Party is modeled as partsDamagePct — INERT in v1 (partless boss). It is retained because it is the named stack currency the burst's second block gates on; its damage contribution here is zero by construction, not by estimate.",
+      "⚑ 'Stack count of buffs ▲ 1' (skill1, Water Code allies, 90 hits) has no schema primitive — it is a stack-count amplifier over other buffs, not a stat. Unmodeled. If it applies to Carrot Party it would shift the burst's max-stack gate earlier; if it applies to teammates' own stacking buffs it is a real cross-unit damage lever the sim does not represent.",
+      "⚑ 'Incoming healing ▲ 150%' is unmodeled: the engine has no HP pool and heal amounts are not tracked (only recovery EVENTS are emitted). The line is offensively inert unless a teammate scales off healing MAGNITUDE, which no modeled consumer does.",
+      "⚑ Cadence tuple (SMG pullsPerSec, reloadFrames 81, ammo 120) comes from the datamine and is known-unreliable; the maxAmmoPct 40% window's damage value is fully downstream of it.",
+      "noFb deliberately NOT set anywhere (default FB-by-timing ON) — this kit has no function-damage riders at all, so the question is moot; noRange is engine-automatic and untouched.",
+      "This unit deals NO kit damage: every modeled effect is a buff, a heal, an ammo/gauge economy lever, or a rotation effect. Her whole sim contribution is (a) maxAmmoPct + instantReload on the team, (b) burstGenPct after FB, (c) the Burst-Stage-1 re-entry, (d) recovery events feeding on-heal consumers."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Alice: Wonderland Bunny (SMG/Water/Supporter/Burst I) is a pure support with zero kit damage lines. Modeled: S1 every-60-hits team heal + a 5-stack/5s Carrot Party parts-damage buff (v1-inert, partless boss, retained as the named stack currency); S2 full-burst-end team Burst Gauge filling speed +10%/5s and full-burst-enter team Max Ammunition +40%/15s plus a 40% instant partial reload; burst re-enters Burst Stage 1 (letting a second Burst I also cast) and heals all allies. Deliberately unmodeled: the 90-hit Water-Code 'Stack count of buffs ▲ 1' (no schema primitive for a stack-count amplifier) and the burst's max-Carrot-Party 'Incoming healing ▲ 150%' (no HP pool; heal magnitude is not tracked). Her measurable board footprint should be almost entirely rotation (the Stage-1 re-entry) and shots-fired (the ammo/reload economy) — grade her against full-burst counts and teammate shot counts, not a damage total."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after landing 60 normal attack",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'hitCount', count:60}, target {kind:'allies'} — recurring every-60-hits read (⚑ vs one-shot)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 7.4% of the skill user's final",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal (ticks:1) to all allies — no HP amount modeled; emits recovery events that fire teammates' 'recovery' triggers (HARD RULE: heal lines are not skippable)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Carrot Party: Damage to Interruption P",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 2, maxStacks 5, durationSec 5 — parsed-but-inert in v1 (no boss parts); kept as the named stack currency the burst gates on"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates after 90 normal attack(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "trigger for an unmodelable effect — no block authored because its sole payload has no primitive"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Stack count of buffs ▲ 1.",
+      "status": "SKIPPED",
+      "effectOrReason": "no schema primitive: a stack-COUNT amplifier over other buffs is not a StatKey and no EffectDef mutates another buff's maxStacks. Verbatim in unmodeled.skill1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after Full Burst ends.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnd'}, target {kind:'allies'}"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 10% for 5",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff burstGenPct 10, durationSec 5 — rotation lever (scales allies' gauge contribution)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} — literal 'entering Full Burst' text, fires on ANY team full burst (NOT burstCast; she is Burst I and the line is not in her own burst block)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max Ammunition Capacity ▲ 40% for 15 s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct 40, durationSec 15 — weapon-state modifier IS damage (gates shots fired / reload frequency)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reload 40%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "instantReload fraction 0.4 — ⚑ ambiguous vs reloadSpeedPct 40; no ▲ arrow and no 'Speed' token, so read as an action (partial magazine refill)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'}, target {kind:'allies'} — her own burst block, so burst-cast keyed (not fullBurstEnter)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "reenterStage stage:1 — rotation stays at stage 1 so another eligible Burst I may also cast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Restores 27% of the skill user's final",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal (ticks:1) to all allies — emits recovery events for on-heal consumers"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Carrot Party is at max",
+      "status": "SKIPPED",
+      "effectOrReason": "gate for an unmodelable effect; a resourceGate on Carrot Party would be authorable but gates nothing representable"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Incoming healing ▲ 150% for 15 sec.",
+      "status": "SKIPPED",
+      "effectOrReason": "no StatKey for incoming-healing amplification and no HP pool in v1 (heal magnitude untracked; only recovery events exist). Verbatim in unmodeled.burst"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[1].effects[1] — 'Reload 40%.'",
+      "estimate": "instantReload { fraction: 0.4 } on all allies at full-burst enter",
+      "reasoning": "Every stat line in this kit carries an explicit ▲/▼ arrow ('Burst Gauge filling speed ▲ 10%', 'Max Ammunition Capacity ▲ 40%', 'Incoming healing ▲ 150%'). This line carries none and names no 'Speed' stat, which structurally marks it as an ACTION (instantly reload 40% of the magazine) rather than a reloadSpeedPct buff. The two readings are not damage-equivalent: a 40% instant refill removes reload downtime once per full burst for the whole team, while reloadSpeedPct 40 would shorten every reload for an unstated window (the line has no duration, which further argues against a timed stat buff).",
+      "recipe": "Record one fight with any teammate whose magazine is visible in the ammo counter. At the frame Full Burst begins, read the counter: an instant jump of +40% of MAX capacity (mid-magazine, no reload animation) confirms instantReload; an unchanged counter with a visibly shorter NEXT reload animation confirms reloadSpeedPct. One full-burst entry decides it — n=1 suffices because the two hypotheses predict different observables at the same frame, not different magnitudes of the same one."
+    },
+    {
+      "field": "skill1[0].trigger — hitCount count 60",
+      "estimate": "recurring every 60 landed normal attacks (fires ~repeatedly through the fight)",
+      "reasoning": "'Activates after landing 60 normal attack(s)' gives a threshold but no 'once per battle' qualifier; the hitCount TriggerDef fires every `count` cumulative hits, which is the standard kit shape for a bare threshold line. A one-shot-at-60 reading is not excluded by the prose. This is only weakly load-bearing here — the payload is a heal (no damage) plus a v1-inert parts buff — but it does control how often teammates' 'recovery' triggers fire, which IS a damage path for on-heal consumers.",
+      "recipe": "Count recovery/heal popups on her in a recorded fight against her own shot count (SMG, hitsPerShot 1, so hits==pulls). Recurring predicts heal events at ~every 60 pulls throughout; one-shot predicts exactly one. The existing probe recordings already carry heal popups — score against them before generating new footage."
+    },
+    {
+      "field": "unmodeled.skill1 — 'Stack count of buffs ▲ 1.'",
+      "estimate": "unmodeled (no primitive); if enacted, most likely raises Carrot Party's cap 5→6 or grants +1 stack per application to Water Code allies",
+      "reasoning": "No StatKey expresses 'stack count of buffs' and no EffectDef mutates another buff's maxStacks or stack level. The scope is genuinely ambiguous from the text alone: it may amplify only HER buffs (Carrot Party, reaching the burst's max-stack gate faster) or every stacking buff held by Water Code allies (a real cross-unit damage lever, since many stacking ATK/damage buffs are Water-carrier buffs). I am deliberately not guessing between these — a precise guess here would be exactly the failure mode the ⚑ rule exists to prevent.",
+      "recipe": "In-game, hover a Water Code ally's buff tray with and without Alice: Wonderland Bunny after 90 of her normal attacks and read the stack numerals. If a teammate's unrelated stacking buff shows +1 over its own printed cap, the effect is roster-wide and needs an engine primitive (buff-stack amplification) before it can be modeled at all; if only Carrot Party moves, it is a local cap bump and can be authored as maxStacks 6 on the S1 buff."
+    },
+    {
+      "field": "skill1[0].effects[1] — Carrot Party partsDamagePct",
+      "estimate": "2% per stack, 5 stacks, 5s — contributes exactly 0 damage in v1",
+      "reasoning": "partsDamagePct is parsed-but-inert (the scope-lock boss is partless), so this buff's damage contribution is zero by construction rather than by estimate. It is retained rather than dropped because it is the named currency the burst's second block gates on, and dropping it would erase the kit's own reference chain. Flagged so a reader does not mistake a live buff entry for a live damage contribution.",
+      "recipe": "No measurement needed for v1. If parts modeling ever lands, the stack cadence (5 stacks × 5s decay against a 60-hit trigger) becomes load-bearing and must be re-derived then: at 60 hits per activation the buff's 5s window likely expires between activations, so max stacks may be unreachable without the 'Stack count of buffs ▲ 1' line — which is itself unmodeled."
+    },
+    {
+      "field": "cadence tuple (pullsPerSec / reloadFrames 81 / ammo 120)",
+      "estimate": "datamined values used as-is; effective rate is frame-quantized (60/ceil(60/nominal))",
+      "reasoning": "ALWAYS-⚑ field: rate_of_fire and reloadFrames are known-unreliable datamine fields, and a nominal rate is quantized to 60fps frame boundaries. Her entire modeled contribution routes through shot economy (the maxAmmoPct 40% window, the 40% instant reload, and the 60/90-hit triggers), so every number in this override is downstream of the cadence tuple. An error here shifts trigger timing, not just magnitude.",
+      "recipe": "Read the ammo counter frame-by-frame over one full magazine in existing footage to get shots/sec directly — the instrument that measures the disputed quantity, not a downstream proxy like full-burst counts. Check docs/VALIDATION-INDEX.md first: an SMG cadence fixture may already exist, in which case score against it and stop."
+    },
+    {
+      "field": "burst[0].trigger — burstCast vs fullBurstEnter",
+      "estimate": "burstCast (her own cast)",
+      "reasoning": "The block sits in her OWN burst slot with no 'entering Full Burst' clause, so it is burst-cast keyed per the trigger-identity rule. This matters for the Stage-1 re-entry specifically: keying it to fullBurstEnter would over-credit in comps containing another Burst I, firing the re-entry on rotations she did not cast. Confidence is high (the text is structural, not inferential) — recorded as a flag only because burst-cast vs full-burst-enter is the single most consequential trigger distinction for rotation.",
+      "recipe": "Already decidable from the prose; no measurement needed. Confirm downstream by full-burst COUNT on a comp with two Burst I units — the measured-exact FB count on graded comps is the existing labeled artifact that scores this."
+    }
+  ],
+  "model": "claude-opus-5"
+}

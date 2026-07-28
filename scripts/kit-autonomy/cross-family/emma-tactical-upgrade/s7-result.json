@@ -1,0 +1,146 @@
+{
+  "slug": "emma-tactical-upgrade",
+  "kitDescription": "Emma: Tactical Upgrade is a Fire MG Supporter (Burst I) whose value is almost entirely team-facing. Her Skill 1, Environment Setup, fires at battle start and every 30 seconds thereafter, putting a 10-second Damage Taken +3.9% debuff on all enemies and a 10-second heal-over-time on all allies; a separate line permanently taunts all enemies onto herself. Skill 2 passively grants same-squad allies +23.51% Critical Damage and all allies +2.32% Projectile Explosion Damage; if she additionally has AS Formation applied to herself (a formation granted by her squadmate Eunhwa: Tactical Upgrade), the whole team also gains +30.97% True Damage and +3.09% more Projectile Explosion Damage, her taunt is disabled, and Environment Setup recurs every 10 seconds instead of 30. Her Burst gives all allies a flat ATK grant equal to 40.07% of her own ATK for 10 seconds, and — if Environment Setup is active when she casts — doubles the enemy Damage Taken debuff (to an effective 7.8%) for 10 seconds while raising the team's incoming healing. She is a Burst-1 vulnerability-and-ATK support whose own weapon damage is a plain MG normal attack.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "AS-default premise (5): 'e2 Projectile Explosion…5.41', 'bonus b1 True Damage…ALL ALLIES', 'bonus b1 True Damage is load-bearing', 'bonus b4 shortens…>=12', 'b4 counterfactual…less than' — blind baked the conditional AS-Formation bonus in unconditionally; driver mode-gates it default-OFF",
+      "Enhanced-debuff encoding (3): 'DOUBLES…include 7.8', 'doubled debuff is a 10s…', 'removing the burst debuff-doubling…' — blind expects one 7.8 instance; driver emits a second slot-keyed co-stacking 3.9 (damage-identical, taken sums to 1.078)",
+      "Blind-test API bugs (6): 'e2 emits a 10-tick heal-over-time' (no heal/recovery kinds in SimEvent union), 'CASTER-scaled ATK' (fromEmma filter catches crown's 64.51 casterAtkPct — 0.6451×80267=51780.2417 exactly matches the observed value), 'keyed to Emma's OWN burst cast' (strict < fails on same-frame equality), the two inertness loops (broad casterIdx!==null filter catches helm's critRateNormalPct and crown's reloadSpeedPct), 'no direct damage' (UnitResult has 'position', not 'slot')"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Damage Taken ▲ 3.9% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive@0 leading block + interval:30 recurrence, damageTakenPct 3.9/10s on enemy, plus name-keyed 'Environment Setup' targetStatus window for the burst gate",
+        "blindSaid": "S5 and S6 both converged: boss debuff, 10s windows, t=0 first fire ('Activates at the start of battle' overrides first-fire-at-t=sec)",
+        "formulaCheck": "damageTakenPct → Taken bucket (§1g), boss-held debuff benefiting all team damage, additive stacking ✓; 6 applications at frames 0/1800/…/9000 with finite 600-frame expiry verified by driver T1",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on stat, value, window, recurrence, and t=0 first fire. The wrong-stat and duration-stripped counterfactuals both discriminate."
+      },
+      {
+        "kitLine": "recovers 2.32% … every 1 sec for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "heal ticks:10/intervalSec:1 on allies, passive@0 + interval:30 (10 under AS); magnitude genuinely unmodeled (no HP pool), cadence is the faithful observable",
+        "blindSaid": "S5/S6 agree on ticks:10/1s; S5's assertion was unobservable (nonexistent event kinds) — the driver's crown-consumer isolation (crown's own heal patched out) is the correct observable",
+        "formulaCheck": "Recovery events drive on-recovery consumers (crown's 20.99% attackDamagePct) at ~1Hz inside each window; 10 ticks spanning ≥8s per window verified; ticks-stripped counterfactual collapses to ≤2 firings",
+        "fireRateOk": true,
+        "explanation": "Heal amount is a documented gap (no HP pool — blanc precedent); the 10-tick cadence, the kit's tandem payload, is modeled and fires. Fixture strips crown's own heal, so the channel is isolated per method C."
+      },
+      {
+        "kitLine": "Attract: Taunt all enemies continuously",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — single immortal boss, no targeting model",
+        "blindSaid": "S5 skipped it; S6 unmodeled it verbatim — identical disposition all three ways",
+        "formulaCheck": "No damage path exists for taunt in v1; zero damage consequence",
+        "fireRateOk": true,
+        "explanation": "Unanimous, documented, damage-inert."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "same squad … Critical Damage ▲ 23.51%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "plain allies at single-squad scope (anchor-innocent-maid precedent), critDamagePct 23.51 continuous from frame 0, no expiry, LIVE on all three fixture units",
+        "blindSaid": "S6 also encoded allies (documented); S2b alone wanted a self-only stand-in; S5 asserted a non-Emma target receives it — satisfied under the driver's encoding",
+        "formulaCheck": "critDamagePct feeds the critBonus term of the Major bucket (§1b), unscoped (applies to normals + procs) ✓; removal lowers every ally's total",
+        "fireRateOk": true,
+        "explanation": "Target-set reading is documented with repo precedent and independently matched by S6; the S2b 'self-only' alternative would under-credit her main team contribution and is contradicted by the driver's cited precedent. Flagged as an owner spot-check residual, not a gotcha — the decision is recorded and two of three agents converge."
+      },
+      {
+        "kitLine": "all allies. Projectile Explosion ▲ 2.32%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "projectileExplosionPct 2.32 continuous allies; LIVE on ada's RL normals (+0.0232 dmgUp exactly, per projExplOnRlNormals default ON) and byte-inert on MG normals",
+        "blindSaid": "S5/S6 converge on stat/value/scope; S5's RL-free fixture only asserted byte-inertness — the driver's RL fixture pins both directions (stronger)",
+        "formulaCheck": "Projectile bucket on explosion-flavored hits (§1f) AND DamageUp-bucket on RL normal attacks (§1e, MEASURED 1.2491) ✓ — the driver's dual-scope assertion matches the SSOT exactly",
+        "fireRateOk": true,
+        "explanation": "Full convergence; the driver's fixture choice (ada as RL) makes the line observable rather than vacuously inert."
+      },
+      {
+        "kitLine": "AS to self: True Damage ▲ 30.97%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode-gated, default OFF — AS Formation is applied by eunhwa-tactical-upgrade (not simSupported), so no board team can have it; mode exists for kit-SSOT completeness (mint-duet precedent)",
+        "blindSaid": "S5/S6 baked it in unconditionally, but S6's own flags concede 'the assumption is baked in rather than gated'; S2b explicitly prescribed a mode gate with declared flagged default",
+        "formulaCheck": "trueDamagePct is a DamageUp-bucket entry gated on true-flavored hits (§1e) ✓; default run emits zero trueDamagePct, AS mode emits 30.97 to all three allies — both pinned by T7",
+        "fireRateOk": true,
+        "explanation": "The prose is conditional ('Bonus effects when applying AS Formation to self'); the driver's gated encoding is the more faithful read and follows S2b's own prescription. Default-ON would over-credit every board team with free True Damage — the blind divergence is the recon error here."
+      },
+      {
+        "kitLine": "AS to self: Projectile Explosion ▲ 3.09%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode-gated second projectileExplosionPct 3.09 instance, additive over the base 2.32 (ada RL normals +0.0309 dmgUp in the isolated [0,7s) band)",
+        "blindSaid": "S5/S6 wanted a summed 5.41 always-on — same AS-premise divergence as above",
+        "formulaCheck": "Additive within the Projectile/DamageUp buckets ✓; same-stat different-value instances co-stack per the KR stacking key",
+        "fireRateOk": true,
+        "explanation": "Correct additive stacking under the correctly-gated mode; buff-level pin confirms 3.09 never ships in the default mode."
+      },
+      {
+        "kitLine": "AS to self: Exposure activation disabled",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — a no-op on the already-unmodeled taunt, even under the AS mode",
+        "blindSaid": "S5 skipped; S6 unmodeled — unanimous",
+        "formulaCheck": "No stat, no event, no damage consequence",
+        "fireRateOk": true,
+        "explanation": "Documented no-op on a documented no-op."
+      },
+      {
+        "kitLine": "AS: Recurring interval of Env Setup ▼ 20s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode-keyed skill1 variants: interval:10 under AS mode, interval:30 default — 18 applications/180s and contiguous duty cycle under AS (T7)",
+        "blindSaid": "S2b prescribed exactly this encoding ('no cross-block interval-modifier primitive → mode-gated skill1 variants'); S6 baked interval:10 unconditionally (its own ⚑ admits the assumption)",
+        "formulaCheck": "Cadence lever triples both the debuff uptime (33%→100%) and the recovery-event cadence (T7d: ≥150 recovery frames, >2.5× default) ✓",
+        "fireRateOk": true,
+        "explanation": "The kit's biggest lever is modeled in both modes with the correct default; applications land exactly at i×600 frames with no duty-cycle gap under AS."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 40.07% of the skill user's ATK",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 40.07 on burstCast, 10s, all allies — flat-resolves to (40.07/100)×her staticAtk per ally per cast",
+        "blindSaid": "S5's own expected magnitude 0.4007×emma.staticAtk=39963.4138 EQUALS the driver's flat resolution (driver T5 passes on it) — independent convergence on the number; the S5 red was its own crown-contaminated filter",
+        "formulaCheck": "§1a: 'X% of caster's ATK' = caster static ATK × X as a FLAT add outside the recipient's (1+ATK%) ✓; in-window baseAtk diffs equal the flat value to 4 decimals, exactly 0 outside; own-% counterfactual keys to the target's ATK and diverges",
+        "fireRateOk": true,
+        "explanation": "Emma is sole B1 in the fixture (9 casts) — the S2b liter-hazard is avoided by construction and casts>0 is asserted. Burst-cast timing rule (pre-FB grant) consistent with §8."
+      },
+      {
+        "kitLine": "Damage taken multiplier scaled by 100%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "second co-stacking damageTakenPct 3.9 instance on burstCast, gated on requiresTargetStatus 'Environment Setup'; overlap sums to taken 1.078; ⚑ ruling (own full 10s vs clip at base-window expiry) documented with recipe + tier 2, <1% of fight damage",
+        "blindSaid": "S5 wanted one 7.8 instance (damage-identical; §1g Taken stacks additively, KR slot keys 0:skill1:… vs 0:burst:… co-stack legitimately); S6 converged on the additive second-3.9 encoding itself",
+        "formulaCheck": "'Scaled by 100%' = doubled (3.9→7.8) ✓ — the no-op ×1.0 reading is rejected by all three agents; gate verified: enhancement fires only on in-window casts, ungated counterfactual provably fires on gap frames",
+        "fireRateOk": true,
+        "explanation": "The only real modeling choice (enhanced window duration semantics) is flagged measurement-gated with a concrete popup-read recipe — acceptable per non-negotiable 2. Encoding difference vs S5 is cosmetic, not behavioral."
+      },
+      {
+        "kitLine": "Incoming healing ▲ 29.04%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim — no heal amounts/HP pool; the recovery-event channel is untouched by healing-taken scaling",
+        "blindSaid": "S5 skipped; S6 unmodeled — unanimous",
+        "formulaCheck": "No consumer exists in v1; correctly NOT encoded as extra recovery events (which would over-fire on-recovery consumers)",
+        "fireRateOk": true,
+        "explanation": "Unanimous documented gap."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: every kit line is FAITHFUL or a DOCUMENTED_GAP, and the unmodeled set (taunt, Exposure-off, incoming healing) is byte-identical across all three agents. The blind re-derivations converged on every substantive encoding — boss-debuff routing with t=0 first fire, ticks:10 recovery cadence, casterAtkPct flat resolution (the blind's own expected magnitude 39963.4138 equals the driver's resolved value to the digit), the 'scaled by 100%'=doubled read, and the critDamage/projectileExplosion passives. The 14 S5 reds decompose cleanly: 6 are verified blind-test API bugs (nonexistent SimEvent kinds, a casterIdx!==null filter that catches crown's 64.51 grant and helm/crown inertness stats, a 'slot'-vs-'position' field error, and a strict-< on same-frame burst timing — arithmetic on the contaminated value 0.6451×80267=51780.2417 confirms the triage); 5 are the AS-Formation default premise, where the driver's conditional, mode-gated default-OFF encoding is the MORE faithful read of 'Bonus effects when applying AS Formation to self' (S2b prescribed exactly this gate; S6's own flags concede its always-on bake is an assumption, and default-ON would over-credit every board team with 3× vulnerability uptime plus free True Damage from a formation no sim-legal team can field); 3 are a damage-identical encoding difference (co-stacking slot-keyed 3.9+3.9 vs a single 7.8 — both yield taken 1.078 per §1g additive Taken stacking, and S6 independently chose the driver's encoding). Discrimination holds: every load-bearing driver test carries a named counterfactual that provably diverges (wrong-stat, duration-stripped, ticks-stripped, own-%, ungated, default-mode absence), and the recovery fixture strips crown's own heal so the channel is isolated. Fire-rate check passes in both modes (6 vs 18 debuff windows, cadence-pinned heals, gated enhancement firing only in-window). Owner spot-check residuals (same-model, low): (a) the packet could not independently verify that eunhwa-tactical-upgrade is the AS-Formation applier and is off-board — if either is wrong the mode default needs revisiting; (b) the same-squad→allies target read rests on the anchor-innocent-maid precedent against S2b's self-only stand-in — if Talentum-squadmates ever join the board, re-check; (c) the T6 full-10s enhanced-window ruling is measurement-gated (<1% impact) with a popup recipe already on file.",
+  "model": "kimi-code/k3"
+}

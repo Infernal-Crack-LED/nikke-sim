@@ -1,0 +1,243 @@
+{
+  "slug": "e-h",
+  "leakDetected": null,
+  "override": {
+    "slug": "e-h",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 7.5,
+            "maxStacks": 4
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "bossElementGate": "Water",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "elementDamagePct",
+            "value": 16.36,
+            "durationSec": 15
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 430.05,
+            "durationSec": 10
+          },
+          {
+            "kind": "weaponSwap",
+            "damagePct": 61,
+            "chargeTimeSec": 0.4,
+            "chargeMultPct": 250,
+            "maxAmmo": 1,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Effect 1: Removes Scrap(s)."
+      ],
+      "skill2": [
+        "Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+        "Effect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+        "Effect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+      ],
+      "burst": [
+        "Deactivation condition: When the duration ends or when all rounds have been fired."
+      ]
+    },
+    "caveats": [
+      "⚑ Magazine count is authored at 1 (the battle-start craft). It feeds TWO live values — skill1's ATK ▲7.5%×mags and the burst weapon's Max Ammo — so any measured second magazine moves both at once.",
+      "⚑ Burst swap shot economy: with a 1-round magazine the kit deactivates the swap after a single full-charge shot (~0.4s), leaving ~9.5s of the ATK ▲430.05% window on the base SMG. The override expresses only the 10s hard bound; whether the engine reverts on empty or reloads-and-refires the 1-round swap is unverified and is the largest single uncertainty in this baseline.",
+      "⚑ Elemental Advantage Attack Damage ▲16.36% is gated to a Water-code boss (Wind advantage) and fires once at t=0, so it is inert on the neutral/Fire graded boss.",
+      "⚑ Base SMG cadence + reloadFrames come from the datamine (known-unreliable); the swap's cadence is charge-time-driven (0.4s) with no kit-stated pull rate.",
+      "noFb is deliberately unset (FB-by-timing default ON); noRange is engine-automatic and not authored."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Scrap/magazine economy: skill2 effect 1 grants 10 Scraps at battle start, which immediately satisfies skill1's craft condition (10 Scraps while <4 magazines) → exactly ONE homemade magazine under scope lock, because the only other Scrap sources (destructible projectiles, destroyed enemy parts, neutralized enemies) have no channel in the sim and the graded boss is partless with a single immortal target. Magazine count drives two live values, both authored at 1: skill1's ATK ▲7.5% × magazines (value 7.5, maxStacks 4 so a measured second magazine is expressible) and the burst weapon's Max Ammunition (1 round). skill2 effect 5's Elemental Advantage Attack Damage ▲16.36% for 15 sec is applied once at t=0 (the battle-start Scrap gain) under a Water-code boss gate. Burst is a self weapon swap: 0.4s charge, 61% of final ATK per shot, ×250% on full charge, 10s window, plus self ATK ▲430.05% for 10 sec. The Scrap pool itself is not tracked as a resource — it has no consumer beyond the craft condition already resolved above."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when obtaining 10 Scrap(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger resolves deterministically at t=0 (skill2 grants 10 Scraps at battle start, 0 magazines held) → encoded as a passive self block rather than an event trigger, since no later Scrap source exists in the sim."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 1: Removes Scrap(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "Scrap pool is not tracked as a resource; its only consumer is the craft condition, already resolved to a single craft. No damage consequence."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 2: Crafts 1 homemade magazine",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Magazine count fixed at 1 (⚑); consumed by skill1's atkPct stack count and by the burst weaponSwap maxAmmo."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Effect 3: ATK ▲ 7.5% x magazines",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 7.5, self, no duration (continuous), maxStacks 4 to cover the kit ceiling of 4 magazines."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} on the skill2 block."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 1: start of battle, Scraps ▲ 10",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Folded into its two modeled consequences: the t=0 magazine craft (skill1 passive) and the t=0 firing of effect 5's elemental buff. The pool value itself is not tracked."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 2: destructible projectile → +1",
+      "status": "SKIPPED",
+      "effectOrReason": "No destructible-projectile channel exists in the sim; unmodeled verbatim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 3: enemy's part destroyed → +5",
+      "status": "SKIPPED",
+      "effectOrReason": "Scope-lock boss is partless; unmodeled verbatim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 4: enemy neutralized → +2",
+      "status": "SKIPPED",
+      "effectOrReason": "Single immortal boss, no neutralization event; unmodeled verbatim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Effect 5: Elem Advantage ▲ 16.36%/15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff elementDamagePct 16.36, durationSec 15, self, applied at t=0 on the battle-start Scrap gain; bossElementGate 'Water' (Wind advantage) so it never credits a non-advantaged fight."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon in use.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap effect on a burstCast/self block (weapon-state modifier = damage, never auto-skipped)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time: 0.4 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeTimeSec 0.4."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 61% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 61."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge Damage: 250% of damage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 250 (multiplier ON the 61%, i.e. 152.5% of final ATK per full-charge shot)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammo Capacity: 1 x magazines",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 1 (⚑ tracks the magazine count; up to 4 if Scrap sources exist on a live boss)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Duration: 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.durationSec 10."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deactivation: duration/all rounds fired",
+      "status": "SKIPPED",
+      "effectOrReason": "Only the time bound is expressible via durationSec; the all-rounds-fired early exit (which with 1 round ends the swap ~0.4s in) has no authored representation. Unmodeled verbatim + ⚑."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional: ATK ▲ 430.05% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 430.05, durationSec 10, self, on the same burstCast block (ordered before the swap)."
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[0].effects[0].value (and burst[0].effects[1].maxAmmo)",
+      "estimate": "1 magazine → atkPct 7.5, maxAmmo 1",
+      "reasoning": "Stack/currency steady-state, derived not guessed: the kit states start (10 Scraps at battle start, cap 10), the consume (10 Scraps per craft), and the rebuild sources (+1 destructible projectile, +5 part, +2 neutralize). On the partless scope-lock boss with no adds, only the destructible-projectile source could fire and it has no sim channel — so the pre-consume count supports exactly one craft. Cap is 4, so a live boss that throws destructible projectiles could reach 2-4 (ATK 15-30%, maxAmmo 2-4).",
+      "recipe": "Count homemade-magazine icons / the burst weapon's ammo readout at the first burst in footage of the graded fight. Ammo count IS the magazine count (1:1 by kit text), so one screenshot of the swapped weapon's ammo pins BOTH values at once. If >1, raise atkPct to 7.5×n and maxAmmo to n together — never one without the other."
+    },
+    {
+      "field": "override.burst[0].effects[1] (swap shot economy / deactivate-on-empty)",
+      "estimate": "1 full-charge shot at 152.5% of final ATK, then revert to the SMG for the remainder of the 10s window",
+      "reasoning": "Weapon-swap shot economy is an ALWAYS-⚑ field, and here the ceiling is unusually tight: maxAmmo 1 plus the kit's explicit 'or when all rounds have been fired' deactivation means the swap should last ~0.4-0.5s, not 10s. If the engine instead reloads the 1-round swap weapon (base reloadFrames 81 = 1.35s), it would fire ~5-6 charged shots over the window — a ~5-6x over-credit on the burst bucket. The authored durationSec 10 is the hard bound only and does NOT encode the early exit.",
+      "recipe": "Count burst-window damage popups in footage: 1 large popup = deactivate-on-empty (correct as authored, assuming the engine reverts on empty); a repeating popup every ~1.75s (1.35s reload + 0.4s charge) = the engine is refilling the swap. Cross-check against the engine's weaponSwap ammo-exhaustion branch before trusting either; if the engine refills, the swap needs an explicit early-termination primitive rather than a durationSec tweak."
+    },
+    {
+      "field": "override.skill2[0] (trigger cadence + durationSec 15)",
+      "estimate": "one application at t=0, 15s window",
+      "reasoning": "The kit gives the trigger ('when obtaining Scraps') but the sim has no Scrap-gain event after battle start, so the literal model is a single 15s window. On a live boss that throws destructible projectiles the buff would refresh repeatedly and read as near-permanent — the 15s duration on a recurring trigger is exactly the multiply-risk case, so it is authored as ONE passive instance, not a repeating one.",
+      "recipe": "Only enactable on an element-advantaged (Water) boss recording: watch the buff icon's uptime across the fight. Continuous uptime → drop durationSec (continuous passive); a single 15s window → keep as authored."
+    },
+    {
+      "field": "override.skill2[0].bossElementGate",
+      "estimate": "'Water' (E.H. is Wind)",
+      "reasoning": "Two stacked assumptions: (a) the element cycle places Wind advantaged over Water; (b) the engine's elementDamagePct does NOT already self-gate on advantage. The gate is the conservative side of (b) — if the engine gates internally the block is merely redundant, whereas omitting it would over-credit every non-advantaged fight by 16.36 points in the element bucket.",
+      "recipe": "Read the advantage table in the engine/data (element cycle) to confirm Wind→Water, and read how elementDamagePct is consumed in the damage path. If elementDamagePct is already advantage-conditional, drop the gate as redundant; if not, keep it. No footage needed — this is a code read."
+    },
+    {
+      "field": "override.burst[0].effects[1].kind — the weaponSwap identifier",
+      "estimate": "'weaponSwap'",
+      "reasoning": "The schema supplied in this packet had the swap effect's `kind` literal redacted (the block is present with damagePct/chargeTimeSec/chargeMultPct/maxAmmo/durationSec but no kind line). 'weaponSwap' is inferred from the surrounding `swapGate: 'swapped'` block gate and the `whileSwapped` buff field.",
+      "recipe": "Read the EffectDef union in src/skills/types.ts and substitute the exact literal before running validate-overrides. Pure lookup — zero cost."
+    },
+    {
+      "field": "cadence tuple (base SMG pullsPerSec / reloadFrames 81 / ammo 120)",
+      "estimate": "datamined values as given; no pullsPerSec authored on the swap",
+      "reasoning": "Mandatory ⚑ — rate_of_fire and reloadFrames are known-unreliable datamine fields, and effective cadence is quantized to 60fps frame boundaries (effective = 60/ceil(60/nominal)). The swap is charge-driven (0.4s) so no pull rate is authored there; the base SMG cadence still gates every non-burst shot and the post-swap remainder of the 10s ATK window.",
+      "recipe": "Read shots/sec off the in-game ammo counter over a full magazine (the instrument that measures the disputed quantity directly), not off burst-gauge or FB counts."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,100 @@
+{
+  "slug": "a2",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "chargeDamagePct",
+          "value": 110.44,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 30.1,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 40.88,
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 15.19,
+          "durationSec": 15
+        },
+        {
+          "kind": "buff",
+          "stat": "chargeSpeedPct",
+          "value": 35.88,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Explosion Radius ▲ 100.74% for 15 sec."],
+    "skill2": [],
+    "burst": [
+      "Own HP decreases every second while ATK and Charge Speed increase. If own HP dips below 40%, Mode B is removed.",
+      "Effect 1: Current HP ▼ 3.99% every 1 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ skill2 trigger: the kit says 'when hitting a target with Full Charge'; the schema has no full-charge trigger kind. Encoded as shotFired because A2 is an RL whose every round is a charge shot (chargeFrames 60) — one pull = one full-charge hit. If the engine ever fires uncharged RL rounds, this OVER-fires.",
+    "⚑ skill2 rider is on-HIT, not on-FIRE: shotFired dispatches at the pull, so the 30.1% rider lands ~0 frames early instead of at impact. No landing-delay is modeled (delaySec unmeasured).",
+    "⚑ burst Mode B duration is kit-silent: no 'for N sec' clause. Set to 15s to match the skill1 window; the real bound is the HP-drain race (3.99% current HP/sec until <40%), which v1 cannot model (no HP pool).",
+    "⚑ burst Mode B is a persistent MODE, not a timed buff — modeled as a burstCast-triggered timed self-buff. If Mode B in fact persists until the HP floor, the real uptime is longer than 15s.",
+    "partsDamagePct is parsed but inert in v1 (partless scope-lock boss) — kept for kit completeness, contributes zero damage.",
+    "Explosion Radius has no schema stat and is NOT projectileExplosionPct (that is a damage stat, this is a hit-area stat) — mapping it to a damage stat would fabricate damage. Skipped.",
+    "FB-by-timing left default ON for the 30.1% rider (noFb unset, per the measured-only rule). No core (kit text does not say 'core strike'). crit left default."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. A2 (a2), RL/Fire/Attacker/Burst III, cd 40s, ammo 6, chargeFrames 60. Skill 1 is a burst-cast self window (charge damage + explosion radius, 15s). Skill 2 is a per-full-charge-hit package: a 30.1%-of-final-ATK rider plus a 3s Damage-to-Parts self buff (inert on the partless boss). Burst is a self 'Mode B' trading current HP per second for ATK ▲15.19% and Charge Speed ▲35.88%; the HP drain and its <40% self-removal are unmodeled (v1 has no HP pool), so Mode B is encoded as a timed self-buff with a ⚑ duration. Charge Speed is a WEAPON-STATE modifier and IS damage (it gates charge shots fired) — deliberately not skipped."
+}
