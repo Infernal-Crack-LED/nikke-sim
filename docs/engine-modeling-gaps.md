@@ -35,7 +35,7 @@
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
-| `burstCdr` | 15 | anis-star, arcana, blanc, d-killer-wife, helm-aquamarine, liter, little-mermaid, moran, … |
+| `burstCdr` | 16 | anis-star, arcana, blanc, d-killer-wife, helm-aquamarine, liter, little-mermaid, moran, … |
 | `burstEligibility` | 1 | rapi-red-hood |
 | `burstFirst` | 1 | prika |
 | `burstSnapshotsPreFb` | 1 | cinderella |
@@ -54,7 +54,7 @@
 | `escalating` | 5 | anchor-innocent-maid, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
-| `excludeSelf` | 8 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny |
+| `excludeSelf` | 9 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny, … |
 | `fbGate` | 5 | eunhwa-tactical-upgrade, modernia, soda-twinkling-bunny, velvet, zwei |
 | `flatDamage` | 51 | anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, brid-silent-track, chisato, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
@@ -88,7 +88,7 @@
 | `pullsPerSec` | 1 | jill |
 | `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
 | `recovery` | 2 | asuka, crown |
-| `reenterStage` | 1 | anis-star |
+| `reenterStage` | 2 | anis-star, tia |
 | `removeOnReload` | 0 | _none_ |
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |

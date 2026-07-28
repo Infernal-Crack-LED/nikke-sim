@@ -1,0 +1,237 @@
+{
+  "slug": "tia",
+  "leakDetected": null,
+  "override": {
+    "slug": "tia",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 13
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 32.11,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 35.07,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies",
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "shield",
+            "maxHpPct": 10.21,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Max HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.",
+        "Attract: Taunts all enemies for 5 sec.",
+        "Recovers 21.96% of attack damage as HP over 10 sec."
+      ],
+      "burst": ["Re-enters Burst Stage 1."]
+    },
+    "caveats": [
+      "⚑ skill1 trigger identity: kit says 'Activates when recovering Cover's HP'. The engine's `recovery` trigger fires on ANY heal reaching the unit, but a NIKKE ally heal restores the unit's HP, not Cover HP — keying to `recovery` would over-fire with any healer teammate (helm/crown comps). The only kit-stated Cover-HP restore is her own skill2 burst-cast line, so BOTH skill1 blocks are keyed to `burstCast` (self). Under-fires if a teammate/another source restores Cover HP.",
+      "⚑ skill1 burst-CDR: 'stacks up to 2 time(s) and lasts for 12 sec' is not expressible — `burstCdr` has no stack cap or window. Modeled as ONE 13s reduction per tia burst cast (one cover-recovery source ⇒ one stack). If a second cover-recovery source exists in a real fight, the model under-credits by up to 13s of her 40s burst CD.",
+      "⚑ burst 'Re-enters Burst Stage 1' has NO engine primitive (burstEligibility/fullBurstExtend/burstCdr are all different mechanics). It is a rotation-machine feature that can add a whole extra Burst-Stage-1 cast per chain — potentially the single largest damage term in this kit, and it is currently INERT.",
+      "⚑ skill2 self lifesteal HoT ('Recovers 21.96% of attack damage as HP over 10 sec') is deliberately NOT emitted as heal/recovery events: it restores the unit's HP, not Cover HP, so emitting it would spuriously fire cover-keyed consumers (and, on 10 ticks, multiply any on-recovery rider). No HP pool is modeled, and no ally consumer exists (target is self).",
+      "⚑ 'Max HP of Cover ▲' targets the COVER entity, which the sim has no representation of; encoding it as casterMaxHpPct/targetMaxHpPct would wrongly inflate the unit's own Max HP (a future atkOfMaxHpPct feed). Skipped, not silently merged.",
+      "⚑ Cadence tuple (ammo 6 / reloadFrames 141 / chargeFrames 60 / RL pull rate) comes from the datamine fields known to be unreliable — unverified against footage.",
+      "The two `shield` effects and the `heal` effect carry no HP pool (v1 boss deals no damage); they exist for kit completeness and to fire teammates' `shielded` / `recovery` triggers."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Tia (RL/Iron/Defender/Burst I) is a shield/sustain Burst I whose only offensive term is skill1's team-wide Attack Damage ▲32.11%/10s, chained off her own burst cast (burst cast → skill2 restores Cover HP → skill1 fires), so the buff opens at cast time and covers the following Full Burst window. Her burst-CD reduction is modeled as one 13s application per own-burst cast. Cover Max HP, taunt, self lifesteal HoT and the 'Re-enters Burst Stage 1' rotation effect are unmodeled (see caveats); the last of these is the biggest known gap."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when recovering Cover's HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger mapped to {kind:'burstCast'} (her S2 burst-cast Cover restore is the sole kit-stated cover-recovery source); engine `recovery` rejected as over-firing on teammate heals — see caveat"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 13 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'burstCdr', seconds:13} on self, per own burst cast"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "stacks up to 2 time(s), lasts 12 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "burstCdr carries no stack cap / window field; single-stack application is the faithful floor given one trigger source (caveat, not a silent drop)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — 'all allies' includes tia)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack damage ▲ 32.11% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 32.11, durationSec 10 (Damage Up bucket; unscoped — kit names no normal/charge/crit scope)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 5 normal atk",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger would be {kind:'hitCount', count:5}, but BOTH of its effect lines are unmodelable (cover Max HP, taunt) ⇒ effect-free block not authored"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP of Cover ▲ 32.75%",
+      "status": "SKIPPED",
+      "effectOrReason": "Targets the COVER, not the unit; no cover entity in the sim, and casterMaxHpPct/targetMaxHpPct would wrongly inflate her own Max HP pool"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attract: Taunts all enemies for 5 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Aggro/defensive; no enemy entity or targeting model in v1 (no damage consequence)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'burstCast'} trigger, target self"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Restores Cover HP by 21.41% of Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal', ticks:1} to self — no HP amount modeled; retained for kit completeness and as the in-fiction source of skill1's cover-recovery trigger"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 21.96% of atk dmg as HP/10s",
+      "status": "SKIPPED",
+      "effectOrReason": "Self lifesteal HoT; no HP pool modeled and NOT emitted as heal ticks — 10 recovery events would spuriously fire cover-keyed consumers (see caveat)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self. Shield 35.07% Max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'shield', maxHpPct:35.07, durationSec:10} to self; fires her own `shielded` trigger (no kit consumer)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "all allies (except self): Shield 10.21%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'shield', maxHpPct:10.21, durationSec:10}, target {kind:'allies', excludeSelf:true} — feeds teammates' `shielded` triggers / requiresShielded gates"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 1.",
+      "status": "SKIPPED",
+      "effectOrReason": "No engine primitive for burst-stage re-entry; burstEligibility/fullBurstExtend/burstCdr all express different mechanics. Largest known gap — see caveat"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[*].trigger",
+      "estimate": "{kind:'burstCast'} — fires once per tia burst cast",
+      "reasoning": "Kit trigger is 'when recovering Cover's HP'. The engine's `recovery` trigger fires on any heal targeting the unit; in NIKKE an ally heal restores unit HP, not Cover HP, so `recovery` would over-fire in any comp with a healer (helm/crown), inflating a team-wide 32.11% Damage-Up buff. The only kit-stated cover-HP restore is her own skill2 burst-cast line, so burstCast is the exact, non-over-firing equivalent.",
+      "recipe": "Record a fight with tia + a healer (e.g. crown/helm). Count tia's Attack-Damage-▲ buff icon applications: if it refreshes on ally heals (not just her own burst), re-key to {kind:'recovery'} and add the heal chain from skill2; if it appears only at her burst banner, burstCast is confirmed."
+    },
+    {
+      "field": "skill1[0].effects[0] (burstCdr)",
+      "estimate": "13 sec once per own burst cast (1 stack); real cap 26 sec at 2 stacks",
+      "reasoning": "'stacks up to 2 time(s) and lasts for 12 sec' has no representation in the burstCdr effect (no maxStacks/window). With a single modeled cover-recovery source only one stack can accrue, so 13s is the honest floor; a second in-game cover-recovery source within 12s would double it and shorten her 40s burst CD to ~14s.",
+      "recipe": "Time tia's burst-banner-to-burst-banner interval in footage with a stopwatch anchored to the 03:00→02:59 frame. 40−13=27s ⇒ 1 stack; ~14s ⇒ 2 stacks. Cross-check the buff-bar stack pip count on her portrait at cast."
+    },
+    {
+      "field": "burst — 'Re-enters Burst Stage 1' (unmodeled)",
+      "estimate": "INERT; true impact plausibly one extra Burst-Stage-1 cast per rotation",
+      "reasoning": "This is a burst-rotation state-machine effect, not a stat/damage effect, and no EffectDef expresses it (burstEligibility grants a unit an extra stage, fullBurstExtend lengthens FB, burstCdr shifts cooldowns — none re-open stage 1 for the whole team). Because full-burst COUNT is the sim's measured-exact rotation invariant, an unmodeled stage re-entry is a first-order rotation error, not a rounding one.",
+      "recipe": "Record any comp containing tia and count full bursts + the burst order per chain against the sim's ROT=1 rotation log. If the real chain shows two stage-1 casts (or an extra FB) per rotation vs the sim's one, the effect is live and needs an engine primitive; log the delta rather than fudging a stat buff to absorb it."
+    },
+    {
+      "field": "skill2 — self lifesteal HoT (unmodeled)",
+      "estimate": "0 damage; 0 recovery events emitted",
+      "reasoning": "Restores the unit's own HP (not Cover HP), and no HP pool exists in v1. Emitting it as {kind:'heal', ticks:10} would fire 10 recovery events on tia, which is the wrong entity for a cover-keyed trigger and would multiply any on-recovery consumer 10×.",
+      "recipe": "Only revisit if a teammate's kit keys off 'when an ally recovers HP' AND tia is in that comp; then confirm from footage whether the teammate's buff ticks during tia's 10s lifesteal window."
+    },
+    {
+      "field": "skill2 — 'Max HP of Cover ▲ 32.75%' (unmodeled)",
+      "estimate": "0 (no cover entity)",
+      "reasoning": "The HP/DEF-scaler prior counts the unit's OWN Max HP; this line raises the COVER's Max HP. Encoding it as casterMaxHpPct/targetMaxHpPct on self would put phantom HP on the unit and could later feed an atkOfMaxHpPct conversion — a silent damage error rather than an honest zero.",
+      "recipe": "No measurement needed for damage; revisit only if a cover entity is added to the sim or if any tia-adjacent kit converts Cover Max HP into ATK."
+    },
+    {
+      "field": "base cadence tuple (ammo 6 / reloadFrames 141 / chargeFrames 60, RL)",
+      "estimate": "as datamined; unverified",
+      "reasoning": "ALWAYS-⚑ field: datamined rate_of_fire and reloadFrames are known-unreliable, and a nominal rate must be snapped to 60fps frame boundaries (effective = 60/ceil(60/nominal)) before use. Tia deals essentially no kit damage, so this only matters via her hitCount:5 line (already unmodeled) and her contribution to burst-gauge generation.",
+      "recipe": "Read her ammo counter frame-by-frame in any recording to get shots/sec directly (the instrument that measures the disputed quantity), and count frames from empty-magazine to first-shot for the reload; compare against the datamined tuple."
+    }
+  ],
+  "model": "claude-opus-5"
+}

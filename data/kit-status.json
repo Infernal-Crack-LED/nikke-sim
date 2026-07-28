@@ -4137,6 +4137,40 @@
         "temp": "COLD ▼"
       }
     },
+    "tia": {
+      "name": "Tia",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-28",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-28: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/tia.json + scripts/kit-autonomy/manual-review/tia.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "date": "2026-07-28",
+      "evidence": "kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; burstCast trigger-proxy independently derived 3-way (driver/S2b/S6), S5 recovery-chain outlier refuted intra-family; reenterStage frame-pinned (T6, 30f chain gap) | kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged; burstCast trigger-proxy independently derived 3-way (driver/S2b/S6), S5 recovery-chain outlier refuted intra-family; reenterStage frame-pinned (T6, 30f chain gap)",
+      "residual": "environmental cover-regen proc cadence unmodeled (COLD: effective CD 27s vs observed ~20s; buff uptime under-credited) — footage spot-check of tia inter-burst gap queued for owner | environmental cover-regen proc cadence unmodeled (COLD: effective CD 27s vs observed ~20s; buff uptime under-credited) — footage spot-check of tia inter-burst gap queued for owner",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "stacks up to 2 time(s) and lasts for 12 sec (the second CDR stack + 12s stack window need a passive cover-regen proc — environmental: requires boss damage on cover + cover HP regeneration, unmodelable at the v1 damage-only scope; COLD: sim grants one −13s stack per burst, effective CD 27s vs the observed in-game ~20s)"
+        ],
+        "skill2": [
+          "■ Activates after landing 5 normal attack(s). Affects self.\nMax HP of Cover ▲ 32.75% of the skill user's Max HP for 5 sec.\nAttract: Taunts all enemies for 5 sec.",
+          "Restores Cover HP by 21.41% of the skill user's final Max HP (the restore AMOUNT — no Cover HP pool at scope; the line's trigger-anchor role for skill1 IS enacted via the burstCast proxy)",
+          "Recovers 21.96% of attack damage as HP over 10 sec."
+        ],
+        "burst": []
+      }
+    },
     "tove": {
       "name": "Tove",
       "burst": "I",
