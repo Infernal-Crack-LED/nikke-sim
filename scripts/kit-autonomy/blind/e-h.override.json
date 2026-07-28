@@ -1,0 +1,88 @@
+{
+  "slug": "e-h",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 7.5,
+          "maxStacks": 4
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "bossElementGate": "Water",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "elementDamagePct",
+          "value": 16.36,
+          "durationSec": 15
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 430.05,
+          "durationSec": 10
+        },
+        {
+          "kind": "weaponSwap",
+          "damagePct": 61,
+          "chargeTimeSec": 0.4,
+          "chargeMultPct": 250,
+          "maxAmmo": 1,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Effect 1: Removes Scrap(s)."],
+    "skill2": [
+      "Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+      "Effect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+      "Effect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+    ],
+    "burst": [
+      "Deactivation condition: When the duration ends or when all rounds have been fired."
+    ]
+  },
+  "caveats": [
+    "⚑ Magazine count is authored at 1 (the battle-start craft). It feeds TWO live values — skill1's ATK ▲7.5%×mags and the burst weapon's Max Ammo — so any measured second magazine moves both at once.",
+    "⚑ Burst swap shot economy: with a 1-round magazine the kit deactivates the swap after a single full-charge shot (~0.4s), leaving ~9.5s of the ATK ▲430.05% window on the base SMG. The override expresses only the 10s hard bound; whether the engine reverts on empty or reloads-and-refires the 1-round swap is unverified and is the largest single uncertainty in this baseline.",
+    "⚑ Elemental Advantage Attack Damage ▲16.36% is gated to a Water-code boss (Wind advantage) and fires once at t=0, so it is inert on the neutral/Fire graded boss.",
+    "⚑ Base SMG cadence + reloadFrames come from the datamine (known-unreliable); the swap's cadence is charge-time-driven (0.4s) with no kit-stated pull rate.",
+    "noFb is deliberately unset (FB-by-timing default ON); noRange is engine-automatic and not authored."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Scrap/magazine economy: skill2 effect 1 grants 10 Scraps at battle start, which immediately satisfies skill1's craft condition (10 Scraps while <4 magazines) → exactly ONE homemade magazine under scope lock, because the only other Scrap sources (destructible projectiles, destroyed enemy parts, neutralized enemies) have no channel in the sim and the graded boss is partless with a single immortal target. Magazine count drives two live values, both authored at 1: skill1's ATK ▲7.5% × magazines (value 7.5, maxStacks 4 so a measured second magazine is expressible) and the burst weapon's Max Ammunition (1 round). skill2 effect 5's Elemental Advantage Attack Damage ▲16.36% for 15 sec is applied once at t=0 (the battle-start Scrap gain) under a Water-code boss gate. Burst is a self weapon swap: 0.4s charge, 61% of final ATK per shot, ×250% on full charge, 10s window, plus self ATK ▲430.05% for 10 sec. The Scrap pool itself is not tracked as a resource — it has no consumer beyond the craft condition already resolved above."
+}

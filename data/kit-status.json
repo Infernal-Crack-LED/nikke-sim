@@ -1262,6 +1262,46 @@
       ],
       "board": null
     },
+    "e-h": {
+      "name": "E.H.",
+      "burst": "III",
+      "weapon": "SMG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-27",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-27: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/e-h.json + scripts/kit-autonomy/manual-review/e-h.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Effect 2: Activates when an ally or self destroys a destructible projectile. Scraps ▲ 1 continuously, up to a maximum of 10.",
+          "Effect 3: Activates when an ally or self destroys an enemy's part. Scraps ▲ 5 continuously, up to a maximum of 10.",
+          "Effect 4: Activates when an enemy is neutralized. Scraps ▲ 2 continuously, up to a maximum of 10."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the 'fewer than 4 homemade magazines' craft gate is encoded as the scrap≥10 resourceGate plus the magazine pool clamp (max 4) — the engine allows ONE resourceGate per block, so the magazine-side half of the condition is carried by the pool ceiling. The only misbehavior this simplification could produce is spending 10 Scrap for no magazine when magazines are already at cap; that state is unreachable in v1 scope (the battle-start seed is the sole scrap source, so exactly one craft ever fires) — damage-inert, re-encode the explicit gate if out-of-scope scrap income (projectile/part/neutralize events) is ever modeled.",
+        "burst: 'Max Ammunition Capacity: 1 x the number of homemade magazines' is encoded at its in-scope value (maxAmmo 1 / maxShots 1) — magazines are fixed at 1 in v1 (see note). The DYNAMIC magazine→ammo link is out of scope, not dropped. ⚑ tier 2; estimate: exact at scope, wrong only on a boss with scrap-yielding parts/projectiles/adds (would under-count swap rounds: 1 vs magazine count); recipe: a resource-scaled swap-ammo engine primitive (weaponSwap.maxAmmo/maxShots read from a named resource pool at cast) — one shared primitive serves any future counter-fed weapon.",
+        "skill2: E5 'Activates when obtaining Scraps' is encoded as a fused passive (frame 0, 15s window) — in scope scraps are obtained exactly once (the battle-start seed), so the activation time and the single 15s expiry are exact. Refresh-on-later-gain awaits the same out-of-scope scrap events (projectile/part/neutralize); the elemAdvantageDamagePct stat is advantage-gated by construction (sim.ts elem bucket: counted only when BEATS[unit element] === boss element), verified byte-identical with the line removed vs a Fire boss.",
+        "skill2: E2/E3/E4 scrap sources (destructible projectile +1, enemy part +5, enemy neutralized +2) are VERBATIM in unmodeled — the v1 sim has no projectile entities, no destructible parts, and the single immortal boss is never neutralized inside the fight, so these triggers never fire; encoding them would require event classes the engine does not emit. Inert at scope (the scrap pool sits at 0 after the frame-0 craft).",
+        "burst: on swap exit ('all rounds fired') the engine forces an empty-belt reload before SMG fire resumes (~1.35s at the datamined 81 reload frames) — the in-game weapon-restore behavior at swap deactivation is unmeasured; this is the shared weaponSwap exit convention (snow-white-heavy-arms et al.), not an E.H.-specific encoding choice. ⚑ low: one reload per cast inside the 430.05% window; refine against an E.H. recording."
+      ],
+      "board": null,
+      "date": "2026-07-27",
+      "evidence": "kit-autonomy gauntlet 2026-07-27; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check magazine persistence + static maxAmmo link on an E.H. recording (one swap shot on the SECOND burst cast closes the loop)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "ein": {
       "name": "Ein",
       "burst": "III",

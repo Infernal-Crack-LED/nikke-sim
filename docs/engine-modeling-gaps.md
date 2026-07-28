@@ -44,7 +44,7 @@
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 1 | scarlet-black-shadow |
-| `chargeMultPct` | 6 | ada, cinderella-crystal-wave, nayuta, red-hood, snow-white, zwei |
+| `chargeMultPct` | 7 | ada, cinderella-crystal-wave, e-h, nayuta, red-hood, snow-white, zwei |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
@@ -73,7 +73,7 @@
 | `lastBullet` | 3 | anis-sparkling-summer, helm, privaty |
 | `magDumpRof` | 1 | cinderella |
 | `maxAmmoFlat` | 4 | grave, noir, tove, trina |
-| `maxShots` | 1 | snow-white-heavy-arms |
+| `maxShots` | 2 | e-h, snow-white-heavy-arms |
 | `mode` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
 | `modes` | 6 | bready, cinderella-crystal-wave, delta-ninja-thief, milk-blooming-bunny, mint, prika |
 | `noB1` | 2 | anis-star, rapi-red-hood |
@@ -83,7 +83,7 @@
 | `outFb` | 1 | velvet |
 | `ownBurstGate` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `pelletCountFlat` | 3 | arcana-fortune-mate, dorothy-serendipity, leona |
-| `perResource` | 4 | mana, marciana-marine-study, phantom, soda-twinkling-bunny |
+| `perResource` | 5 | e-h, mana, marciana-marine-study, phantom, soda-twinkling-bunny |
 | `pierceModes` | 1 | cinderella-crystal-wave |
 | `pullsPerSec` | 1 | jill |
 | `rampSec` | 3 | arcana-fortune-mate, cinderella, scarlet |
@@ -94,7 +94,7 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 5 | asuka-wille, d-killer-wife, marciana-marine-study, phantom, privaty |
-| `resourceGate` | 5 | elegg-boom-and-shock, guillotine-winter-slayer, mana, phantom, soda-twinkling-bunny |
+| `resourceGate` | 6 | e-h, elegg-boom-and-shock, guillotine-winter-slayer, mana, phantom, soda-twinkling-bunny |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
@@ -113,7 +113,7 @@
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 1 | laplace |
 | `weapon` | 11 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
-| `weaponSwap` | 11 | ada, chisato, cinderella-crystal-wave, laplace, moran, nayuta, red-hood, snow-white-heavy-arms, … |
+| `weaponSwap` | 12 | ada, chisato, cinderella-crystal-wave, e-h, laplace, moran, nayuta, red-hood, … |
 | `whileSwapped` | 0 | _none_ |
 
 <!-- END GENERATED: primitive-census -->
