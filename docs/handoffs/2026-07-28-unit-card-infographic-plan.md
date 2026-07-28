@@ -175,36 +175,43 @@ from one data builder:
 Same `buildUnitCardData(slug)` (§14 phase 3) feeds both; only the layout function differs. The
 landscape variant is the canonical one and is specified in §6b.
 
-### 6a. ⚠ X's timeline crop is an UNVERIFIED premise — do not design on it yet
+### 6a. ✅ RESOLVED BY MEASUREMENT — 4:5 renders UNCROPPED in the X timeline
 
-The whole point of a portrait variant is how X crops single images in-timeline. **Web sources
-directly contradict each other on this**, and none is authoritative (all are SEO social-media-size
-blogs; X publishes no current spec):
+**Measured 2026-07-28.** The owner posted the `scripts/x-crop-test.ts` marker image (1200×1500, 4:5)
+as a single-image post and screenshotted the timeline render (X iOS app, dark mode). Result:
 
-- *"A single image shows uncropped between roughly 16:9 and 3:4 … X shows essentially the full frame
-  between 16:9 and 4:5, so the safe zone is generous"* — [SocialKit](https://socialk.it/en/sizes/x-post-size),
-  [aspectratiocalculator](https://aspectratiocalculator.com/twitter-aspect-ratios/)
-- *"Very tall images (taller than 1:1) are center-cropped to roughly a 16:9 preview in the timeline …
-  4:5 takes up more space but **will be center-cropped**"* —
-  [viraly.io](https://viraly.io/blog/twitter-x-image-size-guide),
-  [Image for Post](https://imageforpost.com/guides/twitter-x-image-sizes-dimensions-guide-2025)
+> **Both RED bands visible, full 0–100% ruler visible — the image is displayed in full. The only
+> alteration is rounded corners.**
 
-These cannot both be true, and the difference decides the entire layout. **Resolution is cheap and
-empirical: post one test image from the owner's own account** (a 1200×1500 4:5 card with visible
-markers at the extreme top and bottom) and observe the timeline render on web + mobile. That is
-2 minutes of owner time and settles it definitively. Do not build the portrait layout before it runs.
+**Confirmed a second, independent way (prove-it-differently).** The content read above ("which colour
+bands survived") and this one share no derivation: measuring the **displayed frame's aspect ratio** off
+the same screenshot gives ≈970 px wide × ≈1215 px tall = **1.253**, matching the source 4:5 = **1.250**.
+Had X cropped, the displayed frame would have been 0.563 (16:9) or 1.000 (square) — neither is close.
+Geometry and content agree, so the finding is not resting on one method.
 
-**Robust-either-way design rule (applies now, regardless of the outcome):** if a 4:5 image *is*
-center-cropped to ~16:9, the visible band is the middle **45%** of the height (a 16:9 crop of a 4:5
-frame is `0.5625W` of `1.25W`), cutting the top ~27.5% and bottom ~27.5%. So:
+This **refutes** the "center-cropped to ~16:9" claim from
+[viraly.io](https://viraly.io/blog/twitter-x-image-size-guide) /
+[Image for Post](https://imageforpost.com/guides/twitter-x-image-sizes-dimensions-guide-2025), and
+**confirms** the generous-safe-zone claim from [SocialKit](https://socialk.it/en/sizes/x-post-size) /
+[aspectratiocalculator](https://aspectratiocalculator.com/twitter-aspect-ratios/). It was worth
+measuring: the two readings implied completely different layouts.
 
-> **Everything load-bearing — character name, portrait, and the three rank tiles — must sit inside the
-> vertical middle 45% of the portrait card.** Top and bottom bands carry the logo, tags, notes and
-> watermark: material that is a bonus when shown uncropped and no loss when cut.
+**Consequences:**
 
-Designed that way, the portrait variant is correct under *both* behaviours: uncropped it reads as a
-full portrait infographic; cropped it degrades to a well-composed landscape headline. This is the
-only design that does not gamble on the unresolved premise.
+1. **The middle-45% safe-band rule is RETIRED.** It was insurance against a behaviour that does not
+   occur. The portrait variant uses its **full height**; name, portrait and rank tiles need no
+   vertical confinement.
+2. **NEW constraint — X rounds the image corners.** Measured off the screenshot at roughly **2–2.5%
+   of image width** (≈24–30 px at 1200 px wide). Keep text, the logo and the watermark out of the
+   corner arcs. The existing card padding (`PAD = 36` at 640 px wide, scaling to ~48–64 px at 1200 px)
+   already clears this comfortably — it is a check to honour, not a redesign.
+3. Portrait is now unambiguously the better X format: full height shown, ~2× the timeline real estate
+   of the 2:1 landscape card at the same width.
+
+**Residuals (low risk, do not block):** the test covered the **iOS app** only — desktop web is
+unverified, though it is historically no more aggressive than mobile. And **3:4 (1.333) may also be
+uncropped** — one cited source puts the boundary there, which would buy ~6.7% more height than 4:5.
+Re-runnable with the same script if that height is ever wanted.
 
 ### 6b. Landscape (`discord`) layout
 
@@ -424,9 +431,9 @@ the projection it stays under today's 53 MB PNG set.
 
 ## 13. Open decisions
 
-0. **⛔ TOP ITEM — X in-timeline crop behaviour is UNRESOLVED (§6a).** Public sources contradict each
-   other; this decides the portrait layout. Settle it with one owner test post before phase 4b. Until
-   then the §6a safe-band rule is what makes the design robust either way.
+0. ~~X in-timeline crop behaviour~~ — **RESOLVED BY MEASUREMENT 2026-07-28 (§6a): 4:5 renders
+   UNCROPPED.** Safe-band rule retired; phase 4b unblocked. Residual: honour the rounded corners
+   (~2–2.5% of width).
 1. ~~`Λ` tile set~~ — **SETTLED (ruling 10): `red-hood` uses the B3 set.** Residual: its title-bar
    `Λ` *icon* still has no asset (§10.2b).
 2. ~~Rank-blue vs Water collision~~ — **RETIRED by ruling 12** (§9): rank colours are numeral-only.
@@ -444,16 +451,16 @@ the projection it stays under today's 53 MB PNG set.
 | 1 | Sync | `releaseDate` in `characters.json`; `data/tsareena-build.json` + `src/types.ts` types | `verify.sh` green; re-sync diff reviewed |
 | 2 | Assets | icons vendored into `src/infographics/assets/icons/` + decode test | build-time font-gate equivalent for icons |
 | 3 | Card data builder | pure `buildUnitCardData(slug)` — joins characters + 5 boards + tags + OL + Tsareena, all nullable | unit tests incl. a zero-board unit |
-| 3.5 | **X crop test** | owner posts one 1200×1500 marker image; record the observed crop | **blocks phase 4b only** (§6a) |
+| ~~3.5~~ | ~~X crop test~~ | ✅ **DONE 2026-07-28** — 4:5 uncropped (§6a) | — |
 | 4a | Renderer (landscape) | rewrite `core/unitCard.ts` to the §6b layout, fixed geometry | golden-image test (existing decoded-pixel harness) |
-| 4b | Renderer (portrait) | `twitter` layout sharing phase-3 data + §6a safe-band rule | golden-image test; needs 3.5 |
+| 4b | Renderer (portrait) | `twitter` layout sharing phase-3 data, **full height**, corner-safe | golden-image test |
 | 5 | Pre-render | both variants in `build-infographics.ts`, `RENDERER_VERSION` bump | full 384-image build, size **measured** (§12) |
 | 6 | Consumers | bakery-bot `/nikke` → landscape URL + fallback (§13.5); `/builder` preview | bot tests |
 
 **Variant plumbing.** Manifest keys go from `unit/<slug>` to `unit/<slug>.<variant>` (paths
-`unit/<slug>.<variant>.<hash>.webp`). Phases 1–3 and 4a are **not blocked** by the X crop test — only
-4b is. Build 4a first; it is the variant `/nikke` consumes and the safe fallback for X if the portrait
-test comes back badly.
+`unit/<slug>.<variant>.<hash>.webp`). With the crop question settled, **no phase is blocked** — 4a and
+4b can proceed in either order or in parallel. Build 4a first regardless: it is the variant `/nikke`
+consumes, and the landscape layout is the harder geometry problem (more content per unit height).
 
 `RENDERER_VERSION` in `src/infographics/spec.ts` **must** bump (currently `v2`) — the comment there is
 explicit that stale keys otherwise serve old pixels. Unit cards are in the static manifest rather than
@@ -481,11 +488,13 @@ the spec cache, but the bump keeps the two consistent.
 - **Profiles exist on 3 boards only** (`bufferchart`, `sustain`, `burstgen` — 6 unit/board pairs).
   `burstcdr.profiles` is `{}` and `dpschart` has **no profile concept at all**, so the B3 DPS bars can
   never carry one. A profiled unit occupies TWO rows in `entries` (one `profile: <id>`, one `null`).
-- **NOT a verified fact — X's in-timeline crop.** Two independent web sources assert *opposite*
-  behaviours for a 4:5 single image (uncropped vs centre-cropped to ~16:9); see §6a for both
-  citations. Treat as UNRESOLVED until the owner's test post. Arithmetic that IS solid: a 16:9 crop
-  of a 4:5 frame shows the middle **45%** of the height (0.5625W of 1.25W), cutting 27.5% top and
-  bottom.
+- **MEASURED 2026-07-28 — a 4:5 (1200×1500) single image renders UNCROPPED in the X timeline**
+  (iOS app). Confirmed two independent ways off one screenshot: surviving colour bands (both extreme
+  RED bands present) AND displayed frame aspect ratio (1.253 vs source 1.250; a 16:9 crop would read
+  0.563, square 1.000). The only alteration is **rounded corners at ~2–2.5% of image width**. This
+  REFUTES the widely-repeated "portrait is centre-cropped to 16:9" claim — do not reinstate the
+  middle-45% safe-band rule on the strength of a blog post. Re-run `scripts/x-crop-test.ts` if X
+  changes its timeline layout.
 - Site bar colours are **element colours**, not rank colours (`RankBarChart.tsx:79`,
   `DpsBarChart.tsx:101`); negative-capable boards span `value ↔ 0` about an axis
   (`RankBarChart.tsx:80-87`); sustain fills are 3-segment splits with a transparent track.
