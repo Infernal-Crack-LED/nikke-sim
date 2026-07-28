@@ -2370,6 +2370,35 @@ footer {
   line-height: 1.45;
 }
 
+/* multi-unit comparison picker (full-matrix section) — same disclosure shape
+   as .dpschart-frameworks */
+.dpschart-compare-units {
+  margin: 8px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  background: var(--panel);
+}
+.dpschart-compare-units summary {
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+.dpschart-compare-units .pills {
+  margin: 8px 0;
+}
+.dpschart-compare-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  margin-top: 8px;
+}
+.dpschart-compare-actions .chip:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .dps-mode {
   margin: 8px 0 12px;
 }

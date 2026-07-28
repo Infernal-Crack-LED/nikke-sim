@@ -275,6 +275,12 @@ describe('POST /api/v1/img/render — happy paths + GET parity', () => {
       '/api/v1/img/dps.png?element=iron&unit=liter',
       'dps'
     );
+    // comparison variant — same content address from GET and POST
+    await expectRendered(
+      { kind: 'dps', units: ['alice', 'modernia'] },
+      '/api/v1/img/dps.png?units=alice,modernia',
+      'dps'
+    );
   });
 
   it('table specs render and match GET table/*.png', async () => {
@@ -323,6 +329,19 @@ describe('POST /api/v1/img/render — request validation', () => {
       [{ kind: 'dps', element: 'bogus' }, `unknown element 'bogus'`],
       [{ kind: 'dps', unit: 'bogus' }, `unknown unit 'bogus'`],
       [{ kind: 'dps', unit: 'liter' }, 'not in this chart'], // chartPop-only
+      [
+        { kind: 'dps', unit: 'alice', units: ['modernia'] },
+        'mutually exclusive',
+      ],
+      [{ kind: 'dps', units: ['alice', 'bogus'] }, `unknown unit 'bogus'`],
+      [{ kind: 'dps', units: ['alice', 'liter'] }, 'not in this chart'],
+      [
+        {
+          kind: 'dps',
+          units: Array.from({ length: 11 }, (_, i) => `u${i}`),
+        },
+        'capped at 10',
+      ],
       [{ kind: 'table', table: 'bogus' }, `unknown table 'bogus'`],
       [{ kind: 'table', table: 'max-ammo' }, 'unit is required'],
       [

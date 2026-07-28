@@ -2,10 +2,12 @@
 // (/api/v1/img/dps.png, /api/v1/img/table/*.png). Data selection mirrors
 // build-infographics.ts's dpsJobs (which mirrors web/src/dpschartData.ts
 // chartBars): unfiltered = the chartPop (SSS/SS) population; an element filter
-// ranks ALL of the cell's units carrying that element. §6.6 windowing is
-// always on for these routes (top 10, or 4-above/target/5-below with `unit`),
-// with relScore labels normalized to the FULL filtered population's #1 —
-// computed before windowing, so labels mean the same thing in every image.
+// ranks ALL of the cell's units carrying that element. §6.6 windowing is on
+// for these routes (top 10, or 4-above/target/5-below with `unit`) EXCEPT the
+// `units` comparison variant, which renders exactly the requested bars in
+// population rank order with no window. relScore labels are always normalized
+// to the FULL filtered population's #1 — computed before windowing, so labels
+// mean the same thing in every image.
 import {
   createCanvas,
   chartWindow,
@@ -56,6 +58,7 @@ export interface DpsChartParams {
   cell: string; // cell id, e.g. 'solo.eleweak.c100.8of12'
   element: string | null; // lowercase element filter
   unit: string | null; // §6.6 window target slug
+  units: string[] | null; // comparison: exactly these bars, no window
 }
 
 // Validate params against the artifact and build the card data. Returns an
@@ -95,23 +98,50 @@ export function dpsChartData(
         (ele ? ` (element filter: ${ele})` : ''),
     };
   }
+  // Comparison: exactly the requested slugs' bars, in POPULATION rank order
+  // (the population is sorted desc), with NO §6.6 window. Membership is
+  // checked against the same element-filtered population the window target
+  // is, so an off-element pick 400s identically.
+  let bars = population;
+  if (params.units !== null) {
+    for (const u of params.units) {
+      if (!population.some((p) => p.slug === u)) {
+        return {
+          error:
+            `unit '${u}' is not in this chart` +
+            (ele ? ` (element filter: ${ele})` : ''),
+        };
+      }
+    }
+    const picked = new Set(params.units);
+    bars = population.filter((p) => picked.has(p.slug));
+  }
   // Labels normalize to the FULL filtered population's #1 (§6.6), computed
-  // BEFORE windowing — population is sorted desc in the artifact, but take the
-  // max explicitly rather than trusting the order.
+  // BEFORE windowing/subsetting — population is sorted desc in the artifact,
+  // but take the max explicitly rather than trusting the order. On a
+  // comparison card this keeps relScore labels comparable across images.
   const topDps = Math.max(...population.map((p) => p.dps));
   const data: DpsChartData = {
     title: cellLabel(cell) + (ele ? ` · ${ele} only` : ''),
     subtitle: params.unit
       ? `windowed on ${art.units[params.unit]?.name ?? params.unit}`
-      : undefined,
+      : params.units
+        ? `${params.units.length}-unit comparison`
+        : undefined,
     topDps,
-    bars: population.map((p) => ({
+    bars: bars.map((p) => ({
       name: p.meta.name,
       element: p.meta.element,
       dps: p.dps,
       slug: p.slug,
     })),
-    window: params.unit ? { targetSlug: params.unit } : {}, // §6.6 top-10
+    // §6.6 top-10 (or the unit window). A comparison renders its ≤10 bars
+    // exactly as given — no window field at all.
+    window: params.units
+      ? undefined
+      : params.unit
+        ? { targetSlug: params.unit }
+        : {},
     footer: 'nikkesim.app/dpschart',
     icon: icon ?? undefined,
   };

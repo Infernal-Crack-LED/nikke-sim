@@ -451,6 +451,54 @@ describe('api/v1/img/dps.png (on-demand chart)', () => {
       expect((await fetch(`${base}${p}`)).status).toBe(400);
     }
   });
+
+  it('units= renders a comparison card (order-insensitive, distinct from window)', async () => {
+    const cmp = await expectRenderedPng(
+      '/api/v1/img/dps.png?units=alice,modernia',
+      'dps'
+    );
+    // the sorted cache key makes request order irrelevant — SAME url
+    const res = await fetch(`${base}/api/v1/img/dps.png?units=modernia,alice`, {
+      redirect: 'manual',
+    });
+    expect(res.status).toBe(302);
+    expect(res.headers.get('location')).toBe(cmp);
+    // …and a comparison never collides with the §6.6 window of one of its units
+    const windowed = await expectRenderedPng(
+      '/api/v1/img/dps.png?unit=modernia',
+      'dps'
+    );
+    expect(cmp).not.toBe(windowed);
+    // element filter composes (both picks are Fire)
+    await expectRenderedPng(
+      '/api/v1/img/dps.png?element=fire&units=alice,modernia',
+      'dps'
+    );
+  });
+
+  it('units= 400s: with unit, unknown slug, off-population slug, >10', async () => {
+    const both = await fetch(
+      `${base}/api/v1/img/dps.png?unit=alice&units=modernia`
+    );
+    expect(both.status).toBe(400);
+    expect(await both.text()).toContain('mutually exclusive');
+    expect(
+      (await fetch(`${base}/api/v1/img/dps.png?units=alice,bogus`)).status
+    ).toBe(400);
+    // liter is chartPop:false — not in the unfiltered population
+    const offPop = await fetch(`${base}/api/v1/img/dps.png?units=alice,liter`);
+    expect(offPop.status).toBe(400);
+    expect(await offPop.text()).toContain('not in this chart');
+    // alice is Fire — excluded by the iron filter
+    expect(
+      (await fetch(`${base}/api/v1/img/dps.png?element=iron&units=alice`))
+        .status
+    ).toBe(400);
+    const eleven = Array.from({ length: 11 }, (_, i) => `u${i}`).join(',');
+    const tooMany = await fetch(`${base}/api/v1/img/dps.png?units=${eleven}`);
+    expect(tooMany.status).toBe(400);
+    expect(await tooMany.text()).toContain('capped at 10');
+  });
 });
 
 describe('api/v1/img/table/*.png (breakpoint tables)', () => {

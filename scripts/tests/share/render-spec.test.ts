@@ -56,6 +56,19 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
     expect(
       specCacheKey({ kind: 'dps', cell: 'c1', element: 'iron', unit: 'liter' })
     ).toBe('v1|dps|c1|iron|liter');
+    // comparison variant: a 6th field, the SORTED slug list (request order
+    // must not fork the content address)
+    expect(
+      specCacheKey({ kind: 'dps', cell: 'c1', units: ['liter', 'alice'] })
+    ).toBe('v1|dps|c1|-|-|alice,liter');
+    expect(
+      specCacheKey({
+        kind: 'dps',
+        cell: 'c1',
+        element: 'fire',
+        units: ['modernia', 'alice'],
+      })
+    ).toBe('v1|dps|c1|fire|-|alice,modernia');
     expect(
       specCacheKey({ kind: 'table', table: 'max-ammo', unit: 'alice' })
     ).toBe('v1|table|max-ammo|alice');
@@ -148,6 +161,46 @@ describe('parseRenderSpec — dps', () => {
     expect(
       parseRenderSpec({ kind: 'dps', cell: 'bogus', unit: 'bogus' }).ok
     ).toBe(true);
+  });
+
+  it('units: trims, drops empties, dedupes — an all-empty list means absent', () => {
+    expect(
+      parseRenderSpec({ kind: 'dps', units: [' alice ', 'liter', 'alice', ''] })
+    ).toEqual({
+      ok: true,
+      spec: { kind: 'dps', cell: DEFAULT_DPS_CELL, units: ['alice', 'liter'] },
+    });
+    expect(parseRenderSpec({ kind: 'dps', units: [] })).toEqual({
+      ok: true,
+      spec: { kind: 'dps', cell: DEFAULT_DPS_CELL },
+    });
+    expect(parseRenderSpec({ kind: 'dps', units: [' ', ''] })).toEqual({
+      ok: true,
+      spec: { kind: 'dps', cell: DEFAULT_DPS_CELL },
+    });
+  });
+
+  it('units: rejects non-arrays, >10 slugs, and unknown slugs (with data)', () => {
+    expect(parseRenderSpec({ kind: 'dps', units: 'alice' })).toEqual({
+      ok: false,
+      error: 'units must be an array of unit slugs',
+    });
+    expect(
+      parseRenderSpec({
+        kind: 'dps',
+        units: Array.from({ length: 11 }, (_, i) => `u${i}`),
+      })
+    ).toEqual({ ok: false, error: 'units is capped at 10' });
+    const data = { units: ['alice', 'liter'] };
+    expect(
+      parseRenderSpec({ kind: 'dps', units: ['alice', 'bogus'] }, data)
+    ).toEqual({ ok: false, error: `unknown unit 'bogus'` });
+  });
+
+  it('units and unit (window) are mutually exclusive', () => {
+    expect(
+      parseRenderSpec({ kind: 'dps', unit: 'alice', units: ['liter'] })
+    ).toEqual({ ok: false, error: 'unit and units are mutually exclusive' });
   });
 });
 

@@ -8,7 +8,7 @@
 //   GET /api/v1/img/cache/<file>             → the dynamic-render cache, immutable
 //   GET /api/v1/img/team.png?b=<buildcode>   → 302 to /api/v1/img/cache/team.<hash>.png
 //   GET /api/v1/img/roster.png?b=<buildcode> → 302 to .../roster.<hash>.png
-//   GET /api/v1/img/dps.png?cell&element&unit → 302 to .../dps.<hash>.png
+//   GET /api/v1/img/dps.png?cell&element&unit|units → 302 to .../dps.<hash>.png
 //   GET /api/v1/img/table/max-ammo.png?unit=<slug>     → 302 to .../table.<hash>.png
 //   GET /api/v1/img/table/charge-speed.png[?unit=<slug>] → 302 to .../table.<hash>.png
 //   POST /api/v1/img/render                  → 200 {"url":"/api/v1/img/cache/<file>"}
@@ -240,6 +240,7 @@ async function resolveRender(
           cell: spec.cell,
           element: spec.element ?? null,
           unit: spec.unit ?? null,
+          units: spec.units ?? null,
         },
         ctx.icon
       );
@@ -439,6 +440,9 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
         cell: c.req.query('cell'),
         element: c.req.query('element'),
         unit: c.req.query('unit'),
+        // comparison variant: ?units=a,b,c (comma-separated) — mutually
+        // exclusive with `unit` (parseRenderSpec 400s on both)
+        units: c.req.query('units')?.split(','),
       }),
       ctx
     )

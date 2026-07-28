@@ -30,15 +30,27 @@ export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
 
 // One render request. `build` is the share build code; dps fields are
 // post-normalization (cell defaulted, element lowercased, unit trimmed —
-// absent means "no filter"). The static pre-rendered kinds (unit cards, rank
-// boards, the OL table) are NOT here: this union covers the dynamic,
-// render-on-demand surface only.
+// absent means "no filter"). `units` is the unit-comparison variant of the
+// dps chart (render exactly those bars, in population rank order, NO §6.6
+// window) and is mutually exclusive with `unit` (the window target). The
+// static pre-rendered kinds (unit cards, rank boards, the OL table) are NOT
+// here: this union covers the dynamic, render-on-demand surface only.
 export type RenderSpec =
   | { kind: 'team'; build: string }
   | { kind: 'roster'; build: string }
-  | { kind: 'dps'; cell: string; element?: string; unit?: string }
+  | {
+      kind: 'dps';
+      cell: string;
+      element?: string;
+      unit?: string;
+      units?: string[];
+    }
   | { kind: 'table'; table: 'max-ammo'; unit: string }
   | { kind: 'table'; table: 'charge-speed'; unit?: string };
+
+// A comparison chart is capped at 10 bars — the same row count the §6.6
+// window renders, so the card geometry never changes shape.
+export const DPS_COMPARE_MAX = 10;
 
 export type ParseResult =
   { ok: true; spec: RenderSpec } | { ok: false; error: string };
@@ -82,6 +94,33 @@ export function parseRenderSpec(
       const cell = trimmed(raw.cell) ?? DEFAULT_DPS_CELL;
       const element = trimmed(raw.element)?.toLowerCase();
       const unit = trimmed(raw.unit);
+      // units: the comparison variant — an array of slugs (the GET route
+      // comma-splits its query param into one). Trimmed, empties dropped,
+      // deduped; an all-empty array means "absent", same as the query param.
+      let units: string[] | undefined;
+      if (raw.units !== undefined) {
+        if (!Array.isArray(raw.units)) {
+          return { ok: false, error: 'units must be an array of unit slugs' };
+        }
+        units = [
+          ...new Set(
+            raw.units
+              .map((u) => (typeof u === 'string' ? u.trim() : ''))
+              .filter((u) => u)
+          ),
+        ];
+        if (units.length === 0) {
+          units = undefined;
+        } else if (units.length > DPS_COMPARE_MAX) {
+          return {
+            ok: false,
+            error: `units is capped at ${DPS_COMPARE_MAX}`,
+          };
+        }
+      }
+      if (unit && units) {
+        return { ok: false, error: 'unit and units are mutually exclusive' };
+      }
       if (data?.cells && !data.cells.includes(cell)) {
         return { ok: false, error: `unknown cell '${cell}'` };
       }
@@ -91,6 +130,13 @@ export function parseRenderSpec(
       if (unit && data?.units && !data.units.includes(unit)) {
         return { ok: false, error: `unknown unit '${unit}'` };
       }
+      if (units && data?.units) {
+        for (const u of units) {
+          if (!data.units.includes(u)) {
+            return { ok: false, error: `unknown unit '${u}'` };
+          }
+        }
+      }
       return {
         ok: true,
         spec: {
@@ -98,6 +144,7 @@ export function parseRenderSpec(
           cell,
           ...(element ? { element } : {}),
           ...(unit ? { unit } : {}),
+          ...(units ? { units } : {}),
         },
       };
     }
@@ -141,7 +188,14 @@ export function specCacheKey(spec: RenderSpec): string {
     case 'roster':
       return `${RENDERER_VERSION}|${spec.kind}|${spec.build}`;
     case 'dps':
-      return `${RENDERER_VERSION}|dps|${spec.cell}|${spec.element ?? '-'}|${spec.unit ?? '-'}`;
+      // The 5-field `v1|dps|cell|element|unit` string is pinned for every
+      // pre-units spec (cache compatibility). A comparison appends a 6th
+      // field — the SORTED slug list, so request order can't fork the cache
+      // (unit is always '-' then: the two are mutually exclusive).
+      return (
+        `${RENDERER_VERSION}|dps|${spec.cell}|${spec.element ?? '-'}|${spec.unit ?? '-'}` +
+        (spec.units?.length ? `|${[...spec.units].sort().join(',')}` : '')
+      );
     case 'table':
       return `${RENDERER_VERSION}|table|${spec.table}|${spec.unit ?? 'generic'}`;
   }
