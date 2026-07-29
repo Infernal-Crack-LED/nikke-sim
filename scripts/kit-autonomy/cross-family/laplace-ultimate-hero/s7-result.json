@@ -1,0 +1,138 @@
+{
+  "slug": "laplace-ultimate-hero",
+  "kitDescription": "Laplace: Ultimate Hero is a charge rocket-launcher attacker whose attack stat scales off her own Max HP from battle start. Every full-charge shot builds a Warm Up stack, and at five stacks she swaps to a special 120-round piercing weapon ('Electric Power, Fully Full Charge') that fires until the rounds run out, then dumps her remaining ammo. While wielding the swap weapon, every 12 shots fill an Over Energy meter; each full meter permanently advances her Over Energy stage, stacking Max HP buffs that feed back into her HP-to-ATK conversion. Whenever anyone on the team enters Burst Stage 3 she gains a large Attack Damage buff, and her own burst grants her a big ATK buff, hits all enemies for a massive nuke, and — once she has at least one Over Energy stage — adds a bonus hit to the nearest enemy that grows linearly with her stage.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1b Warm Up chargeSpeedPct 10%×5 — S5/S6 model it, driver UNMODELED (documented: no stack-consume/sawtooth-reset primitive; swap weapon is charge-speed-immune)",
+      "skill1c pierce — S5 asserted top-level hasPierce:true must move the total; pierce is damage-inert at scope lock (PIERCE_CORE_DOUBLE off, no pierceDamagePct carrier), so the assertion is vacuous — test-design issue, both agree pierce is swap-scoped",
+      "skill1c swap inertness — S5 assumed removing laplace's swap leaves teammates' totals unchanged; the shared rotation shifts, moving an ally total — test-design issue (rotation coupling)",
+      "skill1d swap-end ammo dump — S5 models consumeAmmo; driver rules it INERT in the shared-magazine model (swap refills to 120, maxShots:120 empties it, base reload is already forced) and documents the drop; S6 independently agreed (no swap-end trigger exists)",
+      "skill2a Over Energy swap-gating — S5's counterfactual patch targeted a hitCount:12→resource block the driver does not have (driver keys the stage directly to the kit-exact 240 count); the patch was a no-op — test-structure mismatch, gating present in the driver"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 4.05% of final max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive self atkOfMaxHpPct 4.05; load-bearing 1.475× (removal drops 362.7M→245.9M)",
+        "blindSaid": "S2b/S5/S6 all independently chose atkOfMaxHpPct-not-atkPct; S2b demanded live-HP re-read proof",
+        "formulaCheck": "HP→ATK conversions use the unit's OWN final Max HP and feed effectiveAtk as a flat add (SSOT §1a); own-kit HP grants count — matches encoding",
+        "fireRateOk": true,
+        "explanation": "Passive live at frame 0, self-only, no expiry. Triply corroborated; the generic-atkPct nearest-wrong collapses her total in both driver and S5 counterfactuals."
+      },
+      {
+        "kitLine": "Warm Up: Charge Speed ▲10% ×5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — cadence-only; sawtooth stack-reset on swap has no primitive; swap weapon is charge-speed-immune",
+        "blindSaid": "S5 and S6 both modeled the ramp (chargeSpeedPct 10 maxStacks 5); S6 flagged its own over-credit (holds at +50%, no reset primitive)",
+        "formulaCheck": "Charge Speed is subtractive on chargeFrames 60 → real cadence effect on the 5 base charges per cycle; dropping it under-credits warm-up-phase fire rate each cycle",
+        "fireRateOk": true,
+        "explanation": "Verbatim in unmodeled with a correct reason — no stack-consume primitive exists, and S6's alternative (persistent +50%) is a documented over-credit, not a fix. A real but bounded under-credit: only the 5-charge warm-up of each cycle is affected. Severity low-med; acceptable honest flag, but it compounds with the ⚑ swap cadence on cycle pacing."
+      },
+      {
+        "kitLine": "Changes the weapon: Electric Power, FFC",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap 9.45%/maxAmmo 120/maxShots 120/hasPierce swap-scoped/durationSec 300 (never truncates); trigger hitCount:5 + swapGate unswapped",
+        "blindSaid": "S6 converged on identical params (durationSec 180 vs 300, both non-truncating); S2b demanded uses-based end + swap-scoped pierce — both met",
+        "formulaCheck": "Per-shot 9.45% and the 120-round uses-based end are kit-exact (DATAMINED); fire cadence is kit-silent → chargeTimeSec 0.25 is a flagged ⚑ with a measurement recipe (focus video)",
+        "fireRateOk": true,
+        "explanation": "Structurally faithful; S2b's flagship nearest-wrong (a timed swap truncating the 120 rounds) is explicitly avoided — durationSec 300 exceeds any fight so only ammo exhaustion ends it. The 5-charge gate via hitCount:5 is kit-exact for cycle 1; re-swap phasing flagged ⚑ low (120 is divisible by 5, so phase drift is minimal)."
+      },
+      {
+        "kitLine": "When FFC ends: Removes 100% of ammo",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED as INERT — shared-magazine model: swap refills to maxAmmo 120 and maxShots:120 empties it, so the base weapon already forces its own reload at swap end",
+        "blindSaid": "S6 independently skipped it ('consumeAmmo available but untriggerable — no swap-end trigger'); S5 modeled it and diverged",
+        "formulaCheck": "No swap-end trigger kind exists in the schema (S2b flagged this as the likeliest silent drop); driver's inertness claim rests on engine mag-pooling behavior, not the prose",
+        "fireRateOk": true,
+        "explanation": "Documented with reasoning and corroborated by S6. The inertness claim is engine-implementation-dependent (does the base magazine return at 0 or at its pre-swap count?) — plausible and internally consistent, but it is the one residual the owner should verify against the engine's swap-exit path, since if the base mag is restored the drop over-credits ~2.85s uptime per cycle."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "12 normals in FFC: Over Energy ▲5%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "meter untracked; its only consumer (stage advance) keyed directly to the kit-exact 240-swapped-normals count via hitCount:240 + swapGate swapped",
+        "blindSaid": "S6 used the identical fold (hitCount:240, swapGate swapped) with the same caveat; S5 wanted a gated 12-count meter",
+        "formulaCheck": "5%×20 procs×12 normals = 240 per stage is exact arithmetic (12 and 5 DATAMINED); driver and S6 both document that swapGate gates FIRING not COUNTING, so base-weapon shots inflate the counter and stages unlock somewhat early",
+        "fireRateOk": true,
+        "explanation": "The arithmetic fold is faithful and the per-stage magnitude is kit-exact; the counting-not-gated leak (≈5 extra counted shots per 120-shot cycle) is documented by both implementers. Wall-clock unlock timing rides the dominant ⚑ swap cadence regardless. Acceptable flagged approximation; the fix (count-gating) needs an engine primitive."
+      },
+      {
+        "kitLine": "OE 100%: advance Over Energy stage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "oeStage resource 0..4, +1 per hitCount:240 swap-gated; feeds the burst rider",
+        "blindSaid": "S6 converged (identical resource + advance block); S2b required a monotonic stage resource — met",
+        "formulaCheck": "Stage is monotonic, never decreases, resets only the meter — matches the resource semantics; driver test H6 confirms stage ≥1 is reached and the rider fires",
+        "fireRateOk": true,
+        "explanation": "The load-bearing half of the line (the stage counter that gates and scales the burst rider) is modeled and observed firing. Count-proxy phasing caveat carried from the meter fold."
+      },
+      {
+        "kitLine": "Stage Max HP ▲2/3/7/10.5% (cumulative)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "UNMODELED — small second-order feed into the modeled atkOfMaxHpPct (≈+22.5% HP at stage 4 → ≈+123 ATK → low-single-digit % damage); fragile per-stage timing (no auto-advance-stage primitive)",
+        "blindSaid": "S6 modeled it via escalating targetMaxHpPct but flagged a same-stat overwrite concern (may collapse +22.5% to +10.5%); S5 asserted only self-scope",
+        "formulaCheck": "Own Max HP buffs DO feed the atkOfMaxHpPct conversion (SSOT §1a own-HP rule) — so the drop is a genuine small under-credit, correctly bounded by the driver at low-single-digit %",
+        "fireRateOk": true,
+        "explanation": "Documented with a quantified impact bound. S2b's cumulativity point (stage 3 = 12%, not 7%) is moot under the drop but must be respected if this is later enacted. Acceptable low-severity gap."
+      },
+      {
+        "kitLine": "Entering Burst Stage 3: Atk Dmg ▲52.14%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stageEnter:3 self attackDamagePct 52.14/10s — fires on ANY stage-3 caster incl. co-B3 helm",
+        "blindSaid": "S2b/S5/S6 all independently chose stageEnter:3 over burstCast/fullBurstEnter; S5's helm-cast discrimination converged with driver H2",
+        "formulaCheck": "Attack Damage ▲ sits in the DamageUp bucket (SSOT §1e) — correct stat; 10s wall-clock duration correct",
+        "fireRateOk": true,
+        "explanation": "The sharpest trigger-identity call in the kit, triply corroborated and discriminated in both test files (application count exceeds own-cast count in the two-B3 fixture). Expiry pinned at exactly 600 frames."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "ATK ▲ 63.36% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast self atkPct 63.36/10s, exactly one per laplace cast",
+        "blindSaid": "S5/S6 converged (atkPct not attackDamagePct, own-cast only)",
+        "formulaCheck": "Plain ATK ▲ sums into the (1+ΣATK%) term on staticAtk (SSOT §1a) — correct bucket, distinct from the S2c DamageUp entry",
+        "fireRateOk": true,
+        "explanation": "Count-locked to her own burst casts in the driver test; zero applications on helm rotations."
+      },
+      {
+        "kitLine": "All enemies: 2953.84% Burst Skill dmg",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast enemy flatDamage 2953.84; FB-exempt by engine cast-before-window timing",
+        "blindSaid": "S5/S6 converged; S2b demanded fbMajorApplied false — asserted in both test files",
+        "formulaCheck": "Burst-cast instant damage lands before the FB window opens (MEASURED boundary rule, SSOT §8): no +50%, no entry auras, no range — engine handles by ordering, no per-kit flag needed",
+        "fireRateOk": true,
+        "explanation": "Kit-exact magnitude, one hit per cast, burst bucket, fbMajorApplied never true on any nuke event."
+      },
+      {
+        "kitLine": "934.76% × OE stage additional",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "four burstCast flatDamage 934.76 riders resourceGate'd at oeStage min 1/2/3/4 — sums to stage × 934.76; gated off at stage 0",
+        "blindSaid": "S2b prescribed exactly this stacked-gate decomposition (flatDamage has no perResource field); S6 independently produced the identical 4-block encoding; S5 asserted the stage-0 gate",
+        "formulaCheck": "×stage linear law (DATAMINED 934.76 and stage scaling) reproduced exactly by the summing gates; same FB-exempt burst-cast rules as the nuke — asserted",
+        "fireRateOk": true,
+        "explanation": "Driver test H6 proves the first (stage-0) cast carries no companion and the ungated-flat nearest-wrong fires 4× on every cast including the first. Wall-clock unlock timing is ⚑ (rides the swap cadence); magnitude and gating are kit-exact."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: every divergence between the driver and the blind agents is either documented in the override's unmodeled/caveats fields or a blind-side test artifact. The load-bearing damage core (atkOfMaxHpPct HP→ATK passive; stageEnter:3 52.14% Attack Damage; burstCast 63.36% ATK; FB-exempt 2953.84% nuke; uses-based 9.45%×120 swap with swap-scoped Pierce; the 4-gate oeStage-scaled 934.76% rider) was independently derived by all three blind roles and the driver, and each line has a discriminating counterfactual that actually fails under its nearest-wrong model. The four unmodeled residuals are honest DOCUMENTED_GAPs with correct reasons: Warm Up (no stack-consume primitive — S6's modeled alternative is itself a flagged over-credit), the swap-end ammo dump (no swap-end trigger; S6 independently agreed, and the driver's inert-under-shared-mag reasoning is consistent), the 0–100% meter (folded into the kit-exact 240-count), and the stage Max HP buffs (quantified low-single-digit % under-credit). The one binding caveat for the owner: the swap weapon's fire cadence is kit-silent and the two estimates diverge 5× (driver 4 rounds/s vs S6 ~20 rounds/s) — this is the dominant unmeasured lever on her board number and also paces Over Energy stage unlocks, so the ⚑ measurement recipe (focus-video fire-rate read of Electric Power) should be run before her number is trusted; the same-model residuals to spot-check are the shared 'stageEnter:3 fires on any stage-3 caster' read, the shared-magazine inertness assumption behind the dropped ammo dump, and the counting-not-gated hitCount leak that unlocks stages slightly early.",
+  "model": "kimi-code/k3"
+}

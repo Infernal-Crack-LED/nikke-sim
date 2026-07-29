@@ -4613,6 +4613,49 @@
       },
       "evidence": "kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0 (kimi-code/k3 binding judge, zero gotchas); cross-family S2b(claude-fable-5)/S5(claude-opus-5 blind tests 16 pass 0 fail vs driver override)/S6(claude-opus-5 blind override semantically identical)/S7(kimi-code/k3) converged on all 9 lines",
       "residual": "spot-check cluster: (1) Reload 40% as instantReload 0.4 vs reloadSpeedPct — one recording, ammo counter at FB entry; (2) hitCount:60 recurring vs one-shot — count recovery popups; (3) capacity-buff-before-refill ordering (0.4x168 vs 0.4x120 rounds) — swap block order if footage shows base-capacity refill"
+    },
+    "laplace-ultimate-hero": {
+      "name": "Laplace: Ultimate Hero",
+      "burst": "III",
+      "weapon": "RL",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-28",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-28: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/laplace-ultimate-hero.json + scripts/kit-autonomy/manual-review/laplace-ultimate-hero.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when performing a Full Charge attack. Affects self. Warm Up: Charge Speed ▲ 10% continuously. Stacks up to 5 times.",
+          "Activates when Electric Power, Fully Full Charge ends. Affects self. Removes 100% of ammo."
+        ],
+        "skill2": [
+          "Activates after performing 12 normal attacks while in the Electric Power, Fully Full Charge state. Affects self. Over Energy ▲ 5% continuously, up to 100%.",
+          "Activates when Over Energy reaches 100%. Resets Over Energy and affects self. Advances to the next Over Energy stage. Effects vary for each stage of Over Energy. Each subsequent effect triggers all effects before it: Stage 1: Max HP ▲ 2% continuously. Stage 2: Max HP ▲ 3% continuously. Stage 3: Max HP ▲ 7% continuously. Stage 4: Max HP ▲ 10.5% continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: the Electric Power swap weapon's fire cadence is KIT-SILENT — chargeTimeSec 0.25 (4 rounds/s) is an estimate by analogy to base laplace (Treasure)'s beam tick rate, the dominant unmeasured lever on her board number. It drives the swap-mode DPS (9.45% × 120 rounds per cycle) AND how fast oeStage builds (when the burst additional damage unlocks). The swap end is USES-BASED (maxShots:120); durationSec 300 never truncates it. Measure the Electric Power fire rate in a focus video.",
+        "skill1: the swap trigger (hitCount:5 + swapGate:'unswapped') captures the Warm Up 5-full-charge GATE; the counter is cumulative and swapGate gates firing not counting, so the re-swap phasing after the first cycle is approximate (⚑ low — magnitudes kit-exact).",
+        "skill1: hasPierce on the swap is inert at scope lock (PIERCE_CORE_DOUBLE hard-off, no pierceDamagePct carrier → byte-identical totals); tagged for kit completeness, scoped to swap shots only.",
+        "skill2/burst: the Over Energy STAGE is tracked (oeStage 0-4, advanced by hitCount:240 swap-gated = the kit-exact 240-swapped-normals-per-stage build rate) and feeds the burst additional damage (4× resourceGate-gated 934.76 riders = stage × 934.76). The wall-clock stage-UNLOCK timing rides the kit-silent swap cadence (⚑); the per-stage MAGNITUDE is kit-exact. hitCount counts cumulative shots and swapGate gates firing not counting, so the unlock phasing is approximate.",
+        "skill2: the stage Max HP buffs (2/3/7/10.5% cumulative) and the 0-100% Over Energy meter are UNMODELED — the HP buffs are a small second-order feed into the modeled atkOfMaxHpPct (≈+123 ATK at stage 4) with fragile per-stage timing (no auto-advance-stage primitive); the meter's only consumer (stage advance) is keyed directly to the 240-count.",
+        "skill2: the Full Burst Attack Damage ▲ 52.14% is keyed to stageEnter:3 ('entering Burst Stage 3' = the B3 cast frame, fires on any stage-3 caster); burstCast (own-casts-only) and fullBurstEnter (~22f late) are the nearest wrong models (discriminated in the unit test)."
+      ],
+      "board": null,
+      "date": "2026-07-28",
+      "evidence": "kit-autonomy gauntlet 2026-07-28; GO faithfulness 1.0 (kimi-code/k3 binding judge, no REAL-GOTCHAs); cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code/k3) converged on the load-bearing core: atkOfMaxHpPct 4.05 HP->ATK passive, stageEnter:3 52.14% Attack Damage, burstCast 63.36% ATK, FB-exempt 2953.84% nuke, uses-based weaponSwap 9.45%x120 swap-scoped Pierce, oeStage-gated 934.76%xstage burst additional",
+      "residual": "swap weapon fire cadence kit-silent (driver chargeTimeSec 0.25 = 4/s vs S6 ~20/s, 5x spread) = dominant unmeasured lever pacing swap DPS + Over Energy stage unlocks; Warm Up charge-speed stacks + stage Max HP buffs (2/3/7/10.5%) unmodeled (no stack-consume / auto-advance-stage primitive; low-single-digit % under-credit); swap-end ammo dump unmodeled (inert under shared-mag model; S6 agreed untriggerable). Spot-check: focus-video fire-rate read of Electric Power mode.",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }
