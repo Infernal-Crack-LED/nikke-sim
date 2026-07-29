@@ -1,0 +1,502 @@
+{
+  "slug": "laplace-ultimate-hero",
+  "leakDetected": null,
+  "override": {
+    "slug": "laplace-ultimate-hero",
+    "resources": [
+      {
+        "name": "overEnergyStage",
+        "initial": 0,
+        "min": 0,
+        "max": 4
+      }
+    ],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkOfMaxHpPct",
+            "value": 4.05
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 1
+        },
+        "target": {
+          "kind": "self"
+        },
+        "swapGate": "unswapped",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "chargeSpeedPct",
+            "value": 10,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "chargeCounter",
+          "count": 5
+        },
+        "target": {
+          "kind": "self"
+        },
+        "swapGate": "unswapped",
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 9.45,
+            "maxAmmo": 120,
+            "maxShots": 120,
+            "durationSec": 180,
+            "pullsPerSec": 20,
+            "hasPierce": true
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 240
+        },
+        "target": {
+          "kind": "self"
+        },
+        "swapGate": "swapped",
+        "effects": [
+          {
+            "kind": "escalating",
+            "steps": [
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 2
+              },
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 3
+              },
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 7
+              },
+              {
+                "kind": "buff",
+                "stat": "targetMaxHpPct",
+                "value": 10.5
+              }
+            ]
+          },
+          {
+            "kind": "resource",
+            "name": "overEnergyStage",
+            "delta": 1
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "stageEnter",
+          "stage": 3
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 52.14,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 63.36,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 2953.84
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "overEnergyStage",
+          "min": 1
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 934.76
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "overEnergyStage",
+          "min": 2
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 934.76
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "overEnergyStage",
+          "min": 3
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 934.76
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "resourceGate": {
+          "name": "overEnergyStage",
+          "min": 4
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 934.76
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Removes stacks and affects self. — the Warm Up reset at max stacks is not expressible (no stack-consume primitive for buffs); the Charge Speed stacks are modeled as persisting at cap, an over-credit after the first swap.",
+        "Removes 100% of ammo. — activates when Electric Power, Fully Full Charge ends; the schema has no swap-end trigger, so the post-swap forced empty/reload is dropped (an under-credit on downtime)."
+      ],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ Swap shot economy: Electric Power, Fully Full Charge cadence is kit-silent. pullsPerSec 20 is an UNMEASURED estimate; at 9.45%/shot the swap is a DPS loss unless its cadence is far above the base 1s-charge RL — this single value dominates the unit's total.",
+      "⚑ weaponSwap.durationSec 180 is a placeholder: the kit's only deactivation condition is round-based (all 120 rounds fired), carried by maxShots 120. durationSec is a required field, not a kit value.",
+      "⚑ Warm Up trigger mapped to chargeCounter (per-full-charge); stack removal at 5 is unmodeled, so Charge Speed holds at +50% instead of sawtoothing 0→50%. The sawtooth alternative is a flat passive ~+25%.",
+      "⚑ Over Energy accumulation is folded arithmetically: 5% per 12 swap normal attacks, 20 increments to 100% → one stage per 240 swap attacks. The hitCount trigger counts ALL owner hits (swapGate only blocks the FIRE, not the count), so stages advance somewhat early.",
+      "⚑ Over Energy stage HP grants use `escalating` (Nth activation applies steps 1..N), assuming the four same-stat steps COEXIST (stage 4 = +22.5% Max HP). If same-caster-slot overwrite collapses them, the model yields only +10.5%.",
+      "⚑ Stage-scaled burst rider (934.76% × stage) is encoded as 4 resourceGate'd blocks on an `overEnergyStage` resource incremented by the stage-advance block — exact multiplication, but it depends on the resource declaration being honoured by the override loader.",
+      "⚑ Base cadence tuple (rate_of_fire / reloadFrames 171 / chargeFrames 60 / ammo 120 for an RL) is datamine-unreliable and unverified.",
+      "Swap weapon class is assumed to inherit the base RL (no `weapon` set) — affects range-band eligibility and auto-core rate for the 120 swap shots.",
+      "Max HP grants use targetMaxHpPct (kit-literal 'Max HP ▲ X%', self-target); maxHpPct is equivalent for a self target. They are damage-relevant ONLY through skill1's atkOfMaxHpPct self-conversion.",
+      "noFb is not set on the burst nuke or the Over Energy rider: burst-cast damage is FB-exempt by engine timing, not by a per-kit flag.",
+      "Pierce is swap-scoped (weaponSwap.hasPierce), NOT the whole-fight top-level hasPierce flag."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Blind second read of the kit prose only. Structure: S1 = HP→ATK conversion (4.05% of own final Max HP) + a Warm Up charge-speed ramp (10%/full charge, cap 5) whose 5th stack swaps to a 120-round, 9.45%/shot Pierce weapon; S2 = an Over Energy currency earned only while swapped (5% per 12 normal attacks → a stage every 240) whose stages grant cumulative self Max HP (feeding the S1 conversion), plus a 52.14% Attack Damage window on Burst Stage 3 entry; burst = self ATK 63.36%/10s, a 2953.84% nuke, and a 934.76%-per-Over-Energy-stage rider gated at stage ≥1. The two load-bearing unknowns are the swap weapon's cadence (sets whether the swap is a gain or a loss) and whether Over Energy stages are reachable at all inside a 180s fight."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle. Self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive / target self"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 4.05% of ... final max HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkOfMaxHpPct 4.05 (no durationSec = continuous); the sole consumer of every Max HP grant in this kit"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter count 1 (per-full-charge), swapGate unswapped — ⚑ trigger mapping"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Warm Up: Charge Speed ▲ 10% cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff chargeSpeedPct 10, maxStacks 5, no durationSec"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Stacks up to 5 times.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "maxStacks 5"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Warm Up is at max stacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger chargeCounter count 5 (5 full charges = max Warm Up), swapGate unswapped"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes stacks",
+      "status": "SKIPPED",
+      "effectOrReason": "no stack-consume primitive for buffs — Charge Speed persists at +50% instead of resetting; recorded in unmodeled.skill1"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Changes the weapon in use: Electric...",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect weaponSwap"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage: 9.45% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 9.45 (per swap shot)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity: 120",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 120; the 'refresh on weapon change' parenthetical is inherent to the swap"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Deactivation: When all rounds are fired",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxShots 120 (round-based end); durationSec 180 is a ⚑ placeholder for the required field"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Additional Effect: Gains Pierce",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.hasPierce true (swap-scoped) — NOT the top-level hasPierce flag"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when ...Full Charge ends",
+      "status": "SKIPPED",
+      "effectOrReason": "no swap-end trigger exists in TriggerDef"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes 100% of ammo.",
+      "status": "SKIPPED",
+      "effectOrReason": "consumeAmmo fraction 1 is available but untriggerable (its activation is swap-end); dropped, recorded in unmodeled.skill1 — an under-credit on post-swap reload downtime"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 12 normal attacks while in ...state",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "folded into trigger hitCount 240 + swapGate 'swapped' (12 attacks × 20 increments to 100%) — ⚑ the counter is not swap-scoped, only the fire is"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Over Energy ▲ 5% cont., up to 100%.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "derived: 100/5 = 20 increments → one stage advance per 240 swap normal attacks (= 2 full swap magazines)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Resets Over Energy, advances to next stage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resource overEnergyStage delta +1 (max 4) + escalating; the reset is implicit in the repeating hitCount cadence"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Each effect triggers all effects before it",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating: Nth activation applies steps 1..N — ⚑ assumes same-stat steps coexist rather than overwrite"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 1: Max HP ▲ 2% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 1: buff targetMaxHpPct 2 (self) → feeds atkOfMaxHpPct"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 2: Max HP ▲ 3% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 2: buff targetMaxHpPct 3"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 3: Max HP ▲ 7% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 3: buff targetMaxHpPct 7"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stage 4: Max HP ▲ 10.5% continuously.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "escalating step 4: buff targetMaxHpPct 10.5 (cumulative +22.5% at stage 4)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Burst Stage 3",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger stageEnter stage 3 — fires when ANY unit casts the stage-3 burst, per the literal wording (not burstCast)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Attack Damage ▲ 52.14% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 52.14, durationSec 10, target self"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 63.36% for 10 sec. (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast, target self, buff atkPct 63.36 durationSec 10"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 2953.84% of final ATK (Burst)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCast → flatDamage 2953.84, target enemy; no core (no 'core strike' wording), FB-exempt by burst-cast timing"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "when at stage 1+ of Over Energy",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "resourceGate {overEnergyStage, min:1..4} across four blocks — inert at stage 0"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "934.76% of final ATK x Over Energy stage",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "four stacked gated flatDamage 934.76 blocks reproduce the ×stage multiplication exactly (stage N → N × 934.76%)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects enemy nearest to the crosshair",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target enemy — single-boss scope makes 'nearest to crosshair' identical to the sole target"
+    }
+  ],
+  "flags": [
+    {
+      "field": "override.skill1[2].effects[0].pullsPerSec",
+      "estimate": "20 pulls/s (MG-like), i.e. ~6s to burn the 120-round magazine",
+      "reasoning": "ALWAYS-⚑ #3 (weapon-swap shot economy, kit-silent). Whole-picture check: 9.45%/shot × 120 = 1134% of ATK per swap cycle, versus a base RL at normalAttackMultiplier 2.5 (250%/shot) — the swap only pays for itself at a very high cadence, so this value decides whether the swap is the unit's damage engine or a damage sink. Nothing in the kit text bounds it.",
+      "recipe": "Count swap-state shots in a fight recording between the swap banner and the ammo-empty frame (or read the swap magazine's depletion rate off the ammo counter, which measures shots/sec directly); divide 120 by the observed swap duration. Cross-check in the harness by counting cfg.onEvent shot events between the weaponSwap apply and its end."
+    },
+    {
+      "field": "override.skill1[2].effects[0].durationSec",
+      "estimate": "180 (fight length = effectively unbounded)",
+      "reasoning": "The kit gives NO time bound — its only deactivation condition is round-based ('When all rounds are fired'), which maxShots 120 carries. durationSec is a required schema field, so a placeholder is unavoidable; it must never be the binding constraint.",
+      "recipe": "Assert in the unit test that the swap ends on the 120th swap shot (maxShots), not on a clock: the buffApply/swap-end frame should track the measured cadence, and changing durationSec 180 → 300 must move zero damage."
+    },
+    {
+      "field": "override.skill1[1].trigger (chargeCounter count 1) + missing Warm Up reset",
+      "estimate": "Charge Speed holds at +50% from the 5th full charge onward; the faithful sawtooth average is ~+25% (cap/2 prior)",
+      "reasoning": "'Removes stacks' at max is not expressible — no stack-consume primitive exists for buffs. Modeling the stacks as persistent over-credits charge speed for the whole post-first-swap fight; modeling a flat ~25% passive under-credits the pre-swap ramp. I chose the faithful trigger + magnitude and flagged the removal rather than inventing a blended constant.",
+      "recipe": "Read the Warm Up stack pip count off footage across two swap cycles to confirm the reset, then A/B the two encodings (stacking-persistent vs flat 25% passive) for the delta in charge-cycle count; if the delta is material, ask for a stack-consume primitive (an effect that clears a named buff) rather than fudging the value."
+    },
+    {
+      "field": "override.skill2[0].trigger (hitCount count 240, swapGate 'swapped')",
+      "estimate": "One Over Energy stage per 240 owner hits, gated to fire only while swapped",
+      "reasoning": "The kit counts 12 normal attacks *while in the swap state*; hitCount counts ALL cumulative owner hits and swapGate only blocks the FIRE, not the count. Base-weapon charge shots therefore leak into the counter, advancing stages early (an over-credit). Magnitude of the leak depends on the base:swap shot ratio — with a 1s charge weapon vs a fast swap, most hits are swap hits, so the leak is modest but real.",
+      "recipe": "In the harness, count shot events partitioned by swap state (weaponSwap apply/end frames) and compare the first stage-advance frame against 240 SWAP-only shots; if they diverge materially, restructure as a resource incremented by a swapGate'd hitCount:12 block plus a stage-advance trigger keyed to that resource."
+    },
+    {
+      "field": "override.skill2[0].effects[0] (escalating steps, same stat)",
+      "estimate": "Stage 4 = +22.5% Max HP (2+3+7+10.5); if same-caster-slot overwrite collapses the steps, it is +10.5%",
+      "reasoning": "'Each subsequent effect triggers all effects before it' maps exactly onto escalating's 'Nth activation applies steps 1..N', but all four steps carry the SAME stat from the same caster slot, and the buff engine overwrites on same-caster-slot. Whether the steps coexist or collapse changes the HP→ATK conversion by a factor of ~2 at stage 4.",
+      "recipe": "Existing-harness check (no new measurement needed): run the fixture, filter buffApply events for stat 'maxHpFlat' from this unit's casterIdx after the 4th stage advance, and sum the emitted flat values — 22.5% of base Max HP confirms coexistence, 10.5% confirms overwrite. If overwrite, re-author the steps as cumulative totals (2 / 5 / 12 / 22.5)."
+    },
+    {
+      "field": "override.resources + override.burst[2..5].resourceGate",
+      "estimate": "overEnergyStage 0→4, incremented once per stage advance; burst rider = stage × 934.76%",
+      "reasoning": "This is the only primitive combination that reproduces a stage-multiplied damage line exactly (flatDamage has no perResource field). It stands on the override loader accepting a top-level `resources` declaration and on resourceGate being evaluated at burstCast time against the live pool.",
+      "recipe": "Assert in the unit test that with the stage forced to N (patch the resource's `initial` via withPatchedOverride) the burst emits exactly N rider damage events of 934.76%, and that at stage 0 it emits none."
+    },
+    {
+      "field": "stage reachability (skill2 → burst rider)",
+      "estimate": "Stage 1 reached after ~2 full swap magazines (240 swap attacks ≈ 10 full charges + 2 swap windows); stages 2–4 likely unreachable inside 180s",
+      "reasoning": "Derived arithmetic, not measurement: 12 attacks × 20 increments per stage, 120 rounds per swap. If the swap cadence estimate is wrong the whole stage ladder shifts, which in turn silences or multiplies the burst rider — the two ⚑s compound.",
+      "recipe": "Once the swap cadence is measured, count Over Energy stage pips on footage at the 3rd/4th burst; a stage-2 sighting inside 180s would refute the estimate and implicate the cadence value."
+    },
+    {
+      "field": "override.skill1[2].effects[0].weapon (unset)",
+      "estimate": "Swap inherits the base RL class",
+      "reasoning": "The swap is named for an element/state ('Electric Power'), not a weapon class, so the kit gives no class change. Class drives range-band eligibility and auto-core rate across 120 shots, so a wrong assumption is not cosmetic.",
+      "recipe": "Read the in-game weapon icon / reticle during the swap window on footage; if it is not the base RL, set weaponSwap.weapon and re-check core rate on swap shots via the damage events' core field."
+    },
+    {
+      "field": "override.skill2[0].effects[0] stat choice (targetMaxHpPct)",
+      "estimate": "targetMaxHpPct (kit-literal 'Max HP ▲ X%', self-target)",
+      "reasoning": "maxHpPct is documented as the Vigor-cube self path and targetMaxHpPct as the kit-line path; both convert to a self maxHpFlat grant and both feed atkOfMaxHpPct when caster === target, so this is a naming choice, not a magnitude one. Recorded because a diff against another author here is cosmetic, not substantive.",
+      "recipe": "Confirm both emit stat 'maxHpFlat' with the same value in buffApply and that the unit's effective ATK moves identically; if it does, the choice is free."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -19,6 +19,11 @@ export interface TableColumn {
   // the rest — a unit name beside three numeric columns — takes a bigger
   // flex so it is not the one that gets ellipsized.
   flex?: number;
+  // Optional canvas-drawable image drawn beside the header text (the resource
+  // calculator's drop icons). It shares the cell's text box, so the header
+  // label gets HEADER_ICON + 4px less room and fitText ellipsizes against
+  // that — an icon never pushes text into the neighbouring column.
+  icon?: unknown;
 }
 // §6.6 window request for rank boards (burstgen / sustain / burstcdr / buffer).
 // Rows are plain strings, so the target is the unit's 0-indexed row position —
@@ -52,6 +57,7 @@ const COL_HEADER_H = 36;
 const ROW_H = 38;
 const FOOT_H = 40;
 const ICON = 32; // site icon square, drawn beside the title
+const HEADER_ICON = 16; // per-column icon square, drawn beside a column header
 
 // Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
 // the title's textX (padX + ICON + 12; 24px title, baseline y 44).
@@ -166,13 +172,34 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
       : colX(i) + CELL_PAD;
   const cellTextW = (i: number): number => colW(i) - CELL_PAD * 2;
 
-  // column headers
+  // column headers — an optional icon sits immediately left of the label in
+  // both alignments (so a right-aligned numeric column keeps its right edge),
+  // vertically centered on the 13px text.
   const headerY = HEAD_H + 22;
   ctx.fillStyle = '#5b6472';
   ctx.font = `600 13px ${FONT}`;
   data.columns.forEach((col, i) => {
+    const iconGap = col.icon ? HEADER_ICON + 4 : 0;
+    const label = fitText(ctx, col.header, cellTextW(i) - iconGap);
     ctx.textAlign = col.align === 'right' ? 'right' : 'left';
-    ctx.fillText(fitText(ctx, col.header, cellTextW(i)), cellTextX(i), headerY);
+    if (col.icon) {
+      const iconX =
+        col.align === 'right'
+          ? cellTextX(i) - ctx.measureText(label).width - iconGap
+          : cellTextX(i);
+      ctx.drawImage(
+        col.icon,
+        iconX,
+        headerY - HEADER_ICON + 3,
+        HEADER_ICON,
+        HEADER_ICON
+      );
+    }
+    ctx.fillText(
+      label,
+      col.align === 'right' ? cellTextX(i) : cellTextX(i) + iconGap,
+      headerY
+    );
   });
 
   // separator line

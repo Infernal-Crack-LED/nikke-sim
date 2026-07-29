@@ -16,6 +16,7 @@ import {
   buildBufferTable,
 } from '../../src/infographics/core/rankTables';
 import { copyTableCardImage } from './tableShare';
+import { copyTextToClipboard } from './clipboard';
 import {
   loadBurstGen,
   loadBurstCdr,
@@ -122,8 +123,14 @@ function rampText(ramp: number[]): string {
 }
 
 export function SupportRankings() {
-  const [board, setBoard] = useState<BoardId>('buffer');
-  const [bufferBoard, setBufferBoard] = useState<BufferBoard>('generic');
+  const params = new URLSearchParams(window.location.search);
+  const [board, setBoard] = useState<BoardId>(() => {
+    const p = params.get('board');
+    return BOARDS.some((b) => b.id === p) ? (p as BoardId) : 'buffer';
+  });
+  const [bufferBoard, setBufferBoard] = useState<BufferBoard>(() =>
+    params.get('bb') === 'typed' ? 'typed' : 'generic'
+  );
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyArtifact>>>({});
   const [err, setErr] = useState<string | null>(null);
 
@@ -162,9 +169,9 @@ export function SupportRankings() {
   // pre-renders (core/rankTables.ts builders — top-10 §6.6 window; the tab
   // has no selected unit to center on). The buffer board shares whichever
   // sub-board (generic/typed) is on screen.
-  const onShareImage = () => {
+  const onShareImage = (): Promise<'copied' | 'downloaded' | 'unsupported'> => {
     if (!art) {
-      return;
+      return Promise.resolve('unsupported');
     }
     const data =
       board === 'burstgen'
@@ -174,7 +181,20 @@ export function SupportRankings() {
           : board === 'sustain'
             ? buildSustainTable(art as SustainArtifact)
             : buildBufferTable(art as BufferChartArtifact, bufferBoard);
-    void copyTableCardImage(data, `nikke-ranks-${board}.png`);
+    return copyTableCardImage(data, `nikke-ranks-${board}.png`);
+  };
+
+  // Share a link to the active board (+ sub-board, for buffer) — mirrors
+  // DpsChartTab's shareLink.
+  const onShareLink = (): Promise<boolean> => {
+    const u = new URL(window.location.href);
+    u.searchParams.set('board', board);
+    if (board === 'buffer') {
+      u.searchParams.set('bb', bufferBoard);
+    } else {
+      u.searchParams.delete('bb');
+    }
+    return copyTextToClipboard(u.toString());
   };
 
   // Map the active board's typed rows into the chart's uniform bar shape.
@@ -306,6 +326,7 @@ export function SupportRankings() {
             ).toLocaleDateString()}`}
             bars={bars}
             onShareImage={onShareImage}
+            onShareLink={onShareLink}
           />
           <Methodology methodology={art.methodology} profiles={profiles} />
         </>

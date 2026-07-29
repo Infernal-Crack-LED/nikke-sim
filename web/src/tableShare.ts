@@ -18,6 +18,22 @@ import {
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ensureRoboto, copyOrDownloadPng } from './teamShare';
 
+// Load a same-origin image (an /nikke-icons/* asset) for a card's title icon
+// or a column header icon. Same shape as teamShare's loadPortrait — resolves
+// null on any failure, and outside a real browser (JSDOM smoke), so a card
+// whose icons fail still renders, just without them.
+export function loadCardImage(src: string): Promise<HTMLImageElement | null> {
+  if (typeof Image === 'undefined') {
+    return Promise.resolve(null);
+  }
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = src;
+  });
+}
+
 // Render a table card to a canvas (Roboto awaited before the first draw,
 // decision 6.1 — same font-gate reason as shareImage/teamShare). Null where
 // canvas is unavailable (JSDOM). The /builder page previews and copies from

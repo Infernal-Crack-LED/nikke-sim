@@ -203,27 +203,23 @@ function emptySet(): Set<string> {
   return new Set();
 }
 
-// The filterable full-roster grid, shared by the Browse Nikkes modals (Team
-// Sim / Roster Sim) and the Team Builder page. Clicking a card calls onToggle:
-// the caller owns the team and decides what add/remove mean. Units in `exclude`
-// are already placed and disappear from the list entirely. Units the sim
-// doesn't model yet ("Not In Sim") only appear on the Team Builder page
-// (allowUnsupported), which lets them be picked and warns at copy time; the
-// Browse/Include/Exclude modals hide them from the grid entirely. Class names
-// keep their `teambuilder-` prefix from the page this was extracted from.
-export function CharacterGrid({
-  exclude,
-  onToggle,
-  allowUnsupported = false,
-  restrict,
-}: {
+export interface CharacterFilterOpts {
   exclude: Set<string>;
-  onToggle: (slug: string) => void;
   allowUnsupported?: boolean;
   // when set, only these slugs are browsable (the generator modals restrict the
   // pool to the units the generator can actually field); omit = every unit
   restrict?: Set<string>;
-}) {
+}
+
+// Owns all filter/search state + the derived character list + thumbnail maps.
+// Split out from the rendering so a caller that wants a custom layout (the Team
+// Builder page puts the filters above the team slots) can render the filter
+// controls and the card grid in different places while sharing one filter state.
+export function useCharacterFilter({
+  exclude,
+  allowUnsupported = false,
+  restrict,
+}: CharacterFilterOpts) {
   const [search, setSearch] = useState('');
   const [weaponFilter, setWeaponFilter] = useState<Set<string>>(emptySet);
   const [burstFilter, setBurstFilter] = useState<Set<string>>(emptySet);
@@ -380,8 +376,51 @@ export function CharacterGrid({
     manufacturerFilter.size > 0 ||
     archetypeFilter.size > 0;
 
+  const clearAll = () => {
+    setSearch('');
+    setWeaponFilter(emptySet());
+    setBurstFilter(emptySet());
+    setClassFilter(emptySet());
+    setElementFilter(emptySet());
+    setManufacturerFilter(emptySet());
+    setArchetypeFilter(emptySet());
+  };
+
+  return {
+    search,
+    setSearch,
+    weaponFilter,
+    toggleWeapon: toggle(weaponFilter, setWeaponFilter),
+    burstFilter,
+    toggleBurst: toggle(burstFilter, setBurstFilter),
+    classFilter,
+    toggleClass: toggle(classFilter, setClassFilter),
+    elementFilter,
+    toggleElement: toggle(elementFilter, setElementFilter),
+    manufacturerFilter,
+    toggleManufacturer: toggle(manufacturerFilter, setManufacturerFilter),
+    archetypeFilter,
+    toggleArchetype: toggle(archetypeFilter, setArchetypeFilter),
+    filterThumbs,
+    miniThumbs,
+    portraitThumbs,
+    characters,
+    total,
+    showing,
+    anyActive,
+    clearAll,
+  };
+}
+
+export type CharacterFilterState = ReturnType<typeof useCharacterFilter>;
+
+// The filter panel (icon rows + archetype pills), search box, and "showing N of
+// M" count — everything above the card grid. Rendered separately from
+// CharacterCards so a caller can place it wherever it wants (e.g. above a set
+// of team slots instead of directly above the grid).
+export function CharacterFilters({ filter }: { filter: CharacterFilterState }) {
   return (
-    <div className="teambuilder-picker">
+    <>
       <details className="teambuilder-filters-details" open>
         <summary>Filters</summary>
         <div className="teambuilder-filters">
@@ -390,37 +429,37 @@ export function CharacterGrid({
             <FilterRow
               label="Weapon"
               options={WEAPON_OPTIONS}
-              selected={weaponFilter}
-              onToggle={toggle(weaponFilter, setWeaponFilter)}
-              thumbs={filterThumbs}
+              selected={filter.weaponFilter}
+              onToggle={filter.toggleWeapon}
+              thumbs={filter.filterThumbs}
             />
             <FilterRow
               label="Burst"
               options={BURST_OPTIONS}
-              selected={burstFilter}
-              onToggle={toggle(burstFilter, setBurstFilter)}
-              thumbs={filterThumbs}
+              selected={filter.burstFilter}
+              onToggle={filter.toggleBurst}
+              thumbs={filter.filterThumbs}
             />
             <FilterRow
               label="Class"
               options={CLASS_OPTIONS}
-              selected={classFilter}
-              onToggle={toggle(classFilter, setClassFilter)}
-              thumbs={filterThumbs}
+              selected={filter.classFilter}
+              onToggle={filter.toggleClass}
+              thumbs={filter.filterThumbs}
             />
             <FilterRow
               label="Element"
               options={ELEMENT_OPTIONS}
-              selected={elementFilter}
-              onToggle={toggle(elementFilter, setElementFilter)}
-              thumbs={filterThumbs}
+              selected={filter.elementFilter}
+              onToggle={filter.toggleElement}
+              thumbs={filter.filterThumbs}
             />
             <FilterRow
               label="Manufacturer"
               options={MANUFACTURER_OPTIONS}
-              selected={manufacturerFilter}
-              onToggle={toggle(manufacturerFilter, setManufacturerFilter)}
-              thumbs={filterThumbs}
+              selected={filter.manufacturerFilter}
+              onToggle={filter.toggleManufacturer}
+              thumbs={filter.filterThumbs}
             />
           </div>
 
@@ -435,15 +474,13 @@ export function CharacterGrid({
                 </span>
                 <div className="teambuilder-archetype-pills">
                   {options.map((opt) => {
-                    const active = archetypeFilter.has(opt.id);
+                    const active = filter.archetypeFilter.has(opt.id);
                     return (
                       <button
                         key={opt.id}
                         type="button"
                         className={'teambuilder-pill' + (active ? ' on' : '')}
-                        onClick={() =>
-                          toggle(archetypeFilter, setArchetypeFilter)(opt.id)
-                        }
+                        onClick={() => filter.toggleArchetype(opt.id)}
                         title={opt.blurb}
                         aria-pressed={active}
                       >
@@ -462,13 +499,13 @@ export function CharacterGrid({
         <input
           type="text"
           placeholder="Search by name or nickname…"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
+          value={filter.search}
+          onChange={(e) => filter.setSearch(e.target.value)}
         />
-        {search && (
+        {filter.search && (
           <button
             className="teambuilder-search-clear"
-            onClick={() => setSearch('')}
+            onClick={() => filter.setSearch('')}
             aria-label="Clear search"
           >
             ×
@@ -476,28 +513,37 @@ export function CharacterGrid({
         )}
       </div>
 
-      {anyActive && (
+      {filter.anyActive && (
         <div className="teambuilder-count muted">
-          Showing {showing} of {total} NIKKEs
-          <button
-            className="teambuilder-clear"
-            onClick={() => {
-              setSearch('');
-              setWeaponFilter(emptySet());
-              setBurstFilter(emptySet());
-              setClassFilter(emptySet());
-              setElementFilter(emptySet());
-              setManufacturerFilter(emptySet());
-              setArchetypeFilter(emptySet());
-            }}
-          >
+          Showing {filter.showing} of {filter.total} NIKKEs
+          <button className="teambuilder-clear" onClick={filter.clearAll}>
             Clear all
           </button>
         </div>
       )}
+    </>
+  );
+}
 
+// The card grid itself. `dragProps`, when given, is spread onto each card
+// instead of a plain onClick — used by the Team Builder page so a card can be
+// picked up and dropped onto a team slot (a tap that never crosses the drag
+// threshold still calls onToggle, via the caller's onTap wiring).
+export function CharacterCards({
+  filter,
+  onToggle,
+  dragProps,
+  draggingSlug,
+}: {
+  filter: CharacterFilterState;
+  onToggle: (slug: string) => void;
+  dragProps?: (slug: string) => Record<string, unknown>;
+  draggingSlug?: string | null;
+}) {
+  return (
+    <>
       <div className="teambuilder-grid">
-        {characters.map((c) => {
+        {filter.characters.map((c) => {
           const weaponSrc = `/nikke-icons/weapon_${c.weapon.toLowerCase()}.png`;
           // one code icon per element the unit counts as (its own, then any its kit grants)
           const elements = unitElements(c);
@@ -509,20 +555,22 @@ export function CharacterGrid({
             <button
               key={c.slug}
               type="button"
-              className={`teambuilder-card${c.simSupported ? '' : ' unsupported'}`}
-              onClick={() => onToggle(c.slug)}
+              className={`teambuilder-card${c.simSupported ? '' : ' unsupported'}${draggingSlug === c.slug ? ' dragging' : ''}`}
+              onClick={dragProps ? undefined : () => onToggle(c.slug)}
+              {...(dragProps ? dragProps(c.slug) : {})}
               title={
                 c.simSupported
-                  ? `${c.name} — click to add to team`
+                  ? `${c.name} — click to add to team, or drag onto a slot`
                   : `${c.name} — not in the sim yet (can be placed, but not simmed)`
               }
             >
               <div className="teambuilder-portrait">
                 {c.imageUrl ? (
                   <img
-                    src={portraitThumbs[c.imageUrl] ?? c.imageUrl}
+                    src={filter.portraitThumbs[c.imageUrl] ?? c.imageUrl}
                     alt={c.name}
                     loading="lazy"
+                    draggable={false}
                   />
                 ) : (
                   <span className="teambuilder-portrait-empty">?</span>
@@ -537,7 +585,7 @@ export function CharacterGrid({
                 <span className="teambuilder-card-name">{c.name}</span>
                 <div className="teambuilder-card-icons">
                   <img
-                    src={miniThumbs[weaponSrc] ?? weaponSrc}
+                    src={filter.miniThumbs[weaponSrc] ?? weaponSrc}
                     alt={c.weapon}
                     title={c.weapon}
                     className="teambuilder-mini-icon"
@@ -562,7 +610,7 @@ export function CharacterGrid({
                     className="teambuilder-mini-icon"
                   />
                   <img
-                    src={miniThumbs[classSrc] ?? classSrc}
+                    src={filter.miniThumbs[classSrc] ?? classSrc}
                     alt={c.class}
                     title={c.class}
                     className="teambuilder-mini-icon"
@@ -574,11 +622,39 @@ export function CharacterGrid({
         })}
       </div>
 
-      {characters.length === 0 && (
+      {filter.characters.length === 0 && (
         <div className="teambuilder-empty muted">
           No NIKKEs match the selected filters.
         </div>
       )}
+    </>
+  );
+}
+
+// The filterable full-roster grid, shared by the Browse Nikkes modals (Team
+// Sim / Roster Sim) and the Team Builder page. Clicking a card calls onToggle:
+// the caller owns the team and decides what add/remove mean. Units in `exclude`
+// are already placed and disappear from the list entirely. Units the sim
+// doesn't model yet ("Not In Sim") only appear on the Team Builder page
+// (allowUnsupported), which lets them be picked and warns at copy time; the
+// Browse/Include/Exclude modals hide them from the grid entirely. Class names
+// keep their `teambuilder-` prefix from the page this was extracted from.
+export function CharacterGrid({
+  exclude,
+  onToggle,
+  allowUnsupported = false,
+  restrict,
+}: {
+  exclude: Set<string>;
+  onToggle: (slug: string) => void;
+  allowUnsupported?: boolean;
+  restrict?: Set<string>;
+}) {
+  const filter = useCharacterFilter({ exclude, allowUnsupported, restrict });
+  return (
+    <div className="teambuilder-picker">
+      <CharacterFilters filter={filter} />
+      <CharacterCards filter={filter} onToggle={onToggle} />
     </div>
   );
 }

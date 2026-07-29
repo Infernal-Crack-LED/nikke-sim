@@ -1,6 +1,7 @@
 // Presentational ranked-DPS bar chart (one infographic). Element-colored horizontal
 // bars, sorted desc, with an optional compare-unit annotation row and share buttons.
 // The shareable PNG is rendered separately via src/infographics/core/dpsChart.ts.
+import { useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import { relScore } from '../../../src/infographics/core/dpsChart';
 import type { BarEntry } from '../dpschartData';
@@ -22,8 +23,11 @@ export interface DpsBarChartProps {
   subtitle?: string;
   bars: BarEntry[];
   compare?: (BarEntry & { total: number }) | null;
-  onShareImage?: () => void;
-  onShareLink?: () => void;
+  // Resolve to whether the copy actually succeeded (link) or how it landed
+  // (image — clipboard vs. a download fallback) so the chip's "copied" flash
+  // reflects reality instead of firing blind.
+  onShareImage?: () => Promise<'copied' | 'downloaded' | 'unsupported'>;
+  onShareLink?: () => Promise<boolean>;
 }
 
 export function DpsBarChart({
@@ -39,6 +43,30 @@ export function DpsBarChart({
     bars.map((b) => b.imageUrl),
     PORTRAIT_CSS
   );
+  const [linkFlash, setLinkFlash] = useState(false);
+  const [imgFlash, setImgFlash] = useState<'copied' | 'downloaded' | null>(
+    null
+  );
+  const handleShareLink = async () => {
+    if (!onShareLink) {
+      return;
+    }
+    if (await onShareLink()) {
+      setLinkFlash(true);
+      setTimeout(() => setLinkFlash(false), 1500);
+    }
+  };
+  const handleShareImage = async () => {
+    if (!onShareImage) {
+      return;
+    }
+    const result = await onShareImage();
+    if (result === 'unsupported') {
+      return;
+    }
+    setImgFlash(result);
+    setTimeout(() => setImgFlash(null), 1500);
+  };
   return (
     <div className="dpschart-card">
       <div className="dpschart-head">
@@ -50,20 +78,24 @@ export function DpsBarChart({
           <div className="dpschart-share">
             {onShareLink && (
               <button
-                className="chip"
+                className={'chip' + (linkFlash ? ' copied' : '')}
                 title="copy link to this chart"
-                onClick={onShareLink}
+                onClick={handleShareLink}
               >
-                🔗
+                {linkFlash ? '✓ Copied' : '🔗'}
               </button>
             )}
             {onShareImage && (
               <button
-                className="chip"
+                className={'chip' + (imgFlash ? ' copied' : '')}
                 title="copy chart image"
-                onClick={onShareImage}
+                onClick={handleShareImage}
               >
-                🖼
+                {imgFlash === 'copied'
+                  ? '✓ Copied'
+                  : imgFlash === 'downloaded'
+                    ? '⬇ Saved'
+                    : '🖼'}
               </button>
             )}
           </div>
