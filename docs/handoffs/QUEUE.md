@@ -100,6 +100,36 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   every OTHER surface that reads that flag. Fix: apply the alias map when `roster-audit.ts` writes
   `enikk-supported.json`, or switch that artifact to match by slug instead of free-text name.
 
+- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
+  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
+  landing for alice/scarlet-black-shadow this session — see DECISIONS). Cinderella (RL, whole-magazine
+  dump-fire kit, `charFixes.magDumpRof:true`) does NOT get a per-unit multiplier in that landing; she
+  stays on the current flat 2.5× pending this investigation. Her datamined table value is 200
+  (`fullChargeBonus`, → 2.0× if treated like any other charge unit), but a rough solo-footage read
+  (`docs/probes/720-kit-audit/cindy solo neutral.MP4`, magazine-dump cadence too fast/aliased against
+  the 0.2s CV sampling to cleanly resolve) landed at **≈2.6–3.1×** — closer to the CURRENT 2.5× than to
+  either her table's 2.0× or an exemption-to-1.0× hypothesis (the owner's kit-mechanical argument: her
+  dump-fire mechanic doesn't perform the discrete hold-charge/release cycle the einkk `positionBurstBonus`
+  formula's `chargePercent` term presumes). Fable's pre-op review (this session) explicitly rejected
+  locking her to 1.0× on this evidence: "enacting a value the only available measurement contradicts
+  violates measured>fudge regardless of the kit-mechanical argument." **What would resolve it:** a
+  cleaner per-shot cadence read for her specifically — either fix `read-ammo.ts` for her dump-fire
+  ammo-counter pattern (it currently returns 0 reads on her footage, same failure shape as
+  scarlet-black-shadow's — `boxConf` present but zero digit glyphs segmented) or a longer/cleaner solo
+  recording with the gauge-fill crop instrument (now validated against the maiden anchor, see DECISIONS)
+  sampled at a rate that doesn't alias her ~3/s fire rate. Until then: no change to her focus multiplier.
+
+- **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
+  `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.
+  A B3/Λ unit's whole card is its two DPS charts, so an absent one renders two large "Not
+  ranked on this board" plates — those 7 are the only sim-supported units with no bar chart at
+  all (of 90). Not researched; no handoff written.
+  - **Ruling (owner, 2026-07-28): no second-class fallback layout.** A B3/Λ unit that is NOT
+    sim-supported simply gets NO CARD (`scripts/build-infographics.ts` `unitJobs`) — 27 units,
+    54 images. The 7 above keep their cards because their emptiness is a DATA gap this item
+    closes, not a permanent state. B1/B2 units are unaffected either way: buffer / sustain /
+    burst-CDR rank unsupported units too.
+
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
   `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three
@@ -436,7 +466,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `docs/probe-runs.md` § SG SIDE, parse `docs/probe-data/marciana-sg-band.json`, **open-questions
   U35**). ⇒ Fix the SG **landing model** BEFORE any override re-tune — a pure override pass would be
   fitting overrides to absorb a weapon-model error. Exact per-band landing is footage-gated on a SOLO
-  `marciana` recording (U35). Then: owner core
+  `marciana` recording (U35). **2026-07-29 update:** the CV pellet-counter validation run on `noir`/
+  `guilty`/`isabel` solo recordings **FAILED** — the counter is ~10–20% cold on `noir` with band-dependent
+  flattening, and the marciana-derived ammo-box template does not generalize to `guilty`/`isabel`.
+  **2026-07-29 (later) counter-fix follow-up:** implemented per-video ammo-box template extraction +
+  ROI matching; short clips restored `guilty`/`isabel` detection, but full-noir validation still fails
+  (near1 produced no valid shots, near2 7.65 vs anchor 8.9, midfar 6.91 vs anchor 8.8; `guilty` full
+  run only 21 shots). Do NOT use the counter to recalibrate UNIGEO until it passes second-unit
+  validation. Next step: fix near-band under-count / per-video template quality on `noir`/`guilty`,
+  then re-attempt. Full log: `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry + addendum.
+  Then: owner core
   re-trace mid/midfar/far (upgrades ⚑ fit-selected series C); third clean SMG cell (de-saturates
   the ⚑ SMG lens pair — its little-mermaid long-band over-prediction is an active red flag);
   bloom-phase footage for f_bloom; blanc near-HR39 re-count; burst-5 near-ON count backstop;
@@ -537,7 +576,7 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   plan written: `docs/handoffs/2026-07-26-rank-boards-frontend.md` (one `/ranks` page, pill-switched
   boards, profile badges; artifacts carry a `profile` flag with plain+profiled dual entries); (2) DPS ranks for B1/B2 →
   `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
-  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same); **(4) Mint/Prika duo
+  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same); \*\*(4) Mint/Prika duo
   profiles on the buffer rank — plan written 2026-07-26:
   `docs/handoffs/2026-07-26-buffer-rank-mint-prika-plan.md`. The pair's duet modes already encode the
   rotation; the buffer-rank team assembler just needs a partner-unit profile path (Sustain already
