@@ -424,8 +424,15 @@ if (!mock) {
   const peanutCircLo = Number(flags['peanut-circ-lo'] ?? 0.3);
   const peanutAspect = Number(flags['peanut-aspect'] ?? 0.45);
   const peanutMaxMult = Number(flags['peanut-max-mult'] ?? 0);
+  const dumpTracksFlag = flags['dump-tracks'];
+  const dumpTracksArg =
+    dumpTracksFlag === 'true'
+      ? `--dump-tracks "${outDir}/tracks.json"`
+      : dumpTracksFlag
+        ? `--dump-tracks "${dumpTracksFlag}"`
+        : '';
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];
