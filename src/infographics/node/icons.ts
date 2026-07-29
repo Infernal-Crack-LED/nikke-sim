@@ -33,9 +33,17 @@ import { createCanvas, type Canvas } from '@napi-rs/canvas';
 import sharp from 'sharp';
 import { existsSync, readFileSync } from 'node:fs';
 import { ALL_ICON_NAMES } from '../core/iconNames.js';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const ICON_DIR = new URL('../../../web/public/nikke-icons/', import.meta.url);
+// NIKKESIM_ICON_DIR lets a COMPILED host (the dist-server esbuild bundle,
+// whose import.meta.url no longer sits 3 directories under the source tree —
+// it's one flat file) point at the checked-out web/public/nikke-icons/ by an
+// absolute path. Same escape hatch as fonts.ts's NIKKESIM_FONT_DIR; set by
+// src/server/env-defaults.ts when it detects it's running from the bundle.
+// Unset = the source-tree default every tsx / vitest run uses.
+const ICON_DIR = process.env.NIKKESIM_ICON_DIR
+  ? pathToFileURL(`${process.env.NIKKESIM_ICON_DIR}/`)
+  : new URL('../../../web/public/nikke-icons/', import.meta.url);
 
 // Preference order. `.webp` sits ahead of `.png` only because the two families
 // that ship webp (class_/man_) ship NOTHING else; where both exist (code_,
