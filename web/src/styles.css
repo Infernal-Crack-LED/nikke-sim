@@ -3712,10 +3712,25 @@ footer {
   margin-bottom: 6px;
 }
 .res-stat-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
+}
+/* the resource's in-game icon, sized to the value's cap height so the number
+   still leads the tile. Fixed box (never shrinks in the flex row) and
+   letterboxed square by useIconThumbs, so mixed-aspect sources still line up
+   column to column. Keep in sync with RES_ICON_PX in ResourcesPage.tsx — that
+   constant is what the thumbnails are rasterized at. */
+.res-stat-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  user-select: none;
 }
 .res-stat-sub {
   font-size: 12px;
@@ -3768,6 +3783,10 @@ footer {
   }
   .res-stat-value {
     font-size: 19px;
+  }
+  .res-stat-icon {
+    width: 22px;
+    height: 22px;
   }
 }
 

@@ -6,8 +6,8 @@
 // drop a module at all, and `moduleBreakdown` is the quantity distribution
 // CONDITIONAL on a drop occurring (the ×1/×2/×3 split). The module roll is
 // identical for every boss — what differs is the side drops: Kraken pays
-// custom-module fragments and more locks; other bosses drop T10 fragments and
-// a chance at a T10 gear piece instead.
+// custom-module fragments and more locks; other bosses drop T9 fragments and
+// a chance at a T9 gear piece instead.
 
 export const RUNS_PER_DAY = 3;
 
@@ -18,7 +18,7 @@ export interface StageDrops {
   locks: number;
   xpFodder: number;
   fragments: number; // guaranteed — 100% drop rate every run
-  gearRate: number | null; // T10 gear: chance of 1 piece per run (null = this boss never drops it)
+  gearRate: number | null; // T9 gear: chance of 1 piece per run (null = this boss never drops it)
   moduleDropRate: number; // 0..1, chance the run drops a module at all
   moduleBreakdown: { qty: number; p: number }[]; // conditional on a drop; p sums to 1
 }
@@ -28,6 +28,7 @@ export interface BossTable {
   label: string; // pill label
   fullName: string; // used in prose ("Daily income — Kraken, Tier 9")
   fragmentLabel: string; // which fragment this boss pays
+  fragmentIcon: string; // its in-game icon, served from /nikke-icons/
   stages: StageDrops[];
 }
 
@@ -37,6 +38,7 @@ export const BOSS_TABLES: BossTable[] = [
     label: 'Kraken',
     fullName: 'Kraken',
     fragmentLabel: 'Module fragments',
+    fragmentIcon: '/nikke-icons/res_module_fragments.webp',
     stages: [
       {
         stage: 1,
@@ -156,7 +158,8 @@ export const BOSS_TABLES: BossTable[] = [
     key: 'other',
     label: 'Other',
     fullName: 'Other bosses',
-    fragmentLabel: 'T10 fragments',
+    fragmentLabel: 'T9 fragments',
+    fragmentIcon: '/nikke-icons/res_t9_fragments.webp',
     stages: [
       {
         stage: 1,
