@@ -1,6 +1,12 @@
 # Handoff — focus charge-gauge bonus is a flat 2.5×; it should be per-unit (= chargeMultiplier/100)
 
-> Context-packed for a fresh session. **STATUS: FINDING + PROPOSED FIX — NOT ENACTED.**
+> Context-packed for a fresh session. **STATUS: CLOSED (2026-07-29) — all four non-250 outliers
+> resolved.** scarlet-black-shadow IMPLEMENTED (1.5×, measured), alice IMPLEMENTED (3.5×, measured),
+> cinderella set via owner override (2.0×, `charFixes.focusChargeMult`, not independently measured —
+> see `docs/handoffs/2026-07-29-cinderella-focus-gauge-owner-override.md`), vesti-tactical-upgrade
+> stays pinned to the flat constant (`PENDING_TEAM_ISOLATION`; not yet sim-supported). Full record:
+> `docs/DECISIONS.md` 2026-07-29 entries, `docs/handoffs/scientific-method-harness.md` 2026-07-29
+> entries.
 > Discovered 2026-07-27 while investigating why `flora`/`rosanna`/`sugar` mis-ranked on the
 > burst-gen board (that investigation landed three separate fixes — missing gauge rows, a
 > weapon-aware fallback, and removing the focus bonus from the _board_; this is the one
