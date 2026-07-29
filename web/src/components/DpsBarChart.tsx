@@ -111,7 +111,10 @@ export function DpsBarChart({
       ) : (
         <div className="dpschart-bars">
           {bars.map((b, i) => (
-            <div className="dpschart-row" key={`${b.slug}:${b.profile ?? ''}`}>
+            <div
+              className="dpschart-row ranks-row"
+              key={`${b.slug}:${b.profile ?? ''}`}
+            >
               <span className="dpschart-rank">{i + 1}</span>
               {b.imageUrl ? (
                 <img
