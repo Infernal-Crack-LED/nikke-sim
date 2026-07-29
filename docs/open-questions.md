@@ -113,6 +113,18 @@ The counter remains inadmissible. Next tuning targets: (a) near-band pellet loss
 cluster; (b) verify the per-video template is locking onto the true ammo box on `noir`/`guilty`
 using `--dump-tracks` diagnostics; (c) only then re-run full `noir` + `guilty` validation.
 
+**2026-07-29 near-band diagnostic.** Ran `noir sg.MP4 --at 40 --dur 20` with `--center-exclude 0`
+and `36`; results were identical (4 shots, 1 valid, avgTotal=5), so `center-exclude` is not the
+near-band cause. `--dump-tracks` showed the crosshair being placed at the **right edge** of the
+damage crop (mean x≈2544 in a 2606px frame) instead of near the impact cluster. Pellet tracks are
+uniformly distributed across the full frame, and the default `--pellet-radius 160` only counts a
+narrow slice near x≈2544. This explains both the systematic cold bias and the near-band under-count.
+The immediate blocker is the ammo-box-to-crosshair offset: `ammo_offset_x` is currently positive
+(moves right from the ammo box), while the crosshair should be well to the left of the ammo box near
+the crop centre. Calibrating that offset — or confirming the per-video template is actually locking
+onto the ammo box and not a right-side HUD/VFX element — is the next step (the ammo-box quality step
+left for later).
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
