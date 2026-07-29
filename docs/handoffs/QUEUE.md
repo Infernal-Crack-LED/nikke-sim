@@ -52,6 +52,81 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🔵 ALICE'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, ISOLATING TEAM READ NEEDED.**
+  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`,
+  `docs/DECISIONS.md` 2026-07-29, `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry.
+  scarlet-black-shadow's per-unit focus multiplier (1.5×) landed this session; alice's (predicted
+  3.5×) did NOT — she stays pinned to the flat 2.5× constant (`PENDING_TEAM_ISOLATION` in
+  `gaugePerShot`, `src/engine/sim.ts`). Her solo per-shot gauge-fill reading (~3.68× observed, 5%
+  match to 3.5×, `docs/probes/solo/alice solo.MP4`) directly excludes the flat 2.5× and is solid on
+  its own — the blocker is a team-context tension: an alice-focused team recording (`docs/probes/
+  burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full
+  bursts** via `scan.ts` (10/10 corroborated), which the per-unit model only produces in the
+  MINORITY of seeds (7/25, 28%) while the OLD flat-2.5× model produces it in 100% of seeds
+  (25/25). Fable's blind post-op review (three rounds this session) ruled this real-but-
+  non-isolating: FB count is downstream of the whole comp (convolved with red-hood's flex-burst
+  behavior, chain selection, and 3 other units' generation rates), so it cannot move a directly-
+  measured constant in either direction on one categorical draw — but it also means alice's per-
+  unit value isn't confirmed at the confidence bar (HIGH+HIGH) this project requires before an
+  engine change lands. **What would resolve it, in order of value (per Fable's post-op):**
+  1. An ISOLATING gauge read from the SAME team recording — hand-read (not the CV crop, which
+     is unvalidated on team footage) a handful of alice's per-pull gauge deltas directly from
+     `docs/probes/burst tests/alice focused.MP4`. If focused-alice steps ~19-20%/pull in team
+     context too (matching the solo reading), the 3.5× constant is confirmed where the tension
+     actually lives, and the FB-count miss localizes to the comp model (red-hood flex-burst
+     modeling is the named first suspect) rather than to alice.
+  2. Repeat the fight, n≥3. If real counts split 10/11 across runs, reality straddles the boundary
+     exactly as the post-fix distribution does and the tension dissolves; if rigidly 10 every time,
+     that's a genuine composite over-generation signal for THIS comp — its own investigation, NOT
+     an alice-knob change.
+  3. Hand-verify the owner's reported ~95%-full end-of-fight gauge state from a frame (cheap;
+     currently unverified/unused context, not load-bearing for anything in the landed decision).
+  Also open: alice's solo reading itself carries an unexplained +5.1% residual (observed ~20.6%/shot
+  vs the 19.6%/shot the 3.5× prediction implies) — outside the instrument's validated 0.05-0.15%
+  error band. Not yet investigated.
+
+- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
+  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
+  landed for scarlet-black-shadow 2026-07-29 — see DECISIONS). Cinderella (RL, whole-magazine
+  dump-fire kit, `charFixes.magDumpRof:true`) does NOT get a per-unit multiplier in that landing; she
+  stays on the current flat 2.5× (pinned via `magDumpRof` in `gaugePerShot`, `src/engine/sim.ts`)
+  pending this investigation. Her datamined table value is 200 (`fullChargeBonus`, → 2.0× if treated
+  like any other charge unit), but a rough solo-footage read (`docs/probes/720-kit-audit/cindy solo
+  neutral.MP4`, magazine-dump cadence too fast/aliased against the 0.2s CV sampling to cleanly
+  resolve) landed at **≈2.6–3.1×** — closer to the CURRENT 2.5× than to either her table's 2.0× or an
+  exemption-to-1.0× hypothesis (the owner's kit-mechanical argument: her dump-fire mechanic doesn't
+  perform the discrete hold-charge/release cycle the einkk `positionBurstBonus` formula's
+  `chargePercent` term presumes). Fable's pre-op review (2026-07-29) explicitly rejected locking her
+  to 1.0× on this evidence: "enacting a value the only available measurement contradicts violates
+  measured>fudge regardless of the kit-mechanical argument." **What would resolve it:** a
+  cleaner per-shot cadence read for her specifically — either fix `read-ammo.ts` for her dump-fire
+  ammo-counter pattern (it currently returns 0 reads on her footage, same failure shape as
+  scarlet-black-shadow's — `boxConf` present but zero digit glyphs segmented) or a longer/cleaner solo
+  recording with the gauge-fill crop instrument (now validated against the maiden anchor for SOLO
+  footage specifically, see DECISIONS) sampled at a rate that doesn't alias her ~3/s fire rate. Until
+  then: no change to her focus multiplier.
+  **Step 7 implementation review note (2026-07-29):** her pin is keyed off `magDumpRof`
+  (a mechanism flag, not a dedicated measurement-gate marker) — today that's fine, exactly one
+  override carries the flag, but the NEXT unit that gains `charFixes.magDumpRof` inherits a
+  silent 2.5x pin with no review of whether the mechanism argument (or 2.5x specifically) even
+  applies to them. Worth a dedicated `PENDING_TEAM_ISOLATION`-style entry per-unit if/when a
+  second `magDumpRof` carrier lands, rather than assuming the flag alone justifies the pin.
+
+- **⇒ 🔵 VESTI-TACTICAL-UPGRADE + 4 OTHER SR/RL UNITS — `fullChargeBonus` DATA-QUALITY GAP, GUARD
+  BEFORE THEIR FIRST OVERRIDE.** Filed by the Step 7 implementation review of the 2026-07-29
+  per-unit focus-multiplier landing (`docs/engine-modeling-gaps.md` §20 has the full detail).
+  `vesti-tactical-upgrade` (RL, `fullChargeBonus` 200) is now explicitly pinned in
+  `PENDING_TEAM_ISOLATION` (`src/engine/sim.ts`) since she's a 4th non-250 outlier the original
+  landing's evidence never covered — not sim-supported today (no override), so this is currently
+  a no-op, but it must stay pinned when she gets one. Separately, four units have
+  `chargeMultiplier: 350` in `data/characters.json` but no `gauge-per-shot.json` row at all
+  (`belorta`, `n102`, `yan`, `yuni`) — the `?? 250` fallback would run them at 2.5x when the
+  repo's own data says 3.5x, same shape as vesti's gap but not yet guarded. **Before landing an
+  override for ANY of these 5 units**, cross-check `chargeMultiplier` (`characters.json`) against
+  `fullChargeBonus` (`gauge-per-shot.json`) and either add the unit to `PENDING_TEAM_ISOLATION` or
+  take a measurement, the same way alice/scarlet-black-shadow were handled — don't let the
+  fallback silently decide it.
+
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
   `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three

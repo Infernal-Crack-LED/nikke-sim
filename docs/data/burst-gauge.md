@@ -114,10 +114,43 @@ Datamined (`burst_duration`, einkk `ChangeBurstStepEvent`) and directly measured
 ## 4. Charge weapons and the camera-focus bonus
 
 einkk's datamined formula: a charge weapon held by the **camera-focused unit** generates
-× (1 + 1.5 × chargePercent) — **×2.5 at full charge**. Both solos confirm it exactly
-(a solo unit is always focused): maiden 364 × 2.5 = 910/shot, takina 560 × 2.5 =
-1400/shot, measured to the pixel on the gauge bar.
+× (1 + 1.5 × chargePercent) — **×2.5 at full charge, for the chargePercent=1.0 (250-family)
+case**. Both original solo anchors confirm it exactly (a solo unit is always focused): maiden
+364 × 2.5 = 910/shot, takina 560 × 2.5 = 1400/shot, measured to the pixel on the gauge bar —
+both `fullChargeBonus` 250, the modal value across the roster.
 
+- **PER-UNIT (2026-07-29):** the datamined `fullChargeBonus` column (`data/gauge-per-shot.json`,
+  = `chargeMultiplier` for every unit) is the real per-unit focus multiplier
+  (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine: `gaugePerShot()`
+  (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat constant.
+  Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
+  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (out of scope, not
+  sim-supported). Live per-unit status:
+  - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
+    a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
+    (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
+    flat-2.5× model's rigid 12-every-seed prediction, inside the per-unit model's 11-12
+    distribution).
+  - **alice: NOT enacted, pinned to the flat constant** (`PENDING_TEAM_ISOLATION` in
+    `gaugePerShot()`). Her solo per-shot read (~3.68× observed, 5% match to 3.5×) directly
+    excludes 2.5×, but a team full-burst count from an alice-focused recording (10 FBs,
+    `docs/probes/burst tests/alice focused.MP4`) landed as the per-unit model's minority
+    (28%-of-seeds) outcome rather than confirming it — a real, non-isolating tension, not
+    grounds to move a directly-measured constant either way. Isolating follow-up queued:
+    `docs/handoffs/QUEUE.md`.
+  - **cinderella: NOT enacted, pinned to the flat constant** (whole-magazine dump-fire kit,
+    `charFixes.magDumpRof` — she doesn't perform the discrete hold-charge/release cycle the
+    `chargePercent` term presumes, so the formula's applicability to her is itself unclear).
+    A rough solo-footage read (~2.6-3.1×) contradicts both her table value and a 1.0×
+    exemption hypothesis, leaning closer to the current flat 2.5×. Dedicated investigation
+    queued: `docs/handoffs/QUEUE.md`.
+  Full record: `docs/DECISIONS.md` 2026-07-29, `docs/handoffs/scientific-method-harness.md`
+  2026-07-29 entry.
+- **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
+  (`142x12 @ 2470,488`) is a validated CONTINUOUS fill-percentage reader **on solo/near-solo
+  footage** (reproduces the maiden anchor's hand-pixel-read "+9.1% then +3.45%" per-pull
+  pattern to <0.15% error) — this corrects/scopes the 2026-07-24 finding below (§ "burst
+  gauge CHARGING is not in this crop"), which holds for **team footage** only.
 - Default camera focus = formation slot 3 (engine: index `min(2, n-1)`); recordings
   where the user selects a focus unit pass `cfg.focusSlug`. **The recording itself
   perturbs the fight**: in battery test 5 alice (focused, sniper) came in +9.3% vs her

@@ -2547,3 +2547,93 @@ pixel measurement — they change no constant, no default and no board value):
 it accepted 0 of 30 popups on the one hand-read probe available, because that unit's value bands
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
+
+## Focus charge-gauge bonus is PER-UNIT, not flat 2.5x — scarlet-black-shadow IMPLEMENTED, alice LOGGED (2026-07-29)
+
+**Overturns, with a scope correction:** the 2026-07-13 "full_charge_burst_energy unused" ruling
+(that column is `fullChargeBonus`, now read and used — see below) and, narrowly, part of the
+2026-07-24 "burst-gauge crop renders a draining Full-Burst window bar, not a filling gauge" finding
+above: that finding is now scoped to **team footage**. In **solo/near-solo** footage the same crop
+(`142x12 @ 2470,488`) DOES render a persistent, continuously-updating gauge widget through
+charging/full/draining/chain states (owner-confirmed, then independently re-validated: the crop
+reproduces the ORIGINAL maiden-ice-rose tb2-test-3 hand-pixel-read anchor's documented "+9.1% then
++3.45%" per-pull sub-step pattern, TWICE, each within 0.05-0.15% of the 2026-07-13 value). The
+team-footage characterization (drain bar only, absent while charging) is unchanged and still holds —
+confirmed by a fresh `scan.ts` run on `docs/probes/720-kit-audit/scarlet black shadow.MP4` (team
+footage) landing a clean FB count with the ordinary hex/drain detectors, no gauge-crop-missing
+warning, same as always.
+
+**Finding.** `src/engine/sim.ts`'s `gaugePerShot()` hardcoded a flat `FOCUS_CHARGE_GEN = 2.5` for
+every camera-focused SR/RL unit. The datamined `fullChargeBonus` column (`data/gauge-per-shot.json`,
+= `chargeMultiplier` for every unit) is the REAL per-unit focus multiplier (`fullChargeBonus/100`)
+and was dead code. For the 250-family (the large majority, incl. the two original measured anchors
+maiden-ice-rose and takina) this is byte-identical to today (250/100 = 2.5). Four units deviate:
+alice 350 (3.5x), cinderella 200 (2.0x), cinderella-crystal-wave n/a (not RL/SR), scarlet-black-shadow
+150 (1.5x); `vesti-tactical-upgrade` 200 is out of scope (not sim-supported).
+
+**Measured this session** (fresh solo-footage readings via the re-validated instrument):
+- **alice**: base 5.6%/shot (`targetPerTrigger` 560). Observed ~20.6-20.75%/shot → multiplier
+  ≈3.68x, a 5% match to the predicted 3.5x, clearly excluding flat 2.5x (would predict 14.0%/shot,
+  47% below observed).
+- **scarlet-black-shadow**: base 2.5%/shot (`targetPerTrigger` 250). Observed modal delta
+  3.5-3.6%/shot → multiplier ≈1.42x, a 5% match to the predicted 1.5x, excluding flat 2.5x (would
+  predict 6.25%/shot, 76% above observed).
+- **cinderella** (RL, whole-magazine dump-fire kit, `charFixes.magDumpRof`): attempted, inconclusive
+  (~2.6-3.1x — her dump-fire cadence aliases against the 0.2s CV sampling). Her own rough read
+  contradicts BOTH her table value (2.0x) and a 1.0x exemption hypothesis, leaning closer to the
+  CURRENT flat 2.5x.
+
+**Decision, split by unit** (full harness record: `docs/handoffs/scientific-method-harness.md`
+2026-07-29 entry) — full `/scientific-method` pipeline: premise gate, Fable pre-op
+APPROVED-WITH-REVISIONS, work, driver review, three rounds of blind Fable post-op (each round
+triggered by new reuse-before-derive evidence, never by the driver invalidating the judge's
+blindness):
+
+- **scarlet-black-shadow: IMPLEMENT** (2-of-2 HIGH+HIGH). Confirmed at TWO independent measured
+  levels: the solo per-shot rate above, AND a team FB count — `scan.ts` on the existing
+  `docs/probes/720-kit-audit/scarlet black shadow.MP4` control-comp recording reads **11 full
+  bursts, 11/11 corroborated**, which only the per-unit model's 11-12-seed distribution can
+  produce (the old flat-2.5x model rigidly seeded 12/25 every time — the real footage contradicts
+  it outright).
+- **alice: LOG, not enacted.** Pinned to the flat constant (`PENDING_TEAM_ISOLATION` in
+  `gaugePerShot`, same mechanism as cinderella's carve-out) pending an isolating team-context
+  measurement. A fresh owner-supplied alice-focused team recording (`docs/probes/burst tests/alice
+  focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full bursts, 10/10
+  corroborated** — inside BOTH the pre-fix (rigid 25/25-at-10) and post-fix (7/25-at-10,
+  18/25-at-11) distributions, landing as the post-fix model's minority (28%) outcome rather than
+  confirming it. Ruled a non-isolating, downstream observable (FB count convolves alice's rate with
+  red-hood's flex-burst behavior, chain selection, and the other units') that cannot move a
+  directly-measured constant in either direction on a single categorical draw — her solo per-shot
+  measurement (5% match to the datamine, clearly excluding 2.5x) stands un-enacted-but-un-refuted.
+  Owner action item + isolating-measurement follow-up: `docs/handoffs/QUEUE.md`.
+- **cinderella: no change**, current flat-2.5x behavior preserved via the `magDumpRof` pin. Own
+  dedicated investigation filed: `docs/handoffs/QUEUE.md`.
+
+**Engine:** `src/engine/sim.ts` `gaugePerShot()` — per-unit `(fcb && fcb > 0 ? fcb : 250) / 100`
+read, `?? 250`-equivalent fallback verified safe (of 38 SR/RL units with no `gauge-per-shot.json`
+row, only `laplace-ultimate-hero` is currently sim-supported, and she falls through to 250 =
+pre-change behavior). `verify.sh` green; `control-regression-snapshot.json` updated (the only
+behavioral delta in that suite is scarlet-black-shadow's own comp — crown/helm moved as an
+explained second-order rotation ripple from her teammate's changed timing, not a fit signal;
+helm's ratio moved the most, 1.077→1.018, one of her 4 control readings — a future helm tune
+should know that move traces to SBS's rotation, not her own kit).
+
+**Step 7 implementation review (2026-07-29, same date):** found and fixed two real gaps before
+merge — (1) `vesti-tactical-upgrade` (RL, `fullChargeBonus` 200) was a 4th non-250 outlier the
+original evidence never covered and was NOT pinned, so she'd have silently enacted an unmeasured
+2.0x the moment she gets a sim override; now explicitly added to `PENDING_TEAM_ISOLATION`.
+(2) the `?? 250` fallback only guarded `null`/`undefined`, not a present-but-zero
+`fullChargeBonus` (71/115 rows use 0 as their non-charge marker, and a live data disagreement —
+`raven`: gauge row 250 vs `characters.json` `chargeMultiplier` 0 — makes this reachable); hardened
+to `fcb && fcb > 0`. Both fixes verified zero board movement. Full findings, including a
+same-family unit-identification correction mid-session (prika, not alice, was focused in the
+5-unit "PA MiKa" comp — she's SR, not non-charge as first assumed) and the `gauge-per-shot.json`
+data-quality gap this exposed (6/44 SR/RL rows are synthesized class-modal fills, 4 more units
+have a `characters.json` `chargeMultiplier` with no gauge row at all): `docs/engine-modeling-gaps.md`
+§20, `docs/handoffs/QUEUE.md`.
+
+**Open items:** alice's isolating-measurement follow-up and cinderella's dedicated investigation
+(`docs/handoffs/QUEUE.md`); the `scan-frames.py` module docstring still needs a solo-footage
+correction (deferred, tooling-only, does not gate this landing); the `?? 250` fallback should be
+hardened to a `> 0` check at a future touch (no present row is 0, but nothing prevents one from
+being synced in later).
