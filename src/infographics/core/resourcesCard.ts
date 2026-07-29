@@ -154,7 +154,7 @@ export function buildResourcesCard(
 ): ResourcesCardData {
   return {
     title: 'Resource Calculator',
-    subtitle: `Tier ${tier} daily income — every boss family`,
+    subtitle: `Tier ${tier} daily income`,
     sections: BOSS_TABLES.map((table) => buildSection(table, tier, icons)),
     footer: 'nikkesim.app/resources',
   };
@@ -168,7 +168,12 @@ export function buildResourcesCard(
 export const RESOURCES_CARD_W = 940;
 const PAD_X = 32;
 const HEAD_H = 96; // icon + title + subtitle band, matches tableCard's HEAD_H
-const ICON = 32; // site icon square, drawn beside the title
+// The site icon is sized and aligned to the TITLE LINE only (24px, its font
+// size), bottom-edge on the title's baseline — "in line with the title bar",
+// not the bigger, lower-slung 32px mark other cards use beside a title block
+// that also carries a subtitle underneath.
+const TITLE_FONT_SIZE = 24;
+const ICON = TITLE_FONT_SIZE;
 const FOOT_H = 40;
 
 const SECTION_TOP_GAP = 20; // space above a section's heading
@@ -196,7 +201,7 @@ export function resourcesCardHeight(sectionCount: number): number {
 // TABLE_TITLE_INK_REGION comment) — starts at the title's textX, past the icon.
 export const RESOURCES_TITLE_ICON = {
   x: PAD_X,
-  y: 44 - ICON + 4,
+  y: 44 - ICON, // bottom edge sits on the title's baseline (y=44)
   size: ICON,
 } as const;
 export const RESOURCES_TITLE_INK_REGION = {
@@ -310,7 +315,7 @@ export function drawResourcesCard(
     textX = PAD_X + ICON + 12;
   }
   ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 24px ${FONT}`;
+  ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
   ctx.fillText(data.title, textX, 44);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
