@@ -73,6 +73,7 @@ import type {
 } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
 import { copyTableCardImage, loadOlDefaultTable } from './tableShare';
+import { copyTextToClipboard } from './clipboard';
 import {
   buildChargeTable,
   buildAmmoTable,
@@ -1430,33 +1431,6 @@ function CharSearch({
       )}
     </div>
   );
-}
-
-// Copy text to the clipboard, returning whether it worked. Tries the modern
-// async API first, then falls back to the legacy execCommand path (which still
-// works in insecure contexts where navigator.clipboard is blocked) — so the old
-// window.prompt("Copy this link:") dialog is no longer needed as a fallback.
-async function copyTextToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    /* fall through to the legacy path */
-  }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
 }
 
 export function App({ user }: { user: AuthUser | null }) {
@@ -5420,7 +5394,7 @@ export function App({ user }: { user: AuthUser | null }) {
                       };
                     })}
                     onShareImage={() =>
-                      void copyDpsChartImage({
+                      copyDpsChartImage({
                         title: 'Unit Comparison — variable groups',
                         // synthetic comparison, not a ranked population: no
                         // window — every row renders; topDps = the top group.

@@ -2,6 +2,7 @@
 // full-matrix section, over the precomputed artifact. A single compare-unit selector
 // annotates every visible chart with that B3's rank. Per-chart share (link + image).
 import { useEffect, useState } from 'react';
+import { copyTextToClipboard } from './clipboard';
 import { DpsBarChart } from './components/DpsBarChart';
 import { MatrixFilter } from './components/MatrixFilter';
 import { PillGrid } from './components/PillGrid';
@@ -122,6 +123,11 @@ export function DpsChartTab() {
   const [fwMode, setFwMode] = useState<FwMode>(
     params.get('fw') === 'team' ? 'team' : 'solo'
   );
+  // "Copied"/"Saved" flash for the standalone Share Comparison chip (it isn't
+  // routed through DpsBarChart, so it tracks its own copy state)
+  const [cmpImgFlash, setCmpImgFlash] = useState<'copied' | 'downloaded' | null>(
+    null
+  );
   // Multi-unit comparison selection (slugs) for the full-matrix chart — the
   // same picks drive the "Share comparison" card (subset of the population,
   // no §6.6 window; mirrors the API's ?units= dps.png variant).
@@ -171,7 +177,7 @@ export function DpsChartTab() {
 
   const units = allUnits(art);
 
-  const shareLink = (c: Cell) => {
+  const shareLink = (c: Cell): Promise<boolean> => {
     const u = new URL(window.location.href);
     u.searchParams.set('chart', cellId(c));
     if (compareSlug) {
@@ -189,7 +195,7 @@ export function DpsChartTab() {
     } else {
       u.searchParams.delete('fw');
     }
-    void navigator.clipboard?.writeText(u.toString());
+    return copyTextToClipboard(u.toString());
   };
 
   const renderChart = (c: Cell, pageTitle: string, pageSubtitle?: string) => {
@@ -209,7 +215,7 @@ export function DpsChartTab() {
         compare={cmp}
         onShareLink={() => shareLink(c)}
         onShareImage={() =>
-          void copyDpsChartImage(toChartData(shareTitle, population, cmp))
+          copyDpsChartImage(toChartData(shareTitle, population, cmp))
         }
       />
     );
@@ -396,11 +402,13 @@ export function DpsChartTab() {
                 </div>
                 <div className="dpschart-compare-actions">
                   <button
-                    className="chip"
+                    className={
+                      'chip' + (cmpImgFlash ? ' copied' : '')
+                    }
                     disabled={picked.length === 0}
                     title="Copy the comparison card as a PNG"
-                    onClick={() =>
-                      void copyDpsChartImage(
+                    onClick={async () => {
+                      const result = await copyDpsChartImage(
                         toComparisonChartData(
                           eleFilter
                             ? `${cellLabel(cell)} · ${eleFilter} only`
@@ -408,10 +416,19 @@ export function DpsChartTab() {
                           population,
                           picked
                         )
-                      )
-                    }
+                      );
+                      if (result === 'unsupported') {
+                        return;
+                      }
+                      setCmpImgFlash(result);
+                      setTimeout(() => setCmpImgFlash(null), 1500);
+                    }}
                   >
-                    🖼 Share comparison
+                    {cmpImgFlash === 'copied'
+                      ? '✓ Copied'
+                      : cmpImgFlash === 'downloaded'
+                        ? '⬇ Saved'
+                        : '🖼 Share comparison'}
                   </button>
                   {cmpUnits.length > 0 && (
                     <button className="chip" onClick={() => setCmpUnits([])}>

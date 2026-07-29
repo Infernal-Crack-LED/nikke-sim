@@ -878,6 +878,14 @@ input.num {
   color: var(--muted);
   border-style: dashed;
 }
+/* "Copied"/"Saved" flash on a share chip — same accent-fill treatment as
+   .share-btn.copied, scaled down to the chip's pill shape */
+.chip.copied {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1220;
+  font-weight: 600;
+}
 .calc-run {
   margin: 14px 0;
   background: var(--accent);
