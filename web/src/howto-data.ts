@@ -116,7 +116,7 @@ export const sections: HowToSection[] = [
       },
       {
         term: 'Resource Calculator',
-        def: 'Expected daily income from Anomaly Interception — custom modules, fragments, locks and T10 gear — by boss and tier.',
+        def: 'Expected daily income from Anomaly Interception — custom modules, fragments, locks and T9 gear — by boss and tier.',
       },
     ],
   },

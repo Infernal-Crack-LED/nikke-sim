@@ -54,6 +54,12 @@ export interface CharacterData {
   hitsPerShot: number; // hits per trigger pull (for hit-count skill triggers)
   rl3: number | null; // burst gen: % of gauge generated per 3 seconds
   burstGaugePerShot: number | null;
+  // Global release date, `YYYY-MM-DD`, from the DB attributes blob. DISPLAY-ONLY — nothing in the
+  // engine reads it; it exists for the unit-card infographic's title bar. Nullable and OPTIONAL:
+  // upstream carries it for 194/196 rows (missing on laplace-ultimate-hero + anne-miracle-fairy,
+  // the two units whose `attributes` blob isn't curated yet), and a card must draw an absent-state
+  // rather than assume it. See docs/handoffs/2026-07-28-unit-card-infographic-plan.md §5a.
+  releaseDate?: string | null;
   treasure: boolean; // has a Treasure (favorite item); DB favorite_item_id or prydwen_slug -treasure
   // Support tags (sync.ts second stage). Independent — a unit can be one, both, or
   // neither. Neither = "unsupported": pulled in for Team Builder browsing only, never
@@ -95,6 +101,53 @@ export interface LevelMultiplier {
 export interface DataFile {
   syncedAt: string;
   characters: Record<string, CharacterData & { baseStats: BaseStats | null }>;
+}
+
+// ---- Tsareena community build sheet (data/tsareena-build.json) ----
+//
+// Editorial build guidance sourced from the community-maintained "Tsareena" spreadsheet, mirrored
+// into bakery-bot's DB as nikke_characters.sheet_data and written here by src/data/sync.ts.
+//
+// DELIBERATELY A SEPARATE ARTIFACT FROM characters.json. characters.json is the sim's deterministic
+// input — the engine, the regression snapshots and every build script consume it, so it must not
+// churn on an editorial sheet edit. This is display-only prose on a different update cadence with a
+// different provenance tier (community opinion, NOT datamined or measured), and nothing in the
+// engine may read it. It feeds the unit-card infographic's notes panel.
+//
+// COVERAGE IS PARTIAL BY NATURE: 88 of 196 upstream rows carry sheet_data (measured 2026-07-28), so
+// a consumer MUST draw an absent-state for a slug with no entry rather than assume one exists.
+// Every field is nullable for the same reason. See the plan's §5b.
+export interface TsareenaBuild {
+  // "Highest Priority" / "PvE Low Priority" / "PvP Medium Priority" / … — free-form upstream string,
+  // deliberately not narrowed to a union: the sheet's authors add categories without notice.
+  priority: string | null;
+  // Single-letter sheet markers, observed set C | L | T. May be an empty array.
+  annotations: string[];
+  build: {
+    // Present on all 88 rows upstream, but still typed nullable — the sheet is hand-maintained and
+    // a future row may omit any of them.
+    skillLevels: string | null; // "10/10/10", "7+/7+/10"
+    cube: string | null; // "Bastion · Resilience · Adjutant · Quantum"
+    overloadMinimum: string | null; // "2x Element · 2x Attack"
+    // Tsareena's EDITORIAL overload recommendation. Editorially distinct from data/ol-optimal.json,
+    // which is OUR sim-computed damage-optimal 12/12 — a card showing both must label them as
+    // different things (plan §5b).
+    overloadIdeal: string | null;
+    overloadGear: string | null; // "Yes" / "No" / "Yes (Low Prio)"
+    overloadLevelFive: string | null;
+    levelDoll: string | null;
+    endgameUses: string | null; // "Story · Solo Raid · Union Raid · Pilgrim Tower · PvP"
+    burstGen: string | null; // "Auto: Low Manual: High" / "N/A"
+    // Sparse upstream: pairWith 20/88, notes 37/88 (measured 2026-07-28).
+    pairWith: string | null;
+    notes: string | null;
+  };
+}
+
+export interface TsareenaBuildFile {
+  syncedAt: string;
+  source: string;
+  units: Record<string, TsareenaBuild>;
 }
 
 // ---- structured event log (test instrumentation) ----

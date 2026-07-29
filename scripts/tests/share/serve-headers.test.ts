@@ -38,7 +38,11 @@ beforeAll(async () => {
   put('ol-default.json', '{}');
   put('img/manifest.json', '{}');
   put('img/dps/solo.eleweak.c100.8of12.all.deadbeef.png', 'png');
-  put('img/unit/liter.0123abcd.png', 'png');
+  // Unit cards are the only WEBP in the hashed set (build-infographics emits
+  // unit/<slug>.<variant> at ext webp, every other card at png) — pinned in both
+  // shapes so the extension-anchored matcher can't lose one.
+  put('img/unit/liter.discord.0123abcd.webp', 'webp');
+  put('img/unit/liter.twitter.0123abcd.webp', 'webp');
   put('img/portraits/liter-128.webp', 'webp');
   put('fonts/Roboto-Regular.woff2', 'font');
 
@@ -74,7 +78,12 @@ describe('serve.mjs cache-control classes', () => {
     expect(
       await cacheOf('/img/dps/solo.eleweak.c100.8of12.all.deadbeef.png')
     ).toBe(IMMUTABLE);
-    expect(await cacheOf('/img/unit/liter.0123abcd.png')).toBe(IMMUTABLE);
+    expect(await cacheOf('/img/unit/liter.discord.0123abcd.webp')).toBe(
+      IMMUTABLE
+    );
+    expect(await cacheOf('/img/unit/liter.twitter.0123abcd.webp')).toBe(
+      IMMUTABLE
+    );
     expect(await cacheOf('/fonts/Roboto-Regular.woff2')).toBe(IMMUTABLE);
   });
 
@@ -140,8 +149,12 @@ describe('serve.mjs cache-control classes', () => {
     expect(html).toContain('NIKKE DPS Rankings'); // injected tab title
   });
 
-  it('serves hashed PNGs with the right MIME', async () => {
-    const res = await fetch(`${base}/img/unit/liter.0123abcd.png`);
-    expect(res.headers.get('content-type')).toBe('image/png');
+  it('serves hashed images with the right MIME', async () => {
+    const png = await fetch(
+      `${base}/img/dps/solo.eleweak.c100.8of12.all.deadbeef.png`
+    );
+    expect(png.headers.get('content-type')).toBe('image/png');
+    const webp = await fetch(`${base}/img/unit/liter.discord.0123abcd.webp`);
+    expect(webp.headers.get('content-type')).toBe('image/webp');
   });
 });

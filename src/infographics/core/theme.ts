@@ -27,6 +27,30 @@ export const TEXT_PRIMARY = '#e7eaf0';
 export const TEXT_SECONDARY = '#8b93a3';
 export const TEXT_DIM = '#5b6472';
 
+// WarcraftLogs-inspired rank palette (owner-corrected 2026-07-28).
+//
+// ⚠ SCOPE: the rank NUMERAL in the unit card's ranking tiles, and nothing else
+// (ruling 12). BARS are coloured by ELEMENT — ELEMENT_COLORS above, matching
+// RankBarChart.tsx:79 / DpsBarChart.tsx:101 — so the two colour systems live on
+// different elements of the card and never touch. This is also why the old
+// rank-blue (#0070ff) vs Water (#0075f8) collision worry is retired: they can
+// co-occur on one card but never on the same mark.
+export const RANK_COLORS: { max: number; color: string }[] = [
+  { max: 1, color: '#e5cc80' }, // gold
+  { max: 5, color: '#e268a8' }, // pink
+  { max: 10, color: '#ff8000' }, // orange
+  { max: 20, color: '#a335ee' }, // purple
+  { max: Infinity, color: '#0070ff' }, // blue
+];
+
+// Rank → numeral colour. An UNRANKED tile (null) is deliberately not in the
+// palette: it draws in TEXT_DIM, so "no data" can never be mistaken for a
+// legitimate placement.
+export const rankColor = (rank: number | null): string =>
+  rank == null
+    ? TEXT_DIM
+    : (RANK_COLORS.find((b) => rank <= b.max)?.color ?? TEXT_DIM);
+
 // The non-optional mark. Present on every rendered image, exactly once.
 export const WATERMARK = 'nikkesim.app';
 

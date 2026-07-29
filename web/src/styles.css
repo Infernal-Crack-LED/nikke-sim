@@ -416,6 +416,11 @@ header h1 {
   padding: 2px 9px;
   font-size: 12px;
 }
+/* SR/UR quick-fill pills under a Boss DEF input (Team Sim field + the
+   Union Raid per-team rows) — a little breathing room above the input */
+.boss-def-pills {
+  margin-top: 6px;
+}
 .gen-options-pills {
   margin: 8px 0;
 }
@@ -872,6 +877,14 @@ input.num {
 .chip.clear {
   color: var(--muted);
   border-style: dashed;
+}
+/* "Copied"/"Saved" flash on a share chip — same accent-fill treatment as
+   .share-btn.copied, scaled down to the chip's pill shape */
+.chip.copied {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1220;
+  font-weight: 600;
 }
 .calc-run {
   margin: 14px 0;
@@ -2182,7 +2195,7 @@ footer {
 }
 .dpschart-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 .dpschart-grid.one {
@@ -2459,6 +2472,21 @@ footer {
   font-weight: 600;
   white-space: nowrap;
   vertical-align: 1px;
+}
+
+/* DPS chart name column: name truncates to make room for its pill, the pill
+   itself never shrinks (the row's own grid track is sized to the chart's
+   longest bare name — see DpsBarChart's inline gridTemplateColumns). */
+.dpschart-name-row {
+  flex-direction: row;
+  align-items: center;
+}
+.dpschart-name-row .dpschart-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dpschart-name-row .ranks-badge {
+  flex-shrink: 0;
 }
 .ranks-cond {
   margin-left: 2px;
@@ -2772,6 +2800,16 @@ footer {
   justify-content: center;
   gap: 12px;
   width: 100%;
+}
+/* Team Builder page only (not the modal, which already has its own sticky
+   .teambuilder-actions bar): float the slots over the grid on scroll, same
+   sticky-to-top-of-scrollport technique as .modal-wide .teambuilder-actions. */
+.teambuilder-team-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--bg);
+  padding: 10px 0;
 }
 /* direct child = the 5-slot strip (team mode), which gets the wide chips; the
    expanded 5×5 nests .roster-input rows instead, so those slots fall through
@@ -3138,6 +3176,11 @@ footer {
 }
 .teambuilder-card.unsupported:hover {
   opacity: 0.85;
+}
+/* being dragged up toward a team slot — same treatment as .card.dragging */
+.teambuilder-card.dragging {
+  opacity: 0.55;
+  outline: 2px dashed var(--accent);
 }
 .teambuilder-card:disabled {
   cursor: default;
@@ -3712,10 +3755,25 @@ footer {
   margin-bottom: 6px;
 }
 .res-stat-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 22px;
   font-weight: 700;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
+}
+/* the resource's in-game icon, sized to the value's cap height so the number
+   still leads the tile. Fixed box (never shrinks in the flex row) and
+   letterboxed square by useIconThumbs, so mixed-aspect sources still line up
+   column to column. Keep in sync with RES_ICON_PX in ResourcesPage.tsx — that
+   constant is what the thumbnails are rasterized at. */
+.res-stat-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+  user-select: none;
 }
 .res-stat-sub {
   font-size: 12px;
@@ -3768,6 +3826,10 @@ footer {
   }
   .res-stat-value {
     font-size: 19px;
+  }
+  .res-stat-icon {
+    width: 22px;
+    height: 22px;
   }
 }
 

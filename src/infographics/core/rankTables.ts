@@ -17,7 +17,10 @@ import type {
 export type BufferBoardId = 'generic' | 'typed';
 
 // K/M/B magnitude formatting, same shape as SupportRankings.tsx's fmt.
-const fmt = (n: number): string =>
+// Exported so the unit card formats sustain magnitudes identically to the board
+// it is quoting — a card that disagrees with the site it advertises is worse
+// than one with no number at all.
+export const fmtMagnitude = (n: number): string =>
   n >= 1e9
     ? `${(n / 1e9).toFixed(2)}B`
     : n >= 1e6
@@ -28,6 +31,10 @@ const fmt = (n: number): string =>
 
 // Comp-profile chip labels — ported from SupportRankings.tsx PROFILE_LABELS
 // (keep in sync; tooltip text stays on the site, the card needs the short tag).
+// The "with-*" entries are team-composition tags (the fallback below reads them
+// as "w/ X"); the DPS chart's variant profiles (src/dpschart/matrix.ts
+// CHART_VARIANTS) are a per-unit BUILD/rotation choice, not a teammate, so they
+// need an explicit short label here rather than falling through to "w/ <id>".
 const PROFILE_LABELS: Record<string, string> = {
   'with-2mg': 'w/ 2 MG',
   'with-1mg': 'w/ 1 MG',
@@ -36,8 +43,14 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  snipe: 'SR',
+  distributed: 'Distributed',
+  'bursts-second': 'Bursts Second',
 };
-function profileLabel(id: string): string {
+// Exported for the unit card's profile chips (plan §8a: reuse this rather than
+// re-deriving the chip text — two spellings of "w/ Healer" on one page is the
+// failure mode).
+export function profileLabel(id: string): string {
   if (PROFILE_LABELS[id]) {
     return PROFILE_LABELS[id];
   }
@@ -47,7 +60,10 @@ function profileLabel(id: string): string {
   const rest = id.startsWith('with-') ? id.slice(5) : id;
   return `w/ ${rest.replace(/-/g, ' ')}`;
 }
-const unitName = (
+// Exported for the DPS chart's bar-chart renderer (dpsChart.ts DpsBar.name has
+// no separate chip field — unlike the table cards, the tag has to be baked into
+// the drawn name string itself), so it can't drift from this same template.
+export const unitName = (
   units: Record<string, { name: string }>,
   slug: string,
   profile: string | null
@@ -109,7 +125,7 @@ export function buildSustainTable(art: SustainArtifact): TableCardData {
     rows: art.entries.map(([slug, totalHp, totalPct, , , , p], i) => [
       `#${i + 1}`,
       unitName(art.units, slug, p),
-      fmt(totalHp),
+      fmtMagnitude(totalHp),
       `${totalPct.toFixed(0)}%`,
     ]),
     window: {},

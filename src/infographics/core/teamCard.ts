@@ -523,3 +523,112 @@ export function drawRosterCard(
     'nikke-sim · expected-value crits · always in range · 0 enemy debuffs'
   );
 }
+
+// ---------------------------------------------------------------------------
+// Roster COMPOSITION card — the no-sim-behind-it variant of drawRosterCard,
+// for a roster build code rendered without a results snapshot. Mirrors
+// drawTeamCompositionCard's reasoning: show what was PICKED (teams +
+// portraits + per-team boss labels), never a zeroed damage bar or a "0 total
+// damage across all N teams" headline (owner ruling 2026-07-28, extended to
+// the roster card).
+// ---------------------------------------------------------------------------
+export interface RosterCompositionTeam {
+  units: RosterCardUnit[];
+  bossLabel?: string;
+}
+export interface RosterCompositionData {
+  teams: RosterCompositionTeam[];
+  title?: string;
+}
+
+const RC_HEAD_H = 118;
+
+export const rosterCompositionCardHeight = (teamCount: number) =>
+  RC_HEAD_H + teamCount * R_ROW_H + R_FOOT_H;
+
+export function drawRosterCompositionCard(
+  ctx: Canvas2DLike,
+  data: RosterCompositionData,
+  meta: TeamCardMeta
+): void {
+  const W = CARD_W;
+  const padX = PAD_X;
+  const H = rosterCompositionCardHeight(data.teams.length);
+  const hasBossLabels = data.teams.some((t) => t.bossLabel);
+
+  ctx.fillStyle = '#101216';
+  ctx.fillRect(0, 0, W, H);
+  ctx.fillStyle = '#5b9dff';
+  ctx.fillRect(0, 0, W, 5);
+
+  ctx.textBaseline = 'alphabetic';
+  ctx.textAlign = 'left';
+  let textX = padX;
+  if (meta.icon) {
+    ctx.drawImage(meta.icon, padX, 56 - ICON + 4, ICON, ICON);
+    textX = padX + ICON + 12;
+  }
+  ctx.fillStyle = '#e7eaf0';
+  ctx.font = `700 30px ${FONT}`;
+  ctx.fillText(
+    data.title ?? 'NIKKE Solo Raid Sim · Roster Generator',
+    textX,
+    56
+  );
+  ctx.fillStyle = '#8b93a3';
+  ctx.font = `400 18px ${FONT}`;
+  ctx.fillText(
+    hasBossLabels
+      ? `${data.teams.length} teams  ·  lvl ${meta.level}`
+      : `${data.teams.length} teams  ·  ${
+          meta.weakness ? `${meta.weakness}-weak boss` : 'no element'
+        }  ·  lvl ${meta.level}  ·  ${meta.coreLabel}`,
+    padX,
+    94
+  );
+
+  // one row per team: just the portraits + the team/boss label, no bar
+  data.teams.forEach((t, i) => {
+    const y = RC_HEAD_H + i * R_ROW_H;
+    const py = y + (R_ROW_H - R_PS) / 2;
+    t.units.forEach((u, j) => {
+      const px = padX + j * (R_PS + R_GAP);
+      const col = ELEMENT_COLORS[u.element] ?? '#9aa3b2';
+      if (u.img) {
+        ctx.save();
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.clip();
+        ctx.fillStyle = '#1f232d';
+        ctx.fillRect(px, py, R_PS, R_PS);
+        ctx.drawImage(u.img, px, py, R_PS, R_PS);
+        ctx.restore();
+      } else {
+        ctx.fillStyle = '#1f232d';
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.fill();
+        ctx.fillStyle = col;
+        roundRect(ctx, px, py, R_PS, R_PS, 9);
+        ctx.globalAlpha = 0.22;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = col;
+        ctx.font = `700 24px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.fillText(
+          (u.name[0] ?? '?').toUpperCase(),
+          px + R_PS / 2,
+          py + R_PS / 2 + 8
+        );
+        ctx.textAlign = 'left';
+      }
+    });
+    ctx.fillStyle = '#8b93a3';
+    ctx.font = `600 13px ${FONT}`;
+    const label = t.bossLabel
+      ? `team ${i + 1}  ·  ${t.bossLabel}`
+      : `team ${i + 1}`;
+    ctx.fillText(label, padX, py - 6);
+  });
+
+  drawWatermark(ctx, padX, H - 22, 13, meta.footer, 'nikke-sim');
+}

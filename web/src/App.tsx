@@ -73,12 +73,14 @@ import type {
 } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
 import { copyTableCardImage, loadOlDefaultTable } from './tableShare';
+import { copyTextToClipboard } from './clipboard';
 import {
   buildChargeTable,
   buildAmmoTable,
 } from '../../src/infographics/core/tableData';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { TabDropdown, useMediaQuery } from './TabDropdown';
+import { CopyFlashButton, type CopyResult } from './components/CopyFlashButton';
 import { usePortraitThumbs } from './usePortraitThumbs';
 import {
   shareTeamCard,
@@ -571,6 +573,40 @@ const BOSS_RANGE_OPTIONS: { id: BossRange | null; label: string }[] = [
   { id: 'far', label: 'Very far' },
 ];
 
+// Base boss DEF for the two raid types — quick-fill pills sit beside every
+// Boss DEF field so a raid's known base value is one click away instead of a
+// hand-typed guess.
+const SR_DEFAULT_DEF = 30930; // Solo Raid base boss DEF (30.93k)
+const UR_DEFAULT_DEF = 12200; // Union Raid base boss DEF (12.2k)
+function BossDefPresetPills({
+  value,
+  onSet,
+}: {
+  value: string;
+  onSet: (v: string) => void;
+}) {
+  return (
+    <div className="pills small boss-def-pills">
+      <button
+        type="button"
+        className={Number(value) === SR_DEFAULT_DEF ? 'on' : ''}
+        onClick={() => onSet(String(SR_DEFAULT_DEF))}
+        title="Solo Raid base boss DEF (30.93k)"
+      >
+        SR
+      </button>
+      <button
+        type="button"
+        className={Number(value) === UR_DEFAULT_DEF ? 'on' : ''}
+        onClick={() => onSet(String(UR_DEFAULT_DEF))}
+        title="Union Raid base boss DEF (12.2k)"
+      >
+        UR
+      </button>
+    </div>
+  );
+}
+
 // Per-team boss options for Union Raid (each of the 3 teams fights a different boss)
 interface UnionBossOpts {
   weakness: Element | null;
@@ -582,7 +618,7 @@ interface UnionBossOpts {
 }
 const defaultUnionBossOpts = (): UnionBossOpts => ({
   weakness: null,
-  bossDef: '0',
+  bossDef: String(UR_DEFAULT_DEF),
   core: 0,
   coreCustom: false,
   coreCustomVal: '10',
@@ -1398,33 +1434,6 @@ function CharSearch({
   );
 }
 
-// Copy text to the clipboard, returning whether it worked. Tries the modern
-// async API first, then falls back to the legacy execCommand path (which still
-// works in insecure contexts where navigator.clipboard is blocked) — so the old
-// window.prompt("Copy this link:") dialog is no longer needed as a fallback.
-async function copyTextToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    /* fall through to the legacy path */
-  }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
 export function App({ user }: { user: AuthUser | null }) {
   // a full ?b= build (team + loadout + globals) prefills everything and wins
   // over ?team= / localStorage; computed once on mount
@@ -1447,7 +1456,11 @@ export function App({ user }: { user: AuthUser | null }) {
   const [weakness, setWeakness] = useState<Element | null>(
     boot ? coerceWeakness(boot.g.weakness) : null
   );
-  const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
+  const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '1');
+  // Whether the user has ever hand-edited Boss DEF (vs. it still sitting at the
+  // untouched default) — read by the effect below that upgrades it to the Solo
+  // Raid base value the first time a Solo Raid roster view is opened.
+  const bossDefTouched = useRef(!!boot?.g.bossDef);
   const [bossRange, setBossRange] = useState<BossRange | null>(() => {
     const fromBuild = (boot?.g.bossRange as BossRange | null) ?? null;
     if (fromBuild) {
@@ -1681,6 +1694,22 @@ export function App({ user }: { user: AuthUser | null }) {
   // Roster Generator mode pill: Solo Raid (top 5) vs Union Raid (3 teams,
   // each with its own boss options).
   const [rosterGenMode, setRosterGenMode] = useState<'solo' | 'union'>('solo');
+  // Boss DEF is shared with Team Sim (Solo Raid roster search/sim runs off the
+  // same calcCfg()). The first time the user opens a Solo Raid roster view
+  // with an untouched field, upgrade it from the neutral Team Sim default (1)
+  // to the Solo Raid base value — but only once, and never after a manual
+  // edit, so it doesn't fight a value the user actually typed.
+  useEffect(() => {
+    if (bossDefTouched.current) {
+      return;
+    }
+    if (
+      (tab === 'rostersim' && rosterSimMode === 'solo') ||
+      (tab === 'roster' && rosterGenMode === 'solo')
+    ) {
+      setBossDef(String(SR_DEFAULT_DEF));
+    }
+  }, [tab, rosterSimMode, rosterGenMode]);
   const [unionGenBossOpts, setUnionGenBossOpts] = useState<UnionBossOpts[]>(
     Array.from({ length: 3 }, defaultUnionBossOpts)
   );
@@ -2396,6 +2425,22 @@ export function App({ user }: { user: AuthUser | null }) {
     return () => {
       live = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // `?b=` can carry a roster grid too (Build.roster), but bootBuild() only
+  // ever seeded the shared loadout/globals into `slots`/`weakness`/`bossDef`/
+  // … — the roster grid itself was, until now, only ever restored via `?id=`
+  // (applySavedBuild above). Re-applying the (identical) globals here is a
+  // harmless no-op render; the roster branch is what actually fixes the deep
+  // link. Runs once on mount, no network needed (the build is already local).
+  const bootedRoster = useRef(false);
+  useEffect(() => {
+    if (!boot?.roster || bootedRoster.current) {
+      return;
+    }
+    bootedRoster.current = true;
+    applySavedBuild(boot, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -4311,6 +4356,10 @@ export function App({ user }: { user: AuthUser | null }) {
           value={o.bossDef}
           onChange={(e) => setOpt({ bossDef: e.target.value })}
         />
+        <BossDefPresetPills
+          value={o.bossDef}
+          onSet={(v) => setOpt({ bossDef: v })}
+        />
       </div>
       <div className="union-boss-row">
         <span className="union-boss-label">Boss range</span>
@@ -5350,19 +5399,22 @@ export function App({ user }: { user: AuthUser | null }) {
                       const element =
                         data.characters[res.varUnits[0]?.slug ?? '']?.element ??
                         '';
+                      const name = res.varUnits.map((u) => u.name).join(' + ');
                       return {
                         slug: String(i),
-                        name: res.varUnits.map((u) => u.name).join(' + '),
+                        name,
+                        displayName: name,
                         element,
                         elements: element ? [element] : [],
                         weapon: '',
                         tier: '',
                         dps: res.varDamage,
                         rank: i + 1,
+                        profile: null,
                       };
                     })}
                     onShareImage={() =>
-                      void copyDpsChartImage({
+                      copyDpsChartImage({
                         title: 'Unit Comparison — variable groups',
                         // synthetic comparison, not a ranked population: no
                         // window — every row renders; topDps = the top group.
@@ -5475,7 +5527,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // column takes the SAME chargeLatency the panel above uses (0 for
       // autofire units), so the image can't contradict the table it was
       // copied from.
-      const onBpShareImage = async () => {
+      const onBpShareImage = async (): Promise<CopyResult> => {
         let card: TableCardData;
         let slug: string | null;
         if (bpView === 'charge') {
@@ -5487,7 +5539,7 @@ export function App({ user }: { user: AuthUser | null }) {
           slug = chargeChar;
         } else {
           if (!amc) {
-            return;
+            return 'unsupported';
           }
           card = buildAmmoTable(ammoBase, amc.name);
           slug = ammoChar;
@@ -5496,7 +5548,7 @@ export function App({ user }: { user: AuthUser | null }) {
         if (url) {
           card.portrait = (await loadPortrait(url)) ?? undefined;
         }
-        await copyTableCardImage(
+        return copyTableCardImage(
           card,
           `nikke-${bpView === 'charge' ? 'charge-speed' : 'max-ammo'}.png`
         );
@@ -5771,18 +5823,16 @@ export function App({ user }: { user: AuthUser | null }) {
                 ))}
               </select>
             </label>
-            <button
-              className="share-btn"
-              onClick={() => void onBpShareImage()}
+            <CopyFlashButton
+              label="🖼 Copy image"
+              onCopy={onBpShareImage}
               disabled={bpView === 'ammo' && !amc}
               title={
                 bpView === 'ammo' && !amc
                   ? 'pick a nikke first — the ammo table is per-unit'
                   : 'copy this table as an image'
               }
-            >
-              🖼 Copy image
-            </button>
+            />
           </div>
           {bpView === 'charge' ? chargePanel : ammoPanel}
         </section>
@@ -5833,7 +5883,7 @@ export function App({ user }: { user: AuthUser | null }) {
         carrySlug: string,
         subtitle: string,
         results: OlConfigResult[]
-      ) => {
+      ): Promise<CopyResult> => {
         const carry = data.characters[carrySlug];
         const card: TableCardData = {
           title: `${carry?.name ?? carrySlug} — free OL lines`,
@@ -5858,7 +5908,7 @@ export function App({ user }: { user: AuthUser | null }) {
         if (carry?.imageUrl) {
           card.portrait = (await loadPortrait(carry.imageUrl)) ?? undefined;
         }
-        await copyTableCardImage(card, 'nikke-overload.png');
+        return copyTableCardImage(card, 'nikke-overload.png');
       };
       return (
         <section className="calc-tab">
@@ -5956,19 +6006,17 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     Calculate chance to roll →
                   </button>{' '}
-                  <button
-                    className="share-btn"
+                  <CopyFlashButton
+                    label="🖼 Copy image"
                     title="copy the ranked lines as an image"
-                    onClick={() =>
-                      void onOlShareImage(
+                    onCopy={() =>
+                      onOlShareImage(
                         olMatrixResult.carrySlug,
                         `${cellLabel({ ...olCell, invest: '8of12' })} · 180s`,
                         olMatrixResult.results
                       )
                     }
-                  >
-                    🖼 Copy image
-                  </button>
+                  />
                 </div>
               )}
             </>
@@ -6101,22 +6149,22 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     Calculate chance to roll →
                   </button>{' '}
-                  <button
-                    className="share-btn"
+                  <CopyFlashButton
+                    label="🖼 Copy image"
                     title="copy the ranked lines as an image"
-                    onClick={() =>
-                      olCustomCarry &&
-                      void onOlShareImage(
-                        olCustomCarry,
-                        res.teamSlugs
-                          .map((s) => data.characters[s]?.name ?? s)
-                          .join(' · '),
-                        res.results
-                      )
+                    disabled={!olCustomCarry}
+                    onCopy={() =>
+                      olCustomCarry
+                        ? onOlShareImage(
+                            olCustomCarry,
+                            res.teamSlugs
+                              .map((s) => data.characters[s]?.name ?? s)
+                              .join(' · '),
+                            res.results
+                          )
+                        : 'unsupported'
                     }
-                  >
-                    🖼 Copy image
-                  </button>
+                  />
                 </div>
               ))}
             </>
@@ -6388,17 +6436,15 @@ export function App({ user }: { user: AuthUser | null }) {
           </button>{' '}
           {/* the static default 8/12 roll-cost table — the same card the API
               pre-renders as table/ol */}
-          <button
-            className="share-btn"
+          <CopyFlashButton
+            label="🖼 Copy image"
             title="copy the default 8/12 roll-cost table as an image"
-            onClick={() =>
-              void loadOlDefaultTable().then((card) =>
+            onCopy={() =>
+              loadOlDefaultTable().then((card) =>
                 copyTableCardImage(card, 'nikke-ol-default.png')
               )
             }
-          >
-            🖼 Copy image
-          </button>
+          />
           {olSimResult && resultsBlock(olSimResult)}
         </>
       );
@@ -6496,23 +6542,21 @@ export function App({ user }: { user: AuthUser | null }) {
           >
             {calcBusy ? 'Running…' : 'Run from current'}
           </button>{' '}
-          <button
-            className="share-btn"
+          <CopyFlashButton
+            label="🖼 Share before/after"
             disabled={!olSimCurrentResult}
             title={
               olSimCurrentResult
                 ? 'copy a before/after image of your lines vs the target'
                 : 'run the sim first'
             }
-            onClick={() =>
-              void copyTableCardImage(
+            onCopy={() =>
+              copyTableCardImage(
                 olBeforeAfterTable(),
                 'nikke-ol-before-after.png'
               )
             }
-          >
-            🖼 Share before/after
-          </button>
+          />
           {olSimCurrentResult && resultsBlock(olSimCurrentResult)}
         </>
       );
@@ -6870,7 +6914,7 @@ export function App({ user }: { user: AuthUser | null }) {
           const t = (dp.tier[L]?.[0] ?? 'R') as DollTier;
           rows.push([`${L} → ${L + 1}`, DOLL_TIER_LABEL[t]]);
         }
-        void copyTableCardImage(
+        return copyTableCardImage(
           {
             title: `Doll Leveling — ${rarity} doll ${from}→15`,
             subtitle: `expected kits: ${mc.byTier.R.toFixed(1)} Blue · ${mc.byTier.SR.toFixed(1)} Purple · ${mc.byTier.SSR.toFixed(1)} Gold`,
@@ -6906,13 +6950,11 @@ export function App({ user }: { user: AuthUser | null }) {
           </p>
           {dollBell(mc)}
           <div style={{ marginTop: 10 }}>
-            <button
-              className="share-btn"
+            <CopyFlashButton
+              label="🖼 Copy image"
               title="copy this plan as an image"
-              onClick={() => onDollShareImage(rarity, from, dp, mc)}
-            >
-              🖼 Copy image
-            </button>
+              onCopy={() => onDollShareImage(rarity, from, dp, mc)}
+            />
           </div>
         </div>
       );
@@ -7244,8 +7286,8 @@ export function App({ user }: { user: AuthUser | null }) {
     return null;
   };
 
-  const inTools =
-    (CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim') === 'tools';
+  const tabGroup = CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim';
+  const inTools = tabGroup === 'tools';
   // Per-tab h1 — keyword-rich for SEO; Google weighs <h1> heavily.
   const TAB_H1: Record<string, string> = {
     sim: 'NIKKE Solo Raid Sim',
@@ -7268,8 +7310,12 @@ export function App({ user }: { user: AuthUser | null }) {
           <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
           {/* team share actions act on the hand-built team, so they stay off
               the generator tabs (which have their own result share buttons)
-              and the roster sim (which has its own generate link / copy image) */}
-          {!inTools &&
+              and the roster sim (which has its own generate link / copy image).
+              They are also off the rankings and overload sections (owner call
+              2026-07-28): nothing on those pages is a team, so a header block
+              offering to share/save "this team" only confuses — those pages
+              share through their own in-page Copy image buttons. */}
+          {tabGroup === 'sim' &&
             tab !== 'team' &&
             tab !== 'roster' &&
             tab !== 'rostersim' && (
@@ -7527,7 +7573,17 @@ export function App({ user }: { user: AuthUser | null }) {
                       <input
                         className="num"
                         value={bossDef}
-                        onChange={(e) => setBossDef(e.target.value)}
+                        onChange={(e) => {
+                          bossDefTouched.current = true;
+                          setBossDef(e.target.value);
+                        }}
+                      />
+                      <BossDefPresetPills
+                        value={bossDef}
+                        onSet={(v) => {
+                          bossDefTouched.current = true;
+                          setBossDef(v);
+                        }}
                       />
                     </div>
                     <div className="field">

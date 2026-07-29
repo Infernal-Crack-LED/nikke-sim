@@ -18,10 +18,15 @@ import {
   tableHeight,
   drawTableCard,
   TABLE_W,
+  drawResourcesCard,
+  resourcesCardHeight,
+  RESOURCES_CARD_W,
+  unitName,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
   type TableCardData,
+  type ResourcesCardData,
 } from '../infographics/node/render.js';
 import { cellLabel, parseCellId } from '../dpschart/matrix.js';
 import { ELEMENT_FILTERS } from '../infographics/spec.js';
@@ -44,7 +49,7 @@ export interface DpsUnitMeta {
 export interface DpsArtifact {
   generatedAt: string;
   units: Record<string, DpsUnitMeta>;
-  cells: Record<string, [string, number][]>;
+  cells: Record<string, [string, number, string | null][]>;
 }
 
 // The element filter set both link surfaces expose (web DpsChartTab
@@ -87,7 +92,12 @@ export function dpsChartData(
       }
       return ele ? (u.elements ?? [u.element]).includes(ele) : u.chartPop;
     })
-    .map(([slug, dps]) => ({ slug, dps, meta: art.units[slug] }));
+    .map(([slug, dps, profile]) => ({
+      slug,
+      dps,
+      profile,
+      meta: art.units[slug],
+    }));
   if (population.length === 0) {
     return { error: `no units in cell '${params.cell}' for that element` };
   }
@@ -130,7 +140,7 @@ export function dpsChartData(
         : undefined,
     topDps,
     bars: bars.map((p) => ({
-      name: p.meta.name,
+      name: unitName(art.units, p.slug, p.profile),
       element: p.meta.element,
       dps: p.dps,
       slug: p.slug,
@@ -178,5 +188,19 @@ export function renderTableCardPng(data: TableCardData): Buffer {
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
   drawTableCard(ctx as unknown as Canvas2DLike, data);
+  return canvas.toBuffer('image/png');
+}
+
+// Render a ResourcesCardData (core/resourcesCard.ts) to a scale-2 PNG.
+export function renderResourcesCardPng(data: ResourcesCardData): Buffer {
+  const w = RESOURCES_CARD_W * SCALE;
+  const h = resourcesCardHeight(data.sections.length) * SCALE;
+  if (w * h > MAX_CANVAS_PIXELS) {
+    throw new Error(`resources card ${w}×${h} exceeds the pixel budget`);
+  }
+  const canvas = createCanvas(w, h);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  drawResourcesCard(ctx as unknown as Canvas2DLike, data);
   return canvas.toBuffer('image/png');
 }

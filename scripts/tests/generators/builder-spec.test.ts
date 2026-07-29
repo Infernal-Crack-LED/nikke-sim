@@ -21,6 +21,7 @@ const BASE: BuilderState = {
   unit: '',
   units: [],
   board: 'burstgen',
+  unitVariant: 'discord',
 };
 
 describe('manifestKeyFor — pre-rendered head set only', () => {
@@ -57,9 +58,20 @@ describe('manifestKeyFor — pre-rendered head set only', () => {
         `rank/${board}`
       );
     }
+    // Unit-card keys carry the VARIANT: the landscape and portrait cards are
+    // different images of the same unit, and a shared key would serve one to a
+    // request for the other out of an immutable cache.
     expect(manifestKeyFor({ ...BASE, card: 'unit', unit: 'liter' })).toBe(
-      'unit/liter'
+      'unit/liter.discord'
     );
+    expect(
+      manifestKeyFor({
+        ...BASE,
+        card: 'unit',
+        unit: 'liter',
+        unitVariant: 'twitter',
+      })
+    ).toBe('unit/liter.twitter');
     expect(manifestKeyFor({ ...BASE, card: 'ol' })).toBe('table/ol');
     expect(manifestKeyFor({ ...BASE, card: 'charge' })).toBe(
       'table/charge-speed'

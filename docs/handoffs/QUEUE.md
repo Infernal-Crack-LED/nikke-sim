@@ -99,6 +99,53 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `fullChargeBonus` (`gauge-per-shot.json`) and either add the unit to `PENDING_TEAM_ISOLATION` or
   take a measurement, the same way alice/scarlet-black-shadow were handled — don't let the
   fallback silently decide it.
+- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — BUILT + POLISHED, WAITING ON DEPLOY.**
+  Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
+  `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
+  landed-state: `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`.
+  Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
+  The owner's polish pass ran 2026-07-28 and settled every parked tunable (layout consts, the
+  Λ glyph, the icon set, the zero-value rule, the empty-plate question) — see the three
+  `feat(infographics)` / `feat(icons)` commits on the branch. What is left:
+  1. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
+     the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
+     (that fallback is tested).
+  2. **Bot side NOT started** — `/nikke` must show a "not sim supported" line when a unit is in
+     the manifest's new `notSimSupported` list (27 units with no card ON PURPOSE), and must NOT
+     show it for a transient miss (outage / newly-synced unit). Spec, contract and test list:
+     bakery-bot `docs/handoffs/2026-07-28-nikke-unit-card-not-supported.md`. Safe to ship
+     before the nikke-sim deploy — an older manifest has no such field and every lookup
+     answers false.
+  3. **No vector source for burst any more.** The burst/class icons were replaced site-wide with
+     the owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is
+     now RASTER everywhere, ~100px native — fine at every size either surface draws today, but
+     a future surface wanting it large has nothing to rasterize from.
+  4. **`UnitCardSources.prerelease` is plumbed but never set** (cross-family review 2026-07-28,
+     FOLLOW-UP). The flag reaches the model, the `UNRELEASED — PROJECTED` title line and the
+     PROJECTION branch in `drawNotes`, but neither host (`scripts/lib/unit-card-sources.ts`,
+     `web/src/unitCardShare.ts`) ever passes it — so an unreleased unit renders as fully live
+     today, with a null `releaseDate` the only tell. Either wire it (derive from a missing/future
+     `releaseDate`, or an explicit list) or drop the branch until the pre-release authoring
+     workflow lands. A dead render branch on an immutable image pipeline gets discovered by a
+     shipped card.
+  5. **The browser icon loader probes extensions and eats 404s** (same review, NOTE).
+     `web/src/unitCardShare.ts` tries `['svg','png','webp']` per icon via onload/onerror, so the
+     first card preview of a session fires ~8 guaranteed 404s (2 each for the webp-only `burst_*`
+     / `class_*` and `man_*`, 1 for the png-only `weapon_*`). Harmless but noisy in the network
+     log and in any 404 monitoring. The Node loader avoids it by stat-ing the directory; the
+     browser can't, but the icon set is static and tracked, so the extension is knowable at build
+     time — carry it in the `iconNames` mapping (e.g. entries become `{ name, ext }`).
+
+- **⇒ REI-AYANAMI ENIKK ALIAS BUG — still open for `generatorSupported`-gated surfaces (roster/team
+  generators).** `data/enikk-supported.json`'s `names` list carries enikk's raw display names
+  (`"Rei"` / `"Rei (Tentative Name)"`) instead of the `NAME_TO_SLUG_OVERRIDES`-aliased form
+  `scripts/enikk/roster-audit.ts` already uses for its own audit doc, so `src/data/sync.ts`'s
+  `generatorSupported = proven.has(normalizeName(c.name))` string-match silently fails for both
+  `rei-ayanami` and `rei-ayanami-tentative-name` even though they ARE on the enikk top-100 union.
+  Found + fixed for the DPS chart (2026-07-29, DECISIONS — the chart dropped the `generatorSupported`
+  gate entirely), but the underlying alias bug is untouched and still under-counts both slugs on
+  every OTHER surface that reads that flag. Fix: apply the alias map when `roster-audit.ts` writes
+  `enikk-supported.json`, or switch that artifact to match by slug instead of free-text name.
 
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
@@ -505,15 +552,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `/scientific-method`. The generator already enforces their same-team pairing
   (`genCalc.TEAM_CONSTRAINTS`, relaxes if one is unavailable).
 
-- **⇒ WEB/DPS-CHART PROFILE TODOs (2 deferred backend items).**
-  - **Bready taste** — currently a MANUAL `sustained | distributed` mode pill. TODO: auto-derive the
-    live taste from the team's actual buff types, model the tasteless state (both buff types absent →
-    taste-gated lines + charge-speed debuff inert), measure the taste-line magnitudes (all ⚑).
-    `src/skills/overrides/bready.json`.
-  - **Diesel: Winter Sweets Highlight** — chart scores with the faithful Intro (bursts-first) numbers
-    (owner ruling 2026-07-17: doc-only). TODO: model the burst-order-coupled Highlight (a no-op B3 must
-    drive FB; Sustained ▲235.03 vs Intro ▲60.19, loses burst DoTs + team Damage-Taken ▲25% amp).
-    `src/skills/overrides/diesel-winter-sweets.json`.
+- **⇒ WEB/DPS-CHART PROFILE TODOs (1 deferred backend item).**
+  - **Bready taste** — currently a MANUAL `sustained | distributed` mode pill (now ranked BOTH ways on
+    the DPS chart, 2026-07-29). TODO: auto-derive the live taste from the team's actual buff types,
+    model the tasteless state (both buff types absent → taste-gated lines + charge-speed debuff
+    inert), measure the taste-line magnitudes (all ⚑). `src/skills/overrides/bready.json`.
 
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/2026-07-17-role-audit-followups.md`:** (1) custom-weaponry
   `role` sweep — mostly deflated by D; what's left = pierce-from-kit-text + (data-blocked) weapon-swap

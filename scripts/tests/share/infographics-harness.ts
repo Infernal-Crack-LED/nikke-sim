@@ -27,13 +27,22 @@ import {
   tableHeight,
   drawTableCard,
   visibleRows,
-  UNIT_CARD_W,
-  UNIT_CARD_H,
-  drawUnitCard,
+  unitCardSize,
+  drawUnitCardVariant,
   TEAM_TITLE_INK_REGION,
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_INK_REGION,
   UNIT_TITLE_INK_REGION,
+  UNIT_PORTRAIT_TITLE_INK_REGION,
+  RESOURCES_TITLE_INK_REGION,
+  drawResourcesCard,
+  resourcesCardHeight,
+  buildResourcesCard,
+  RESOURCES_CARD_W,
+  loadIcon,
+  BOSS_TABLES,
+  iconBasename,
+  type UnitCardVariant,
   type Canvas,
   type Canvas2DLike,
   type TeamCardData,
@@ -42,7 +51,20 @@ import {
   type DpsChartData,
   type TableCardData,
   type UnitCardData,
+  type ResourcesCardData,
+  type ResourcesIcons,
 } from '../../../src/infographics/node/render.js';
+import {
+  loadUnitCardSources,
+  buildUnitCardRender,
+} from '../../lib/unit-card-sources.js';
+
+// Ink regions are declared in LOGICAL px; a variant rendered at dpr != 1 needs
+// them scaled to physical px before getImageData reads them.
+const scaleRegion = (
+  r: { x: number; y: number; w: number; h: number },
+  scale: number
+) => ({ x: r.x * scale, y: r.y * scale, w: r.w * scale, h: r.h * scale });
 
 const SITE_ICON_PATH = new URL(
   '../../../src/infographics/assets/nikkesim-icon.png',
@@ -308,22 +330,49 @@ export async function buildTableCardWindow(): Promise<TableCardData> {
   };
 }
 
+// Real icons loaded through the same node/icons.ts path the server route uses
+// (RES_ICON_SIZE mirrors api.ts's resources resolveRender branch) — pins the
+// real drop-icon join, not a hand-stubbed one.
+const RES_ICON_SIZE = 26;
+export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
+  const [moduleIcon, gearIcon, lockIcon, fodderIcon, ...fragIcons] =
+    await Promise.all([
+      loadIcon('res_module', RES_ICON_SIZE),
+      loadIcon('res_t9_gear', RES_ICON_SIZE),
+      loadIcon('res_lock', RES_ICON_SIZE),
+      loadIcon('res_xp_fodder', RES_ICON_SIZE),
+      ...BOSS_TABLES.map((t) => loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)),
+    ]);
+  const fragmentByBoss: ResourcesIcons['fragmentByBoss'] = {};
+  BOSS_TABLES.forEach((t, i) => {
+    fragmentByBoss[t.key] = fragIcons[i] ?? undefined;
+  });
+  const icons: ResourcesIcons = {
+    module: moduleIcon ?? undefined,
+    gear: gearIcon ?? undefined,
+    lock: lockIcon ?? undefined,
+    fodder: fodderIcon ?? undefined,
+    fragmentByBoss,
+  };
+  const data = buildResourcesCard(9, icons);
+  data.icon = (await loadSiteIcon()) ?? undefined;
+  return data;
+}
+
 // ---- renders ----------------------------------------------------------------
 
-// A real unit identity card (Liter — B1 Supporter, real portrait, real
-// characters.json field values).
-export async function buildUnitCard(): Promise<UnitCardData> {
-  return {
-    name: 'Liter',
-    element: 'Iron',
-    weapon: 'SMG',
-    burst: 'I',
-    class: 'Supporter',
-    manufacturer: 'Missilis',
-    burstCooldownSec: 20,
-    img: (await loadPortrait('liter')) ?? undefined,
-    footer: 'nikkesim.app',
-  };
+// A real unit card, built from the REAL artifacts through the same loader the
+// pre-render pipeline uses — so the golden fixture pins the shipping join, not a
+// hand-written stand-in that can drift from it.
+//
+// crown is the deliberate subject: she is profiled on bufferchart (with-healer),
+// so this one fixture exercises the dual-rank tile, the appended default row,
+// the 3-segment sustain bar AND a full Tsareena panel. A unit on no board would
+// pin only the empty states.
+export async function buildUnitCard(
+  variant: UnitCardVariant = 'discord'
+): Promise<UnitCardData> {
+  return buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
 }
 
 export interface FixtureRender {
@@ -415,10 +464,37 @@ export async function renderAll(): Promise<FixtureRender[]> {
   );
   finish('table-card-window.png', tableWindowedCanvas, TABLE_TITLE_INK_REGION);
 
-  const unit = await buildUnitCard();
-  const unitCanvas = createCanvas(UNIT_CARD_W, UNIT_CARD_H);
-  drawUnitCard(unitCanvas.getContext('2d') as unknown as Canvas2DLike, unit);
-  finish('unit-card.png', unitCanvas, UNIT_TITLE_INK_REGION);
+  const resources = await buildResourcesFixtureCard();
+  const resourcesCanvas = createCanvas(
+    RESOURCES_CARD_W,
+    resourcesCardHeight(resources.sections.length)
+  );
+  drawResourcesCard(
+    resourcesCanvas.getContext('2d') as unknown as Canvas2DLike,
+    resources
+  );
+  finish('resources-card.png', resourcesCanvas, RESOURCES_TITLE_INK_REGION);
+
+  // BOTH variants are pinned: they are separate layout functions over one
+  // model, so a change to the shared sections has to be seen in both pictures.
+  for (const variant of ['discord', 'twitter'] as UnitCardVariant[]) {
+    const unit = await buildUnitCard(variant);
+    const { w, h, dpr } = unitCardSize(variant);
+    const unitCanvas = createCanvas(w * dpr, h * dpr);
+    unitCanvas.getContext('2d').scale(dpr, dpr);
+    drawUnitCardVariant(
+      unitCanvas.getContext('2d') as unknown as Canvas2DLike,
+      unit,
+      variant
+    );
+    finish(
+      `unit-card.${variant}.png`,
+      unitCanvas,
+      variant === 'twitter'
+        ? scaleRegion(UNIT_PORTRAIT_TITLE_INK_REGION, dpr)
+        : scaleRegion(UNIT_TITLE_INK_REGION, dpr)
+    );
+  }
 
   return out;
 }

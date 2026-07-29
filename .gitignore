@@ -51,3 +51,5 @@ scripts/kit-autonomy/cross-family/**/*
 !scripts/kit-autonomy/cross-family/*/*-result.json
 
 .kimi-code/local.toml
+# Local unit-card layout previews (scripts/render-unit-card.ts) — dev eyes only.
+.preview/

@@ -41,10 +41,11 @@ import {
   GENERIC_BASE_FRAMES,
 } from '../../src/infographics/core/tableData';
 import {
-  drawUnitCard,
-  UNIT_CARD_W,
-  UNIT_CARD_H,
+  drawUnitCardVariant,
+  unitCardSize,
+  type UnitCardVariant,
 } from '../../src/infographics/core/unitCard';
+import { buildUnitCardShare } from './unitCardShare';
 import type { DpsChartData } from '../../src/infographics/core/dpsChart';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
@@ -85,6 +86,15 @@ const BOARDS: { key: BuilderBoard; label: string }[] = [
   { key: 'burstcdr', label: 'Burst CDR' },
   { key: 'sustain', label: 'Sustain' },
   { key: 'buffer', label: 'Buffer' },
+];
+
+// Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the
+// site shares; `twitter` is the 3:4 portrait launch asset (measured to render
+// UNCROPPED in the X timeline, where it gets ~2x the real estate of the
+// landscape card at the same width).
+const UNIT_VARIANTS: { key: UnitCardVariant; label: string }[] = [
+  { key: 'discord', label: 'Landscape (Discord)' },
+  { key: 'twitter', label: 'Portrait (X)' },
 ];
 
 const DPS_MODES: { key: BuilderDpsMode; label: string }[] = [
@@ -161,6 +171,7 @@ export function BuilderPage() {
     unit: '',
     units: [],
     board: 'burstgen',
+    unitVariant: 'discord',
   });
   const [dpsArt, setDpsArt] = useState<DpsArtifact | null>(null);
   const [rankArts, setRankArts] = useState<
@@ -272,14 +283,34 @@ export function BuilderPage() {
         if (!c) {
           return null;
         }
+        // The unit card now joins the five rank boards, so the preview loads
+        // whatever the page has and passes the rest as null — every field is
+        // nullable and the card draws an absent-state, so a board that hasn't
+        // been fetched thins the card rather than breaking it.
         const [img] = await Promise.all([
           c.imageUrl ? loadPortrait(c.imageUrl) : null,
           ensureRoboto(),
         ]);
-        const dpr = 2;
+        const card = await buildUnitCardShare(
+          state.unit,
+          {
+            dpschart: dpsArt,
+            burstgen: rankArts.burstgen as BurstGenArtifact | undefined,
+            burstcdr: rankArts.burstcdr as BurstCdrArtifact | undefined,
+            sustain: rankArts.sustain as SustainArtifact | undefined,
+            bufferchart: rankArts.buffer as BufferChartArtifact | undefined,
+          },
+          img,
+          undefined,
+          state.unitVariant
+        );
+        if (!card) {
+          return null;
+        }
+        const { w, h, dpr } = unitCardSize(state.unitVariant);
         const cv = document.createElement('canvas');
-        cv.width = UNIT_CARD_W * dpr;
-        cv.height = UNIT_CARD_H * dpr;
+        cv.width = w * dpr;
+        cv.height = h * dpr;
         const ctx = cv.getContext('2d');
         if (!ctx) {
           return null;
@@ -287,16 +318,7 @@ export function BuilderPage() {
         ctx.scale(dpr, dpr);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        drawUnitCard(ctx as unknown as Canvas2DLike, {
-          name: c.name,
-          element: c.element,
-          weapon: c.weapon,
-          burst: c.burst,
-          class: c.class,
-          manufacturer: c.manufacturer ?? '',
-          burstCooldownSec: c.burstCooldownSec ?? null,
-          img: img ?? undefined,
-        });
+        drawUnitCardVariant(ctx as unknown as Canvas2DLike, card, state.unitVariant);
         return cv;
       }
       case 'ol': {
@@ -600,6 +622,26 @@ export function BuilderPage() {
                   ) : null;
                 })}
               </select>
+            </div>
+          )}
+
+          {s.card === 'unit' && (
+            <div className="field">
+              <label>Shape</label>
+              <PillGrid>
+                {UNIT_VARIANTS.map((v) => (
+                  <button
+                    key={v.key}
+                    type="button"
+                    className={s.unitVariant === v.key ? 'pill on' : 'pill'}
+                    onClick={() =>
+                      setS((cur) => ({ ...cur, unitVariant: v.key }))
+                    }
+                  >
+                    {v.label}
+                  </button>
+                ))}
+              </PillGrid>
             </div>
           )}
 
