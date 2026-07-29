@@ -230,3 +230,75 @@ confidences, why the decision landed where it did, owner action items, and the H
   coherence check the driver hadn't (CW5 bare-weapon scaling 0.87247 = idoll-ocean board move 0.8722,
   and correctly ABOVE 20/24=0.833 because reload time is cadence-independent) — the strongest
   single piece of not-a-fit evidence came from the judge, not the implementer.
+- **2026-07-29 — focus charge-gauge bonus is PER-UNIT (`fullChargeBonus/100`), not flat 2.5x: SPLIT
+  DECISION — scarlet-black-shadow IMPLEMENT, alice LOG, cinderella out of scope.** Background:
+  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`. Premise gate: the crux premise (does the
+  solo-footage `scan.ts` `solo` HUD crop, 142x12 @ 2470,488, faithfully read continuous burst-gauge
+  fill %?) was REFUTED by a fresh-context `premise-verifier` citing the tool's own docstring ("the
+  burst gauge charging is not in this crop... absent entirely between cycles"). Owner correction: the
+  widget IS persistent and continuously rendered in solo footage regardless of state (charging/full/
+  draining/chain) — the docstring's characterization was made from team footage and doesn't hold for
+  solo. Re-validated the crop against the ORIGINAL maiden-ice-rose tb2-test-3 anchor (the historic
+  hand-pixel-read recording that established the existing x2.5 rule, `docs/data/burst-gauge.md` §6):
+  the fresh CV read reproduced maiden's documented "+9.1% then +3.45%" two-substep per-pull pattern
+  TWICE in the recording, each within 0.05-0.15% of the 2026-07-13 hand-derived value — a genuine
+  quantitative validation, not a plausibility argument. Fable pre-op **APPROVED-WITH-REVISIONS** (7
+  revisions: reject the driver's proposed cinderella 1.0x exemption — her own rough footage read
+  ~2.6-3.1x contradicts it, closer to the CURRENT flat 2.5x than either 1.0x or her table's 2.0x, so
+  she is PINNED to current behavior instead, measurement-gated, not exempted; guard the `?? 250`
+  fallback for undatamined SR/RL rows so a missing row can never zero a focused unit's gauge; pre-
+  register graded-comp coverage; disclose the inverted procedure (measurements preceded the written
+  plan); fix the stale `scan-frames.py` docstring — deferred, filed as a follow-up; record the ±5%
+  residuals as open; isolated worktree). Driver review: confirmed the control-regression suite's
+  crown/scarlet-black-shadow/helm total-damage drift (1.49%/0.61%/7.97%) is a real, explained
+  second-order rotation ripple (SBS's own FB distribution went from a rigid 12/25 seeds to 11-12/25 —
+  neither crown nor helm are charge weapons and can't be touched directly), not a fit signal; `verify.sh`
+  green, `control-regression.ts --update`. Blind Fable post-op round 1: **ACCEPT, composite MEDIUM**
+  (SBS+alice both single-recording; Q3 pending — named the cheapest resolver: video-count the FB in
+  the ALREADY-HELD `docs/probes/720-kit-audit/scarlet black shadow.MP4` control-comp source
+  recording, an existing artifact, not a new one). Reuse-before-derive: ran `scan.ts` on that exact
+  recording — **11 full bursts, 11/11 corroborated** — outside the pre-fix model's rigid 25/25-seeds-
+  at-12 distribution and inside the post-fix model's 11-12 distribution; sent back to the SAME blind
+  judge (not self-upgraded). Round 2: **ACCEPT, SBS component upgraded to HIGH** (two independent
+  measured-tier confirmations — solo per-shot rate AND team FB count, both agreeing with her datamined
+  150), **alice component held at MEDIUM** (nothing in the SBS datum touches her; her own coverage gap
+  and +5.1% solo residual stand). Owner then supplied a genuine alice-FOCUSED team recording (`docs/
+  probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, alice at mid-slot —
+  the earlier "PA MiKa" comp was a red herring, its mid-slot occupant is prika, not alice, corrected
+  mid-session after initially misjudging prika as non-charge when she is SR). Measured: **10 full
+  bursts, 10/10 corroborated**; sim comparison (25 MC seeds, toggled via `git stash` on the worktree)
+  showed pre-fix rigid 25/25-at-10, post-fix 7/25-at-10 / 18/25-at-11 — the real count landed INSIDE
+  both distributions, as the post-fix model's MINORITY (28%) outcome rather than confirming it. Round
+  3 (same blind judge, this new datum): **ACCEPT held, alice confidence unchanged at MEDIUM** — ruled
+  the team FB count a non-isolating, downstream observable (FB count is convolved with red-hood's
+  flex-burst behavior, chain selection, and 3 other units' rates) that cannot outvote alice's direct,
+  isolating solo measurement in EITHER direction (a likelihood-ratio ~3.6:1 on one categorical draw
+  does not overturn an instrument-validated direct read) — explicitly invoking "measured truths are
+  constraints, not scores" and "a model-vs-reality gap localizes to the model as a whole, not one
+  knob." **2-of-2, by unit: scarlet-black-shadow HIGH+HIGH → IMPLEMENT. alice MEDIUM (both judges) →
+  LOG — pinned to the flat constant (same mechanism as cinderella's carve-out, `PENDING_TEAM_ISOLATION`
+  set in `gaugePerShot`), NOT enacted, owner action item filed in `docs/handoffs/QUEUE.md`.**
+  cinderella: no change from pre-existing behavior (flat 2.5x), pinned via `magDumpRof`, own dedicated
+  investigation filed in QUEUE.md (her rough read ~2.6-3.1x contradicts both her table's 2.0x and a
+  1.0x exemption). `verify.sh` green, `control-regression-snapshot.json` updated to reflect the SBS
+  change (the only behavioral delta in that suite). **HARNESS LESSONS:** (1) a premise-verifier's
+  REFUTE grounded entirely in a tool's own documentation can still be wrong if the documentation was
+  characterized under different conditions (team footage) than the case at hand (solo footage) — the
+  owner's direct domain correction plus a fresh quantitative re-validation against an existing anchor
+  resolved it, rather than either blindly trusting the refute or blindly overriding it on say-so alone.
+  (2) Reuse-before-derive paid for itself twice in one post-op loop: both FB-count resolution steps
+  used footage the repo ALREADY held (a control-comp source recording, and — once obtained — an
+  owner-supplied focused recording) run through an already-validated instrument, never a fresh
+  bespoke derivation. (3) A downstream/composite observable (team FB count) is real evidence but is
+  not fungible with a direct/isolating one (solo per-shot rate) — it can corroborate decisively when
+  it falls OUTSIDE the null distribution entirely (SBS), but a same-both-distributions result is weak
+  and must not move a directly-measured constant in either direction on its own (alice). (4) A
+  same-family unit misidentification mid-session (prika judged non-charge when she is SR) was caught
+  by the owner, not self-detected — a reminder that "isCharge" gating and weapon-class claims warrant
+  the same slug-discipline as unit-identity claims, not just character names. DECISIONS 2026-07-29.
+- **2026-07-29 — Alice & Cinderella un-pinned to their datamined `fullChargeBonus` values (3.5× /
+  2.0×): IMPLEMENT (owner ruling).** `focusChargeMult = chargeMultiplier/100` is accepted as TRUE
+  for both units, same footing as scarlet-black-shadow above. A same-day recount run had produced a
+  REJECT verdict on Cinderella (an alleged 8-shot gaugeless opener yielding an effective ≈2.2×) — that
+  finding was a repeated instrument/reading error, not a real mechanic, and is RETRACTED; do not
+  re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.

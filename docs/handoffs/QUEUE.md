@@ -52,6 +52,53 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🟡 GAUGE-FILL READER CALIBRATION — PARTIALLY SETTLED 2026-07-29 (third pass, owner
+  rulings).** Verdict + full evidence: `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md`
+  (§RESULT + §OWNER-RULINGS). SETTLED: the reader is trustworthy for SHAPE and SMALL-step
+  magnitude at ≥15fps (30fps default, ±1 column = 0.72%) — the sampling/rendering-artefact
+  hypothesis (b) is refuted (large-step error flat at every rate, single-frame snaps) and the
+  rider sub-step is exact. NOT SETTLED: LARGE-step magnitude — weapon sub-steps read ~1.0–1.3%
+  absolute hot on both tb2-test-3 solos; the "8 shots fill the bar" counting bound that excluded
+  the documented 12.55% anchor is WITHDRAWN because its endpoint evidence (shots 7–8, full-cross
+  t=18.73, ammo t=18.72) sits outside the owner-bounded viable footage window (0:06–0:17).
+  Standing protocol rule: define a recording's viable window BEFORE reading from it.
+
+- **⇒ ✅ (a) ESCALATION — CLOSED 2026-07-29 (third pass) BY OWNER RULING: "charge cap as
+  datamined is correct, there's no overcharge."** The candidate mechanism (real charge-at-release
+  > 1.0, the ×(1+1.5c) focus formula extending past c=1, c ∈ [1.07, 1.32]) does not exist — no
+  pipeline, no constant moves, nothing re-colors the scarlet-black-shadow 1.5× landing or the
+  250-family ×2.5 rule. The residual the hypothesis was built to explain — the reader's weapon
+  sub-step at ~10.1% vs the modelled 9.1% (takina 14.5–16.7 vs 14.0) — is an open READER question
+  (previous bullet), not a game-mechanics discrepancy; the documented 910+364 anchor is NOT
+  excluded (the excluding evidence sat outside the viable footage window). The maiden override's
+  "156–212% overcharge" note is a meter-DISPLAY observation, not a mechanic — do not cite it as
+  one. The alice/cinderella pauses are lifted (their bullets carry the surviving basis).
+
+- **⇒ 🔵 SIM/REAL DIVERGENCE AT GAUGE-FULL FOR A LONE BURST III — FILE ONLY, DAMAGE-INERT SOLO.**
+  Split out of the gauge-fill calibration handoff (§6 known trap), where it surfaced and was
+  explicitly ruled out of scope. At gauge-full the engine opens the burst chain, zeroes the gauge
+  and halts generation even with NO Burst I present (`src/engine/sim.ts` `addGauge`/chain path),
+  while the real bar holds full indefinitely (confirmed on the maiden-ice-rose solo footage:
+  bar fills at t≈18.7 and holds green for the remaining ~55s). Damage-inert for a lone-Burst-III
+  solo (nothing casts either way), so it distorts no current measurement — but any future
+  solo-gauge methodology that reads POST-full behavior, and any lone-B3 team-adjacent config,
+  should know the two diverge. Fix only if a measurement ever needs it; do not ride it into
+  unrelated gauge work.
+
+- **⇒ 🔵 VESTI-TACTICAL-UPGRADE + 4 OTHER SR/RL UNITS — `fullChargeBonus` DATA-QUALITY GAP, GUARD
+  BEFORE THEIR FIRST OVERRIDE.** Filed by the Step 7 implementation review of the 2026-07-29
+  per-unit focus-multiplier landing (`docs/engine-modeling-gaps.md` §20 has the full detail).
+  `vesti-tactical-upgrade` (RL, `fullChargeBonus` 200) is now explicitly pinned in
+  `PENDING_TEAM_ISOLATION` (`src/engine/sim.ts`) since she's a 4th non-250 outlier the original
+  landing's evidence never covered — not sim-supported today (no override), so this is currently
+  a no-op, but it must stay pinned when she gets one. Separately, four units have
+  `chargeMultiplier: 350` in `data/characters.json` but no `gauge-per-shot.json` row at all
+  (`belorta`, `n102`, `yan`, `yuni`) — the `?? 250` fallback would run them at 2.5x when the
+  repo's own data says 3.5x, same shape as vesti's gap but not yet guarded. **Before landing an
+  override for ANY of these 5 units**, cross-check `chargeMultiplier` (`characters.json`) against
+  `fullChargeBonus` (`gauge-per-shot.json`) and either add the unit to `PENDING_TEAM_ISOLATION` or
+  take a measurement, the same way alice/scarlet-black-shadow were handled — don't let the
+  fallback silently decide it.
 - **⇒ 🟡 UNIT-CARD INFOGRAPHIC — BUILT + POLISHED, WAITING ON DEPLOY.**
   Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
   `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
@@ -254,19 +301,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   body cap → 413 (content-length AND stream), 415 non-JSON, 400 bad JSON/spec; rate limiting stays
   at Cloudflare, `REQUIRE_RENDER_SECRET` (env-off) gates it when flipped. **Still owner-gated:**
   the `railway.json` startCommand flip (item (1) above) — POST /render is dark in prod until then.
-
-- **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
-  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
-  hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
-  `full_charge_burst_energy` column (`fullChargeBonus` in `data/gauge-per-shot.json`), which equals
-  `chargeMultiplier` for every unit and IS the focus multiplier ×100 (measured anchor: takina/maiden
-  250 → focused base×2.5; additive reading ruled out by TB3 A1/A2). Four units deviate from 250:
-  **alice 350 → 3.5× (currently 40% under-credited)**, cinderella + vesti-tactical-upgrade 200 → 2.0×,
-  scarlet-black-shadow 150 → 1.5×. Burst-gen board UNAFFECTED (measured unfocused as of 2026-07-27);
-  only focused sim fights move (DPS chart / probes / team sim). **Gated:** `/scientific-method`
-  (engine default change) + the four non-250 values are datamine-derived not recorded → owner picks
-  measure-`alice`-first vs land-as-⚑-hypothesis; overturns the 2026-07-13 "full_charge_burst_energy
-  unused" ruling (needs DECISIONS entry + `burst-gauge.md` §4 rewrite).
 
 - **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
   `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`

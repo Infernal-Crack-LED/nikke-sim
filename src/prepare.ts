@@ -52,6 +52,7 @@ export interface PreparedUnit {
   noBoltRecovery?: boolean; // charFixes: this SR's DB chargeFrames already includes the bolt recovery
   pullsPerSec?: number; // charFixes: datamined per-unit rate_of_fire deviating from the weapon-class rate
   magDumpRof?: boolean; // charFixes: whole-mag dump (one charge primes, then autofire the mag at rate_of_fire)
+  focusChargeMult?: number; // charFixes: owner-override camera-focus charge-gauge multiplier
   loadout: string[]; // human-readable, for the report
 }
 
@@ -259,6 +260,7 @@ export function prepareUnit(
     noBoltRecovery: deps.overrides[char.slug]?.charFixes?.noBoltRecovery,
     pullsPerSec: deps.overrides[char.slug]?.charFixes?.pullsPerSec,
     magDumpRof: deps.overrides[char.slug]?.charFixes?.magDumpRof,
+    focusChargeMult: deps.overrides[char.slug]?.charFixes?.focusChargeMult,
     loadout,
   };
 }

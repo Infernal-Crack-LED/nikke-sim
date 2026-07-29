@@ -80,7 +80,7 @@ faithfulness basis ([data/clean-weapons.md](data/clean-weapons.md)); pinned by
 | `RELOAD_TAIL_FRAMES`                        | 13 (0.21s)                                             | Additive reload tail: `round(base·0.975·(1−buff)) + 13`                                                                     | :163     |
 | `UNHITTABLE_FRAMES`                         | 60 (1s)                                                | Boss off-screen at each range transition (blocks burst casts)                                                               | :195     |
 | `BOSS_RANGE_SCRIPT`                         | 0/33/70/106/144/176s → mid/near/far/midfar/near/midfar | Test-boss range timeline                                                                                                    | :171     |
-| `FOCUS_CHARGE_GEN` / `UNFOCUSED_CHARGE_GEN` | 2.5 / 1.0                                              | Camera-focus charge-gauge multiplier vs unfocused flat                                                                      | :987     |
+| `FOCUS_CHARGE_GEN` / `UNFOCUSED_CHARGE_GEN` | 2.5 / 1.0                                              | Camera-focus charge-gauge multiplier fallback vs unfocused flat — per-unit `fullChargeBonus/100` is the real multiplier (see below) | :987     |
 | Base-5 `staticAtk`                          | Attacker 118,027 · Supporter 98,367 · Defender 78,707  | Combat-ATK basis (NOT battle-records ATK, NOT OL0) + a modeled relationship/bond bonus                                      | —        |
 
 ## 3. Burst rotation model (the live chain)
@@ -103,8 +103,11 @@ reloads, or generates gauge; mags start full. On auto the chain is:
 - SR/RL release-fired charge weapons carry the 22f bolt/release latency (autofire exempt; +11f start
   recovery at fight-start).
 
-Standing rotation facts: focus-unit charge weapons make ×2.5 gauge (focus-only; middle slot by
-default). Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry
+Standing rotation facts: focus-unit charge weapons make gauge at their per-unit `fullChargeBonus/100`
+multiplier (focus-only; middle slot by default) — ×2.5 for the 250-family (the roster majority);
+alice 3.5×, cinderella 2.0× (owner override, `charFixes.focusChargeMult`), scarlet-black-shadow
+1.5×; vesti-tactical-upgrade pinned to the flat 2.5× (`PENDING_TEAM_ISOLATION`, not yet
+sim-supported). Burst-cast damage lands **before** Full Burst — it misses the +50% FB major and FB-entry
 auras, but buffs live at cast (incl. allies' same-rotation burst-granted buffs) still apply. Full-burst
 counts are cooldown/chain arithmetic — deterministic run-to-run except at boss-transition/chain
 collisions. → DECISIONS 2026-07-13 (chain/POST_FB/22f/focus/burst-cast), 2026-07-21 (window 600→120,
