@@ -18,7 +18,9 @@
 // So: "which colours survived?" is the entire measurement. The % ruler down both
 // edges reads off the exact surviving range for anything in between.
 import { createCanvas } from '@napi-rs/canvas';
-import { writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import '../src/infographics/node/fonts.js';
 
 const W = 1200;
@@ -38,9 +40,14 @@ const RED = '#c0392b';
 const AMBER = '#b8860b';
 const GREEN = '#1e7a4c';
 
+// Defaults into .preview/ (gitignored) like render-unit-card.ts — a diagnostic
+// that drops an untracked PNG in the repo root shows up as noise in every
+// subsequent `git status`.
 const outArg = process.argv.indexOf('--out');
 const OUT =
-  outArg >= 0 ? process.argv[outArg + 1]! : 'x-crop-test-1200x1500.png';
+  outArg >= 0
+    ? process.argv[outArg + 1]!
+    : fileURLToPath(new URL('../.preview/x-crop-test-1200x1500.png', import.meta.url));
 
 const cv = createCanvas(W, H);
 const ctx = cv.getContext('2d');
@@ -140,6 +147,7 @@ ctx.strokeStyle = '#ffffff';
 ctx.lineWidth = 8;
 ctx.strokeRect(4, 4, W - 8, H - 8);
 
+mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, cv.toBuffer('image/png'));
 console.log(
   `x-crop-test: ${W}×${H} (4:5) → ${OUT}\n` +

@@ -1,18 +1,18 @@
 // Node loader for the NIKKE identity icons (element code, burst stage, class,
 // manufacturer, weapon) that the unit card's icon strip draws.
 //
-// SOURCE: web/public/nikke-icons/ is read DIRECTLY — no vendoring step. Those 30
+// SOURCE: web/public/nikke-icons/ is read DIRECTLY — no vendoring step. Those 28
 // files are tracked in git (unlike the gitignored web/public/*.json build
 // outputs), and `emptyOutDir` wipes dist/, never web/public/, so they are
 // present on a clean checkout with no build ordering to honour.
 //
 // ── Why this module rasterizes instead of just decoding a file ────────────────
-// The icons ship at wildly different native resolutions (measured 2026-07-28):
-// weapon_* 80x80, man_* 50x50 except man_missilis at 32x32, class_* 25x25,
-// code_* 63x73, burst_* 17-40x37. The card draws them all at ONE size, so a
-// plain decode would paint a 25px class icon into a 64px box at 2.6x (5.1x on
-// the dpr-2 landscape card) — visibly soft on an asset whose entire job is
-// advertising.
+// The icons ship at different native resolutions (measured 2026-07-28, after the
+// burst/class replacement): burst_* 91x104, class_* 78-101x101-103, code_* 63x73
+// raster / 73x73 vector, man_* 50x50 except man_missilis at 32x32, weapon_* 80x80.
+// The card draws them all at ONE size, so a plain decode would paint a 32px
+// manufacturer icon into a 64px box at 2x (4x on the dpr-2 landscape card) —
+// visibly soft on an asset whose entire job is advertising.
 //
 // So every icon is resolved at its TARGET size:
 //   - `.svg` present  → sharp rasterizes the vector AT that size. True
@@ -21,10 +21,12 @@
 //   - no `.svg`       → the raster file, resized to the target with a decent
 //     kernel. Sharp than a naive drawImage stretch, but bounded by the source.
 //
-// SVG-FIRST IS DELIBERATE AND FORWARD-COMPATIBLE. Only burst_* and code_* ship
-// `.svg` today (8 of 30 files; confirmed absent for class_/man_/weapon_ in this
-// repo, the main worktree, and bakery-bot as of 2026-07-28). Dropping the
-// missing SVGs into web/public/nikke-icons/ later needs NO code change — the
+// SVG-FIRST IS DELIBERATE AND FORWARD-COMPATIBLE. Only code_* ships `.svg` today
+// (5 of 28 files, as of 2026-07-28). The rest are raster-bound — including
+// burst_*, whose vector source did not survive the icon replacement: the new
+// burst and class sets are webp-only at ~100px native, which is comfortably
+// above every box the card draws them in, so raster is not a compromise there.
+// Dropping SVGs into web/public/nikke-icons/ later needs NO code change — the
 // resolver picks them up automatically and the raster path stops being used.
 // `iconUpscaleAudit()` below reports which families are still raster-bound.
 import { createCanvas, type Canvas } from '@napi-rs/canvas';

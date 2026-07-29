@@ -5,9 +5,7 @@
     "notes": [
       "Every NIKKE now has a pre-rendered info card: portrait, burst/class/element/manufacturer at a glance, its three best ranking-board placements, bar charts showing the units immediately above and below it on each board, and its build notes. Two shapes — a wide one for Discord and a tall one for social posts.",
       "Where a unit's ranking depends on its teammates, the card labels it — Crown's #1 Buffer placement is tagged \"w/ Healer\", with her unpartnered #4 shown alongside, and the same for every neighbour on the chart.",
-      "The Overload recommendation now states the whole 12 rolls, not just the four the sim picks: 4× Elemental Damage and 4× ATK are the assumed floor and are now written out, so the line reads as a complete build instead of a four-roll one.",
-      "Sustain board cleanup: units whose kits produce no healing or shielding in the tested fight no longer appear on it. They were ranked at zero, which crowded out real entries and hid units' genuine Burst Cooldown Reduction standing behind an empty Sustain chart.",
-      "New, sharper burst and class icons across the Team Builder and the cards — and Burst Λ finally has its own icon instead of borrowing Burst III's."
+      "Sustain board cleanup: units whose kits produce no healing or shielding in the tested fight no longer appear on it. They were ranked at zero, which crowded out real entries and hid units' genuine Burst Cooldown Reduction standing behind an empty Sustain chart."
     ]
   },
   {

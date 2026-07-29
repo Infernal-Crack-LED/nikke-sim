@@ -606,16 +606,27 @@ function drawBarChart(
   const trackX = r.x + nameW + 10;
   const trackW = r.w - nameW - valueW - 20;
   const span = chart.max - chart.min || 1;
-  const barH = Math.round(rowH * 0.5);
+  // Rows are laid out at the height the SLOT can afford, not the nominal one.
+  // layoutCharts divides a fixed band proportionally, so a card whose charts want
+  // more than the band gets compressed slots — and drawing at a fixed rowH then
+  // ran the last rows out of the slot and put the next chart's header on top of
+  // them. Measured 2026-07-28 across all 390 renders: 9 overflow, worst
+  // prika/twitter at 78px (crown/discord, the golden fixture, at 8px). `rowH`
+  // stays the TYPOGRAPHIC size (it selects the font branch via `small`); only the
+  // geometry follows the fit, so a crowded card gets tighter rows rather than
+  // smaller text or a dropped neighbour — both of which lose information the card
+  // exists to show.
+  const drawRowH = fittedRowH(r.h - (top - r.y), chart.rows.length, rowH);
+  const barH = Math.round(drawRowH * 0.5);
 
   chart.rows.forEach((row, i) => {
-    const y = top + i * rowH;
+    const y = top + i * drawRowH;
     const col = ELEMENT_COLORS[row.element] ?? '#9aa3b2';
 
     // the card's own unit gets a highlight plate so the eye lands on it first
     if (row.isUnit) {
       ctx.fillStyle = '#1e2430';
-      roundRect(ctx, r.x - 6, y - 2, r.w + 12, rowH - 4, 8);
+      roundRect(ctx, r.x - 6, y - 2, r.w + 12, drawRowH - 4, 8);
       ctx.fill();
     }
 
@@ -829,6 +840,29 @@ function drawNotes(ctx: Canvas2DLike, r: Rect, d: UnitCardData, big: boolean): v
 // overran its half and drew the next chart's title through its last bar. Sizing
 // by row count also means the chart with more to say gets more room, which is
 // the same principle as §6c lever 1.
+/**
+ * The row height a chart may actually draw at, given the space its slot leaves below the header.
+ *
+ * layoutCharts splits a FIXED band proportionally (ruling 2: every card is the same size), so a
+ * unit whose charts want more than the band gets slots smaller than their natural height. Drawing
+ * at the nominal rowH regardless is what put a chart's last rows under the next chart's header —
+ * and on the portrait variant, into the notes panel. Shrinking the rows keeps every neighbour row
+ * on the card, which is the point of the chart; dropping rows or clipping does not.
+ *
+ * Returns the nominal height when it fits (the overwhelmingly common case — 381 of 390 renders as
+ * measured 2026-07-28), so an uncrowded card is pixel-identical to before.
+ */
+export function fittedRowH(
+  availH: number,
+  rowCount: number,
+  nominalRowH: number
+): number {
+  if (rowCount <= 0) {
+    return nominalRowH;
+  }
+  return Math.min(nominalRowH, Math.floor(availH / rowCount));
+}
+
 function layoutCharts(
   charts: BarChart[],
   top: number,

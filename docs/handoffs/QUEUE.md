@@ -73,6 +73,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      the owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is
      now RASTER everywhere, ~100px native — fine at every size either surface draws today, but
      a future surface wanting it large has nothing to rasterize from.
+  4. **`UnitCardSources.prerelease` is plumbed but never set** (cross-family review 2026-07-28,
+     FOLLOW-UP). The flag reaches the model, the `UNRELEASED — PROJECTED` title line and the
+     PROJECTION branch in `drawNotes`, but neither host (`scripts/lib/unit-card-sources.ts`,
+     `web/src/unitCardShare.ts`) ever passes it — so an unreleased unit renders as fully live
+     today, with a null `releaseDate` the only tell. Either wire it (derive from a missing/future
+     `releaseDate`, or an explicit list) or drop the branch until the pre-release authoring
+     workflow lands. A dead render branch on an immutable image pipeline gets discovered by a
+     shipped card.
+  5. **The browser icon loader probes extensions and eats 404s** (same review, NOTE).
+     `web/src/unitCardShare.ts` tries `['svg','png','webp']` per icon via onload/onerror, so the
+     first card preview of a session fires ~8 guaranteed 404s (2 each for the webp-only `burst_*`
+     / `class_*` and `man_*`, 1 for the png-only `weapon_*`). Harmless but noisy in the network
+     log and in any 404 monitoring. The Node loader avoids it by stat-ing the directory; the
+     browser can't, but the icon set is static and tracked, so the extension is knowable at build
+     time — carry it in the `iconNames` mapping (e.g. entries become `{ name, ext }`).
 
 - **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
   `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.

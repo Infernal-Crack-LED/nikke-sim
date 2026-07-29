@@ -24,6 +24,12 @@
 // Regenerate fixtures after an intentional renderer change, ON darwin-arm64
 // (the byte-exact gate's platform):
 //   npm run fixtures:infographics
+//
+// BUILD-OUTPUT DEPENDENCY: the two unit-card fixtures render through the real
+// rank boards (web/public/*.json), which are gitignored build outputs. They SKIP
+// on a checkout that hasn't run `npm run dpschart && npm run ranks:all` — there
+// the same code draws an all-Unranked card, which is a different picture rather
+// than renderer drift. Every other fixture here is hermetic.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
@@ -42,6 +48,19 @@ import {
 import { renderAll, type FixtureRender } from './infographics-harness.js';
 
 const FIXTURE_DIR = new URL('../fixtures/infographics/', import.meta.url);
+
+// The unit-card goldens are the only ones joined against the rank boards, and
+// web/public/*.json are GITIGNORED build outputs (`npm run dpschart &&
+// ranks:all`). Same gate as unit-card-data.test.ts, for the same reason.
+const UNIT_CARDS = ['unit-card.discord.png', 'unit-card.twitter.png'];
+const HAVE_BOARDS = [
+  'dpschart.json',
+  'burstgen.json',
+  'bufferchart.json',
+  'sustain.json',
+  'burstcdr.json',
+].every((f) => existsSync(new URL(`../../../web/public/${f}`, import.meta.url)));
+
 const REGEN_HINT =
   'fixture mismatch — regenerate with `npm run fixtures:infographics` ' +
   '(and eyeball the diff before committing it)';
@@ -116,10 +135,17 @@ describe('infographic golden images', () => {
     'dps-chart-window.png',
     'table-card.png',
     'table-card-window.png',
-    'unit-card.discord.png',
-    'unit-card.twitter.png',
+    ...UNIT_CARDS,
   ]) {
-    it(name, async () => {
+    // The unit-card fixtures are the only goldens joined against the rank
+    // boards, so they carry the sibling gate (unit-card-data.test.ts): a clean
+    // checkout that hasn't run `npm run dpschart && npm run ranks:all` renders
+    // an all-Unranked card, which is a legitimately different picture, not
+    // renderer drift. Skipping beats failing verify.sh on a missing build
+    // output — but it does mean these two are only covered where the boards
+    // exist, so a card-layout change must be validated on a built tree.
+    const runner = UNIT_CARDS.includes(name) && !HAVE_BOARDS ? it.skip : it;
+    runner(name, async () => {
       const render = renders.find((r) => r.name === name);
       expect(render, `${name}: harness produced no render`).toBeDefined();
       // Every platform: the card rendered at a sane size (the ink assertions
