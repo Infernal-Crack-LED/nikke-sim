@@ -5399,15 +5399,18 @@ export function App({ user }: { user: AuthUser | null }) {
                       const element =
                         data.characters[res.varUnits[0]?.slug ?? '']?.element ??
                         '';
+                      const name = res.varUnits.map((u) => u.name).join(' + ');
                       return {
                         slug: String(i),
-                        name: res.varUnits.map((u) => u.name).join(' + '),
+                        name,
+                        displayName: name,
                         element,
                         elements: element ? [element] : [],
                         weapon: '',
                         tier: '',
                         dps: res.varDamage,
                         rank: i + 1,
+                        profile: null,
                       };
                     })}
                     onShareImage={() =>

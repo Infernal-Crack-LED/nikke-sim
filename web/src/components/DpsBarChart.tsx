@@ -107,22 +107,22 @@ export function DpsBarChart({
       ) : (
         <div className="dpschart-bars">
           {bars.map((b, i) => (
-            <div className="dpschart-row" key={b.slug}>
+            <div className="dpschart-row" key={`${b.slug}:${b.profile ?? ''}`}>
               <span className="dpschart-rank">{i + 1}</span>
               {b.imageUrl ? (
                 <img
                   className="dpschart-portrait"
                   src={thumbs[b.imageUrl] ?? b.imageUrl}
-                  alt={b.name}
+                  alt={b.displayName}
                   loading="lazy"
-                  title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}
+                  title={`${b.displayName} · ${b.tier} · ${b.weapon} · ${b.element}`}
                 />
               ) : (
                 <span
                   className="dpschart-name"
-                  title={`${b.name} · ${b.tier} · ${b.weapon} · ${b.element}`}
+                  title={`${b.displayName} · ${b.tier} · ${b.weapon} · ${b.element}`}
                 >
-                  {b.name}
+                  {b.displayName}
                 </span>
               )}
               <span className="dpschart-track">

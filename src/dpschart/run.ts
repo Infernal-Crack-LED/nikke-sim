@@ -29,12 +29,18 @@ export interface RunCtx {
 const charFor = (ctx: RunCtx, slug: string) =>
   ctx.characters[slug] ?? NOOP_CHARACTERS[slug];
 
-// memo of the tested unit's optimal 12/12 remainder lines, keyed by slug only. The
+// memo of the tested unit's optimal 12/12 remainder lines, keyed by slug+profile. The
 // user's spec is a PER-UNIT optimizer: a unit's best remaining lines (crit / ammo /
 // charge …) are governed by its own kit, not by which supports are present or the
-// boss element (the elemental lines are already floored), so we optimize once per unit
-// in a fixed canonical context and reuse everywhere. Also keeps the precompute fast.
+// boss element (the elemental lines are already floored), so we optimize once per
+// (unit, profile) in a fixed canonical context and reuse everywhere. Also keeps the
+// precompute fast. Profile is part of the key because a variant build (e.g.
+// cinderella-crystal-wave's Snipe mode) can legitimately want different OL lines
+// than the plain row — reusing the plain row's picks for the profiled row would
+// silently understate/overstate whichever mode the memo happened to cache first.
 export type OptMemo = Map<string, LineSelection[]>;
+const memoKey = (tested: TestedUnit): string =>
+  `${tested.slug}::${tested.profile ?? ''}`;
 
 // canonical context for the per-unit optimization pass (representative 5-unit team)
 const PROBE_CELL: Cell = {
@@ -51,7 +57,8 @@ function optimizedLines(
   ctx: RunCtx,
   memo: OptMemo
 ): LineSelection[] {
-  const cached = memo.get(tested.slug);
+  const key = memoKey(tested);
+  const cached = memo.get(key);
   if (cached) {
     return cached;
   }
@@ -79,7 +86,7 @@ function optimizedLines(
     type,
     count,
   }));
-  memo.set(tested.slug, lines);
+  memo.set(key, lines);
   return lines;
 }
 
@@ -102,10 +109,13 @@ export function dpsFor(
 export interface RankedEntry {
   slug: string;
   dps: number;
+  profile: string | null; // variant-profile id (CHART_VARIANTS), null = plain row
   rank: number; // 1-based, by descending dps
 }
 
-// Rank the whole tested population for one cell.
+// Rank the whole tested population for one cell. A profiled slug appears TWICE
+// in `tested` (plain + variant) and both rows compete in the SAME ranking, same
+// convention as the buffer/sustain/burstgen boards (src/ranks/*.ts).
 export function runCell(
   cell: Cell,
   tested: TestedUnit[],
@@ -115,6 +125,7 @@ export function runCell(
   const scored = tested.map((t) => ({
     slug: t.slug,
     dps: dpsFor(cell, t, ctx, memo),
+    profile: t.profile ?? null,
   }));
   scored.sort((a, b) => b.dps - a.dps);
   return scored.map((s, i) => ({ ...s, rank: i + 1 }));

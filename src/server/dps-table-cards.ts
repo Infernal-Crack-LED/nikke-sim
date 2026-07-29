@@ -21,6 +21,7 @@ import {
   drawResourcesCard,
   resourcesCardHeight,
   RESOURCES_CARD_W,
+  unitName,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
@@ -48,7 +49,7 @@ export interface DpsUnitMeta {
 export interface DpsArtifact {
   generatedAt: string;
   units: Record<string, DpsUnitMeta>;
-  cells: Record<string, [string, number][]>;
+  cells: Record<string, [string, number, string | null][]>;
 }
 
 // The element filter set both link surfaces expose (web DpsChartTab
@@ -91,7 +92,12 @@ export function dpsChartData(
       }
       return ele ? (u.elements ?? [u.element]).includes(ele) : u.chartPop;
     })
-    .map(([slug, dps]) => ({ slug, dps, meta: art.units[slug] }));
+    .map(([slug, dps, profile]) => ({
+      slug,
+      dps,
+      profile,
+      meta: art.units[slug],
+    }));
   if (population.length === 0) {
     return { error: `no units in cell '${params.cell}' for that element` };
   }
@@ -134,7 +140,7 @@ export function dpsChartData(
         : undefined,
     topDps,
     bars: bars.map((p) => ({
-      name: p.meta.name,
+      name: unitName(art.units, p.slug, p.profile),
       element: p.meta.element,
       dps: p.dps,
       slug: p.slug,

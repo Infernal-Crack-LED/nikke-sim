@@ -31,6 +31,10 @@ export const fmtMagnitude = (n: number): string =>
 
 // Comp-profile chip labels — ported from SupportRankings.tsx PROFILE_LABELS
 // (keep in sync; tooltip text stays on the site, the card needs the short tag).
+// The "with-*" entries are team-composition tags (the fallback below reads them
+// as "w/ X"); the DPS chart's variant profiles (src/dpschart/matrix.ts
+// CHART_VARIANTS) are a per-unit BUILD/rotation choice, not a teammate, so they
+// need an explicit short label here rather than falling through to "w/ <id>".
 const PROFILE_LABELS: Record<string, string> = {
   'with-2mg': 'w/ 2 MG',
   'with-1mg': 'w/ 1 MG',
@@ -39,6 +43,9 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
+  snipe: 'Snipe',
+  distributed: 'Distributed',
+  'bursts-second': 'Bursts Second',
 };
 // Exported for the unit card's profile chips (plan §8a: reuse this rather than
 // re-deriving the chip text — two spellings of "w/ Healer" on one page is the
@@ -53,7 +60,10 @@ export function profileLabel(id: string): string {
   const rest = id.startsWith('with-') ? id.slice(5) : id;
   return `w/ ${rest.replace(/-/g, ' ')}`;
 }
-const unitName = (
+// Exported for the DPS chart's bar-chart renderer (dpsChart.ts DpsBar.name has
+// no separate chip field — unlike the table cards, the tag has to be baked into
+// the drawn name string itself), so it can't drift from this same template.
+export const unitName = (
   units: Record<string, { name: string }>,
   slug: string,
   profile: string | null
