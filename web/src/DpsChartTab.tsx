@@ -267,7 +267,7 @@ export function DpsChartTab() {
             <dt>Cinderella: Crystal Wave</dt>
             <dd>
               Ranked <b>both</b> ways: her default MG row and a permanent{' '}
-              <b>Snipe</b>-mode weapon-swap row (tagged "Snipe" on the chart).
+              <b>Snipe</b>-mode weapon-swap row (tagged "SR" on the chart).
             </dd>
           </div>
           <div>

@@ -1,7 +1,7 @@
 // Presentational ranked-DPS bar chart (one infographic). Element-colored horizontal
 // bars, sorted desc, with an optional compare-unit annotation row and share buttons.
 // The shareable PNG is rendered separately via src/infographics/core/dpsChart.ts.
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import { relScore } from '../../../src/infographics/core/dpsChart';
 import { profileLabel } from '../../../src/infographics/core/rankTables';
@@ -43,6 +43,28 @@ export function DpsBarChart({
   onShareLink,
 }: DpsBarChartProps) {
   const max = Math.max(...bars.map((b) => b.dps), 1);
+  // Size the name column to the longest BARE name in this chart (e.g. "Snow
+  // White: Heavy Arms") so every plain row shows in full; a profiled row's
+  // pill then eats into that same budget, truncating the name instead of
+  // growing the row. Character count is a poor proxy for rendered width
+  // (capital-heavy short names can render wider than longer ones), so measure
+  // the real pixel width against the name span's own computed font — falls
+  // back to a `ch` estimate for the first paint, before layout is known.
+  const firstNameRef = useRef<HTMLSpanElement | null>(null);
+  const [maxNamePx, setMaxNamePx] = useState<number | null>(null);
+  useLayoutEffect(() => {
+    const el = firstNameRef.current;
+    const ctx = el && document.createElement('canvas').getContext('2d');
+    if (!ctx) {
+      return;
+    }
+    ctx.font = getComputedStyle(el).font;
+    setMaxNamePx(Math.max(...bars.map((b) => ctx.measureText(b.name).width)));
+  }, [bars]);
+  const nameColWidth =
+    maxNamePx != null
+      ? `${Math.ceil(maxNamePx) + 1}px`
+      : `${Math.max(...bars.map((b) => b.name.length), 1)}ch`;
   const thumbs = usePortraitThumbs(
     bars.map((b) => b.imageUrl),
     PORTRAIT_CSS
@@ -113,6 +135,9 @@ export function DpsBarChart({
           {bars.map((b, i) => (
             <div
               className="dpschart-row ranks-row"
+              style={{
+                gridTemplateColumns: `18px 33px ${nameColWidth} minmax(0, 1fr) auto`,
+              }}
               key={`${b.slug}:${b.profile ?? ''}`}
             >
               <span className="dpschart-rank">{i + 1}</span>
@@ -130,21 +155,19 @@ export function DpsBarChart({
                   aria-hidden="true"
                 />
               )}
-              <span className="ranks-name">
+              <span className="ranks-name dpschart-name-row">
                 <span
                   className="dpschart-name"
+                  ref={i === 0 ? firstNameRef : undefined}
                   title={`${b.name} · ${b.weapon} · ${b.element}`}
                 >
                   {b.name}
-                  {b.profile && (
-                    <span
-                      className="ranks-badge"
-                      title={profiles?.[b.profile]}
-                    >
-                      {profileLabel(b.profile)}
-                    </span>
-                  )}
                 </span>
+                {b.profile && (
+                  <span className="ranks-badge" title={profiles?.[b.profile]}>
+                    {profileLabel(b.profile)}
+                  </span>
+                )}
               </span>
               <span className="dpschart-track">
                 <span

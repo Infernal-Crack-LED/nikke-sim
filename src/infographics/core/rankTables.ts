@@ -43,7 +43,7 @@ const PROFILE_LABELS: Record<string, string> = {
   'with-healer': 'w/ Healer',
   'with-mast-rm': 'w/ Mast RM',
   'with-shielder': 'w/ Shielder',
-  snipe: 'Snipe',
+  snipe: 'SR',
   distributed: 'Distributed',
   'bursts-second': 'Bursts Second',
 };

@@ -2473,6 +2473,21 @@ footer {
   white-space: nowrap;
   vertical-align: 1px;
 }
+
+/* DPS chart name column: name truncates to make room for its pill, the pill
+   itself never shrinks (the row's own grid track is sized to the chart's
+   longest bare name — see DpsBarChart's inline gridTemplateColumns). */
+.dpschart-name-row {
+  flex-direction: row;
+  align-items: center;
+}
+.dpschart-name-row .dpschart-name {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.dpschart-name-row .ranks-badge {
+  flex-shrink: 0;
+}
 .ranks-cond {
   margin-left: 2px;
   color: var(--warn);
