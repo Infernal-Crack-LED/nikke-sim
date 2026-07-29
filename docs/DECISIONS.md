@@ -2547,3 +2547,115 @@ pixel measurement — they change no constant, no default and no board value):
 it accepted 0 of 30 popups on the one hand-read probe available, because that unit's value bands
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
+
+## DPS chart drops the enikk-proven ("meta") gate — every sim-supported B3 is now ranked (2026-07-29)
+
+**Decision.** `scripts/build-dpschart.ts`'s tested population no longer requires
+`generatorSupported` (enikk top-100 usage) or a bossing tier in `{SSS,SS,S,A,B}`. Eligibility is now
+just: burst III (or the same `FORCED_BURST`-style pin the team generators use, `src/teamcalc.ts`) +
+`simSupported` (has a real kit override). Owner ruling: the chart's job is to rank every unit the sim
+can actually model, not just units popular enough to show up in enikk's top-ranker sample — "meta
+only" was never the intent, just an accident of reusing the generator's eligibility flag.
+
+**Why.** QUEUE.md flagged 7 sim-supported B3s rendering two large "Not ranked on this board" plates
+each (`2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`) — the
+only sim-supported units with no bar chart at all. Investigation found three independent causes, not
+one: `2b`/`a2`/`phantom`/`sugar` simply aren't on the enikk union (low real-world usage, not a bug);
+`rei-ayanami`/`rei-ayanami-tentative-name` ARE on the union but under aliased display names
+(`"Rei"`/`"Rei (Tentative Name)"`) that `data/enikk-supported.json` never reconciles against
+`characters.json`'s real names — a separate, still-open bug for surfaces that still use
+`generatorSupported` (the roster/team generators); `sugar`'s tier `C` independently failed the old
+`SELECTOR_TIERS` gate. `red-hood` (Λ, all-stage burst) was excluded by the `burst !== 'III'` filter
+outright — nothing to do with support flags. Rather than patch each cause separately (manually
+allowlisting the enikk-unproven units, fixing the alias, special-casing the tier), the owner chose to
+retire the shared root cause: **the "meta-only" gate itself**, since the game and the sim now support
+far more of the roster than enikk's top-100 usage sample reflects. This also incidentally fixed an
+8th unit the original QUEUE triage missed: `laplace-ultimate-hero` (same not-on-the-enikk-union cause
+as the AR/RL/SG group).
+
+**What landed.**
+
+1. **`scripts/build-dpschart.ts`** — population filter is now `effBurst(slug, c.burst) === 'III' &&
+c.simSupported && tiersFile.tiers[slug]` (the tier existence check is a defensive boundary guard;
+   every current sim-supported B3 already has one). `CHART_TIERS` (SSS/SS → shown as a ranked bar by
+   default; everything else selector-only) is unchanged — that's a display-density concern, not an
+   eligibility one.
+2. **`src/dpschart/matrix.ts` `CHART_PROFILES`** — added `'red-hood': { lambdaStage: 3 }`, pinning her
+   sim rotation to burst stage 3 (same mechanism as `bready`'s taste profile) so she actually occupies
+   the tested B3 slot instead of free-running as a Λ wildcard. The web tab's "Custom Profiles"
+   disclosure already documented "Red Hood & Rapi: Red Hood — Operate as Burst III (B3)" before this
+   landed; the backend just never delivered on it.
+3. **`scripts/build-infographics.ts`** — trimmed the now-stale comment sentence claiming
+   sim-supported-but-unranked B3s were "a DATA gap, tracked in QUEUE.md" (this landing closes that
+   gap for the 8 units it applied to).
+
+**Evidence.** Population grew from 43 to 51 B3s; regenerated `web/public/dpschart.json` (build output,
+gitignored) confirmed all 8 target slugs present. `red-hood` produces a sane, non-zero, mid-pack DPS
+in both the Solo framework (750,036, rank 31/51 in `solo.neutral.c0.scope`) and a named-control
+framework (2,081,905, rank 31/51 in `standard.neutral.c0.scope`) — not zero, not an outlier, confirming
+the `lambdaStage` pin works in both team-assembly shapes. `npm run test:dpschart` (dedicated build +
+smoke test) passes; rendered unit cards for `red-hood` and `sugar` (`scripts/render-unit-card.ts`)
+show real ranked bars in place of the former "Not ranked on this board" plates. Full `verify.sh` green
+(2148 unit tests, all regression suites) with these changes.
+
+**Explicitly NOT fixed here.** The `rei-ayanami`/`rei-ayanami-tentative-name` display-name alias bug in
+`data/enikk-supported.json` still affects every OTHER surface that gates on `generatorSupported`
+(the roster/team generators) — only the DPS chart stopped checking that flag. Tracked as an open
+follow-up in QUEUE.md.
+
+## DPS chart build: skip-if-unchanged gate against the live artifact (2026-07-29)
+
+**Decision.** `scripts/build-dpschart.ts` now hashes every file its computation actually depends on
+and, before running a single cell, compares that hash against the `inputsHash` embedded in the
+CURRENTLY LIVE `${NIKKESIM_SITE_ORIGIN}/dpschart.json` (default `https://nikkesim.app`). On a match
+it downloads and reuses that artifact byte-for-byte; on any mismatch, fetch error, timeout, or
+missing field it falls through to the full rebuild — fail-open on anything uncertain, never skip on
+doubt. `--force` bypasses the check unconditionally (manual/testing use).
+
+**Why.** The B3 population expansion earlier this session (43→51 units) pushed the full rebuild to
+~4m08s, and most deploys touch nothing this artifact depends on — infographics/web/share-config work
+is the bulk of this repo's actual commit traffic. The owner asked for a file-watch, but there's no
+long-running process during a one-shot Railway build for a watcher to live in; a skip-if-unchanged
+gate is the equivalent for a build step. The owner also asked whether the artifact needs to be
+committed to git so a hash could survive between fresh Railway build containers — it doesn't: the
+LIVE PRODUCTION URL already persists across deploys independent of the build container, so fetching
+it at build time supplies the "did anything change" reference with no new infra (no Railway cache
+mount, no DB, nothing committed). This deliberately avoids reopening the 2026-07-23 `verify.sh`
+ruling against committing the derived artifact to git (rejected then for diff noise/merge conflicts
+across concurrent sessions, and because a stale committed copy would let a smoke test assert against
+an older engine's output while reporting green) — this mechanism never touches git at all, and
+shares only the discipline that ruling implies: fail toward a rebuild, never toward a silent stale
+skip.
+
+**What's hashed, and why directories instead of a hand-maintained file list** (owner steer: don't
+hand-maintain the code-file list). Three directories are hashed WHOLESALE — `src/dpschart/`
+(matrix/run/noop — cell + team-assembly logic), `src/engine/` (sim.ts + the sg-geometry.ts/unigeo*.ts
+it imports — the damage formula itself), `src/skills/overrides/` (every unit's kit model, ~93 files)
+— so a new file added inside any of them needs no update to the hash list; a directory walk covers it
+automatically. Six files are hand-listed individually (`prepare.ts`, `bestol.ts`, `relationship.ts`,
+`elements.ts`, `types.ts`, plus four `src/skills/*.ts` helpers) because they sit flat under `src/`
+with unrelated siblings (`teamcalc.ts`, `ranks/`, `share/`, `server/`, …) and there is no directory
+boundary that would isolate them without also dragging in code that has nothing to do with the DPS
+chart's math. Eight data files round out the list, including two a naive read of
+`build-dpschart.ts` alone would miss: `data/gauge-per-shot.json` and `data/relationship-bonus.json`,
+both pulled in only via static `with { type: 'json' }` imports inside `engine/sim.ts` and
+`relationship.ts` respectively.
+
+**Evidence.** Verified all four branches directly: (1) unchanged inputs against a local mock of the
+live endpoint → reused the artifact byte-identical, 0.45s vs the ~4min full run; (2) a deliberately
+wrong `inputsHash` on the mock → correctly fell through to a full rebuild; (3) `--force` → bypassed
+the check and ran fully even with a matching mock; (4) an unreachable origin (connection refused) →
+failed open to a full rebuild immediately, no hang. `npm run typecheck` clean; full `bash
+scripts/verify.sh` and `bash scripts/verify.sh deploy` both green end-to-end (2164 tests; the deploy
+run took 7m05s total on this box, correctly doing a full rebuild since the real
+`nikkesim.app/dpschart.json` doesn't carry an `inputsHash` yet — this lands cold on the very next
+real deploy, then hits the fast path once a deploy with no relevant changes follows).
+
+**Also landed alongside (unrelated fixture drift, surfaced by this work):** the
+`unit-card.{discord,twitter}.png` golden fixtures were stale by one Burst Gen rank (#36→#37 for
+Crown) — ordinary roster-data churn unrelated to the dps-chart change (Crown's card doesn't read
+`dpschart.json` at all; it reads the burstgen/sustain/buffer boards only), never caught before
+because the golden test SKIPS when `web/public/*.json` doesn't exist on disk, which it hadn't during
+prior sessions' test runs. Regenerated via `npm run fixtures:infographics`, diff eyeballed
+(`git diff --stat` showed only these two files touched; the rendered before/after differ in exactly
+the one rank number).

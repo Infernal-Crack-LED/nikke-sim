@@ -324,11 +324,17 @@ export interface TestedUnit {
 // carry, encoding a modeling choice the plain defaults don't capture. Documented for
 // players in the "Custom Profiles" disclosure on the DPS Rankings tab. Keep the two in sync.
 //   bready          — run in her Distributed taste (Recommended Taste; the distributed-buff branch)
+//   red-hood        — Λ (all-stage) unit pinned to burst stage 3 so she occupies the tested
+//                     B3 slot like any other carry (the population filter in
+//                     scripts/build-dpschart.ts already pins her effective burst class to
+//                     'III'; this pins the sim rotation itself — same forced mapping as the
+//                     team generators, src/teamcalc.ts FORCED_BURST)
 // NOTE (backend TODO): diesel-winter-sweets "bursts second / Highlight" is NOT encoded here
 // yet — it needs real burst-order/Highlight modeling; see docs/handoffs/QUEUE.md. It is documented in
 // the Custom Profiles note only, so the chart keeps her faithful Intro numbers for now.
 export const CHART_PROFILES: Record<string, Partial<UnitOptions>> = {
   bready: { mode: 'distributed' },
+  'red-hood': { lambdaStage: 3 },
 };
 
 // Build the 4- or 5-unit control team for one cell + tested unit. Pass

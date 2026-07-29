@@ -89,16 +89,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
      browser can't, but the icon set is static and tracked, so the extension is knowable at build
      time — carry it in the `iconNames` mapping (e.g. entries become `{ name, ext }`).
 
-- **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
-  `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.
-  A B3/Λ unit's whole card is its two DPS charts, so an absent one renders two large "Not
-  ranked on this board" plates — those 7 are the only sim-supported units with no bar chart at
-  all (of 90). Not researched; no handoff written.
-  - **Ruling (owner, 2026-07-28): no second-class fallback layout.** A B3/Λ unit that is NOT
-    sim-supported simply gets NO CARD (`scripts/build-infographics.ts` `unitJobs`) — 27 units,
-    54 images. The 7 above keep their cards because their emptiness is a DATA gap this item
-    closes, not a permanent state. B1/B2 units are unaffected either way: buffer / sustain /
-    burst-CDR rank unsupported units too.
+- **⇒ REI-AYANAMI ENIKK ALIAS BUG — still open for `generatorSupported`-gated surfaces (roster/team
+  generators).** `data/enikk-supported.json`'s `names` list carries enikk's raw display names
+  (`"Rei"` / `"Rei (Tentative Name)"`) instead of the `NAME_TO_SLUG_OVERRIDES`-aliased form
+  `scripts/enikk/roster-audit.ts` already uses for its own audit doc, so `src/data/sync.ts`'s
+  `generatorSupported = proven.has(normalizeName(c.name))` string-match silently fails for both
+  `rei-ayanami` and `rei-ayanami-tentative-name` even though they ARE on the enikk top-100 union.
+  Found + fixed for the DPS chart (2026-07-29, DECISIONS — the chart dropped the `generatorSupported`
+  gate entirely), but the underlying alias bug is untouched and still under-counts both slugs on
+  every OTHER surface that reads that flag. Fix: apply the alias map when `roster-audit.ts` writes
+  `enikk-supported.json`, or switch that artifact to match by slug instead of free-text name.
 
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
