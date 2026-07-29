@@ -604,7 +604,7 @@ export function CharacterCards({
                     />
                   ))}
                   <img
-                    src={miniThumbs[burstSrc] ?? burstSrc}
+                    src={filter.miniThumbs[burstSrc] ?? burstSrc}
                     alt={`Burst ${c.burst}`}
                     title={`Burst ${c.burst}`}
                     className="teambuilder-mini-icon"

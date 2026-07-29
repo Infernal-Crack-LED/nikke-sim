@@ -15,13 +15,9 @@
       "Sim and Roster Sim have a Share result button that mints a short link to your setup. Sharing the same setup twice gives you the same link back rather than piling up new ones.",
       "A shared card now carries the damage numbers it was simmed with, instead of showing the team composition alone.",
       "Those numbers are a snapshot taken in your browser at the moment you shared, so the card stamps the date it was simmed — an older card stays readable and tells you it predates a later balance or accuracy change, rather than quietly showing stale figures.",
-      "Not signed in, or the link service is unavailable? Sharing still works — it falls back to the long self-contained link, same as before."
-    "title": "Resource Calculator icons, a tier label fix, and copy feedback everywhere",
-    "notes": [
+      "Not signed in, or the link service is unavailable? Sharing still works — it falls back to the long self-contained link, same as before.",
       "The Anomaly Interception calculator now shows each drop's in-game icon beside its number — custom modules, gear, fragments, locks and XP fodder — both on the page and in the image you copy.",
-      "Label fix: Anomaly Interception drops T9 gear and T9 fragments, not T10. The page said T10 throughout; every mention is corrected. (T10 elsewhere on the site still means overload gear, which is unaffected.)",
-      "Every Copy image button now flashes \"✓ Copied\" once the image is on your clipboard, so you can tell it worked — Optimize Overload, Overload Rolling, Overload Breakpoints, Doll Leveling and the Resource Calculator.",
-      "The Rankings and Overload pages no longer show the team save/share buttons in their header. Nothing on those pages is a team, so those buttons had nothing to act on; each page still shares through its own Copy image button."
+      "Label fix: Anomaly Interception drops T9 gear and T9 fragments, not T10. The page said T10 throughout; every mention is corrected. (T10 elsewhere on the site still means overload gear, which is unaffected.)"
     ]
   },
   {
