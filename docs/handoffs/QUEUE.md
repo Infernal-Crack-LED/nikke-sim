@@ -63,10 +63,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   1. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
      the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
      (that fallback is tested).
-  2. **Untested at the icon swap.** The burst/class icons were replaced site-wide with the
-     owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is now
-     RASTER everywhere, ~100px native — fine at every size either surface draws today, but a
-     future surface wanting it large has no vector source.
+  2. **Bot side NOT started** — `/nikke` must show a "not sim supported" line when a unit is in
+     the manifest's new `notSimSupported` list (27 units with no card ON PURPOSE), and must NOT
+     show it for a transient miss (outage / newly-synced unit). Spec, contract and test list:
+     bakery-bot `docs/handoffs/2026-07-28-nikke-unit-card-not-supported.md`. Safe to ship
+     before the nikke-sim deploy — an older manifest has no such field and every lookup
+     answers false.
+  3. **No vector source for burst any more.** The burst/class icons were replaced site-wide with
+     the owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is
+     now RASTER everywhere, ~100px native — fine at every size either surface draws today, but
+     a future surface wanting it large has nothing to rasterize from.
 
 - **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
   `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.

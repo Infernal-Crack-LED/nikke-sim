@@ -415,10 +415,13 @@ function tableJobs(): Job[] {
 //
 // Keys carry the variant (`unit/<slug>.<variant>`) — a shared key would serve
 // the landscape card to a portrait request out of an immutable cache.
+// `skipped` is an OUT param: the deliberately-cardless slugs go into the
+// manifest so a consumer can tell "no card on purpose" from "no card yet".
 function unitJobs(
   chars: CharacterRow[],
   sources: UnitCardSourceSet,
-  limit: number | null
+  limit: number | null,
+  skipped: string[]
 ): Job[] {
   // A B3/Λ card's whole left column is its two DPS charts, and those come from
   // the DPS chart, which only ranks sim-supported units. An unsupported B3
@@ -434,6 +437,11 @@ function unitJobs(
     (c) =>
       !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
   );
+  for (const c of chars) {
+    if (!eligible.includes(c)) {
+      skipped.push(c.slug);
+    }
+  }
   const sorted = [...eligible].sort((a, b) => a.slug.localeCompare(b.slug));
   const picked = limit === null ? sorted : sorted.slice(0, limit);
   const jobs: Job[] = [];
@@ -487,6 +495,12 @@ interface ManifestImage {
 interface Manifest {
   generatedAt: string;
   images: Record<string, ManifestImage>;
+  // Slugs with NO unit card ON PURPOSE (unsupported B3/Λ — see unitJobs). A
+  // consumer cannot otherwise tell this apart from the other ways a card can be
+  // missing (manifest outage, a unit synced after the last deploy), which are
+  // transient and mean something different to a user. bakery-bot's /nikke uses
+  // it to say "not sim supported" only when that is actually true.
+  notSimSupported: string[];
 }
 
 const hash8 = (png: Buffer): string =>
@@ -526,7 +540,13 @@ async function main(): Promise<void> {
         `render 'Unranked' for them: ${sources.missing.join(', ')} (${DATA_HINT})`
     );
   }
-  const jobs: Job[] = unitJobs(Object.values(chars.characters), sources, LIMIT);
+  const notSimSupported: string[] = [];
+  const jobs: Job[] = unitJobs(
+    Object.values(chars.characters),
+    sources,
+    LIMIT,
+    notSimSupported
+  );
   if (LIMIT === null) {
     // full set: DPS charts + rank boards (needs the web/public artifacts)
     const dpschart = loadJson<DpsArtifact>(
@@ -547,7 +567,11 @@ async function main(): Promise<void> {
     rmSync(join(OUT_DIR, dir), { recursive: true, force: true });
   }
   rmSync(join(OUT_DIR, 'manifest.json'), { force: true });
-  const manifest: Manifest = { generatedAt: '', images: {} };
+  const manifest: Manifest = {
+    generatedAt: '',
+    images: {},
+    notSimSupported: [...notSimSupported].sort(),
+  };
   let totalBytes = 0;
   let totalPx = 0;
 

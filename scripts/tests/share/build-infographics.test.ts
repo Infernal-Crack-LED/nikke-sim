@@ -6,6 +6,7 @@
 //   - content-hashed filenames: <logical-key>.<sha256(bytes)[0:8]>.<ext>
 //   - manifest.json schema: { generatedAt, images[key] = { file, hash, bytes,
 //     width, height } } matching the bytes on disk
+//   - notSimSupported: the deliberately-cardless slugs, disjoint from `images`
 //   - determinism: a second run reproduces identical hashes
 import { describe, expect, it } from 'vitest';
 import { execFile } from 'node:child_process';
@@ -14,6 +15,7 @@ import { createHash } from 'node:crypto';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const run = promisify(execFile);
 const SCRIPT = new URL('../../build-infographics.ts', import.meta.url);
@@ -30,6 +32,9 @@ interface Manifest {
     string,
     { file: string; hash: string; bytes: number; width: number; height: number }
   >;
+  // Slugs deliberately given no card (unsupported B3/Λ) — a consumer contract,
+  // see the test below.
+  notSimSupported: string[];
 }
 
 async function build(outDir: string): Promise<Manifest> {
@@ -93,6 +98,50 @@ describe('build-infographics manifest + content hashing', () => {
           expect(entry.width).toBe(2400);
           expect(entry.height).toBe(1200);
         }
+      }
+    } finally {
+      rmSync(out, { recursive: true, force: true });
+    }
+  });
+
+  it('lists the deliberately-cardless slugs, and never renders one', async () => {
+    // bakery-bot's /nikke depends on this: a null card lookup is ambiguous
+    // between "no card on purpose" and "no card yet" (manifest outage, or a
+    // unit synced after the last deploy), and only the first should tell a user
+    // the unit is not sim-supported.
+    const out = mkdtempSync(join(tmpdir(), 'infographics-skip-'));
+    try {
+      const manifest = await build(out);
+      expect(Array.isArray(manifest.notSimSupported)).toBe(true);
+      expect(manifest.notSimSupported.length).toBeGreaterThan(0);
+      // sorted, so the manifest stays diff-friendly
+      expect(manifest.notSimSupported).toEqual(
+        [...manifest.notSimSupported].sort()
+      );
+      // the two halves are disjoint by construction — a listed slug has no card
+      for (const slug of manifest.notSimSupported) {
+        expect(manifest.images[`unit/${slug}.discord`]).toBeUndefined();
+        expect(manifest.images[`unit/${slug}.twitter`]).toBeUndefined();
+      }
+      // and each one is genuinely an unsupported B3/Λ, not an arbitrary drop
+      const chars = (
+        JSON.parse(
+          readFileSync(
+            fileURLToPath(new URL('../../../data/characters.json', import.meta.url)),
+            'utf8'
+          )
+        ) as {
+          characters: Record<
+            string,
+            { burst: string; simSupported?: boolean }
+          >;
+        }
+      ).characters;
+      for (const slug of manifest.notSimSupported) {
+        const c = chars[slug];
+        expect(c, slug).toBeTruthy();
+        expect(['III', 'Λ'], slug).toContain(c.burst);
+        expect(c.simSupported, slug).toBe(false);
       }
     } finally {
       rmSync(out, { recursive: true, force: true });
