@@ -42,6 +42,19 @@ const burstcdr = load<any>('web/public/burstcdr.json');
 const characters = load<any>('data/characters.json')!;
 const haveBoards = !!(dpschart && burstgen && bufferchart && sustain && burstcdr);
 
+// DPS-chart variant units (src/dpschart/matrix.ts CHART_VARIANTS, landed
+// 2026-07-29): their own card headlines the PROFILED row (see findHits/
+// headline in unitCardData.ts), which is not necessarily the row at their
+// raw array position — so a plain "rank == array index + 1" check only holds
+// for a non-variant slug. Tests below that sample "the #1 unit" or "unit at
+// array index i" skip past a variant landing on that boundary instead of
+// asserting a rank that dpsTile deliberately doesn't report for it.
+const DPS_VARIANT_SLUGS = [
+  'cinderella-crystal-wave',
+  'bready',
+  'diesel-winter-sweets',
+];
+
 const boards = () => ({ dpschart, burstgen, bufferchart, sustain, burstcdr });
 
 const charOf = (slug: string): UnitCardCharacter => {
@@ -216,6 +229,9 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
 describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
   it.runIf(haveBoards)('DPS tiles carry the rel-score, and #1 reads 1.000', () => {
     const top = dpschart.cells[NEUTRAL_CELL][0][0];
+    if (DPS_VARIANT_SLUGS.includes(top)) {
+      return; // its own card headlines its profiled row instead — see above
+    }
     const model = build(top);
     expect(model.tiles[0].rank).toBe(1);
     expect(model.tiles[0].value).toBe('1.000');
@@ -231,7 +247,7 @@ describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
       // sample across the board, not just the top
       for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
         const slug = rows[i][0];
-        if (!characters.characters[slug]) {
+        if (!characters.characters[slug] || DPS_VARIANT_SLUGS.includes(slug)) {
           continue;
         }
         const model = build(slug);
@@ -343,30 +359,61 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
     }
   );
 
-  it.runIf(haveBoards)('the B3 DPS path can never carry a profile', () => {
-    // dpschart has no `profiles` key at all, so this is structural, not a
-    // property of today's data.
-    expect(dpschart.profiles).toBeUndefined();
-    for (const slug of Object.keys(characters.characters)) {
-      const c = characters.characters[slug];
-      if (!isDpsSet(c.burst)) {
-        continue;
-      }
-      const model = build(slug);
-      expect(model.tiles[0].profileChip, slug).toBeNull();
-      expect(model.tiles[1].profileChip, slug).toBeNull();
-      for (const chart of model.charts) {
-        expect(chart.rows.every((r) => !r.isDefaultAppendix), slug).toBe(true);
+  // Variant profiles landed on the DPS chart 2026-07-29 (src/dpschart/matrix.ts
+  // CHART_VARIANTS) — cinderella-crystal-wave (Snipe), bready (Distributed),
+  // diesel-winter-sweets (Bursts Second). Every OTHER B3 still carries none.
+  it.runIf(haveBoards)(
+    'a DPS-chart variant unit carries a profile chip + default rank, like the other boards',
+    () => {
+      for (const slug of DPS_VARIANT_SLUGS) {
+        const model = build(slug);
+        for (const idx of [0, 1]) {
+          const tile = model.tiles[idx];
+          expect(tile.profileChip, `${slug} tile ${idx}`).not.toBeNull();
+          expect(tile.defaultRank, `${slug} tile ${idx}`).not.toBeNull();
+          expect(tile.rank, `${slug} tile ${idx}`).not.toBeNull();
+        }
       }
     }
-  });
+  );
+
+  it.runIf(haveBoards)(
+    'every non-variant B3 still carries no profile on the DPS chart',
+    () => {
+      for (const slug of Object.keys(characters.characters)) {
+        const c = characters.characters[slug];
+        if (!isDpsSet(c.burst) || DPS_VARIANT_SLUGS.includes(slug)) {
+          continue;
+        }
+        const model = build(slug);
+        expect(model.tiles[0].profileChip, slug).toBeNull();
+        expect(model.tiles[1].profileChip, slug).toBeNull();
+        for (const chart of model.charts) {
+          expect(chart.rows.every((r) => !r.isDefaultAppendix), slug).toBe(
+            true
+          );
+        }
+      }
+    }
+  );
 });
 
 describe('buildUnitCardData — neighbourhood windows', () => {
+  // If the true boundary slot's slug is a DPS-chart variant unit, ITS OWN card
+  // headlines the PROFILED row (see findHits/headline in unitCardData.ts),
+  // which generally sits at a DIFFERENT rank than its plain row's raw array
+  // position — so building ITS card would not center the window on this exact
+  // array edge, and the assertion below isn't testing what it claims to. Skip
+  // rather than assert a rank dpsTile deliberately doesn't report for it (the
+  // profiled-vs-plain-rank behavior is exercised separately above).
+
   it.runIf(haveBoards)('a #1 unit still gets a full-height chart', () => {
     // The most postable card must not be the one that looks broken: clamping at
     // the board edge re-expands rather than truncating.
     const top = dpschart.cells[NEUTRAL_CELL][0][0];
+    if (DPS_VARIANT_SLUGS.includes(top)) {
+      return;
+    }
     const model = build(top);
     const chart = model.charts[0];
     expect(chart.rows).toHaveLength(NEIGHBOUR_ROWS * 2 + 1);
@@ -376,7 +423,7 @@ describe('buildUnitCardData — neighbourhood windows', () => {
   it.runIf(haveBoards)('a last-place unit also gets a full-height chart', () => {
     const rows = dpschart.cells[NEUTRAL_CELL];
     const last = rows[rows.length - 1][0];
-    if (!characters.characters[last]) {
+    if (!characters.characters[last] || DPS_VARIANT_SLUGS.includes(last)) {
       return;
     }
     const chart = build(last).charts[0];

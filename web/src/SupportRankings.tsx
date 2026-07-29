@@ -66,6 +66,12 @@ const PROFILE_LABELS: Record<string, string> = {
   'w/ Mint': 'w/ Mint',
   'w/ Anchor': 'w/ Anchor',
   'w/ Bunny': 'w/ Bunny',
+  // DPS-chart-only variant profiles (src/dpschart/matrix.ts CHART_VARIANTS) —
+  // this page never reads dpschart.json, but rankTables.ts's copy is kept in
+  // sync per the shared comment on both maps.
+  snipe: 'Snipe',
+  distributed: 'Distributed',
+  'bursts-second': 'Bursts Second',
 };
 function profileLabel(id: string): string {
   if (PROFILE_LABELS[id]) {

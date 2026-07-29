@@ -518,15 +518,11 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `/scientific-method`. The generator already enforces their same-team pairing
   (`genCalc.TEAM_CONSTRAINTS`, relaxes if one is unavailable).
 
-- **⇒ WEB/DPS-CHART PROFILE TODOs (2 deferred backend items).**
-  - **Bready taste** — currently a MANUAL `sustained | distributed` mode pill. TODO: auto-derive the
-    live taste from the team's actual buff types, model the tasteless state (both buff types absent →
-    taste-gated lines + charge-speed debuff inert), measure the taste-line magnitudes (all ⚑).
-    `src/skills/overrides/bready.json`.
-  - **Diesel: Winter Sweets Highlight** — chart scores with the faithful Intro (bursts-first) numbers
-    (owner ruling 2026-07-17: doc-only). TODO: model the burst-order-coupled Highlight (a no-op B3 must
-    drive FB; Sustained ▲235.03 vs Intro ▲60.19, loses burst DoTs + team Damage-Taken ▲25% amp).
-    `src/skills/overrides/diesel-winter-sweets.json`.
+- **⇒ WEB/DPS-CHART PROFILE TODOs (1 deferred backend item).**
+  - **Bready taste** — currently a MANUAL `sustained | distributed` mode pill (now ranked BOTH ways on
+    the DPS chart, 2026-07-29). TODO: auto-derive the live taste from the team's actual buff types,
+    model the tasteless state (both buff types absent → taste-gated lines + charge-speed debuff
+    inert), measure the taste-line magnitudes (all ⚑). `src/skills/overrides/bready.json`.
 
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/2026-07-17-role-audit-followups.md`:** (1) custom-weaponry
   `role` sweep — mostly deflated by D; what's left = pierce-from-kit-text + (data-blocked) weapon-swap

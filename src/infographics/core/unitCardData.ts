@@ -82,7 +82,8 @@ export interface UnitCardCharacter {
 // import.meta.env and can't be imported by a script or a core renderer).
 export interface DpsArtifactLike {
   units: Record<string, { name: string; element: string; elements?: string[] }>;
-  cells: Record<string, [string, number][]>;
+  profiles?: Record<string, string>; // profile id → player-facing note
+  cells: Record<string, [string, number, string | null][]>;
 }
 
 // The two headline DPS cells, matching the pre-rendered chart set
@@ -245,25 +246,24 @@ function dpsTile(
   slug: string
 ): RankTile {
   const cell = art?.cells?.[cellId];
-  if (!cell?.length) {
-    return unrankedTile(title);
-  }
-  const index = cell.findIndex(([s]) => s === slug);
-  if (index < 0) {
+  const hits = findHits(cell, slug, 2);
+  const hit = headline(hits);
+  if (!hit || !cell?.length) {
     return unrankedTile(title);
   }
   const top = cell[0][1];
+  const dps = hit.row[1] as number;
   return {
     title,
-    rank: index + 1,
-    population: cell.length,
+    rank: hit.index + 1,
+    population: hits.entries.length,
     // rel-score vs the population #1 — the site's own DPS label (dpsChart.ts
     // relScore). NOT a raw DPS number: the boards are normalized, and a raw
     // number would imply a precision the card can't stand behind.
-    value: (top > 0 ? cell[index][1] / top : 0).toFixed(3),
+    value: (top > 0 ? dps / top : 0).toFixed(3),
     sub: 'rel. to #1',
-    profileChip: null, // dpschart has no profile concept at all
-    defaultRank: null,
+    profileChip: hit.profile ? profileLabel(hit.profile) : null,
+    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -402,29 +402,25 @@ function dpsChartRows(
   if (!cell?.length) {
     return emptyChart(title);
   }
-  const index = cell.findIndex(([s]) => s === slug);
-  if (index < 0) {
-    return emptyChart(title);
-  }
+  const hits = findHits(cell, slug, 2);
   const top = cell[0][1];
-  const all = cell.map(([s, dps], i) => ({ s, dps, i }));
-  const rows: BarRow[] = neighbourhood(all, index, each).map((r) => {
-    const meta = art?.units?.[r.s];
-    const rel = top > 0 ? r.dps / top : 0;
+  return boardChart(title, hits, each, (row, i, isUnit) => {
+    const [s, dps, profile] = row as [string, number, string | null];
+    const meta = art?.units?.[s];
+    const rel = top > 0 ? dps / top : 0;
     return {
-      slug: r.s,
-      name: meta?.name ?? r.s,
+      slug: s,
+      name: meta?.name ?? s,
       element: meta?.element ?? '',
       value: rel,
       label: rel.toFixed(3),
-      rank: r.i + 1,
-      isUnit: r.s === slug,
+      rank: i + 1,
+      isUnit: isUnit && s === slug,
       isDefaultAppendix: false,
-      profileChip: null,
+      profileChip: profile ? profileLabel(profile) : null,
       qualified: false,
     };
   });
-  return { title, rows, ...axis(rows.map((r) => r.value)), unranked: false };
 }
 
 // Chip text for the unit's own no-profile row (see boardChart).

@@ -64,7 +64,7 @@ function toChartData(
     title,
     topDps: population[0]?.dps ?? 0,
     bars: population.map((b) => ({
-      name: b.name,
+      name: b.displayName,
       element: b.element,
       dps: b.dps,
       slug: b.slug,
@@ -98,7 +98,7 @@ function toComparisonChartData(
     subtitle: `${picked.length}-unit comparison`,
     topDps: population[0]?.dps ?? 0,
     bars: picked.map((b) => ({
-      name: b.name,
+      name: b.displayName,
       element: b.element,
       dps: b.dps,
       slug: b.slug,
@@ -213,6 +213,7 @@ export function DpsChartTab() {
         subtitle={pageSubtitle}
         bars={bars}
         compare={cmp}
+        profiles={art.profiles}
         onShareLink={() => shareLink(c)}
         onShareImage={() =>
           copyDpsChartImage(toChartData(shareTitle, population, cmp))
@@ -257,17 +258,37 @@ export function DpsChartTab() {
           <div>
             <dt>Bready</dt>
             <dd>
-              Modeled in her <b>Distributed</b> taste (Recommended Taste — the
-              distributed-damage-buff branch).
+              Ranked <b>both</b> ways: her default row (Sustained taste) and a{' '}
+              <b>Distributed</b> row (the distributed-damage-buff branch,
+              tagged "Distributed" on the chart).
+            </dd>
+          </div>
+          <div>
+            <dt>Cinderella: Crystal Wave</dt>
+            <dd>
+              Ranked <b>both</b> ways: her default MG row and a permanent{' '}
+              <b>Snipe</b>-mode weapon-swap row (tagged "SR" on the chart).
+            </dd>
+          </div>
+          <div>
+            <dt>Maiden: Ice Rose</dt>
+            <dd>
+              Ranked <b>both</b> ways: her default row (bursts on the normal
+              rotation schedule) and a row that holds her burst until{' '}
+              <b>12 MP stacks</b> before casting (tagged "Burst at 12 MP" on
+              the chart — the same toggle as the Sim/Roster Sim "burst at 12
+              MP" checkbox).
             </dd>
           </div>
           <div>
             <dt>Diesel: Winter Sweets</dt>
             <dd>
-              Modeled as bursting <b>second</b> (her Highlight state deals more
-              sustained damage than bursting first) — but burst-order modeling
-              isn’t implemented yet, so her chart score still uses the Intro
-              (bursts-first) numbers.
+              Ranked <b>both</b> ways: her default row (bursts first) and a{' '}
+              <b>Bursts Second</b> row where she opens in Highlight — the
+              bigger sustained tier — instead of Intro (tagged "Bursts Second"
+              on the chart). Every row already alternates Intro/Highlight each
+              Full Burst as the fight goes on; the two rows differ only in
+              which one she opens with.
             </dd>
           </div>
           <div>
@@ -356,13 +377,18 @@ export function DpsChartTab() {
         <div className="dpschart-headliner" key={h.slug}>
           <h3>{h.name}</h3>
           <div className="dpschart-grid">
-            {h.cells.map((c) =>
-              renderChart(
-                c,
-                CORES[c.core].label,
-                `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`
-              )
-            )}
+            {/* Frontend-only trial (2026-07-29): drop Core 50 from the headliner
+                display to make room — matrix.ts still generates it (Full matrix
+                below keeps all 3), only this render skips it. */}
+            {h.cells
+              .filter((c) => c.core !== 'c50')
+              .map((c) =>
+                renderChart(
+                  c,
+                  CORES[c.core].label,
+                  `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`
+                )
+              )}
           </div>
         </div>
       ))}
@@ -392,11 +418,11 @@ export function DpsChartTab() {
                 <div className="pills">
                   {population.map((b) => (
                     <button
-                      key={b.slug}
+                      key={`${b.slug}:${b.profile ?? ''}`}
                       className={cmpUnits.includes(b.slug) ? 'on' : ''}
                       onClick={() => toggle(b.slug)}
                     >
-                      {b.name}
+                      {b.displayName}
                     </button>
                   ))}
                 </div>

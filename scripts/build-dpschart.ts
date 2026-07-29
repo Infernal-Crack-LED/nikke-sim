@@ -52,7 +52,9 @@ import {
   ELEADV_IDS,
   CORE_IDS,
   INVEST_IDS,
+  CHART_VARIANTS,
   type Cell,
+  type TestedUnit,
 } from '../src/dpschart/matrix.js';
 import { runCell, type RunCtx, type OptMemo } from '../src/dpschart/run.js';
 
@@ -269,20 +271,42 @@ for (const [slug, c] of Object.entries(data.characters)) {
 }
 population.sort((a, b) => a.name.localeCompare(b.name));
 
-const tested = population.map((u) => ({ slug: u.slug, element: u.element }));
+// A slug in CHART_VARIANTS is tested TWICE — its plain default row (profile:
+// null) and the variant row — and both compete in the SAME ranking, same
+// convention as the buffer/sustain/burstgen boards (src/ranks/*.ts).
+const tested: TestedUnit[] = population.flatMap((u) => {
+  const rows: TestedUnit[] = [
+    { slug: u.slug, element: u.element, profile: null },
+  ];
+  const variant = CHART_VARIANTS[u.slug];
+  if (variant) {
+    rows.push({ slug: u.slug, element: u.element, profile: variant.id });
+  }
+  return rows;
+});
 
 // run all cells, sharing one optimizer memo (keyed by tested×framework×eleadv)
 const memo: OptMemo = new Map();
-const cells: Record<string, [string, number][]> = {};
+const cells: Record<string, [string, number, string | null][]> = {};
 let done = 0;
 for (const cell of CELLS) {
   const ranked = runCell(cell as Cell, tested, ctx, memo);
-  cells[cellId(cell as Cell)] = ranked.map((r) => [r.slug, Math.round(r.dps)]);
+  cells[cellId(cell as Cell)] = ranked.map((r) => [
+    r.slug,
+    Math.round(r.dps),
+    r.profile,
+  ]);
   done++;
   if (done % 12 === 0) {
     process.stderr.write(`  …${done}/${CELLS.length} cells\n`);
   }
 }
+
+// player-facing note per profile id, surfaced on the DPS Rankings tab (mirrors
+// the other boards' `profiles` map — src/ranks/types.ts).
+const profiles: Record<string, string> = Object.fromEntries(
+  Object.values(CHART_VARIANTS).map((v) => [v.id, v.note])
+);
 
 const axis = <T extends { id: string; label: string }>(
   ids: string[],
@@ -323,6 +347,7 @@ const artifact = {
       },
     ])
   ),
+  profiles,
   cells,
   inputsHash,
 };
@@ -330,5 +355,7 @@ const artifact = {
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 process.stderr.write(
-  `dpschart: ${CELLS.length} cells × ${population.length} B3 (${population.filter((u) => u.chartPop).length} charted) → ${out}\n`
+  `dpschart: ${CELLS.length} cells × ${population.length} B3 ` +
+    `(${tested.length - population.length} profiled variant rows, ` +
+    `${population.filter((u) => u.chartPop).length} charted) → ${out}\n`
 );
