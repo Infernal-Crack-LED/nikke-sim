@@ -238,7 +238,14 @@ async function resolveRender(
       // decodeBuild checks only the envelope — the roster/slot contents are
       // attacker-controlled and size the canvas, so validate BEFORE rendering
       // (an unvalidated roster was a one-request ~1.6 GB canvas allocation).
-      const invalid = cardBuildError(build, spec.kind, !!spec.results);
+      // teams.length, not just spec.results truthiness — must match exactly
+      // what renderTeamCardPng/renderRosterCardPng branch on, else this sizes
+      // one layout while the renderer draws the other.
+      const invalid = cardBuildError(
+        build,
+        spec.kind,
+        !!spec.results?.teams?.length
+      );
       if (invalid) {
         return { error: invalid, status: 400 };
       }
