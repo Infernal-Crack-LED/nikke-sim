@@ -168,15 +168,27 @@ export function buildResourcesCard(
 export const RESOURCES_CARD_W = 940;
 const PAD_X = 32;
 const HEAD_H = 96; // icon + title + subtitle band, matches tableCard's HEAD_H
-// The site icon's top/bottom bounds match the CAP HEIGHT of the title text's
-// capital letters (measured directly off a rendered "R" glyph at this font/
-// weight/size: 700 24px Roboto draws ink from y=27 to y=43 against a
-// baseline of 44 — a 17px cap height, not the full 24px font size) — "in
-// line with the title bar", not the bigger, lower-slung 32px mark other cards
-// use beside a title block that also carries a subtitle underneath.
+const TITLE_BASELINE_Y = 44;
 const TITLE_FONT_SIZE = 24;
+// The title text's CAP HEIGHT (measured directly off a rendered "R" glyph at
+// this font/weight/size: 700 24px Roboto draws ink from y=27 to y=43 against
+// a baseline of 44 — a 17px cap height, not the full 24px font size).
 const TITLE_CAP_HEIGHT = 17;
-const ICON = TITLE_CAP_HEIGHT;
+
+// src/infographics/assets/nikkesim-icon.png is a 256×256 canvas, but the
+// actual bar art is NOT the full square — it's a rounded, transparent-
+// cornered PLATE with the bars drawn inset inside it (measured 2026-07-29 by
+// scanning for pixels off the plate's own background fill: the bars occupy
+// y=52..211 of the 256px source, an 0.625 fraction of the height, centered).
+// Sizing/positioning the drawn image by ITS OWN bounding box (what the first
+// pass here did) puts the PLATE'S edges on the title's cap height, not the
+// bars' — the bars end up visibly smaller and offset. Scaling the whole
+// plate so this measured content band lands on
+// [baseline - TITLE_CAP_HEIGHT, baseline] instead makes the visible bars —
+// not the plate — match the title's cap height.
+const ICON_CONTENT_FRAC_TOP = 52 / 256;
+const ICON_CONTENT_FRAC_BOTTOM = 212 / 256;
+const ICON = TITLE_CAP_HEIGHT / (ICON_CONTENT_FRAC_BOTTOM - ICON_CONTENT_FRAC_TOP);
 const FOOT_H = 40;
 
 const SECTION_TOP_GAP = 20; // space above a section's heading
@@ -204,7 +216,9 @@ export function resourcesCardHeight(sectionCount: number): number {
 // TABLE_TITLE_INK_REGION comment) — starts at the title's textX, past the icon.
 export const RESOURCES_TITLE_ICON = {
   x: PAD_X,
-  y: 44 - ICON, // bottom edge sits on the title's baseline (y=44)
+  // Positions the drawn PLATE so its measured bar-content band — not its own
+  // bounding box — has its bottom edge on the title's baseline.
+  y: TITLE_BASELINE_Y - ICON_CONTENT_FRAC_BOTTOM * ICON,
   size: ICON,
 } as const;
 export const RESOURCES_TITLE_INK_REGION = {
@@ -319,7 +333,7 @@ export function drawResourcesCard(
   }
   ctx.fillStyle = '#e7eaf0';
   ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
-  ctx.fillText(data.title, textX, 44);
+  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;
