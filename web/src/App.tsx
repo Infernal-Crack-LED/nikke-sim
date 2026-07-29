@@ -73,6 +73,7 @@ import type {
 } from '../../src/doll/policy';
 import { copyDpsChartImage } from './shareImage';
 import { copyTableCardImage, loadOlDefaultTable } from './tableShare';
+import { copyTextToClipboard } from './clipboard';
 import {
   buildChargeTable,
   buildAmmoTable,
@@ -575,6 +576,40 @@ const BOSS_RANGE_OPTIONS: { id: BossRange | null; label: string }[] = [
   { id: 'far', label: 'Very far' },
 ];
 
+// Base boss DEF for the two raid types — quick-fill pills sit beside every
+// Boss DEF field so a raid's known base value is one click away instead of a
+// hand-typed guess.
+const SR_DEFAULT_DEF = 30930; // Solo Raid base boss DEF (30.93k)
+const UR_DEFAULT_DEF = 12200; // Union Raid base boss DEF (12.2k)
+function BossDefPresetPills({
+  value,
+  onSet,
+}: {
+  value: string;
+  onSet: (v: string) => void;
+}) {
+  return (
+    <div className="pills small boss-def-pills">
+      <button
+        type="button"
+        className={Number(value) === SR_DEFAULT_DEF ? 'on' : ''}
+        onClick={() => onSet(String(SR_DEFAULT_DEF))}
+        title="Solo Raid base boss DEF (30.93k)"
+      >
+        SR
+      </button>
+      <button
+        type="button"
+        className={Number(value) === UR_DEFAULT_DEF ? 'on' : ''}
+        onClick={() => onSet(String(UR_DEFAULT_DEF))}
+        title="Union Raid base boss DEF (12.2k)"
+      >
+        UR
+      </button>
+    </div>
+  );
+}
+
 // Per-team boss options for Union Raid (each of the 3 teams fights a different boss)
 interface UnionBossOpts {
   weakness: Element | null;
@@ -586,7 +621,7 @@ interface UnionBossOpts {
 }
 const defaultUnionBossOpts = (): UnionBossOpts => ({
   weakness: null,
-  bossDef: '0',
+  bossDef: String(UR_DEFAULT_DEF),
   core: 0,
   coreCustom: false,
   coreCustomVal: '10',
@@ -1402,33 +1437,6 @@ function CharSearch({
   );
 }
 
-// Copy text to the clipboard, returning whether it worked. Tries the modern
-// async API first, then falls back to the legacy execCommand path (which still
-// works in insecure contexts where navigator.clipboard is blocked) — so the old
-// window.prompt("Copy this link:") dialog is no longer needed as a fallback.
-async function copyTextToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    /* fall through to the legacy path */
-  }
-  try {
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    ta.setAttribute('readonly', '');
-    ta.style.position = 'fixed';
-    ta.style.opacity = '0';
-    document.body.appendChild(ta);
-    ta.select();
-    const ok = document.execCommand('copy');
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
-}
-
 export function App({ user }: { user: AuthUser | null }) {
   // a full ?b= build (team + loadout + globals) prefills everything and wins
   // over ?team= / localStorage; computed once on mount
@@ -1451,7 +1459,11 @@ export function App({ user }: { user: AuthUser | null }) {
   const [weakness, setWeakness] = useState<Element | null>(
     boot ? coerceWeakness(boot.g.weakness) : null
   );
-  const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '0');
+  const [bossDef, setBossDef] = useState(boot?.g.bossDef ?? '1');
+  // Whether the user has ever hand-edited Boss DEF (vs. it still sitting at the
+  // untouched default) — read by the effect below that upgrades it to the Solo
+  // Raid base value the first time a Solo Raid roster view is opened.
+  const bossDefTouched = useRef(!!boot?.g.bossDef);
   const [bossRange, setBossRange] = useState<BossRange | null>(() => {
     const fromBuild = (boot?.g.bossRange as BossRange | null) ?? null;
     if (fromBuild) {
@@ -1685,6 +1697,22 @@ export function App({ user }: { user: AuthUser | null }) {
   // Roster Generator mode pill: Solo Raid (top 5) vs Union Raid (3 teams,
   // each with its own boss options).
   const [rosterGenMode, setRosterGenMode] = useState<'solo' | 'union'>('solo');
+  // Boss DEF is shared with Team Sim (Solo Raid roster search/sim runs off the
+  // same calcCfg()). The first time the user opens a Solo Raid roster view
+  // with an untouched field, upgrade it from the neutral Team Sim default (1)
+  // to the Solo Raid base value — but only once, and never after a manual
+  // edit, so it doesn't fight a value the user actually typed.
+  useEffect(() => {
+    if (bossDefTouched.current) {
+      return;
+    }
+    if (
+      (tab === 'rostersim' && rosterSimMode === 'solo') ||
+      (tab === 'roster' && rosterGenMode === 'solo')
+    ) {
+      setBossDef(String(SR_DEFAULT_DEF));
+    }
+  }, [tab, rosterSimMode, rosterGenMode]);
   const [unionGenBossOpts, setUnionGenBossOpts] = useState<UnionBossOpts[]>(
     Array.from({ length: 3 }, defaultUnionBossOpts)
   );
@@ -4315,6 +4343,10 @@ export function App({ user }: { user: AuthUser | null }) {
           value={o.bossDef}
           onChange={(e) => setOpt({ bossDef: e.target.value })}
         />
+        <BossDefPresetPills
+          value={o.bossDef}
+          onSet={(v) => setOpt({ bossDef: v })}
+        />
       </div>
       <div className="union-boss-row">
         <span className="union-boss-label">Boss range</span>
@@ -5366,7 +5398,7 @@ export function App({ user }: { user: AuthUser | null }) {
                       };
                     })}
                     onShareImage={() =>
-                      void copyDpsChartImage({
+                      copyDpsChartImage({
                         title: 'Unit Comparison — variable groups',
                         // synthetic comparison, not a ranked population: no
                         // window — every row renders; topDps = the top group.
@@ -7525,7 +7557,17 @@ export function App({ user }: { user: AuthUser | null }) {
                       <input
                         className="num"
                         value={bossDef}
-                        onChange={(e) => setBossDef(e.target.value)}
+                        onChange={(e) => {
+                          bossDefTouched.current = true;
+                          setBossDef(e.target.value);
+                        }}
+                      />
+                      <BossDefPresetPills
+                        value={bossDef}
+                        onSet={(v) => {
+                          bossDefTouched.current = true;
+                          setBossDef(v);
+                        }}
                       />
                     </div>
                     <div className="field">

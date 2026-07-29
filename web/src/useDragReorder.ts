@@ -145,3 +145,109 @@ export function useDragReorder(
 
   return { register, handleProps, dragIndex, overIndex };
 }
+
+// Drag an EXTERNAL item (e.g. a roster-grid card, identified by a payload
+// value rather than a registered index) onto one of N registered drop targets
+// — the counterpart to useDragReorder above, for a source that isn't itself
+// one of the registered items. overIndex tracks the slot the payload would
+// land on if released now (render it with the same `.droptarget` class
+// useDragReorder's commitOnDrop mode uses); the drop commits via
+// onDrop(payload, index) on release. A press that never crosses the drag
+// threshold calls onTap(payload) instead, so a plain click/tap keeps its usual
+// meaning (e.g. "add to the next open slot").
+export function useDropTarget<T>(
+  onDrop: (payload: T, index: number) => void,
+  onTap?: (payload: T) => void
+) {
+  const items = useRef(new Map<number, HTMLElement>());
+  const drag = useRef<{
+    pointerId: number;
+    payload: T;
+    startX: number;
+    startY: number;
+    moved: boolean;
+  } | null>(null);
+  const [dragPayload, setDragPayload] = useState<T | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
+
+  const register = (i: number) => (el: HTMLElement | null) => {
+    if (el) {
+      items.current.set(i, el);
+    } else {
+      items.current.delete(i);
+    }
+  };
+
+  const nearest = (x: number, y: number): number => {
+    let best = -1;
+    let bestDist = Infinity;
+    items.current.forEach((el, idx) => {
+      const r = el.getBoundingClientRect();
+      const dx = r.left + r.width / 2 - x;
+      const dy = r.top + r.height / 2 - y;
+      const d = dx * dx + dy * dy;
+      if (d < bestDist) {
+        bestDist = d;
+        best = idx;
+      }
+    });
+    return best;
+  };
+
+  const dragProps = (payload: T) => ({
+    onPointerDown: (e: ReactPointerEvent) => {
+      if (e.button && e.button !== 0) {
+        return;
+      }
+      drag.current = {
+        pointerId: e.pointerId,
+        payload,
+        startX: e.clientX,
+        startY: e.clientY,
+        moved: false,
+      };
+      e.currentTarget.setPointerCapture(e.pointerId);
+    },
+    onPointerMove: (e: ReactPointerEvent) => {
+      const st = drag.current;
+      if (!st || e.pointerId !== st.pointerId) {
+        return;
+      }
+      if (!st.moved) {
+        const dx = e.clientX - st.startX;
+        const dy = e.clientY - st.startY;
+        if (dx * dx + dy * dy < 36) {
+          return;
+        } // ~6px threshold before it's a drag
+        st.moved = true;
+        setDragPayload(payload);
+      }
+      const target = nearest(e.clientX, e.clientY);
+      setOverIndex(target >= 0 ? target : null);
+    },
+    onPointerUp: (e: ReactPointerEvent) => {
+      const st = drag.current;
+      if (!st || e.pointerId !== st.pointerId) {
+        return;
+      }
+      if (!st.moved) {
+        onTap?.(st.payload);
+      } else {
+        const target = nearest(e.clientX, e.clientY);
+        if (target >= 0) {
+          onDrop(st.payload, target);
+        }
+      }
+      drag.current = null;
+      setDragPayload(null);
+      setOverIndex(null);
+    },
+    onPointerCancel: () => {
+      drag.current = null;
+      setDragPayload(null);
+      setOverIndex(null);
+    },
+  });
+
+  return { register, dragProps, dragPayload, overIndex };
+}

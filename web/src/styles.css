@@ -416,6 +416,11 @@ header h1 {
   padding: 2px 9px;
   font-size: 12px;
 }
+/* SR/UR quick-fill pills under a Boss DEF input (Team Sim field + the
+   Union Raid per-team rows) — a little breathing room above the input */
+.boss-def-pills {
+  margin-top: 6px;
+}
 .gen-options-pills {
   margin: 8px 0;
 }
@@ -872,6 +877,14 @@ input.num {
 .chip.clear {
   color: var(--muted);
   border-style: dashed;
+}
+/* "Copied"/"Saved" flash on a share chip — same accent-fill treatment as
+   .share-btn.copied, scaled down to the chip's pill shape */
+.chip.copied {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0b1220;
+  font-weight: 600;
 }
 .calc-run {
   margin: 14px 0;
@@ -2773,6 +2786,16 @@ footer {
   gap: 12px;
   width: 100%;
 }
+/* Team Builder page only (not the modal, which already has its own sticky
+   .teambuilder-actions bar): float the slots over the grid on scroll, same
+   sticky-to-top-of-scrollport technique as .modal-wide .teambuilder-actions. */
+.teambuilder-team-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  background: var(--bg);
+  padding: 10px 0;
+}
 /* direct child = the 5-slot strip (team mode), which gets the wide chips; the
    expanded 5×5 nests .roster-input rows instead, so those slots fall through
    to the Roster Sim's own .roster-slots sizing — pixel-identical grid */
@@ -3138,6 +3161,11 @@ footer {
 }
 .teambuilder-card.unsupported:hover {
   opacity: 0.85;
+}
+/* being dragged up toward a team slot — same treatment as .card.dragging */
+.teambuilder-card.dragging {
+  opacity: 0.55;
+  outline: 2px dashed var(--accent);
 }
 .teambuilder-card:disabled {
   cursor: default;
