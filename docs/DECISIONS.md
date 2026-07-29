@@ -2602,3 +2602,60 @@ show real ranked bars in place of the former "Not ranked on this board" plates. 
 `data/enikk-supported.json` still affects every OTHER surface that gates on `generatorSupported`
 (the roster/team generators) — only the DPS chart stopped checking that flag. Tracked as an open
 follow-up in QUEUE.md.
+
+## DPS chart build: skip-if-unchanged gate against the live artifact (2026-07-29)
+
+**Decision.** `scripts/build-dpschart.ts` now hashes every file its computation actually depends on
+and, before running a single cell, compares that hash against the `inputsHash` embedded in the
+CURRENTLY LIVE `${NIKKESIM_SITE_ORIGIN}/dpschart.json` (default `https://nikkesim.app`). On a match
+it downloads and reuses that artifact byte-for-byte; on any mismatch, fetch error, timeout, or
+missing field it falls through to the full rebuild — fail-open on anything uncertain, never skip on
+doubt. `--force` bypasses the check unconditionally (manual/testing use).
+
+**Why.** The B3 population expansion earlier this session (43→51 units) pushed the full rebuild to
+~4m08s, and most deploys touch nothing this artifact depends on — infographics/web/share-config work
+is the bulk of this repo's actual commit traffic. The owner asked for a file-watch, but there's no
+long-running process during a one-shot Railway build for a watcher to live in; a skip-if-unchanged
+gate is the equivalent for a build step. The owner also asked whether the artifact needs to be
+committed to git so a hash could survive between fresh Railway build containers — it doesn't: the
+LIVE PRODUCTION URL already persists across deploys independent of the build container, so fetching
+it at build time supplies the "did anything change" reference with no new infra (no Railway cache
+mount, no DB, nothing committed). This deliberately avoids reopening the 2026-07-23 `verify.sh`
+ruling against committing the derived artifact to git (rejected then for diff noise/merge conflicts
+across concurrent sessions, and because a stale committed copy would let a smoke test assert against
+an older engine's output while reporting green) — this mechanism never touches git at all, and
+shares only the discipline that ruling implies: fail toward a rebuild, never toward a silent stale
+skip.
+
+**What's hashed, and why directories instead of a hand-maintained file list** (owner steer: don't
+hand-maintain the code-file list). Three directories are hashed WHOLESALE — `src/dpschart/`
+(matrix/run/noop — cell + team-assembly logic), `src/engine/` (sim.ts + the sg-geometry.ts/unigeo*.ts
+it imports — the damage formula itself), `src/skills/overrides/` (every unit's kit model, ~93 files)
+— so a new file added inside any of them needs no update to the hash list; a directory walk covers it
+automatically. Six files are hand-listed individually (`prepare.ts`, `bestol.ts`, `relationship.ts`,
+`elements.ts`, `types.ts`, plus four `src/skills/*.ts` helpers) because they sit flat under `src/`
+with unrelated siblings (`teamcalc.ts`, `ranks/`, `share/`, `server/`, …) and there is no directory
+boundary that would isolate them without also dragging in code that has nothing to do with the DPS
+chart's math. Eight data files round out the list, including two a naive read of
+`build-dpschart.ts` alone would miss: `data/gauge-per-shot.json` and `data/relationship-bonus.json`,
+both pulled in only via static `with { type: 'json' }` imports inside `engine/sim.ts` and
+`relationship.ts` respectively.
+
+**Evidence.** Verified all four branches directly: (1) unchanged inputs against a local mock of the
+live endpoint → reused the artifact byte-identical, 0.45s vs the ~4min full run; (2) a deliberately
+wrong `inputsHash` on the mock → correctly fell through to a full rebuild; (3) `--force` → bypassed
+the check and ran fully even with a matching mock; (4) an unreachable origin (connection refused) →
+failed open to a full rebuild immediately, no hang. `npm run typecheck` clean; full `bash
+scripts/verify.sh` and `bash scripts/verify.sh deploy` both green end-to-end (2164 tests; the deploy
+run took 7m05s total on this box, correctly doing a full rebuild since the real
+`nikkesim.app/dpschart.json` doesn't carry an `inputsHash` yet — this lands cold on the very next
+real deploy, then hits the fast path once a deploy with no relevant changes follows).
+
+**Also landed alongside (unrelated fixture drift, surfaced by this work):** the
+`unit-card.{discord,twitter}.png` golden fixtures were stale by one Burst Gen rank (#36→#37 for
+Crown) — ordinary roster-data churn unrelated to the dps-chart change (Crown's card doesn't read
+`dpschart.json` at all; it reads the burstgen/sustain/buffer boards only), never caught before
+because the golden test SKIPS when `web/public/*.json` doesn't exist on disk, which it hadn't during
+prior sessions' test runs. Regenerated via `npm run fixtures:infographics`, diff eyeballed
+(`git diff --stat` showed only these two files touched; the rendered before/after differ in exactly
+the one rank number).
