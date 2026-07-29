@@ -44,6 +44,8 @@ import {
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_ICON,
   TABLE_TITLE_INK_REGION,
+  RESOURCES_TITLE_ICON,
+  RESOURCES_TITLE_INK_REGION,
 } from '../../../src/infographics/node/render.js';
 import { renderAll, type FixtureRender } from './infographics-harness.js';
 
@@ -135,6 +137,7 @@ describe('infographic golden images', () => {
     'dps-chart-window.png',
     'table-card.png',
     'table-card-window.png',
+    'resources-card.png',
     ...UNIT_CARDS,
   ]) {
     // The unit-card fixtures are the only goldens joined against the rank
@@ -198,6 +201,7 @@ describe('assertTitleInk regions are not satisfiable by the site icon alone', ()
     ['teamCard', TEAM_TITLE_ICON, TEAM_TITLE_INK_REGION],
     ['dpsChart', DPS_TITLE_ICON, DPS_TITLE_INK_REGION],
     ['tableCard', TABLE_TITLE_ICON, TABLE_TITLE_INK_REGION],
+    ['resourcesCard', RESOURCES_TITLE_ICON, RESOURCES_TITLE_INK_REGION],
   ];
   for (const [card, iconRect, region] of cases) {
     it(`${card}: icon-only canvas fails the ink guard`, async () => {

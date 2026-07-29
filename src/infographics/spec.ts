@@ -35,6 +35,12 @@ export const BUILD_CODE_MAX_LEN = 4096;
 // dps.png with no cell param renders the site's default chart cell.
 export const DEFAULT_DPS_CELL = 'solo.eleweak.c100.8of12';
 
+// resources.png with no tier param renders the highest tier (matches
+// ResourcesPage.tsx's default useState(9)).
+export const DEFAULT_RESOURCES_TIER = 9;
+export const RESOURCES_TIER_MIN = 1;
+export const RESOURCES_TIER_MAX = 9;
+
 // The element filter set both link surfaces expose (web DpsChartTab
 // ELEMENT_FILTERS pills, bot /dps choices) — request values are lowercase.
 export const ELEMENT_FILTERS = ['fire', 'water', 'wind', 'electric', 'iron'];
@@ -63,7 +69,8 @@ export type RenderSpec =
       units?: string[];
     }
   | { kind: 'table'; table: 'max-ammo'; unit: string }
-  | { kind: 'table'; table: 'charge-speed'; unit?: string };
+  | { kind: 'table'; table: 'charge-speed'; unit?: string }
+  | { kind: 'resources'; tier: number };
 
 // A comparison chart is capped at 10 bars — the same row count the §6.6
 // window renders, so the card geometry never changes shape.
@@ -198,6 +205,21 @@ export function parseRenderSpec(
         },
       };
     }
+    case 'resources': {
+      const rawTier = trimmed(String(raw.tier ?? ''));
+      const tier = rawTier !== undefined ? Number(rawTier) : DEFAULT_RESOURCES_TIER;
+      if (
+        !Number.isInteger(tier) ||
+        tier < RESOURCES_TIER_MIN ||
+        tier > RESOURCES_TIER_MAX
+      ) {
+        return {
+          ok: false,
+          error: `tier must be an integer ${RESOURCES_TIER_MIN}-${RESOURCES_TIER_MAX}`,
+        };
+      }
+      return { ok: true, spec: { kind: 'resources', tier } };
+    }
     default:
       return { ok: false, error: `unknown render kind '${String(raw.kind)}'` };
   }
@@ -317,6 +339,8 @@ export function specCacheKey(spec: RenderSpec): string {
       );
     case 'table':
       return `${RENDERER_VERSION}|table|${spec.table}|${spec.unit ?? 'generic'}`;
+    case 'resources':
+      return `${RENDERER_VERSION}|resources|${spec.tier}`;
   }
 }
 
@@ -324,6 +348,6 @@ export function specCacheKey(spec: RenderSpec): string {
 // variants share the `table` prefix, matching the existing files).
 export function specCacheType(
   spec: RenderSpec
-): 'team' | 'roster' | 'dps' | 'table' {
+): 'team' | 'roster' | 'dps' | 'table' | 'resources' {
   return spec.kind === 'table' ? 'table' : spec.kind;
 }
