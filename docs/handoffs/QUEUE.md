@@ -88,8 +88,14 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   magnitude, which is itself an open question (next bullet). Alice's solo footage is 20.5s and
   contains ~5 shots total — that is the entire dataset and no rescan enlarges it.
 
-- **⇒ 🔵 GAUGE-FILL READER: WEAPON SUB-STEP READS ~11% ABOVE THE LABELED ANCHOR — OPEN, GATES
-  BOTH alice AND cinderella.** Filed 2026-07-29. Scored at 30fps against the 2026-07-13 hand
+- **⇒ 🔵 GAUGE-FILL READER CALIBRATION — OPEN, GATES `alice` AND `cinderella` BOTH.**
+  **Full plan: [`docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md`](2026-07-29-gauge-fill-reader-calibration.md)
+  — start there, it carries the test, the decision rules, the premise list and the traps.**
+  Two headlines from it: (1) **shot-counting is the PRIMARY instrument, not pixel reading** —
+  if N shots fill the bar and N−1 do not, per-shot is bounded to [100/N, 100/(N−1)) with no
+  pixel measurement at all (owner ruling; it immediately excluded reader output for `alice`);
+  (2) no measured per-shot value from the 2026-07-29 session survives — that session produced
+  mutually-inconsistent numbers, all withdrawn, **re-derive rather than inherit.** Filed 2026-07-29. Scored at 30fps against the 2026-07-13 hand
   pixel read (`docs/data/burst-gauge.md` §6, `maiden-ice-rose` 12.55%/pull in +9.1/+3.45
   sub-steps), `scripts/probe/gauge-fill.py` reproduces the **rider sub-step exactly (3.63 vs
   model 3.64)** but reads the **weapon sub-step ~11% high (10.1 vs 9.1)**. The exact small step
