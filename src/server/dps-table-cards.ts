@@ -18,10 +18,14 @@ import {
   tableHeight,
   drawTableCard,
   TABLE_W,
+  drawResourcesCard,
+  resourcesCardHeight,
+  RESOURCES_CARD_W,
   type Canvas,
   type Canvas2DLike,
   type DpsChartData,
   type TableCardData,
+  type ResourcesCardData,
 } from '../infographics/node/render.js';
 import { cellLabel, parseCellId } from '../dpschart/matrix.js';
 import { ELEMENT_FILTERS } from '../infographics/spec.js';
@@ -178,5 +182,19 @@ export function renderTableCardPng(data: TableCardData): Buffer {
   const ctx = canvas.getContext('2d');
   ctx.scale(SCALE, SCALE);
   drawTableCard(ctx as unknown as Canvas2DLike, data);
+  return canvas.toBuffer('image/png');
+}
+
+// Render a ResourcesCardData (core/resourcesCard.ts) to a scale-2 PNG.
+export function renderResourcesCardPng(data: ResourcesCardData): Buffer {
+  const w = RESOURCES_CARD_W * SCALE;
+  const h = resourcesCardHeight(data.sections.length) * SCALE;
+  if (w * h > MAX_CANVAS_PIXELS) {
+    throw new Error(`resources card ${w}×${h} exceeds the pixel budget`);
+  }
+  const canvas = createCanvas(w, h);
+  const ctx = canvas.getContext('2d');
+  ctx.scale(SCALE, SCALE);
+  drawResourcesCard(ctx as unknown as Canvas2DLike, data);
   return canvas.toBuffer('image/png');
 }

@@ -141,6 +141,12 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
     expect(
       specCacheKey({ kind: 'table', table: 'charge-speed', unit: 'alice' })
     ).toBe('v2|table|charge-speed|alice');
+    expect(specCacheKey({ kind: 'resources', tier: 9 })).toBe(
+      'v2|resources|9'
+    );
+    expect(specCacheKey({ kind: 'resources', tier: 1 })).toBe(
+      'v2|resources|1'
+    );
   });
 
   it('maps kinds to the existing cache filename prefixes', () => {
@@ -153,6 +159,7 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
     expect(specCacheType({ kind: 'table', table: 'charge-speed' })).toBe(
       'table'
     );
+    expect(specCacheType({ kind: 'resources', tier: 9 })).toBe('resources');
   });
 });
 
@@ -296,6 +303,35 @@ describe('parseRenderSpec — table', () => {
         { units: ['alice'] }
       )
     ).toEqual({ ok: false, error: `unknown unit 'bogus'` });
+  });
+});
+
+describe('parseRenderSpec — resources', () => {
+  it('defaults to tier 9', () => {
+    expect(parseRenderSpec({ kind: 'resources' })).toEqual({
+      ok: true,
+      spec: { kind: 'resources', tier: 9 },
+    });
+  });
+
+  it('accepts a query-string tier (GET) or a numeric tier (POST)', () => {
+    expect(parseRenderSpec({ kind: 'resources', tier: '3' })).toEqual({
+      ok: true,
+      spec: { kind: 'resources', tier: 3 },
+    });
+    expect(parseRenderSpec({ kind: 'resources', tier: 3 })).toEqual({
+      ok: true,
+      spec: { kind: 'resources', tier: 3 },
+    });
+  });
+
+  it('rejects out-of-range or non-integer tiers', () => {
+    for (const tier of [0, 10, 1.5, 'bogus', -1]) {
+      expect(parseRenderSpec({ kind: 'resources', tier })).toEqual({
+        ok: false,
+        error: 'tier must be an integer 1-9',
+      });
+    }
   });
 });
 
