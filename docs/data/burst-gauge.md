@@ -131,21 +131,22 @@ both `fullChargeBonus` 250, the modal value across the roster.
     (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
     flat-2.5× model's rigid 12-every-seed prediction, inside the per-unit model's 11-12
     distribution).
-  - **alice: NOT enacted, pinned to the flat constant** (`PENDING_TEAM_ISOLATION` in
-    `gaugePerShot()`). Her solo per-shot read (~3.68× observed, 5% match to 3.5×) directly
-    excludes 2.5×, but a team full-burst count from an alice-focused recording (10 FBs,
-    `docs/probes/burst tests/alice focused.MP4`) landed as the per-unit model's minority
-    (28%-of-seeds) outcome rather than confirming it — a real, non-isolating tension, not
-    grounds to move a directly-measured constant either way. Isolating follow-up queued:
-    `docs/handoffs/QUEUE.md`.
-  - **cinderella: NOT enacted, pinned to the flat constant** (whole-magazine dump-fire kit,
-    `charFixes.magDumpRof` — she doesn't perform the discrete hold-charge/release cycle the
-    `chargePercent` term presumes, so the formula's applicability to her is itself unclear).
-    A rough solo-footage read (~2.6-3.1×) contradicts both her table value and a 1.0×
-    exemption hypothesis, leaning closer to the current flat 2.5×. Dedicated investigation
-    queued: `docs/handoffs/QUEUE.md`.
+  - **alice: ENACTED at 3.5×** (removed from `PENDING_TEAM_ISOLATION` in `gaugePerShot()`,
+    which now falls through to her table `fullChargeBonus` 350). Solo per-shot gauge-fill
+    count (`docs/probes/solo/alice solo.MP4`, gauge full on shot 6) lands inside the H1
+    (3.5×) counting bound `[16.67%, 20.0%)` and excludes the flat 2.5× bound. Driver +
+    blind Fable post-op both ACCEPT H1 at HIGH confidence.
+  - **cinderella: ENACTED at 2.0× by owner override** (`charFixes.focusChargeMult` 2.0 in
+    `src/skills/overrides/cinderella.json`, applied ahead of the `magDumpRof` flat-2.5× pin
+    — her whole-magazine dump-fire cadence modeling via `magDumpRof` is unaffected). This is
+    an owner ruling, not an independently measured value: the automated re-derivation
+    (`docs/handoffs/scientific-method-harness.md` 2026-07-29 combined-H1 entry) REJECTED
+    2.0× at HIGH confidence both sides, having visually confirmed her solo-footage magazine
+    opener (shots 1–8) generates no gauge — the owner ruling treats that opener reading as a
+    UI-occlusion artifact of the BURST-label bar rendering instead, so all 76 shots count.
+    Full basis: `docs/handoffs/2026-07-29-cinderella-focus-gauge-owner-override.md`.
   Full record: `docs/DECISIONS.md` 2026-07-29, `docs/handoffs/scientific-method-harness.md`
-  2026-07-29 entry.
+  2026-07-29 entries.
 - **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
   (`142x12 @ 2470,488`) is a continuous fill-percentage reader **on solo/near-solo footage**
   (committed: `scripts/probe/gauge-fill.py` + anchor fixture/vitest) — this corrects/scopes the

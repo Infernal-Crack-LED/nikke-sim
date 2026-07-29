@@ -2669,3 +2669,42 @@ future solo-gauge work: **define the recording's viable window BEFORE reading fr
 also corrects the reader-validation claim in the 2026-07-29 per-unit entry above ("reproduces the
 anchor's +9.1% then +3.45% pattern to 0.05–0.15%") — that claim predates the ladder; the rider
 sub-step reproduces exactly, the weapon sub-step does not (and the footage order is rider-first).
+
+## Alice focus charge-gauge un-pinned to 3.5x; cinderella pinned at 2.0x by owner override (2026-07-29)
+
+**Follow-up run** to the split decision above, re-testing whether alice and cinderella could be
+un-pinned from `PENDING_TEAM_ISOLATION`/`magDumpRof` to their datamined `fullChargeBonus`
+multipliers, using a fresh shot-counting re-derivation (not the disputed gauge-fill reader
+magnitude) on existing solo footage. Full record: `docs/handoffs/scientific-method-harness.md`
+2026-07-29 "Alice & Cinderella should use datamined `fullChargeBonus` values" entry.
+
+**Alice: IMPLEMENT (2-of-2 HIGH+HIGH).** `docs/probes/solo/alice solo.MP4` fills the gauge on shot
+6 (`t=18.38s`); the counting bound `[100/6, 100/5) = [16.67%, 20.0%)` contains the datamined 3.5×
+prediction (19.6%/shot) and excludes the flat-2.5× prediction (14.0%/shot, predicts shot 8). Both
+driver and blind Fable post-op independently ACCEPT H1 at HIGH confidence. **Enacted:** `alice`
+removed from `PENDING_TEAM_ISOLATION` in `src/engine/sim.ts` `gaugePerShot()`; she now falls
+through to her table `fullChargeBonus` 350 (3.5×), byte-identical mechanism to
+scarlet-black-shadow's prior enactment. `docs/handoffs/2026-07-29-alice-focus-gauge-implement.md`.
+
+**Cinderella: pipeline REJECT H1 (2.0×) at HIGH confidence both sides** — a fresh 60fps recount on
+`docs/probes/720-kit-audit/cindy solo neutral.MP4` (24+24+24+4 = 76-shot magazine, ammo-keyframe
+confirmed) found the first gauge step at shot 9, not shot 1: the bar sits flat at its floor from
+`t≈7.37s` to `t≈11.08s`, and visual inspection of the raw frames confirmed the "BURST" label sits
+at the bar's empty end and does not occlude the growing fill — i.e. shots 1–8 measurably generate
+no gauge. The resulting effective multiplier (`≈2.22×` over the 68 contributing shots) excludes
+both 2.0× and the current 2.5× pin, closer to the latter. **Owner override enacted anyway:**
+`charFixes.focusChargeMult: 2.0` (`src/skills/overrides/cinderella.json`), applied ahead of the
+`magDumpRof` pin in `gaugePerShot()`. The owner ruling treats the 8-shot gaugeless opener as a
+reader/UI artifact rather than a real mechanic and enacts the datamined value directly, not from an
+independent measurement — this is a deliberate departure from the pipeline's HIGH-confidence
+REJECT, not a resolution of it. `docs/handoffs/2026-07-29-cinderella-focus-gauge-owner-override.md`.
+
+**Engine:** new opt-in `charFixes.focusChargeMult` (`src/skills/index.ts`, `src/prepare.ts`,
+`src/engine/sim.ts`) — an explicit per-unit override that takes priority over both the table
+`fullChargeBonus` value and the `magDumpRof`/`PENDING_TEAM_ISOLATION` pin. Currently only
+`cinderella` sets it; `vesti-tactical-upgrade` remains pinned via `PENDING_TEAM_ISOLATION`
+(unaffected by either change).
+
+**Blast radius:** Alice-focused and cinderella-focused comps' focused-gauge generation changes
+(~+40% alice, ~−20% cinderella vs the prior flat-2.5× behavior for each). Graded probes where
+either held camera focus should be re-checked.

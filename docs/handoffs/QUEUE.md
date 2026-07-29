@@ -52,54 +52,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ 🔵 ALICE'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, ISOLATING TEAM READ NEEDED.**
-  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`,
-  `docs/DECISIONS.md` 2026-07-29, `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry.
-  scarlet-black-shadow's per-unit focus multiplier (1.5×) landed this session; alice's (predicted
-  3.5×) did NOT — she stays pinned to the flat 2.5× constant (`PENDING_TEAM_ISOLATION` in
-  `gaugePerShot`, `src/engine/sim.ts`). Her solo per-shot gauge-fill reading (~3.68× observed, 5%
-  match to 3.5×, `docs/probes/solo/alice solo.MP4`) directly excludes the flat 2.5× and is solid on
-  its own — the blocker is a team-context tension: an alice-focused team recording (`docs/probes/
-  burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full
-  bursts** via `scan.ts` (10/10 corroborated), which the per-unit model only produces in the
-  MINORITY of seeds (7/25, 28%) while the OLD flat-2.5× model produces it in 100% of seeds
-  (25/25). Fable's blind post-op review (three rounds this session) ruled this real-but-
-  non-isolating: FB count is downstream of the whole comp (convolved with red-hood's flex-burst
-  behavior, chain selection, and 3 other units' generation rates), so it cannot move a directly-
-  measured constant in either direction on one categorical draw — but it also means alice's per-
-  unit value isn't confirmed at the confidence bar (HIGH+HIGH) this project requires before an
-  engine change lands.
-
-  **⇒ CORRECTED 2026-07-29 (owner ruling) — THE "ISOLATING TEAM GAUGE READ" WAS A CATEGORY ERROR.**
-  The prior wording of this item asked for alice's per-pull gauge deltas to be hand-read out of
-  `docs/probes/burst tests/alice focused.MP4`. That is not what the recording is for: **`alice
-  focused.MP4` is an FB-COUNT recording; gauge reading is done on the SOLO video**
-  (`docs/probes/solo/alice solo.MP4`). There is therefore NO team-context gauge measurement to
-  take, and alice has no blocked measurement pending — the FB count is a downstream composite
-  observable that Fable already ruled non-isolating, so it was never going to confirm or refute
-  her multiplier in either direction. Do not re-file it.
-
-  **What actually blocks alice: instrument magnitude, not access to footage.** The gauge-fill
-  reader is now committed (`scripts/probe/gauge-fill.py` + the anchor fixture/vitest,
-  2026-07-29) and re-reads her solo footage cleanly — 4 stable plateaus, cadence matching her
-  modelled 112f, and it reproduces the owner's direct observation that her 5th shot leaves the
-  bar ~99% full (measured 99.3%). But successive calibrations of that reader put her per-shot
-  anywhere in **3.5×-3.9×**, so her value is NOT pinned. The blocker is the reader's absolute
-  magnitude, which is itself an open question (next bullet). Alice's solo footage is 20.5s and
-  contains ~5 shots total — that is the entire dataset and no rescan enlarges it.
-  **UPDATE 2026-07-29 (second session):** the reader calibration SETTLED in the reader's favor
-  (see the (a)-escalation bullet), so instrument magnitude no longer blocks her — but her
-  resolution is now PAUSED on (a) itself (if real charge-at-release > 1.0 scales gauge, the
-  meaning of her 3.5× datamined value shifts). Anchor-independent arithmetic that survives any
-  (a) outcome: 5 shots to ~99.3% with the 6th filling bounds her per-shot to [16.67%, 20%) =
-  [2.98×, 3.57×) — excludes the withdrawn 3.68-3.9× session values, CONTAINS datamined 3.5×.
-  **UPDATE 2026-07-29 (third pass, owner rulings):** the (a) pause is LIFTED — the overcharge
-  mechanism was rejected outright and the shot-counting anchor exclusion was withdrawn (its
-  endpoint evidence sits outside tb2 test 3's viable 0:06–0:17 window). The counting arithmetic
-  above (on HER OWN solo footage) stands untouched and still contains her datamined 3.5×. She
-  STAYS PINNED regardless: the reader's large-step magnitude is unresolved, so no confirming
-  measurement exists at the landing bar yet.
-
 - **⇒ 🟡 GAUGE-FILL READER CALIBRATION — PARTIALLY SETTLED 2026-07-29 (third pass, owner
   rulings).** Verdict + full evidence: `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md`
   (§RESULT + §OWNER-RULINGS). SETTLED: the reader is trustworthy for SHAPE and SMALL-step
@@ -121,48 +73,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   excluded (the excluding evidence sat outside the viable footage window). The maiden override's
   "156–212% overcharge" note is a meter-DISPLAY observation, not a mechanic — do not cite it as
   one. The alice/cinderella pauses are lifted (their bullets carry the surviving basis).
-
-- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASURED 2026-07-29 (≈2.2×; pin is
-  measured-wrong) → OWNER DECISION via `/scientific-method`.** Full record:
-  `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §CINDERELLA-RESULT. The dedicated
-  re-review of `docs/probes/720-kit-audit/cindy solo neutral.MP4` is done (settled gauge-fill
-  reader at 30/60fps + ammo-counter shot counting, viable window defined first): **76 shots to
-  full** (24+24+24+4, ammo-verified), opener shots 1–8 generate ZERO gauge (new anomaly, filed),
-  steady-state 1.45%/shot = rider 0.45 + weapon ~1.00 ⇒ **focus multiplier ≈ 2.22 [2.17, 2.27]**.
-  All three prior candidates EXCLUDED: flat 2.5× (pin is ~12–14% hot), 1.0× exemption, AND the
-  datamined 2.0× (closing account fails by ~9.5 points at the green transition). The measured
-  2.2× matches no table entry — it fits the einkk ×(1+1.5c) shape at chargePercent ≈ 0.8 — so
-  enactment is a measured-constant decision for the owner (plus the opener anomaly as a separate
-  line, ~11.6% of one cycle). Residual alias risk flagged: her unmodeled Decoy cannot be
-  positively excluded as a gauge source from a solo read. Supersedes the aliased ≈2.6–3.1× rough
-  read. [HISTORICAL — the pre-measurement gate text:] Background:
-  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
-  landed for scarlet-black-shadow 2026-07-29 — see DECISIONS). Cinderella (RL, whole-magazine
-  dump-fire kit, `charFixes.magDumpRof:true`) did NOT get a per-unit multiplier in that landing;
-  she stays pinned to flat 2.5× (via `magDumpRof` in `gaugePerShot`, `src/engine/sim.ts`) until
-  the owner enacts the measured value. Her datamined table value is 200 (`fullChargeBonus` →
-  2.0×); a rough aliased 0.2s-sampling read had landed at ≈2.6–3.1×, and Fable's pre-op review
-  (2026-07-29) rejected locking her to 1.0× on that evidence ("enacting a value the only
-  available measurement contradicts violates measured>fudge"). The gauge-fill crop instrument +
-  ammo-counter counting resolved it (see §CINDERELLA-RESULT); `read-ammo.ts` still returns 0
-  reads on her dump-fire counter pattern (digits read visually instead — fixing the reader for
-  her pattern remains open tooling).
-  **Step 7 implementation review note (2026-07-29):** her pin is keyed off `magDumpRof`
-  (a mechanism flag, not a dedicated measurement-gate marker) — today that's fine, exactly one
-  override carries the flag, but the NEXT unit that gains `charFixes.magDumpRof` inherits a
-  silent 2.5x pin with no review of whether the mechanism argument (or 2.5x specifically) even
-  applies to them. Worth a dedicated `PENDING_TEAM_ISOLATION`-style entry per-unit if/when a
-  second `magDumpRof` carrier lands, rather than assuming the flag alone justifies the pin.
-  **UPDATE 2026-07-29 (second session):** PAUSED on the (a) escalation like alice — her rough
-  ~2.6-3.1× read and its interpretation depend on whether real charge > 1.0 scales gauge. Her
-  engine facts were premise-verified this session (rider = flat 45/rocket, no focus bonus; pin
-  is `u.magDumpRof`, NOT `PENDING_TEAM_ISOLATION`; per pull today 112.5+45 = 157.5 energy;
-  ⚠ `scripts/sim/<element>.ts` runners drop `magDumpRof` and take the un-pinned path). See the
-  §RESULT handoff section.
-  **UPDATE 2026-07-29 (third pass, owner rulings):** the (a) pause is LIFTED (mechanism rejected;
-  anchor exclusion withdrawn). Her resolution path stands as filed, with one downgrade: the
-  reader's LARGE-step magnitude is no longer confirming evidence — her per-pull read needs a
-  counting bound or a bounded-window re-read (define the viable window first).
 
 - **⇒ 🔵 SIM/REAL DIVERGENCE AT GAUGE-FULL FOR A LONE BURST III — FILE ONLY, DAMAGE-INERT SOLO.**
   Split out of the gauge-fill calibration handoff (§6 known trap), where it surfaced and was

@@ -515,6 +515,7 @@ interface UnitState {
   boltRecoveryFrames: number; // remaining post-shot bolt-cycle frames (SR)
   noBoltRecovery: boolean;
   pullsPerSec?: number;
+  focusChargeMult?: number; // charFixes override: replaces the per-unit fullChargeBonus/100 focus multiplier
   // Whole-magazine dump (cinderella: opt-in charFixes.magDumpRof). One charge PRIMES the mag, then
   // the whole magazine autofires at the datamined rate_of_fire WITHOUT recharging; the reload-to-max
   // clears `primed` so the next mag re-charges once. Inert unless the flag is set (regression-proven).
@@ -830,6 +831,7 @@ export function runSim(
           : 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
+      focusChargeMult: prepared?.[idx]?.focusChargeMult,
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
       magDumpRofFrames: (() => {
         const rof = (
@@ -1273,14 +1275,13 @@ export function runSim(
   // compensating for per-unit skill-generation quirks and the (then-wrong) anis-star
   // shot row, both now modeled from measurements.
   const UNFOCUSED_CHARGE_GEN = 1.0;
-  // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus (see the
-  // gaugePerShot comment below for why each is here) — measurement-gated, not enacted.
-  // vesti-tactical-upgrade (fullChargeBonus 200, currently unmeasured, not sim-supported —
-  // no override exists yet) is included pre-emptively: the only measurement ever taken at
-  // the 200 column (cinderella's ~2.6-3.1x) contradicts 2.0x, so a future override for her
-  // must not silently inherit an unmeasured value the moment it lands (implementation
-  // review, 2026-07-29).
-  const PENDING_TEAM_ISOLATION = new Set(['alice', 'vesti-tactical-upgrade']);
+  // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus.
+  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200, currently unmeasured, not
+  // sim-supported — no override exists yet) is included pre-emptively: the only measurement
+  // ever taken at the 200 column (cinderella (RL/Electric, "cindy")'s ~2.2-3.1x reads)
+  // contradicts 2.0x, so a future override for vesti-tactical-upgrade must not silently
+  // inherit an unmeasured value the moment it lands (implementation review, 2026-07-29).
+  const PENDING_TEAM_ISOLATION = new Set(['vesti-tactical-upgrade']);
   const focusIdx =
     cfg.focusSlug !== undefined
       ? Math.max(
@@ -1327,18 +1328,11 @@ export function runSim(
     // Per-unit focus multiplier = fullChargeBonus/100 (2026-07-29, see comment above);
     // ?? 250 is the fallback for units with no datamined row (e.g. laplace-ultimate-hero) —
     // byte-identical to the old flat-2.5x default, never lets a missing row zero the gauge.
-    // cinderella (magDumpRof: her whole-magazine dump-fire kit doesn't perform the discrete
-    // hold-charge/release cycle the einkk chargePercent term presumes) is PINNED to the flat
-    // constant rather than her table value (200 -> 2.0x): a rough solo-footage read landed
-    // ~2.6-3.1x, contradicting both her table value and a 1.0x exemption hypothesis, so no
-    // per-unit value is enacted for her pending a cleaner cadence read (docs/handoffs/QUEUE.md).
-    // alice is ALSO pinned (measurement-gated, not mechanical): her solo per-shot reading
-    // (~3.68x observed vs 3.5x predicted, 5% match) directly excludes the flat 2.5x, but a
-    // fresh alice-focused TEAM recording's measured FB count (10) landed as this model's
-    // MINORITY seeded outcome (7/25) rather than confirming it -- a real, non-isolating tension
-    // (FB count is downstream of the whole comp, not a direct read of her multiplier) that the
-    // 2026-07-29 post-op review ruled insufficient to enact her value on either direction. She
-    // stays on the flat constant pending an isolating team-context gauge read (docs/handoffs/QUEUE.md).
+    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit owner-override
+    // that takes priority over both the table value and the magDumpRof/PENDING_TEAM_ISOLATION
+    // pin — cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire kit
+    // doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
+    // presumes) carries focusChargeMult 2.0 rather than her table value.
     // fcb > 0 (not ?? alone): a handful of gauge rows carry fullChargeBonus:0 as their
     // non-charge marker, and one live data disagreement (raven: gauge row 250 vs
     // characters.json chargeMultiplier 0) means a present-but-zero value is reachable —
@@ -1346,9 +1340,10 @@ export function runSim(
     // (implementation review, 2026-07-29).
     const fcb = entry?.fullChargeBonus;
     const focusMult =
-      u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
+      u.focusChargeMult ??
+      (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
-        : (fcb && fcb > 0 ? fcb : 250) / 100;
+        : (fcb && fcb > 0 ? fcb : 250) / 100);
     return (
       per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat
     );
