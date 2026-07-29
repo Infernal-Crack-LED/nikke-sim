@@ -495,6 +495,10 @@ describe('buildUnitCardData — nullable externals (§11)', () => {
         { type: 'chargedmg', count: 3 },
       ],
     });
-    expect(model.olOptimal).toBe('1× Max Ammo · 3× Charge DMG');
+    // data/ol-optimal.json holds only the 4-roll REMAINDER; the line states the
+    // whole 12/12, floor first, or it reads as a 4-roll recommendation.
+    expect(model.olOptimal).toBe(
+      '4× Elemental DMG · 4× ATK · 1× Max Ammo · 3× Charge DMG'
+    );
   });
 });

@@ -226,14 +226,6 @@ function findHits<R extends unknown[]>(
 // The headline row: the profiled one when it exists, else the plain one.
 const headline = <R>(h: BoardHits<R>): Hit<R> | null => h.profiled ?? h.plain;
 
-// The headline row's value at `col`, or 0 when the unit isn't on the board —
-// so "absent" and "present at zero" are one case for chart selection, which is
-// what they amount to visually.
-const boardValue = <R extends unknown[]>(
-  hits: BoardHits<R>,
-  col: number
-): number => (headline(hits)?.row[col] as number | undefined) ?? 0;
-
 // ---- tile builders -----------------------------------------------------------
 
 const unrankedTile = (title: string): RankTile => ({
@@ -587,11 +579,20 @@ const OL_LABEL: Record<string, string> = {
   critdmg: 'Crit DMG',
 };
 
+// data/ol-optimal.json holds the 12/12 REMAINDER — the 4 rolls the sim chooses
+// beyond a floor of 4 Elemental DMG + 4 ATK that every build takes. The card
+// states the whole 12, floor included: shown alone the remainder reads as the
+// entire recommendation, which is a 4-roll build.
+const OL_FLOOR: { type: string; count: number }[] = [
+  { type: 'elem', count: 4 },
+  { type: 'atk', count: 4 },
+];
+
 const olLine = (
   lines: { type: string; count: number }[] | null | undefined
 ): string | null =>
   lines?.length
-    ? lines
+    ? [...OL_FLOOR, ...lines]
         .map((l) => `${l.count}× ${OL_LABEL[l.type] ?? l.type}`)
         .join(' · ')
     : null;
@@ -655,17 +656,12 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
       dpsChartRows('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug, nb)
     );
   } else {
-    // "Present" for CHART purposes means present with a NON-ZERO value.
-    //
-    // A board lists plenty of units at exactly 0 — Liter sits on the sustain
-    // board at 0, as do her neighbours — and an all-zero chart is three empty
-    // tracks that say nothing, while the unit may have a real burst-CDR figure
-    // one fallback down. Ruling 13's "sustain if present, else burst CDR if
-    // present" is about having something to SHOW, so a zero entry falls through.
-    // The tile still reports the honest 0 with its real rank; only chart
-    // SELECTION is affected.
-    const hasSustain = boardValue(findHits(src.sustain?.entries, slug, 6), 1) > 0;
-    const hasCdr = boardValue(findHits(src.burstcdr?.entries, slug, 5), 1) > 0;
+    // Ruling 13 as written: "sustain if present, else burst CDR if present".
+    // Presence is a plain board lookup again — the sustain board no longer lists
+    // units at 0 (scripts/build-sustain.ts filters them), so being ON it is the
+    // same statement as having sustain, and burst CDR has never carried a zero.
+    const hasSustain = !!headline(findHits(src.sustain?.entries, slug, 6));
+    const hasCdr = !!headline(findHits(src.burstcdr?.entries, slug, 5));
     // No second chart → spend the freed height on more neighbours in the
     // surviving one, never on whitespace (§6c lever 1).
     const each = hasSustain || hasCdr ? nb : nbSolo;

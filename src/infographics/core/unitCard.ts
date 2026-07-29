@@ -310,18 +310,21 @@ function drawTitle(
   }
 }
 
-// Per-family inset, ported from the team builder's filter row
-// (web/src/components/CharacterGrid.tsx): every icon is drawn into an identical
-// box, and the box is then inset by family before the art is fitted. The burst
-// SVGs carry no internal padding while the code/class/manufacturer rasters do,
-// so at an equal box the burst glyph reads noticeably heavier than its
-// neighbours. The team builder solves that with padding 8 on a 40px button for
-// burst and 4 for the rest (weapon: none) — the same 0.60 / 0.80 / 1.00 ratios
-// expressed as fractions here so they hold at any ICON_SIZE.
+// Per-family inset: every icon is drawn into an identical box, and the box is
+// inset by family before the art is fitted, so the strip reads with even optical
+// weight instead of each family's own margins deciding how big it looks. The
+// pattern is the team builder's filter row
+// (web/src/components/CharacterGrid.tsx), which insets its 40px button by 8 for
+// burst and 4 for code/class/manufacturer, weapon not at all.
+//
+// Burst and class take the FULL box here, unlike the site: the card draws the
+// tightly-cropped `card_*` set (core/iconNames.ts), which has no transparent
+// margin to compensate for. Element and manufacturer are still the old rasters
+// and still carry theirs.
 const ICON_FIT: Record<string, number> = {
-  burst: 0.6,
+  burst: 1,
   element: 0.8,
-  class: 0.8,
+  class: 1,
   manufacturer: 0.8,
   weapon: 1,
 };
@@ -732,7 +735,17 @@ function drawNotes(ctx: Canvas2DLike, r: Rect, d: UnitCardData, big: boolean): v
     ctx.fillText(label, px, y);
     ctx.font = `400 ${bodySize}px ${FONT}`;
     ctx.fillStyle = color;
-    ctx.fillText(fitText(ctx, value, maxW - lw), px + lw, y);
+    // The value WRAPS under a hanging indent rather than truncating. A full OL
+    // recommendation is 12 rolls and does not fit the landscape column on one
+    // line; the panel is fixed-height, so `room()` still bounds it and a value
+    // that genuinely cannot fit is clipped at the last available line.
+    const wrapped = wrapText(ctx, value, maxW - lw, Math.min(room(), 3));
+    wrapped.forEach((l, i) => {
+      ctx.fillText(l, px + lw, y);
+      if (i < wrapped.length - 1) {
+        y += lineH;
+      }
+    });
     y += lineH;
   };
 

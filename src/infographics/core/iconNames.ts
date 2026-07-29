@@ -13,24 +13,36 @@ export const ICON_BY_ELEMENT: Record<string, string> = {
   Iron: 'code_iron',
 };
 
+// CARD-ONLY ASSETS (`card_*`, 2026-07-28). The class and burst icons the card
+// draws are a higher-resolution set the owner supplied, kept under their own
+// names so THIS surface can adopt them while the site keeps loading the old
+// `class_*` / `burst_*` files it hardcodes (web/src/components/CharacterGrid.tsx
+// builds those paths as string literals — it does not read this map). If they
+// hold up on the cards, the old files get replaced and the site follows; until
+// then the two sets coexist deliberately.
+//
+// They are tightly cropped — no transparent margin, unlike the raster sets they
+// replace — so the card draws them at FULL box size (unitCard.ts ICON_FIT) and
+// the loader's contain-into-square fits them by their taller dimension.
 export const ICON_BY_CLASS: Record<string, string> = {
-  Attacker: 'class_attacker',
-  Defender: 'class_defender',
-  // The asset is `class_support`, the data says "Supporter" — the mismatch is
+  Attacker: 'card_class_attacker',
+  Defender: 'card_class_defender',
+  // The asset is `*_class_support`, the data says "Supporter" — the mismatch is
   // why this is a map rather than a lowercase() call.
-  Supporter: 'class_support',
+  Supporter: 'card_class_support',
 };
 
-// Burst stage → icon. `Λ` has NO asset of its own. Ruling 10 treats red-hood
-// (Red Hood, SR/Iron Attacker — NOT rapi-red-hood, Rapi: Red Hood, MG/Fire,
-// which is a different unit already typed 'III') as B3 for tile/bar selection,
-// and the owner approved reusing burst_3 as the ICON placeholder until a Λ glyph
-// exists (2026-07-28). Tracked in docs/handoffs/QUEUE.md.
+// Burst stage → icon, from the card-only set described above. `Λ` now has a
+// glyph of its own (`card_burst_lambda`), so red-hood (Red Hood, SR/Iron
+// Attacker — NOT rapi-red-hood, Rapi: Red Hood, MG/Fire, which is a different
+// unit already typed 'III') no longer borrows the B3 icon. Ruling 10 still
+// governs the tile/bar SET she is scored against; that is a separate question
+// from which glyph her burst stage draws.
 export const ICON_BY_BURST: Record<string, string> = {
-  I: 'burst_1',
-  II: 'burst_2',
-  III: 'burst_3',
-  'Λ': 'burst_3',
+  I: 'card_burst_1',
+  II: 'card_burst_2',
+  III: 'card_burst_3',
+  'Λ': 'card_burst_lambda',
 };
 
 const WEAPONS = ['ar', 'mg', 'rl', 'sg', 'smg', 'sr'];

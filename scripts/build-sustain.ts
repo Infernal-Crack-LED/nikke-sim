@@ -67,7 +67,15 @@ for (const slug of population) {
   }
 }
 
-const ranked = sustainRank(population, ctx);
+// A unit that restores and shields NOTHING is not on the sustain board. The
+// candidate population is tag-driven (healer/shield), and a tag can be earned by
+// a line that cannot proc at scope lock — those units used to rank at the bottom
+// with 0, which is a true statement about the sim but not a leaderboard entry:
+// it put empty tracks on every neighbourhood chart around them, and made
+// "is this unit on the sustain board?" answer yes for units with no sustain.
+// Zeroes sort last by construction, so dropping them renumbers nobody.
+const ranked = sustainRank(population, ctx).filter((r) => r.totalHp > 0);
+const listed = new Set(ranked.map((r) => r.slug));
 
 const artifact: SustainArtifact = {
   generatedAt: new Date().toISOString(),
@@ -82,7 +90,7 @@ const artifact: SustainArtifact = {
     '0. Profiles: prika runs with mint (duet), anchor-innocent-maid with ' +
     'mast-romantic-maid (same-squad gate). Ranked by absolute HP.',
   units: Object.fromEntries(
-    population.map((slug) => {
+    population.filter((slug) => listed.has(slug)).map((slug) => {
       const c = data.characters[slug];
       return [
         slug,
