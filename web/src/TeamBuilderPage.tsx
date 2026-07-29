@@ -2,8 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import charactersJson from '../../data/characters.json';
 import type { DataFile, Element } from '../../src/types';
 import { usePortraitThumbs } from './usePortraitThumbs';
-import { useDragReorder } from './useDragReorder';
-import { CharacterGrid } from './components/CharacterGrid';
+import { useDragReorder, useDropTarget } from './useDragReorder';
+import {
+  useCharacterFilter,
+  CharacterFilters,
+  CharacterCards,
+} from './components/CharacterGrid';
 import { InlineNameField } from './components/InlineNameField';
 import type { AuthUser } from './auth';
 
@@ -204,6 +208,24 @@ export function TeamBuilderPage({
     });
   };
 
+  // Drag a card up from the grid straight onto a target slot (dedupe an
+  // earlier occurrence of the same unit so it can't end up in the team twice);
+  // a tap that never crosses the drag threshold falls back to toggleTeamSlot,
+  // same as clicking a card always has.
+  const dropIntoSlot = (slug: string, index: number) => {
+    setCopyWarning(null);
+    setTeamSlots((prev) => {
+      const next = [...prev];
+      const existingIdx = next.indexOf(slug);
+      if (existingIdx >= 0) {
+        next[existingIdx] = null;
+      }
+      next[index] = slug;
+      return next;
+    });
+  };
+  const slotDrop = useDropTarget<string>(dropIntoSlot, toggleTeamSlot);
+
   const removeFromSlot = (idx: number) => {
     setCopyWarning(null);
     setTeamSlots((prev) => {
@@ -281,8 +303,14 @@ export function TeamBuilderPage({
   // Units already placed (anywhere in the grid) leave the grid below
   const stripSet = new Set(teamSlotUrls);
 
+  // Filter/search state, shared between the CharacterFilters panel (rendered
+  // above the team slots) and the CharacterCards grid (rendered below them).
+  const filter = useCharacterFilter({ exclude: stripSet, allowUnsupported: true });
+
   // One slot chip — draggable in all modes; in the grid a drag can cross
-  // teams (nearest-centre targeting over all registered chips)
+  // teams (nearest-centre targeting over all registered chips). Registers into
+  // BOTH teamReorder (slot-to-slot reordering) and slotDrop (a card dragged up
+  // from the grid below) — they share the same slot index space.
   const renderChip = (i: number, draggable: boolean) => {
     const slug = teamSlots[i];
     const c = slug ? data.characters[slug] : null;
@@ -290,11 +318,19 @@ export function TeamBuilderPage({
       <button
         key={i}
         type="button"
-        ref={draggable ? teamReorder.register(i) : undefined}
+        ref={
+          draggable
+            ? (el: HTMLButtonElement | null) => {
+                teamReorder.register(i)(el);
+                slotDrop.register(i)(el);
+              }
+            : undefined
+        }
         className={
           'team-chip roster-slot' +
           (slug ? ' active' : '') +
-          (draggable && teamReorder.dragIndex === i ? ' dragging' : '')
+          (draggable && teamReorder.dragIndex === i ? ' dragging' : '') +
+          (draggable && slotDrop.overIndex === i ? ' droptarget' : '')
         }
         title={c?.name ?? `slot ${i + 1}`}
         {...(draggable ? teamReorder.handleProps(i) : {})}
@@ -406,14 +442,21 @@ export function TeamBuilderPage({
     <section className="calc-tab teambuilder-page">
       <p className="muted">
         Browse all NIKKEs and filter by weapon, burst, class, element,
-        manufacturer, or kit role. Click a card to add it to the team; click ×
-        on a portrait to remove it. Then copy the team into the Sim or Roster
-        Sim — or press + to build a full roster at once.
+        manufacturer, or kit role. Click a card to add it to the team, or drag
+        one onto a slot below; click × on a portrait to remove it. Then copy
+        the team into the Sim or Roster Sim — or press + to build a full
+        roster at once.
       </p>
 
+      {/* Filters sit above the team slots so they're reachable without
+          scrolling past the slots first. */}
+      <CharacterFilters filter={filter} />
+
       {/* Team slots — 5 boxes (or a full roster grid) that fill in as you click
-          characters below; the + / − button switches between the modes */}
-      <div className="teambuilder-team">
+          or drag characters below; the + / − button switches between the
+          modes. Sticky so the slots stay in view (floating over the grid)
+          while scrolling the list, same as the Browse Nikkes modal. */}
+      <div className="teambuilder-team teambuilder-team-sticky">
         {rosterMode === 'team' ? (
           <div className="roster-slots">
             {teamSlots.map((_, i) => renderChip(i, true))}
@@ -525,10 +568,11 @@ export function TeamBuilderPage({
         </div>
       )}
 
-      <CharacterGrid
-        exclude={stripSet}
+      <CharacterCards
+        filter={filter}
         onToggle={toggleTeamSlot}
-        allowUnsupported
+        dragProps={slotDrop.dragProps}
+        draggingSlug={slotDrop.dragPayload}
       />
     </section>
   );
