@@ -4,8 +4,9 @@
 // the sim runs offline and deterministically.
 import 'dotenv/config';
 import pg from 'pg';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync } from 'node:fs';
 import type { CharacterData, DataFile, TsareenaBuild } from '../types.js';
+import { writeJsonArtifact } from './json-artifact.js';
 import type { OverrideFile } from '../skills/index.js';
 import { countsAsElements } from '../elements.js';
 import { deriveNicknames } from './nicknames.js';
@@ -394,40 +395,34 @@ async function main() {
 
   mkdirSync(new URL('../../data/', import.meta.url), { recursive: true });
   const out: DataFile = { syncedAt: new Date().toISOString(), characters };
-  writeFileSync(
+  // All four go through writeJsonArtifact so the file this writes is byte-identical to what the
+  // pre-commit hook would write — a sync then diffs by what actually CHANGED, not by re-indentation.
+  await writeJsonArtifact(
     new URL('../../data/characters.json', import.meta.url),
-    JSON.stringify(out, null, 1)
+    out
   );
-  writeFileSync(
+  await writeJsonArtifact(
     new URL('../../data/bossing-tiers.json', import.meta.url),
-    JSON.stringify(
-      {
-        updated: new Date().toISOString().slice(0, 10),
-        source: 'bakery-bot DB nikke_characters.prydwen_tiers.bossing',
-        tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
-      },
-      null,
-      1
-    )
+    {
+      updated: new Date().toISOString().slice(0, 10),
+      source: 'bakery-bot DB nikke_characters.prydwen_tiers.bossing',
+      tiers: Object.fromEntries(Object.entries(bossingTiers).sort()),
+    }
   );
-  writeFileSync(
+  await writeJsonArtifact(
     new URL('../../data/level-multiplier.json', import.meta.url),
-    JSON.stringify(levelMultiplier)
+    levelMultiplier
   );
   // Editorial build guidance, kept OUT of characters.json on purpose (see TsareenaBuildFile).
   // Insertion order follows the query's `order by id`, so this diffs cleanly like the others.
-  writeFileSync(
+  await writeJsonArtifact(
     new URL('../../data/tsareena-build.json', import.meta.url),
-    JSON.stringify(
-      {
-        syncedAt: new Date().toISOString(),
-        source:
-          'bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)',
-        units: tsareena,
-      },
-      null,
-      1
-    )
+    {
+      syncedAt: new Date().toISOString(),
+      source:
+        'bakery-bot DB nikke_characters.sheet_data (community Tsareena build sheet)',
+      units: tsareena,
+    }
   );
 
   const total = Object.keys(characters).length;

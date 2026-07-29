@@ -28,6 +28,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import type { DataFile } from '../../src/types.js';
+import { writeJsonArtifact } from '../../src/data/json-artifact.js';
 
 const ENDPOINT = 'https://enikk.app/api/webapp';
 // raid → the boss element it presents (element the recorded advantage is vs).
@@ -352,7 +353,7 @@ if (process.env.OUT) {
       raids: [...v.raids].sort(),
     })),
   };
-  writeFileSync(process.env.OUT, JSON.stringify(payload, null, 1));
+  await writeJsonArtifact(process.env.OUT, payload);
   console.log(`\nJSON written to ${process.env.OUT}`);
 }
 
@@ -445,7 +446,7 @@ if (process.env.SUPPORTED) {
       'npx tsx scripts/enikk/roster-audit.ts`.',
     names,
   };
-  writeFileSync(process.env.SUPPORTED, JSON.stringify(payload, null, 1) + '\n');
+  await writeJsonArtifact(process.env.SUPPORTED, payload);
   console.log(
     `enikk-supported roster written to ${process.env.SUPPORTED} (${names.length} names)`
   );
