@@ -168,12 +168,15 @@ export function buildResourcesCard(
 export const RESOURCES_CARD_W = 940;
 const PAD_X = 32;
 const HEAD_H = 96; // icon + title + subtitle band, matches tableCard's HEAD_H
-// The site icon is sized and aligned to the TITLE LINE only (24px, its font
-// size), bottom-edge on the title's baseline — "in line with the title bar",
-// not the bigger, lower-slung 32px mark other cards use beside a title block
-// that also carries a subtitle underneath.
+// The site icon's top/bottom bounds match the CAP HEIGHT of the title text's
+// capital letters (measured directly off a rendered "R" glyph at this font/
+// weight/size: 700 24px Roboto draws ink from y=27 to y=43 against a
+// baseline of 44 — a 17px cap height, not the full 24px font size) — "in
+// line with the title bar", not the bigger, lower-slung 32px mark other cards
+// use beside a title block that also carries a subtitle underneath.
 const TITLE_FONT_SIZE = 24;
-const ICON = TITLE_FONT_SIZE;
+const TITLE_CAP_HEIGHT = 17;
+const ICON = TITLE_CAP_HEIGHT;
 const FOOT_H = 40;
 
 const SECTION_TOP_GAP = 20; // space above a section's heading
