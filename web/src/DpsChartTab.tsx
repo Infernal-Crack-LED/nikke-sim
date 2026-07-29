@@ -213,6 +213,7 @@ export function DpsChartTab() {
         subtitle={pageSubtitle}
         bars={bars}
         compare={cmp}
+        profiles={art.profiles}
         onShareLink={() => shareLink(c)}
         onShareImage={() =>
           copyDpsChartImage(toChartData(shareTitle, population, cmp))
@@ -376,13 +377,18 @@ export function DpsChartTab() {
         <div className="dpschart-headliner" key={h.slug}>
           <h3>{h.name}</h3>
           <div className="dpschart-grid">
-            {h.cells.map((c) =>
-              renderChart(
-                c,
-                CORES[c.core].label,
-                `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`
-              )
-            )}
+            {/* Frontend-only trial (2026-07-29): drop Core 50 from the headliner
+                display to make room — matrix.ts still generates it (Full matrix
+                below keeps all 3), only this render skips it. */}
+            {h.cells
+              .filter((c) => c.core !== 'c50')
+              .map((c) =>
+                renderChart(
+                  c,
+                  CORES[c.core].label,
+                  `${FRAMEWORKS[h.framework].label} · ${ELEADVS[h.eleadv].label} · ${INVESTS[h.invest].label}`
+                )
+              )}
           </div>
         </div>
       ))}

@@ -4,6 +4,7 @@
 import { useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import { relScore } from '../../../src/infographics/core/dpsChart';
+import { profileLabel } from '../../../src/infographics/core/rankTables';
 import type { BarEntry } from '../dpschartData';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 
@@ -23,6 +24,8 @@ export interface DpsBarChartProps {
   subtitle?: string;
   bars: BarEntry[];
   compare?: (BarEntry & { total: number }) | null;
+  // profile id → player-facing note, for the profile pill's tooltip (art.profiles).
+  profiles?: Record<string, string>;
   // Resolve to whether the copy actually succeeded (link) or how it landed
   // (image — clipboard vs. a download fallback) so the chip's "copied" flash
   // reflects reality instead of firing blind.
@@ -35,6 +38,7 @@ export function DpsBarChart({
   subtitle,
   bars,
   compare,
+  profiles,
   onShareImage,
   onShareLink,
 }: DpsBarChartProps) {
@@ -113,18 +117,32 @@ export function DpsBarChart({
                 <img
                   className="dpschart-portrait"
                   src={thumbs[b.imageUrl] ?? b.imageUrl}
-                  alt={b.displayName}
+                  alt={b.name}
                   loading="lazy"
-                  title={`${b.displayName} · ${b.tier} · ${b.weapon} · ${b.element}`}
+                  title={`${b.name} · ${b.weapon} · ${b.element}`}
                 />
               ) : (
                 <span
-                  className="dpschart-name"
-                  title={`${b.displayName} · ${b.tier} · ${b.weapon} · ${b.element}`}
-                >
-                  {b.displayName}
-                </span>
+                  className="dpschart-portrait ranks-no-portrait"
+                  aria-hidden="true"
+                />
               )}
+              <span className="ranks-name">
+                <span
+                  className="dpschart-name"
+                  title={`${b.name} · ${b.weapon} · ${b.element}`}
+                >
+                  {b.name}
+                  {b.profile && (
+                    <span
+                      className="ranks-badge"
+                      title={profiles?.[b.profile]}
+                    >
+                      {profileLabel(b.profile)}
+                    </span>
+                  )}
+                </span>
+              </span>
               <span className="dpschart-track">
                 <span
                   className="dpschart-fill"
