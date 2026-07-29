@@ -12,9 +12,14 @@
  *
  * NOTE ON WHAT IS PINNED: the small (rider) sub-step is pinned tightly because it matches the
  * model exactly. The large (weapon) sub-step is pinned LOOSELY and deliberately — it measures
- * ~11% above the modelled 9.1%, and whether that is a real effect or a sampling artefact is an
- * OPEN question (see the CALIBRATION STATUS block in scripts/probe/gauge-fill.py). This test
- * exists to detect DRIFT in that discrepancy, not to bless its current value.
+ * ~11% above the modelled 9.1%. A 2026-07-29 sampling-rate ladder + shot-counting on the anchor
+ * (docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md §RESULT) REFUTED the sampling-
+ * artefact hypothesis: the large step is flat across 5/15/30/60fps, lands in a single 60fps
+ * frame, and an 8-shots-to-full count bounds per-pull >= ~13.6%, EXCLUDING the documented
+ * 12.55% — i.e. the reader is right and the 2026-07-13 hand anchor under-read the weapon
+ * sub-step. WHY the weapon sub-step exceeds the modelled 910 energy is the open DECISIONS-tier
+ * hypothesis (a) (charge-at-release > 1.0?), gated by /scientific-method. This test exists to
+ * detect DRIFT in the reader, not to bless the game-truth value of either sub-step.
  */
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';

@@ -1,6 +1,9 @@
 # Gauge-fill reader calibration — the shared blocker for `maiden-ice-rose`, `alice`, `cinderella`
 
-**Status:** OPEN. Nothing enacted. Engine untouched.
+**Status:** READER SETTLED (tooling, cheap lane) 2026-07-29 second session — see §RESULT. The
+anchor's documented per-pull value is EXCLUDED by shot-counting; hypothesis (a) is escalated as
+its own pipeline candidate. Engine untouched. `alice`/`cinderella` multiplier resolution PAUSED
+pending (a) (§3.2's pause rule fired).
 **Branch/worktree:** `focus-charge-gauge-per-unit` @ `../nikke-sim-wt-focus-charge-gauge` (parked,
 unmerged, unpushed, behind `main`).
 **Audience:** AI-facing handoff. Shorthand OK.
@@ -200,3 +203,116 @@ Spawn `premise-verifier` agents per `/scientific-method` step 0. At minimum:
   constant change along with it in the same motion.
 - **Do not invent a calibration constant to make a number come out right.** A factor that fixes
   the large step while breaking the currently-exact small step is a fudge, not a calibration.
+
+---
+
+## §RESULT (2026-07-29, second session — Kimi driver)
+
+The discriminating test and all three supporting checks are DONE. Everything below was re-derived
+from primary sources (the recording, the ammo counter, the engine), per the owner ruling — no
+2026-07-29-session values were carried in.
+
+### Premise verification (§5) — all CONFIRM, with corrections
+
+- **Anchor trace (§5.1, driver-verified):** documented values live in `docs/data/burst-gauge.md` §6
+  and originate in `docs/probe-runs.md` (test-3 entry, 2026-07-13) + answered-questions A22. The doc
+  is internally inconsistent on the rider: observed "+3.45%" vs modeled "364 — exact" (3.64%);
+  open-questions U13 already flags that residual. **How the hand read established the bar's 0%/100%
+  reference points is NOT documented anywhere** — that provenance gap is itself now load-bearing
+  (see verdict).
+- **`cinderella` rider (§5.2, premise-verifier, code + DBG_GAUGE):** S1 `shotFired` → `flatDamage`
+  → `skillGauge()` = flat `targetPerTrigger` 45 per rocket, NO focus bonus (`src/engine/sim.ts`
+  1398-1410, 2275). Weapon term pinned to flat 2.5× via `u.magDumpRof` (`sim.ts:1349`) — NOT
+  `PENDING_TEAM_ISOLATION` (that set is `{alice, vesti-tactical-upgrade}` only, `sim.ts:1283`).
+  Per pull focused today: 112.5 + 45 = 157.5 energy. ⚠ TRAP: `scripts/sim/<element>.ts` runners
+  build `prepared` by hand and DROP `magDumpRof` (0.90/0.45 at 1 shot/s instead) — only the
+  `prepareTeam` pipeline exercises the pinned path.
+- **Firing structures (§5.3, premise-verifier):** `maiden-ice-rose` (RL/**Electric** — not Water)
+  mag 6, 82f ≈ 1.37s/pull cycle, rider procs per full-charged shot; engine has no partial-charge
+  path but REAL footage can open partial (confirmed, below). `alice` mag 6, 112f ≈ 1.87s/pull,
+  NO gauge-generating skill even with Full Burst (S1/burst are buff-only, S2 empty) — her solo
+  gauge is unconfounded. `cinderella` mag = `round(24 × (1+maxAmmoPct/100)) + maxAmmoFlat` per
+  reload; dump cadence 20f (3 rockets/s) after one 60f prime.
+- **Datamined + pins (§5.4, premise-verifier):** `alice` 560 target, `fullChargeBonus` 350 →
+  un-pinned 19.6%/shot, pinned 14.0%/shot. `cinderella` 45 target, fcb 200 → un-pinned 0.90%/shot,
+  pinned 1.125%/shot. `maiden-ice-rose` 364/250 → 9.1% weapon (un-pinned; family value).
+  `scarlet-black-shadow` 250/150 → 3.75% enacted.
+
+### The ladder (§3 discriminating test) — (b) NOT SUPPORTED
+
+Cropped gauge-region frames (crop=400:160:2350:430, self-calibrated bar 138px) at 5/15/30/60fps;
+my 30fps run reproduces the committed fixture BYTE-IDENTICALLY (450/450 reads). Weapon sub-step by
+rate — 5fps: {9.4, 11.6, 10.1, 10.1} + two merged smears; 15fps: mean 10.07; 30fps: mean 10.10;
+60fps: mean 9.98. **Flat across all rates, never converging on 9.1.** Rider sub-step: 3.6 at every
+rate (matches model 3.64; the hand read's 3.45 is a quarter-column below the 5-column quantisation
+floor). Per the pre-committed decision rule: large-step error flat ⇒ (b) is not supported.
+
+### Supporting check 1 — frame-level: the bar SNAPS
+
+Every weapon jump lands in EXACTLY ONE 60fps frame (e.g. t=12.650→12.670: 50.0→60.1; t=11.270→
+11.280: 37.7→47.1). No multi-frame rise, no overshoot, no intermediate values. (b) is refuted by
+direct observation, not just by the ladder aggregate.
+
+### Supporting check 2 — counting cross-check (§2 owner instrument): the ANCHOR fails the bound
+
+**8 shots fill the bar.** Ammo counter verified visually on full frames: `005` at t=7.00 (shot 1
+fired), `000` at t=13.90 (mag 1 empty → the 14.03-17.20 reload), `004` at t=18.72 (2 shots into
+mag 2). Full crosses at t=18.73, 0.16s after shot 8's rider sub-step — the exact rider→weapon
+spacing of every other pull — with shot 8's rocket visibly exploding and its rider popup (437,296,
+her documented non-crit rider value) on screen. Shot 1 was a PARTIAL-charge opener: weapon-only
++2.9% (~364 energy, c≈0), NO rider proc — consistent with her rider being gated to full-charged
+shots (override note).
+
+Bound (§2): 7 steady pulls P + partial E ≈ 3.6 ≥ 100 and 6P + E < 100 ⇒ **P ∈ [~13.6, ~16.0)**.
+The documented 12.55%/pull — and the 910+364 model's 12.74% — are EXCLUDED. Under the model the
+bar would sit at ~93% after shot 8's weapon and need a 9th shot; the footage fills on the 8th.
+The reader's 13.73%/pull (3.63 + 10.1) closes the account: 7 × 13.73 + 3.6 = 99.7 ≈ 100.
+
+§3.2's pause clause FIRES: the anchor's documented value disagrees with the counting bound, so
+everything resting on the anchor is in question (see pause list below).
+
+### Supporting check 3 — sub-step ORDER is rider-first
+
+At every rate the small (rider) step precedes the large (weapon) step by 0.15-0.17s — the
+documented "+9.1% then +3.45%" ordering is inverted in the footage. Consistent with rider proc on
+FIRE, weapon gauge on rocket HIT. Order does not change per-pull totals at ≥15fps (both sub-steps
+fully resolve); it matters only at 5fps, where a pull smears into one merged step.
+
+### Verdict
+
+- **The reader is NOT miscalibrated.** Rider exact vs model; weapon/per-pull corroborated by
+  shot-counting (an instrument with no pixels in it); full-state detection correct; 30fps ==
+  60fps. Adopted as trustworthy for shape AND magnitude at ≥15fps, 30fps practical default,
+  ±1 column (0.72%) residual. Script header updated; a stderr warning now fires when
+  self-calibration lands on the MIN/MAX bound (the whole-video intro-fade mis-lock found this
+  session). The vitest's loose large-step pin stays as a drift detector — it is NOT a blessing of
+  10.1 as game truth.
+- **Hypothesis (a) ESCALATED — the weapon sub-step genuinely generates ~10.1% (~1010 energy vs the
+  modelled 910), varying per shot (9.4-10.8%).** Candidate mechanism (a HYPOTHESIS, not measured):
+  real charge-at-release EXCEEDS 1.0 (the override note independently records real auto
+  overcharging) and the focus formula ×(1+1.5c) extends past c=1; the six observed steps fit
+  c ∈ [1.07, 1.32]. This is DECISIONS-tier: it moves a 2026-07-13 measured anchor (910, and the
+  c=1.0 cap underneath the whole 250-family ×2.5 rule, takina's 1400 included) and re-colors the
+  scarlet-black-shadow 1.5× landing and the alice/cinderella reads. It runs the full
+  /scientific-method pipeline on its own — cross-family gates need the owner's explicit request,
+  so this is filed as an owner action item, NOT started.
+- **PAUSED pending (a) (§3.2):** `alice` and `cinderella` multiplier resolution (both their
+  "reader magnitude once trusted" paths and the meaning of their datamined multipliers depend on
+  whether real charge > 1.0 scales gauge). Note the counting bounds are anchor-independent and
+  survive any (a) outcome: alice's own solo footage (~5 shots to ~99.3%, 6th fills, per QUEUE)
+  bounds her per-shot to [16.67%, 20%) = [2.98×, 3.57×) — which EXCLUDES the withdrawn
+  3.68-3.9× session values and CONTAINS her datamined 3.5× (19.6%). That is recorded here as
+  arithmetic, not as a landing.
+- **Filed separately (§6 known trap):** the sim/real divergence at gauge-full for a lone Burst III
+  (engine opens the chain, zeroes the gauge and halts generation with no Burst I present; the real
+  bar holds full) — damage-inert solo, must not be "fixed" as a side-effect of this work. QUEUE
+  carries it as its own item.
+
+### Evidence package
+
+`scratchpad/gauge-ladder/` (worktree, gitignored): `series-{5,15,30,60}fps.json` (full-video
+reader runs), `montage-intro.png` (the t≈4.3 event is the intro FADE, not a gauge event),
+`montage-pull1.png`, `montage-full.png` (full-state transition anatomy), `full/t*.png` (ammo-
+counter frames). Frames are re-derivable: `ffmpeg -i "docs/probes/tb2/tb2 3 maiden.MP4" -vf
+"fps=N,crop=400:160:2350:430" f_%05d.png` (video lives in the MAIN checkout — gitignored — not
+the worktree).

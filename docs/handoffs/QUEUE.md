@@ -87,25 +87,33 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   anywhere in **3.5×-3.9×**, so her value is NOT pinned. The blocker is the reader's absolute
   magnitude, which is itself an open question (next bullet). Alice's solo footage is 20.5s and
   contains ~5 shots total — that is the entire dataset and no rescan enlarges it.
+  **UPDATE 2026-07-29 (second session):** the reader calibration SETTLED in the reader's favor
+  (see the (a)-escalation bullet), so instrument magnitude no longer blocks her — but her
+  resolution is now PAUSED on (a) itself (if real charge-at-release > 1.0 scales gauge, the
+  meaning of her 3.5× datamined value shifts). Anchor-independent arithmetic that survives any
+  (a) outcome: 5 shots to ~99.3% with the 6th filling bounds her per-shot to [16.67%, 20%) =
+  [2.98×, 3.57×) — excludes the withdrawn 3.68-3.9× session values, CONTAINS datamined 3.5×.
 
-- **⇒ 🔵 GAUGE-FILL READER CALIBRATION — OPEN, GATES `alice` AND `cinderella` BOTH.**
-  **Full plan: [`docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md`](2026-07-29-gauge-fill-reader-calibration.md)
-  — start there, it carries the test, the decision rules, the premise list and the traps.**
-  Two headlines from it: (1) **shot-counting is the PRIMARY instrument, not pixel reading** —
-  if N shots fill the bar and N−1 do not, per-shot is bounded to [100/N, 100/(N−1)) with no
-  pixel measurement at all (owner ruling; it immediately excluded reader output for `alice`);
-  (2) no measured per-shot value from the 2026-07-29 session survives — that session produced
-  mutually-inconsistent numbers, all withdrawn, **re-derive rather than inherit.** Filed 2026-07-29. Scored at 30fps against the 2026-07-13 hand
-  pixel read (`docs/data/burst-gauge.md` §6, `maiden-ice-rose` 12.55%/pull in +9.1/+3.45
-  sub-steps), `scripts/probe/gauge-fill.py` reproduces the **rider sub-step exactly (3.63 vs
-  model 3.64)** but reads the **weapon sub-step ~11% high (10.1 vs 9.1)**. The exact small step
-  means the reader's absolute scale is correct, so this is a STRUCTURED discrepancy that no
-  scale factor can absorb. Two hypotheses, unresolved: (a) the weapon sub-step genuinely
-  generates more than the modelled 910 energy — which would put a documented measured constant
-  in question, or (b) a large jump's rise spans frames and an intermediate value inflates the
-  measured step. **Settle this BEFORE quoting any absolute per-shot gauge magnitude** — it is
-  the common blocker for both alice and cinderella. Cheap first probe: re-read at 60fps (source
-  rate) and see whether the large step narrows toward 9.1.
+- **⇒ 🟢 GAUGE-FILL READER CALIBRATION — READER SETTLED 2026-07-29 (second session); SUPERSEDED BY
+  THE (a) ESCALATION BELOW.** Verdict + full evidence: `docs/handoffs/
+  2026-07-29-gauge-fill-reader-calibration.md` §RESULT. The sampling-rate ladder (5/15/30/60fps)
+  showed the large-step discrepancy FLAT at every rate and each weapon jump landing in a single
+  60fps frame — the sampling/rendering-artefact hypothesis (b) is REFUTED. Shot-counting (8 shots
+  to full, ammo-counter verified) bounds per-pull to ≥ ~13.6%, EXCLUDING the documented 12.55%
+  anchor — the reader was right; the 2026-07-13 hand read under-read both sub-steps. **The reader
+  is adopted as trustworthy for shape AND magnitude at ≥15fps (30fps default, ±1 column = 0.72%);
+  settle nothing further about the tool.** What remains is the game-mechanics question, next bullet.
+
+- **⇒ 🔴 (a) ESCALATION — maiden-ice-rose's weapon sub-step genuinely generates ~10.1% (~1010
+  energy vs the modelled 910), per shot, varying 9.4-10.8%. OWNER DECISION NEEDED: run the full
+  /scientific-method pipeline (cross-family gates are owner-requested).** Candidate mechanism
+  (HYPOTHESIS): real charge-at-release exceeds 1.0 (overcharge) and the ×(1+1.5c) focus formula
+  extends past c=1 — the six observed steps fit c ∈ [1.07, 1.32]. If true it moves the 2026-07-13
+  anchor constant, the c=1.0 cap under the whole 250-family ×2.5 rule (takina's 1400 included),
+  and re-colors the scarlet-black-shadow 1.5× landing and every focused-charge read. Per §3.2 of
+  the calibration handoff, everything resting on the anchor PAUSES until this settles — including
+  the `alice` and `cinderella` multiplier resolutions below. Evidence package + suggested test
+  shapes in the §RESULT handoff section.
 
 - **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
   Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
@@ -133,6 +141,23 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   silent 2.5x pin with no review of whether the mechanism argument (or 2.5x specifically) even
   applies to them. Worth a dedicated `PENDING_TEAM_ISOLATION`-style entry per-unit if/when a
   second `magDumpRof` carrier lands, rather than assuming the flag alone justifies the pin.
+  **UPDATE 2026-07-29 (second session):** PAUSED on the (a) escalation like alice — her rough
+  ~2.6-3.1× read and its interpretation depend on whether real charge > 1.0 scales gauge. Her
+  engine facts were premise-verified this session (rider = flat 45/rocket, no focus bonus; pin
+  is `u.magDumpRof`, NOT `PENDING_TEAM_ISOLATION`; per pull today 112.5+45 = 157.5 energy;
+  ⚠ `scripts/sim/<element>.ts` runners drop `magDumpRof` and take the un-pinned path). See the
+  §RESULT handoff section.
+
+- **⇒ 🔵 SIM/REAL DIVERGENCE AT GAUGE-FULL FOR A LONE BURST III — FILE ONLY, DAMAGE-INERT SOLO.**
+  Split out of the gauge-fill calibration handoff (§6 known trap), where it surfaced and was
+  explicitly ruled out of scope. At gauge-full the engine opens the burst chain, zeroes the gauge
+  and halts generation even with NO Burst I present (`src/engine/sim.ts` `addGauge`/chain path),
+  while the real bar holds full indefinitely (confirmed on the maiden-ice-rose solo footage:
+  bar fills at t≈18.7 and holds green for the remaining ~55s). Damage-inert for a lone-Burst-III
+  solo (nothing casts either way), so it distorts no current measurement — but any future
+  solo-gauge methodology that reads POST-full behavior, and any lone-B3 team-adjacent config,
+  should know the two diverge. Fix only if a measurement ever needs it; do not ride it into
+  unrelated gauge work.
 
 - **⇒ 🔵 VESTI-TACTICAL-UPGRADE + 4 OTHER SR/RL UNITS — `fullChargeBonus` DATA-QUALITY GAP, GUARD
   BEFORE THEIR FIRST OVERRIDE.** Filed by the Step 7 implementation review of the 2026-07-29

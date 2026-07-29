@@ -33,37 +33,45 @@ METHOD
   * Full/ready is detected as green dominance over the bar interior and reported as state
     "full" with fill 100.0 (NOT 0.0).
 
-CALIBRATION STATUS — NOT YET SETTLED (2026-07-29). READ BEFORE QUOTING AN ABSOLUTE VALUE.
------------------------------------------------------------------------------------------
-Scored against the repo's own labeled anchor — the 2026-07-13 hand pixel reads in
-docs/data/burst-gauge.md section 6, made long before any of these scripts existed and therefore
-independent of them:
+CALIBRATION STATUS — SETTLED AS TOOLING 2026-07-29 (second session); the ANCHOR is now the open
+question, not the reader.
+-------------------------------------------------------------------------------------------------
+Scored against the repo's labeled anchor — the 2026-07-13 hand pixel reads in
+docs/data/burst-gauge.md section 6 (maiden-ice-rose, docs/probes/tb2/tb2 3 maiden.MP4, documented
+12.55%/pull in sub-steps of +9.1% then +3.45%) — the earlier scoring left the reader reading the
+large (weapon) sub-step ~11% high while matching the small (rider) sub-step exactly. A
+sampling-rate ladder + shot-counting on the same recording (full evidence:
+docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md §RESULT) resolved which side was wrong:
 
-  maiden-ice-rose (docs/probes/tb2/tb2 3 maiden.MP4): documented 12.55%/pull in two sub-steps
-  of +9.1% then +3.45%.
+  * The large step reads 9.4-10.8 (mean ~10.1) at EVERY sampling rate (5/15/30/60fps) and lands
+    in a SINGLE 60fps frame — no animation, no overshoot. A sampling/rendering artefact is
+    REFUTED by direct observation.
+  * Shot-counting (no pixels): 8 shots fill the bar (ammo counter verified: 005 at t=7.0, 000 at
+    13.9, 004 at 18.72; full crosses on shot 8's weapon landing at 18.73), shot 1 a partial-charge
+    opener (~3.6%, no rider proc). That bounds per-pull to >= ~13.6% — the documented 12.55% (and
+    the 910+364 model's 12.74%) are EXCLUDED, while this reader's 13.7%/pull (3.6 rider + 10.1
+    weapon) closes the energy account to ~100 exactly.
+  * Sub-step ORDER in the footage is rider-first, weapon 0.15-0.17s later (rider on fire, weapon
+    gauge on rocket hit) — the doc's "+9.1% then +3.45%" ordering is inverted.
 
-At --fps 5 the magnitude was method-dependent and even changed SIGN (+6.4% by summing paired
-sub-steps, -2.8% by endpoint/pull-count), because a two-sub-step pull smears across samples and
-"how many pulls occurred" becomes ambiguous. Re-running at --fps 30 resolves the structure and
-gives a stable, and more interesting, answer.
+So the reader is CORRECT on both sub-steps; the 2026-07-13 hand read under-read both (rider ~5%,
+weapon ~10%). WHY the weapon sub-step genuinely generates ~10.1% (~1010 energy vs the modelled
+910) is hypothesis (a) — candidate mechanism: real charge-at-release exceeds 1.0 (overcharge) and
+the x(1+1.5c) focus formula extends past c=1; the six observed steps fit c in [1.07, 1.32]. That
+question is DECISIONS-tier and runs the full /scientific-method pipeline separately — do NOT land
+a constant change from this tooling verdict, and do not "fix" the reader to match 9.1.
 
-At --fps 30 over 6 complete pulls (cadence a regular 1.37s, reload gap at t=14.03-17.20):
+CONSEQUENCE FOR CALLERS: trustworthy for shape AND for magnitude at >=15fps (15/30/60 agree to the
+column; 5fps smears a two-sub-step pull into one merged step). 30fps reproduces 60fps exactly —
+use 30 as the practical default. Residual uncertainty is the +-1 column (0.72%) quantisation of
+the 138px bar. Large-step magnitudes are USABLE, but the game-truth value of the weapon sub-step
+is the open (a) question above — quoting it as an engine constant still gates on that pipeline.
 
-  sub-step        model    measured here
-  rider  (small)   3.64        3.63       <- EXACT
-  weapon (big)     9.1        10.1        <- +11%
-  per pull        12.74       13.76
-
-The small sub-step matching the model to two decimals means this worker's ABSOLUTE SCALE IS
-CORRECT — the discrepancy is not a calibration factor and must not be papered over with one.
-The large sub-step specifically reads ~11% high. Two live hypotheses, UNRESOLVED as of
-2026-07-29: (a) the weapon sub-step genuinely generates more than the modelled 910 energy,
-which would put a documented measured constant in question, or (b) a large jump's rise spans
-more than one sampled frame and an intermediate value inflates the measured step.
-
-CONSEQUENCE FOR CALLERS: trustworthy for SHAPE (step timing, cadence, pull counting,
-filling-vs-full state) and for SMALL sub-steps. Do NOT derive an engine constant from a large
-step's magnitude until (a) vs (b) is settled — that question is gated by /scientific-method.
+USAGE NOTE: self-calibration picks the LONGEST dark run in the first plausible frame. On a
+whole-video scan the intro fade (t~4-5s) can present a longer dark run than the bar — pass
+--calib-frame <a mid-fight frame> or window the scan with --at to skip the intro, and check the
+reported bar width (the bar is 138px on these recordings; a width at the MIN/MAX bound means
+mis-calibration — the script warns on stderr in that case).
 
 usage: gauge-fill.py --frames <dir> --fps <n> [--at <s>] [--calib-frame <i>] [--out <file>]
 """
@@ -159,6 +167,11 @@ def main():
             sys.exit('no frame yielded a detectable bar — check the crop region')
 
     row, x0, x1 = geom
+    if x1 - x0 in (MIN_BAR_PX, MAX_BAR_PX):
+        print(f'⚠ calibrated bar width {x1 - x0}px sits exactly on the '
+              f'{"MIN" if x1 - x0 == MIN_BAR_PX else "MAX"}_BAR_PX bound — likely a mis-lock '
+              f'(the intro fade can out-compete the real bar). Pass --calib-frame with a '
+              f'mid-fight frame.', file=sys.stderr)
     reads = []
     for i, f in enumerate(files):
         img = np.array(Image.open(f).convert('RGB')).astype(int)
