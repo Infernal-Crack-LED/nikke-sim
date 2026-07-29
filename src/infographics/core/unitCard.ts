@@ -317,10 +317,9 @@ function drawTitle(
 // (web/src/components/CharacterGrid.tsx), which insets its 40px button by 8 for
 // burst and 4 for code/class/manufacturer, weapon not at all.
 //
-// Burst and class take the FULL box here, unlike the site: the card draws the
-// tightly-cropped `card_*` set (core/iconNames.ts), which has no transparent
-// margin to compensate for. Element and manufacturer are still the old rasters
-// and still carry theirs.
+// Burst and class take the FULL box: their assets are tightly cropped, with no
+// transparent margin to compensate for. Element and manufacturer are the older
+// rasters and still carry theirs.
 const ICON_FIT: Record<string, number> = {
   burst: 1,
   element: 0.8,
@@ -633,7 +632,11 @@ function drawBarChart(
     ctx.fillStyle = row.isUnit ? TEXT_PRIMARY : TEXT_SECONDARY;
     ctx.font = `${row.isUnit ? 700 : 400} ${small ? 13 : 17}px ${FONT}`;
     const rankTag = row.rank != null ? `${row.rank}. ` : '';
-    const label = rankTag + row.name + (row.qualified ? ' *' : '');
+    // No qualifier asterisk on a bar-chart NAME. The footnote it points at is
+    // about this card's unit only, so on a neighbour it was a marker with
+    // nothing on the card to resolve it. The TILE still carries its '*' and the
+    // notes panel still spells it out.
+    const label = rankTag + row.name;
     const shown = fitText(ctx, label, nameW - chipW);
     ctx.fillText(shown, r.x, y + barH);
     if (chip) {
