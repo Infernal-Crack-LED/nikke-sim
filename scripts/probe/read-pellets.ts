@@ -45,7 +45,7 @@ for (let i = 1; i < argv.length; i++) {
 }
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--mock] [--out DIR]'
+    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]'
   );
   process.exit(1);
 }
@@ -63,12 +63,15 @@ const pelletCrop = flags['pellet-crop'] ?? 'crop=1303:396:672:268';
 const timerCrop = flags['timer-crop'] ?? 'crop=59:39:2317:21';
 const zoom = Number(flags.zoom ?? 3);
 const coreRate = Number(flags['core-rate'] ?? 0.05);
+const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
+const ammoOffsetYNative = Number(flags['ammo-offset-y'] ?? -5.5);
 const mock = flags.mock === 'true';
 const outDir = flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/pellets';
 const scriptDir = fileURLToPath(new URL('.', import.meta.url));
 const pythonBin = `${scriptDir}.venv/bin/python`;
 const counterScript = `${scriptDir}count-pellets.py`;
 const ammoTemplatePath = `${scriptDir}ammo-box-template.png`;
+const forceVlmCrosshair = flags['no-ammo-template'] === 'true';
 
 const MIN_PELLETS = 5;
 const MAX_PELLETS = 10;
@@ -253,7 +256,7 @@ console.log(`  timer VLM: ${((Date.now() - t0Timer) / 1000).toFixed(1)}s`);
 
 // ---- VLM crosshair reads (skipped when ammo template is available) ----
 const crosshairFile = `${outDir}/crosshairs.json`;
-if (!existsSync(ammoTemplatePath)) {
+if (forceVlmCrosshair || !existsSync(ammoTemplatePath)) {
   const CROSSHAIR_PROMPT = `You are looking at a cropped region from a NIKKE boss fight showing the
 damage area around the boss. Find the CROSSHAIR — the small aiming reticle where the player's
 shots impact. It is usually a small circle, diamond, or chevron shape near the centre of the
@@ -405,8 +408,8 @@ if (!mock) {
   const minArea = Math.round(100 * zoomScale);
   const maxArea = Math.round(3000 * zoomScale);
   const pelletRadius = Math.round(Number(flags['pellet-radius'] ?? 80 * zoom));
-  const ammoOffsetX = Math.round(62.5 * zoom);
-  const ammoOffsetY = Math.round(-5.5 * zoom);
+  const ammoOffsetX = Math.round(ammoOffsetXNative * zoom);
+  const ammoOffsetY = Math.round(ammoOffsetYNative * zoom);
   const ammoTemplate = existsSync(perVideoAmmoTemplate)
     ? perVideoAmmoTemplate
     : ammoTemplatePath;
