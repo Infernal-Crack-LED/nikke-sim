@@ -15,10 +15,14 @@ import olOptimalJson from '../../data/ol-optimal.json';
 import tsareenaJson from '../../data/tsareena-build.json';
 import {
   buildUnitCardData,
+  neighbourRowsFor,
   type UnitCardCharacter,
   type DpsArtifactLike,
 } from '../../src/infographics/core/unitCardData';
-import type { UnitCardData } from '../../src/infographics/core/unitCard';
+import type {
+  UnitCardData,
+  UnitCardVariant,
+} from '../../src/infographics/core/unitCard';
 import {
   ICON_BY_ELEMENT,
   ICON_BY_BURST,
@@ -98,7 +102,11 @@ export async function buildUnitCardShare(
   slug: string,
   boards: UnitCardBoards,
   portrait: HTMLImageElement | null,
-  siteIcon?: unknown
+  siteIcon?: unknown,
+  // Portrait draws a wider neighbourhood, so the browser preview has to know
+  // which variant it is building or it renders a different card than the
+  // pre-rendered one for the same unit.
+  variant: UnitCardVariant = 'discord'
 ): Promise<UnitCardData | null> {
   const character = characters[slug];
   if (!character) {
@@ -115,6 +123,7 @@ export async function buildUnitCardShare(
     tagLabels: archetype.vocabulary,
     olOptimal: olUnits[slug] ?? null,
     tsareena: tsareenaUnits[slug] ?? null,
+    neighbourRows: neighbourRowsFor(variant),
   });
 
   const [element, burst, cls, weapon, manufacturer] = await Promise.all([

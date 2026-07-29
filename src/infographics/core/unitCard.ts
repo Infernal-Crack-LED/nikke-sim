@@ -45,7 +45,7 @@ import {
   TEXT_SECONDARY,
   TEXT_DIM,
   rankColor,
-  drawWatermark,
+  WATERMARK,
 } from './theme.js';
 import type { UnitCardModel, RankTile, BarChart } from './unitCardData.js';
 
@@ -91,7 +91,7 @@ const PANEL_EDGE = '#242936';
 const LEFT_COL_FRAC = 0.62; // landscape: detail column vs the tiles/notes column
 const COL_GUTTER = 24;
 
-const PORTRAIT_ART = 96; // landscape title-bar art
+const PORTRAIT_ART = 112; // landscape title-bar art
 const PORTRAIT_ART_P = 190; // portrait title-bar art
 const ICON_SIZE = 44; // landscape icon strip
 const ICON_SIZE_P = 60; // portrait icon strip
@@ -244,21 +244,36 @@ function drawTitle(
   const col = ELEMENT_COLORS[m.element] ?? '#9aa3b2';
   drawArt(ctx, { x: r.x, y: r.y, w: art, h: art }, d.portrait, col, (m.name[0] ?? '?').toUpperCase());
 
-  const textX = r.x + art + (art >= PORTRAIT_ART_P ? 24 : 20);
-  // The site logo sits at the FAR RIGHT of the title row — a second, more
-  // prominent placement of the mark than the footer watermark (§3). It never
-  // replaces the watermark, which is drawn unconditionally as the final pass.
-  const logo = 40;
-  let nameMax = r.x + r.w - textX;
+  const big = art >= PORTRAIT_ART_P;
+  const textX = r.x + art + (big ? 24 : 20);
+  // The mark sits at the FAR RIGHT of the title row: the wordmark in accent blue
+  // with the site icon to its right. This IS the card's watermark now (owner,
+  // 2026-07-28) — it replaced the muted grey footer line, which was the least
+  // legible text on the card at timeline scale while the title row is where the
+  // eye already is. The wordmark draws unconditionally; the icon is optional
+  // (the browser preview has no icon to hand), so a missing icon thins the mark
+  // rather than dropping it.
+  //
+  // The icon scales with the variant — a fixed 40px read as an afterthought on
+  // the portrait canvas, where everything around it is roughly 1.6× larger.
+  const logo = big ? 60 : 40;
+  const markSize = big ? 22 : 15;
+  ctx.font = `700 ${markSize}px ${FONT}`;
+  const wordW = ctx.measureText(WATERMARK).width;
+  let markRight = r.x + r.w;
   if (d.siteIcon) {
     drawContained(ctx, d.siteIcon, {
-      x: r.x + r.w - logo,
-      y: r.y + 2,
+      x: markRight - logo,
+      y: r.y + (big ? 4 : 2),
       w: logo,
       h: logo,
     });
-    nameMax -= logo + 16;
+    markRight -= logo + (big ? 12 : 8);
   }
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#5b9dff'; // --accent
+  ctx.fillText(WATERMARK, markRight - wordW, r.y + (big ? 36 : 26));
+  const nameMax = markRight - wordW - 20 - textX;
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
@@ -280,15 +295,12 @@ function drawTitle(
   // Release date — nullable (2 units upstream have none, and an unreleased
   // character has none by definition). Absent → the line simply isn't drawn;
   // the space stays reserved, so no reflow (§11).
+  // Class and manufacturer USED to sit here too; they were dropped in the polish
+  // pass (owner, 2026-07-28) because the icon strip directly below already states
+  // both, with the icon and the label — the line was a second, weaker copy.
   ctx.font = `400 ${art >= PORTRAIT_ART_P ? 20 : 15}px ${FONT}`;
   ctx.fillStyle = TEXT_SECONDARY;
-  const sub = [
-    m.class,
-    m.manufacturerBase ?? undefined,
-    m.releaseDate ? `Released ${m.releaseDate}` : undefined,
-  ]
-    .filter(Boolean)
-    .join(' · ');
+  const sub = m.releaseDate ? `Released ${m.releaseDate}` : '';
   ctx.fillText(fitText(ctx, sub, nameMax), textX, nameBase + (art >= PORTRAIT_ART_P ? 34 : 26));
 
   if (m.prerelease) {
@@ -297,6 +309,22 @@ function drawTitle(
     ctx.fillText('UNRELEASED — PROJECTED', textX, nameBase + (art >= PORTRAIT_ART_P ? 64 : 48));
   }
 }
+
+// Per-family inset, ported from the team builder's filter row
+// (web/src/components/CharacterGrid.tsx): every icon is drawn into an identical
+// box, and the box is then inset by family before the art is fitted. The burst
+// SVGs carry no internal padding while the code/class/manufacturer rasters do,
+// so at an equal box the burst glyph reads noticeably heavier than its
+// neighbours. The team builder solves that with padding 8 on a 40px button for
+// burst and 4 for the rest (weapon: none) — the same 0.60 / 0.80 / 1.00 ratios
+// expressed as fractions here so they hold at any ICON_SIZE.
+const ICON_FIT: Record<string, number> = {
+  burst: 0.6,
+  element: 0.8,
+  class: 0.8,
+  manufacturer: 0.8,
+  weapon: 1,
+};
 
 // Icon strip: burst · CDR (text) · element · weapon · class · manufacturer · RL3.
 // Burst CDR has no icon by ruling 11 and renders as text.
@@ -308,16 +336,17 @@ function drawIconStrip(
 ): void {
   const m = d.model;
   const icons = d.icons ?? {};
-  const items: { img?: unknown; text?: string; label: string }[] = [
-    { img: icons.burst, label: `B${m.burst}` },
+  const items: { img?: unknown; text?: string; label: string; fit?: number }[] = [
+    { img: icons.burst, label: `B${m.burst}`, fit: ICON_FIT.burst },
     {
       text: m.burstCooldownSec != null ? `${m.burstCooldownSec}s` : '—',
       label: 'CD',
     },
-    { img: icons.element, label: m.element },
-    { img: icons.weapon, label: m.weapon },
-    { img: icons.class, label: m.class },
+    { img: icons.element, label: m.element, fit: ICON_FIT.element },
+    { img: icons.weapon, label: m.weapon, fit: ICON_FIT.weapon },
+    { img: icons.class, label: m.class, fit: ICON_FIT.class },
     {
+      fit: ICON_FIT.manufacturer,
       img: icons.manufacturer,
       // The 4 overspec units keep the distinction visible rather than having it
       // silently dropped when the icon name is resolved (§10.2c).
@@ -329,7 +358,16 @@ function drawIconStrip(
   const labelSize = size >= ICON_SIZE_P ? 15 : 12;
   items.forEach((item, i) => {
     const cx = r.x + cell * i + cell / 2;
-    const box = { x: cx - size / 2, y: r.y, w: size, h: size };
+    // The BOX is constant across the strip (so labels and baselines line up);
+    // only the art inside it is inset, which is what equalizes optical weight.
+    const fit = item.fit ?? 1;
+    const inner = size * fit;
+    const box = {
+      x: cx - inner / 2,
+      y: r.y + (size - inner) / 2,
+      w: inner,
+      h: inner,
+    };
     if (item.img) {
       drawContained(ctx, item.img, box);
     } else if (item.text) {
@@ -346,9 +384,53 @@ function drawIconStrip(
   ctx.textAlign = 'left';
 }
 
+// Vertical advances BELOW the numeral's baseline, in draw order. Kept as one
+// list so the height measurement and the drawing can never disagree about the
+// spacing — the tile is centred by measuring it first, and a second copy of
+// these numbers would silently drift.
+function tileAdvances(tile: RankTile, big: boolean): number[] {
+  if (tile.rank == null) {
+    return [big ? 30 : 22]; // 'Unranked'
+  }
+  const out = [big ? 34 : 24]; // → value
+  const sublines: number[] = [];
+  if (tile.sub) {
+    sublines.push(big ? 22 : 16);
+  }
+  if (tile.profileChip) {
+    sublines.push(big ? 21 : 15);
+  }
+  if (tile.defaultRank != null) {
+    sublines.push(0); // last line advances nothing
+  }
+  if (sublines.length) {
+    out.push(big ? 24 : 18); // → first sub-line
+    out.push(...sublines.slice(0, -1));
+  }
+  return out;
+}
+
+// How tall a tile's content block is, numeral cap-height included.
+function tileBlockHeight(tile: RankTile, big: boolean): number {
+  const ascent = (big ? 74 : 46) * 0.72;
+  return ascent + tileAdvances(tile, big).reduce((a, b) => a + b, 0);
+}
+
 // A ranking tile. The rank NUMERAL is the headline — huge, rank-coloured, and
 // the one element besides the name that must survive a 45% downscale.
-function drawTile(ctx: Canvas2DLike, r: Rect, tile: RankTile, big: boolean): void {
+//
+// `blockH` is the height of the TALLEST block in the row, not this tile's own:
+// the content is centred against that shared height so all three numerals land
+// on one line (owner, 2026-07-28). Centring each tile independently would push
+// the profiled tile's numeral off the line the other two sit on, and the row of
+// numerals is the first thing read at timeline scale.
+function drawTile(
+  ctx: Canvas2DLike,
+  r: Rect,
+  tile: RankTile,
+  big: boolean,
+  blockH: number
+): void {
   panel(ctx, r);
   ctx.fillStyle = PANEL_EDGE;
   ctx.fillRect(r.x + 10, r.y + (big ? 34 : 26), r.w - 20, 1);
@@ -366,42 +448,66 @@ function drawTile(ctx: Canvas2DLike, r: Rect, tile: RankTile, big: boolean): voi
   const numeralSize = big ? 74 : 46;
   ctx.fillStyle = rankColor(tile.rank);
   ctx.font = `700 ${numeralSize}px ${FONT}`;
-  const numeralY = r.y + (big ? 108 : 76);
+  const blockTop = r.y + (big ? 34 : 26); // the divider — the header stays pinned
+  const avail = r.h - (blockTop - r.y) - (big ? 14 : 10);
+  const numeralY =
+    blockTop + Math.max(0, (avail - blockH) / 2) + numeralSize * 0.72;
   ctx.fillText(tile.rank == null ? '—' : `#${tile.rank}`, cx, numeralY);
+
+  const adv = tileAdvances(tile, big);
+  let ai = 0;
 
   if (tile.rank == null) {
     ctx.fillStyle = TEXT_DIM;
     ctx.font = `600 ${big ? 15 : 11}px ${FONT}`;
-    ctx.fillText('Unranked', cx, numeralY + (big ? 30 : 22));
+    ctx.fillText('Unranked', cx, numeralY + adv[ai]);
     ctx.textAlign = 'left';
     return;
   }
 
+  let y = numeralY + adv[ai++];
   ctx.fillStyle = TEXT_PRIMARY;
   ctx.font = `700 ${big ? 22 : 15}px ${FONT}`;
-  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - 12), cx, numeralY + (big ? 34 : 24));
+  ctx.fillText(fitText(ctx, tile.value ?? '', r.w - 12), cx, y);
 
-  let y = numeralY + (big ? 58 : 42);
-  ctx.fillStyle = TEXT_SECONDARY;
-  ctx.font = `400 ${big ? 15 : 11}px ${FONT}`;
-  if (tile.sub) {
-    ctx.fillText(fitText(ctx, tile.sub, r.w - 12), cx, y);
-    y += big ? 22 : 16;
-  }
   // Dual rank (§8a ruling 14): the PROFILED rank is the single large numeral
   // above; the profile chip and the muted default rank sit below. Two numerals
   // of equal weight would compete and neither would read at timeline scale.
+  // Text is fitted at DRAW time, after its own font is set — measuring a
+  // 400/11px sub-line against the 700/15px value font truncates it early.
+  const sublines: { text: string; fill: string; font: string }[] = [];
+  if (tile.sub) {
+    sublines.push({
+      text: tile.sub,
+      fill: TEXT_SECONDARY,
+      font: `400 ${big ? 15 : 11}px ${FONT}`,
+    });
+  }
   if (tile.profileChip) {
-    ctx.fillStyle = '#8fb4ff';
-    ctx.font = `700 ${big ? 15 : 11}px ${FONT}`;
-    ctx.fillText(fitText(ctx, tile.profileChip, r.w - 12), cx, y);
-    y += big ? 21 : 15;
+    sublines.push({
+      text: tile.profileChip,
+      fill: '#8fb4ff',
+      font: `700 ${big ? 15 : 11}px ${FONT}`,
+    });
   }
   if (tile.defaultRank != null) {
-    ctx.fillStyle = TEXT_DIM;
-    ctx.font = `400 ${big ? 14 : 10}px ${FONT}`;
-    ctx.fillText(`#${tile.defaultRank} default`, cx, y);
+    sublines.push({
+      text: `#${tile.defaultRank} default`,
+      fill: TEXT_DIM,
+      font: `400 ${big ? 14 : 10}px ${FONT}`,
+    });
   }
+  if (sublines.length) {
+    y += adv[ai++];
+  }
+  sublines.forEach((ln, i) => {
+    ctx.fillStyle = ln.fill;
+    ctx.font = ln.font;
+    ctx.fillText(fitText(ctx, ln.text, r.w - 12), cx, y);
+    if (i < sublines.length - 1) {
+      y += adv[ai++];
+    }
+  });
   ctx.textAlign = 'left';
 }
 
@@ -412,9 +518,50 @@ function drawTiles(
   big: boolean
 ): void {
   const w = (r.w - TILE_GAP * (tiles.length - 1)) / tiles.length;
+  // ONE block height for the row — see drawTile.
+  const blockH = Math.max(...tiles.map((t) => tileBlockHeight(t, big)));
   tiles.forEach((t, i) => {
-    drawTile(ctx, { x: r.x + (w + TILE_GAP) * i, y: r.y, w, h: r.h }, t, big);
+    drawTile(ctx, { x: r.x + (w + TILE_GAP) * i, y: r.y, w, h: r.h }, t, big, blockH);
   });
+}
+
+// Comp-profile pill, drawn to match the site's .ranks-badge: muted text on the
+// panel2 fill with a 1px border, trailing the name it qualifies.
+const CHIP_PAD = 6;
+const chipFont = (small: boolean): string => `600 ${small ? 10 : 13}px ${FONT}`;
+
+function measureChip(ctx: Canvas2DLike, text: string, small: boolean): number {
+  ctx.font = chipFont(small);
+  return ctx.measureText(text).width + CHIP_PAD * 2 + 6; // +6 = the 6px gap
+}
+
+// `baseline` is the text baseline of the row the chip trails, so the pill is
+// centred on it rather than sitting on it.
+function drawChip(
+  ctx: Canvas2DLike,
+  x: number,
+  baseline: number,
+  text: string,
+  small: boolean
+): void {
+  ctx.font = chipFont(small);
+  const fs = small ? 10 : 13;
+  const w = ctx.measureText(text).width + CHIP_PAD * 2;
+  const h = fs + (small ? 6 : 8);
+  const y = baseline - h + (small ? 3 : 4);
+  // The 1px border is TWO FILLS, not a stroke: Canvas2DLike is a deliberately
+  // minimal surface shared by the browser and @napi-rs/canvas, and it carries no
+  // stroke API. A border-coloured plate with the fill inset by 1 is identical at
+  // this size and costs no interface widening.
+  ctx.fillStyle = '#2a2f3b'; // --border
+  roundRect(ctx, x, y, w, h, 6);
+  ctx.fill();
+  ctx.fillStyle = '#1f232d'; // --panel2
+  roundRect(ctx, x + 1, y + 1, w - 2, h - 2, 5);
+  ctx.fill();
+  ctx.fillStyle = '#8b93a3'; // --muted
+  ctx.textAlign = 'left';
+  ctx.fillText(text, x + CHIP_PAD, y + h - (small ? 5 : 6));
 }
 
 // A neighbourhood bar chart. Bars are ELEMENT-coloured (ruling 12) and span
@@ -470,16 +617,25 @@ function drawBarChart(
       ctx.fill();
     }
 
+    // Name, then the comp-profile PILL after it — the site's own row layout
+    // (.ranks-badge in web/src/styles.css: a muted pill trailing the name).
+    // Every row carries its own profileChip, neighbours included, so this is
+    // what makes "3. Prika w/ Mint" read as a different standing from plain
+    // Prika instead of looking like a duplicate. The unit's own no-profile row
+    // is the same pill saying 'default' — it used to be a PREFIX, which put the
+    // qualifier before the name it qualifies and broke the column's alignment.
+    const chip = row.profileChip;
+    const chipW = chip ? measureChip(ctx, chip, small) : 0;
     ctx.textAlign = 'left';
     ctx.fillStyle = row.isUnit ? TEXT_PRIMARY : TEXT_SECONDARY;
     ctx.font = `${row.isUnit ? 700 : 400} ${small ? 13 : 17}px ${FONT}`;
     const rankTag = row.rank != null ? `${row.rank}. ` : '';
-    const label =
-      (row.isDefaultAppendix ? 'default · ' : '') +
-      rankTag +
-      row.name +
-      (row.qualified ? ' *' : '');
-    ctx.fillText(fitText(ctx, label, nameW), r.x, y + barH);
+    const label = rankTag + row.name + (row.qualified ? ' *' : '');
+    const shown = fitText(ctx, label, nameW - chipW);
+    ctx.fillText(shown, r.x, y + barH);
+    if (chip) {
+      drawChip(ctx, r.x + ctx.measureText(shown).width + 6, y + barH, chip, small);
+    }
 
     // track
     ctx.fillStyle = '#20242e';
@@ -501,10 +657,15 @@ function drawBarChart(
       // Sustain is a 3-segment split (heal / shield / lifesteal) drawn inside
       // one track — a single-colour sustain bar loses the composition that
       // makes the board useful.
+      // The site's own sustain palette (.ranks-seg-* in web/src/styles.css,
+      // owner 2026-07-26): green heal / blue shield / yellow lifesteal. Heal
+      // used to take the unit's ELEMENT colour here, which made the same
+      // composition read as a different one per unit and disagreed with the
+      // board the card is quoting.
       const parts: [number, string][] = [
-        [row.segments.heal, col],
-        [row.segments.shield, '#9fd0ff'],
-        [row.segments.lifesteal, '#ffd479'],
+        [row.segments.heal, '#4ecb71'], // --ranks-seg-heal
+        [row.segments.shield, '#5b9dff'], // --accent
+        [row.segments.lifesteal, '#e0b04b'], // --warn
       ];
       let sx = bx;
       parts.forEach(([frac, c], pi) => {
@@ -716,16 +877,21 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
   const rightW = innerW - leftW - COL_GUTTER;
   const rightX = PAD + leftW + COL_GUTTER;
 
+  // The two gaps below the title absorb the taller title art: the bar charts are
+  // the tightest band on this variant (natural height already exceeds the slot),
+  // so height taken here comes straight out of chart rows.
+  const TITLE_GAP = 14;
+  const STRIP_GAP = 22;
   drawTitle(ctx, { x: PAD, y: PAD, w: leftW, h: PORTRAIT_ART }, d, PORTRAIT_ART, [34, 30, 26]);
   drawIconStrip(
     ctx,
-    { x: PAD, y: PAD + PORTRAIT_ART + 22, w: leftW, h: ICON_SIZE + 18 },
+    { x: PAD, y: PAD + PORTRAIT_ART + TITLE_GAP, w: leftW, h: ICON_SIZE + 18 },
     d,
     ICON_SIZE
   );
 
   const tagsY = H - PAD - 24 - 22;
-  const chartsTop = PAD + PORTRAIT_ART + 22 + ICON_SIZE + 30;
+  const chartsTop = PAD + PORTRAIT_ART + TITLE_GAP + ICON_SIZE + STRIP_GAP;
   const chartsH = tagsY - chartsTop - 12;
   const slots = layoutCharts(m.charts, chartsTop, chartsH, BAR_ROW_H, 24);
   m.charts.forEach((chart, i) => {
@@ -737,6 +903,7 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
     );
   });
 
+  // No footer watermark: the mark moved into the title row (see drawTitle).
   drawTags(ctx, { x: PAD, y: tagsY, w: leftW, h: 22 }, m, false);
 
   // right column: tiles then notes
@@ -748,8 +915,6 @@ export function drawUnitCard(ctx: Canvas2DLike, d: UnitCardData): void {
     d,
     false
   );
-
-  drawWatermark(ctx, PAD, H - 16, 13, d.footer, 'nikke-sim unit card');
 }
 
 // PORTRAIT (`twitter`, 1200×1600). Single column in the owner's stack order
@@ -767,25 +932,36 @@ export function drawUnitCardPortrait(ctx: Canvas2DLike, d: UnitCardData): void {
   const x = PAD_P;
   let y = PAD_P;
 
+  // The three gaps above the charts. Two neighbour rows each side (the portrait
+  // row count) makes the chart band the tightest one here too, so these are
+  // trimmed to the point where a two-chart card's natural height fits its slot —
+  // past that, layoutCharts compresses the slot while the rows keep drawing at a
+  // fixed rowH, and the second chart's HEADER lands on the last row of the first.
+  const TITLE_GAP = 26;
+  const STRIP_GAP = 22;
+  const TILES_GAP = 24;
+
   // 1 — title bar
   drawTitle(ctx, { x, y, w: innerW, h: PORTRAIT_ART_P }, d, PORTRAIT_ART_P, [50, 44, 38, 32]);
-  y += PORTRAIT_ART_P + 34;
+  y += PORTRAIT_ART_P + TITLE_GAP;
 
   // 2 — icon strip
   drawIconStrip(ctx, { x, y, w: innerW, h: ICON_SIZE_P + 24 }, d, ICON_SIZE_P);
-  y += ICON_SIZE_P + 24 + 30;
+  y += ICON_SIZE_P + 24 + STRIP_GAP;
 
   // 3 — rank tiles (the headline; `big` type for the 45%-scale constraint)
   const tilesH = 250;
   drawTiles(ctx, { x, y, w: innerW, h: tilesH }, m.tiles, true);
-  y += tilesH + 30;
+  y += tilesH + TILES_GAP;
 
   // 5/6/7 are measured from the BOTTOM so the bar charts absorb the slack —
   // the fixed-size guarantee has to put leftover space somewhere, and §6c lever
   // 1 says it goes into chart rows, never whitespace.
-  const footerY = H - PAD_P + 4;
+  // Tags are now the LAST band — the watermark line that used to sit under them
+  // moved into the title row, and the freed height goes to the bar charts (§6c
+  // lever 1), not to a bigger bottom margin.
   const tagsH = 30;
-  const tagsY = footerY - 26 - tagsH;
+  const tagsY = H - PAD_P - tagsH;
   const notesH = 300;
   const notesY = tagsY - 24 - notesH;
 
@@ -803,7 +979,6 @@ export function drawUnitCardPortrait(ctx: Canvas2DLike, d: UnitCardData): void {
 
   drawNotes(ctx, { x, y: notesY, w: innerW, h: notesH }, d, true);
   drawTags(ctx, { x, y: tagsY, w: innerW, h: tagsH }, m, true);
-  drawWatermark(ctx, x, footerY, 16, d.footer, 'nikke-sim unit card');
 }
 
 // Dispatch by variant — the single entry point a host should use.

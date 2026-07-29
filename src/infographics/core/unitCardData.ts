@@ -39,8 +39,18 @@ import { fmtMagnitude, profileLabel } from './rankTables.js';
 // so the polish pass can tune them without hunting through layout code.
 
 // Neighbour rows drawn each side of the unit in a bar chart. The mockup asks for
-// one above and one below (3 rows total).
+// one above and one below (3 rows total) — which fills the LANDSCAPE column but
+// left ~300px of dead space on the taller portrait canvas, so portrait draws two
+// each side (owner polish pass 2026-07-28). This is the one place the two
+// variants' DATA differs; everything else is one model rendered two ways.
 export const NEIGHBOUR_ROWS = 1;
+export const NEIGHBOUR_ROWS_PORTRAIT = 2;
+
+// Takes the variant as a bare string rather than UnitCardVariant: that type
+// lives in unitCard.ts, which already imports this module, and both hosts must
+// resolve the row count the same way or the two pictures diverge.
+export const neighbourRowsFor = (variant: string): number =>
+  variant === 'twitter' ? NEIGHBOUR_ROWS_PORTRAIT : NEIGHBOUR_ROWS;
 
 // When a B1/B2 unit has no second bar chart (no sustain AND no burst CDR), the
 // freed vertical space goes into MORE neighbour rows in the surviving chart —
@@ -92,6 +102,10 @@ export interface UnitCardSources {
   olOptimal?: { type: string; count: number }[] | null;
   tsareena?: TsareenaBuild | null;
   prerelease?: boolean;
+  // Neighbour rows each side of the unit in a bar chart. Defaults to
+  // NEIGHBOUR_ROWS (landscape); the portrait host passes NEIGHBOUR_ROWS_PORTRAIT
+  // because the taller canvas has room for a wider neighbourhood.
+  neighbourRows?: number;
 }
 
 // ---- outputs -----------------------------------------------------------------
@@ -421,6 +435,9 @@ function dpsChartRows(
   return { title, rows, ...axis(rows.map((r) => r.value)), unranked: false };
 }
 
+// Chip text for the unit's own no-profile row (see boardChart).
+const DEFAULT_CHIP = 'default';
+
 // Shared shape for the three profiled boards: build the neighbourhood around the
 // HEADLINE row, then append the unit's default (no-profile) row below the last
 // neighbour if it exists and isn't already in the window (plan §8a — it is out
@@ -439,11 +456,19 @@ function boardChart<R extends unknown[]>(
   const window = neighbourhood(indexed, hit.index, each);
   const rows = window.map((w) => toRow(w.row, w.i, w.i === hit.index));
   if (hits.profiled && hits.plain) {
-    const already = window.some((w) => w.i === hits.plain!.index);
-    if (!already) {
+    // The unit's no-profile standing is labelled 'default' WHEREVER it lands.
+    // A wide enough neighbourhood pulls it into the window in rank order (the
+    // portrait variant does exactly this), and there it is neither appended nor
+    // out of order — but it is still the same unit twice, so without the chip it
+    // reads as a duplicate row. Only the APPENDED copy gets isDefaultAppendix,
+    // which is what dims it; an in-window one is an ordinary row.
+    const inWindow = window.findIndex((w) => w.i === hits.plain!.index);
+    if (inWindow >= 0) {
+      rows[inWindow].profileChip = DEFAULT_CHIP;
+    } else {
       const appendix = toRow(hits.plain.row, hits.plain.index, false);
       appendix.isDefaultAppendix = true;
-      appendix.profileChip = null;
+      appendix.profileChip = DEFAULT_CHIP;
       rows.push(appendix);
     }
   }
@@ -597,6 +622,10 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
   const c = src.character;
   const slug = c.slug;
   const dpsSet = isDpsSet(c.burst);
+  const nb = src.neighbourRows ?? NEIGHBOUR_ROWS;
+  // The solo-chart bonus is a DELTA, not an absolute, so the "spend freed height
+  // on neighbours" lever survives a variant that already draws more of them.
+  const nbSolo = NEIGHBOUR_ROWS_SOLO_CHART + (nb - NEIGHBOUR_ROWS);
 
   // --- tiles: always exactly three (§7) ---
   let tiles: [RankTile, RankTile, RankTile];
@@ -622,14 +651,8 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
     // The B3 DPS bars can never carry a profile: dpschart has no profile
     // concept at all. Worth knowing — the headline cards need none of §8a.
     charts.push(
-      dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, NEIGHBOUR_ROWS),
-      dpsChartRows(
-        'Ele. Adv. DPS',
-        src.dpschart,
-        ELEWEAK_CELL,
-        slug,
-        NEIGHBOUR_ROWS
-      )
+      dpsChartRows('Neutral DPS', src.dpschart, NEUTRAL_CELL, slug, nb),
+      dpsChartRows('Ele. Adv. DPS', src.dpschart, ELEWEAK_CELL, slug, nb)
     );
   } else {
     // "Present" for CHART purposes means present with a NON-ZERO value.
@@ -645,12 +668,12 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
     const hasCdr = boardValue(findHits(src.burstcdr?.entries, slug, 5), 1) > 0;
     // No second chart → spend the freed height on more neighbours in the
     // surviving one, never on whitespace (§6c lever 1).
-    const each = hasSustain || hasCdr ? NEIGHBOUR_ROWS : NEIGHBOUR_ROWS_SOLO_CHART;
+    const each = hasSustain || hasCdr ? nb : nbSolo;
     charts.push(bufferChart(src.bufferchart, slug, each));
     if (hasSustain) {
-      charts.push(sustainChart(src.sustain, slug, NEIGHBOUR_ROWS));
+      charts.push(sustainChart(src.sustain, slug, nb));
     } else if (hasCdr) {
-      charts.push(burstCdrChart(src.burstcdr, slug, NEIGHBOUR_ROWS));
+      charts.push(burstCdrChart(src.burstcdr, slug, nb));
     }
   }
 

@@ -21,6 +21,7 @@ import {
   iconNameForManufacturer,
   decodeToCanvas,
   buildUnitCardData,
+  neighbourRowsFor,
   unitCardSize,
   type Canvas,
   type UnitCardData,
@@ -137,6 +138,7 @@ export async function buildUnitCardRender(
     tagLabels: src.tagLabels,
     olOptimal: src.olOptimal[slug] ?? null,
     tsareena: src.tsareena[slug] ?? null,
+    neighbourRows: neighbourRowsFor(variant),
   });
 
   const px = ICON_PX[variant];

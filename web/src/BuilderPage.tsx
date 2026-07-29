@@ -300,7 +300,9 @@ export function BuilderPage() {
             sustain: rankArts.sustain as SustainArtifact | undefined,
             bufferchart: rankArts.buffer as BufferChartArtifact | undefined,
           },
-          img
+          img,
+          undefined,
+          state.unitVariant
         );
         if (!card) {
           return null;

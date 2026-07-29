@@ -19,7 +19,9 @@ import {
   NEUTRAL_CELL,
   ELEWEAK_CELL,
   NEIGHBOUR_ROWS,
+  NEIGHBOUR_ROWS_PORTRAIT,
   NEIGHBOUR_ROWS_SOLO_CHART,
+  neighbourRowsFor,
   type UnitCardSources,
   type UnitCardCharacter,
 } from '../../../src/infographics/core/unitCardData.js';
@@ -189,6 +191,25 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
     expect(alone.charts).toHaveLength(1);
     expect(alone.charts[0].rows.length).toBe(NEIGHBOUR_ROWS_SOLO_CHART * 2 + 1);
     expect(NEIGHBOUR_ROWS_SOLO_CHART).toBeGreaterThan(NEIGHBOUR_ROWS);
+
+    // The solo-chart bonus is a DELTA over the variant's row count, so the
+    // "spend freed height on neighbours" lever survives the portrait variant
+    // already drawing more of them.
+    const aloneP = buildUnitCardData({
+      character: base,
+      bufferchart: soloBuffer,
+      neighbourRows: NEIGHBOUR_ROWS_PORTRAIT,
+    });
+    expect(aloneP.charts[0].rows.length).toBe(
+      (NEIGHBOUR_ROWS_SOLO_CHART + NEIGHBOUR_ROWS_PORTRAIT - NEIGHBOUR_ROWS) * 2 + 1
+    );
+  });
+
+  it('resolves the row count per variant, identically on both hosts', () => {
+    // The Node pre-render and the browser preview both call this; if they ever
+    // resolved it differently the same unit would render two different cards.
+    expect(neighbourRowsFor('discord')).toBe(NEIGHBOUR_ROWS);
+    expect(neighbourRowsFor('twitter')).toBe(NEIGHBOUR_ROWS_PORTRAIT);
   });
 });
 
@@ -296,7 +317,29 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
       // above it — that is intended, not a sorting bug.
       expect(chart.rows[chart.rows.length - 1].isDefaultAppendix).toBe(true);
       expect(appendix[0].slug).toBe('crown');
-      expect(appendix[0].profileChip).toBeNull();
+      // It is labelled 'default' by its chip, which the renderer draws as a pill
+      // AFTER the name (it used to be a 'default · ' prefix on the name text).
+      expect(appendix[0].profileChip).toBe('default');
+    }
+  );
+
+  it.runIf(haveBoards)(
+    'a neighbourhood wide enough to contain the default row labels it in place',
+    () => {
+      // The portrait variant draws two neighbours each side, which pulls crown's
+      // own no-profile row into the window in rank order. It is then NOT an
+      // appendix — not appended, not dimmed — but it must still carry the
+      // 'default' chip or the card shows the same unit twice with no
+      // explanation.
+      const model = build('crown', { neighbourRows: NEIGHBOUR_ROWS_PORTRAIT });
+      const chart = model.charts[0];
+      const own = chart.rows.filter((r) => r.slug === 'crown');
+      expect(own.length).toBe(2);
+      expect(chart.rows.some((r) => r.isDefaultAppendix)).toBe(false);
+      expect(own.map((r) => r.profileChip).sort()).toEqual([
+        'default',
+        'w/ Healer',
+      ]);
     }
   );
 
