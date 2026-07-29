@@ -1,0 +1,2273 @@
+{
+ "fps": 30.0,
+ "at": 6.0,
+ "bar": {
+  "borderRow": 31,
+  "x0": 74,
+  "x1": 212,
+  "widthPx": 138
+ },
+ "calibration": {
+  "rawOverTrue": 1.064,
+  "anchor": "maiden-ice-rose docs/probes/tb2/tb2 3 maiden.MP4 (12.55%/pull, +9.1/+3.45 sub-steps, docs/data/burst-gauge.md)"
+ },
+ "reads": [
+  {
+   "t": 6.0,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.03,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.07,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.1,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.13,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.17,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.2,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.23,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.27,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.3,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.33,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.37,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.4,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.43,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.47,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.5,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.53,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.57,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.6,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.63,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.67,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.7,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.73,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.77,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.8,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.83,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.87,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.9,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.93,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 6.97,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.0,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.03,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.07,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.1,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.13,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.17,
+   "state": "filling",
+   "fillRaw": 2.2
+  },
+  {
+   "t": 7.2,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.23,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.27,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.3,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.33,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.37,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.4,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.43,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.47,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.5,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.53,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.57,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.6,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.63,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.67,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.7,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.73,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.77,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.8,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.83,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.87,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.9,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.93,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 7.97,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 8.0,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.03,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.07,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.1,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 8.13,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.17,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.2,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.23,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.27,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.3,
+   "state": "filling",
+   "fillRaw": 5.1
+  },
+  {
+   "t": 8.33,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.37,
+   "state": "filling",
+   "fillRaw": 5.8
+  },
+  {
+   "t": 8.4,
+   "state": "filling",
+   "fillRaw": 9.4
+  },
+  {
+   "t": 8.43,
+   "state": "filling",
+   "fillRaw": 9.4
+  },
+  {
+   "t": 8.47,
+   "state": "filling",
+   "fillRaw": 9.4
+  },
+  {
+   "t": 8.5,
+   "state": "filling",
+   "fillRaw": 9.4
+  },
+  {
+   "t": 8.53,
+   "state": "filling",
+   "fillRaw": 9.4
+  },
+  {
+   "t": 8.57,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.6,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.63,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.67,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.7,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.73,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.77,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.8,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.83,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.87,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.9,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.93,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 8.97,
+   "state": "filling",
+   "fillRaw": 19.6
+  },
+  {
+   "t": 9.0,
+   "state": "filling",
+   "fillRaw": 19.6
+  },
+  {
+   "t": 9.03,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.07,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.1,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.13,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.17,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.2,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.23,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.27,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.3,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.33,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.37,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.4,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.43,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.47,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.5,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.53,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.57,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.6,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.63,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.67,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.7,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.73,
+   "state": "filling",
+   "fillRaw": 18.8
+  },
+  {
+   "t": 9.77,
+   "state": "filling",
+   "fillRaw": 22.5
+  },
+  {
+   "t": 9.8,
+   "state": "filling",
+   "fillRaw": 22.5
+  },
+  {
+   "t": 9.83,
+   "state": "filling",
+   "fillRaw": 22.5
+  },
+  {
+   "t": 9.87,
+   "state": "filling",
+   "fillRaw": 22.5
+  },
+  {
+   "t": 9.9,
+   "state": "filling",
+   "fillRaw": 22.5
+  },
+  {
+   "t": 9.93,
+   "state": "filling",
+   "fillRaw": 33.3
+  },
+  {
+   "t": 9.97,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.0,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.03,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.07,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.1,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.13,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.17,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.2,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.23,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.27,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.3,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.33,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.37,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.4,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.43,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.47,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.5,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.53,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.57,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.6,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.63,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.67,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.7,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.73,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.77,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.8,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.83,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.87,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.9,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.93,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 10.97,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 11.0,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 11.03,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 11.07,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 11.1,
+   "state": "filling",
+   "fillRaw": 34.1
+  },
+  {
+   "t": 11.13,
+   "state": "filling",
+   "fillRaw": 37.7
+  },
+  {
+   "t": 11.17,
+   "state": "filling",
+   "fillRaw": 37.7
+  },
+  {
+   "t": 11.2,
+   "state": "filling",
+   "fillRaw": 37.7
+  },
+  {
+   "t": 11.23,
+   "state": "filling",
+   "fillRaw": 37.7
+  },
+  {
+   "t": 11.27,
+   "state": "filling",
+   "fillRaw": 37.7
+  },
+  {
+   "t": 11.3,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.33,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.37,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.4,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.43,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.47,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.5,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.53,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.57,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.6,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.63,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.67,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.7,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.73,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.77,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.8,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.83,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.87,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.9,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.93,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 11.97,
+   "state": "filling",
+   "fillRaw": 47.1
+  },
+  {
+   "t": 12.0,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.03,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.07,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.1,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.13,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.17,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.2,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.23,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.27,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.3,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.33,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.37,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.4,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.43,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.47,
+   "state": "filling",
+   "fillRaw": 46.4
+  },
+  {
+   "t": 12.5,
+   "state": "filling",
+   "fillRaw": 50.0
+  },
+  {
+   "t": 12.53,
+   "state": "filling",
+   "fillRaw": 50.0
+  },
+  {
+   "t": 12.57,
+   "state": "filling",
+   "fillRaw": 50.0
+  },
+  {
+   "t": 12.6,
+   "state": "filling",
+   "fillRaw": 50.0
+  },
+  {
+   "t": 12.63,
+   "state": "filling",
+   "fillRaw": 50.0
+  },
+  {
+   "t": 12.67,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.7,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.73,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.77,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.8,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.83,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.87,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.9,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.93,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 12.97,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 13.0,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.03,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.07,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.1,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.13,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.17,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.2,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.23,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.27,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.3,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.33,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.37,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.4,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.43,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.47,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.5,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.53,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.57,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.6,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.63,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.67,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.7,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.73,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.77,
+   "state": "filling",
+   "fillRaw": 60.1
+  },
+  {
+   "t": 13.8,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.83,
+   "state": "filling",
+   "fillRaw": 60.9
+  },
+  {
+   "t": 13.87,
+   "state": "filling",
+   "fillRaw": 64.5
+  },
+  {
+   "t": 13.9,
+   "state": "filling",
+   "fillRaw": 64.5
+  },
+  {
+   "t": 13.93,
+   "state": "filling",
+   "fillRaw": 64.5
+  },
+  {
+   "t": 13.97,
+   "state": "filling",
+   "fillRaw": 64.5
+  },
+  {
+   "t": 14.0,
+   "state": "filling",
+   "fillRaw": 63.8
+  },
+  {
+   "t": 14.03,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.07,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.1,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.13,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.17,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.2,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.23,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.27,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.3,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.33,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.37,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.4,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.43,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.47,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.5,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.53,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.57,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.6,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.63,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.67,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.7,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.73,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.77,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.8,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.83,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.87,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.9,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.93,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 14.97,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 15.0,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.03,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.07,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.1,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.13,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.17,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.2,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.23,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.27,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.3,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.33,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.37,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.4,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.43,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.47,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.5,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.53,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.57,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.6,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.63,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.67,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.7,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.73,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.77,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.8,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.83,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.87,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.9,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.93,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 15.97,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 16.0,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 16.03,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.07,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.1,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.13,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.17,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.2,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.23,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.27,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.3,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.33,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.37,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.4,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.43,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.47,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.5,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.53,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.57,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.6,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.63,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.67,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.7,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.73,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.77,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.8,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.83,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.87,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.9,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.93,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 16.97,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 17.0,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 17.03,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 17.07,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 17.1,
+   "state": "filling",
+   "fillRaw": 75.4
+  },
+  {
+   "t": 17.13,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 17.17,
+   "state": "filling",
+   "fillRaw": 74.6
+  },
+  {
+   "t": 17.2,
+   "state": "filling",
+   "fillRaw": 78.3
+  },
+  {
+   "t": 17.23,
+   "state": "filling",
+   "fillRaw": 78.3
+  },
+  {
+   "t": 17.27,
+   "state": "filling",
+   "fillRaw": 78.3
+  },
+  {
+   "t": 17.3,
+   "state": "filling",
+   "fillRaw": 78.3
+  },
+  {
+   "t": 17.33,
+   "state": "filling",
+   "fillRaw": 78.3
+  },
+  {
+   "t": 17.37,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.4,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.43,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.47,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.5,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.53,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.57,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.6,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.63,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.67,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.7,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.73,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.77,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.8,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.83,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.87,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.9,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.93,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 17.97,
+   "state": "filling",
+   "fillRaw": 89.1
+  },
+  {
+   "t": 18.0,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.03,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.07,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.1,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.13,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.17,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.2,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.23,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.27,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.3,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.33,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.37,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.4,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.43,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.47,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.5,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.53,
+   "state": "filling",
+   "fillRaw": 88.4
+  },
+  {
+   "t": 18.57,
+   "state": "filling",
+   "fillRaw": 92.0
+  },
+  {
+   "t": 18.6,
+   "state": "filling",
+   "fillRaw": 92.0
+  },
+  {
+   "t": 18.63,
+   "state": "filling",
+   "fillRaw": 92.0
+  },
+  {
+   "t": 18.67,
+   "state": "filling",
+   "fillRaw": 92.0
+  },
+  {
+   "t": 18.7,
+   "state": "filling",
+   "fillRaw": 92.0
+  },
+  {
+   "t": 18.73,
+   "state": "filling",
+   "fillRaw": 35.5
+  },
+  {
+   "t": 18.77,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.8,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.83,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.87,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.9,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.93,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 18.97,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.0,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.03,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.07,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.1,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.13,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.17,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.2,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.23,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.27,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.3,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.33,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.37,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.4,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.43,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.47,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.5,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.53,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.57,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.6,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.63,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.67,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.7,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.73,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.77,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.8,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.83,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.87,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.9,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.93,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 19.97,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.0,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.03,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.07,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.1,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.13,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.17,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.2,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.23,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.27,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.3,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.33,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.37,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.4,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.43,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.47,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.5,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.53,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.57,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.6,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.63,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.67,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.7,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.73,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.77,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.8,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.83,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.87,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.9,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.93,
+   "state": "full",
+   "fillRaw": 100.0
+  },
+  {
+   "t": 20.97,
+   "state": "full",
+   "fillRaw": 100.0
+  }
+ ],
+ "_fixture": {
+  "unit": "maiden-ice-rose",
+  "video": "docs/probes/tb2/tb2 3 maiden.MP4",
+  "window": "--ss 6 -t 15 --fps 30, crop=222:60:2400:470",
+  "why": "labeled anchor: docs/data/burst-gauge.md s6 hand pixel read 2026-07-13 (12.55%/pull, +9.1/+3.45 sub-steps), independent of every script in this repo",
+  "generatedBy": "scripts/probe/gauge-fill.py --frames <d> --fps 30 --at 6 --calib-frame 200"
+ }
+}
