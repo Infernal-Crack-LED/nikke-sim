@@ -68,22 +68,38 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   behavior, chain selection, and 3 other units' generation rates), so it cannot move a directly-
   measured constant in either direction on one categorical draw — but it also means alice's per-
   unit value isn't confirmed at the confidence bar (HIGH+HIGH) this project requires before an
-  engine change lands. **What would resolve it, in order of value (per Fable's post-op):**
-  1. An ISOLATING gauge read from the SAME team recording — hand-read (not the CV crop, which
-     is unvalidated on team footage) a handful of alice's per-pull gauge deltas directly from
-     `docs/probes/burst tests/alice focused.MP4`. If focused-alice steps ~19-20%/pull in team
-     context too (matching the solo reading), the 3.5× constant is confirmed where the tension
-     actually lives, and the FB-count miss localizes to the comp model (red-hood flex-burst
-     modeling is the named first suspect) rather than to alice.
-  2. Repeat the fight, n≥3. If real counts split 10/11 across runs, reality straddles the boundary
-     exactly as the post-fix distribution does and the tension dissolves; if rigidly 10 every time,
-     that's a genuine composite over-generation signal for THIS comp — its own investigation, NOT
-     an alice-knob change.
-  3. Hand-verify the owner's reported ~95%-full end-of-fight gauge state from a frame (cheap;
-     currently unverified/unused context, not load-bearing for anything in the landed decision).
-  Also open: alice's solo reading itself carries an unexplained +5.1% residual (observed ~20.6%/shot
-  vs the 19.6%/shot the 3.5× prediction implies) — outside the instrument's validated 0.05-0.15%
-  error band. Not yet investigated.
+  engine change lands.
+
+  **⇒ CORRECTED 2026-07-29 (owner ruling) — THE "ISOLATING TEAM GAUGE READ" WAS A CATEGORY ERROR.**
+  The prior wording of this item asked for alice's per-pull gauge deltas to be hand-read out of
+  `docs/probes/burst tests/alice focused.MP4`. That is not what the recording is for: **`alice
+  focused.MP4` is an FB-COUNT recording; gauge reading is done on the SOLO video**
+  (`docs/probes/solo/alice solo.MP4`). There is therefore NO team-context gauge measurement to
+  take, and alice has no blocked measurement pending — the FB count is a downstream composite
+  observable that Fable already ruled non-isolating, so it was never going to confirm or refute
+  her multiplier in either direction. Do not re-file it.
+
+  **What actually blocks alice: instrument magnitude, not access to footage.** The gauge-fill
+  reader is now committed (`scripts/probe/gauge-fill.py` + the anchor fixture/vitest,
+  2026-07-29) and re-reads her solo footage cleanly — 4 stable plateaus, cadence matching her
+  modelled 112f, and it reproduces the owner's direct observation that her 5th shot leaves the
+  bar ~99% full (measured 99.3%). But successive calibrations of that reader put her per-shot
+  anywhere in **3.5×-3.9×**, so her value is NOT pinned. The blocker is the reader's absolute
+  magnitude, which is itself an open question (next bullet). Alice's solo footage is 20.5s and
+  contains ~5 shots total — that is the entire dataset and no rescan enlarges it.
+
+- **⇒ 🔵 GAUGE-FILL READER: WEAPON SUB-STEP READS ~11% ABOVE THE LABELED ANCHOR — OPEN, GATES
+  BOTH alice AND cinderella.** Filed 2026-07-29. Scored at 30fps against the 2026-07-13 hand
+  pixel read (`docs/data/burst-gauge.md` §6, `maiden-ice-rose` 12.55%/pull in +9.1/+3.45
+  sub-steps), `scripts/probe/gauge-fill.py` reproduces the **rider sub-step exactly (3.63 vs
+  model 3.64)** but reads the **weapon sub-step ~11% high (10.1 vs 9.1)**. The exact small step
+  means the reader's absolute scale is correct, so this is a STRUCTURED discrepancy that no
+  scale factor can absorb. Two hypotheses, unresolved: (a) the weapon sub-step genuinely
+  generates more than the modelled 910 energy — which would put a documented measured constant
+  in question, or (b) a large jump's rise spans frames and an intermediate value inflates the
+  measured step. **Settle this BEFORE quoting any absolute per-shot gauge magnitude** — it is
+  the common blocker for both alice and cinderella. Cheap first probe: re-read at 60fps (source
+  rate) and see whether the large step narrows toward 9.1.
 
 - **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
   Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
