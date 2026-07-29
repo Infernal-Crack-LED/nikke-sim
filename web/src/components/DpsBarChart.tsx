@@ -157,7 +157,6 @@ export function DpsBarChart({
               </span>
               <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
                 {relScore(b.dps, max)}
-                <span className="dpschart-val-raw">{fmt(b.dps)}</span>
               </span>
             </div>
           ))}
@@ -172,7 +171,6 @@ export function DpsBarChart({
           </span>
           <span className="dpschart-val" title={`${fmt(compare.dps)} DPS`}>
             {relScore(compare.dps, max)}
-            <span className="dpschart-val-raw">{fmt(compare.dps)}</span>
           </span>
         </div>
       )}
