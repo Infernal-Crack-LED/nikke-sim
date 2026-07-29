@@ -296,53 +296,9 @@ confidences, why the decision landed where it did, owner action items, and the H
   same-family unit misidentification mid-session (prika judged non-charge when she is SR) was caught
   by the owner, not self-detected — a reminder that "isCharge" gating and weapon-class claims warrant
   the same slug-discipline as unit-identity claims, not just character names. DECISIONS 2026-07-29.
-- **2026-07-29 — Alice & Cinderella should use datamined `fullChargeBonus` values (3.5× / 2.0×) for focus charge-gauge generation: DECISION = REJECT (combined H1).**
-  Follow-up to the previous 2026-07-29 LOG: this run tested whether the two still-pinned units (Alice
-  via `PENDING_TEAM_ISOLATION`, Cinderella via `magDumpRof`) could now be un-pinned to their datamined
-  `fullChargeBonus/100` multipliers using existing solo footage.
-  **Driver (primary judge):** Alice **ACCEPT H1** (3.5×), confidence HIGH; Cinderella **REJECT H1**
-  (2.0×), confidence HIGH; therefore the combined H1 claim is **REJECTED**.
-  **Blind Fable post-op (`claude-fable-5`):** Alice **ACCEPT H1**, Cinderella **REJECT H1**, overall
-  verdict **REJECT** combined H1, confidence **HIGH**.
-  **Evidence and recount (driver re-derived this turn from primary sources):**
-  - Alice, `docs/probes/solo/alice solo.MP4`: gauge turns green on shot 6 at `t=18.38 s`; H1 (3.5×)
-    predicts 6, H0 (2.5×) predicts 8. Charge-HUD crop confirms every counted shot is full-charge.
-    The counting bound `[100/6, 100/5) = [16.67%, 20.0%)` contains the datamined 19.6% and excludes
-    the pinned 14.0%.
-  - Cinderella, `docs/probes/720-kit-audit/cindy solo neutral.MP4`: fresh 60fps reader run with the
-    documented crop (`400:160:2350:430`) reproduces first `full` at `t=44.57 s` on the 4th shot of
-    magazine 4. Ammo-keyframe recount confirms the same magazine structure (24/24/24/4) → **76 total
-    shots fired to full**. The bar is at the 2.2% border floor from `t≈7.37 s` to `t≈11.08 s`; the
-    first gauge step arrives with shot 9, so **shots 1–8 generate no gauge**.
-  - The "BURST" text does not occlude the growing fill: it sits at the empty (0%) end of the bar;
-    the fill grows from the opposite end and is plainly empty for the opener window. Visual inspection
-    of the raw frames (`scratchpad/cindy-recount/gauge-wide/` and `gauge-opener/`) confirms this.
-  - Opener-window read at `t=11.25 s` (pre-committed frame, just after shot 8) = `2.9 %`, which fails
-    the mandatory H1-accept window `[7%, 12%]` and lands in the pre-committed REJECT-H1 / ~2.2× band
-    `[0%, 3%]`.
-  **Math breakdown for Cinderella values:**
-  - `data/gauge-per-shot.json`: `targetPerTrigger = 45`, `fullChargeBonus = 200`.
-  - Rider (S1 `skillGauge`, no focus bonus): `45 energy / 100 = 0.45 %` per shot.
-  - Weapon under H1 (2.0×): `0.45 % × 2.0 = 0.90 %` per shot.
-  - Total H1 per shot: `0.45 + 0.90 = 1.35 %`.
-  - Current pin (2.5×): weapon `0.45 × 2.5 = 1.125 %`, total `1.575 %`.
-  - Measured steady-state (shots 9–75, 67 contributing shots taking the bar from `2.2 %` to `99.3 %`):
-    `97.1 / 67 ≈ 1.45 %/shot`. Backing out the 0.45 % rider gives weapon `≈1.00 %/shot`, i.e. an
-    effective focus multiplier of `1.00 / 0.45 ≈ 2.22×` — closer to the current 2.5× pin than to the
-    datamined 2.0×, but still not a table value.
-  **Why the simple `100/76 = 1.32 %` comparison is misleading:** that bound only holds if every one
-  of the 76 shots contributes gauge. Because the first 8 contribute nothing, the contributing-shot
-  count is 68 (shots 9–76), giving `100/68 ≈ 1.47 %/shot`, consistent with the measured 1.45 % and
-  excluding the 1.35 % H1 prediction.
-  **Disposition:** no engine change. Alice remains pinned to the flat 2.5× constant via
-  `PENDING_TEAM_ISOLATION`; Cinderella remains pinned via `magDumpRof`. Cinderella's measured-but-
-  unmodeled ~2.2× effective multiplier and the 8-shot gaugeless opener are recorded as open questions
-  / owner action items. The work deliverable and blind judge result are preserved under
-  `/tmp/sci-method-cindy-alice/`.
-  **HARNESS LESSONS:** (1) A counting bound is a hard sanity check **only when every counted shot is
-  a contributing shot**; a non-contributing opener silently shifts the per-shot estimate by ~12%.
-  (2) A UI label that *looks* like it could occlude the bar is not evidence of occlusion — check the
-  bar geometry directly (the BURST label sits at the 0% end; the fill grows from the other end).
-  (3) When a user challenge points at a real ambiguity (Cinderella count vs opener), re-derive from
-  primary sources before either accepting the challenge or defending the prior read; the recount
-  confirmed the prior read, and the confirmation itself is now load-bearing evidence.
+- **2026-07-29 — Alice & Cinderella un-pinned to their datamined `fullChargeBonus` values (3.5× /
+  2.0×): IMPLEMENT (owner ruling).** `focusChargeMult = chargeMultiplier/100` is accepted as TRUE
+  for both units, same footing as scarlet-black-shadow above. A same-day recount run had produced a
+  REJECT verdict on Cinderella (an alleged 8-shot gaugeless opener yielding an effective ≈2.2×) — that
+  finding was a repeated instrument/reading error, not a real mechanic, and is RETRACTED; do not
+  re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.

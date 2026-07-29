@@ -255,19 +255,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   at Cloudflare, `REQUIRE_RENDER_SECRET` (env-off) gates it when flipped. **Still owner-gated:**
   the `railway.json` startCommand flip (item (1) above) — POST /render is dark in prod until then.
 
-- **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
-  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
-  hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
-  `full_charge_burst_energy` column (`fullChargeBonus` in `data/gauge-per-shot.json`), which equals
-  `chargeMultiplier` for every unit and IS the focus multiplier ×100 (measured anchor: takina/maiden
-  250 → focused base×2.5; additive reading ruled out by TB3 A1/A2). Four units deviate from 250:
-  **alice 350 → 3.5× (currently 40% under-credited)**, cinderella + vesti-tactical-upgrade 200 → 2.0×,
-  scarlet-black-shadow 150 → 1.5×. Burst-gen board UNAFFECTED (measured unfocused as of 2026-07-27);
-  only focused sim fights move (DPS chart / probes / team sim). **Gated:** `/scientific-method`
-  (engine default change) + the four non-250 values are datamine-derived not recorded → owner picks
-  measure-`alice`-first vs land-as-⚑-hypothesis; overturns the 2026-07-13 "full_charge_burst_energy
-  unused" ruling (needs DECISIONS entry + `burst-gauge.md` §4 rewrite).
-
 - **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
   `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
   outliers in `docs/rl3-burstgen-rank-comparison.md` (regenerate: `npx tsx scripts/rl3-burstgen-compare.ts`)

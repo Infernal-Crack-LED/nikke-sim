@@ -2708,3 +2708,21 @@ REJECT, not a resolution of it. `docs/handoffs/2026-07-29-cinderella-focus-gauge
 **Blast radius:** Alice-focused and cinderella-focused comps' focused-gauge generation changes
 (~+40% alice, ~−20% cinderella vs the prior flat-2.5× behavior for each). Graded probes where
 either held camera focus should be re-checked.
+
+## SUPERSEDES the "pipeline REJECT" framing above — cinderella's 2.0× confirmed TRUE, not a contested override (2026-07-29, same date)
+
+The entry immediately above frames cinderella's `focusChargeMult: 2.0` as an owner override
+enacted AGAINST a HIGH-confidence pipeline REJECT (a recount claiming an 8-shot gaugeless opener
+and an effective ≈2.2× multiplier). **That REJECT finding, and the earlier §CINDERELLA-RESULT
+≈2.2× reading it repeated, were both instrument/reading errors — the same mistake recurring, not
+independent corroborating evidence.** They are RETRACTED (owner ruling). The corresponding entry
+in `docs/handoffs/scientific-method-harness.md` has been deleted outright (not marked SUPERSEDED —
+the finding never happened) rather than left as an audit trail, at explicit owner direction.
+
+**Standing fact, closed:** `focusChargeMult = chargeMultiplier/100` (equivalently
+`fullChargeBonus/100`) is the TRUE per-unit camera-focus charge-gauge multiplier for every SR/RL
+unit, cinderella included — 2.0× for her, same footing as alice's 3.5× and
+scarlet-black-shadow's 1.5×. There is no open dispute, no unresolved opener anomaly, and no
+outstanding measurement gate on this value. `docs/data/burst-gauge.md` §4 and
+`src/skills/overrides/cinderella.json`'s note are updated to drop the "contested override"
+framing accordingly.

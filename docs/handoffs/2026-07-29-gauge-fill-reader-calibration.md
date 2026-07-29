@@ -5,8 +5,11 @@ The owner (1) REJECTED hypothesis (a)'s overcharge mechanism outright — the da
 is correct, there is no overcharge — and (2) bounded tb2-test-3 footage viability to **0:06–0:17**,
 which WITHDRAWS the shot-counting anchor exclusion (its endpoint evidence sits at t≈17.2–18.8,
 outside the bound). Reader: shape + small-step magnitude settled; large-step magnitude UNRESOLVED.
-`alice`/`cinderella` un-paused on the surviving basis (§OWNER-RULINGS consequence 3).
-Engine untouched.
+`alice`/`cinderella` un-paused on the surviving basis (§OWNER-RULINGS consequence 3); both are
+now ENACTED at their datamined multipliers (`docs/DECISIONS.md` 2026-07-29) — `alice` measured,
+`cinderella` confirmed TRUE by owner ruling with the §CINDERELLA-RESULT ≈2.2× reading RETRACTED.
+Engine untouched by this handoff's own work (the enactment landed in `src/engine/sim.ts` and
+`src/skills/overrides/cinderella.json` via the DECISIONS entry above).
 **Branch/worktree:** `focus-charge-gauge-per-unit` @ `../nikke-sim-wt-focus-charge-gauge` (parked,
 unmerged, unpushed, behind `main`).
 **Audience:** AI-facing handoff. Shorthand OK.
@@ -408,6 +411,13 @@ reading, per this ruling).
 ---
 
 ## §CINDERELLA-RESULT (2026-07-29, fourth pass — Kimi driver, cindy solo footage re-review)
+
+**⇒ RETRACTED (2026-07-29, owner ruling).** The ≈2.2× reading below, and the follow-up recount
+that reproduced it (`docs/handoffs/scientific-method-harness.md`, now deleted), were the same
+instrument/reading error repeating, not independent corroboration. `focusChargeMult =
+chargeMultiplier/100` (2.0×) is confirmed TRUE for cinderella, same footing as alice/
+scarlet-black-shadow — see `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry. The section
+below is kept only as a record of the retracted reading; do not re-derive or re-cite it.
 
 The §4 cinderella resolution path is COMPLETE: rider term (already engine-verified §RESULT) →
 counting bound on pulls-to-full → closing account. The reader's unresolved large-step magnitude

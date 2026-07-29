@@ -1328,11 +1328,12 @@ export function runSim(
     // Per-unit focus multiplier = fullChargeBonus/100 (2026-07-29, see comment above);
     // ?? 250 is the fallback for units with no datamined row (e.g. laplace-ultimate-hero) —
     // byte-identical to the old flat-2.5x default, never lets a missing row zero the gauge.
-    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit owner-override
-    // that takes priority over both the table value and the magDumpRof/PENDING_TEAM_ISOLATION
-    // pin — cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire kit
-    // doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
-    // presumes) carries focusChargeMult 2.0 rather than her table value.
+    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit multiplier that
+    // takes priority over both the table lookup and the magDumpRof/PENDING_TEAM_ISOLATION pin
+    // — needed for cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire
+    // kit doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
+    // presumes) so her table value (fullChargeBonus 200 -> 2.0x) applies instead of the
+    // magDumpRof pin's FOCUS_CHARGE_GEN fallback.
     // fcb > 0 (not ?? alone): a handful of gauge rows carry fullChargeBonus:0 as their
     // non-charge marker, and one live data disagreement (raven: gauge row 250 vs
     // characters.json chargeMultiplier 0) means a present-but-zero value is reachable —
