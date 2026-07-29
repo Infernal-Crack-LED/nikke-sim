@@ -122,26 +122,31 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   "156–212% overcharge" note is a meter-DISPLAY observation, not a mechanic — do not cite it as
   one. The alice/cinderella pauses are lifted (their bullets carry the surviving basis).
 
-- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
-  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
+- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASURED 2026-07-29 (≈2.2×; pin is
+  measured-wrong) → OWNER DECISION via `/scientific-method`.** Full record:
+  `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §CINDERELLA-RESULT. The dedicated
+  re-review of `docs/probes/720-kit-audit/cindy solo neutral.MP4` is done (settled gauge-fill
+  reader at 30/60fps + ammo-counter shot counting, viable window defined first): **76 shots to
+  full** (24+24+24+4, ammo-verified), opener shots 1–8 generate ZERO gauge (new anomaly, filed),
+  steady-state 1.45%/shot = rider 0.45 + weapon ~1.00 ⇒ **focus multiplier ≈ 2.22 [2.17, 2.27]**.
+  All three prior candidates EXCLUDED: flat 2.5× (pin is ~12–14% hot), 1.0× exemption, AND the
+  datamined 2.0× (closing account fails by ~9.5 points at the green transition). The measured
+  2.2× matches no table entry — it fits the einkk ×(1+1.5c) shape at chargePercent ≈ 0.8 — so
+  enactment is a measured-constant decision for the owner (plus the opener anomaly as a separate
+  line, ~11.6% of one cycle). Residual alias risk flagged: her unmodeled Decoy cannot be
+  positively excluded as a gauge source from a solo read. Supersedes the aliased ≈2.6–3.1× rough
+  read. [HISTORICAL — the pre-measurement gate text:] Background:
+  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
   landed for scarlet-black-shadow 2026-07-29 — see DECISIONS). Cinderella (RL, whole-magazine
-  dump-fire kit, `charFixes.magDumpRof:true`) does NOT get a per-unit multiplier in that landing; she
-  stays on the current flat 2.5× (pinned via `magDumpRof` in `gaugePerShot`, `src/engine/sim.ts`)
-  pending this investigation. Her datamined table value is 200 (`fullChargeBonus`, → 2.0× if treated
-  like any other charge unit), but a rough solo-footage read (`docs/probes/720-kit-audit/cindy solo
-  neutral.MP4`, magazine-dump cadence too fast/aliased against the 0.2s CV sampling to cleanly
-  resolve) landed at **≈2.6–3.1×** — closer to the CURRENT 2.5× than to either her table's 2.0× or an
-  exemption-to-1.0× hypothesis (the owner's kit-mechanical argument: her dump-fire mechanic doesn't
-  perform the discrete hold-charge/release cycle the einkk `positionBurstBonus` formula's
-  `chargePercent` term presumes). Fable's pre-op review (2026-07-29) explicitly rejected locking her
-  to 1.0× on this evidence: "enacting a value the only available measurement contradicts violates
-  measured>fudge regardless of the kit-mechanical argument." **What would resolve it:** a
-  cleaner per-shot cadence read for her specifically — either fix `read-ammo.ts` for her dump-fire
-  ammo-counter pattern (it currently returns 0 reads on her footage, same failure shape as
-  scarlet-black-shadow's — `boxConf` present but zero digit glyphs segmented) or a longer/cleaner solo
-  recording with the gauge-fill crop instrument (now validated against the maiden anchor for SOLO
-  footage specifically, see DECISIONS) sampled at a rate that doesn't alias her ~3/s fire rate. Until
-  then: no change to her focus multiplier.
+  dump-fire kit, `charFixes.magDumpRof:true`) did NOT get a per-unit multiplier in that landing;
+  she stays pinned to flat 2.5× (via `magDumpRof` in `gaugePerShot`, `src/engine/sim.ts`) until
+  the owner enacts the measured value. Her datamined table value is 200 (`fullChargeBonus` →
+  2.0×); a rough aliased 0.2s-sampling read had landed at ≈2.6–3.1×, and Fable's pre-op review
+  (2026-07-29) rejected locking her to 1.0× on that evidence ("enacting a value the only
+  available measurement contradicts violates measured>fudge"). The gauge-fill crop instrument +
+  ammo-counter counting resolved it (see §CINDERELLA-RESULT); `read-ammo.ts` still returns 0
+  reads on her dump-fire counter pattern (digits read visually instead — fixing the reader for
+  her pattern remains open tooling).
   **Step 7 implementation review note (2026-07-29):** her pin is keyed off `magDumpRof`
   (a mechanism flag, not a dedicated measurement-gate marker) — today that's fine, exactly one
   override carries the flag, but the NEXT unit that gains `charFixes.magDumpRof` inherits a

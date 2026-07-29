@@ -391,3 +391,109 @@ here. Both units STAY PINNED regardless: no confirming measurement exists at the
 the reader's large-step magnitude is unresolved, and any future counting-bound endpoint must be
 re-established inside an explicitly viability-bounded window (define the viable span BEFORE
 reading, per this ruling).
+
+---
+
+## §CINDERELLA-RESULT (2026-07-29, fourth pass — Kimi driver, cindy solo footage re-review)
+
+The §4 cinderella resolution path is COMPLETE: rider term (already engine-verified §RESULT) →
+counting bound on pulls-to-full → closing account. The reader's unresolved large-step magnitude
+turned out NOT to be needed — the measurement rests on shot counts, the bar's own 0–100 geometry,
+and the (exact) rider sub-steps. Recording: `docs/probes/720-kit-audit/cindy solo neutral.MP4`
+(198.6s, 60fps, 2622×1206; video lives in the MAIN checkout, gitignored).
+
+**Viable window (defined BEFORE reading, per owner ruling):** gauge widget live ~t=5.5 (intro
+fade artefacts 5.9–7.4 excluded — a 55%-in-one-frame spike + crash is the fade, not gauge);
+full-auto solo throughout; fight ends into a loading screen ~t≈190. The gauge accumulates only
+over t≈5.5–44.57 (lone Burst III: once full it holds green; nothing casts, nothing consumes).
+All measurement below sits inside t=5.5–44.57. One anomaly INSIDE the window: a boss-dash /
+camera-pan phase ~t=35.5–38.1 hides the ammo widget (HUD off-crop) — the gauge stays on-screen
+and the staircase carries that span.
+
+### Shot count to full: N = 76 (ammo-counter verified)
+
+- Mag 1 = 24 (022@9.00 → 000@16.25; 2 shots pre-9.0, first fire ~8.4 — damage counter is 0 at
+  t=8.5). Reload 16.2→19.75 (~3.5s).
+- Mag 2 = 24 (024@~19.75 → 000@~27.3). Reload → ~30.7.
+- Mag 3 = 24 (022@31.05 → ~008@35.3, fire pause 35.5–38.1 during the camera pan, resumes 38.17,
+  last shots ~40.2). Reload 40.2→43.5 (~3.3s).
+- Mag 4: steps at 43.53 / 43.87 / 44.20 / 44.53 — **bar goes GREEN (state full) at t=44.57 on
+  the 4th shot of mag 4 = global shot 76.** Green is sustained to video end (not a blip).
+- 30fps and 60fps reader runs agree to the frame (green 44.57 both; identical landmarks).
+
+### Opener anomaly (NEW BEHAVIOR, mechanism unresolved — filed, not settled)
+
+Shots 1–8 (~t=8.4–11.08) generate **NO gauge at all**: the bar sits at its 2.2% border floor for
+111 consecutive 30fps frames — no weapon steps AND no rider steps (the rider is the reader-exact
+fire-instant small step, so this is shape, not magnitude). Yet the shots deal full damage: rider
+popups land (109,806 = her documented 136.6% × ATK rider value) and the damage counter climbs
+from ~9.0. From shot 9 (t≈11.1) gauge steps arrive every shot, 1:1 with the 3/s cadence. The gap
+is fight-start-only — mag 2/3/4 resume stepping immediately after each reload (rider step +0.7 at
+19.77 etc.). maiden-ice-rose got gauge from her very first (partial) shot in tb2-test-3, so this
+is cinderella-specific. The sim currently credits those 8 shots with full per-shot gauge.
+
+### Steady-state per-shot: 1.45%/shot ⇒ focus multiplier ≈ 2.2
+
+Shots 9–75 (67 shots) carry the bar 2.2 → 99.3 (+97.1, ±1 col = 0.72 at each endpoint):
+**P = 1.450 [1.428, 1.471]** — interior slopes agree (shots 24→72: 68.1/48 = 1.419; shots 24→75:
+72.5/51 = 1.422; quantization bands all intersect ~1.42–1.45). Per-shot sub-steps separate at
+range into rider +0.45 (fire-instant, reader-exact) + weapon ~1.00 (hit-instant). With the
+engine-verified rider (skillGauge = targetPerTrigger 45, no focus bonus, sim.ts:1398):
+
+> weapon = 1.45 − 0.45 = **1.00%/shot** ⇒ focus multiplier = 1.00/0.45 = **2.22 [2.17, 2.27]**
+> (±2 cols/endpoint widens it to [2.13, 2.32] — still excludes both table neighbours).
+
+The mag-boundary checkpoints close to ±1–2 cols at every mag (predicted vs observed: 25.0 vs
+26.8 end-mag-1; 59.6 vs 60.9 end-mag-2; 95.5 vs 94.5 end-mag-3; green at shot 76) — the
+one-opener + uniform-steady model reproduces the entire curve.
+
+### Verdicts on the three candidates
+
+- **Flat 2.5× pin — EXCLUDED, robustly.** 1.575%/shot fills by shot ~64 (mid-mag-3); mag 4 was
+  observed firing. Slopes read COLD vs 1.575, against the reader's known bias direction. No
+  dependence on any magnitude correction.
+- **1.0× exemption (owner's kit-mechanical hypothesis) — EXCLUDED.** 0.90%/shot needs ~112 shots
+  (~2 more mags than observed).
+- **Datamined 2.0× (`fullChargeBonus` 200) — EXCLUDED by this footage, at ~3σ of the reading
+  band.** 1.35%/shot × 67 steady shots + ~0 opener = ~90.5 at shot 75 — the green at shot 76
+  refutes it. Note the direction: the reader's documented weapon-step bias (+10.7% relative on
+  both tb2 anchors) would make a true-1.35 climb read as 0.45+0.90×1.107 = 1.446 — matching the
+  rendered 1.45 almost exactly. **But that correction breaks the closing account** (true total
+  90.5 < 100 at green, and no third gauge source exists in her kit — S2 Decoy is defensive and
+  unmodeled, burst unreachable solo). The only self-consistent reading of THIS footage is
+  bias-absent: **multiplier ≈ 2.2**, i.e. the einkk ×(1+1.5c) shape at an effective
+  chargePercent ≈ 0.8 (vs the table-implied 0.667) — consistent with the owner's argument that
+  her dump-fire does not perform the full hold-charge/release cycle, but NOT with c as low as
+  the table's 0.667 and NOT with the flat 2.5×.
+- The earlier rough read (≈2.6–3.1×, aliased 0.2s CV sampling, cited in QUEUE) is superseded.
+
+### What this does and does not unblock
+
+- Her pin (flat 2.5× via `magDumpRof` in `gaugePerShot`) is now MEASURED-WRONG, ~12–14% hot on
+  her focused gauge (1.575 vs 1.45 per shot) plus the opener over-credit. Enactment is the
+  owner's call via `/scientific-method` — the measured value (≈2.2) matches no table entry, so
+  this lands as a measured constant, not a datamine lookup. If a 2.2 constant is enacted, the
+  opener anomaly (~8 gaugeless shots at fight start) is a separate, smaller modeling gap worth
+  its own line (worth ~8 × 1.45 ≈ 11.6% of one gauge cycle).
+- **Residual alias risk (flagged, not resolved):** if her unmodeled Decoy (or anything else)
+  generates gauge in the real game, some of the "weapon" term could be decoy gauge and the true
+  focus multiplier would be lower (toward 2.0). No evidence for this in the footage (steps are
+  1:1 with HER shots at 3/s including through the camera pan), but the Decoy is unmodeled, so it
+  cannot be positively excluded from a solo read. A team recording where her FB cadence is
+  observable would settle it — the FB-count route Fable already ruled non-isolating for alice
+  does not apply to this question, since here the unknown is a per-shot value with a directly
+  observed staircase.
+- **For the reader-calibration question itself:** the +10.7% weapon-step bias did NOT reproduce
+  on this video (if it had, the closing account fails) — a third data point for the unresolved
+  large-step question, suggesting the bias is video/exposure-dependent (her small rapid rocket
+  hits vs the anchors' large single-hit flashes), not a fixed reader property. Do not tighten
+  the anchor vitest on this — one contradictory video is a finding, not a blessing.
+
+### Evidence package
+
+`scratchpad/cindy-focus-gauge/` (worktree, gitignored): `series-30fps.json`, `series-60fps.json`
+(full reader runs), `m02.png`/`m03.png` (mag-1 ammo montages), `q01.png`/`q02.png` (mag-3 ammo
+montages), `a8.5.png` (damage counter 0 pre-first-shot), `a10.5.png` (rider popups + AMMO 018).
+Re-derive: reader frames `ffmpeg -ss 5 -t 41 -i "<video>" -vf "fps=60,crop=400:160:2350:430"`;
+ammo montages `fps=4,crop=260:80:1580:655` (widget position drifts with the camera — verify per
+segment; it is off-crop entirely 35.5–38.1 and during the end-of-fight pan).
