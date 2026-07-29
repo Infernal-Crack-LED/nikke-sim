@@ -8,8 +8,9 @@ import {
   type ModuleBoss,
 } from './resources-data';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
-import { copyTableCardImage } from './tableShare';
+import { copyTableCardImage, loadCardImage } from './tableShare';
 import { useIconThumbs } from './useIconThumbs';
+import { CopyFlashButton } from './components/CopyFlashButton';
 
 // Resource calculators, one pill per resource family. Anomaly Interception is
 // the first; new families join RES_TABS as they land.
@@ -81,9 +82,17 @@ function CustomModulesTab() {
       : null;
 
   // Share the tier ladder as a table card — the same rows the on-screen
-  // ladder shows, with the selected tier marked in the accent color.
-  const onShareImage = () => {
+  // ladder shows, with the selected tier marked in the accent color and the
+  // same drop icons the tiles carry sitting beside their column headers (they
+  // load null-safe, so the card still renders if an icon 404s).
+  const onShareImage = async () => {
     const ACCENT = '#5b9dff'; // the theme accent (tableCard's bar color)
+    const [modIcon, gearIcon, fragIcon, lockIcon] = await Promise.all([
+      loadCardImage(ICON_MODULE),
+      loadCardImage(ICON_GEAR),
+      loadCardImage(table.fragmentIcon),
+      loadCardImage(ICON_LOCK),
+    ]);
     const card: TableCardData = {
       title: `Daily income — ${table.fullName}`,
       // The fragment kind rides the subtitle: at 6-7 columns the header row
@@ -91,15 +100,29 @@ function CustomModulesTab() {
       // a column header (tableCard would ellipsize it).
       subtitle:
         `${RUNS_PER_DAY} runs/day · selected tier T${stage.stage} in blue · ` +
-        `frags = ${table.fragmentLabel.toLowerCase()}`,
+        // only the first letter is lowered — a full toLowerCase would render
+        // the tier as "t9 fragments"
+        `frags = ${table.fragmentLabel[0].toLowerCase()}${table.fragmentLabel.slice(1)}`,
+      // The icon'd columns take a little extra flex: a header icon eats 20px
+      // of its cell's text box, and "Locks/day" at 13px does not fit what is
+      // left of an even 7-way split.
       columns: [
         { header: 'Tier', flex: 0.6 },
-        { header: 'Chance/run', align: 'right' },
-        { header: 'Mod/run', align: 'right' },
-        { header: 'Mod/day', align: 'right' },
-        ...(hasGear ? [{ header: 'Gear/day', align: 'right' as const }] : []),
-        { header: 'Frags/day', align: 'right' },
-        { header: 'Locks/day', align: 'right' },
+        { header: 'Chance/run', align: 'right', flex: 0.95 },
+        { header: 'Mod/run', align: 'right', flex: 1.05, icon: modIcon },
+        { header: 'Mod/day', align: 'right', flex: 1.05, icon: modIcon },
+        ...(hasGear
+          ? [
+              {
+                header: 'Gear/day',
+                align: 'right' as const,
+                flex: 1.1,
+                icon: gearIcon,
+              },
+            ]
+          : []),
+        { header: 'Frags/day', align: 'right', flex: 1.1, icon: fragIcon },
+        { header: 'Locks/day', align: 'right', flex: 1.1, icon: lockIcon },
       ],
       rows: table.stages.map((s) => {
         const e = expectedModulesPerRun(s);
@@ -124,7 +147,7 @@ function CustomModulesTab() {
       ),
       footer: 'nikkesim.app/resources',
     };
-    void copyTableCardImage(card, 'nikke-resources.png');
+    return copyTableCardImage(card, 'nikke-resources.png');
   };
 
   // The drop pool is boss-dependent: modules + locks + fodder are shared, but
@@ -225,13 +248,11 @@ function CustomModulesTab() {
             ))}
           </select>
         </label>
-        <button
-          className="share-btn"
+        <CopyFlashButton
+          label="🖼 Copy image"
           title="copy the tier ladder as an image"
-          onClick={onShareImage}
-        >
-          🖼 Copy image
-        </button>
+          onCopy={onShareImage}
+        />
       </div>
 
       <h3 className="res-heading">

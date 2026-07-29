@@ -79,6 +79,10 @@ import {
 } from '../../src/infographics/core/tableData';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { TabDropdown, useMediaQuery } from './TabDropdown';
+import {
+  CopyFlashButton,
+  type CopyResult,
+} from './components/CopyFlashButton';
 import { usePortraitThumbs } from './usePortraitThumbs';
 import {
   shareTeamCard,
@@ -5475,7 +5479,7 @@ export function App({ user }: { user: AuthUser | null }) {
       // column takes the SAME chargeLatency the panel above uses (0 for
       // autofire units), so the image can't contradict the table it was
       // copied from.
-      const onBpShareImage = async () => {
+      const onBpShareImage = async (): Promise<CopyResult> => {
         let card: TableCardData;
         let slug: string | null;
         if (bpView === 'charge') {
@@ -5487,7 +5491,7 @@ export function App({ user }: { user: AuthUser | null }) {
           slug = chargeChar;
         } else {
           if (!amc) {
-            return;
+            return 'unsupported';
           }
           card = buildAmmoTable(ammoBase, amc.name);
           slug = ammoChar;
@@ -5496,7 +5500,7 @@ export function App({ user }: { user: AuthUser | null }) {
         if (url) {
           card.portrait = (await loadPortrait(url)) ?? undefined;
         }
-        await copyTableCardImage(
+        return copyTableCardImage(
           card,
           `nikke-${bpView === 'charge' ? 'charge-speed' : 'max-ammo'}.png`
         );
@@ -5771,18 +5775,16 @@ export function App({ user }: { user: AuthUser | null }) {
                 ))}
               </select>
             </label>
-            <button
-              className="share-btn"
-              onClick={() => void onBpShareImage()}
+            <CopyFlashButton
+              label="🖼 Copy image"
+              onCopy={onBpShareImage}
               disabled={bpView === 'ammo' && !amc}
               title={
                 bpView === 'ammo' && !amc
                   ? 'pick a nikke first — the ammo table is per-unit'
                   : 'copy this table as an image'
               }
-            >
-              🖼 Copy image
-            </button>
+            />
           </div>
           {bpView === 'charge' ? chargePanel : ammoPanel}
         </section>
@@ -5833,7 +5835,7 @@ export function App({ user }: { user: AuthUser | null }) {
         carrySlug: string,
         subtitle: string,
         results: OlConfigResult[]
-      ) => {
+      ): Promise<CopyResult> => {
         const carry = data.characters[carrySlug];
         const card: TableCardData = {
           title: `${carry?.name ?? carrySlug} — free OL lines`,
@@ -5858,7 +5860,7 @@ export function App({ user }: { user: AuthUser | null }) {
         if (carry?.imageUrl) {
           card.portrait = (await loadPortrait(carry.imageUrl)) ?? undefined;
         }
-        await copyTableCardImage(card, 'nikke-overload.png');
+        return copyTableCardImage(card, 'nikke-overload.png');
       };
       return (
         <section className="calc-tab">
@@ -5956,19 +5958,17 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     Calculate chance to roll →
                   </button>{' '}
-                  <button
-                    className="share-btn"
+                  <CopyFlashButton
+                    label="🖼 Copy image"
                     title="copy the ranked lines as an image"
-                    onClick={() =>
-                      void onOlShareImage(
+                    onCopy={() =>
+                      onOlShareImage(
                         olMatrixResult.carrySlug,
                         `${cellLabel({ ...olCell, invest: '8of12' })} · 180s`,
                         olMatrixResult.results
                       )
                     }
-                  >
-                    🖼 Copy image
-                  </button>
+                  />
                 </div>
               )}
             </>
@@ -6101,22 +6101,22 @@ export function App({ user }: { user: AuthUser | null }) {
                   >
                     Calculate chance to roll →
                   </button>{' '}
-                  <button
-                    className="share-btn"
+                  <CopyFlashButton
+                    label="🖼 Copy image"
                     title="copy the ranked lines as an image"
-                    onClick={() =>
-                      olCustomCarry &&
-                      void onOlShareImage(
-                        olCustomCarry,
-                        res.teamSlugs
-                          .map((s) => data.characters[s]?.name ?? s)
-                          .join(' · '),
-                        res.results
-                      )
+                    disabled={!olCustomCarry}
+                    onCopy={() =>
+                      olCustomCarry
+                        ? onOlShareImage(
+                            olCustomCarry,
+                            res.teamSlugs
+                              .map((s) => data.characters[s]?.name ?? s)
+                              .join(' · '),
+                            res.results
+                          )
+                        : 'unsupported'
                     }
-                  >
-                    🖼 Copy image
-                  </button>
+                  />
                 </div>
               ))}
             </>
@@ -6388,17 +6388,15 @@ export function App({ user }: { user: AuthUser | null }) {
           </button>{' '}
           {/* the static default 8/12 roll-cost table — the same card the API
               pre-renders as table/ol */}
-          <button
-            className="share-btn"
+          <CopyFlashButton
+            label="🖼 Copy image"
             title="copy the default 8/12 roll-cost table as an image"
-            onClick={() =>
-              void loadOlDefaultTable().then((card) =>
+            onCopy={() =>
+              loadOlDefaultTable().then((card) =>
                 copyTableCardImage(card, 'nikke-ol-default.png')
               )
             }
-          >
-            🖼 Copy image
-          </button>
+          />
           {olSimResult && resultsBlock(olSimResult)}
         </>
       );
@@ -6496,23 +6494,21 @@ export function App({ user }: { user: AuthUser | null }) {
           >
             {calcBusy ? 'Running…' : 'Run from current'}
           </button>{' '}
-          <button
-            className="share-btn"
+          <CopyFlashButton
+            label="🖼 Share before/after"
             disabled={!olSimCurrentResult}
             title={
               olSimCurrentResult
                 ? 'copy a before/after image of your lines vs the target'
                 : 'run the sim first'
             }
-            onClick={() =>
-              void copyTableCardImage(
+            onCopy={() =>
+              copyTableCardImage(
                 olBeforeAfterTable(),
                 'nikke-ol-before-after.png'
               )
             }
-          >
-            🖼 Share before/after
-          </button>
+          />
           {olSimCurrentResult && resultsBlock(olSimCurrentResult)}
         </>
       );
@@ -6870,7 +6866,7 @@ export function App({ user }: { user: AuthUser | null }) {
           const t = (dp.tier[L]?.[0] ?? 'R') as DollTier;
           rows.push([`${L} → ${L + 1}`, DOLL_TIER_LABEL[t]]);
         }
-        void copyTableCardImage(
+        return copyTableCardImage(
           {
             title: `Doll Leveling — ${rarity} doll ${from}→15`,
             subtitle: `expected kits: ${mc.byTier.R.toFixed(1)} Blue · ${mc.byTier.SR.toFixed(1)} Purple · ${mc.byTier.SSR.toFixed(1)} Gold`,
@@ -6906,13 +6902,11 @@ export function App({ user }: { user: AuthUser | null }) {
           </p>
           {dollBell(mc)}
           <div style={{ marginTop: 10 }}>
-            <button
-              className="share-btn"
+            <CopyFlashButton
+              label="🖼 Copy image"
               title="copy this plan as an image"
-              onClick={() => onDollShareImage(rarity, from, dp, mc)}
-            >
-              🖼 Copy image
-            </button>
+              onCopy={() => onDollShareImage(rarity, from, dp, mc)}
+            />
           </div>
         </div>
       );
@@ -7244,8 +7238,8 @@ export function App({ user }: { user: AuthUser | null }) {
     return null;
   };
 
-  const inTools =
-    (CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim') === 'tools';
+  const tabGroup = CALC_TABS.find((t) => t.key === tab)?.group ?? 'sim';
+  const inTools = tabGroup === 'tools';
   // Per-tab h1 — keyword-rich for SEO; Google weighs <h1> heavily.
   const TAB_H1: Record<string, string> = {
     sim: 'NIKKE Solo Raid Sim',
@@ -7268,8 +7262,12 @@ export function App({ user }: { user: AuthUser | null }) {
           <h1>{TAB_H1[tab] ?? 'NIKKE Solo Raid Sim'}</h1>
           {/* team share actions act on the hand-built team, so they stay off
               the generator tabs (which have their own result share buttons)
-              and the roster sim (which has its own generate link / copy image) */}
-          {!inTools &&
+              and the roster sim (which has its own generate link / copy image).
+              They are also off the rankings and overload sections (owner call
+              2026-07-28): nothing on those pages is a team, so a header block
+              offering to share/save "this team" only confuses — those pages
+              share through their own in-page Copy image buttons. */}
+          {tabGroup === 'sim' &&
             tab !== 'team' &&
             tab !== 'roster' &&
             tab !== 'rostersim' && (
