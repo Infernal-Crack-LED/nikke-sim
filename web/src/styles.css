@@ -416,6 +416,11 @@ header h1 {
   padding: 2px 9px;
   font-size: 12px;
 }
+/* SR/UR quick-fill pills under a Boss DEF input (Team Sim field + the
+   Union Raid per-team rows) — a little breathing room above the input */
+.boss-def-pills {
+  margin-top: 6px;
+}
 .gen-options-pills {
   margin: 8px 0;
 }

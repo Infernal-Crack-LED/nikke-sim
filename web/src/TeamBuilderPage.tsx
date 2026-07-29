@@ -22,6 +22,10 @@ const BOSS_RANGE_OPTIONS: { id: BossRange | null; label: string }[] = [
   { id: 'far', label: 'Very far' },
 ];
 
+// Base boss DEF for the two raid types (mirrors App.tsx SR_DEFAULT_DEF/UR_DEFAULT_DEF)
+const SR_DEFAULT_DEF = 30930; // Solo Raid base boss DEF (30.93k)
+const UR_DEFAULT_DEF = 12200; // Union Raid base boss DEF (12.2k)
+
 // Per-team boss options for Union Raid (mirrors App.tsx UnionBossOpts)
 export interface UnionBossOpts {
   weakness: Element | null;
@@ -33,7 +37,7 @@ export interface UnionBossOpts {
 }
 const defaultUnionBossOpts = (): UnionBossOpts => ({
   weakness: null,
-  bossDef: '0',
+  bossDef: String(UR_DEFAULT_DEF),
   core: 0,
   coreCustom: false,
   coreCustomVal: '10',
@@ -401,6 +405,28 @@ export function TeamBuilderPage({
             value={o.bossDef}
             onChange={(e) => setUnionBossOpt(ti, { bossDef: e.target.value })}
           />
+          <div className="pills small boss-def-pills">
+            <button
+              type="button"
+              className={Number(o.bossDef) === SR_DEFAULT_DEF ? 'on' : ''}
+              onClick={() =>
+                setUnionBossOpt(ti, { bossDef: String(SR_DEFAULT_DEF) })
+              }
+              title="Solo Raid base boss DEF (30.93k)"
+            >
+              SR
+            </button>
+            <button
+              type="button"
+              className={Number(o.bossDef) === UR_DEFAULT_DEF ? 'on' : ''}
+              onClick={() =>
+                setUnionBossOpt(ti, { bossDef: String(UR_DEFAULT_DEF) })
+              }
+              title="Union Raid base boss DEF (12.2k)"
+            >
+              UR
+            </button>
+          </div>
         </div>
         <div className="union-boss-row">
           <span className="union-boss-label">Core</span>
