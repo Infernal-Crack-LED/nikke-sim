@@ -65,10 +65,14 @@ overrides['noop-b3-mg'] = loadOverride('noop-b3-mg');
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RunCtx = { characters: data.characters as any, mult, deps };
 
-// tested population: every B3, bossing tier SSS–B. SSS/SS units are the ranked bars;
-// S/A/B are selector-only. Guard against garbled multi-mode burst strings.
+// tested population: every B3 with a kit override (simSupported) — no enikk-proven/"meta"
+// usage gate; a unit only needs a real override to produce a meaningful damage number.
+// Λ units are pinned to a fixed slot instead of treated as unsupported — see FORCED_BURST
+// (same forced mapping as the team generators, src/teamcalc.ts). SSS/SS units are the
+// ranked bars by default; every other tier is selector-only (chartPop: false).
 const CHART_TIERS = new Set(['SSS', 'SS']);
-const SELECTOR_TIERS = new Set(['SSS', 'SS', 'S', 'A', 'B']);
+const FORCED_BURST: Record<string, 'III'> = { 'red-hood': 'III' };
+const effBurst = (slug: string, burst: string) => FORCED_BURST[slug] ?? burst;
 interface UnitMeta {
   slug: string;
   name: string;
@@ -83,17 +87,15 @@ interface UnitMeta {
 }
 const population: UnitMeta[] = [];
 for (const [slug, c] of Object.entries(data.characters)) {
-  if (c.burst !== 'III') {
+  // guard against garbled multi-mode burst strings
+  if (effBurst(slug, c.burst) !== 'III') {
     continue;
   }
-  // generatorSupported gates chart eligibility (enikk-proven); simSupported is required too —
-  // without a kit override the damage number would be near-meaningless (no buffs/burst behavior).
-  // Today the two always coincide, but they're independent tags going forward (src/types.ts).
-  if (!c.generatorSupported || !c.simSupported) {
+  if (!c.simSupported) {
     continue;
   }
   const tier = tiersFile.tiers[slug];
-  if (!tier || !SELECTOR_TIERS.has(tier)) {
+  if (!tier) {
     continue;
   }
   population.push({

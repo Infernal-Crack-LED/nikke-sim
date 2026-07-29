@@ -2547,3 +2547,58 @@ pixel measurement — they change no constant, no default and no board value):
 it accepted 0 of 30 popups on the one hand-read probe available, because that unit's value bands
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
+
+## DPS chart drops the enikk-proven ("meta") gate — every sim-supported B3 is now ranked (2026-07-29)
+
+**Decision.** `scripts/build-dpschart.ts`'s tested population no longer requires
+`generatorSupported` (enikk top-100 usage) or a bossing tier in `{SSS,SS,S,A,B}`. Eligibility is now
+just: burst III (or the same `FORCED_BURST`-style pin the team generators use, `src/teamcalc.ts`) +
+`simSupported` (has a real kit override). Owner ruling: the chart's job is to rank every unit the sim
+can actually model, not just units popular enough to show up in enikk's top-ranker sample — "meta
+only" was never the intent, just an accident of reusing the generator's eligibility flag.
+
+**Why.** QUEUE.md flagged 7 sim-supported B3s rendering two large "Not ranked on this board" plates
+each (`2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`) — the
+only sim-supported units with no bar chart at all. Investigation found three independent causes, not
+one: `2b`/`a2`/`phantom`/`sugar` simply aren't on the enikk union (low real-world usage, not a bug);
+`rei-ayanami`/`rei-ayanami-tentative-name` ARE on the union but under aliased display names
+(`"Rei"`/`"Rei (Tentative Name)"`) that `data/enikk-supported.json` never reconciles against
+`characters.json`'s real names — a separate, still-open bug for surfaces that still use
+`generatorSupported` (the roster/team generators); `sugar`'s tier `C` independently failed the old
+`SELECTOR_TIERS` gate. `red-hood` (Λ, all-stage burst) was excluded by the `burst !== 'III'` filter
+outright — nothing to do with support flags. Rather than patch each cause separately (manually
+allowlisting the enikk-unproven units, fixing the alias, special-casing the tier), the owner chose to
+retire the shared root cause: **the "meta-only" gate itself**, since the game and the sim now support
+far more of the roster than enikk's top-100 usage sample reflects. This also incidentally fixed an
+8th unit the original QUEUE triage missed: `laplace-ultimate-hero` (same not-on-the-enikk-union cause
+as the AR/RL/SG group).
+
+**What landed.**
+
+1. **`scripts/build-dpschart.ts`** — population filter is now `effBurst(slug, c.burst) === 'III' &&
+c.simSupported && tiersFile.tiers[slug]` (the tier existence check is a defensive boundary guard;
+   every current sim-supported B3 already has one). `CHART_TIERS` (SSS/SS → shown as a ranked bar by
+   default; everything else selector-only) is unchanged — that's a display-density concern, not an
+   eligibility one.
+2. **`src/dpschart/matrix.ts` `CHART_PROFILES`** — added `'red-hood': { lambdaStage: 3 }`, pinning her
+   sim rotation to burst stage 3 (same mechanism as `bready`'s taste profile) so she actually occupies
+   the tested B3 slot instead of free-running as a Λ wildcard. The web tab's "Custom Profiles"
+   disclosure already documented "Red Hood & Rapi: Red Hood — Operate as Burst III (B3)" before this
+   landed; the backend just never delivered on it.
+3. **`scripts/build-infographics.ts`** — trimmed the now-stale comment sentence claiming
+   sim-supported-but-unranked B3s were "a DATA gap, tracked in QUEUE.md" (this landing closes that
+   gap for the 8 units it applied to).
+
+**Evidence.** Population grew from 43 to 51 B3s; regenerated `web/public/dpschart.json` (build output,
+gitignored) confirmed all 8 target slugs present. `red-hood` produces a sane, non-zero, mid-pack DPS
+in both the Solo framework (750,036, rank 31/51 in `solo.neutral.c0.scope`) and a named-control
+framework (2,081,905, rank 31/51 in `standard.neutral.c0.scope`) — not zero, not an outlier, confirming
+the `lambdaStage` pin works in both team-assembly shapes. `npm run test:dpschart` (dedicated build +
+smoke test) passes; rendered unit cards for `red-hood` and `sugar` (`scripts/render-unit-card.ts`)
+show real ranked bars in place of the former "Not ranked on this board" plates. Full `verify.sh` green
+(2148 unit tests, all regression suites) with these changes.
+
+**Explicitly NOT fixed here.** The `rei-ayanami`/`rei-ayanami-tentative-name` display-name alias bug in
+`data/enikk-supported.json` still affects every OTHER surface that gates on `generatorSupported`
+(the roster/team generators) — only the DPS chart stopped checking that flag. Tracked as an open
+follow-up in QUEUE.md.

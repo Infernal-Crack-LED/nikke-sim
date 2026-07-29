@@ -424,18 +424,15 @@ function unitJobs(
   skipped: string[]
 ): Job[] {
   // A B3/Λ card's whole left column is its two DPS charts, and those come from
-  // the DPS chart, which only ranks sim-supported units. An unsupported B3
-  // therefore renders two large "Not ranked on this board" plates and nothing
-  // else — so it gets NO CARD rather than a second-class fallback layout (owner,
-  // 2026-07-28; this is the answer to the "large empty plates" question in
-  // QUEUE.md). B1/B2 units are unaffected: they draw buffer/sustain/burst-CDR,
-  // which rank unsupported units too.
-  //
-  // Sim-supported B3s that are missing from the DPS chart still render empty —
-  // that is a DATA gap, tracked in QUEUE.md, not a reason to drop their card.
+  // the DPS chart, which ranks every sim-supported B3 (scripts/build-dpschart.ts —
+  // no enikk-proven/"meta" gate). An unsupported B3 therefore renders two large
+  // "Not ranked on this board" plates and nothing else — so it gets NO CARD
+  // rather than a second-class fallback layout (owner, 2026-07-28; this is the
+  // answer to the "large empty plates" question in QUEUE.md). B1/B2 units are
+  // unaffected: they draw buffer/sustain/burst-CDR, which rank unsupported
+  // units too.
   const eligible = chars.filter(
-    (c) =>
-      !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
+    (c) => !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
   );
   for (const c of chars) {
     if (!eligible.includes(c)) {
