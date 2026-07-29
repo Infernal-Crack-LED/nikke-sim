@@ -149,6 +149,7 @@ interface CharacterRow {
   class: string;
   manufacturer: string;
   burstCooldownSec: number | null;
+  simSupported?: boolean;
 }
 
 const DATA_HINT =
@@ -419,7 +420,21 @@ function unitJobs(
   sources: UnitCardSourceSet,
   limit: number | null
 ): Job[] {
-  const sorted = [...chars].sort((a, b) => a.slug.localeCompare(b.slug));
+  // A B3/Λ card's whole left column is its two DPS charts, and those come from
+  // the DPS chart, which only ranks sim-supported units. An unsupported B3
+  // therefore renders two large "Not ranked on this board" plates and nothing
+  // else — so it gets NO CARD rather than a second-class fallback layout (owner,
+  // 2026-07-28; this is the answer to the "large empty plates" question in
+  // QUEUE.md). B1/B2 units are unaffected: they draw buffer/sustain/burst-CDR,
+  // which rank unsupported units too.
+  //
+  // Sim-supported B3s that are missing from the DPS chart still render empty —
+  // that is a DATA gap, tracked in QUEUE.md, not a reason to drop their card.
+  const eligible = chars.filter(
+    (c) =>
+      !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
+  );
+  const sorted = [...eligible].sort((a, b) => a.slug.localeCompare(b.slug));
   const picked = limit === null ? sorted : sorted.slice(0, limit);
   const jobs: Job[] = [];
   for (const c of picked) {

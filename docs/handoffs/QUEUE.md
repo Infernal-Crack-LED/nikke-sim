@@ -52,39 +52,32 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — ALL 6 PHASES BUILT, NEEDS AN OWNER POLISH PASS.**
+- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — BUILT + POLISHED, WAITING ON DEPLOY.**
   Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
   `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
   landed-state: `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`.
-  Measured at the phase-5 gate: **408 images, 25.8 MB** (390 unit cards across 2 variants at
-  **55 KB avg**, WebP q90) — under the ~27 MB projection and half today's 53 MB PNG set.
-  The owner asked for uncertain values to be parked as tunable consts and settled in ONE polish
-  pass rather than guessed at mid-build. They are:
-  1. **Layout/behaviour tunables** — `src/infographics/core/unitCardData.ts`: `NEIGHBOUR_ROWS` (1),
-     `NEIGHBOUR_ROWS_SOLO_CHART` (3), `MAX_TAGS` (6); `core/unitCard.ts`: `PAD`/`PAD_P`,
-     `PORTRAIT_ART`/`_P`, `ICON_SIZE`/`_P`, `BAR_ROW_H`/`_P`, `LEFT_COL_FRAC` (0.62),
-     `X_CORNER_RADIUS_PCT`; `scripts/build-infographics.ts`: `UNIT_CARD_WEBP_QUALITY` (90).
-     Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
-  2. **`Λ` burst icon is a PLACEHOLDER.** `red-hood` (Red Hood, SR/Iron — NOT `rapi-red-hood`) is
-     the only Λ unit and currently draws `burst_3`, per the owner's "use b3 for now". Needs a real
-     Λ glyph or a text chip (`core/iconNames.ts` `ICON_BY_BURST`).
-  3. **`class_*` icons are 25×25 and `man_missilis` is 32×32, with no vector source**, against a
-     64px icon strip (128px physical on the landscape card) — a 2.6–5.1× upscale on an
-     advertising asset. The owner expected a full SVG set in-repo; it is NOT there (only
-     `burst_*` + `code_*`, verified across this repo, the main worktree and bakery-bot). The
-     loader is already SVG-first, so **dropping the missing SVGs in needs no code change**, and
-     every build prints the remaining raster-bound icons.
-  4. **Zero-value chart fallback (confirm the rule).** A board entry of exactly 0 now counts as
-     "not present" for CHART SELECTION only — Liter sat on the sustain board at 0 with all her
-     neighbours at 0, producing three empty tracks, while she has a real burst-CDR figure one
-     fallback down. The TILE still reports the honest 0 and its real rank. Rule lives in
-     `unitCardData.ts` (`boardValue(...) > 0`); confirm it is what ruling 13 intended.
-  5. **A unit on no board renders two large empty plates** (e.g. `red-hood`, off both DPS
-     boards). Honest and fixed-geometry, but it is a lot of dead space — worth deciding whether
-     those units get a different second-class layout (ruling 13 explicitly deprioritizes them).
-  6. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
+  Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
+  The owner's polish pass ran 2026-07-28 and settled every parked tunable (layout consts, the
+  Λ glyph, the icon set, the zero-value rule, the empty-plate question) — see the three
+  `feat(infographics)` / `feat(icons)` commits on the branch. What is left:
+  1. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
      the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
      (that fallback is tested).
+  2. **Untested at the icon swap.** The burst/class icons were replaced site-wide with the
+     owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is now
+     RASTER everywhere, ~100px native — fine at every size either surface draws today, but a
+     future surface wanting it large has no vector source.
+
+- **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
+  `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.
+  A B3/Λ unit's whole card is its two DPS charts, so an absent one renders two large "Not
+  ranked on this board" plates — those 7 are the only sim-supported units with no bar chart at
+  all (of 90). Not researched; no handoff written.
+  - **Ruling (owner, 2026-07-28): no second-class fallback layout.** A B3/Λ unit that is NOT
+    sim-supported simply gets NO CARD (`scripts/build-infographics.ts` `unitJobs`) — 27 units,
+    54 images. The 7 above keep their cards because their emptiness is a DATA gap this item
+    closes, not a permanent state. B1/B2 units are unaffected either way: buffer / sustain /
+    burst-CDR rank unsupported units too.
 
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
