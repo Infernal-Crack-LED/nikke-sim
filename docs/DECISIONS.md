@@ -2637,3 +2637,35 @@ have a `characters.json` `chargeMultiplier` with no gauge row at all): `docs/eng
 correction (deferred, tooling-only, does not gate this landing); the `?? 250` fallback should be
 hardened to a `> 0` check at a future touch (no present row is 0, but nothing prevents one from
 being synced in later).
+
+## Owner rulings: NO overcharge (charge cap as datamined) + tb2-test-3 viable footage is 0:06–0:17 ONLY (2026-07-29, third pass)
+
+Two owner rulings on the gauge-fill-reader calibration work (`docs/handoffs/
+2026-07-29-gauge-fill-reader-calibration.md` §RESULT), recorded there in full as §OWNER-RULINGS:
+
+- **"Charge cap as datamined is correct, there's no 'overcharge'."** The escalated hypothesis
+  (a) — real charge-at-release > 1.0 with the ×(1+1.5c) focus formula extending past c=1
+  (the c ∈ [1.07, 1.32] fit to the reader's hot weapon sub-steps) — is REJECTED. The mechanic
+  does not exist; no pipeline, no constant moves. The focus charge-gauge bonus at full charge is
+  the per-unit datamined multiplier, full stop. The maiden override's "156–212% overcharge" note
+  (and the matching phrases in `docs/data/charge-weapons.md` §2 / answered-questions A12) is a
+  charge-meter DISPLAY observation during the auto hold — never evidence for a c>1 mechanic.
+- **"For tb2 test 3, only 0:06–0:17 are viable footage."** Both test-3 recordings share one
+  timeline (intro fade through ~5.8s; six pulls 7.2–14.0; reload ~14.0–17.2; at ~17.4–18.7 the
+  player takes manual aim — the tak footage shows the scope HUD from t≈18). Audited against every
+  §RESULT claim: all ladder sub-step reads, the frame-snap checks, the shot-1-partial and ammo
+  `005`/`000` reads are INSIDE the window and stand; **shots 7–8, the full-cross at t=18.73 and
+  the ammo `004` read are OUTSIDE** — which WITHDRAWS the "8 shots fill the bar" counting bound
+  that had excluded the documented 12.55%/pull (910+364) maiden anchor. The anchor stands
+  un-excluded; inside the window the cumulative fill does not discriminate it from the reader's
+  hotter per-pull.
+
+Consequences: the gauge-fill reader is settled for SHAPE and SMALL-step magnitude only — its
+LARGE-step magnitude (~1.0–1.3% absolute hot on both solos, rider exact) is an unresolved READER
+question, not a game-mechanics one, and must not feed engine constants. The alice/cinderella
+pauses are lifted (both stay pinned; alice's surviving basis is the anchor-independent counting
+arithmetic on her own solo footage, [2.98×, 3.57×) ⊇ datamined 3.5×). Standing protocol rule for
+future solo-gauge work: **define the recording's viable window BEFORE reading from it.** This
+also corrects the reader-validation claim in the 2026-07-29 per-unit entry above ("reproduces the
+anchor's +9.1% then +3.45% pattern to 0.05–0.15%") — that claim predates the ladder; the rider
+sub-step reproduces exactly, the weapon sub-step does not (and the footage order is rider-first).

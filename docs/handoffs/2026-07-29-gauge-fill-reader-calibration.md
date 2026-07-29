@@ -1,9 +1,12 @@
 # Gauge-fill reader calibration — the shared blocker for `maiden-ice-rose`, `alice`, `cinderella`
 
-**Status:** READER SETTLED (tooling, cheap lane) 2026-07-29 second session — see §RESULT. The
-anchor's documented per-pull value is EXCLUDED by shot-counting; hypothesis (a) is escalated as
-its own pipeline candidate. Engine untouched. `alice`/`cinderella` multiplier resolution PAUSED
-pending (a) (§3.2's pause rule fired).
+**Status:** PARTIALLY SUPERSEDED by §OWNER-RULINGS (2026-07-29, third pass — read it first).
+The owner (1) REJECTED hypothesis (a)'s overcharge mechanism outright — the datamined charge cap
+is correct, there is no overcharge — and (2) bounded tb2-test-3 footage viability to **0:06–0:17**,
+which WITHDRAWS the shot-counting anchor exclusion (its endpoint evidence sits at t≈17.2–18.8,
+outside the bound). Reader: shape + small-step magnitude settled; large-step magnitude UNRESOLVED.
+`alice`/`cinderella` un-paused on the surviving basis (§OWNER-RULINGS consequence 3).
+Engine untouched.
 **Branch/worktree:** `focus-charge-gauge-per-unit` @ `../nikke-sim-wt-focus-charge-gauge` (parked,
 unmerged, unpushed, behind `main`).
 **Audience:** AI-facing handoff. Shorthand OK.
@@ -316,3 +319,75 @@ reader runs), `montage-intro.png` (the t≈4.3 event is the intro FADE, not a ga
 counter frames). Frames are re-derivable: `ffmpeg -i "docs/probes/tb2/tb2 3 maiden.MP4" -vf
 "fps=N,crop=400:160:2350:430" f_%05d.png` (video lives in the MAIN checkout — gitignored — not
 the worktree).
+
+---
+
+## §OWNER-RULINGS (2026-07-29, third pass — Kimi driver)
+
+Two owner rulings landed on the §RESULT above. **This section is the current state**; §RESULT is
+kept as the evidence record, with the supersessions below.
+
+### Ruling 1 — "Charge cap as datamined is correct, there's no overcharge" → hypothesis (a)'s mechanism REJECTED
+
+The escalated candidate mechanism — real charge-at-release > 1.0, the ×(1+1.5c) focus formula
+extending past c=1 (the c ∈ [1.07, 1.32] fit) — is ruled OUT. No pipeline, no engine change, no
+constant moves: the mechanic does not exist. The maiden override note's "real auto overcharging"
+phrase (the 156–212% charge-meter display during the auto hold) is a RENDER observation, not a
+mechanic — it must not be cited as support for c>1 gauge/damage effects, as §RESULT's (a)
+paragraph did. (The same phrase in `docs/data/charge-weapons.md` §2 and answered-questions A12 is
+likewise display-description only.)
+
+What remains unexplained: the reader's large (weapon) sub-step reads ~1.0–1.3% absolute ABOVE the
+per-unit model on BOTH tb2-test-3 solos (maiden ~10.1 vs 9.1; takina 14.5–16.7 vs 14.0), while
+the small (rider) sub-step is exact (3.6–3.7 vs 3.64). With overcharge ruled out and the counting
+bound withdrawn (ruling 2), that residual is an open **reader** question, not a game-mechanics
+one — suspect class not yet discriminated (per-snap read bias at the hit instant — fire-time
+rider steps are exact, hit-time weapon steps are hot — vs a real per-unit table gap). Do not
+quote the reader's large-step magnitude as game truth, and do not open a mechanics pipeline on it.
+
+### Ruling 2 — "For tb2 test 3, only 0:06–0:17 is viable footage" → audit of every §RESULT claim
+
+Both recordings (`tb2 3 maiden.MP4` 73.7s, `tb2 3 tak.MP4` 44.3s) share one timeline: intro-fade
+artefacts through ~5.8s, gauge live from ~6.0s, six pulls land 7.2–14.0, reload ~14.0–17.2, and
+at ~17.4–18.7 the player takes MANUAL aim (the tak footage shows the sniper scope + CHARGE% HUD
+from t≈18) — consistent with the owner's cutoff: past 0:17 is no longer clean auto footage.
+(Verified this pass: fresh 30fps reader run on the tak video + full-frame views at t=8/12/16/
+17.5/18.7/25; the two videos' fill events land at the same timestamps to the frame.)
+
+| §RESULT claim | Evidence timestamps | Inside 0:06–0:17? |
+| --- | --- | --- |
+| Ladder weapon sub-steps 9.4–10.8 (×5) | 8.57 / 9.93 / 11.30 / 12.67 / 14.03 | YES |
+| Ladder rider sub-steps 3.6–3.7 (×5) | 8.40 / 9.77 / 11.13 / 12.50 / 13.87 | YES |
+| Frame-snap check (single-frame jumps) | 11.27→11.28, 12.65→12.67 | YES |
+| Shot-1 partial opener +2.9, no rider | 7.20 (ammo `005` at 7.00) | YES |
+| Mag-1 empty after 6 shots | ammo `000` at 13.90 | YES |
+| Rider-first sub-step order | the above step pairs | YES |
+| Takina per-shot steps 14.5–16.7 (×5) | 8.57–14.03 (same cadence) | YES |
+| Shot 7 (rider +3.7 / weapon +10.1) | 17.20 / 17.37 | **NO** |
+| Shot 8 + full-cross | 18.57 / 18.73 / 18.77 | **NO** |
+| Ammo `004` corroboration | 18.72 | **NO** |
+
+**Consequence 1 — the shot-counting anchor exclusion is WITHDRAWN.** "8 shots fill the bar, full
+crosses at t=18.73" — the evidence that excluded the documented 12.55%/pull anchor and closed the
+energy account for the reader's 13.73%/pull — sits ENTIRELY outside the viable window (shots 7–8,
+the full-cross, and the corroborating ammo read all land at t ≥ 17.2). Inside the bound, six
+pulls (1 partial + 5 full) take maiden's bar ~0 → 74.6 and takina's ~0 → 81.9 (raw reads), which
+does NOT discriminate the documented model from the reader's hotter per-pull. §3.2's pause-clause
+basis is gone.
+
+**Consequence 2 — reader verdict revised.** SETTLED: shape (plateaus, cadence, single-frame
+snaps, rider-first order, full-state detection) and SMALL-step magnitude (rider exact at every
+sampling rate). UNRESOLVED: LARGE-step magnitude (~1.0–1.3% absolute hot on both solos; the
+`RAW_OVER_TRUE` 1.064 constant is anchor-derived metadata, never applied to output, and not
+validated). Callers: ≥15fps (30fps default) for shape and small steps; do not enact constants
+from large-step magnitudes.
+
+**Consequence 3 — `alice`/`cinderella` un-paused, on the surviving basis.** The pause had two
+legs — hypothesis (a) and the anchor exclusion — and both are gone (rejected / withdrawn). What
+stands for alice is the anchor-independent counting arithmetic on HER OWN solo footage (5 shots
+to ~99.3%, the 6th fills → per-shot ∈ [16.67%, 20%) = [2.98×, 3.57×), containing her datamined
+3.5× and excluding the withdrawn 3.68–3.9× session values) — untouched by everything withdrawn
+here. Both units STAY PINNED regardless: no confirming measurement exists at the landing bar —
+the reader's large-step magnitude is unresolved, and any future counting-bound endpoint must be
+re-established inside an explicitly viability-bounded window (define the viable span BEFORE
+reading, per this ruling).

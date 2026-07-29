@@ -93,27 +93,34 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   meaning of her 3.5× datamined value shifts). Anchor-independent arithmetic that survives any
   (a) outcome: 5 shots to ~99.3% with the 6th filling bounds her per-shot to [16.67%, 20%) =
   [2.98×, 3.57×) — excludes the withdrawn 3.68-3.9× session values, CONTAINS datamined 3.5×.
+  **UPDATE 2026-07-29 (third pass, owner rulings):** the (a) pause is LIFTED — the overcharge
+  mechanism was rejected outright and the shot-counting anchor exclusion was withdrawn (its
+  endpoint evidence sits outside tb2 test 3's viable 0:06–0:17 window). The counting arithmetic
+  above (on HER OWN solo footage) stands untouched and still contains her datamined 3.5×. She
+  STAYS PINNED regardless: the reader's large-step magnitude is unresolved, so no confirming
+  measurement exists at the landing bar yet.
 
-- **⇒ 🟢 GAUGE-FILL READER CALIBRATION — READER SETTLED 2026-07-29 (second session); SUPERSEDED BY
-  THE (a) ESCALATION BELOW.** Verdict + full evidence: `docs/handoffs/
-  2026-07-29-gauge-fill-reader-calibration.md` §RESULT. The sampling-rate ladder (5/15/30/60fps)
-  showed the large-step discrepancy FLAT at every rate and each weapon jump landing in a single
-  60fps frame — the sampling/rendering-artefact hypothesis (b) is REFUTED. Shot-counting (8 shots
-  to full, ammo-counter verified) bounds per-pull to ≥ ~13.6%, EXCLUDING the documented 12.55%
-  anchor — the reader was right; the 2026-07-13 hand read under-read both sub-steps. **The reader
-  is adopted as trustworthy for shape AND magnitude at ≥15fps (30fps default, ±1 column = 0.72%);
-  settle nothing further about the tool.** What remains is the game-mechanics question, next bullet.
+- **⇒ 🟡 GAUGE-FILL READER CALIBRATION — PARTIALLY SETTLED 2026-07-29 (third pass, owner
+  rulings).** Verdict + full evidence: `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md`
+  (§RESULT + §OWNER-RULINGS). SETTLED: the reader is trustworthy for SHAPE and SMALL-step
+  magnitude at ≥15fps (30fps default, ±1 column = 0.72%) — the sampling/rendering-artefact
+  hypothesis (b) is refuted (large-step error flat at every rate, single-frame snaps) and the
+  rider sub-step is exact. NOT SETTLED: LARGE-step magnitude — weapon sub-steps read ~1.0–1.3%
+  absolute hot on both tb2-test-3 solos; the "8 shots fill the bar" counting bound that excluded
+  the documented 12.55% anchor is WITHDRAWN because its endpoint evidence (shots 7–8, full-cross
+  t=18.73, ammo t=18.72) sits outside the owner-bounded viable footage window (0:06–0:17).
+  Standing protocol rule: define a recording's viable window BEFORE reading from it.
 
-- **⇒ 🔴 (a) ESCALATION — maiden-ice-rose's weapon sub-step genuinely generates ~10.1% (~1010
-  energy vs the modelled 910), per shot, varying 9.4-10.8%. OWNER DECISION NEEDED: run the full
-  /scientific-method pipeline (cross-family gates are owner-requested).** Candidate mechanism
-  (HYPOTHESIS): real charge-at-release exceeds 1.0 (overcharge) and the ×(1+1.5c) focus formula
-  extends past c=1 — the six observed steps fit c ∈ [1.07, 1.32]. If true it moves the 2026-07-13
-  anchor constant, the c=1.0 cap under the whole 250-family ×2.5 rule (takina's 1400 included),
-  and re-colors the scarlet-black-shadow 1.5× landing and every focused-charge read. Per §3.2 of
-  the calibration handoff, everything resting on the anchor PAUSES until this settles — including
-  the `alice` and `cinderella` multiplier resolutions below. Evidence package + suggested test
-  shapes in the §RESULT handoff section.
+- **⇒ ✅ (a) ESCALATION — CLOSED 2026-07-29 (third pass) BY OWNER RULING: "charge cap as
+  datamined is correct, there's no overcharge."** The candidate mechanism (real charge-at-release
+  > 1.0, the ×(1+1.5c) focus formula extending past c=1, c ∈ [1.07, 1.32]) does not exist — no
+  pipeline, no constant moves, nothing re-colors the scarlet-black-shadow 1.5× landing or the
+  250-family ×2.5 rule. The residual the hypothesis was built to explain — the reader's weapon
+  sub-step at ~10.1% vs the modelled 9.1% (takina 14.5–16.7 vs 14.0) — is an open READER question
+  (previous bullet), not a game-mechanics discrepancy; the documented 910+364 anchor is NOT
+  excluded (the excluding evidence sat outside the viable footage window). The maiden override's
+  "156–212% overcharge" note is a meter-DISPLAY observation, not a mechanic — do not cite it as
+  one. The alice/cinderella pauses are lifted (their bullets carry the surviving basis).
 
 - **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
   Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
@@ -147,6 +154,10 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   is `u.magDumpRof`, NOT `PENDING_TEAM_ISOLATION`; per pull today 112.5+45 = 157.5 energy;
   ⚠ `scripts/sim/<element>.ts` runners drop `magDumpRof` and take the un-pinned path). See the
   §RESULT handoff section.
+  **UPDATE 2026-07-29 (third pass, owner rulings):** the (a) pause is LIFTED (mechanism rejected;
+  anchor exclusion withdrawn). Her resolution path stands as filed, with one downgrade: the
+  reader's LARGE-step magnitude is no longer confirming evidence — her per-pull read needs a
+  counting bound or a bounded-window re-read (define the viable window first).
 
 - **⇒ 🔵 SIM/REAL DIVERGENCE AT GAUGE-FULL FOR A LONE BURST III — FILE ONLY, DAMAGE-INERT SOLO.**
   Split out of the gauge-fill calibration handoff (§6 known trap), where it surfaced and was

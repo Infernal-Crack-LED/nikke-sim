@@ -147,10 +147,17 @@ both `fullChargeBonus` 250, the modal value across the roster.
   Full record: `docs/DECISIONS.md` 2026-07-29, `docs/handoffs/scientific-method-harness.md`
   2026-07-29 entry.
 - **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
-  (`142x12 @ 2470,488`) is a validated CONTINUOUS fill-percentage reader **on solo/near-solo
-  footage** (reproduces the maiden anchor's hand-pixel-read "+9.1% then +3.45%" per-pull
-  pattern to <0.15% error) — this corrects/scopes the 2026-07-24 finding below (§ "burst
-  gauge CHARGING is not in this crop"), which holds for **team footage** only.
+  (`142x12 @ 2470,488`) is a continuous fill-percentage reader **on solo/near-solo footage**
+  (committed: `scripts/probe/gauge-fill.py` + anchor fixture/vitest) — this corrects/scopes the
+  2026-07-24 finding below (§ "burst gauge CHARGING is not in this crop"), which holds for
+  **team footage** only. Calibration state (owner rulings, same date): validated for SHAPE and
+  SMALL-step magnitude against the maiden anchor (rider sub-step exact; sub-step ORDER in the
+  footage is rider-first, the reverse of the hand read's note); LARGE-step magnitude UNRESOLVED
+  (reads ~1–1.3% absolute hot on both tb2-test-3 solos) — do not enact constants from it.
+  tb2-test-3 footage is viable **only 0:06–0:17** (owner ruling; past ~0:17 the player takes
+  manual aim), so the earlier "8 shots fill at t=18.73" counting exclusion of the documented
+  12.55%/pull hand-read anchor is WITHDRAWN — the anchor stands. Full record:
+  `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §OWNER-RULINGS.
 - Default camera focus = formation slot 3 (engine: index `min(2, n-1)`); recordings
   where the user selects a focus unit pass `cfg.focusSlug`. **The recording itself
   perturbs the fight**: in battery test 5 alice (focused, sniper) came in +9.3% vs her

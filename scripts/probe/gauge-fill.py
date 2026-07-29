@@ -33,39 +33,42 @@ METHOD
   * Full/ready is detected as green dominance over the bar interior and reported as state
     "full" with fill 100.0 (NOT 0.0).
 
-CALIBRATION STATUS — SETTLED AS TOOLING 2026-07-29 (second session); the ANCHOR is now the open
-question, not the reader.
+CALIBRATION STATUS — PARTIALLY SUPERSEDED 2026-07-29 (third pass, owner rulings)
 -------------------------------------------------------------------------------------------------
 Scored against the repo's labeled anchor — the 2026-07-13 hand pixel reads in
 docs/data/burst-gauge.md section 6 (maiden-ice-rose, docs/probes/tb2/tb2 3 maiden.MP4, documented
-12.55%/pull in sub-steps of +9.1% then +3.45%) — the earlier scoring left the reader reading the
-large (weapon) sub-step ~11% high while matching the small (rider) sub-step exactly. A
-sampling-rate ladder + shot-counting on the same recording (full evidence:
-docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md §RESULT) resolved which side was wrong:
+12.55%/pull in sub-steps of +9.1% then +3.45%):
 
-  * The large step reads 9.4-10.8 (mean ~10.1) at EVERY sampling rate (5/15/30/60fps) and lands
-    in a SINGLE 60fps frame — no animation, no overshoot. A sampling/rendering artefact is
-    REFUTED by direct observation.
-  * Shot-counting (no pixels): 8 shots fill the bar (ammo counter verified: 005 at t=7.0, 000 at
-    13.9, 004 at 18.72; full crosses on shot 8's weapon landing at 18.73), shot 1 a partial-charge
-    opener (~3.6%, no rider proc). That bounds per-pull to >= ~13.6% — the documented 12.55% (and
-    the 910+364 model's 12.74%) are EXCLUDED, while this reader's 13.7%/pull (3.6 rider + 10.1
-    weapon) closes the energy account to ~100 exactly.
-  * Sub-step ORDER in the footage is rider-first, weapon 0.15-0.17s later (rider on fire, weapon
-    gauge on rocket hit) — the doc's "+9.1% then +3.45%" ordering is inverted.
+  * SETTLED — shape: plateaus, cadence, single-frame snaps (no animation, no overshoot — a
+    sampling/rendering artefact is REFUTED by direct observation), rider-first sub-step order
+    (rider on fire, weapon gauge on rocket hit — the doc's "+9.1% then +3.45%" ordering is
+    inverted), green full-state detection. 30fps reproduces 60fps exactly.
+  * SETTLED — SMALL-step magnitude: the rider sub-step reads 3.6-3.7 at every sampling rate vs
+    the modelled 3.64.
+  * UNRESOLVED — LARGE-step magnitude: the weapon sub-step reads 9.4-10.8 (mean ~10.1) vs the
+    modelled 9.1, and takina's shots read 14.5-16.7 vs the modelled 14.0 — hot by ~1.0-1.3%
+    absolute on both tb2-test-3 solos while the rider step is exact; mechanism not yet
+    discriminated (per-snap read bias at the hit instant vs a real table gap). RAW_OVER_TRUE
+    (1.064) is anchor-derived metadata, NOT applied to output and NOT validated — do not
+    "correct" reads with it.
+  * WITHDRAWN — the shot-counting exclusion of the documented 12.55%/pull anchor: its endpoint
+    evidence (shots 7-8, the full-cross at t=18.73, the corroborating ammo read at t=18.72) sits
+    OUTSIDE the owner-bounded viable window for tb2 test 3 (0:06-0:17 ONLY; past ~0:17 the player
+    takes manual aim — the scope HUD is visible on the tak footage from t~18). Inside the window
+    the cumulative fill does not discriminate the documented model from the reader's hotter
+    per-pull.
+  * REJECTED (owner ruling 2026-07-29): the overcharge hypothesis — "real charge-at-release
+    exceeds 1.0 and the x(1+1.5c) focus formula extends past c=1" — is ruled OUT. The datamined
+    charge cap is correct; there is no overcharge. The ~1% large-step residual is a READER
+    question, not a game-mechanics one — do not open a pipeline on it, and do not cite the maiden
+    override's "156-212% overcharge" meter-display note as a mechanic.
 
-So the reader is CORRECT on both sub-steps; the 2026-07-13 hand read under-read both (rider ~5%,
-weapon ~10%). WHY the weapon sub-step genuinely generates ~10.1% (~1010 energy vs the modelled
-910) is hypothesis (a) — candidate mechanism: real charge-at-release exceeds 1.0 (overcharge) and
-the x(1+1.5c) focus formula extends past c=1; the six observed steps fit c in [1.07, 1.32]. That
-question is DECISIONS-tier and runs the full /scientific-method pipeline separately — do NOT land
-a constant change from this tooling verdict, and do not "fix" the reader to match 9.1.
-
-CONSEQUENCE FOR CALLERS: trustworthy for shape AND for magnitude at >=15fps (15/30/60 agree to the
-column; 5fps smears a two-sub-step pull into one merged step). 30fps reproduces 60fps exactly —
-use 30 as the practical default. Residual uncertainty is the +-1 column (0.72%) quantisation of
-the 138px bar. Large-step magnitudes are USABLE, but the game-truth value of the weapon sub-step
-is the open (a) question above — quoting it as an engine constant still gates on that pipeline.
+CONSEQUENCE FOR CALLERS: trustworthy for shape AND small-step magnitude at >=15fps (5fps smears
+a two-sub-step pull into one merged step); 30fps is the practical default. Residual uncertainty
+is the +-1 column (0.72%) quantisation of the 138px bar. Large-step magnitudes are NOT confirmed
+— do not enact engine constants from them, and define the footage's viable window BEFORE reading
+(tb2 test 3: 0:06-0:17, owner-ruled). Full record:
+docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md (§RESULT + §OWNER-RULINGS).
 
 USAGE NOTE: self-calibration picks the LONGEST dark run in the first plausible frame. On a
 whole-video scan the intro fade (t~4-5s) can present a longer dark run than the bar — pass
@@ -95,7 +98,7 @@ INTERIOR_ROWS = 9     # bar interior band height sampled above the border row
 GREEN_MARGIN = 25     # G must exceed R and B by this to count as the green full state
 GREEN_FRAC = 0.30     # fraction of interior pixels that must be green to call the bar full
 
-RAW_OVER_TRUE = 1.064  # measured over-read vs the maiden-ice-rose anchor (see CALIBRATION)
+RAW_OVER_TRUE = 1.064  # anchor-derived, NOT validated and NOT applied to output (see CALIBRATION)
 
 
 def find_bar(img):
