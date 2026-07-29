@@ -79,6 +79,71 @@ export function fitText(ctx: Canvas2DLike, text: string, maxW: number): string {
   return `${s}…`;
 }
 
+// Greedy word-wrap into at most `maxLines`, ellipsizing the last line when the
+// text overruns. The caller sets ctx.font BEFORE calling (measurement is
+// font-dependent), exactly like fitText.
+//
+// THIS IS WHAT MAKES A FIXED-SIZE CARD POSSIBLE. The unit card's notes panel is
+// free prose from a community sheet — the only genuinely variable-height content
+// on the card — and ruling 2 requires every card to emit at the same size. So the
+// panel is a fixed-height box with CLAMPED text rather than a box that grows.
+// A word longer than the line budget is broken mid-word instead of overflowing.
+export function wrapText(
+  ctx: Canvas2DLike,
+  text: string,
+  maxW: number,
+  maxLines: number
+): string[] {
+  if (maxW <= 0 || maxLines <= 0 || !text) {
+    return [];
+  }
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let line = '';
+  // Indexed, not for-of: the overflow branch needs the REMAINDER of the input,
+  // and words.indexOf(word) would find the first occurrence of a repeated word.
+  // (Latent rather than observable — fitText truncates to maxW and the cut point
+  // is fixed by the already-full line — but the index is the honest expression
+  // of "everything still unplaced".)
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    const candidate = line ? `${line} ${word}` : word;
+    if (ctx.measureText(candidate).width <= maxW) {
+      line = candidate;
+      continue;
+    }
+    if (line) {
+      lines.push(line);
+      if (lines.length === maxLines) {
+        // Out of room: re-fit the last line with everything still unplaced
+        // appended, so the ellipsis lands at the real truncation point rather
+        // than at a tidy word boundary that hides how much was dropped.
+        const rest = words.slice(i).join(' ');
+        lines[maxLines - 1] = fitText(
+          ctx,
+          `${lines[maxLines - 1]} ${rest}`,
+          maxW
+        );
+        return lines;
+      }
+    }
+    // a single word wider than the budget — break it rather than overflow
+    if (ctx.measureText(word).width > maxW) {
+      let s = word;
+      while (s.length > 1 && ctx.measureText(s).width > maxW) {
+        s = s.slice(0, -1);
+      }
+      line = s;
+    } else {
+      line = word;
+    }
+  }
+  if (line) {
+    lines.push(line);
+  }
+  return lines.slice(0, maxLines);
+}
+
 // ---- elemental-advantage marker ---------------------------------------------
 
 // The ▲ that marks elemental advantage is DRAWN, not typed. Roboto has no

@@ -52,6 +52,54 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — BUILT + POLISHED, WAITING ON DEPLOY.**
+  Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
+  `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
+  landed-state: `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`.
+  Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
+  The owner's polish pass ran 2026-07-28 and settled every parked tunable (layout consts, the
+  Λ glyph, the icon set, the zero-value rule, the empty-plate question) — see the three
+  `feat(infographics)` / `feat(icons)` commits on the branch. What is left:
+  1. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
+     the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
+     (that fallback is tested).
+  2. **Bot side NOT started** — `/nikke` must show a "not sim supported" line when a unit is in
+     the manifest's new `notSimSupported` list (27 units with no card ON PURPOSE), and must NOT
+     show it for a transient miss (outage / newly-synced unit). Spec, contract and test list:
+     bakery-bot `docs/handoffs/2026-07-28-nikke-unit-card-not-supported.md`. Safe to ship
+     before the nikke-sim deploy — an older manifest has no such field and every lookup
+     answers false.
+  3. **No vector source for burst any more.** The burst/class icons were replaced site-wide with
+     the owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is
+     now RASTER everywhere, ~100px native — fine at every size either surface draws today, but
+     a future surface wanting it large has nothing to rasterize from.
+  4. **`UnitCardSources.prerelease` is plumbed but never set** (cross-family review 2026-07-28,
+     FOLLOW-UP). The flag reaches the model, the `UNRELEASED — PROJECTED` title line and the
+     PROJECTION branch in `drawNotes`, but neither host (`scripts/lib/unit-card-sources.ts`,
+     `web/src/unitCardShare.ts`) ever passes it — so an unreleased unit renders as fully live
+     today, with a null `releaseDate` the only tell. Either wire it (derive from a missing/future
+     `releaseDate`, or an explicit list) or drop the branch until the pre-release authoring
+     workflow lands. A dead render branch on an immutable image pipeline gets discovered by a
+     shipped card.
+  5. **The browser icon loader probes extensions and eats 404s** (same review, NOTE).
+     `web/src/unitCardShare.ts` tries `['svg','png','webp']` per icon via onload/onerror, so the
+     first card preview of a session fires ~8 guaranteed 404s (2 each for the webp-only `burst_*`
+     / `class_*` and `man_*`, 1 for the png-only `weapon_*`). Harmless but noisy in the network
+     log and in any 404 monitoring. The Node loader avoids it by stat-ing the directory; the
+     browser can't, but the icon set is static and tracked, so the extension is knowable at build
+     time — carry it in the `iconNames` mapping (e.g. entries become `{ name, ext }`).
+
+- **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
+  `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.
+  A B3/Λ unit's whole card is its two DPS charts, so an absent one renders two large "Not
+  ranked on this board" plates — those 7 are the only sim-supported units with no bar chart at
+  all (of 90). Not researched; no handoff written.
+  - **Ruling (owner, 2026-07-28): no second-class fallback layout.** A B3/Λ unit that is NOT
+    sim-supported simply gets NO CARD (`scripts/build-infographics.ts` `unitJobs`) — 27 units,
+    54 images. The 7 above keep their cards because their emptiness is a DATA gap this item
+    closes, not a permanent state. B1/B2 units are unaffected either way: buffer / sustain /
+    burst-CDR rank unsupported units too.
+
 - **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
   Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
   `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three

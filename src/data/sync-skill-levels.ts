@@ -3,10 +3,11 @@
 // placeholders with a 10-entry array (index = skill level - 1) — real per-level
 // numbers, no approximation. We store the arrays; the loader matches parsed
 // prose values against index 9 (max level) to scale them down.
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 // @ts-expect-error — plain .mjs helper
 import { getRoleData } from '../../scripts/blablalink-stats.mjs';
 import type { DataFile } from '../types.js';
+import { writeJsonArtifact } from './json-artifact.js';
 
 type SlotArrays = number[][]; // one 10-entry array per placeholder that varies or not
 export interface SkillLevelData {
@@ -54,9 +55,9 @@ async function main() {
       }
     })
   );
-  writeFileSync(
+  await writeJsonArtifact(
     new URL('../../data/skill-levels.json', import.meta.url),
-    JSON.stringify(out)
+    out
   );
   console.log(
     `skill-level data for ${Object.keys(out).length} characters (${failed} failed)`

@@ -1,5 +1,5 @@
 {
-  "syncedAt": "2026-07-28T02:16:31.523Z",
+  "syncedAt": "2026-07-28T21:11:34.132Z",
   "characters": {
     "2b": {
       "slug": "2b",
@@ -19,6 +19,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2023-09-01",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -452,6 +453,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 31.2,
+      "releaseDate": "2023-09-08",
       "burstGaugePerShot": 1.3,
       "treasure": false,
       "skills": {
@@ -914,6 +916,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-09-24",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -1467,6 +1470,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2024-02-15",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -1978,6 +1982,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2025-09-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["aab", "bade"],
@@ -2477,6 +2482,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.1,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.7,
       "treasure": false,
       "skills": {
@@ -2910,6 +2916,7 @@
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
       "rl3": 5.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -3382,6 +3389,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2024-06-06",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["awb"],
@@ -3894,6 +3902,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2023-08-03",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -4276,6 +4285,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-02-06",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["aim", "manchor", "maids (with mast)"],
@@ -4828,6 +4838,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 42.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 3.55,
       "treasure": false,
       "nicknames": ["base anis"],
@@ -5263,6 +5274,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 13,
+      "releaseDate": "2023-08-03",
       "burstGaugePerShot": 2.5,
       "treasure": false,
       "nicknames": ["ass", "sanis"],
@@ -5762,6 +5774,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 2,
       "rl3": 53.424,
+      "releaseDate": "2026-04-23",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["as", "aniss", "star", "ttanis"],
@@ -6357,6 +6370,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["anne"],
@@ -6844,6 +6858,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 18,
+      "releaseDate": "2025-05-15",
       "burstGaugePerShot": 1.5,
       "treasure": false,
       "skills": {
@@ -7421,6 +7436,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2026-03-19",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["afm", "jkana", "arcanafm"],
@@ -7933,6 +7949,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -8353,6 +8370,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2026-06-11",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["arb", "ark", "ranger", "black"],
@@ -8904,6 +8922,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 11.4,
+      "releaseDate": "2024-08-22",
       "burstGaugePerShot": 0.3,
       "treasure": false,
       "skills": {
@@ -9404,6 +9423,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.6,
+      "releaseDate": "2025-02-20",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["aw", "wasuka"],
@@ -10061,6 +10081,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2026-04-23",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -10494,6 +10515,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2024-04-11",
       "burstGaugePerShot": 1.4,
       "treasure": true,
       "skills": {
@@ -10902,6 +10924,7 @@
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
       "rl3": 11.2,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -11336,6 +11359,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2023-03-15",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -11848,6 +11872,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2023-05-18",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -12346,6 +12371,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2025-03-27",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -12922,6 +12948,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -13316,6 +13343,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12.2,
+      "releaseDate": "2025-12-11",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["bst", "xbrid", "bridsl"],
@@ -13815,6 +13843,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 41.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 3.45,
       "treasure": true,
       "skills": {
@@ -14223,6 +14252,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2025-10-30",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -14631,6 +14661,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -15170,6 +15201,7 @@
       "chargeMultiplier": 200,
       "hitsPerShot": 1,
       "rl3": 3.6,
+      "releaseDate": "2024-10-31",
       "burstGaugePerShot": 0.225,
       "treasure": false,
       "nicknames": ["cindy"],
@@ -15633,6 +15665,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2026-07-02",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["ccw", "scindy"],
@@ -16211,6 +16244,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-09-24",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -16619,6 +16653,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2024-06-20",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -17091,6 +17126,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2023-02-01",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -17524,6 +17560,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 11.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -17918,6 +17955,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-04-25",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -18495,6 +18533,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-04-10",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -19150,6 +19189,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2023-04-13",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -19661,6 +19701,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 7.95,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.65,
       "treasure": false,
       "skills": {
@@ -20068,6 +20109,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2025-10-16",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["dnt"],
@@ -20712,6 +20754,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -21171,6 +21214,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-12-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["dws", "xdiesel", "dieselws"],
@@ -21788,6 +21832,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-03-07",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["dkw"],
@@ -22274,6 +22319,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -22759,6 +22805,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2023-04-27",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -23195,6 +23242,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2025-07-17",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["ds", "sdoro"],
@@ -23724,6 +23772,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -24170,6 +24219,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2026-03-05",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["eh"],
@@ -24671,6 +24721,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 14,
+      "releaseDate": "2024-07-25",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -25146,6 +25197,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-02-22",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -25631,6 +25683,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2025-07-24",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["ebas", "selegg", "segg"],
@@ -26158,6 +26211,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 37.8,
+      "releaseDate": "2024-03-21",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["emi"],
@@ -26647,6 +26701,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -27067,6 +27122,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2025-08-07",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["emmatu"],
@@ -27553,6 +27609,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -27986,6 +28043,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -28432,6 +28490,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -28904,6 +28963,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2025-08-14",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["eunwhatu"],
@@ -29364,6 +29424,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2025-06-12",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -29849,6 +29910,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -30321,6 +30383,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-11-21",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -30819,6 +30882,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -31278,6 +31342,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 7.95,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.65,
       "treasure": true,
       "skills": {
@@ -31737,6 +31802,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 17.1,
+      "releaseDate": "2024-11-07",
       "burstGaugePerShot": 0.45,
       "treasure": false,
       "skills": {
@@ -32278,6 +32344,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -32763,6 +32830,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2024-12-12",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["gws"],
@@ -33327,6 +33395,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2023-01-12",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -33812,6 +33881,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 14.5,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -34259,6 +34329,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 59.73,
+      "releaseDate": "2025-01-16",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "nicknames": ["thelm"],
@@ -34701,6 +34772,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.8,
+      "releaseDate": "2023-08-10",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["ha", "shelm"],
@@ -35174,6 +35246,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.7,
+      "releaseDate": "2023-02-22",
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -35633,6 +35706,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["if"],
@@ -36037,6 +36111,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["io"],
@@ -36414,6 +36489,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "nicknames": ["is"],
@@ -36817,6 +36893,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -37303,6 +37380,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 42.6,
+      "releaseDate": "2023-01-12",
       "burstGaugePerShot": 3.55,
       "treasure": false,
       "skills": {
@@ -37802,6 +37880,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 13.2,
+      "releaseDate": "2025-10-02",
       "burstGaugePerShot": 1.1,
       "treasure": false,
       "skills": {
@@ -38328,6 +38407,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "skills": {
@@ -38748,6 +38828,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 11.4,
+      "releaseDate": "2025-05-29",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -39259,6 +39340,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-04-25",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -39718,6 +39800,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2026-02-12",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -40125,6 +40208,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 12.9504,
+      "releaseDate": "2026-01-15",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -40610,6 +40694,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 34.8,
+      "releaseDate": "2024-05-30",
       "burstGaugePerShot": 1.45,
       "treasure": true,
       "nicknames": ["tlaplace"],
@@ -41040,6 +41125,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": null,
+      "releaseDate": null,
       "burstGaugePerShot": 1.5,
       "treasure": false,
       "skills": {
@@ -41619,6 +41705,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2024-01-11",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -42143,6 +42230,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 33.6,
+      "releaseDate": "2025-11-06",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["lib", "libby"],
@@ -42631,6 +42719,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2025-06-12",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -43051,6 +43140,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -43536,6 +43626,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 6.2,
+      "releaseDate": "2025-04-24",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["lm", "siren"],
@@ -44101,6 +44192,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 8.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.15,
       "treasure": false,
       "skills": {
@@ -44573,6 +44665,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.6,
+      "releaseDate": "2023-12-07",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["lwo", "xlud", "lewd"],
@@ -45072,6 +45165,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -45492,6 +45586,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 27.3,
+      "releaseDate": "2024-12-05",
       "burstGaugePerShot": 1.82,
       "treasure": false,
       "nicknames": ["mir", "xmaiden"],
@@ -46070,6 +46165,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2023-02-22",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -46581,6 +46677,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 16.188,
+      "releaseDate": "2025-01-16",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -47118,6 +47215,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2023-09-21",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -47564,6 +47662,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2026-07-09",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["mms", "smarci", "marcims", "smarciana", "marcianams"],
@@ -48180,6 +48279,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-09-05",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -48647,6 +48747,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -49067,6 +49168,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 7.95,
+      "releaseDate": "2023-06-15",
       "burstGaugePerShot": 2.65,
       "treasure": false,
       "nicknames": ["mbg"],
@@ -49592,6 +49694,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2023-07-20",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -50129,6 +50232,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2025-01-30",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["mrm", "mmast", "maids (with anchor)"],
@@ -50643,6 +50747,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["mw"],
@@ -51077,6 +51182,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -51524,6 +51630,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 22.8,
+      "releaseDate": "2023-12-14",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["msb"],
@@ -51984,6 +52091,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "skills": {
@@ -52404,6 +52512,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 4.95,
+      "releaseDate": "2025-05-01",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["mbc", "miharabc", "mihara os"],
@@ -52878,6 +52987,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": true,
       "skills": {
@@ -53272,6 +53382,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2025-09-11",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["mbb", "bmilk"],
@@ -53771,6 +53882,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2026-05-14",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "nicknames": ["idols (with prika)"],
@@ -54300,6 +54412,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": true,
       "nicknames": ["tmiranda"],
@@ -54786,6 +54899,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2024-08-22",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -55240,6 +55354,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 7.1,
+      "releaseDate": "2023-01-01",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -55752,6 +55867,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2024-01-25",
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "nicknames": ["tmoran"],
@@ -56331,6 +56447,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2025-04-24",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -56855,6 +56972,7 @@
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
       "rl3": 11.2,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -57302,6 +57420,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2023-10-05",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -57826,6 +57945,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2025-10-30",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["nayu"],
@@ -58482,6 +58602,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -58915,6 +59036,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2023-06-22",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["nbo"],
@@ -59427,6 +59549,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 9,
+      "releaseDate": "2026-04-30",
       "burstGaugePerShot": 0.75,
       "treasure": false,
       "nicknames": ["nve", "neo neon", "veon", "nneon"],
@@ -60126,6 +60249,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2023-07-06",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -60650,6 +60774,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-12-08",
       "burstGaugePerShot": 2,
       "treasure": false,
       "skills": {
@@ -61083,6 +61208,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 25.2,
+      "releaseDate": "2023-03-30",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -61530,6 +61656,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 2,
       "rl3": 36,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.5,
       "treasure": false,
       "skills": {
@@ -61991,6 +62118,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2023-05-25",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -62491,6 +62619,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -62938,6 +63067,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -63423,6 +63553,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 27.6,
+      "releaseDate": "2023-09-01",
       "burstGaugePerShot": 1.15,
       "treasure": false,
       "skills": {
@@ -63844,6 +63975,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "skills": {
@@ -64329,6 +64461,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2024-10-10",
       "burstGaugePerShot": 0.25,
       "treasure": true,
       "skills": {
@@ -64853,6 +64986,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2,
       "treasure": true,
       "skills": {
@@ -65312,6 +65446,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2023-02-22",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -65772,6 +65907,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2026-05-28",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["idols (with mint)"],
@@ -66310,6 +66446,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["tpriv", "priv"],
@@ -66757,6 +66894,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12.8,
+      "releaseDate": "2024-02-05",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["pum"],
@@ -67282,6 +67420,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["p0"],
@@ -67698,6 +67837,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["p1"],
@@ -68088,6 +68228,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "nicknames": ["p2"],
@@ -68478,6 +68619,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 11.4,
+      "releaseDate": "2023-01-12",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -68937,6 +69079,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 8.436,
+      "releaseDate": "2024-10-03",
       "burstGaugePerShot": 0.074,
       "treasure": false,
       "nicknames": ["qeq"],
@@ -69449,6 +69592,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2022-12-15",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -69909,6 +70053,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-03-21",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -70368,6 +70513,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -70814,6 +70960,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2025-01-01",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["rrh", "rapipi"],
@@ -71435,6 +71582,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 17.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.45,
       "treasure": false,
       "nicknames": ["rapu"],
@@ -71910,6 +72058,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-10-31",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["rpg"],
@@ -72384,6 +72533,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-06-19",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -72870,6 +73020,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2023-11-02",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["rh"],
@@ -73448,6 +73599,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2023-04-27",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -73894,6 +74046,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-08-29",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -74392,6 +74545,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.5,
+      "releaseDate": "2025-02-27",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "nicknames": ["reitn"],
@@ -74969,6 +75123,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2024-03-28",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -75454,6 +75609,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.65,
+      "releaseDate": "2023-06-01",
       "burstGaugePerShot": 0.05,
       "treasure": true,
       "skills": {
@@ -75978,6 +76134,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2024-07-11",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["rco", "srosanna"],
@@ -76464,6 +76621,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.7,
+      "releaseDate": "2024-09-19",
       "burstGaugePerShot": 2.9,
       "treasure": false,
       "skills": {
@@ -77004,6 +77162,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 39,
+      "releaseDate": "2024-10-17",
       "burstGaugePerShot": 3.25,
       "treasure": false,
       "skills": {
@@ -77490,6 +77649,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -77949,6 +78109,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-12-08",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["rws"],
@@ -78422,6 +78583,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.1,
+      "releaseDate": "2023-03-30",
       "burstGaugePerShot": 2.7,
       "treasure": false,
       "skills": {
@@ -78907,6 +79069,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-07-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["sbis"],
@@ -79393,6 +79556,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2025-02-20",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["ss"],
@@ -79892,6 +80056,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 17.1,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.45,
       "treasure": false,
       "skills": {
@@ -80391,6 +80556,7 @@
       "chargeMultiplier": 150,
       "hitsPerShot": 1,
       "rl3": 13.75,
+      "releaseDate": "2024-01-01",
       "burstGaugePerShot": 1.25,
       "treasure": false,
       "nicknames": ["sbs"],
@@ -80881,6 +81047,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -81340,6 +81507,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2023-01-12",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "skills": {
@@ -81851,6 +82019,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2026-04-09",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["sc"],
@@ -82298,6 +82467,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 9.75,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.25,
       "treasure": false,
       "nicknames": ["sw"],
@@ -82746,6 +82916,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 67.2,
+      "releaseDate": "2026-01-01",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["swha"],
@@ -83393,6 +83564,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 1.95,
+      "releaseDate": "2023-11-02",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "nicknames": ["swid"],
@@ -83908,6 +84080,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 3.55,
+      "releaseDate": "2023-02-08",
       "burstGaugePerShot": 0.05,
       "treasure": false,
       "skills": {
@@ -84354,6 +84527,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2024-05-30",
       "burstGaugePerShot": 4.5,
       "treasure": false,
       "nicknames": ["stb", "bsoda"],
@@ -84957,6 +85131,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.2,
       "treasure": false,
       "nicknames": ["se"],
@@ -85347,6 +85522,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["sf"],
@@ -85737,6 +85913,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "nicknames": ["so"],
@@ -86127,6 +86304,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 2,
       "rl3": 11.4,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -86534,6 +86712,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 12,
+      "releaseDate": "2025-11-20",
       "burstGaugePerShot": 2,
       "treasure": false,
       "nicknames": ["sft", "solineft"],
@@ -86955,6 +87134,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2025-07-03",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -87376,6 +87556,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -87862,6 +88043,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2026-02-19",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -88360,6 +88542,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2023-10-12",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -88885,6 +89068,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 7.6,
+      "releaseDate": "2023-11-23",
       "burstGaugePerShot": 0.2,
       "treasure": true,
       "nicknames": ["ttove"],
@@ -89371,6 +89555,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 43.2,
+      "releaseDate": "2025-03-13",
       "burstGaugePerShot": 3.6,
       "treasure": false,
       "skills": {
@@ -90015,6 +90200,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2024-05-16",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "skills": {
@@ -90513,6 +90699,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.4,
+      "releaseDate": "2026-01-29",
       "burstGaugePerShot": 2.8,
       "treasure": false,
       "nicknames": ["vel"],
@@ -91116,6 +91303,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 16.8,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -91589,6 +91777,7 @@
       "chargeMultiplier": 200,
       "hitsPerShot": 1,
       "rl3": 31.2,
+      "releaseDate": "2025-08-21",
       "burstGaugePerShot": 0.65,
       "treasure": false,
       "nicknames": ["vtu", "vestitu"],
@@ -92091,6 +92280,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 27,
+      "releaseDate": "2023-01-19",
       "burstGaugePerShot": 4.5,
       "treasure": true,
       "skills": {
@@ -92550,6 +92740,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 1,
       "rl3": 5.7,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 0.1,
       "treasure": false,
       "skills": {
@@ -93035,6 +93226,7 @@
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
       "rl3": 11.2,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -93456,6 +93648,7 @@
       "chargeMultiplier": 250,
       "hitsPerShot": 1,
       "rl3": 8.25,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 2.75,
       "treasure": false,
       "skills": {
@@ -93876,6 +94069,7 @@
       "chargeMultiplier": 350,
       "hitsPerShot": 1,
       "rl3": 11.2,
+      "releaseDate": "2022-11-04",
       "burstGaugePerShot": 1.4,
       "treasure": false,
       "skills": {
@@ -94323,6 +94517,7 @@
       "chargeMultiplier": 0,
       "hitsPerShot": 10,
       "rl3": 21,
+      "releaseDate": "2024-08-08",
       "burstGaugePerShot": 1.75,
       "treasure": true,
       "nicknames": ["tzwei"],

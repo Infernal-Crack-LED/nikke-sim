@@ -8,8 +8,8 @@
 // optimize each unit once in the solo isolation team and reuse the result everywhere.
 //
 //   npx tsx scripts/build-ol-optimal.ts [--out <path>]
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { writeJsonArtifact } from '../src/data/json-artifact.js';
 import type { DataFile, LevelMultiplier, Element } from '../src/types.js';
 import { loadOverride } from '../src/skills/overrides-node.js';
 import type { OverrideFile } from '../src/skills/index.js';
@@ -109,8 +109,7 @@ const out =
   outArg >= 0
     ? process.argv[outArg + 1]
     : new URL('../data/ol-optimal.json', import.meta.url).pathname;
-mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, JSON.stringify(artifact, null, 2) + '\n');
+await writeJsonArtifact(out, artifact);
 process.stderr.write(
   `ol-optimal: ${Object.keys(units).length} units → ${out}\n`
 );

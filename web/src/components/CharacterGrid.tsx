@@ -3,6 +3,13 @@ import charactersJson from '../../../data/characters.json';
 import archetypeTagsJson from '../../../data/archetype-tags.json';
 import type { DataFile } from '../../../src/types';
 import { BEATS, unitElements } from '../../../src/elements';
+// The burst/class field-value → file mapping is shared with the infographic
+// renderers, so the grid and a unit card can never resolve different assets for
+// the same unit — including Λ, which this file used to fold into B3.
+import {
+  ICON_BY_BURST,
+  ICON_BY_CLASS,
+} from '../../../src/infographics/core/iconNames';
 import { useIconThumbs } from '../useIconThumbs';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 
@@ -114,20 +121,25 @@ const WEAPON_OPTIONS = [
   { id: 'RL', icon: 'weapon_rl.png' },
 ];
 
+// No imgStyle padding on burst or class any more: the icon set was replaced
+// 2026-07-28 with tightly-cropped art that has no transparent margin of its own,
+// so an inset here would make them read SMALLER than the weapon icons beside
+// them rather than evening them out.
 const BURST_OPTIONS = [
-  { id: 'I', icon: 'burst_1.svg', imgStyle: { padding: 8 } },
-  { id: 'II', icon: 'burst_2.svg', imgStyle: { padding: 8 } },
-  { id: 'III', icon: 'burst_3.svg', imgStyle: { padding: 8 } },
+  { id: 'I', icon: `${ICON_BY_BURST.I}.webp` },
+  { id: 'II', icon: `${ICON_BY_BURST.II}.webp` },
+  { id: 'III', icon: `${ICON_BY_BURST.III}.webp` },
 ];
-// Λ burst characters are included in every burst filter selection (no dedicated
-// Λ icon exists, and they're rare enough that a separate filter isn't needed).
+// Λ burst characters are included in every burst filter selection — they're rare
+// enough that a separate filter isn't warranted. (A Λ icon DOES exist now; the
+// grid still draws it per-card, this is only about the filter row.)
 
 const ICON_PAD: React.CSSProperties = { padding: 4 };
 
 const CLASS_OPTIONS = [
-  { id: 'Attacker', icon: 'class_attacker.webp', imgStyle: ICON_PAD },
-  { id: 'Defender', icon: 'class_defender.webp', imgStyle: ICON_PAD },
-  { id: 'Supporter', icon: 'class_support.webp', imgStyle: ICON_PAD },
+  { id: 'Attacker', icon: `${ICON_BY_CLASS.Attacker}.webp` },
+  { id: 'Defender', icon: `${ICON_BY_CLASS.Defender}.webp` },
+  { id: 'Supporter', icon: `${ICON_BY_CLASS.Supporter}.webp` },
 ];
 
 const ELEMENT_OPTIONS = [
@@ -223,14 +235,18 @@ export function useCharacterFilter({
   const miniIconUrls = useMemo(() => {
     const urls = new Set<string>();
     Object.values(data.characters).forEach((c) => {
-      // Raster sources only — SVGs (element/burst) are rendered natively by
-      // the browser at device resolution; canvas-rasterizing them here would
-      // only blur them.
+      // Raster sources only — element SVGs are rendered natively by the browser
+      // at device resolution; canvas-rasterizing them here would only blur them.
+      // Burst is raster since 2026-07-28 and is pre-downscaled with the rest.
       urls.add(`/nikke-icons/weapon_${c.weapon.toLowerCase()}.png`);
-      // Class icon: 'Supporter' → 'class_support.webp' (file named without 'er')
-      const classFile =
-        c.class === 'Supporter' ? 'support' : c.class.toLowerCase();
-      urls.add(`/nikke-icons/class_${classFile}.webp`);
+      const classIcon = ICON_BY_CLASS[c.class];
+      if (classIcon) {
+        urls.add(`/nikke-icons/${classIcon}.webp`);
+      }
+      const burstIcon = ICON_BY_BURST[c.burst];
+      if (burstIcon) {
+        urls.add(`/nikke-icons/${burstIcon}.webp`);
+      }
     });
     return Array.from(urls);
   }, []);
@@ -531,11 +547,10 @@ export function CharacterCards({
           const weaponSrc = `/nikke-icons/weapon_${c.weapon.toLowerCase()}.png`;
           // one code icon per element the unit counts as (its own, then any its kit grants)
           const elements = unitElements(c);
-          const burstSrc = `/nikke-icons/burst_${c.burst === 'I' ? '1' : c.burst === 'II' ? '2' : '3'}.svg`;
-          // Class icon: 'Supporter' → 'class_support.webp' (file named without 'er')
-          const classFile =
-            c.class === 'Supporter' ? 'support' : c.class.toLowerCase();
-          const classSrc = `/nikke-icons/class_${classFile}.webp`;
+          // Both resolved through the shared map, so a Λ unit gets the Λ glyph
+          // instead of falling into the B3 branch this used to have.
+          const burstSrc = `/nikke-icons/${ICON_BY_BURST[c.burst] ?? ICON_BY_BURST.III}.webp`;
+          const classSrc = `/nikke-icons/${ICON_BY_CLASS[c.class] ?? ICON_BY_CLASS.Attacker}.webp`;
           return (
             <button
               key={c.slug}
@@ -589,7 +604,7 @@ export function CharacterCards({
                     />
                   ))}
                   <img
-                    src={burstSrc}
+                    src={miniThumbs[burstSrc] ?? burstSrc}
                     alt={`Burst ${c.burst}`}
                     title={`Burst ${c.burst}`}
                     className="teambuilder-mini-icon"

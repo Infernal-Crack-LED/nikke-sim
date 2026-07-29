@@ -25,8 +25,9 @@
 // for the vocabulary definitions + the manual single-unit workflow (new units are
 // tagged one-at-a-time as they land, then the sweep keeps the file sorted/complete).
 
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import type { DataFile } from '../src/types.js';
+import { writeJsonArtifact } from '../src/data/json-artifact.js';
 
 const OUT = new URL('../data/archetype-tags.json', import.meta.url);
 const data: DataFile = JSON.parse(
@@ -616,7 +617,7 @@ const out = {
   tags,
 };
 
-writeFileSync(OUT, JSON.stringify(out, null, 1));
+await writeJsonArtifact(OUT, out);
 console.log(
   `\nwrote ${OUT.pathname} (${Object.keys(tags).length} slugs, ${TAG_DEFS.length} tags)`
 );

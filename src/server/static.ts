@@ -223,10 +223,17 @@ const MUTABLE_PATHS = new Set([
   '/img/manifest.json',
 ]);
 // Content-hashed URL patterns: vite bundles (assets/<name>-<hash8>.<ext>),
-// build-infographics PNGs (img/<key>.<hash8-hex>.png), self-hosted fonts
+// build-infographics images (img/<key>.<hash8-hex>.<png|webp>), self-hosted fonts
 // (license-stable Roboto subsets — versioned by build, effectively immutable).
+//
+// BOTH extensions matter: unit cards emit .webp (img/unit/<slug>.<variant>.<hash>.webp), every
+// other card emits .png. The hash segment is what makes a URL immutable, not the extension — but
+// this matcher is extension-anchored, so a third format would silently fall through to no-cache
+// and revalidate on every Discord/browser hit. Add it here and to serve-headers.test.ts together.
+// Unversioned art keeps no-cache by construction: /img/portraits/liter-128.webp has no hash
+// segment, so it cannot match.
 const VITE_HASHED = /^\/assets\/.+-[A-Za-z0-9_-]{8}\.[^/]+$/;
-const IMG_HASHED = /^\/img\/.+\.[0-9a-f]{8}\.png$/;
+const IMG_HASHED = /^\/img\/.+\.[0-9a-f]{8}\.(png|webp)$/;
 const FONT_FILE = /\.woff2?$/;
 export function cacheControlFor(path: string): string {
   if (path.endsWith('index.html') || MUTABLE_PATHS.has(path)) {

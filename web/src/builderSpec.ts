@@ -22,7 +22,13 @@ export interface BuilderState {
   unit: string; // dps window target, unit card, per-unit charge/ammo slug ('' = generic charge table)
   units: string[]; // dps compare picks (1–10)
   board: BuilderBoard; // rank board
+  // unit card: which variant to preview. 'discord' is the 2:1 landscape card the
+  // bot embeds; 'twitter' is the 3:4 portrait launch asset. Both are
+  // pre-rendered, so both map to the manifest.
+  unitVariant: UnitCardVariant;
 }
+
+export type UnitCardVariant = 'discord' | 'twitter';
 
 // The two cells build-infographics.ts pre-renders (its HEADLINE_CELL_IDS —
 // the bot /dps default + its neutral variant). Any other cell is tail → POST.
@@ -46,7 +52,10 @@ export function manifestKeyFor(s: BuilderState): string | null {
     case 'rank':
       return `rank/${s.board}`;
     case 'unit':
-      return s.unit ? `unit/${s.unit}` : null;
+      // Keyed by variant: the two cards are different images of the same unit,
+      // and a shared key would serve the landscape card to a portrait request
+      // out of an immutable cache.
+      return s.unit ? `unit/${s.unit}.${s.unitVariant}` : null;
     case 'ol':
       return 'table/ol';
     case 'charge':
