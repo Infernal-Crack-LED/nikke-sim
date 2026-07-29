@@ -230,3 +230,58 @@ confidences, why the decision landed where it did, owner action items, and the H
   coherence check the driver hadn't (CW5 bare-weapon scaling 0.87247 = idoll-ocean board move 0.8722,
   and correctly ABOVE 20/24=0.833 because reload time is cadence-independent) — the strongest
   single piece of not-a-fit evidence came from the judge, not the implementer.
+- **2026-07-29 — UNIGEO SG landing under-prediction on scope-lock spider-mech (U35 follow-up): DECISION = REJECT.**
+  Claim: the live UNIGEO SG landing model (`unigeoSgLanding` at HR=0) under-predicts real per-band landed
+  pellets on the scope-lock spider-mech boss, using direct per-shot counts from the CV pellet counter.
+  Plan: `docs/handoffs/2026-07-29-sg-landing-recalibration-plan.md` (UNIGEO-targeted, pre-op judge
+  APPROVED-WITH-REVISIONS, revisions executed in analysis). Work: counter run on four HR=0 solo SG
+  recordings (`marciana-solo`, `noir sg`, `guilty solo sg`, `isabel solo sg`) with locked parameters
+  `--fps 30 --zoom 2 --marker-min 2 --core-rate 0.05`.
+  **Driver review (primary judge): REJECT, confidence HIGH.** The CV counter failed second-unit validation
+  against the running-counter/lattice anchor. On `noir sg.MP4` (cleanest SG anchor), the counter read
+  near1 ≈7.04/10 vs running-counter anchor 8.9/10, far ≈6.98/10 vs anchor 7.4/10, midfar ≈7.36/10 vs
+  anchor 8.8/10. Shape ratios were also wrong: counter far/near ≈0.99 and midfar/near ≈1.05 vs anchor
+  ratios 0.831 and 0.989. The counter therefore has a **systematic cold bias plus a band-dependent flattening**
+  that makes it unreliable for landing measurement. `guilty solo sg` and `isabel solo sg` produced only
+  3 and 4 detected shots respectively (vs ~200 expected), indicating the marciana-derived ammo-box
+  template does not generalize to those HUDs. `marciana-solo` reproduced the run18 mean (~7.3/10),
+  confirming the counter is stable on its tuning video but not transferable as-is.
+  **Fable post-op:** not consulted — driver rejected before the post-op panel (a driver reject is
+  permitted when the instrument is demonstrably biased; no code change is proposed).
+  **2-of-2:** N/A (driver REJECT).
+  **WHY REJECT:** The counter is the instrument under test, not UNIGEO. Before it can score U35, it must
+  agree with an independent running-counter/lattice method on at least one second unit. It does not.
+  The observed discrepancy on noir (~1.5–1.9 pellets/shot, shape ratios off by >0.10) exceeds the plan's
+  ±1 pellet/shot validation gate. Continuing to a UNIGEO recalibration would be fitting the model to a
+  biased instrument.
+  **Owner action items:** (1) Fix the pellet counter's crosshair/template matching so it generalizes
+  across SG units/HUDs (per-video ammo-box template extraction or a more robust crosshair tracker);
+  (2) Investigate and remove the band-dependent flattening (near-band under-count relative to far/midfar)
+  before using it for per-band landing; (3) Re-attempt U35 validation once the counter passes noir + one
+  other clean anchor within ±1 pellet/shot and shape ratios within ±0.10.
+  **HARNESS LESSON:** A counter that is "now-working" on its tuning video is not validated for the class.
+  The second-unit validation gate is load-bearing — it caught both a template-mismatch failure (guilty/
+  isabel) and a subtler band-dependent bias (noir) that would have polluted a landing recalibration.
+- **2026-07-29 (counter-fix follow-up) — SG pellet counter instrument fix: DECISION = still REJECT / LOG.**
+  Implemented the owner action items from the earlier 2026-07-29 REJECT entry:
+  `scripts/probe/extract-ammo-template.py` extracts a per-video ammo-box template from each input
+  video; `count-pellets.py` restricts template matching to a bottom-right ROI and exposes
+  `--ammo-roi-x0`/`--ammo-roi-y0`; `read-pellets.ts` wires both and adds `--center-exclude` /
+  `--pellet-radius` tunables. Short-clip verification on `guilty`/`isabel` restored shot detection
+  (vs the 3–4 total shots with the global marciana template). Full-video validation against the
+  running-counter anchor still failed.
+  - `noir sg.MP4` (`--fps 30 --zoom 2 --marker-min 2 --core-rate 0.05`; both `--center-exclude 24`
+    and `36` gave identical results): 107 shots detected, 56 valid, avgTotal=7.1. Band means:
+    near1 n_valid=0/11 (all totals <5), near2 7.65/10 vs anchor 8.9 (-1.25), far 7.33/10 vs 7.4
+    (-0.07), midfar 6.91/10 vs 8.8 (-1.89). Shape ratios are unusable because near1 produced no
+    valid shots; the surviving near value is still >1 pellet/shot low.
+  - `guilty solo sg.MP4` full run: only 21 shots detected (12 valid), near1 n_valid=0/3, midfar
+    6.89/10 (no anchor). Not yet a usable second anchor.
+    **Why still REJECT:** the counter-side fixes removed the global-template false locks but did not
+    remove the systematic cold bias or the near-band under-count that drove the original REJECT. No
+    UNIGEO recalibration is justified.
+    **Next tuning step:** (1) diagnose near-band pellet loss, most likely `--center-exclude` too large
+    relative to the near pellet cluster or crosshair crop drift, using `--dump-tracks` diagnostics;
+    (2) confirm the per-video template locks onto the true ammo box for `noir`/`guilty`; (3) re-run
+    full `noir` + `guilty` and require ±1 pellet/shot and shape ratios within ±0.10 before any U35
+    validation. **No engine change proposed or enacted.**

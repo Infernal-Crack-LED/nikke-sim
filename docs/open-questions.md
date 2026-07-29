@@ -75,17 +75,43 @@ mid/midfar landing), the SG re-tune thread in CLAUDE.md, and **U32** (`folkwang`
 solo-re-record need for the AR class).
 
 **GATING FOLLOW-UP (owner direction 2026-07-24) — the instrument must be validated on a SECOND unit
-before it answers this question.** We intend to score the solo recording with
-`scripts/probe/read-pellets.ts` (CV pellet counter, `count-pellets.py`). It is currently tuned on
-`marciana-solo.MP4` ALONE, and on that video it detects **70 of ~90** expected shots, averages
-**7.6** pellets/shot against the lattice-measured ≈**8.45**, and reads `avgRed` 0.19 vs the ~0.5
-expected — i.e. its landing average is itself ~10% cold, in the same direction as the effect under
-test. Scoring U35 with it as-is would risk confirming the hypothesis with an instrument that shares
-its bias. **Requirement:** validate the counter against a second SG unit's footage (a different
-shooter, ideally a different band mix) and close the shot shortfall, then admit its per-shot histogram
-ONLY where it agrees with the running-total pellet lattice — the lattice is arithmetic closure and
-outranks the CV counter wherever they disagree. Build/validation plan:
-`docs/handoffs/2026-07-24-probe-reader-buildout-plan.md` (P3).
+before it answers this question.** We ran the CV pellet counter on four HR=0 solo SG recordings
+(`marciana-solo`, `noir sg`, `guilty solo sg`, `isabel solo sg`) with locked parameters
+(`--fps 30 --zoom 2 --marker-min 2 --core-rate 0.05`). **Validation FAILED.**
+
+- `marciana-solo` reproduced the run18 mean (~7.3/10), confirming stability on the tuning video.
+- `noir sg.MP4` (the cleanest running-counter anchor) read near1 ≈7.04/10 vs the lattice anchor 8.9/10,
+  far ≈6.98/10 vs 7.4/10, midfar ≈7.36/10 vs 8.8/10. Shape ratios were also wrong: counter far/near
+  ≈0.99 and midfar/near ≈1.05 vs anchor ratios 0.831 and 0.989 — a systematic cold bias plus
+  band-dependent flattening.
+- `guilty solo sg` and `isabel solo sg` produced only 3 and 4 detected shots respectively (vs ~200
+  expected), indicating the marciana-derived ammo-box template does not generalize to those HUDs.
+  **Conclusion:** the counter is not yet admissible for U35. It needs (1) a crosshair/template tracker
+  that generalizes across SG units/HUDs, and (2) correction of the band-dependent flattening before its
+  per-shot histogram can be admitted. Full scientific-method log:
+  `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry. The running-total pellet lattice
+  remains the independent arbiter; the CV counter outranks it nowhere.
+
+**2026-07-29 counter-fix follow-up.** Implemented per-video ammo-box template extraction
+(`scripts/probe/extract-ammo-template.py`) and ROI-restricted template matching in
+`count-pellets.py`; `read-pellets.ts` now extracts a unit-specific template before the counter run
+and passes `--ammo-roi-x0 0.55 --ammo-roi-y0 0.50`. Short-clip tests (`guilty`/`isabel` t=25, 15s)
+restored shot detection (15 and ~N shots vs the earlier 3–4 total). Full-video re-validation against
+the running-counter anchor still failed:
+
+- `noir sg.MP4` (`--center-exclude 24` and `36` produced identical results): totalShots=107,
+  validShots=56, avgTotal=7.1. Band means: near1 n_valid=0/11 (all totals <5), near2 7.65/10 vs
+  anchor 8.9 (-1.25), far 7.33/10 vs 7.4 (-0.07), midfar 6.91/10 vs 8.8 (-1.89). Shape ratios are
+  unusable because near1 produced no valid shots; the surviving near value is still >1 pellet/shot
+  low.
+- `guilty solo sg.MP4` full run detected only 21 shots (12 valid); near1 n_valid=0/3, midfar 6.89/10
+  (no anchor). The per-video template cleared the short-clip false lock but did not yet yield a
+  usable second-anchor histogram.
+
+The counter remains inadmissible. Next tuning targets: (a) near-band pellet loss, most likely from
+`--center-exclude` removing central near pellets or from the crosshair crop drifting off the impact
+cluster; (b) verify the per-video template is locking onto the true ammo box on `noir`/`guilty`
+using `--dump-tracks` diagnostics; (c) only then re-run full `noir` + `guilty` validation.
 
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 
