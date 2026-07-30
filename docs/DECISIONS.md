@@ -2850,3 +2850,24 @@ because the golden test SKIPS when `web/public/*.json` doesn't exist on disk, wh
 prior sessions' test runs. Regenerated via `npm run fixtures:infographics`, diff eyeballed
 (`git diff --stat` showed only these two files touched; the rendered before/after differ in exactly
 the one rank number).
+
+- **(2026-07-30) `sugar`'s `data/gauge-per-shot.json` row was never reading her own datamine —
+  corrected to match `drake`/`noir`.** Found while auditing why she reads far below `drake`/`noir` on
+  the burst-gen ranking board (owner: "sugar has the same entries in characters.json that lead to the
+  datamined values for noir and drake, and is also listed as rl3 27"). Confirmed: `sugar`'s
+  `characters.json` `role.weapon.shot_detail` already carries `burst_energy_pershot: 4500` /
+  `target_burst_energy_pershot: 9000` — byte-identical to `drake` and `noir` (same `rl3: 27` too) —
+  but her `gauge-per-shot.json` row was populated with the generic SG class-modal fallback
+  (`basePerTrigger: 200` / `targetPerTrigger: 400`, tagged `"class-modal-SG"`) instead of her own
+  already-present data. The derivation formula (raw `target_burst_energy_pershot` ÷ 10 =
+  `targetPerTrigger`) holds exactly, with zero exceptions, on every other confirmed-datamined
+  RL/SG-adjacent row checked (`zwei` 7000→700, `anis-sparkling-summer` 5000→500, `drake`/`noir`
+  9000→900) — this was a lookup gap in whatever pass originally populated the table (`sugar`'s row
+  was added later, in `c044fcb` "finalizing support ranks v1", using the fallback because her
+  datamine wasn't picked up at that time), not a deliberate or measured value. Corrected to
+  `basePerTrigger: 450` / `targetPerTrigger: 900` / `source: "datamined"`, matching `drake`/`noir`
+  exactly. `sugar` is not in any graded comp roster; `scripts/regression.ts` and `bash
+scripts/verify.sh` both green, no snapshot change. Ruled a direct data-correctness fix (same class as
+  the 2026-07-26 `liberalio` ×6-datamine-misread correction) rather than a `/scientific-method` empirical
+  claim — the evidence is the unit's OWN already-present primary-source record, not a new measurement,
+  and the formula was already cross-validated on 4 other units with no exceptions.
