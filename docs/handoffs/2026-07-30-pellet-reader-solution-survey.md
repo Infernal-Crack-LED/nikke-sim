@@ -8,6 +8,32 @@
 > Purpose: find out whether this workflow is already solved elsewhere, name concrete vetted
 > candidates with sources, and record the dead paths so nobody re-walks them.
 
+> ## ⚠ STATUS (updated 2026-07-30, same day) — read the plan first
+>
+> **This survey is still valid as a CANDIDATE + SOURCE catalogue, and that is all it should be used
+> for.** Its _diagnosis_ has since been superseded by measurement. The plan of record is
+> **`docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md`** — start there.
+>
+> What changed after this doc was written:
+>
+> - **F1 (§1a) is superseded.** The "absolute-brightness thresholding means the detector sees ~1/6 of
+>   the evidence" claim was measured and is **false as a diagnosis**. Track lifetimes really are 58.8%
+>   life=1, but per-frame detection off the pixels is **7–10 white per blast frame against a 7–9
+>   ground truth** — it is adequate. Detector replacement (C1) is therefore an _enabler_, not the fix,
+>   and is demoted accordingly in the plan.
+> - **F2 is reframed, not refuted.** Counting is still wrong to do on one frame, but for a different
+>   reason: the owner's pellet-lifecycle spec (60 fps, 13 frames) shows the peak frames f3–4 are where
+>   pellets **occlude each other**, and the readable frames are f1 and f8–11. The design is now
+>   _process all 13, count on ~5_.
+> - **F3 stands and got worse.** Not only are 6 labeled shots too few — they were hand-counted on
+>   **peak frames**, the least readable ones. Regenerate at f8–11 before using them.
+> - **The error budget now sets the target**: per-band **bias ≤ ±0.25 pellets/10**; per-shot random SD
+>   of ±1.5 is tolerable at n≈40/band. **Chase bias, not variance.**
+> - **Two amendments to the rejected table below**: the peanut heuristic is now _obsolete_ rather than
+>   merely rejected, and the ring/annulus detector rejection is **re-opened as a 1-hour re-test at
+>   f8–11** (it was judged on peak frames, where a neighbouring pellet destroys the shadowed surround
+>   the owner confirms exists). Everything else in that table stands.
+
 ---
 
 ## 1. The problem, stated the way the literature states it

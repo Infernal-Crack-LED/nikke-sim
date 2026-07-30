@@ -184,13 +184,50 @@ def compare_frames(data, frames_dir, start, count):
         print(f"  {i:6d}  {t:6d}  {g:4d}   {'T' * t:<12}|{'L' * g}")
 
 
+FIXTURE = "scripts/tests/fixtures/pellets/run16-tracks-slice.json"
+
+# Pinned from the committed fixture (a 400-frame slice of the run16 dump). These reproduce the
+# full-run figures cited in docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md
+# (life=1 58.8%, max-at-first 73.5%) to within slice noise -- the slice is representative.
+SELFTEST_EXPECT = {"near_crosshair": 303, "life1_pct": 56.8, "argmax_first_pct": 77.4}
+
+
+def selftest():
+    """Self-validate against the committed fixture, so this instrument's cited numbers stay
+    reproducible from a clean checkout (CLAUDE.md constraint 9)."""
+    with open(FIXTURE) as fh:
+        data = json.load(fh)
+    p, cross = data["params"], data["cross_positions"]
+    radius = p.get("pellet_radius", 160)
+    cand = [t for t in data["tracks"] if not t["is_red"] and near_crosshair(t, cross, radius)]
+    longs = [t for t in cand if t["life"] >= 5]
+    got = {
+        "near_crosshair": len(cand),
+        "life1_pct": round(100 * sum(1 for t in cand if t["life"] == 1) / len(cand), 1),
+        "argmax_first_pct": round(
+            100 * sum(1 for t in longs if t["areas"].index(max(t["areas"])) == 0) / len(longs), 1
+        ),
+    }
+    ok = got == SELFTEST_EXPECT
+    print(f"expected: {SELFTEST_EXPECT}")
+    print(f"got     : {got}")
+    print("SELFTEST PASS" if ok else "SELFTEST FAIL")
+    return 0 if ok else 1
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--tracks", required=True, help="tracks.json from count-pellets.py --dump-tracks")
+    ap.add_argument("--tracks", help="tracks.json from count-pellets.py --dump-tracks")
     ap.add_argument("--frames", help="directory of extracted pellet frames (enables detector comparison)")
     ap.add_argument("--start", type=int, default=0, help="first frame index for --frames comparison")
     ap.add_argument("--count", type=int, default=60, help="frames to compare (default 60 = ~3 blasts)")
+    ap.add_argument("--selftest", action="store_true", help=f"validate against {FIXTURE} and exit")
     args = ap.parse_args()
+
+    if args.selftest:
+        raise SystemExit(selftest())
+    if not args.tracks:
+        ap.error("--tracks is required (or use --selftest)")
 
     with open(args.tracks) as fh:
         data = json.load(fh)

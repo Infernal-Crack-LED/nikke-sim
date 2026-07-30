@@ -290,25 +290,45 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   (near1 produced no valid shots, near2 7.65 vs anchor 8.9, midfar 6.91 vs anchor 8.8; `guilty` full
   run only 21 shots). Do NOT use the counter to recalibrate UNIGEO until it passes second-unit
   validation. Full log: `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry + addendum.
-  **2026-07-30 prior-art survey — `docs/handoffs/2026-07-30-pellet-reader-solution-survey.md`
-  (findings-only, nothing enacted).** Verdict: further parameter-tuning of the current
-  absolute-RGB-threshold detector is the wrong lever — this is a solved problem in spot
-  detection / point-source astronomy / IR small-target detection, and our method is the one all
-  three fields abandoned first. Unblocked next steps (no footage needed): **(1)** dump the
-  track-lifetime histogram from an existing run to confirm/kill the "most pellet tracks are life=1"
-  premise (~1 h, decides everything downstream); **(2)** swap detection to LoG/DoG matched-filter
-  (`skimage.blob_log` / `photutils.DAOStarFinder`) and count **linked tracks** rather than blobs in
-  one frame (trackpy); **(3)** build the synthetic labeled set (extracted sprite composited onto real
-  backgrounds from all 4 videos) — it is the missing validation harness, and the 6 owner-counted
-  shots stay as the held-out real check. Rejected paths recorded there too (VLM counting, SAM 2,
-  Hough circles, ring detector, peanut heuristic).
-  Then: owner core
-  re-trace mid/midfar/far (upgrades ⚑ fit-selected series C); third clean SMG cell (de-saturates
-  the ⚑ SMG lens pair — its little-mermaid long-band over-prediction is an active red flag);
-  bloom-phase footage for f_bloom; blanc near-HR39 re-count; burst-5 near-ON count backstop;
-  chisato SMG midfar HR22 stays excluded (WEAK); quency-escape-queen flag-off HOT baseline =
-  Explore-Route kit over-credit (owner kit audit). (Mechanics SSOT pair refreshed to UNIGEO
-  2026-07-22 — done.)
+  **⇒ 2026-07-30 PELLET-READER REBUILD — the plan of record is
+  `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md` (START HERE block at the top;
+  prior-art + sources in the companion `…-solution-survey.md`). Findings-only, nothing enacted.**
+  A fresh session should read the plan first — these are only the headlines:
+  - **Error budget (the target, computed):** U35 needs ±0.5 pellets/10 discrimination; at n≈40
+    shots/band a per-shot random SD of **±1.5 pellets is tolerable**, but per-band **bias must be
+    ≤ ±0.25 pellets/10**. The counter is ~10–20% cold = 0.8–1.6 → **3–6× over budget on BIAS.**
+    ⇒ **Chase bias, not variance.** Stop when bias is inside ±0.25 against an independent anchor.
+  - **Owner pellet-lifecycle spec (60fps, 13 frames)** now governs: f1 small w/ shadowed surround →
+    f3–4 peak (2×, **pellets occlude — least readable**) → f5–11 shrink to 1× → f12–13 fade.
+    **Readable frames are f1 and f8–11.** Corroborated: the spec predicts an area-decay curve that
+    matches a run16 measurement taken before the spec existed.
+  - **Design: PROCESS all 13 frames, COUNT on ~5.** Identity from the full lifecycle curve (the first
+    discriminator that is _not_ per-component — the record's hardest dead end was "no per-component
+    filter separates blips from pellets"); counting at f1+f8–11; shared-t0 per blast collapses the
+    area gate from a 30× band to a ~2.5× per-frame expectation.
+  - **Superseded by measurement:** per-frame detection is **adequate** (7–10 vs 7–9 ground truth), so
+    detector replacement is an _enabler_, not the fix. The 2026-07-29 REJECT **conflated two faults** —
+    `guilty`/`isabel` never localized (3 shots/180s), `noir` ran fine but cold; do not read
+    guilty/isabel as evidence about counting.
+  - **Unblocked, no footage, all free:** 0.1 cherry-pick the `+62.5` crosshair-offset fix (`b69b5c6`)
+    that never merged — `main` still has `−62.5`, latent, poisons the next run (it did **not** cause
+    the 07-29 REJECT: artifacts 12:19–13:33, commit 15:17) · 0.5 lifecycle stability on `noir`
+    (one run; gates the one-template-fits-all-units assumption) · 0.6 are the missed shots
+    **selected** (bias) or random (harmless)?
+  - **⚠ Reproducibility gap:** the 07-30 numbers came from `scratchpad/pellets/run16/` — untracked.
+    `scripts/probe/analyze-pellet-tracks.py` is committed but its input is not; distill a fixture
+    before leaning on them further (constraint 9).
+  - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
+    the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
+    ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
+    neighbour destroys the shadowed surround the owner confirms exists).
+    Then: owner core
+    re-trace mid/midfar/far (upgrades ⚑ fit-selected series C); third clean SMG cell (de-saturates
+    the ⚑ SMG lens pair — its little-mermaid long-band over-prediction is an active red flag);
+    bloom-phase footage for f_bloom; blanc near-HR39 re-count; burst-5 near-ON count backstop;
+    chisato SMG midfar HR22 stays excluded (WEAK); quency-escape-queen flag-off HOT baseline =
+    Explore-Route kit over-credit (owner kit audit). (Mechanics SSOT pair refreshed to UNIGEO
+    2026-07-22 — done.)
 
 - **⇒ `fbext` BRANCH — MERGED to main 2026-07-22 (PR #17 `af0592b`, owner-confirmed).** Ordering fix +
   chip-gated FB-extension ladder + soda-twinkling-bunny's Hit Rate; the `soda-tb control` comp is

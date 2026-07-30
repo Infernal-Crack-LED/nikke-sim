@@ -15,6 +15,86 @@
 
 ---
 
+## START HERE — fresh session
+
+**Read order:** this doc → `docs/handoffs/2026-07-30-pellet-reader-solution-survey.md` (candidates +
+sources) → `scratchpad/pellets/HANDOFF.md` (tuning record; ⚠ **untracked, local-only**) →
+open-questions **U35**.
+
+**Settled — do not re-derive:**
+
+- The pellet lifecycle (§ below) — owner spec, corroborated against an independent measurement.
+- Per-frame detection is **adequate** (7–10 vs 7–9 ground truth). Detector replacement is not the fix.
+- The 2026-07-29 REJECT conflated **two different faults**; see §0.1b. Do not read `guilty`/`isabel`
+  results as evidence about counting — those runs never localized.
+- Prior-art candidates and rejected paths are surveyed. Don't re-research VLM/SAM/Hough.
+
+**Open, in order:** 0.1 (offset fix) · 0.5 (lifecycle stability on `noir`) · 0.6 (missed-shot bias)
+→ Phase 1 infrastructure → Phase 2A ∥ Phase 2 → Phase 3.
+
+**Do not:** merge `fix/pellet-counter-restore` or `fix/sg-pellet-counter-template` wholesale (both
+branched off an older `origin/main`; cherry-pick only) · tune the current threshold detector further ·
+compare any new number to run16–run19 (the count definition changes in Phase 2).
+
+**✅ Reproducibility (constraint 9) — closed.** The 2026-07-30 measurements came from
+`scratchpad/pellets/run16/`, which is **untracked and gitignored** — so the instrument was committed
+but its input was not, exactly the failure mode constraint 9 exists to prevent. Fixed the same
+session: a 400-frame distilled slice is committed at
+`scripts/tests/fixtures/pellets/run16-tracks-slice.json` (420 KB) and the tool self-validates
+against it:
+
+```sh
+scripts/probe/.venv/bin/python scripts/probe/analyze-pellet-tracks.py --selftest
+# expected: {'near_crosshair': 303, 'life1_pct': 56.8, 'argmax_first_pct': 77.4}  -> SELFTEST PASS
+```
+
+The slice reproduces the full-run figures within slice noise (life=1 56.8% vs 58.8%; max-at-first
+77.4% vs 73.5%; area decay 0.91→0.58→0.48→0.36→0.24 vs 0.93→0.57→0.43→0.33→0.22), so it is
+representative, not cherry-picked. **Not wired into `verify.sh`** — that gate is node/TS and a clean
+checkout has no `scripts/probe/.venv`; run it manually when touching the reader.
+
+**Still local-only:** the full `run16/` frame PNGs (needed for the `--frames` detector-comparison
+mode) and `scratchpad/pellets/HANDOFF.md`. The per-frame counts quoted in §"What was measured" are
+therefore **locally verified, not tree-reproducible** — re-derive them from a fresh run if they
+become load-bearing.
+
+---
+
+## What would be sufficient — the error budget (compute this before optimising anything)
+
+`CLAUDE.md` §⚖.4: _state what would be sufficient, up front, so the question is decidable instead of
+open-ended._ The reader exists to answer **U35** (per-band SG landing). That fixes a target:
+
+| Quantity                                                 | Value                         |
+| -------------------------------------------------------- | ----------------------------- |
+| U35 discrimination threshold (2026-07-29 decision rule)  | **±0.5** pellets/10           |
+| Smallest real gap to resolve (UNIGEO vs `noir` anchors)  | **0.77** pellets/10           |
+| Shots per band (37 s window × 1.5/s, at 60–100% valid)   | **n ≈ 33–56**                 |
+| ⇒ tolerable per-shot **random** SD (band-mean SE ≤ 0.25) | **±1.4 – ±1.9 pellets**       |
+| ⇒ tolerable per-band **systematic bias**                 | **±0.25 pellets/10**          |
+| Current counter's reported bias (~10–20% cold)           | **0.8 – 1.6** → **3–6× over** |
+
+**⇒ The single most important consequence: chase BIAS, not variance.**
+
+Random per-shot error is nearly free — at n ≈ 40/band you can tolerate a per-shot SD of ~±1.5
+pellets, which is enormous. **A systematic offset does not average down**, and bias is the entire
+measured problem. Every phase below should be judged on whether it removes a _systematic_ error:
+
+- **Occlusion undercount at f3–4 is a bias** (always cold, never hot) → Phase 2's phase-locking to
+  f8–11 targets it directly. This is the highest-value item in the plan.
+- **False positives are a bias** (always hot) → Phase 2's lifecycle-template filter targets it.
+- **Missed shots are only a bias if they are SELECTED** — if the 22% are missed at random they merely
+  reduce n, and n is plentiful. If the messy, high-count, heavy-VFX blasts are preferentially the
+  missed ones, that is a cold bias. **This reframes Phase 0.6** (below): the question is not "why are
+  22% missed" but **"are the missed shots selected in a way that skews the mean?"**
+
+**Stopping rule.** When per-band bias is inside ±0.25 pellets/10 against an independent anchor, the
+counter is sufficient for U35 and the work is DONE — regardless of whether a further refinement is
+conceivable (`CLAUDE.md` §⚖.3: when the bar is met, the instruction is ACT). Do not chase per-shot
+perfection; it is not what the question needs.
+
+---
+
 ## The pellet lifecycle (owner spec, 2026-07-30) — the governing model
 
 Everything below depends on this. **Source: owner, 2026-07-30.** It supersedes the coarser and
@@ -290,19 +370,29 @@ the phase-mix prediction, same shape). **Kill condition:** materially different 
 must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
 this after implementing steps 4–6 is the expensive path.**
 
-### 0.6 — ⚠ Check the ~90 denominator before treating 78% as a defect
+### 0.6 — ⚠ Are the missed shots SELECTED? (not "why are 22% missed")
 
-"70 shots of ~90 expected" is the largest measured gap in the reader — but ~90 assumes uninterrupted
-1.5 shots/s across the 60 s window. Boss-transition fire-holds, reloads, and cover phases would lower
-the true expectation and the real detection rate could be substantially better than reported.
+Re-framed by the error budget above. "70 shots of ~90" reads like the headline defect, but at
+n ≈ 40/band **random** misses only reduce n, and n is plentiful. Missed shots matter **only if they
+are selected** — i.e. if the messy, high-count, heavy-VFX blasts are preferentially the ones dropped,
+which is a cold bias and would sit squarely in the 0.8–1.6 pellets/10 the counter is currently off by.
 
-**Steps.** Derive expected shots from the actual fight timeline (boss script + transitions) rather
-than from cadence × duration; cross-check against the ammo-counter reads (`read-ammo.ts`) where
-available.
+**Two questions, both free, in order:**
 
-**Exit criterion.** A defensible denominator. If it lands near 90, the 22% miss is real and event
-segmentation is the next target. **If it lands near 75, the problem largely dissolves** and the
-effort should go to Phase 2's accuracy instead of shot recall. Free, and it may retire the item.
+1. **Is ~90 even the right denominator?** It assumes uninterrupted 1.5 shots/s across the window.
+   Boss-transition fire-holds, reloads, and cover phases lower the true expectation. Derive expected
+   shots from the actual fight timeline (boss script + transitions), and cross-check the
+   ammo-counter reads (`read-ammo.ts`) where available. ⚠ Note `read-ammo.ts` **cannot yet read a
+   small-magazine SG counter** (~29% of frames on `marciana-solo`, per QUEUE) — so it is a partial
+   cross-check here, not an authority.
+2. **Are the misses random or selected?** Compare the detected-shot counts immediately adjacent to
+   each gap against the run's overall distribution, and check whether gaps cluster at transitions
+   (benign — genuine fire-holds) or inside steady-fire stretches (suspicious — selection).
+
+**Exit criterion.** Either (a) the misses are random / the denominator was wrong ⇒ **the item is
+retired**, effort goes to Phase 2 accuracy; or (b) the misses are selected ⇒ quantify the implied
+bias in pellets/10 and treat event segmentation as a bias source with a number attached, not as a
+vague recall problem.
 
 > **Phase 0 deliverable:** `analyze-pellet-tracks.py` (✅ committed), the 0.2 findings (✅ recorded
 > above), a decision on 0.1, and — before any Phase 2 code — the **0.5 lifecycle-stability** and
