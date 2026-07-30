@@ -1,6 +1,6 @@
 // Support Rankings tab (/ranks/support, inside the sim App's rankings
 // section) — four ranked boards over the precomputed artifacts: Burst
-// Generation, Burst CDR, Sustain, Buffer. One shared ranked-bar UI
+// Generation, Burst CDR, Sustain, Team Buffs. One shared ranked-bar UI
 // (RankBarChart) with a board pill-switcher; the buffer board gets a second
 // pill row (Generic / Typed carries). Only the active board's artifact
 // fetches. Every board's `methodology` string sits in a collapsible
@@ -37,7 +37,7 @@ import {
 } from './rankChartBars';
 
 const BOARDS: { id: BoardId; label: string; title: string }[] = [
-  { id: 'buffer', label: 'Buffer', title: 'Buffer' },
+  { id: 'buffer', label: 'Team Buffs', title: 'Team Buffs' },
   { id: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
   { id: 'sustain', label: 'Sustain', title: 'Sustain' },
   { id: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },

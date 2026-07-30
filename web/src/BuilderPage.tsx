@@ -101,7 +101,7 @@ const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
   { key: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
   { key: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
   { key: 'sustain', label: 'Sustain', title: 'Sustain' },
-  { key: 'buffer', label: 'Buffer', title: 'Buffer' },
+  { key: 'buffer', label: 'Team Buffs', title: 'Team Buffs' },
 ];
 
 // Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the

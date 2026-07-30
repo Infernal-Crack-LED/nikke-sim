@@ -153,7 +153,7 @@ export function buildBufferTable(
   board: BufferBoardId = 'generic'
 ): TableCardData {
   return {
-    title: `Buffer Ranking — ${board === 'generic' ? 'Generic' : 'Typed'}`,
+    title: `Team Buffs Ranking — ${board === 'generic' ? 'Generic' : 'Typed'}`,
     subtitle: 'team damage increase vs the no-op baseline',
     columns: [
       { header: '#', flex: 0.5 },

@@ -122,7 +122,7 @@ const checks = {
     'Unit Comparisons',
   ].every((s) => text().includes(s)),
   'board pills render (buffer first)': [
-    'Buffer',
+    'Team Buffs',
     'Burst Gen',
     'Sustain',
     'Burst CDR',
@@ -130,7 +130,7 @@ const checks = {
   // owner 2026-07-26: pill order Buffer → Burst Gen → Sustain → Burst CDR
   // (first occurrences are the pills; the intro copy is lowercase)
   'pill order: buffer, burst gen, sustain, cdr': (() => {
-    const i = ['Buffer', 'Burst Gen', 'Sustain', 'Burst CDR'].map((s) =>
+    const i = ['Team Buffs', 'Burst Gen', 'Sustain', 'Burst CDR'].map((s) =>
       text().indexOf(s)
     );
     return i.every((x) => x >= 0) && i[0] < i[1] && i[1] < i[2] && i[2] < i[3];
@@ -161,10 +161,10 @@ try {
   await waitFor(/Burst Generation/, 'burst-gen board');
   checks[`burst-gen top bar renders (${burstgenTopName})`] =
     text().includes(burstgenTopName);
-  clickPill('Buffer');
+  clickPill('Team Buffs');
   await waitFor(/Generic/, 'buffer sub-board pills');
   clickPill('Typed');
-  await waitFor(/Buffer · typed/, 'buffer typed board');
+  await waitFor(/Team Buffs · typed/, 'buffer typed board');
   checks['buffer Generic/Typed pills render'] = true;
   checks[`buffer typed top bar renders (${typedTopName})`] =
     text().includes(typedTopName);
