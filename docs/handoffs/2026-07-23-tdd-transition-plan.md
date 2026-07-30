@@ -170,13 +170,25 @@ had nothing to record). Blast-radius order, top of the census first:
       correctly in both directions. Synthetic `interval`-triggered fixture on a zeroed-kit AR carrier
       (`blanc`) + a bare-weapon filler ally — independent of burst rotation entirely. No engine bug
       surfaced (findings-only discipline had nothing to record).
+- [x] `instantReload` (8) + `consumeAmmo` (2) → `scripts/tests/engine/ammo-economy.test.ts` (landed
+      2026-07-29) — the ammo-economy pair, literal inverses whose clamps run opposite directions
+      (`min(max, ammo+add)` vs `max(0, ammo-drain)`). Chained effects on a known prior ammo state
+      (a preceding instantReload/consumeAmmo in the SAME block) make every assertion deterministic,
+      independent of organic pre-trigger firing history: a fractional instantReload from a known-full
+      base saturates at max rather than overshooting (rules out a "set ammo" misreading); the same
+      fraction from a known-empty base adds a genuine partial amount; instantReload interrupts an
+      in-progress forced reload so firing resumes immediately; consumeAmmo only forces a real
+      magazine reload + fires `lastBullet` when a drain actually reaches exactly empty, checked PER
+      CALL (two chained 0.5-fraction drains only fire on the second); the `!reloading` guard stops a
+      double-fire when two full drains chain in the same frame. Same zeroed-kit-carrier pattern as
+      `weapon-swap.test.ts`; a tight epsilon around each interval-trigger second isolates the forced
+      firings from blanc's own ~5s organic mag cycle between triggers. No engine bug surfaced.
 
 **Not yet backfilled (next sessions, priority order, current census counts):** `hitRatePct` (14, ⚑
-HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path),
-`instantReload`/`consumeAmmo` (8/2, the ammo-economy pair), `mode`/`modes` (7), `escalating` (6), the
-trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval` first-fire phase,
-`stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain. Single-carrier exotics defer
-to their unit's step-3 session.
+HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path), `mode`/`modes`
+(7), `escalating` (6), the trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval`
+first-fire phase, `stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain.
+Single-carrier exotics defer to their unit's step-3 session.
 
 ## Step 3 — per-unit TDD sessions (the new kit workflow)
 
