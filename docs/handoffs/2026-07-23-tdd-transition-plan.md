@@ -183,12 +183,27 @@ had nothing to record). Blast-radius order, top of the census first:
       double-fire when two full drains chain in the same frame. Same zeroed-kit-carrier pattern as
       `weapon-swap.test.ts`; a tight epsilon around each interval-trigger second isolates the forced
       firings from blanc's own ~5s organic mag cycle between triggers. No engine bug surfaced.
+- [x] `mode` / `modes` (7 each) → `scripts/tests/engine/mode-gate.test.ts` (landed 2026-07-29) — the
+      static per-block mode gate resolved once at prepare-time (`skills.blocks.filter(b => !b.mode ||
+    b.mode === selectedMode)`), so a single frame-0 `passive` `flatDamage` per candidate block is a
+      complete readout: no unselected-mode default falls back to `modes[0]`; selecting a mode swaps
+      which mode-tagged block is live without touching an ungated (no-`mode`-field) block; an
+      unrecognized mode string falls back to `modes[0]` rather than firing nothing or crashing. No
+      timing/rotation machinery needed — 3 assertions, all exact-set.
+- [x] `escalating` (6) → `scripts/tests/engine/escalating.test.ts` (landed 2026-07-29) — the
+      Liter-style Once:/Twice:/… ladder is CUMULATIVE (`steps.slice(0, min(activations,
+    steps.length))` re-applied in full on every activation), not "fire only the newest step": a
+      3-step synthetic ladder on an `interval` trigger shows activation 1 firing step 0 alone,
+      activation 2 firing steps 0+1 (step 0 genuinely re-fires), activation 3 all three — and every
+      activation past `steps.length` stays clamped at the full ladder rather than indexing out of
+      bounds or truncating. Matches the cumulative CDR-ladder arithmetic `liter.test.ts` already
+      pins per-unit; this backfill isolates the primitive itself. No engine bug surfaced.
 
 **Not yet backfilled (next sessions, priority order, current census counts):** `hitRatePct` (14, ⚑
-HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path), `mode`/`modes`
-(7), `escalating` (6), the trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval`
-first-fire phase, `stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain.
-Single-carrier exotics defer to their unit's step-3 session.
+HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path); the
+trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval` first-fire phase,
+`stageEnter`, `fullBurstEnter`/`End`); gauge suppression during FB/chain. Single-carrier exotics defer
+to their unit's step-3 session.
 
 ## Step 3 — per-unit TDD sessions (the new kit workflow)
 
