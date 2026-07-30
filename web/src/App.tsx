@@ -26,6 +26,7 @@ import { SupportRankings } from './SupportRankings';
 import { ResourcesPage } from './ResourcesPage';
 import { TeamBuilderPage } from './TeamBuilderPage';
 import { BuilderPage } from './BuilderPage';
+import { CharSearch, CharPicker } from './components/CharSearch';
 import {
   BrowseNikkesModal,
   BrowseRosterNikkesModal,
@@ -711,13 +712,6 @@ const GEN_BOX_SLOTS = 12;
 // legacy alias — most pickers on the site are sim-engine pickers; keep the short name for them
 const allChars = simChars;
 
-// search predicate for the char pickers: slug, name, or an APPROVED community
-// nickname (characters.json `nicknames`, sync-derived from bakery-bot aliases)
-const charMatchesQuery = (c: (typeof allChars)[number], q: string) =>
-  c.slug.includes(q) ||
-  c.name.toLowerCase().includes(q) ||
-  (c.nicknames ?? []).some((n) => n.includes(q));
-
 // At-a-glance 64×64 portrait strip for a generated team (tight grouping). Shared
 // by the Optimal Team result and, later, the Roster generator — keep it prop-only
 // (no App state) so both can reuse it. `adv` flags the elementally-advantaged
@@ -1314,127 +1308,6 @@ function remapIndex(e: number, from: number, to: number): number {
     return e + 1;
   }
   return e;
-}
-
-function CharPicker({
-  slot,
-  onPick,
-  pool = allChars,
-}: {
-  slot: SlotState;
-  onPick: (slug: string) => void;
-  // which support-tag pool to offer — defaults to the sim-supported pool (allChars); pass
-  // generatorChars from a generator-context caller (e.g. the Unit Comparison tab).
-  pool?: typeof allChars;
-}) {
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const selected = slot.slug ? data.characters[slot.slug] : null;
-  const q = query.toLowerCase();
-  const matches = q
-    ? pool.filter((c) => charMatchesQuery(c, q)).slice(0, 12)
-    : pool.slice(0, 12);
-  return (
-    <div className="picker">
-      <input
-        value={open ? query : (selected?.name ?? '')}
-        placeholder="search nikke…"
-        onFocus={() => {
-          setOpen(true);
-          setQuery('');
-        }}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      {open && (
-        <div className="picker-list">
-          {matches.map((c) => (
-            <button
-              key={c.slug}
-              onMouseDown={() => {
-                onPick(c.slug);
-                setOpen(false);
-              }}
-            >
-              {c.imageUrl && (
-                <img
-                  src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-              <span>{c.name}</span>
-              <span className="muted">
-                B{c.burst} · {c.weapon} · {c.element}
-              </span>
-            </button>
-          ))}
-          {!matches.length && <div className="muted pad">no matches</div>}
-        </div>
-      )}
-    </div>
-  );
-}
-
-// search box that adds a nikke on pick (for blocked list / single-char picks);
-// clears after each pick and hides anything already excluded
-function CharSearch({
-  placeholder,
-  exclude,
-  onPick,
-  pool = allChars,
-}: {
-  placeholder: string;
-  exclude: string[];
-  onPick: (slug: string) => void;
-  // which support-tag pool to offer — defaults to the sim-supported pool (allChars); pass
-  // generatorChars from a generator-context caller (Team/Roster generator, Custom DPS Rankings).
-  pool?: typeof allChars;
-}) {
-  const [query, setQuery] = useState('');
-  const [open, setOpen] = useState(false);
-  const q = query.toLowerCase();
-  const matches = pool
-    .filter((c) => !exclude.includes(c.slug))
-    .filter((c) => !q || charMatchesQuery(c, q))
-    .slice(0, 12);
-  return (
-    <div className="picker">
-      <input
-        value={query}
-        placeholder={placeholder}
-        onFocus={() => setOpen(true)}
-        onBlur={() => setTimeout(() => setOpen(false), 150)}
-        onChange={(e) => setQuery(e.target.value)}
-      />
-      {open && (
-        <div className="picker-list">
-          {matches.map((c) => (
-            <button
-              key={c.slug}
-              onMouseDown={() => {
-                onPick(c.slug);
-                setQuery('');
-              }}
-            >
-              {c.imageUrl && (
-                <img
-                  src={manifestThumbUrl(c.imageUrl, 24) ?? c.imageUrl}
-                  alt=""
-                  loading="lazy"
-                />
-              )}
-              <span>{c.name}</span>
-              <span className="muted">
-                B{c.burst} · {c.weapon} · {c.element}
-              </span>
-            </button>
-          ))}
-          {!matches.length && <div className="muted pad">no matches</div>}
-        </div>
-      )}
-    </div>
-  );
 }
 
 export function App({ user }: { user: AuthUser | null }) {
@@ -4316,6 +4189,7 @@ export function App({ user }: { user: AuthUser | null }) {
             exclude={rosterSlugsPlaced.filter(
               (s) => s !== rosterSim[rosterActive[0]][rosterActive[1]]
             )}
+            pool={allChars}
             onPick={(slug) =>
               assignRosterSlot(rosterActive[0], rosterActive[1], slug)
             }
@@ -4475,6 +4349,7 @@ export function App({ user }: { user: AuthUser | null }) {
               (s) =>
                 s !== unionRosterSim[unionRosterActive[0]][unionRosterActive[1]]
             )}
+            pool={allChars}
             onPick={(slug) =>
               assignUnionSlot(unionRosterActive[0], unionRosterActive[1], slug)
             }
@@ -4550,7 +4425,7 @@ export function App({ user }: { user: AuthUser | null }) {
           </div>
         )}
         <CharPicker
-          slot={slot}
+          selectedSlug={slot.slug}
           pool={pool}
           onPick={(slug) => onChange(pickPatch(slot, slug))}
         />
@@ -5583,6 +5458,7 @@ export function App({ user }: { user: AuthUser | null }) {
               <CharSearch
                 placeholder="pick a charge nikke (RL / SR)…"
                 exclude={nonCharge}
+                pool={allChars}
                 onPick={(slug) => setChargeChar(slug)}
               />
             )}
@@ -5718,6 +5594,7 @@ export function App({ user }: { user: AuthUser | null }) {
               <CharSearch
                 placeholder="pick a nikke…"
                 exclude={[]}
+                pool={allChars}
                 onPick={(slug) => setAmmoChar(slug)}
               />
             )}
@@ -5975,6 +5852,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   <CharSearch
                     placeholder="pick a Nikke…"
                     exclude={[]}
+                    pool={allChars}
                     onPick={(slug) => {
                       setOlCarry(slug);
                       setOlMatrixResult(null);
@@ -6051,6 +5929,7 @@ export function App({ user }: { user: AuthUser | null }) {
                   <CharSearch
                     placeholder="pick a Nikke…"
                     exclude={[]}
+                    pool={allChars}
                     onPick={(slug) => {
                       setOlCustomCarry(slug);
                       setOlCustomResults(null);
@@ -6102,6 +5981,7 @@ export function App({ user }: { user: AuthUser | null }) {
                         ...(olCustomCarry ? [olCustomCarry] : []),
                         ...team,
                       ]}
+                      pool={allChars}
                       onPick={(slug) =>
                         editSupport((ts) =>
                           ts.map((t, j) => (j === ti ? [...t, slug] : t))

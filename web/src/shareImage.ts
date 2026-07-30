@@ -10,6 +10,7 @@ import {
 } from '../../src/infographics/core/dpsChart';
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ensureRoboto, loadPortrait } from './teamShare';
+import { loadSiteIcon } from './siteIcon';
 
 // Render a DPS-chart card to a canvas (portraits preloaded into the shown
 // bars, Roboto awaited before the first draw — decision 6.1: a @font-face
@@ -24,14 +25,18 @@ export async function buildDpsChartCanvas(
   // draw it (on a windowed chart, bars outside the window never render)
   const win = chartWindow(data);
   const shown = data.bars.slice(win.start, win.end);
-  await Promise.all([
-    ...shown.map(async (b) => {
-      if (b.imageUrl) {
-        b.img = (await loadPortrait(b.imageUrl)) ?? undefined;
-      }
-    }),
+  const [icon] = await Promise.all([
+    loadSiteIcon(),
+    Promise.all(
+      shown.map(async (b) => {
+        if (b.imageUrl) {
+          b.img = (await loadPortrait(b.imageUrl)) ?? undefined;
+        }
+      })
+    ),
     ensureRoboto(),
   ]);
+  data.icon ??= icon ?? undefined;
 
   const dpr = 2;
   const cv = document.createElement('canvas');

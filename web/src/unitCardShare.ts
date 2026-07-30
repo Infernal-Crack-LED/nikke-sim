@@ -37,15 +37,18 @@ import type {
   BufferChartArtifact,
 } from '../../src/ranks/types';
 import type { TsareenaBuildFile } from '../../src/types';
+import { loadSiteIcon } from './siteIcon';
 
-const characters = (charactersJson as { characters: Record<string, UnitCardCharacter> })
-  .characters;
+const characters = (
+  charactersJson as { characters: Record<string, UnitCardCharacter> }
+).characters;
 const archetype = archetypeJson as {
   tags: Record<string, string[]>;
   vocabulary: Record<string, { label: string }>;
 };
-const olUnits = (olOptimalJson as { units: Record<string, { type: string; count: number }[]> })
-  .units;
+const olUnits = (
+  olOptimalJson as { units: Record<string, { type: string; count: number }[]> }
+).units;
 const tsareenaUnits = (tsareenaJson as unknown as TsareenaBuildFile).units;
 
 // Icons are tracked assets under web/public/nikke-icons/, served at the root.
@@ -67,7 +70,9 @@ function loadOne(src: string): Promise<HTMLImageElement | null> {
 
 // Try each extension in order; a name with no variant resolves to null and the
 // card simply omits that mark rather than drawing a broken image.
-export function loadIconImage(name: string | null): Promise<HTMLImageElement | null> {
+export function loadIconImage(
+  name: string | null
+): Promise<HTMLImageElement | null> {
   if (!name) {
     return Promise.resolve(null);
   }
@@ -102,6 +107,8 @@ export async function buildUnitCardShare(
   slug: string,
   boards: UnitCardBoards,
   portrait: HTMLImageElement | null,
+  // Undefined (the common case — no caller currently has one already loaded)
+  // falls back to the site icon; pass null explicitly to force no icon.
   siteIcon?: unknown,
   // Portrait draws a wider neighbourhood, so the browser preview has to know
   // which variant it is building or it renders a different card than the
@@ -126,15 +133,17 @@ export async function buildUnitCardShare(
     neighbourRows: neighbourRowsFor(variant),
   });
 
-  const [element, burst, cls, weapon, manufacturer] = await Promise.all([
-    loadIconImage(ICON_BY_ELEMENT[model.element] ?? null),
-    loadIconImage(ICON_BY_BURST[model.burst] ?? null),
-    loadIconImage(ICON_BY_CLASS[model.class] ?? null),
-    loadIconImage(iconNameForWeapon(model.weapon)),
-    loadIconImage(
-      model.manufacturer ? iconNameForManufacturer(model.manufacturer) : null
-    ),
-  ]);
+  const [element, burst, cls, weapon, manufacturer, resolvedSiteIcon] =
+    await Promise.all([
+      loadIconImage(ICON_BY_ELEMENT[model.element] ?? null),
+      loadIconImage(ICON_BY_BURST[model.burst] ?? null),
+      loadIconImage(ICON_BY_CLASS[model.class] ?? null),
+      loadIconImage(iconNameForWeapon(model.weapon)),
+      loadIconImage(
+        model.manufacturer ? iconNameForManufacturer(model.manufacturer) : null
+      ),
+      siteIcon === undefined ? loadSiteIcon() : Promise.resolve(siteIcon),
+    ]);
 
   return {
     model,
@@ -146,7 +155,7 @@ export async function buildUnitCardShare(
       weapon: weapon ?? undefined,
       manufacturer: manufacturer ?? undefined,
     },
-    siteIcon,
+    siteIcon: resolvedSiteIcon,
     footer: 'nikkesim.app',
   };
 }

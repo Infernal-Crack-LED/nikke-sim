@@ -17,6 +17,7 @@ import {
 } from '../../src/infographics/core/tableData';
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ensureRoboto, copyOrDownloadPng } from './teamShare';
+import { loadSiteIcon } from './siteIcon';
 
 // Load a same-origin image (an /nikke-icons/* asset) for a card's title icon
 // or a column header icon. Same shape as teamShare's loadPortrait — resolves
@@ -43,7 +44,8 @@ export function loadCardImage(src: string): Promise<HTMLImageElement | null> {
 export async function buildTableCardCanvas(
   data: TableCardData
 ): Promise<HTMLCanvasElement | null> {
-  await ensureRoboto();
+  const [icon] = await Promise.all([loadSiteIcon(), ensureRoboto()]);
+  data.icon ??= icon ?? undefined;
   const dpr = 2;
   const cv = document.createElement('canvas');
   cv.width = TABLE_W * dpr;
