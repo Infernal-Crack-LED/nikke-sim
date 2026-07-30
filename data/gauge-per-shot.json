@@ -625,10 +625,10 @@
     "targetPerTrigger": 400.0
   },
   "sugar": {
-    "basePerTrigger": 200.0,
+    "basePerTrigger": 450.0,
     "fullChargeBonus": 0.0,
-    "source": "class-modal-SG",
-    "targetPerTrigger": 400.0
+    "source": "datamined; characters.json role.weapon.shot_detail.burst_energy_pershot=4500 / target_burst_energy_pershot=9000 (identical to drake/noir; rl3=27 also identical to both) were already present but this row fell back to the SG class-modal value instead of reading them",
+    "targetPerTrigger": 900.0
   },
   "takina": {
     "basePerTrigger": 280.0,
