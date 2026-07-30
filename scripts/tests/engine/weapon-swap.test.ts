@@ -28,7 +28,7 @@ const SWAP_SEC = 30; // interval trigger: fires t=30,60,90,120,150 — 5 windows
 const SWAP_DUR = 8; // well inside each 30s gap, so windows never overlap or chain
 
 const inWindow = (sec: number) =>
-  sec >= SWAP_SEC && ((sec - SWAP_SEC) % SWAP_SEC) - 0 < SWAP_DUR;
+  sec >= SWAP_SEC && (sec - SWAP_SEC) % SWAP_SEC < SWAP_DUR;
 
 /** Run blanc with a synthetic weaponSwap on a repeating interval, plus optional extra skill1 blocks. */
 function swapComp(effect: Record<string, unknown>, extraBlocks: any[] = []) {
@@ -70,12 +70,16 @@ function swapComp(effect: Record<string, unknown>, extraBlocks: any[] = []) {
 }
 
 describe('weaponSwap (temporary weapon override)', () => {
-  it('fixture check — blanc is a plain non-charge, non-MG, non-swap AR carrier', () => {
+  it('fixture check — blanc is a plain non-charge, non-MG, non-swap, non-Pierce AR carrier', () => {
     const c = data.characters[CARRY];
     expect(c.weapon).toBe('AR');
     expect(c.chargeFrames).toBe(0);
     expect(c.hitsPerShot).toBe(1);
     expect(BASE_MULT).toBeGreaterThan(0);
+    // the hasPierce test's out-of-window dmgUp===1 assertion assumes blanc carries no innate
+    // Pierce tag — pin that assumption so a future characters.json data change fails HERE with a
+    // clear cause, not as a confusing mismatch three tests down.
+    expect((c as { hasPierce?: boolean }).hasPierce ?? false).toBe(false);
   });
 
   it('DISCRIMINATING: an explicit pullsPerSec overrides the fire cadence only inside the window', () => {
