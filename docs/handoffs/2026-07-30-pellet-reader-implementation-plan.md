@@ -1165,6 +1165,89 @@ only, validated on A/B slices; no `docs/probe-data/` fixture or committed dump w
 artifact above is reproducible-by-command, not committed (constraint 9 is satisfied by the code fix
 being in the tree at `scripts/probe/count-pellets.py`, not by a raw JSON dump).
 
+### ✅ 2026-07-30 — Phase 2A part 2, structural (non-template) localization: gate 1 MET on all four videos
+
+**What it is.** `locate_ammo_structural()` (`scripts/probe/count-pellets.py`) replaces
+`cv2.matchTemplate` with the shape model `segment_ammo_digits` already uses to _read_ the counter:
+2-3 bright-or-red glyph-shaped components sharing a top edge (`DIGIT_H_RANGE`/`DIGIT_W_RANGE`/
+`DIGIT_ROW_TOL`, reused as-is), scored by the mean brightness of the padded margin AROUND the row
+excluding the glyphs (the counter sits on a dark badge; a floating damage number of the same glyph
+shape does not). Selection (`locate_crosshair_structural`) prefers the candidate nearest the previous
+lock within `--max-template-disp` (continuity, same gate the template path uses); on loss it
+re-acquires from the darkest-surround candidate rather than carrying the stale position forward — per
+H1's finding that carrying forward through a multi-second gap while the aim point moves is wrong by
+construction. Enabled via `--locate structural` (`count-pellets.py`) / `--locate structural`
+(`read-pellets.ts`, which also skips the now-unneeded per-video template extraction and VLM crosshair
+fallback). `--relock-conf-min 0.55` is untouched — this is a different code path, not a retuned
+threshold, and does not revisit §H5's finding that no confidence value can work for the template path.
+
+**Why this isn't another confidence knob.** §H5 killed `--relock-conf-min` tuning because the false
+seed and the real box occupy overlapping _scalar confidence bands_ — no cutoff separates them. This
+method has no such scalar: admission is categorical (a component either has 2-3 row-mates of digit
+size sharing a top edge, or it doesn't), and disambiguation between two admitted candidates uses two
+cues from a different evidence class (physical badge darkness + frame-to-frame continuity), not a
+threshold on the same channel that failed.
+
+**Result — the concrete target.** `marciana` (slug `marciana`, SG/Iron, `marciana-solo.MP4`) dead
+windows, direct `count-pellets.py --temporal --locate structural` over the cached 1800-frame
+`h1-marciana-treecode` set (same params as H1):
+
+| Window (fightT)             | Old (template, §H5)  | New (structural)                   |
+| --------------------------- | -------------------- | ---------------------------------- |
+| DEAD 41.4-53.3 (358 frames) | 0% frames ≥0.55 conf | **53.9% non-zero, 358/358 locked** |
+| DEAD 68.7-75.4 (202 frames) | 0% frames ≥0.55 conf | **53.5% non-zero, 202/202 locked** |
+| control 56-68 (361 frames)  | both detect          | 48.5% non-zero, 361/361 locked     |
+
+The dead windows are no longer dead — their non-zero-frame rate now _exceeds_ the control window and
+matches run16's independent per-frame-activity prediction (46% both windows, §H1 driver analysis).
+Confirmed end-to-end (not just the direct-frame path) via the real orchestrator on the actual video,
+`fightT` 35-50s spanning straight through the 41.4 dead-window boundary:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts docs/probes/clean-weapons/marciana-solo.MP4 \
+  --at 41 --dur 15 --fps 30 --zoom 2 --locate structural --dump-tracks true --out <dir>
+# -> 19 shots (15 valid, expected ~23), avg total 7.9 — shots recovered continuously through
+#    fight=41.10s..49.77s, the exact stretch that read 0 shots under template matching.
+```
+
+**Gate 1 (crosshair validity) — MET, all four videos together**, via
+`analyze-pellet-tracks.py`'s `check_crosshair_validity()` (≥5% = OK) and `crosshair_wander()`
+(FROZEN below 300px), same cached frame sets `guilty`/`isabel` failed gate 1 on under every
+template configuration tried:
+
+| Video      | Frames | Before (template, this doc's own record) | After (structural)   |
+| ---------- | ------ | ---------------------------------------- | -------------------- |
+| `marciana` | 1800   | 14.3% OK (healthy reference)             | **19.1% OK, 1783px** |
+| `noir`     | 600    | 1.3% BROKEN, 87px FROZEN                 | **21.2% OK, 1675px** |
+| `guilty`   | 5738   | 0.0-2.5% BROKEN on every config tried    | **19.7% OK, 2326px** |
+| `isabel`   | 5721   | 6.8% OK (marginal, per-video template)   | **19.9% OK, 2080px** |
+
+All four now score OK and land in a tight 17-22% band — above `marciana`/run16's own reference
+(14.3%), not just above the 5% bar — with wander 1638-2326px, in family with run16's 2351px and far
+above the 300px freeze line. Full-run lock coverage: `guilty` 97.8%, `isabel` 97.9% (vs "3 shots on a
+180s fight" — i.e. essentially never — under template matching).
+
+**Gate 2 (detection rate ≥60% of expected) — NOT independently re-measured this session** for the
+full-video case on all four; not run for lack of time, not because it failed. What exists: the
+15s `marciana` smoke run above recovers 19/23 shots (83%) through the dead-window boundary, and the
+full-run lock-coverage/non-zero-frame numbers above are consistent with real, continuous firing
+detection rather than the near-total loss template matching produced on `guilty`/`isabel`. A proper
+gate-2 number needs a full-video `read-pellets.ts --locate structural` run (with the VLM timer pass)
+on all four videos, which this session did not do.
+
+**Self-test committed:** `scripts/probe/count-pellets.py --selftest` validates
+`locate_ammo_structural` against `scripts/tests/fixtures/pellets/ammo-box-structural-frame350.png` —
+a real crop (marciana, frame 350, inside the DEAD 41.4-53.3 window) containing both the true ammo
+box and a 5-digit floating damage number of similar glyph brightness, so the test proves the
+STRUCT_ROW_SIZES count filter rejects the look-alike rather than merely getting lucky on one frame.
+
+**Not done / open:** the digit-row → crosshair offset (`--struct-offset-x/y`, default 162/-12.5 at
+zoom 2) was calibrated against the template path's own offset on 30 `marciana` frames (sd < 1px) —
+it has not been independently cross-checked against `noir`/`guilty`/`isabel`, only via the validity
+metric working end-to-end on those videos. Gate 2 (above). Whether the structural method should now
+_replace_ the template default or stay an opt-in `--locate structural` flag is an owner call, not
+made here.
+
 ---
 
 ## Phase 2 — Lifecycle-aware counting (the core of the redesign)

@@ -366,6 +366,125 @@ def _ammo_roi(img_rgb, loc, tshape, pad_x=70, pad_y=25):
     return img_rgb[y0:y1, x0:x1], (x0, y0)
 
 
+# ============================================================
+# Structural crosshair localization (Phase 2A part 2,
+# docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
+#
+# cv2.matchTemplate keys on one video's specific box pixels and does not
+# generalise (`guilty`: 3 shots on a 180s fight) and, worse, freezes on a
+# false seed with no way back (`noir-near-ce36`) — and no confidence
+# threshold can separate a false seed from a real box, because their
+# confidence bands overlap (§H5: `noir`'s false lock sits at conf 0.43,
+# inside marciana's own healthy 0.39-0.53 lock band).
+#
+# This replaces appearance-matching with the SAME shape model
+# `segment_ammo_digits` already uses to read the counter once it is found:
+# the ammo box is a fixed-geometry HUD element -- 2-3 bright (or red, at low
+# ammo) glyphs sharing a top edge, rendered on a dark badge. That geometry
+# is a property of the UI, not of any one recording's pixels, so it
+# generalises where a pixel template cannot. Disambiguation from a same-shaped
+# false candidate (a floating damage number is also 2-3 bright digits) is by
+# TWO independent structural cues, not a single tunable scalar:
+#   1. the digit row's local surround is DARK (the badge) -- a floating
+#      number has no badge, so its surround is the (brighter) battle scene;
+#   2. continuity with the previous frame's lock (the box slides smoothly
+#      with the aim point, same `--max-template-disp` gate as the template
+#      path) -- a decoy at a random screen position rarely sits within the
+#      gate two frames running.
+# Categorical shape-admission (a component either has 2-3 row-mates of digit
+# size or it doesn't) is what keeps this out of the H5 failure mode: there is
+# no single confidence scalar whose "real" and "false" bands can overlap.
+# ============================================================
+STRUCT_ROW_SIZES = (2, 3)  # ammo counters render 2 or 3 digits
+
+
+def _digit_glyph_mask(rgb):
+    """White-or-red glyph mask — the same colour rule `segment_ammo_digits` reads digits with."""
+    r, g, b = rgb[..., 0].astype(int), rgb[..., 1].astype(int), rgb[..., 2].astype(int)
+    white = (r > 190) & (g > 190) & (b > 190)
+    red = (r > 150) & (g < 90) & (b < 90)
+    return ((white | red) * 255).astype(np.uint8)
+
+
+def _group_digit_rows(mask, templ_h, row_tol_frac=DIGIT_ROW_TOL):
+    """Connected glyph-shaped components grouped by shared top edge (one group = one number)."""
+    import cv2
+    n, labels, stats, _ = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    hlo, hhi = DIGIT_H_RANGE[0] * templ_h, DIGIT_H_RANGE[1] * templ_h
+    wlo, whi = DIGIT_W_RANGE[0] * templ_h, DIGIT_W_RANGE[1] * templ_h
+    cands = []
+    for i in range(1, n):
+        x, y, w, h, _area = stats[i]
+        if hlo <= h <= hhi and wlo <= w <= whi:
+            cands.append((x, y, w, h))
+    tol = row_tol_frac * templ_h
+    groups, used = [], set()
+    for idx, c in enumerate(cands):
+        if idx in used:
+            continue
+        row = [j for j, c2 in enumerate(cands) if abs(c2[1] - c[1]) <= tol]
+        for j in row:
+            used.add(j)
+        groups.append([cands[j] for j in row])
+    return groups
+
+
+def locate_ammo_structural(rgb, templ_h):
+    """Candidate ammo-counter positions in FULL-frame coords, best (darkest surround) first.
+
+    Each candidate is `(surround_gray, cx, cy, row_width)`. `surround_gray` is the mean
+    brightness of a padded margin around the digit row, excluding the glyph pixels
+    themselves — low means "sits on a dark badge" (the real counter), high means
+    "floats on the battle scene" (a damage number of the same glyph shape).
+    """
+    import cv2
+    gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
+    mask = _digit_glyph_mask(rgb)
+    pad = int(0.15 * templ_h)
+    h, w = gray.shape
+    out = []
+    for grp in _group_digit_rows(mask, templ_h):
+        if len(grp) not in STRUCT_ROW_SIZES:
+            continue
+        x0 = min(c[0] for c in grp)
+        y0 = min(c[1] for c in grp)
+        x1 = max(c[0] + c[2] for c in grp)
+        y1 = max(c[1] + c[3] for c in grp)
+        px0, px1 = max(0, x0 - pad), min(w, x1 + pad)
+        py0, py1 = max(0, y0 - pad), min(h, y1 + pad)
+        region = gray[py0:py1, px0:px1]
+        region_mask = mask[py0:py1, px0:px1] > 0
+        bg = region[~region_mask]
+        if not bg.size:
+            continue
+        out.append((float(bg.mean()), (x0 + x1) / 2.0, (y0 + y1) / 2.0, float(x1 - x0)))
+    out.sort(key=lambda c: c[0])
+    return out
+
+
+def locate_crosshair_structural(rgb, templ_h, last_acc, max_disp):
+    """One frame's (cx, cy) digit-row centre + its surround score, or (last_acc, None).
+
+    Selection prefers CONTINUITY over raw score: the candidate nearest the previous
+    lock wins if it is within `max_disp` (the box moves smoothly with the aim point,
+    same gate the template path uses), else the darkest-surround candidate re-acquires
+    the lock outright. There is no confidence-scalar override tier and no carry-forward
+    on a lost lock — H1's diagnosis is that carrying a stale position through a multi-
+    second gap while the aim point moves is wrong by construction; re-acquiring from
+    the best structural candidate every frame is the fix.
+    """
+    cands = locate_ammo_structural(rgb, templ_h)
+    if not cands:
+        return last_acc, None
+    if last_acc is not None:
+        nearest = min(cands, key=lambda c: math.hypot(c[1] - last_acc[0], c[2] - last_acc[1]))
+        d = math.hypot(nearest[1] - last_acc[0], nearest[2] - last_acc[1])
+        if d <= max_disp:
+            return (nearest[1], nearest[2]), nearest[0]
+    best = cands[0]
+    return (best[1], best[2]), best[0]
+
+
 def segment_ammo_digits(roi_rgb, templ_h):
     """Return the digit cells (binary crops) left-to-right, or [] if the box is not readable."""
     import cv2
@@ -511,11 +630,51 @@ def save_debug(img: np.ndarray, path: str, args):
     cv2.imwrite(path, cv2.cvtColor(combined, cv2.COLOR_RGB2BGR))
 
 # ============================================================
+# Self-test: validate locate_ammo_structural against a committed real frame crop
+# (CLAUDE.md constraint 9 — the instrument stays reproducible from a clean checkout).
+# ============================================================
+STRUCT_FIXTURE = 'scripts/tests/fixtures/pellets/ammo-box-structural-frame350.png'
+
+# `marciana` (slug `marciana`, SG/Iron, marciana-solo.MP4 — NOT marciana-marine-study), frame 350,
+# fightT ~41.6s — inside the dropout window (fightT 41.4-53.3) where the OLD template matcher had
+# 0% confident matches (docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md Phase 2A).
+# The crop keeps both the real ammo box ("008", a dark badge) and a 5-digit floating damage number
+# ("26149") that shares the same glyph shape/brightness, so the selftest proves the STRUCT_ROW_SIZES
+# count filter rejects the look-alike rather than merely getting lucky on this one frame.
+STRUCT_SELFTEST_EXPECT = {'n_candidates': 1, 'cx': 106.0, 'cy': 310.0}
+
+
+def selftest_structural():
+    import cv2
+    im = cv2.imread(STRUCT_FIXTURE)
+    if im is None:
+        print(f'selftest: could not load fixture {STRUCT_FIXTURE}', file=sys.stderr)
+        return 1
+    rgb = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+    cands = locate_ammo_structural(rgb, templ_h=74.0)
+    got = {'n_candidates': len(cands)}
+    if cands:
+        got['cx'] = round(cands[0][1], 1)
+        got['cy'] = round(cands[0][2], 1)
+    ok = (got.get('n_candidates') == STRUCT_SELFTEST_EXPECT['n_candidates'] and
+          cands and
+          abs(cands[0][1] - STRUCT_SELFTEST_EXPECT['cx']) < 1.0 and
+          abs(cands[0][2] - STRUCT_SELFTEST_EXPECT['cy']) < 1.0)
+    print(f'expected: {STRUCT_SELFTEST_EXPECT}')
+    print(f'got     : {got}')
+    print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
+    return 0 if ok else 1
+
+
+# ============================================================
 # Main
 # ============================================================
 def main():
+    if '--selftest' in sys.argv:
+        raise SystemExit(selftest_structural())
     parser = argparse.ArgumentParser(description='Shotgun pellet counter (A/B: numpy, PIL, OpenCV)')
-    parser.add_argument('input', help='image file or directory of frames')
+    parser.add_argument('input', nargs='?', help='image file or directory of frames')
+    parser.add_argument('--selftest', action='store_true', help=f'validate locate_ammo_structural against {STRUCT_FIXTURE} and exit (handled before other args are required)')
     parser.add_argument('--debug-dir', help='save debug masks + outlines')
     parser.add_argument('--center-exclude', type=float, default=18, help='exclude radius from crop centre (px)')
     parser.add_argument('--min-area', type=int, default=100, help='min component area (px²)')
@@ -541,6 +700,10 @@ def main():
     parser.add_argument('--max-template-disp', type=float, default=150, help='max frame-to-frame ammo-box displacement (zoomed px) before a template match is rejected as a false lock (default 150)')
     parser.add_argument('--relock-conf-min', type=float, default=0.55, help='confidence bar to (re)acquire the crosshair lock: gates the very first lock (instead of the base 0.3), and lets a strong match beyond --max-template-disp override a stale/false lock rather than being discarded as a jump (default 0.55)')
     parser.add_argument('--track-conf-min', type=float, default=0.3, help='min confidence to accept a smooth, in-gate continuation of the current lock (default 0.3, the original base threshold) — raise this to stop a chain of weak matches drifting the lock away from the real box one small step at a time')
+    parser.add_argument('--locate', choices=['template', 'structural'], default='template', help='crosshair localization method: "template" = cv2.matchTemplate on --ammo-template (default, needs a per-video template); "structural" = find the ammo counter by its shape (2-3 digit glyphs on a dark badge, see locate_ammo_structural) — no template needed, does not depend on any one video\'s pixels (default: template)')
+    parser.add_argument('--struct-templ-h', type=float, help='ammo-badge basis height in ZOOMED px, for the digit height/width gates (default 37*zoom = 74 at zoom 2, the box size measured across all four videos)')
+    parser.add_argument('--struct-offset-x', type=float, help='crosshair X offset from the structural digit-row CENTRE in zoomed px (default 81*zoom = 162 at zoom 2, calibrated against the template-derived crosshair on marciana)')
+    parser.add_argument('--struct-offset-y', type=float, help='crosshair Y offset from the structural digit-row CENTRE in zoomed px (default -6.25*zoom = -12.5 at zoom 2)')
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
@@ -557,6 +720,15 @@ def main():
         args.ammo_offset_x = 12.5 * args.zoom
     if args.ammo_offset_y is None:
         args.ammo_offset_y = -100 * args.zoom
+
+    # Structural-locate defaults scale with zoom the same way (see locate_ammo_structural /
+    # the Phase 2A part 2 calibration in the implementation plan).
+    if args.struct_templ_h is None:
+        args.struct_templ_h = 37.0 * args.zoom
+    if args.struct_offset_x is None:
+        args.struct_offset_x = 81.0 * args.zoom
+    if args.struct_offset_y is None:
+        args.struct_offset_y = -6.25 * args.zoom
 
     # Apply tunable red threshold to the module-level constants used by all backends
     global RED_LO, RED_HI
@@ -667,9 +839,14 @@ def main():
         all_comps = []       # per-frame component lists (full frame coords)
         cross_positions = [] # per-frame crosshair positions (full frame coords)
         fnames = []
-        cross_confs = []   # per-frame template match confidence (None if no template)
-        cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc
+        cross_confs = []   # per-frame template match confidence (None if no template) —
+                           # when --locate structural, this holds the accepted candidate's
+                           # SURROUND score instead (lower = darker badge = better; see
+                           # locate_ammo_structural). Same slot, documented meaning per mode.
+        cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc, or the
+                           # best structural candidate's (cx, cy) before the continuity gate
         last_acc = None    # last accepted ammo-box top-left loc (for displacement gate)
+        last_acc_struct = None  # last accepted structural digit-row centre (cx, cy)
         max_disp = args.max_template_disp
         for f in files:
             img = load_rgb(f)
@@ -681,7 +858,16 @@ def main():
             cross_pos = None
             conf_val = None
             raw_loc = None
-            if ammo_tmpl is not None:
+            if args.locate == 'structural':
+                center, score = locate_crosshair_structural(img, args.struct_templ_h,
+                                                              last_acc_struct, max_disp)
+                if center is not None:
+                    last_acc_struct = center
+                    conf_val = score
+                    raw_loc = (round(center[0]), round(center[1]))
+                    cross_pos = (round(center[0] + args.struct_offset_x),
+                                 round(center[1] + args.struct_offset_y))
+            elif ammo_tmpl is not None:
                 import cv2 as _cv2
                 frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
                 conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)

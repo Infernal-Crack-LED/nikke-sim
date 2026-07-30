@@ -15,6 +15,12 @@
 //     --pellet-radius <n>   count pellets within this radius of crosshair in zoomed px (default 80*zoom)
 //     --mock                synthetic reads (no VLM / Python needed)
 //     --out <dir>           scratch dir (default $CLAUDE_SCRATCH|/tmp/pellets)
+//     --locate <mode>       crosshair localization: "template" (default, per-video
+//                           cv2.matchTemplate) or "structural" (find the ammo counter by
+//                           shape — 2-3 digit glyphs on a dark badge; no template, does not
+//                           depend on any one video's pixels — see count-pellets.py's
+//                           locate_ammo_structural and Phase 2A part 2 of
+//                           docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md)
 //
 // Requires: scripts/probe/.venv/bin/python with numpy, scipy, Pillow, opencv-python-headless
 //
@@ -65,6 +71,7 @@ const zoom = Number(flags.zoom ?? 3);
 const coreRate = Number(flags['core-rate'] ?? 0.05);
 const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
 const ammoOffsetYNative = Number(flags['ammo-offset-y'] ?? -5.5);
+const locateMode = flags.locate === 'structural' ? 'structural' : 'template';
 const mock = flags.mock === 'true';
 const outDir = flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/pellets';
 const scriptDir = fileURLToPath(new URL('.', import.meta.url));
@@ -124,35 +131,41 @@ if (!pelletFiles.length) {
 
 // ---- extract a per-video ammo-box template (global marciana template does not
 //      generalize to all SG HUDs; see docs/handoffs/2026-07-29-sg-landing-recalibration-plan.md)
+// Skipped entirely under --locate structural: that mode finds the ammo counter by its SHAPE
+// (2-3 digit glyphs on a dark badge), not by matching one video's box pixels — see
+// locate_ammo_structural in count-pellets.py and Phase 2A part 2 of
+// docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.
 const perVideoAmmoTemplate = `${outDir}/ammo-box-template.png`;
-try {
-  console.log('  extracting per-video ammo-box template ...');
-  const t0Tmpl = Date.now();
-  execFileSync(
-    pythonBin,
-    [
-      `${scriptDir}extract-ammo-template.py`,
-      video,
-      '--out',
-      perVideoAmmoTemplate,
-      '--crop',
-      pelletCrop,
-      '--zoom',
-      String(zoom),
-      '--roi-x0',
-      '0.55',
-      '--roi-y0',
-      '0.50',
-    ],
-    { stdio: ['ignore', 'inherit', 'inherit'] }
-  );
-  console.log(
-    `  per-video template: ${((Date.now() - t0Tmpl) / 1000).toFixed(1)}s -> ${perVideoAmmoTemplate}`
-  );
-} catch {
-  console.log(
-    `  per-video template extraction failed, falling back to ${ammoTemplatePath}`
-  );
+if (locateMode === 'template') {
+  try {
+    console.log('  extracting per-video ammo-box template ...');
+    const t0Tmpl = Date.now();
+    execFileSync(
+      pythonBin,
+      [
+        `${scriptDir}extract-ammo-template.py`,
+        video,
+        '--out',
+        perVideoAmmoTemplate,
+        '--crop',
+        pelletCrop,
+        '--zoom',
+        String(zoom),
+        '--roi-x0',
+        '0.55',
+        '--roi-y0',
+        '0.50',
+      ],
+      { stdio: ['ignore', 'inherit', 'inherit'] }
+    );
+    console.log(
+      `  per-video template: ${((Date.now() - t0Tmpl) / 1000).toFixed(1)}s -> ${perVideoAmmoTemplate}`
+    );
+  } catch {
+    console.log(
+      `  per-video template extraction failed, falling back to ${ammoTemplatePath}`
+    );
+  }
 }
 
 // ---- run Python pellet counter on ALL pellet frames (fast, no VLM) ----
@@ -256,7 +269,10 @@ console.log(`  timer VLM: ${((Date.now() - t0Timer) / 1000).toFixed(1)}s`);
 
 // ---- VLM crosshair reads (skipped when ammo template is available) ----
 const crosshairFile = `${outDir}/crosshairs.json`;
-if (forceVlmCrosshair || !existsSync(ammoTemplatePath)) {
+if (
+  locateMode === 'template' &&
+  (forceVlmCrosshair || !existsSync(ammoTemplatePath))
+) {
   const CROSSHAIR_PROMPT = `You are looking at a cropped region from a NIKKE boss fight showing the
 damage area around the boss. Find the CROSSHAIR — the small aiming reticle where the player's
 shots impact. It is usually a small circle, diamond, or chevron shape near the centre of the
@@ -394,7 +410,11 @@ Respond with ONLY this JSON: {"x": <int or null>, "y": <int or null>}`;
     `  crosshair positions: ${Object.keys(crosshairMap).length} frames -> ${crosshairFile}`
   );
 } else {
-  console.log('  crosshair: using ammo box template matching (skipping VLM)');
+  console.log(
+    locateMode === 'structural'
+      ? '  crosshair: using structural digit-row localization (skipping VLM + template)'
+      : '  crosshair: using ammo box template matching (skipping VLM)'
+  );
 }
 
 // ---- run Python pellet counter (AFTER crosshair reads) ----
@@ -414,9 +434,20 @@ if (!mock) {
     ? perVideoAmmoTemplate
     : ammoTemplatePath;
   const useAmmoTemplate = existsSync(ammoTemplate);
-  const crosshairArgs = useAmmoTemplate
-    ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY} --ammo-roi-x0 0.55 --ammo-roi-y0 0.50`
-    : `--crosshair-file "${crosshairFile}"`;
+  // Structural mode's geometry constants are calibrated at zoom 2 (162/-12.5/74 — see
+  // count-pellets.py's own defaults) and must be scaled to whatever --zoom this run actually
+  // uses, the same way ammoOffsetX/Y above are scaled — passing count-pellets.py's OWN --zoom
+  // default (1) here would silently mis-scale them exactly like the --zoom 2 vs 3 mismatch H3
+  // documents for the template path.
+  const structTemplH = 37 * zoom;
+  const structOffsetX = 81 * zoom;
+  const structOffsetY = -6.25 * zoom;
+  const crosshairArgs =
+    locateMode === 'structural'
+      ? `--locate structural --struct-templ-h ${structTemplH} --struct-offset-x ${structOffsetX} --struct-offset-y ${structOffsetY}`
+      : useAmmoTemplate
+        ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY} --ammo-roi-x0 0.55 --ammo-roi-y0 0.50`
+        : `--crosshair-file "${crosshairFile}"`;
   const redRMin = Number(flags['red-r-min'] ?? 200);
   const redGbMax = Number(flags['red-gb-max'] ?? 60);
   const markerRadius = Number(flags['marker-radius'] ?? 65);
