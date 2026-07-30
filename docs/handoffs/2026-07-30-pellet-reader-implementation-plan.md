@@ -681,6 +681,53 @@ Also run `analyze-pellet-tracks.py` on the new dump and confirm `[crosshair-vali
 
 **Stop condition: one run, record, report. Do not tune, do not sweep parameters.**
 
+### H1 — ✅ DONE 2026-07-30 — result: **materially different but non-zero**
+
+Ran exactly the target command (input video is only present in the main tree, not this worktree —
+gitignored media isn't shared across worktrees — so the video path had to be absolute:
+`/Users/maxwellsutton/nikke-sim/docs/probes/clean-weapons/marciana-solo.MP4`; output written under
+the main tree's `scratchpad/pellets/h1-marciana-treecode/`, same reason).
+
+```
+43 shots (29 valid 5-10, expected ~90)
+avg total: 7.3  avg red: 0.17
+```
+
+| Metric        | run18 (reference) | tree-code (H1) | Δ               |
+| ------------- | ----------------- | -------------- | --------------- |
+| totalShots    | 70                | **43**         | −39%            |
+| validShots    | 58                | **29**         | −50%            |
+| avgTotal      | 7.6               | **7.3**        | −4%, in family  |
+| avgRed        | 0.19              | **0.17**       | −11%, in family |
+| expectedShots | 90                | 90 (same calc) | —               |
+
+Against the pre-committed table: not zero/near-zero, and not "in family" either (shots is far
+outside the 60–80 band even though `avgTotal`/`avgRed` land inside their bands) — this is the
+middle row, **materially different but non-zero**. Per the decision rule: do not tune toward
+`run18`'s numbers, record both, and **the tree-code run becomes the new reference** (43 shots / 29
+valid / avgTotal 7.3 / avgRed 0.17 / expected 90). `run18`'s totalShots/validShots are superseded —
+they came from code no longer in the tree.
+
+**Crosshair validity.** `read-pellets.ts` itself doesn't emit a `tracks.json` (no `--dump-tracks`
+flag was in the target command as written, and adding it would have meant re-running the full
+pipeline including the 60-call VLM timer pass). Since the pellet frames were already extracted by
+the H1 run, `count-pellets.py` was invoked a second time directly against the existing
+`frames-pellet/` dir, replicating `read-pellets.ts`'s own parameter derivation (`--zoom 2` →
+`center-exclude 36`, `min-area 25`, `max-area 750`, `pellet-radius 160`, `ammo-offset-x 125`,
+`ammo-offset-y -11`, `max-pellet-frames 7`, same per-video ammo template) plus `--dump-tracks`, to
+avoid a second full run. Result:
+
+```
+white tracks within pellet_radius(160) of crosshair: 919   [crosshair-validity: 7.9% near — OK]
+```
+
+**OK**, but notably lower than `marciana`/`run16`'s 14.3% — recorded, not chased (H1 is one run,
+not a diagnosis pass).
+
+**Not done, out of scope for H1:** no attempt to explain the 43-vs-70 shot gap (candidates: the
+`--relock-conf-min` stricter seeding losing more events than it gains, or the temporal-count fix
+changing which frames clear the temporal filter) — that is diagnosis work, not H1's stop condition.
+
 ### H2 — Regression test: temporal counts are never silently zero
 
 The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
