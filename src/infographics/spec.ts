@@ -207,7 +207,8 @@ export function parseRenderSpec(
     }
     case 'resources': {
       const rawTier = trimmed(String(raw.tier ?? ''));
-      const tier = rawTier !== undefined ? Number(rawTier) : DEFAULT_RESOURCES_TIER;
+      const tier =
+        rawTier !== undefined ? Number(rawTier) : DEFAULT_RESOURCES_TIER;
       if (
         !Number.isInteger(tier) ||
         tier < RESOURCES_TIER_MIN ||

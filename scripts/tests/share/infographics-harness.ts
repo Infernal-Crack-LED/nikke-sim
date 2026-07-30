@@ -341,7 +341,9 @@ export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
       loadIcon('res_t9_gear', RES_ICON_SIZE),
       loadIcon('res_lock', RES_ICON_SIZE),
       loadIcon('res_xp_fodder', RES_ICON_SIZE),
-      ...BOSS_TABLES.map((t) => loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)),
+      ...BOSS_TABLES.map((t) =>
+        loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)
+      ),
     ]);
   const fragmentByBoss: ResourcesIcons['fragmentByBoss'] = {};
   BOSS_TABLES.forEach((t, i) => {
@@ -372,7 +374,7 @@ export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
 export async function buildUnitCard(
   variant: UnitCardVariant = 'discord'
 ): Promise<UnitCardData> {
-  return buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
+  return await buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
 }
 
 export interface FixtureRender {

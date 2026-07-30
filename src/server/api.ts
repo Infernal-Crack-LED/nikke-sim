@@ -43,7 +43,10 @@ import {
   buildResourcesCard,
   type ResourcesIcons,
 } from '../infographics/core/resourcesCard.js';
-import { BOSS_TABLES, iconBasename } from '../infographics/core/resourcesData.js';
+import {
+  BOSS_TABLES,
+  iconBasename,
+} from '../infographics/core/resourcesData.js';
 import {
   parseRenderSpec,
   specCacheKey,

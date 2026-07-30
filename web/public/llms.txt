@@ -1,0 +1,45 @@
+# NIKKE Solo Raid Sim
+
+> A frame-tick damage simulator for NIKKE: Goddess of Victory solo raids. It
+> predicts per-unit DPS for 5-unit teams by modeling actual firing cadence,
+> burst rotation, and charge timing frame-by-frame — not averaged rates —
+> validated against real recorded fights. Free, runs entirely in the browser,
+> no login required for the core tools.
+
+nikkesim.app is a fan-made tool for the mobile game NIKKE: Goddess of Victory
+(developer: SHIFT UP / level infinite / PROXIMA BETA). It is not affiliated
+with or endorsed by the game's publisher.
+
+## Sim
+
+- [Team Sim](https://nikkesim.app/): Build a 5-unit team, configure a boss profile, and get per-unit DPS, damage share, and Full Burst counts from a frame-tick simulation (not an averaged-rate estimate).
+- [Roster Sim](https://nikkesim.app/rostersim): Sim up to five of your own teams at once and compare their damage side by side.
+- [Team Generator](https://nikkesim.app/team): Generate the best 5-Nikke solo-raid team against a custom boss profile, factoring element, burst rotation, and overload synergy.
+- [Roster Generator](https://nikkesim.app/roster): Input your real NIKKE roster and generate the optimal solo-raid team from the units, gear, and overload lines you actually have.
+- [Team Builder](https://nikkesim.app/teambuilder): Visually build and share a team composition; filter the full roster, set loadouts, and hand the team off to Team Sim or Roster Sim.
+- [Sync Your Roster](https://nikkesim.app/roster-sync): Import your real NIKKE roster via blablalink so Roster Sim and the Roster Generator use your actual units.
+
+## Rankings
+
+- [DPS Rankings](https://nikkesim.app/ranks): Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks, with best overload lines per unit.
+- [Support Rankings](https://nikkesim.app/ranks/support): Ranked support boards — burst generation, burst cooldown reduction, sustain (team HP), and buffer value — from the same sim data as the DPS rankings.
+- [Unit Comparison](https://nikkesim.app/ranks/compare): Head-to-head per-unit DPS comparison with a custom control group.
+- [Card Builder](https://nikkesim.app/builder): Compose a shareable NIKKE infographic (DPS chart, unit comparison, rank board, unit card, or overload table) with a hosted, Discord-embeddable image URL.
+
+## Overload
+
+- [Overload Optimizer](https://nikkesim.app/overload): Find the optimal 3rd overload line for a NIKKE B3, ranked by simulated DPS gain.
+- [Overload Rolling Simulator](https://nikkesim.app/olsim): Estimate the rerolls and Custom Modules needed to hit a target overload build.
+- [Overload Breakpoints](https://nikkesim.app/charge): Charge-speed frame breakpoints and max-ammo line costs for every RL and SR.
+
+## Tools
+
+- [Doll Leveling Calculator](https://nikkesim.app/doll): The most resource-efficient path to level a doll (Favorite Item) to SR phase 15.
+- [Resource Calculator](https://nikkesim.app/resources): Expected daily solo-raid resource drops by stage — Custom Modules, module fragments, locks, XP fodder.
+
+## Reference
+
+- [Game Mechanics Reference](https://nikkesim.app/mechanics): The sim's damage formula, burst rotation, charge math, and solo-raid mechanics, each sourced and evidence-tiered.
+- [How to Use the Sim](https://nikkesim.app/howto): Quick-start guide — build a team, configure the boss, read the results.
+- [Patch Notes](https://nikkesim.app/patch-notes): Changelog of accuracy improvements, new unit models, and mechanics updates.
+- [Testing Requested](https://nikkesim.app/testing-requests): Units and matchups the sim needs real fight recordings for, to close the accuracy gap.

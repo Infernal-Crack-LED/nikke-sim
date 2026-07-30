@@ -125,9 +125,9 @@ export function DpsChartTab() {
   );
   // "Copied"/"Saved" flash for the standalone Share Comparison chip (it isn't
   // routed through DpsBarChart, so it tracks its own copy state)
-  const [cmpImgFlash, setCmpImgFlash] = useState<'copied' | 'downloaded' | null>(
-    null
-  );
+  const [cmpImgFlash, setCmpImgFlash] = useState<
+    'copied' | 'downloaded' | null
+  >(null);
   // Multi-unit comparison selection (slugs) for the full-matrix chart — the
   // same picks drive the "Share comparison" card (subset of the population,
   // no §6.6 window; mirrors the API's ?units= dps.png variant).
@@ -259,8 +259,8 @@ export function DpsChartTab() {
             <dt>Bready</dt>
             <dd>
               Ranked <b>both</b> ways: her default row (Sustained taste) and a{' '}
-              <b>Distributed</b> row (the distributed-damage-buff branch,
-              tagged "Distributed" on the chart).
+              <b>Distributed</b> row (the distributed-damage-buff branch, tagged
+              "Distributed" on the chart).
             </dd>
           </div>
           <div>
@@ -275,20 +275,20 @@ export function DpsChartTab() {
             <dd>
               Ranked <b>both</b> ways: her default row (bursts on the normal
               rotation schedule) and a row that holds her burst until{' '}
-              <b>12 MP stacks</b> before casting (tagged "Burst at 12 MP" on
-              the chart — the same toggle as the Sim/Roster Sim "burst at 12
-              MP" checkbox).
+              <b>12 MP stacks</b> before casting (tagged "Burst at 12 MP" on the
+              chart — the same toggle as the Sim/Roster Sim "burst at 12 MP"
+              checkbox).
             </dd>
           </div>
           <div>
             <dt>Diesel: Winter Sweets</dt>
             <dd>
               Ranked <b>both</b> ways: her default row (bursts first) and a{' '}
-              <b>Bursts Second</b> row where she opens in Highlight — the
-              bigger sustained tier — instead of Intro (tagged "Bursts Second"
-              on the chart). Every row already alternates Intro/Highlight each
-              Full Burst as the fight goes on; the two rows differ only in
-              which one she opens with.
+              <b>Bursts Second</b> row where she opens in Highlight — the bigger
+              sustained tier — instead of Intro (tagged "Bursts Second" on the
+              chart). Every row already alternates Intro/Highlight each Full
+              Burst as the fight goes on; the two rows differ only in which one
+              she opens with.
             </dd>
           </div>
           <div>
@@ -428,9 +428,7 @@ export function DpsChartTab() {
                 </div>
                 <div className="dpschart-compare-actions">
                   <button
-                    className={
-                      'chip' + (cmpImgFlash ? ' copied' : '')
-                    }
+                    className={'chip' + (cmpImgFlash ? ' copied' : '')}
                     disabled={picked.length === 0}
                     title="Copy the comparison card as a PNG"
                     onClick={async () => {

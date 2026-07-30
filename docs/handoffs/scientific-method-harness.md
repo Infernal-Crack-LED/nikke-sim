@@ -285,3 +285,153 @@ confidences, why the decision landed where it did, owner action items, and the H
     (2) confirm the per-video template locks onto the true ammo box for `noir`/`guilty`; (3) re-run
     full `noir` + `guilty` and require ±1 pellet/shot and shape ratios within ±0.10 before any U35
     validation. **No engine change proposed or enacted.**
+- **2026-07-29 — focus charge-gauge bonus is PER-UNIT (`fullChargeBonus/100`), not flat 2.5x: SPLIT
+  DECISION — scarlet-black-shadow IMPLEMENT, alice LOG, cinderella out of scope.** Background:
+  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`. Premise gate: the crux premise (does the
+  solo-footage `scan.ts` `solo` HUD crop, 142x12 @ 2470,488, faithfully read continuous burst-gauge
+  fill %?) was REFUTED by a fresh-context `premise-verifier` citing the tool's own docstring ("the
+  burst gauge charging is not in this crop... absent entirely between cycles"). Owner correction: the
+  widget IS persistent and continuously rendered in solo footage regardless of state (charging/full/
+  draining/chain) — the docstring's characterization was made from team footage and doesn't hold for
+  solo. Re-validated the crop against the ORIGINAL maiden-ice-rose tb2-test-3 anchor (the historic
+  hand-pixel-read recording that established the existing x2.5 rule, `docs/data/burst-gauge.md` §6):
+  the fresh CV read reproduced maiden's documented "+9.1% then +3.45%" two-substep per-pull pattern
+  TWICE in the recording, each within 0.05-0.15% of the 2026-07-13 hand-derived value — a genuine
+  quantitative validation, not a plausibility argument. Fable pre-op **APPROVED-WITH-REVISIONS** (7
+  revisions: reject the driver's proposed cinderella 1.0x exemption — her own rough footage read
+  ~2.6-3.1x contradicts it, closer to the CURRENT flat 2.5x than either 1.0x or her table's 2.0x, so
+  she is PINNED to current behavior instead, measurement-gated, not exempted; guard the `?? 250`
+  fallback for undatamined SR/RL rows so a missing row can never zero a focused unit's gauge; pre-
+  register graded-comp coverage; disclose the inverted procedure (measurements preceded the written
+  plan); fix the stale `scan-frames.py` docstring — deferred, filed as a follow-up; record the ±5%
+  residuals as open; isolated worktree). Driver review: confirmed the control-regression suite's
+  crown/scarlet-black-shadow/helm total-damage drift (1.49%/0.61%/7.97%) is a real, explained
+  second-order rotation ripple (SBS's own FB distribution went from a rigid 12/25 seeds to 11-12/25 —
+  neither crown nor helm are charge weapons and can't be touched directly), not a fit signal; `verify.sh`
+  green, `control-regression.ts --update`. Blind Fable post-op round 1: **ACCEPT, composite MEDIUM**
+  (SBS+alice both single-recording; Q3 pending — named the cheapest resolver: video-count the FB in
+  the ALREADY-HELD `docs/probes/720-kit-audit/scarlet black shadow.MP4` control-comp source
+  recording, an existing artifact, not a new one). Reuse-before-derive: ran `scan.ts` on that exact
+  recording — **11 full bursts, 11/11 corroborated** — outside the pre-fix model's rigid 25/25-seeds-
+  at-12 distribution and inside the post-fix model's 11-12 distribution; sent back to the SAME blind
+  judge (not self-upgraded). Round 2: **ACCEPT, SBS component upgraded to HIGH** (two independent
+  measured-tier confirmations — solo per-shot rate AND team FB count, both agreeing with her datamined
+  150), **alice component held at MEDIUM** (nothing in the SBS datum touches her; her own coverage gap
+  and +5.1% solo residual stand). Owner then supplied a genuine alice-FOCUSED team recording (`docs/
+probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, alice at mid-slot —
+  the earlier "PA MiKa" comp was a red herring, its mid-slot occupant is prika, not alice, corrected
+  mid-session after initially misjudging prika as non-charge when she is SR). Measured: **10 full
+  bursts, 10/10 corroborated**; sim comparison (25 MC seeds, toggled via `git stash` on the worktree)
+  showed pre-fix rigid 25/25-at-10, post-fix 7/25-at-10 / 18/25-at-11 — the real count landed INSIDE
+  both distributions, as the post-fix model's MINORITY (28%) outcome rather than confirming it. Round
+  3 (same blind judge, this new datum): **ACCEPT held, alice confidence unchanged at MEDIUM** — ruled
+  the team FB count a non-isolating, downstream observable (FB count is convolved with red-hood's
+  flex-burst behavior, chain selection, and 3 other units' rates) that cannot outvote alice's direct,
+  isolating solo measurement in EITHER direction (a likelihood-ratio ~3.6:1 on one categorical draw
+  does not overturn an instrument-validated direct read) — explicitly invoking "measured truths are
+  constraints, not scores" and "a model-vs-reality gap localizes to the model as a whole, not one
+  knob." **2-of-2, by unit: scarlet-black-shadow HIGH+HIGH → IMPLEMENT. alice MEDIUM (both judges) →
+  LOG — pinned to the flat constant (same mechanism as cinderella's carve-out, `PENDING_TEAM_ISOLATION`
+  set in `gaugePerShot`), NOT enacted, owner action item filed in `docs/handoffs/QUEUE.md`.**
+  cinderella: no change from pre-existing behavior (flat 2.5x), pinned via `magDumpRof`, own dedicated
+  investigation filed in QUEUE.md (her rough read ~2.6-3.1x contradicts both her table's 2.0x and a
+  1.0x exemption). `verify.sh` green, `control-regression-snapshot.json` updated to reflect the SBS
+  change (the only behavioral delta in that suite). **HARNESS LESSONS:** (1) a premise-verifier's
+  REFUTE grounded entirely in a tool's own documentation can still be wrong if the documentation was
+  characterized under different conditions (team footage) than the case at hand (solo footage) — the
+  owner's direct domain correction plus a fresh quantitative re-validation against an existing anchor
+  resolved it, rather than either blindly trusting the refute or blindly overriding it on say-so alone.
+  (2) Reuse-before-derive paid for itself twice in one post-op loop: both FB-count resolution steps
+  used footage the repo ALREADY held (a control-comp source recording, and — once obtained — an
+  owner-supplied focused recording) run through an already-validated instrument, never a fresh
+  bespoke derivation. (3) A downstream/composite observable (team FB count) is real evidence but is
+  not fungible with a direct/isolating one (solo per-shot rate) — it can corroborate decisively when
+  it falls OUTSIDE the null distribution entirely (SBS), but a same-both-distributions result is weak
+  and must not move a directly-measured constant in either direction on its own (alice). (4) A
+  same-family unit misidentification mid-session (prika judged non-charge when she is SR) was caught
+  by the owner, not self-detected — a reminder that "isCharge" gating and weapon-class claims warrant
+  the same slug-discipline as unit-identity claims, not just character names. DECISIONS 2026-07-29.
+- **2026-07-29 — Alice & Cinderella un-pinned to their datamined `fullChargeBonus` values (3.5× /
+  2.0×): IMPLEMENT (owner ruling).** `focusChargeMult = chargeMultiplier/100` is accepted as TRUE
+  for both units, same footing as scarlet-black-shadow above. A same-day recount run had produced a
+  REJECT verdict on Cinderella (an alleged 8-shot gaugeless opener yielding an effective ≈2.2×) — that
+  finding was a repeated instrument/reading error, not a real mechanic, and is RETRACTED; do not
+  re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.
+- **2026-07-29 — Dot-tick burst-gauge over-count from concurrent stacking DoT instances (found while
+  auditing the burst-gen ranking chart): DECISION = LOG (not Implement).** Claim: `skillGauge()` fires
+  unconditionally on every live dot instance's tick (`src/engine/sim.ts:3303`), so a unit whose DoT is
+  modeled as a stacking/self-refreshing effect (a new independent instance per re-trigger, e.g. raven's
+  S1 on `shotFired`) generates N× the intended burst gauge when N instances are concurrently live —
+  purely an artifact of how many parallel dot objects encode the damage, not a real per-unit trigger
+  count. The rule's sole citation (Haran/`harran` "290/tick", `docs/data/burst-gauge.md:181`) was
+  premise-checked and found **CANNOT-VERIFY on the instance-count dimension** — it records only a
+  per-tick rate, silent on concurrency, so the incumbent N-linear default has NO evidentiary backing
+  in either direction (also: the unit's real slug is `harran`, not `haran`, and she has no override —
+  unmodeled, not itself at risk).
+  Two independent fixes were designed and driven through the full gate (premise gate → 2 rounds of
+  Fable pre-op revision, after the first mechanism design — a 1-second wall-clock bucket — was caught
+  by Fable implementing H0c, silently 4×-throttling `anis-star`'s single-instance 0.25s-tick dot):
+  **Fix A** (instance election: among concurrently-live dots sharing an `(ownerIdx, srcSlot)` key, only
+  the earliest-created still-live one calls `skillGauge()` on its tick; `dealDamage` unchanged for every
+  instance) and **Fix B** (add the `stage !== 0` chain-lock guard to `fillGauge`, `sim.ts` ~2349, to
+  match `addGauge`'s existing guard — a separate bug where little-mermaid's `teamAmmo:400` instant-fill
+  effect could leak gauge mid-chain).
+  **Fix A: 2-of-2 ACCEPT, both MEDIUM confidence → LOG.** Driver (Opus): ACCEPT MEDIUM. Fable (blind
+  post-op): ACCEPT MEDIUM. Both judges capped at MEDIUM for the SAME structural reason (Q1 split): the
+  _internal-consistency_ claim (leaves every measured pin untouched) is strongly provable — `jill`
+  (single-instance, load-bearing in graded "misc B3s run I" pin 13) and `anis-star` (single-instance,
+  0.25s tick — the sharpest H0c detector) came back byte-identical to the last digit; all 7 graded
+  FB-count pins held; `ada` (2-concurrent-instance case in graded "elec DPS run E") came back
+  byte-identical with a measured mechanistic reason (her duplicate ticks were already guard-locked); a
+  raven discrepancy (measured 1.86× drop vs a pre-derived exact prediction of 2.07× and the [2.5,3.0]×
+  fallback band) was NOT waved through — it was resolved by an index-for-index pre/post instrumentation
+  decomposition proving 0/483 election mismatches and localizing 100% of the gap to a real feedback
+  effect (Fix A lowers raven's own gauge rate, dropping her solo FB count 11→10, which shifts her own
+  chain-lock windows — a confound the frozen pre-fix-timeline prediction couldn't encode). But the
+  _true-mechanic_ claim (is concurrency-gated gauge actually how real NIKKE works, vs the incumbent
+  N-linear) remains CANNOT-VERIFY — zero footage evidence exists either direction — so Q1 is
+  irreducibly split and confidence cannot exceed MEDIUM for this class of change no matter how clean
+  the implementation is. Per the 2-of-2 rule, MEDIUM+MEDIUM = **LOG, not IMPLEMENT**: approved-by-judges
+  as a non-destructive internal-consistency fix, but not landed — the engine was NOT touched on the
+  shared tree. Fix A sits committed (`e76093f`) on the isolated worktree
+  `worktree-agent-aab3a19427393feb2` (branch `worktree-agent-aab3a19427393feb2`), preserved pending an
+  owner decision, not merged back.
+  **Fix B: driver-decided NOT to implement this pass (independent of Fix A's LOG), before reaching the
+  post-op panel.** Fix B passed its own 3 named checks (N6 FB pin holds, no `regression.ts` hard-fail,
+  little-mermaid's N6 total exactly unchanged) but was discovered — via an EXISTING kit-faithfulness
+  test outside any graded comp (`scripts/tests/units/little-mermaid.test.ts`, fixture
+  little-mermaid/crown/ada/`helm` [SR/Water base, not `helm-aquamarine`], boss Iron) — to make her
+  `fillGauge` ability completely inert in that
+  fixture (the M4 "BEHAVIOURAL: the gauge fill is live" assertion flips from pass to fail; her total
+  with-vs-without `fillGauge` becomes bit-identical under Fix B). This surfaces a genuinely new,
+  previously-unexamined premise the original plan didn't anticipate: whether a "Fills Burst Gauge X%"
+  effect is, in real NIKKE, subject to the SAME continuous-generation chain-lock as `addGauge`, or is a
+  mechanically distinct discrete grant that bypasses it — with zero footage evidence either way. Left
+  uncommitted in the same worktree; not sent to Fable pre-op/post-op (a driver call, not a judged
+  REJECT) because the discovery changes the scope of what's being claimed, and a revised plan
+  addressing that premise should go through its own gate rather than being folded into this one.
+  **OWNER ACTION ITEMS** (filed `docs/handoffs/QUEUE.md`): (1) decide whether to merge Fix A
+  (`e76093f`) as-is — it is judge-approved-but-LOG, a defensible internal-consistency default with zero
+  measured-board risk, but not evidence that it's the TRUE mechanic; (2) file the companion
+  `docs/open-questions.md` UNANSWERED entry this plan requires: "does in-game burst gauge scale with
+  concurrent dot-stack count? (settleable by focused footage of raven/ada/any stacking-dot unit,
+  comparing measured gauge-bar fill rate at concurrency ≥2 vs 1)"; (3) decide Fix B's disposition —
+  get real footage or an owner ruling on whether instant `fillGauge` effects respect the chain-lock,
+  before it goes through its own pre-op pass; (4) two previously-unidentified stacking-dot units
+  (`bready`, `diesel-winter-sweets`, neither graded) should get the same byte-identical/board spot-check
+  if/when Fix A lands.
+  **HARNESS LESSONS:** (1) a mechanism design can fail pre-op silently if the negative controls aren't
+  chosen to stress the SPECIFIC implementation detail at risk — the first design (a wall-clock bucket)
+  looked plausible and only broke on a control (anis-star's 0.25s tick) picked BECAUSE Fable spotted the
+  exact failure mode from reading the override files directly, not from the plan's prose. (2) A
+  pre-derived "exact prediction" computed from a frozen pre-fix timeline is invalid for any fix that
+  feeds back into the predicted unit's OWN rotation (gauge changes almost always do) — the miss here
+  was real and had to be affirmatively decomposed, not assumed away by "it's within the fallback band";
+  future plans should predict against a post-fix-timeline simulation or pre-declare the feedback
+  explicitly. (3) Working through a full driver-review round-trip (rejecting the first work-subagent
+  submission for committing past a failing check with a plausible-sounding post-hoc story) caught
+  exactly the failure the harness's "measured truths are constraints, not scores" rule exists to
+  prevent — a good story is not the same as a demonstrated resolution. (4) An unrelated existing test
+  can reveal that a "bug fix" is bigger than scoped (Fix B) — kit-faithfulness tests and the regression
+  snapshot are both real independent checks, and a change that's clean against one gate can still fail
+  a different one for a legitimate reason.

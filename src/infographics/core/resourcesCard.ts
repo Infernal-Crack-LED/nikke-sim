@@ -9,13 +9,14 @@
 // tile per drop the boss pays), so the card height is a formula over those
 // counts rather than something measured after drawing — the detail paragraph
 // is a fixed-line clamped box (wrapText), never a grow-to-fit one.
+import { type Canvas2DLike, roundRect, fitText, wrapText } from './canvas2d.js';
 import {
-  type Canvas2DLike,
-  roundRect,
-  fitText,
-  wrapText,
-} from './canvas2d.js';
-import { FONT, TEXT_PRIMARY, TEXT_SECONDARY, TEXT_DIM, drawWatermark } from './theme.js';
+  FONT,
+  TEXT_PRIMARY,
+  TEXT_SECONDARY,
+  TEXT_DIM,
+  drawWatermark,
+} from './theme.js';
 import {
   BOSS_TABLES,
   RUNS_PER_DAY,
@@ -104,7 +105,8 @@ function buildSection(
       label: 'Custom modules',
       icon: icons.module,
       value: modulesPerDay.toFixed(2),
-      valueNote: krakenTotal !== null ? `(${krakenTotal.toFixed(2)})` : undefined,
+      valueNote:
+        krakenTotal !== null ? `(${krakenTotal.toFixed(2)})` : undefined,
       sub: `expected / day · ${perRun.toFixed(2)} per run`,
       main: true,
     },
@@ -188,7 +190,8 @@ const TITLE_CAP_HEIGHT = 17;
 // not the plate — match the title's cap height.
 const ICON_CONTENT_FRAC_TOP = 52 / 256;
 const ICON_CONTENT_FRAC_BOTTOM = 212 / 256;
-const ICON = TITLE_CAP_HEIGHT / (ICON_CONTENT_FRAC_BOTTOM - ICON_CONTENT_FRAC_TOP);
+const ICON =
+  TITLE_CAP_HEIGHT / (ICON_CONTENT_FRAC_BOTTOM - ICON_CONTENT_FRAC_TOP);
 const FOOT_H = 40;
 
 const SECTION_TOP_GAP = 20; // space above a section's heading
@@ -299,8 +302,7 @@ function drawSection(
   y += HEADING_H + TILES_GAP;
 
   const tiles = section.tiles;
-  const tileW =
-    (w - PAD_X * 2 - TILE_GAP * (tiles.length - 1)) / tiles.length;
+  const tileW = (w - PAD_X * 2 - TILE_GAP * (tiles.length - 1)) / tiles.length;
   tiles.forEach((tile, i) => {
     drawTile(ctx, PAD_X + i * (tileW + TILE_GAP), y, tileW, TILE_H, tile);
   });
@@ -328,7 +330,13 @@ export function drawResourcesCard(
   ctx.textAlign = 'left';
   let textX = PAD_X;
   if (data.icon) {
-    ctx.drawImage(data.icon, RESOURCES_TITLE_ICON.x, RESOURCES_TITLE_ICON.y, ICON, ICON);
+    ctx.drawImage(
+      data.icon,
+      RESOURCES_TITLE_ICON.x,
+      RESOURCES_TITLE_ICON.y,
+      ICON,
+      ICON
+    );
     textX = PAD_X + ICON + 12;
   }
   ctx.fillStyle = '#e7eaf0';

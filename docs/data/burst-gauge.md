@@ -114,10 +114,48 @@ Datamined (`burst_duration`, einkk `ChangeBurstStepEvent`) and directly measured
 ## 4. Charge weapons and the camera-focus bonus
 
 einkk's datamined formula: a charge weapon held by the **camera-focused unit** generates
-× (1 + 1.5 × chargePercent) — **×2.5 at full charge**. Both solos confirm it exactly
-(a solo unit is always focused): maiden 364 × 2.5 = 910/shot, takina 560 × 2.5 =
-1400/shot, measured to the pixel on the gauge bar.
+× (1 + 1.5 × chargePercent) — **×2.5 at full charge, for the chargePercent=1.0 (250-family)
+case**. Both original solo anchors confirm it exactly (a solo unit is always focused): maiden
+364 × 2.5 = 910/shot, takina 560 × 2.5 = 1400/shot, measured to the pixel on the gauge bar —
+both `fullChargeBonus` 250, the modal value across the roster.
 
+- **PER-UNIT (2026-07-29):** the datamined `fullChargeBonus` column (`data/gauge-per-shot.json`,
+  = `chargeMultiplier` for every unit) is the real per-unit focus multiplier
+  (`fullChargeBonus / 100`), not a roster-wide flat 2.5 — engine: `gaugePerShot()`
+  (`src/engine/sim.ts`). For the 250-family this is byte-identical to the old flat constant.
+  Four units deviate: **alice 350 (3.5×)**, **cinderella 200 (2.0×)**,
+  **scarlet-black-shadow 150 (1.5×)**, `vesti-tactical-upgrade` 200 (out of scope, not
+  sim-supported). Live per-unit status:
+  - **scarlet-black-shadow: ENACTED at 1.5×.** Confirmed at two independent measured levels:
+    a solo per-shot gauge-fill read (~1.42× observed) AND a team full-burst count
+    (`docs/probes/720-kit-audit/scarlet black shadow.MP4`, 11 FBs measured — outside the old
+    flat-2.5× model's rigid 12-every-seed prediction, inside the per-unit model's 11-12
+    distribution).
+  - **alice: ENACTED at 3.5×** (removed from `PENDING_TEAM_ISOLATION` in `gaugePerShot()`,
+    which now falls through to her table `fullChargeBonus` 350). Solo per-shot gauge-fill
+    count (`docs/probes/solo/alice solo.MP4`, gauge full on shot 6) lands inside the H1
+    (3.5×) counting bound `[16.67%, 20.0%)` and excludes the flat 2.5× bound. Driver +
+    blind Fable post-op both ACCEPT H1 at HIGH confidence.
+  - **cinderella: ENACTED at 2.0×** (`charFixes.focusChargeMult` 2.0 in
+    `src/skills/overrides/cinderella.json`, applied ahead of the `magDumpRof` flat-2.5× pin
+    — her whole-magazine dump-fire cadence modeling via `magDumpRof` is unaffected).
+    `focusChargeMult = chargeMultiplier/100` is confirmed TRUE for her (owner ruling), same
+    footing as alice/scarlet-black-shadow above. A prior recount claiming an 8-shot gaugeless
+    opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no
+    open dispute on this value.
+    Full record: `docs/DECISIONS.md` 2026-07-29 entries.
+- **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
+  (`142x12 @ 2470,488`) is a continuous fill-percentage reader **on solo/near-solo footage**
+  (committed: `scripts/probe/gauge-fill.py` + anchor fixture/vitest) — this corrects/scopes the
+  2026-07-24 finding below (§ "burst gauge CHARGING is not in this crop"), which holds for
+  **team footage** only. Calibration state (owner rulings, same date): validated for SHAPE and
+  SMALL-step magnitude against the maiden anchor (rider sub-step exact; sub-step ORDER in the
+  footage is rider-first, the reverse of the hand read's note); LARGE-step magnitude UNRESOLVED
+  (reads ~1–1.3% absolute hot on both tb2-test-3 solos) — do not enact constants from it.
+  tb2-test-3 footage is viable **only 0:06–0:17** (owner ruling; past ~0:17 the player takes
+  manual aim), so the earlier "8 shots fill at t=18.73" counting exclusion of the documented
+  12.55%/pull hand-read anchor is WITHDRAWN — the anchor stands. Full record:
+  `docs/handoffs/2026-07-29-gauge-fill-reader-calibration.md` §OWNER-RULINGS.
 - Default camera focus = formation slot 3 (engine: index `min(2, n-1)`); recordings
   where the user selects a focus unit pass `cfg.focusSlug`. **The recording itself
   perturbs the fight**: in battery test 5 alice (focused, sniper) came in +9.3% vs her

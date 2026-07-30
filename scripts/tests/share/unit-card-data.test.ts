@@ -40,7 +40,13 @@ const bufferchart = load<any>('web/public/bufferchart.json');
 const sustain = load<any>('web/public/sustain.json');
 const burstcdr = load<any>('web/public/burstcdr.json');
 const characters = load<any>('data/characters.json')!;
-const haveBoards = !!(dpschart && burstgen && bufferchart && sustain && burstcdr);
+const haveBoards = !!(
+  dpschart &&
+  burstgen &&
+  bufferchart &&
+  sustain &&
+  burstcdr
+);
 
 // DPS-chart variant units (src/dpschart/matrix.ts CHART_VARIANTS, landed
 // 2026-07-29): their own card headlines the PROFILED row (see findHits/
@@ -133,13 +139,16 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
     }
   );
 
-  it.runIf(haveBoards)('B3 charts are the two DPS boards, never burst gen', () => {
-    const model = build('red-hood');
-    expect(model.charts.map((c) => c.title)).toEqual([
-      'Neutral DPS',
-      'Ele. Adv. DPS',
-    ]);
-  });
+  it.runIf(haveBoards)(
+    'B3 charts are the two DPS boards, never burst gen',
+    () => {
+      const model = build('red-hood');
+      expect(model.charts.map((c) => c.title)).toEqual([
+        'Neutral DPS',
+        'Ele. Adv. DPS',
+      ]);
+    }
+  );
 
   it.runIf(haveBoards)('a B1/B2 unit gets buffer first', () => {
     const model = build('liter'); // B1 Supporter
@@ -162,7 +171,15 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       burstCooldownSec: 20,
     };
     const buffer = {
-      units: { x: { name: 'X', element: 'Fire', weapon: 'AR', burst: 'I', imageUrl: null } },
+      units: {
+        x: {
+          name: 'X',
+          element: 'Fire',
+          weapon: 'AR',
+          burst: 'I',
+          imageUrl: null,
+        },
+      },
       profiles: {},
       cells: { generic: [['x', 5, null, null]], typed: [] },
     } as any;
@@ -176,17 +193,31 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
         profiles: {},
         entries: [['x', 1000, 50, 30, 20, 0, null]],
       } as any,
-      burstcdr: { units: {}, profiles: {}, entries: [['x', 3, null, null, null, null]] } as any,
+      burstcdr: {
+        units: {},
+        profiles: {},
+        entries: [['x', 3, null, null, null, null]],
+      } as any,
     });
-    expect(withSustain.charts.map((c) => c.title)).toEqual(['Buffer — team DMG', 'Sustain']);
+    expect(withSustain.charts.map((c) => c.title)).toEqual([
+      'Buffer — team DMG',
+      'Sustain',
+    ]);
 
     // no sustain, CDR present → CDR is the second chart
     const withCdr = buildUnitCardData({
       character: base,
       bufferchart: buffer,
-      burstcdr: { units: {}, profiles: {}, entries: [['x', 3, null, null, null, null]] } as any,
+      burstcdr: {
+        units: {},
+        profiles: {},
+        entries: [['x', 3, null, null, null, null]],
+      } as any,
     });
-    expect(withCdr.charts.map((c) => c.title)).toEqual(['Buffer — team DMG', 'Burst CDR']);
+    expect(withCdr.charts.map((c) => c.title)).toEqual([
+      'Buffer — team DMG',
+      'Burst CDR',
+    ]);
 
     // neither → NO second chart set at all, and the survivor gets more
     // neighbours instead of the card growing whitespace (§6c lever 1).
@@ -194,13 +225,19 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       units: {},
       profiles: {},
       cells: {
-        generic: Array.from({ length: 40 }, (_, i) => [`u${i}`, 40 - i, null, null]).concat([
-          ['x', 5, null, null] as any,
-        ]),
+        generic: Array.from({ length: 40 }, (_, i) => [
+          `u${i}`,
+          40 - i,
+          null,
+          null,
+        ]).concat([['x', 5, null, null] as any]),
         typed: [],
       },
     } as any;
-    const alone = buildUnitCardData({ character: base, bufferchart: soloBuffer });
+    const alone = buildUnitCardData({
+      character: base,
+      bufferchart: soloBuffer,
+    });
     expect(alone.charts).toHaveLength(1);
     expect(alone.charts[0].rows.length).toBe(NEIGHBOUR_ROWS_SOLO_CHART * 2 + 1);
     expect(NEIGHBOUR_ROWS_SOLO_CHART).toBeGreaterThan(NEIGHBOUR_ROWS);
@@ -214,7 +251,9 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       neighbourRows: NEIGHBOUR_ROWS_PORTRAIT,
     });
     expect(aloneP.charts[0].rows.length).toBe(
-      (NEIGHBOUR_ROWS_SOLO_CHART + NEIGHBOUR_ROWS_PORTRAIT - NEIGHBOUR_ROWS) * 2 + 1
+      (NEIGHBOUR_ROWS_SOLO_CHART + NEIGHBOUR_ROWS_PORTRAIT - NEIGHBOUR_ROWS) *
+        2 +
+        1
     );
   });
 
@@ -227,34 +266,45 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
 });
 
 describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
-  it.runIf(haveBoards)('DPS tiles carry the rel-score, and #1 reads 1.000', () => {
-    const top = dpschart.cells[NEUTRAL_CELL][0][0];
-    if (DPS_VARIANT_SLUGS.includes(top)) {
-      return; // its own card headlines its profiled row instead — see above
+  it.runIf(haveBoards)(
+    'DPS tiles carry the rel-score, and #1 reads 1.000',
+    () => {
+      const top = dpschart.cells[NEUTRAL_CELL][0][0];
+      if (DPS_VARIANT_SLUGS.includes(top)) {
+        return; // its own card headlines its profiled row instead — see above
+      }
+      const model = build(top);
+      expect(model.tiles[0].rank).toBe(1);
+      expect(model.tiles[0].value).toBe('1.000');
+      expect(model.tiles[0].population).toBe(
+        dpschart.cells[NEUTRAL_CELL].length
+      );
     }
-    const model = build(top);
-    expect(model.tiles[0].rank).toBe(1);
-    expect(model.tiles[0].value).toBe('1.000');
-    expect(model.tiles[0].population).toBe(dpschart.cells[NEUTRAL_CELL].length);
-  });
+  );
 
-  it.runIf(haveBoards)('ranks match the artifact index for both DPS cells', () => {
-    for (const [cell, tileIdx] of [
-      [NEUTRAL_CELL, 0],
-      [ELEWEAK_CELL, 1],
-    ] as const) {
-      const rows = dpschart.cells[cell];
-      // sample across the board, not just the top
-      for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
-        const slug = rows[i][0];
-        if (!characters.characters[slug] || DPS_VARIANT_SLUGS.includes(slug)) {
-          continue;
+  it.runIf(haveBoards)(
+    'ranks match the artifact index for both DPS cells',
+    () => {
+      for (const [cell, tileIdx] of [
+        [NEUTRAL_CELL, 0],
+        [ELEWEAK_CELL, 1],
+      ] as const) {
+        const rows = dpschart.cells[cell];
+        // sample across the board, not just the top
+        for (const i of [0, 1, Math.floor(rows.length / 2), rows.length - 1]) {
+          const slug = rows[i][0];
+          if (
+            !characters.characters[slug] ||
+            DPS_VARIANT_SLUGS.includes(slug)
+          ) {
+            continue;
+          }
+          const model = build(slug);
+          expect(model.tiles[tileIdx].rank, `${slug} ${cell}`).toBe(i + 1);
         }
-        const model = build(slug);
-        expect(model.tiles[tileIdx].rank, `${slug} ${cell}`).toBe(i + 1);
       }
     }
-  });
+  );
 
   it('formats a NEGATIVE buffer with a minus sign and a zero axis', () => {
     // addedPct is negative-capable (soline-frost-ticket is the precedent) and a
@@ -288,22 +338,25 @@ describe('buildUnitCardData — values mirror the site (ruling 1)', () => {
     expect(chart.max).toBeGreaterThan(0);
   });
 
-  it.runIf(haveBoards)('sustain rows carry the 3-segment split as fractions', () => {
-    const slug = sustain.entries.find((e: any[]) => e[2] > 0)![0];
-    const c = characters.characters[slug];
-    if (!c || isDpsSet(c.burst)) {
-      return; // sustain chart only renders on the B1/B2 path
+  it.runIf(haveBoards)(
+    'sustain rows carry the 3-segment split as fractions',
+    () => {
+      const slug = sustain.entries.find((e: any[]) => e[2] > 0)![0];
+      const c = characters.characters[slug];
+      if (!c || isDpsSet(c.burst)) {
+        return; // sustain chart only renders on the B1/B2 path
+      }
+      const model = build(slug);
+      const chart = model.charts.find((x) => x.title === 'Sustain');
+      if (!chart) {
+        return;
+      }
+      const row = chart.rows.find((r) => r.isUnit)!;
+      expect(row.segments).toBeDefined();
+      const s = row.segments!;
+      expect(s.heal + s.shield + s.lifesteal).toBeCloseTo(1, 5);
     }
-    const model = build(slug);
-    const chart = model.charts.find((x) => x.title === 'Sustain');
-    if (!chart) {
-      return;
-    }
-    const row = chart.rows.find((r) => r.isUnit)!;
-    expect(row.segments).toBeDefined();
-    const s = row.segments!;
-    expect(s.heal + s.shield + s.lifesteal).toBeCloseTo(1, 5);
-  });
+  );
 });
 
 describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
@@ -389,9 +442,10 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
         expect(model.tiles[0].profileChip, slug).toBeNull();
         expect(model.tiles[1].profileChip, slug).toBeNull();
         for (const chart of model.charts) {
-          expect(chart.rows.every((r) => !r.isDefaultAppendix), slug).toBe(
-            true
-          );
+          expect(
+            chart.rows.every((r) => !r.isDefaultAppendix),
+            slug
+          ).toBe(true);
         }
       }
     }
@@ -420,32 +474,38 @@ describe('buildUnitCardData — neighbourhood windows', () => {
     expect(chart.rows[0].isUnit).toBe(true); // it IS the top row
   });
 
-  it.runIf(haveBoards)('a last-place unit also gets a full-height chart', () => {
-    const rows = dpschart.cells[NEUTRAL_CELL];
-    const last = rows[rows.length - 1][0];
-    if (!characters.characters[last] || DPS_VARIANT_SLUGS.includes(last)) {
-      return;
+  it.runIf(haveBoards)(
+    'a last-place unit also gets a full-height chart',
+    () => {
+      const rows = dpschart.cells[NEUTRAL_CELL];
+      const last = rows[rows.length - 1][0];
+      if (!characters.characters[last] || DPS_VARIANT_SLUGS.includes(last)) {
+        return;
+      }
+      const chart = build(last).charts[0];
+      expect(chart.rows).toHaveLength(NEIGHBOUR_ROWS * 2 + 1);
+      expect(chart.rows[chart.rows.length - 1].isUnit).toBe(true);
     }
-    const chart = build(last).charts[0];
-    expect(chart.rows).toHaveLength(NEIGHBOUR_ROWS * 2 + 1);
-    expect(chart.rows[chart.rows.length - 1].isUnit).toBe(true);
-  });
+  );
 });
 
 describe('buildUnitCardData — nullable externals (§11)', () => {
-  it.runIf(haveBoards)('carries releaseDate through, and tolerates its absence', () => {
-    // Phase 1 synced it; 2 units legitimately have none.
-    const withDate = Object.values(characters.characters).find(
-      (c: any) => c.releaseDate
-    ) as any;
-    expect(build(withDate.slug).releaseDate).toBe(withDate.releaseDate);
-    const without = Object.values(characters.characters).find(
-      (c: any) => !c.releaseDate
-    ) as any;
-    if (without) {
-      expect(build(without.slug).releaseDate).toBeNull();
+  it.runIf(haveBoards)(
+    'carries releaseDate through, and tolerates its absence',
+    () => {
+      // Phase 1 synced it; 2 units legitimately have none.
+      const withDate = Object.values(characters.characters).find(
+        (c: any) => c.releaseDate
+      ) as any;
+      expect(build(withDate.slug).releaseDate).toBe(withDate.releaseDate);
+      const without = Object.values(characters.characters).find(
+        (c: any) => !c.releaseDate
+      ) as any;
+      if (without) {
+        expect(build(without.slug).releaseDate).toBeNull();
+      }
     }
-  });
+  );
 
   it('strips the " Overspec" suffix but keeps the distinction', () => {
     const model = buildUnitCardData({

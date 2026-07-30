@@ -179,9 +179,9 @@ export function burstGenFor(
     rangeBonus: true,
     durationSec: 180,
     // Camera focus is parked on a non-charge no-op teammate so the unit under
-    // test is measured UNFOCUSED: the ×2.5 focused charge bonus (sim.ts
-    // FOCUS_CHARGE_GEN, SR/RL only) is a camera artifact a ranking board cannot
-    // grant to every unit at once. Focusing a non-charge unit means no unit
+    // test is measured UNFOCUSED: the focused charge bonus (sim.ts gaugePerShot,
+    // per-unit since 2026-07-29, SR/RL only) is a camera artifact a ranking board
+    // cannot grant to every unit at once. Focusing a non-charge unit means no unit
     // receives it, so charge weapons are ranked on raw ×1.0 generation. (If no
     // non-charge teammate exists, the engine's default slot-2 focus applies.)
     focusSlug: slugs.find((s) => {

@@ -2548,6 +2548,197 @@ it accepted 0 of 30 popups on the one hand-read probe available, because that un
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
 
+## Rank boards: DPS ranks for B1/B2 and composite support rank — DROPPED (2026-07-29)
+
+**Decision (owner).** Of the three open follow-ups filed when the rank-boards backend + frontend
+landed (`docs/STATE.md` §8; backend 2026-07-26, `/ranks` frontend PR #31 2026-07-27), two are not
+being built: **DPS ranks for B1/B2** and a **composite support rank** combining the four boards.
+Design-brief handoffs closed and archived: `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`,
+`docs/handoffs/closed/2026-07-26-support-rank-composite.md`. The third follow-up from that same
+landing — Mint/Prika duo profiles on the buffer rank — was built separately and stands.
+
+**Why.** Scope call, no further rationale recorded.
+
+## Focus charge-gauge bonus is PER-UNIT, not flat 2.5x — scarlet-black-shadow IMPLEMENTED, alice LOGGED (2026-07-29)
+
+**Overturns, with a scope correction:** the 2026-07-13 "full_charge_burst_energy unused" ruling
+(that column is `fullChargeBonus`, now read and used — see below) and, narrowly, part of the
+2026-07-24 "burst-gauge crop renders a draining Full-Burst window bar, not a filling gauge" finding
+above: that finding is now scoped to **team footage**. In **solo/near-solo** footage the same crop
+(`142x12 @ 2470,488`) DOES render a persistent, continuously-updating gauge widget through
+charging/full/draining/chain states (owner-confirmed, then independently re-validated: the crop
+reproduces the ORIGINAL maiden-ice-rose tb2-test-3 hand-pixel-read anchor's documented "+9.1% then
++3.45%" per-pull sub-step pattern, TWICE, each within 0.05-0.15% of the 2026-07-13 value). The
+team-footage characterization (drain bar only, absent while charging) is unchanged and still holds —
+confirmed by a fresh `scan.ts` run on `docs/probes/720-kit-audit/scarlet black shadow.MP4` (team
+footage) landing a clean FB count with the ordinary hex/drain detectors, no gauge-crop-missing
+warning, same as always.
+
+**Finding.** `src/engine/sim.ts`'s `gaugePerShot()` hardcoded a flat `FOCUS_CHARGE_GEN = 2.5` for
+every camera-focused SR/RL unit. The datamined `fullChargeBonus` column (`data/gauge-per-shot.json`,
+= `chargeMultiplier` for every unit) is the REAL per-unit focus multiplier (`fullChargeBonus/100`)
+and was dead code. For the 250-family (the large majority, incl. the two original measured anchors
+maiden-ice-rose and takina) this is byte-identical to today (250/100 = 2.5). Four units deviate:
+alice 350 (3.5x), cinderella 200 (2.0x), cinderella-crystal-wave n/a (not RL/SR), scarlet-black-shadow
+150 (1.5x); `vesti-tactical-upgrade` 200 is out of scope (not sim-supported).
+
+**Measured this session** (fresh solo-footage readings via the re-validated instrument):
+
+- **alice**: base 5.6%/shot (`targetPerTrigger` 560). Observed ~20.6-20.75%/shot → multiplier
+  ≈3.68x, a 5% match to the predicted 3.5x, clearly excluding flat 2.5x (would predict 14.0%/shot,
+  47% below observed).
+- **scarlet-black-shadow**: base 2.5%/shot (`targetPerTrigger` 250). Observed modal delta
+  3.5-3.6%/shot → multiplier ≈1.42x, a 5% match to the predicted 1.5x, excluding flat 2.5x (would
+  predict 6.25%/shot, 76% above observed).
+- **cinderella** (RL, whole-magazine dump-fire kit, `charFixes.magDumpRof`): attempted, inconclusive
+  (~2.6-3.1x — her dump-fire cadence aliases against the 0.2s CV sampling). Her own rough read
+  contradicts BOTH her table value (2.0x) and a 1.0x exemption hypothesis, leaning closer to the
+  CURRENT flat 2.5x.
+
+**Decision, split by unit** (full harness record: `docs/handoffs/scientific-method-harness.md`
+2026-07-29 entry) — full `/scientific-method` pipeline: premise gate, Fable pre-op
+APPROVED-WITH-REVISIONS, work, driver review, three rounds of blind Fable post-op (each round
+triggered by new reuse-before-derive evidence, never by the driver invalidating the judge's
+blindness):
+
+- **scarlet-black-shadow: IMPLEMENT** (2-of-2 HIGH+HIGH). Confirmed at TWO independent measured
+  levels: the solo per-shot rate above, AND a team FB count — `scan.ts` on the existing
+  `docs/probes/720-kit-audit/scarlet black shadow.MP4` control-comp recording reads **11 full
+  bursts, 11/11 corroborated**, which only the per-unit model's 11-12-seed distribution can
+  produce (the old flat-2.5x model rigidly seeded 12/25 every time — the real footage contradicts
+  it outright).
+- **alice: LOG, not enacted.** Pinned to the flat constant (`PENDING_TEAM_ISOLATION` in
+  `gaugePerShot`, same mechanism as cinderella's carve-out) pending an isolating team-context
+  measurement. A fresh owner-supplied alice-focused team recording (`docs/probes/burst tests/alice
+focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full bursts, 10/10
+  corroborated** — inside BOTH the pre-fix (rigid 25/25-at-10) and post-fix (7/25-at-10,
+  18/25-at-11) distributions, landing as the post-fix model's minority (28%) outcome rather than
+  confirming it. Ruled a non-isolating, downstream observable (FB count convolves alice's rate with
+  red-hood's flex-burst behavior, chain selection, and the other units') that cannot move a
+  directly-measured constant in either direction on a single categorical draw — her solo per-shot
+  measurement (5% match to the datamine, clearly excluding 2.5x) stands un-enacted-but-un-refuted.
+  Owner action item + isolating-measurement follow-up: `docs/handoffs/QUEUE.md`.
+- **cinderella: no change**, current flat-2.5x behavior preserved via the `magDumpRof` pin. Own
+  dedicated investigation filed: `docs/handoffs/QUEUE.md`.
+
+**Engine:** `src/engine/sim.ts` `gaugePerShot()` — per-unit `(fcb && fcb > 0 ? fcb : 250) / 100`
+read, `?? 250`-equivalent fallback verified safe (of 38 SR/RL units with no `gauge-per-shot.json`
+row, only `laplace-ultimate-hero` is currently sim-supported, and she falls through to 250 =
+pre-change behavior). `verify.sh` green; `control-regression-snapshot.json` updated (the only
+behavioral delta in that suite is scarlet-black-shadow's own comp — crown/helm moved as an
+explained second-order rotation ripple from her teammate's changed timing, not a fit signal;
+helm's ratio moved the most, 1.077→1.018, one of her 4 control readings — a future helm tune
+should know that move traces to SBS's rotation, not her own kit).
+
+**Step 7 implementation review (2026-07-29, same date):** found and fixed two real gaps before
+merge — (1) `vesti-tactical-upgrade` (RL, `fullChargeBonus` 200) was a 4th non-250 outlier the
+original evidence never covered and was NOT pinned, so she'd have silently enacted an unmeasured
+2.0x the moment she gets a sim override; now explicitly added to `PENDING_TEAM_ISOLATION`.
+(2) the `?? 250` fallback only guarded `null`/`undefined`, not a present-but-zero
+`fullChargeBonus` (71/115 rows use 0 as their non-charge marker, and a live data disagreement —
+`raven`: gauge row 250 vs `characters.json` `chargeMultiplier` 0 — makes this reachable); hardened
+to `fcb && fcb > 0`. Both fixes verified zero board movement. Full findings, including a
+same-family unit-identification correction mid-session (prika, not alice, was focused in the
+5-unit "PA MiKa" comp — she's SR, not non-charge as first assumed) and the `gauge-per-shot.json`
+data-quality gap this exposed (6/44 SR/RL rows are synthesized class-modal fills, 4 more units
+have a `characters.json` `chargeMultiplier` with no gauge row at all): `docs/engine-modeling-gaps.md`
+§20, `docs/handoffs/QUEUE.md`.
+
+**Open items:** alice's isolating-measurement follow-up and cinderella's dedicated investigation
+(`docs/handoffs/QUEUE.md`); the `scan-frames.py` module docstring still needs a solo-footage
+correction (deferred, tooling-only, does not gate this landing); the `?? 250` fallback should be
+hardened to a `> 0` check at a future touch (no present row is 0, but nothing prevents one from
+being synced in later).
+
+## Owner rulings: NO overcharge (charge cap as datamined) + tb2-test-3 viable footage is 0:06–0:17 ONLY (2026-07-29, third pass)
+
+Two owner rulings on the gauge-fill-reader calibration work (`docs/handoffs/
+2026-07-29-gauge-fill-reader-calibration.md` §RESULT), recorded there in full as §OWNER-RULINGS:
+
+- **"Charge cap as datamined is correct, there's no 'overcharge'."** The escalated hypothesis
+  (a) — real charge-at-release > 1.0 with the ×(1+1.5c) focus formula extending past c=1
+  (the c ∈ [1.07, 1.32] fit to the reader's hot weapon sub-steps) — is REJECTED. The mechanic
+  does not exist; no pipeline, no constant moves. The focus charge-gauge bonus at full charge is
+  the per-unit datamined multiplier, full stop. The maiden override's "156–212% overcharge" note
+  (and the matching phrases in `docs/data/charge-weapons.md` §2 / answered-questions A12) is a
+  charge-meter DISPLAY observation during the auto hold — never evidence for a c>1 mechanic.
+- **"For tb2 test 3, only 0:06–0:17 are viable footage."** Both test-3 recordings share one
+  timeline (intro fade through ~5.8s; six pulls 7.2–14.0; reload ~14.0–17.2; at ~17.4–18.7 the
+  player takes manual aim — the tak footage shows the scope HUD from t≈18). Audited against every
+  §RESULT claim: all ladder sub-step reads, the frame-snap checks, the shot-1-partial and ammo
+  `005`/`000` reads are INSIDE the window and stand; **shots 7–8, the full-cross at t=18.73 and
+  the ammo `004` read are OUTSIDE** — which WITHDRAWS the "8 shots fill the bar" counting bound
+  that had excluded the documented 12.55%/pull (910+364) maiden anchor. The anchor stands
+  un-excluded; inside the window the cumulative fill does not discriminate it from the reader's
+  hotter per-pull.
+
+Consequences: the gauge-fill reader is settled for SHAPE and SMALL-step magnitude only — its
+LARGE-step magnitude (~1.0–1.3% absolute hot on both solos, rider exact) is an unresolved READER
+question, not a game-mechanics one, and must not feed engine constants. The alice/cinderella
+pauses are lifted (both stay pinned; alice's surviving basis is the anchor-independent counting
+arithmetic on her own solo footage, [2.98×, 3.57×) ⊇ datamined 3.5×). Standing protocol rule for
+future solo-gauge work: **define the recording's viable window BEFORE reading from it.** This
+also corrects the reader-validation claim in the 2026-07-29 per-unit entry above ("reproduces the
+anchor's +9.1% then +3.45% pattern to 0.05–0.15%") — that claim predates the ladder; the rider
+sub-step reproduces exactly, the weapon sub-step does not (and the footage order is rider-first).
+
+## Alice focus charge-gauge un-pinned to 3.5x; cinderella pinned at 2.0x by owner override (2026-07-29)
+
+**Follow-up run** to the split decision above, re-testing whether alice and cinderella could be
+un-pinned from `PENDING_TEAM_ISOLATION`/`magDumpRof` to their datamined `fullChargeBonus`
+multipliers, using a fresh shot-counting re-derivation (not the disputed gauge-fill reader
+magnitude) on existing solo footage. Full record: `docs/handoffs/scientific-method-harness.md`
+2026-07-29 "Alice & Cinderella should use datamined `fullChargeBonus` values" entry.
+
+**Alice: IMPLEMENT (2-of-2 HIGH+HIGH).** `docs/probes/solo/alice solo.MP4` fills the gauge on shot
+6 (`t=18.38s`); the counting bound `[100/6, 100/5) = [16.67%, 20.0%)` contains the datamined 3.5×
+prediction (19.6%/shot) and excludes the flat-2.5× prediction (14.0%/shot, predicts shot 8). Both
+driver and blind Fable post-op independently ACCEPT H1 at HIGH confidence. **Enacted:** `alice`
+removed from `PENDING_TEAM_ISOLATION` in `src/engine/sim.ts` `gaugePerShot()`; she now falls
+through to her table `fullChargeBonus` 350 (3.5×), byte-identical mechanism to
+scarlet-black-shadow's prior enactment. `docs/handoffs/2026-07-29-alice-focus-gauge-implement.md`.
+
+**Cinderella: pipeline REJECT H1 (2.0×) at HIGH confidence both sides** — a fresh 60fps recount on
+`docs/probes/720-kit-audit/cindy solo neutral.MP4` (24+24+24+4 = 76-shot magazine, ammo-keyframe
+confirmed) found the first gauge step at shot 9, not shot 1: the bar sits flat at its floor from
+`t≈7.37s` to `t≈11.08s`, and visual inspection of the raw frames confirmed the "BURST" label sits
+at the bar's empty end and does not occlude the growing fill — i.e. shots 1–8 measurably generate
+no gauge. The resulting effective multiplier (`≈2.22×` over the 68 contributing shots) excludes
+both 2.0× and the current 2.5× pin, closer to the latter. **Owner override enacted anyway:**
+`charFixes.focusChargeMult: 2.0` (`src/skills/overrides/cinderella.json`), applied ahead of the
+`magDumpRof` pin in `gaugePerShot()`. The owner ruling treats the 8-shot gaugeless opener as a
+reader/UI artifact rather than a real mechanic and enacts the datamined value directly, not from an
+independent measurement — this is a deliberate departure from the pipeline's HIGH-confidence
+REJECT, not a resolution of it. `docs/handoffs/2026-07-29-cinderella-focus-gauge-owner-override.md`.
+
+**Engine:** new opt-in `charFixes.focusChargeMult` (`src/skills/index.ts`, `src/prepare.ts`,
+`src/engine/sim.ts`) — an explicit per-unit override that takes priority over both the table
+`fullChargeBonus` value and the `magDumpRof`/`PENDING_TEAM_ISOLATION` pin. Currently only
+`cinderella` sets it; `vesti-tactical-upgrade` remains pinned via `PENDING_TEAM_ISOLATION`
+(unaffected by either change).
+
+**Blast radius:** Alice-focused and cinderella-focused comps' focused-gauge generation changes
+(~+40% alice, ~−20% cinderella vs the prior flat-2.5× behavior for each). Graded probes where
+either held camera focus should be re-checked.
+
+## SUPERSEDES the "pipeline REJECT" framing above — cinderella's 2.0× confirmed TRUE, not a contested override (2026-07-29, same date)
+
+The entry immediately above frames cinderella's `focusChargeMult: 2.0` as an owner override
+enacted AGAINST a HIGH-confidence pipeline REJECT (a recount claiming an 8-shot gaugeless opener
+and an effective ≈2.2× multiplier). **That REJECT finding, and the earlier §CINDERELLA-RESULT
+≈2.2× reading it repeated, were both instrument/reading errors — the same mistake recurring, not
+independent corroborating evidence.** They are RETRACTED (owner ruling). The corresponding entry
+in `docs/handoffs/scientific-method-harness.md` has been deleted outright (not marked SUPERSEDED —
+the finding never happened) rather than left as an audit trail, at explicit owner direction.
+
+**Standing fact, closed:** `focusChargeMult = chargeMultiplier/100` (equivalently
+`fullChargeBonus/100`) is the TRUE per-unit camera-focus charge-gauge multiplier for every SR/RL
+unit, cinderella included — 2.0× for her, same footing as alice's 3.5× and
+scarlet-black-shadow's 1.5×. There is no open dispute, no unresolved opener anomaly, and no
+outstanding measurement gate on this value. `docs/data/burst-gauge.md` §4 and
+`src/skills/overrides/cinderella.json`'s note are updated to drop the "contested override"
+framing accordingly.
+
 ## DPS chart drops the enikk-proven ("meta") gate — every sim-supported B3 is now ranked (2026-07-29)
 
 **Decision.** `scripts/build-dpschart.ts`'s tested population no longer requires

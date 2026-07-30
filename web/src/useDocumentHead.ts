@@ -27,9 +27,10 @@ const META: Record<string, HeadMeta> = {
       'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
   },
   ranks: {
-    title: 'NIKKE Rankings — DPS Chart, Support Boards & Unit Comparison',
+    title:
+      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Buffer Boards',
     description:
-      'NIKKE rankings hub: ranked DPS of every B3 carry under standardized solo-raid frameworks, support boards (burst gen, burst CDR, sustain, buffer value), and head-to-head unit comparison.',
+      'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
   },
   overload: {
     title: 'NIKKE Overload Optimizer — Best Overload Lines Calculator',
@@ -151,14 +152,33 @@ function setCanonical(href: string) {
 }
 
 // Resolve the active tab key from the current URL (mirrors tabFromLocation
-// in App.tsx but without importing the full sim state).
+// in App.tsx but without importing the full sim state). The rankings section
+// lives under /ranks/* (owner decision 2026-07-26): bare /ranks is the DPS
+// chart, /ranks/support is Support Rankings, /ranks/compare is Unit
+// Comparison.
 function tabKey(): string {
-  const seg = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && META[seg]) {
-    return seg;
+  const segs = window.location.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  if (segs[0] === 'ranks') {
+    if (segs[1] === 'support') {
+      return 'ranks';
+    }
+    if (segs[1] === 'compare') {
+      return 'dps';
+    }
+    return 'dpschart';
+  }
+  if (segs[0] && META[segs[0]]) {
+    return segs[0];
   }
   return 'sim';
 }
+
+// /dpschart and /dps are legacy aliases the client canonicalizes via
+// replaceState (App.tsx); this covers the window before that effect runs.
+const LEGACY_CANONICAL: Record<string, string> = {
+  dpschart: '/ranks',
+  dps: '/ranks/compare',
+};
 
 // Sync <title>, <meta description>, OG tags, and <link rel="canonical"> to
 // the current route. Runs on mount and on popstate (SPA navigation).
@@ -167,7 +187,11 @@ export function useDocumentHead() {
     function sync() {
       const key = tabKey();
       const m = META[key] ?? DEFAULT_META;
-      const canonical = SITE + window.location.pathname;
+      const seg = window.location.pathname
+        .replace(/^\/+|\/+$/g, '')
+        .split('/')[0];
+      const canonical =
+        SITE + (LEGACY_CANONICAL[seg] ?? window.location.pathname);
 
       document.title = m.title;
       setMeta('description', m.description);
