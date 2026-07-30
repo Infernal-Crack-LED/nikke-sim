@@ -257,27 +257,56 @@ lifetime 6–7 — **flush against the rejection boundary**. Any pellet whose tr
 VFX blob for one extra frame is silently discarded as a "damage number", and this discards
 _best-detected_ pellets preferentially.
 
-**Steps.** From the same dump, count tracks at lifetime 8–10 with pellet-like area/circularity inside
-shot events. Sweep the cutoff 7→10 over the cached tracks and re-score the 6 owner-counted shots.
+**Status: SUPERSEDED as a fix, still worth one measurement.** Phase 2 step 5 replaces the hard
+`lifetime <= 7` cutoff with a lifecycle-template score, which retires this boundary entirely. Do
+**not** build a cutoff sweep. Still worth the one-line count of pellet-shaped tracks at lifetime
+8–10 inside shot events, purely to size how many pellets the current cutoff has been discarding —
+that number quantifies what Phase 2 recovers.
 
-**Exit criterion.** If lifetime 8–10 holds a meaningful population of pellet-shaped tracks, raise the
-cutoff (or replace the hard cutoff with a lifetime _prior_ in the Phase 2 scorer) and record the
-count delta. If that band is near-empty, the boundary is not a live fault — note it and move on.
+### 0.4 — Simulate lifecycle counting offline, for free
 
-### 0.4 — Simulate Phase 2 offline, for free
+`run16/tracks.json` carries every track's first/last frame, position **and per-frame areas** — enough
+to prototype Phase 2's scorer without touching the pipeline. Fit t0 per blast from the shared-onset
+constraint, score each track against the lifecycle template, and count accepted tracks.
 
-Track-birth counting can be evaluated **without touching the pipeline**: `run16/tracks.json` already
-has every track's first/last frame and position. Re-score the 6 owner-counted shots as _"number of
-distinct pellet-shaped tracks born within the event window"_ and compare to the current
-median-frame blob count.
+**Caveat that limits what this can prove:** run16 is **30 fps**, so it holds only ~6 of the 13
+lifecycle frames and the phase is unknown per blast. The offline prototype can validate the
+**template-scoring / precision** half (does the curve separate pellets from blips?) but **not** the
+phase-locked counting half, which needs 60 fps. Treat a good result as encouraging, not as the
+go/no-go — and do not tune template tolerances on 30 fps data that will be re-derived at 60.
 
-**Exit criterion.** This is the go/no-go for Phase 2 at zero implementation cost. If offline
-track-birth counting moves the 6 shots toward 7/9/7/9/8/8, build it. If it doesn't, Phase 2 is not
-the fix and Phase 3 moves up.
+**Exit criterion.** The lifecycle score separates the "life=1 blips" population from pellet-shaped
+tracks at all. If it does not separate them even in principle on this data, the precision premise of
+Phase 2 is wrong and the design needs revisiting before implementation.
 
-> **Phase 0 deliverable:** one committed `analyze-tracks.py`, one short findings note appended here,
-> and a decision on whether 0.1 invalidates the 2026-07-29 REJECT. Nothing else is built until this
-> lands.
+### 0.5 — ⚠ Lifecycle stability across units (gates Phase 2 steps 4–6)
+
+Phase 2 assumes one lifecycle template fits every unit and VFX load. That assumption is currently
+supported by exactly one video. Run `analyze-pellet-tracks.py` against a `noir` dump and compare the
+normalised area decay to the prediction table in §2.0.
+
+**Exit criterion.** `noir`'s decay matches within the same tolerance `marciana`'s does (~10–25% below
+the phase-mix prediction, same shape). **Kill condition:** materially different curve → the template
+must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
+this after implementing steps 4–6 is the expensive path.**
+
+### 0.6 — ⚠ Check the ~90 denominator before treating 78% as a defect
+
+"70 shots of ~90 expected" is the largest measured gap in the reader — but ~90 assumes uninterrupted
+1.5 shots/s across the 60 s window. Boss-transition fire-holds, reloads, and cover phases would lower
+the true expectation and the real detection rate could be substantially better than reported.
+
+**Steps.** Derive expected shots from the actual fight timeline (boss script + transitions) rather
+than from cadence × duration; cross-check against the ammo-counter reads (`read-ammo.ts`) where
+available.
+
+**Exit criterion.** A defensible denominator. If it lands near 90, the 22% miss is real and event
+segmentation is the next target. **If it lands near 75, the problem largely dissolves** and the
+effort should go to Phase 2's accuracy instead of shot recall. Free, and it may retire the item.
+
+> **Phase 0 deliverable:** `analyze-pellet-tracks.py` (✅ committed), the 0.2 findings (✅ recorded
+> above), a decision on 0.1, and — before any Phase 2 code — the **0.5 lifecycle-stability** and
+> **0.6 denominator** answers. Nothing is built until those two land.
 
 ---
 
@@ -314,13 +343,25 @@ expensive-derivation failure mode `CLAUDE.md` §⚖ warns about, so generate ins
    phase.
 2. Composite N patches at known coordinates onto real background frames sampled from **all four**
    videos (`marciana`, `noir`, `guilty`, `isabel`), including frames with damage numbers, VFX, and
-   the HP bar, so the clutter distribution is real. Sample lifecycle stage and occlusion explicitly.
-3. Emit frames + exact labels (count, positions, occlusion flags).
-4. Add `scripts/probe/score-pellets.py`: Jaccard/F1 + count RMSE against labels — the ISBI
-   Particle-Tracking-Challenge metric pair the reference fields select on.
+   the HP bar, so the clutter distribution is real.
+3. **Render synthetic blasts as full 13-frame sequences, not isolated frames.** Phase 2 scores tracks
+   against the lifecycle curve, so the labeled set must exercise that curve: one shared t0 per blast,
+   the size profile from §2.0 applied per phase, the f12–13 alpha fade, and occlusion sampled
+   explicitly at the f3–4 peak where it actually happens. A single-frame corpus can score a detector
+   but cannot score Phase 2 at all.
+4. Emit sequences + exact labels (count, positions, per-frame phase index, occlusion flags).
+5. Add `scripts/probe/score-pellets.py`: Jaccard/F1 + count RMSE against labels — the ISBI
+   Particle-Tracking-Challenge metric pair the reference fields select on — plus **phase-resolved
+   recall**, which is Phase 3's exit criterion.
 
-**Exit criterion.** Any candidate detector can be scored on one command, across all four video
-backgrounds, and the current detector's score is recorded as the baseline to beat.
+**Exit criterion.** Any candidate detector or counter can be scored on one command, across all four
+video backgrounds, and the current pipeline's score is recorded as the baseline to beat.
+
+**⚠ Regenerate the real ground truth at f8–11.** `make-groundtruth.py` currently picks each shot's
+peak frame (max bright-dot count) — the frame the owner identifies as **least** readable, where
+pellets occlude. The existing 6-shot labels were counted there and are suspect; expect true counts
+**≥** the recorded 7/9/7/9/8/8. Re-crop at f8–11 and re-count **before** those labels gate anything.
+This is the one piece of hand-labelling worth paying for, and it is small.
 
 **Honest limit — state it in the fixture's README.** Synthetic labels validate the _detector_, not
 the compositing assumption. If the game blends the marker rather than blitting it, synthetic frames
@@ -371,63 +412,150 @@ rather than silently producing 3 shots. A counter that knows it failed is usable
 
 ---
 
-## Phase 2 — Count tracks, not blobs (survey C2)
+## Phase 2 — Lifecycle-aware counting (the core of the redesign)
 
-**Highest P(success) of the method changes**, because it needs no new detector — it changes how
-existing detections are aggregated, and Phase 0.4 will already have measured the effect offline.
+**The governing principle: PROCESS all 13 frames, COUNT on ~5.** Three jobs want three different
+frame sets, and the current pipeline conflates them into one median frame.
 
-**Why it is the direct remedy if F1 is true.** If each pellet is detected on only ~1 frame, and 10
-pellets peak on _different_ frames within the event, then no single frame ever shows more than 2–3
-blobs — and the current median-frame estimator can never recover the other 7. Counting **track
-births across the event** recovers exactly that spread evidence. F1 and F2 are the same wound.
+| Job                                   | Frames         | Why                                              |
+| ------------------------------------- | -------------- | ------------------------------------------------ |
+| **Identity** — is this blob a pellet? | **all 13**     | the lifecycle curve _is_ the discriminator       |
+| **Counting** — how many?              | **f1, f8–11**  | f3–4 merge pellets; f12–13 are transparent       |
+| **Phase anchoring** — where is f1?    | onset + growth | you cannot index the lifecycle without the onset |
 
-**Steps**
+### 2.0 — Why the full lifecycle is worth paying for
 
-1. `temporal_filter` (`count-pellets.py:279`) currently collapses tracks to per-frame `{white, red}`
-   counts (line 336). Emit the **track list** (id, first_frame, last_frame, mean position, area,
-   circularity, is_red) alongside the per-frame counts.
-2. In `read-pellets.ts`, replace the median-frame estimator (`:602–630`) with: **shot count =
-   distinct pellet-shaped tracks born within the event window**, with a lifetime prior rather than
-   the hard `<= 7` cutoff (per Phase 0.3), and a spatial-plausibility filter (inside the aim disc).
-3. Keep the marker-based binary core-hit fallback (`:632–648`) unchanged — it is owner-validated and
-   orthogonal.
-4. Replace the greedy nearest-neighbour linker with `trackpy.link()` **only if** the greedy linker
-   measurably fragments tracks on the cached detections. Do not swap it speculatively.
+`scratchpad/pellets/HANDOFF.md` records a hard dead end: _"the extra components are life=1 blips that
+look identical to real pellets (same size med 159 vs 166, same circularity) — **no per-component
+filter separates them**."_ That is true, and it is why four tuning passes failed: they all searched
+for a per-component feature that does not exist.
 
-**Exit criterion.** Count RMSE improves on the Phase 1.2 synthetic set **and** the 6 owner shots move
-toward ground truth, **and** the `noir` per-band means move toward the `noir-solo-recon.json` anchors
-(mid 10.0 / near 8.9 / far 7.4 / midfar 8.8) — specifically the far/near = 0.831 and
-midfar/near = 0.989 shape ratios, since the 2026-07-29 failure was band-dependent _flattening_.
+**The lifecycle is not a per-component feature — it is a per-track temporal one.** A real pellet must
+appear at 1×, double by f3, hold exactly one frame, decay monotonically over 7 frames, and **fade
+before vanishing**, all at a fixed position. A VFX blip does none of that. This is the precision
+lever the record concluded was unavailable.
 
-**Kill condition.** No improvement on the synthetic set → aggregation was not the fault; the
-detections themselves are wrong. Go straight to Phase 3.
+**And the blast gives a joint constraint on top: all ~10 pellets of one shot share the same t0.**
+They appear together on one frame. Once t0 is known, every frame's _expected_ pellet size is known —
+which collapses the area gate from today's **30× band** (`min_area 25` … `max_area 750`, wide enough
+to admit nearly anything) to a **~2.5× per-frame expectation**. That is the single largest precision
+gain available in this reader, and it exists _only_ if the lifecycle is covered.
 
-**Note.** This changes the _definition_ of a shot count, so the 6-shot ground truth must be re-scored
-under the new definition before any comparison to run16–run19 numbers. Old runs are not comparable.
+**Corroboration that the spec is safe to build on (2026-07-30).** The owner's lifecycle predicts an
+area-decay curve. Compared against the run16 measurement — taken for an unrelated purpose, before the
+spec was written:
+
+```
+predicted, odd phase  (acquire f3) : 1.00  0.86  0.62  0.41  0.25
+predicted, even phase (acquire f4) : 1.00  0.73  0.51  0.33  0.25
+MEASURED  (run16, mix of phases)   : 0.93  0.57  0.43  0.33  0.22
+```
+
+Right shape, right ~4× range, sitting slightly under the phase-mix average — the expected direction
+for a brightness threshold eroding the dim anti-aliased edge as the pellet shrinks. The spec predicts
+a measurement nobody took with it in mind.
+
+### 2.1 — Steps
+
+1. **Extract at 60 fps with an ROI crop.** 60 fps is required: at 30 you hit f1 only ~half the time
+   and get 2 of the 4 frames in f8–11. **The cost objection dissolves** — detection currently runs on
+   the full 2606×792 damage-area frame and filters by crosshair distance afterward. Cropping to the
+   disc ROI first (320×320 at `pellet_radius` 160 zoomed) is ~20× fewer pixels, so 60 fps + ROI
+   should run _faster_ than today's 30 fps full-frame. (`HANDOFF.md` §4 already lists this crop as an
+   open speed item; it now has a second and better reason.)
+2. **Emit tracks, not just counts.** `temporal_filter` (`count-pellets.py:279`) collapses tracks to
+   per-frame `{white, red}` at line 336. Emit the track list (id, first/last frame, position,
+   per-frame area, circularity, is_red) alongside.
+3. **Add gap tolerance to the linker.** `count-pellets.py:296` matches only `last_frame == fi-1` —
+   zero tolerance. One missed frame splits a pellet in two. (Note: Phase 0.2 showed this is _not_ the
+   dominant fault, so this is hygiene, not the fix. Do not over-invest.)
+4. **Estimate t0 per blast** from the ensemble of candidate tracks — the shared-onset constraint makes
+   this robust: the correct t0 is the one that maximises how many tracks fit the expected curve.
+5. **Score each track against the lifecycle template** (normalised size-vs-phase, plus the
+   fade-before-vanish requirement). Accept/reject on the fit. **This replaces the `lifetime <= 7`
+   hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
+6. **Apply phase-indexed size gating** — at each frame, gate area against the expected size for that
+   phase rather than the global 25–750 band.
+7. **Count accepted tracks, using f1 and f8–11 for the count/position read.** Do **not** count on all
+   13: f3–4 merge and would re-introduce the occlusion undercount; f12–13 are transparent and add
+   variance.
+8. Keep the marker-based binary core-hit fallback (`read-pellets.ts:632–648`) unchanged — it is
+   owner-validated and orthogonal. Red pellets follow the same lifecycle, so phase-indexed gating
+   applies to them too (with the `red-gb-max` ceiling raised toward the ~90 anti-aliasing floor
+   `redprobe.py` measured).
+9. `trackpy.link()` replaces the greedy linker **only if** the greedy one measurably fragments on
+   cached detections. Do not swap speculatively.
+
+### 2.2 — Exit criterion
+
+Count RMSE improves on the Phase 1.2 labeled set **and** the re-generated f8–11 ground truth (per
+Phase 1.2 — the existing 6-shot labels were counted on peak frames and are suspect), **and** the
+`noir` per-band means move toward the `noir-solo-recon.json` anchors (mid 10.0 / near 8.9 / far 7.4 /
+midfar 8.8) — specifically the far/near = 0.831 and midfar/near = 0.989 **shape ratios**, since the
+2026-07-29 failure was band-dependent flattening.
+
+**Precision check, and it is the real prize:** the "life=1 blips indistinguishable from pellets"
+population should now be separable. Report how many candidate tracks the lifecycle filter rejects and
+spot-check a sample visually. If it rejects near-zero, the lifecycle template is not discriminating
+and step 5 has failed regardless of what the count does.
+
+### 2.3 — Kill conditions
+
+- **Lifecycle not stable across units** → confirm the same decay curve on `noir` with
+  `analyze-pellet-tracks.py` **before** building steps 4–6. One run. If `noir`'s curve differs
+  materially from `marciana`'s, the template must be per-unit or per-VFX-load, which changes the
+  design; do not discover that after implementing.
+- **t0 cannot be estimated reliably** (overlapping blasts, fire-holds) → fall back to counting on
+  the best-scoring 4-frame window within each event rather than an absolute phase index.
+- **No count improvement but good precision** → keep the lifecycle filter anyway (it fixes the
+  false-positive population) and move the count problem to Phase 3.
+
+### 2.4 — Note on comparability
+
+This changes the _definition_ of a shot count. The 6-shot ground truth must be re-scored under the
+new definition, and run16–run19 numbers are **not** comparable to anything produced after this phase.
 
 ---
 
 ## Phase 3 — Matched-filter detection (survey C1)
 
-Replaces the absolute RGB threshold — the root cause behind F1 — with the approach all three
-reference fields converged on.
+**Demoted from "the fix" to "an enabler for Phase 2."** Phase 0.2 measured per-frame detection at
+7–10 white per blast frame against a 7–9 ground truth — it is approximately correct, so replacing the
+detector is not, on its own, the win. What Phase 2 actually needs from it is different and narrower:
+
+- **Detection at the f8–11 tail**, where pellets are back to ~1× and dim. Phase 2 counts there, so
+  recall in that phase window is what matters — not aggregate per-frame recall.
+- **Detection at f1 and the f12–13 fade**, which the lifecycle template needs to confirm the
+  appear-and-fade signature. A pellet whose onset and fade are both missed cannot be scored on the
+  curve, so the identity filter degrades.
+- **Size fidelity across the 8.6× dynamic range**, since phase-indexed gating compares measured area
+  to expected area. A threshold detector systematically under-reads dim edges — visible in the
+  corroboration table above, where measured decay runs below prediction. That bias is tolerable for
+  counting and **not** tolerable for phase-indexed gating.
+
+⇒ Score Phase 3 on **phase-resolved recall** (recall at f1, f8–11, f12–13 separately), not on
+aggregate per-frame counts. Aggregate recall is already fine and will not move.
 
 **Steps**
 
 1. Add `count-pellets.py --detector {threshold,log,dog}`, defaulting to `threshold` so nothing
-   changes until the A/B says so. Implement `log`/`dog` via `skimage.feature.blob_log` /
-   `blob_dog`, thresholding on **filtered response** (local contrast), not absolute pixel value.
-2. Keep the white/red channel split: run the filter on a red-channel-dominant map for the core
-   triangles and a luminance map for white pellets.
-3. Two parameters only — approximate pellet diameter (known: ~166 px² at 2× zoom → r ≈ 7.3 zoomed px)
-   and a response threshold. Fit the threshold **on synthetic data**, score on the held-out real
-   shots. Never fit on the thing you score.
-4. If `blob_log`'s per-scale cost dominates, `photutils.DAOStarFinder` is the faster
-   single-kernel equivalent (DAOFIND, Stetson 1987).
+   changes until the A/B says so. Implement `log`/`dog` via `scipy.ndimage.gaussian_laplace`
+   (already a dependency — `skimage` is **not** installed in `scripts/probe/.venv`), thresholding on
+   **filtered response** (local contrast), not absolute pixel value.
+2. **Calibrate the scale and threshold properly.** The 2026-07-30 exploratory LoG run returned
+   170–200 detections/frame — saturated on background texture — because the threshold was picked
+   blind. Fit sigma to the pellet's actual radii (~1× ≈ 4.2 px, 2× ≈ 12.4 px at 2× zoom, from the
+   56/481 px² trough/peak areas) and fit the response threshold on the Phase 1.2 labeled set. Never
+   fit on the thing you score.
+3. Keep the white/red channel split: filter a red-chroma map for the core triangles and a luminance
+   map for white pellets.
+4. If per-scale cost dominates, `photutils.DAOStarFinder` is the faster single-kernel equivalent
+   (DAOFIND, Stetson 1987).
 
-**Exit criterion.** Track lifetimes rise from ~1 toward 5–7 (the direct F1 test), and Jaccard/F1
-beats the Phase 1.2 baseline **on all four video backgrounds** — cross-background generalization is
-the criterion that the previous four tuning passes failed, so it is non-negotiable here.
+**Exit criterion.** Phase-resolved recall at f8–11 and at f1/f12–13 beats the threshold baseline, and
+measured-vs-expected area tracks the lifecycle curve more tightly than the threshold detector's
+(which runs ~10–25% low at the dim end). Jaccard/F1 must not regress **on all evaluable video
+backgrounds**.
 
 **Scoring caveat.** Score Phase 3 on `marciana` + `noir` only until Phase 2A lands. `guilty`/`isabel`
 cannot evaluate a detector while localization is failing — their 3-shot and 21-shot runs measure the
@@ -499,36 +627,62 @@ If it only wins on synthetic, the compositing assumption is leaking and the win 
 ## What is explicitly NOT in this plan
 
 Recorded in the survey's rejected table; repeated here so no phase quietly reintroduces them: VLM
-counting as the primary counter, SAM/SAM 2 as a detector, Hough Circle Transform, the ring/annulus
-detector (`marker_detect2.py` / `read-markers.py` — except its crosshair track and radial output,
-which Phase 3's kill-path salvages), the peanut multiplicity heuristic (measured regression at
-run19), and **further parameter tuning of the current threshold detector**.
+counting as the primary counter, SAM/SAM 2 as a detector, Hough Circle Transform, the peanut
+multiplicity heuristic (measured regression at run19), and **further parameter tuning of the current
+threshold detector**.
+
+**Two amendments from the lifecycle spec:**
+
+- **The peanut heuristic is not just rejected, it is obsolete.** It existed to un-merge pellets that
+  overlap at the f3–4 peak. Phase 2 stops counting on those frames, so the problem it addressed no
+  longer arises. Delete it rather than leaving it disabled beside its replacement (per the repo rule
+  on not parking known-wrong models next to their successors).
+- **The ring/annulus detector rejection is RE-OPENED as a cheap re-test.**
+  `marker_detect2.py`/`read-markers.py` was parked for requiring "a dark grey ring our pellets lack"
+  — but the owner's spec says pellets **do** have a shadowed surround, and that tool was evaluated on
+  peak frames, where a neighbouring pellet destroys the ring. Re-test it at **f8–11**, where pellets
+  are separated and the surround should be intact. ~1 hour. This is a re-test of one structural
+  filter under corrected conditions, **not** a revival: its white-detection thresholds were
+  separately shown to under-count, and its radial-landing output plus ammo-box crosshair track remain
+  the parts worth salvaging (the latter feeds Phase 2A).
 
 ---
 
 ## Critical path
 
 ```
-0.1 offset fix ─┐
-0.1b two-fault decomposition ─┤
-0.2 F1 / 0.3 lifetime boundary / 0.4 offline track-birth ─┘
+0.1 offset fix · 0.1b two-fault decomposition · 0.2 ✅DONE
+0.5 lifecycle stability on noir  ·  0.6 the ~90 denominator     ← both free, both gating
                           ↓
-        1.1 cache-then-sweep + 1.2 labeled set
+        1.1 cache-then-sweep + 1.2 labeled set (labels at f8–11)
                           ↓
         ┌─────────────────┴─────────────────┐
-   2A localization                    2 track counting
-   (unblocks guilty/isabel)      (fixes noir/marciana coldness)
+   2A localization                    2 lifecycle-aware counting
+   (unblocks guilty/isabel)      (60fps + ROI · t0 · template · phase-gated)
         └─────────────────┬─────────────────┘
                           ↓
-                 3 matched-filter detection
+              3 matched-filter detection
+              (scored on PHASE-RESOLVED recall)
                           ↓
             [4 top-hat/LCM · 5 exact sprite · 6 learned]
                         as the residual dictates
 ```
 
 **Phases 2A and 2 are parallel** — they address the two distinct faults Phase 0.1b separates, and
-they touch different code. Phase 3 needs both, because its exit criterion is cross-video
-generalization and `guilty`/`isabel` can't participate until 2A lands.
+they touch different code. Phase 3 follows Phase 2 rather than preceding it, because Phase 2 defines
+what the detector is being asked for (recall at f8–11 and f1/f12–13, plus area fidelity) — without
+that, Phase 3 has no meaningful exit criterion, since aggregate per-frame recall is already adequate.
+
+**Two free Phase 0 items now gate the build:**
+
+- **0.5 — lifecycle stability.** Run `analyze-pellet-tracks.py` on a `noir` dump and check the area
+  decay against the same prediction table. Phase 2 steps 4–6 assume one template fits all units; if
+  `noir`'s curve differs materially the template must be per-unit or per-VFX-load. **One run, and
+  discovering it after implementing is the expensive path.**
+- **0.6 — the ~90 denominator.** "70 of ~90 shots" is the largest measured gap, but ~90 assumes
+  uninterrupted 1.5 shots/s across the window. Boss-transition fire-holds would make the real
+  detection rate substantially better than reported. **Check the denominator before treating a 22%
+  miss rate as a defect** — it is free and it may dissolve the problem entirely.
 
 Phase 0 is unblocked today and needs no new footage. **Do not build anything before it lands** — it
 already overturned this plan's own first draft once (see the 0.1 callout).
@@ -546,3 +700,17 @@ already overturned this plan's own first draft once (see the 0.1 callout).
   two different faults (`guilty`/`isabel` localization vs `noir` method-level coldness) conflated
   into one "the counter failed" conclusion, plus an un-diagnosed `noir` 179→107 regression in the
   patch that was adopted to fix `guilty`.
+- **Phase 2 rewritten around the lifecycle (owner spec + §2.0 corroboration).** The design changed
+  from "count track births" to **process all 13 frames, count on ~5** — separating identity (the
+  full curve), counting (f1, f8–11) and phase anchoring (onset). The reason is specific: the record's
+  hardest dead end was _"no per-component filter separates blips from pellets"_, which is true, and
+  the lifecycle is the first candidate feature that is **not** per-component. The shared-t0 constraint
+  then collapses the area gate from a 30× band to a ~2.5× per-frame expectation.
+- **Phase 3 demoted, and its exit criterion replaced.** Per-frame detection measured adequate
+  (7–10 vs 7–9 ground truth), so detector replacement is an enabler for Phase 2, not the fix. It is
+  now scored on **phase-resolved recall** (f8–11, f1, f12–13) and area fidelity across the 8.6×
+  dynamic range — aggregate recall is already fine and will not move.
+- **0.5 and 0.6 added as gating free checks.** 0.5 because Phase 2's one-template-fits-all-units
+  assumption rests on a single video, and finding out after implementing is the expensive path.
+  0.6 because the headline "22% of shots missed" may be an artifact of a cadence-derived denominator
+  that ignores fire-holds — worth retiring before it drives work.
