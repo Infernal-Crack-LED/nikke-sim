@@ -330,13 +330,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   line. Cheap pre-check before building any of it: does union greedy leave a team on the table on a
   constrained pool the way solo did?
 
-- **⇒ MINT/PRIKA KIT FIX (owner-flagged "coming soon", 2026-07-24) must ALSO add the
-  "prika bursts first, then only mint" rotation config** for the pair (owner requirement, same
-  ruling that retired the always-combos). No engine knob exists today (only Λ `lambdaStage`) —
-  needs a per-unit burst-selection primitive (e.g. max-casts + priority), gated engine work via
-  `/scientific-method`. The generator already enforces their same-team pairing
-  (`genCalc.TEAM_CONSTRAINTS`, relaxes if one is unavailable).
-
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/2026-07-17-role-audit-followups.md`:** (1) custom-weaponry
   `role` sweep — mostly deflated by D; what's left = pierce-from-kit-text + (data-blocked) weapon-swap
   secondary-weapon row; (2) **anis-star dot-gauge re-model** then drop her `hitsPerShot` carve-out to 1
