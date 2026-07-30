@@ -762,6 +762,102 @@ with an explicit committed template per recording and a lock-quality metric that
 rather than silently producing 3 shots. A counter that knows it failed is usable; one that reports
 3 shots as data is not.
 
+### ⚠ 2026-07-30 — attempted on `fix/pellet-reader` (worktree). Two bugs found and fixed; exit
+
+criterion NOT met — `guilty` still fails gate 1.
+
+**Root cause of the crosshair mislock (§0.1b / ⛔0.5), found by instrumented A/B, not guessed.**
+`count-pellets.py`'s per-frame lock (`--temporal`) accepts the FIRST frame whose match confidence
+clears the base bar (`conf > 0.3`) as `last_acc`, then only re-accepts a later match if it is within
+`--max-template-disp` (150 zoomed px) of that position — otherwise the stale position is carried
+forward forever. This has no way back once the first lock is wrong: on `noir-near-ce36`'s own 600
+frames, the seed at frame ~2 (conf 0.43, verified by cropping the pixels — plain background smoke,
+no box) froze the lock for the whole clip, while conf 0.5–0.8 matches on the REAL box (verified by
+cropping those too — a legible "006" ammo counter next to the reticle) kept recurring and being
+discarded as "jumps" every single time. Confidence never separated the two: healthy reference
+(`marciana`/run16) sits at conf 0.39–0.53 during its correct, continuously-tracking lock — inside the
+SAME band as `noir`'s false seed.
+
+**Fix 1 — confidence-gated (re)acquisition**, `count-pellets.py` (`--relock-conf-min`, default 0.55;
+`--track-conf-min`, default 0.3 = old behaviour, raise to resist slow drift): the very first lock must
+clear the stronger bar (not the base 0.3), and a later match that clears it may override the distance
+gate rather than being discarded as a jump.
+
+**Fix 2 — independent, more severe: temporal shot counts were unconditionally zero.** Traced (live
+debug prints, not inferred) to a variable-name collision: `main()` sets `active` once as the
+`--backend` selector dict, then the `--temporal` per-frame tracking loop reuses the SAME name for its
+per-frame active-track list (`active = []`), permanently rebinding it for the rest of the function.
+The results loop's `if name in active` (added when `fix/pellet-counter-restore` merged into this
+branch on 2026-07-30 — the pre-merge code on `main` unconditionally filled all three backend keys and
+never hit this) then checks a backend-name STRING against a list of `(track_id, x, y, is_red)` TUPLES
+— always false, every entry falls to the zero-fill branch, on every video, regardless of `--backend`
+or crosshair quality. This is why `noir-near-ce36`'s "4 shots" and this session's first noir re-run
+both under-reported independent of the crosshair fix. Fixed by renaming the loop-local list to
+`frame_active`.
+
+**A/B evidence (600-frame / 20s slices, cached frames where noted, `--relock-conf-min 0.55` default;
+`analyze-pellet-tracks.py`'s `check_crosshair_validity`, ≥5% = OK):**
+
+| Video (window)                                        | Template  | Before (this session's baseline)                   | After both fixes                                         |
+| ----------------------------------------------------- | --------- | -------------------------------------------------- | -------------------------------------------------------- |
+| `noir` t=40–60s (cached frames)                       | global    | 10.5% OK¹ / per-video 1.3% BROKEN                  | 13.3% OK                                                 |
+| `noir` t=40–60s (real pipeline)                       | per-video | —                                                  | **11.8% OK, 15 shots (10 valid), avgTotal 8.3**          |
+| `isabel` t=40–60s (real pipeline)                     | per-video | —                                                  | 6.8% OK, 9 shots (5 valid), avgTotal 7                   |
+| `guilty` t=40–60s (real pipeline)                     | per-video | 0.3–0.0% BROKEN (global) / 0.0% BROKEN (per-video) | **2.5% BROKEN** — still fails                            |
+| `marciana` t=0–60s (cached, =run16 range)             | global    | 14.3% OK (original run16)                          | 10.5% OK                                                 |
+| `marciana` t=40–60s (real pipeline, different window) | per-video | —                                                  | **2.8% BROKEN** — same reference video, different window |
+
+¹ "Before" for `noir` already reflects re-running the ORIGINAL (unfixed) code against the global
+template on this slice — i.e. `noir`'s failure was never inherent to the global template; only the
+per-video template + frozen seed combination failed it. Full method + all raw numbers are reproducible
+from this section's description; nothing here was hand-picked without checking the failing case too.
+
+**Reading the table honestly:**
+
+- Fix 2 is unconditionally correct and load-bearing — it is a straight variable-collision bug, not a
+  tuning question, and it blocks EVERY detection-rate (gate 2) measurement until fixed. Land it
+  regardless of what happens with Fix 1.
+- Fix 1 is a real, measured improvement (`noir` global-template near-fraction 10.5%→13.3%; `isabel`
+  and `noir` per-video-template now both pass where the session's baseline broke) but **not a
+  complete solve**: `marciana` — the healthy reference video itself — fails gate 1 (2.8%) on a
+  DIFFERENT 20s window (t=40–60s) of the same video that passes at t=0–60s. Seed quality is a
+  per-window lottery; raising the relock bar makes bad seeds rarer, not impossible, and costs a
+  bootstrap delay when the first ≥0.55 match happens to be late (measured on `marciana`/run16 full
+  1800-frame replay: 16s / 480 frames before first lock, vs the original code's near-instant lock).
+- `guilty` fails gate 1 with BOTH templates, at every `--track-conf-min` tried (0.3/0.4/0.45/0.5), and
+  its per-video template's own bootstrap extraction (conf 0.546, comparable to `noir`'s 0.545 and
+  `isabel`'s 0.526) is not obviously worse — so this is not simply "the template is bad." Unexplained;
+  not investigated further this session. A structural (non-template) localization method — plan option
+  2 — is the most likely next step, since it doesn't depend on finding one lucky confident match.
+
+**Exit criterion status: NOT MET.** Gate 1 fails for `guilty` on every configuration tried, and the
+"all four videos, together" conjunction the criterion asks for is therefore unmet even though 3 of 4
+pass individually. Gate 2 numbers above are single 20s-window samples, not full-video rates, and
+should not be read as the ≥60%-of-expected figure the criterion asks for.
+
+**Deliverable for §0.5 — MET.** `noir` t=40–60s (real `read-pellets.ts` pipeline, both fixes,
+`--zoom 2`) passes gate 1 at 11.8% with 15 real shots recovered. Reproduce with:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --at 40 --dur 20 --fps 30 --zoom 2 --dump-tracks true --out <dir>
+```
+
+(needs `scripts/probe/.venv` — in a worktree, symlink it from the main tree first; see START HERE.)
+
+**Housekeeping note — `--zoom` default mismatch.** `read-pellets.ts`'s own default is `--zoom 3`, but
+every reference run this plan cites (`run16`, `marciana-solo`, `noir-sg`, `guilty-sg`, `isabel-sg`) was
+produced with `--zoom 2`, and the per-video ammo template extractor's own default is also `--zoom 2`.
+Passing no `--zoom` flag silently extracts frames at 3x while other defaults still assume 2x scaling in
+places, and produced 0 shots in an early attempt this session before the mismatch was caught. Not fixed
+here (out of scope for the localization bug) — pass `--zoom 2` explicitly until it is.
+
+**Not done this session:** guilty's fix, a full-video (not 20s-slice) re-run of any video, and the
+detection-rate (gate 2) measurement the exit criterion actually asks for. Both fixes are code changes
+only, validated on A/B slices; no `docs/probe-data/` fixture or committed dump was added — the noir
+artifact above is reproducible-by-command, not committed (constraint 9 is satisfied by the code fix
+being in the tree at `scripts/probe/count-pellets.py`, not by a raw JSON dump).
+
 ---
 
 ## Phase 2 — Lifecycle-aware counting (the core of the redesign)

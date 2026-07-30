@@ -539,6 +539,8 @@ def main():
     parser.add_argument('--pellet-radius', type=int, default=80, help='radius of pellet crop in ZOOMED px (default 80)')
     parser.add_argument('--marker-radius', type=int, default=65, help='red components closer than this to the crosshair (zoomed px) are core-hit hit-markers, not pellets (default 65)')
     parser.add_argument('--max-template-disp', type=float, default=150, help='max frame-to-frame ammo-box displacement (zoomed px) before a template match is rejected as a false lock (default 150)')
+    parser.add_argument('--relock-conf-min', type=float, default=0.55, help='confidence bar to (re)acquire the crosshair lock: gates the very first lock (instead of the base 0.3), and lets a strong match beyond --max-template-disp override a stale/false lock rather than being discarded as a jump (default 0.55)')
+    parser.add_argument('--track-conf-min', type=float, default=0.3, help='min confidence to accept a smooth, in-gate continuation of the current lock (default 0.3, the original base threshold) — raise this to stop a chain of weak matches drifting the lock away from the real box one small step at a time')
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
@@ -689,9 +691,25 @@ def main():
                 # Positional-consistency gate: the ammo box moves smoothly, so a match
                 # that jumps implausibly far (e.g. locking onto the HP bar) is rejected
                 # and the last accepted position is carried forward instead.
+                #
+                # This gate has no way back once the FIRST lock is wrong: an unconditional
+                # base-threshold (conf>0.3) seed can land on background clutter (measured:
+                # noir-near-ce36 seeded at conf=0.43 on smoke, frame ~2, then froze there for
+                # all 600 frames while conf 0.5-0.8 matches on the REAL box kept appearing and
+                # being discarded as "jumps" for the rest of the run — see Phase 2A diagnosis,
+                # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). A strong match
+                # is therefore allowed to (re)acquire the lock even when it fails the distance
+                # gate, and the very first lock must itself clear the stronger bar rather than
+                # the base threshold.
                 accepted = None
-                if conf > 0.3 and (last_acc is None or
-                                   math.hypot(cand[0] - last_acc[0], cand[1] - last_acc[1]) < max_disp):
+                if last_acc is None:
+                    if conf >= args.relock_conf_min:
+                        accepted = cand
+                        last_acc = cand
+                elif conf >= args.track_conf_min and math.hypot(cand[0] - last_acc[0], cand[1] - last_acc[1]) < max_disp:
+                    accepted = cand
+                    last_acc = cand
+                elif conf >= args.relock_conf_min:
                     accepted = cand
                     last_acc = cand
                 elif last_acc is not None:
@@ -717,7 +735,16 @@ def main():
         for fi, comps in enumerate(all_comps):
             prev_active = [t for t in tracks if t['last_frame'] == fi - 1]
             matched = set()
-            active = []
+            # NOT `active` — that name is the CLI backend-selector dict from main()'s top
+            # (`active = backends if args.backend == 'all' else {...}`), read further down by
+            # the results loop's `if name in active`. Reusing it here for the per-frame active-
+            # track list silently rebinds it for the rest of the function, so `name in active`
+            # checks a list of (track_id, x, y, is_red) tuples instead of the backend dict and
+            # is never true — every entry falls to the zero-fill branch. Measured: with this
+            # collision, --temporal --dump-tracks reports frame_counts all-zero regardless of
+            # --backend, on every video (Phase 2A diagnosis,
+            # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
+            frame_active = []
             for cx, cy, is_red, area, circ in comps:
                 best_t, best_d = None, 30  # match_dist
                 for t in prev_active:
@@ -732,14 +759,14 @@ def main():
                     best_t['xs'].append(cx)
                     best_t['ys'].append(cy)
                     matched.add(best_t['id'])
-                    active.append((best_t['id'], cx, cy, is_red))
+                    frame_active.append((best_t['id'], cx, cy, is_red))
                 else:
                     tracks.append({'id': next_id, 'is_red': is_red, 'first_frame': fi,
                                    'last_frame': fi, 'last_pos': (cx, cy),
                                    'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy]})
-                    active.append((next_id, cx, cy, is_red))
+                    frame_active.append((next_id, cx, cy, is_red))
                     next_id += 1
-            frame_tracks.append(active)
+            frame_tracks.append(frame_active)
 
         track_life = {t['id']: t['last_frame'] - t['first_frame'] + 1 for t in tracks}
         pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
