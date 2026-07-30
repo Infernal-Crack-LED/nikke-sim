@@ -64,6 +64,19 @@ def near_crosshair(t, cross_positions, radius):
 CROSSHAIR_MIN_NEAR_FRAC = 0.05  # below this, treat the dump's crosshair track as BROKEN
 
 
+def crosshair_wander(data):
+    """Spread of the crosshair's x across the run — the DIRECT signature of a frozen lock.
+
+    A healthy lock follows the moving aim point; a mislocked one sits still. Reference (2026-07-30),
+    `marciana` = the SG/Iron slug (marciana-solo.MP4), NOT marciana-marine-study (AR/Iron):
+    marciana/run16 sweeps x 341..2692 (range 2351) over a ~2606px-wide crop; the frozen
+    noir-near-ce36 lock sat in an 87px band at the right edge for all 600 frames. Near-fraction
+    catches this too, but only indirectly — range measures the freeze itself.
+    """
+    xs = [c[0] for c in data["cross_positions"] if c]
+    return (max(xs) - min(xs)) if xs else 0.0
+
+
 def check_crosshair_validity(data):
     """Return (ok, near_frac, median_dx, median_dy). Guards against mislocked-template dumps."""
     p, tracks, cross = data["params"], data["tracks"], data["cross_positions"]
@@ -105,9 +118,11 @@ def report_tracks(data):
         print("     crosshair track is sound (see the plan's Phase 2A) instead of re-reading it.")
         print("=" * 78 + "\n")
 
+    wander = crosshair_wander(data)
     cand = [t for t in tracks if not t["is_red"] and near_crosshair(t, cross, radius)]
     print(f"white tracks within pellet_radius({radius}) of crosshair: {len(cand)}"
-          f"   [crosshair-validity: {frac:.1%} near — {'OK' if ok else 'BROKEN'}]")
+          f"   [crosshair-validity: {frac:.1%} near — {'OK' if ok else 'BROKEN'}"
+          f" | lock wander: {wander:.0f}px {'(FROZEN?)' if wander < 300 else ''}]")
 
     # A fully-detected pellet spans 13 game frames at 60fps => 6-7 samples at 30fps.
     hist = collections.Counter(t["life"] for t in cand)
