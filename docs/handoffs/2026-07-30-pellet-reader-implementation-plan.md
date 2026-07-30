@@ -36,6 +36,47 @@ open-questions **U35**.
 branched off an older `origin/main`; cherry-pick only) · tune the current threshold detector further ·
 compare any new number to run16–run19 (the count definition changes in Phase 2).
 
+### Dispatch — model tier per phase, and how to scope the prompt
+
+**Dispatch ONE phase at a time.** Do not hand this whole document to an agent and say "continue."
+The doc is deliberately not split — the error budget and the do-not list are cross-cutting and
+fragments would drift — so scope the **task**, not the file:
+
+> _"Read the START HERE block and §X of
+> `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md`. Do §X. Stop at its exit criterion
+> and report — do not start the next phase, do not re-plan, do not revisit settled items."_
+
+| Phase                            | Tier                                     | Why                                                                                                                                       |
+| -------------------------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **0.1 / 0.5 / 0.6**              | **Sonnet**                               | Run a script, read a number, compare to a written expectation. The decision rules are pre-committed below.                                |
+| **1.1 / 1.2** (harness + labels) | **Sonnet**                               | Ordinary engineering against a written spec. The one subtle part (13-frame sequences w/ shared t0) is specified in §1.2 step 3.           |
+| **2A** (localization)            | **Sonnet**, escalate                     | Bounded: three named options, clear exit criterion. Escalate to Opus only if all three fail.                                              |
+| **2** (lifecycle counting)       | **Opus**                                 | Real design work — t0 estimation, template scoring, phase-indexed gating — and the phase most likely to break the plan's own assumptions. |
+| **2 design review, before code** | `/logic-gate` pre-op — **owner-invoked** | Cross-family independence on a large build resting on a lifecycle spec corroborated on ONE video. Worth more than a stronger implementer. |
+| **3+**                           | **Opus** design, Sonnet calibration      | Design is judgement; threshold/scale fitting against labels is mechanical.                                                                |
+
+⚠ **`/logic-gate` routing — do not guess the reviewer.** It is **owner-invoked only**; the driver
+never triggers it. And the reviewer is the **opposite family from the driver**, so with a Claude
+driver the pre-op gate is **`kimi-code/k3`** (`dispatch-kimi.sh`), **not Fable** — Fable reviews
+Kimi/Qwen drivers. Running the fable-pinned native agent under a Claude driver is the _same-family
+fallback_ and its verdict must be reported as **"same-family only"**, never silently substituted.
+Canonical names: `scripts/kit-autonomy/CROSS-FAMILY-PROTOCOL.md`.
+
+**The reasoning behind this split, because it is not about capability.** Where a decision rule is
+already written and a cheap ground-truth check sits next to it, a cheaper model is **safer**, not
+merely cheaper — the dominant failure mode is inventing an explanation instead of reading the output,
+and surplus capability is what builds the explanation. Where the task is "work out what the rule
+should be" (Phase 2), you need the stronger model precisely to notice the rule is missing.
+
+⚠ **`/scientific-method` does NOT apply to this thread** — it gates damage-model values, and this is
+reader tooling (`CLAUDE.md` §⚖). `/logic-gate` is the right, lighter gate for the Phase 2 design.
+
+**The tell this plan was built around:** both diagnoses that had to be retracted on 2026-07-30 were
+_elaborate and explained everything_, and both died in ~2 minutes to a mechanical check against an
+existing artifact. **When an explanation accounts for everything, distrust it and go find the
+two-minute check.** No tier substitutes for that habit — which is why every phase below carries a
+pre-committed exit criterion and a kill condition.
+
 **✅ Reproducibility (constraint 9) — closed.** The 2026-07-30 measurements came from
 `scratchpad/pellets/run16/`, which is **untracked and gitignored** — so the instrument was committed
 but its input was not, exactly the failure mode constraint 9 exists to prevent. Fixed the same
