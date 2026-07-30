@@ -63,7 +63,7 @@ const pelletCrop = flags['pellet-crop'] ?? 'crop=1303:396:672:268';
 const timerCrop = flags['timer-crop'] ?? 'crop=59:39:2317:21';
 const zoom = Number(flags.zoom ?? 3);
 const coreRate = Number(flags['core-rate'] ?? 0.05);
-const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
+const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
 const ammoOffsetYNative = Number(flags['ammo-offset-y'] ?? -5.5);
 const mock = flags.mock === 'true';
 const outDir = flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/pellets';
