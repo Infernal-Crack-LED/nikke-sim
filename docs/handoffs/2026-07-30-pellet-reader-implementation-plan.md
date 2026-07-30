@@ -698,15 +698,30 @@ instrument here.
 
 ## Phase 2A — Crosshair localization (the `guilty`/`isabel` blocker)
 
-**Promoted to a first-class phase by Phase 0.1b.** This is not a contingency — it is an
-already-evidenced fault, and it is the _only_ fault visible on `guilty`/`isabel`, which never get far
-enough for any counting method to matter. It runs in parallel with Phase 2; they touch different
-code.
+**⇒ THE CRITICAL PATH (re-scoped 2026-07-30). Do this before 0.5 and before Phase 1.** It was
+promoted to a first-class phase by §0.1b and to the critical path by the failed §0.5 attempt: 0.5
+needs a `noir` dump with a sound crosshair track, and no such dump exists. 2A now gates 0.5, which
+gates Phase 2's one-template-fits-all-units assumption. It is **no longer parallel to Phase 2**.
 
 **The problem.** Crosshair position comes from `cv2.matchTemplate` on a 74×74 ammo-box template
 extracted from one `marciana` frame. It does not generalize (`guilty-sg`: 3 shots on a 180 s fight).
 The per-video-template patch improved `guilty` 3→21 but regressed `noir` 179→107 — so the current
 state is a trade, not a fix.
+
+**⚠ It is worse than §0.1b said — `noir` is affected too.** §0.1b framed this as "`guilty`/`isabel`
+fail to localize, `noir` runs fine (179 shots)." The 2026-07-30 §0.5 attempt found
+`noir-near-ce36`'s crosshair **frozen at the crop's right edge for all 600 frames**, with 1.3% of
+white tracks near it vs `marciana`'s 14.3%. So localization failure is **not confined to
+`guilty`/`isabel`**, and a healthy-looking shot count does not certify a sound crosshair track.
+Treat every video as suspect until it passes the validity check below.
+
+**You already have the lock-quality metric this phase's kill condition asks for.**
+`scripts/probe/analyze-pellet-tracks.py` gained `check_crosshair_validity()` on 2026-07-30: it prints
+a `CROSSHAIR TRACK LOOKS BROKEN` banner and an inline `[crosshair-validity: N% near — OK/BROKEN]`
+tag whenever under 5% of white tracks fall within `pellet_radius` of the reported crosshair.
+Reference points: `marciana`/run16 = **14.3% (OK)**, `noir-near-ce36` = **1.3% (BROKEN)**. Use it as
+the primary instrument — it is objective, cheap, and catches what template-match **confidence does
+not** (noir's confidence is a normal 0.430; the mislock hides inside the healthy 0.33–0.51 band).
 
 **Steps**
 
@@ -724,9 +739,23 @@ state is a trade, not a fix.
      sound, tuned component of that otherwise-parked tool.
 3. Keep the template-jump gate (`--max-template-disp 150`) regardless — it is validated and cheap.
 
-**Exit criterion.** `guilty` and `isabel` reach detection rates comparable to `noir` (≥60% of
-expected shots, the pre-committed validity bar from the 2026-07-29 plan) **without** regressing
-`noir` or `marciana`. All four videos must pass together — that conjunction is the whole point.
+**Exit criterion — two gates, both required.**
+
+1. **Crosshair validity (primary, objective).** A fresh dump for **all four** videos — `marciana`,
+   `noir`, `guilty`, `isabel` — each scoring **OK** (≥5% near-fraction) under
+   `analyze-pellet-tracks.py`'s `check_crosshair_validity`, ideally approaching `marciana`/run16's
+   14.3%. This is the gate that unblocks §0.5, so it is the one that matters most.
+2. **Detection rate.** `guilty` and `isabel` reach rates comparable to `noir` (≥60% of expected
+   shots, the pre-committed bar from the 2026-07-29 plan) **without** regressing `noir` or
+   `marciana`.
+
+All four videos must pass **together** — that conjunction is the whole point, and it is the thing
+four previous tuning passes each failed. ⚠ **Do not accept a healthy shot count as evidence of a
+sound crosshair**: `noir-sg` produced 179 shots while a `noir` dump was mislocked. Gate 1 is not
+implied by gate 2.
+
+**Deliverable for §0.5:** at least one `noir` dump that passes gate 1, committed or reproducible by a
+recorded command. §0.5 stays blocked until that exists.
 
 **Kill condition.** If no localization method generalizes, fall back to a per-video calibration step
 with an explicit committed template per recording and a lock-quality metric that **fails loudly**
