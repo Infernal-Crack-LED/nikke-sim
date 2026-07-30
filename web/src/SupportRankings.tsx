@@ -28,6 +28,7 @@ import {
   bufferBars,
   type BoardId,
   type BufferBoard,
+  type BurstGenBoard,
   type BurstGenArtifact,
   type BurstCdrArtifact,
   type SustainArtifact,
@@ -137,6 +138,9 @@ export function SupportRankings() {
   const [bufferBoard, setBufferBoard] = useState<BufferBoard>(() =>
     params.get('bb') === 'typed' ? 'typed' : 'generic'
   );
+  const [burstGenBoard, setBurstGenBoard] = useState<BurstGenBoard>(() =>
+    params.get('bg') === 'focused' ? 'focused' : 'unfocused'
+  );
   const [arts, setArts] = useState<Partial<Record<BoardId, AnyArtifact>>>({});
   const [err, setErr] = useState<string | null>(null);
 
@@ -181,7 +185,7 @@ export function SupportRankings() {
     }
     const data =
       board === 'burstgen'
-        ? buildBurstGenTable(art as BurstGenArtifact)
+        ? buildBurstGenTable(art as BurstGenArtifact, burstGenBoard)
         : board === 'burstcdr'
           ? buildBurstCdrTable(art as BurstCdrArtifact)
           : board === 'sustain'
@@ -200,6 +204,11 @@ export function SupportRankings() {
     } else {
       u.searchParams.delete('bb');
     }
+    if (board === 'burstgen') {
+      u.searchParams.set('bg', burstGenBoard);
+    } else {
+      u.searchParams.delete('bg');
+    }
     return copyTextToClipboard(u.toString());
   };
 
@@ -213,7 +222,7 @@ export function SupportRankings() {
         ? { badge: profileLabel(b.profile), badgeTitle: profiles[b.profile] }
         : {};
     if (board === 'burstgen') {
-      bars = burstGenBars(art as BurstGenArtifact).map((b) => ({
+      bars = burstGenBars(art as BurstGenArtifact, burstGenBoard).map((b) => ({
         ...b,
         key: `${b.slug}:${b.profile ?? ''}`,
         value: b.gaugePerSec,
@@ -313,6 +322,24 @@ export function SupportRankings() {
           ))}
         </div>
       )}
+      {board === 'burstgen' && (
+        <div className="pills ranks-subboards">
+          {(['unfocused', 'focused'] as BurstGenBoard[]).map((bg) => (
+            <button
+              key={bg}
+              className={burstGenBoard === bg ? 'on' : ''}
+              onClick={() => setBurstGenBoard(bg)}
+              title={
+                bg === 'unfocused'
+                  ? 'camera focus parked off the tested unit — the fair, nobody-favored baseline for comparing across weapon classes'
+                  : "camera focus on the tested unit itself — its ceiling as your team's designated burst-gen carry (SR/RL only change; non-charge weapons get no focus bonus)"
+              }
+            >
+              {bg === 'unfocused' ? 'Unfocused' : 'Focused'}
+            </button>
+          ))}
+        </div>
+      )}
 
       {err && !art ? (
         <p className="muted">
@@ -325,7 +352,11 @@ export function SupportRankings() {
         <>
           <RankBarChart
             title={
-              board === 'buffer' ? `${meta.title} · ${bufferBoard}` : meta.title
+              board === 'buffer'
+                ? `${meta.title} · ${bufferBoard}`
+                : board === 'burstgen'
+                  ? `${meta.title} · ${burstGenBoard}`
+                  : meta.title
             }
             subtitle={`${bars.length} entries · generated ${new Date(
               art.generatedAt
@@ -334,7 +365,14 @@ export function SupportRankings() {
             onShareImage={onShareImage}
             onShareLink={onShareLink}
           />
-          <Methodology methodology={art.methodology} profiles={profiles} />
+          <Methodology
+            methodology={
+              board === 'burstgen' && burstGenBoard === 'focused'
+                ? (art as BurstGenArtifact).focusedMethodology
+                : art.methodology
+            }
+            profiles={profiles}
+          />
         </>
       )}
     </section>

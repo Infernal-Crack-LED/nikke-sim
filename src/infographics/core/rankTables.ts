@@ -72,17 +72,30 @@ export const unitName = (
   return profile ? `${name} (${profileLabel(profile)})` : name;
 };
 
-export function buildBurstGenTable(art: BurstGenArtifact): TableCardData {
+export type BurstGenBoardId = 'unfocused' | 'focused';
+
+// The site's default view is the unfocused board (SupportRankings.tsx
+// useState('unfocused')) — the fair, nobody-favored cross-class baseline; the
+// focused board (the unit as its team's designated carry) is the share
+// button's second variant, mirroring buildBufferTable's generic/typed pattern.
+export function buildBurstGenTable(
+  art: BurstGenArtifact,
+  board: BurstGenBoardId = 'unfocused'
+): TableCardData {
+  const rows = board === 'focused' ? art.focusedEntries : art.entries;
   return {
-    title: 'Burst Generation Ranking',
-    subtitle: 'no-op team · 180s · unfocused · scope-lock loadout',
+    title: `Burst Generation Ranking${board === 'focused' ? ' — Focused' : ''}`,
+    subtitle:
+      board === 'focused'
+        ? 'no-op team · 180s · unit itself focused · scope-lock loadout'
+        : 'no-op team · 180s · unfocused · scope-lock loadout',
     columns: [
       { header: '#', flex: 0.5 },
       { header: 'Unit', flex: 2 },
       { header: 'Gauge %/s', align: 'right' },
       { header: 'Bars (180s)', align: 'right' },
     ],
-    rows: art.entries.map(([slug, gps, gtotal, , profile], i) => [
+    rows: rows.map(([slug, gps, gtotal, , profile], i) => [
       `#${i + 1}`,
       unitName(art.units, slug, profile),
       `${gps.toFixed(2)}%/s`,

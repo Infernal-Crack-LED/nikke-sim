@@ -28,9 +28,11 @@ export type BurstGenRow = [
 export interface BurstGenArtifact {
   generatedAt: string;
   methodology: string;
+  focusedMethodology: string; // methodology note for `focusedEntries` (the unit as its team's designated burst-gen carry)
   units: Record<string, RankUnitMeta>;
   profiles: Record<string, string>; // profile id → player-facing note
-  entries: BurstGenRow[];
+  entries: BurstGenRow[]; // unfocused — the fair, nobody-favored baseline (unchanged shape/meaning)
+  focusedEntries: BurstGenRow[]; // the unit itself holds camera focus (its realistic ceiling as a team's designated carry)
 }
 
 // [slug, cdrPer20s, ramp, condition, selfCdr, profile] — fixed arity 6 (pad

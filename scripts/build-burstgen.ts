@@ -64,6 +64,7 @@ for (const [slug, c] of Object.entries(data.characters)) {
 }
 
 const ranked = rankBurstGen(population, ctx);
+const rankedFocused = rankBurstGen(population, ctx, true);
 
 const artifact: BurstGenArtifact = {
   generatedAt: new Date().toISOString(),
@@ -80,6 +81,17 @@ const artifact: BurstGenArtifact = {
     'little-mermaid runs with two MG B3 partners, cinderella-crystal-wave with one ' +
     'MG B3 partner (their team-ammo fills scale with team ammunition burn). ' +
     'Scope-lock loadout (Base-5, 3★/core 7, 10/10/10).',
+  focusedMethodology:
+    'Identical setup to the unfocused board above, EXCEPT camera focus is placed ' +
+    'on the tested unit itself instead of a non-charge no-op teammate — its ' +
+    "realistic ceiling as the team's deliberately-built-around burst-gen carry. " +
+    'Charge weapons (SR/RL) generate at ×2.5 instead of ×1.0; non-charge weapons ' +
+    '(AR/SMG/SG/MG) see no change, since focus grants them no bonus either way — ' +
+    'their focused and unfocused numbers are identical. This is why the unfocused ' +
+    'board exists as the default: it is the only apples-to-apples comparison across ' +
+    'weapon classes, since a board where everyone is "focused" cannot happen at once ' +
+    'in a real 5-unit team (only one camera target). Use this board to answer ' +
+    '"how good is this unit if I build my team around it", not for cross-class ranking.',
   units: Object.fromEntries(
     population.map((slug) => {
       const c = data.characters[slug];
@@ -106,6 +118,13 @@ const artifact: BurstGenArtifact = {
     r.fullBursts,
     r.profile, // null = plain base-team run
   ]),
+  focusedEntries: rankedFocused.map((r): BurstGenRow => [
+    r.slug,
+    Math.round(r.gaugePerSec * 100) / 100,
+    Math.round(r.gaugeTotal * 100) / 100,
+    r.fullBursts,
+    r.profile,
+  ]),
 };
 
 const outArg = process.argv.indexOf('--out');
@@ -116,8 +135,17 @@ const out =
 mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 process.stderr.write(
-  `burstgen: ${ranked.length} units ranked → ${out}\n` +
+  `burstgen: ${ranked.length} units ranked (unfocused) → ${out}\n` +
     ranked
+      .slice(0, 10)
+      .map(
+        (r) =>
+          `  #${r.rank} ${r.slug} ${r.gaugePerSec.toFixed(2)}%/s ${r.gaugeTotal.toFixed(1)} bars ${r.fullBursts.toFixed(1)} FB${r.profile ? ` [${r.profile}]` : ''}`
+      )
+      .join('\n') +
+    '\n' +
+    `burstgen: ${rankedFocused.length} units ranked (focused, self-carry) →\n` +
+    rankedFocused
       .slice(0, 10)
       .map(
         (r) =>

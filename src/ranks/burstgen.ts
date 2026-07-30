@@ -143,12 +143,18 @@ function buildTeam(
 }
 
 // Run one unit in its no-op team and return its burst-generation contribution.
-// The tested unit is leftmost in its burst category and measured unfocused
-// (charge weapons at ×1.0; camera focus is parked on a non-charge teammate).
+// The tested unit is leftmost in its burst category. Default (focusSelf=false)
+// measures UNFOCUSED (charge weapons at ×1.0; camera focus is parked on a
+// non-charge teammate) — the fair, nobody-favored baseline. focusSelf=true
+// measures the unit AS THE TEAM'S DESIGNATED FOCUS TARGET instead (the ×2.5
+// charge bonus applies to it if it's SR/RL; no change for non-charge weapons,
+// which get no focus bonus either way) — the realistic ceiling for a team
+// deliberately built around this unit as its burst-gen carry.
 export function burstGenFor(
   slug: string,
   ctx: RanksCtx,
-  withProfile = true
+  withProfile = true,
+  focusSelf = false
 ): BurstGenEntry {
   const char = characterFor(slug, ctx);
   const slugs = buildTeam(slug, char, withProfile);
@@ -178,19 +184,26 @@ export function burstGenFor(
     coreHitRate: 0,
     rangeBonus: true,
     durationSec: 180,
-    // Camera focus is parked on a non-charge no-op teammate so the unit under
-    // test is measured UNFOCUSED: the focused charge bonus (sim.ts gaugePerShot,
-    // per-unit since 2026-07-29, SR/RL only) is a camera artifact a ranking board
-    // cannot grant to every unit at once. Focusing a non-charge unit means no unit
-    // receives it, so charge weapons are ranked on raw ×1.0 generation. (If no
-    // non-charge teammate exists, the engine's default slot-2 focus applies.)
-    focusSlug: slugs.find((s) => {
-      if (s === slug) {
-        return false;
-      }
-      const w = characterFor(s, ctx).weapon;
-      return w !== 'SR' && w !== 'RL';
-    }),
+    // focusSelf=true: focus the tested unit itself — its realistic ceiling as
+    // the team's designated burst-gen carry (×2.5 charge bonus if SR/RL; no
+    // change for non-charge weapons, which get no focus bonus regardless).
+    // focusSelf=false (default): camera focus is parked on a non-charge no-op
+    // teammate so the unit under test is measured UNFOCUSED instead — the
+    // focused charge bonus (sim.ts gaugePerShot, per-unit since 2026-07-29,
+    // SR/RL only) is a camera artifact a ranking board cannot grant to every
+    // unit at once, so this is the fair, nobody-favored baseline. Focusing a
+    // non-charge unit means no unit receives it, so charge weapons are ranked
+    // on raw ×1.0 generation. (If no non-charge teammate exists, the engine's
+    // default slot-2 focus applies.)
+    focusSlug: focusSelf
+      ? slug
+      : slugs.find((s) => {
+          if (s === slug) {
+            return false;
+          }
+          const w = characterFor(s, ctx).weapon;
+          return w !== 'SR' && w !== 'RL';
+        }),
   };
   const prepared = prepareTeam(chars, unitOpts, ctx.deps);
   const r = runSim(chars, ctx.mult, cfg, prepared);
@@ -211,20 +224,21 @@ export function burstGenFor(
 
 // Rank the whole population (every sim-supported slug). Profiled units appear
 // TWICE — plain (profile: null) and profiled (profile: id) — so the two
-// standings compare at a glance.
+// standings compare at a glance. focusSelf: see burstGenFor.
 export function rankBurstGen(
   population: string[],
-  ctx: RanksCtx
+  ctx: RanksCtx,
+  focusSelf = false
 ): BurstGenEntry[] {
   const scored = population.flatMap((slug) => {
     const char = ctx.characters[slug];
     if (!char) {
       return [];
     }
-    const rows = [burstGenFor(slug, ctx, false)];
+    const rows = [burstGenFor(slug, ctx, false, focusSelf)];
     const profile = BURSTGEN_PROFILES[slug];
     if (profile) {
-      rows.push(burstGenFor(slug, ctx, true));
+      rows.push(burstGenFor(slug, ctx, true, focusSelf));
     }
     return rows;
   });

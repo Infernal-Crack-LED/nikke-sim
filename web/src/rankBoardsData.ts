@@ -90,8 +90,13 @@ export interface BurstGenBar extends RowBase {
   gaugeTotal: number; // uncapped 180s gauge (100 = one full bar)
   fullBursts: number; // full bursts completed by the team
 }
-export function burstGenBars(art: BurstGenArtifact): BurstGenBar[] {
-  return art.entries.map(
+export type BurstGenBoard = 'unfocused' | 'focused';
+export function burstGenBars(
+  art: BurstGenArtifact,
+  board: BurstGenBoard = 'unfocused'
+): BurstGenBar[] {
+  const rows = board === 'focused' ? art.focusedEntries : art.entries;
+  return rows.map(
     ([slug, gaugePerSec, gaugeTotal, fullBursts, profile], i) => ({
       ...base(art.units, slug, i + 1, profile),
       gaugePerSec,
