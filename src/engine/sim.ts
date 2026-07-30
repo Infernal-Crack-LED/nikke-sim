@@ -1345,9 +1345,7 @@ export function runSim(
       (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
         ? FOCUS_CHARGE_GEN
         : (fcb && fcb > 0 ? fcb : 250) / 100);
-    return (
-      per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat
-    );
+    return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
     // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an

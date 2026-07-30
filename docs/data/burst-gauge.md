@@ -143,7 +143,7 @@ both `fullChargeBonus` 250, the modal value across the roster.
     footing as alice/scarlet-black-shadow above. A prior recount claiming an 8-shot gaugeless
     opener and an effective ≈2.2× was a repeated reading error and is RETRACTED — there is no
     open dispute on this value.
-  Full record: `docs/DECISIONS.md` 2026-07-29 entries.
+    Full record: `docs/DECISIONS.md` 2026-07-29 entries.
 - **Instrument note (2026-07-29):** the burst-gauge widget's `solo`/`bar` HUD crop
   (`142x12 @ 2470,488`) is a continuous fill-percentage reader **on solo/near-solo footage**
   (committed: `scripts/probe/gauge-fill.py` + anchor fixture/vitest) — this corrects/scopes the

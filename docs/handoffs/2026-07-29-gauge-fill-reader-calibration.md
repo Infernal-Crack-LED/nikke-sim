@@ -143,10 +143,12 @@ Supporting checks, cheap and worth doing in the same pass:
 All three currently sit behind this one question.
 
 ### `maiden-ice-rose` — the anchor
+
 Not a unit question. Under (a) her documented weapon sub-step is wrong and a measured constant
 moves; under (b) nothing about her changes. Either way she stays the calibration reference.
 
 ### `alice` (SR/Fire — NOT `alice-wonderland-bunny`)
+
 - Datamined `chargeMultiplier` / `fullChargeBonus` agree with each other; under the per-unit model
   (`fullChargeBonus/100`) they imply a specific multiplier. Verify from `data/characters.json` +
   `data/gauge-per-shot.json`, don't take it from memory.
@@ -164,6 +166,7 @@ moves; under (b) nothing about her changes. Either way she stays the calibration
   multiplier is settled at the same evidence tier that `scarlet-black-shadow` already landed on.
 
 ### `cinderella` (RL/Electric — NOT `cinderella-crystal-wave`)
+
 - Pinned to the flat constant via the `magDumpRof` predicate in `gaugePerShot`.
 - **Confounded in a way `alice` is not:** her S1 rider contributes gauge through `skillGauge`,
   which receives NO focus bonus. So her per-pull generation is `base × focusMult + rider`, and the
@@ -171,7 +174,7 @@ moves; under (b) nothing about her changes. Either way she stays the calibration
   about that rider give wildly different multipliers from the SAME measurement — verify it against
   the engine (`DBG_GAUGE`) rather than reasoning about it.
 - Her magazine size is **not** a fixed constant: it is `round(ammo × (1 + maxAmmoPct/100)) +
-  maxAmmoFlat` evaluated at each reload. It equals the datamined value only when no max-ammo buff
+maxAmmoFlat` evaluated at each reload. It equals the datamined value only when no max-ammo buff
   is live — true solo, false in the graded control comp. Solo reads are therefore fine; do not
   reuse the assumption in team context.
 - Her solo recording is long, but only the pre-full portion carries accumulation. **Once the gauge
@@ -370,18 +373,18 @@ from t≈18) — consistent with the owner's cutoff: past 0:17 is no longer clea
 (Verified this pass: fresh 30fps reader run on the tak video + full-frame views at t=8/12/16/
 17.5/18.7/25; the two videos' fill events land at the same timestamps to the frame.)
 
-| §RESULT claim | Evidence timestamps | Inside 0:06–0:17? |
-| --- | --- | --- |
-| Ladder weapon sub-steps 9.4–10.8 (×5) | 8.57 / 9.93 / 11.30 / 12.67 / 14.03 | YES |
-| Ladder rider sub-steps 3.6–3.7 (×5) | 8.40 / 9.77 / 11.13 / 12.50 / 13.87 | YES |
-| Frame-snap check (single-frame jumps) | 11.27→11.28, 12.65→12.67 | YES |
-| Shot-1 partial opener +2.9, no rider | 7.20 (ammo `005` at 7.00) | YES |
-| Mag-1 empty after 6 shots | ammo `000` at 13.90 | YES |
-| Rider-first sub-step order | the above step pairs | YES |
-| Takina per-shot steps 14.5–16.7 (×5) | 8.57–14.03 (same cadence) | YES |
-| Shot 7 (rider +3.7 / weapon +10.1) | 17.20 / 17.37 | **NO** |
-| Shot 8 + full-cross | 18.57 / 18.73 / 18.77 | **NO** |
-| Ammo `004` corroboration | 18.72 | **NO** |
+| §RESULT claim                         | Evidence timestamps                 | Inside 0:06–0:17? |
+| ------------------------------------- | ----------------------------------- | ----------------- |
+| Ladder weapon sub-steps 9.4–10.8 (×5) | 8.57 / 9.93 / 11.30 / 12.67 / 14.03 | YES               |
+| Ladder rider sub-steps 3.6–3.7 (×5)   | 8.40 / 9.77 / 11.13 / 12.50 / 13.87 | YES               |
+| Frame-snap check (single-frame jumps) | 11.27→11.28, 12.65→12.67            | YES               |
+| Shot-1 partial opener +2.9, no rider  | 7.20 (ammo `005` at 7.00)           | YES               |
+| Mag-1 empty after 6 shots             | ammo `000` at 13.90                 | YES               |
+| Rider-first sub-step order            | the above step pairs                | YES               |
+| Takina per-shot steps 14.5–16.7 (×5)  | 8.57–14.03 (same cadence)           | YES               |
+| Shot 7 (rider +3.7 / weapon +10.1)    | 17.20 / 17.37                       | **NO**            |
+| Shot 8 + full-cross                   | 18.57 / 18.73 / 18.77               | **NO**            |
+| Ammo `004` corroboration              | 18.72                               | **NO**            |
 
 **Consequence 1 — the shot-counting anchor exclusion is WITHDRAWN.** "8 shots fill the bar, full
 crosses at t=18.73" — the evidence that excluded the documented 12.55%/pull anchor and closed the

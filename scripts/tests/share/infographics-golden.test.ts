@@ -61,7 +61,9 @@ const HAVE_BOARDS = [
   'bufferchart.json',
   'sustain.json',
   'burstcdr.json',
-].every((f) => existsSync(new URL(`../../../web/public/${f}`, import.meta.url)));
+].every((f) =>
+  existsSync(new URL(`../../../web/public/${f}`, import.meta.url))
+);
 
 const REGEN_HINT =
   'fixture mismatch — regenerate with `npm run fixtures:infographics` ' +

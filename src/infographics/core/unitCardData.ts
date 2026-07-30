@@ -284,8 +284,7 @@ function burstGenTile(
     value: `${gaugePerSec.toFixed(2)}%/s`,
     sub: `${(gaugeTotal / 100).toFixed(1)} bars · ${fullBursts.toFixed(1)} FB`,
     profileChip: hit.profile ? profileLabel(hit.profile) : null,
-    defaultRank:
-      hit.profile && hits.plain ? hits.plain.index + 1 : null,
+    defaultRank: hit.profile && hits.plain ? hits.plain.index + 1 : null,
   };
 }
 
@@ -638,7 +637,11 @@ export function buildUnitCardData(src: UnitCardSources): UnitCardModel {
     const sus = sustainTile(src.sustain, slug);
     const cdr = burstCdrTile(src.burstcdr, slug);
     const second = sus.rank != null ? sus : cdr.rank != null ? cdr : sus;
-    tiles = [bufferTile(src.bufferchart, slug), second, burstGenTile(src.burstgen, slug)];
+    tiles = [
+      bufferTile(src.bufferchart, slug),
+      second,
+      burstGenTile(src.burstgen, slug),
+    ];
   }
 
   // --- bar charts: a strict SUBSET of the tiles (ruling 13) ---

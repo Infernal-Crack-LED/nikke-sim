@@ -11,6 +11,8 @@
 //     --timer-crop "<ff>"   override timer crop (default crop=59:39:2317:21)
 //     --zoom <n>            pellet crop upscale (default 4)
 //     --core-rate <0-1>     expected core hit fraction (default 0.05)
+//     --center-exclude <n>  crosshair exclusion radius in zoomed px (default 18*zoom)
+//     --pellet-radius <n>   count pellets within this radius of crosshair in zoomed px (default 80*zoom)
 //     --mock                synthetic reads (no VLM / Python needed)
 //     --out <dir>           scratch dir (default $CLAUDE_SCRATCH|/tmp/pellets)
 //
@@ -43,7 +45,7 @@ for (let i = 1; i < argv.length; i++) {
 }
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--mock] [--out DIR]'
+    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]'
   );
   process.exit(1);
 }
@@ -61,11 +63,15 @@ const pelletCrop = flags['pellet-crop'] ?? 'crop=1303:396:672:268';
 const timerCrop = flags['timer-crop'] ?? 'crop=59:39:2317:21';
 const zoom = Number(flags.zoom ?? 3);
 const coreRate = Number(flags['core-rate'] ?? 0.05);
+const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
+const ammoOffsetYNative = Number(flags['ammo-offset-y'] ?? -5.5);
 const mock = flags.mock === 'true';
 const outDir = flags.out ?? (process.env.CLAUDE_SCRATCH ?? '/tmp') + '/pellets';
 const scriptDir = fileURLToPath(new URL('.', import.meta.url));
 const pythonBin = `${scriptDir}.venv/bin/python`;
 const counterScript = `${scriptDir}count-pellets.py`;
+const ammoTemplatePath = `${scriptDir}ammo-box-template.png`;
+const forceVlmCrosshair = flags['no-ammo-template'] === 'true';
 
 const MIN_PELLETS = 5;
 const MAX_PELLETS = 10;
@@ -114,6 +120,39 @@ console.log(`  extraction: ${((Date.now() - t0Extract) / 1000).toFixed(1)}s`);
 if (!pelletFiles.length) {
   console.error('no frames extracted');
   process.exit(1);
+}
+
+// ---- extract a per-video ammo-box template (global marciana template does not
+//      generalize to all SG HUDs; see docs/handoffs/2026-07-29-sg-landing-recalibration-plan.md)
+const perVideoAmmoTemplate = `${outDir}/ammo-box-template.png`;
+try {
+  console.log('  extracting per-video ammo-box template ...');
+  const t0Tmpl = Date.now();
+  execFileSync(
+    pythonBin,
+    [
+      `${scriptDir}extract-ammo-template.py`,
+      video,
+      '--out',
+      perVideoAmmoTemplate,
+      '--crop',
+      pelletCrop,
+      '--zoom',
+      String(zoom),
+      '--roi-x0',
+      '0.55',
+      '--roi-y0',
+      '0.50',
+    ],
+    { stdio: ['ignore', 'inherit', 'inherit'] }
+  );
+  console.log(
+    `  per-video template: ${((Date.now() - t0Tmpl) / 1000).toFixed(1)}s -> ${perVideoAmmoTemplate}`
+  );
+} catch {
+  console.log(
+    `  per-video template extraction failed, falling back to ${ammoTemplatePath}`
+  );
 }
 
 // ---- run Python pellet counter on ALL pellet frames (fast, no VLM) ----
@@ -216,9 +255,8 @@ for (let i = 0; i < timerFiles.length; i++) {
 console.log(`  timer VLM: ${((Date.now() - t0Timer) / 1000).toFixed(1)}s`);
 
 // ---- VLM crosshair reads (skipped when ammo template is available) ----
-const ammoTemplatePath = `${scriptDir}ammo-box-template.png`;
 const crosshairFile = `${outDir}/crosshairs.json`;
-if (!existsSync(ammoTemplatePath)) {
+if (forceVlmCrosshair || !existsSync(ammoTemplatePath)) {
   const CROSSHAIR_PROMPT = `You are looking at a cropped region from a NIKKE boss fight showing the
 damage area around the boss. Find the CROSSHAIR — the small aiming reticle where the player's
 shots impact. It is usually a small circle, diamond, or chevron shape near the centre of the
@@ -365,17 +403,19 @@ if (!mock) {
     `  running pellet counter on ${pelletFiles.length} frames (OpenCV, crosshair-directed) ...`
   );
   const t0Count = Date.now();
-  const centerExclude = 18 * zoom;
+  const centerExclude = Number(flags['center-exclude'] ?? 18 * zoom);
   const zoomScale = (zoom / 4) ** 2;
   const minArea = Math.round(100 * zoomScale);
   const maxArea = Math.round(3000 * zoomScale);
-  const pelletRadius = Math.round(80 * zoom);
-  const ammoTemplate = `${scriptDir}ammo-box-template.png`;
-  const ammoOffsetX = Math.round(62.5 * zoom);
-  const ammoOffsetY = Math.round(-5.5 * zoom);
+  const pelletRadius = Math.round(Number(flags['pellet-radius'] ?? 80 * zoom));
+  const ammoOffsetX = Math.round(ammoOffsetXNative * zoom);
+  const ammoOffsetY = Math.round(ammoOffsetYNative * zoom);
+  const ammoTemplate = existsSync(perVideoAmmoTemplate)
+    ? perVideoAmmoTemplate
+    : ammoTemplatePath;
   const useAmmoTemplate = existsSync(ammoTemplate);
   const crosshairArgs = useAmmoTemplate
-    ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY}`
+    ? `--ammo-template "${ammoTemplate}" --ammo-offset-x ${ammoOffsetX} --ammo-offset-y ${ammoOffsetY} --ammo-roi-x0 0.55 --ammo-roi-y0 0.50`
     : `--crosshair-file "${crosshairFile}"`;
   const redRMin = Number(flags['red-r-min'] ?? 200);
   const redGbMax = Number(flags['red-gb-max'] ?? 60);
@@ -387,8 +427,15 @@ if (!mock) {
   const peanutCircLo = Number(flags['peanut-circ-lo'] ?? 0.3);
   const peanutAspect = Number(flags['peanut-aspect'] ?? 0.45);
   const peanutMaxMult = Number(flags['peanut-max-mult'] ?? 0);
+  const dumpTracksFlag = flags['dump-tracks'];
+  const dumpTracksArg =
+    dumpTracksFlag === 'true'
+      ? `--dump-tracks "${outDir}/tracks.json"`
+      : dumpTracksFlag
+        ? `--dump-tracks "${dumpTracksFlag}"`
+        : '';
   const raw = execSync(
-    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult}`,
+    `"${pythonBin}" "${counterScript}" "${pelletFramesDir}" --center-exclude ${centerExclude} --min-area ${minArea} --max-area ${maxArea} --backend opencv ${crosshairArgs} --pellet-radius ${pelletRadius} --marker-radius ${markerRadius} --temporal --max-pellet-frames ${Math.max(4, Math.round((13 / 60) * fps))} --red-r-min ${redRMin} --red-gb-max ${redGbMax} --pellet-unit-area ${pelletUnitArea} --peanut-circ-lo ${peanutCircLo} --peanut-aspect ${peanutAspect} --peanut-max-mult ${peanutMaxMult} ${dumpTracksArg}`,
     { encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 }
   );
   frameCounts = JSON.parse(raw) as FrameCounts[];

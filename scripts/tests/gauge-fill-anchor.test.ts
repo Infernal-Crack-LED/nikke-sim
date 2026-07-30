@@ -26,7 +26,13 @@ import { describe, expect, it } from 'vitest';
 
 type Read = { t: number; state: string; fillRaw: number | null };
 const fixture = JSON.parse(
-  readFileSync(new URL('./fixtures/gauge-fill-maiden-ice-rose-30fps.json', import.meta.url), 'utf8')
+  readFileSync(
+    new URL(
+      './fixtures/gauge-fill-maiden-ice-rose-30fps.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
 ) as { bar: { widthPx: number }; reads: Read[] };
 
 /** Rising transitions in the filling series, i.e. gauge-generating events. */
@@ -34,10 +40,16 @@ function steps(reads: Read[], minDelta = 0.6) {
   const out: { t: number; delta: number }[] = [];
   let prev: number | null = null;
   for (const r of reads) {
-    if (r.state === 'full') break;
+    if (r.state === 'full') {
+      break;
+    }
     const v = r.fillRaw;
-    if (prev != null && v != null && v - prev >= minDelta) out.push({ t: r.t, delta: v - prev });
-    if (v != null) prev = v;
+    if (prev != null && v != null && v - prev >= minDelta) {
+      out.push({ t: r.t, delta: v - prev });
+    }
+    if (v != null) {
+      prev = v;
+    }
   }
   return out;
 }

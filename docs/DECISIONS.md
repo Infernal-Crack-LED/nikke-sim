@@ -2548,6 +2548,17 @@ it accepted 0 of 30 popups on the one hand-read probe available, because that un
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
 
+## Rank boards: DPS ranks for B1/B2 and composite support rank — DROPPED (2026-07-29)
+
+**Decision (owner).** Of the three open follow-ups filed when the rank-boards backend + frontend
+landed (`docs/STATE.md` §8; backend 2026-07-26, `/ranks` frontend PR #31 2026-07-27), two are not
+being built: **DPS ranks for B1/B2** and a **composite support rank** combining the four boards.
+Design-brief handoffs closed and archived: `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`,
+`docs/handoffs/closed/2026-07-26-support-rank-composite.md`. The third follow-up from that same
+landing — Mint/Prika duo profiles on the buffer rank — was built separately and stands.
+
+**Why.** Scope call, no further rationale recorded.
+
 ## Focus charge-gauge bonus is PER-UNIT, not flat 2.5x — scarlet-black-shadow IMPLEMENTED, alice LOGGED (2026-07-29)
 
 **Overturns, with a scope correction:** the 2026-07-13 "full_charge_burst_energy unused" ruling
@@ -2572,6 +2583,7 @@ alice 350 (3.5x), cinderella 200 (2.0x), cinderella-crystal-wave n/a (not RL/SR)
 150 (1.5x); `vesti-tactical-upgrade` 200 is out of scope (not sim-supported).
 
 **Measured this session** (fresh solo-footage readings via the re-validated instrument):
+
 - **alice**: base 5.6%/shot (`targetPerTrigger` 560). Observed ~20.6-20.75%/shot → multiplier
   ≈3.68x, a 5% match to the predicted 3.5x, clearly excluding flat 2.5x (would predict 14.0%/shot,
   47% below observed).
@@ -2598,7 +2610,7 @@ blindness):
 - **alice: LOG, not enacted.** Pinned to the flat constant (`PENDING_TEAM_ISOLATION` in
   `gaugePerShot`, same mechanism as cinderella's carve-out) pending an isolating team-context
   measurement. A fresh owner-supplied alice-focused team recording (`docs/probes/burst tests/alice
-  focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full bursts, 10/10
+focused.MP4`, crown/liter/alice/red-hood, boss Water) measured **10 full bursts, 10/10
   corroborated** — inside BOTH the pre-fix (rigid 25/25-at-10) and post-fix (7/25-at-10,
   18/25-at-11) distributions, landing as the post-fix model's minority (28%) outcome rather than
   confirming it. Ruled a non-isolating, downstream observable (FB count convolves alice's rate with
@@ -2726,6 +2738,7 @@ scarlet-black-shadow's 1.5×. There is no open dispute, no unresolved opener ano
 outstanding measurement gate on this value. `docs/data/burst-gauge.md` §4 and
 `src/skills/overrides/cinderella.json`'s note are updated to drop the "contested override"
 framing accordingly.
+
 ## DPS chart drops the enikk-proven ("meta") gate — every sim-supported B3 is now ranked (2026-07-29)
 
 **Decision.** `scripts/build-dpschart.ts`'s tested population no longer requires

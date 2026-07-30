@@ -141,12 +141,8 @@ describe('specCacheKey — pinned key strings (cache compatibility)', () => {
     expect(
       specCacheKey({ kind: 'table', table: 'charge-speed', unit: 'alice' })
     ).toBe('v2|table|charge-speed|alice');
-    expect(specCacheKey({ kind: 'resources', tier: 9 })).toBe(
-      'v2|resources|9'
-    );
-    expect(specCacheKey({ kind: 'resources', tier: 1 })).toBe(
-      'v2|resources|1'
-    );
+    expect(specCacheKey({ kind: 'resources', tier: 9 })).toBe('v2|resources|9');
+    expect(specCacheKey({ kind: 'resources', tier: 1 })).toBe('v2|resources|1');
   });
 
   it('maps kinds to the existing cache filename prefixes', () => {

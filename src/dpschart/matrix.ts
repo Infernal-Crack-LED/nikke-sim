@@ -412,9 +412,16 @@ export function assembleTeam(
   // wins the opening leftmost tie-break instead — the tested unit's own first
   // burst becomes the fight's SECOND B3 burst.
   const variantForSwap = CHART_VARIANTS[tested.slug];
-  if (tested.profile && variantForSwap?.id === tested.profile && variantForSwap.burstsSecond) {
+  if (
+    tested.profile &&
+    variantForSwap?.id === tested.profile &&
+    variantForSwap.burstsSecond
+  ) {
     const coB3Index = fw.solo ? 3 : fw.mast ? 3 : 2;
-    [slugs[testedIndex], slugs[coB3Index]] = [slugs[coB3Index], slugs[testedIndex]];
+    [slugs[testedIndex], slugs[coB3Index]] = [
+      slugs[coB3Index],
+      slugs[testedIndex],
+    ];
     testedIndex = coB3Index;
   }
 

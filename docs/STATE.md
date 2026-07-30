@@ -325,9 +325,9 @@ Two structural facts that keep getting re-derived:
 - **The "team burst bar" and "solo BURST meter" crops are SUB-STRIPS of that same gauge crop**, so
   they are not an independent instrument — they are diagnostics only.
 
-## 8. Ranking boards beyond DPS (landed 2026-07-26)
+## 8. Ranking boards beyond DPS (landed 2026-07-26; frontend landed 2026-07-27)
 
-Four non-DPS ranked lists, backend only (frontend not started). Sources `src/ranks/`, builders
+Four non-DPS ranked lists. Sources `src/ranks/`, builders
 `scripts/build-{burstgen,burstcdr,sustain,bufferchart}.ts` (`npm run ranks:all`), artifacts
 `web/public/{burstgen,burstcdr,sustain,bufferchart}.json` (gitignored build outputs, not in
 verify.sh), tests `scripts/tests/ranks/*.test.ts`. Methodology of record: `docs/data/rank-boards.md`.
@@ -356,4 +356,5 @@ entry flagged `profile: null | <id>` (the frontend differentiator). burstgen: li
 `with-mast-rm`. buffer: crown `with-healer` (recovery-triggered AD buff at ~100% uptime vs ~27% off
 her own Relax self-heal), naga `with-shielder` (shield-gated core/ATK lines live vs inert) — both
 via a synthetic heal/shield kit on the no-op fillers (`COMP_PROFILES` in `src/ranks/buffer.ts`).
-Frontend build plan: `docs/handoffs/2026-07-26-rank-boards-frontend.md`.
+Frontend: `/ranks` (Rankings section home, `/ranks/support` boards + `/ranks/compare` comparator,
+pill-switched, profile badges — `web/src/App.tsx`, PR #31).
