@@ -931,7 +931,38 @@ that `count-pellets.py --temporal --backend opencv` over it yields **total white
 FAILS against the pre-fix script (`git show 2a1e99c:scripts/probe/count-pellets.py`) and passes now —
 a regression test that never went red proves nothing.
 
-### H3 — Zoom mismatch must fail loudly
+### H3 — Zoom mismatch must fail loudly (root cause pinned 2026-07-30)
+
+**Diagnosed, so this is now a bounded fix rather than an investigation.** Three facts:
+
+| thing                                                                             | value                                    |
+| --------------------------------------------------------------------------------- | ---------------------------------------- |
+| `read-pellets.ts:70` code default                                                 | `--zoom` **3**                           |
+| `read-pellets.ts:12` + `:54` doc/usage string                                     | `--zoom` **4** ← disagrees with the code |
+| Committed `scripts/probe/ammo-box-template.png`                                   | **74×74**, extracted at zoom **2**       |
+| Every reference run (run16/18, noir-sg, guilty-sg, isabel-sg, g2-noir-structural) | zoom **2**                               |
+
+**Root cause of the silent 0 shots:** in `template` mode, `cv2.matchTemplate` hunts a 74 px box in
+frames rendered at zoom 3, where the box is ~111 px. Match never clears threshold ⇒ no crosshair lock
+⇒ zero counts ⇒ an empty-but-valid `pellets.json`. The template's scale is an **implicit, unchecked
+dependency** on `--zoom`. (Structural mode is not affected — its geometry constants are scaled from
+`--zoom` explicitly — but it inherits the same misleading default.)
+
+**Three-part fix:**
+
+1. **Change the default to `--zoom 2`.** It is what the committed template, all six reference runs,
+   and every command in this plan use. ⚠ This is a _default behaviour change_ — note it in the commit
+   and confirm nothing in-tree relies on 3.
+2. **Make the doc/usage strings agree with the code** (both currently claim 4).
+3. **Fail loudly, which is the durable part.** In `template` mode, verify the template's size is
+   consistent with the run's `--zoom` (a 74 px template implies zoom 2) and **error out with a
+   diagnostic naming both values** rather than proceeding. Independently, a run that ends with
+   **zero locked frames or zero shots should exit non-zero with an explanatory message**, never emit
+   an empty JSON — the same principle as the crosshair-validity banner and H1's zero-shot stop.
+
+**Why this is worth doing now:** the warning has been hand-carried in three consecutive dispatch
+prompts. A trap that must be verbally re-transmitted every time is a bug in the tool, not a briefing
+gap.
 
 `read-pellets.ts` defaults to `--zoom 3`; every historical reference run used `--zoom 2`. The
 mismatch silently produces **0 shots** (it cost the Phase 2A session a run). Make a zero-shot result,
