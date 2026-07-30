@@ -9,7 +9,9 @@
 //     --model <name>        VLM model (default qwen2.5-vl)
 //     --pellet-crop "<ff>"  override pellet crop (default crop=163:141:1423:464 for 2622x1206)
 //     --timer-crop "<ff>"   override timer crop (default crop=59:39:2317:21)
-//     --zoom <n>            pellet crop upscale (default 4)
+//     --zoom <n>            pellet crop upscale (default 2 — matches the committed ammo-box
+//                           template and every reference run; see H3,
+//                           docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md)
 //     --core-rate <0-1>     expected core hit fraction (default 0.05)
 //     --center-exclude <n>  crosshair exclusion radius in zoomed px (default 18*zoom)
 //     --pellet-radius <n>   count pellets within this radius of crosshair in zoomed px (default 80*zoom)
@@ -51,7 +53,7 @@ for (let i = 1; i < argv.length; i++) {
 }
 if (!video || !existsSync(video)) {
   console.error(
-    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 4] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]'
+    'usage: read-pellets.ts <video> [--fps 30] [--at S] [--dur S] [--endpoint URL] [--model NAME] [--pellet-crop "..."] [--timer-crop "..."] [--zoom 2] [--core-rate 0.05] [--center-exclude N] [--pellet-radius N] [--ammo-offset-x X] [--ammo-offset-y Y] [--mock] [--out DIR]'
   );
   process.exit(1);
 }
@@ -67,7 +69,11 @@ const model = flags.model ?? 'qwen2.5-vl';
 const apikey = flags.apikey ?? 'no-key';
 const pelletCrop = flags['pellet-crop'] ?? 'crop=1303:396:672:268';
 const timerCrop = flags['timer-crop'] ?? 'crop=59:39:2317:21';
-const zoom = Number(flags.zoom ?? 3);
+// Default 2, not 4/3 as earlier drafts of this file claimed: the committed
+// ammo-box-template.png (74x74px) and every historical reference run (run16/18, noir-sg,
+// guilty-sg, isabel-sg, g2-noir-structural) used zoom 2. A run at a different zoom silently
+// mismatches the template's scale — see H3, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.
+const zoom = Number(flags.zoom ?? 2);
 const coreRate = Number(flags['core-rate'] ?? 0.05);
 const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
 const ammoOffsetYNative = Number(flags['ammo-offset-y'] ?? -5.5);
@@ -83,6 +89,13 @@ const forceVlmCrosshair = flags['no-ammo-template'] === 'true';
 const MIN_PELLETS = 5;
 const MAX_PELLETS = 10;
 const TIMER_FPS = 1; // sparse timer sampling — VLM is the bottleneck, not the counter
+
+// PNG width/height live at a fixed offset in the IHDR chunk (8-byte signature, then a 4-byte
+// chunk length + "IHDR", then width/height as big-endian uint32) — no image library needed.
+function pngDimensions(path: string): { width: number; height: number } {
+  const buf = readFileSync(path);
+  return { width: buf.readUInt32BE(16), height: buf.readUInt32BE(20) };
+}
 
 mkdirSync(outDir, { recursive: true });
 const pelletFramesDir = `${outDir}/frames-pellet`;
@@ -434,6 +447,29 @@ if (!mock) {
     ? perVideoAmmoTemplate
     : ammoTemplatePath;
   const useAmmoTemplate = existsSync(ammoTemplate);
+  if (locateMode === 'template' && useAmmoTemplate) {
+    // The committed seed template (ammo-box-template.png, 74x74px at zoom 2) is what
+    // extract-ammo-template.py matches against to derive a per-video template — it never
+    // rescales the seed to the run's --zoom, so EVERY template this pipeline produces is
+    // implicitly zoom-2-shaped. Running template mode at a different --zoom silently
+    // mismatches cv2.matchTemplate's window against the on-screen box: the match never
+    // clears its confidence threshold, so the crosshair never locks and the counter reports
+    // 0 shots in a JSON that otherwise looks valid. See H3,
+    // docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.
+    const NATIVE_AMMO_BOX_PX = 37; // 74px committed template / zoom 2
+    const { width: tw, height: th } = pngDimensions(ammoTemplate);
+    const impliedZoom = (tw + th) / 2 / NATIVE_AMMO_BOX_PX;
+    if (Math.abs(impliedZoom - zoom) > 0.5) {
+      console.error(
+        `error: ammo template "${ammoTemplate}" is ${tw}x${th}px, which implies zoom ≈` +
+          `${impliedZoom.toFixed(1)}, but this run uses --zoom ${zoom}. Template-matching will ` +
+          `silently fail to lock the crosshair at the wrong scale (see H3, ` +
+          `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). Re-run at ` +
+          `--zoom ${Math.round(impliedZoom)}, or regenerate the template at --zoom ${zoom}.`
+      );
+      process.exit(1);
+    }
+  }
   // Structural mode's geometry constants are calibrated at zoom 2 (162/-12.5/74 — see
   // count-pellets.py's own defaults) and must be scaled to whatever --zoom this run actually
   // uses, the same way ammoOffsetX/Y above are scaled — passing count-pellets.py's OWN --zoom
@@ -698,6 +734,30 @@ for (let i = 0; i <= reads.length; i++) {
 const validShots = shots.filter(
   (s) => s.total >= MIN_PELLETS && s.total <= MAX_PELLETS
 );
+
+// Fail loudly rather than emitting an empty-but-valid pellets.json. Zero non-zero reads means
+// the crosshair never locked for the whole run (every python-side pellet count is gated on a
+// resolved crosshair position — see count-pellets.py's `if cp:` guard); zero shots means the
+// debouncer never found a sustained-enough run of frames to call a blast, which happens
+// whenever the crosshair lock never engages OR is too weak/sporadic to clear the shot
+// threshold. Both are exactly the silent-0-shots failure mode H3 diagnosed (a zoom/template
+// scale mismatch, but also anything else that starves the crosshair lock) — see
+// docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.
+if (!mock && (nonZero === 0 || shots.length === 0)) {
+  console.error(
+    nonZero === 0
+      ? `error: zero non-zero pellet reads across ${reads.length} frames — the crosshair never ` +
+          `locked for this whole run. Check --zoom (currently ${zoom}) against the ammo template ` +
+          `size and --locate mode (currently "${locateMode}"); see H3, ` +
+          `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.`
+      : `error: 0 shots detected across ${reads.length} frames (${nonZero} had a non-zero pellet ` +
+          `count, but never sustained long enough to form a shot event). Check the crosshair lock ` +
+          `quality and --zoom (currently ${zoom}); see H3, ` +
+          `docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md.`
+  );
+  process.exit(1);
+}
+
 const result = {
   video,
   fps,
