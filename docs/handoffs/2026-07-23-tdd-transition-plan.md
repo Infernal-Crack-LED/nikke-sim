@@ -158,13 +158,25 @@ had nothing to record). Blast-radius order, top of the census first:
       partition; `everyN`/`everyNOffset` phase; **gates run BEFORE the everyN counter** (unexercised
       by any shipped override → invisible to the snapshot); `requiresCore` inert in coreless fights;
       `bossElementGate` match-only.
+- [x] `weaponSwap` (14) + `swapGate` (7) → `scripts/tests/engine/weapon-swap.test.ts` (landed
+      2026-07-29; current census counts, up from the 11/2 this doc originally recorded) — cadence
+      override (explicit `pullsPerSec` and the weapon-class fallback, both discriminated from the
+      base AR rate and each other); `damagePct` REPLACES (not adds to) the base
+      `normalAttackMultiplier` (exact `atkPct` match on the `damage` event); `hasPierce` /
+      `trueNormals` route only swap-window shots through the `pierceDamagePct` / `trueDamagePct`
+      buckets; a real (non-`trueNormals`) swap force-refills ammo to `swap.maxAmmo` on entry,
+      `trueNormals` does not; `maxShots` ends the swap early (uses-based) independent of
+      `durationSec`, per-window; `swapGate: 'swapped'/'unswapped'` partitions block activations
+      correctly in both directions. Synthetic `interval`-triggered fixture on a zeroed-kit AR carrier
+      (`blanc`) + a bare-weapon filler ally — independent of burst rotation entirely. No engine bug
+      surfaced (findings-only discipline had nothing to record).
 
-**Not yet backfilled (next sessions, priority order):** `hitRatePct` (11, ⚑ HRCORE core-lift — note
-it's geometry, needs a fixture that reaches the HR→core path), `instantReload`/`consumeAmmo` (7/1,
-the ammo-economy pair), the trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`,
-`interval` first-fire phase, `stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain,
-`weaponSwap` state + `swapGate` (11/2), `escalating` (5), `mode`/`modes` (7). Single-carrier exotics
-defer to their unit's step-3 session.
+**Not yet backfilled (next sessions, priority order, current census counts):** `hitRatePct` (14, ⚑
+HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path),
+`instantReload`/`consumeAmmo` (8/2, the ammo-economy pair), `mode`/`modes` (7), `escalating` (6), the
+trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval` first-fire phase,
+`stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain. Single-carrier exotics defer
+to their unit's step-3 session.
 
 ## Step 3 — per-unit TDD sessions (the new kit workflow)
 
