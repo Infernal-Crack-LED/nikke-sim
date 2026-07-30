@@ -350,9 +350,20 @@ describe('little-mermaid — kit spec', () => {
       expect(blk.target).toEqual({ kind: 'allies' });
       expect(blk.effects.find((e: any) => e.kind === 'fillGauge').pct).toBe(37);
     });
-    it('BEHAVIOURAL: the gauge fill is live — removing it lowers her 180s total (deterministic)', () => {
-      // fillGauge emits no event; faster gauge → earlier casts → more buff/DoT uptime.
-      expect(base.totals['little-mermaid']).toBeGreaterThan(
+    it('BEHAVIOURAL: the fill is chain-locked exactly like passive generation — removing it nets ZERO change in THIS fixture (deterministic)', () => {
+      // fillGauge emits no event; observed through the 180s total. The engine gates this
+      // effect the same way as every other gauge-generation path (addGauge's fbEndFrame/stage
+      // guard, sim.ts) — a "Fills Burst Gauge X%" effect does NOT bypass the chain lock
+      // (owner ruling, 2026-07-30). little-mermaid is the SOLE Burst I in this fixture,
+      // casting every ~15s cycle: her chain/Full-Burst uptime is high enough that every crossing
+      // of the teamAmmo(400) trigger in this specific comp lands while gauge generation is
+      // already locked, so the fill is wasted and removing it changes nothing — a
+      // FIXTURE-CONDITIONAL consequence of the corrected model (measured bit-identical), NOT a
+      // universal claim that fillGauge always nets zero. A different fixture (a slower-cycling
+      // comp with genuine unlocked windows between crossings) is EXPECTED to break this equality
+      // by design; the correct response then is to re-measure the new expected delta, not to
+      // treat the break as a regression to suppress.
+      expect(base.totals['little-mermaid']).toBe(
         noFill.totals['little-mermaid']
       );
     });
