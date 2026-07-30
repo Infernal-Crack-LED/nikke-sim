@@ -22,6 +22,11 @@ import {
 } from './canvas2d.js';
 import { FONT, ELEMENT_COLORS, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
+import {
+  siteIconSizeFor,
+  siteIconTopFor,
+  TITLE_CAP_HEIGHT,
+} from './siteIcon.js';
 
 // Relative-normalized score against the POPULATION #1's dps (`DpsChartData.topDps`
 // — never the rendered window's max): the population #1 is 1.000 in EVERY image,
@@ -74,13 +79,17 @@ const HEAD_H = 118;
 const ROW_H = 52;
 const FOOT_H = 44;
 const COMPARE_H = 52;
-const ICON = 34; // site icon square, drawn beside the title
+const TITLE_BASELINE_Y = 50;
+const TITLE_FONT_SIZE = 26;
+// The icon plate is scaled so its measured bar content (not its own bounding
+// box) spans the title's cap height — see core/siteIcon.ts for why.
+const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]); // site icon square, drawn beside the title
 
 // Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
 // the title's textX (padX + ICON + 12; 26px title, baseline y 50).
 export const DPS_TITLE_ICON = {
   x: PAD_X,
-  y: 50 - ICON + 4,
+  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
   size: ICON,
 } as const;
 export const DPS_TITLE_INK_REGION = {
@@ -128,12 +137,12 @@ export function drawDpsChart(ctx: Canvas2DLike, data: DpsChartData) {
   ctx.textAlign = 'left';
   let textX = padX;
   if (data.icon) {
-    ctx.drawImage(data.icon, padX, 50 - ICON + 4, ICON, ICON);
+    ctx.drawImage(data.icon, DPS_TITLE_ICON.x, DPS_TITLE_ICON.y, ICON, ICON);
     textX = padX + ICON + 12;
   }
   ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 26px ${FONT}`;
-  ctx.fillText(data.title, textX, 50);
+  ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
+  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 16px ${FONT}`;
