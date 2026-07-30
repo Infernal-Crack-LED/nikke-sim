@@ -195,14 +195,35 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
     isolated worktree, `/scientific-method` step-7 reviewed, merged; output byte-identical on a
     whole-board A/B, not just the snapshots), so event-level kit assertions are live for steps 2–3.
     6 payload follow-ups (weapon-swap events, perResource/ramp/swap-gate fields on `buffApply`, …) are
-    listed under §1d in the plan doc — build them as step-2 tests need them. Open:
-    (2) engine-primitive test backfill by census priority (before
-    per-unit work); (3) per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text —
+    listed under §1d in the plan doc — build them as step-2 tests need them.
+    **⇒ Step 2 PRIORITY LIST LANDED 2026-07-29, AWAITING OWNER MERGE** — branch `tdd-step2-backfill`
+    (worktree `../nikke-sim-wt-tdd-step2`, based on `origin/main`; PR opened, see below). Every
+    primitive-census row with >1 carrier now has a dedicated `scripts/tests/engine/*.test.ts`:
+    `weaponSwap`+`swapGate` (14/7), `instantReload`+`consumeAmmo` (8/2), `mode`/`modes` (7/7),
+    `escalating` (6), `hitRatePct` (14, deliberately scoped to primitive-wiring only — see that file's
+    header, it stays out of the contested UNIGEO/CONE_DELTA/HRCORE geometry territory), on top of the
+    6 landed 2026-07-23 (flatDamage/hitCount/hitsPerShot/burstCdr/buff-application/block-gates). No `src/`
+    changes anywhere in this branch — every assertion is against ALREADY-SHIPPED engine behavior, and no
+    engine bug surfaced (findings-only discipline had nothing to record). Cross-family reviewed CLEAN
+    (`kimi-code/k3` via `/code-review`, two dispatch rounds — the first caught the driver's own packet-
+    assembly bug (an unexpanded `$(cat ...)` placeholder) before any code was even read, the second came
+    back CLEAN with 6 NOTE-level findings, 2 applied as trivial follow-up fixes). Full coverage detail +
+    what each file pins → the step-2 checklist in the plan doc. **NOT fully closed:** two diffuse items
+    deliberately deferred (lower priority, harder to scope as one dedicated file) — the trigger-kind
+    matrix as its own cross-cutting suite (`lastBullet`/`shotFired`/`interval` first-fire phase/
+    `stageEnter`/`fullBurstEnter`/`End` — largely exercised incidentally by the backfills above, never
+    pinned as a dedicated suite), and gauge suppression during FB/chain. Pick either up in a fresh
+    session using the same zeroed-kit-carrier (`blanc`+bare-weapon-`crown`) pattern the 5 landed files
+    establish.
+    **Next up:** (3) per-unit dedicated sessions, OWNER drives the spec line-by-line from kit text —
     **run them with the `/kit-tdd` skill** (created 2026-07-23; the operational form of the plan's step 3:
-    slug gate → owner-driven spec table → RED test against the SHIPPED override → gated fix → board A/B);
-    (4) audit-kit/blind-rebuild demoted to post-validation sampling. Rationale: the board gates
-    FIT only; faithfulness errors of a few % (helm's `critRateNormalPct` mis-scoped generic, her
-    round count faked as `durationSec`) are absorbed by calibration and only unit tests can gate them.
+    slug gate → owner-driven spec table → RED test against the SHIPPED override → gated fix → board A/B) —
+    now fully unblocked now that the step-2 priority backfill has landed; (4) audit-kit/blind-rebuild
+    demoted to post-validation sampling — doc/skill reframe still open (CONVENTIONS test-first note,
+    audit-kit/kit-parse one-line reframe, STATE.md pointer), pick up with `/skill-maintenance`.
+    Rationale: the board gates FIT only; faithfulness errors of a few % (helm's `critRateNormalPct`
+    mis-scoped generic, her round count faked as `durationSec`) are absorbed by calibration and only unit
+    tests can gate them.
 
 - **⇒ SMG OVERRIDE RE-TUNE WORKLIST (follow-up to the LANDED SMG cadence flip).** The SMG cadence
   flip 24→20.0/s (frame quantization) LANDED default-ON 2026-07-23 (DECISIONS; `docs/STATE.md`
@@ -344,13 +365,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   union roster as a plain damage sum, which IS union scoring); only score-vs-teamDamage remains, one
   line. Cheap pre-check before building any of it: does union greedy leave a team on the table on a
   constrained pool the way solo did?
-
-- **⇒ MINT/PRIKA KIT FIX (owner-flagged "coming soon", 2026-07-24) must ALSO add the
-  "prika bursts first, then only mint" rotation config** for the pair (owner requirement, same
-  ruling that retired the always-combos). No engine knob exists today (only Λ `lambdaStage`) —
-  needs a per-unit burst-selection primitive (e.g. max-casts + priority), gated engine work via
-  `/scientific-method`. The generator already enforces their same-team pairing
-  (`genCalc.TEAM_CONSTRAINTS`, relaxes if one is unavailable).
 
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/2026-07-17-role-audit-followups.md`:** (1) custom-weaponry
   `role` sweep — mostly deflated by D; what's left = pierce-from-kit-text + (data-blocked) weapon-swap

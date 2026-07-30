@@ -170,13 +170,51 @@ had nothing to record). Blast-radius order, top of the census first:
       correctly in both directions. Synthetic `interval`-triggered fixture on a zeroed-kit AR carrier
       (`blanc`) + a bare-weapon filler ally — independent of burst rotation entirely. No engine bug
       surfaced (findings-only discipline had nothing to record).
+- [x] `instantReload` (8) + `consumeAmmo` (2) → `scripts/tests/engine/ammo-economy.test.ts` (landed
+      2026-07-29) — the ammo-economy pair, literal inverses whose clamps run opposite directions
+      (`min(max, ammo+add)` vs `max(0, ammo-drain)`). Chained effects on a known prior ammo state
+      (a preceding instantReload/consumeAmmo in the SAME block) make every assertion deterministic,
+      independent of organic pre-trigger firing history: a fractional instantReload from a known-full
+      base saturates at max rather than overshooting (rules out a "set ammo" misreading); the same
+      fraction from a known-empty base adds a genuine partial amount; instantReload interrupts an
+      in-progress forced reload so firing resumes immediately; consumeAmmo only forces a real
+      magazine reload + fires `lastBullet` when a drain actually reaches exactly empty, checked PER
+      CALL (two chained 0.5-fraction drains only fire on the second); the `!reloading` guard stops a
+      double-fire when two full drains chain in the same frame. Same zeroed-kit-carrier pattern as
+      `weapon-swap.test.ts`; a tight epsilon around each interval-trigger second isolates the forced
+      firings from blanc's own ~5s organic mag cycle between triggers. No engine bug surfaced.
+- [x] `mode` / `modes` (7 each) → `scripts/tests/engine/mode-gate.test.ts` (landed 2026-07-29) — the
+      static per-block mode gate resolved once at prepare-time (`skills.blocks.filter(b => !b.mode ||
+b.mode === selectedMode)`), so a single frame-0 `passive` `flatDamage` per candidate block is a
+      complete readout: no unselected-mode default falls back to `modes[0]`; selecting a mode swaps
+      which mode-tagged block is live without touching an ungated (no-`mode`-field) block; an
+      unrecognized mode string falls back to `modes[0]` rather than firing nothing or crashing. No
+      timing/rotation machinery needed — 3 assertions, all exact-set.
+- [x] `escalating` (6) → `scripts/tests/engine/escalating.test.ts` (landed 2026-07-29) — the
+      Liter-style Once:/Twice:/… ladder is CUMULATIVE (`steps.slice(0, min(activations,
+steps.length))` re-applied in full on every activation), not "fire only the newest step": a
+      3-step synthetic ladder on an `interval` trigger shows activation 1 firing step 0 alone,
+      activation 2 firing steps 0+1 (step 0 genuinely re-fires), activation 3 all three — and every
+      activation past `steps.length` stays clamped at the full ladder rather than indexing out of
+      bounds or truncating. Matches the cumulative CDR-ladder arithmetic `liter.test.ts` already
+      pins per-unit; this backfill isolates the primitive itself. No engine bug surfaced.
+- [x] `hitRatePct` (14) → `scripts/tests/engine/hit-rate-core.test.ts` (landed 2026-07-29) —
+      DELIBERATELY NARROW SCOPE: this only tests that a hitRatePct buff reaches the live core-hit
+      computation (`damage` event `coreRate` moves at all vs baseline) and that the response is
+      non-decreasing in hitRatePct (every live model in sim.ts documents itself as monotone —
+      `hrCoreMultGeo`'s own comment: "≥1, monotone in hr"), plus `coreRate` staying in `[0,1]` at an
+      absurd value. It asserts NOTHING about the calibrated magnitude, curve shape, or which of the
+      UNIGEO/CONE_DELTA/HRCORE arms is right — that territory is genuinely contested (⚑-flagged,
+      open-questions U27/U29, "measured constants never refit") and out of scope for a primitive
+      backfill. Uses exactly ONE hitRatePct source (sim.ts flags multi-source stat() summation for
+      this stat as "⚑ UNVALIDATED (R8)" — not something this test assumes an answer to). All 4
+      assertions passed on the shipped default engine first try — no engine bug surfaced.
 
-**Not yet backfilled (next sessions, priority order, current census counts):** `hitRatePct` (14, ⚑
-HRCORE core-lift — note it's geometry, needs a fixture that reaches the HR→core path),
-`instantReload`/`consumeAmmo` (8/2, the ammo-economy pair), `mode`/`modes` (7), `escalating` (6), the
-trigger-kind matrix not yet isolated (`lastBullet`, `shotFired`, `interval` first-fire phase,
-`stageEnter`, `fullBurstEnter`/`End`), gauge suppression during FB/chain. Single-carrier exotics defer
-to their unit's step-3 session.
+**Not yet backfilled (next sessions):** the trigger-kind matrix not yet isolated as its own
+cross-cutting test (`lastBullet`, `shotFired`, `interval` first-fire phase, `stageEnter`,
+`fullBurstEnter`/`End` — largely exercised incidentally by the backfills above, but never pinned as a
+dedicated suite); gauge suppression during FB/chain. Single-carrier exotics defer to their unit's
+step-3 session. **Every census-row primitive with >1 carrier now has a dedicated backfill test.**
 
 ## Step 3 — per-unit TDD sessions (the new kit workflow)
 
@@ -250,8 +288,16 @@ cover-HP restore emits nothing).
       tsconfig `include` so typecheck covers it.
 - [x] **1d LANDED 2026-07-23** — `cfg.onEvent` on the `onevent` worktree, step-7 reviewed, merged.
       Output byte-identical (whole-board A/B, not just the snapshots). 6 payload follow-ups above.
-- [ ] 2: primitive backfill by census priority (multi-session; findings-only discipline; checklist
-      appended here)
+- [x] 2: **PRIORITY LIST LANDED 2026-07-29** on branch `tdd-step2-backfill` (worktree
+      `../nikke-sim-wt-tdd-step2`, based on `origin/main`; PR pending) — every census-row primitive
+      with >1 carrier now has a dedicated `scripts/tests/engine/*.test.ts` (see the step-2 coverage
+      checklist above for the full landed list + what each one pins). Cross-family reviewed CLEAN
+      (`kimi-code/k3` via `/code-review`; packet + result under `scratchpad/gates/` on that branch,
+      gitignored/local). Findings-only discipline had nothing to record across all 5 files — every
+      assertion passed against the shipped default engine on first or second try, no engine bug
+      surfaced. **NOT fully closed:** two diffuse items remain, deliberately deferred as lower-value/
+      harder-to-scope-as-one-file (see the coverage checklist's "Not yet backfilled" line) — the
+      trigger-kind matrix as its own cross-cutting suite, and gauge suppression during FB/chain.
 - [x] 3: per-unit TDD sessions begin (owner-driven; ongoing — this bullet never "completes", it
       replaces the old kit workflow)
 - [ ] 4: doc/skill reframe + `/skill-maintenance`
