@@ -25,6 +25,7 @@ import { DpsChartTab } from './DpsChartTab';
 import { SupportRankings } from './SupportRankings';
 import { ResourcesPage } from './ResourcesPage';
 import { TeamBuilderPage } from './TeamBuilderPage';
+import { BuilderPage } from './BuilderPage';
 import {
   BrowseNikkesModal,
   BrowseRosterNikkesModal,
@@ -420,7 +421,8 @@ type CalcTab =
   | 'dpschart'
   | 'ranks'
   | 'charge'
-  | 'teambuilder';
+  | 'teambuilder'
+  | 'builder';
 // Four tool sections, mirrored in the top nav (web/src/router.ts): Sim,
 // Rankings, Overload, Tools. The tab bar shows the current section's tabs.
 type TabGroup = 'sim' | 'rankings' | 'overload' | 'tools';
@@ -436,6 +438,7 @@ const CALC_TABS: { key: CalcTab; label: string; group: TabGroup }[] = [
   { key: 'olsim', label: 'Overload Rolling', group: 'overload' },
   { key: 'charge', label: 'Overload Breakpoints', group: 'overload' },
   { key: 'teambuilder', label: 'Team Builder', group: 'tools' },
+  { key: 'builder', label: 'Card Builder', group: 'tools' },
   { key: 'doll', label: 'Doll Leveling', group: 'tools' },
   { key: 'resources', label: 'Resource Calculator', group: 'tools' },
 ];
@@ -7181,6 +7184,9 @@ export function App({ user }: { user: AuthUser | null }) {
     if (tab === 'resources') {
       return <ResourcesPage />;
     }
+    if (tab === 'builder') {
+      return <BuilderPage />;
+    }
     if (tab === 'teambuilder') {
       // Team Builder callbacks — save/copy actions for the built team. The name
       // is collected by the page's inline field (no window.prompt here — the old
@@ -7302,6 +7308,7 @@ export function App({ user }: { user: AuthUser | null }) {
     resources: 'Resource Calculator',
     charge: 'Overload Breakpoints',
     teambuilder: 'Team Builder',
+    builder: 'Card Builder',
   };
   return (
     <div className="app">
@@ -7526,6 +7533,7 @@ export function App({ user }: { user: AuthUser | null }) {
         tab !== 'doll' &&
         tab !== 'resources' &&
         tab !== 'teambuilder' &&
+        tab !== 'builder' &&
         !(tab === 'overload' && olMode === 'matrix') && (
           <details
             className="global-details"

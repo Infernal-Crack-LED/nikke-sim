@@ -18,7 +18,6 @@ export type Route =
   | 'patch-notes'
   | 'testing-requests'
   | 'roster-sync'
-  | 'builder'
   | 'credits';
 
 export const ROUTES: Route[] = [
@@ -32,7 +31,6 @@ export const ROUTES: Route[] = [
   'patch-notes',
   'testing-requests',
   'roster-sync',
-  'builder',
   'credits',
 ];
 
@@ -46,7 +44,6 @@ const PAGE_ROUTES: Route[] = [
   'patch-notes',
   'testing-requests',
   'roster-sync',
-  'builder',
   'credits',
 ];
 // The App hosts four tool SECTIONS — Sim, Rankings, Overload, Tools. Each sub-tab
@@ -56,7 +53,7 @@ const RANKINGS_PATHS = ['ranks', 'dpschart', 'dps'];
 const OVERLOAD_PATHS = ['overload', 'olsim', 'charge'];
 // Team Generator + Roster Generator live in the Sim section, so their paths
 // (/team, /roster) fall through to 'sim' below.
-const TOOL_PATHS = ['teambuilder', 'doll', 'resources'];
+const TOOL_PATHS = ['teambuilder', 'builder', 'doll', 'resources'];
 // Where each section's nav link lands — the section's first tab.
 const SECTION_LANDING: Record<'rankings' | 'overload' | 'tools', string> = {
   rankings: '/ranks',

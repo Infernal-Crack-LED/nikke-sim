@@ -3,7 +3,9 @@
 // renderers + hosts the tabs' share buttons use), then either copy the PNG or
 // mint a hosted, Discord-embeddable URL: pre-rendered cards come straight from
 // the manifest, everything else POSTs a RenderSpec to /api/v1/img/render
-// (builderSpec.ts owns the state → manifest-key / spec mapping).
+// (builderSpec.ts owns the state → manifest-key / spec mapping). Hosted as a
+// tool tab inside App (addressable at /builder); App provides the .app chrome
+// and the "Card Builder" h1, this supplies the picker + preview.
 import { useEffect, useRef, useState } from 'react';
 import { MatrixFilter } from './components/MatrixFilter';
 import { PillGrid } from './components/PillGrid';
@@ -318,7 +320,11 @@ export function BuilderPage() {
         ctx.scale(dpr, dpr);
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        drawUnitCardVariant(ctx as unknown as Canvas2DLike, card, state.unitVariant);
+        drawUnitCardVariant(
+          ctx as unknown as Canvas2DLike,
+          card,
+          state.unitVariant
+        );
         return cv;
       }
       case 'ol': {
@@ -471,15 +477,12 @@ export function BuilderPage() {
     }));
 
   return (
-    <div className="app builder-page">
-      <header>
-        <h1>Card Builder</h1>
-        <p className="muted">
-          Compose a share card from the site’s data — a DPS chart, rank board,
-          unit card, or overload table — then copy the image or mint a hosted
-          URL you can paste into Discord.
-        </p>
-      </header>
+    <section className="calc-tab builder-page">
+      <p className="muted">
+        Compose a share card from the site’s data — a DPS chart, rank board,
+        unit card, or overload table — then copy the image or mint a hosted URL
+        you can paste into Discord.
+      </p>
       {loadErr && (
         <p className="muted">Some card data failed to load ({loadErr}).</p>
       )}
@@ -722,6 +725,6 @@ export function BuilderPage() {
           {hostErr && <p className="muted">{hostErr}</p>}
         </div>
       </div>
-    </div>
+    </section>
   );
 }

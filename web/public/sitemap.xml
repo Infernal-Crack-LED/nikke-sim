@@ -12,9 +12,9 @@
   <url><loc>https://nikkesim.app/doll</loc><priority>0.7</priority></url>
   <url><loc>https://nikkesim.app/charge</loc><priority>0.7</priority></url>
   <url><loc>https://nikkesim.app/teambuilder</loc><priority>0.7</priority></url>
+  <url><loc>https://nikkesim.app/builder</loc><priority>0.7</priority></url>
   <url><loc>https://nikkesim.app/resources</loc><priority>0.7</priority></url>
   <url><loc>https://nikkesim.app/roster-sync</loc><priority>0.6</priority></url>
-  <url><loc>https://nikkesim.app/builder</loc><priority>0.6</priority></url>
   <url><loc>https://nikkesim.app/mechanics</loc><priority>0.6</priority></url>
   <url><loc>https://nikkesim.app/howto</loc><priority>0.5</priority></url>
   <url><loc>https://nikkesim.app/testing-requests</loc><priority>0.5</priority></url>
