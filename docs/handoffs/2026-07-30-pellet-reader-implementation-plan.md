@@ -484,6 +484,68 @@ the phase-mix prediction, same shape). **Kill condition:** materially different 
 must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
 this after implementing steps 4–6 is the expensive path.**
 
+### ✅ 0.5 — DONE 2026-07-30 — result: underpowered, not contradicted
+
+Ran the exact named command against `noir-near-ce36/tracks.json`. Params confirmed identical to
+`run16` from the dump's own embedded `params` block (not assumed): `ammo_offset_x=125`,
+`ammo_offset_y=-11`, `center_exclude=36`, `min_area=25`, `max_area=750`, `min_circ=0.55`,
+`pellet_radius=160`, `max_pellet_frames=7`.
+
+```
+white tracks within pellet_radius(160) of crosshair: 58
+
+LIFETIME HISTOGRAM (full pellet at 30fps sampling = 6-7):
+  life   1:    41   70.7%
+  life   2:     7   12.1%
+  life   3:     4    6.9%
+  life   4:     1    1.7%
+  life   5:     4    6.9%
+  life   7:     1    1.7%
+
+POSITION OF MAX AREA within a track (life>=5, n=5):
+    sample 1:    5  (100.0%)
+
+  normalised area profile (mean rel-size per sample):
+    (blank — no sample position reaches the script's n>=20 print threshold)
+
+  peak area median   :   430.0 px^2
+  trough area median :    36.0 px^2
+  dynamic range      :    11.9x
+
+  life=1 median area : 50.0 px^2
+  life=1 with a static neighbour within +/-2 frames: 0/41 = 0%
+```
+
+**The exit criterion as literally written cannot be evaluated.** It asks to compare noir's normalised
+area-decay _curve_ to marciana's `0.93 → 0.57 → 0.43 → 0.33 → 0.22`. The script only prints that curve
+for sample positions with ≥20 contributing tracks (by design, to keep it from reporting noise) — and
+`noir-near-ce36` (600 frames / 20 s) yields only **58 near-crosshair white tracks total, of which 5**
+reach life≥5, versus `run16`'s 1668 / 373. No sample position clears the bar, so the profile line is
+empty. Confirmed this is a sample-size limit of the 20 s dump, not a script defect, by re-running the
+same script unchanged against `run16/tracks.json`: it reproduces the doc's quoted profile line
+(`0.88 → 0.59 → 0.49 → 0.38 → 0.26 → …`, n=373) exactly.
+
+**What the n=5 statistics do show, read only as a direction check, not a quantitative match:**
+
+| Metric                    | marciana (`run16`, n=373 long tracks) | noir (`noir-near-ce36`, n=5 long tracks) |
+| ------------------------- | ------------------------------------- | ---------------------------------------- |
+| life=1 fraction           | 58.8%                                 | 70.7%                                    |
+| max-area at sample 1      | 73.5%                                 | 100.0%                                   |
+| peak/trough dynamic range | 8.6x                                  | 11.9x                                    |
+
+Same direction and same order of magnitude on every axis (mostly life=1, acquire-at-peak-then-decay,
+single-digit-x dynamic range) — nothing here shows noir behaving _qualitatively_ differently (no
+plateau, no inverted profile, no order-of-magnitude range jump). But n=5 cannot support "matches
+within tolerance" as the quantitative claim the criterion asks for, and per this session's explicit
+instruction not to re-run the counter, it was not strengthened by generating a longer noir dump.
+
+**Disposition: neither PASS nor KILL — inconclusive on the criterion as written, no contradicting
+signal found.** Phase 2 steps 4–6 rest on "one lifecycle template fits all units." This dump is
+consistent with that at the qualitative level and cannot confirm or refute it at the level the
+criterion asked for. Flagging for the owner rather than picking a side: either accept the qualitative
+read as sufficient to proceed, or a longer/different noir dump (a fresh ~13 min run, out of scope for
+this session) would be needed to get n large enough for the quantitative comparison.
+
 ### 0.6 — ⚠ Are the missed shots SELECTED? (not "why are 22% missed")
 
 Re-framed by the error budget above. "70 shots of ~90" reads like the headline defect, but at
