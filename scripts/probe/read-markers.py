@@ -243,13 +243,17 @@ def interp_centres(cmap, n):
     return out
 
 
-def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, debug_dir=None,
-        tmpl=None, zoom=2, offx=62.5, offy=-5.5, roi=(0.55, 0.50), max_disp=150.0):
+def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=20.0, debug_dir=None,
+        tmpl=None, zoom=2, offx=62.5, offy=-5.5, roi=(0.55, 0.50), max_disp=150.0,
+        min_seen=2, shot_gap=0.5):
     if tmpl is not None:
         raw = disc_centers_ammo(files, tmpl, zoom, offx, offy, roi, hr, max_disp)
     else:
         raw = disc_centers(files, hr=hr)
-    cmap = interp_centres(raw, len(files))
+    # Detect only on frames with a real template lock. Interpolating centres into
+    # unlocked frames and detecting there lets perimeter VFX spawn many spurious tracks
+    # that merge into giant shots (validated: locked-only matches the tuned harness).
+    cmap = raw
     tracks = []
     for i, f in enumerate(files):
         if i not in cmap:
@@ -269,7 +273,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
         for x, y, kind, s in ded:
             best = None
             for tr in tracks:
-                if i - tr["last_seen"] <= 12 and math.hypot(x - tr["x0"], y - tr["y0"]) < 5:
+                if i - tr["last_seen"] <= 12 and math.hypot(x - tr["x0"], y - tr["y0"]) < 5 * zoom:
                     if best is None or math.hypot(x - tr["x0"], y - tr["y0"]) < math.hypot(x - best["x0"], y - best["y0"]):
                         best = tr
             if best is not None:
@@ -281,7 +285,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
                     best["red_votes"] += 1
                 continue
             r_spawn = float(math.hypot(x - cx, y - cy))
-            if r_spawn <= R + spawn_margin:
+            if r_spawn <= R + spawn_margin * zoom:
                 tracks.append({
                     "x": x, "y": y, "x0": x, "y0": y,
                     "kind": kind, "spawn_frame": i,
@@ -298,7 +302,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
     for t in tracks:
         host = None
         for m in merged:
-            if t["spawn_frame"] - m["last_seen"] <= 25 and math.hypot(t["x0"] - m["x0"], t["y0"] - m["y0"]) < 6:
+            if t["spawn_frame"] - m["last_seen"] <= 25 and math.hypot(t["x0"] - m["x0"], t["y0"] - m["y0"]) < 6 * zoom:
                 host = m
                 break
         if host is not None:
@@ -308,14 +312,14 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
         else:
             merged.append(t)
 
-    merged = [t for t in merged if t["seen"] >= 3]
+    merged = [t for t in merged if t["seen"] >= min_seen]
     for t in merged:
         t["kind"] = "red" if t["red_votes"] >= max(1, t["seen"] // 3) else "white"
 
-    # cluster spawns into shots (gap > 0.35 s starts a new shot)
+    # cluster spawns into shots (gap > shot_gap s starts a new shot)
     shots = []
     for t in merged:
-        if shots and (t["spawn_frame"] - shots[-1]["frames"][0]) <= int(0.35 * fps):
+        if shots and (t["spawn_frame"] - shots[-1]["frames"][0]) <= int(shot_gap * fps):
             s = shots[-1]
         else:
             shots.append({"frames": [], "markers": []})
@@ -375,6 +379,12 @@ def main():
                         help="restrict ammo template matching to y >= roi-y0 * height (default 0.50)")
     parser.add_argument("--max-template-disp", type=float, default=150.0,
                         help="max frame-to-frame ammo-box displacement (zoomed px) before rejecting a false lock")
+    parser.add_argument("--spawn-margin", type=float, default=20.0,
+                        help="max spawn distance beyond the disc radius, native px (scaled by zoom; default 20)")
+    parser.add_argument("--min-seen", type=int, default=2,
+                        help="min frames a marker must persist to count (default 2)")
+    parser.add_argument("--shot-gap", type=float, default=0.5,
+                        help="gap in seconds that starts a new shot (default 0.5)")
     parser.add_argument("--out", required=True, help="output directory")
     parser.add_argument("--debug", action="store_true", help="write debug frames")
     args = parser.parse_args()
@@ -409,7 +419,8 @@ def main():
     print("running marker counter ...")
     shots, cmap = run(files, args.at, fps=args.fps, hr=args.hr, debug_dir=debug_dir,
                       tmpl=tmpl, zoom=args.zoom, offx=args.ammo_offset_x, offy=args.ammo_offset_y,
-                      roi=(args.ammo_roi_x0, args.ammo_roi_y0), max_disp=args.max_template_disp)
+                      roi=(args.ammo_roi_x0, args.ammo_roi_y0), max_disp=args.max_template_disp,
+                      spawn_margin=args.spawn_margin, min_seen=args.min_seen, shot_gap=args.shot_gap)
 
     shots_path = out_dir / "shots.json"
     shots_path.write_text(json.dumps({
