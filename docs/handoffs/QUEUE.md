@@ -52,20 +52,16 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ DOT-TICK BURST-GAUGE CONCURRENCY FIX — judge-approved (2-of-2 ACCEPT, both MEDIUM) but LOG not
-  IMPLEMENT; awaiting owner call.** Full record: `docs/handoffs/scientific-method-harness.md`
-  (2026-07-29 entry). Fix A (dot-instance gauge election — stops N concurrent stacking-DoT instances,
-  e.g. raven's S1, from multiplying burst gauge N×) is committed (`e76093f`) on isolated worktree
-  `worktree-agent-aab3a19427393feb2`, verified byte-identical on every measured pin (all 7 graded
-  comps + jill/anis-star/ada controls), not merged — MEDIUM confidence caps on a CANNOT-VERIFY premise
-  (no footage evidence either direction on whether real burst gauge scales with concurrent dot stacks).
-  **Owner decides:** (1) merge Fix A as a defensible MODEL-ONLY internal-consistency default, or hold
-  for footage; (2) file the required `docs/open-questions.md` UNANSWERED entry (settleable by focused
-  footage of a stacking-dot unit at concurrency ≥2 vs 1); (3) Fix B (`fillGauge` chain-lock parity)
-  surfaced a NEW premise question via an existing little-mermaid kit test — does an in-game "instant
-  gauge fill" effect respect the same chain-lock as continuous generation, or is it a distinct discrete
-  grant? — needs footage/ruling before its own pre-op pass, left uncommitted in the same worktree;
-  (4) spot-check `bready`/`diesel-winter-sweets` (newly-found stacking-dot units, ungraded) if Fix A lands.
+- **⇒ DOT-TICK BURST-GAUGE CONCURRENCY (Fix A) — RESOLVED 2026-07-30, REJECTED.** Owner-supplied
+  footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`) settled U37 against the fix — see
+  `docs/answered-questions.md` U37 + `docs/handoffs/scientific-method-harness.md` 2026-07-30 follow-up.
+  Worktree `worktree-agent-aab3a19427393feb2` discarded, not merged. Remaining open item: Fix B
+  (`fillGauge` chain-lock parity) — **owner ruled 2026-07-30 that in-game instant "Fills Burst Gauge
+  X%" effects do NOT bypass the chain-lock**, confirming Fix B's mechanism is correct; it still needs
+  its own `/scientific-method` pass (the little-mermaid kit test it broke, `scripts/tests/units/
+little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating alongside the fix, not
+  treated as a blocker). Also still open: spot-check `bready`/`diesel-winter-sweets` (newly-found
+  stacking-dot units, ungraded) whenever a future dot-gauge change lands.
 
 - **⇒ 🟡 UNIT-CARD INFOGRAPHIC — LANDED + DEPLOYED (both repos on main).** Render pipeline
   (`scripts/render-unit-card.ts`, `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`) and the
@@ -293,8 +289,19 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   ROI matching; short clips restored `guilty`/`isabel` detection, but full-noir validation still fails
   (near1 produced no valid shots, near2 7.65 vs anchor 8.9, midfar 6.91 vs anchor 8.8; `guilty` full
   run only 21 shots). Do NOT use the counter to recalibrate UNIGEO until it passes second-unit
-  validation. Next step: fix near-band under-count / per-video template quality on `noir`/`guilty`,
-  then re-attempt. Full log: `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry + addendum.
+  validation. Full log: `docs/handoffs/scientific-method-harness.md` 2026-07-29 entry + addendum.
+  **2026-07-30 prior-art survey — `docs/handoffs/2026-07-30-pellet-reader-solution-survey.md`
+  (findings-only, nothing enacted).** Verdict: further parameter-tuning of the current
+  absolute-RGB-threshold detector is the wrong lever — this is a solved problem in spot
+  detection / point-source astronomy / IR small-target detection, and our method is the one all
+  three fields abandoned first. Unblocked next steps (no footage needed): **(1)** dump the
+  track-lifetime histogram from an existing run to confirm/kill the "most pellet tracks are life=1"
+  premise (~1 h, decides everything downstream); **(2)** swap detection to LoG/DoG matched-filter
+  (`skimage.blob_log` / `photutils.DAOStarFinder`) and count **linked tracks** rather than blobs in
+  one frame (trackpy); **(3)** build the synthetic labeled set (extracted sprite composited onto real
+  backgrounds from all 4 videos) — it is the missing validation harness, and the 6 owner-counted
+  shots stay as the held-out real check. Rejected paths recorded there too (VLM counting, SAM 2,
+  Hough circles, ring detector, peanut heuristic).
   Then: owner core
   re-trace mid/midfar/far (upgrades ⚑ fit-selected series C); third clean SMG cell (de-saturates
   the ⚑ SMG lens pair — its little-mermaid long-band over-prediction is an active red flag);
@@ -372,6 +379,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   (highest-value modeling fix; needs a measurement); (3) re-pin PH-water FB to 12 when the burst-cycle fix
   lands / after re-measure. Passive carries: next sync applies 18 behaviour-neutral `burstGaugePerShot`
   diffs; D.4 RL splash (multi-part scope only); E class-mismatch core-row guard (no current violator).
+
+- **⇒ SEO — GSC redirect status explained (no fix needed) + SPA/SSR gap write-up (low-prio,
+  owner unsure it's worth doing) → `docs/handoffs/2026-07-30-seo-notes.md`.** GSC's "Page with
+  redirect" flag on the http:// variants is expected (Google confirming the 301→canonical works),
+  not a defect. The bigger item is whether to prerender/SSR the docs/FAQ content so non-Google AI
+  crawlers (GPTBot/PerplexityBot/etc., which don't execute JS) can see it — full detail + the
+  Google-AI-Overview correction (it draws from Google's own already-rendered index, so SSR doesn't
+  move that lever) in the handoff doc. Parked; revisit only if AI-citation/organic traffic to the
+  docs pages becomes a priority.
 
 - **⇒ VERIFY BOSS PROFILES (low-prio).** medium/large `bossPelletProfile` magnitudes are ⚑ UNVERIFIED
   (owner-chosen, not measured). dorothy-serendipity PH-water (766M) vs N9-redhood (328M) already DISAGREE on

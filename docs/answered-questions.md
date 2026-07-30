@@ -1269,3 +1269,45 @@ residual is closed; CCW grades ~1.0.
 >   only at the FB boundary. A meter-carryover measurement (count meter-100% events across an FB entry) would
 >   discriminate.
 > - Residual remainder is likely generic MG-cold (board ~0.947).
+
+### U37 — does in-game burst gauge scale with concurrent DoT-stack count? (opened 2026-07-29, ANSWERED 2026-07-30)
+
+**ANSWERED 2026-07-30 (measured, video-confirmed, single solo recording).** `docs/probes/burst
+tests/Raven Solo Burst Gen.MP4` (raven, exact slug `raven`, solo — no teammates, so the team gauge
+bar reflects her contribution alone) was frame-read (burst-gauge bar crop + ammo counter + damage
+popups) across her full first-magazine-plus-reload cycle. Measured fill percentage at each of her 7
+shots:
+
+| shot            | video time | fill %                                                 |
+| --------------- | ---------- | ------------------------------------------------------ |
+| 1               | ~8.8s      | ~0%                                                    |
+| 2               | ~11.0s     | ~15%                                                   |
+| 3               | ~12.8s     | ~38%                                                   |
+| 4               | ~14.8s     | ~67%                                                   |
+| 5               | ~16.8s     | ~80%                                                   |
+| 6 (empties mag) | ~18.2s     | ~89%                                                   |
+| (post-reload)   | ~20.8s     | ~98%                                                   |
+| 7               | ~22.6s     | **100% — chain opens** (green stage-1 hexagon appears) |
+
+The per-shot increment is NOT flat (+15, +23, +29, +13, +9, +9-ish) — it ramps up over shots 2–4 then
+plateaus, which is the signature of concurrent DoT instances stacking to a steady count (her measured
+~2.7–2.9 average concurrency) and holding, not a single-instance-at-a-time model (which would predict
+a roughly constant ~14%/shot the whole way through). Cross-check on the damage side: her white popup
+value grows in clean steps of ~82,012 (×1, ×2, ×3…) tracking shot count — consistent with concurrent
+ticks summing into one merged popup — while a separate red CORE HIT value (~367,175) recurs
+unchanged as her actual weapon shot.
+
+**Conclusion: the engine's existing N-linear-per-concurrent-instance dot-tick gauge behavior is the
+FAITHFUL one.** The concurrency-gated "instance election" fix designed and judge-approved (LOG, not
+IMPLEMENT — 2-of-2 ACCEPT both MEDIUM, capped precisely because this question was then unresolved;
+`docs/handoffs/scientific-method-harness.md` 2026-07-29) is REJECTED by this measurement — it would
+have moved the engine away from observed behavior, not toward it. The isolated worktree carrying that
+fix (`worktree-agent-aab3a19427393feb2`, commit `e76093f`) is discarded, not merged.
+
+**Caveat (honesty, not hedging-away):** n=1 recording, fill percentages read by eye off a compressed
+video bar crop (not pixel-measured), so treat the exact percentages as approximate — the qualitative
+shape (ramp-then-plateau, not flat) is the load-bearing part of this answer. If a future recording
+ever showed a flat per-shot fill rate instead, that would be worth reopening.
+
+Recording persisted: `docs/probe-data/raven-solo-burstgen.json`; measurement log:
+`docs/probe-runs.md` 2026-07-30.

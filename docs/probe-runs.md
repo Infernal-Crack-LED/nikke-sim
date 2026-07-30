@@ -1721,3 +1721,24 @@ were `skill:core`/`skill:crit+core`, and a 64,733 called "crit" when 64,733 is t
 normal. Both were caught by adding two conditions: the matched band variant must be reachable from
 the reported class, and the value must match exactly one variant. ⇒ **The auto-accept path itself is
 UNEXERCISED** and stays unproven until a focus unit with a clean band trips it.
+
+### 2026-07-30 — raven solo burst-gauge fill timeline (settles U37)
+
+`docs/probes/burst tests/Raven Solo Burst Gen.MP4` (raven, solo — no teammates). Read: ammo-counter
+decrements (shot timestamps, 6-round RL mag) + the burst-gauge bar's fill percentage at each shot,
+via a contrast-boosted crop read by eye (parsed record: `docs/probe-data/raven-solo-burstgen.json`).
+
+Fill by shot: 1/~8.8s/~0%, 2/~11.0s/~15%, 3/~12.8s/~38%, 4/~14.8s/~67%, 5/~16.8s/~80%,
+6(empties mag)/~18.2s/~89%, post-reload/~20.8s/~98%, 7/~22.6s/100% (chain visibly opens — green
+stage-1 hexagon). Per-shot increment ramps (+15,+23,+29 over shots 2-4) then plateaus (+13,+9,+9) —
+matching concurrent DoT-tick stacking building to her measured steady-state concurrency (~2.7-2.9),
+not a flat single-instance rate. Cross-check on the damage side: her white popup value climbs in
+clean ~82,012 steps (×1,×2,×3…) tracking shot count, while a separate red CORE HIT value (~367,175)
+recurs unchanged as her actual weapon shot.
+
+**Settles U37** (see `docs/answered-questions.md`): the engine's existing N-linear-per-concurrent-
+instance dot-tick gauge behavior is the faithful one. The concurrency-gated "instance election" fix
+that was judge-approved-but-LOGGED pending exactly this footage (`docs/handoffs/scientific-method-
+harness.md` 2026-07-29) is REJECTED by this measurement and its isolated worktree
+(`worktree-agent-aab3a19427393feb2`) discarded, not merged. n=1, percentages eyeballed not
+pixel-measured — the ramp-then-plateau shape is the load-bearing part, not the exact numbers.

@@ -1,0 +1,66 @@
+{
+  "video": "docs/probes/burst tests/Raven Solo Burst Gen.MP4",
+  "screenshot": "docs/probes/burst tests/Raven Solo Burst Gen.jpg",
+  "focus": "raven",
+  "boss": null,
+  "comp": ["raven"],
+  "params": {
+    "basis": "solo burst-gen test (not a scope-lock accuracy reconciliation — purpose-built to observe her own burst-gauge generation in isolation, no teammates diluting the shared bar)",
+    "durationSec": 29.4,
+    "focusReason": "solo recording — she is the only unit, so the team gauge bar is entirely her own contribution"
+  },
+  "extractedOn": "2026-07-30",
+  "method": "ffmpeg crop+tile contact sheets at 5fps over the ammo/popup region (crop=700:250:250:100 within the documented damage-area crop) and the burst-gauge region (crop=260:100:2380:430), read by eye; shot timestamps cross-checked against the ammo-counter decrement; fill percentages estimated from the light(filled)/dark(empty) boundary position in a contrast-boosted crop of the gauge bar",
+  "fightClock": false,
+  "popups": [
+    {
+      "t": 9.8,
+      "value": 82012,
+      "crit": false,
+      "core": false,
+      "kind": "dot",
+      "note": "first clean read of the recurring value; grows in steps of ~82012 tracking shot count — read as summed concurrent DoT ticks, not a single fixed-value hit"
+    },
+    {
+      "t": 11.6,
+      "value": 164025,
+      "crit": false,
+      "core": false,
+      "kind": "dot",
+      "note": "~2x the base 82012 step"
+    },
+    {
+      "t": 13.8,
+      "value": 246037,
+      "crit": false,
+      "core": false,
+      "kind": "dot",
+      "note": "~3x the base 82012 step"
+    },
+    {
+      "t": 16.0,
+      "value": 328049,
+      "crit": false,
+      "core": false,
+      "kind": "dot",
+      "note": "~4x the base 82012 step"
+    },
+    {
+      "t": 18.0,
+      "value": 410062,
+      "crit": false,
+      "core": false,
+      "kind": "dot",
+      "note": "~5x the base 82012 step"
+    },
+    {
+      "t": 12.8,
+      "value": 367175,
+      "crit": false,
+      "core": true,
+      "kind": "charge",
+      "note": "recurs unchanged across the clip — read as her actual RL weapon shot (core hit), distinct from the growing white DoT-sum value"
+    }
+  ],
+  "notes": "PRIMARY PURPOSE OF THIS RECORDING was not the popups above but the burst-gauge FILL TIMELINE, which settled open-questions U37 (see docs/answered-questions.md). Shot timestamps (from ammo-counter decrements, 6-round RL magazine) vs measured gauge-bar fill %: shot1 ~8.8s/~0%, shot2 ~11.0s/~15%, shot3 ~12.8s/~38%, shot4 ~14.8s/~67%, shot5 ~16.8s/~80%, shot6(empties mag) ~18.2s/~89%, post-reload ~20.8s/~98%, shot7 ~22.6s/100% (chain opens, green stage-1 hexagon visible). Per-shot fill increment ramps (+15,+23,+29) then plateaus (+13,+9,+9) — the signature of concurrent DoT-tick stacking (her measured ~2.7-2.9 average instance concurrency) rather than a flat single-instance rate. n=1 recording; fill percentages are eyeballed off a contrast-boosted crop, not pixel-measured — treat the qualitative ramp-then-plateau shape as the load-bearing finding, not the exact percentages. Boss identity not determined from footage (generic mech enemy, not visually identified by element); marked null/neutral pending confirmation, though boss element is irrelevant to this gauge-timing question."
+}

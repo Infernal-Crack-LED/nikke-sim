@@ -435,3 +435,22 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   can reveal that a "bug fix" is bigger than scoped (Fix B) — kit-faithfulness tests and the regression
   snapshot are both real independent checks, and a change that's clean against one gate can still fail
   a different one for a legitimate reason.
+- **2026-07-30 — FOLLOW-UP to the 2026-07-29 dot-tick gauge-concurrency entry above: Fix A REJECTED by
+  the footage it was waiting on.** That entry landed LOG (2-of-2 ACCEPT, both MEDIUM confidence,
+  capped because open-questions U37 — does real burst gauge scale with concurrent DoT-stack count —
+  was CANNOT-VERIFY, no footage either direction) and named exactly the recording that would settle
+  it. The owner supplied `docs/probes/burst tests/Raven Solo Burst Gen.MP4` (raven, solo) the next
+  day. Measured: her burst-gauge fill percentage at each of her 7 shots ramps (+15,+23,+29 over shots
+  2-4) then plateaus (+13,+9,+9) — the signature of concurrent DoT instances stacking to her measured
+  steady-state concurrency (~2.7-2.9) and holding, not a flat single-instance rate a concurrency-gated
+  model would produce. Full measurement: `docs/probe-data/raven-solo-burstgen.json`,
+  `docs/probe-runs.md` 2026-07-30, resolution: `docs/answered-questions.md` U37.
+  **DECISION: Fix A (instance-election concurrency gating) is REJECTED, not merged.** The isolated
+  worktree `worktree-agent-aab3a19427393feb2` (commit `e76093f`) is discarded — implementing it now,
+  with footage arguing against it, would move the engine AWAY from observed behavior. The existing
+  N-linear-per-concurrent-instance dot-tick gauge rule stands as the faithful one.
+  HARNESS LESSON: this is the pattern the "revisitable on the first focused stacking-dot footage"
+  clause was written for — a LOG decision naming its own falsification recording, and the owner
+  supplying it within 24 hours, closing the loop cleanly without needing a new pre-op/post-op round
+  (no engine change was ever made, so there was nothing to re-judge — only a decision NOT to
+  implement, informed by the evidence the original panel asked for).
