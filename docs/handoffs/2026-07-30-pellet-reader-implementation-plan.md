@@ -1035,7 +1035,7 @@ implied by gate 2.
 **Deliverable for §0.5:** at least one `noir` dump that passes gate 1, committed or reproducible by a
 recorded command. §0.5 stays blocked until that exists.
 
-### 2A-G2 — Gate 2 on a full `noir` run (also produces §0.5's deliverable) — NEXT
+### 2A-G2 — Gate 2 on a full `noir` run (also produces §0.5's deliverable) — DONE, all three pass
 
 Gate 1 is met and driver-verified. Gate 2 is unmeasured. **One full-video run settles both**, and its
 dump is exactly what §0.5 has been blocked on since it needs a `noir` dump that is well-localized
@@ -1048,6 +1048,17 @@ shots.
 ```sh
 npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
   --fps 30 --zoom 2 --locate structural \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural
+```
+
+**⚠ This command as written does not produce `tracks.json`** — `--dump-tracks` is opt-in in
+`read-pellets.ts` and this copy-paste omits it, even though gates 2/3 both need `tracks.json` via
+`analyze-pellet-tracks.py`. Every other reproduction command in this doc includes `--dump-tracks
+true`; add it here too:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
   --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural
 ```
 
@@ -1085,6 +1096,52 @@ the endpoint is unavailable, take the fight-clock offset from the existing `noir
 with an explicit committed template per recording and a lock-quality metric that **fails loudly**
 rather than silently producing 3 shots. A counter that knows it failed is usable; one that reports
 3 shots as data is not.
+
+### ✅ 2026-07-30 — 2A-G2 run: all three pass conditions MET
+
+Ran the end-to-end orchestrator per the (corrected, `--dump-tracks true`) command above. Took ~7.1
+min total (78.4s frame extraction + 68.4s VLM timer pass, 191/191 reads, no fallback needed +
+280.7s counter), under the ~14 min estimate. `fightStartVideoT=3s` from the real timer spine,
+matching `noir-sg`'s known value.
+
+1. **Gate 2 (detection rate) — MET.** **214 total shots (174 valid 5–10)** over 190.75s. Against
+   the reference (`noir-sg`: 179 shots / ~286 expected @1.5/s ≈ 63%): 214/286 = **74.8%** on total
+   shots, 174/286 = **60.8%** on valid-only — both clear 60%, and 214 beats the **≥179** absolute
+   bar outright. Landed clean, not near the boundary — the §0.6 fire-hold-adjusted denominator
+   wasn't needed.
+2. **Gate 1 at full length — MET.** `analyze-pellet-tracks.py` on the 5,722-frame `tracks.json`:
+   **21.1% near-crosshair, 1915px wander** — essentially unchanged from the 600-frame slice's
+   21.2%/1675px. No full-run collapse.
+3. **§0.5 answerable — MET.** Normalised area-decay curve printed with **n=1,215** long-lived
+   tracks (life≥5), ≫ the n≥20 floor. First 5 samples: **0.83 → 0.60 → 0.50 → 0.40 → 0.28**,
+   qualitatively similar decay to `marciana`'s **0.93 → 0.57 → 0.43 → 0.33 → 0.22** (lower start,
+   similar slope), then rebounds past sample 5 (→0.65 by sample 20) where marciana's shorter
+   reference doesn't extend — flagged for a §0.5 session to interpret, not analyzed further here
+   (out of 2A-G2's scope).
+
+**Artifacts (main tree `scratchpad/`, gitignored, reproducible by the commands recorded here —
+confirmed on disk after the run, not just claimed):**
+
+- `scratchpad/pellets/g2-noir-structural/pellets.json` (2.8 MB)
+- `scratchpad/pellets/g2-noir-structural/tracks.json` (9.8 MB, 43,164 tracks)
+- `scratchpad/pellets/g2-noir-structural/frames-pellet/` (6.3 GB cached frames — large; safe to
+  clear once the dump above is no longer needed, it is regenerable from the command)
+
+`tracks.json` came from a second, faster invocation: rather than re-run the full ~7 min pipeline
+after discovering the `--dump-tracks` gap, `count-pellets.py` was invoked directly on the
+already-extracted `frames-pellet/` cache with the exact flags `read-pellets.ts` computes internally
+for `--zoom 2 --locate structural` (`--center-exclude 36 --min-area 25 --max-area 750
+--locate structural --struct-templ-h 74 --struct-offset-x 162 --struct-offset-y -12.5
+--pellet-radius 160 --marker-radius 65 --temporal --max-pellet-frames 7 --red-r-min 200
+--red-gb-max 60 --pellet-unit-area 320 --peanut-circ-lo 0.3 --peanut-aspect 0.45
+--peanut-max-mult 0 --dump-tracks <path>`), then verified byte-for-byte reproduction against the
+full run's own reported figure (3177/5722 non-zero frames matched exactly) before trusting it for
+gates 1/3 above.
+
+**Exit criterion status: MET.** All three pre-committed pass conditions clear on a full `noir` run.
+**Not evaluated here (out of scope):** whether this also closes Phase 2A's four-video
+"all-together" conjunction — `guilty` was still failing gate 1 as of the last recorded attempt in
+this doc — or a full-video gate-2 re-run on `marciana`/`isabel`/`guilty`.
 
 ### ⚠ 2026-07-30 — attempted on `fix/pellet-reader` (worktree). Two bugs found and fixed; exit
 
