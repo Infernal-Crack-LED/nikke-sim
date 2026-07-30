@@ -456,8 +456,28 @@ Phase 2 is wrong and the design needs revisiting before implementation.
 ### 0.5 — ⚠ Lifecycle stability across units (gates Phase 2 steps 4–6)
 
 Phase 2 assumes one lifecycle template fits every unit and VFX load. That assumption is currently
-supported by exactly one video. Run `analyze-pellet-tracks.py` against a `noir` dump and compare the
-normalised area decay to the prediction table in §2.0.
+supported by exactly one video. Compare a `noir` dump's normalised area decay to the prediction table
+in §2.0.
+
+**The dump already exists — do NOT re-run the counter (that is ~13 min/video and unnecessary):**
+
+```sh
+/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python \
+  scripts/probe/analyze-pellet-tracks.py \
+  --tracks scratchpad/pellets/noir-near-ce36/tracks.json
+```
+
+⚠ **Use `noir-near-ce36`, not `noir-near-ce0`.** Verified 2026-07-30: `noir-near-ce36` is
+**parameter-identical to run16** — `ammo_offset_x` 125, `center_exclude` 36, `min_area` 25,
+`max_area` 750, `min_circ` 0.55, `pellet_radius` 160, `max_pellet_frames` 7 — so it is a like-for-like
+comparison. `noir-near-ce0` differs (`center_exclude` 0, which admits crosshair-centre components) and
+would confound the curve. **Also ignore `noir-offset-neg125`, `noir-offset-neg250` and `noir-max3`** —
+those are wrong-offset experiments (`-125`, `-250`, `+25`) and are not valid for this comparison.
+`noir-near-ce36` is 600 frames (~20 s), 7,353 tracks.
+
+The comparison basis is `marciana`'s measured decay **0.93 → 0.57 → 0.43 → 0.33 → 0.22**, which sits
+~10–25% below the phase-mix prediction (see §2.0). `noir` should show the same shape and a similar
+mild undershoot.
 
 **Exit criterion.** `noir`'s decay matches within the same tolerance `marciana`'s does (~10–25% below
 the phase-mix prediction, same shape). **Kill condition:** materially different curve → the template
