@@ -10,6 +10,8 @@ import {
   HEADLINE_CELL_IDS,
   manifestKeyFor,
   renderSpecFor,
+  OL_DEFAULT_LINES,
+  OL_DEFAULT_TIER,
   type BuilderState,
 } from '../../../web/src/builderSpec.js';
 
@@ -21,6 +23,10 @@ const BASE: BuilderState = {
   unit: '',
   units: [],
   board: 'burstgen',
+  bufferBoard: 'generic',
+  burstGenBoard: 'unfocused',
+  olLines: OL_DEFAULT_LINES,
+  olTier: OL_DEFAULT_TIER,
   unitVariant: 'discord',
 };
 
@@ -47,17 +53,18 @@ describe('manifestKeyFor — pre-rendered head set only', () => {
     ).toBeNull();
   });
 
-  it('maps rank boards, unit cards, and the static tables', () => {
+  it("never maps a rank board — the Builder card (portrait bar chart, with a sub-mode) is a different image than the manifest's plain-text/unfocused/generic one", () => {
     for (const board of [
       'burstgen',
       'burstcdr',
       'sustain',
       'buffer',
     ] as const) {
-      expect(manifestKeyFor({ ...BASE, card: 'rank', board })).toBe(
-        `rank/${board}`
-      );
+      expect(manifestKeyFor({ ...BASE, card: 'rank', board })).toBeNull();
     }
+  });
+
+  it('maps unit cards and the static tables', () => {
     // Unit-card keys carry the VARIANT: the landscape and portrait cards are
     // different images of the same unit, and a shared key would serve one to a
     // request for the other out of an immutable cache.
@@ -72,10 +79,17 @@ describe('manifestKeyFor — pre-rendered head set only', () => {
         unitVariant: 'twitter',
       })
     ).toBe('unit/liter.twitter');
-    expect(manifestKeyFor({ ...BASE, card: 'ol' })).toBe('table/ol');
     expect(manifestKeyFor({ ...BASE, card: 'charge' })).toBe(
       'table/charge-speed'
     );
+  });
+
+  it('maps ol ONLY at the exact default combo the manifest was built at', () => {
+    expect(manifestKeyFor({ ...BASE, card: 'ol' })).toBe('table/ol');
+    expect(
+      manifestKeyFor({ ...BASE, card: 'ol', olLines: '4of12' })
+    ).toBeNull();
+    expect(manifestKeyFor({ ...BASE, card: 'ol', olTier: 10 })).toBeNull();
   });
 
   it('never maps per-unit or unchosen cards', () => {
@@ -142,7 +156,7 @@ describe('renderSpecFor — the on-demand tail', () => {
     expect(renderSpecFor({ ...BASE, card: 'ammo', unit: '' })).toBeNull();
   });
 
-  it('the two mappings are disjoint: exactly one is set for any state', () => {
+  it('the two mappings never both fire for the same state', () => {
     const states: BuilderState[] = [
       BASE,
       { ...BASE, element: 'iron' },
@@ -152,15 +166,31 @@ describe('renderSpecFor — the on-demand tail', () => {
       { ...BASE, card: 'rank', board: 'buffer' },
       { ...BASE, card: 'unit', unit: 'liter' },
       { ...BASE, card: 'ol' },
+      { ...BASE, card: 'ol', olLines: '4of12' },
       { ...BASE, card: 'charge' },
       { ...BASE, card: 'charge', unit: 'alice' },
       { ...BASE, card: 'ammo', unit: 'alice' },
     ];
     for (const s of states) {
       expect(
-        (manifestKeyFor(s) !== null) !== (renderSpecFor(s) !== null),
+        manifestKeyFor(s) !== null && renderSpecFor(s) !== null,
         JSON.stringify(s)
-      ).toBe(true);
+      ).toBe(false);
+    }
+  });
+
+  // 'rank' and a non-default 'ol' combo are the two "neither" states — no
+  // pre-rendered manifest image, and no server RenderSpec support to render
+  // one on demand. onGetUrl falls through to its "use Copy image instead"
+  // message for these (see BuilderPage.tsx); Copy image still works for
+  // both, since it draws through the live client-side canvas, not this path.
+  it('leaves rank and a non-default ol combo hosted nowhere yet', () => {
+    for (const s of [
+      { ...BASE, card: 'rank' as const, board: 'buffer' as const },
+      { ...BASE, card: 'ol' as const, olLines: '4of12' as const },
+    ]) {
+      expect(manifestKeyFor(s)).toBeNull();
+      expect(renderSpecFor(s)).toBeNull();
     }
   });
 

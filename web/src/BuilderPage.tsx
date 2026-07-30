@@ -25,23 +25,26 @@ import {
   loadSustain,
   loadBufferChart,
 } from './rankBoardsData';
-import {
-  buildBurstGenTable,
-  buildBurstCdrTable,
-  buildSustainTable,
-  buildBufferTable,
-} from '../../src/infographics/core/rankTables';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
 } from '../../src/ranks/types';
+import { barsForBoard } from './rankChartBars';
+import { buildRankChartCanvas } from './rankChartShare';
+import type { RankChartData } from '../../src/infographics/core/rankChart';
 import {
   buildAmmoTable,
   buildChargeTable,
   chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
+  buildOlRollTable,
+  olTargetFor,
+  OL_LINES_PRESETS,
+  OL_LINES_LABEL,
+  OL_PIECES,
+  type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
 import {
   drawUnitCardVariant,
@@ -55,16 +58,24 @@ import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ELEMENT_FILTERS } from '../../src/infographics/spec';
 import { ensureRoboto, loadPortrait, copyOrDownloadPng } from './teamShare';
 import { buildDpsChartCanvas } from './shareImage';
-import { buildTableCardCanvas, loadOlDefaultTable } from './tableShare';
+import { buildTableCardCanvas } from './tableShare';
+import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
+import type { OlProbModel } from '../../src/overload/model';
+import olProbJson from '../../data/ol-probabilities.json';
 import {
   manifestKeyFor,
   renderSpecFor,
+  OL_DEFAULT_LINES,
+  OL_DEFAULT_TIER,
   type BuilderState,
   type BuilderCardType,
   type BuilderBoard,
   type BuilderDpsMode,
   type ImgManifest,
 } from './builderSpec';
+
+const olProbModel = olProbJson as unknown as OlProbModel;
+const OL_TRIALS = 20_000; // matches scripts/build-ol-default.ts's default-combo recipe exactly
 
 const data = charactersJson as unknown as DataFile;
 
@@ -86,11 +97,11 @@ const CARD_TYPES: { key: BuilderCardType; label: string }[] = [
   { key: 'ammo', label: 'Max Ammo' },
 ];
 
-const BOARDS: { key: BuilderBoard; label: string }[] = [
-  { key: 'burstgen', label: 'Burst Gen' },
-  { key: 'burstcdr', label: 'Burst CDR' },
-  { key: 'sustain', label: 'Sustain' },
-  { key: 'buffer', label: 'Buffer' },
+const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
+  { key: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
+  { key: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
+  { key: 'sustain', label: 'Sustain', title: 'Sustain' },
+  { key: 'buffer', label: 'Buffer', title: 'Buffer' },
 ];
 
 // Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the
@@ -196,13 +207,22 @@ export function BuilderPage() {
     unit: '',
     units: [],
     board: 'burstgen',
+    bufferBoard: 'generic',
+    burstGenBoard: 'unfocused',
+    olLines: OL_DEFAULT_LINES,
+    olTier: OL_DEFAULT_TIER,
     unitVariant: 'discord',
   });
   const [dpsArt, setDpsArt] = useState<DpsArtifact | null>(null);
   const [rankArts, setRankArts] = useState<
     Partial<Record<BuilderBoard, unknown>>
   >({});
-  const [olTable, setOlTable] = useState<TableCardData | null>(null);
+  const [olMc, setOlMc] = useState<{
+    perPiece: McSummary[];
+    total: McSummary;
+    lines: OlLinesPreset;
+    tier: number;
+  } | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   const cellObj = parseCellId(s.cell) ?? DEFAULT_CELL;
@@ -253,18 +273,37 @@ export function BuilderPage() {
       alive = false;
     };
   }, [s.card, s.board, rankArts]);
+  // Overload roll cost is a live Monte Carlo (not a fetch) — same trial count
+  // + seed as scripts/build-ol-default.ts, so the default 8/12 · T11 combo is
+  // numerically identical to the pre-rendered manifest card. Runs off the main
+  // render pass (setTimeout 0) so the "computing…" state gets a chance to
+  // paint before the ~0.5-1s synchronous roll sim blocks the thread.
   useEffect(() => {
-    if (s.card !== 'ol' || olTable) {
+    if (
+      s.card !== 'ol' ||
+      (olMc?.lines === s.olLines && olMc?.tier === s.olTier)
+    ) {
       return;
     }
     let alive = true;
-    loadOlDefaultTable()
-      .then((t) => alive && setOlTable(t))
-      .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    const lines = s.olLines;
+    const tier = s.olTier;
+    const id = setTimeout(() => {
+      if (!alive) {
+        return;
+      }
+      const target = olTargetFor(lines, tier);
+      const targets = Array.from({ length: OL_PIECES }, () => target);
+      const result = monteCarloBuild(olProbModel, targets, {
+        trials: OL_TRIALS,
+      });
+      setOlMc({ ...result, lines, tier });
+    }, 0);
     return () => {
       alive = false;
+      clearTimeout(id);
     };
-  }, [s.card, olTable]);
+  }, [s.card, s.olLines, s.olTier, olMc]);
   // The Nikke Card draws on the DPS chart PLUS all four rank boards (every
   // field nullable, see renderCard's 'unit' case) — it's the default tab, so
   // kick off every load it can use instead of waiting on the user to have
@@ -331,19 +370,35 @@ export function BuilderPage() {
         return buildDpsChartCanvas(chartData);
       }
       case 'rank': {
-        const art = rankArts[state.board];
-        if (!art) {
+        const rawArt = rankArts[state.board];
+        if (!rawArt) {
           return null;
         }
-        const table: TableCardData =
-          state.board === 'burstgen'
-            ? buildBurstGenTable(art as BurstGenArtifact)
-            : state.board === 'burstcdr'
-              ? buildBurstCdrTable(art as BurstCdrArtifact)
-              : state.board === 'sustain'
-                ? buildSustainTable(art as SustainArtifact)
-                : buildBufferTable(art as BufferChartArtifact, 'generic');
-        return buildTableCardCanvas(table);
+        const art = rawArt as
+          | BurstGenArtifact
+          | BurstCdrArtifact
+          | SustainArtifact
+          | BufferChartArtifact;
+        const allBars = barsForBoard(state.board, art, {
+          bufferBoard: state.bufferBoard,
+          burstGenBoard: state.burstGenBoard,
+        });
+        const boardMeta = BOARDS.find((b) => b.key === state.board)!;
+        const subMode =
+          state.board === 'buffer'
+            ? state.bufferBoard
+            : state.board === 'burstgen'
+              ? state.burstGenBoard
+              : null;
+        const chartData: RankChartData = {
+          title: subMode
+            ? `${boardMeta.title} · ${cap(subMode)}`
+            : boardMeta.title,
+          subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
+          bars: allBars.slice(0, 10),
+          footer: 'nikkesim.app/ranks',
+        };
+        return buildRankChartCanvas(chartData);
       }
       case 'unit': {
         const c = data.characters[state.unit];
@@ -393,7 +448,20 @@ export function BuilderPage() {
         return cv;
       }
       case 'ol': {
-        return olTable ? buildTableCardCanvas(olTable) : null;
+        if (
+          !olMc ||
+          olMc.lines !== state.olLines ||
+          olMc.tier !== state.olTier
+        ) {
+          return null;
+        }
+        const table = buildOlRollTable(
+          state.olLines,
+          state.olTier,
+          olMc,
+          OL_TRIALS
+        );
+        return buildTableCardCanvas(table);
       }
       case 'charge':
       case 'ammo': {
@@ -443,7 +511,7 @@ export function BuilderPage() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effKey, dpsArt, rankArts, olTable]);
+  }, [effKey, dpsArt, rankArts, olMc]);
 
   // Narrow layouts stack controls above the preview (ResizeObserver, not a
   // window resize listener — the PillGrid pattern).
@@ -500,7 +568,9 @@ export function BuilderPage() {
       const spec = renderSpecFor(eff);
       if (!spec) {
         setHostErr(
-          'Pick at least one unit first — then the card can be hosted.'
+          eff.card === 'rank' || eff.card === 'ol'
+            ? "This exact card isn't hosted yet — use Copy image instead."
+            : 'Pick at least one unit first — then the card can be hosted.'
         );
         return;
       }
@@ -653,20 +723,58 @@ export function BuilderPage() {
           )}
 
           {s.card === 'rank' && (
-            <div className="field">
-              <label>Board</label>
-              <PillGrid>
-                {BOARDS.map((b) => (
-                  <button
-                    key={b.key}
-                    className={s.board === b.key ? 'on' : ''}
-                    onClick={() => setS((cur) => ({ ...cur, board: b.key }))}
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </PillGrid>
-            </div>
+            <>
+              <div className="field">
+                <label>Board</label>
+                <PillGrid>
+                  {BOARDS.map((b) => (
+                    <button
+                      key={b.key}
+                      className={s.board === b.key ? 'on' : ''}
+                      onClick={() => setS((cur) => ({ ...cur, board: b.key }))}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </PillGrid>
+              </div>
+              {s.board === 'buffer' && (
+                <div className="field">
+                  <label>Type</label>
+                  <PillGrid>
+                    {(['generic', 'typed'] as const).map((bb) => (
+                      <button
+                        key={bb}
+                        className={s.bufferBoard === bb ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, bufferBoard: bb }))
+                        }
+                      >
+                        {bb === 'generic' ? 'Generic' : 'Typed'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+              {s.board === 'burstgen' && (
+                <div className="field">
+                  <label>Type</label>
+                  <PillGrid>
+                    {(['unfocused', 'focused'] as const).map((bg) => (
+                      <button
+                        key={bg}
+                        className={s.burstGenBoard === bg ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, burstGenBoard: bg }))
+                        }
+                      >
+                        {bg === 'unfocused' ? 'Unfocused' : 'Focused'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+            </>
           )}
 
           {s.card === 'unit' && (
@@ -728,9 +836,42 @@ export function BuilderPage() {
           )}
 
           {s.card === 'ol' && (
-            <p className="muted">
-              The default overload-lines table (no options).
-            </p>
+            <>
+              <div className="field">
+                <label>Lines</label>
+                <PillGrid>
+                  {OL_LINES_PRESETS.map((l) => (
+                    <button
+                      key={l}
+                      className={s.olLines === l ? 'on' : ''}
+                      onClick={() => setS((cur) => ({ ...cur, olLines: l }))}
+                    >
+                      {OL_LINES_LABEL[l]}
+                    </button>
+                  ))}
+                </PillGrid>
+              </div>
+              <div className="field">
+                <label>Tier</label>
+                <select
+                  value={s.olTier}
+                  onChange={(e) =>
+                    setS((cur) => ({ ...cur, olTier: +e.target.value }))
+                  }
+                >
+                  {Array.from({ length: 15 }, (_, t) => t + 1).map((t) => (
+                    <option key={t} value={t}>
+                      T{t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="muted">
+                {OL_PIECES} pieces, {OL_TRIALS / 1000}k-trial Monte Carlo —
+                states the line COUNT and tier only, never which stats were
+                simulated.
+              </p>
+            </>
           )}
         </div>
 

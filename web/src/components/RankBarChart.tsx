@@ -6,33 +6,16 @@
 // Presentational only: the page maps each board's typed rows into RankChartBar.
 import { useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
+import type { RankChartBar } from '../../../src/infographics/core/rankChart';
 import { usePortraitThumbs } from '../usePortraitThumbs';
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
 
-export interface RankChartBar {
-  key: string; // slug + profile (a profiled unit appears twice on one board)
-  slug: string;
-  name: string;
-  element: string;
-  weapon: string;
-  burst: string;
-  imageUrl: string | null;
-  rank: number; // 1-based over the full entry list (profiles included)
-  value: number; // signed bar magnitude (negative → left of the zero axis)
-  valueText: string; // primary value label ("12.3 bars", "+12.3M")
-  valueSub?: string | null; // muted secondary under the value (raw gauge, carry DPS)
-  valueTitle?: string; // tooltip on the value block
-  badge?: string | null; // profile chip label ("w/ 2 MG")
-  badgeTitle?: string; // profile note tooltip
-  sub?: string | null; // muted sub-line under the name (CDR ramp, split %…)
-  condition?: string | null; // conditional caveat → asterisk with tooltip
-  // sustain: heal/shield/lifesteal split as a stacked mini-bar inside the track
-  // (three segment widths as fractions of the bar's own width, summing to ≤1)
-  split?: [heal: number, shield: number, lifesteal: number] | null;
-  splitTitle?: string; // exact split breakdown tooltip
-  info?: string | null; // buffer typed rules → ⓘ tooltip ("why did the carries change?")
-}
+// RankChartBar is defined in core/rankChart.ts (the Card Builder's canvas
+// twin of this component) so web/src/rankChartBars.ts's mapping feeds both
+// hosts from one shape — re-exported here so existing `import { ...,
+// type RankChartBar } from './RankBarChart'` call sites keep working.
+export type { RankChartBar };
 
 export function RankBarChart({
   title,
