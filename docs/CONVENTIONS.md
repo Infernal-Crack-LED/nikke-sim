@@ -169,7 +169,9 @@ runbook. A reversed ruling's history goes to DECISIONS; the mechanics docs keep 
 ## Commit style
 
 - Small verified increments; `scripts/verify.sh` green before every commit. Never commit or push
-  unless the owner asks. End agent-authored commits with the fixed trailer:
-  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`.
+  unless the owner asks. End agent-authored commits with the per-harness trailer (attribute to the
+  harness that authored it): Claude/Kimi use
+  `Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>`; Qwen uses
+  `Co-Authored-By: Qwen Code <noreply@alibaba.com>`.
 - Never commit `.env` or `.git-credential-pat.sh` (gitignored; repo pushes authenticate via the
   repo-local PAT helper, not the global account).

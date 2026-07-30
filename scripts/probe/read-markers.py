@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """SG pellet-marker counter wrapper.
 
-Uses the UNIGEO marker-detection logic (docs/probes/drawn-geometry/marker_detect2.py
-+ marker_track.py) but supplies the missing disc-centre tracker and generalises the
-input/output so it can run on any solo SG recording.
+Uses the UNIGEO marker-detection logic (scripts/unigeo/marker_detect2.py +
+marker_track.py) and locates the aim disc via the proven ammo-box-template crosshair
+track from read-pellets.ts/count-pellets.py (disc_centers_ammo), so it runs on any solo
+SG recording. A HoughCircles finder (find_disc) remains as a fallback when no ammo
+template is supplied.
 
 Output:
   <out>/shots.json      per-shot landed/core counts + radial positions
@@ -23,14 +25,15 @@ from pathlib import Path
 import cv2
 import numpy as np
 
-# Make the UNIGEO marker scripts importable.
-UNIGEO_DIR = Path(__file__).resolve().parent.parent.parent / "docs" / "probes" / "drawn-geometry"
+# Make the UNIGEO marker scripts importable (tracked in scripts/unigeo/).
+UNIGEO_DIR = Path(__file__).resolve().parent.parent / "unigeo"
 sys.path.insert(0, str(UNIGEO_DIR))
 import marker_detect2 as M  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
-# Disc-centre tracker (missing from the committed marker_detect2.py)
+# HoughCircles fallback disc finder (disc_centers_ammo's ammo-box template track is
+# the primary path; this is used only when no ammo template is supplied)
 # ---------------------------------------------------------------------------
 
 def _disc_score(gray, cx, cy, R):
@@ -131,6 +134,56 @@ def find_disc(img_bgr, prev=None, hr=0.0):
     return best
 
 
+def match_ammo_in_roi(frame_bgr, tmpl, roi_x0, roi_y0):
+    """cv2.matchTemplate restricted to a bottom-right ROI (replicates count-pellets.py).
+
+    Returns (conf, loc) where loc is the template top-left corner in full-frame coords.
+    """
+    h, w = frame_bgr.shape[:2]
+    x0 = int(w * roi_x0) if roi_x0 >= 0 else 0
+    y0 = int(h * roi_y0) if roi_y0 >= 0 else 0
+    roi = frame_bgr[y0:h, x0:w]
+    if roi.shape[0] < tmpl.shape[0] or roi.shape[1] < tmpl.shape[1]:
+        return 0.0, (0, 0)
+    res = cv2.matchTemplate(roi, tmpl, cv2.TM_CCOEFF_NORMED)
+    _, conf, _, loc = cv2.minMaxLoc(res)
+    return float(conf), (int(loc[0] + x0), int(loc[1] + y0))
+
+
+def disc_centers_ammo(files, tmpl, zoom, offx_native, offy_native, roi, hr, max_disp):
+    """Per-frame disc centre from the ammo-box template track — the PROVEN crosshair
+    locator from count-pellets.py / read-pellets.ts (template match + calibrated offset
+    + frame-to-frame displacement gate). The crosshair IS the aim-disc centre, so this
+    replaces the unreliable HoughCircles find_disc. The disc radius is the drawn-geometry
+    calibration (R0 = 85.7 px native at HR=0) scaled by zoom and hit-rate.
+
+    Returns {frame_index: (cx, cy, R, conf)}.
+    """
+    th, tw = tmpl.shape[:2]
+    offx, offy = offx_native * zoom, offy_native * zoom
+    R = 85.7 * zoom * max(0.0, 1.0 - hr / 100.0)
+    roi_x0, roi_y0 = roi
+    centres = {}
+    last = None  # last accepted ammo-box top-left loc (for the displacement gate)
+    for i, f in enumerate(files):
+        im = cv2.imread(str(f))
+        if im is None:
+            continue
+        conf, loc = match_ammo_in_roi(im, tmpl, roi_x0, roi_y0)
+        if conf < 0.3:
+            continue  # no usable lock; interp_centres fills the gap
+        # Positional-consistency gate: the ammo box moves smoothly, so a match that jumps
+        # more than max_disp (zoomed px) from the last accepted lock is a false lock
+        # (e.g. the HP bar) — decline it rather than guess.
+        if last is not None and max_disp > 0 and math.hypot(loc[0] - last[0], loc[1] - last[1]) > max_disp:
+            continue
+        last = loc
+        cx = loc[0] + tw // 2 + offx
+        cy = loc[1] + th // 2 + offy
+        centres[i] = (float(cx), float(cy), float(R), float(conf))
+    return centres
+
+
 # ---------------------------------------------------------------------------
 # Frame extraction + tracking + shot clustering
 # ---------------------------------------------------------------------------
@@ -190,8 +243,17 @@ def interp_centres(cmap, n):
     return out
 
 
-def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, debug_dir=None):
-    cmap = interp_centres(disc_centers(files, hr=hr), len(files))
+def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=20.0, debug_dir=None,
+        tmpl=None, zoom=2, offx=62.5, offy=-5.5, roi=(0.55, 0.50), max_disp=150.0,
+        min_seen=2, shot_gap=0.5):
+    if tmpl is not None:
+        raw = disc_centers_ammo(files, tmpl, zoom, offx, offy, roi, hr, max_disp)
+    else:
+        raw = disc_centers(files, hr=hr)
+    # Detect only on frames with a real template lock. Interpolating centres into
+    # unlocked frames and detecting there lets perimeter VFX spawn many spurious tracks
+    # that merge into giant shots (validated: locked-only matches the tuned harness).
+    cmap = raw
     tracks = []
     for i, f in enumerate(files):
         if i not in cmap:
@@ -211,7 +273,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
         for x, y, kind, s in ded:
             best = None
             for tr in tracks:
-                if i - tr["last_seen"] <= 12 and math.hypot(x - tr["x0"], y - tr["y0"]) < 5:
+                if i - tr["last_seen"] <= 12 and math.hypot(x - tr["x0"], y - tr["y0"]) < 5 * zoom:
                     if best is None or math.hypot(x - tr["x0"], y - tr["y0"]) < math.hypot(x - best["x0"], y - best["y0"]):
                         best = tr
             if best is not None:
@@ -223,7 +285,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
                     best["red_votes"] += 1
                 continue
             r_spawn = float(math.hypot(x - cx, y - cy))
-            if r_spawn <= R + spawn_margin:
+            if r_spawn <= R + spawn_margin * zoom:
                 tracks.append({
                     "x": x, "y": y, "x0": x, "y0": y,
                     "kind": kind, "spawn_frame": i,
@@ -240,7 +302,7 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
     for t in tracks:
         host = None
         for m in merged:
-            if t["spawn_frame"] - m["last_seen"] <= 25 and math.hypot(t["x0"] - m["x0"], t["y0"] - m["y0"]) < 6:
+            if t["spawn_frame"] - m["last_seen"] <= 25 and math.hypot(t["x0"] - m["x0"], t["y0"] - m["y0"]) < 6 * zoom:
                 host = m
                 break
         if host is not None:
@@ -250,14 +312,14 @@ def run(files, t0_video, fps=60.0, hr=0.0, zone_factor=1.6, spawn_margin=10.0, d
         else:
             merged.append(t)
 
-    merged = [t for t in merged if t["seen"] >= 3]
+    merged = [t for t in merged if t["seen"] >= min_seen]
     for t in merged:
         t["kind"] = "red" if t["red_votes"] >= max(1, t["seen"] // 3) else "white"
 
-    # cluster spawns into shots (gap > 0.35 s starts a new shot)
+    # cluster spawns into shots (gap > shot_gap s starts a new shot)
     shots = []
     for t in merged:
-        if shots and (t["spawn_frame"] - shots[-1]["frames"][0]) <= int(0.35 * fps):
+        if shots and (t["spawn_frame"] - shots[-1]["frames"][0]) <= int(shot_gap * fps):
             s = shots[-1]
         else:
             shots.append({"frames": [], "markers": []})
@@ -302,22 +364,51 @@ def main():
     parser.add_argument("--fps", type=int, default=60, help="frame extraction rate")
     parser.add_argument("--hr", type=float, default=0.0, help="known hit-rate percent (0 for solo HR=0)")
     parser.add_argument("--crop", default="crop=1303:396:672:268", help="ffmpeg crop filter")
+    parser.add_argument("--zoom", type=int, default=2,
+                        help="damage-area crop upscale (default 2; matches the 74px ammo-box template)")
+    parser.add_argument("--ammo-template", default=str(Path(__file__).resolve().parent / "ammo-box-template.png"),
+                        help="ammo-box template for crosshair localization (default: scripts/probe/ammo-box-template.png; "
+                             "pass empty string to fall back to the HoughCircles find_disc)")
+    parser.add_argument("--ammo-offset-x", type=float, default=62.5,
+                        help="crosshair X offset from ammo-box centre, native px (default 62.5)")
+    parser.add_argument("--ammo-offset-y", type=float, default=-5.5,
+                        help="crosshair Y offset from ammo-box centre, native px (default -5.5)")
+    parser.add_argument("--ammo-roi-x0", type=float, default=0.55,
+                        help="restrict ammo template matching to x >= roi-x0 * width (default 0.55)")
+    parser.add_argument("--ammo-roi-y0", type=float, default=0.50,
+                        help="restrict ammo template matching to y >= roi-y0 * height (default 0.50)")
+    parser.add_argument("--max-template-disp", type=float, default=150.0,
+                        help="max frame-to-frame ammo-box displacement (zoomed px) before rejecting a false lock")
+    parser.add_argument("--spawn-margin", type=float, default=20.0,
+                        help="max spawn distance beyond the disc radius, native px (scaled by zoom; default 20)")
+    parser.add_argument("--min-seen", type=int, default=2,
+                        help="min frames a marker must persist to count (default 2)")
+    parser.add_argument("--shot-gap", type=float, default=0.5,
+                        help="gap in seconds that starts a new shot (default 0.5)")
     parser.add_argument("--out", required=True, help="output directory")
     parser.add_argument("--debug", action="store_true", help="write debug frames")
     args = parser.parse_args()
+
+    tmpl = None
+    if args.ammo_template:
+        tmpl = cv2.imread(args.ammo_template)
+        if tmpl is None:
+            print(f"warning: could not load ammo template {args.ammo_template}; "
+                  f"falling back to HoughCircles find_disc", file=sys.stderr)
 
     out_dir = Path(args.out)
     frames_dir = out_dir / "frames"
     debug_dir = out_dir / "debug" if args.debug else None
 
-    print(f"extracting frames @ {args.fps}fps ...")
+    print(f"extracting frames @ {args.fps}fps (zoom {args.zoom}) ...")
     dur = args.dur if args.dur > 0 else None
     ffmpeg_dur = ["-t", str(args.dur)] if args.dur > 0 else []
+    vf = f"fps={args.fps},{args.crop}" + (f",scale=iw*{args.zoom}:ih*{args.zoom}" if args.zoom != 1 else "")
     frames_dir.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         ["ffmpeg", "-y", "-loglevel", "error", "-ss", str(args.at)]
         + ffmpeg_dur
-        + ["-i", args.video, "-vf", f"fps={args.fps},{args.crop}", str(frames_dir / "f_%05d.png")],
+        + ["-i", args.video, "-vf", vf, str(frames_dir / "f_%05d.png")],
         check=True,
     )
     files = sorted(frames_dir.glob("f_*.png"))
@@ -326,7 +417,10 @@ def main():
     print(f"  {len(files)} frames -> {frames_dir}")
 
     print("running marker counter ...")
-    shots, cmap = run(files, args.at, fps=args.fps, hr=args.hr, debug_dir=debug_dir)
+    shots, cmap = run(files, args.at, fps=args.fps, hr=args.hr, debug_dir=debug_dir,
+                      tmpl=tmpl, zoom=args.zoom, offx=args.ammo_offset_x, offy=args.ammo_offset_y,
+                      roi=(args.ammo_roi_x0, args.ammo_roi_y0), max_disp=args.max_template_disp,
+                      spawn_margin=args.spawn_margin, min_seen=args.min_seen, shot_gap=args.shot_gap)
 
     shots_path = out_dir / "shots.json"
     shots_path.write_text(json.dumps({
