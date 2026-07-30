@@ -55,6 +55,7 @@ import {
   buildBurstCdrTable,
   buildSustainTable,
   buildBufferTable,
+  unitName,
   type OlDefaultArtifact,
   DPS_TITLE_INK_REGION,
   TABLE_TITLE_INK_REGION,
@@ -138,7 +139,7 @@ interface DpsUnitMeta {
 interface DpsArtifact {
   generatedAt: string;
   units: Record<string, DpsUnitMeta>;
-  cells: Record<string, [string, number][]>;
+  cells: Record<string, [string, number, string | null][]>;
 }
 interface CharacterRow {
   slug: string;
@@ -252,7 +253,12 @@ function dpsJobs(art: DpsArtifact): Job[] {
           }
           return ele ? (u.elements ?? [u.element]).includes(ele) : u.chartPop;
         })
-        .map(([slug, dps]) => ({ slug, dps, meta: art.units[slug] }));
+        .map(([slug, dps, profile]) => ({
+          slug,
+          dps,
+          profile,
+          meta: art.units[slug],
+        }));
       if (population.length === 0) {
         continue; // an element with no B3s — skip, never publish an empty chart
       }
@@ -264,7 +270,7 @@ function dpsJobs(art: DpsArtifact): Job[] {
             title: cellLabel(cell) + (ele ? ` · ${ele} only` : ''),
             topDps: population[0].dps,
             bars: population.map((p) => ({
-              name: p.meta.name,
+              name: unitName(art.units, p.slug, p.profile),
               element: p.meta.element,
               dps: p.dps,
               slug: p.slug,
@@ -424,18 +430,15 @@ function unitJobs(
   skipped: string[]
 ): Job[] {
   // A B3/Λ card's whole left column is its two DPS charts, and those come from
-  // the DPS chart, which only ranks sim-supported units. An unsupported B3
-  // therefore renders two large "Not ranked on this board" plates and nothing
-  // else — so it gets NO CARD rather than a second-class fallback layout (owner,
-  // 2026-07-28; this is the answer to the "large empty plates" question in
-  // QUEUE.md). B1/B2 units are unaffected: they draw buffer/sustain/burst-CDR,
-  // which rank unsupported units too.
-  //
-  // Sim-supported B3s that are missing from the DPS chart still render empty —
-  // that is a DATA gap, tracked in QUEUE.md, not a reason to drop their card.
+  // the DPS chart, which ranks every sim-supported B3 (scripts/build-dpschart.ts —
+  // no enikk-proven/"meta" gate). An unsupported B3 therefore renders two large
+  // "Not ranked on this board" plates and nothing else — so it gets NO CARD
+  // rather than a second-class fallback layout (owner, 2026-07-28; this is the
+  // answer to the "large empty plates" question in QUEUE.md). B1/B2 units are
+  // unaffected: they draw buffer/sustain/burst-CDR, which rank unsupported
+  // units too.
   const eligible = chars.filter(
-    (c) =>
-      !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
+    (c) => !(c.burst === 'III' || c.burst === 'Λ') || c.simSupported !== false
   );
   for (const c of chars) {
     if (!eligible.includes(c)) {

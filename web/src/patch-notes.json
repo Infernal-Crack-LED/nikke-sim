@@ -1,5 +1,13 @@
 [
   {
+    "date": "2026-07-29",
+    "title": "DPS Chart: 8 more units now fully ranked",
+    "notes": [
+      "The DPS Chart now ranks every Burst III unit the sim supports, instead of only units popular enough to show up in a third-party usage sample. Red Hood, Sugar, 2B, A2, Phantom, Rei Ayanami, Rei Ayanami (Tentative Name), and Laplace: Ultimate Hero were fully modeled but showed empty \"Not ranked on this board\" charts on their unit cards — they now show real ranked bars like everyone else.",
+      "Red Hood (whose burst works differently from a normal Burst III unit) is now ranked as a Burst III carry, matching how she's actually used on a real team."
+    ]
+  },
+  {
     "date": "2026-07-28",
     "title": "New: unit cards — one shareable image per NIKKE",
     "notes": [

@@ -14,8 +14,12 @@
 // arrive WITH the request, as a snapshot the browser computed and a shared
 // config stored (src/share/shared-config.ts). So there are two cards, chosen by
 // whether the caller supplied results — never by a server-side sim:
-//   results absent  → the composition card (drawTeamCompositionCard / a roster
-//                     card with zeroed bars), exactly as before.
+//   results absent  → the composition card (drawTeamCompositionCard /
+//                     drawRosterCompositionCard): picks + boss/level/core only,
+//                     never a zeroed damage/DPS/total line (owner ruling
+//                     2026-07-28, extended to rosters 2026-07-29 — a zeroed
+//                     roster card previously read as "your teams do no
+//                     damage" instead of "no sim data").
 //   results present → the full card (drawTeamCard: total, DPS, full bursts,
 //                     per-unit bars / drawRosterCard with real team bars), the
 //                     SAME renderers the web's own results share card uses.
@@ -29,7 +33,9 @@ import {
   drawTeamCard,
   drawTeamCompositionCard,
   rosterCardHeight,
+  rosterCompositionCardHeight,
   drawRosterCard,
+  drawRosterCompositionCard,
   loadPortrait,
   type Canvas2DLike,
   type TeamCardMeta,
@@ -117,7 +123,12 @@ export function cardBuildError(
       return 'invalid roster team';
     }
   }
-  return checkPixels(CARD_W * SCALE, rosterCardHeight(roster.length) * SCALE);
+  return checkPixels(
+    CARD_W * SCALE,
+    (hasResults
+      ? rosterCardHeight(roster.length)
+      : rosterCompositionCardHeight(roster.length)) * SCALE
+  );
 }
 
 const FALLBACK_CHAR = (slug: string | null): CardCharacter => ({
@@ -270,6 +281,7 @@ export async function renderRosterCardPng(
 ): Promise<Buffer> {
   const roster = build.roster ?? [];
   const union = build.rosterMode === 'union';
+  const hasResults = !!results?.teams?.length;
   const teams: RosterCardTeam[] = await Promise.all(
     roster.map(async (teamSlugs, i) => ({
       teamDamage: results?.teams[i]?.damage ?? 0,
@@ -299,7 +311,10 @@ export async function renderRosterCardPng(
     }))
   );
   const w = CARD_W * SCALE;
-  const h = rosterCardHeight(teams.length) * SCALE;
+  const h =
+    (hasResults
+      ? rosterCardHeight(teams.length)
+      : rosterCompositionCardHeight(teams.length)) * SCALE;
   // Hard backstop — see renderTeamCardPng.
   if (w * h > MAX_CANVAS_PIXELS) {
     throw new Error(`roster card ${w}×${h} exceeds the pixel budget`);
@@ -309,17 +324,31 @@ export async function renderRosterCardPng(
   ctx.scale(SCALE, SCALE);
   ctx.imageSmoothingEnabled = true;
   ctx.imageSmoothingQuality = 'high';
-  drawRosterCard(
-    ctx as unknown as Canvas2DLike,
-    {
-      // The stored grand total is not trusted over the rows it is a total of —
-      // the rendered bars and the headline number must agree, and only the
-      // rows above reached the card.
-      totalDamage: teams.reduce((sum, t) => sum + t.teamDamage, 0),
-      teams,
-      title: union ? 'NIKKE Solo Raid Sim · Union Raid' : undefined,
-    },
-    metaFor(build, icon, 'nikkesim.app/roster', results)
-  );
+  const title = union ? 'NIKKE Solo Raid Sim · Union Raid' : undefined;
+  const meta = metaFor(build, icon, 'nikkesim.app/roster', results);
+  if (hasResults) {
+    // A shared config HAS a sim behind it — real per-team bars.
+    drawRosterCard(
+      ctx as unknown as Canvas2DLike,
+      {
+        // The stored grand total is not trusted over the rows it is a total
+        // of — the rendered bars and the headline number must agree, and
+        // only the rows above reached the card.
+        totalDamage: teams.reduce((sum, t) => sum + t.teamDamage, 0),
+        teams,
+        title,
+      },
+      meta
+    );
+  } else {
+    // The COMPOSITION layout: no sim behind this build code, so the card
+    // shows the teams as PICKED — never a zeroed damage bar or a "0 total
+    // damage" headline (owner ruling 2026-07-28, extended to rosters).
+    drawRosterCompositionCard(
+      ctx as unknown as Canvas2DLike,
+      { teams, title },
+      meta
+    );
+  }
   return canvas.toBuffer('image/png');
 }

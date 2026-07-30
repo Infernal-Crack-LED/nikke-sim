@@ -4,6 +4,7 @@
 // artifact carries only the per-cell rankings + unit metadata, fetched at runtime so it
 // stays out of the initial bundle and the TS graph.
 import { cellId, type Cell } from '../../src/dpschart/matrix';
+import { unitName } from '../../src/infographics/core/rankTables';
 
 export interface DpsUnitMeta {
   name: string;
@@ -19,7 +20,8 @@ export interface DpsUnitMeta {
 export interface DpsArtifact {
   generatedAt: string;
   units: Record<string, DpsUnitMeta>;
-  cells: Record<string, [string, number][]>; // cellId → [slug, dps] ranked desc
+  profiles: Record<string, string>; // profile id → player-facing note
+  cells: Record<string, [string, number, string | null][]>; // cellId → [slug, dps, profile] ranked desc
 }
 
 let cache: Promise<DpsArtifact> | null = null;
@@ -37,7 +39,11 @@ export function loadDpsChart(): Promise<DpsArtifact> {
 
 export interface BarEntry {
   slug: string;
-  name: string;
+  name: string; // bare unit name — for lookups/matching, NOT for drawing
+  // The name as it should be DRAWN: bare for a plain row, "Name (tag)" for a
+  // profiled one (rankTables.ts unitName — reused so a bar chart can't drift
+  // from the tag text the table cards and unit-card tiles already show).
+  displayName: string;
   element: string;
   elements: string[];
   weapon: string;
@@ -45,16 +51,21 @@ export interface BarEntry {
   dps: number;
   rank: number; // 1-based over the full population
   imageUrl?: string | null; // portrait; absent for synthetic (DPS-test) rows
+  // Variant-profile id (null = plain default row). A profiled unit (e.g.
+  // Cinderella: Crystal Wave's Snipe mode) appears TWICE in the population —
+  // same convention as the buffer/sustain/burstgen boards.
+  profile: string | null;
 }
 
 // full ranked population for a cell (already sorted desc in the artifact)
 export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
   const rows = art.cells[cellId(cell)] ?? [];
-  return rows.map(([slug, dps], i) => {
+  return rows.map(([slug, dps, profile], i) => {
     const m = art.units[slug];
     return {
       slug,
       name: m?.name ?? slug,
+      displayName: unitName(art.units, slug, profile ?? null),
       element: m?.element ?? '',
       elements: m?.elements ?? (m?.element ? [m.element] : []),
       weapon: m?.weapon ?? '',
@@ -62,6 +73,7 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
       dps,
       rank: i + 1,
       imageUrl: m?.imageUrl ?? null,
+      profile: profile ?? null,
     };
   });
 }
@@ -85,6 +97,9 @@ export function chartBars(
 // a single unit's standing in a cell (for the compare selector); null if absent.
 // With an element filter, rank/total are within that element's population (and a
 // unit of another element is absent — it has no place on a filtered chart).
+// A profiled unit has two rows; the compare picker always targets the PLAIN
+// (profile: null) one — picking a specific variant to compare isn't wired yet,
+// out of scope for the initial profile-pairs landing.
 export function compareIn(
   art: DpsArtifact,
   cell: Cell,
@@ -97,7 +112,7 @@ export function compareIn(
       .filter((x) => x.elements.includes(element))
       .map((x, i) => ({ ...x, rank: i + 1 }));
   }
-  const e = ranked.find((x) => x.slug === slug);
+  const e = ranked.find((x) => x.slug === slug && !x.profile);
   return e ? { ...e, total: ranked.length } : null;
 }
 

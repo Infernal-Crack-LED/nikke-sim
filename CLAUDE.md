@@ -55,6 +55,20 @@ overrides/**` edit while other sessions may be active — do the work in a dedic
    verified changes — never make the engine edit directly there mid-session, since a concurrent writer or a
    later tree-reset will collide with it (root cause of the 2026-07-21 clobber). This isolates the whole
    edit→verify→A/B loop from concurrent work instead of racing on one tree.
+9. **NEW TOOLING IS ALWAYS COMMITTED — never left as a `/tmp` one-off (2026-07-29 owner ruling).** Any
+   script, reader, instrument, probe driver, or fixture built during a session gets committed as part of
+   the work it supported. **An instrument cited as evidence MUST be in the tree at a named path, and the
+   citation must name that path** — a `DECISIONS.md` entry, engine comment, or override `note` that cites
+   a tool nobody can re-run is not reproducible evidence. Root cause: the 2026-07-29 per-unit focus
+   charge-gauge landing cited a "validated instrument (reproduces the `maiden-ice-rose` anchor's
+   +9.1%/+3.45% sub-step pattern to <0.15% error)" in `src/engine/sim.ts` and DECISIONS, but its commit (`a525247`)
+   touched **no script** — the instrument was an ad-hoc `/tmp` driver that no longer exists, leaving only
+   its raw output (`/tmp/alice-solo-scratch/scan/bar-solo-series.txt`) behind a reboot away from
+   destruction, and forcing a later session to re-derive it. Prefer **extending an existing committed
+   script with a flag** over a new standalone one (that dump belonged on `scripts/probe/scan.ts`), and
+   pair the tool with a committed fixture pinning a known-good result so it self-validates later. Genuinely
+   throwaway scratch (a one-line engine probe answering an in-session question) may stay in `/tmp`; the
+   rule binds anything **whose output could later be cited as a measurement**.
 
 ## Verified facts (do not re-derive)
 

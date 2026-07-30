@@ -515,6 +515,7 @@ interface UnitState {
   boltRecoveryFrames: number; // remaining post-shot bolt-cycle frames (SR)
   noBoltRecovery: boolean;
   pullsPerSec?: number;
+  focusChargeMult?: number; // charFixes override: replaces the per-unit fullChargeBonus/100 focus multiplier
   // Whole-magazine dump (cinderella: opt-in charFixes.magDumpRof). One charge PRIMES the mag, then
   // the whole magazine autofires at the datamined rate_of_fire WITHOUT recharging; the reload-to-max
   // clears `primed` so the next mag re-charges once. Inert unless the flag is set (regression-proven).
@@ -830,6 +831,7 @@ export function runSim(
           : 0,
       noBoltRecovery: prepared?.[idx]?.noBoltRecovery ?? false,
       pullsPerSec: prepared?.[idx]?.pullsPerSec,
+      focusChargeMult: prepared?.[idx]?.focusChargeMult,
       magDumpRof: prepared?.[idx]?.magDumpRof ?? false,
       magDumpRofFrames: (() => {
         const rof = (
@@ -990,8 +992,9 @@ export function runSim(
   // CharacterShotTable, 15 weapon-class modal fallbacks, anis-star battery estimate ⚑).
   // The synergy-API burstGaugePerShot column was DROPPED as a gauge source — its
   // semantics vary per unit (sometimes base, sometimes target, sometimes target x2).
-  // full_charge_burst_energy column stored but unused ⚑ (both solo fits are exact
-  // without it). Gauge = 10,000 energy (we track percent); locked during FB.
+  // full_charge_burst_energy column = fullChargeBonus, PER-UNIT focus multiplier
+  // (2026-07-29: retired the flat x2.5 read — see FOCUS_CHARGE_GEN below).
+  // Gauge = 10,000 energy (we track percent); locked during FB.
   // Auto-aim core rate is RANGE-DEPENDENT per (weapon, band) (2026-07-15 ⚑ refit; overturns the
   // flat per-weapon ⚑ with same-tier footage — AR/SMG/SG solo scope-lock recordings, core popups
   // binned by the boss-range band). Findings (docs/probe-data/coreband2-*.json, Wilson 95% CIs):
@@ -1248,12 +1251,21 @@ export function runSim(
   // once the decoded cadences are in). Kept as a switch for part-ed boss support later.
   const PIERCE_CORE_DOUBLE = false;
   // charge weapons on the CAMERA-FOCUSED unit generate x(1 + 1.5xcharge) = x2.5 at
-  // full charge (einkk positionBurstBonus, datamined). Both solo gauge recordings
-  // fit this exactly (a solo unit is always focused: maiden 364x2.5=910, takina
-  // 560x2.5=1400); the TB2T2 3-unit rotation (40s real) requires trina (unfocused,
-  // cinderella held camera) to generate FLAT 720 — the bonus is focus-gated, not
-  // weapon-class-wide. Default focus = formation slot 3 (index min(2, n-1));
-  // recorded runs pass cfg.focusSlug for the user-selected camera unit.
+  // full charge (einkk positionBurstBonus, datamined) FOR THE 250-FAMILY (chargeMultiplier
+  // 250 = the modal case). Both original solo gauge recordings fit this exactly (a solo
+  // unit is always focused: maiden 364x2.5=910, takina 560x2.5=1400, both fullChargeBonus
+  // 250); the TB2T2 3-unit rotation (40s real) requires trina (unfocused, cinderella held
+  // camera) to generate FLAT 720 — the bonus is focus-gated, not weapon-class-wide.
+  // PER-UNIT (2026-07-29): fullChargeBonus is NOT flat across the roster — it equals each
+  // unit's chargeMultiplier, and the multiplier is fullChargeBonus/100. Fresh solo-footage
+  // measurements this session (validated instrument: reproduces the ORIGINAL maiden anchor's
+  // hand-pixel-read +9.1%/+3.45% sub-step pattern to <0.15% error) confirm two outliers:
+  // alice observed ~3.68x vs predicted 3.5x (fullChargeBonus 350); scarlet-black-shadow
+  // observed ~1.42x vs predicted 1.5x (fullChargeBonus 150) — both within ~5% of their
+  // per-unit datamined value and clearly off the flat 2.5x (which would read 14.0%/shot for
+  // alice, observed 20.6%; 6.25%/shot for SBS, observed 3.55%). DECISIONS 2026-07-29.
+  // FOCUS_CHARGE_GEN remains the fallback for units with no datamined row (250 default,
+  // byte-identical to pre-2026-07-29 behavior) and the explicit pin for cinderella (below).
   const FOCUS_CHARGE_GEN = 2.5;
   // UNFOCUSED_CHARGE_GEN — MEASURED 1.0 (test battery 3 A1/A2 pair, 2026-07-13):
   // takina UNfocused in a 2-unit fight steps the gauge +5.6-6.5%/shot (her flat 560
@@ -1263,6 +1275,13 @@ export function runSim(
   // compensating for per-unit skill-generation quirks and the (then-wrong) anis-star
   // shot row, both now modeled from measurements.
   const UNFOCUSED_CHARGE_GEN = 1.0;
+  // Units pinned to FOCUS_CHARGE_GEN instead of their per-unit fullChargeBonus.
+  // vesti-tactical-upgrade (RL/Fire; fullChargeBonus 200, currently unmeasured, not
+  // sim-supported — no override exists yet) is included pre-emptively: the only measurement
+  // ever taken at the 200 column (cinderella (RL/Electric, "cindy")'s ~2.2-3.1x reads)
+  // contradicts 2.0x, so a future override for vesti-tactical-upgrade must not silently
+  // inherit an unmeasured value the moment it lands (implementation review, 2026-07-29).
+  const PENDING_TEAM_ISOLATION = new Set(['vesti-tactical-upgrade']);
   const focusIdx =
     cfg.focusSlug !== undefined
       ? Math.max(
@@ -1290,7 +1309,11 @@ export function runSim(
     const entry = (
       gaugeTable as Record<
         string,
-        { targetPerTrigger?: number; flatPerTrigger?: number }
+        {
+          targetPerTrigger?: number;
+          flatPerTrigger?: number;
+          fullChargeBonus?: number;
+        }
       >
     )[u.char.slug];
     const per =
@@ -1302,10 +1325,27 @@ export function runSim(
     if (!isCharge) {
       return per + flat;
     }
-    return (
-      per * (u.idx === focusIdx ? FOCUS_CHARGE_GEN : UNFOCUSED_CHARGE_GEN) +
-      flat
-    );
+    // Per-unit focus multiplier = fullChargeBonus/100 (2026-07-29, see comment above);
+    // ?? 250 is the fallback for units with no datamined row (e.g. laplace-ultimate-hero) —
+    // byte-identical to the old flat-2.5x default, never lets a missing row zero the gauge.
+    // u.focusChargeMult (charFixes.focusChargeMult) is an explicit per-unit multiplier that
+    // takes priority over both the table lookup and the magDumpRof/PENDING_TEAM_ISOLATION pin
+    // — needed for cinderella (RL/Electric, "cindy"; magDumpRof: her whole-magazine dump-fire
+    // kit doesn't perform the discrete hold-charge/release cycle the einkk chargePercent term
+    // presumes) so her table value (fullChargeBonus 200 -> 2.0x) applies instead of the
+    // magDumpRof pin's FOCUS_CHARGE_GEN fallback.
+    // fcb > 0 (not ?? alone): a handful of gauge rows carry fullChargeBonus:0 as their
+    // non-charge marker, and one live data disagreement (raven: gauge row 250 vs
+    // characters.json chargeMultiplier 0) means a present-but-zero value is reachable —
+    // treat it the same as missing rather than actually zeroing a focused unit's gauge
+    // (implementation review, 2026-07-29).
+    const fcb = entry?.fullChargeBonus;
+    const focusMult =
+      u.focusChargeMult ??
+      (u.magDumpRof || PENDING_TEAM_ISOLATION.has(u.char.slug)
+        ? FOCUS_CHARGE_GEN
+        : (fcb && fcb > 0 ? fcb : 250) / 100);
+    return per * (u.idx === focusIdx ? focusMult : UNFOCUSED_CHARGE_GEN) + flat;
   };
   const addGauge = (u: UnitState, frame: number, energyPct: number) => {
     // Generation is LOCKED during Full Burst (user-confirmed 2026-07-13, correcting an

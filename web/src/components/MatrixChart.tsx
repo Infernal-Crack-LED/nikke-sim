@@ -35,7 +35,7 @@ function toChartData(
     title,
     topDps: population[0]?.dps ?? 0,
     bars: population.map((b) => ({
-      name: b.name,
+      name: b.displayName,
       element: b.element,
       dps: b.dps,
       slug: b.slug,

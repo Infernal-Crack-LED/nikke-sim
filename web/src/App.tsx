@@ -80,10 +80,7 @@ import {
 } from '../../src/infographics/core/tableData';
 import type { TableCardData } from '../../src/infographics/core/tableCard';
 import { TabDropdown, useMediaQuery } from './TabDropdown';
-import {
-  CopyFlashButton,
-  type CopyResult,
-} from './components/CopyFlashButton';
+import { CopyFlashButton, type CopyResult } from './components/CopyFlashButton';
 import { usePortraitThumbs } from './usePortraitThumbs';
 import {
   shareTeamCard,
@@ -2428,6 +2425,22 @@ export function App({ user }: { user: AuthUser | null }) {
     return () => {
       live = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // `?b=` can carry a roster grid too (Build.roster), but bootBuild() only
+  // ever seeded the shared loadout/globals into `slots`/`weakness`/`bossDef`/
+  // … — the roster grid itself was, until now, only ever restored via `?id=`
+  // (applySavedBuild above). Re-applying the (identical) globals here is a
+  // harmless no-op render; the roster branch is what actually fixes the deep
+  // link. Runs once on mount, no network needed (the build is already local).
+  const bootedRoster = useRef(false);
+  useEffect(() => {
+    if (!boot?.roster || bootedRoster.current) {
+      return;
+    }
+    bootedRoster.current = true;
+    applySavedBuild(boot, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -5386,15 +5399,18 @@ export function App({ user }: { user: AuthUser | null }) {
                       const element =
                         data.characters[res.varUnits[0]?.slug ?? '']?.element ??
                         '';
+                      const name = res.varUnits.map((u) => u.name).join(' + ');
                       return {
                         slug: String(i),
-                        name: res.varUnits.map((u) => u.name).join(' + '),
+                        name,
+                        displayName: name,
                         element,
                         elements: element ? [element] : [],
                         weapon: '',
                         tier: '',
                         dps: res.varDamage,
                         rank: i + 1,
+                        profile: null,
                       };
                     })}
                     onShareImage={() =>

@@ -5,6 +5,7 @@
 // loads an <img> (web/src/unitCardShare.ts). Keeping the mapping here rather
 // than in the Node module is what stops the two hosts picking different files —
 // the failure mode is silent and only visible by comparing two rendered cards.
+import { BOSS_TABLES, iconBasename } from './resourcesData.js';
 export const ICON_BY_ELEMENT: Record<string, string> = {
   Fire: 'code_fire',
   Water: 'code_water',
@@ -36,7 +37,7 @@ export const ICON_BY_BURST: Record<string, string> = {
   I: 'burst_1',
   II: 'burst_2',
   III: 'burst_3',
-  'Λ': 'burst_lambda',
+  Λ: 'burst_lambda',
 };
 
 const WEAPONS = ['ar', 'mg', 'rl', 'sg', 'smg', 'sr'];
@@ -70,6 +71,19 @@ export const iconNameForBurst = (burst: string): string | null =>
 export const isOverspec = (mfr: string | null): boolean =>
   !!mfr && / Overspec$/.test(mfr);
 
+// Resources card (core/resourcesData.ts + core/resourcesCard.ts) fixed icon
+// names — not resolved from a data field like the ones above, so a plain list
+// rather than a Record. The per-boss fragment icons are derived from
+// BOSS_TABLES itself so this list can't drift from what the card actually
+// requests.
+export const RESOURCE_ICON_NAMES: string[] = [
+  'res_module',
+  'res_t9_gear',
+  'res_lock',
+  'res_xp_fodder',
+  ...BOSS_TABLES.map((t) => iconBasename(t.fragmentIcon)),
+];
+
 // Every logical icon a card can ask for — the population the build-time gate
 // asserts is live.
 export const ALL_ICON_NAMES: string[] = [
@@ -78,4 +92,5 @@ export const ALL_ICON_NAMES: string[] = [
   ...Object.values(ICON_BY_CLASS),
   ...MANUFACTURERS.map((m) => `man_${m}`),
   ...WEAPONS.map((w) => `weapon_${w}`),
+  ...RESOURCE_ICON_NAMES,
 ];

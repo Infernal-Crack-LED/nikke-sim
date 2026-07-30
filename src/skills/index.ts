@@ -51,6 +51,7 @@ export interface OverrideFile {
     noBoltRecovery?: boolean;
     pullsPerSec?: number;
     magDumpRof?: boolean;
+    focusChargeMult?: number; // owner-override camera-focus charge-gauge multiplier
   };
   // Pellet-consolidation mode (dorothy-S: "after landing N pellets, for K rounds → pellet count fixed at 1
   // + high core + Pierce + attack-dmg"). Range-gated to near (where the boss affords the trigger). MEASURED

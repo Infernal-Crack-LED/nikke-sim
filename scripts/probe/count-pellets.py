@@ -33,6 +33,23 @@ def load_rgb(path: str) -> np.ndarray:
     from PIL import Image
     return np.array(Image.open(path).convert('RGB'))
 
+def match_ammo_in_roi(frame_bgr, ammo_tmpl, roi_x0: float, roi_y0: float):
+    """Run cv2.matchTemplate restricted to a bottom-right ROI.
+
+    Returns (conf, loc) where loc is the top-left corner in FULL-frame coords.
+    If ROI args are disabled (<0), searches the full frame.
+    """
+    import cv2 as _cv2
+    h, w = frame_bgr.shape[:2]
+    x0 = int(w * roi_x0) if roi_x0 >= 0 else 0
+    y0 = int(h * roi_y0) if roi_y0 >= 0 else 0
+    roi = frame_bgr[y0:h, x0:w]
+    if roi.shape[0] < ammo_tmpl.shape[0] or roi.shape[1] < ammo_tmpl.shape[1]:
+        return 0.0, (0, 0)
+    res = _cv2.matchTemplate(roi, ammo_tmpl, _cv2.TM_CCOEFF_NORMED)
+    _, conf, _, loc = _cv2.minMaxLoc(res)
+    return float(conf), (int(loc[0] + x0), int(loc[1] + y0))
+
 def circularity(area: float, perimeter: float) -> float:
     if perimeter == 0:
         return 0.0
@@ -422,8 +439,7 @@ def read_ammo_frame(img_rgb, ammo_tmpl, args, last_acc):
     """Locate the box (proven template track + jump gate) and read its digits."""
     import cv2
     frame_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
-    res = cv2.matchTemplate(frame_bgr, ammo_tmpl, cv2.TM_CCOEFF_NORMED)
-    _, conf, _, loc = cv2.minMaxLoc(res)
+    conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)
     accepted = None
     # The jump gate assumes CONSECUTIVE frames (the box slides smoothly). Pass
     # --max-template-disp 0 to disable it for scattered/sampled frames, where a large jump
@@ -505,6 +521,7 @@ def main():
     parser.add_argument('--min-area', type=int, default=100, help='min component area (px²)')
     parser.add_argument('--max-area', type=int, default=3000, help='max component area (px²)')
     parser.add_argument('--min-circ', type=float, default=0.55, help='min circularity (0..1)')
+    parser.add_argument('--zoom', type=int, default=1, help='upscale factor applied during extraction (for offset/area defaults)')
     parser.add_argument('--red-r-min', type=int, default=200, help='red pellet R-channel floor (default 200)')
     parser.add_argument('--red-gb-max', type=int, default=60, help='red pellet G/B-channel ceiling (default 60; real red pellets anti-alias up to ~90)')
     parser.add_argument('--pellet-unit-area', type=int, default=320, help='approx area (px²) of one pellet at this zoom — basis for peanut multiplicity (default 320 at 2x)')
@@ -515,8 +532,10 @@ def main():
                         help='run one backend only (default: all for A/B)')
     parser.add_argument('--crosshair-file', help='JSON file mapping frame filename to {x,y} normalized 0-1000 crosshair coords')
     parser.add_argument('--ammo-template', help='path to ammo box template image — enables per-frame crosshair tracking via template matching')
-    parser.add_argument('--ammo-offset-x', type=float, default=125, help='crosshair X offset from ammo box center in zoomed px (default 125 = 62.5 native at 2x)')
-    parser.add_argument('--ammo-offset-y', type=float, default=-11, help='crosshair Y offset from ammo box center in zoomed px (default -11 = -5.5 native at 2x)')
+    parser.add_argument('--ammo-offset-x', type=float, default=None, help='crosshair X offset from ammo box center in zoomed px (default = 12.5 native * --zoom)')
+    parser.add_argument('--ammo-offset-y', type=float, default=None, help='crosshair Y offset from ammo box center in zoomed px (default = -100 native * --zoom)')
+    parser.add_argument('--ammo-roi-x0', type=float, default=-1, help='if >=0, restrict ammo-box template matching to x >= roi-x0 * frame_width')
+    parser.add_argument('--ammo-roi-y0', type=float, default=-1, help='if >=0, restrict ammo-box template matching to y >= roi-y0 * frame_height')
     parser.add_argument('--pellet-radius', type=int, default=80, help='radius of pellet crop in ZOOMED px (default 80)')
     parser.add_argument('--marker-radius', type=int, default=65, help='red components closer than this to the crosshair (zoomed px) are core-hit hit-markers, not pellets (default 65)')
     parser.add_argument('--max-template-disp', type=float, default=150, help='max frame-to-frame ammo-box displacement (zoomed px) before a template match is rejected as a false lock (default 150)')
@@ -529,6 +548,13 @@ def main():
     parser.add_argument('--labels', help='(--build-atlas) comma-separated counter values, one per input frame, in filename order')
     parser.add_argument('--digit-score-min', type=float, default=0.60, help='min glyph match score; a frame below it ABSTAINS rather than guessing (default 0.60)')
     args = parser.parse_args()
+
+    # Default crosshair offset scales with zoom so direct callers get the same
+    # native geometry as the orchestrator (12.5 px right, 100 px above ammo box centre).
+    if args.ammo_offset_x is None:
+        args.ammo_offset_x = 12.5 * args.zoom
+    if args.ammo_offset_y is None:
+        args.ammo_offset_y = -100 * args.zoom
 
     # Apply tunable red threshold to the module-level constants used by all backends
     global RED_LO, RED_HI
@@ -569,8 +595,7 @@ def main():
         if ammo_tmpl is not None:
             import cv2 as _cv2
             frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
-            res = _cv2.matchTemplate(frame_bgr, ammo_tmpl, _cv2.TM_CCOEFF_NORMED)
-            _, conf, _, loc = _cv2.minMaxLoc(res)
+            conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)
             if conf > 0.3:
                 th, tw = ammo_tmpl.shape[:2]
                 crop_center = (int(loc[0] + tw//2 + args.ammo_offset_x),
@@ -657,8 +682,7 @@ def main():
             if ammo_tmpl is not None:
                 import cv2 as _cv2
                 frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
-                res = _cv2.matchTemplate(frame_bgr, ammo_tmpl, _cv2.TM_CCOEFF_NORMED)
-                _, conf, _, loc = _cv2.minMaxLoc(res)
+                conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)
                 conf_val = float(conf)
                 raw_loc = (int(loc[0]), int(loc[1]))
                 cand = raw_loc
@@ -738,7 +762,7 @@ def main():
                         white += 1
             entry = {"file": fname}
             for name in backends:
-                entry[name] = {"white": white, "red": red, "marker": marker}
+                entry[name] = {"white": white, "red": red, "marker": marker} if name in active else {"white": 0, "red": 0, "marker": 0}
             results.append(entry)
 
         # Optional diagnostic dump: every track with full stats + per-frame crosshair data

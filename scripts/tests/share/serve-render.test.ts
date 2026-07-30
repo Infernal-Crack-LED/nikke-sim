@@ -304,6 +304,19 @@ describe('POST /api/v1/img/render — happy paths + GET parity', () => {
       'table'
     );
   });
+
+  it('resources specs render and match GET resources.png (default + explicit tier)', async () => {
+    await expectRendered(
+      { kind: 'resources' },
+      '/api/v1/img/resources.png',
+      'resources'
+    );
+    await expectRendered(
+      { kind: 'resources', tier: 3 },
+      '/api/v1/img/resources.png?tier=3',
+      'resources'
+    );
+  });
 });
 
 describe('POST /api/v1/img/render — request validation', () => {
@@ -356,6 +369,8 @@ describe('POST /api/v1/img/render — request validation', () => {
         { kind: 'table', table: 'charge-speed', unit: 'liter' },
         'not a charge weapon',
       ],
+      [{ kind: 'resources', tier: 0 }, 'tier must be an integer 1-9'],
+      [{ kind: 'resources', tier: 10 }, 'tier must be an integer 1-9'],
     ];
     for (const [spec, error] of cases) {
       const res = await postRender(JSON.stringify(spec));

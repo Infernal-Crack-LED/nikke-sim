@@ -230,3 +230,130 @@ confidences, why the decision landed where it did, owner action items, and the H
   coherence check the driver hadn't (CW5 bare-weapon scaling 0.87247 = idoll-ocean board move 0.8722,
   and correctly ABOVE 20/24=0.833 because reload time is cadence-independent) — the strongest
   single piece of not-a-fit evidence came from the judge, not the implementer.
+- **2026-07-29 — UNIGEO SG landing under-prediction on scope-lock spider-mech (U35 follow-up): DECISION = REJECT.**
+  Claim: the live UNIGEO SG landing model (`unigeoSgLanding` at HR=0) under-predicts real per-band landed
+  pellets on the scope-lock spider-mech boss, using direct per-shot counts from the CV pellet counter.
+  Plan: `docs/handoffs/2026-07-29-sg-landing-recalibration-plan.md` (UNIGEO-targeted, pre-op judge
+  APPROVED-WITH-REVISIONS, revisions executed in analysis). Work: counter run on four HR=0 solo SG
+  recordings (`marciana-solo`, `noir sg`, `guilty solo sg`, `isabel solo sg`) with locked parameters
+  `--fps 30 --zoom 2 --marker-min 2 --core-rate 0.05`.
+  **Driver review (primary judge): REJECT, confidence HIGH.** The CV counter failed second-unit validation
+  against the running-counter/lattice anchor. On `noir sg.MP4` (cleanest SG anchor), the counter read
+  near1 ≈7.04/10 vs running-counter anchor 8.9/10, far ≈6.98/10 vs anchor 7.4/10, midfar ≈7.36/10 vs
+  anchor 8.8/10. Shape ratios were also wrong: counter far/near ≈0.99 and midfar/near ≈1.05 vs anchor
+  ratios 0.831 and 0.989. The counter therefore has a **systematic cold bias plus a band-dependent flattening**
+  that makes it unreliable for landing measurement. `guilty solo sg` and `isabel solo sg` produced only
+  3 and 4 detected shots respectively (vs ~200 expected), indicating the marciana-derived ammo-box
+  template does not generalize to those HUDs. `marciana-solo` reproduced the run18 mean (~7.3/10),
+  confirming the counter is stable on its tuning video but not transferable as-is.
+  **Fable post-op:** not consulted — driver rejected before the post-op panel (a driver reject is
+  permitted when the instrument is demonstrably biased; no code change is proposed).
+  **2-of-2:** N/A (driver REJECT).
+  **WHY REJECT:** The counter is the instrument under test, not UNIGEO. Before it can score U35, it must
+  agree with an independent running-counter/lattice method on at least one second unit. It does not.
+  The observed discrepancy on noir (~1.5–1.9 pellets/shot, shape ratios off by >0.10) exceeds the plan's
+  ±1 pellet/shot validation gate. Continuing to a UNIGEO recalibration would be fitting the model to a
+  biased instrument.
+  **Owner action items:** (1) Fix the pellet counter's crosshair/template matching so it generalizes
+  across SG units/HUDs (per-video ammo-box template extraction or a more robust crosshair tracker);
+  (2) Investigate and remove the band-dependent flattening (near-band under-count relative to far/midfar)
+  before using it for per-band landing; (3) Re-attempt U35 validation once the counter passes noir + one
+  other clean anchor within ±1 pellet/shot and shape ratios within ±0.10.
+  **HARNESS LESSON:** A counter that is "now-working" on its tuning video is not validated for the class.
+  The second-unit validation gate is load-bearing — it caught both a template-mismatch failure (guilty/
+  isabel) and a subtler band-dependent bias (noir) that would have polluted a landing recalibration.
+- **2026-07-29 (counter-fix follow-up) — SG pellet counter instrument fix: DECISION = still REJECT / LOG.**
+  Implemented the owner action items from the earlier 2026-07-29 REJECT entry:
+  `scripts/probe/extract-ammo-template.py` extracts a per-video ammo-box template from each input
+  video; `count-pellets.py` restricts template matching to a bottom-right ROI and exposes
+  `--ammo-roi-x0`/`--ammo-roi-y0`; `read-pellets.ts` wires both and adds `--center-exclude` /
+  `--pellet-radius` tunables. Short-clip verification on `guilty`/`isabel` restored shot detection
+  (vs the 3–4 total shots with the global marciana template). Full-video validation against the
+  running-counter anchor still failed.
+  - `noir sg.MP4` (`--fps 30 --zoom 2 --marker-min 2 --core-rate 0.05`; both `--center-exclude 24`
+    and `36` gave identical results): 107 shots detected, 56 valid, avgTotal=7.1. Band means:
+    near1 n_valid=0/11 (all totals <5), near2 7.65/10 vs anchor 8.9 (-1.25), far 7.33/10 vs 7.4
+    (-0.07), midfar 6.91/10 vs 8.8 (-1.89). Shape ratios are unusable because near1 produced no
+    valid shots; the surviving near value is still >1 pellet/shot low.
+  - `guilty solo sg.MP4` full run: only 21 shots detected (12 valid), near1 n_valid=0/3, midfar
+    6.89/10 (no anchor). Not yet a usable second anchor.
+    **Why still REJECT:** the counter-side fixes removed the global-template false locks but did not
+    remove the systematic cold bias or the near-band under-count that drove the original REJECT. No
+    UNIGEO recalibration is justified.
+    **Next tuning step:** (1) diagnose near-band pellet loss, most likely `--center-exclude` too large
+    relative to the near pellet cluster or crosshair crop drift, using `--dump-tracks` diagnostics;
+    (2) confirm the per-video template locks onto the true ammo box for `noir`/`guilty`; (3) re-run
+    full `noir` + `guilty` and require ±1 pellet/shot and shape ratios within ±0.10 before any U35
+    validation. **No engine change proposed or enacted.**
+- **2026-07-29 — focus charge-gauge bonus is PER-UNIT (`fullChargeBonus/100`), not flat 2.5x: SPLIT
+  DECISION — scarlet-black-shadow IMPLEMENT, alice LOG, cinderella out of scope.** Background:
+  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`. Premise gate: the crux premise (does the
+  solo-footage `scan.ts` `solo` HUD crop, 142x12 @ 2470,488, faithfully read continuous burst-gauge
+  fill %?) was REFUTED by a fresh-context `premise-verifier` citing the tool's own docstring ("the
+  burst gauge charging is not in this crop... absent entirely between cycles"). Owner correction: the
+  widget IS persistent and continuously rendered in solo footage regardless of state (charging/full/
+  draining/chain) — the docstring's characterization was made from team footage and doesn't hold for
+  solo. Re-validated the crop against the ORIGINAL maiden-ice-rose tb2-test-3 anchor (the historic
+  hand-pixel-read recording that established the existing x2.5 rule, `docs/data/burst-gauge.md` §6):
+  the fresh CV read reproduced maiden's documented "+9.1% then +3.45%" two-substep per-pull pattern
+  TWICE in the recording, each within 0.05-0.15% of the 2026-07-13 hand-derived value — a genuine
+  quantitative validation, not a plausibility argument. Fable pre-op **APPROVED-WITH-REVISIONS** (7
+  revisions: reject the driver's proposed cinderella 1.0x exemption — her own rough footage read
+  ~2.6-3.1x contradicts it, closer to the CURRENT flat 2.5x than either 1.0x or her table's 2.0x, so
+  she is PINNED to current behavior instead, measurement-gated, not exempted; guard the `?? 250`
+  fallback for undatamined SR/RL rows so a missing row can never zero a focused unit's gauge; pre-
+  register graded-comp coverage; disclose the inverted procedure (measurements preceded the written
+  plan); fix the stale `scan-frames.py` docstring — deferred, filed as a follow-up; record the ±5%
+  residuals as open; isolated worktree). Driver review: confirmed the control-regression suite's
+  crown/scarlet-black-shadow/helm total-damage drift (1.49%/0.61%/7.97%) is a real, explained
+  second-order rotation ripple (SBS's own FB distribution went from a rigid 12/25 seeds to 11-12/25 —
+  neither crown nor helm are charge weapons and can't be touched directly), not a fit signal; `verify.sh`
+  green, `control-regression.ts --update`. Blind Fable post-op round 1: **ACCEPT, composite MEDIUM**
+  (SBS+alice both single-recording; Q3 pending — named the cheapest resolver: video-count the FB in
+  the ALREADY-HELD `docs/probes/720-kit-audit/scarlet black shadow.MP4` control-comp source
+  recording, an existing artifact, not a new one). Reuse-before-derive: ran `scan.ts` on that exact
+  recording — **11 full bursts, 11/11 corroborated** — outside the pre-fix model's rigid 25/25-seeds-
+  at-12 distribution and inside the post-fix model's 11-12 distribution; sent back to the SAME blind
+  judge (not self-upgraded). Round 2: **ACCEPT, SBS component upgraded to HIGH** (two independent
+  measured-tier confirmations — solo per-shot rate AND team FB count, both agreeing with her datamined
+  150), **alice component held at MEDIUM** (nothing in the SBS datum touches her; her own coverage gap
+  and +5.1% solo residual stand). Owner then supplied a genuine alice-FOCUSED team recording (`docs/
+probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, alice at mid-slot —
+  the earlier "PA MiKa" comp was a red herring, its mid-slot occupant is prika, not alice, corrected
+  mid-session after initially misjudging prika as non-charge when she is SR). Measured: **10 full
+  bursts, 10/10 corroborated**; sim comparison (25 MC seeds, toggled via `git stash` on the worktree)
+  showed pre-fix rigid 25/25-at-10, post-fix 7/25-at-10 / 18/25-at-11 — the real count landed INSIDE
+  both distributions, as the post-fix model's MINORITY (28%) outcome rather than confirming it. Round
+  3 (same blind judge, this new datum): **ACCEPT held, alice confidence unchanged at MEDIUM** — ruled
+  the team FB count a non-isolating, downstream observable (FB count is convolved with red-hood's
+  flex-burst behavior, chain selection, and 3 other units' rates) that cannot outvote alice's direct,
+  isolating solo measurement in EITHER direction (a likelihood-ratio ~3.6:1 on one categorical draw
+  does not overturn an instrument-validated direct read) — explicitly invoking "measured truths are
+  constraints, not scores" and "a model-vs-reality gap localizes to the model as a whole, not one
+  knob." **2-of-2, by unit: scarlet-black-shadow HIGH+HIGH → IMPLEMENT. alice MEDIUM (both judges) →
+  LOG — pinned to the flat constant (same mechanism as cinderella's carve-out, `PENDING_TEAM_ISOLATION`
+  set in `gaugePerShot`), NOT enacted, owner action item filed in `docs/handoffs/QUEUE.md`.**
+  cinderella: no change from pre-existing behavior (flat 2.5x), pinned via `magDumpRof`, own dedicated
+  investigation filed in QUEUE.md (her rough read ~2.6-3.1x contradicts both her table's 2.0x and a
+  1.0x exemption). `verify.sh` green, `control-regression-snapshot.json` updated to reflect the SBS
+  change (the only behavioral delta in that suite). **HARNESS LESSONS:** (1) a premise-verifier's
+  REFUTE grounded entirely in a tool's own documentation can still be wrong if the documentation was
+  characterized under different conditions (team footage) than the case at hand (solo footage) — the
+  owner's direct domain correction plus a fresh quantitative re-validation against an existing anchor
+  resolved it, rather than either blindly trusting the refute or blindly overriding it on say-so alone.
+  (2) Reuse-before-derive paid for itself twice in one post-op loop: both FB-count resolution steps
+  used footage the repo ALREADY held (a control-comp source recording, and — once obtained — an
+  owner-supplied focused recording) run through an already-validated instrument, never a fresh
+  bespoke derivation. (3) A downstream/composite observable (team FB count) is real evidence but is
+  not fungible with a direct/isolating one (solo per-shot rate) — it can corroborate decisively when
+  it falls OUTSIDE the null distribution entirely (SBS), but a same-both-distributions result is weak
+  and must not move a directly-measured constant in either direction on its own (alice). (4) A
+  same-family unit misidentification mid-session (prika judged non-charge when she is SR) was caught
+  by the owner, not self-detected — a reminder that "isCharge" gating and weapon-class claims warrant
+  the same slug-discipline as unit-identity claims, not just character names. DECISIONS 2026-07-29.
+- **2026-07-29 — Alice & Cinderella un-pinned to their datamined `fullChargeBonus` values (3.5× /
+  2.0×): IMPLEMENT (owner ruling).** `focusChargeMult = chargeMultiplier/100` is accepted as TRUE
+  for both units, same footing as scarlet-black-shadow above. A same-day recount run had produced a
+  REJECT verdict on Cinderella (an alleged 8-shot gaugeless opener yielding an effective ≈2.2×) — that
+  finding was a repeated instrument/reading error, not a real mechanic, and is RETRACTED; do not
+  re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.
