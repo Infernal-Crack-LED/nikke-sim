@@ -45,11 +45,69 @@ def near_crosshair(t, cross_positions, radius):
     return math.hypot(t["xs"][0] - c[0], t["ys"][0] - c[1]) <= radius
 
 
+# A dump whose ammo-box template mislocked reports a crosshair that is nowhere near the pellet
+# cluster. Every downstream statistic then silently computes over ~nothing and LOOKS merely
+# underpowered rather than invalid -- which is exactly how `noir-near-ce36` was first read as a
+# small-sample result on 2026-07-30.
+#
+# Reference numbers (2026-07-30), `marciana` = the SG/Iron slug (marciana-solo.MP4), NOT
+# marciana-marine-study:
+#   healthy  marciana/run16 : 14.3% of white tracks inside pellet_radius, median offset (-50,-180),
+#                             crosshair x sweeps 341..2692 (it tracks the moving aim point)
+#   BROKEN   noir-near-ce36 :  1.3% inside, median offset (-1027,-125), crosshair x pinned to
+#                             2514..2601 -- an 87px band at the right edge of the 2606px crop,
+#                             stuck for all 600 frames while the pellets sit ~1000px to the left.
+#
+# NOTE: template-match CONFIDENCE does not catch this (noir 0.430 vs marciana 0.502, 0% below 0.30).
+# That is the documented failure mode -- the template locks onto the HP bar/other furniture while
+# confidence stays in its normal 0.33-0.51 band. Do not use confidence as the validity check.
+CROSSHAIR_MIN_NEAR_FRAC = 0.05  # below this, treat the dump's crosshair track as BROKEN
+
+
+def check_crosshair_validity(data):
+    """Return (ok, near_frac, median_dx, median_dy). Guards against mislocked-template dumps."""
+    p, tracks, cross = data["params"], data["tracks"], data["cross_positions"]
+    radius = p.get("pellet_radius", 160)
+    dxs, dys, near = [], [], 0
+    for t in tracks:
+        if t["is_red"]:
+            continue
+        c = cross[t["first"]] if t["first"] < len(cross) and cross[t["first"]] else None
+        if not c:
+            continue
+        dx, dy = t["xs"][0] - c[0], t["ys"][0] - c[1]
+        dxs.append(dx)
+        dys.append(dy)
+        if math.hypot(dx, dy) <= radius:
+            near += 1
+    if not dxs:
+        return False, 0.0, 0.0, 0.0
+    frac = near / len(dxs)
+    return frac >= CROSSHAIR_MIN_NEAR_FRAC, frac, st.median(dxs), st.median(dys)
+
+
 def report_tracks(data):
     p, tracks, cross = data["params"], data["tracks"], data["cross_positions"]
     radius = p.get("pellet_radius", 160)
+
+    ok, frac, mdx, mdy = check_crosshair_validity(data)
+    if not ok:
+        print("=" * 78)
+        print("!! CROSSHAIR TRACK LOOKS BROKEN — DO NOT READ THE STATISTICS BELOW AS A RESULT !!")
+        print("=" * 78)
+        print(f"  only {frac:.1%} of white tracks fall within pellet_radius({radius}) of the")
+        print(f"  reported crosshair (healthy reference: marciana/run16 = 14.3%).")
+        print(f"  median offset of white tracks from the crosshair: dx={mdx:+.0f} dy={mdy:+.0f}")
+        print("  => the ammo-box template almost certainly mislocked; the pellet cluster is not")
+        print("     where this dump says the crosshair is. Everything below is computed over")
+        print("     near-nothing and will LOOK underpowered rather than invalid.")
+        print("  => This dump cannot answer a lifecycle/decay question. Get a dump whose")
+        print("     crosshair track is sound (see the plan's Phase 2A) instead of re-reading it.")
+        print("=" * 78 + "\n")
+
     cand = [t for t in tracks if not t["is_red"] and near_crosshair(t, cross, radius)]
-    print(f"white tracks within pellet_radius({radius}) of crosshair: {len(cand)}")
+    print(f"white tracks within pellet_radius({radius}) of crosshair: {len(cand)}"
+          f"   [crosshair-validity: {frac:.1%} near — {'OK' if ok else 'BROKEN'}]")
 
     # A fully-detected pellet spans 13 game frames at 60fps => 6-7 samples at 30fps.
     hist = collections.Counter(t["life"] for t in cand)
