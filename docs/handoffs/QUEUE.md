@@ -52,16 +52,15 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ DOT-TICK BURST-GAUGE CONCURRENCY (Fix A) — RESOLVED 2026-07-30, REJECTED.** Owner-supplied
-  footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`) settled U37 against the fix — see
-  `docs/answered-questions.md` U37 + `docs/handoffs/scientific-method-harness.md` 2026-07-30 follow-up.
-  Worktree `worktree-agent-aab3a19427393feb2` discarded, not merged. Remaining open item: Fix B
-  (`fillGauge` chain-lock parity) — **owner ruled 2026-07-30 that in-game instant "Fills Burst Gauge
-  X%" effects do NOT bypass the chain-lock**, confirming Fix B's mechanism is correct; it still needs
-  its own `/scientific-method` pass (the little-mermaid kit test it broke, `scripts/tests/units/
-little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating alongside the fix, not
-  treated as a blocker). Also still open: spot-check `bready`/`diesel-winter-sweets` (newly-found
-  stacking-dot units, ungraded) whenever a future dot-gauge change lands.
+- **⇒ DOT-TICK/FILLGAUGE BURST-GAUGE PAIR — BOTH RESOLVED 2026-07-30.** Fix A (dot-tick concurrency
+  election): REJECTED — owner-supplied footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`)
+  settled U37 against it; see `docs/answered-questions.md` U37 +
+  `docs/handoffs/scientific-method-harness.md` 2026-07-30 follow-up. Worktree
+  `worktree-agent-aab3a19427393feb2` discarded, not merged. Fix B (`fillGauge` chain-lock parity):
+  **IMPLEMENTED** — owner ruling confirmed the mechanism, full `/scientific-method` pass (2-of-2
+  ACCEPT, both HIGH), landed on main (see `docs/DECISIONS.md` 2026-07-30 entry). Still open: spot-check
+  `bready`/`diesel-winter-sweets` (newly-found stacking-dot units, ungraded) whenever a future dot-gauge
+  change lands.
 
 - **⇒ 🟡 UNIT-CARD INFOGRAPHIC — LANDED + DEPLOYED (both repos on main).** Render pipeline
   (`scripts/render-unit-card.ts`, `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`) and the

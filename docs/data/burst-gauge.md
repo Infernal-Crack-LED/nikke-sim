@@ -182,6 +182,14 @@ both `fullChargeBonus` 250, the modal value across the roster.
   base). Engine: `skillGauge()` on dot ticks.
 - Non-damage skill applications were measured by note.com/_trick_ to generate the same
   per-application amount [MEDIUM confidence, not modeled].
+- **Discrete "Fills Burst Gauge X%" effects** (a flat instant grant, distinct from the
+  per-shot/per-tick paths above — e.g. little-mermaid's S1 "each time total ally ammo
+  reaches 400 → Fills Burst Gauge 37%", or cinderella-crystal-wave's S1 "each time total
+  ally ammo reaches 200 → Fills Burst Gauge 12%") respect the SAME chain-lock as
+  continuous generation: they do nothing while the burst chain is open (stages 1-3) or
+  Full Burst is active, not just during Full Burst. Owner ruling (2026-07-30): these
+  effects do NOT bypass the chain-lock in-game. Engine: `case 'fillGauge'` guard
+  `fbEndFrame <= frame && stage === 0`, matching `addGauge`'s guard exactly.
 
 ## 6. The two solo measurements (docs/probes/tb2, test 3)
 

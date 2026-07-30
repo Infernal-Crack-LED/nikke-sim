@@ -2871,3 +2871,59 @@ scripts/verify.sh` both green, no snapshot change. Ruled a direct data-correctne
   the 2026-07-26 `liberalio` ×6-datamine-misread correction) rather than a `/scientific-method` empirical
   claim — the evidence is the unit's OWN already-present primary-source record, not a new measurement,
   and the formula was already cross-validated on 4 other units with no exceptions.
+
+- **(2026-07-30) `fillGauge` (discrete "Fills Burst Gauge X%" effects) now respects the chain-lock
+  exactly like every other gauge-generation path — DECISION = IMPLEMENT (2-of-2 ACCEPT, both HIGH
+  confidence).** Full `/scientific-method` run (a follow-up companion to the 2026-07-29 dot-tick
+  gauge-concurrency entry above, which left this exact code path's premise unresolved as "Fix B").
+  **Evidence tier: OWNER RULING, this project's top tier for a real-game mechanic question — not an
+  empirical measurement landed in this session.** Asked directly whether in-game "Fills Burst Gauge
+  X%" effects bypass the chain-lock, the owner answered (2026-07-30, verbatim): "no, they dont". This
+  is NOT re-derived here (no premise-verifier was spawned for it — a direct owner statement on a
+  real-game mechanic is stronger evidence than anything a file-search subagent could establish, and
+  the harness's own cheapness rule holds an already-confirmed input needs no re-probing).
+  **The fix:** `src/engine/sim.ts`, `case 'fillGauge'` guard changed from `if (fbEndFrame <= frame)`
+  (only the Full-Burst half of the lock) to `if (fbEndFrame <= frame && stage === 0)` — the exact
+  guard `addGauge` already uses for every continuous per-shot/per-tick gauge path. **CORRECTION (step 7
+  implementation review caught this): `little-mermaid` is NOT the sole carrier as first stated** — `src/
+skills/overrides/cinderella-crystal-wave.json` also carries a `fillGauge` block (S1:
+  `teamAmmo(200) → fillGauge(12) → allies`). Both are covered: `cinderella-crystal-wave`'s own kit test
+  (`scripts/tests/units/cinderella-crystal-wave.test.ts`, "feeds TEAM burst cadence: removing it drops a
+  teammate's burst count") passes unchanged post-fix (27/27) — a SECOND, independent confirmation the
+  effect stays alive-but-gated (her fixture's rotation dynamics differ from little-mermaid's sole-B1
+  comp, so removing her fillGauge still measurably drops a teammate's burst count even after the fix,
+  unlike little-mermaid's fixture where it fully collapses to equality). Her two `scripts/regression.ts`
+  appearances: the `disabled: true` "T5 wind-weak" comp (unrelated pre-existing burst-generation
+  shortfall, not gating) and an unrelated invariant check (that a burst-gated support unit never casts
+  more often than the focus unit it's synced to — `scripts/regression.ts`'s "Mast burst-gate
+  (syncWithFocus)" section, an internal test-pattern name for that check, not a reference to any unit
+  named `mast`/`mast-romantic-maid`) that uses `cinderella-crystal-wave` as its test case, unrelated to
+  `fillGauge` specifically. Both green under `scripts/regression.ts`'s full run above.
+  **Verification, both judges independently ACCEPT/HIGH:** (1) her kit test's `M4` "BEHAVIOURAL"
+  sub-test (`scripts/tests/units/little-mermaid.test.ts`) previously asserted removing the block
+  LOWERS her 180s total — true only under the old bug. Corrected to an EQUALITY assertion (she's the
+  sole B1 in that fixture, casting every ~15s cycle, so her chain/FB uptime is high enough that
+  essentially every `teamAmmo(400)` crossing lands locked post-fix — `base` and `noFill` totals become
+  bit-identical, 426,367,981.6068724 both), directly verified (not assumed) to FAIL on the reverted
+  engine (429,480,823.04 vs 426,367,981.61, ~3.11M delta) and PASS on the fixed one — a real
+  discriminator. The test's comment states this equality is fixture-conditional (this comp's burst
+  uptime), not a universal law of `fillGauge`. (2) A new committed instrument,
+  `scripts/build-burstgen.ts --isolate-fillgauge <slug>` (isolates a unit's `fillGauge` channel by
+  running `burstGenFor` against an in-memory override clone with `fillGauge` blocks stripped — the
+  file on disk is never touched), measured little-mermaid's channel dropping from 11.339 to 9.052
+  gauge%/s — **79.84% retained**, inside a band ([75%, 90%]) pre-committed BEFORE the measurement to
+  distinguish a correctly-gated effect (partial retention) from an over-blocked/dead one (≈0%) or a
+  guard that never engaged (≈100%). (3) `scripts/regression.ts`: all 7 graded comps hold with zero
+  `--update` needed — `little-mermaid`'s only graded comp, "N6 mihara/maiden wind", re-confirmed
+  `EV_FB=11` and every unit's snapshot stable. (4) `bash scripts/verify.sh`: 150 files / 2178 tests,
+  fully green. Landed on isolated worktree `nikke-sim-wt-fillgauge-fixb`, commit `7809459`, cherry-
+  picked to main.
+  **What this does NOT establish** (explicitly struck by both judges): whether "Fills Burst Gauge X%"
+  respects the chain-lock in real NIKKE — that rests entirely on the owner ruling above, not on
+  anything measured in this run; and nothing here speaks to board accuracy for any OTHER or future
+  `fillGauge` carrier beyond `little-mermaid`.
+  **Reservation carried forward (post-op judge, non-blocking):** the corrected M4 equality is
+  fixture-contingent — a future roster/fixture change that gives little-mermaid genuine gauge-limited
+  (rather than cooldown-limited) rotation windows could legitimately make `base > noFill` again with a
+  CORRECT guard, and the test would need re-measuring, not reverting. The landed test comment already
+  states this explicitly.
