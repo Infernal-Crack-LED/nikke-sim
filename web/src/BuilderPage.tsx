@@ -867,9 +867,8 @@ export function BuilderPage() {
                 </select>
               </div>
               <p className="muted">
-                {OL_PIECES} pieces, {OL_TRIALS / 1000}k-trial Monte Carlo —
-                states the line COUNT and tier only, never which stats were
-                simulated.
+                {OL_PIECES} pieces, {OL_TRIALS / 1000}k-trial Monte Carlo
+                simulation
               </p>
             </>
           )}
