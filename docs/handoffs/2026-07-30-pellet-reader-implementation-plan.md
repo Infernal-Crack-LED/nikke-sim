@@ -1165,6 +1165,52 @@ only, validated on A/B slices; no `docs/probe-data/` fixture or committed dump w
 artifact above is reproducible-by-command, not committed (constraint 9 is satisfied by the code fix
 being in the tree at `scripts/probe/count-pellets.py`, not by a raw JSON dump).
 
+### ✅ 2026-07-30 — DRIVER VERIFICATION of the structural-localization result: CONFIRMED, and it is stronger than reported
+
+> **Independently reproduced by the driver on fresh 600-frame slices**, because the session's own
+> validation dumps **did not survive** — no `tracks.json` newer than 12:00 existed anywhere in either
+> tree. The code, fixture and selftest are committed (good); the _evidence_ was not. That is the
+> constraint-9 failure this thread has already been bitten by once, and it is why the numbers below
+> were re-derived rather than accepted.
+>
+> **Gate 1 — reproduced on all four, structural mode, 600-frame slices:**
+>
+> | video (slice)    | reported | driver re-run | wander  | verdict |
+> | ---------------- | -------- | ------------- | ------- | ------- |
+> | `marciana`       | 19.1%    | **17.0%**     | 1304 px | OK      |
+> | `noir-near-ce36` | 21.2%    | **21.2%**     | 1675 px | OK      |
+> | `guilty-sg`      | 19.7%    | **20.0%**     | 1092 px | OK      |
+> | `isabel-sg`      | 19.9%    | **20.5%**     | 1392 px | OK      |
+>
+> All ≥5% and all far clear of the 300 px freeze line. `noir-near-ce36` — the frozen 87 px / 1.3% dump
+> that started this whole thread — now reads **21.2% / 1675 px**.
+>
+> **⇒ NEW: the 17–22% band is legitimate, and run16's "healthy reference" was itself degraded.**
+> The obvious worry was that a _higher_ near-fraction than run16's 14.3% meant the metric was being
+> gamed — a lock parked somewhere busier rather than somewhere correct. Tested directly:
+>
+> - Structural vs run16's validated lock over 600 comparable `marciana` frames: **median distance
+>   1.4 px** (dx +1.0, dy +0.0). The two methods find the _same place_ on ~70% of frames — so
+>   structural is not sitting somewhere else.
+> - On the **183 frames where they disagree by ≥50 px** (bimodal: agree ~1 px, else ~500 px), score
+>   the **same detections** against both candidate crosshairs: **240 white detections near
+>   structural vs 62 near the template — 3.87×.**
+>
+> ⇒ **Where they differ, structural is right and the old template lock was wrong.** The higher
+> near-fraction reflects better localization, not a gamed metric.
+>
+> ⚠ **Consequence for the plan's own reference:** run16's crosshair was wrong on roughly 30% of
+> frames — and the disagreement is _not_ concentrated in the known dead windows (27% dead vs 36%
+> control), so it is a general template weakness, not just a dropout artifact. run16 underpins §2.0's
+> lifecycle corroboration and the committed fixture. The lifecycle curve is computed from per-track
+> areas over time and is unlikely to be overturned, but **the reference is noisier than this plan has
+> been treating it.** Re-derive §2.0's corroboration against a structural-mode run before Phase 2
+> leans on it further.
+>
+> **Still genuinely open (the session flagged this honestly):** gate 2 (detection rate ≥60%) is
+> unmeasured on full videos. Gate 1 is necessary, not sufficient — §0.5 needs a `noir` dump that is
+> both well-localized _and_ complete. Do not mark Phase 2A closed on gate 1 alone.
+
 ### ✅ 2026-07-30 — Phase 2A part 2, structural (non-template) localization: gate 1 MET on all four videos
 
 **What it is.** `locate_ammo_structural()` (`scripts/probe/count-pellets.py`) replaces
