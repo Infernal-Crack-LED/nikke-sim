@@ -15,6 +15,112 @@
 
 ---
 
+## The pellet lifecycle (owner spec, 2026-07-30) — the governing model
+
+Everything below depends on this. **Source: owner, 2026-07-30.** It supersedes the coarser and
+partly-wrong record in `scratchpad/pellets/HANDOFF.md` ("peak frames 2-3 → shrink frames 4-13").
+
+Source video is **60 fps**. A pellet is visible for **13 game frames**:
+
+| game frame | state                                      | size  | readability                    |
+| ---------- | ------------------------------------------ | ----- | ------------------------------ |
+| **1**      | appears — small dot, **shadowed surround** | 1×    | ✅ **reliable** (separated)    |
+| 2–3        | grows rapidly, peak reached at f3          | →2×   | ⚠ transitional                 |
+| **3–4**    | **peak** — the only 2 frames at one size   | 2×    | ❌ **worst — pellets occlude** |
+| 5–11       | shrinks back to 1× over 7 frames           | 2×→1× | ✅ **f8–11 reliable**          |
+| 12–13      | fades, partially transparent               | 1×    | ⚠ dim                          |
+| 14         | gone                                       | —     | —                              |
+
+**The readable frames are f1 and f8–11. The peak (f3–f4) is the least readable** — that is where
+pellets overlap each other, and it is the only part of the lifecycle where two frames share a size.
+
+### What was measured (2026-07-30), and what it killed
+
+Instrument: `scripts/probe/analyze-pellet-tracks.py` (committed this session) over
+`scratchpad/pellets/run16/tracks.json` + `run16/frames-pellet/` — existing artifacts, no re-runs,
+from `marciana-solo.MP4` (slug **`marciana`**, SG/Iron) at 30 fps sampling. n = 1,668 white tracks
+within `pellet_radius` of the crosshair.
+
+**Facts (hold up):**
+
+| Measurement                                          | Result                                             |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| Track-lifetime histogram (30 fps; full pellet = 6–7) | **life=1: 58.8%**, life≤2: 70%, life 6–7: **7.5%** |
+| Where a long track's max area sits (life≥5, n=373)   | **73.5% at the FIRST sample**, then monotone decay |
+| Normalised area profile of long tracks               | 0.93 → 0.57 → 0.43 → 0.33 → 0.22 (**pure decay**)  |
+| Full-track peak vs trough area                       | **481 px² vs 56 px²** — an ~8.6× dynamic range     |
+| Crosshair motion per frame                           | median **4 px**, p90 **15 px** (zoomed)            |
+
+**⇒ The interesting claim I built on these, and why it is WRONG.**
+
+The tempting reading — and the one this doc carried in draft — was: _59% life=1 + tracks acquiring at
+their own peak means the detector only sees the bright 2× peak, i.e. it counts at exactly the frames
+the owner says occlude, and is blind at f1 and f8–11 where pellets are separable._ It explains
+everything, it matches the lifecycle spec beautifully, and **it does not survive contact with the
+pixels.**
+
+Per-frame counts measured directly off the frame PNGs across three consecutive blasts:
+
+```
+raw threshold detections : 1, 11,  8,  8, 10,  9,  2   (frames 100–106)
+post-temporal-filter     : 0, 10,  7,  7,  9,  8,  1
+owner ground truth       : 7–9 white per shot
+```
+
+**Per-frame detection is approximately correct**, and it spans ~6 samples per blast — i.e. roughly
+the whole 6.5-sample lifecycle at 30 fps, not a narrow peak window. The detector is not blind at the
+readable frames. The "counts at the worst moment, blind at the best" story is **refuted**.
+
+**Two further corrections to my own analysis, recorded so they aren't repeated:**
+
+1. **The fragmentation test was circular.** I tested whether life=1 tracks cluster within 30 px in
+   adjacent frames and got 6%, concluding "not fragmentation". But 30 px _is_ the tracker's
+   `match_dist` — any such pair would already have been linked into a life≥2 track, so the test can
+   only ever return ~0. Re-run at wider radii it gives 28.7% (60 px) / 53.6% (100 px) — but at those
+   radii it is just measuring pellet density (10 pellets in a 160 px-radius disc), not identity.
+   **The test cannot distinguish fragmentation from density at any radius. It is uninformative;
+   discard it rather than read either result.**
+2. **The LoG comparison leg was inconclusive**, not supportive. At the threshold I picked it returned
+   170–200 detections/frame — saturated on background texture. It needs proper scale/threshold
+   calibration against labels before it says anything. Recorded so the next session doesn't cite
+   the run as evidence either way.
+
+**⇒ What actually survives, and it still matters:**
+
+- **Per-frame detection is roughly right; the loss is at the SHOT level.** The headline gap in the
+  record is 70 shots detected of ~90 expected (**78%**) — 22% of shots missed entirely — plus
+  shot-total estimation. That is where the error budget lives, not in per-frame detection.
+- **The lifecycle spec still sharpens the shot estimator, for a different reason than I claimed.**
+  Per-frame counts are right _on average_ while averaging over frames of very different reliability
+  (occluded peak vs separated f8–11). Phase-locking the count to f8–11 should cut variance and remove
+  the occlusion bias — a **refinement of a working stage**, not a rescue of a broken one. Size it
+  accordingly.
+- **The `min_circ 0.55` + peak-occlusion interaction is still real** and still explains the
+  peanut-heuristic history: merged peak-frame pellets fail circularity and are dropped whole rather
+  than split. Counting at f8–11 sidesteps it without needing the heuristic.
+- **Sample at 60 fps.** At 30 fps you hit f1 only ~half the time and get 2 of the 4 frames in f8–11.
+  Phase-locking to a 4-frame window is not reliable at half rate.
+- **⚠ The 6-shot ground truth was hand-counted on PEAK frames.** `make-groundtruth.py` picks each
+  shot's peak frame (max bright-dot count) — the frame the owner identifies as least readable.
+  Regenerate the labels at f8–11 before scoring anything against them; expect true counts **≥** the
+  peak-frame counts.
+- **The shadowed surround is still a real asset.** A bright core on a dark halo is a textbook
+  center-surround signature — the exact response shape of a Laplacian-of-Gaussian. That argues for
+  LoG on its merits; it just isn't yet demonstrated here, per correction (2).
+- **Re-open the ring-detector rejection cheaply.** `read-markers.py` was parked for requiring "a dark
+  grey ring our pellets lack" — but the owner says the pellets _do_ have a shadowed surround, and
+  that tool was evaluated on peak frames where a neighbour destroys the ring. A re-test at f8–11 is
+  an hour. (Re-test, not revival — its white thresholds were separately shown to under-count.)
+
+**⇒ Consequence for ordering.** Detection is _not_ the top defect, so the draft's promotion of
+matched-filter detection ahead of counting is **withdrawn** — the phase order below stands as
+written: **Phase 2 (shot-level counting + phase-locking) before Phase 3 (detector replacement)**.
+Phase 0.2 re-targets: the open question is no longer "does per-frame detection work" (it does) but
+**"why are 22% of shots missed entirely?"** — a shot-detection/event-segmentation question, and the
+largest single measured gap in the reader.
+
+---
+
 ## Working agreement
 
 - **Worktree.** `git worktree add ../nikke-sim-wt-pellet -b fix/pellet-reader` (public `.git`).
@@ -104,7 +210,22 @@ where the counter currently gets far enough to be wrong in an interesting way.
 **Steps.** Diff the two noir runs' accepted-crosshair traces to find where the per-video template
 loses lock. Record whether the 179→107 regression is lost shots or merged events.
 
-### 0.2 — Confirm or kill F1 (the `life=1` premise) from an existing dump
+### 0.2 — ✅ DONE (2026-07-30) — and it re-targeted itself
+
+Ran via `scripts/probe/analyze-pellet-tracks.py`. Full result in the lifecycle section above.
+Summary: the `life=1` premise is **true as a statistic** (58.8%) but **false as a diagnosis** —
+per-frame detection measured off the pixels is 7–10 white per blast frame against a 7–9 ground
+truth, so the detector is not missing the evidence. Two of my own sub-tests were bad (a circular
+30 px clustering test, an uncalibrated LoG comparison) and are recorded as discarded, not as results.
+
+**The replacement question, now the top Phase 0 item:** ~90 shots are expected in the 60 s window and
+70 are found. **Why are 22% of shots missed entirely?** Candidates, all testable on cached data:
+event segmentation merging adjacent blasts (`EVENT_MIN=3`, `MAX_GAP≈4`), crosshair-lock dropouts
+during those windows, or genuine fire-holds at boss transitions (in which case ~90 is the wrong
+denominator and the detection rate is better than reported). **Check the denominator first** — it is
+free, and it may dissolve the problem.
+
+<details><summary>Original 0.2 text (superseded — kept for the reasoning trail)</summary>
 
 The survey's most load-bearing claim is a repo assertion, not a measurement: "most real pellet tracks
 are life=1" against an expected 6–7 frames at 30 fps. **`scratchpad/pellets/run16/tracks.json`
@@ -121,6 +242,11 @@ and the same histogram restricted to tracks inside shot events.
 - **Lifetimes cluster at 5–7** → F1 is **refuted**. Detection per-frame is fine, the fault is
   elsewhere (localization, event segmentation, or the shot estimator). Phase 3 drops in priority;
   re-open the crosshair-tracking path instead.
+
+</details>
+
+_(Outcome: neither branch cleanly. Lifetimes did cluster at 1, but per-frame detection was fine
+anyway — the histogram turned out not to be the discriminator the plan assumed it was.)_
 
 ### 0.3 — The `max_pellet_frames` boundary (a suspected second bug)
 
