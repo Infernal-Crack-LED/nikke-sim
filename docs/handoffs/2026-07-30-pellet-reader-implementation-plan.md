@@ -633,6 +633,79 @@ vague recall problem.
 
 ---
 
+## Phase H — Hardening (ATTENDED, runs before Phase 2A part 2)
+
+**Added 2026-07-30 after the Phase 2A pass.** Three separate wrong-but-plausible conclusions have now
+been reached in this thread (a bad cherry-pick instruction, a broken pinned dump, a mis-attributed
+bug), each internally consistent and each caught only by an independent check against an artifact.
+The common factor is **silent failure**: the tools return a wrong answer rather than refusing.
+
+⛔ **Do NOT run this phase autonomously** (owner ruling 2026-07-30). Not for difficulty — for the
+failure shape. A `/goal` driver turns a wrong-but-plausible conclusion into the premise for the next
+step, which is exactly how this thread's errors were already starting to chain. The repo's autonomy
+bar ("verifiable by a script that already exists") does not hold here yet, because this subsystem's
+scripts are the thing under suspicion.
+
+**The point of Phase H is to buy that bar back.** Each item converts one silent failure into a loud
+one. Autonomy becomes viable for this thread in proportion to guard coverage, not model tier.
+
+### H1 — Do the reference baselines reproduce against TREE code? (do this first)
+
+Every number this plan cites (`run16`, `run18`, `noir-sg`) came from a `count-pellets.py` that is
+**not what is in the tree** — see the Fix 2 provenance correction. `run16` underpins §2.0's lifecycle
+corroboration and the committed fixture. Until a tree-code run reproduces them, the foundation is
+unverified. This also gates Phase 2A part 2, whose exit criterion compares new dumps against
+`marciana` as the reference.
+
+**Target — `run18`, whose exact config is recorded in its own `pellets.json` header:**
+
+```sh
+npx tsx scripts/probe/read-pellets.ts docs/probes/clean-weapons/marciana-solo.MP4 \
+  --at 30 --dur 60 --fps 30 --zoom 2 --out scratchpad/pellets/h1-marciana-treecode
+```
+
+Reference values to beat/compare: `totalShots` **70**, `validShots` **58**, `avgTotal` **7.6**,
+`avgRed` **0.19**, `expectedShots` 90.
+
+⚠ **An exact match is NOT expected, and a mismatch is NOT a failure.** The two 2026-07-30 fixes
+deliberately change behaviour — stricter crosshair seeding (`--relock-conf-min`), and temporal counts
+that are no longer zeroed. Judge it as:
+
+| Outcome                                       | Reading                                                                                                                               |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| In family (shots ~60–80, `avgTotal` ~7.0–8.2) | Foundation sound. **Record the tree-code run as the new reference** and mark `run18`'s numbers superseded (they came from lost code). |
+| Materially different but non-zero             | **Do not tune toward the old numbers** — that is fitting to an unreproducible artifact. Record both; the tree-code run becomes truth. |
+| Zero / near-zero shots                        | A third bug. **STOP and report** — do not proceed to H2.                                                                              |
+
+Also run `analyze-pellet-tracks.py` on the new dump and confirm `[crosshair-validity: … OK]`.
+
+**Stop condition: one run, record, report. Do not tune, do not sweep parameters.**
+
+### H2 — Regression test: temporal counts are never silently zero
+
+The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
+produces output. That is the gap, not the bug.
+
+Add a committed frame fixture (2–3 PNGs from a known blast — `scratchpad/` is gitignored, which is
+exactly why no such test exists) under `scripts/tests/fixtures/pellets/frames/`, and a test asserting
+that `count-pellets.py --temporal --backend opencv` over it yields **total white > 0**. Verify it
+FAILS against the pre-fix script (`git show 2a1e99c:scripts/probe/count-pellets.py`) and passes now —
+a regression test that never went red proves nothing.
+
+### H3 — Zoom mismatch must fail loudly
+
+`read-pellets.ts` defaults to `--zoom 3`; every historical reference run used `--zoom 2`. The
+mismatch silently produces **0 shots** (it cost the Phase 2A session a run). Make a zero-shot result,
+or a zoom/template-scale mismatch, emit a visible error rather than an empty JSON. Same principle as
+H1's zero-shot stop and the crosshair-validity banner: **a reader that knows it failed is usable; one
+that reports 0 as data is not.**
+
+### H4 — §0.6 (missed-shot selection)
+
+Unchanged, specified at §0.6. Cheap, and it may retire the "22% missed" item entirely.
+
+---
+
 ## Phase 1 — The two pieces of infrastructure everything else needs
 
 Four tuning passes (run16→run19, then the per-video-template pass) each fixed the tuning video and
