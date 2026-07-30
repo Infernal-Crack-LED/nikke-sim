@@ -69,6 +69,14 @@ overrides/**` edit while other sessions may be active — do the work in a dedic
    pair the tool with a committed fixture pinning a known-good result so it self-validates later. Genuinely
    throwaway scratch (a one-line engine probe answering an in-session question) may stay in `/tmp`; the
    rule binds anything **whose output could later be cited as a measurement**.
+10. **Player-facing UI/card copy states facts, not authoring decisions.** It never explains what it
+    deliberately omits or why ("never which stats," "no options here") — if a detail was left out on
+    purpose, the copy is just silent about it, the same way it wouldn't announce every other thing it
+    isn't saying. This is usually a sign a prompt's negative instruction ("don't mention X") got echoed
+    into the deliverable instead of just being followed — treat "don't do X" as a constraint on the
+    action, never as source material for the text itself (2026-07-30: a Card Builder caption shipped
+    "states the line COUNT and tier only, never which stats were simulated" — the "never which stats"
+    clause was pure prompt-echo, not something a player needed).
 
 ## Verified facts (do not re-derive)
 
