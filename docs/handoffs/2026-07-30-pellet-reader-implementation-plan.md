@@ -783,17 +783,46 @@ SAME band as `noir`'s false seed.
 clear the stronger bar (not the base 0.3), and a later match that clears it may override the distance
 gate rather than being discarded as a jump.
 
-**Fix 2 — independent, more severe: temporal shot counts were unconditionally zero.** Traced (live
-debug prints, not inferred) to a variable-name collision: `main()` sets `active` once as the
-`--backend` selector dict, then the `--temporal` per-frame tracking loop reuses the SAME name for its
-per-frame active-track list (`active = []`), permanently rebinding it for the rest of the function.
-The results loop's `if name in active` (added when `fix/pellet-counter-restore` merged into this
-branch on 2026-07-30 — the pre-merge code on `main` unconditionally filled all three backend keys and
-never hit this) then checks a backend-name STRING against a list of `(track_id, x, y, is_red)` TUPLES
-— always false, every entry falls to the zero-fill branch, on every video, regardless of `--backend`
-or crosshair quality. This is why `noir-near-ce36`'s "4 shots" and this session's first noir re-run
-both under-reported independent of the crosshair fix. Fixed by renaming the loop-local list to
-`frame_active`.
+**Fix 2 — independent, more severe: temporal shot counts were unconditionally zero.** A variable-name
+collision: `main()` sets `active` once as the `--backend` selector dict, then the `--temporal`
+per-frame tracking loop reuses the SAME name for its per-frame active-track list (`active = []`),
+permanently rebinding it for the rest of the function. The results loop's `if name in active` then
+checks a backend-name STRING against a list of `(track_id, x, y, is_red)` TUPLES — always false, so
+every entry falls to the zero-fill branch regardless of `--backend` or crosshair quality. Fixed by
+renaming the loop-local list to `frame_active`.
+
+> **✅ The fix is CORRECT — verified independently.** A/B of the pre-fix (`2a1e99c`) and post-fix
+> scripts over the same 19 `run16` frames with `run16`'s own flags: **pre-fix `total_white=0` across
+> all 19 frames; post-fix `8, 1`.** The bug and the fix are both real.
+>
+> **⚠ Two claims about its PROVENANCE were wrong — corrected 2026-07-30 by the driver.**
+>
+> 1. **It was NOT introduced by the `fix/pellet-counter-restore` merge.** The shadowing is byte-identical
+>    at `6cf3dbf` (pre-merge) and `2a1e99c` (post-merge). `git log -S` dates it to **`1d3c721`,
+>    2026-07-24 12:33 ("pellet tuning")** — six days before the merge. The merge is exonerated.
+> 2. **"This is why `noir-near-ce36` under-reported" does not follow**, and there is an unresolved
+>    discrepancy underneath it. Every reference run **postdates** the 12:33 bug commit yet has ~50%
+>    non-zero reads: `run16` (12:58) 73 shots / 927 of 1800 non-zero; `run18` (13:46) 70 / 925;
+>    `noir-sg` (07-29) 179 / 2691. If the committed code zeroed everything, those are impossible.
+>
+> **⇒ The real finding, and it is bigger than the bug.** The committed mainline `count-pellets.py`
+> has been unable to produce temporal counts **since 2026-07-24**, while every reference number this
+> plan cites came from a version that **is not what is in the tree** — almost certainly the
+> `fix/pellet-counter-restore` worktree that was live that day. So the reference runs are **not
+> reproducible from committed code**. That is a constraint-9 problem one level up from the usual one:
+> not "the instrument is in `/tmp`" but "**the instrument in the tree is not the instrument that
+> produced the numbers.**"
+>
+> **Consequences to act on:**
+>
+> - Do **not** treat run16/run18/noir-sg as reproducible baselines until a post-fix run reproduces
+>   them. The `run16` numbers underpin §2.0's lifecycle corroboration and the committed fixture. The
+>   fixture _data_ is unaffected (it is stored output), but its _provenance_ is now uncertain.
+> - **Add a regression test** pinning "temporal mode yields non-zero counts on a known frame set."
+>   This bug survived six days and a merge precisely because nothing asserted it. Needs a small
+>   committed frame fixture — `scratchpad/` is gitignored, which is why no such test exists.
+> - Re-check whether the 2026-07-29 REJECT runs were affected. `noir-sg`'s 179 shots say no, but that
+>   run's provenance is now as uncertain as the rest.
 
 **A/B evidence (600-frame / 20s slices, cached frames where noted, `--relock-conf-min 0.55` default;
 `analyze-pellet-tracks.py`'s `check_crosshair_validity`, ≥5% = OK):**
