@@ -496,7 +496,41 @@ the phase-mix prediction, same shape). **Kill condition:** materially different 
 must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
 this after implementing steps 4–6 is the expensive path.**
 
-### ⛔ 0.5 — NOT ANSWERED. The dump I pinned is INVALID, not underpowered.
+### ✅ 0.5 — ANSWERED 2026-07-30: the lifecycle template GENERALISES. Phase 2 steps 4–6 are unblocked.
+
+> **Resolved off the §2A-G2 full `noir` structural dump** (`scratchpad/pellets/g2-noir-structural/`),
+> n = **1,215** long-lived tracks — vastly over the n≥20 floor that made the earlier attempt
+> unanswerable. Both curves below are produced by the **same committed tool** on each run's own dump,
+> so they are directly comparable:
+>
+> | sample            | 1    | 2    | 3    | 4    | 5    | 6    | 7    | 8    | 9    | 10   | 11   |
+> | ----------------- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
+> | `marciana` run16  | 0.88 | 0.59 | 0.49 | 0.38 | 0.26 | 0.27 | 0.34 | 0.32 | 0.41 | 0.55 | 0.62 |
+> | `noir` structural | 0.83 | 0.60 | 0.50 | 0.40 | 0.28 | 0.30 | 0.35 | 0.35 | 0.45 | 0.51 | 0.58 |
+> | Δ                 | −.05 | +.01 | +.01 | +.02 | +.02 | +.03 | +.01 | +.03 | +.04 | −.04 | −.04 |
+>
+> **Agreement is within ±0.05 across all 11 samples** — including the decay minimum at sample 5 and
+> the subsequent rise. This is far stronger than the "qualitatively similar" the §2A-G2 pass claimed.
+>
+> **⇒ VERDICT: PASS.** Two different units, two different videos, two different localization methods,
+> one curve. **The one-lifecycle-template-fits-all-units assumption behind Phase 2 steps 4–6 holds.**
+> The kill condition ("materially different curve ⇒ the template must be per-unit or conditioned on
+> VFX load") does **not** fire.
+>
+> **⚠ Two caveats to carry into Phase 2:**
+>
+> 1. **Fit the template on samples 1–5 only.** Both curves decay to a minimum at sample 5 and then
+>    _rise_ (0.26→0.62 / 0.28→0.58). A pellet does not grow back — that tail is the `life≥5` bucket
+>    picking up damage numbers and persistent VFX at high lifetimes. The pellet signal is the decay
+>    limb; the rise is contamination and must not be fit.
+> 2. **⚠ Curve-quote inconsistency in this doc, corrected here.** §2.0 and the old §0.5 text quote
+>    `marciana` as **0.93 → 0.57 → 0.43 → 0.33 → 0.22**. That came from an ad-hoc driver computation
+>    filtered to `life 5–7`; the committed `analyze-pellet-tracks.py` uses `life≥5` and yields
+>    **0.88 → 0.59 → 0.49 → 0.38 → 0.26**. Both are `marciana`; they differ only by track filter.
+>    **Always compare tool-output to tool-output** — comparing `noir`'s tool output against the ad-hoc
+>    0.93-series is apples-to-oranges and made the agreement look worse than it is.
+
+#### (superseded) ⛔ 0.5 — NOT ANSWERED. The dump I pinned is INVALID, not underpowered.
 
 > **⚠ SUPERSEDED — verdict corrected 2026-07-30 by the driver, same day.** The pass below concluded
 > "underpowered, not contradicted" and treated the tiny sample as a limit of a 20 s dump. **That is
@@ -1139,13 +1173,34 @@ full run's own reported figure (3177/5722 non-zero frames matched exactly) befor
 gates 1/3 above.
 
 **Exit criterion status: MET.** All three pre-committed pass conditions clear on a full `noir` run.
-**Not evaluated here (out of scope):** whether this also closes Phase 2A's four-video
-"all-together" conjunction — `guilty` was still failing gate 1 as of the last recorded attempt in
-this doc — or a full-video gate-2 re-run on `marciana`/`isabel`/`guilty`.
 
-### ⚠ 2026-07-30 — attempted on `fix/pellet-reader` (worktree). Two bugs found and fixed; exit
+> **⚠ Correction (driver, same day).** The line originally here said the four-video conjunction was
+> still open because "`guilty` was still failing gate 1 as of the last recorded attempt in this doc."
+> **That was reading stale template-era text** (now banner-marked SUPERSEDED below). `guilty` passes
+> gate 1 at **20.0%** under structural localization, driver-verified. **Gate 1 is met on all four
+> videos.** What genuinely remains is a full-video **gate 2** on `marciana`/`guilty`/`isabel` — only
+> `noir` has been measured end-to-end at full length.
 
-criterion NOT met — `guilty` still fails gate 1.
+### ⛔ SUPERSEDED (2026-07-30, same day) — TEMPLATE-ERA attempt. `guilty` PASSES gate 1 now; read this as history only.
+
+> **Everything in this subsection predates structural localization** (`--locate structural`) and
+> describes the **template** matcher's behaviour. Its `guilty` verdicts — "2.5% BROKEN", "fails gate 1
+> with BOTH templates at every `--track-conf-min` tried" — are **no longer the status**:
+>
+> | video      | template era (below) | structural, driver-verified |
+> | ---------- | -------------------- | --------------------------- |
+> | `guilty`   | 0–2.5% **BROKEN**    | **20.0% OK**                |
+> | `isabel`   | 6.8% marginal        | **20.5% OK**                |
+> | `noir`     | 1.3% **BROKEN**      | **21.1% OK** (full run)     |
+> | `marciana` | 14.3% OK             | **17.0% OK**                |
+>
+> **This stale text already caused harm**: the §2A-G2 session read it as live and reported "did not
+> touch `guilty`'s remaining gate-1 failure" — there is no such failure. That is precisely the
+> `CLAUDE.md` hazard (superseded narration reads as a live claim to every future agent and
+> manufactures phantom findings). Kept rather than deleted because the _root-cause analysis_ below is
+> still valuable and load-bearing; only its verdicts are dead.
+
+#### (historical) 2026-07-30 — template-era attempt: two bugs found and fixed; exit criterion NOT met under templates
 
 **Root cause of the crosshair mislock (§0.1b / ⛔0.5), found by instrumented A/B, not guessed.**
 `count-pellets.py`'s per-frame lock (`--temporal`) accepts the FIRST frame whose match confidence
