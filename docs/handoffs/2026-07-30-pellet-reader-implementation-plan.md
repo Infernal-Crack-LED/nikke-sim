@@ -29,9 +29,14 @@ open-questions **U35**.
   results as evidence about counting — those runs never localized.
 - Prior-art candidates and rejected paths are surveyed. Don't re-research VLM/SAM/Hough.
 
-**Open, in order:** ~~0.1~~ ✅ done · **0.5** (lifecycle stability on `noir`) · **0.6** (missed-shot
-bias) → Phase 1 infrastructure → Phase 2A ∥ Phase 2 → Phase 3. One 0.1 leftover: the vitest pin on
-the offset default.
+**Open, in order:** ~~0.1~~ ✅ done (incl. the vitest offset pin) · **0.6** (missed-shot bias) →
+**Phase 2A (localization) — now the critical path** → **0.5** (blocked on 2A: it needs a `noir` dump
+with a sound crosshair track) → Phase 1 infrastructure ∥ Phase 2 → Phase 3.
+
+> **⚠ Re-ordered 2026-07-30.** 0.5 was attempted and could not be answered: the `noir` dump this plan
+> pinned has a **mislocked crosshair** (details in **⛔ 0.5**). Since 0.5 gates Phase 2's
+> one-template-fits-all-units assumption, and a valid dump requires working localization, **Phase 2A
+> moved ahead of both.** It is no longer a parallel track — it is the critical path.
 
 **Do not:** tune the current threshold detector further · compare any new number to run16–run19 (the
 count definition changes in Phase 2) · merge `fix/sg-pellet-counter-template` wholesale (still
@@ -459,7 +464,14 @@ Phase 2 assumes one lifecycle template fits every unit and VFX load. That assump
 supported by exactly one video. Compare a `noir` dump's normalised area decay to the prediction table
 in §2.0.
 
-**The dump already exists — do NOT re-run the counter (that is ~13 min/video and unnecessary):**
+> **⛔ STOP — the dump pinned below is BROKEN. Do not run this.** Kept only so the mistake is legible.
+> `noir-near-ce36`'s crosshair track is mislocked (1.3% of white tracks near it vs `marciana`'s
+> 14.3%; crosshair frozen at the crop's right edge for all 600 frames). See the **⛔ 0.5** correction
+> below. §0.5 is **blocked on Phase 2A**, which must produce a dump with a sound crosshair track.
+> `analyze-pellet-tracks.py` now refuses to let this pass silently — it prints a
+> `CROSSHAIR TRACK LOOKS BROKEN` banner on any dump under 5% near-fraction.
+
+**~~The dump already exists — do NOT re-run the counter (that is ~13 min/video and unnecessary):~~**
 
 ```sh
 /Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python \
@@ -484,7 +496,52 @@ the phase-mix prediction, same shape). **Kill condition:** materially different 
 must be per-unit or conditioned on VFX load, which changes the Phase 2 design. **One run. Discovering
 this after implementing steps 4–6 is the expensive path.**
 
-### ✅ 0.5 — DONE 2026-07-30 — result: underpowered, not contradicted
+### ⛔ 0.5 — NOT ANSWERED. The dump I pinned is INVALID, not underpowered.
+
+> **⚠ SUPERSEDED — verdict corrected 2026-07-30 by the driver, same day.** The pass below concluded
+> "underpowered, not contradicted" and treated the tiny sample as a limit of a 20 s dump. **That is
+> wrong, and the error was mine: I pinned a broken dump in this doc and told the agent to trust it.**
+> `noir-near-ce36`'s **crosshair track is mislocked**, so the statistics are computed over
+> near-nothing and merely _look_ underpowered.
+>
+> Three lines of evidence, the last two independent of the first:
+>
+> 1. **Not a duration effect.** 58 near-crosshair white tracks observed; scaling `marciana`'s 1,668
+>    by 600/1800 frames predicts **~556**. A 10× shortfall. As a fraction of white tracks:
+>    **1.3% vs 14.3%**.
+> 2. **The pellets are somewhere else.** Median offset of white tracks from the reported crosshair is
+>    **dx = −1027 px** (`marciana`: −50 px). The cluster sits ~1000 px to the left.
+> 3. **The crosshair never moves.** Its x is pinned to **2514–2601** — an 87 px band at the right
+>    edge of the 2606 px crop — for all 600 frames, while `marciana`'s sweeps **341–2692** tracking
+>    the aim point. It locked onto fixed furniture and stayed.
+>
+> **Ruled out:** resolution/calibration mismatch — both videos are 1206×2622.
+> **Does NOT catch it:** template-match _confidence_ is normal (noir 0.430 vs `marciana` 0.502, 0%
+> below 0.30). That is the documented mislock mode — it locks onto the HP bar/other furniture inside
+> the normal 0.33–0.51 confidence band. Never use confidence as the validity check.
+>
+> **Consequences.**
+>
+> - **§0.5 is still OPEN and is now blocked on Phase 2A**, not on a longer dump. Re-running the
+>   counter on `noir` with today's merged defaults is the way to get a valid dump — but that is the
+>   localization work, so 2A now gates 0.5, which gates Phase 2's one-template assumption.
+> - **This is a third data point for §0.1b.** `guilty`/`isabel` were the known localization failures;
+>   `noir` was thought clean because `noir-sg` produced 179 shots. At least one `noir` dump is also
+>   mislocked. The `noir` = method-only / `guilty`+`isabel` = localization split is **too clean** —
+>   localization is broader than §0.1b claims. **Phase 2A rises in priority accordingly.**
+> - **Instrument hardened so this cannot recur:** `analyze-pellet-tracks.py` now runs
+>   `check_crosshair_validity()` first and prints a loud **CROSSHAIR TRACK LOOKS BROKEN** banner plus
+>   an inline `[crosshair-validity: N% near — OK/BROKEN]` tag below 5%. The agent's reading was
+>   reasonable given a tool that reported a broken dump and a thin dump identically; the tool no
+>   longer does.
+>
+> The original pass is kept below because its _procedure_ was right — it verified params from the
+> dump instead of assuming, refused to force a pass/kill verdict on n=5, cross-checked the script
+> against `run16` to rule out a script defect, and escalated. Only the premise it was handed was bad.
+
+#### Original pass (SUPERSEDED — read the correction above first)
+
+**~~DONE 2026-07-30 — result: underpowered, not contradicted~~**
 
 Ran the exact named command against `noir-near-ce36/tracks.json`. Params confirmed identical to
 `run16` from the dump's own embedded `params` block (not assumed): `ammo_offset_x=125`,
