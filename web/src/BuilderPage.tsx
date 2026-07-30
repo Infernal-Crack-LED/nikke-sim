@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MatrixFilter } from './components/MatrixFilter';
 import { PillGrid } from './components/PillGrid';
+import { CharPicker, CharSearch } from './components/CharSearch';
 import charactersJson from '../../data/characters.json';
 import type { DataFile } from '../../src/types';
 import { loadDpsChart, chartBars, type DpsArtifact } from './dpschartData';
@@ -74,13 +75,15 @@ const DEFAULT_CELL: Cell = {
   invest: 'scope',
 };
 
+// Nikke Card leads (and is the default open tab) — it's the single card that
+// draws on every other data source here, so it's the natural first stop.
 const CARD_TYPES: { key: BuilderCardType; label: string }[] = [
-  { key: 'dps', label: 'DPS chart' },
-  { key: 'rank', label: 'Rank board' },
-  { key: 'unit', label: 'Unit card' },
-  { key: 'ol', label: 'OL table' },
-  { key: 'charge', label: 'Charge speed' },
-  { key: 'ammo', label: 'Max ammo' },
+  { key: 'unit', label: 'Nikke Card' },
+  { key: 'dps', label: 'DPS Ranks' },
+  { key: 'rank', label: 'Support Ranks' },
+  { key: 'ol', label: 'Overload Calculator' },
+  { key: 'charge', label: 'Charge Speed' },
+  { key: 'ammo', label: 'Max Ammo' },
 ];
 
 const BOARDS: { key: BuilderBoard; label: string }[] = [
@@ -114,17 +117,37 @@ const RANK_LOADERS = {
 
 const cap = (el: string) => el[0].toUpperCase() + el.slice(1);
 
-// Unit pickers' option lists (characters.json is a static import — computed once).
+// Unit pickers' option lists (characters.json is a static import — computed
+// once). Each list is scoped to that card type's real population, and carries
+// enough fields (imageUrl/weapon/burst/nicknames) for the CharPicker search UI.
+const pickerFields = (c: DataFile['characters'][string]) => ({
+  slug: c.slug,
+  name: c.name,
+  nicknames: c.nicknames,
+  imageUrl: c.imageUrl,
+  weapon: c.weapon,
+  element: c.element,
+  burst: c.burst,
+});
+// Nikke Card content is only meaningful for units that actually have DPS-chart
+// / rank-board data behind them — the same support tag that gates the DPS
+// chart + generator tools elsewhere on the site (App.tsx's `generatorChars`).
 const ALL_UNITS = Object.values(data.characters)
-  .map((c) => ({ slug: c.slug, name: c.name, element: c.element }))
+  .filter((c) => c.generatorSupported)
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
 const CHARGE_UNITS = Object.values(data.characters)
   .filter((c) => (c.weapon === 'SR' || c.weapon === 'RL') && c.chargeFrames > 0)
-  .map((c) => ({ slug: c.slug, name: c.name }))
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
+// The charge-speed picker's "no unit picked" state is itself a meaningful
+// choice (the generic 1.0s baseline), so it gets a synthetic pool entry
+// instead of an empty CharPicker input.
+const GENERIC_CHARGE_OPTION = { slug: '__generic__', name: 'Generic (1.0s)' };
+const CHARGE_PICKER_POOL = [GENERIC_CHARGE_OPTION, ...CHARGE_UNITS];
 const AMMO_UNITS = Object.values(data.characters)
   .filter((c) => c.ammo > 0)
-  .map((c) => ({ slug: c.slug, name: c.name }))
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 // Fill in the state's implicit picks (a select's value when the user hasn't
@@ -166,7 +189,7 @@ function loadImgManifest(): Promise<ImgManifest> {
 
 export function BuilderPage() {
   const [s, setS] = useState<BuilderState>({
-    card: 'dps',
+    card: 'unit',
     cell: 'solo.eleweak.c100.8of12',
     element: null,
     dpsMode: 'top',
@@ -186,6 +209,22 @@ export function BuilderPage() {
   const ele = s.element ? cap(s.element) : null;
   const population =
     s.card === 'dps' && dpsArt ? chartBars(dpsArt, cellObj, ele, Infinity) : [];
+  // A profiled unit (e.g. Cinderella: Crystal Wave's MG mode) appears TWICE in
+  // `population`, same slug — fine for the ranked bars, but the picker only
+  // needs one row per unit; keep the plain (non-profiled) row when there's a
+  // choice. BarEntry also lacks nicknames/burst (not part of the dps-chart
+  // artifact) — pull those from characters.json.
+  const dpsPickerBySlug = new Map<string, (typeof population)[number]>();
+  for (const b of population) {
+    if (!dpsPickerBySlug.has(b.slug) || b.profile === null) {
+      dpsPickerBySlug.set(b.slug, b);
+    }
+  }
+  const dpsPickerPool = Array.from(dpsPickerBySlug.values()).map((b) => ({
+    ...b,
+    nicknames: data.characters[b.slug]?.nicknames,
+    burst: data.characters[b.slug]?.burst,
+  }));
   const eff = effectiveState(s, population);
   const effKey = JSON.stringify(eff);
 
@@ -226,6 +265,32 @@ export function BuilderPage() {
       alive = false;
     };
   }, [s.card, olTable]);
+  // The Nikke Card draws on the DPS chart PLUS all four rank boards (every
+  // field nullable, see renderCard's 'unit' case) — it's the default tab, so
+  // kick off every load it can use instead of waiting on the user to have
+  // separately visited the DPS/Rank tabs first.
+  useEffect(() => {
+    if (s.card !== 'unit') {
+      return;
+    }
+    let alive = true;
+    if (!dpsArt) {
+      loadDpsChart()
+        .then((a) => alive && setDpsArt(a))
+        .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    }
+    (Object.keys(RANK_LOADERS) as BuilderBoard[]).forEach((b) => {
+      if (rankArts[b]) {
+        return;
+      }
+      RANK_LOADERS[b]()
+        .then((a) => alive && setRankArts((prev) => ({ ...prev, [b]: a })))
+        .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    });
+    return () => {
+      alive = false;
+    };
+  }, [s.card, dpsArt, rankArts]);
 
   // Draw the card for the given state to an offscreen canvas (scale 2) — ONE
   // path shared by the live preview and the Copy-image button.
@@ -551,18 +616,11 @@ export function BuilderPage() {
               {s.dpsMode === 'window' && (
                 <div className="field">
                   <label>Windowed unit</label>
-                  <select
-                    value={eff.unit}
-                    onChange={(e) =>
-                      setS((cur) => ({ ...cur, unit: e.target.value }))
-                    }
-                  >
-                    {population.map((b) => (
-                      <option key={b.slug} value={b.slug}>
-                        #{b.rank} {b.name}
-                      </option>
-                    ))}
-                  </select>
+                  <CharPicker
+                    selectedSlug={eff.unit || null}
+                    pool={dpsPickerPool}
+                    onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+                  />
                 </div>
               )}
               {s.dpsMode === 'compare' && (
@@ -570,16 +628,24 @@ export function BuilderPage() {
                   <label>
                     Compared units ({eff.units.length}/10 — rank order is kept)
                   </label>
+                  <CharSearch
+                    placeholder="add a nikke on the chart…"
+                    exclude={eff.units}
+                    pool={dpsPickerPool}
+                    onPick={(slug) => toggleCmpUnit(slug)}
+                  />
                   <div className="pills">
-                    {population.map((b) => (
-                      <button
-                        key={b.slug}
-                        className={eff.units.includes(b.slug) ? 'on' : ''}
-                        onClick={() => toggleCmpUnit(b.slug)}
-                      >
-                        {b.name}
-                      </button>
-                    ))}
+                    {population
+                      .filter((b) => eff.units.includes(b.slug))
+                      .map((b) => (
+                        <button
+                          key={b.slug}
+                          className="on"
+                          onClick={() => toggleCmpUnit(b.slug)}
+                        >
+                          {b.name}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -606,25 +672,11 @@ export function BuilderPage() {
           {s.card === 'unit' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={eff.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
-                }
-              >
-                {ELEMENT_FILTERS.map((el) => {
-                  const group = ALL_UNITS.filter((u) => u.element === cap(el));
-                  return group.length ? (
-                    <optgroup key={el} label={cap(el)}>
-                      {group.map((u) => (
-                        <option key={u.slug} value={u.slug}>
-                          {u.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ) : null;
-                })}
-              </select>
+              <CharPicker
+                selectedSlug={eff.unit || null}
+                pool={ALL_UNITS}
+                onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+              />
             </div>
           )}
 
@@ -651,37 +703,27 @@ export function BuilderPage() {
           {s.card === 'charge' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={s.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
+              <CharPicker
+                selectedSlug={s.unit || GENERIC_CHARGE_OPTION.slug}
+                pool={CHARGE_PICKER_POOL}
+                onPick={(slug) =>
+                  setS((cur) => ({
+                    ...cur,
+                    unit: slug === GENERIC_CHARGE_OPTION.slug ? '' : slug,
+                  }))
                 }
-              >
-                <option value="">Generic (1.0s)</option>
-                {CHARGE_UNITS.map((u) => (
-                  <option key={u.slug} value={u.slug}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           )}
 
           {s.card === 'ammo' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={eff.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
-                }
-              >
-                {AMMO_UNITS.map((u) => (
-                  <option key={u.slug} value={u.slug}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+              <CharPicker
+                selectedSlug={eff.unit || null}
+                pool={AMMO_UNITS}
+                onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+              />
             </div>
           )}
 
