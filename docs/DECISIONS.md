@@ -2547,3 +2547,14 @@ pixel measurement — they change no constant, no default and no board value):
 it accepted 0 of 30 popups on the one hand-read probe available, because that unit's value bands
 overlap outright. Treat an `autoAccept` as unproven until a clean-band unit trips it. And
 `read-ammo.ts` does not yet read a small-magazine SG counter (~29% of frames on `marciana-solo`).
+
+## Rank boards: DPS ranks for B1/B2 and composite support rank — DROPPED (2026-07-29)
+
+**Decision (owner).** Of the three open follow-ups filed when the rank-boards backend + frontend
+landed (`docs/STATE.md` §8; backend 2026-07-26, `/ranks` frontend PR #31 2026-07-27), two are not
+being built: **DPS ranks for B1/B2** and a **composite support rank** combining the four boards.
+Design-brief handoffs closed and archived: `docs/handoffs/closed/2026-07-26-dps-ranks-b1b2.md`,
+`docs/handoffs/closed/2026-07-26-support-rank-composite.md`. The third follow-up from that same
+landing — Mint/Prika duo profiles on the buffer rank — was built separately and stands.
+
+**Why.** Scope call, no further rationale recorded.

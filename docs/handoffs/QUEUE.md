@@ -52,118 +52,24 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
-- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — BUILT + POLISHED, WAITING ON DEPLOY.**
-  Branch `unit-card-infographic`, worktree `../nikke-sim-wt-unitcard`, + bakery-bot `main`.
-  `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. Plan +
-  landed-state: `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`.
-  Preview any slug in both shapes with `npx tsx scripts/render-unit-card.ts <slug>`.
-  The owner's polish pass ran 2026-07-28 and settled every parked tunable (layout consts, the
-  Λ glyph, the icon set, the zero-value rule, the empty-plate question) — see the three
-  `feat(infographics)` / `feat(icons)` commits on the branch. What is left:
-  1. **Not deployed.** The bakery-bot `/nikke` change reads the manifest from the LIVE site, so
-     the cards only appear once nikke-sim deploys; until then `/nikke` keeps its existing embed
-     (that fallback is tested).
-  2. **Bot side NOT started** — `/nikke` must show a "not sim supported" line when a unit is in
-     the manifest's new `notSimSupported` list (27 units with no card ON PURPOSE), and must NOT
-     show it for a transient miss (outage / newly-synced unit). Spec, contract and test list:
-     bakery-bot `docs/handoffs/2026-07-28-nikke-unit-card-not-supported.md`. Safe to ship
-     before the nikke-sim deploy — an older manifest has no such field and every lookup
-     answers false.
-  3. **No vector source for burst any more.** The burst/class icons were replaced site-wide with
-     the owner's higher-res set (old `burst_*.svg`/`.png` + 25×25 `class_*` deleted). Burst is
-     now RASTER everywhere, ~100px native — fine at every size either surface draws today, but
-     a future surface wanting it large has nothing to rasterize from.
-  4. **`UnitCardSources.prerelease` is plumbed but never set** (cross-family review 2026-07-28,
-     FOLLOW-UP). The flag reaches the model, the `UNRELEASED — PROJECTED` title line and the
-     PROJECTION branch in `drawNotes`, but neither host (`scripts/lib/unit-card-sources.ts`,
-     `web/src/unitCardShare.ts`) ever passes it — so an unreleased unit renders as fully live
-     today, with a null `releaseDate` the only tell. Either wire it (derive from a missing/future
-     `releaseDate`, or an explicit list) or drop the branch until the pre-release authoring
-     workflow lands. A dead render branch on an immutable image pipeline gets discovered by a
-     shipped card.
-  5. **The browser icon loader probes extensions and eats 404s** (same review, NOTE).
-     `web/src/unitCardShare.ts` tries `['svg','png','webp']` per icon via onload/onerror, so the
-     first card preview of a session fires ~8 guaranteed 404s (2 each for the webp-only `burst_*`
-     / `class_*` and `man_*`, 1 for the png-only `weapon_*`). Harmless but noisy in the network
-     log and in any 404 monitoring. The Node loader avoids it by stat-ing the directory; the
-     browser can't, but the icon set is static and tracked, so the extension is knowable at build
+- **⇒ 🟡 UNIT-CARD INFOGRAPHIC — LANDED + DEPLOYED (both repos on main).** Render pipeline
+  (`scripts/render-unit-card.ts`, `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`) and the
+  bakery-bot `/nikke` not-sim-supported line (bakery-bot PRs #29 `nikke-not-sim-supported`, #30
+  `nikke-card-only`) are both merged and live. Preview any slug with
+  `npx tsx scripts/render-unit-card.ts <slug>`. Three small follow-ups remain, code-verified still
+  open:
+  1. **No vector source for burst icons any more.** The old `burst_*.svg`/`.png` + 25×25 `class_*`
+     were deleted; `web/public/nikke-icons/burst_*` is webp-only, ~100px native — fine at every size
+     drawn today, but a future surface wanting it large has nothing to rasterize from.
+  2. **`UnitCardSources.prerelease` is still never set** (cross-family review 2026-07-28 FOLLOW-UP;
+     re-checked 2026-07-29, still no `prerelease` reference in `scripts/lib/unit-card-sources.ts` or
+     `web/src/unitCardShare.ts`). The flag reaches the model and the `UNRELEASED — PROJECTED` title/
+     PROJECTION branch in `drawNotes`, but nothing sets it, so an unreleased unit renders as fully
+     live with a null `releaseDate` the only tell. Either wire it or drop the dead branch.
+  3. **The browser icon loader still probes extensions and eats 404s** (same review, NOTE;
+     `web/src/unitCardShare.ts:55` still tries `['svg','png','webp']` per icon via onload/onerror).
+     Harmless but noisy; the icon set is static and tracked, so the extension is knowable at build
      time — carry it in the `iconNames` mapping (e.g. entries become `{ name, ext }`).
-
-- **⇒ 🔵 CINDERELLA'S FOCUS CHARGE-GAUGE MULTIPLIER — MEASUREMENT-GATED, DEDICATED INVESTIGATION NEEDED.**
-  Background: `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md` (the per-unit focus-gauge fix,
-  landing for alice/scarlet-black-shadow this session — see DECISIONS). Cinderella (RL, whole-magazine
-  dump-fire kit, `charFixes.magDumpRof:true`) does NOT get a per-unit multiplier in that landing; she
-  stays on the current flat 2.5× pending this investigation. Her datamined table value is 200
-  (`fullChargeBonus`, → 2.0× if treated like any other charge unit), but a rough solo-footage read
-  (`docs/probes/720-kit-audit/cindy solo neutral.MP4`, magazine-dump cadence too fast/aliased against
-  the 0.2s CV sampling to cleanly resolve) landed at **≈2.6–3.1×** — closer to the CURRENT 2.5× than to
-  either her table's 2.0× or an exemption-to-1.0× hypothesis (the owner's kit-mechanical argument: her
-  dump-fire mechanic doesn't perform the discrete hold-charge/release cycle the einkk `positionBurstBonus`
-  formula's `chargePercent` term presumes). Fable's pre-op review (this session) explicitly rejected
-  locking her to 1.0× on this evidence: "enacting a value the only available measurement contradicts
-  violates measured>fudge regardless of the kit-mechanical argument." **What would resolve it:** a
-  cleaner per-shot cadence read for her specifically — either fix `read-ammo.ts` for her dump-fire
-  ammo-counter pattern (it currently returns 0 reads on her footage, same failure shape as
-  scarlet-black-shadow's — `boxConf` present but zero digit glyphs segmented) or a longer/cleaner solo
-  recording with the gauge-fill crop instrument (now validated against the maiden anchor, see DECISIONS)
-  sampled at a rate that doesn't alias her ~3/s fire rate. Until then: no change to her focus multiplier.
-
-- **⇒ 🔵 EVERY SIM-SUPPORTED B3 SHOULD BE ON THE DPS CHARTS.** 7 of them are not:
-  `2b`, `a2`, `phantom`, `red-hood`, `rei-ayanami`, `rei-ayanami-tentative-name`, `sugar`.
-  A B3/Λ unit's whole card is its two DPS charts, so an absent one renders two large "Not
-  ranked on this board" plates — those 7 are the only sim-supported units with no bar chart at
-  all (of 90). Not researched; no handoff written.
-  - **Ruling (owner, 2026-07-28): no second-class fallback layout.** A B3/Λ unit that is NOT
-    sim-supported simply gets NO CARD (`scripts/build-infographics.ts` `unitJobs`) — 27 units,
-    54 images. The 7 above keep their cards because their emptiness is a DATA gap this item
-    closes, not a permanent state. B1/B2 units are unaffected either way: buffer / sustain /
-    burst-CDR rank unsupported units too.
-
-- **⇒ 🔴 SHAREABLE SAVED CONFIGS — BUILT, NEEDS TWO OWNER GATES BEFORE IT WORKS IN PROD.**
-  Branch `infographics-card-fixes`, worktree `../nikke-sim-wt-cardfix` (`f025cc8`) + bakery-bot
-  `main` (`f2f9af1`), `verify.sh` + `web:build` + `web-smoke` green, NOTHING PUSHED. The three
-  owner questions were answered 2026-07-28 — **(1a)** the numbers are a browser-computed
-  SNAPSHOT stored with the config (no engine in `dist-server`), **(2a)** the id lives in
-  bakery-bot `user_profiles` behind a kind-allowlisted public read, **(3)** `POST /render`
-  returns `{url, imageUrl, pageUrl}` — and all four asks are implemented. What is left is
-  deployment and two things only the owner can decide:
-  1. **GATE — deploy order.** The bakery-bot public read (`GET /api/profiles/:id/public`) must be
-     live BEFORE any `?id=` link is minted, or every shared link 404s. It is an additive route,
-     no schema change, so it can ship independently and ahead of the sim.
-  2. **GATE — the 100-profiles-per-kind cap.** `POST /api/profiles` refuses a genuinely new name
-     past 100 rows per (user, kind). Shares are named by a content hash, so re-sharing an
-     unchanged config is idempotent and costs nothing, but a user who shares 100 DISTINCT configs
-     hits `limit_reached` and silently falls back to the long `?b=` link. Options: raise the cap
-     for the share kind, evict oldest, or accept the fallback. **Accepted for now** — nothing
-     breaks, links just get long again.
-  - **Tell the bot:** `POST /api/v1/img/render` now answers `{url, imageUrl, pageUrl}`; `url`
-    is an alias of `imageUrl` so nothing existing breaks, and `pageUrl` is present only for a
-    request that named a config id. `{id}` alone is accepted (kind inferred from the config), as
-    is `{kind, id}` (mismatched kind → 400).
-  - **Known limit, unchanged from the earlier integration report:** a `characters.json` change (a
-    unit rename) moves pixels without moving the cache hash. The key covers renderer changes, not
-    data changes; if it bites, add a data stamp to the key.
-  - **Follow-up worth doing:** `NIKKESIM_CONFIG_API` / `NIKKESIM_SITE_ORIGIN` default to the prod
-    bakery-bot origin and `https://nikkesim.app`. Set them explicitly in Railway rather than
-    relying on the defaults baked into `src/server/config-store.ts`.
-  - **Cross-family code review (kimi-code/k3) ran on the branch: round 1 FIX-BEFORE-MERGE → all
-    four findings fixed (`b86e42f`) → round 2 CLEAN.** Packets + result JSONs in
-    `scratchpad/gates/2026-07-28-shared-configs/`. The FIX was real and is the one worth
-    remembering: `shareName` hashed the ENCODED payload, which carries a click-time `at`, so
-    every press minted a new profile row — the code carried a comment promising precisely the
-    idempotency it did not deliver. Split into `sharedConfigIdentity` (name from this) vs the
-    stored payload; the same root also fed the render cache key, now normalized through the
-    shared `simmedDay`. Round 2's two NOTEs (orphaned old-shape cache entries; pre-fix share rows
-    surviving against the cap) are both **empirically empty** — this branch has never been pushed
-    or deployed, so no `sim-share` row and no with-results cache entry has ever existed. Nothing
-    to migrate; do NOT file migration work for them.
-
-  **Other decisions already made, don't relitigate:** the composition card keeps the boss/level/
-  core line (a SELECTION, not a metric); a card renders the FULL `drawTeamCard` layout only when
-  the request carries a results snapshot, the composition card otherwise; `RENDERER_VERSION` is
-  `v2` and must be bumped by any further renderer change (the shared-config work deliberately did
-  NOT bump it — results are APPENDED to the cache key, so every existing no-results key is
-  byte-identical and nothing on disk was orphaned).
 
 - **⇒ BAKERY-BOT INTEGRATION REPORT (2026-07-28) — BOTH ITEMS ANSWERED on branch
   `infographics-card-fixes`.** (1) _"the cache hash is derived from the request, not the output"_ —
@@ -183,109 +89,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   a different hash) — the short URL is now as durable as the long one. **Still open / to tell the
   bot:** a `characters.json` change (a unit rename) moves pixels without moving the hash — the key
   covers renderer changes, not data changes; if that bites, add a data stamp to the key.
-- **⇒ POST-MERGE CODE REVIEW OF PR #33 (`9526dad`) — 2 FIXES LANDED on branch
-  `infographics-card-fixes`, 4 FOLLOW-UPS OPEN.** The review ran after the merge (owner ask).
-  No blockers; the two FIX-level defects are fixed on that branch (worktree
-  `../nikke-sim-wt-cardfix`, unpushed, `verify.sh` green): (a) `buildChargeTable` hardcoded the
-  22f release latency, so every AUTOFIRE charge unit (anis-star, cinderella, liberalio,
-  neon-vision-eye, vesti-tactical-upgrade — datamined `input_type: 'DOWN_Charge'`) published a
-  shots-per-Full-Burst ~25–30% below the site's own /charge panel, on the tab share button, the
-  /builder card AND the hosted `table/charge-speed?unit=` route; (b) `drawTableCard` distributed
-  width evenly with no truncation, so the 6–7-column resources card overdrew its neighbouring
-  column. Also landed there: the owner's bar-label style ruling (a bar track never clips a NIKKE
-  name — `canvas2d.ts` `barTrackX`/`fitText`, applied to `dpsChart.ts` + `teamCard.ts`) and
-  `RENDERER_VERSION` → `v2` (the renderers changed, so v1 cache files must age out). **Open
-  follow-ups, none blocking a deploy:**
-  1. **Memoized REJECTED promises** — `BuilderPage.loadImgManifest` and
-     `tableShare.loadOlDefaultTable` cache the promise including its rejection, so one transient
-     fetch failure permanently breaks "Get hosted URL" / the OL share until a page reload. Clear
-     the memo in a `.catch` that rethrows.
-  2. **No in-process render concurrency cap** — `api.ts ensureCached` single-flights identical
-     specs only; N distinct concurrent specs run N renders, each up to `MAX_CANVAS_PIXELS`
-     (12M px ≈ 48 MB RGBA) on one instance, with the routes anonymous by design. A 4–8 slot
-     semaphore turns a burst into latency instead of RSS. Do this before bakery-bot points
-     production traffic at `POST /render`.
-  3. **Breakpoint-panel tier vs card tier** — the /charge panel computes rows at the selected OL
-     tier (`olTierValues(bpTier)`), the share card always renders the T11 constants. Self-
-     consistent (the subtitle names T11) but it disagrees with the table it was copied from at
-     any other tier: pass the tier's per-line value into `buildAmmoTable`/`buildChargeTable`.
-  4. **▲ renders as tofu in every NODE card** — Roboto has no U+25B2 and the Node font stack has
-     no fallback face, so the advantaged-element marker is a □ box on the pre-rendered images
-     (the browser falls back per-glyph, so the site is fine). Pre-existing, cosmetic, visible on
-     every DPS/team card: either register a fallback face for the Node renderer or swap the
-     marker for a Roboto-covered glyph.
-
-- **⇒ INFOGRAPHIC CENTRALIZATION + IMAGE API — PHASES 0–3 LANDED (PR #32), PHASE 6 LANDED on
-  branch `infographics-phase6` (unpushed), PHASE 4 PR-READY on bakery-bot branch
-  `infographics-centralization` (worktree `../bakery-bot-wt-infographics`, unpushed) →
-  `docs/handoffs/2026-07-27-infographics-centralization-plan.md`.** One renderer
-  (`src/infographics/{core,node}`) now serves the web tabs, the build-time pre-rendered head
-  (208+ images + manifest.json), and the `/api/v1/img/*` routes. **Phase 6 landed 2026-07-28:**
-  share-image buttons on every remaining tab (ranks, charge, overload, olsim, doll, resources —
-  `web/src/tableShare.ts` host + core `rankTables.ts` builders + tableCard `rowColors`), olsim
-  before/after OL card, unit-comparison cards (RenderSpec `units[]`, `dps.png?units=a,b,c`,
-  DPS Rankings "Compare units…" picker), and the `/builder` public card-builder page (client-side
-  preview + manifest URL / POST `/api/v1/img/render` for a hosted link). **Phase 4 (bakery-bot thin
-  client) is code-complete but MUST NOT merge/deploy until the new server is live in prod** — the
-  six commands now `setImage()` nikkesim.app URLs (manifest-hashed or 302→content-addressed), the
-  1,113-line fork + 192 portraits + Roboto TTFs + `@napi-rs/canvas` are deleted (−2 MB), `sharp`
-  stays for `/nikke`. **Remaining owner gates, in order:** (1) merge/push `infographics-phase6`
-  (this branch also contains the hono server — first deploy runs the new build); (2) flip
-  `railway.json` startCommand `npm run start` → `npm run start:server` and deploy — `/api/v1/img/*`
-  is dark until this happens (item (1) of the follow-ups bullet below); (3) add the Cloudflare
-  rate-limit rule on `POST /api/v1/img/render` (rate limiting lives at the edge by decision 6.3);
-  (4) merge/deploy bakery-bot `infographics-centralization`; (5) R2 for the static set only once
-  it outgrows the deploy artifact or Railway egress becomes visible. Historical plan detail
-  (fork drift, §1a font guarantees, §6 decisions, §6.6 windowing math) is in the plan doc.
-
-- **⇒ INFOGRAPHIC PHASE-3 REVIEW FOLLOW-UPS (branch `infographics-centralization`; three opus
-  cross-family review rounds 2026-07-27 — blocker + fixes landed, packets under the gitignored
-  `scratchpad/gates/`):** (1) **startCommand flip is
-  owner-gated** — `railway.json` still starts `scripts/serve.mjs`, so `/api/v1/img/*` is dark in prod
-  until the owner flips to `npm run start:server` (dist-server/ now builds in the `verify.sh deploy`
-  tier).
-  **LANDED 2026-07-28 on branch `infographics-phase6`:** (2) API surface gaps — on-demand
-  `/api/v1/img/dps.png?cell&element&unit`, `/api/v1/img/table/{max-ammo,charge-speed}.png`, and the
-  static `table/{ol,charge-speed}.png` pre-renders (shared `src/infographics/core/tableData.ts`);
-  (3) compiled-bundle boot test (`scripts/tests/share/serve-bundle.test.ts`); (5) ink-region
-  geometry dedupe (core cards export `*_TITLE_ICON` / `*_TITLE_INK_REGION`); (6) RenderCache
-  in-memory byte tracking (readdir only across the cap / on boot); (8) portrait LRU keyed on
-  dir+slug; (9) poison-restore in a `finally`; (10) 304 last-modified symmetry + wrong-etag
-  body assertions; (4) golden drift off-Mac — decoded-pixel compare (sharp RGBA, ≥99.9% of
-  pixels within channel delta 2, exact dimensions) now runs on EVERY platform; byte-exact sha256
-  stays as a stronger darwin-arm64 gate; (7a) Matrix-tab portrait share card made deliberate —
-  draw-call-level test of the `hasPortraits`/`labelW=210` branch in `windowed-render.test.ts` +
-  a `dpsChart.ts` module-header note; (7b) reproducible woff2 subsets — `npm run fonts:subsets`
-  (`scripts/subset-fonts.ts`) rebuilds them from the TTFs + a checked-in glyph manifest
-  (`src/infographics/assets/fonts/subset-ranges.json`), and `@font-face` now declares the matching
-  `unicode-range` so out-of-subset glyphs fall through the stack.
-
-- **⇒ LANDED 2026-07-28 (branch `infographics-phase6`): hono migration + `POST /api/v1/img/render`
-  — the §6.4 trigger fired (owner-approved).** `src/server/` now builds a Hono app (`hono` +
-  `@hono/node-server`, bundled into dist-server) served over node:http via `getRequestListener`;
-  the behavior contract is unchanged (serve-api/serve-bundle pass, serve-headers untouched against
-  the old serve.mjs, static handler kept hand-rolled for exact ETag/304/OG parity). New
-  `src/infographics/spec.ts` is the shared request contract — `RenderSpec` union, `parseRenderSpec`,
-  `specCacheKey` (the `v1|...` key strings are pinned byte-for-byte in
-  `scripts/tests/share/render-spec.test.ts`; drift orphans every cached render) — used by BOTH the
-  GET query routes and POST /render, so the two can never drift (parity asserted in
-  `serve-render.test.ts`). POST answers 200 `{"url":"/api/v1/img/cache/<file>"}`; guards: 16 KB
-  body cap → 413 (content-length AND stream), 415 non-JSON, 400 bad JSON/spec; rate limiting stays
-  at Cloudflare, `REQUIRE_RENDER_SECRET` (env-off) gates it when flipped. **Still owner-gated:**
-  the `railway.json` startCommand flip (item (1) above) — POST /render is dark in prod until then.
-
-- **⇒ FOCUS CHARGE-GAUGE BONUS IS PER-UNIT, NOT FLAT 2.5× — own PR, NOT ENACTED →
-  `docs/handoffs/2026-07-27-focus-charge-gauge-per-unit.md`.** The camera-focus charge bonus is
-  hardcoded `FOCUS_CHARGE_GEN = 2.5` (`src/engine/sim.ts:1257`) and ignores the datamined
-  `full_charge_burst_energy` column (`fullChargeBonus` in `data/gauge-per-shot.json`), which equals
-  `chargeMultiplier` for every unit and IS the focus multiplier ×100 (measured anchor: takina/maiden
-  250 → focused base×2.5; additive reading ruled out by TB3 A1/A2). Four units deviate from 250:
-  **alice 350 → 3.5× (currently 40% under-credited)**, cinderella + vesti-tactical-upgrade 200 → 2.0×,
-  scarlet-black-shadow 150 → 1.5×. Burst-gen board UNAFFECTED (measured unfocused as of 2026-07-27);
-  only focused sim fights move (DPS chart / probes / team sim). **Gated:** `/scientific-method`
-  (engine default change) + the four non-250 values are datamine-derived not recorded → owner picks
-  measure-`alice`-first vs land-as-⚑-hypothesis; overturns the 2026-07-13 "full_charge_burst_energy
-  unused" ruling (needs DECISIONS entry + `burst-gauge.md` §4 rewrite).
 
 - **⇒ RL3-VS-BOARD OUTLIER GAUGE INVESTIGATION — findings-only, NOT ENACTED →
   `docs/handoffs/2026-07-27-rl3-rank-outlier-gauge-investigation.md`.** Triage the 53 `|Δrank| ≥ 10`
@@ -433,14 +236,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   **P0 is CLEAR:** the crit/core bracket is ADDITIVE (owner ruling 2026-07-22, zero engine change →
   DECISIONS).
 
-- **⇒ KIT-AUDIT IMPLEMENTATION PLAN → `docs/handoffs/2026-07-20-kit-audit-implementation-plan.md`.**
-  Phase C continues from `elegg-boom-and-shock`. Open, all measurement/footage-gated: the A4 primitive
-  build-order (state machines — do NOT bulk-land); the soda-twinkling-bunny FB-extension + jill
-  trueNormals gated enactment passes; scarlet-black-shadow in-burst per-phase proc count (needs
-  isolated-burst footage); moran swap-window throughput (needs isolated moran-solo); chisato's PI/PI2
-  reenterStage attribution re-derive (code-verified inert). ⚑ dorothy-serendipity landed-consolidation
-  switch contradicts her measured solo count (~55–64) → solo re-validation before it's fully trusted.
-
 - **⇒ UNIGEO SHIPPED (default `'all'`, owner enactment 2026-07-22 → DECISIONS; live model
   `docs/STATE.md` §4; full thread `docs/handoffs/2026-07-22-sg-geometry-handoff.md`).** SG/AR/SMG
   accuracy geometry is now uniform-in-circle (R(hr) linear-to-zero at HR 100 from the datamined
@@ -477,10 +272,6 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   graded (board 142 datapoints, boss NEUTRAL per owner — the recon's inferred Electric was wrong and
   would have handed both Iron units a ~10% advantage). The 4 formerly pre-merge items remain open as
   post-merge follow-ups: `docs/handoffs/2026-07-22-engine-work-plan.md` (FB-extension item).
-
-- **⇒ ROSTER `simSupported`-EXPANSION BACKLOG.** rei (`rei`, ≠ `rei-ayanami`) is `generatorSupported`
-  but has no override → excluded from DPS/generator tools until one is authored; the other ~117
-  unsupported units are the kit-parse-rollout expansion backlog (not started).
 
 - **⇒ SG-LANDING GEOMETRY: aim-circle method fix (`docs/data/sg-calc/`)** — all four owner rulings RESOLVED
   2026-07-22, scope collapsed to ONE workstream. Workstreams A + B are RETIRED (superseded by the live
@@ -546,42 +337,12 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
   `/scientific-method`. The generator already enforces their same-team pairing
   (`genCalc.TEAM_CONSTRAINTS`, relaxes if one is unavailable).
 
-- **⇒ WEB/DPS-CHART PROFILE TODOs (2 deferred backend items).**
-  - **Bready taste** — currently a MANUAL `sustained | distributed` mode pill. TODO: auto-derive the
-    live taste from the team's actual buff types, model the tasteless state (both buff types absent →
-    taste-gated lines + charge-speed debuff inert), measure the taste-line magnitudes (all ⚑).
-    `src/skills/overrides/bready.json`.
-  - **Diesel: Winter Sweets Highlight** — chart scores with the faithful Intro (bursts-first) numbers
-    (owner ruling 2026-07-17: doc-only). TODO: model the burst-order-coupled Highlight (a no-op B3 must
-    drive FB; Sustained ▲235.03 vs Intro ▲60.19, loses burst DoTs + team Damage-Taken ▲25% amp).
-    `src/skills/overrides/diesel-winter-sweets.json`.
-
 - **⇒ ROLE-AUDIT FOLLOW-UPS → `docs/handoffs/2026-07-17-role-audit-followups.md`:** (1) custom-weaponry
   `role` sweep — mostly deflated by D; what's left = pierce-from-kit-text + (data-blocked) weapon-swap
   secondary-weapon row; (2) **anis-star dot-gauge re-model** then drop her `hitsPerShot` carve-out to 1
   (highest-value modeling fix; needs a measurement); (3) re-pin PH-water FB to 12 when the burst-cycle fix
   lands / after re-measure. Passive carries: next sync applies 18 behaviour-neutral `burstGaugePerShot`
   diffs; D.4 RL splash (multi-part scope only); E class-mismatch core-row guard (no current violator).
-
-- **⇒ RANK BOARDS BEYOND DPS — BACKEND LANDED 2026-07-26** (methodology `docs/data/rank-boards.md`;
-  registry `docs/STATE.md` §8). Four boards: burstgen / burstcdr / sustain / buffer, sources
-  `src/ranks/`, `npm run ranks:all` → `web/public/*.json`. **OPEN follow-ups:** (1) frontend pass —
-  plan written: `docs/handoffs/2026-07-26-rank-boards-frontend.md` (one `/ranks` page, pill-switched
-  boards, profile badges; artifacts carry a `profile` flag with plain+profiled dual entries); (2) DPS ranks for B1/B2 →
-  `docs/handoffs/2026-07-26-dps-ranks-b1b2.md` (owner plans in a separate session); (3) composite
-  support rank → `docs/handoffs/2026-07-26-support-rank-composite.md` (same); **(4) Mint/Prika duo
-  profiles on the buffer rank — plan written 2026-07-26:
-  `docs/handoffs/2026-07-26-buffer-rank-mint-prika-plan.md`. The pair's duet modes already encode the
-  rotation; the buffer-rank team assembler just needs a partner-unit profile path (Sustain already
-  ships pair profiles). Known caveats to
-  carry into any owner review: buffer board under-reads trigger-gated kits (crown's recovery-gated
-  lines fire only with a healer present); `soline-frost-ticket` reads NEGATIVE (−32k) on the buffer
-  board — unexamined sim interaction; sustain lifesteal lines valued on own damage only.
-
-- **⇒ `unmodeled` BACKFILL (~40 hand-authored overrides)** (deferred, owner-approved) — their authored slots
-  carry `unmodeled: []` (skips still note-only); fill per unit via a kit-parse audit pass. Hand-authored
-  values tracing to OLD fan wording may disagree with the official prose — reconcile per-unit when touched,
-  never as a blocker.
 
 - **⇒ VERIFY BOSS PROFILES (low-prio).** medium/large `bossPelletProfile` magnitudes are ⚑ UNVERIFIED
   (owner-chosen, not measured). dorothy-serendipity PH-water (766M) vs N9-redhood (328M) already DISAGREE on
