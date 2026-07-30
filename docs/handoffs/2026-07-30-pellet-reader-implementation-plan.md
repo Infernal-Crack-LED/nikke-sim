@@ -681,6 +681,73 @@ Also run `analyze-pellet-tracks.py` on the new dump and confirm `[crosshair-vali
 
 **Stop condition: one run, record, report. Do not tune, do not sweep parameters.**
 
+### H1 — driver analysis: the gap is 100% LOCK DROPOUT, and the lost shots were REAL
+
+> **Added by the driver after the H1 pass.** The pass executed the protocol correctly and correctly
+> declined to tune. This is the follow-up diagnosis; it turns "materially different, cause unknown"
+> into a bounded fix.
+>
+> **1. The deficit is entirely four dead windows, not a uniform degradation.** Shots per 10 s bucket:
+>
+> ```
+> run18     : 13 12 13  8 11 13      max gap 2.53s   dead-time >2s: 4.64s
+> tree-code : 13  7  2 12  8  1      max gap 11.96s  dead-time >2s: 23.02s
+> ```
+>
+> Dead windows (fightT): **33.2→35.3 (2.1s) · 41.4→53.3 (11.96s) · 53.8→56.0 (2.2s) · 68.7→75.4
+> (6.76s)**. Extra dead time vs run18 ≈ **18.4 s → ~28 missed shots**, against an actual deficit of
+> **27**. The accounting closes.
+>
+> **2. Outside those windows the tree code is indistinguishable from run18** — median inter-shot gap
+> **0.70 s vs 0.67 s** (cadence 1.5/s), `avgTotal` 7.3 vs 7.6. **Per-shot counting is intact.** The
+> regression is purely in _shot detection_, i.e. crosshair lock availability.
+>
+> **3. ⚠ The lost shots were REAL, not garbage.** The obvious hope — that run18's extra 27 shots were
+> a mislocked crosshair counting noise, making 43 the _more_ correct number — is **false**. Splitting
+> run18's shots by whether they fall inside the now-dead windows:
+>
+> | run18 shots                 | n   | mean total | valid (5–10) |
+> | --------------------------- | --- | ---------- | ------------ |
+> | INSIDE the now-dead windows | 23  | **7.70**   | 78%          |
+> | OUTSIDE (both runs detect)  | 47  | 7.13       | 85%          |
+>
+> The lost population is _cleaner than average_. So `--relock-conf-min 0.55` is a **net recall
+> regression** — it trades false-lock for **no-lock**, and in these windows the looser lock was
+> producing correct counts.
+>
+> **Confirmed by an INDEPENDENT method (not the same derivation).** The above uses run18's own shot
+> list, so it could in principle inherit run18's error. `run16` is a _separate_ run (07-24 12:58,
+> max-of-event estimator, no marker fallback) whose **per-frame** counts were produced independently
+> of run18's shot list. Its pellet activity in the windows tree code now goes dark:
+>
+> | window (fightT)                  | run16 frames with pellets | mean when non-zero |
+> | -------------------------------- | ------------------------- | ------------------ |
+> | DEAD 41.4→53.3                   | **46%** (165/359)         | 4.7                |
+> | DEAD 68.7→75.4                   | **46%** (93/203)          | 5.0                |
+> | control 56→68 (both runs detect) | 38% (137/360)             | 5.5                |
+>
+> Pellets are demonstrably on screen throughout both dead windows — at a _higher_ frame-hit rate than
+> the control stretch. Three converging lines (run18 shot quality · cadence arithmetic · run16
+> per-frame activity) all say the same thing. **The bar is met: the lost shots were real, and this is
+> a recall regression to be fixed, not a filter working as intended.**
+>
+> **⇒ Consequences.**
+>
+> - **Fix 1 is directionally right but mis-calibrated.** It genuinely fixed the `noir` seed-freeze;
+>   0.55 is simply too strict for `marciana`. There is very likely a value in **(0.30, 0.55)** that
+>   holds `noir` without going dark on `marciana`. Both test cases now exist, so this is a bounded
+>   sweep with a pre-committed target, not open-ended tuning.
+> - ⚠ **This does NOT violate the "do not tune the detector further" rule.** That rule governs the
+>   _pellet-brightness_ threshold (`WHITE_LO`, areas, circularity). `--relock-conf-min` is
+>   crosshair-lock acquisition — a different subsystem, and one with an objective pass/fail on two
+>   videos.
+> - **§0.6 is answered in the affirmative, and it is worse than assumed.** Missed shots here are
+>   **SELECTED**, not random — contiguous multi-second windows. Detection rate on tree code is
+>   **48%**, not the 78% this plan has been quoting. Since bands are time windows, a dead stretch
+>   inside a band biases that band's mean rather than merely thinning it.
+> - **Phase 2A gains a concrete, reproducible target** better than "make `guilty` work": eliminate
+>   the `marciana` dropout at fightT ≈ 41–53 and ≈ 69–75, while keeping `noir` locked.
+
 ### H1 — ✅ DONE 2026-07-30 — result: **materially different but non-zero**
 
 Ran exactly the target command (input video is only present in the main tree, not this worktree —
