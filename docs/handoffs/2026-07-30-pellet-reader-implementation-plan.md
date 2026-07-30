@@ -970,6 +970,43 @@ or a zoom/template-scale mismatch, emit a visible error rather than an empty JSO
 H1's zero-shot stop and the crosshair-validity banner: **a reader that knows it failed is usable; one
 that reports 0 as data is not.**
 
+### ✅ H3 — DONE 2026-07-30
+
+All three parts landed in `scripts/probe/read-pellets.ts` (commit `42fd4e1`):
+
+1. **`--zoom` default changed 3 → 2.** Confirmed nothing in-tree relies on 3 first: every doc/skill/
+   script invocation of `read-pellets.ts` already passes `--zoom 2` explicitly (`frames.ts` and
+   `read-burst-gauge.ts` have their own unrelated `--zoom 3` usage on a different tool, not this
+   default). Called out as a default-behaviour change in the commit message.
+2. **Doc/usage strings corrected** (`read-pellets.ts:12`, `:54`) — both said 4, now say 2.
+3. **Two loud-failure guards added**, both exit non-zero and skip writing `pellets.json` rather than
+   emitting an empty-but-valid one:
+   - **Template-size-vs-zoom check** (before the counter subprocess runs, template mode only): reads
+     the actual ammo template's PNG dimensions, derives the implied zoom (74–82px ⇒ zoom 2, since
+     `extract-ammo-template.py` never rescales its seed template to the run's `--zoom` — every
+     template this pipeline produces is implicitly zoom-2-shaped), and errors with both values named
+     if it disagrees with `--zoom` by more than 0.5.
+   - **Zero-locked / zero-shots check** (after the counter runs): errors if every pellet read is zero
+     (crosshair never locked all run) or if debouncing produced zero shots, naming `--zoom` and
+     `--locate` in the diagnostic.
+
+**Verified the guard actually fires**, not just written: a 6 s clip run in `template` mode at
+`--zoom 3` now exits 1 with the size/zoom-mismatch diagnostic (template read as 82×82px ⇒ implied
+zoom ≈2.2) and no `pellets.json` is written. The same clip at the new `--zoom 2` default instead hit
+the _second_ guard (zero non-zero reads) — a real, different finding: a 6 s window this early
+(`--at 3 --dur 6`) doesn't reliably lock the crosshair, not a false positive. Re-run at the H1
+reference window (`--at 30 --dur 60`) exits 0 and reproduces H1's tree-code numbers exactly (43
+shots, 29 valid, avgTotal 7.3, avgRed 0.17), confirming the fix is behaviour-neutral for a
+correctly-scaled, adequately-long run.
+
+`bash scripts/verify.sh`, `count-pellets.py --selftest`, and `analyze-pellet-tracks.py --selftest`
+all pass.
+
+**Not investigated, out of scope for H3:** _why_ a short early-fight window fails to lock at all —
+that's `--relock-conf-min` / matcher behaviour (H5 territory), not H3's zoom/scale-mismatch bug. The
+new zero-locked guard just makes that failure mode visible instead of silent; H4/H5/Phase 2A own
+diagnosing it further.
+
 ### H4 — §0.6 (missed-shot selection)
 
 Unchanged, specified at §0.6. Cheap, and it may retire the "22% missed" item entirely.
