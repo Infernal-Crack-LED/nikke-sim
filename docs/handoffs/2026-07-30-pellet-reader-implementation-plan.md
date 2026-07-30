@@ -1002,10 +1002,29 @@ correctly-scaled, adequately-long run.
 `bash scripts/verify.sh`, `count-pellets.py --selftest`, and `analyze-pellet-tracks.py --selftest`
 all pass.
 
-**Not investigated, out of scope for H3:** _why_ a short early-fight window fails to lock at all —
-that's `--relock-conf-min` / matcher behaviour (H5 territory), not H3's zoom/scale-mismatch bug. The
-new zero-locked guard just makes that failure mode visible instead of silent; H4/H5/Phase 2A own
-diagnosing it further.
+**~~Not investigated, out of scope for H3:~~ ✅ CLOSED by the driver, same day — it is not an open
+thread and not H5 territory.** The H3 pass correctly deferred "why does a short window fail to lock",
+suspecting `--relock-conf-min` / matcher behaviour. Two controlled 6 s runs settle it:
+
+| 6 s clip                                 | `template`               | `structural`              |
+| ---------------------------------------- | ------------------------ | ------------------------- |
+| control window (fightT 56–62)            | exit 0, 8 valid shots    | exit 0, 8 valid shots     |
+| **known dead window (fightT 41.4–53.3)** | **exit 1 (guard fires)** | **exit 0, 7 valid shots** |
+
+⇒ **There is no short-clip / cold-start limitation** — both matchers handle a 6 s clip fine in a
+normal stretch, so slice-based validation (including the 600-frame gate-1 slices) is sound. The
+zero-lock was `template` mode failing in **the known dead window**, i.e. the exact failure structural
+localization was built to fix and which §H5 already proved no confidence threshold can fix. **Nothing
+new, nothing deferred, no H4/H5/Phase 2A follow-up owed.**
+
+⇒ Two things confirmed as a bonus: the new guard **fires on the real historical failure case** rather
+than only on a synthetic one, and **structural localization fixes the dead window end-to-end through
+the real orchestrator** — independent corroboration of the earlier per-frame finding, by a different
+route.
+
+⚠ Recorded in place because a deferred-but-actually-closed item is the same hazard as a superseded
+verdict: the next session budgets for an investigation that has no work in it. (This doc already
+cost one session exactly that, with the phantom `guilty` gate-1 failure.)
 
 ### H4 — §0.6 (missed-shot selection)
 
