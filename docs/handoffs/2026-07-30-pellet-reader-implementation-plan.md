@@ -925,11 +925,26 @@ shot recovery, report. **Do not** sweep any other parameter, and do not tune per
 The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
 produces output. That is the gap, not the bug.
 
-Add a committed frame fixture (2–3 PNGs from a known blast — `scratchpad/` is gitignored, which is
-exactly why no such test exists) under `scripts/tests/fixtures/pellets/frames/`, and a test asserting
-that `count-pellets.py --temporal --backend opencv` over it yields **total white > 0**. Verify it
-FAILS against the pre-fix script (`git show 2a1e99c:scripts/probe/count-pellets.py`) and passes now —
-a regression test that never went red proves nothing.
+Add a committed frame fixture (a short **contiguous** run from a known blast — `scratchpad/` is
+gitignored, which is exactly why no such test exists) under `scripts/tests/fixtures/pellets/frames/`,
+and a test asserting that `count-pellets.py --temporal --backend opencv` over it yields
+**total white > 0**. Verify it FAILS against the pre-fix script
+(`git show 2a1e99c:scripts/probe/count-pellets.py`) and passes now — a regression test that never
+went red proves nothing.
+
+**⚠ Design constraint, verified 2026-07-30 — the test must be EXTERNAL to `count-pellets.py`.**
+`2a1e99c` has **no `--selftest`** (that flag postdates it), so a test implemented as another
+`--selftest` mode inside the script **cannot be pointed at the old version**, and the mandatory
+red-demonstration becomes impossible. Write it as a test that invokes a **script path given to it**
+as a subprocess (vitest shelling out, or a small standalone runner), so the same test can run against
+both the current file and `git show 2a1e99c:… > <tmp>/prefix.py`.
+
+**Fixture notes.** Frames must be **contiguous** — temporal mode builds tracks across adjacent
+frames, so scattered frames won't reproduce the behaviour. Known-good source: `run16` frames around
+idx 101 / 118 / 122 / 125 carry white counts 9–11. A driver A/B over `run16` frames 100–118 gave
+**pre-fix total_white = 0, post-fix = 9**, so that range demonstrably discriminates. ⚠ These are
+2606×792 PNGs (~350 KB each) — use the **smallest contiguous run that still shows red-then-green**,
+and state the fixture's total size in the commit.
 
 ### H3 — Zoom mismatch must fail loudly (root cause pinned 2026-07-30)
 
