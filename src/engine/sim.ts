@@ -2347,8 +2347,11 @@ export function runSim(
           }
           break;
         case 'fillGauge':
-          // gauge is locked during full burst — fills landing then are wasted
-          if (fbEndFrame <= frame) {
+          // gauge is locked during full burst AND during the burst chain itself (stages
+          // 1-3) — matches addGauge's guard exactly (owner ruling, 2026-07-30: "Fills
+          // Burst Gauge X%" effects do not bypass the chain lock). Fills landing during
+          // either window are wasted.
+          if (fbEndFrame <= frame && stage === 0) {
             owner.gaugeGenerated += e.pct; // uncapped counter (ranking boards), pre-clamp
             gauge = Math.min(100, gauge + e.pct);
           }

@@ -20,6 +20,7 @@ import type {
 } from '../src/prepare.js';
 import {
   rankBurstGen,
+  burstGenFor,
   BURSTGEN_PROFILES,
   type RanksCtx,
 } from '../src/ranks/burstgen.js';
@@ -51,6 +52,72 @@ for (const slug of ['noop-b1-ar', 'noop-b3-mg']) {
 
 const deps: PrepareDeps = { overrides, skillLevels, cubes, olLines };
 const ctx: RanksCtx = { characters: data.characters as any, mult, deps };
+
+// --isolate-fillgauge <slug>: isolate a unit's `fillGauge` effect channel on the
+// burst-gen board. Runs burstGenFor twice for the given slug — once against its
+// shipped override, once with every `fillGauge` effect block stripped from an
+// IN-MEMORY clone (the committed override on disk is never touched) — and reports
+// the gaugePerSec delta as that channel's contribution. Used to gate the
+// fbEndFrame/stage chain-lock fix on little-mermaid's S1 teamAmmo(400)->fillGauge(37)
+// block (2026-07-30, owner-ruled: Fills-Burst-Gauge effects do not bypass the chain
+// lock). Exits before writing the main artifact — this is a measurement mode, not a
+// board build.
+const isolateArgIdx = process.argv.indexOf('--isolate-fillgauge');
+if (isolateArgIdx >= 0) {
+  const slug = process.argv[isolateArgIdx + 1];
+  if (!slug) {
+    process.stderr.write('--isolate-fillgauge requires a slug argument\n');
+    process.exit(1);
+  }
+  const shipped = overrides[slug];
+  if (!shipped) {
+    process.stderr.write(`${slug}: no override loaded — cannot isolate\n`);
+    process.exit(1);
+  }
+  const withProfile = true; // match the unit's actual board entry (profile if any)
+  const withFill = burstGenFor(slug, ctx, withProfile);
+
+  const stripped = JSON.parse(JSON.stringify(shipped)) as OverrideFile;
+  let hit = false;
+  for (const key of ['skill1', 'skill2', 'burst'] as const) {
+    const blocks = (stripped as any)[key];
+    if (!Array.isArray(blocks)) {
+      continue;
+    }
+    const before = blocks.length;
+    (stripped as any)[key] = blocks.filter(
+      (b: any) => !b.effects?.some((e: any) => e.kind === 'fillGauge')
+    );
+    if ((stripped as any)[key].length !== before) {
+      hit = true;
+    }
+  }
+  if (!hit) {
+    process.stderr.write(
+      `${slug}: no fillGauge effect found in its override — fixture is stale\n`
+    );
+    process.exit(1);
+  }
+  overrides[slug] = stripped;
+  const withoutFill = burstGenFor(slug, ctx, withProfile);
+  overrides[slug] = shipped; // restore (in-memory only; nothing on disk changed)
+
+  const delta = withFill.gaugePerSec - withoutFill.gaugePerSec;
+  process.stdout.write(
+    JSON.stringify(
+      {
+        slug,
+        withProfile,
+        withFillGaugePerSec: withFill.gaugePerSec,
+        withoutFillGaugePerSec: withoutFill.gaugePerSec,
+        fillGaugeChannelDelta: delta,
+      },
+      null,
+      2
+    ) + '\n'
+  );
+  process.exit(0);
+}
 
 // Population: every sim-supported unit (data-driven, NOT tag-driven — the board
 // must catch pure weapon/stat generation monsters the burst-gauge-buffer tag
