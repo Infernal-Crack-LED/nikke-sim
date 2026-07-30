@@ -1035,6 +1035,52 @@ implied by gate 2.
 **Deliverable for §0.5:** at least one `noir` dump that passes gate 1, committed or reproducible by a
 recorded command. §0.5 stays blocked until that exists.
 
+### 2A-G2 — Gate 2 on a full `noir` run (also produces §0.5's deliverable) — NEXT
+
+Gate 1 is met and driver-verified. Gate 2 is unmeasured. **One full-video run settles both**, and its
+dump is exactly what §0.5 has been blocked on since it needs a `noir` dump that is well-localized
+**and** complete.
+
+**Run the END-TO-END orchestrator, not just the counter.** Gate 2 is a shot-level criterion and
+shot debouncing lives in `read-pellets.ts`; `count-pellets.py` alone yields per-frame counts, not
+shots.
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "docs/probes/ar-sg-smg/noir sg.MP4" \
+  --fps 30 --zoom 2 --locate structural \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-noir-structural
+```
+
+⚠ **`--zoom 2` is not optional.** `read-pellets.ts` defaults to `--zoom 3`; every reference run used
+2, and the mismatch **silently yields 0 shots** (H3, still unfixed). Passing it explicitly is the
+workaround, not a fix.
+
+**Pre-committed pass conditions:**
+
+1. **Gate 2 — detection rate ≥60%** of expected shots. Reference: the old template run `noir-sg`
+   found **179 shots** over 5,722 frames (~190 s ⇒ ~286 expected at 1.5/s ≈ **63%**). Structural must
+   not regress detection while fixing localization — **≥179 shots, or ≥60%, whichever is the weaker
+   bar.** ⚠ Per §0.6 the ~1.5/s denominator ignores fire-holds and may be too high; if the rate lands
+   just under 60%, report it against **both** denominators rather than failing it outright.
+2. **Gate 1 holds at full length** — `analyze-pellet-tracks.py` on the run's `tracks.json` still
+   reports **OK** (≥5% near) and wander ≫300 px. The 600-frame slice gave 21.2% / 1675 px; a
+   full-run collapse would mean the slice was unrepresentative.
+3. **§0.5 becomes answerable** — the dump must carry enough long-lived tracks for the normalised
+   area-decay curve to print (the script needs n≥20 per sample position; the 600-frame
+   `noir-near-ce36` had only 5, which is what made §0.5 unanswerable). Then compare the curve to
+   `marciana`'s **0.93 → 0.57 → 0.43 → 0.33 → 0.22** per §0.5.
+
+**⚠ THE ARTIFACT MUST SURVIVE.** The Phase 2A part 2 session's validation dumps did not — the driver
+had to re-derive every number. Write to the **main tree's** `scratchpad/` (the worktree has none, and
+`scratchpad/` is gitignored so it will not be committed), and **confirm the `tracks.json` and
+`pellets.json` still exist on disk after the run** before reporting. Record the exact command in this
+doc. If the run is superseded later, that is fine — losing it silently is not.
+
+**Snag to expect:** the timer spine uses a local VLM endpoint (`--endpoint`, default
+`localhost:8090/v1`). Structural mode skips the VLM _crosshair_ fallback but not the _timer_ read. If
+the endpoint is unavailable, take the fight-clock offset from the existing `noir-sg/pellets.json`
+(`fightStartVideoT = 3`) rather than blocking — shot counts do not depend on the timer.
+
 **Kill condition.** If no localization method generalizes, fall back to a per-video calibration step
 with an explicit committed template per recording and a lock-quality metric that **fails loudly**
 rather than silently producing 3 shots. A counter that knows it failed is usable; one that reports
