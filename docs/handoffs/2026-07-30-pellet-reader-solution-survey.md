@@ -30,10 +30,9 @@ That is, near-verbatim, the problem statement of:
   backgrounds, false-alarm suppression is the whole game).
 
 All three have decades of vetted, benchmarked tooling. **We have been solving a solved problem with
-an ad-hoc method.** Specifically, `count-pellets.py` uses an _absolute RGB threshold_ (`R,G,B ≥ 210`)
-
-- connected components + circularity, which is the one approach every one of those fields abandoned
-  first, for exactly the failure modes we are hitting.
+an ad-hoc method.** Specifically, `count-pellets.py` detects by _absolute RGB threshold_
+(`R,G,B ≥ 210`), then connected components, then a circularity filter — which is the one approach
+every one of those fields abandoned first, for exactly the failure modes we are hitting.
 
 ### 1a. Diagnosis — why the current pipeline fails (from our own record)
 
