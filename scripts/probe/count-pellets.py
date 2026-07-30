@@ -521,6 +521,7 @@ def main():
     parser.add_argument('--min-area', type=int, default=100, help='min component area (px²)')
     parser.add_argument('--max-area', type=int, default=3000, help='max component area (px²)')
     parser.add_argument('--min-circ', type=float, default=0.55, help='min circularity (0..1)')
+    parser.add_argument('--zoom', type=int, default=1, help='upscale factor applied during extraction (for offset/area defaults)')
     parser.add_argument('--red-r-min', type=int, default=200, help='red pellet R-channel floor (default 200)')
     parser.add_argument('--red-gb-max', type=int, default=60, help='red pellet G/B-channel ceiling (default 60; real red pellets anti-alias up to ~90)')
     parser.add_argument('--pellet-unit-area', type=int, default=320, help='approx area (px²) of one pellet at this zoom — basis for peanut multiplicity (default 320 at 2x)')
@@ -531,8 +532,8 @@ def main():
                         help='run one backend only (default: all for A/B)')
     parser.add_argument('--crosshair-file', help='JSON file mapping frame filename to {x,y} normalized 0-1000 crosshair coords')
     parser.add_argument('--ammo-template', help='path to ammo box template image — enables per-frame crosshair tracking via template matching')
-    parser.add_argument('--ammo-offset-x', type=float, default=125, help='crosshair X offset from ammo box center in zoomed px (default 125 = 62.5 native at 2x)')
-    parser.add_argument('--ammo-offset-y', type=float, default=-11, help='crosshair Y offset from ammo box center in zoomed px (default -11 = -5.5 native at 2x)')
+    parser.add_argument('--ammo-offset-x', type=float, default=None, help='crosshair X offset from ammo box center in zoomed px (default = 12.5 native * --zoom)')
+    parser.add_argument('--ammo-offset-y', type=float, default=None, help='crosshair Y offset from ammo box center in zoomed px (default = -100 native * --zoom)')
     parser.add_argument('--ammo-roi-x0', type=float, default=-1, help='if >=0, restrict ammo-box template matching to x >= roi-x0 * frame_width')
     parser.add_argument('--ammo-roi-y0', type=float, default=-1, help='if >=0, restrict ammo-box template matching to y >= roi-y0 * frame_height')
     parser.add_argument('--pellet-radius', type=int, default=80, help='radius of pellet crop in ZOOMED px (default 80)')
@@ -547,6 +548,13 @@ def main():
     parser.add_argument('--labels', help='(--build-atlas) comma-separated counter values, one per input frame, in filename order')
     parser.add_argument('--digit-score-min', type=float, default=0.60, help='min glyph match score; a frame below it ABSTAINS rather than guessing (default 0.60)')
     args = parser.parse_args()
+
+    # Default crosshair offset scales with zoom so direct callers get the same
+    # native geometry as the orchestrator (12.5 px right, 100 px above ammo box centre).
+    if args.ammo_offset_x is None:
+        args.ammo_offset_x = 12.5 * args.zoom
+    if args.ammo_offset_y is None:
+        args.ammo_offset_y = -100 * args.zoom
 
     # Apply tunable red threshold to the module-level constants used by all backends
     global RED_LO, RED_HI
@@ -754,7 +762,7 @@ def main():
                         white += 1
             entry = {"file": fname}
             for name in backends:
-                entry[name] = {"white": white, "red": red, "marker": marker}
+                entry[name] = {"white": white, "red": red, "marker": marker} if name in active else {"white": 0, "red": 0, "marker": 0}
             results.append(entry)
 
         # Optional diagnostic dump: every track with full stats + per-frame crosshair data

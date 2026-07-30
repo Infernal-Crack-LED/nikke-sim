@@ -641,3 +641,32 @@ landing not captured by the class table. Units: drake (explicit 10× lever), sol
 arcana-fortune-mate, isabel (per-unit SG landing residuals). Per-unit landing is CLOSED by owner override
 (open-questions **A31 (U17)** — the class table stands, class-wide far 0.66 rejected); the open tail is
 isabel's mid/midfar clock-drift re-derive (**U27**). The pull-vs-pellet 10× lever stays open.
+
+### 20. `gauge-per-shot.json` `fullChargeBonus` — partly synthesized, disagrees with `characters.json` for 6/44 SR/RL units
+
+Flagged by the implementation review of the 2026-07-29 per-unit focus-multiplier landing
+(`docs/DECISIONS.md` same date). `fullChargeBonus` is now a LIVE engine input
+(`gaugePerShot`, `src/engine/sim.ts`) rather than dead data, which exposes two pre-existing
+data-quality issues:
+
+- **6 of 42 SR/RL gauge rows are `class-modal-SR`/`class-modal-RL`** — a synthesized 250 fill,
+  not a per-unit datamined value, but now consumed identically to a real row. Includes
+  `takina` (one of the two original measured 2.5x anchors — she confirms the class modal, not
+  independently the per-unit rule; `maiden-ice-rose` 250, `scarlet-black-shadow` 150, `alice`
+  350 are genuinely datamined and remain the rule's real confirmations).
+- **4 SR/RL units have `chargeMultiplier: 350` in `characters.json` but NO gauge row at all**
+  (`belorta`, `n102`, `yan`, `yuni`) — the `?? 250` fallback runs them at 2.5x when the repo's
+  own `characters.json` says 3.5x. None is sim-supported today (no override), so this is
+  currently latent, the same shape as `vesti-tactical-upgrade` (now explicitly pinned in
+  `PENDING_TEAM_ISOLATION`, see the same DECISIONS entry) but not yet enumerated/guarded.
+- **One live disagreement**: `raven` (RL, sim-supported) has gauge-row `fullChargeBonus: 250`
+  vs `characters.json` `chargeMultiplier: 0` — the two sources are one resync apart from
+  agreeing on 0, which the `fcb > 0` guard (landed same date) now treats as "missing" rather
+  than zeroing her gauge, but the underlying source disagreement is unresolved.
+
+**Suggested fix (not yet done):** source the multiplier from `characters.json.chargeMultiplier`
+with the gauge row as an explicit override only when it disagrees, or add a lint/validator that
+fails when an SR/RL unit gains an override while its `chargeMultiplier` is neither 250 nor its
+gauge-row value — the same gated-decision treatment scarlet-black-shadow got. Until then: any
+NEW override landing on an SR/RL unit should cross-check `chargeMultiplier` against
+`gauge-per-shot.json` before assuming the fallback/table value is correct.

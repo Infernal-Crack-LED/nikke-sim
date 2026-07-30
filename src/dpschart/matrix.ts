@@ -318,17 +318,74 @@ export const SOLO_BURST_CDR_SEC = 7;
 export interface TestedUnit {
   slug: string;
   element: Element;
+  // Variant-profile id (see CHART_VARIANTS) when this row is the profiled run;
+  // null/undefined = the unit's plain default row.
+  profile?: string | null;
 }
 
-// Per-unit chart profiles: extra UnitOptions applied to a slug WHEN it is the tested
-// carry, encoding a modeling choice the plain defaults don't capture. Documented for
-// players in the "Custom Profiles" disclosure on the DPS Rankings tab. Keep the two in sync.
-//   bready          — run in her Distributed taste (Recommended Taste; the distributed-buff branch)
-// NOTE (backend TODO): diesel-winter-sweets "bursts second / Highlight" is NOT encoded here
-// yet — it needs real burst-order/Highlight modeling; see docs/handoffs/QUEUE.md. It is documented in
-// the Custom Profiles note only, so the chart keeps her faithful Intro numbers for now.
+// MANDATORY per-slug UnitOptions applied WHENEVER a slug is the tested carry,
+// regardless of profile row — a modeling requirement, not a player-chosen build.
+// Documented for players in the "Custom Profiles" disclosure on the DPS Rankings
+// tab. Keep the two in sync.
+//   red-hood — Λ (all-stage) unit pinned to burst stage 3 so she occupies the tested
+//              B3 slot like any other carry (the population filter in
+//              scripts/build-dpschart.ts already pins her effective burst class to
+//              'III'; this pins the sim rotation itself — same forced mapping as the
+//              team generators, src/teamcalc.ts FORCED_BURST)
 export const CHART_PROFILES: Record<string, Partial<UnitOptions>> = {
-  bready: { mode: 'distributed' },
+  'red-hood': { lambdaStage: 3 },
+};
+
+// OPTIONAL per-slug alternate build/rotation, ranked as a SECOND row alongside the
+// unit's plain default (mirrors the buffer/sustain/burstgen boards' comp-profile
+// pattern — src/ranks/buffer.ts DUO_BUFFER_PROFILES, findHits/headline in
+// unitCardData.ts). Every entry here reuses an EXISTING mechanism — a kit `mode`,
+// an existing UnitOptions flag, or (burstsSecond) the engine's own leftmost
+// tie-break — not new engine modeling. `id` is the profile id (surfaced in the
+// artifact's `profiles` map and via profileLabel — keep PROFILE_LABELS in
+// rankTables.ts in sync for a short chip, else it falls back to a generic
+// "w/ <id>" reading).
+//
+// A unit whose default row would only be reachable via genuinely new engine
+// work (no existing toggle or team-shape trick produces the split faithfully)
+// does NOT belong here — e.g. maiden-ice-rose's "burst at 12 MP stacks" was
+// tried via the existing `mpPriority` flag (2026-07-29) and found INERT in
+// every chart team shape: mpPriority only tie-breaks among multiple
+// SIMULTANEOUSLY-eligible burst candidates, and every chart team has the
+// tested unit as the sole real B3 — there is never a second candidate for it
+// to jump ahead of, so both rows came out byte-identical. Dropped rather than
+// ship two rows with the same number.
+export interface ChartVariant {
+  id: string;
+  note: string; // player-facing, in the artifact's `profiles` map + the tab's disclosure
+  opts: Partial<UnitOptions>;
+  // Swap the tested unit's array position with the control B3's (or, in the
+  // Solo framework, the no-op B3's), so the OTHER slot wins the opening
+  // full-burst race under the engine's existing "first-ready, tie→leftmost"
+  // rule (src/engine/sim.ts) — the tested unit's own first burst becomes the
+  // SECOND B3 burst of the fight instead of the first. Verified empirically
+  // (2026-07-29): diesel-winter-sweets's ownBurstGate-driven Intro/Highlight
+  // split already alternates naturally every full burst once the team's two
+  // B3-eligible slots are contested — this only flips which one opens.
+  burstsSecond?: boolean;
+}
+export const CHART_VARIANTS: Record<string, ChartVariant> = {
+  'cinderella-crystal-wave': {
+    id: 'snipe',
+    note: 'Snipe mode — her permanent weapon-swap build (default row is MG)',
+    opts: { mode: 'Snipe' },
+  },
+  bready: {
+    id: 'distributed',
+    note: 'Distributed taste — the distributed-damage-buff branch (default row is Sustained)',
+    opts: { mode: 'distributed' },
+  },
+  'diesel-winter-sweets': {
+    id: 'bursts-second',
+    note: "her first burst is the fight's SECOND B3 burst — she opens in Highlight (the bigger 235.03% sustained tier) instead of Intro (60.19%), then alternates as normal (default row bursts first)",
+    opts: {},
+    burstsSecond: true,
+  },
 };
 
 // Build the 4- or 5-unit control team for one cell + tested unit. Pass
@@ -348,7 +405,25 @@ export function assembleTeam(
     : fw.mast
       ? [tested.slug, MAST, CROWN, controlB3, fw.b1]
       : [tested.slug, CROWN, controlB3, fw.b1];
-  const testedIndex = fw.solo ? 2 : 0;
+  let testedIndex = fw.solo ? 2 : 0;
+
+  // burstsSecond (CHART_VARIANTS): swap the tested unit with the OTHER
+  // B3-eligible slot (the no-op B3 in Solo, controlB3 elsewhere) so that slot
+  // wins the opening leftmost tie-break instead — the tested unit's own first
+  // burst becomes the fight's SECOND B3 burst.
+  const variantForSwap = CHART_VARIANTS[tested.slug];
+  if (
+    tested.profile &&
+    variantForSwap?.id === tested.profile &&
+    variantForSwap.burstsSecond
+  ) {
+    const coB3Index = fw.solo ? 3 : fw.mast ? 3 : 2;
+    [slugs[testedIndex], slugs[coB3Index]] = [
+      slugs[coB3Index],
+      slugs[testedIndex],
+    ];
+    testedIndex = coB3Index;
+  }
 
   const unitOpts: UnitOptions[] = slugs.map((slug, i) => {
     const isTested = i === testedIndex;
@@ -384,6 +459,10 @@ export function assembleTeam(
     }
     if (isTested) {
       Object.assign(opt, CHART_PROFILES[tested.slug] ?? {});
+      const variant = CHART_VARIANTS[tested.slug];
+      if (tested.profile && variant?.id === tested.profile) {
+        Object.assign(opt, variant.opts);
+      }
     }
     return opt;
   });

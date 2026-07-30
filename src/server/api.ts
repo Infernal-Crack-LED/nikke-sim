@@ -32,13 +32,21 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { join, normalize } from 'node:path';
 import type { Canvas, TableCardData } from '../infographics/node/render.js';
-import { loadPortrait } from '../infographics/node/render.js';
+import { loadPortrait, loadIcon } from '../infographics/node/render.js';
 import {
   buildAmmoTable,
   buildChargeTable,
   chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
 } from '../infographics/core/tableData.js';
+import {
+  buildResourcesCard,
+  type ResourcesIcons,
+} from '../infographics/core/resourcesCard.js';
+import {
+  BOSS_TABLES,
+  iconBasename,
+} from '../infographics/core/resourcesData.js';
 import {
   parseRenderSpec,
   specCacheKey,
@@ -61,12 +69,13 @@ import {
   dpsChartData,
   renderDpsChartPng,
   renderTableCardPng,
+  renderResourcesCardPng,
   type DpsArtifact,
 } from './dps-table-cards.js';
 
 // Cached dynamic renders: `<type>.<hash16>.png` — nothing else is servable
 // from the cache dir.
-const CACHE_FILE = /^(team|roster|dps|table)\.[0-9a-f]{16}\.png$/;
+const CACHE_FILE = /^(team|roster|dps|table|resources)\.[0-9a-f]{16}\.png$/;
 
 export const API_PREFIX = '/api/v1/img/';
 
@@ -318,6 +327,37 @@ async function resolveRender(
         file,
         spec,
         render: () => Promise.resolve(renderTableCardPng(data)),
+      };
+    }
+    case 'resources': {
+      const RES_ICON_SIZE = 26; // matches web's .res-stat-icon (styles.css)
+      const [moduleIcon, gearIcon, lockIcon, fodderIcon, ...fragIcons] =
+        await Promise.all([
+          loadIcon('res_module', RES_ICON_SIZE),
+          loadIcon('res_t9_gear', RES_ICON_SIZE),
+          loadIcon('res_lock', RES_ICON_SIZE),
+          loadIcon('res_xp_fodder', RES_ICON_SIZE),
+          ...BOSS_TABLES.map((t) =>
+            loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)
+          ),
+        ]);
+      const fragmentByBoss: ResourcesIcons['fragmentByBoss'] = {};
+      BOSS_TABLES.forEach((t, i) => {
+        fragmentByBoss[t.key] = fragIcons[i] ?? undefined;
+      });
+      const icons: ResourcesIcons = {
+        module: moduleIcon ?? undefined,
+        gear: gearIcon ?? undefined,
+        lock: lockIcon ?? undefined,
+        fodder: fodderIcon ?? undefined,
+        fragmentByBoss,
+      };
+      const resData = buildResourcesCard(spec.tier, icons);
+      resData.icon = ctx.icon ?? undefined;
+      return {
+        file,
+        spec,
+        render: () => Promise.resolve(renderResourcesCardPng(resData)),
       };
     }
   }
@@ -599,6 +639,13 @@ export function registerImgApi(app: Hono, ctx: ApiContext): void {
         table: 'charge-speed',
         unit: c.req.query('unit'),
       }),
+      ctx
+    )
+  );
+  app.get(
+    '/api/v1/img/resources.png',
+    handleDynamicGet(
+      (c) => ({ kind: 'resources', tier: c.req.query('tier') }),
       ctx
     )
   );

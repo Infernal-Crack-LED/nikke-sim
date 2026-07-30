@@ -34,6 +34,14 @@ import {
   TABLE_TITLE_INK_REGION,
   UNIT_TITLE_INK_REGION,
   UNIT_PORTRAIT_TITLE_INK_REGION,
+  RESOURCES_TITLE_INK_REGION,
+  drawResourcesCard,
+  resourcesCardHeight,
+  buildResourcesCard,
+  RESOURCES_CARD_W,
+  loadIcon,
+  BOSS_TABLES,
+  iconBasename,
   type UnitCardVariant,
   type Canvas,
   type Canvas2DLike,
@@ -43,6 +51,8 @@ import {
   type DpsChartData,
   type TableCardData,
   type UnitCardData,
+  type ResourcesCardData,
+  type ResourcesIcons,
 } from '../../../src/infographics/node/render.js';
 import {
   loadUnitCardSources,
@@ -320,6 +330,37 @@ export async function buildTableCardWindow(): Promise<TableCardData> {
   };
 }
 
+// Real icons loaded through the same node/icons.ts path the server route uses
+// (RES_ICON_SIZE mirrors api.ts's resources resolveRender branch) — pins the
+// real drop-icon join, not a hand-stubbed one.
+const RES_ICON_SIZE = 26;
+export async function buildResourcesFixtureCard(): Promise<ResourcesCardData> {
+  const [moduleIcon, gearIcon, lockIcon, fodderIcon, ...fragIcons] =
+    await Promise.all([
+      loadIcon('res_module', RES_ICON_SIZE),
+      loadIcon('res_t9_gear', RES_ICON_SIZE),
+      loadIcon('res_lock', RES_ICON_SIZE),
+      loadIcon('res_xp_fodder', RES_ICON_SIZE),
+      ...BOSS_TABLES.map((t) =>
+        loadIcon(iconBasename(t.fragmentIcon), RES_ICON_SIZE)
+      ),
+    ]);
+  const fragmentByBoss: ResourcesIcons['fragmentByBoss'] = {};
+  BOSS_TABLES.forEach((t, i) => {
+    fragmentByBoss[t.key] = fragIcons[i] ?? undefined;
+  });
+  const icons: ResourcesIcons = {
+    module: moduleIcon ?? undefined,
+    gear: gearIcon ?? undefined,
+    lock: lockIcon ?? undefined,
+    fodder: fodderIcon ?? undefined,
+    fragmentByBoss,
+  };
+  const data = buildResourcesCard(9, icons);
+  data.icon = (await loadSiteIcon()) ?? undefined;
+  return data;
+}
+
 // ---- renders ----------------------------------------------------------------
 
 // A real unit card, built from the REAL artifacts through the same loader the
@@ -333,7 +374,7 @@ export async function buildTableCardWindow(): Promise<TableCardData> {
 export async function buildUnitCard(
   variant: UnitCardVariant = 'discord'
 ): Promise<UnitCardData> {
-  return buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
+  return await buildUnitCardRender(loadUnitCardSources(), 'crown', variant);
 }
 
 export interface FixtureRender {
@@ -424,6 +465,17 @@ export async function renderAll(): Promise<FixtureRender[]> {
     tableWindowed
   );
   finish('table-card-window.png', tableWindowedCanvas, TABLE_TITLE_INK_REGION);
+
+  const resources = await buildResourcesFixtureCard();
+  const resourcesCanvas = createCanvas(
+    RESOURCES_CARD_W,
+    resourcesCardHeight(resources.sections.length)
+  );
+  drawResourcesCard(
+    resourcesCanvas.getContext('2d') as unknown as Canvas2DLike,
+    resources
+  );
+  finish('resources-card.png', resourcesCanvas, RESOURCES_TITLE_INK_REGION);
 
   // BOTH variants are pinned: they are separate layout functions over one
   // model, so a change to the shared sections has to be seen in both pictures.
