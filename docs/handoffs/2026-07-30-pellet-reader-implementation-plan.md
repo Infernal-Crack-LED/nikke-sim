@@ -795,7 +795,98 @@ not a diagnosis pass).
 `--relock-conf-min` stricter seeding losing more events than it gains, or the temporal-count fix
 changing which frames clear the temporal filter) — that is diagnosis work, not H1's stop condition.
 
-### H2 — Regression test: temporal counts are never silently zero
+### H5 — ⛔ CANCELLED before running: no `--relock-conf-min` value can work. Confidence tuning is a dead end.
+
+**This was drafted as a 6-point sweep. A 4-minute check against data already in hand determined its
+outcome, so it was cancelled rather than run.** Recorded in full because the _reason_ it fails is the
+evidence that sends Phase 2A structural.
+
+**The mechanism, confirmed independently of the shot-count derivation.** H1's dump records
+per-frame `cross_confs`. Fix 1 requires **conf ≥ 0.55** to seed or override a lock:
+
+| window (fightT)             | median conf | <0.30 | 0.30–0.55 | **≥0.55** |
+| --------------------------- | ----------- | ----- | --------- | --------- |
+| DEAD 41.4→53.3              | 0.408       | 0%    | **100%**  | **0%**    |
+| DEAD 68.7→75.4              | 0.371       | 0%    | **100%**  | **0%**    |
+| control 56→68 (both detect) | 0.457       | 0%    | 56%       | 44%       |
+| control 33→41               | 0.366       | 0%    | 91%       | 9%        |
+
+The dead windows are **exactly** the stretches where confidence never reaches 0.55. Mechanism proved
+by a signal entirely separate from the shot counts — the diagnosis is now double-sourced.
+
+**Why no threshold fixes it.** The frozen `noir` lock's own confidence distribution
+(`noir-near-ce36`, 600 frames): **median 0.430**, 61% in 0.30–0.45, **25.5% at ≥0.55**.
+
+- To reject `noir`'s false seed you need a bar **above ~0.45**.
+- To re-lock in `marciana`'s dead windows you need a bar **at or below ~0.40**.
+- **No value satisfies both.** The bands overlap — as the Phase 2A pass already reported
+  ("the false seed and the real box occupy overlapping confidence bands"). That report was right and
+  this doc was briefly about to route around it.
+
+**The sharper statement, and it is what matters.** Fix 1 works on `noir` because `noir` _has_
+high-confidence frames available (25.5% ≥0.55) — the real ammo box outbids the 0.43 smoke.
+`marciana`'s dead windows have **0% ≥0.55**: there is no confident match available _at all_. So
+lowering the bar would not "recover the lock" — it would let whatever happens to score ~0.40 win,
+which on `noir` was demonstrably background smoke. **Lowering the threshold is not a fix; it is a
+gamble that the best sub-0.55 candidate is the real box.**
+
+⇒ **Confidence-threshold policy cannot solve this.** The dead windows need a fundamentally better
+matcher — structural / multi-template localization, i.e. **Phase 2A part 2**. Carry-forward is not an
+alternative either: holding the last position through a 12 s stretch while the aim point moves is
+wrong by construction.
+
+⇒ **Keep `--relock-conf-min 0.55` as-is.** It is correct where a confident match exists, and no other
+value is better. The `marciana` dropout is a _matcher_ limitation, not a _threshold_ one.
+
+<details><summary>Original sweep design (cancelled — kept for the reasoning trail)</summary>
+
+**Why.** H1's diagnosis: `--relock-conf-min 0.55` fixed `noir`'s seed-freeze but goes dark on
+`marciana` for ~18 s, costing 27 real shots (detection 78% → 48%). Directionally right,
+mis-calibrated. Both failure modes now have a cached test case, so this is a **bounded sweep with a
+pre-committed rule**, not open-ended tuning.
+
+⚠ **This does not violate "do not tune the detector further."** That rule governs the
+_pellet-brightness_ threshold (`WHITE_LO`, `min_area`, `min_circ`). This is crosshair-lock
+acquisition — a different subsystem with an objective two-video pass/fail.
+
+**Metrics (both printed by `analyze-pellet-tracks.py` since 2026-07-30):**
+
+| Metric                | Healthy ref (`marciana`/run16) | Frozen ref (`noir-near-ce36`, pre-fix) | Current tree code (H1) |
+| --------------------- | ------------------------------ | -------------------------------------- | ---------------------- |
+| crosshair-validity    | 14.3% near                     | 1.3% near (BROKEN)                     | 7.9% near              |
+| lock wander (x range) | 2351 px                        | 87 px (FROZEN)                         | **898 px**             |
+
+Wander is the **direct** signature of a freeze; near-fraction is an indirect proxy. H1's compressed
+898 px independently corroborates the dead-window finding.
+
+**Method — reuse cached frames, no ffmpeg, no VLM.** Both frame sets already exist:
+
+- `marciana` coverage case: `scratchpad/pellets/h1-marciana-treecode/frames-pellet` (1800 frames)
+  plus that dir's own `ammo-box-template.png`.
+- `noir` freeze case: `scratchpad/pellets/noir-near-ce36/frames-pellet` (600 frames). ⚠ Its committed
+  `tracks.json` is **pre-fix** output — re-running these frames with today's code is precisely the
+  test of whether Fix 1 unfroze it.
+
+Run `count-pellets.py … --temporal --dump-tracks <out>` per sweep point, then
+`analyze-pellet-tracks.py --tracks <out>`. Take each dump's params from its own recorded `params`
+block. Sweep `--relock-conf-min` ∈ **{0.30, 0.35, 0.40, 0.45, 0.50, 0.55}**. ~4.4 min per
+`marciana` point (146 ms/frame × 1800), ~1.5 min per `noir` point — roughly 35 min total.
+
+**Pre-committed decision rule.** For each value record: near-fraction, wander, longest zero-white
+frame run (the dead-stretch metric), and non-zero frame count.
+
+1. **`noir` must PASS**: wander **> 300 px** AND near-fraction **≥ 5%**. This is the guard Fix 1 was
+   introduced for; a value that re-freezes `noir` is disqualified no matter how good `marciana` looks.
+2. **Among the values passing (1), choose the LOWEST** — lower is more permissive, hence better
+   `marciana` coverage.
+3. **`marciana` must actually improve**: longest zero-white run must drop materially below the
+   current tree-code value, toward run18's ≤2.5 s (≈75 frames at 30 fps). If no passing value
+   improves it, **report that and stop** — it means the freeze and the dropout are not separable by
+   this one knob, which is a genuine finding and sends Phase 2A structural.
+4. **Ties → prefer the HIGHER (safer) value.**
+
+**Stop condition.** Record the table, apply the winning default, re-run H1's command once to confirm
+shot recovery, report. **Do not** sweep any other parameter, and do not tune per-video.
 
 The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
 produces output. That is the gap, not the bug.
