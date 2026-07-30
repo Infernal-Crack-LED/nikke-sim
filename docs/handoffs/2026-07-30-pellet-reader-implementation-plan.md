@@ -244,10 +244,21 @@ largest single measured gap in the reader.
 
 ## Working agreement
 
-- **Worktree.** `git worktree add ../nikke-sim-wt-pellet -b fix/pellet-reader` (public `.git`).
-  `scripts/probe/**` is not in the protected-paths table, but this is a multi-phase build on a shared
-  tree — isolate it. Note: the restore worktree has no venv; use the main tree's
-  `scripts/probe/.venv/bin/python`.
+- **Worktree — already created 2026-07-30.** `/Users/maxwellsutton/nikke-sim-wt-pellet` on branch
+  `fix/pellet-reader`. `scripts/probe/**` is not in the protected-paths table, but this is a
+  multi-phase build on a shared tree — keep it isolated.
+- **Two setup gotchas, both already handled here; re-read if you ever rebuild the worktree:**
+  1. **No Python venv in a worktree.** Use the main tree's interpreter by absolute path:
+     `/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python`. Verified working from the
+     worktree (`--selftest` passes).
+  2. **`NODE_ENV=production` is set in this environment**, which makes npm apply `omit=dev` and
+     silently skip devDependencies — so a plain `npm install`/`npm ci` yields a tree with no
+     prettier / typescript / lint-staged / husky, and the **pre-commit hook then fails with a
+     confusing `Task failed to spawn: prettier --write ENOENT`**. Install with:
+     `NODE_ENV=development npm ci --include=dev --ignore-scripts`. (`--ignore-scripts` avoids the
+     chicken-and-egg where the `prepare` script calls `husky` before husky exists.) Expect **199**
+     entries in `node_modules`; 75 means devDeps were skipped.
+     Do **not** work around a failing hook with `--no-verify` — `CLAUDE.md` forbids it.
 - **Commit per phase** (constraint 2: commit early/often, never push). Every script/fixture built
   here gets committed at a named path (constraint 9) — no `/tmp` instruments.
 - **Every phase has an exit criterion and a kill condition.** If a phase fails its criterion, the
@@ -287,10 +298,20 @@ from `main` displaces the counting window by **125 native px** against a `--pell
 > Recorded because the shard-level evidence (git archaeology) pointed hard at a conclusion the
 > whole-picture check refutes. **The bug is real and latent, not historical.**
 
-**Steps.** Cherry-pick `b69b5c6`'s one-line fix onto the worktree. Do **not** merge
-`fix/pellet-counter-restore` wholesale — it branched off an older `origin/main` and its diff deletes
-~3,600 lines of tests/fixtures that exist on `main` today. Add a vitest pin on the default so it
-cannot silently flip again.
+**Steps. ⚠ Do NOT run `git cherry-pick b69b5c6` — verified 2026-07-30, it is not a one-line commit.**
+It touches 4 files / +414 lines and would **add `scripts/unigeo/marker_detect2.py` and
+`marker_track.py`, which are not on `main`** — the parked ring-detector code this plan lists as a
+dead path. Nor may you merge `fix/pellet-counter-restore` wholesale: it branched off an older
+`origin/main` and its diff deletes ~3,600 lines of tests/fixtures that exist on `main` today.
+
+The fix is **a single character** — `scripts/probe/read-pellets.ts:66`, drop the minus sign:
+
+```ts
+-const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
++const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
+```
+
+Make that edit directly. Then add a vitest pin on the default so it cannot silently flip again.
 
 **Exit criterion.** Re-running `marciana-solo` from `main` reproduces the run18 numbers (70 shots,
 avgTotal 7.6). If it doesn't, the offset was load-bearing in a way this analysis missed — stop and
