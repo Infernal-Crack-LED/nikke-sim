@@ -185,14 +185,14 @@ had nothing to record). Blast-radius order, top of the census first:
       firings from blanc's own ~5s organic mag cycle between triggers. No engine bug surfaced.
 - [x] `mode` / `modes` (7 each) → `scripts/tests/engine/mode-gate.test.ts` (landed 2026-07-29) — the
       static per-block mode gate resolved once at prepare-time (`skills.blocks.filter(b => !b.mode ||
-  b.mode === selectedMode)`), so a single frame-0 `passive` `flatDamage` per candidate block is a
+b.mode === selectedMode)`), so a single frame-0 `passive` `flatDamage` per candidate block is a
       complete readout: no unselected-mode default falls back to `modes[0]`; selecting a mode swaps
       which mode-tagged block is live without touching an ungated (no-`mode`-field) block; an
       unrecognized mode string falls back to `modes[0]` rather than firing nothing or crashing. No
       timing/rotation machinery needed — 3 assertions, all exact-set.
 - [x] `escalating` (6) → `scripts/tests/engine/escalating.test.ts` (landed 2026-07-29) — the
       Liter-style Once:/Twice:/… ladder is CUMULATIVE (`steps.slice(0, min(activations,
-  steps.length))` re-applied in full on every activation), not "fire only the newest step": a
+steps.length))` re-applied in full on every activation), not "fire only the newest step": a
       3-step synthetic ladder on an `interval` trigger shows activation 1 firing step 0 alone,
       activation 2 firing steps 0+1 (step 0 genuinely re-fires), activation 3 all three — and every
       activation past `steps.length` stays clamped at the full ladder rather than indexing out of
@@ -288,8 +288,16 @@ cover-HP restore emits nothing).
       tsconfig `include` so typecheck covers it.
 - [x] **1d LANDED 2026-07-23** — `cfg.onEvent` on the `onevent` worktree, step-7 reviewed, merged.
       Output byte-identical (whole-board A/B, not just the snapshots). 6 payload follow-ups above.
-- [ ] 2: primitive backfill by census priority (multi-session; findings-only discipline; checklist
-      appended here)
+- [x] 2: **PRIORITY LIST LANDED 2026-07-29** on branch `tdd-step2-backfill` (worktree
+      `../nikke-sim-wt-tdd-step2`, based on `origin/main`; PR pending) — every census-row primitive
+      with >1 carrier now has a dedicated `scripts/tests/engine/*.test.ts` (see the step-2 coverage
+      checklist above for the full landed list + what each one pins). Cross-family reviewed CLEAN
+      (`kimi-code/k3` via `/code-review`; packet + result under `scratchpad/gates/` on that branch,
+      gitignored/local). Findings-only discipline had nothing to record across all 5 files — every
+      assertion passed against the shipped default engine on first or second try, no engine bug
+      surfaced. **NOT fully closed:** two diffuse items remain, deliberately deferred as lower-value/
+      harder-to-scope-as-one-file (see the coverage checklist's "Not yet backfilled" line) — the
+      trigger-kind matrix as its own cross-cutting suite, and gauge suppression during FB/chain.
 - [x] 3: per-unit TDD sessions begin (owner-driven; ongoing — this bullet never "completes", it
       replaces the old kit workflow)
 - [ ] 4: doc/skill reframe + `/skill-maintenance`
