@@ -29,12 +29,20 @@ open-questions **U35**.
   results as evidence about counting — those runs never localized.
 - Prior-art candidates and rejected paths are surveyed. Don't re-research VLM/SAM/Hough.
 
-**Open, in order:** 0.1 (offset fix) · 0.5 (lifecycle stability on `noir`) · 0.6 (missed-shot bias)
-→ Phase 1 infrastructure → Phase 2A ∥ Phase 2 → Phase 3.
+**Open, in order:** ~~0.1~~ ✅ done · **0.5** (lifecycle stability on `noir`) · **0.6** (missed-shot
+bias) → Phase 1 infrastructure → Phase 2A ∥ Phase 2 → Phase 3. One 0.1 leftover: the vitest pin on
+the offset default.
 
-**Do not:** merge `fix/pellet-counter-restore` or `fix/sg-pellet-counter-template` wholesale (both
-branched off an older `origin/main`; cherry-pick only) · tune the current threshold detector further ·
-compare any new number to run16–run19 (the count definition changes in Phase 2).
+**Do not:** tune the current threshold detector further · compare any new number to run16–run19 (the
+count definition changes in Phase 2) · merge `fix/sg-pellet-counter-template` wholesale (still
+branched off an older `origin/main`).
+
+> **⚠ Correction 2026-07-30:** an earlier draft of this list also said "do not merge
+> `fix/pellet-counter-restore` wholesale — it deletes ~3,600 lines of tests/fixtures." **That is no
+> longer true.** The branch was reconciled with `main` on 2026-07-30 and merged clean into
+> `fix/pellet-reader` (8 files, +473/−44). It is now IN this branch — see §0.1. Left visible because
+> a stale prohibition is worse than no prohibition: it would have blocked exactly the merge that
+> resolved 0.1.
 
 ### Dispatch — model tier per phase, and how to scope the prompt
 
@@ -228,10 +236,21 @@ readable frames. The "counts at the worst moment, blind at the best" story is **
 - **The shadowed surround is still a real asset.** A bright core on a dark halo is a textbook
   center-surround signature — the exact response shape of a Laplacian-of-Gaussian. That argues for
   LoG on its merits; it just isn't yet demonstrated here, per correction (2).
-- **Re-open the ring-detector rejection cheaply.** `read-markers.py` was parked for requiring "a dark
-  grey ring our pellets lack" — but the owner says the pellets _do_ have a shadowed surround, and
-  that tool was evaluated on peak frames where a neighbour destroys the ring. A re-test at f8–11 is
-  an hour. (Re-test, not revival — its white thresholds were separately shown to under-count.)
+- **Re-open the ring-detector rejection cheaply — now unblocked.** `read-markers.py` was parked for
+  requiring "a dark grey ring our pellets lack" — but the owner says the pellets _do_ have a shadowed
+  surround, and that tool was evaluated on peak frames where a neighbour destroys the ring. A re-test
+  at f8–11 is an hour. (Re-test, not revival — its white thresholds were separately shown to
+  under-count.) **The 2026-07-30 merge put the code in-tree**: `scripts/unigeo/marker_detect2.py`
+  (+175), `scripts/unigeo/marker_track.py` (+144), and `read-markers.py` (+128, incl. the tuned
+  ammo-box crosshair track). Previously this re-test would have required resurrecting files that were
+  on no merged branch.
+- **Phase 2A's salvage target is now in-tree too.** The plan names `read-markers.py`'s ammo-box
+  crosshair track as "the one sound part" of the parked tool and a candidate localization fix for
+  `guilty`/`isabel`. It arrived with the same merge — Phase 2A no longer starts by reconstructing it.
+- **⚠ Do not read the merge as reviving the ring detector.** `.claude/skills/probe-processing/SKILL.md`
+  came along and now correctly demotes `read-markers.py` to **PARKED WIP** while naming
+  `read-pellets.ts` the SG pellet counter. That matches this plan. The merge makes the parked code
+  _available to re-test_; it does not make it the counter.
 
 **⇒ Consequence for ordering.** Detection is _not_ the top defect, so the draft's promotion of
 matched-filter detection ahead of counting is **withdrawn** — the phase order below stands as
@@ -298,20 +317,33 @@ from `main` displaces the counting window by **125 native px** against a `--pell
 > Recorded because the shard-level evidence (git archaeology) pointed hard at a conclusion the
 > whole-picture check refutes. **The bug is real and latent, not historical.**
 
-**Steps. ⚠ Do NOT run `git cherry-pick b69b5c6` — verified 2026-07-30, it is not a one-line commit.**
-It touches 4 files / +414 lines and would **add `scripts/unigeo/marker_detect2.py` and
-`marker_track.py`, which are not on `main`** — the parked ring-detector code this plan lists as a
-dead path. Nor may you merge `fix/pellet-counter-restore` wholesale: it branched off an older
-`origin/main` and its diff deletes ~3,600 lines of tests/fixtures that exist on `main` today.
+### ✅ 0.1 — DONE 2026-07-30 by merging `fix/pellet-counter-restore`
 
-The fix is **a single character** — `scripts/probe/read-pellets.ts:66`, drop the minus sign:
+**Superseded by events, and the fix is better than this plan specified.** The owner flagged that
+in-progress pellet-counter work had never been merged. `fix/pellet-counter-restore` was brought up to
+date with `main` that same day ("resolving merge conflicts"), which **retired the staleness this plan
+warned about** — the ~3,600-line test/fixture deletion is gone. It now merges **clean**: 8 files,
++473/−44, no mass deletions. Merged into `fix/pellet-reader`.
 
-```ts
--const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? -62.5);
-+const ammoOffsetXNative = Number(flags['ammo-offset-x'] ?? 62.5);
-```
+It fixes the offset in **both** places — this plan only knew about the first:
 
-Make that edit directly. Then add a vitest pin on the default so it cannot silently flip again.
+| File                                     | Before                                     | After                                      |
+| ---------------------------------------- | ------------------------------------------ | ------------------------------------------ |
+| `scripts/probe/read-pellets.ts:66`       | `?? -62.5`                                 | **`?? 62.5`**                              |
+| `scripts/probe/count-pellets.py:535-536` | `default=None` → `12.5*zoom` / `-100*zoom` | **`default=125` / `default=-11`** (zoomed) |
+
+The Python-side fix matters independently: the plan dismissed it as "always overridden by
+`read-pellets.ts`", which is true only when the TS orchestrator drives it. **Phase 0.5 and the
+diagnostics call `count-pellets.py` directly**, and would have used a crosshair 100 zoomed px off.
+
+**Independent corroboration that `+125 / −11` is right** (checked before trusting the merge): `run16`
+— the run whose output actually matches ground truth (avgTotal 7.6 vs owner 7–9) — recorded
+`ammo_offset_x = 125.0, ammo_offset_y = -11.0` in its own params. The merge makes the shipped
+defaults equal to what the known-good run used. It also confirms every 2026-07-30 measurement in this
+doc, and the committed fixture, were taken with the **correct** crosshair.
+
+**Still open from 0.1:** add a vitest pin on the `read-pellets.ts` default so it cannot silently flip
+again — that is what let `5c62a2d` introduce the wrong sign unnoticed on 2026-07-29.
 
 **Exit criterion.** Re-running `marciana-solo` from `main` reproduces the run18 numbers (70 shots,
 avgTotal 7.6). If it doesn't, the offset was load-bearing in a way this analysis missed — stop and
@@ -852,6 +884,14 @@ already overturned this plan's own first draft once (see the 0.1 callout).
   two different faults (`guilty`/`isabel` localization vs `noir` method-level coldness) conflated
   into one "the counter failed" conclusion, plus an un-diagnosed `noir` 179→107 regression in the
   patch that was adopted to fix `guilty`.
+- **`fix/pellet-counter-restore` merged (2026-07-30, owner-flagged).** Resolves §0.1 in both files,
+  retires this plan's own "do not merge it wholesale" warning (the staleness was fixed upstream that
+  day), and lands the parked marker code so the f8–11 ring re-test and Phase 2A's crosshair salvage
+  are unblocked. ⚠ **Touches a protected path** — `.claude/skills/probe-processing/SKILL.md` — which
+  `CLAUDE.md` says never to modify without an explicit owner ask; merged under the owner's
+  "pellet-counter work wasn't merged in" instruction, and the change is corrective (it demotes
+  `read-markers.py` to PARKED WIP and names `read-pellets.ts` the SG counter). **Flagged for owner
+  review rather than treated as covered** — revert that one file if the ask did not extend to it.
 - **Phase 2 rewritten around the lifecycle (owner spec + §2.0 corroboration).** The design changed
   from "count track births" to **process all 13 frames, count on ~5** — separating identity (the
   full curve), counting (f1, f8–11) and phase anchoring (onset). The reason is specific: the record's
