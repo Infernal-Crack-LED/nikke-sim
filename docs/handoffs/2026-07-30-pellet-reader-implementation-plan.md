@@ -244,10 +244,21 @@ largest single measured gap in the reader.
 
 ## Working agreement
 
-- **Worktree.** `git worktree add ../nikke-sim-wt-pellet -b fix/pellet-reader` (public `.git`).
-  `scripts/probe/**` is not in the protected-paths table, but this is a multi-phase build on a shared
-  tree — isolate it. Note: the restore worktree has no venv; use the main tree's
-  `scripts/probe/.venv/bin/python`.
+- **Worktree — already created 2026-07-30.** `/Users/maxwellsutton/nikke-sim-wt-pellet` on branch
+  `fix/pellet-reader`. `scripts/probe/**` is not in the protected-paths table, but this is a
+  multi-phase build on a shared tree — keep it isolated.
+- **Two setup gotchas, both already handled here; re-read if you ever rebuild the worktree:**
+  1. **No Python venv in a worktree.** Use the main tree's interpreter by absolute path:
+     `/Users/maxwellsutton/nikke-sim/scripts/probe/.venv/bin/python`. Verified working from the
+     worktree (`--selftest` passes).
+  2. **`NODE_ENV=production` is set in this environment**, which makes npm apply `omit=dev` and
+     silently skip devDependencies — so a plain `npm install`/`npm ci` yields a tree with no
+     prettier / typescript / lint-staged / husky, and the **pre-commit hook then fails with a
+     confusing `Task failed to spawn: prettier --write ENOENT`**. Install with:
+     `NODE_ENV=development npm ci --include=dev --ignore-scripts`. (`--ignore-scripts` avoids the
+     chicken-and-egg where the `prepare` script calls `husky` before husky exists.) Expect **199**
+     entries in `node_modules`; 75 means devDeps were skipped.
+     Do **not** work around a failing hook with `--no-verify` — `CLAUDE.md` forbids it.
 - **Commit per phase** (constraint 2: commit early/often, never push). Every script/fixture built
   here gets committed at a named path (constraint 9) — no `/tmp` instruments.
 - **Every phase has an exit criterion and a kill condition.** If a phase fails its criterion, the
