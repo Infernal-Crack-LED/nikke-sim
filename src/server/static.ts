@@ -56,16 +56,21 @@ const TAB_META: Record<string, { title: string; desc: string }> = {
     desc: 'Ranked DPS of every NIKKE B3 carry under standardized solo-raid frameworks. Compare units, see best overload lines, and find your best carries.',
   },
   dps: {
-    title: 'Custom DPS Rankings — NIKKE Head-to-Head Unit Comparator',
-    desc: 'Head-to-head per-unit DPS comparison with a custom framework. Pit any NIKKE against any other under identical conditions.',
+    title: 'Unit Comparison — NIKKE Head-to-Head DPS Comparator',
+    desc: 'Head-to-head per-unit DPS comparison with a custom control group. Pit any NIKKE against any other under identical conditions.',
+  },
+  ranks: {
+    title:
+      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Buffer Boards',
+    desc: 'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
   },
   team: {
-    title: 'NIKKE Optimal Team Generator — Best 5-Nikke Team Builder',
+    title: 'NIKKE Team Generator — Best 5-Unit Solo Raid Team',
     desc: 'Generate the best 5-Nikke solo-raid team against a custom boss profile. Factors element, burst rotation, and overload synergy.',
   },
   roster: {
-    title: 'NIKKE Solo-Raid Roster Generator — Best Team from Your Units',
-    desc: 'Input your NIKKE roster and generate the optimal solo-raid team. Accounts for your actual units, gear, and overload lines.',
+    title: 'NIKKE Roster Generator — Best Solo-Raid Teams from Your Units',
+    desc: 'Input your NIKKE roster and generate the optimal solo-raid teams. Accounts for your actual units, gear, and overload lines.',
   },
   rostersim: {
     title: 'NIKKE Roster Sim — Compare All Your Solo-Raid Teams',
@@ -84,12 +89,12 @@ const TAB_META: Record<string, { title: string; desc: string }> = {
     desc: 'Calculate the most resource-efficient path to level your dolls (Favorite Items) to SR phase 15. Minimize waste, maximize stats.',
   },
   charge: {
-    title: 'NIKKE Charge Speed Breakpoints — RL & SR Frame Table',
-    desc: 'Charge-speed frame breakpoints for every RL and SR in NIKKE. See exactly how much charge speed you need to hit each frame threshold.',
+    title: 'NIKKE Overload Breakpoints — Charge Speed & Max Ammo Tables',
+    desc: 'Charge-speed frame breakpoints and max-ammo line costs for every RL and SR in NIKKE. See exactly how many overload lines each breakpoint takes.',
   },
   teambuilder: {
     title: 'NIKKE Team Builder — Visual Team Planner & Loadout Editor',
-    desc: 'Build and share NIKKE solo-raid teams visually. Set loadouts, tweak overload lines, and share your team composition with a link.',
+    desc: 'Build and share NIKKE solo-raid teams visually. Filter the full roster, set loadouts, and copy your team into the sim or roster sim.',
   },
   resources: {
     title: 'NIKKE Resource Calculator — Daily Custom Module & Fragment Income',
@@ -152,18 +157,40 @@ const escapeAttr = (s: string): string =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
+// The rankings section lives under /ranks/* (owner decision 2026-07-26):
+// bare /ranks is the DPS chart, /ranks/support is Support Rankings, and
+// /ranks/compare is Unit Comparison — mirrors tabFromLocation in App.tsx.
+// /dpschart and /dps are legacy aliases the client canonicalizes via
+// replaceState; a non-JS crawler still needs the right tab meta AND a
+// canonical tag pointing at the real URL (legacyCanonical below), not itself.
 function tabFromReqUrl(u: URL): string {
-  const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
-  if (seg && TAB_META[seg]) {
-    return seg;
+  const segs = u.pathname.replace(/^\/+|\/+$/g, '').split('/');
+  if (segs[0] === 'ranks') {
+    if (segs[1] === 'support') {
+      return 'ranks';
+    }
+    if (segs[1] === 'compare') {
+      return 'dps';
+    }
+    return 'dpschart';
+  }
+  if (segs[0] && TAB_META[segs[0]]) {
+    return segs[0];
   }
   return u.searchParams.has('chart') ? 'dpschart' : 'sim';
 }
 
+const LEGACY_CANONICAL: Record<string, string> = {
+  dpschart: '/ranks',
+  dps: '/ranks/compare',
+};
+
 function injectMeta(html: string, reqUrl: string): string {
   const u = new URL(reqUrl || '/', SITE);
+  const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
   const m = TAB_META[tabFromReqUrl(u)];
-  const canonical = escapeAttr(SITE + (reqUrl || '/'));
+  const canonicalPath = LEGACY_CANONICAL[seg] ?? (u.pathname || '/');
+  const canonical = escapeAttr(SITE + canonicalPath);
   const title = escapeAttr(m.title);
   const desc = escapeAttr(m.desc);
   return html
