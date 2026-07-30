@@ -14,6 +14,38 @@ DECISIONS leaves the stale question here reading as live — always move it.
 
 ## UNANSWERED
 
+### U37 — does in-game burst gauge scale with concurrent DoT-stack count? (opened 2026-07-29)
+
+**Status: engine-modeling question, CANNOT-VERIFY from any primary source currently in this repo.**
+`src/engine/sim.ts` generates burst gauge on every live DoT instance's tick (`skillGauge()`, sim.ts
+~3303), unconditionally per instance. A unit whose DoT is modeled as a stacking/self-refreshing
+effect (a new independent instance per re-trigger — e.g. raven's S1, `shotFired`-triggered, ~2.7–2.9
+concurrent 5s instances at her measured engine cadence) therefore generates N× the gauge a single
+instance would, purely as an artifact of the damage-modeling encoding (N parallel dot objects),
+regardless of whether the real game's server actually fires N separate burst-energy triggers per
+second in that situation.
+
+The rule's only in-repo citation (`docs/data/burst-gauge.md:181`, "wiki3 measured Haran's S1 DoT at
+290/tick ≈ her SR base" — note the roster slug is `harran`, not `haran`; she has no override, so is
+unmodeled and not itself at risk) was premise-checked (2026-07-29) and found to record ONLY a
+per-tick rate — silent on how many concurrent instances were live when it was measured. It therefore
+neither confirms nor excludes N-linear scaling across concurrently-stacked instances of the same
+source, for `harran` or any other unit.
+
+A concurrency-gated fix (instance election: only the earliest-created still-live instance of a given
+`(ownerIdx, srcSlot)` key generates gauge per tick; damage unaffected) was designed, gated through
+`/scientific-method`, and judge-approved as a non-destructive internal-consistency choice (2-of-2
+ACCEPT, both MEDIUM confidence — capped there because THIS question is unresolved) but LOGGED rather
+than implemented; see `docs/handoffs/scientific-method-harness.md` 2026-07-29 and
+`docs/handoffs/QUEUE.md` for the owner action items.
+
+**To answer it:** focused footage (camera-focused, gauge bar clearly readable) of a stacking-DoT unit
+— `raven` or `ada` are the best candidates already in the roster — during a window with instrumented
+concurrency ≥2, compared against an equivalent window at concurrency 1 (e.g. her opening shots vs
+steady state). If the bar visibly fills faster per real-time second at higher concurrency (beyond
+what her own shot cadence alone would produce), that supports the incumbent N-linear model; if the
+fill rate stays flat regardless of concurrency, that supports concurrency-gated election.
+
 ### U36 — the popup reader's AUTO-ACCEPT path is unexercised: does it hold on a clean-band unit? (opened 2026-07-24)
 
 **Status: an INSTRUMENT question, not a game-mechanics one — but it gates how much popup reading can

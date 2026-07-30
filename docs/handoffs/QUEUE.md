@@ -52,6 +52,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ DOT-TICK BURST-GAUGE CONCURRENCY FIX — judge-approved (2-of-2 ACCEPT, both MEDIUM) but LOG not
+  IMPLEMENT; awaiting owner call.** Full record: `docs/handoffs/scientific-method-harness.md`
+  (2026-07-29 entry). Fix A (dot-instance gauge election — stops N concurrent stacking-DoT instances,
+  e.g. raven's S1, from multiplying burst gauge N×) is committed (`e76093f`) on isolated worktree
+  `worktree-agent-aab3a19427393feb2`, verified byte-identical on every measured pin (all 7 graded
+  comps + jill/anis-star/ada controls), not merged — MEDIUM confidence caps on a CANNOT-VERIFY premise
+  (no footage evidence either direction on whether real burst gauge scales with concurrent dot stacks).
+  **Owner decides:** (1) merge Fix A as a defensible MODEL-ONLY internal-consistency default, or hold
+  for footage; (2) file the required `docs/open-questions.md` UNANSWERED entry (settleable by focused
+  footage of a stacking-dot unit at concurrency ≥2 vs 1); (3) Fix B (`fillGauge` chain-lock parity)
+  surfaced a NEW premise question via an existing little-mermaid kit test — does an in-game "instant
+  gauge fill" effect respect the same chain-lock as continuous generation, or is it a distinct discrete
+  grant? — needs footage/ruling before its own pre-op pass, left uncommitted in the same worktree;
+  (4) spot-check `bready`/`diesel-winter-sweets` (newly-found stacking-dot units, ungraded) if Fix A lands.
+
 - **⇒ 🟡 UNIT-CARD INFOGRAPHIC — LANDED + DEPLOYED (both repos on main).** Render pipeline
   (`scripts/render-unit-card.ts`, `docs/handoffs/2026-07-28-unit-card-infographic-plan.md`) and the
   bakery-bot `/nikke` not-sim-supported line (bakery-bot PRs #29 `nikke-not-sim-supported`, #30

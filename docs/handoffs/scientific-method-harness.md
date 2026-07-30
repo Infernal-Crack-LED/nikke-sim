@@ -357,3 +357,81 @@ probes/burst tests/alice focused.MP4`, crown/liter/alice/red-hood, boss Water, a
   REJECT verdict on Cinderella (an alleged 8-shot gaugeless opener yielding an effective ≈2.2×) — that
   finding was a repeated instrument/reading error, not a real mechanic, and is RETRACTED; do not
   re-derive or re-cite it. Full record: `docs/DECISIONS.md` 2026-07-29 "confirmed true" entry.
+- **2026-07-29 — Dot-tick burst-gauge over-count from concurrent stacking DoT instances (found while
+  auditing the burst-gen ranking chart): DECISION = LOG (not Implement).** Claim: `skillGauge()` fires
+  unconditionally on every live dot instance's tick (`src/engine/sim.ts:3303`), so a unit whose DoT is
+  modeled as a stacking/self-refreshing effect (a new independent instance per re-trigger, e.g. raven's
+  S1 on `shotFired`) generates N× the intended burst gauge when N instances are concurrently live —
+  purely an artifact of how many parallel dot objects encode the damage, not a real per-unit trigger
+  count. The rule's sole citation (Haran/`harran` "290/tick", `docs/data/burst-gauge.md:181`) was
+  premise-checked and found **CANNOT-VERIFY on the instance-count dimension** — it records only a
+  per-tick rate, silent on concurrency, so the incumbent N-linear default has NO evidentiary backing
+  in either direction (also: the unit's real slug is `harran`, not `haran`, and she has no override —
+  unmodeled, not itself at risk).
+  Two independent fixes were designed and driven through the full gate (premise gate → 2 rounds of
+  Fable pre-op revision, after the first mechanism design — a 1-second wall-clock bucket — was caught
+  by Fable implementing H0c, silently 4×-throttling `anis-star`'s single-instance 0.25s-tick dot):
+  **Fix A** (instance election: among concurrently-live dots sharing an `(ownerIdx, srcSlot)` key, only
+  the earliest-created still-live one calls `skillGauge()` on its tick; `dealDamage` unchanged for every
+  instance) and **Fix B** (add the `stage !== 0` chain-lock guard to `fillGauge`, `sim.ts` ~2349, to
+  match `addGauge`'s existing guard — a separate bug where little-mermaid's `teamAmmo:400` instant-fill
+  effect could leak gauge mid-chain).
+  **Fix A: 2-of-2 ACCEPT, both MEDIUM confidence → LOG.** Driver (Opus): ACCEPT MEDIUM. Fable (blind
+  post-op): ACCEPT MEDIUM. Both judges capped at MEDIUM for the SAME structural reason (Q1 split): the
+  _internal-consistency_ claim (leaves every measured pin untouched) is strongly provable — `jill`
+  (single-instance, load-bearing in graded "misc B3s run I" pin 13) and `anis-star` (single-instance,
+  0.25s tick — the sharpest H0c detector) came back byte-identical to the last digit; all 7 graded
+  FB-count pins held; `ada` (2-concurrent-instance case in graded "elec DPS run E") came back
+  byte-identical with a measured mechanistic reason (her duplicate ticks were already guard-locked); a
+  raven discrepancy (measured 1.86× drop vs a pre-derived exact prediction of 2.07× and the [2.5,3.0]×
+  fallback band) was NOT waved through — it was resolved by an index-for-index pre/post instrumentation
+  decomposition proving 0/483 election mismatches and localizing 100% of the gap to a real feedback
+  effect (Fix A lowers raven's own gauge rate, dropping her solo FB count 11→10, which shifts her own
+  chain-lock windows — a confound the frozen pre-fix-timeline prediction couldn't encode). But the
+  _true-mechanic_ claim (is concurrency-gated gauge actually how real NIKKE works, vs the incumbent
+  N-linear) remains CANNOT-VERIFY — zero footage evidence exists either direction — so Q1 is
+  irreducibly split and confidence cannot exceed MEDIUM for this class of change no matter how clean
+  the implementation is. Per the 2-of-2 rule, MEDIUM+MEDIUM = **LOG, not IMPLEMENT**: approved-by-judges
+  as a non-destructive internal-consistency fix, but not landed — the engine was NOT touched on the
+  shared tree. Fix A sits committed (`e76093f`) on the isolated worktree
+  `worktree-agent-aab3a19427393feb2` (branch `worktree-agent-aab3a19427393feb2`), preserved pending an
+  owner decision, not merged back.
+  **Fix B: driver-decided NOT to implement this pass (independent of Fix A's LOG), before reaching the
+  post-op panel.** Fix B passed its own 3 named checks (N6 FB pin holds, no `regression.ts` hard-fail,
+  little-mermaid's N6 total exactly unchanged) but was discovered — via an EXISTING kit-faithfulness
+  test outside any graded comp (`scripts/tests/units/little-mermaid.test.ts`, fixture
+  little-mermaid/crown/ada/`helm` [SR/Water base, not `helm-aquamarine`], boss Iron) — to make her
+  `fillGauge` ability completely inert in that
+  fixture (the M4 "BEHAVIOURAL: the gauge fill is live" assertion flips from pass to fail; her total
+  with-vs-without `fillGauge` becomes bit-identical under Fix B). This surfaces a genuinely new,
+  previously-unexamined premise the original plan didn't anticipate: whether a "Fills Burst Gauge X%"
+  effect is, in real NIKKE, subject to the SAME continuous-generation chain-lock as `addGauge`, or is a
+  mechanically distinct discrete grant that bypasses it — with zero footage evidence either way. Left
+  uncommitted in the same worktree; not sent to Fable pre-op/post-op (a driver call, not a judged
+  REJECT) because the discovery changes the scope of what's being claimed, and a revised plan
+  addressing that premise should go through its own gate rather than being folded into this one.
+  **OWNER ACTION ITEMS** (filed `docs/handoffs/QUEUE.md`): (1) decide whether to merge Fix A
+  (`e76093f`) as-is — it is judge-approved-but-LOG, a defensible internal-consistency default with zero
+  measured-board risk, but not evidence that it's the TRUE mechanic; (2) file the companion
+  `docs/open-questions.md` UNANSWERED entry this plan requires: "does in-game burst gauge scale with
+  concurrent dot-stack count? (settleable by focused footage of raven/ada/any stacking-dot unit,
+  comparing measured gauge-bar fill rate at concurrency ≥2 vs 1)"; (3) decide Fix B's disposition —
+  get real footage or an owner ruling on whether instant `fillGauge` effects respect the chain-lock,
+  before it goes through its own pre-op pass; (4) two previously-unidentified stacking-dot units
+  (`bready`, `diesel-winter-sweets`, neither graded) should get the same byte-identical/board spot-check
+  if/when Fix A lands.
+  **HARNESS LESSONS:** (1) a mechanism design can fail pre-op silently if the negative controls aren't
+  chosen to stress the SPECIFIC implementation detail at risk — the first design (a wall-clock bucket)
+  looked plausible and only broke on a control (anis-star's 0.25s tick) picked BECAUSE Fable spotted the
+  exact failure mode from reading the override files directly, not from the plan's prose. (2) A
+  pre-derived "exact prediction" computed from a frozen pre-fix timeline is invalid for any fix that
+  feeds back into the predicted unit's OWN rotation (gauge changes almost always do) — the miss here
+  was real and had to be affirmatively decomposed, not assumed away by "it's within the fallback band";
+  future plans should predict against a post-fix-timeline simulation or pre-declare the feedback
+  explicitly. (3) Working through a full driver-review round-trip (rejecting the first work-subagent
+  submission for committing past a failing check with a plausible-sounding post-hoc story) caught
+  exactly the failure the harness's "measured truths are constraints, not scores" rule exists to
+  prevent — a good story is not the same as a demonstrated resolution. (4) An unrelated existing test
+  can reveal that a "bug fix" is bigger than scoped (Fix B) — kit-faithfulness tests and the regression
+  snapshot are both real independent checks, and a change that's clean against one gate can still fail
+  a different one for a legitimate reason.
