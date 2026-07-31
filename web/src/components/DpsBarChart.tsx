@@ -7,6 +7,7 @@ import { relScore } from '../../../src/infographics/core/dpsChart';
 import { profileLabel } from '../../../src/infographics/core/rankTables';
 import type { BarEntry } from '../dpschartData';
 import { usePortraitThumbs } from '../usePortraitThumbs';
+import { ChartModal } from './ChartModal';
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
 
@@ -19,31 +20,21 @@ const fmt = (n: number) =>
         ? `${(n / 1e3).toFixed(1)}K`
         : n.toFixed(0);
 
-export interface DpsBarChartProps {
-  title: string;
-  subtitle?: string;
-  bars: BarEntry[];
-  compare?: (BarEntry & { total: number }) | null;
-  // profile id → player-facing note, for the profile pill's tooltip (art.profiles).
-  profiles?: Record<string, string>;
-  // Resolve to whether the copy actually succeeded (link) or how it landed
-  // (image — clipboard vs. a download fallback) so the chip's "copied" flash
-  // reflects reality instead of firing blind.
-  onShareImage?: () => Promise<'copied' | 'downloaded' | 'unsupported'>;
-  onShareLink?: () => Promise<boolean>;
-}
-
-export function DpsBarChart({
-  title,
-  subtitle,
+// The ranked-rows list, factored out so the compact inline chart and the
+// expanded modal (which may show a larger population — see `fullBars`) can
+// each size their own name column against whatever they're actually showing.
+function DpsBarsList({
   bars,
-  compare,
+  max,
+  thumbs,
   profiles,
-  onShareImage,
-  onShareLink,
-}: DpsBarChartProps) {
-  const max = Math.max(...bars.map((b) => b.dps), 1);
-  // Size the name column to the longest BARE name in this chart (e.g. "Snow
+}: {
+  bars: BarEntry[];
+  max: number;
+  thumbs: Record<string, string>;
+  profiles?: Record<string, string>;
+}) {
+  // Size the name column to the longest BARE name in this list (e.g. "Snow
   // White: Heavy Arms") so every plain row shows in full; a profiled row's
   // pill then eats into that same budget, truncating the name instead of
   // growing the row. Character count is a poor proxy for rendered width
@@ -65,10 +56,104 @@ export function DpsBarChart({
     maxNamePx != null
       ? `${Math.ceil(maxNamePx) + 1}px`
       : `${Math.max(...bars.map((b) => b.name.length), 1)}ch`;
+
+  if (bars.length === 0) {
+    return <div className="dpschart-empty">no data</div>;
+  }
+  return (
+    <div className="dpschart-bars">
+      {bars.map((b, i) => (
+        <div
+          className="dpschart-row ranks-row"
+          style={{
+            gridTemplateColumns: `18px 33px ${nameColWidth} minmax(0, 1fr) auto`,
+          }}
+          key={`${b.slug}:${b.profile ?? ''}`}
+        >
+          <span className="dpschart-rank">{i + 1}</span>
+          {b.imageUrl ? (
+            <img
+              className="dpschart-portrait"
+              src={thumbs[b.imageUrl] ?? b.imageUrl}
+              alt={b.name}
+              loading="lazy"
+              title={`${b.name} · ${b.weapon} · ${b.element}`}
+            />
+          ) : (
+            <span
+              className="dpschart-portrait ranks-no-portrait"
+              aria-hidden="true"
+            />
+          )}
+          <span className="ranks-name dpschart-name-row">
+            <span
+              className="dpschart-name"
+              ref={i === 0 ? firstNameRef : undefined}
+              title={`${b.name} · ${b.weapon} · ${b.element}`}
+            >
+              {b.name}
+            </span>
+            {b.profile && (
+              <span className="ranks-badge" title={profiles?.[b.profile]}>
+                {profileLabel(b.profile)}
+              </span>
+            )}
+          </span>
+          <span className="dpschart-track">
+            <span
+              className="dpschart-fill"
+              style={{
+                width: `${Math.max(2, (b.dps / max) * 100)}%`,
+                background: ELEMENT_COLORS[b.element] ?? '#9aa3b2',
+              }}
+            />
+          </span>
+          <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
+            {relScore(b.dps, max)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export interface DpsBarChartProps {
+  title: string;
+  subtitle?: string;
+  bars: BarEntry[];
+  // The full ranked population behind this chart, when the inline `bars` is a
+  // windowed subset (e.g. the DPS Rankings top-10 cards) — the expand modal
+  // shows this instead of the window. Defaults to `bars` (expand just
+  // enlarges) when the chart already shows everything.
+  fullBars?: BarEntry[];
+  compare?: (BarEntry & { total: number }) | null;
+  // profile id → player-facing note, for the profile pill's tooltip (art.profiles).
+  profiles?: Record<string, string>;
+  // Resolve to whether the copy actually succeeded (link) or how it landed
+  // (image — clipboard vs. a download fallback) so the chip's "copied" flash
+  // reflects reality instead of firing blind.
+  onShareImage?: () => Promise<'copied' | 'downloaded' | 'unsupported'>;
+  onShareLink?: () => Promise<boolean>;
+}
+
+export function DpsBarChart({
+  title,
+  subtitle,
+  bars,
+  fullBars,
+  compare,
+  profiles,
+  onShareImage,
+  onShareLink,
+}: DpsBarChartProps) {
+  const expandBars = fullBars ?? bars;
+  const max = Math.max(...bars.map((b) => b.dps), 1);
+  const expandMax = Math.max(...expandBars.map((b) => b.dps), 1);
   const thumbs = usePortraitThumbs(
-    bars.map((b) => b.imageUrl),
+    expandBars.map((b) => b.imageUrl),
     PORTRAIT_CSS
   );
+  const [expanded, setExpanded] = useState(false);
   const [linkFlash, setLinkFlash] = useState(false);
   const [imgFlash, setImgFlash] = useState<'copied' | 'downloaded' | null>(
     null
@@ -93,6 +178,17 @@ export function DpsBarChart({
     setImgFlash(result);
     setTimeout(() => setImgFlash(null), 1500);
   };
+  const compareRow = compare && (
+    <div className="dpschart-compare">
+      <span className="dpschart-name">{compare.name}</span>
+      <span className="dpschart-rankinfo">
+        rank {compare.rank} / {compare.total}
+      </span>
+      <span className="dpschart-val" title={`${fmt(compare.dps)} DPS`}>
+        {relScore(compare.dps, expandMax)}
+      </span>
+    </div>
+  );
   return (
     <div className="dpschart-card">
       <div className="dpschart-head">
@@ -100,102 +196,52 @@ export function DpsBarChart({
           <div className="dpschart-title">{title}</div>
           {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
-        {(onShareLink || onShareImage) && (
-          <div className="dpschart-share">
-            {onShareLink && (
-              <button
-                className={'chip' + (linkFlash ? ' copied' : '')}
-                title="copy link to this chart"
-                onClick={handleShareLink}
-              >
-                {linkFlash ? '✓ Copied' : '🔗'}
-              </button>
-            )}
-            {onShareImage && (
-              <button
-                className={'chip' + (imgFlash ? ' copied' : '')}
-                title="copy chart image"
-                onClick={handleShareImage}
-              >
-                {imgFlash === 'copied'
-                  ? '✓ Copied'
-                  : imgFlash === 'downloaded'
-                    ? '⬇ Saved'
-                    : '🖼'}
-              </button>
-            )}
-          </div>
-        )}
+        <div className="dpschart-share">
+          <button
+            className="chip"
+            title="expand full chart"
+            onClick={() => setExpanded(true)}
+          >
+            ⛶
+          </button>
+          {onShareLink && (
+            <button
+              className={'chip' + (linkFlash ? ' copied' : '')}
+              title="copy link to this chart"
+              onClick={handleShareLink}
+            >
+              {linkFlash ? '✓ Copied' : '🔗'}
+            </button>
+          )}
+          {onShareImage && (
+            <button
+              className={'chip' + (imgFlash ? ' copied' : '')}
+              title="copy chart image"
+              onClick={handleShareImage}
+            >
+              {imgFlash === 'copied'
+                ? '✓ Copied'
+                : imgFlash === 'downloaded'
+                  ? '⬇ Saved'
+                  : '🖼'}
+            </button>
+          )}
+        </div>
       </div>
 
-      {bars.length === 0 ? (
-        <div className="dpschart-empty">no data</div>
-      ) : (
-        <div className="dpschart-bars">
-          {bars.map((b, i) => (
-            <div
-              className="dpschart-row ranks-row"
-              style={{
-                gridTemplateColumns: `18px 33px ${nameColWidth} minmax(0, 1fr) auto`,
-              }}
-              key={`${b.slug}:${b.profile ?? ''}`}
-            >
-              <span className="dpschart-rank">{i + 1}</span>
-              {b.imageUrl ? (
-                <img
-                  className="dpschart-portrait"
-                  src={thumbs[b.imageUrl] ?? b.imageUrl}
-                  alt={b.name}
-                  loading="lazy"
-                  title={`${b.name} · ${b.weapon} · ${b.element}`}
-                />
-              ) : (
-                <span
-                  className="dpschart-portrait ranks-no-portrait"
-                  aria-hidden="true"
-                />
-              )}
-              <span className="ranks-name dpschart-name-row">
-                <span
-                  className="dpschart-name"
-                  ref={i === 0 ? firstNameRef : undefined}
-                  title={`${b.name} · ${b.weapon} · ${b.element}`}
-                >
-                  {b.name}
-                </span>
-                {b.profile && (
-                  <span className="ranks-badge" title={profiles?.[b.profile]}>
-                    {profileLabel(b.profile)}
-                  </span>
-                )}
-              </span>
-              <span className="dpschart-track">
-                <span
-                  className="dpschart-fill"
-                  style={{
-                    width: `${Math.max(2, (b.dps / max) * 100)}%`,
-                    background: ELEMENT_COLORS[b.element] ?? '#9aa3b2',
-                  }}
-                />
-              </span>
-              <span className="dpschart-val" title={`${fmt(b.dps)} DPS`}>
-                {relScore(b.dps, max)}
-              </span>
-            </div>
-          ))}
-        </div>
-      )}
+      <DpsBarsList bars={bars} max={max} thumbs={thumbs} profiles={profiles} />
+      {compareRow}
 
-      {compare && (
-        <div className="dpschart-compare">
-          <span className="dpschart-name">{compare.name}</span>
-          <span className="dpschart-rankinfo">
-            rank {compare.rank} / {compare.total}
-          </span>
-          <span className="dpschart-val" title={`${fmt(compare.dps)} DPS`}>
-            {relScore(compare.dps, max)}
-          </span>
-        </div>
+      {expanded && (
+        <ChartModal title={title} onClose={() => setExpanded(false)}>
+          <DpsBarsList
+            bars={expandBars}
+            max={expandMax}
+            thumbs={thumbs}
+            profiles={profiles}
+          />
+          {compareRow}
+        </ChartModal>
       )}
     </div>
   );

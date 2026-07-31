@@ -57,6 +57,7 @@ import type { TableCardData } from '../../src/infographics/core/tableCard';
 import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ELEMENT_FILTERS } from '../../src/infographics/spec';
 import { ensureRoboto, loadPortrait, copyOrDownloadPng } from './teamShare';
+import { CopyFlashButton, type CopyResult } from './components/CopyFlashButton';
 import { buildDpsChartCanvas } from './shareImage';
 import { buildTableCardCanvas } from './tableShare';
 import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
@@ -537,17 +538,18 @@ export function BuilderPage() {
     setHostErr(null);
   }, [effKey]);
 
-  const onCopyImage = () => {
-    void renderCard(eff).then((cv) => {
-      if (!cv) {
-        return;
-      }
-      cv.toBlob((b) => {
-        if (b) {
-          void copyOrDownloadPng(b, 'nikke-card.png');
-        }
-      }, 'image/png');
-    });
+  const onCopyImage = async (): Promise<CopyResult> => {
+    const cv = await renderCard(eff);
+    if (!cv) {
+      return 'unsupported';
+    }
+    const blob = await new Promise<Blob | null>((resolve) =>
+      cv.toBlob(resolve, 'image/png')
+    );
+    if (!blob) {
+      return 'unsupported';
+    }
+    return copyOrDownloadPng(blob, 'nikke-card.png');
   };
 
   const onGetUrl = async () => {
@@ -878,9 +880,12 @@ export function BuilderPage() {
           <canvas ref={canvasRef} aria-label="Card preview" />
           {previewBusy && <p className="muted">Rendering…</p>}
           <div className="builder-actions">
-            <button className="chip" onClick={onCopyImage}>
-              📋 Copy image
-            </button>
+            <CopyFlashButton
+              className="chip"
+              label="📋 Copy image"
+              copiedLabel="✓ Copied"
+              onCopy={onCopyImage}
+            />
             <button
               className="chip"
               disabled={hosting}

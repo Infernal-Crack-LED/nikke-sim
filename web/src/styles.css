@@ -185,6 +185,17 @@ body {
 .modal-wide {
   max-width: 1080px;
 }
+/* expanded /ranks infographic (DpsBarChart / RankBarChart "⛶" button) — wider
+   than the compact grid card, with its own scroll so a long ranked list
+   doesn't blow out the page instead of the modal. */
+.modal-chart {
+  max-width: 720px;
+}
+.modal-chart .dpschart-bars {
+  max-height: 65vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
 .modal-head {
   display: flex;
   align-items: center;

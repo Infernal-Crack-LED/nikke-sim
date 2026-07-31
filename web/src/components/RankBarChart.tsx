@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { ELEMENT_COLORS } from '../../../src/infographics/core/theme';
 import type { RankChartBar } from '../../../src/infographics/core/rankChart';
 import { usePortraitThumbs } from '../usePortraitThumbs';
+import { ChartModal } from './ChartModal';
 
 const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles.css
 
@@ -16,6 +17,111 @@ const PORTRAIT_CSS = 33; // must match .dpschart-portrait width/height in styles
 // hosts from one shape — re-exported here so existing `import { ...,
 // type RankChartBar } from './RankBarChart'` call sites keep working.
 export type { RankChartBar };
+
+// The ranked-rows list, factored out so the compact inline chart and the
+// expanded modal render the same markup from one place.
+function RankBarsList({
+  bars,
+  thumbs,
+}: {
+  bars: RankChartBar[];
+  thumbs: Record<string, string>;
+}) {
+  const max = Math.max(...bars.map((b) => b.value), 0);
+  const min = Math.min(...bars.map((b) => b.value), 0);
+  const span = max - min || 1;
+
+  if (bars.length === 0) {
+    return <div className="dpschart-empty">no data</div>;
+  }
+  return (
+    <div className="dpschart-bars">
+      {bars.map((b) => {
+        const color = ELEMENT_COLORS[b.element] ?? '#9aa3b2';
+        // bar geometry: all-positive boards fill 0→value from the left;
+        // boards with negatives span value↔0 on either side of the axis
+        const leftPct =
+          min < 0 ? ((Math.min(b.value, 0) - min) / span) * 100 : 0;
+        const widthPct =
+          min < 0 ? (Math.abs(b.value) / span) * 100 : (b.value / span) * 100;
+        const [heal, shield, steal] = b.split ?? [0, 0, 0];
+        return (
+          <div className="dpschart-row ranks-row" key={b.key}>
+            <span className="dpschart-rank">{b.rank}</span>
+            {b.imageUrl ? (
+              <img
+                className="dpschart-portrait"
+                src={thumbs[b.imageUrl] ?? b.imageUrl}
+                alt={b.name}
+                loading="lazy"
+                title={`${b.name} · ${b.burst} · ${b.weapon} · ${b.element}`}
+              />
+            ) : (
+              <span
+                className="dpschart-portrait ranks-no-portrait"
+                aria-hidden="true"
+              />
+            )}
+            <span className="ranks-name">
+              <span className="dpschart-name" title={b.name}>
+                {b.name}
+                {b.badge && (
+                  <span className="ranks-badge" title={b.badgeTitle}>
+                    {b.badge}
+                  </span>
+                )}
+                {b.condition && (
+                  <span className="ranks-cond" title={b.condition}>
+                    *
+                  </span>
+                )}
+                {b.info && (
+                  <span className="ranks-info" title={b.info}>
+                    ⓘ
+                  </span>
+                )}
+              </span>
+              {b.sub && <span className="ranks-sub">{b.sub}</span>}
+            </span>
+            <span className="dpschart-track ranks-track" title={b.splitTitle}>
+              <span
+                className="dpschart-fill"
+                style={{
+                  marginLeft: `${leftPct}%`,
+                  width: `${Math.max(min < 0 ? 0.5 : 2, widthPct)}%`,
+                  background: b.split ? 'transparent' : color,
+                }}
+              >
+                {b.split && (
+                  <>
+                    <span
+                      className="ranks-seg ranks-seg-heal"
+                      style={{ width: `${heal * 100}%` }}
+                    />
+                    <span
+                      className="ranks-seg ranks-seg-shield"
+                      style={{ width: `${shield * 100}%` }}
+                    />
+                    <span
+                      className="ranks-seg ranks-seg-steal"
+                      style={{ width: `${steal * 100}%` }}
+                    />
+                  </>
+                )}
+              </span>
+            </span>
+            <span className="dpschart-val ranks-val" title={b.valueTitle}>
+              {b.valueText}
+              {b.valueSub && (
+                <span className="ranks-val-sub">{b.valueSub}</span>
+              )}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 export function RankBarChart({
   title,
@@ -32,14 +138,11 @@ export function RankBarChart({
   onShareImage?: () => Promise<'copied' | 'downloaded' | 'unsupported'>;
   onShareLink?: () => Promise<boolean>;
 }) {
-  const max = Math.max(...bars.map((b) => b.value), 0);
-  const min = Math.min(...bars.map((b) => b.value), 0);
-  const span = max - min || 1;
-  // zero-axis position (% from the left) — only meaningful when min < 0
   const thumbs = usePortraitThumbs(
     bars.map((b) => b.imageUrl),
     PORTRAIT_CSS
   );
+  const [expanded, setExpanded] = useState(false);
   const [linkFlash, setLinkFlash] = useState(false);
   const [imgFlash, setImgFlash] = useState<'copied' | 'downloaded' | null>(
     null
@@ -71,126 +174,44 @@ export function RankBarChart({
           <div className="dpschart-title">{title}</div>
           {subtitle && <div className="dpschart-sub">{subtitle}</div>}
         </div>
-        {(onShareLink || onShareImage) && (
-          <div className="dpschart-share">
-            {onShareLink && (
-              <button
-                className={'chip' + (linkFlash ? ' copied' : '')}
-                title="copy link to this chart"
-                onClick={handleShareLink}
-              >
-                {linkFlash ? '✓ Copied' : '🔗'}
-              </button>
-            )}
-            {onShareImage && (
-              <button
-                className={'chip' + (imgFlash ? ' copied' : '')}
-                title="copy chart image"
-                onClick={handleShareImage}
-              >
-                {imgFlash === 'copied'
-                  ? '✓ Copied'
-                  : imgFlash === 'downloaded'
-                    ? '⬇ Saved'
-                    : '🖼'}
-              </button>
-            )}
-          </div>
-        )}
-      </div>
-      {bars.length === 0 ? (
-        <div className="dpschart-empty">no data</div>
-      ) : (
-        <div className="dpschart-bars">
-          {bars.map((b) => {
-            const color = ELEMENT_COLORS[b.element] ?? '#9aa3b2';
-            // bar geometry: all-positive boards fill 0→value from the left;
-            // boards with negatives span value↔0 on either side of the axis
-            const leftPct =
-              min < 0 ? ((Math.min(b.value, 0) - min) / span) * 100 : 0;
-            const widthPct =
-              min < 0
-                ? (Math.abs(b.value) / span) * 100
-                : (b.value / span) * 100;
-            const [heal, shield, steal] = b.split ?? [0, 0, 0];
-            return (
-              <div className="dpschart-row ranks-row" key={b.key}>
-                <span className="dpschart-rank">{b.rank}</span>
-                {b.imageUrl ? (
-                  <img
-                    className="dpschart-portrait"
-                    src={thumbs[b.imageUrl] ?? b.imageUrl}
-                    alt={b.name}
-                    loading="lazy"
-                    title={`${b.name} · ${b.burst} · ${b.weapon} · ${b.element}`}
-                  />
-                ) : (
-                  <span
-                    className="dpschart-portrait ranks-no-portrait"
-                    aria-hidden="true"
-                  />
-                )}
-                <span className="ranks-name">
-                  <span className="dpschart-name" title={b.name}>
-                    {b.name}
-                    {b.badge && (
-                      <span className="ranks-badge" title={b.badgeTitle}>
-                        {b.badge}
-                      </span>
-                    )}
-                    {b.condition && (
-                      <span className="ranks-cond" title={b.condition}>
-                        *
-                      </span>
-                    )}
-                    {b.info && (
-                      <span className="ranks-info" title={b.info}>
-                        ⓘ
-                      </span>
-                    )}
-                  </span>
-                  {b.sub && <span className="ranks-sub">{b.sub}</span>}
-                </span>
-                <span
-                  className="dpschart-track ranks-track"
-                  title={b.splitTitle}
-                >
-                  <span
-                    className="dpschart-fill"
-                    style={{
-                      marginLeft: `${leftPct}%`,
-                      width: `${Math.max(min < 0 ? 0.5 : 2, widthPct)}%`,
-                      background: b.split ? 'transparent' : color,
-                    }}
-                  >
-                    {b.split && (
-                      <>
-                        <span
-                          className="ranks-seg ranks-seg-heal"
-                          style={{ width: `${heal * 100}%` }}
-                        />
-                        <span
-                          className="ranks-seg ranks-seg-shield"
-                          style={{ width: `${shield * 100}%` }}
-                        />
-                        <span
-                          className="ranks-seg ranks-seg-steal"
-                          style={{ width: `${steal * 100}%` }}
-                        />
-                      </>
-                    )}
-                  </span>
-                </span>
-                <span className="dpschart-val ranks-val" title={b.valueTitle}>
-                  {b.valueText}
-                  {b.valueSub && (
-                    <span className="ranks-val-sub">{b.valueSub}</span>
-                  )}
-                </span>
-              </div>
-            );
-          })}
+        <div className="dpschart-share">
+          <button
+            className="chip"
+            title="expand full chart"
+            onClick={() => setExpanded(true)}
+          >
+            ⛶
+          </button>
+          {onShareLink && (
+            <button
+              className={'chip' + (linkFlash ? ' copied' : '')}
+              title="copy link to this chart"
+              onClick={handleShareLink}
+            >
+              {linkFlash ? '✓ Copied' : '🔗'}
+            </button>
+          )}
+          {onShareImage && (
+            <button
+              className={'chip' + (imgFlash ? ' copied' : '')}
+              title="copy chart image"
+              onClick={handleShareImage}
+            >
+              {imgFlash === 'copied'
+                ? '✓ Copied'
+                : imgFlash === 'downloaded'
+                  ? '⬇ Saved'
+                  : '🖼'}
+            </button>
+          )}
         </div>
+      </div>
+      <RankBarsList bars={bars} thumbs={thumbs} />
+
+      {expanded && (
+        <ChartModal title={title} onClose={() => setExpanded(false)}>
+          <RankBarsList bars={bars} thumbs={thumbs} />
+        </ChartModal>
       )}
     </div>
   );
