@@ -2279,6 +2279,77 @@ owner — it does **not**, by itself, retire steps 4–6 or change Phase 2's sta
 If none clear both screens, their failure characterizes what steps 4–6 need to fix (which frames,
 which direction) rather than licensing starting them in this pass.
 
+#### Results (2026-07-31) — **NONE of the 7 clear the ±0.25 criterion. `simplerPath` does NOT retire steps 4–6.**
+
+Synthetic set regenerated at n=120 (`--sequences-per-video 30`, seed 20260731) per §2.2a; real
+screen is the full 6-shot fixture. Both via `score-pellets.py --estimators` (synthetic) /
+`--estimators --real-fixture` (real), reproduced twice, byte-identical.
+
+**Synthetic screen (n=120) — decisive fail, all 7, small SE:**
+
+| estimator                  | bias (pellets) | SD    | SE    | RMSE  | vs ±0.25   |
+| -------------------------- | -------------- | ----- | ----- | ----- | ---------- |
+| `current` (control)        | **−2.462**     | 1.769 | 0.161 | 3.028 | 9.8× over  |
+| `median_persist_readable`  | **−2.617**     | 1.820 | 0.166 | 3.183 | 10.5× over |
+| `max_nonpeak_persist`      | **−2.192**     | 1.736 | 0.158 | 2.791 | 8.8× over  |
+| `p75_nonpeak_persist`      | **−2.567**     | 1.802 | 0.165 | 3.132 | 10.3× over |
+| `p90_nonpeak_persist`      | **−2.301**     | 1.782 | 0.163 | 2.906 | 9.2× over  |
+| `median_readable_nofilter` | **−2.475**     | 1.815 | 0.166 | 3.065 | 9.9× over  |
+| `max_nonpeak_nofilter`     | **−2.042**     | 1.727 | 0.158 | 2.669 | 8.2× over  |
+
+Position-level (per the "Quantitative separation criterion" floor, for context — not itself the
+bias criterion): raw/is_pellet family precision **0.943** (clears ≥0.90), recall **0.517** (fails
+≥0.80 badly); persisted family precision **0.943**, recall **0.500**. `degenerate_nonpeak_sequences:
+0` — the peak-exclusion proxy behaved normally on the full 13-frame synthetic sequences.
+
+**Real screen (6 shots) — small point-estimate biases, but SE too loose to certify anything (per
+§2.2a, this set can only FAIL, never confirm):**
+
+| estimator                  | bias (pellets) | SD    | SE    | RMSE  |
+| -------------------------- | -------------- | ----- | ----- | ----- |
+| `current` (control)        | −0.375         | 1.671 | 0.682 | 1.571 |
+| `median_persist_readable`  | −0.583         | 1.201 | 0.490 | 1.242 |
+| `max_nonpeak_persist`      | −0.500         | 1.225 | 0.500 | 1.225 |
+| `p75_nonpeak_persist`      | −0.625         | 1.531 | 0.625 | 1.531 |
+| `p90_nonpeak_persist`      | −0.550         | 1.347 | 0.550 | 1.347 |
+| `median_readable_nofilter` | −0.167         | 1.472 | 0.601 | 1.354 |
+| `max_nonpeak_nofilter`     | −0.167         | 1.472 | 0.601 | 1.354 |
+
+`degenerate_nonpeak_sequences: 1` (shot0, the single-frame false-positive confirmation crop — has
+no peak to exclude anything from, falls back to using its one frame, exactly the known failure mode
+§2.2b flagged in advance). Position-level precision/recall are **null** on this screen — the real
+fixture has no labeled pellet xy positions, only counts, so ISBI-style matching does not apply here
+(ONE finding neither reviewer's `simplerPath` spelled out: precision/recall as originally specified
+is a synthetic-only metric).
+
+**Verdict: NO candidate clears both screens.** The synthetic screen fails all 7 by 8–11× the budget
+with tight SE (0.16–0.17) — not a noisy near-miss, a clear and confident fail. The real screen's
+point estimates are all closer to zero than synthetic's, and two (`median_readable_nofilter`,
+`max_nonpeak_nofilter`, both −0.167) are nominally inside ±0.25 — but at SE ≈ 0.6 this is not a
+finding, it is exactly the "cannot certify, can only fail" limit §2.2a predicted, and it does not
+survive being read next to the synthetic screen's decisive fail.
+
+**A finding neither reviewer anticipated: the synthetic screen is COLDER than the real screen, the
+opposite of what §1.2's "optimistic by construction" honest limit predicts.** The synthetic
+generator's own documentation states synthetic scores should be optimistic relative to real footage
+(single repeated background, easier alpha-blit compositing) — so synthetic bias should sit CLOSER TO
+ZERO than real, not 4–10× further from it. Candidate explanations, not investigated further here
+(out of this task's scope — reported, not diagnosed): the synthetic pellet placement
+(`MEDIAN_R=64, R_SPREAD=40`, uniform angle) may pack pellets more densely / with more mutual
+occlusion than real blasts exhibit at the counted f8–11 phase; or the synthetic `n_pellets` draw
+(uniform 5–10) skews the mix differently than the real fixture's mostly-high-count shots (7–10, one
+0). Whichever it is, it means the synthetic screen is not a strictly easier/rosier version of the
+real one for THIS class of cheap aggregator, and should not be read as merely a stricter version of
+the same test.
+
+**A second finding: the n=12 baseline's SD (1.079, used to plan the n=120 regeneration in §2.2a)
+underestimated the true SD (1.769 measured at n=120) by ~64%.** The regenerated set's actual
+planning SE (0.161, using the true n=120 SD) still lands well under the ±0.25 target, so §2.2a's
+sizing decision was not invalidated in practice — but it is a concrete illustration of why §2.2a
+flagged the n=12-derived SD as "a planning prior, may differ for new candidates," and argues for
+treating any single small-n SD estimate (including this task's own real-screen SD) with the same
+caution before it is used to size a future set.
+
 ### 2.3 — Kill conditions
 
 - **Lifecycle not stable across units** → confirm the same decay curve on `noir` with

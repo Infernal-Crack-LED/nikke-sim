@@ -210,6 +210,24 @@ def offset_filtered_counts(tracks, persisted_ids, n_frames, cx, cy, radius):
     return counts
 
 
+def filtered_offset_stats(tracks, persisted_ids, n_frames, cx, cy, radius, true_positions):
+    """Position-matched TP/FP/FN per offset for the persisted-track subset -- the *_persist
+    estimators use a DIFFERENT track subset than score_sequence()'s raw per_offset (is_pellet vs
+    persisted_ids), so their precision/recall is not the same number and must be scored
+    separately, not assumed equal to the raw family's. None if the sequence has no labeled
+    positions (the real-fixture screen)."""
+    if true_positions is None:
+        return None
+    stats = []
+    for fi in range(n_frames):
+        pred_pts = [(t['xs'][fi - t['first']], t['ys'][fi - t['first']])
+                    for t in tracks if t['id'] in persisted_ids and t['first'] <= fi <= t['last']]
+        pred_pts = [p for p in pred_pts if math.hypot(p[0] - cx, p[1] - cy) <= radius]
+        tp, fp, fn = match_greedy(pred_pts, true_positions)
+        stats.append({'tp': tp, 'fp': fp, 'fn': fn})
+    return stats
+
+
 def compute_estimators(seq, dump, per_offset):
     """The pre-registered estimator list (docs/handoffs/2026-07-30-pellet-reader-implementation-
     plan.md §2.2 step 2a), scored on the SAME sequence score_sequence() already scored:
@@ -343,7 +361,8 @@ def run(args):
         tmp_dir = Path(args.labels).parent / '_score_tmp'
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    all_offsets = {}  # offset -> [tp, fp, fn] accumulators
+    all_offsets = {}  # offset -> [tp, fp, fn] accumulators -- RAW/is_pellet track family
+    all_offsets_persisted = {}  # offset -> [tp, fp, fn] -- persist+monotonic-decay track family
     count_errs = []
     per_seq_report = []
     per_seq_estimator_errs = []  # {estimator_key: error} per sequence, for aggregate_estimator_stats
@@ -364,6 +383,17 @@ def run(args):
             acc[0] += o['tp']
             acc[1] += o['fp']
             acc[2] += o['fn']
+        if args.estimators:
+            cx, cy = seq['crosshair']
+            persisted_ids = persisted_track_ids(dump['tracks'])
+            pstats = filtered_offset_stats(dump['tracks'], persisted_ids, len(seq['frames']),
+                                            cx, cy, seq['pellet_radius'], seq.get('positions'))
+            if pstats is not None:
+                for offset0, s in enumerate(pstats):
+                    acc = all_offsets_persisted.setdefault(offset0 + 1, [0, 0, 0])
+                    acc[0] += s['tp']
+                    acc[1] += s['fp']
+                    acc[2] += s['fn']
         per_seq_report.append({
             'seq': seq['seq'], 'video': seq['video'], 'n_pellets': seq['n_pellets'],
             'f8_11_mean_count': round(mean_count, 2), 'error': round(err, 2),
@@ -396,6 +426,8 @@ def run(args):
             'f1': round(f1, 3) if f1 is not None else None,
         }
 
+    overall_precision = overall_tp / (overall_tp + overall_fp) if (overall_tp + overall_fp) else None
+    overall_recall = overall_tp / (overall_tp + overall_fn) if (overall_tp + overall_fn) else None
     overall_jaccard = overall_tp / (overall_tp + overall_fp + overall_fn) if (overall_tp + overall_fp + overall_fn) else None
     overall_f1 = 2 * overall_tp / (2 * overall_tp + overall_fp + overall_fn) if (2 * overall_tp + overall_fp + overall_fn) else None
 
@@ -404,6 +436,8 @@ def run(args):
         'n_sequences': len(sequences),
         'dist_tolerance_px': DIST_TOLERANCE,
         'count_rmse': round(count_rmse, 3) if count_rmse is not None else None,
+        'overall_precision': round(overall_precision, 3) if overall_precision is not None else None,
+        'overall_recall': round(overall_recall, 3) if overall_recall is not None else None,
         'overall_jaccard': round(overall_jaccard, 3) if overall_jaccard is not None else None,
         'overall_f1': round(overall_f1, 3) if overall_f1 is not None else None,
         'phase_resolved': phase_report,
@@ -413,6 +447,14 @@ def run(args):
     if args.estimators:
         report['estimators'] = aggregate_estimator_stats(per_seq_estimator_errs)
         report['estimator_keys'] = ESTIMATOR_KEYS
+        # Position-level precision/recall for the *_persist estimator family -- a DIFFERENT
+        # track subset (persisted_ids) than the raw/is_pellet family `overall_precision/recall`
+        # above already reports, so it needs its own numbers, not a copy.
+        p_tp = sum(v[0] for v in all_offsets_persisted.values())
+        p_fp = sum(v[1] for v in all_offsets_persisted.values())
+        p_fn = sum(v[2] for v in all_offsets_persisted.values())
+        report['persisted_precision'] = round(p_tp / (p_tp + p_fp), 3) if (p_tp + p_fp) else None
+        report['persisted_recall'] = round(p_tp / (p_tp + p_fn), 3) if (p_tp + p_fn) else None
     print(json.dumps(report, indent=2))
     return report
 
