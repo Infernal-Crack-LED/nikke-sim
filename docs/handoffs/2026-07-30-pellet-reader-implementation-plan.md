@@ -1485,19 +1485,73 @@ since it has no blast to sample f8-11 from), owner-counted, committed.
    Particle-Tracking-Challenge metric pair the reference fields select on — plus **phase-resolved
    recall**, which is Phase 3's exit criterion.
 
-**Exit criterion.** Any candidate detector or counter can be scored on one command, across all four
-video backgrounds, and the current pipeline's score is recorded as the baseline to beat.
+### ✅ Steps 1-5 — DONE 2026-07-31: generator + scorer built, current pipeline's baseline recorded
 
-**⚠ Regenerate the real ground truth at f8–11.** `make-groundtruth.py` currently picks each shot's
-peak frame (max bright-dot count) — the frame the owner identifies as **least** readable, where
-pellets occlude. The existing 6-shot labels were counted there and are suspect; expect true counts
-**≥** the recorded 7/9/7/9/8/8. Re-crop at f8–11 and re-count **before** those labels gate anything.
-This is the one piece of hand-labelling worth paying for, and it is small.
+**`scripts/probe/make-synthetic-pellets.py` (new, committed).** Extracts real pellet patches
+(RGBA, soft-edged) from the owner-counted `groundtruth-f8-11.json` crops (214 patches from 5
+shots), composites N=5-10 of them per blast onto a REAL quiet background frame sampled from each
+of the four videos' EXISTING structural-localization dumps in `scratchpad/pellets/`
+(`h4-marciana-structural`, `g2-noir-structural`, `h4-guilty-structural`, `h4-isabel-structural` —
+reused, not re-derived), rendered as full 13-frame sequences using this script's own linear
+interpolation of the owner's qualitative lifecycle table (size 1x→2x by f3, held f3-4, back to 1x
+by f11, alpha-faded f12-13) — clearly documented as a modeling choice, not a second measurement.
+Positions are fixed per pellet across the blast; occlusion is computed from actual circle overlap
+at each frame's scale, so it emerges naturally at the f3-4 peak rather than being special-cased.
 
-**Honest limit — state it in the fixture's README.** Synthetic labels validate the _detector_, not
-the compositing assumption. If the game blends the marker rather than blitting it, synthetic frames
-are systematically easier than real ones and scores run optimistic. **Mitigation, and it is
-mandatory:** the 6 owner-counted shots and the `docs/probe-data/*-sg-band.json` anchors stay as a
+**Caught before trusting any output:** the naive first pass sampled "quiet" (white==0) frames
+without restricting to the fight window, and picked a pre-fight character-bio menu screen as a
+background — caught by visually inspecting a rendered frame, fixed by bounding the search to
+`fightStartVideoT .. +180s` from each dump's own `pellets.json`.
+
+**`scripts/probe/score-pellets.py` (new, committed).** Runs the real `count-pellets.py --temporal`
+(settled filter defaults) on each synthetic sequence, fed a `--crosshair-file` built from the
+label's KNOWN crosshair position (deliberately isolating detection/counting from localization,
+which Phase 2A already owns). Computes position-level Jaccard/F1 (greedy-matched within 20px),
+count RMSE (f8-11 mean vs true count), and phase-resolved recall (1-13). `--selftest` pins
+`match_greedy`'s TP/FP/FN arithmetic against a fixed 3-point example.
+
+**Caught before trusting the first real score:** false positives were IDENTICAL across all 13
+offsets of every sequence (77 total) — a giveaway, since real detectability varies by lifecycle
+phase. Root cause: `is_pellet` is a track-lifetime classification over the WHOLE frame, not
+radius-windowed; scoring wasn't applying the same `pellet_radius` distance gate the real per-frame
+white/red COUNT does. Fixed; the remaining (smaller, still frame-constant) FP count was verified
+by hand to be real static-background clutter within `pellet_radius` of the crosshair — genuine
+given this generator's own honest limitation (see below), not a residual bug.
+
+**Baseline (current pipeline, `--seed 20260731 --sequences-per-video 3`, 12 sequences across all
+four videos):**
+
+```
+count RMSE: 2.141   overall Jaccard: 0.511   overall F1: 0.676
+phase-resolved recall:  f1 .663  f2 .627  f3 .518  f4 .518  f5 .554  f6 .614  f7 .639
+                         f8 .651  f9 .675  f10 .639  f11 .663  f12 .349  f13 .012
+```
+
+**This reproduces the owner's lifecycle prediction qualitatively, using nothing but today's
+non-lifecycle-aware detector** — recall dips at f3-4 (the occlusion peak) relative to its f1-2/
+f8-11 neighbours, and collapses at f12-13 (fade below the WHITE_LO=210 threshold). That the
+harness surfaces this pattern from a detector that has no lifecycle awareness built in is the
+end-to-end validation that the generator and scorer are measuring the right thing, before any
+Phase 2 code exists to be scored.
+
+Reproduce: `scripts/probe/.venv/bin/python scripts/probe/make-synthetic-pellets.py --out
+scratchpad/pellets/synthetic --seed 20260731 --sequences-per-video 3` then `scripts/probe/.venv/
+bin/python scripts/probe/score-pellets.py --labels scratchpad/pellets/synthetic/labels.json`.
+Rendered sequences are NOT committed (reproducible-by-command from the committed ground-truth
+fixture + the existing scratchpad dumps, same precedent as H1/2A-G2's dumps) — only the two
+scripts and this baseline are.
+
+**Exit criterion MET.** Any candidate detector/counter scores on one command
+(`score-pellets.py --labels <path>`), across all four video backgrounds, current-pipeline baseline
+recorded above.
+
+**⚠ Honest limit (mandatory, carried forward — do not drop when Phase 2 reads this).** The
+background for one synthetic blast is a SINGLE real quiet frame repeated across all 13 offsets,
+not a real evolving 13-frame background (avoids a fresh 60fps extraction for guilty/isabel/noir,
+whose existing dumps are 30fps — reuse-before-derive). Alpha-blit compositing is also easier than
+however the game actually blends its pellet markers. Synthetic scores are optimistic BY
+CONSTRUCTION relative to real footage. **Mitigation, and it is mandatory:** the 6 owner-counted
+real shots (`groundtruth-f8-11.json`) and the `docs/probe-data/*-sg-band.json` anchors stay as a
 held-out real-data check. A candidate must pass **both** to be adopted. Per
 `docs/VALIDATION-INDEX.md` §"Validating a READER", the existing labeled records are the right
 instrument here.
