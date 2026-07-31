@@ -1527,12 +1527,25 @@ phase-resolved recall:  f1 .663  f2 .627  f3 .518  f4 .518  f5 .554  f6 .614  f7
                          f8 .651  f9 .675  f10 .639  f11 .663  f12 .349  f13 .012
 ```
 
-**This reproduces the owner's lifecycle prediction qualitatively, using nothing but today's
-non-lifecycle-aware detector** — recall dips at f3-4 (the occlusion peak) relative to its f1-2/
-f8-11 neighbours, and collapses at f12-13 (fade below the WHITE_LO=210 threshold). That the
-harness surfaces this pattern from a detector that has no lifecycle awareness built in is the
-end-to-end validation that the generator and scorer are measuring the right thing, before any
-Phase 2 code exists to be scored.
+**2026-07-31 — independently reproduced from tree code, twice, byte-identical (all three overall
+metrics and all 13 phase-resolved recall values both times).** The on-disk `scratchpad/pellets/
+synthetic/` artifact this baseline was originally taken from had gone stale (its background frames
+sat outside the fight-window bound the generator was later given, idx 5583-5614) and scored
+2.314/0.593/0.744 instead — a phantom improvement anyone diffing against the stale artifact would
+have chased. The generator itself was never the problem; only the leftover output was. Regenerated
+with the exact command below and rescored to confirm the numbers above still hold from a clean run.
+
+**What this result actually shows.** `make-synthetic-pellets.py`'s own `lifecycle_scale()` renders
+1x→2x by f3, holds f3-4, shrinks back to 1x by f11, and `lifecycle_alpha()` fades f12-13 — so the
+f3-4 recall dip and the f12-13 collapse above are consequences of the generator's own construction,
+recovered by the scorer, not an independent discovery of anything. What the result DOES show: the
+generate→detect→score pipeline is wired correctly end-to-end, phase indexing is not scrambled
+anywhere in that chain, and the real (non-lifecycle-aware) detector does lose merged pellets at the
+synthetically-enlarged f3-4 frames specifically — a real property of the CURRENT detector, useful as
+the Phase 2 baseline it's recorded for. **This is NOT independent corroboration of the owner's
+lifecycle spec** (unlike §2.0's run16 area-decay measurement, which was taken for an unrelated
+purpose before the spec existed) and must not be cited alongside it as if it were a second
+confirming data point.
 
 Reproduce: `scripts/probe/.venv/bin/python scripts/probe/make-synthetic-pellets.py --out
 scratchpad/pellets/synthetic --seed 20260731 --sequences-per-video 3` then `scripts/probe/.venv/

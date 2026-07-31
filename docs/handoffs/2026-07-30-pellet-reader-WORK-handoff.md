@@ -36,8 +36,13 @@ for full detail; summary:
 - **§1.2 steps 1-5** — `scripts/probe/make-synthetic-pellets.py` + `scripts/probe/score-pellets.py`
   built, validated, and run: baseline recorded for the CURRENT (non-lifecycle-aware) pipeline —
   count RMSE 2.141, Jaccard 0.511, F1 0.676, phase-resolved recall already dipping at f3-4 and
-  collapsing at f12-13 (reproduces the owner's lifecycle prediction from a detector that has no
-  lifecycle logic — the harness is measuring the right thing).
+  collapsing at f12-13. **Not independent corroboration of the lifecycle spec** — the generator's
+  own `lifecycle_scale()`/`lifecycle_alpha()` construct the f3-4 enlargement and f12-13 fade, so the
+  scorer is recovering the generator's own construction, not discovering anything. What it DOES show:
+  the pipeline is wired correctly end-to-end and the real detector genuinely loses merged pellets at
+  the enlarged f3-4 frames. Do not cite this alongside §2.0's run16 area-decay measurement (which IS
+  independent — taken before the spec existed) as if it were a second confirming data point. Full
+  wording: the plan doc's §1.2.
 - **`scripts/probe/pellet-selftest.sh`** (new) folds all four probe selftests into one command —
   the "worth doing" item below is done.
 
