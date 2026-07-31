@@ -1,0 +1,321 @@
+{
+  "slug": "crust",
+  "leakDetected": null,
+  "override": {
+    "slug": "crust",
+    "modes": ["blanching", "maillard"],
+    "skill1": [
+      {
+        "slot": "skill1",
+        "mode": "blanching",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "mode": "maillard",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 20,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 20,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "mode": "maillard",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "distributedDamagePct",
+            "value": 60,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "mode": "blanching",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "sustainedDamagePct",
+            "value": 10,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when attacking with Full Charge and self is in Maillard status. Affects all allies. Maillard Duration ▲ 2.5 sec.",
+        "Activates when attacking with Full Charge and self is in Blanching status. Affects all allies. Blanching Duration ▲ 2.5 sec.",
+        "Removes Blanching.",
+        "Removes Maillard."
+      ],
+      "skill2": [
+        "Activates after performing 3 normal, non-Full-Charge attacks.",
+        "Affects all allies not in Reliable Cooking status.",
+        "Removes 1 debuff."
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ TWO-STATUS TOGGLE MODELED AS `modes` (default `blanching`). Maillard is granted by 3 NON-full-charge normals and Blanching by 3 maintained Full Charges, and each REMOVES the other, so exactly one is live at a time. The engine fires a charge RL at full charge, so the Blanching branch is the reachable one — hence the default. `maillard` mode is declared so the branch is reachable if the owner rules Crust is played tap-firing, but the engine cannot reproduce the DPS cost of tap-firing, so the maillard mode over-credits Crust's own shot damage.",
+      "⚑ The Maillard vs Blanching choice is a LARGE burst swing (Distributed Damage ▲60% vs Sustained Damage ▲10%). Mode choice must be settled from footage before any board reading is trusted.",
+      "⚑ Trigger proxy: both status grants use `hitCount:3` (3 rounds). The kit's Blanching branch says '3 Full Charge ... more than 1 sec'; the '>1 sec' HOLD after reaching Full Charge is not modeled (the engine releases at full charge + release latency), so the real cadence may be slower than modeled and buff uptime slightly over-credited.",
+      "⚑ 'DEF ▲ 10% of the skill user's DEF' has no caster-scaled DEF StatKey; modeled as `defPct:10` (target's own DEF). `defPct` is inert for damage in v1, so the approximation moves nothing today — it is kept for kit completeness and any future consumer.",
+      "⚑ 'Removes 1 debuff' has no ally-cleanse primitive and no debuffs exist in v1 scope — skipped, damage-neutral.",
+      "⚑ 'Affects all allies NOT in Reliable Cooking status' is a NO-REFRESH gate: the DEF buff cannot be re-applied while live, so it lapses at 10s and only re-applies on the next trigger. The model refreshes instead, over-stating uptime in the gaps (inert while defPct is inert).",
+      "⚑ The skill-2 Full-Burst-enter ATK ▲20% is gated on the target being in Maillard OR Blanching. With grants every ~3 rounds and a 10s window, status uptime is assumed ~100% at FB entry, so the gate is dropped. If Crust's opening 3 rounds land after the first Full Burst, the first proc is over-credited.",
+      "⚑ 'Affects all allies' assumed to INCLUDE self (no excludeSelf).",
+      "⚑ Crust's skill1 (casterAtkPct 10) and skill2 (casterAtkPct 20) are separate NAMED in-game buffs but the same stat from the same caster; if the buff engine's same-caster-slot overwrite collapses them, the team loses the 10% grant while the 20% is live. Verify with a buffApply event trace before trusting magnitude."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Crust (RL/Water/Supporter/Burst II) is a pure team buffer — the kit carries NO damage effect of its own (no flatDamage/dot/storedHit), so every line here is a stat or damage-bucket grant to allies. Structure: a mutually-exclusive two-status toggle (Maillard from 3 non-full-charge normals / Blanching from 3 maintained Full Charges, each removing the other) drives an identical ATK ▲10% of the skill user's ATK grant either way, plus a status-independent Reliable Cooking DEF grant, plus a Full-Burst-enter ATK ▲20% of the skill user's ATK gated on holding either status. The burst gives all allies Attack Damage ▲20% unconditionally and then a status-branched bucket buff — Distributed Damage ▲60% under Maillard, Sustained Damage ▲10% under Blanching. Because the two statuses are mutually exclusive and the ATK magnitudes are identical, the toggle only matters for the BURST branch; it is modeled with `modes` (first = default `blanching`, the branch a charge RL actually reaches in the engine) rather than by implementing both branches unconditionally, which would double-credit. Duration-extension lines (+2.5 sec per Full Charge while in status) have no buff-extension primitive and are unmodeled; with a ~3-round grant cadence against a 10s window the extension is expected to be near-redundant."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge + self in Maillard status",
+      "status": "SKIPPED",
+      "effectOrReason": "Maillard Duration ▲ 2.5 sec — no buff-duration-extension primitive in EffectDef; verbatim in unmodeled.skill1. Near-redundant given a ~3-round re-grant cadence vs a 10s window."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Full Charge + self in Blanching status",
+      "status": "SKIPPED",
+      "effectOrReason": "Blanching Duration ▲ 2.5 sec — same reason as the Maillard extension; verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "after 3 normal attacks w/o Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1 block 2 (mode 'maillard'): trigger hitCount:3, target allies, buff casterAtkPct 10 for 10s. Mode-gated (inert by default) because the engine fires a charge RL at full charge, so the non-full-charge path is unreachable without an owner ruling that Crust tap-fires."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Blanching.",
+      "status": "SKIPPED",
+      "effectOrReason": "Mutual exclusion expressed structurally as the `modes` gate (only one branch's blocks are ever live), not as a removal effect; verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "after maintaining 3 Full Charge >1 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill1 block 1 (mode 'blanching', DEFAULT): trigger hitCount:3, target allies, buff casterAtkPct 10 for 10s. hitCount counts rounds and hitsPerShot=1, so 3 rounds = 3 full-charge shots. The '>1 sec' hold is a ⚑ (not modeled)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Removes Maillard.",
+      "status": "SKIPPED",
+      "effectOrReason": "Same as 'Removes Blanching' — handled by the mode gate; verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after 3 normal, non-Full-Charge attacks",
+      "status": "SKIPPED",
+      "effectOrReason": "Branch merged: Reliable Cooking is granted identically by BOTH branches, so one status-independent block carries it (skill2 block 1). This branch line is listed verbatim in unmodeled.skill2 to record that the non-full-charge path itself is not separately reachable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Reliable Cooking: DEF ▲ 10% ... 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2 block 1: trigger hitCount:3, target allies, buff defPct 10 for 10s. Caster-DEF scaling has no StatKey — approximated by the target's own defPct (⚑). Kept per the HARD RULE that DEF/HP/heal/shield lines are never skipped on isolation; inert for damage in v1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "allies not in Reliable Cooking status",
+      "status": "SKIPPED",
+      "effectOrReason": "No-refresh gate — the engine has no 'apply only if absent' target filter; the model refreshes instead, over-stating uptime in the lapse gaps. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Removes 1 debuff.",
+      "status": "SKIPPED",
+      "effectOrReason": "No ally debuff-cleanse primitive; v1 scope-lock boss applies no debuffs, so damage-neutral. Verbatim in unmodeled.skill2 (covers both branches)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "after maintaining 3 Full Charge for 1+ sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Same merged skill2 block 1 (hitCount:3 → Reliable Cooking). This is the branch actually reachable in-engine."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2 block 2: trigger fullBurstEnter (kit says 'entering Full Burst', NOT 'when using Burst Skill' — so it fires on ANY team Full Burst, not only Crust's own cast)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "all targets in Maillard or Blanching",
+      "status": "SKIPPED",
+      "effectOrReason": "Ally-status gate has no engine primitive (requiresTargetStatus is ENEMY-only). Dropped on the assumption of ~100% status uptime at FB entry (⚑); target modeled as all allies."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 20% of skill user's ATK for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "skill2 block 2: buff casterAtkPct 20 for 10s, target allies."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies. Attack Damage ▲ 20%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 1: trigger burstCast (own-burst block with no activation clause), target allies, buff attackDamagePct 20 for 10s. Unconditional — no status gate in the kit line."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies in Maillard: Distributed Dmg ▲60%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 2 (mode 'maillard'): buff distributedDamagePct 60 for 10s, target allies. Inert under the default blanching mode — this is the single largest ⚑ in the model."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "allies in Blanching: Sustained Dmg ▲10%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burst block 3 (mode 'blanching', DEFAULT): buff sustainedDamagePct 10 for 10s, target allies."
+    }
+  ],
+  "flags": [
+    {
+      "field": "modes / default mode ('blanching')",
+      "estimate": "Blanching (full-charge branch) live; Maillard branch inert",
+      "reasoning": "Maillard requires 3 NON-full-charge normal attacks; the engine fires a charge weapon at full charge with no tap-fire concept, so only the Blanching branch is reachable in-sim. The two branches grant identical ATK magnitudes, so the choice only changes the BURST bucket buff — Distributed ▲60% (Maillard) vs Sustained ▲10% (Blanching), a large swing.",
+      "recipe": "Watch a Crust recording: count charge-bar completions vs quick taps in the first magazine, and read which burst banner/status icon is on the team at burst time. If she is played tap-firing, switch the default mode to 'maillard' AND open a separate gap for the unmodeled DPS cost of tap-firing a charge RL (the engine will still fire full charges)."
+    },
+    {
+      "field": "skill1/skill2 trigger `hitCount:{count:3}`",
+      "estimate": "3 rounds ≈ 3 full charges; first grant ~3-4s into the fight",
+      "reasoning": "Kit says '3 Full Charge status ... more than 1 sec'. hitCount counts ROUNDS (hitsPerShot 1), so 3 rounds = 3 full-charge shots — but the kit's '>1 sec' MAINTENANCE of Full Charge after the bar completes is not modeled (the engine releases at full charge + the measured 22-frame latency). If a real hold exists, the grant cadence is slower than modeled and buff uptime is over-credited.",
+      "recipe": "Frame-count a recording from charge-bar-full to shot release. If release is ~immediate, hitCount:3 is faithful. If there is a ~1s hold, the effective cadence per grant is 3×(chargeTime + 1s + fire) and the model needs a slower trigger (or an interval proxy pinned to the measured period)."
+    },
+    {
+      "field": "cadence tuple (chargeFrames 60 / reloadFrames 141 / ammo 6)",
+      "estimate": "~1.0s charge, ~2.35s reload, 6 rounds/magazine → a grant roughly every ~3-4s",
+      "reasoning": "Datamined cadence fields are known-unreliable, and every grant in this kit hangs off the round counter, so cadence error propagates directly into buff UPTIME for the whole team — not just into Crust's own (zero) damage.",
+      "recipe": "Count Crust's shots and reloads over a 30s window of footage (ammo counter is the direct instrument for shots/sec — not full-burst counts, which are downstream of gauge). Compare against the datamined tuple and pin the measured value."
+    },
+    {
+      "field": "skill2 block 1 effects[0].stat = 'defPct'",
+      "estimate": "10 (target's own DEF %), as a stand-in for 10% of the CASTER's DEF",
+      "reasoning": "No caster-scaled DEF StatKey exists (casterAtkPct has no DEF analogue). defPct is inert for damage in v1, so the approximation is damage-neutral today; kept per the rule that DEF/HP/shield/heal lines are never skipped on isolation, since a future consumer or a DEF-scaling teammate could read it.",
+      "recipe": "No measurement needed while defPct is inert. If a DEF-scaling consumer ever lands, add a casterDefPct StatKey rather than re-tuning this value."
+    },
+    {
+      "field": "skill2 block 2 (FB-enter ATK ▲20%) — dropped status gate",
+      "estimate": "~100% status uptime at Full Burst entry",
+      "reasoning": "The kit gates the 20% on the ally holding Maillard or Blanching. With a grant every ~3 rounds against a 10s window, status should be continuously up after Crust's first three shots — so the gate is expected to be satisfied on every FB. The exception is a Full Burst that lands before Crust has fired 3 rounds (an opening-rotation FB), where the model over-credits.",
+      "recipe": "From footage, timestamp Crust's 3rd round vs the first Full Burst entry. If the first FB precedes it, gate the block behind a measured delay or accept the documented first-proc over-credit."
+    },
+    {
+      "field": "unmodeled.skill1 duration-extension lines (+2.5 sec)",
+      "estimate": "≈0 net effect (grant cadence already shorter than the 10s window)",
+      "reasoning": "Each full-charge attack while in status extends that status by 2.5s, but the status is re-granted every ~3 rounds against a 10s duration, so the base window should already cover the gap. The extension only matters if the real trigger cadence is materially slower than modeled (see the cadence ⚑).",
+      "recipe": "Only revisit if the measured grant cadence exceeds ~10s per proc; then the ATK buff has real downtime the extension was covering, and a longer durationSec (measured, not fitted) becomes the right encoding."
+    },
+    {
+      "field": "target {kind:'allies'} — self inclusion",
+      "estimate": "Includes self (excludeSelf not set) on every block",
+      "reasoning": "The kit says 'Affects all allies' with no '(except self)' qualifier, which in this schema maps to allies without excludeSelf. Crust deals no kit damage, so self-inclusion only matters for her own weapon damage.",
+      "recipe": "Compare Crust's own recorded damage against a sim run with and without excludeSelf on the skill1/skill2 ATK grants; the delta is the whole test."
+    },
+    {
+      "field": "casterAtkPct co-existence (skill1 10% + skill2 20%)",
+      "estimate": "Both live simultaneously (30% of caster ATK total during the FB window)",
+      "reasoning": "In game these are distinct named buffs (the status buff vs the FB-enter buff), but they share stat + caster. If the buff engine's same-caster-slot overwrite keys only on (caster, stat), the 20% would replace the 10% and the team loses 10% of Crust's ATK for the whole FB window — a real magnitude error, not a rounding one.",
+      "recipe": "Run the comp with cfg.onEvent, filter buffApply for stat 'casterAtkPct' with casterIdx = Crust's slot, and check that two distinct keys are live across a Full Burst window (values are flat-resolved: 0.10×staticAtk and 0.20×staticAtk). If they collapse, the blocks need distinct keys."
+    }
+  ],
+  "model": "claude-opus-5"
+}

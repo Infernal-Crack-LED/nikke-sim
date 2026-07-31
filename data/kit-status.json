@@ -4685,6 +4685,51 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "crust": {
+      "name": "Crust",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/crust.json + scripts/kit-autonomy/manual-review/crust.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.",
+          "Maillard Duration ▲ 2.5 sec.",
+          "Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.",
+          "Blanching Duration ▲ 2.5 sec.",
+          "Removes Blanching.",
+          "Removes Maillard."
+        ],
+        "skill2": [
+          "Affects all allies not in Reliable Cooking status.",
+          "Removes 1 debuff."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern",
+        "skill1: the 'Duration ▲2.5 sec' lines are unmodeled — the stance ATK buff is modeled at saturated 100% uptime, so extending its duration moves no damage",
+        "skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse and the 'allies not in Reliable Cooking' no-refresh gate are unmodeled (no primitive; inert in v1)",
+        "burst: the Distributed Damage ▲60% (Maillard) and Sustained Damage ▲10% (Blanching) buffs are granted to all allies but only affect distributed-/sustained-flavor hits — inert in a comp without such hits"
+      ],
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on modes [Blanching,Maillard] default Blanching, casterAtkPct 10/20 flat, fullBurstEnter S2, burstCast burst aura, distributedDamagePct 60 (Maillard) / sustainedDamagePct 10 (Blanching), inert defPct 10",
+      "residual": "RL-always-full-charge premise (DATAMINED) + unmeasured >1s-maintain dwell convention drive the Blanching default; mode choice is a 60% Distributed vs 10% Sustained burst swing — re-pick from a crust recording (tap-fire vs full-charge cadence) before trusting a board reading; cadence tuple (charge 60/reload 141) datamine-estimated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

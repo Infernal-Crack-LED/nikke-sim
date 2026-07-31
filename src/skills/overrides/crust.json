@@ -1,0 +1,121 @@
+{
+  "note": "Crust — Water RL Supporter, Burst II, cd 20s, ammo 6 / reloadFrames 141 / chargeFrames 60 (datamine). STANCE-MODE MACHINE (mutually exclusive): her kit toggles between Maillard (entered in game by landing 3 normal non-Full-Charge attacks) and Blanching (entered by maintaining 3 Full Charges for >1 sec); each stance REMOVES the other. LOAD-BEARING PREMISE (verified sim.ts:3121 + probe 2026-07-31): the engine's RL/SR path ALWAYS fires full-charge shots (firePull(...,true) on every charge cycle; an RL never tap-fires), so the '3 normal non-Full-Charge → Maillard' entry can NEVER fire in-sim and Blanching is the ONLY reachable stance. The default mode is therefore BLANCHING (the sim-faithful state); a default run grants the burst's Sustained ▲10% and NEVER the Distributed ▲60%. Maillard is kept as a documented OPT-IN mode for modeling a real tap-fire / distributed-team playstyle (its buff payload — incl. the 60% Distributed burst — is real kit information), with the caveat that the sim's RL cadence full-charges regardless of the selected mode; selecting Maillard represents a player-behaviour override, not the sim's default cadence. The engine has no attack-pattern / stance-entry event primitive, so the live stance is a user-selectable `modes` pair [Blanching, Maillard]. Both stances grant the SAME S1 ATK buff (▲10% of caster ATK to all allies), so that line is unconditional across modes; only the burst's conditional damage buff discriminates the two stances. S1 STANCE ATK: 'ATK ▲10% of the skill user's ATK' = casterAtkPct 10 (a FLAT grant derived from the CASTER's staticAtk, identical absolute amount on every ally regardless of their own ATK — NOT atkPct which scales each target's own ATK). Modeled as a hitCount:3 trigger per stance (fires every 3 of crust's hits; RL hitsPerShot 1 ⇒ 3 full-charge shots ≈ 4.1s in, then re-procs every ~3 shots against the 10s window ⇒ saturated ~100% uptime after the opening proc); one mode-gated block per stance documents the two distinct entry conditions while the mode gate enforces their mutual exclusivity. The kit's '>1 sec maintain Full Charge' dwell qualifier is NOT modeled (the engine releases at full charge + release latency) — ⚑ convention: every sim full-charge shot counts as qualifying. S2 FB-ENTRY ATK: 'entering Full Burst → all targets in Maillard or Blanching → ATK ▲20% of the skill user's ATK /10s' = fullBurstEnter casterAtkPct 20 to all allies; a stance is always active (one of the two modes), so the 'in Maillard or Blanching' qualifier is ungated. BURST: 'all allies Attack Damage ▲20%/10s' = burstCast attackDamagePct 20 (ungated, lands on the cast frame BEFORE the FB window); 'all allies in Maillard Distributed Damage ▲60%/10s' = burstCast distributedDamagePct 60 mode-gated Maillard (feeds each ally's distributed-flavor hits ×1.6, sim.ts distributed bucket); 'all allies in Blanching Sustained Damage ▲10%/10s' = burstCast sustainedDamagePct 10 mode-gated Blanching (additive Damage-Up on sustained-flavor hits). The Distributed/Sustained buffs are granted to all allies but only move damage on distributed/sustained-flavor hits — inert at ×1 in comps without such hits (correct engine behaviour, not a gap). UNMODELED (all in `unmodeled`, no silent drops): S1 L1/L2 'Duration ▲2.5 sec' (a buff-duration-extension maintenance line — the stance ATK buff is modeled at saturated uptime, so extending its duration moves no damage; no generic duration-extend primitive); S1 'Removes Blanching'/'Removes Maillard' (mutual exclusivity enforced STRUCTURALLY by the single selected mode); S2 'Affects all allies not in Reliable Cooking status' (no-refresh gate — the engine has no 'apply only if absent' target filter; the model refreshes instead, inert while defPct is inert) and 'Removes 1 debuff' (no cleanse primitive; the scope-lock boss applies no ally debuffs). S2 RELIABLE COOKING DEF: 'DEF ▲10% of the skill user's DEF /10s' IS encoded as an inert defPct 10 block (hitCount:3, all allies, 10s) for kit completeness — ⚑ the kit is CASTER-DEF-derived but there is no casterDefPct StatKey, so it is approximated by the target's own defPct; defPct is inert for damage in v1 (self DEF does not feed own damage), so the approximation moves nothing today (a future DEF consumer would need a casterDefPct StatKey, not a retune). ⚑ MEASUREMENT-GATED: the full cadence tuple (charge 60 / reload 141) is a datamine estimate; stance-entry timing (first qualifying attack pattern, not t=0) and the '>1s maintain' dwell are folded into the hitCount:3 convention and unmeasured; which stance a real team holds is a player-behaviour choice the sim cannot auto-derive (pick the mode matching the recording). | Kit-autonomy gauntlet 2026-07-31: encoding authored test-first (scripts/tests/units/crust.test.ts) and reconciled cross-family — S1 stance ATK casterAtkPct 10 (hitCount:3, both stances, flat-from-caster discriminated vs atkPct), S2 Reliable Cooking defPct 10 (hitCount:3, inert), S2 FB-entry casterAtkPct 20 (fullBurstEnter, uncond), burst attackDamagePct 20 (burstCast, uncond), burst distributedDamagePct 60 (Maillard-gated), burst sustainedDamagePct 10 (Blanching-gated). S2b (claude-fable-5) verified the RL-always-full-charge premise ⇒ Blanching default; S5/S6 (claude-opus-5) blind re-derivations converged on modes [Blanching,Maillard], the casterAtkPct flat scaling, hitCount:3 stance trigger, inert defPct, fullBurstEnter S2, and the burstCast burst aura; corroboration recorded in scripts/kit-autonomy/results/crust.json.",
+  "modes": ["Blanching", "Maillard"],
+  "unmodeled": {
+    "skill1": [
+      "Activates when attacking with Full Charge and self is in Maillard status. Affects all allies.",
+      "Maillard Duration ▲ 2.5 sec.",
+      "Activates when attacking with Full Charge and self is in Blanching status. Affects all allies.",
+      "Blanching Duration ▲ 2.5 sec.",
+      "Removes Blanching.",
+      "Removes Maillard."
+    ],
+    "skill2": [
+      "Affects all allies not in Reliable Cooking status.",
+      "Removes 1 debuff."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: which stance (Blanching vs Maillard) is active is a user-selectable mode (default Blanching — the sim's RL always full-charges, sim.ts:3121, so Blanching is the only reachable stance; Maillard models the alternate tap-fire / distributed-team playstyle and overrides the sim's default cadence) — the stance-entry attack-pattern triggers (3 normal non-Full-Charge vs 3 Full Charges held >1s) are not simulated; pick the mode matching the real team's play pattern",
+    "skill1: the 'Duration ▲2.5 sec' lines are unmodeled — the stance ATK buff is modeled at saturated 100% uptime, so extending its duration moves no damage",
+    "skill2: the Reliable Cooking 'DEF ▲10% of the skill user's DEF' grant is encoded as an inert defPct 10 block (kit completeness) — the kit is caster-DEF-derived but no casterDefPct StatKey exists, so it is approximated by the target's own defPct; defPct is damage-inert in v1, so this moves nothing. The 'Removes 1 debuff' cleanse and the 'allies not in Reliable Cooking' no-refresh gate are unmodeled (no primitive; inert in v1)",
+    "burst: the Distributed Damage ▲60% (Maillard) and Sustained Damage ▲10% (Blanching) buffs are granted to all allies but only affect distributed-/sustained-flavor hits — inert in a comp without such hits"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "allies" },
+      "mode": "Maillard",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "allies" },
+      "mode": "Blanching",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "hitCount", "count": 3 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "defPct", "value": 10, "durationSec": 10 }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 20,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 20,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "mode": "Maillard",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "distributedDamagePct",
+          "value": 60,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "mode": "Blanching",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "sustainedDamagePct",
+          "value": 10,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

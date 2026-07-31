@@ -1,0 +1,146 @@
+{
+  "slug": "crust",
+  "kitDescription": "Crust is a Water rocket-launcher Supporter whose whole kit is team buffing — she has no damage skill of her own. Her attacks toggle her between two mutually exclusive cooking stances: Maillard (from 3 uncharged shots) or Blanching (from 3 held full charges), and either stance gives all allies an ATK buff equal to 10% of her own ATK. She also grants the team a small DEF buff and a debuff cleanse (Reliable Cooking), and whenever the team enters Full Burst she gives everyone holding a stance an ATK buff worth 20% of her ATK. Her burst gives all allies +20% Attack Damage, plus a stance-dependent extra: +60% Distributed Damage under Maillard or +10% Sustained Damage under Blanching. Because the sim's launcher always full-charges, Blanching is the stance that actually occurs in simulation, so the Sustained branch is the live one and the Distributed branch never fires by default.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "5 burst-line assertions (attackDamagePct 20 emit/targets/cast-count, distributedDamagePct 60 emit, sustainedDamagePct 10 emit) — fixture bug: S5's controlComp('crust', true) seats crown (B2, earlier slot) which pre-empts the Burst-2 stage every rotation, so crust casts 0 bursts (S5's own 'Crust casts her own burst' sanity check fails against its own fixture, corroborating the driver's empirical burstCast census liter 10 / crown 10 / helm 5 / crust 0); all burst assertions are vacuous under this fixture",
+      "1 durationShots assertion — assertion bug: S5 expects toBeUndefined() but sim.ts applyBuff emits durationShots ?? null; the driver test correctly asserts toBeNull()",
+      "1 distributedDamagePct 60 assertion — genuine model divergence: S5 left status-gating as an ungated GAP and asserts BOTH stance payloads emit in one run, which is less faithful than the mode gate (stances are mutually exclusive; ungated emits a simultaneous Distributed+Sustained pair that can never occur in game). Also masked by the fixture bug"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "FC+Maillard: Maillard Duration ▲2.5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no duration-extend primitive; saturated uptime makes it damage-neutral",
+        "blindSaid": "S2b: UNMODELED, must move zero damage in default comp (Maillard dead); S5: it.skip GAP; S6: unmodeled verbatim",
+        "formulaCheck": "Maillard unreachable in-sim (RL always full-charges, game-mechanics §4 DATAMINED einkk always-full-charge); line is inert",
+        "fireRateOk": true,
+        "explanation": "Legitimately out-of-domain and documented in override.unmodeled verbatim."
+      },
+      {
+        "kitLine": "FC+Blanching: Blanching Duration ▲2.5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; re-proc every ~3 shots (~4.1s) ≪ 10s window ⇒ saturated uptime, extension damage-neutral",
+        "blindSaid": "S2b: GAP, derivably inert (cadence arithmetic, reload included); S5: it.skip GAP; S6: unmodeled verbatim with same derivation",
+        "formulaCheck": "charge 60f + 22f release ≈ 1.37s/shot, 141f reload per 6 shots — max refresh gap ≪ 10s duration; extension cannot change any total",
+        "fireRateOk": true,
+        "explanation": "Missing-primitive gap, derivably inert; all three agents converged on the same inertness arithmetic."
+      },
+      {
+        "kitLine": "3 non-FC atk → Maillard ATK ▲10%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode-gated Maillard block, casterAtkPct 10, hitCount:3, durationSec 10, all allies; unreachable by default, kept as documented opt-in mode",
+        "blindSaid": "S2b: UNMODELED-but-negative-assertion (zero Maillard-attributable events by default); S6: identical mode-gated block",
+        "formulaCheck": "RL auto always full-charges (SSOT §4) ⇒ non-FC counter never advances; default run emits zero Maillard-family events — driver H0/H6 pins exactly this",
+        "fireRateOk": true,
+        "explanation": "Mode-gated preservation is strictly more faithful than dropping the line; the default-run inertness the reviewer demanded is pinned green by H0."
+      },
+      {
+        "kitLine": "3 FC >1s → Blanching ATK ▲10%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "mode-gated Blanching block, casterAtkPct 10, hitCount:3, durationSec 10; >1s dwell unmodeled with ⚑ convention",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, hitCount:3/chargeCounter:3 equivalent (hitsPerShot 1, all shots charged); S6: identical block + same ⚑",
+        "formulaCheck": "casterAtkPct = flat 10% × caster staticAtk outside (1+ATK%) per SSOT §1a ✓; all-ally target ✓; 10s refresh ✓; H1 pins flat value, single uniform value across targets, exact 2:1 ratio vs the S2 20% grant, and 600-frame windows",
+        "fireRateOk": true,
+        "explanation": "Correct stat identity (caster-scaled flat, NOT atkPct), trigger, target, and duration; dwell qualifier flagged ⚑ per S2b's instruction rather than silently encoded."
+      },
+      {
+        "kitLine": "Removes Blanching / Removes Maillard",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; mutual exclusivity enforced structurally by the single selected mode",
+        "blindSaid": "S5: it.skip GAP (no named-ally-status primitive); S6: unmodeled verbatim",
+        "formulaCheck": "No remove-named-buff primitive exists; mode gate guarantees exactly one stance's blocks are live, so there is nothing to remove in-sim",
+        "fireRateOk": true,
+        "explanation": "Structural enforcement is behaviorally exact in-sim; documented, not silently dropped."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "3 non-FC/3 FC → Reliable Cooking DEF ▲10%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "encoded inert defPct 10 (hitCount:3, allies, 10s) — ⚑ kit is caster-DEF-derived, no casterDefPct StatKey, approximated by target defPct; inert in v1",
+        "blindSaid": "S2b: acceptable as inert-encoded block or unmodeled, never a damage-moving stat; S5: asserts presence + byte-identical totals when stripped; S6: identical inert block + ⚑",
+        "formulaCheck": "defPct has no damage consumer in v1; driver H-def pins presence on all 3 allies AND byte-identical totals under the strip counterfactual — the approximation provably moves nothing",
+        "fireRateOk": true,
+        "explanation": "Both blind agents independently converged on encode-inert over drop; the ⚑ caster-DEF approximation is recorded with the future-consumer recipe (a casterDefPct StatKey, not a retune). Acceptable."
+      },
+      {
+        "kitLine": "allies not in Reliable Cooking (no-refresh)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no apply-only-if-absent target filter; model refreshes instead, inert while defPct is inert",
+        "blindSaid": "S5: it.skip GAP; S6: unmodeled verbatim + ⚑ uptime over-statement in gaps (inert)",
+        "formulaCheck": "Affects only the inert DEF payload's refresh timing; zero damage consequence in v1",
+        "fireRateOk": true,
+        "explanation": "Documented no-primitive gap on an inert payload."
+      },
+      {
+        "kitLine": "Removes 1 debuff",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; no cleanse primitive; scope-lock boss applies no ally debuffs",
+        "blindSaid": "S5: it.skip GAP (unobservable payload in v1); S6: unmodeled verbatim + ⚑ damage-neutral",
+        "formulaCheck": "No debuff carrier exists at scope lock; line is unobservable",
+        "fireRateOk": true,
+        "explanation": "Legitimately out-of-domain, documented."
+      },
+      {
+        "kitLine": "FB enter → Maillard/Blanching: ATK ▲20%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter, casterAtkPct 20, all allies, 10s; stance qualifier ungated (a stance is always active)",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, fullBurstEnter NOT burstCast; S6: identical block + uptime caveat",
+        "formulaCheck": "Blanching established ~4.1s in, well before the first Full Burst, so the status gate is behaviorally satisfied and 'all allies' is exact; casterAtkPct flat per SSOT §1a ✓. H2 discriminates by FRAME (lands on fullBurstStart frame, ≠ burstCast frame ~22f earlier) — a burstCast-keyed model provably fails",
+        "fireRateOk": true,
+        "explanation": "Correct trigger tier (the classic burstCast/fullBurstEnter swap avoided), correct stat and target. The one residual: the driver's fixture has crust casting every rotation, so S2b's preferred evidence (fires on an FB crust did NOT cast) is absent — but the frame-level discrimination is an adequate independent proof of trigger identity."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "All allies: Attack Damage ▲20% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, attackDamagePct 20, allies, 10s",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, burstCast NOT fullBurstEnter; S6: identical block",
+        "formulaCheck": "attackDamagePct sits in the DamageUp bucket per SSOT §1e ✓; H3 pins the aura lands on the burstCast frame BEFORE the FB window (≠ fullBurstStart frames), the mirror discrimination of H2",
+        "fireRateOk": true,
+        "explanation": "Correct stat, value (matches L10 prose 20), trigger, target, duration."
+      },
+      {
+        "kitLine": "Maillard allies: Distributed ▲60%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, distributedDamagePct 60, mode-gated Maillard; never emitted by default (H0/H4 pin zero in Blanching/default)",
+        "blindSaid": "S2b: the single most important negative assertion — must move nothing on any default comp; S6: identical mode-gated block; S5's ungated assertion is the less-faithful artifact",
+        "formulaCheck": "Distributed Damage ▲ is its own Taken-side bucket per SSOT §1g ✓, applied to all allies but only live on distributed-flavor hits ✓; mode gate honors the mutually-exclusive status gate that no ally-status primitive can express",
+        "fireRateOk": true,
+        "explanation": "The 60% over-credit trap (shared-prior misread) is avoided: emitted only in the opt-in Maillard mode, and the ungated counterfactual (H4) provably leaks into Blanching — discrimination demonstrated."
+      },
+      {
+        "kitLine": "Blanching allies: Sustained ▲10%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast, sustainedDamagePct 10, mode-gated Blanching; present in default run, absent in Maillard",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, value 10 NOT 60 (payload-swap discriminator); S6: identical block",
+        "formulaCheck": "Sustained Damage ▲ is a DamageUp-bucket flavor-gated term per SSOT §1e ✓; H5 pins value/stat/mode-gating and inertness in Maillard",
+        "fireRateOk": true,
+        "explanation": "Correct stat, value (L10 prose 10), gating, and negative assertion; no payload swap."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: every kit line is either FAITHFUL or a DOCUMENTED_GAP, and all four load-bearing lines (S1 Blanching casterAtkPct 10, S2 fullBurstEnter casterAtkPct 20, burst attackDamagePct 20, burst sustainedDamagePct 10 mode-gated) carry frame- or counterfactual-level discrimination that the named nearest-wrong models provably fail. The Blanching-default mode encoding is faithful: the RL-always-full-charge premise is independently grounded in the mechanics SSOT (§4, DATAMINED einkk always-full-charge), so the Maillard family is genuinely unreachable by default, and the driver's H0/H6 pin the reviewer's most important negative assertion (zero distributedDamagePct 60 in a default run) — the 60% over-credit trap is closed, with Maillard preserved as a documented opt-in mode rather than dropped. The unmodeled lines (duration +2.5s extensions, stance removals, no-refresh gate, debuff cleanse) are all no-primitive or derivably-inert gaps documented verbatim in the override, with the S2b/S6 inertness arithmetic agreeing; the inert defPct encoding of the caster-DEF line is acceptable — both blind agents converged on it, the ⚑ approximation (no casterDefPct StatKey) is recorded with the correct future recipe, and the driver proves byte-identical totals when stripped. All 7 S5 blind-test failures are correctly attributed to blind-side artifacts, not faithfulness errors: 5 to S5's controlComp fixture bug (crown pre-empts the B2 slot so crust casts 0 bursts — S5's own fixture-sanity assertion fails against its own fixture, corroborating the driver's burst census), 1 to a durationShots null-vs-undefined assertion bug, and 1 to S5's ungated status model being less faithful than the mutually-exclusive mode gate (a RECON_ERROR, not a driver gotcha). The 16 passing blind assertions independently corroborate casterAtkPct flat scaling, team-wide targeting, fullBurstEnter identity, DEF inertness, and flavor-scoping; the S6 blind override converges block-for-block with the driver. Minor nits noted but not gotchas: the driver test's header comment describing S1 as a 'duration-less passive with expiresFrame null' is stale (the override ships durationSec 10 and the assertions correctly pin 600-frame windows — comment/implementation mismatch only), and the driver's unmodeled.skill2 omits the verbatim '3 normal, non-Full-Charge attacks' trigger line that S6 listed (the payload is encoded merged and inert, so this is documentation completeness, not a silent drop). Same-model residual for the owner to spot-check: the entire verdict rides on the DATAMINED RL-always-full-charge premise and the unmeasured '>1s maintain' dwell convention (⚑) — if a real crust recording ever shows tap-fire play or a slower Blanching cadence, the mode choice (a 60% Distributed vs 10% Sustained burst swing) must be re-picked from footage before trusting a board reading.",
+  "model": "kimi-code/k3"
+}
