@@ -116,7 +116,7 @@ const TAB_META = {
     desc: 'Import your real NIKKE roster into the sim via blablalink. Auto-fills your units, gear, and overload lines for accurate team generation.',
   },
   builder: {
-    title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
+    title: 'NIKKE Card Builder — Custom Infographics',
     desc: 'Build a shareable NIKKE infographic: Nikke Card, custom DPS chart, unit comparison, rank board, and more. Live preview and specialized formatting for Discord and X.',
     // Showcases an actual generated card (the builder's Nikke Card default
     // pick) instead of the generic site screenshot — resolved against the
