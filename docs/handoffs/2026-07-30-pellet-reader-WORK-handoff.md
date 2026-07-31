@@ -1,4 +1,4 @@
-# Pellet reader — WORK session handoff (next: Phase 1)
+# Pellet reader — WORK session handoff (next: Phase 2, owner-gated pre-op first)
 
 > AI-facing. For the session that **builds**. The companion
 > [`…-JUDGE-handoff.md`](2026-07-30-pellet-reader-JUDGE-handoff.md) is for the session that
@@ -16,11 +16,51 @@
 Branch `fix/pellet-reader`, worktree `/Users/maxwellsutton/nikke-sim-wt-pellet`. Everything below is
 committed there, nothing pushed.
 
-**Done and verified today:** H1 · H2 · H3 · H4 · H5 (cancelled with proof) · §0.5 · Phase 2A part 2.
-**Phase 2A's four-video conjunction is CLOSED** — gate 1 and gate 2 met on `marciana`, `noir`,
-`guilty`, `isabel` simultaneously, which four previous tuning passes failed to achieve.
+**Done and verified today (2026-07-30):** H1 · H2 · H3 · H4 · H5 (cancelled with proof) · §0.5 ·
+Phase 2A part 2. **Phase 2A's four-video conjunction is CLOSED** — gate 1 and gate 2 met on
+`marciana`, `noir`, `guilty`, `isabel` simultaneously, which four previous tuning passes failed to
+achieve.
 
-## Next task: Phase 1 — and it is Phase 2's only blocker
+**✅ Phase 1 — DONE 2026-07-31 (§1.1 + §1.2, all steps).** See the plan doc's own §1.1/§1.2 sections
+for full detail; summary:
+
+- **§1.1 cache-then-sweep** — `count-pellets.py` gained `--dump-detections`/`--load-detections`/
+  `--sweep`/`--shots`, and the tracker + a Python port of the TS shot debouncer were factored into
+  reusable functions. Validated: 0 frame-count mismatches between a live run and a cached replay
+  over 1800 frames, replay 230× faster, a 4-combo sweep in 2.1s.
+- **§1.2 step 0 (OWNER-GATED)** — f8-11 ground truth regenerated and owner-counted:
+  `scripts/tests/fixtures/pellets/groundtruth-f8-11.json` (+ compact committed crops). Counts:
+  0/7/10/8/9/8 across shots 0-5 (shot0 = confirmed false positive). Note: the plan's own "7/9/7/9/
+  8/8" quote didn't match the primary source (`scratchpad/pellets/HANDOFF.md`) — used the primary
+  table instead.
+- **§1.2 steps 1-5** — `scripts/probe/make-synthetic-pellets.py` + `scripts/probe/score-pellets.py`
+  built, validated, and run: baseline recorded for the CURRENT (non-lifecycle-aware) pipeline —
+  count RMSE 2.141, Jaccard 0.511, F1 0.676, phase-resolved recall already dipping at f3-4 and
+  collapsing at f12-13 (reproduces the owner's lifecycle prediction from a detector that has no
+  lifecycle logic — the harness is measuring the right thing).
+- **`scripts/probe/pellet-selftest.sh`** (new) folds all four probe selftests into one command —
+  the "worth doing" item below is done.
+
+Two real findings surfaced along the way, neither requiring action right now:
+
+- shot4's structural crosshair localization briefly mislocked (~10 frames) during its own f8-11
+  window — Phase 2A's gate-1 near-fraction (computed over a WHOLE video) can hide a short per-shot
+  excursion. Worth a line if/when Phase 2A gate 2 work resumes.
+- The synthetic generator's background is a single real quiet frame repeated across all 13
+  offsets (not a real evolving background) — documented as a mandatory honest limit; the 6
+  owner-counted real shots + `docs/probe-data/*-sg-band.json` anchors are the required held-out
+  check for any candidate this labeled set scores.
+
+## Next: Phase 2 (lifecycle-aware counting) — its design needs an OWNER-INVOKED `/logic-gate` pre-op FIRST
+
+Per this doc's own "After Phase 1" section below (now current) and the plan's dispatch table:
+Phase 2 is real design work (t0 estimation, template scoring, phase-indexed gating) resting on a
+lifecycle spec corroborated on relatively few videos. **Do not start writing Phase 2 code without
+the owner explicitly invoking `/logic-gate` pre-op first** — it is not something a driver session
+triggers on its own initiative, and with a Claude driver it routes cross-family to `kimi-code/k3`,
+not the same-family Fable fallback. See "After Phase 1" below for the full gate list.
+
+<details><summary>Original pre-Phase-1 task list (superseded by the ✅ summary above — kept for the reasoning trail)</summary>
 
 Phase 2 cannot be scored without it. Neither `scripts/probe/make-synthetic-pellets.py` nor
 `scripts/probe/score-pellets.py` exists, and Phase 2's exit criterion is written against both.
@@ -48,6 +88,8 @@ cached detections in seconds rather than minutes.
    Phase 2's exit criterion is scored against these labels. Do not skip, delegate to a model, or
    use the existing peak-frame counts (7/9/7/9/8/8) as a substitute — those were counted on the
    frames the owner identifies as least readable.
+
+</details>
 
 ## Things that will bite you (each already cost a session)
 
