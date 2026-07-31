@@ -1122,6 +1122,78 @@ npx tsx scripts/probe/read-pellets.ts "<video>" \
 **Then Phase 2A can finally be closed or not**, on all four videos together — the conjunction that
 four tuning passes failed and that has never yet been evaluated under one working matcher.
 
+### ✅ H4 — DONE 2026-07-30 — gate 2 MET on all three; §0.6 miss pattern is SCATTERED under structural, not the template-era SELECTED signature
+
+Ran exactly the specified command per video (worktree cwd, absolute main-tree video + `--out`
+paths, `--dump-tracks true`), foreground, ~7 min each:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "<video>" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/h4-<unit>-structural
+```
+
+**Gate 2 (detection rate ≥60%) — MET on all three, against both denominators:**
+
+| unit     | shots (valid) | totalDur | naive expected (1.5/s×dur) | naive rate | dead-time >2s   | adjusted expected | adjusted rate |
+| -------- | ------------- | -------- | -------------------------- | ---------- | --------------- | ----------------- | ------------- |
+| marciana | 218 (176)     | 189.9s   | 284.9                      | **76.5%**  | 14.8s (7 gaps)  | 262.7             | 83.0%         |
+| guilty   | 180 (150)     | 191.3s   | 286.9                      | **62.7%**  | 60.8s (19 gaps) | 195.6             | 92.0%         |
+| isabel   | 203 (156)     | 190.7s   | 286.0                      | **71.0%**  | 41.7s (17 gaps) | 223.5             | 90.8%         |
+
+All three clear ≥60% on the naive denominator outright — the adjusted (fire-hold-corrected)
+denominator wasn't needed to pass, but is reported per the pre-committed instruction and lands
+83–92%, i.e. correcting only for each run's own observed gaps closes most of the remaining "miss".
+
+**Gate 1 (crosshair validity, full length) — MET on all three:**
+
+| unit     | near-crosshair % | wander (px) |
+| -------- | ---------------- | ----------- |
+| marciana | 19.0% — OK       | 1894        |
+| guilty   | 19.7% — OK       | 2326        |
+| isabel   | 19.9% — OK       | 2080        |
+
+All comfortably clear the ≥5% floor and ≫300px wander bar — in the same ~19–20%/≫300px range as
+`noir`'s full-length reference (21.1%, 1915px from 2A-G2), so the signature holds across the
+four-video conjunction, not just `noir`.
+
+**§0.6 miss-pattern — SCATTERED on all three, unlike the template-era SELECTED signature.**
+10s-bucket shot counts are close to uniform end-to-end (no near-zero buckets except the trailing
+partial bucket after the fight ends near t≈180s), and every gap >2s is individually short
+(2.0–4.0s ≈ 3–6 missed shots) — none of §H1's template-mode 12–24s single-window collapses:
+
+- **marciana**: buckets `9 12 14 11 14 11 14 11 13 14 11 11 13 12 11 13 13 11 [0]`; 7 gaps, all
+  2.0–2.2s, spread across fightT 35–178s.
+- **guilty**: buckets `9 11 10 9 11 9 8 11 7 10 10 11 12 9 11 10 13 9 [0 0]`; 19 gaps, 2.4–4.0s,
+  spread across fightT 17–177s, at a rough (not exact) ~8s cadence for most of the run.
+- **isabel**: buckets `9 11 13 12 10 11 11 13 10 12 11 11 12 12 11 12 10 12 [0 0]`; 17 gaps,
+  2.1–3.2s, spread across fightT 9–176s.
+
+This is qualitatively different from §H1's `marciana`-template-mode finding (4 discrete dead
+windows totalling 18.4s, one of them 12s alone, bucket counts collapsing to `2` and `1`). Under
+structural localization the deficit on all three is many small, evenly-distributed gaps, not a
+few long lock-dropout windows.
+
+⇒ **§0.6 Q2 (random vs selected) under current code: SCATTERED.** The template-era "selected,
+48%" finding described a lock-dropout bug in a mode this doc's own H1→H3→Phase 2A work has since
+replaced — do not quote it as current (per the dispatch instruction).
+
+⇒ **§0.6 Q1 (is the naive denominator right?) still leans no.** `guilty` alone moves 62.7%→92.0%
+once only its own observed gaps are subtracted — a large share of the "miss" is fire-hold/reload
+cadence, not lost detections. **Not further diagnosed here** — the ~8s gap periodicity visible in
+`guilty`'s data is recorded, not root-caused; that would be a diagnosis pass, out of scope for H4.
+
+**Artifacts confirmed on disk after each run (main tree, gitignored `scratchpad/`):**
+
+- `scratchpad/pellets/h4-marciana-structural/{pellets.json (2.8 MB), tracks.json (9.2 MB)}`
+- `scratchpad/pellets/h4-guilty-structural/{pellets.json (2.8 MB), tracks.json (7.9 MB)}`
+- `scratchpad/pellets/h4-isabel-structural/{pellets.json (2.8 MB), tracks.json (9.4 MB)}`
+
+**Phase 2A four-video conjunction — CLOSED.** Gate 1 and gate 2 are both MET on all four videos
+(`noir` per 2A-G2, `marciana`/`guilty`/`isabel` per this pass) under one working matcher
+(`--locate structural`) — the conjunction four tuning passes previously failed and that had never
+been evaluated together until now.
+
 ---
 
 ## Phase 1 — The two pieces of infrastructure everything else needs
