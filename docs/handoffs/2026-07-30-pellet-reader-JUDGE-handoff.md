@@ -46,6 +46,15 @@ two-minute check.** That single habit did more work today than any amount of ana
    `guilty` failure cost one session real work. If a report cites a status, verify it is still true.
 5. **Suspect results that are too clean.** `marciana` at exactly 100.1% detection is currently
    flagged as a possible over-count, not celebrated.
+6. **Check the owner spot-check gate.** Phase 2's exit criterion now includes an owner visual
+   inspection (10 randomly selected shots, f8–11 frames alongside pipeline counts). If a build
+   session reports Phase 2 done without presenting this to the owner, it is not done. The metrics
+   can pass while the output is visually wrong — the owner's eyeball is the independent method.
+7. **Verify the pre-committed separation numbers were not moved.** Phase 2's lifecycle filter must
+   hit precision ≥ 0.90 and recall ≥ 0.80 on the labeled set. These were pre-committed before
+   Phase 2 code was written. If a report quotes different thresholds, ask why — adjusting
+   pre-committed criteria after seeing the data is the exact failure mode this process exists to
+   prevent.
 
 ## Traps in your own tooling
 
@@ -75,5 +84,15 @@ failed. §0.5 answered (lifecycle generalises, ±0.05 across 11 samples). Detect
 reload-corrected denominator, corroborated by hand-derived counts. H1/H2/H3/H4 done, H5 cancelled
 with proof.
 
-**Open:** Phase 1 (Phase 2's only blocker) · Phase 2 · the `--debug-dir`/`--temporal` no-op · a
-wrapper for the three Python self-checks · `marciana`'s possible over-count.
+**Open:** Phase 1 (Phase 2's only blocker) · Phase 2 ·
+the `--debug-dir`/`--temporal` no-op · a wrapper for the three Python self-checks · `marciana`'s
+possible over-count.
+
+**Closed 2026-07-30:** §0.7 VLM zero-shot — Qwen2.5-VL-7B scored 46.2% within ±2 (threshold 70%)
+on 80 frames. Perception failure; the model estimates, does not count. Phase 3 is classical
+detectors only. Report: `scratchpad/pellets/vlm-test/report.html`.
+
+**Phase 2 gates added 2026-07-30 (owner review):** f8–11 ground truth must be owner-counted before
+P2 is scored (§1.2 step 0) · lifecycle separation pre-committed at precision ≥0.90 / recall ≥0.80 ·
+owner spot-check gate (10 shots, >2 clearly wrong → stop) · `/logic-gate` pre-op is owner-invoked
+and routes cross-family (Claude driver → `kimi-code/k3`).

@@ -25,10 +25,16 @@ committed there, nothing pushed.
 Phase 2 cannot be scored without it. Neither `scripts/probe/make-synthetic-pellets.py` nor
 `scripts/probe/score-pellets.py` exists, and Phase 2's exit criterion is written against both.
 
+**Before P1.1/P1.2 — ~~run §0.7 (VLM zero-shot, ~1 hour, free).~~ ✅ DONE — VLM NOT VIABLE.**
+Qwen2.5-VL-7B scored 46.2% within ±2 (threshold: 70%) on 80 frames. The model estimates from
+brightness/density, it does not resolve individual pellets. Phase 3 proceeds with classical
+detectors only (threshold, LoG/DoG). §1.2 does not need VLM-ready crops. Do not re-test.
+Report: `scratchpad/pellets/vlm-test/report.html`.
+
 **§1.1 — cache-then-sweep.** Split detection from counting so candidate methods can be A/B'd over
 cached detections in seconds rather than minutes.
 
-**§1.2 — the labeled set.** Read §1.2 in the plan, then apply these two amendments:
+**§1.2 — the labeled set.** Read §1.2 in the plan, then apply these three amendments:
 
 1. **Use ONE shared 13-frame lifecycle profile, not per-unit ones.** §0.5 was answered today: the
    lifecycle generalises across units (`marciana` vs `noir` agree within ±0.05 across all 11 profile
@@ -36,6 +42,12 @@ cached detections in seconds rather than minutes.
 2. **Fit/emit the profile on samples 1–5 only.** Both measured curves decay to a minimum at sample 5
    then _rise_ — a pellet does not grow back; that tail is the `life≥5` bucket picking up damage
    numbers and persistent VFX. Synthesising the rise would bake contamination into the labels.
+3. **Step 0 is OWNER-GATED and comes first.** Before generating synthetic data, regenerate the
+   6-shot ground truth at f8–11: identify the f8–11 frames from track data, crop them, present to
+   the owner for counting, commit as `scripts/tests/fixtures/pellets/groundtruth-f8-11.json`.
+   Phase 2's exit criterion is scored against these labels. Do not skip, delegate to a model, or
+   use the existing peak-frame counts (7/9/7/9/8/8) as a substitute — those were counted on the
+   frames the owner identifies as least readable.
 
 ## Things that will bite you (each already cost a session)
 
@@ -75,3 +87,15 @@ Phase 2 (lifecycle-aware counting). **Its design should go through `/logic-gate`
 is written** — owner-invoked, and with a Claude driver it routes to `kimi-code/k3`, not Fable. The
 reason is in the judge handoff: the design was authored by the same assistant that has been verifying
 this thread, so a same-family review is weak evidence.
+
+**Phase 2 gates added 2026-07-30 (do not skip):**
+
+- **f8–11 ground truth must exist** (§1.2 step 0, owner-counted) before Phase 2 is scored.
+- **Lifecycle separation is pre-committed:** precision ≥ 0.90, recall ≥ 0.80 on the labeled set.
+  Do not adjust these after seeing the data.
+- **Owner spot-check gate:** after metrics pass, present 10 randomly selected shots (5 high, 5 low)
+  with f8–11 frames alongside pipeline counts. >2 clearly wrong → stop and diagnose.
+- **t0 overlap policy is specified** in §2.1 step 4 — read it before implementing, do not invent
+  your own.
+- **Greedy linker escalation:** if life=1 tracks are still >40% after gap tolerance, `trackpy.link()`
+  is required, not optional (§2.1 step 3).
