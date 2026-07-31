@@ -1081,9 +1081,46 @@ route.
 verdict: the next session budgets for an investigation that has no work in it. (This doc already
 cost one session exactly that, with the phantom `guilty` gate-1 failure.)
 
-### H4 — §0.6 (missed-shot selection)
+### H4 — RE-SCOPED 2026-07-30: full-video gate 2 on the remaining three, which answers §0.6 under current code
 
-Unchanged, specified at §0.6. Cheap, and it may retire the "22% missed" item entirely.
+**Do not run §0.6 as originally written — half of it is already answered and the other half is
+measured against superseded numbers.**
+
+- **§0.6 Q2 ("are the misses random or selected?") was ANSWERED** by the §H1 driver analysis: under
+  template mode the misses were four **contiguous dead windows** (~18 s), i.e. **selected**, not
+  random. Re-asking it would be a phantom item.
+- **But that answer is about code that no longer runs.** Structural localization eliminated those
+  windows: `noir` went from the template era's dropout to **214 shots / 74.8%** end-to-end. The 48%
+  and "22% missed" figures in §0.6 are **template-era** and must not be quoted as current.
+- **§0.6 Q1 (is ~90 the right denominator?) is still open**, still free, and now better anchored —
+  `noir`'s full structural run gives a real shots-per-fight datum to sanity-check against.
+
+**What is actually open: gate 2 on `marciana`, `guilty`, `isabel`.** Only `noir` has been measured
+end-to-end at full length under structural. That single measurement closes Phase 2A's four-video
+conjunction **and** re-answers §0.6 against live code, so it is one task, not two.
+
+**Method.** For each of the three, the §2A-G2 command with the video swapped:
+
+```sh
+npx tsx scripts/probe/read-pellets.ts "<video>" \
+  --fps 30 --zoom 2 --locate structural --dump-tracks true \
+  --out /Users/maxwellsutton/nikke-sim/scratchpad/pellets/g2-<unit>-structural
+```
+
+`--zoom 2` is now the default (H3) but pass it explicitly anyway; `--dump-tracks true` is required —
+§2A-G2's command omitted it and the run produced no `tracks.json`. ~7 min each.
+
+**Pre-committed exit criteria, per video:**
+
+1. **Gate 2 — detection ≥60%** of expected. Report against **both** denominators (naive 1.5/s × duration,
+   and one adjusted for observed fire-holds) rather than failing on the naive one alone.
+2. **Gate 1 holds at full length** — `analyze-pellet-tracks.py` reports OK (≥5% near) and wander ≫300 px.
+3. **§0.6 miss pattern** — are the gaps **contiguous** (selected ⇒ a bias source, quantify it in
+   pellets/10) or **scattered** (random ⇒ merely thins n, and n is plentiful)? Use §H1's method:
+   shots-per-10 s buckets plus the list of inter-shot gaps >2 s.
+
+**Then Phase 2A can finally be closed or not**, on all four videos together — the conjunction that
+four tuning passes failed and that has never yet been evaluated under one working matcher.
 
 ---
 
