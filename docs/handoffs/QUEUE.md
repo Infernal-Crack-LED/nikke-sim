@@ -326,6 +326,15 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     one is invisible to it — a healthy whole-video fraction does not certify every individual shot's
     localization. Worth a per-shot (not just per-video) validity check if/when Phase 2A gate 2 work
     resumes.
+  - **⚠ ROI-restriction shot-count sensitivity (RECORD ONLY, filed 2026-07-31, n=1) →
+    open-questions U35.** Same `marciana` (exact slug `marciana`, SG/Iron) 1800-frame `h1` cache,
+    identical filter params: `--ammo-roi-x0 0.55 --ammo-roi-y0 0.50` alone is the difference between
+    43/29/7.3/0.17 (H1's reference) and ~72–74/61–62/7.5–7.6/0.23 without it — the no-ROI figures sit
+    close to run18 (70/58/7.6) and the ~90 expected. NOT "the ROI is a bug" (it demonstrably fixed
+    `guilty`/`isabel` false locks 2026-07-29); more shots may be more false locks, not more real ones.
+    H1's "the lost shots were REAL" diagnosis was formed on the ROI-restricted run only. Do NOT
+    change `--ammo-roi` defaults off this single reading — needs a per-video on/off comparison
+    against each video's own independent anchor first.
   - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
     the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
     ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
