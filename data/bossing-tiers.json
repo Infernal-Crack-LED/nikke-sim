@@ -1,5 +1,5 @@
 {
-  "updated": "2026-07-28",
+  "updated": "2026-07-31",
   "source": "bakery-bot DB nikke_characters.prydwen_tiers.bossing",
   "tiers": {
     "2b": "B",
@@ -107,6 +107,7 @@
     "mast": "C",
     "mast-romantic-maid": "SS",
     "maxwell": "S",
+    "maxwell-ordinary-mechanic": "?",
     "mica": "F",
     "mica-snow-buddy": "B",
     "mihara": "F",
