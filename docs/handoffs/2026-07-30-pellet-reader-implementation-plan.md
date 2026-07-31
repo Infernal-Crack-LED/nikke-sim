@@ -922,6 +922,46 @@ frame run (the dead-stretch metric), and non-zero frame count.
 **Stop condition.** Record the table, apply the winning default, re-run H1's command once to confirm
 shot recovery, report. **Do not** sweep any other parameter, and do not tune per-video.
 
+### ✅ H2 — DONE 2026-07-30, driver-verified
+
+> ⚠ **Heading restored.** This section lost its `### H2` heading when the H5 block was inserted above
+> it — a driver edit clobbered it, leaving the spec orphaned under H5 with no title. The H2 pass
+> found and executed it correctly regardless. Flagged because a heading-less section is the quiet
+> cousin of a stale claim: the next reader doesn't argue with it, they just never find it.
+>
+> **`scripts/probe/temporal-count-regression.py`** (committed `e2681a5`) — external by design, takes
+> a script path or `--prefix-commit <SHA>`, runs it as a subprocess with `--temporal --backend
+opencv`, asserts non-zero total white.
+>
+> **Red/green demonstration, re-run by the driver — the mandatory part, and it holds:**
+>
+> | script under test       | total white | verdict | exit |
+> | ----------------------- | ----------- | ------- | ---- |
+> | tree `count-pellets.py` | **9**       | PASS    | 0    |
+> | `2a1e99c` (pre-fix)     | **0**       | FAIL    | 1    |
+>
+> Fixture: 4 contiguous frames (`f_00103`–`f_00106`) from `marciana-solo.MP4` (slug **`marciana`**,
+> SG/Iron — not `marciana-marine-study`), a sub-window of the named idx 100–118 range, independently
+> reproducing its cited numbers.
+>
+> ⚠ **Measuring this correctly:** `python … | tail; echo $?` reports **`tail`'s** exit status, not the
+> script's — the RED case then shows exit 0 and looks like the test failed to fail. Capture the exit
+> code without a pipe. The driver hit exactly this and nearly filed a false bug against a correct test.
+>
+> **Two notes, neither blocking:**
+>
+> - **Fixture is 4.9 MB** (4 × ~1.28 MB full 2606×792 PNGs) — an order of magnitude larger than
+>   anything else in `scripts/tests/fixtures/`. A one-time cost for a test that catches a bug class
+>   which survived six days and a merge, so it stands. If it ever needs trimming, **2 contiguous
+>   frames would likely still discriminate** (the shadowing zeroes counts regardless of track length).
+> - **Not in `verify.sh`**, same rationale as the other Python selftests: needs `scripts/probe/.venv`,
+>   absent on a clean checkout. The reader now has **three** manual checks
+>   (`count-pellets.py --selftest`, `analyze-pellet-tracks.py --selftest`,
+>   `temporal-count-regression.py`) — enough that they want one wrapper script rather than three
+>   remembered commands. Worth doing before the count grows again.
+
+#### (spec) H2 — Regression test: temporal counts are never silently zero
+
 The Fix 2 shadowing survived **six days and a merge** because nothing asserted that `--temporal`
 produces output. That is the gap, not the bug.
 
