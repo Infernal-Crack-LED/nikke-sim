@@ -228,9 +228,8 @@ const ctx: RunCtx = { characters: data.characters as any, mult, deps };
 // tested population: every B3 with a kit override (simSupported) — no enikk-proven/"meta"
 // usage gate; a unit only needs a real override to produce a meaningful damage number.
 // Λ units are pinned to a fixed slot instead of treated as unsupported — see FORCED_BURST
-// (same forced mapping as the team generators, src/teamcalc.ts). SSS/SS units are the
-// ranked bars by default; every other tier is selector-only (chartPop: false).
-const CHART_TIERS = new Set(['SSS', 'SS']);
+// (same forced mapping as the team generators, src/teamcalc.ts). The chart's top-N windows
+// the raw ranked population, tier unrestricted — `tier` is display-only here.
 const FORCED_BURST: Record<string, 'III'> = { 'red-hood': 'III' };
 const effBurst = (slug: string, burst: string) => FORCED_BURST[slug] ?? burst;
 interface UnitMeta {
@@ -242,7 +241,6 @@ interface UnitMeta {
   elements: Element[];
   weapon: string;
   tier: string;
-  chartPop: boolean;
   imageUrl: string | null;
 }
 const population: UnitMeta[] = [];
@@ -265,7 +263,6 @@ for (const [slug, c] of Object.entries(data.characters)) {
     elements: unitElements(c),
     weapon: c.weapon,
     tier,
-    chartPop: CHART_TIERS.has(tier),
     imageUrl: c.imageUrl ?? null,
   });
 }
@@ -342,7 +339,6 @@ const artifact = {
         elements: u.elements,
         weapon: u.weapon,
         tier: u.tier,
-        chartPop: u.chartPop,
         imageUrl: u.imageUrl,
       },
     ])
@@ -356,6 +352,5 @@ mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, JSON.stringify(artifact));
 process.stderr.write(
   `dpschart: ${CELLS.length} cells × ${population.length} B3 ` +
-    `(${tested.length - population.length} profiled variant rows, ` +
-    `${population.filter((u) => u.chartPop).length} charted) → ${out}\n`
+    `(${tested.length - population.length} profiled variant rows) → ${out}\n`
 );

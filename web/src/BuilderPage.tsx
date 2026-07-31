@@ -162,6 +162,16 @@ const AMMO_UNITS = Object.values(data.characters)
   .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
 
+// Nikke Card and Max Ammo default to Maiden: Ice Rose when the user hasn't
+// picked a unit yet (falls back to the pool's first entry if she's ever
+// missing from it).
+const DEFAULT_PICK_SLUG = 'maiden-ice-rose';
+function defaultPick(pool: { slug: string }[]): string {
+  return pool.some((u) => u.slug === DEFAULT_PICK_SLUG)
+    ? DEFAULT_PICK_SLUG
+    : (pool[0]?.slug ?? '');
+}
+
 // Fill in the state's implicit picks (a select's value when the user hasn't
 // chosen yet, compare picks pruned to the live population) so the preview,
 // the copy button and the hosted-URL button all act on ONE state.
@@ -177,10 +187,10 @@ function effectiveState(
     return { ...s, unit, units };
   }
   if (s.card === 'unit') {
-    return { ...s, unit: s.unit || (ALL_UNITS[0]?.slug ?? '') };
+    return { ...s, unit: s.unit || defaultPick(ALL_UNITS) };
   }
   if (s.card === 'ammo') {
-    return { ...s, unit: s.unit || (AMMO_UNITS[0]?.slug ?? '') };
+    return { ...s, unit: s.unit || defaultPick(AMMO_UNITS) };
   }
   return s;
 }

@@ -5,8 +5,8 @@
 // always the LAST element); keep tuple index access in the web data module.
 // Methodology of record: docs/data/rank-boards.md.
 
-// Per-unit display metadata (same shape as dpschart's units minus tier/chartPop,
-// which are dpschart-only).
+// Per-unit display metadata (same shape as dpschart's units minus tier,
+// which is dpschart-only).
 export interface RankUnitMeta {
   name: string;
   element: string;

@@ -103,8 +103,9 @@ const CHARS: Record<string, CardCharacter> = {
 };
 
 // A minimal dpschart.json fixture for the dps.png route: two cells, four
-// units (liter is chartPop:false — selector-only on the site, so she is only
-// reachable through an element filter).
+// units. modernia and liter are absent from the neutral cell's ranked
+// list — a real "this unit isn't in this cell" scenario, distinct from an
+// unknown slug.
 const DPSCHART = {
   generatedAt: 't',
   meta: {},
@@ -115,7 +116,6 @@ const DPSCHART = {
       elements: ['Iron'],
       weapon: 'SR',
       tier: 'SSS',
-      chartPop: true,
       imageUrl: null,
     },
     alice: {
@@ -124,7 +124,6 @@ const DPSCHART = {
       elements: ['Fire'],
       weapon: 'SR',
       tier: 'SSS',
-      chartPop: true,
       imageUrl: null,
     },
     modernia: {
@@ -133,7 +132,6 @@ const DPSCHART = {
       elements: ['Fire'],
       weapon: 'MG',
       tier: 'SS',
-      chartPop: true,
       imageUrl: null,
     },
     liter: {
@@ -142,7 +140,6 @@ const DPSCHART = {
       elements: ['Iron'],
       weapon: 'SMG',
       tier: 'S',
-      chartPop: false,
       imageUrl: null,
     },
   },
@@ -451,19 +448,24 @@ describe('api/v1/img/dps.png (on-demand chart)', () => {
     expect(new Set([all, fire, windowed]).size).toBe(3);
   });
 
-  it('element filter reaches non-chartPop units; a bad combo is a 400', async () => {
-    // liter is chartPop:false — selectable only through an element filter
+  it('element filter narrows the population; off-cell unit is a 400', async () => {
+    // liter is Iron — reachable both unfiltered and via the iron filter
     await expectRenderedPng(
       '/api/v1/img/dps.png?element=iron&unit=liter',
       'dps'
     );
-    // …but not through the unfiltered population
-    expect((await fetch(`${base}/api/v1/img/dps.png?unit=liter`)).status).toBe(
-      400
-    );
+    await expectRenderedPng('/api/v1/img/dps.png?unit=liter', 'dps');
     // alice is Fire — excluded by the iron filter
     expect(
       (await fetch(`${base}/api/v1/img/dps.png?element=iron&unit=alice`)).status
+    ).toBe(400);
+    // modernia isn't ranked in the neutral cell at all
+    expect(
+      (
+        await fetch(
+          `${base}/api/v1/img/dps.png?cell=solo.neutral.c100.8of12&unit=modernia`
+        )
+      ).status
     ).toBe(400);
   });
 
@@ -510,8 +512,10 @@ describe('api/v1/img/dps.png (on-demand chart)', () => {
     expect(
       (await fetch(`${base}/api/v1/img/dps.png?units=alice,bogus`)).status
     ).toBe(400);
-    // liter is chartPop:false — not in the unfiltered population
-    const offPop = await fetch(`${base}/api/v1/img/dps.png?units=alice,liter`);
+    // modernia isn't ranked in the neutral cell at all
+    const offPop = await fetch(
+      `${base}/api/v1/img/dps.png?cell=solo.neutral.c100.8of12&units=alice,modernia`
+    );
     expect(offPop.status).toBe(400);
     expect(await offPop.text()).toContain('not in this chart');
     // alice is Fire — excluded by the iron filter

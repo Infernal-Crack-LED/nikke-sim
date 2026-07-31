@@ -14,7 +14,6 @@ export interface DpsUnitMeta {
   elements?: string[];
   weapon: string;
   tier: string;
-  chartPop: boolean; // SSS/SS → shown as ranked bars; else selector-only
   imageUrl: string | null;
 }
 export interface DpsArtifact {
@@ -78,10 +77,9 @@ export function rankedFor(art: DpsArtifact, cell: Cell): BarEntry[] {
   });
 }
 
-// the charted top-N for the bars. Unfiltered = the SSS/SS chart population; an
-// element filter instead ranks ALL B3s of that element (a single element has only
-// a couple of charted units, so the element view digs into the lower tiers). A unit
-// whose kit grants a second code's advantage appears under BOTH elements.
+// the charted top-N for the bars: the raw top-N of the full ranked population,
+// tier unrestricted. An element filter instead ranks only B3s of that element. A
+// unit whose kit grants a second code's advantage appears under BOTH elements.
 export function chartBars(
   art: DpsArtifact,
   cell: Cell,
@@ -90,7 +88,7 @@ export function chartBars(
 ): BarEntry[] {
   const pop = element
     ? rankedFor(art, cell).filter((e) => e.elements.includes(element))
-    : rankedFor(art, cell).filter((e) => art.units[e.slug]?.chartPop);
+    : rankedFor(art, cell);
   return pop.slice(0, topN);
 }
 

@@ -9,7 +9,6 @@ import { PillGrid } from './components/PillGrid';
 import {
   loadDpsChart,
   chartBars,
-  rankedFor,
   compareIn,
   allUnits,
   type DpsArtifact,
@@ -201,13 +200,9 @@ export function DpsChartTab() {
 
   const renderChart = (c: Cell, pageTitle: string, pageSubtitle?: string) => {
     const bars = chartBars(art, c, eleFilter);
-    // Windowed population for the shared image (mirrors the on-screen chart —
-    // SSS/SS only when unfiltered, same as `bars` but unsliced).
+    // Full ranked population for the shared image and the expand modal
+    // (mirrors the on-screen chart — `bars` but unsliced).
     const population = chartBars(art, c, eleFilter, Infinity);
-    // Every sim-supported B3 in this cell, tier included, for the expand
-    // modal — an element filter already reaches into lower tiers (`population`
-    // covers it), but the unfiltered view otherwise windows to SSS/SS only.
-    const fullBars = eleFilter ? population : rankedFor(art, c);
     const cmp = compareSlug ? compareIn(art, c, compareSlug, eleFilter) : null;
     const shareTitle = eleFilter
       ? `${cellLabel(c)} · ${eleFilter} only`
@@ -218,7 +213,7 @@ export function DpsChartTab() {
         title={pageTitle}
         subtitle={pageSubtitle}
         bars={bars}
-        fullBars={fullBars}
+        fullBars={population}
         compare={cmp}
         profiles={art.profiles}
         onShareLink={() => shareLink(c)}

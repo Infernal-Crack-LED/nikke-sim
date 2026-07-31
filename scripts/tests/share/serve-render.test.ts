@@ -84,7 +84,6 @@ const DPSCHART = {
       elements: ['Iron'],
       weapon: 'SR',
       tier: 'SSS',
-      chartPop: true,
       imageUrl: null,
     },
     alice: {
@@ -93,7 +92,6 @@ const DPSCHART = {
       elements: ['Fire'],
       weapon: 'SR',
       tier: 'SSS',
-      chartPop: true,
       imageUrl: null,
     },
     modernia: {
@@ -102,7 +100,6 @@ const DPSCHART = {
       elements: ['Fire'],
       weapon: 'MG',
       tier: 'SS',
-      chartPop: true,
       imageUrl: null,
     },
     liter: {
@@ -111,7 +108,6 @@ const DPSCHART = {
       elements: ['Iron'],
       weapon: 'SMG',
       tier: 'S',
-      chartPop: false,
       imageUrl: null,
     },
   },
@@ -345,13 +341,24 @@ describe('POST /api/v1/img/render — request validation', () => {
       [{ kind: 'dps', cell: 'bogus' }, `unknown cell 'bogus'`],
       [{ kind: 'dps', element: 'bogus' }, `unknown element 'bogus'`],
       [{ kind: 'dps', unit: 'bogus' }, `unknown unit 'bogus'`],
-      [{ kind: 'dps', unit: 'liter' }, 'not in this chart'], // chartPop-only
+      [
+        // modernia isn't ranked in the neutral cell at all
+        { kind: 'dps', cell: 'solo.neutral.c100.8of12', unit: 'modernia' },
+        'not in this chart',
+      ],
       [
         { kind: 'dps', unit: 'alice', units: ['modernia'] },
         'mutually exclusive',
       ],
       [{ kind: 'dps', units: ['alice', 'bogus'] }, `unknown unit 'bogus'`],
-      [{ kind: 'dps', units: ['alice', 'liter'] }, 'not in this chart'],
+      [
+        {
+          kind: 'dps',
+          cell: 'solo.neutral.c100.8of12',
+          units: ['alice', 'modernia'],
+        },
+        'not in this chart',
+      ],
       [
         {
           kind: 'dps',

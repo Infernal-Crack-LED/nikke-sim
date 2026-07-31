@@ -133,7 +133,6 @@ interface DpsUnitMeta {
   elements?: string[];
   weapon: string;
   tier: string;
-  chartPop: boolean;
   imageUrl: string | null;
 }
 interface DpsArtifact {
@@ -230,9 +229,9 @@ const loadSiteIcon = (): Promise<Canvas | null> => {
 };
 
 // 2 headline cells × (all + 5 element filters). Population semantics mirror
-// the web's chartBars() (web/src/dpschartData.ts): unfiltered = the SSS/SS
-// chart population; an element filter ranks ALL B3s of that element. Windowed
-// top-10 per §6.6, labels normalized to the population #1 (topDps).
+// the web's chartBars() (web/src/dpschartData.ts): unfiltered = the raw ranked
+// population, tier unrestricted; an element filter ranks ALL B3s of that
+// element. Windowed top-10 per §6.6, labels normalized to the population #1 (topDps).
 function dpsJobs(art: DpsArtifact): Job[] {
   const jobs: Job[] = [];
   for (const id of HEADLINE_CELL_IDS) {
@@ -251,7 +250,7 @@ function dpsJobs(art: DpsArtifact): Job[] {
           if (!u) {
             return false;
           }
-          return ele ? (u.elements ?? [u.element]).includes(ele) : u.chartPop;
+          return ele ? (u.elements ?? [u.element]).includes(ele) : true;
         })
         .map(([slug, dps, profile]) => ({
           slug,

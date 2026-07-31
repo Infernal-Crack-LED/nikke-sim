@@ -1,8 +1,8 @@
 // DPS-chart + table card rendering for the dynamic render routes
 // (/api/v1/img/dps.png, /api/v1/img/table/*.png). Data selection mirrors
 // build-infographics.ts's dpsJobs (which mirrors web/src/dpschartData.ts
-// chartBars): unfiltered = the chartPop (SSS/SS) population; an element filter
-// ranks ALL of the cell's units carrying that element. §6.6 windowing is on
+// chartBars): unfiltered = the raw ranked population, tier unrestricted; an
+// element filter ranks ALL of the cell's units carrying that element. §6.6 windowing is on
 // for these routes (top 10, or 4-above/target/5-below with `unit`) EXCEPT the
 // `units` comparison variant, which renders exactly the requested bars in
 // population rank order with no window. relScore labels are always normalized
@@ -43,7 +43,6 @@ export interface DpsUnitMeta {
   elements?: string[];
   weapon: string;
   tier: string;
-  chartPop: boolean;
   imageUrl: string | null;
 }
 export interface DpsArtifact {
@@ -83,14 +82,14 @@ export function dpsChartData(
   }
   const ele = params.element ? canonicalElement(params.element) : null;
   // Population semantics (chartBars): element filter = ALL units carrying the
-  // element; unfiltered = the SSS/SS chart population only.
+  // element; unfiltered = the raw ranked population, tier unrestricted.
   const population = ranked
     .filter(([slug]) => {
       const u = art.units[slug];
       if (!u) {
         return false;
       }
-      return ele ? (u.elements ?? [u.element]).includes(ele) : u.chartPop;
+      return ele ? (u.elements ?? [u.element]).includes(ele) : true;
     })
     .map(([slug, dps, profile]) => ({
       slug,
