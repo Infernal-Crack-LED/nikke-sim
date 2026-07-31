@@ -13,12 +13,47 @@ const SERVE = new URL('../../serve.mjs', import.meta.url);
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 const NO_CACHE = 'no-cache';
 
-// minimal SPA shell — sendIndex injects per-tab meta into it
-const INDEX = `<!doctype html><html><head><title>t</title>
-<meta name="description" content="d"><link rel="canonical" href="x">
-<meta property="og:title" content="t"><meta property="og:description" content="d">
-<meta property="og:url" content="u"><meta name="twitter:title" content="t">
-<meta name="twitter:description" content="d"></head><body></body></html>`;
+// minimal SPA shell — sendIndex injects per-tab meta into it. Wrapped
+// attribute-per-line like the real (Prettier-formatted, vite-built)
+// dist/index.html — a single-line fixture here would hide a regex that only
+// matches attributes on one line (the 2026-07-31 bug: og:title/description
+// and twitter:title/description silently kept their default content in
+// every real deploy because vite does not collapse index.html to one line).
+const INDEX = `<!doctype html><html><head>
+<title>
+  t
+</title>
+<meta
+  name="description"
+  content="d"
+/>
+<link rel="canonical" href="x" />
+<meta
+  property="og:title"
+  content="t"
+/>
+<meta
+  property="og:description"
+  content="d"
+/>
+<meta property="og:url" content="u" />
+<meta property="og:image" content="https://nikkesim.app/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta
+  property="og:image:alt"
+  content="d"
+/>
+<meta
+  name="twitter:title"
+  content="t"
+/>
+<meta
+  name="twitter:description"
+  content="d"
+/>
+<meta name="twitter:image" content="https://nikkesim.app/og.png" />
+</head><body></body></html>`;
 
 let dist: string;
 let child: ChildProcess;
@@ -36,13 +71,32 @@ beforeAll(async () => {
   put('dpschart.json', '{}');
   put('burstgen.json', '{}');
   put('ol-default.json', '{}');
-  put('img/manifest.json', '{}');
+  // The builder tab's og:image resolves 'unit/maiden-ice-rose.discord'
+  // against this manifest — real shape (width/height in physical px, the
+  // hash embedded in `file`).
+  put(
+    'img/manifest.json',
+    JSON.stringify({
+      generatedAt: 't',
+      images: {
+        'unit/maiden-ice-rose.discord': {
+          file: 'unit/maiden-ice-rose.discord.9fedcba1.webp',
+          hash: '9fedcba1',
+          bytes: 105_574,
+          width: 2400,
+          height: 1200,
+        },
+      },
+      notSimSupported: [],
+    })
+  );
   put('img/dps/solo.eleweak.c100.8of12.all.deadbeef.png', 'png');
   // Unit cards are the only WEBP in the hashed set (build-infographics emits
   // unit/<slug>.<variant> at ext webp, every other card at png) — pinned in both
   // shapes so the extension-anchored matcher can't lose one.
   put('img/unit/liter.discord.0123abcd.webp', 'webp');
   put('img/unit/liter.twitter.0123abcd.webp', 'webp');
+  put('img/unit/maiden-ice-rose.discord.9fedcba1.webp', 'webp');
   put('img/portraits/liter-128.webp', 'webp');
   put('fonts/Roboto-Regular.woff2', 'font');
 
@@ -147,6 +201,46 @@ describe('serve.mjs cache-control classes', () => {
     expect(res.headers.get('cache-control')).toBe(NO_CACHE);
     const html = await res.text();
     expect(html).toContain('NIKKE DPS Rankings'); // injected tab title
+  });
+
+  // Pins the 2026-07-31 fix: the real (Prettier-formatted) dist/index.html
+  // wraps every meta tag's attributes across lines, and the old
+  // literal-space regexes silently no-op'd on all of them except <title> —
+  // so a shared /dpschart link's Discord/Twitter embed showed the SITE
+  // og:title/og:description, not the tab's, in every real deploy.
+  it('replaces og:title/og:description/twitter:* content, not just <title>', async () => {
+    const html = await (await fetch(`${base}/dpschart`)).text();
+    const tag = (attr: string) =>
+      new RegExp(
+        `<meta\\s+(?:property|name)="${attr}"\\s+content="([^"]*)"`
+      ).exec(html)?.[1];
+    expect(tag('og:title')).toContain('NIKKE DPS Rankings');
+    expect(tag('og:description')).toContain('Ranked DPS');
+    expect(tag('twitter:title')).toContain('NIKKE DPS Rankings');
+    expect(tag('twitter:description')).toContain('Ranked DPS');
+    const desc = /<meta\s+name="description"\s+content="([^"]*)"/.exec(
+      html
+    )?.[1];
+    expect(desc).toContain('Ranked DPS');
+  });
+
+  it('/builder gets its custom og:image from the manifest; other tabs keep the generic one', async () => {
+    const builderHtml = await (await fetch(`${base}/builder`)).text();
+    expect(builderHtml).toContain(
+      'https://nikkesim.app/img/unit/maiden-ice-rose.discord.9fedcba1.webp'
+    );
+    expect(builderHtml).toMatch(/property="og:image:width"\s+content="2400"/);
+    expect(builderHtml).toMatch(/property="og:image:height"\s+content="1200"/);
+    const twitterImg = /<meta\s+name="twitter:image"\s+content="([^"]*)"/.exec(
+      builderHtml
+    )?.[1];
+    expect(twitterImg).toBe(
+      'https://nikkesim.app/img/unit/maiden-ice-rose.discord.9fedcba1.webp'
+    );
+
+    const rootHtml = await (await fetch(`${base}/`)).text();
+    expect(rootHtml).toContain('https://nikkesim.app/og.png');
+    expect(rootHtml).not.toContain('maiden-ice-rose');
   });
 
   it('serves hashed images with the right MIME', async () => {

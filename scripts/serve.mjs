@@ -118,6 +118,11 @@ const TAB_META = {
   builder: {
     title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
     desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+    // Showcases an actual generated card (the builder's Nikke Card default
+    // pick) instead of the generic site screenshot — resolved against the
+    // build-infographics manifest at request time since the file name is
+    // content-hashed.
+    image: 'unit/maiden-ice-rose.discord',
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
@@ -174,7 +179,27 @@ const LEGACY_CANONICAL = {
   dps: '/ranks/compare',
 };
 
-function injectMeta(html, reqUrl) {
+// Replaces a <meta property|name="attr" content="..."> tag's content,
+// tolerant of Prettier's multi-line wrap (attribute per line) — vite's build
+// does NOT collapse index.html to one line, so a literal-space regex here
+// silently no-ops on every wrapped tag (title/description/og:*/twitter:* are
+// all wrapped in the real dist/index.html once the content is non-trivial).
+function replaceMetaContent(html, key, attr, value) {
+  const re = new RegExp(`(<meta\\s+${key}="${attr}"\\s+content=")[^"]*(")`);
+  return html.replace(re, `$1${value}$2`);
+}
+
+// dist/img/manifest.json — read once per process (content-hashed filenames
+// are stable for the process's lifetime; a redeploy restarts the process).
+let imgManifestPromise = null;
+function loadImgManifest() {
+  imgManifestPromise ??= readFile(join(DIST, 'img', 'manifest.json'), 'utf8')
+    .then((raw) => JSON.parse(raw).images ?? {})
+    .catch(() => null);
+  return imgManifestPromise;
+}
+
+async function injectMeta(html, reqUrl) {
   const u = new URL(reqUrl || '/', SITE);
   const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
   const m = TAB_META[tabFromReqUrl(u)];
@@ -182,27 +207,50 @@ function injectMeta(html, reqUrl) {
   const canonical = escapeAttr(SITE + canonicalPath);
   const title = escapeAttr(m.title);
   const desc = escapeAttr(m.desc);
-  return html
-    .replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`)
-    .replace(/(<meta name="description" content=")[^"]*(")/, `$1${desc}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canonical}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(
-      /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${desc}$2`
-    )
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(
-      /(<meta name="twitter:description" content=")[^"]*(")/,
-      `$1${desc}$2`
-    );
+  let out = html.replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`);
+  out = replaceMetaContent(out, 'name', 'description', desc);
+  out = out.replace(
+    /(<link rel="canonical" href=")[^"]*(")/,
+    `$1${canonical}$2`
+  );
+  out = replaceMetaContent(out, 'property', 'og:title', title);
+  out = replaceMetaContent(out, 'property', 'og:description', desc);
+  out = replaceMetaContent(out, 'property', 'og:url', canonical);
+  out = replaceMetaContent(out, 'name', 'twitter:title', title);
+  out = replaceMetaContent(out, 'name', 'twitter:description', desc);
+
+  // Per-tab OG/Twitter image, resolved against the content-hashed manifest.
+  // Falls back to the generic og:image already baked into index.html when
+  // the tab has none, or the manifest/key isn't there (e.g. a deploy predating
+  // the img API, or a slug that lost its card).
+  if (m.image) {
+    const images = await loadImgManifest();
+    const entry = images && images[m.image];
+    if (entry) {
+      const imgUrl = escapeAttr(`${SITE}/img/${entry.file}`);
+      out = replaceMetaContent(out, 'property', 'og:image', imgUrl);
+      out = replaceMetaContent(
+        out,
+        'property',
+        'og:image:width',
+        String(entry.width)
+      );
+      out = replaceMetaContent(
+        out,
+        'property',
+        'og:image:height',
+        String(entry.height)
+      );
+      out = replaceMetaContent(out, 'property', 'og:image:alt', title);
+      out = replaceMetaContent(out, 'name', 'twitter:image', imgUrl);
+    }
+  }
+  return out;
 }
 
 async function sendIndex(res, reqUrl) {
-  const html = injectUmami(
-    injectMeta(await readFile(join(DIST, 'index.html'), 'utf8'), reqUrl)
-  );
+  const raw = await readFile(join(DIST, 'index.html'), 'utf8');
+  const html = injectUmami(await injectMeta(raw, reqUrl));
   res.writeHead(200, {
     'content-type': MIME['.html'],
     'cache-control': 'no-cache',

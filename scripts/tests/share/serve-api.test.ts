@@ -25,12 +25,41 @@ import type { CardCharacter } from '../../../src/server/card-from-build.js';
 const IMMUTABLE = 'public, max-age=31536000, immutable';
 const NO_CACHE = 'no-cache';
 
-// minimal SPA shell — sendIndex injects per-tab meta into it
-const INDEX = `<!doctype html><html><head><title>t</title>
-<meta name="description" content="d"><link rel="canonical" href="x">
-<meta property="og:title" content="t"><meta property="og:description" content="d">
-<meta property="og:url" content="u"><meta name="twitter:title" content="t">
-<meta name="twitter:description" content="d"></head><body></body></html>`;
+// minimal SPA shell — sendIndex injects per-tab meta into it. Wrapped
+// attribute-per-line like the real (Prettier-formatted, vite-built)
+// dist/index.html — see serve-headers.test.ts for why a single-line fixture
+// would hide a regex that only matches attributes on one line.
+const INDEX = `<!doctype html><html><head>
+<title>
+  t
+</title>
+<meta
+  name="description"
+  content="d"
+/>
+<link rel="canonical" href="x" />
+<meta
+  property="og:title"
+  content="t"
+/>
+<meta
+  property="og:description"
+  content="d"
+/>
+<meta property="og:url" content="u" />
+<meta property="og:image" content="https://nikkesim.app/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta
+  name="twitter:title"
+  content="t"
+/>
+<meta
+  name="twitter:description"
+  content="d"
+/>
+<meta name="twitter:image" content="https://nikkesim.app/og.png" />
+</head><body></body></html>`;
 
 // Injected character metadata (tests don't read data/characters.json). Slugs
 // deliberately have no portrait files — cards degrade to placeholder boxes,
@@ -205,9 +234,27 @@ beforeAll(async () => {
   put('index.html', INDEX);
   put('assets/App-AbCd1234.js', 'js');
   put('dpschart.json', JSON.stringify(DPSCHART));
-  put('img/manifest.json', '{"generatedAt":"t","images":{}}');
+  // The builder tab's og:image resolves 'unit/maiden-ice-rose.discord'
+  // against this manifest (see serve-headers.test.ts for the real shape).
+  put(
+    'img/manifest.json',
+    JSON.stringify({
+      generatedAt: 't',
+      images: {
+        'unit/maiden-ice-rose.discord': {
+          file: 'unit/maiden-ice-rose.discord.9fedcba1.webp',
+          hash: '9fedcba1',
+          bytes: 105_574,
+          width: 2400,
+          height: 1200,
+        },
+      },
+      notSimSupported: [],
+    })
+  );
   put('img/dps/solo.eleweak.c100.8of12.all.deadbeef.png', 'png');
   put('img/unit/liter.0123abcd.png', 'png');
+  put('img/unit/maiden-ice-rose.discord.9fedcba1.webp', 'webp');
   put('img/table/ol.c0ffee00.png', 'png');
   put('img/portraits/liter-128.webp', 'webp');
 
@@ -643,6 +690,34 @@ describe('static port parity with serve.mjs', () => {
     expect(res.headers.get('cache-control')).toBe(NO_CACHE);
     const html = await res.text();
     expect(html).toContain('NIKKE DPS Rankings');
+  });
+
+  // Parity with serve-headers.test.ts's 2026-07-31 fix pin: the wrapped
+  // (Prettier-formatted) meta tags must actually get their content replaced
+  // here too, not just in the .mjs original.
+  it('replaces og:title/og:description/twitter:* content, not just <title>', async () => {
+    const html = await (await fetch(`${base}/dpschart`)).text();
+    const tag = (attr: string) =>
+      new RegExp(
+        `<meta\\s+(?:property|name)="${attr}"\\s+content="([^"]*)"`
+      ).exec(html)?.[1];
+    expect(tag('og:title')).toContain('NIKKE DPS Rankings');
+    expect(tag('twitter:title')).toContain('NIKKE DPS Rankings');
+    const desc = /<meta\s+name="description"\s+content="([^"]*)"/.exec(
+      html
+    )?.[1];
+    expect(desc).toBeTruthy();
+    expect(desc).not.toBe('d');
+  });
+
+  it('/builder gets its custom og:image from the manifest; other tabs keep the generic one', async () => {
+    const builderHtml = await (await fetch(`${base}/builder`)).text();
+    expect(builderHtml).toContain(
+      'https://nikkesim.app/img/unit/maiden-ice-rose.discord.9fedcba1.webp'
+    );
+    const rootHtml = await (await fetch(`${base}/`)).text();
+    expect(rootHtml).toContain('https://nikkesim.app/og.png');
+    expect(rootHtml).not.toContain('maiden-ice-rose');
   });
 
   it('static tab + hashed vite asset serve with the Phase-2 cache classes', async () => {

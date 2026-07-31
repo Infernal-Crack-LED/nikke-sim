@@ -45,7 +45,16 @@ export function mimeFor(file: string): string {
 // tags on the URL's `?tab=` (mirrors the client's tabFromLocation) so each tab is
 // independently linkable with its own title/description.
 const SITE = 'https://nikkesim.app';
-const TAB_META: Record<string, { title: string; desc: string }> = {
+interface TabMeta {
+  title: string;
+  desc: string;
+  // Optional build-infographics manifest key (e.g. 'unit/<slug>.discord') for
+  // a tab-specific OG/Twitter image — resolved at request time since the
+  // served file name is content-hashed. Omitted tabs keep index.html's
+  // generic og:image.
+  image?: string;
+}
+const TAB_META: Record<string, TabMeta> = {
   sim: {
     title:
       'NIKKE Solo Raid Sim — DPS Calculator, Overload Optimizer & Team Builder',
@@ -131,6 +140,9 @@ const TAB_META: Record<string, { title: string; desc: string }> = {
   builder: {
     title: 'NIKKE Card Builder — Custom DPS Charts & Infographics',
     desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+    // Showcases an actual generated card (the builder's Nikke Card default
+    // pick) instead of the generic site screenshot.
+    image: 'unit/maiden-ice-rose.discord',
   },
   credits: {
     title: 'Credits — NIKKE Solo Raid Sim',
@@ -189,7 +201,53 @@ const LEGACY_CANONICAL: Record<string, string> = {
   dps: '/ranks/compare',
 };
 
-function injectMeta(html: string, reqUrl: string): string {
+// Replaces a <meta property|name="attr" content="..."> tag's content,
+// tolerant of Prettier's multi-line wrap (attribute per line) — vite's build
+// does NOT collapse index.html to one line, so a literal-space regex here
+// silently no-ops on every wrapped tag (title/description/og:*/twitter:* are
+// all wrapped in the real dist/index.html once the content is non-trivial).
+function replaceMetaContent(
+  html: string,
+  key: 'name' | 'property',
+  attr: string,
+  value: string
+): string {
+  const re = new RegExp(`(<meta\\s+${key}="${attr}"\\s+content=")[^"]*(")`);
+  return html.replace(re, `$1${value}$2`);
+}
+
+interface ImgManifestEntry {
+  file: string;
+  width: number;
+  height: number;
+}
+// dist/img/manifest.json, keyed by distDir (a test harness can spin up
+// multiple servers against different temp dist trees in one process).
+const imgManifestCache = new Map<
+  string,
+  Promise<Record<string, ImgManifestEntry> | null>
+>();
+function loadImgManifest(
+  distDir: string
+): Promise<Record<string, ImgManifestEntry> | null> {
+  let p = imgManifestCache.get(distDir);
+  if (!p) {
+    p = readFile(join(distDir, 'img', 'manifest.json'), 'utf8')
+      .then(
+        (raw) =>
+          (JSON.parse(raw).images ?? {}) as Record<string, ImgManifestEntry>
+      )
+      .catch(() => null);
+    imgManifestCache.set(distDir, p);
+  }
+  return p;
+}
+
+async function injectMeta(
+  html: string,
+  reqUrl: string,
+  distDir: string
+): Promise<string> {
   const u = new URL(reqUrl || '/', SITE);
   const seg = u.pathname.replace(/^\/+|\/+$/g, '').split('/')[0];
   const m = TAB_META[tabFromReqUrl(u)];
@@ -197,34 +255,53 @@ function injectMeta(html: string, reqUrl: string): string {
   const canonical = escapeAttr(SITE + canonicalPath);
   const title = escapeAttr(m.title);
   const desc = escapeAttr(m.desc);
-  return html
-    .replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`)
-    .replace(/(<meta name="description" content=")[^"]*(")/, `$1${desc}$2`)
-    .replace(/(<link rel="canonical" href=")[^"]*(")/, `$1${canonical}$2`)
-    .replace(/(<meta property="og:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(
-      /(<meta property="og:description" content=")[^"]*(")/,
-      `$1${desc}$2`
-    )
-    .replace(/(<meta property="og:url" content=")[^"]*(")/, `$1${canonical}$2`)
-    .replace(/(<meta name="twitter:title" content=")[^"]*(")/, `$1${title}$2`)
-    .replace(
-      /(<meta name="twitter:description" content=")[^"]*(")/,
-      `$1${desc}$2`
-    );
+  let out = html.replace(/(<title>)[^<]*(<\/title>)/, `$1${title}$2`);
+  out = replaceMetaContent(out, 'name', 'description', desc);
+  out = out.replace(
+    /(<link rel="canonical" href=")[^"]*(")/,
+    `$1${canonical}$2`
+  );
+  out = replaceMetaContent(out, 'property', 'og:title', title);
+  out = replaceMetaContent(out, 'property', 'og:description', desc);
+  out = replaceMetaContent(out, 'property', 'og:url', canonical);
+  out = replaceMetaContent(out, 'name', 'twitter:title', title);
+  out = replaceMetaContent(out, 'name', 'twitter:description', desc);
+
+  // Per-tab OG/Twitter image, resolved against the content-hashed manifest.
+  // Falls back to the generic og:image already baked into index.html when
+  // the tab has none, or the manifest/key isn't there (e.g. a deploy predating
+  // the img API, or a slug that lost its card).
+  if (m.image) {
+    const images = await loadImgManifest(distDir);
+    const entry = images?.[m.image];
+    if (entry) {
+      const imgUrl = escapeAttr(`${SITE}/img/${entry.file}`);
+      out = replaceMetaContent(out, 'property', 'og:image', imgUrl);
+      out = replaceMetaContent(
+        out,
+        'property',
+        'og:image:width',
+        String(entry.width)
+      );
+      out = replaceMetaContent(
+        out,
+        'property',
+        'og:image:height',
+        String(entry.height)
+      );
+      out = replaceMetaContent(out, 'property', 'og:image:alt', title);
+      out = replaceMetaContent(out, 'name', 'twitter:image', imgUrl);
+    }
+  }
+  return out;
 }
 
 async function sendIndex(
   reqUrl: string,
   opts: StaticOptions
 ): Promise<Response> {
-  const html = injectUmami(
-    injectMeta(
-      await readFile(join(opts.distDir, 'index.html'), 'utf8'),
-      reqUrl
-    ),
-    opts
-  );
+  const raw = await readFile(join(opts.distDir, 'index.html'), 'utf8');
+  const html = injectUmami(await injectMeta(raw, reqUrl, opts.distDir), opts);
   return new Response(html, {
     headers: {
       'content-type': MIME['.html'],
