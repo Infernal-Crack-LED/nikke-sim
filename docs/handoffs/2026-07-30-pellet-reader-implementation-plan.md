@@ -1081,7 +1081,87 @@ route.
 verdict: the next session budgets for an investigation that has no work in it. (This doc already
 cost one session exactly that, with the phantom `guilty` gate-1 failure.)
 
-### H4 — RE-SCOPED 2026-07-30: full-video gate 2 on the remaining three, which answers §0.6 under current code
+### ✅✅ H4 — DONE + DRIVER EXTENSION: §0.6 RESOLVED — the "missed shots" are RELOADS, and the reader is ~88–100% complete
+
+> **Phase 2A's four-video conjunction is CLOSED.** Gate 1 and gate 2 both met on all four videos under
+> one working matcher — the thing four separate tuning passes failed. Driver-verified: artifacts on
+> disk (2.7–8.9 MB each), gate 1 **19.0 / 19.7 / 19.9%** near with wander **1894 / 2326 / 2080 px**,
+> gate 2 naive **76.5 / 62.7 / 71.0%**, all reproducing the H4 pass's figures exactly.
+>
+> **§0.6 miss-pattern — confirmed scattered, and dramatically better than template era:**
+>
+> | `marciana`     | max gap     | 20 s-bucket shot counts            |
+> | -------------- | ----------- | ---------------------------------- |
+> | template (§H1) | **11.96 s** | 13, 7, **2**, 12, 8, **1**         |
+> | structural     | **2.24 s**  | 21, 25, 25, 25, 27, 22, 25, 24, 24 |
+>
+> All four now sit at median inter-shot gap **0.70 s** — the 1.5/s cadence — with flat buckets.
+>
+> **⇒ DRIVER EXTENSION: the gaps are RELOADS. The H4 pass logged an "~8 s gap periodicity" as an
+> unexplained observation; it is fully explained by datamined weapon stats.**
+>
+> | unit       | reload (datamined) | observed max gap | predicted cycle | observed gap period |
+> | ---------- | ------------------ | ---------------- | --------------- | ------------------- |
+> | `guilty`   | 3.02 s             | **4.00 s**       | 9.02 s          | **8.1 s**           |
+> | `isabel`   | 2.22 s             | **3.20 s**       | 8.22 s          | **7.6 s**           |
+> | `marciana` | 1.85 s             | **2.24 s**       | 7.85 s          | irregular           |
+> | `noir`     | 1.03 s             | —                | 7.03 s          | —                   |
+>
+> Gap lengths track reload time in the **right order and right magnitude** (each ~0.4–1.0 s longer,
+> as expected since a between-shots gap spans the reload plus partial shot intervals at each end).
+> `marciana` looks "irregular" only because its 1.85 s reload falls **below the 2 s gap threshold**, so
+> only its longest reloads register at all — and `noir`'s 1.03 s reload is shorter still, which is why
+> `noir` always looked cleanest.
+>
+> **⇒ The naive `1.5/s × duration` denominator is simply WRONG — it assumes continuous fire with no
+> reloads.** Against a physically correct denominator (`cycle = ammo/1.5 + reloadFrames/60`;
+> `expected = duration/cycle × ammo`, from `data/characters.json`, whose `reloadFrames` is already
+> gated by `verify.sh`'s `check-reload-chunks.ts`):
+>
+> | unit       | observed | naive exp | naive % | cycle-based exp | **real rate** |
+> | ---------- | -------- | --------- | ------- | --------------- | ------------- |
+> | `marciana` | 218      | 285       | 76.5%   | 217.7           | **100.1%**    |
+> | `isabel`   | 203      | 286       | 71.0%   | 208.9           | **97.2%**     |
+> | `guilty`   | 180      | 287       | 62.7%   | 190.9           | **94.3%**     |
+> | `noir`     | 214      | 286       | 74.8%   | 244.1           | **87.7%**     |
+>
+> **The reader is ~88–100% complete, not missing a quarter to a third of every fight.** Every "22%
+> missed" / "48%" / "62.7%" figure in this plan is an artifact of the wrong denominator and must not
+> be quoted again.
+>
+> **⇒ §0.6 IS RESOLVED AND RETIRED.** The misses are a **game mechanic uniformly distributed across
+> the fight**, not a selection effect. They are **not a bias source**, so the error budget's binding
+> constraint stays where it was — per-band bias ≤ ±0.25 pellets/10 — with shot recall no longer
+> competing for attention.
+>
+> **⇒ CONFIRMED BY AN INDEPENDENT LABELED ARTIFACT ALREADY IN THE REPO.** The reload argument above
+> is arithmetic over datamined stats — the same class of derivation throughout. `docs/probe-data/
+guilty-sg-band.json` carries **hand-derived per-band shot counts** from footage analysis that
+> predates this reader entirely (36 + 36 + 39 + 40 + 34 = **185** across ~185 s of banded coverage on
+> a ~191 s fight):
+>
+> | source                                         | `guilty` shots                  |
+> | ---------------------------------------------- | ------------------------------- |
+> | hand-derived band sum (committed, independent) | **185**                         |
+> | structural reader, today                       | **180** (97.3% of hand-derived) |
+> | cycle-based prediction                         | 190.9                           |
+> | naive `1.5/s × duration`                       | **287** ← refuted               |
+>
+> Humans counting this footage found ~185 shots, **not 287**. That independently (a) kills the naive
+> denominator outright and (b) puts the reader within **2.7%** of a hand-derived ground truth. Per
+> `docs/VALIDATION-INDEX.md` §"Validating a READER", scoring against an existing labeled record **is**
+> the validation. **The bar is met — no further experiment is owed here.**
+>
+> **⚠ Two honest caveats, neither celebratory:**
+>
+> 1. The cycle denominator still **ignores boss transitions, cover phases and burst animations**,
+>    which would lower expected shots further and push these rates _higher_. So these are lower
+>    bounds on completeness.
+> 2. Which makes **`marciana` at 100.1% a mild over-detection flag, not a triumph** — with
+>    interruptions unaccounted, a truly complete reader should land _under_ 100%. Worth a look during
+>    Phase 2's precision work; not worth chasing now.
+
+#### (spec) H4 — RE-SCOPED 2026-07-30: full-video gate 2 on the remaining three, which answers §0.6 under current code
 
 **Do not run §0.6 as originally written — half of it is already answered and the other half is
 measured against superseded numbers.**
