@@ -152,9 +152,9 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
 
   it.runIf(haveBoards)('a B1/B2 unit gets buffer first', () => {
     const model = build('liter'); // B1 Supporter
-    expect(model.tiles[0].title).toBe('Buffer');
+    expect(model.tiles[0].title).toBe('Team Buffs');
     expect(model.tiles[2].title).toBe('Burst Gen');
-    expect(model.charts[0].title).toContain('Buffer');
+    expect(model.charts[0].title).toContain('Team Buffs');
     // burst gen is a TILE ONLY — it must never appear as a chart.
     expect(model.charts.some((c) => c.title.includes('Burst Gen'))).toBe(false);
   });
@@ -200,7 +200,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       } as any,
     });
     expect(withSustain.charts.map((c) => c.title)).toEqual([
-      'Buffer — team DMG',
+      'Team Buffs — team DMG',
       'Sustain',
     ]);
 
@@ -215,7 +215,7 @@ describe('buildUnitCardData — tile/bar set selection (§7, ruling 13)', () => 
       } as any,
     });
     expect(withCdr.charts.map((c) => c.title)).toEqual([
-      'Buffer — team DMG',
+      'Team Buffs — team DMG',
       'Burst CDR',
     ]);
 
@@ -367,7 +367,7 @@ describe('buildUnitCardData — comp profiles (§8a, ruling 14)', () => {
       // profiled row AND a default row, and the profiled one ranks higher.
       const model = build('crown');
       const tile = model.tiles[0];
-      expect(tile.title).toBe('Buffer');
+      expect(tile.title).toBe('Team Buffs');
       expect(tile.profileChip).toBe('w/ Healer');
       expect(tile.rank).not.toBeNull();
       expect(tile.defaultRank).not.toBeNull();

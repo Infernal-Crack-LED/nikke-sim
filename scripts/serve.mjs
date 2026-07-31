@@ -52,7 +52,7 @@ const TAB_META = {
   },
   ranks: {
     title:
-      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Buffer Boards',
+      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Team Buffs Boards',
     desc: 'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
   },
   team: {

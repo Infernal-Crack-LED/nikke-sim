@@ -5,6 +5,8 @@
 // load-bearing). Pure and DOM-free like the rest of core/: callers attach the
 // icon/portrait and render via drawTableCard.
 import type { TableCardData } from './tableCard.js';
+import type { OlKey, Target } from '../../overload/model.js';
+import type { McSummary } from '../../overload/policy.js';
 
 // ---- max ammo ---------------------------------------------------------------
 
@@ -159,11 +161,17 @@ export interface OlDefaultArtifact {
   total: OlPieceResult;
 }
 
-// The /ol table: 4 pieces + Full Build. Mirrors the bot's ol.ts buildTable;
-// the subtitle is composed from the artifact's config (lines, piece count,
-// trial count) instead of the bot's hardcoded string.
-export function buildOlTable(art: OlDefaultArtifact): TableCardData {
-  const row = (label: string, p: OlPieceResult) => [
+const OL_ROLL_COLUMNS: TableCardData['columns'] = [
+  { header: '' },
+  { header: 'Exp Rolls', align: 'right' },
+  { header: 'P95', align: 'right' },
+  { header: 'Ph1 / Ph2', align: 'right' },
+  { header: 'Modules', align: 'right' },
+  { header: 'Mod P95', align: 'right' },
+];
+
+function olRollRow(label: string, p: OlPieceResult): string[] {
+  return [
     label,
     `${p.expRolls}`,
     `${p.p95}`,
@@ -171,24 +179,95 @@ export function buildOlTable(art: OlDefaultArtifact): TableCardData {
     `${p.modules}`,
     `${p.modulesP95}`,
   ];
-  const rows = art.perPiece.map((p, i) => row(`Piece ${i + 1}`, p));
-  rows.push(row('Full Build', art.total));
-  const trialsK =
-    art.config.trials >= 1000
-      ? `${art.config.trials / 1000}k`
-      : `${art.config.trials}`;
+}
+function olRollRows(
+  perPiece: OlPieceResult[],
+  total: OlPieceResult
+): string[][] {
+  const rows = perPiece.map((p, i) => olRollRow(`Piece ${i + 1}`, p));
+  rows.push(olRollRow('Full Build', total));
+  return rows;
+}
+function trialsLabel(trials: number): string {
+  return trials >= 1000 ? `${trials / 1000}k` : `${trials}`;
+}
+
+// The /ol table: 4 pieces + Full Build. Mirrors the bot's ol.ts buildTable;
+// the subtitle is composed from the artifact's config (lines, piece count,
+// trial count) instead of the bot's hardcoded string.
+export function buildOlTable(art: OlDefaultArtifact): TableCardData {
   return {
     title: 'Overload Roll Calculator — Default 8/12',
-    subtitle: `${art.config.lines.join(' + ')} · ${art.config.pieces} pieces · ${trialsK}-trial Monte Carlo`,
-    columns: [
-      { header: '' },
-      { header: 'Exp Rolls', align: 'right' },
-      { header: 'P95', align: 'right' },
-      { header: 'Ph1 / Ph2', align: 'right' },
-      { header: 'Modules', align: 'right' },
-      { header: 'Mod P95', align: 'right' },
-    ],
-    rows,
+    subtitle: `${art.config.lines.join(' + ')} · ${art.config.pieces} pieces · ${trialsLabel(art.config.trials)}-trial Monte Carlo`,
+    columns: OL_ROLL_COLUMNS,
+    rows: olRollRows(art.perPiece, art.total),
+    footer: 'nikkesim.app/olsim',
+  };
+}
+
+// ---- OL roll costs, live/parameterized (Card Builder) ----------------------
+
+// Round a live Monte Carlo summary into the same shape/precision as the
+// static ol-default.json artifact's baked OlPieceResult fields (mirrors
+// scripts/build-ol-default.ts's fmt()).
+function olPieceResultFrom(s: McSummary): OlPieceResult {
+  return {
+    expRolls: Math.round(s.ops.mean * 10) / 10,
+    p50: s.ops.pctiles.p50,
+    p95: s.ops.pctiles.p95,
+    phase1: Math.round(s.phase1Rerolls.mean * 10) / 10,
+    phase2: Math.round(s.phase2Resets.mean * 10) / 10,
+    modules: Math.round(s.moduleCostPerm.mean),
+    modulesP95: s.moduleCostPerm.p95,
+  };
+}
+
+export type OlLinesPreset = '4of12' | '8of12' | '12of12';
+export const OL_LINES_PRESETS: OlLinesPreset[] = ['4of12', '8of12', '12of12'];
+export const OL_LINES_LABEL: Record<OlLinesPreset, string> = {
+  '4of12': '4/12',
+  '8of12': '8/12',
+  '12of12': '12/12',
+};
+const OL_LINES_PER_PIECE: Record<OlLinesPreset, number> = {
+  '4of12': 1,
+  '8of12': 2,
+  '12of12': 3,
+};
+export const OL_PIECES = 4;
+// The Monte Carlo needs SOME concrete stat per line slot (roll probability is
+// stat-dependent — data/ol-probabilities.json weights differ by key), but the
+// card intentionally never names which stats it used (owner ruling — only the
+// line COUNT and tier are shown). Elemental DMG + ATK is the sitewide 8/12
+// floor (App.tsx's OL_8_12_ELEM/OL_8_12_ATK bulk-apply pill); Crit Rate stands
+// in for the unit-specific 4th "12/12" line every real build actually rolls
+// (scripts/build-ol-optimal.ts) since this card has no unit to be optimal for.
+const OL_REPRESENTATIVE_KEYS: OlKey[] = ['elem', 'atk', 'critrate'];
+
+export function olTargetFor(lines: OlLinesPreset, tier: number): Target {
+  return OL_REPRESENTATIVE_KEYS.slice(0, OL_LINES_PER_PIECE[lines]).map(
+    (key) => ({ key, minTier: tier })
+  );
+}
+
+// The generic (no-lines-named) OL roll table for the Card Builder: same shape
+// as buildOlTable, sourced from a live monteCarloBuild() result instead of
+// the static default artifact. Title/subtitle state only the line count and
+// tier — never which stats were simulated.
+export function buildOlRollTable(
+  lines: OlLinesPreset,
+  tier: number,
+  mc: { perPiece: McSummary[]; total: McSummary },
+  trials: number
+): TableCardData {
+  return {
+    title: `Overload Roll Calculator — ${OL_LINES_LABEL[lines]}`,
+    subtitle: `T${tier} · ${OL_PIECES} pieces · ${trialsLabel(trials)}-trial Monte Carlo`,
+    columns: OL_ROLL_COLUMNS,
+    rows: olRollRows(
+      mc.perPiece.map(olPieceResultFrom),
+      olPieceResultFrom(mc.total)
+    ),
     footer: 'nikkesim.app/olsim',
   };
 }

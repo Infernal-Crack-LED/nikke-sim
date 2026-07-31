@@ -10,6 +10,11 @@ import {
 } from './canvas2d.js';
 import { FONT, drawWatermark } from './theme.js';
 import { windowRows } from './window.js';
+import {
+  siteIconSizeFor,
+  siteIconTopFor,
+  TITLE_CAP_HEIGHT,
+} from './siteIcon.js';
 
 export interface TableColumn {
   header: string;
@@ -56,14 +61,18 @@ const HEAD_H = 96;
 const COL_HEADER_H = 36;
 const ROW_H = 38;
 const FOOT_H = 40;
-const ICON = 32; // site icon square, drawn beside the title
+const TITLE_BASELINE_Y = 44;
+const TITLE_FONT_SIZE = 24;
+// The icon plate is scaled so its measured bar content (not its own bounding
+// box) spans the title's cap height — see core/siteIcon.ts for why.
+const ICON = siteIconSizeFor(TITLE_CAP_HEIGHT[TITLE_FONT_SIZE]); // site icon square, drawn beside the title
 const HEADER_ICON = 16; // per-column icon square, drawn beside a column header
 
 // Ink-guard geometry — see teamCard.ts's TEAM_TITLE_INK_REGION comment. Starts at
 // the title's textX (padX + ICON + 12; 24px title, baseline y 44).
 export const TABLE_TITLE_ICON = {
   x: PAD_X,
-  y: 44 - ICON + 4,
+  y: siteIconTopFor(TITLE_BASELINE_Y, ICON),
   size: ICON,
 } as const;
 export const TABLE_TITLE_INK_REGION = {
@@ -114,13 +123,18 @@ export function drawTableCard(ctx: Canvas2DLike, data: TableCardData): void {
   ctx.textAlign = 'left';
   let textX = padX;
   if (data.icon) {
-    const iy = 44 - ICON + 4;
-    ctx.drawImage(data.icon, padX, iy, ICON, ICON);
+    ctx.drawImage(
+      data.icon,
+      TABLE_TITLE_ICON.x,
+      TABLE_TITLE_ICON.y,
+      ICON,
+      ICON
+    );
     textX = padX + ICON + 12;
   }
   ctx.fillStyle = '#e7eaf0';
-  ctx.font = `700 24px ${FONT}`;
-  ctx.fillText(data.title, textX, 44);
+  ctx.font = `700 ${TITLE_FONT_SIZE}px ${FONT}`;
+  ctx.fillText(data.title, textX, TITLE_BASELINE_Y);
   if (data.subtitle) {
     ctx.fillStyle = '#8b93a3';
     ctx.font = `400 14px ${FONT}`;

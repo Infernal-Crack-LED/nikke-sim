@@ -297,11 +297,11 @@ function bufferTile(
   const hits = findHits(art?.cells?.generic, slug, 3);
   const hit = headline(hits);
   if (!hit) {
-    return unrankedTile('Buffer');
+    return unrankedTile('Team Buffs');
   }
   const added = hit.row[1];
   return {
-    title: 'Buffer',
+    title: 'Team Buffs',
     rank: hit.index + 1,
     population: hits.entries.length,
     value: `${added >= 0 ? '+' : '−'}${Math.abs(added).toFixed(1)}%`,
@@ -476,7 +476,7 @@ function bufferChart(
   each: number
 ): BarChart {
   const hits = findHits(art?.cells?.generic, slug, 3);
-  return boardChart('Buffer — team DMG', hits, each, (row, i, isUnit) => {
+  return boardChart('Team Buffs — team DMG', hits, each, (row, i, isUnit) => {
     const [s, added, , profile] = row as [
       string,
       number,

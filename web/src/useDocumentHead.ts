@@ -28,7 +28,7 @@ const META: Record<string, HeadMeta> = {
   },
   ranks: {
     title:
-      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Buffer Boards',
+      'NIKKE Support Rankings — Burst Gen, Burst CDR, Sustain & Team Buffs Boards',
     description:
       'Ranked NIKKE support boards: burst generation, burst cooldown reduction, sustain (team HP), and buffer value — precomputed from the same frame-tick solo-raid sim as the DPS rankings.',
   },

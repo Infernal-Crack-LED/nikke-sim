@@ -9,6 +9,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MatrixFilter } from './components/MatrixFilter';
 import { PillGrid } from './components/PillGrid';
+import { CharPicker, CharSearch } from './components/CharSearch';
 import charactersJson from '../../data/characters.json';
 import type { DataFile } from '../../src/types';
 import { loadDpsChart, chartBars, type DpsArtifact } from './dpschartData';
@@ -24,23 +25,26 @@ import {
   loadSustain,
   loadBufferChart,
 } from './rankBoardsData';
-import {
-  buildBurstGenTable,
-  buildBurstCdrTable,
-  buildSustainTable,
-  buildBufferTable,
-} from '../../src/infographics/core/rankTables';
 import type {
   BurstGenArtifact,
   BurstCdrArtifact,
   SustainArtifact,
   BufferChartArtifact,
 } from '../../src/ranks/types';
+import { barsForBoard } from './rankChartBars';
+import { buildRankChartCanvas } from './rankChartShare';
+import type { RankChartData } from '../../src/infographics/core/rankChart';
 import {
   buildAmmoTable,
   buildChargeTable,
   chargeLatencyFrames,
   GENERIC_BASE_FRAMES,
+  buildOlRollTable,
+  olTargetFor,
+  OL_LINES_PRESETS,
+  OL_LINES_LABEL,
+  OL_PIECES,
+  type OlLinesPreset,
 } from '../../src/infographics/core/tableData';
 import {
   drawUnitCardVariant,
@@ -54,16 +58,24 @@ import type { Canvas2DLike } from '../../src/infographics/core/canvas2d';
 import { ELEMENT_FILTERS } from '../../src/infographics/spec';
 import { ensureRoboto, loadPortrait, copyOrDownloadPng } from './teamShare';
 import { buildDpsChartCanvas } from './shareImage';
-import { buildTableCardCanvas, loadOlDefaultTable } from './tableShare';
+import { buildTableCardCanvas } from './tableShare';
+import { monteCarloBuild, type McSummary } from '../../src/overload/policy';
+import type { OlProbModel } from '../../src/overload/model';
+import olProbJson from '../../data/ol-probabilities.json';
 import {
   manifestKeyFor,
   renderSpecFor,
+  OL_DEFAULT_LINES,
+  OL_DEFAULT_TIER,
   type BuilderState,
   type BuilderCardType,
   type BuilderBoard,
   type BuilderDpsMode,
   type ImgManifest,
 } from './builderSpec';
+
+const olProbModel = olProbJson as unknown as OlProbModel;
+const OL_TRIALS = 20_000; // matches scripts/build-ol-default.ts's default-combo recipe exactly
 
 const data = charactersJson as unknown as DataFile;
 
@@ -74,20 +86,22 @@ const DEFAULT_CELL: Cell = {
   invest: 'scope',
 };
 
+// Nikke Card leads (and is the default open tab) — it's the single card that
+// draws on every other data source here, so it's the natural first stop.
 const CARD_TYPES: { key: BuilderCardType; label: string }[] = [
-  { key: 'dps', label: 'DPS chart' },
-  { key: 'rank', label: 'Rank board' },
-  { key: 'unit', label: 'Unit card' },
-  { key: 'ol', label: 'OL table' },
-  { key: 'charge', label: 'Charge speed' },
-  { key: 'ammo', label: 'Max ammo' },
+  { key: 'unit', label: 'Nikke Card' },
+  { key: 'dps', label: 'DPS Ranks' },
+  { key: 'rank', label: 'Support Ranks' },
+  { key: 'ol', label: 'Overload Calculator' },
+  { key: 'charge', label: 'Charge Speed' },
+  { key: 'ammo', label: 'Max Ammo' },
 ];
 
-const BOARDS: { key: BuilderBoard; label: string }[] = [
-  { key: 'burstgen', label: 'Burst Gen' },
-  { key: 'burstcdr', label: 'Burst CDR' },
-  { key: 'sustain', label: 'Sustain' },
-  { key: 'buffer', label: 'Buffer' },
+const BOARDS: { key: BuilderBoard; label: string; title: string }[] = [
+  { key: 'burstgen', label: 'Burst Gen', title: 'Burst Generation' },
+  { key: 'burstcdr', label: 'Burst CDR', title: 'Burst Cooldown Reduction' },
+  { key: 'sustain', label: 'Sustain', title: 'Sustain' },
+  { key: 'buffer', label: 'Team Buffs', title: 'Team Buffs' },
 ];
 
 // Unit-card shapes. `discord` is the 2:1 landscape card the bot embeds and the
@@ -114,17 +128,37 @@ const RANK_LOADERS = {
 
 const cap = (el: string) => el[0].toUpperCase() + el.slice(1);
 
-// Unit pickers' option lists (characters.json is a static import — computed once).
+// Unit pickers' option lists (characters.json is a static import — computed
+// once). Each list is scoped to that card type's real population, and carries
+// enough fields (imageUrl/weapon/burst/nicknames) for the CharPicker search UI.
+const pickerFields = (c: DataFile['characters'][string]) => ({
+  slug: c.slug,
+  name: c.name,
+  nicknames: c.nicknames,
+  imageUrl: c.imageUrl,
+  weapon: c.weapon,
+  element: c.element,
+  burst: c.burst,
+});
+// Nikke Card content is only meaningful for units that actually have DPS-chart
+// / rank-board data behind them — the same support tag that gates the DPS
+// chart + generator tools elsewhere on the site (App.tsx's `generatorChars`).
 const ALL_UNITS = Object.values(data.characters)
-  .map((c) => ({ slug: c.slug, name: c.name, element: c.element }))
+  .filter((c) => c.generatorSupported)
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
 const CHARGE_UNITS = Object.values(data.characters)
   .filter((c) => (c.weapon === 'SR' || c.weapon === 'RL') && c.chargeFrames > 0)
-  .map((c) => ({ slug: c.slug, name: c.name }))
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
+// The charge-speed picker's "no unit picked" state is itself a meaningful
+// choice (the generic 1.0s baseline), so it gets a synthetic pool entry
+// instead of an empty CharPicker input.
+const GENERIC_CHARGE_OPTION = { slug: '__generic__', name: 'Generic (1.0s)' };
+const CHARGE_PICKER_POOL = [GENERIC_CHARGE_OPTION, ...CHARGE_UNITS];
 const AMMO_UNITS = Object.values(data.characters)
   .filter((c) => c.ammo > 0)
-  .map((c) => ({ slug: c.slug, name: c.name }))
+  .map(pickerFields)
   .sort((a, b) => a.name.localeCompare(b.name));
 
 // Fill in the state's implicit picks (a select's value when the user hasn't
@@ -166,26 +200,51 @@ function loadImgManifest(): Promise<ImgManifest> {
 
 export function BuilderPage() {
   const [s, setS] = useState<BuilderState>({
-    card: 'dps',
+    card: 'unit',
     cell: 'solo.eleweak.c100.8of12',
     element: null,
     dpsMode: 'top',
     unit: '',
     units: [],
     board: 'burstgen',
+    bufferBoard: 'generic',
+    burstGenBoard: 'unfocused',
+    olLines: OL_DEFAULT_LINES,
+    olTier: OL_DEFAULT_TIER,
     unitVariant: 'discord',
   });
   const [dpsArt, setDpsArt] = useState<DpsArtifact | null>(null);
   const [rankArts, setRankArts] = useState<
     Partial<Record<BuilderBoard, unknown>>
   >({});
-  const [olTable, setOlTable] = useState<TableCardData | null>(null);
+  const [olMc, setOlMc] = useState<{
+    perPiece: McSummary[];
+    total: McSummary;
+    lines: OlLinesPreset;
+    tier: number;
+  } | null>(null);
   const [loadErr, setLoadErr] = useState<string | null>(null);
 
   const cellObj = parseCellId(s.cell) ?? DEFAULT_CELL;
   const ele = s.element ? cap(s.element) : null;
   const population =
     s.card === 'dps' && dpsArt ? chartBars(dpsArt, cellObj, ele, Infinity) : [];
+  // A profiled unit (e.g. Cinderella: Crystal Wave's MG mode) appears TWICE in
+  // `population`, same slug — fine for the ranked bars, but the picker only
+  // needs one row per unit; keep the plain (non-profiled) row when there's a
+  // choice. BarEntry also lacks nicknames/burst (not part of the dps-chart
+  // artifact) — pull those from characters.json.
+  const dpsPickerBySlug = new Map<string, (typeof population)[number]>();
+  for (const b of population) {
+    if (!dpsPickerBySlug.has(b.slug) || b.profile === null) {
+      dpsPickerBySlug.set(b.slug, b);
+    }
+  }
+  const dpsPickerPool = Array.from(dpsPickerBySlug.values()).map((b) => ({
+    ...b,
+    nicknames: data.characters[b.slug]?.nicknames,
+    burst: data.characters[b.slug]?.burst,
+  }));
   const eff = effectiveState(s, population);
   const effKey = JSON.stringify(eff);
 
@@ -214,18 +273,63 @@ export function BuilderPage() {
       alive = false;
     };
   }, [s.card, s.board, rankArts]);
+  // Overload roll cost is a live Monte Carlo (not a fetch) — same trial count
+  // + seed as scripts/build-ol-default.ts, so the default 8/12 · T11 combo is
+  // numerically identical to the pre-rendered manifest card. Runs off the main
+  // render pass (setTimeout 0) so the "computing…" state gets a chance to
+  // paint before the ~0.5-1s synchronous roll sim blocks the thread.
   useEffect(() => {
-    if (s.card !== 'ol' || olTable) {
+    if (
+      s.card !== 'ol' ||
+      (olMc?.lines === s.olLines && olMc?.tier === s.olTier)
+    ) {
       return;
     }
     let alive = true;
-    loadOlDefaultTable()
-      .then((t) => alive && setOlTable(t))
-      .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    const lines = s.olLines;
+    const tier = s.olTier;
+    const id = setTimeout(() => {
+      if (!alive) {
+        return;
+      }
+      const target = olTargetFor(lines, tier);
+      const targets = Array.from({ length: OL_PIECES }, () => target);
+      const result = monteCarloBuild(olProbModel, targets, {
+        trials: OL_TRIALS,
+      });
+      setOlMc({ ...result, lines, tier });
+    }, 0);
+    return () => {
+      alive = false;
+      clearTimeout(id);
+    };
+  }, [s.card, s.olLines, s.olTier, olMc]);
+  // The Nikke Card draws on the DPS chart PLUS all four rank boards (every
+  // field nullable, see renderCard's 'unit' case) — it's the default tab, so
+  // kick off every load it can use instead of waiting on the user to have
+  // separately visited the DPS/Rank tabs first.
+  useEffect(() => {
+    if (s.card !== 'unit') {
+      return;
+    }
+    let alive = true;
+    if (!dpsArt) {
+      loadDpsChart()
+        .then((a) => alive && setDpsArt(a))
+        .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    }
+    (Object.keys(RANK_LOADERS) as BuilderBoard[]).forEach((b) => {
+      if (rankArts[b]) {
+        return;
+      }
+      RANK_LOADERS[b]()
+        .then((a) => alive && setRankArts((prev) => ({ ...prev, [b]: a })))
+        .catch((e) => alive && setLoadErr(String(e?.message ?? e)));
+    });
     return () => {
       alive = false;
     };
-  }, [s.card, olTable]);
+  }, [s.card, dpsArt, rankArts]);
 
   // Draw the card for the given state to an offscreen canvas (scale 2) — ONE
   // path shared by the live preview and the Copy-image button.
@@ -266,19 +370,35 @@ export function BuilderPage() {
         return buildDpsChartCanvas(chartData);
       }
       case 'rank': {
-        const art = rankArts[state.board];
-        if (!art) {
+        const rawArt = rankArts[state.board];
+        if (!rawArt) {
           return null;
         }
-        const table: TableCardData =
-          state.board === 'burstgen'
-            ? buildBurstGenTable(art as BurstGenArtifact)
-            : state.board === 'burstcdr'
-              ? buildBurstCdrTable(art as BurstCdrArtifact)
-              : state.board === 'sustain'
-                ? buildSustainTable(art as SustainArtifact)
-                : buildBufferTable(art as BufferChartArtifact, 'generic');
-        return buildTableCardCanvas(table);
+        const art = rawArt as
+          | BurstGenArtifact
+          | BurstCdrArtifact
+          | SustainArtifact
+          | BufferChartArtifact;
+        const allBars = barsForBoard(state.board, art, {
+          bufferBoard: state.bufferBoard,
+          burstGenBoard: state.burstGenBoard,
+        });
+        const boardMeta = BOARDS.find((b) => b.key === state.board)!;
+        const subMode =
+          state.board === 'buffer'
+            ? state.bufferBoard
+            : state.board === 'burstgen'
+              ? state.burstGenBoard
+              : null;
+        const chartData: RankChartData = {
+          title: subMode
+            ? `${boardMeta.title} · ${cap(subMode)}`
+            : boardMeta.title,
+          subtitle: `top 10 of ${allBars.length} · generated ${new Date(art.generatedAt).toLocaleDateString()}`,
+          bars: allBars.slice(0, 10),
+          footer: 'nikkesim.app/ranks',
+        };
+        return buildRankChartCanvas(chartData);
       }
       case 'unit': {
         const c = data.characters[state.unit];
@@ -328,7 +448,20 @@ export function BuilderPage() {
         return cv;
       }
       case 'ol': {
-        return olTable ? buildTableCardCanvas(olTable) : null;
+        if (
+          !olMc ||
+          olMc.lines !== state.olLines ||
+          olMc.tier !== state.olTier
+        ) {
+          return null;
+        }
+        const table = buildOlRollTable(
+          state.olLines,
+          state.olTier,
+          olMc,
+          OL_TRIALS
+        );
+        return buildTableCardCanvas(table);
       }
       case 'charge':
       case 'ammo': {
@@ -378,7 +511,7 @@ export function BuilderPage() {
       alive = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [effKey, dpsArt, rankArts, olTable]);
+  }, [effKey, dpsArt, rankArts, olMc]);
 
   // Narrow layouts stack controls above the preview (ResizeObserver, not a
   // window resize listener — the PillGrid pattern).
@@ -435,7 +568,9 @@ export function BuilderPage() {
       const spec = renderSpecFor(eff);
       if (!spec) {
         setHostErr(
-          'Pick at least one unit first — then the card can be hosted.'
+          eff.card === 'rank' || eff.card === 'ol'
+            ? "This exact card isn't hosted yet — use Copy image instead."
+            : 'Pick at least one unit first — then the card can be hosted.'
         );
         return;
       }
@@ -551,18 +686,11 @@ export function BuilderPage() {
               {s.dpsMode === 'window' && (
                 <div className="field">
                   <label>Windowed unit</label>
-                  <select
-                    value={eff.unit}
-                    onChange={(e) =>
-                      setS((cur) => ({ ...cur, unit: e.target.value }))
-                    }
-                  >
-                    {population.map((b) => (
-                      <option key={b.slug} value={b.slug}>
-                        #{b.rank} {b.name}
-                      </option>
-                    ))}
-                  </select>
+                  <CharPicker
+                    selectedSlug={eff.unit || null}
+                    pool={dpsPickerPool}
+                    onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+                  />
                 </div>
               )}
               {s.dpsMode === 'compare' && (
@@ -570,16 +698,24 @@ export function BuilderPage() {
                   <label>
                     Compared units ({eff.units.length}/10 — rank order is kept)
                   </label>
+                  <CharSearch
+                    placeholder="add a nikke on the chart…"
+                    exclude={eff.units}
+                    pool={dpsPickerPool}
+                    onPick={(slug) => toggleCmpUnit(slug)}
+                  />
                   <div className="pills">
-                    {population.map((b) => (
-                      <button
-                        key={b.slug}
-                        className={eff.units.includes(b.slug) ? 'on' : ''}
-                        onClick={() => toggleCmpUnit(b.slug)}
-                      >
-                        {b.name}
-                      </button>
-                    ))}
+                    {population
+                      .filter((b) => eff.units.includes(b.slug))
+                      .map((b) => (
+                        <button
+                          key={b.slug}
+                          className="on"
+                          onClick={() => toggleCmpUnit(b.slug)}
+                        >
+                          {b.name}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}
@@ -587,44 +723,68 @@ export function BuilderPage() {
           )}
 
           {s.card === 'rank' && (
-            <div className="field">
-              <label>Board</label>
-              <PillGrid>
-                {BOARDS.map((b) => (
-                  <button
-                    key={b.key}
-                    className={s.board === b.key ? 'on' : ''}
-                    onClick={() => setS((cur) => ({ ...cur, board: b.key }))}
-                  >
-                    {b.label}
-                  </button>
-                ))}
-              </PillGrid>
-            </div>
+            <>
+              <div className="field">
+                <label>Board</label>
+                <PillGrid>
+                  {BOARDS.map((b) => (
+                    <button
+                      key={b.key}
+                      className={s.board === b.key ? 'on' : ''}
+                      onClick={() => setS((cur) => ({ ...cur, board: b.key }))}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </PillGrid>
+              </div>
+              {s.board === 'buffer' && (
+                <div className="field">
+                  <label>Type</label>
+                  <PillGrid>
+                    {(['generic', 'typed'] as const).map((bb) => (
+                      <button
+                        key={bb}
+                        className={s.bufferBoard === bb ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, bufferBoard: bb }))
+                        }
+                      >
+                        {bb === 'generic' ? 'Generic' : 'Typed'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+              {s.board === 'burstgen' && (
+                <div className="field">
+                  <label>Type</label>
+                  <PillGrid>
+                    {(['unfocused', 'focused'] as const).map((bg) => (
+                      <button
+                        key={bg}
+                        className={s.burstGenBoard === bg ? 'on' : ''}
+                        onClick={() =>
+                          setS((cur) => ({ ...cur, burstGenBoard: bg }))
+                        }
+                      >
+                        {bg === 'unfocused' ? 'Unfocused' : 'Focused'}
+                      </button>
+                    ))}
+                  </PillGrid>
+                </div>
+              )}
+            </>
           )}
 
           {s.card === 'unit' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={eff.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
-                }
-              >
-                {ELEMENT_FILTERS.map((el) => {
-                  const group = ALL_UNITS.filter((u) => u.element === cap(el));
-                  return group.length ? (
-                    <optgroup key={el} label={cap(el)}>
-                      {group.map((u) => (
-                        <option key={u.slug} value={u.slug}>
-                          {u.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ) : null;
-                })}
-              </select>
+              <CharPicker
+                selectedSlug={eff.unit || null}
+                pool={ALL_UNITS}
+                onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+              />
             </div>
           )}
 
@@ -651,44 +811,66 @@ export function BuilderPage() {
           {s.card === 'charge' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={s.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
+              <CharPicker
+                selectedSlug={s.unit || GENERIC_CHARGE_OPTION.slug}
+                pool={CHARGE_PICKER_POOL}
+                onPick={(slug) =>
+                  setS((cur) => ({
+                    ...cur,
+                    unit: slug === GENERIC_CHARGE_OPTION.slug ? '' : slug,
+                  }))
                 }
-              >
-                <option value="">Generic (1.0s)</option>
-                {CHARGE_UNITS.map((u) => (
-                  <option key={u.slug} value={u.slug}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
           )}
 
           {s.card === 'ammo' && (
             <div className="field">
               <label>Unit</label>
-              <select
-                value={eff.unit}
-                onChange={(e) =>
-                  setS((cur) => ({ ...cur, unit: e.target.value }))
-                }
-              >
-                {AMMO_UNITS.map((u) => (
-                  <option key={u.slug} value={u.slug}>
-                    {u.name}
-                  </option>
-                ))}
-              </select>
+              <CharPicker
+                selectedSlug={eff.unit || null}
+                pool={AMMO_UNITS}
+                onPick={(slug) => setS((cur) => ({ ...cur, unit: slug }))}
+              />
             </div>
           )}
 
           {s.card === 'ol' && (
-            <p className="muted">
-              The default overload-lines table (no options).
-            </p>
+            <>
+              <div className="field">
+                <label>Lines</label>
+                <PillGrid>
+                  {OL_LINES_PRESETS.map((l) => (
+                    <button
+                      key={l}
+                      className={s.olLines === l ? 'on' : ''}
+                      onClick={() => setS((cur) => ({ ...cur, olLines: l }))}
+                    >
+                      {OL_LINES_LABEL[l]}
+                    </button>
+                  ))}
+                </PillGrid>
+              </div>
+              <div className="field">
+                <label>Tier</label>
+                <select
+                  value={s.olTier}
+                  onChange={(e) =>
+                    setS((cur) => ({ ...cur, olTier: +e.target.value }))
+                  }
+                >
+                  {Array.from({ length: 15 }, (_, t) => t + 1).map((t) => (
+                    <option key={t} value={t}>
+                      T{t}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="muted">
+                {OL_PIECES} pieces, {OL_TRIALS / 1000}k-trial Monte Carlo
+                simulation
+              </p>
+            </>
           )}
         </div>
 

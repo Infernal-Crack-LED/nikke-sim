@@ -223,13 +223,13 @@ describe('core/rankTables builders (shared server pre-render + web share)', () =
       },
     } as unknown as BufferChartArtifact;
     const g = buildBufferTable(art);
-    expect(g.title).toBe('Buffer Ranking — Generic');
+    expect(g.title).toBe('Team Buffs Ranking — Generic');
     expect(g.rows).toEqual([
       ['#1', 'Unit A', '+12.3%'],
       ['#2', 'Unit B', '-3.2%'],
     ]);
     const t = buildBufferTable(art, 'typed');
-    expect(t.title).toBe('Buffer Ranking — Typed');
+    expect(t.title).toBe('Team Buffs Ranking — Typed');
     expect(t.rows).toEqual([['#1', 'Unit B', '+20.5%']]);
   });
 });

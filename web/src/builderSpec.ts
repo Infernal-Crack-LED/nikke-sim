@@ -13,6 +13,15 @@ export type BuilderCardType =
   'dps' | 'rank' | 'unit' | 'ol' | 'charge' | 'ammo';
 export type BuilderBoard = 'burstgen' | 'burstcdr' | 'sustain' | 'buffer';
 export type BuilderDpsMode = 'top' | 'window' | 'compare';
+export type OlLinesPreset = '4of12' | '8of12' | '12of12';
+export type BufferBoard = 'generic' | 'typed';
+export type BurstGenBoard = 'unfocused' | 'focused';
+
+// The exact (lines, tier) the static ol-default.json artifact was built at —
+// the ONE OL combo manifestKeyFor can still serve from the pre-rendered
+// manifest (see below).
+export const OL_DEFAULT_LINES: OlLinesPreset = '8of12';
+export const OL_DEFAULT_TIER = 11;
 
 export interface BuilderState {
   card: BuilderCardType;
@@ -22,6 +31,10 @@ export interface BuilderState {
   unit: string; // dps window target, unit card, per-unit charge/ammo slug ('' = generic charge table)
   units: string[]; // dps compare picks (1–10)
   board: BuilderBoard; // rank board
+  bufferBoard: BufferBoard; // rank/buffer sub-mode
+  burstGenBoard: BurstGenBoard; // rank/burstgen sub-mode
+  olLines: OlLinesPreset; // ol: desired line count
+  olTier: number; // ol: desired tier (1-15)
   // unit card: which variant to preview. 'discord' is the 2:1 landscape card the
   // bot embeds; 'twitter' is the 3:4 portrait launch asset. Both are
   // pre-rendered, so both map to the manifest.
@@ -38,10 +51,11 @@ export const HEADLINE_CELL_IDS = [
 ] as const;
 
 // The manifest key for a state, or null when no pre-rendered image covers it
-// (→ POST a RenderSpec instead). Deliberately conservative: a state maps to
-// the manifest ONLY when the pre-rendered image is pixel-for-pixel the same
-// card (headline cell, top-10 window, no unit/units; the generic buffer
-// board; the generic charge table).
+// (→ POST a RenderSpec instead, or — for 'rank'/a non-default 'ol' — nothing
+// hosted at all yet; see renderSpecFor). Deliberately conservative: a state
+// maps to the manifest ONLY when the pre-rendered image is pixel-for-pixel
+// the same card (headline cell, top-10 window, no unit/units; the generic
+// charge table; the exact default OL combo).
 export function manifestKeyFor(s: BuilderState): string | null {
   switch (s.card) {
     case 'dps':
@@ -50,14 +64,22 @@ export function manifestKeyFor(s: BuilderState): string | null {
       }
       return `dps/${s.cell}.${s.element ?? 'all'}`;
     case 'rank':
-      return `rank/${s.board}`;
+      // rank/<board> pre-renders the old plain-text table (build-infographics
+      // .ts's rankJobs, unfocused/generic only) — the Builder card is now the
+      // portrait bar chart with the chosen sub-mode, a different image, so
+      // nothing in the manifest matches any state here.
+      return null;
     case 'unit':
       // Keyed by variant: the two cards are different images of the same unit,
       // and a shared key would serve the landscape card to a portrait request
       // out of an immutable cache.
       return s.unit ? `unit/${s.unit}.${s.unitVariant}` : null;
     case 'ol':
-      return 'table/ol';
+      // table/ol pre-renders ONE specific combo (scripts/build-ol-default.ts:
+      // 8/12 · T11) — only that exact selection matches it.
+      return s.olLines === OL_DEFAULT_LINES && s.olTier === OL_DEFAULT_TIER
+        ? 'table/ol'
+        : null;
     case 'charge':
       return s.unit ? null : 'table/charge-speed';
     case 'ammo':
@@ -94,10 +116,15 @@ export function renderSpecFor(s: BuilderState): RenderSpec | null {
         : null; // generic → manifest
     case 'ammo':
       return s.unit ? { kind: 'table', table: 'max-ammo', unit: s.unit } : null;
-    case 'rank':
     case 'unit':
+      return null; // manifest-only card type
+    case 'rank':
     case 'ol':
-      return null; // manifest-only card types
+      // No server RenderSpec support yet for the portrait bar chart or a
+      // non-default OL combo — 'unit' cards render on demand via the API;
+      // these don't, so onGetUrl falls through to its "use Copy image
+      // instead" message for anything manifestKeyFor doesn't cover.
+      return null;
   }
 }
 
