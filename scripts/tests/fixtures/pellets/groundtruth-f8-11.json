@@ -1,0 +1,95 @@
+{
+  "_source": "Phase 1 §1.2 step 0, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md — OWNER-GATED, hand-counted 2026-07-31 by the owner from the crops committed alongside this file (scripts/tests/fixtures/pellets/groundtruth-f8-11/).",
+  "_note": "Regenerates the 2026-07-26 6-shot ground truth (scratchpad/pellets/HANDOFF.md, main tree, untracked) at the lifecycle-reliable f8-11 window (shrinking, SEPARATED phase) instead of the shot's PEAK frame (f3-4, where the owner's 2026-07-30 pellet-lifecycle spec says pellets OCCLUDE and are the LEAST readable). The primary-source peak-frame counts were 0(false-positive)/7/9/7/9/8 for shots 0-5 — NOT the '7/9/7/9/8/8' the implementation plan paraphrased (that number doesn't match HANDOFF.md's own table; the false-positive row was dropped and miscounted as an 8). Generator: scripts/probe/make-groundtruth-f811.py.",
+  "video": "docs/probes/clean-weapons/marciana-solo.MP4",
+  "slug": "marciana",
+  "clip": { "at": 15, "dur": 30, "fps": 60, "zoom": 2 },
+  "shots": [
+    {
+      "shot": 0,
+      "video_t": 31.73,
+      "t0": null,
+      "locate": "structural",
+      "white": 0,
+      "red": 0,
+      "note": "false positive — no blast onset (total>=EVENT_MIN) ever detected in this window; owner re-confirmed 0 pellets on the single confirmation crop (crosshair stable, red VFX streak only, no white dots).",
+      "crops": ["groundtruth-f8-11/shot00/shot00_confirm_idx1004.png"]
+    },
+    {
+      "shot": 1,
+      "video_t": 32.88,
+      "t0": 1060,
+      "locate": "structural",
+      "white": 7,
+      "red": 0,
+      "orig_peak_frame_count": 7,
+      "crops": [
+        "groundtruth-f8-11/shot01/f08_idx1068.png",
+        "groundtruth-f8-11/shot01/f09_idx1069.png",
+        "groundtruth-f8-11/shot01/f10_idx1070.png",
+        "groundtruth-f8-11/shot01/f11_idx1071.png"
+      ]
+    },
+    {
+      "shot": 2,
+      "video_t": 33.5,
+      "t0": 1096,
+      "locate": "structural",
+      "white": 10,
+      "red": 0,
+      "orig_peak_frame_count": 9,
+      "crops": [
+        "groundtruth-f8-11/shot02/f08_idx1104.png",
+        "groundtruth-f8-11/shot02/f09_idx1105.png",
+        "groundtruth-f8-11/shot02/f10_idx1106.png",
+        "groundtruth-f8-11/shot02/f11_idx1107.png"
+      ]
+    },
+    {
+      "shot": 3,
+      "video_t": 34.27,
+      "t0": 1140,
+      "locate": "structural",
+      "white": 8,
+      "red": 0,
+      "orig_peak_frame_count": 7,
+      "crops": [
+        "groundtruth-f8-11/shot03/f08_idx1148.png",
+        "groundtruth-f8-11/shot03/f09_idx1149.png",
+        "groundtruth-f8-11/shot03/f10_idx1150.png",
+        "groundtruth-f8-11/shot03/f11_idx1151.png"
+      ]
+    },
+    {
+      "shot": 4,
+      "video_t": 36.48,
+      "t0": 1289,
+      "locate": "template",
+      "locate_note": "structural localization mislocked onto a floating damage-number stack for ~10 frames spanning this shot's f8-11 window (jumped >150px from t0's position — see scripts/probe/make-groundtruth-f811.py's crosshair-jump rejection); fell back to template-mode localization (the pre-Phase-2A method, which is what produced the original 2026-07-26 ground truth) to recover a clean crop. A real, newly-observed gap in structural localization's coverage, not a fixture-generation bug — worth a QUEUE.md entry against Phase 2A gate 2.",
+      "white": 9,
+      "red": 0,
+      "orig_peak_frame_count": 9,
+      "crops": [
+        "groundtruth-f8-11/shot04/f08_idx1297.png",
+        "groundtruth-f8-11/shot04/f09_idx1298.png",
+        "groundtruth-f8-11/shot04/f10_idx1299.png",
+        "groundtruth-f8-11/shot04/f11_idx1300.png"
+      ]
+    },
+    {
+      "shot": 5,
+      "video_t": 37.82,
+      "t0": 1369,
+      "locate": "structural",
+      "white": 8,
+      "red": 0,
+      "orig_peak_frame_count": 8,
+      "crops": [
+        "groundtruth-f8-11/shot05/f08_idx1377.png",
+        "groundtruth-f8-11/shot05/f09_idx1378.png",
+        "groundtruth-f8-11/shot05/f10_idx1379.png",
+        "groundtruth-f8-11/shot05/f11_idx1380.png"
+      ]
+    }
+  ]
+}
