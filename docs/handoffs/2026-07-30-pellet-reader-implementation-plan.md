@@ -1423,14 +1423,52 @@ expensive-derivation failure mode `CLAUDE.md` §⚖ warns about, so generate ins
 
 **Steps.** `scripts/probe/make-synthetic-pellets.py` (committed):
 
-0. **Regenerate the 6-shot ground truth at f8–11 (OWNER-GATED).** For each of the 6 owner-labeled
-   shots, identify the f8–11 frames from the track data (the shrinking phase where pellets are
-   separated), crop them at `pellet_radius` around the structural crosshair, and present to the
-   owner for counting. Record the counts alongside the existing peak-frame counts (7/9/7/9/8/8).
-   **Exit criterion:** 6 shots × ≥3 frames each, owner-counted, committed as
-   `scripts/tests/fixtures/pellets/groundtruth-f8-11.json`. **Owner sign-off required** — these
-   labels gate Phase 2's exit criterion, and the existing peak-frame labels were counted on the
-   frames the owner identifies as least readable. Do not skip this or delegate it to a model.
+### ✅ 0 — DONE 2026-07-31: owner-counted, committed
+
+**Corrected premise, checked against the primary source before generating anything:** this
+section's "7/9/7/9/8/8" does not match `scratchpad/pellets/HANDOFF.md`'s own 2026-07-26 table —
+that table's 6 rows are 0 (a confirmed false-positive at 31.73s, red VFX only) / 7 / 9 / 7 / 9 / 8.
+The plan's paraphrase dropped the false-positive row and mis-remembered an extra "8". The primary
+table, not the paraphrase, is what this step regenerated against.
+
+**Generator:** `scripts/probe/make-groundtruth-f811.py` (new, committed) — extracts the same 6
+shots (by video time) at 60fps, locates each shot's t0 via the SAME `EVENT_MIN` onset definition
+`read-pellets.ts`'s debounce uses (an onset-edge search narrower than the ~40-frame inter-shot
+cadence, not a wide scan — an earlier, wider version of this search cross-contaminated adjacent
+shots, caught and fixed before generating the committed crops), then crops t0+8..t0+11 around the
+structural crosshair. Rejects any crop whose crosshair jumped >150 zoomed px from t0 (the same
+bound the live pipeline uses elsewhere) rather than silently emitting a mislocked crop.
+
+**Owner-counted result** (2026-07-31), committed at
+`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` +
+`scripts/tests/fixtures/pellets/groundtruth-f8-11/` (compact re-encoded crops, 3.1MB — the
+3×-upscaled review copies were ~21MB, too large to commit, and detectors work at native crop scale
+anyway):
+
+| shot | video_t | peak-frame count (2026-07-26) | f8-11 count (2026-07-31)                            |
+| ---- | ------- | ----------------------------- | --------------------------------------------------- |
+| 0    | 31.73s  | 0 (false positive)            | **0** — re-confirmed, no blast onset in this window |
+| 1    | 32.88s  | 7                             | **7**                                               |
+| 2    | 33.50s  | 9                             | **10**                                              |
+| 3    | 34.27s  | 7                             | **8**                                               |
+| 4    | 36.48s  | 9                             | **9**                                               |
+| 5    | 37.82s  | 8                             | **8**                                               |
+| —    | —       | —                             | 0 red/core hits on any shot                         |
+
+Directionally consistent with the plan's own prediction ("expect true counts ≥ the peak-frame
+counts" — occlusion at the peak should only ever lose pellets, never gain phantom ones): 2 shots
+rose, 4 stayed flat, none fell.
+
+**One real finding surfaced by this pass, not by design:** shot4's structural localization
+mislocked for ~10 frames spanning its f8-11 window (jumped onto a floating damage-number stack —
+caught by the >150px rejection, not silently absorbed into the label). Recovered via a template-
+mode fallback for that one shot. This is evidence Phase 2A's gate-1 near-fraction metric (computed
+over a whole video) can still hide a short per-shot excursion; worth a `docs/handoffs/QUEUE.md`
+line, not re-litigated here.
+
+**Exit criterion MET:** 6 shots, ≥3 frames each (shot0 is the one exception — 1 confirmation frame,
+since it has no blast to sample f8-11 from), owner-counted, committed.
+
 1. Crop real pellet patches (with alpha) from the owner-labeled frames. **This deliberately avoids
    depending on Phase 5's asset extraction** — the labeled set must not be blocked on the riskiest
    phase.
