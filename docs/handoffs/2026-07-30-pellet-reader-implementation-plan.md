@@ -123,10 +123,15 @@ open-ended._ The reader exists to answer **U35** (per-band SG landing). That fix
 | -------------------------------------------------------- | ----------------------------- |
 | U35 discrimination threshold (2026-07-29 decision rule)  | **±0.5** pellets/10           |
 | Smallest real gap to resolve (UNIGEO vs `noir` anchors)  | **0.77** pellets/10           |
-| Shots per band (37 s window × 1.5/s, at 60–100% valid)   | **n ≈ 33–56**                 |
+| Shots per band (37 s window × 1.5/s, at 60–100% valid)   | **n ≈ 33–56** ¹               |
 | ⇒ tolerable per-shot **random** SD (band-mean SE ≤ 0.25) | **±1.4 – ±1.9 pellets**       |
 | ⇒ tolerable per-band **systematic bias**                 | **±0.25 pellets/10**          |
 | Current counter's reported bias (~10–20% cold)           | **0.8 – 1.6** → **3–6× over** |
+
+¹ **Updated by H4:** the naive 1.5/s denominator overstates n. Cycle-based rates (accounting for
+reloads, from `data/characters.json`) are 88–100% of a lower expected count, so real n per band is
+~25–45. The conclusion — **chase bias, not variance** — is unchanged: tolerable SD at n=25 is still
+±1.25 pellets, which is enormous.
 
 **⇒ The single most important consequence: chase BIAS, not variance.**
 
@@ -664,6 +669,73 @@ vague recall problem.
 > **Phase 0 deliverable:** `analyze-pellet-tracks.py` (✅ committed), the 0.2 findings (✅ recorded
 > above), a decision on 0.1, and — before any Phase 2 code — the **0.5 lifecycle-stability** and
 > **0.6 denominator** answers. Nothing is built until those two land.
+
+### 0.7 — VLM zero-shot pellet counting (free, ~1 hour, informs Phase 3 detector choice)
+
+**Added 2026-07-30 (owner review).** The early ruling against VLM counting was made before
+structural localization produced clean 320×320 crops and the lifecycle spec identified f8–11 as the
+counting frames. "How many white dots in this small crop" is a different question than "count pellets
+in a full frame" — test whether the local VLM can answer it before committing to a detector path.
+
+**Method.** From `h4-marciana-structural/frames-pellet/` (or any structural dump with a
+`tracks.json`), select 20–30 frames where the track data shows 6–10 white pellets and the frame
+index corresponds to f8–11 timing (shrinking phase, pellets separated). Crop each to the
+`pellet_radius` disc around the structural crosshair position. Send each crop to the local VLM
+(Qwen2-VL-7B or equivalent, via the llama.cpp OpenAI-compatible endpoint):
+
+> _"How many small white circular dots are visible in this image? Count carefully and give only
+> the number."_
+
+Compare the VLM's count to the track-based count for that frame.
+
+**Exit criterion.**
+
+- **≥70% of frames within ±2 of the track count** → VLM is a viable Phase 3 detector candidate.
+  Add VLM-compatible crop outputs to §1.2's labeled set, and include a VLM leg in the Phase 3
+  detector A/B (alongside threshold and LoG/DoG).
+- **Most frames off by >±4** → the model cannot resolve 56 px² pellets at this crop resolution.
+  Record the result, close the question, and proceed with the classical detector path. Do not
+  fine-tune on top of a perception failure.
+
+**This does not replace any phase.** It informs Phase 3's detector choice and tells §1.2 whether to
+emit VLM-ready crops. If the VLM passes, it is a _sensor_ that still needs Phase 2's lifecycle
+temporal logic on top — it counts dots per frame, it does not group frames into shots.
+
+### ✅ 0.7 — DONE 2026-07-30: **VLM NOT VIABLE.** Question closed.
+
+Ran `scripts/probe/vlm-pellet-test.py` (committed) against `h4-marciana-structural`, 80 frames with
+track-based white counts 6–10, 320×320 crops centered on the structural crosshair, Qwen2.5-VL-7B
+(Q4_K_M) at `localhost:8090/v1`, temperature 0.
+
+| Metric          | Value                             |
+| --------------- | --------------------------------- |
+| Frames tested   | 80                                |
+| Parse failures  | 0                                 |
+| Within ±1       | **28.8%**                         |
+| Within ±2       | **46.2%** ← FAIL (threshold: 70%) |
+| Within ±3       | 68.8%                             |
+| Median \|err\|  | 3                                 |
+| Mean err (bias) | +0.55 (slight hot)                |
+| Max \|err\|     | 7                                 |
+
+**The model is not counting — it is estimating.** Responses cluster at "10" (~50% of frames) and
+"5" (~25%), with occasional "8", "7", "6", "3". It does not resolve individual 56 px² pellets at
+this crop resolution; it guesses from overall brightness/density. A track count of 6 is as likely
+to get "10" as "5". The error distribution is not noise around a correct answer — it is a
+systematic rounding to coarse buckets.
+
+**⇒ VERDICT: VLM NOT VIABLE as a per-frame detector.** The early ruling is confirmed under
+conditions that did not exist when it was made (structural localization, f8–11 crops, clean
+320×320 input). The failure is perceptual, not prompt-related — the model cannot see the pellets
+as discrete objects at this resolution. Fine-tuning on top of a perception failure is not
+indicated.
+
+**⇒ Phase 3 proceeds with classical detectors only** (threshold, LoG/DoG). §1.2 does not need
+VLM-ready crops. The question is closed; do not re-test without a fundamentally different input
+(e.g. much higher resolution, or a model trained on this specific task from scratch).
+
+Report: `scratchpad/pellets/vlm-test/report.html` (80 crops with VLM responses, for owner review).
+Raw data: `scratchpad/pellets/vlm-test/results.json`.
 
 ---
 
@@ -1297,6 +1369,10 @@ promote it from an ad-hoc habit to the committed pipeline shape.
 reproduces the current `pellets.json` exactly on `run16` frames (the handoff's existing
 0-mismatch/1800-frame reproduction standard).
 
+⚠ **`--debug-dir` is a no-op with `--temporal`** (the save call only exists in the non-temporal
+branch). If the cache-then-sweep work needs debug images from temporal mode, this must be fixed
+first. Known gap, unfixed as of 2026-07-30.
+
 ### 1.2 — A real labeled set (the F3 gate)
 
 Six hand-counted shots cannot separate the candidates. Hand-counting more is exactly the
@@ -1304,6 +1380,14 @@ expensive-derivation failure mode `CLAUDE.md` §⚖ warns about, so generate ins
 
 **Steps.** `scripts/probe/make-synthetic-pellets.py` (committed):
 
+0. **Regenerate the 6-shot ground truth at f8–11 (OWNER-GATED).** For each of the 6 owner-labeled
+   shots, identify the f8–11 frames from the track data (the shrinking phase where pellets are
+   separated), crop them at `pellet_radius` around the structural crosshair, and present to the
+   owner for counting. Record the counts alongside the existing peak-frame counts (7/9/7/9/8/8).
+   **Exit criterion:** 6 shots × ≥3 frames each, owner-counted, committed as
+   `scripts/tests/fixtures/pellets/groundtruth-f8-11.json`. **Owner sign-off required** — these
+   labels gate Phase 2's exit criterion, and the existing peak-frame labels were counted on the
+   frames the owner identifies as least readable. Do not skip this or delegate it to a model.
 1. Crop real pellet patches (with alpha) from the owner-labeled frames. **This deliberately avoids
    depending on Phase 5's asset extraction** — the labeled set must not be blocked on the riskiest
    phase.
@@ -1841,9 +1925,20 @@ a measurement nobody took with it in mind.
    per-frame area, circularity, is_red) alongside.
 3. **Add gap tolerance to the linker.** `count-pellets.py:296` matches only `last_frame == fi-1` —
    zero tolerance. One missed frame splits a pellet in two. (Note: Phase 0.2 showed this is _not_ the
-   dominant fault, so this is hygiene, not the fix. Do not over-invest.)
+   dominant fault, so this is hygiene, not the fix. Do not over-invest.) **However:** 58.8% of tracks
+   are life=1, and P0.2 also showed per-frame detection is approximately correct — so the detector
+   _sees_ the pellets and the linker fails to connect them. If Phase 2's track emission still shows
+   > 40% life=1 after gap tolerance, the linker is the bottleneck and `trackpy.link()` moves from
+   > "only if measurable fragmentation" (step 9) to required.
 4. **Estimate t0 per blast** from the ensemble of candidate tracks — the shared-onset constraint makes
    this robust: the correct t0 is the one that maximises how many tracks fit the expected curve.
+   **Overlapping blasts:** at 1.5/s cadence and 60 fps, blasts are ~40 frames apart with 13-frame
+   lifecycles, so they usually don't overlap. When two t0 candidates score within 20% of each other
+   and are separated by <15 frames, treat the window as overlapping blasts: assign tracks to the
+   nearer t0 by onset frame, and count each blast on its own f8–11 window. If the overlap makes
+   phase assignment ambiguous for >30% of tracks in the window, flag the shot as low-confidence
+   rather than forcing a count. (This is a specification, not a suggestion — the implementer should
+   not have to invent the overlap policy.)
 5. **Score each track against the lifecycle template** (normalised size-vs-phase, plus the
    fade-before-vanish requirement). Accept/reject on the fit. **This replaces the `lifetime <= 7`
    hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
@@ -1862,7 +1957,7 @@ a measurement nobody took with it in mind.
 ### 2.2 — Exit criterion
 
 Count RMSE improves on the Phase 1.2 labeled set **and** the re-generated f8–11 ground truth (per
-Phase 1.2 — the existing 6-shot labels were counted on peak frames and are suspect), **and** the
+Phase 1.2 step 0 — the existing 6-shot labels were counted on peak frames and are suspect), **and** the
 `noir` per-band means move toward the `noir-solo-recon.json` anchors (mid 10.0 / near 8.9 / far 7.4 /
 midfar 8.8) — specifically the far/near = 0.831 and midfar/near = 0.989 **shape ratios**, since the
 2026-07-29 failure was band-dependent flattening.
@@ -1871,6 +1966,19 @@ midfar 8.8) — specifically the far/near = 0.831 and midfar/near = 0.989 **shap
 population should now be separable. Report how many candidate tracks the lifecycle filter rejects and
 spot-check a sample visually. If it rejects near-zero, the lifecycle template is not discriminating
 and step 5 has failed regardless of what the count does.
+
+**Quantitative separation criterion (pre-committed).** "Separates" means: at the chosen score
+threshold, **precision ≥ 0.90** (≤10% of accepted tracks are blips) **and recall ≥ 0.80** (≥80%
+of true pellets accepted), measured on the Phase 1.2 labeled set. If the best threshold cannot reach
+both, the lifecycle template is not discriminating and step 5 has failed. These numbers are
+pre-committed before Phase 2 code is written — do not adjust them after seeing the data.
+
+**Owner spot-check gate.** After the metric criteria above are met, present the owner with 10
+randomly selected shots (5 high-count, 5 low-count) showing the f8–11 frames alongside the
+pipeline's per-frame counts. If the owner judges >2 of 10 as clearly wrong, the metrics are passing
+on a technicality and the error is not random — stop and diagnose before proceeding to Phase 3.
+This is the two-minute check applied to the plan's own output: the owner's eyeball is an independent
+method that the metrics cannot substitute for.
 
 ### 2.3 — Kill conditions
 
@@ -2024,46 +2132,44 @@ threshold detector**.
 ## Critical path
 
 ```
-0.1 offset fix · 0.1b two-fault decomposition · 0.2 ✅DONE
-0.5 lifecycle stability on noir  ·  0.6 the ~90 denominator     ← both free, both gating
+0.1 ✅ · 0.1b ✅ · 0.2 ✅ · 0.5 ✅ · 0.6 ✅ · 0.7 ✅ (VLM not viable) · H1–H4 ✅ · 2A ✅
                           ↓
-        1.1 cache-then-sweep + 1.2 labeled set (labels at f8–11)
+        1.1 cache-then-sweep + 1.2 labeled set
+            (step 0: f8–11 ground truth, OWNER-GATED)
                           ↓
-        ┌─────────────────┴─────────────────┐
-   2A localization                    2 lifecycle-aware counting
-   (unblocks guilty/isabel)      (60fps + ROI · t0 · template · phase-gated)
-        └─────────────────┬─────────────────┘
+        2 lifecycle-aware counting
+            (design → /logic-gate pre-op [owner-invoked] → code)
                           ↓
-              3 matched-filter detection
-              (scored on PHASE-RESOLVED recall)
+        3 detector A/B (threshold vs LoG/DoG)
+            (scored on PHASE-RESOLVED recall)
                           ↓
-            [4 top-hat/LCM · 5 exact sprite · 6 learned]
-                        as the residual dictates
+        [4 top-hat/LCM · 5 exact sprite · 6 learned]
+                    as the residual dictates
 ```
 
-**Phases 2A and 2 are parallel** — they address the two distinct faults Phase 0.1b separates, and
-they touch different code. Phase 3 follows Phase 2 rather than preceding it, because Phase 2 defines
-what the detector is being asked for (recall at f8–11 and f1/f12–13, plus area fidelity) — without
-that, Phase 3 has no meaningful exit criterion, since aggregate per-frame recall is already adequate.
+**Phase 2A is DONE** — gate 1 and gate 2 met on all four videos under structural localization.
+It is no longer parallel to Phase 2; it is complete. Phase 1 is Phase 2's only blocker.
 
-**Two free Phase 0 items now gate the build:**
+**§0.7 closed the VLM question** — Qwen2.5-VL-7B cannot resolve individual pellets at 320×320
+crop resolution (46% within ±2, threshold 70%). Phase 3 proceeds with classical detectors only.
 
-- **0.5 — lifecycle stability.** Run `analyze-pellet-tracks.py` on a `noir` dump and check the area
-  decay against the same prediction table. Phase 2 steps 4–6 assume one template fits all units; if
-  `noir`'s curve differs materially the template must be per-unit or per-VFX-load. **One run, and
-  discovering it after implementing is the expensive path.**
-- **0.6 — the ~90 denominator.** "70 of ~90 shots" is the largest measured gap, but ~90 assumes
-  uninterrupted 1.5 shots/s across the window. Boss-transition fire-holds would make the real
-  detection rate substantially better than reported. **Check the denominator before treating a 22%
-  miss rate as a defect** — it is free and it may dissolve the problem entirely.
-
-Phase 0 is unblocked today and needs no new footage. **Do not build anything before it lands** — it
-already overturned this plan's own first draft once (see the 0.1 callout).
+**Phase 0 is complete.** 0.5 ✅ (lifecycle generalises, ±0.05 across 11 samples), 0.6 ✅ (misses
+are reloads, not selection; detection ~88–100% against a cycle-based denominator), 0.7 ✅ (VLM
+not viable — perception failure at pellet resolution). Phase 1 is unblocked.
 
 ---
 
 ## Correction log
 
+- **2026-07-30 (owner review pass).** Eight targeted edits after a full-plan review + owner
+  accuracy assessment: (1) §0.7 VLM zero-shot test added as a free pre-P1 experiment; (2) §1.2
+  step 0 — f8–11 ground truth regeneration — made a named, owner-gated step with its own exit
+  criterion; (3) critical-path diagram updated (2A done, H phases done, VLM leg in P3); (4) §2.2
+  pre-committed quantitative separation criterion (precision ≥0.90, recall ≥0.80); (5) §2.1
+  step 4 — t0 overlap policy specified; (6) §2.2 owner spot-check gate added; (7) error budget
+  footnote — H4 denominator correction forward-referenced; (8) §2.1 step 3 — greedy linker
+  escalation threshold (>40% life=1 after gap tolerance → trackpy required). Also: §1.1
+  `--debug-dir`/`--temporal` no-op noted. None of these change the phase ordering or core design.
 - **0.1 rewritten (same session).** First draft led with "the −62.5 offset broke the 2026-07-29
   validation." Refuted on timeline (artifacts 12:19–13:33, commit 15:17) and on magnitude (a
   near-disjoint window collapses counts to ~0; the runs reported `avgTotal` 7.1–7.3). The bug is
