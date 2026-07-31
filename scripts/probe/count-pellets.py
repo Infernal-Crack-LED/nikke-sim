@@ -17,7 +17,7 @@ Usage:
 Output: JSON to stdout — per-frame counts from all three backends.
   [{"file": "f_00001.jpg", "numpy": {"white": 6, "red": 1}, "pil": {...}, "opencv": {...}}, ...]
 """
-import sys, os, json, math, argparse
+import sys, os, json, math, argparse, hashlib
 import numpy as np
 from pathlib import Path
 
@@ -877,14 +877,268 @@ def selftest_structural():
 
 
 # ============================================================
+# --load-detections cache: filter/tracker param persistence
+# ============================================================
+# Filter/tracker knobs that determine a --load-detections replay's answer but that a
+# --dump-detections cache's `params` block did NOT originally persist — only detection/
+# localization params (frame size, --locate, offsets, red thresholds, --detect-*) were saved,
+# so a replay that didn't re-pass every one of these fell back to argparse defaults that differ
+# from whatever produced the cache, and returned a plausible-looking WRONG answer with no warning
+# (Phase H hardening finding, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
+# Persisted at dump time under `dump['filter_params']`; a `--load-detections` replay uses the
+# cache's value for each unless the CLI explicitly passes its own (see _explicit_cacheable_params).
+CACHEABLE_PARAMS = [
+    'center_exclude', 'min_area', 'max_area', 'min_circ', 'pellet_radius', 'marker_radius',
+    'max_pellet_frames', 'pellet_unit_area', 'peanut_circ_lo', 'peanut_aspect', 'peanut_max_mult',
+    'fps', 'marker_min', 'bounds',
+]
+
+
+def _explicit_cacheable_params(argv):
+    """Which of CACHEABLE_PARAMS the caller actually typed on argv, vs left at the argparse
+    default.
+
+    A parsed Namespace can't answer this by itself — an explicitly-passed flag whose value
+    happens to equal the default looks identical to an unset default once parsed. Comparing
+    args.<dest> to parser.get_default(<dest>) (the other option the task note allows) would
+    misclassify that case, so this instead re-parses the SAME argv with a second, throwaway
+    parser scoped to just these dests, each defaulted to argparse.SUPPRESS — a dest lands in the
+    resulting Namespace's vars() iff its flag was actually present on argv, default value or not.
+    Option strings/types must stay in sync with the real definitions in main()'s parser above.
+    """
+    p = argparse.ArgumentParser(add_help=False)
+    p.add_argument('--center-exclude', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--min-area', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--max-area', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--min-circ', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--pellet-radius', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--marker-radius', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--max-pellet-frames', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--pellet-unit-area', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--peanut-circ-lo', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--peanut-aspect', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--peanut-max-mult', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--fps', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--marker-min', type=int, default=argparse.SUPPRESS)
+    p.add_argument('--bounds', default=argparse.SUPPRESS)
+    ns, _ = p.parse_known_args(argv)
+    return set(vars(ns).keys())
+
+
+def _resolve_cache_params(args, loaded, explicit, load_path):
+    """Merge a --load-detections cache's persisted filter_params into `args` (mutated in place),
+    letting any CLI flag the caller actually typed override the cached value.
+
+    Refuses (loud banner + exit 1) rather than silently defaulting when the cache predates
+    filter_params AND the caller didn't explicitly supply every one of CACHEABLE_PARAMS itself —
+    the exact silent-wrong-answer shape this function exists to eliminate (see
+    analyze-pellet-tracks.py's "CROSSHAIR TRACK LOOKS BROKEN" for the precedent this follows).
+    """
+    cached = loaded.get('filter_params', {})
+    missing = [p for p in CACHEABLE_PARAMS if p not in explicit and p not in cached]
+    if missing:
+        print('=' * 78, file=sys.stderr)
+        print('!! --load-detections CACHE HAS NO filter_params FOR THESE ARGS — REFUSING !!', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        print(f'  {load_path}', file=sys.stderr)
+        print('  was dumped before filter/tracker params were persisted into the cache (or is', file=sys.stderr)
+        print('  missing some of them), and the following were not explicitly passed on this', file=sys.stderr)
+        print('  command line either:', file=sys.stderr)
+        print(f'    {", ".join(missing)}', file=sys.stderr)
+        print('  Replaying anyway would silently fall back to argparse defaults that likely differ', file=sys.stderr)
+        print('  from whatever produced this cache, and LOOK like a plausible answer while being', file=sys.stderr)
+        print('  wrong — that silent-failure shape is exactly what this refusal exists to prevent.', file=sys.stderr)
+        print('  => Re-dump with the current script (persists filter_params automatically), or pass', file=sys.stderr)
+        print('     every one of --center-exclude/--min-area/--max-area/--min-circ/--pellet-radius/', file=sys.stderr)
+        print('     --marker-radius/--max-pellet-frames/--pellet-unit-area/--peanut-circ-lo/', file=sys.stderr)
+        print('     --peanut-aspect/--peanut-max-mult/--fps/--marker-min/--bounds explicitly.', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        sys.exit(1)
+    for p in CACHEABLE_PARAMS:
+        if p not in explicit:
+            setattr(args, p, cached[p])
+
+
+# ============================================================
+# --load-detections cache: crosshair-localization param persistence
+# ============================================================
+# 2026-07-31 incident that motivated this block: a --dump-detections cache's `params` already
+# stored `locate`/`struct_*` but never --ammo-template's identity or --ammo-roi-x0/--ammo-roi-y0.
+# While trying to regenerate a lost cache from source frames, an agent omitted --ammo-roi-x0/y0
+# (invisible in the old cache, so nothing flagged the gap) and, separately, picked an
+# --ammo-template file that shared a filename with the correct one but not its content — two
+# on-disk templates, two different crosshair tracks, no warning either way.
+#
+# Unlike CACHEABLE_PARAMS (filter/tracker knobs, genuinely re-applied on every --load-detections
+# replay), these values only ever affect DETECTION-TIME localization: a replay reuses the
+# crosshair track frozen in the cache at dump time and can never actually re-run localization
+# against a different template/ROI/locate method. So the risk here isn't "silently computes with
+# a wrong default" (as with the filter params) — it's "silently accepts a flag that LOOKS like an
+# override but cannot take effect, while the frozen-at-dump-time track quietly disagrees with it."
+# That is why a MISMATCH is refused outright (there is a concrete wrong answer to catch), while a
+# cache that simply predates this block is a BANNER, not a refusal (there is nothing to check the
+# explicit flag against, and if nothing localization-related was passed the flag is moot either
+# way — this keeps every cache dumped before this change, including a legacy replay that never
+# touches these flags, working exactly as before).
+LOCALIZATION_PARAM_KEYS = [
+    'ammo_template_path', 'ammo_template_sha256', 'ammo_roi_x0', 'ammo_roi_y0',
+    'locate', 'struct_templ_h', 'struct_offset_x', 'struct_offset_y',
+]
+
+
+def _file_sha256(path):
+    h = hashlib.sha256()
+    with open(path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 16), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _explicit_localization_params(argv):
+    """Same SUPPRESS-second-parse technique as _explicit_cacheable_params (see its docstring),
+    scoped to the crosshair-localization inputs.
+    """
+    p = argparse.ArgumentParser(add_help=False)
+    p.add_argument('--ammo-template', default=argparse.SUPPRESS)
+    p.add_argument('--ammo-roi-x0', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--ammo-roi-y0', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--locate', choices=['template', 'structural'], default=argparse.SUPPRESS)
+    p.add_argument('--struct-templ-h', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--struct-offset-x', type=float, default=argparse.SUPPRESS)
+    p.add_argument('--struct-offset-y', type=float, default=argparse.SUPPRESS)
+    ns, _ = p.parse_known_args(argv)
+    return set(vars(ns).keys())
+
+
+def _check_localization_params(args, loaded, explicit, load_path):
+    """Validate (and, where meaningful, merge) a --load-detections cache's crosshair-localization
+    params against this invocation. Mutates args in place for the merge; exits 1 on a real
+    mismatch. See the module comment above for why this differs from _resolve_cache_params.
+    """
+    cached = loaded.get('params', {})
+    complete = all(k in cached for k in LOCALIZATION_PARAM_KEYS)
+    checks = [
+        ('ammo_template', 'ammo_template_sha256',
+         _file_sha256(args.ammo_template) if args.ammo_template else None),
+        ('ammo_roi_x0', 'ammo_roi_x0', args.ammo_roi_x0),
+        ('ammo_roi_y0', 'ammo_roi_y0', args.ammo_roi_y0),
+        ('locate', 'locate', args.locate),
+        ('struct_templ_h', 'struct_templ_h', args.struct_templ_h),
+        ('struct_offset_x', 'struct_offset_x', args.struct_offset_x),
+        ('struct_offset_y', 'struct_offset_y', args.struct_offset_y),
+    ]
+    if not complete:
+        explicit_hit = [dest for dest, _, _ in checks if dest in explicit]
+        if explicit_hit:
+            print('=' * 78, file=sys.stderr)
+            print('!! --load-detections CACHE PREDATES LOCALIZATION-PARAM PERSISTENCE !!', file=sys.stderr)
+            print('=' * 78, file=sys.stderr)
+            print(f'  {load_path} has no recorded ammo-template hash / ROI / locate / struct-*', file=sys.stderr)
+            print(f'  block, so the explicitly-passed {", ".join(explicit_hit)} cannot be checked', file=sys.stderr)
+            print('  against whatever actually produced this cache\'s crosshair track. These flags', file=sys.stderr)
+            print('  have NO effect on a --load-detections replay either way — the track is frozen', file=sys.stderr)
+            print('  at dump time — so this is a consistency WARNING, not a recomputation.', file=sys.stderr)
+            print('  => Re-dump with the current script to get a verifiable cache.', file=sys.stderr)
+            print('=' * 78, file=sys.stderr)
+        return
+    for dest, cache_key, current in checks:
+        if dest in explicit and current != cached.get(cache_key):
+            print('=' * 78, file=sys.stderr)
+            print('!! --load-detections LOCALIZATION MISMATCH — REFUSING !!', file=sys.stderr)
+            print('=' * 78, file=sys.stderr)
+            print(f'  {load_path}', file=sys.stderr)
+            print(f'  was localized with {cache_key}={cached.get(cache_key)!r}', file=sys.stderr)
+            flag = '--' + dest.replace('_', '-')
+            print(f'  but this invocation explicitly passes {flag}, resolving to {current!r}.', file=sys.stderr)
+            print('  A --load-detections replay can never re-run localization — the crosshair track', file=sys.stderr)
+            print('  is frozen at dump time — so honoring this flag would silently keep using the OLD', file=sys.stderr)
+            print('  track while claiming the NEW template/ROI/locate is in effect.', file=sys.stderr)
+            print(f'  => Re-dump with {flag} matching this invocation instead.', file=sys.stderr)
+            print('=' * 78, file=sys.stderr)
+            sys.exit(1)
+    # Every one of these is inert to replay computation (see module comment) — merging cached
+    # values into args is pure bookkeeping so `args` stays truthful about what actually produced
+    # the frozen track. ammo_template's PATH can't be reconstructed from its cached hash, so it's
+    # left alone rather than merged.
+    for dest, cache_key, _ in checks:
+        if dest != 'ammo_template' and dest not in explicit and cache_key in cached:
+            setattr(args, dest, cached[cache_key])
+
+
+# ============================================================
+# --load-detections cache-then-sweep regression pin
+# ============================================================
+CACHE_SLICE_FIXTURE = 'scripts/tests/fixtures/pellets/h1-cache-slice.json'
+CACHE_SELFTEST_COMBO = [{"min_area": 25, "max_area": 750, "min_circ": 0.55}]
+# Pinned from the committed fixture (a 200-frame slice of scratchpad/pellets/h1-cache-test/
+# detections.json, itself frames 1-200 of scratchpad/pellets/h1-marciana-treecode/frames-pellet —
+# marciana-solo.MP4, slug `marciana` (SG/Iron), not marciana-marine-study).
+# Independently cross-checked against scratchpad/pellets/h1-cache-test/live200-shots.log (an
+# uncommitted scratch run over the same 200 frames with the full filter/tracker arg set passed
+# explicitly) before being pinned here — that agreement IS the fixture's validation.
+CACHE_SELFTEST_EXPECT = {"totalShots": 9, "validShots": 7, "avgTotal": 7.1, "avgRed": 0.0}
+CACHE_SELFTEST_OVERRIDE_EXPECT = {"totalShots": 3, "validShots": 1, "avgTotal": 5.0, "avgRed": 0.0}
+
+
+def _cache_selftest_sweep(extra_args):
+    """Drive the real CLI as a subprocess (same technique as temporal-count-regression.py) so this
+    pin exercises argparse + _explicit_cacheable_params + _resolve_cache_params exactly as a real
+    invocation would, not just the helper functions directly."""
+    import subprocess, tempfile
+    with tempfile.NamedTemporaryFile('w', suffix='.json', delete=False) as tf:
+        json.dump(CACHE_SELFTEST_COMBO, tf)
+        combo_path = tf.name
+    try:
+        proc = subprocess.run(
+            [sys.executable, __file__, '--load-detections', CACHE_SLICE_FIXTURE,
+             '--temporal', '--sweep', combo_path] + extra_args,
+            capture_output=True, text=True)
+    finally:
+        os.unlink(combo_path)
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+        return None
+    return json.loads(proc.stdout.strip().splitlines()[0])['summary']
+
+
+def selftest_cache():
+    """Regression pin for the --load-detections cache-then-sweep filter/tracker param persistence
+    fix (Phase H hardening, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md — a
+    replay that omitted args silently fell back to argparse defaults that differed from whatever
+    produced the cache, returning a plausible-looking wrong answer with no warning). Checks:
+      1. A --sweep combo naming only min_area/max_area/min_circ reproduces the cache's OWN
+         creation-time answer, by falling back to its filter_params block for every other
+         filter/tracker knob (center_exclude, pellet_radius, marker_radius, max_pellet_frames,
+         ...) instead of silently defaulting.
+      2. An explicit CLI flag (--pellet-radius 80) still overrides the cached value.
+    """
+    ok = True
+    got_base = _cache_selftest_sweep([])
+    print(f'cache-fallback expected: {CACHE_SELFTEST_EXPECT}')
+    print(f'cache-fallback got     : {got_base}')
+    ok = ok and (got_base == CACHE_SELFTEST_EXPECT)
+
+    got_override = _cache_selftest_sweep(['--pellet-radius', '80'])
+    print(f'explicit-override expected: {CACHE_SELFTEST_OVERRIDE_EXPECT}')
+    print(f'explicit-override got     : {got_override}')
+    ok = ok and (got_override == CACHE_SELFTEST_OVERRIDE_EXPECT)
+
+    print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
+    return 0 if ok else 1
+
+
+# ============================================================
 # Main
 # ============================================================
 def main():
     if '--selftest' in sys.argv:
         raise SystemExit(selftest_structural())
+    if '--cache-selftest' in sys.argv:
+        raise SystemExit(selftest_cache())
     parser = argparse.ArgumentParser(description='Shotgun pellet counter (A/B: numpy, PIL, OpenCV)')
     parser.add_argument('input', nargs='?', help='image file or directory of frames')
     parser.add_argument('--selftest', action='store_true', help=f'validate locate_ammo_structural against {STRUCT_FIXTURE} and exit (handled before other args are required)')
+    parser.add_argument('--cache-selftest', action='store_true', help=f'validate --load-detections cache-then-sweep param persistence against {CACHE_SLICE_FIXTURE} and exit (handled before other args are required)')
     parser.add_argument('--debug-dir', help='save debug masks + outlines')
     parser.add_argument('--center-exclude', type=float, default=18, help='exclude radius from crop centre (px)')
     parser.add_argument('--min-area', type=int, default=100, help='min component area (px²)')
@@ -931,7 +1185,21 @@ def main():
     parser.add_argument('--build-atlas', action='store_true', help='(with --ammo-digits --ammo-atlas --labels) harvest labelled glyphs instead of reading')
     parser.add_argument('--labels', help='(--build-atlas) comma-separated counter values, one per input frame, in filename order')
     parser.add_argument('--digit-score-min', type=float, default=0.60, help='min glyph match score; a frame below it ABSTAINS rather than guessing (default 0.60)')
+    parser.add_argument('--force', action='store_true', help='(--dump-detections) overwrite an existing dump path — refused otherwise (2026-07-31: an unforced overwrite destroyed scratchpad/pellets/h1-cache-test/detections.json with no way back; see docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md Phase H)')
     args = parser.parse_args()
+
+    if args.dump_detections and os.path.exists(args.dump_detections) and not args.force:
+        print('=' * 78, file=sys.stderr)
+        print('!! --dump-detections REFUSING TO OVERWRITE AN EXISTING FILE — pass --force !!', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        print(f'  {args.dump_detections} already exists.', file=sys.stderr)
+        print('  A silent overwrite here already destroyed a fixture once with no way back — the', file=sys.stderr)
+        print('  cache is the only record of a raw per-frame detection + crosshair-localization run', file=sys.stderr)
+        print('  that can take minutes to reproduce, and (2026-07-31 incident) may not even be', file=sys.stderr)
+        print('  byte-reproducible if any localization input silently differs. Move the existing', file=sys.stderr)
+        print('  file aside, pick a new --dump-detections path, or pass --force to replace it.', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        sys.exit(1)
 
     # Default crosshair offset scales with zoom so direct callers get the same
     # native geometry as the orchestrator (12.5 px right, 100 px above ammo box centre).
@@ -1074,6 +1342,10 @@ def main():
         if args.load_detections:
             with open(args.load_detections) as lf:
                 loaded = json.load(lf)
+            explicit = _explicit_cacheable_params(sys.argv[1:])
+            _resolve_cache_params(args, loaded, explicit, args.load_detections)
+            loc_explicit = _explicit_localization_params(sys.argv[1:])
+            _check_localization_params(args, loaded, loc_explicit, args.load_detections)
             fnames = loaded['frame_files']
             cross_positions = [tuple(c) if c else None for c in loaded['cross_positions']]
             cross_confs = loaded['cross_confs']
@@ -1175,7 +1447,11 @@ def main():
                         "relock_conf_min": args.relock_conf_min, "track_conf_min": args.track_conf_min,
                         "red_r_min": args.red_r_min, "red_gb_max": args.red_gb_max,
                         "detect_min_area": args.detect_min_area, "detect_max_area": args.detect_max_area,
+                        "ammo_template_path": args.ammo_template,
+                        "ammo_template_sha256": _file_sha256(args.ammo_template) if args.ammo_template else None,
+                        "ammo_roi_x0": args.ammo_roi_x0, "ammo_roi_y0": args.ammo_roi_y0,
                     },
+                    "filter_params": {p: getattr(args, p) for p in CACHEABLE_PARAMS},
                     "frame_files": fnames,
                     "cross_positions": cross_positions,
                     "cross_confs": cross_confs,
