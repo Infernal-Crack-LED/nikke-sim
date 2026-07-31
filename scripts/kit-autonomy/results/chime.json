@@ -1,0 +1,82 @@
+{
+  "slug": "chime",
+  "kitDescription": "Chime is a Burst-II SMG Iron Supporter who designates one ally as 'the king' (the highest-ATK ally) and funnels nearly all of her value into that unit. From the start of battle she permanently grants the king bonus attack equal to 46.46% of her own ATK. Every time the team enters Full Burst she boosts the king's normal-attack damage multiplier by 46.22% for 10 seconds. Her burst re-opens Burst Stage 2 so a second Burst-II unit can also cast in the same rotation, raises all allies' maximum ammunition by 20% for 10 seconds, and grants the king 92.44% Attack Damage for 10 seconds. Her own SMG damage is minor; she is a pure single-carry enabler.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "skill1: 'emits a caster-scaled ATK grant, flat-resolved...' — byStat('casterAtkPct') unfiltered by caster catches crown's own 64.51 casterAtkPct grants (15s expiry, 3 recipients) in the controlComp fixture; value/expiry assertions fail on crown's grants, not chime's",
+      "skill1: 'applied at battle start and never expires' — same crown pollution (crown's grants have finite expiresFrame)",
+      "skill1: 'goes to exactly ONE ally' — same crown pollution (crown's 3 recipients join the targetIdx set)",
+      "burst maxAmmo: 'grants maxAmmoPct 20 to MORE THAN ONE ally' — chime never casts in controlComp: crown (slot 1) wins the leftmost Burst-II pick, no reenterStage on crown, stage advances, chime's burst never fires",
+      "burst maxAmmo: 'is a 10-second window' — zero grants, vacuous-fail on the same fixture trap",
+      "burst maxAmmo: 'dropping it lowers team damage' — line never fires in either arm of the A/B, so the non-vacuity guard trips",
+      "burst loyalty: 'applies 92.44% generic Attack Damage' — chime never casts in the fixture",
+      "burst loyalty: 'goes to exactly ONE ally' — zero grants in the fixture",
+      "burst loyalty: 'is load-bearing...' — zero grants; exactly-one-unit-moved guard fails"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Wish: ATK ▲ 46.46% of the skill user's ATK continuously",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive / alliesTopAtk count:1 / casterAtkPct 46.46, no durationSec; caster-basis (chime's static ATK) explicitly called out vs the atkPct nearest-wrong",
+        "blindSaid": "S6 identical encoding (adds excludeSelf:true); S5 asserts caster-scaled flat value, permanence, single recipient — its 3 reds are crown-pollution defects in the blind reader, not the driver",
+        "formulaCheck": "SSOT §1a: 'X% of caster's ATK' = caster's BASE static ATK added flat outside the recipient's (1+ATK%) — casterAtkPct on chime.staticAtk is the correct bucket and basis; atkPct counterfactual provably over-buffs (driver pin)",
+        "fireRateOk": true,
+        "explanation": "Passive applies once at t=0, permanent, single recipient = the king (ada, derived independently in-test as highest staticAtk). excludeSelf divergence (blind ON vs driver OFF) is behaviorally identical — a low-ATK Supporter is never the top-staticAtk ally — and the driver's literal-word rationale is documented. The king-designation rule itself is a documented ⚑ flagged identically by driver, S2b, and S6."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Daily Report: Normal Attack Damage Multiplier ▲ 46.22% / 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter / alliesTopAtk count:1 / normalAttackPct 46.22 durationSec 10; test pins apply frames within 2f of fullBurstStart and count == fbStarts",
+        "blindSaid": "S6 identical; S5 skill2 block FULLY GREEN (5/5) against the shipped override including the fullBurstEnter trigger count and 10s window",
+        "formulaCheck": "'Normal Attack Damage Multiplier' scales the normal-attack multiplier — normalAttackPct is the correct scoped stat, NOT the generic Damage-Up attackDamagePct (SSOT §1e flavor/scope gating); 'entering Full Burst' = fullBurstEnter (any team FB), not burstCast",
+        "fireRateOk": true,
+        "explanation": "Fires once per team Full Burst at FB entry (driver frame-coincidence pin discriminates against a burstCast encoding: chime's stage-2 cast lands ~52f before FB start, so apply-at-cast would fail the ±2f window). 10s wall-clock window verified as expiresFrame−frame == 600. Independent blind block is the strongest convergence signal in the packet."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Re-enters Burst Stage 2",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "reenterStage stage:2 on burstCast in the all-allies block; behaviorally verified in comp C (chime ahead of crown): crown casts at stage 2 with re-entry, never casts without it",
+        "blindSaid": "S6 identical effect; S5 it.skip'd the two-B2 behavioral leg believing controlComp had a single B2 slot — a blind fixture limitation, not a driver gap",
+        "formulaCheck": "SSOT §8: reenterStage (Tia/Anis:Star mechanic) re-opens stage 1/2 mid-rotation — correct primitive; the binary crown-casts-vs-never delta is exactly the observable the mechanic implies",
+        "fireRateOk": true,
+        "explanation": "The driver test is STRONGER than the blind spec here: S2b asked for a two-B2 fixture proving a second stage-2 cast, and the driver built it (comp C) with a clean counterfactual (noReenterC → crown cast count 0 while chime still casts). Inertness leg holds: sole-B2 comp is unaffected by the effect's presence."
+      },
+      {
+        "kitLine": "Max Ammunition Capacity ▲ 20% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoPct 20/10s, target allies, on burstCast; test pins value, 600f window, all-4-ally targeting, and count == chimeCasts × 4",
+        "blindSaid": "S6 identical; S5's 3 reds on this line are the controlComp leftmost-B2 fixture trap (chime never casts), not driver unfaithfulness",
+        "formulaCheck": "Weapon-state modifier — stretches magazines, delays reloads, raises shots fired; correctly NOT dropped as cosmetic (S2b's most-likely-dropped line). All-allies targeting matches the first '■ Affects all allies' header",
+        "fireRateOk": true,
+        "explanation": "Fires on every chime cast (comp A: >5 casts as sole B2). Driver's per-cast-count assertion discriminates both king-only targeting (3 missing applies/cast) and a skip. The S2b-suggested reload-economy A/B is a nice-to-have strengthening, recorded as such by the driver — not a faithfulness gap."
+      },
+      {
+        "kitLine": "Loyalty: Attack Damage ▲ 92.44% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "attackDamagePct 92.44/10s, alliesTopAtk count:1, on burstCast; test pins value, window, once-per-cast, single recipient == king",
+        "blindSaid": "S6 identical (plus excludeSelf:true); S5's 3 reds are the same fixture trap; its targeting/load-bearing assertions are correct in shape and pass in the driver's valid fixture",
+        "formulaCheck": "'Attack Damage' = Damage-Up bucket (SSOT §1e), additive with other support Damage-Up — attackDamagePct correct; NOT atkPct (wrong bucket) and NOT all-allies (the second ■ header re-scopes to the king); driver widening counterfactual proves the king scope moves the board",
+        "fireRateOk": true,
+        "explanation": "Once per chime cast, king-only, 10s covering the ensuing Full Burst. The pairing with skill2 (scoped normalAttackPct vs generic attackDamagePct) is correctly kept distinct by both driver and blind — a driver that treated both alike would fail one of the two."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA found: all five kit lines are FAITHFUL — correct stat channels (casterAtkPct vs atkPct; scoped normalAttackPct vs generic attackDamagePct), correct triggers (passive / fullBurstEnter / burstCast), correct target sets (king vs all allies, with the burst's two headers correctly split), and correct durations (continuous / 10s wall-clock). The blind re-derivations converged hard: S2b re-derived the identical 5-line spec with the same nearest-wrong models, S6's override is near-identical (only a behaviorally-null excludeSelf differs), and S5's skill2 block is fully green against the shipped override while its 9 reds are blind-side defects — an unfiltered byStat that ingests crown's own casterAtkPct, and a controlComp fixture where the leftmost Burst-II rule starves chime's cast entirely. Both are RECON_ERROR-class blind misreads of harness/fixture, corroborated by the driver test being 18/18 in valid fixtures including the two-B2 comp C that S5 could only it.skip. Discrimination holds: every driver pin carries a failing nearest-wrong counterfactual (atkPct, king→allies widening, no-reenter) and the skill2 frame-coincidence assertion separates fullBurstEnter from burstCast. Residual for owner spot-check (same-model + shared-prior): the 'king' designation rule is not in the prose — every agent converged on 'highest-static-ATK ally, fixed at apply' from the same in-game knowledge, which is stable-not-proven; specifically worth an owner confirmation that the designation is static-base-ATK (not final/live ATK re-evaluated as buffs land) and that it never re-targets mid-fight. The SMG 20/s-vs-24/s cadence question is engine-wide and documented in the SSOT, not a chime finding. Nothing must change for GO.",
+  "model": "kimi-code/k3"
+}

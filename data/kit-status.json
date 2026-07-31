@@ -773,6 +773,35 @@
       ],
       "board": null
     },
+    "chime": {
+      "name": "Chime",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/chime.json + scripts/kit-autonomy/manual-review/chime.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "king-designation rule (highest static-base ATK, fixed at apply, never re-targets) is same-model+shared-prior, owner spot-check; SMG cadence tuple datamine-sourced",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "chisato": {
       "name": "Chisato",
       "burst": "III",

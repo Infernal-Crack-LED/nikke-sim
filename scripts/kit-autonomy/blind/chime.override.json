@@ -1,0 +1,98 @@
+{
+  "slug": "chime",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 46.46
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "normalAttackPct",
+          "value": 46.22,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "reenterStage",
+          "stage": 2
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 20,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 1,
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 92.44,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 TARGET IDENTITY \u2014 every one of this unit's three skills is scoped to a kit-named single ally ('the king'), a designated-ally selector this schema has no primitive for. Modeled as alliesTopAtk count:1 excludeSelf:true (highest-static-ATK ally other than the caster) as a documented stand-in. If the real selector is positional (leftmost/adjacent), by-final-ATK, or a user-chosen designation, the recipient changes and so does every number below. This is the single highest-leverage unknown in the model.",
+    "\u2691 cadence tuple (SMG 120 ammo / 81 reloadFrames / hitsPerShot 1) is datamine-sourced and known-unreliable; effective pulls/s is frame-quantized by the engine. Not overridden here.",
+    "\u2691 Burst 'Re-enters Burst Stage 2' is modeled as a reenterStage effect so another Burst-II unit can also cast; whether the re-entry consumes the same rotation slot in-game is unverified.",
+    "All three magnitudes (46.46 / 46.22 / 92.44) are kit-literal, not calibrated \u2014 no \u2691 on the values themselves."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. chime is a Burst-II SMG/Iron Supporter whose entire kit funnels into ONE designated ally ('the king'): S1 grants that ally a continuous flat ATK add equal to 46.46% of chime's OWN ATK (casterAtkPct \u2014 scales off the caster's sheet, not the recipient's); S2 grants that ally Normal Attack Damage Multiplier \u25b246.22% for 10s on Full Burst ENTRY (kit says 'Activates when entering Full Burst' \u2014 team-wide FB trigger, NOT own-burst-gated, so it fires on any team Full Burst); burst gives ALL allies Max Ammunition \u25b220%/10s (a weapon-state modifier \u2014 it gates shots fired, therefore damage, and is modeled, not skipped) plus Re-enters Burst Stage 2, and gives the designated ally Attack Damage \u25b292.44%/10s (Damage-Up bucket, generic, not scoped to normal attacks). S2's 'Normal Attack Damage Multiplier' is scoped to the normal-attack multiplier (normalAttackPct), deliberately NOT the generic attackDamagePct bucket \u2014 conflating them would over-credit skill and burst damage. The burst's Attack Damage line IS generic and correctly sits in the Damage-Up bucket. Self-damage contribution is a plain SMG cycle with no self-buffs; chime is a pure enabler whose entire value is the single-target funnel. FB-by-timing is default ON for all riders (no noFb set, none measured). The one structural risk is the target selector \u2014 see caveats."
+}

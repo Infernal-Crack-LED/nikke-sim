@@ -1,0 +1,97 @@
+{
+  "slug": "chime",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Wish: ATK \u25b2 46.46% of the skill user's",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK stat grant \u2014 not scoped to normal/charge/crit; feeds the target's effective ATK for all their damage.",
+      "durationSemantics": "'continuously' + 'start of battle' = permanent passive, no durationSec, no durationShots.",
+      "triggerIdentity": "passive (applied at t=0 / battle start); no gate, no interval.",
+      "targetSet": "Exactly ONE ally: 'the king' \u2014 a kit-designated single ally, NOT all allies, NOT self. Most plausible engine mapping: alliesTopAtk{count:1, excludeSelf:true} (the highest-ATK ally, i.e. the carry under scope lock). The designation rule itself is not stated in this prose \u2014 it is a modeling choice that must be flagged.",
+      "nearestWrongModel": "stat 'atkPct' 46.46 (scales the TARGET's own ATK) instead of 'casterAtkPct' (46.46% of CHIME's ATK as a flat add). Chime is a Supporter (staticAtk 98,367) while the king is likely an Attacker (118,027), so atkPct over-credits by ~20%. Second-nearest: target 'allies' instead of one unit.",
+      "distinguishingAssertion": "Filter buffApply events for stat==='casterAtkPct' sourced from chime's slot at frame 0: assert exactly ONE apply per application (single targetIdx, not 5), with value \u2248 (46.46/100) \u00d7 chime.staticAtk (a FLAT ATK number \u2014 harness rule: casterAtkPct is flat-resolved at apply time), and expiresFrame indicating no expiry. RED under atkPct encoding (stat key differs and value would be the raw 46.46 percentage); RED under allies targeting (5 applies).",
+      "inertness": "Non-king allies' effective ATK must NOT move; chime's own damage must NOT self-benefit if the king designation excludes self.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Normal Attack Damage Multiplier \u25b2 46.22%",
+      "disposition": "FAITHFUL",
+      "scope": "SCOPED to normal attacks only \u2014 'Normal Attack Damage Multiplier' scales the normal-attack multiplier (schema stat 'normalAttackPct'), never skill/flatDamage/burst/DoT damage.",
+      "durationSemantics": "'for 10 sec' = durationSec 10, wall-clock (not rounds). Refreshes every Full Burst entry, so it is live for roughly each FB window.",
+      "triggerIdentity": "fullBurstEnter \u2014 'Activates when entering Full Burst' fires on ANY team FB, every rotation, regardless of whether chime cast her own burst. NOT burstCast.",
+      "targetSet": "The king (single ally), same designation as skill1 \u2014 not allies, not self.",
+      "nearestWrongModel": "Two near-misreads of equal plausibility: (a) stat 'attackDamagePct' or 'atkPct' instead of the normal-scoped 'normalAttackPct' \u2014 over-credits the king's skill/burst/proc damage; (b) trigger 'burstCast' instead of 'fullBurstEnter' \u2014 under-fires in any rotation chime doesn't personally burst.",
+      "distinguishingAssertion": "Assert a buffApply with stat==='normalAttackPct', value 46.22, at each fullBurstStart, targeting one unit. Scope check: with the buff patched to 0 vs live, ONLY the king's normal-bucket damage moves; the king's flatDamage/burst-bucket totals are byte-identical. Trigger check: in a comp where chime is present but a patched override strips her burst (or another B2 completes the chain), the buffApply must STILL occur at FB entry \u2014 RED under a burstCast encoding.",
+      "inertness": "King's charge/skill/burst buckets unchanged; all non-king units unchanged; no application outside FB entries.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 2.",
+      "disposition": "FAITHFUL",
+      "scope": "Rotation-level effect, not a stat; schema kind 'reenterStage' stage:2.",
+      "durationSemantics": "Instantaneous rotation-state effect on cast; no duration.",
+      "triggerIdentity": "burstCast (chime's OWN burst, stage 2) \u2014 the effect exists only on rotations chime actually casts.",
+      "targetSet": "Rotation state (the 'all allies' header is cosmetic for this sentence); enables ANOTHER eligible Burst II unit to also cast in the same rotation.",
+      "nearestWrongModel": "Dropped entirely ('inert \u2014 sole B2 in fixture'), or mis-encoded as burstEligibility/fillGauge. Also plausible: encoding it so chime herself re-casts (double-dipping her own burst) instead of opening the stage for a DIFFERENT B2.",
+      "distinguishingAssertion": "In a comp with chime AND a second Burst II unit (e.g. crown): assert TWO stage-2 burstCast events in the same rotation (chime's, then the other B2's), followed by a stage-3 cast and fullBurstStart \u2014 the rotation still completes. RED if only one stage-2 cast occurs or if FB never starts. Inertness leg: with chime as the SOLE B2, per-rotation cast counts and FB count are identical to a no-reenterStage patch.",
+      "inertness": "With no second B2 in the team, FB counts and rotation timing must NOT change; chime must not cast twice herself.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity \u25b2 20% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier \u2014 maxAmmoPct 20. This IS damage (taxonomy #6): it stretches magazines, delaying reloads and raising shots fired; also lowers lastBullet frequency for last-bullet kits.",
+      "durationSemantics": "'for 10 sec' = durationSec 10, wall-clock.",
+      "triggerIdentity": "burstCast (rides chime's own burst) \u2014 NOT fullBurstEnter; in rotations another B2 bursts instead, it must not fire.",
+      "targetSet": "ALL allies (including self) \u2014 this header says 'Affects all allies', unlike the king-scoped lines.",
+      "nearestWrongModel": "Skipped as 'defensive/QoL, no damage' (the classic dropped-reload-mechanic failure), or mis-targeted to the king only because the neighboring lines are king-scoped.",
+      "distinguishingAssertion": "Assert 5 buffApply events with stat==='maxAmmoPct' value 20 at chime's burstCast (targetIdx spanning all slots). Economy check: A/B the override with the effect zeroed \u2014 the carry's reload-event count over 180s must DIFFER (fewer reloads with the buff), and total shots fired must be \u2265 the zeroed run. RED under a king-only targeting (4 missing applies) and under a skip (no reload-count movement).",
+      "inertness": "Outside the 10s windows, magazine size back at base; no effect in rotations where chime did not cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Loyalty: Attack Damage \u25b2 92.44% for 10",
+      "disposition": "FAITHFUL",
+      "scope": "'Attack Damage' = the Damage Up bucket (stat 'attackDamagePct') \u2014 additive with other support Damage-Up buffs, diluted accordingly; NOT an ATK stat grant.",
+      "durationSemantics": "'for 10 sec' = durationSec 10, wall-clock.",
+      "triggerIdentity": "burstCast (chime's own burst). Note: her burst cast itself lands pre-FB, but this is a buff, not damage \u2014 it simply starts its 10s window at cast, covering the ensuing FB.",
+      "targetSet": "The king only (single ally) \u2014 this second \u25a0 header reverts to 'Affects the king'; NOT all allies.",
+      "nearestWrongModel": "Target 'allies' (bleeding the first header's target onto this line \u2014 over-credits the whole team by a 92.44-point Damage-Up), or stat 'atkPct' 92.44 (wrong bucket: multiplies base ATK instead of joining the diluted Damage-Up sum).",
+      "distinguishingAssertion": "At chime's burstCast, assert exactly ONE buffApply with stat==='attackDamagePct' value 92.44 (raw percentage \u2014 plain percentage stats keep their kit value), targetIdx == the king's slot. Bucket check: zeroing it moves the king's total while leaving the king's effective-ATK-derived buffApply values (casterAtkPct feeds) untouched. RED under allies targeting (5 applies) or atkPct encoding (different stat key/semantics).",
+      "inertness": "Non-king allies' Damage-Up bucket unchanged; no application on rotations chime doesn't cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Wish casterAtkPct 46.46 \u2192 the king (passive, permanent)",
+    "skill2:Daily Report normalAttackPct 46.22 \u2192 the king (fullBurstEnter, 10s)",
+    "burst:reenterStage 2 (burstCast)",
+    "burst:maxAmmoPct 20 \u2192 all allies (burstCast, 10s)",
+    "burst:Loyalty attackDamagePct 92.44 \u2192 the king (burstCast, 10s)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "THE central shared-prior risk is the 'king' target: three of five lines target 'the king', a kit-designated SINGLE ally that has no literal TargetDef. The prose never states the designation rule; the plausible mapping is alliesTopAtk{count:1} (probably excludeSelf:true, so the Attacker carry at 118,027 static ATK is the king under scope lock), but whether it is highest-ATK, a fixed slot, or player-selected is NOT kit-derivable here \u2014 the driver must \u2691 the designation rule with its source, and a test must pin WHICH unit receives the buffs (assert targetSlug === the carry, not chime, not 5 targets). Second reconciliation point: skill2's trigger is fullBurstEnter (any team FB) while both burst-block effects are burstCast \u2014 a driver that keys all three to one trigger kind has misread one of them; the divergence only shows in a two-B2 comp, which chime's own reenterStage makes a NATURAL fixture (chime + crown both at B2). Third: fixture validity \u2014 chime is Burst II, so controlComp(carry) with chime as the B3-slot carry is invalid; she must occupy the B2 slot (replacing crown) with a real B3 present, or bursts never chain. Fourth: all four magnitudes and durations are literally kit-stated (tier DATAMINED); the only \u2691 in this kit is the king-designation rule plus the standard cadence tuple. Fifth: maxAmmoPct is the line most likely to be silently dropped as non-damage \u2014 it is load-bearing via shot economy and must carry a reload-count A/B assertion, not just a buffApply presence check.",
+  "model": "claude-fable-5",
+  "driverReconciliation": {
+    "convergence": "5/5 lines converge. Fable (blind) independently re-derived the SAME spec as the driver: S1 casterAtkPct 46.46 passive/permanent->king; S2 normalAttackPct 46.22/10s on fullBurstEnter (NOT burstCast) ->king; burst reenterStage stage2 on burstCast (enables a 2nd B2); burst maxAmmoPct 20/10s ->ALL allies; burst Loyalty attackDamagePct 92.44/10s ->king. Same nearest-wrong models (atkPct vs casterAtkPct; allies vs king; burstCast vs fullBurstEnter; dropped-reload-mechanic).",
+    "kingDesignationFlag": "ACCEPTED as the one open flag. 'the king' (word_group=10091) has no literal TargetDef; the designation rule is not kit-derivable from prose alone. Driver models it as alliesTopAtk count:1 (highest STATIC ATK, the well-established in-game rule for Chime) and the test PINS the recipient (targetSlug === 'ada', the highest-staticAtk ally, computed independently in-test). Carried as a residual MEASUREMENT-GATED flag for owner confirmation, not a faithfulness defect.",
+    "excludeSelf": "Driver left excludeSelf OFF (kit does not say 'except self'; owner literal-word rule). Fable guessed 'probably excludeSelf:true'. Behaviorally IDENTICAL: Chime is a low-ATK Supporter and is never the highest-staticAtk ally, so the king is never her either way. No damage moves. Documented, not changed.",
+    "maxAmmoReloadEconomy": "Fable suggested a reload-count A/B for maxAmmoPct (most-likely-dropped line). Driver test PINs buffApply presence + value 20 + all-ally targeting + per-cast count (applied.length === chimeCasts * 4), which already discriminates king-only/skip counterfactuals. The line is faithfully modeled; a reload-economy A/B is a nice-to-have strengthening, not a faithfulness gap. Noted for owner.",
+    "verdict": "GO (cross-family corroborated at S2b): blind fable spec == driver spec on every load-bearing line; no REAL-GOTCHA; one residual king-designation flag."
+  }
+}
