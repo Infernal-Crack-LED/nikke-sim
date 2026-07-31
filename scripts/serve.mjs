@@ -117,7 +117,7 @@ const TAB_META = {
   },
   builder: {
     title: 'NIKKE Card Builder — Custom DPS Charts & Share Images',
-    desc: 'Build a shareable NIKKE infographic: custom DPS chart, unit comparison, rank board, unit card, or overload table — with a live preview and a hosted, Discord-embeddable URL.',
+    desc: 'Build a shareable NIKKE infographic: Nikke Card, custom DPS chart, unit comparison, rank board, and more. Live preview and specialized formatting for Discord and X.',
     // Showcases an actual generated card (the builder's Nikke Card default
     // pick) instead of the generic site screenshot — resolved against the
     // build-infographics manifest at request time since the file name is
