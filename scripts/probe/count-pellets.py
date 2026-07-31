@@ -218,63 +218,114 @@ def count_opencv(img: np.ndarray, args) -> dict:
 # Temporal tracking: detect components with positions, track across
 # frames, classify by lifetime (pellets are short-lived, damage numbers persist)
 # ============================================================
-def detect_components_with_pos(img: np.ndarray, args):
-    """Return list of (cx, cy, is_red, area, circ) for each detected component."""
+# ------------------------------------------------------------------------------------------
+# Cache-then-sweep (Phase 1 §1.1, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
+#
+# Detection (mask threshold + connected components + per-component contour/circularity/hole
+# stats) is the expensive part of a frame pass (~146ms/frame) and is IDENTICAL regardless of
+# which area/circularity/center-exclude/peanut thresholds a sweep wants to try — those are
+# comparisons over the same raw component list, not re-detections. `_raw_components` computes
+# every component's stats ONCE, deferring only the area/circ/hole/center-exclude ACCEPT/REJECT
+# decision (which is cheap dict/tuple arithmetic) to `_filter_components`. `detect_components_
+# with_pos` composes them so the live (non-cached) path is unchanged.
+#
+# DETECT_MIN_AREA/DETECT_MAX_AREA bound the raw dump to components a sweep could plausibly want
+# — NOT a re-tuning of the settled WHITE_LO/area/circularity defaults (CLAUDE.md — those stay
+# min-area=25/max-area=750/min-circ=0.55 at the filter stage). They exist only so a future sweep
+# can loosen --min-area/--max-area within this headroom without a fresh dump; a sweep outside it
+# needs a new --dump-detections pass.
+# ------------------------------------------------------------------------------------------
+DETECT_MIN_AREA = 4
+DETECT_MAX_AREA = 5000
+
+
+def _raw_components(img: np.ndarray, args):
+    """Every WHITE/RED-mask component's stats, in the same (white-then-red, label order) order
+    `detect_components_with_pos` used to filter live — NO area/circ/hole/center-exclude decision
+    applied yet. Returns (raw_list, w, h); raw_list items are dicts with cx/cy/is_red/area/circ/
+    has_hole/bw/bh (bw/bh = the bounding box of the component's largest contour, matching what
+    the peanut-recovery aspect check in `_filter_components` used to compute inline)."""
     import cv2
     h, w = img.shape[:2]
-    cx0, cy0 = w / 2, h / 2
     bgr = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
-    comps = []
+    raw = []
 
-    def detect(lower_bgr, upper_bgr, is_red):
+    def scan(lower_bgr, upper_bgr, is_red):
         mask = cv2.inRange(bgr, lower_bgr, upper_bgr)
         n, labels, stats, centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
         for i in range(1, n):
-            area = stats[i, cv2.CC_STAT_AREA]
-            if area < args.min_area or area > args.max_area:
+            area = int(stats[i, cv2.CC_STAT_AREA])
+            if area < args.detect_min_area or area > args.detect_max_area:
                 continue
             mx, my = centroids[i]
-            if math.hypot(mx - cx0, my - cy0) < args.center_exclude:
-                continue
             comp_mask = (labels == i).astype(np.uint8) * 255
             contours, hierarchy = cv2.findContours(comp_mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
             if not contours:
                 continue
             perim = cv2.arcLength(contours[0], True)
             circ = circularity(area, perim)
-            has_hole = any(h[2] != -1 for h in hierarchy[0] if h[3] == -1)
-            mult = 1
-            if circ >= args.min_circ:
-                # Normal round pellet: reject hole-digits (0/6/8/9).
-                if has_hole:
-                    continue
-            else:
-                # Low circularity — normally rejected, but a compact low-circ WHITE blob is
-                # usually overlapping/partially-occluded pellets. Recover it with a multiplicity
-                # from its area (partial single = 1, peanut pair = 2). Holes are ALLOWED here:
-                # a crescent + full-circle peanut has a hole from the occluded circle's shadowed
-                # background, whereas hole-digits are roundish (circ >= min_circ) and take the
-                # normal path above. Elongated fragments stay rejected via circ-lo / aspect.
-                if is_red or args.peanut_max_mult < 1:
-                    continue
-                if circ < args.peanut_circ_lo:
-                    continue
-                bx, by, bw, bh = cv2.boundingRect(contours[0])
-                aspect = min(bw, bh) / max(bw, bh) if max(bw, bh) > 0 else 0
-                if aspect < args.peanut_aspect:
-                    continue
-                unit = args.pellet_unit_area
-                if area < unit * 0.6 or area > unit * args.peanut_max_mult * 1.4:
-                    continue
-                mult = max(1, min(args.peanut_max_mult, round(area / unit)))
-            # Emit `mult` co-located components so the existing tracker/counter counts each.
-            for k in range(mult):
-                off = (k - (mult - 1) / 2.0) * 0.5
-                comps.append((float(mx) + off, float(my), is_red, int(area), float(circ)))
+            has_hole = any(hh[2] != -1 for hh in hierarchy[0] if hh[3] == -1)
+            bx, by, bw, bh = cv2.boundingRect(contours[0])
+            raw.append({
+                'cx': float(mx), 'cy': float(my), 'is_red': bool(is_red),
+                'area': area, 'circ': float(circ), 'has_hole': bool(has_hole),
+                'bw': int(bw), 'bh': int(bh),
+            })
 
-    detect(WHITE_LO[::-1].copy(), np.array([255,255,255], dtype=np.uint8), False)
-    detect(RED_LO[::-1].copy(), RED_HI[::-1].copy(), True)
+    scan(WHITE_LO[::-1].copy(), np.array([255, 255, 255], dtype=np.uint8), False)
+    scan(RED_LO[::-1].copy(), RED_HI[::-1].copy(), True)
+    return raw, w, h
+
+
+def _filter_components(raw_list, args, w, h):
+    """Apply the area/circularity/hole/center-exclude/peanut-recovery decision to a raw
+    component list — the exact logic `detect_components_with_pos` used to apply inline, just
+    replayable against a cached list instead of pixels. Returns the same (cx, cy, is_red, area,
+    circ) tuple list, peanut-multiplicity-expanded, that the live path returned."""
+    cx0, cy0 = w / 2, h / 2
+    comps = []
+    for r in raw_list:
+        area = r['area']
+        if area < args.min_area or area > args.max_area:
+            continue
+        if math.hypot(r['cx'] - cx0, r['cy'] - cy0) < args.center_exclude:
+            continue
+        circ = r['circ']
+        mult = 1
+        if circ >= args.min_circ:
+            # Normal round pellet: reject hole-digits (0/6/8/9).
+            if r['has_hole']:
+                continue
+        else:
+            # Low circularity — normally rejected, but a compact low-circ WHITE blob is
+            # usually overlapping/partially-occluded pellets. Recover it with a multiplicity
+            # from its area (partial single = 1, peanut pair = 2). Holes are ALLOWED here:
+            # a crescent + full-circle peanut has a hole from the occluded circle's shadowed
+            # background, whereas hole-digits are roundish (circ >= min_circ) and take the
+            # normal path above. Elongated fragments stay rejected via circ-lo / aspect.
+            if r['is_red'] or args.peanut_max_mult < 1:
+                continue
+            if circ < args.peanut_circ_lo:
+                continue
+            bw, bh = r['bw'], r['bh']
+            aspect = min(bw, bh) / max(bw, bh) if max(bw, bh) > 0 else 0
+            if aspect < args.peanut_aspect:
+                continue
+            unit = args.pellet_unit_area
+            if area < unit * 0.6 or area > unit * args.peanut_max_mult * 1.4:
+                continue
+            mult = max(1, min(args.peanut_max_mult, round(area / unit)))
+        # Emit `mult` co-located components so the existing tracker/counter counts each.
+        for k in range(mult):
+            off = (k - (mult - 1) / 2.0) * 0.5
+            comps.append((r['cx'] + off, r['cy'], r['is_red'], area, circ))
     return comps
+
+
+def detect_components_with_pos(img: np.ndarray, args):
+    """Return list of (cx, cy, is_red, area, circ) for each detected component."""
+    raw, w, h = _raw_components(img, args)
+    return _filter_components(raw, args, w, h)
 
 def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
     """Track components across frames, return per-frame pellet counts.
@@ -335,6 +386,165 @@ def temporal_filter(all_comps, max_pellet_frames=8, match_dist=30):
         red = sum(1 for tid in active_ids if tid in pellet_ids and track_color[tid])
         results.append({"white": white, "red": red})
     return results
+
+
+# ============================================================
+# Cross-frame tracking + per-frame result assembly (Phase 1 §1.1) — factored out of main()'s
+# `--temporal` loop so it can run BOTH against a live per-frame detection pass and against a
+# `--load-detections` cache's filtered component lists. Match-distance (30 zoomed px) and the
+# pellet-lifetime cutoff (`--max-pellet-frames`) are the two things a filter/tracker sweep varies
+# here; both are cheap (O(components), not O(pixels)) so many combinations run in seconds once
+# `all_comps` is available, whether freshly detected or filtered from a cache.
+# ============================================================
+def build_tracks_and_counts(all_comps, cross_positions, args):
+    """Track components across frames, classify by lifetime, and window by crosshair radius.
+
+    `all_comps`: per-frame list of (cx, cy, is_red, area, circ) — either detect_components_with_
+    pos(img, args) output (live) or _filter_components(raw, args, w, h) output (cached replay).
+    Returns (results, tracks, track_life, pellet_ids, frame_tracks) — `results` is the per-frame
+    {"white", "red", "marker"} dict list `--temporal` has always emitted; the rest are what
+    `--dump-tracks` reports.
+    """
+    tracks = []
+    next_id = 0
+    frame_tracks = []  # per-frame list of (track_id, x, y, is_red)
+    for fi, comps in enumerate(all_comps):
+        prev_active = [t for t in tracks if t['last_frame'] == fi - 1]
+        matched = set()
+        # NOT `active` — that name is the CLI backend-selector dict from main()'s top
+        # (`active = backends if args.backend == 'all' else {...}`), read further down by
+        # the results loop's `if name in active`. Reusing it here for the per-frame active-
+        # track list silently rebinds it for the rest of the function, so `name in active`
+        # checks a list of (track_id, x, y, is_red) tuples instead of the backend dict and
+        # is never true — every entry falls to the zero-fill branch. Measured: with this
+        # collision, --temporal --dump-tracks reports frame_counts all-zero regardless of
+        # --backend, on every video (Phase 2A diagnosis,
+        # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
+        frame_active = []
+        for cx, cy, is_red, area, circ in comps:
+            best_t, best_d = None, 30  # match_dist
+            for t in prev_active:
+                if t['id'] in matched:
+                    continue
+                d = math.hypot(cx - t['last_pos'][0], cy - t['last_pos'][1])
+                if d < best_d:
+                    best_d, best_t = d, t
+            if best_t:
+                best_t['last_frame'] = fi
+                best_t['last_pos'] = (cx, cy)
+                best_t['areas'].append(area)
+                best_t['circs'].append(circ)
+                best_t['xs'].append(cx)
+                best_t['ys'].append(cy)
+                matched.add(best_t['id'])
+                frame_active.append((best_t['id'], cx, cy, is_red))
+            else:
+                tracks.append({'id': next_id, 'is_red': is_red, 'first_frame': fi,
+                               'last_frame': fi, 'last_pos': (cx, cy),
+                               'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy]})
+                frame_active.append((next_id, cx, cy, is_red))
+                next_id += 1
+        frame_tracks.append(frame_active)
+
+    track_life = {t['id']: t['last_frame'] - t['first_frame'] + 1 for t in tracks}
+    pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
+
+    results = []
+    for fi in range(len(all_comps)):
+        cp = cross_positions[fi] if fi < len(cross_positions) else None
+        white, red, marker = 0, 0, 0
+        if cp:
+            for tid, x, y, is_red in frame_tracks[fi]:
+                if tid not in pellet_ids:
+                    continue
+                dist = math.hypot(x - cp[0], y - cp[1])
+                if dist > args.pellet_radius:
+                    continue
+                if is_red:
+                    # Red components tight to the crosshair are the triangular core-hit
+                    # hit-markers, not pellets; count them separately as a core-hit signal.
+                    if dist < args.marker_radius:
+                        marker += 1
+                    else:
+                        red += 1
+                else:
+                    white += 1
+        results.append({"white": white, "red": red, "marker": marker})
+    return results, tracks, track_life, pellet_ids, frame_tracks
+
+
+# ============================================================
+# Shot-level debouncing — a faithful Python port of read-pellets.ts's event-grouping estimator
+# (Phase 1 §1.1: "make the filters, the tracker, AND THE SHOT ESTIMATOR consume that cache").
+# This exists so a cache-then-sweep loop can go all the way from a `--load-detections` replay to
+# shot-level totals/avgTotal — the thing a parameter choice actually needs to be judged on — in
+# one fast Python process, without invoking read-pellets.ts's ffmpeg/VLM orchestration per combo.
+#
+# KEEP THIS IN LOCKSTEP WITH read-pellets.ts's debounce block (search that file for "debounce:
+# gap-tolerant event grouping"). It is a second implementation of the same algorithm, not a
+# shared module, so it is validated against the TS output once (scripts/probe/
+# temporal-count-regression.py's sibling check / the H1 tree-code run's committed pellets.json)
+# rather than assumed — see `--shots` below.
+# ============================================================
+def debounce_shots(frame_counts, fps, marker_min=2, min_pellets=5, max_pellets=10):
+    """frame_counts: per-frame {"white", "red", "marker"} dicts (build_tracks_and_counts output,
+    or any source of the same shape). Returns (shots, summary) mirroring read-pellets.ts's
+    `shots`/`summary.{totalShots,validShots,avgTotal,avgRed}`."""
+    max_gap = max(3, round(fps * 0.13))
+    event_min = 3
+    totals = [r['white'] + r['red'] for r in frame_counts]
+    n = len(frame_counts)
+    shots = []
+    event_start = -1
+    zero_run = 0
+    for i in range(n + 1):
+        in_event = i < n and totals[i] >= event_min
+        if in_event:
+            if event_start < 0:
+                event_start = i
+            zero_run = 0
+            continue
+        if event_start >= 0:
+            zero_run += 1
+            if zero_run <= max_gap and i < n:
+                continue
+            event_end = i - zero_run
+            event_frames = event_end - event_start
+            if event_frames >= 2:
+                active_idx = [j for j in range(event_start, event_end) if totals[j] >= event_min]
+                sorted_totals = sorted(totals[j] for j in active_idx)
+                m = len(sorted_totals)
+                median_total = (
+                    (sorted_totals[(m - 1) // 2] + sorted_totals[m // 2]) / 2 if m else 0
+                )
+                rep_idx = active_idx[0] if active_idx else event_start
+                best_d = float('inf')
+                for j in active_idx:
+                    d = abs(totals[j] - median_total)
+                    if d < best_d:
+                        best_d, rep_idx = d, j
+                core_hit = any(
+                    frame_counts[j].get('marker', 0) >= marker_min
+                    for j in range(event_start, event_end)
+                )
+                shot_red = 1 if core_hit else 0
+                rep = frame_counts[rep_idx]
+                shots.append({
+                    'frame': rep_idx, 'white': rep['white'], 'red': shot_red,
+                    'total': rep['white'] + shot_red, 'frames': event_frames, 'core': core_hit,
+                })
+            event_start = -1
+            zero_run = 0
+
+    valid = [s for s in shots if min_pellets <= s['total'] <= max_pellets]
+    summary = {
+        'totalShots': len(shots),
+        'validShots': len(valid),
+        'avgTotal': round(sum(s['total'] for s in valid) / len(valid), 1) if valid else None,
+        'avgRed': round(sum(s['red'] for s in valid) / len(valid), 2) if valid else None,
+    }
+    return shots, summary
+
 
 # ============================================================
 # Ammo counter: read the 3 digits inside the box the pellet tracker already locates.
@@ -707,6 +917,15 @@ def main():
     parser.add_argument('--temporal', action='store_true', help='enable temporal filtering (track components across frames, classify by lifetime)')
     parser.add_argument('--max-pellet-frames', type=int, default=8, help='max frames a pellet component persists (default 8 at 30fps)')
     parser.add_argument('--dump-tracks', help='(temporal) write full per-track diagnostics JSON to this path')
+    parser.add_argument('--dump-detections', help='(temporal) write the RAW pre-filter per-frame component list + crosshair track to this path — the cache half of cache-then-sweep (Phase 1 §1.1, docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). Detection (mask+CC+contour stats) runs once and is cached; a later --load-detections run replays filtering/tracking against it in seconds instead of minutes.')
+    parser.add_argument('--load-detections', help='(temporal) replay filtering + tracking from a --dump-detections cache instead of re-detecting from frame images. The positional `input` arg is ignored in this mode (frame identity comes from the cache). Combine with --min-area/--max-area/--min-circ/--center-exclude/--pellet-radius/--max-pellet-frames/--peanut-* to sweep those cheaply; the crosshair track and raw components are frozen at dump time (re-dump to change --locate or the WHITE_LO/RED_LO color thresholds).')
+    parser.add_argument('--detect-min-area', type=int, default=DETECT_MIN_AREA, help=f'(--dump-detections) raw component area floor BEFORE filtering — generous headroom for a future --min-area sweep, not the tunable pellet-shape filter itself (default {DETECT_MIN_AREA})')
+    parser.add_argument('--detect-max-area', type=int, default=DETECT_MAX_AREA, help=f'(--dump-detections) raw component area ceiling BEFORE filtering, same rationale as --detect-min-area (default {DETECT_MAX_AREA})')
+    parser.add_argument('--fps', type=float, default=30.0, help='sampling fps of the frame source — only used by --shots/--sweep for the debounce gap-tolerance constant (read-pellets.ts computes the same thing from its own --fps; default 30 matches every reference run)')
+    parser.add_argument('--shots', action='store_true', help='(temporal) also run the shot-level debouncer (a Python port of read-pellets.ts\'s event-grouping estimator — see debounce_shots) over the frame counts and print shots + summary to stderr, instead of needing the TS orchestrator for a quick sweep read')
+    parser.add_argument('--marker-min', type=int, default=2, help='(--shots) min red hit-markers in an event to call it a core hit (default 2, matches read-pellets.ts)')
+    parser.add_argument('--bounds', default='5,10', help='(--shots) MIN,MAX total pellets for a shot to count as "valid" (default 5,10, matches read-pellets.ts)')
+    parser.add_argument('--sweep', help='(temporal, needs --load-detections) JSON file: a list of param-override objects (any of min_area/max_area/min_circ/center_exclude/pellet_radius/marker_radius/max_pellet_frames/peanut_circ_lo/peanut_aspect/peanut_max_mult/pellet_unit_area). Runs filter+track+debounce for each combo against the SAME cached detections and prints one JSON summary line per combo to stdout — the "seconds not minutes" sweep this phase exists for.')
     parser.add_argument('--ammo-digits', action='store_true', help='read the AMMO COUNTER digits inside the located box (needs --ammo-template + --ammo-atlas)')
     parser.add_argument('--ammo-atlas', help='directory of digit glyph PNGs named <digit>_<tag>.png')
     parser.add_argument('--build-atlas', action='store_true', help='(with --ammo-digits --ammo-atlas --labels) harvest labelled glyphs instead of reading')
@@ -752,11 +971,18 @@ def main():
     backends = {'numpy': count_numpy, 'pil': count_pil, 'opencv': count_opencv}
     active = backends if args.backend == 'all' else {args.backend: backends[args.backend]}
 
-    p = Path(args.input)
-    if p.is_dir():
-        files = sorted(str(f) for f in p.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png'))
+    if args.load_detections:
+        # Frame identity comes from the cache; `input` is unused (and often omitted) in this mode.
+        files = []
     else:
-        files = [str(p)]
+        if not args.input:
+            print('input is required unless --load-detections is given', file=sys.stderr)
+            sys.exit(1)
+        p = Path(args.input)
+        if p.is_dir():
+            files = sorted(str(f) for f in p.iterdir() if f.suffix.lower() in ('.jpg', '.jpeg', '.png'))
+        else:
+            files = [str(p)]
 
     if args.debug_dir:
         os.makedirs(args.debug_dir, exist_ok=True)
@@ -836,146 +1062,141 @@ def main():
     if args.temporal:
         # Temporal mode: detect on FULL frames (stable coords), track, filter by lifetime,
         # then count only short-lived components near the crosshair per frame.
-        all_comps = []       # per-frame component lists (full frame coords)
-        cross_positions = [] # per-frame crosshair positions (full frame coords)
-        fnames = []
-        cross_confs = []   # per-frame template match confidence (None if no template) —
-                           # when --locate structural, this holds the accepted candidate's
-                           # SURROUND score instead (lower = darker badge = better; see
-                           # locate_ammo_structural). Same slot, documented meaning per mode.
-        cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc, or the
-                           # best structural candidate's (cx, cy) before the continuity gate
-        last_acc = None    # last accepted ammo-box top-left loc (for displacement gate)
-        last_acc_struct = None  # last accepted structural digit-row centre (cx, cy)
-        max_disp = args.max_template_disp
-        for f in files:
-            img = load_rgb(f)
-            fname = os.path.basename(f)
-            fnames.append(fname)
-            # Detect components on the full (uncropped) frame
-            all_comps.append(detect_components_with_pos(img, args))
-            # Find crosshair position via ammo template
-            cross_pos = None
-            conf_val = None
-            raw_loc = None
-            if args.locate == 'structural':
-                center, score = locate_crosshair_structural(img, args.struct_templ_h,
-                                                              last_acc_struct, max_disp)
-                if center is not None:
-                    last_acc_struct = center
-                    conf_val = score
-                    raw_loc = (round(center[0]), round(center[1]))
-                    cross_pos = (round(center[0] + args.struct_offset_x),
-                                 round(center[1] + args.struct_offset_y))
-            elif ammo_tmpl is not None:
-                import cv2 as _cv2
-                frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
-                conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)
-                conf_val = float(conf)
-                raw_loc = (int(loc[0]), int(loc[1]))
-                cand = raw_loc
-                # Positional-consistency gate: the ammo box moves smoothly, so a match
-                # that jumps implausibly far (e.g. locking onto the HP bar) is rejected
-                # and the last accepted position is carried forward instead.
-                #
-                # This gate has no way back once the FIRST lock is wrong: an unconditional
-                # base-threshold (conf>0.3) seed can land on background clutter (measured:
-                # noir-near-ce36 seeded at conf=0.43 on smoke, frame ~2, then froze there for
-                # all 600 frames while conf 0.5-0.8 matches on the REAL box kept appearing and
-                # being discarded as "jumps" for the rest of the run — see Phase 2A diagnosis,
-                # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). A strong match
-                # is therefore allowed to (re)acquire the lock even when it fails the distance
-                # gate, and the very first lock must itself clear the stronger bar rather than
-                # the base threshold.
-                accepted = None
-                if last_acc is None:
-                    if conf >= args.relock_conf_min:
+        #
+        # Two sources for all_comps/cross_positions, both feeding the SAME downstream tracker
+        # (build_tracks_and_counts) — cache-then-sweep (Phase 1 §1.1):
+        #   --load-detections <cache>  : replay filtering from a --dump-detections cache (fast,
+        #                                 no image I/O, no re-localization — see below)
+        #   (default)                  : fresh per-frame detection + localization from `files`,
+        #                                 optionally ALSO written to --dump-detections
+        raw_dump = None       # per-frame raw (pre-filter) component lists, if --dump-detections
+        frame_w = frame_h = None
+        if args.load_detections:
+            with open(args.load_detections) as lf:
+                loaded = json.load(lf)
+            fnames = loaded['frame_files']
+            cross_positions = [tuple(c) if c else None for c in loaded['cross_positions']]
+            cross_confs = loaded['cross_confs']
+            cross_rawloc = [tuple(c) if c else None for c in loaded['cross_rawloc']]
+            frame_w, frame_h = loaded['params']['frame_w'], loaded['params']['frame_h']
+            all_comps = [_filter_components(fr, args, frame_w, frame_h) for fr in loaded['detections']]
+        else:
+            all_comps = []       # per-frame component lists (full frame coords)
+            cross_positions = [] # per-frame crosshair positions (full frame coords)
+            fnames = []
+            cross_confs = []   # per-frame template match confidence (None if no template) —
+                               # when --locate structural, this holds the accepted candidate's
+                               # SURROUND score instead (lower = darker badge = better; see
+                               # locate_ammo_structural). Same slot, documented meaning per mode.
+            cross_rawloc = []  # per-frame raw (unfiltered) template match top-left loc, or the
+                               # best structural candidate's (cx, cy) before the continuity gate
+            last_acc = None    # last accepted ammo-box top-left loc (for displacement gate)
+            last_acc_struct = None  # last accepted structural digit-row centre (cx, cy)
+            max_disp = args.max_template_disp
+            if args.dump_detections:
+                raw_dump = []
+            for f in files:
+                img = load_rgb(f)
+                fname = os.path.basename(f)
+                fnames.append(fname)
+                # Detect components on the full (uncropped) frame
+                raw, frame_w, frame_h = _raw_components(img, args)
+                all_comps.append(_filter_components(raw, args, frame_w, frame_h))
+                if raw_dump is not None:
+                    raw_dump.append(raw)
+                # Find crosshair position via ammo template
+                cross_pos = None
+                conf_val = None
+                raw_loc = None
+                if args.locate == 'structural':
+                    center, score = locate_crosshair_structural(img, args.struct_templ_h,
+                                                                  last_acc_struct, max_disp)
+                    if center is not None:
+                        last_acc_struct = center
+                        conf_val = score
+                        raw_loc = (round(center[0]), round(center[1]))
+                        cross_pos = (round(center[0] + args.struct_offset_x),
+                                     round(center[1] + args.struct_offset_y))
+                elif ammo_tmpl is not None:
+                    import cv2 as _cv2
+                    frame_bgr = _cv2.cvtColor(img, _cv2.COLOR_RGB2BGR)
+                    conf, loc = match_ammo_in_roi(frame_bgr, ammo_tmpl, args.ammo_roi_x0, args.ammo_roi_y0)
+                    conf_val = float(conf)
+                    raw_loc = (int(loc[0]), int(loc[1]))
+                    cand = raw_loc
+                    # Positional-consistency gate: the ammo box moves smoothly, so a match
+                    # that jumps implausibly far (e.g. locking onto the HP bar) is rejected
+                    # and the last accepted position is carried forward instead.
+                    #
+                    # This gate has no way back once the FIRST lock is wrong: an unconditional
+                    # base-threshold (conf>0.3) seed can land on background clutter (measured:
+                    # noir-near-ce36 seeded at conf=0.43 on smoke, frame ~2, then froze there for
+                    # all 600 frames while conf 0.5-0.8 matches on the REAL box kept appearing and
+                    # being discarded as "jumps" for the rest of the run — see Phase 2A diagnosis,
+                    # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md). A strong match
+                    # is therefore allowed to (re)acquire the lock even when it fails the distance
+                    # gate, and the very first lock must itself clear the stronger bar rather than
+                    # the base threshold.
+                    accepted = None
+                    if last_acc is None:
+                        if conf >= args.relock_conf_min:
+                            accepted = cand
+                            last_acc = cand
+                    elif conf >= args.track_conf_min and math.hypot(cand[0] - last_acc[0], cand[1] - last_acc[1]) < max_disp:
                         accepted = cand
                         last_acc = cand
-                elif conf >= args.track_conf_min and math.hypot(cand[0] - last_acc[0], cand[1] - last_acc[1]) < max_disp:
-                    accepted = cand
-                    last_acc = cand
-                elif conf >= args.relock_conf_min:
-                    accepted = cand
-                    last_acc = cand
-                elif last_acc is not None:
-                    accepted = last_acc
-                if accepted is not None:
-                    th, tw = ammo_tmpl.shape[:2]
-                    cross_pos = (int(accepted[0] + tw//2 + args.ammo_offset_x),
-                                 int(accepted[1] + th//2 + args.ammo_offset_y))
-            if cross_pos is None:
-                ch = crosshairs.get(fname)
-                if ch and ch.get('x') is not None and ch.get('y') is not None:
-                    h, w = img.shape[:2]
-                    cross_pos = (int(ch['x'] / 1000 * w), int(ch['y'] / 1000 * h))
-            cross_positions.append(cross_pos)
-            cross_confs.append(conf_val)
-            cross_rawloc.append(raw_loc)
+                    elif conf >= args.relock_conf_min:
+                        accepted = cand
+                        last_acc = cand
+                    elif last_acc is not None:
+                        accepted = last_acc
+                    if accepted is not None:
+                        th, tw = ammo_tmpl.shape[:2]
+                        cross_pos = (int(accepted[0] + tw//2 + args.ammo_offset_x),
+                                     int(accepted[1] + th//2 + args.ammo_offset_y))
+                if cross_pos is None:
+                    ch = crosshairs.get(fname)
+                    if ch and ch.get('x') is not None and ch.get('y') is not None:
+                        h, w = img.shape[:2]
+                        cross_pos = (int(ch['x'] / 1000 * w), int(ch['y'] / 1000 * h))
+                cross_positions.append(cross_pos)
+                cross_confs.append(conf_val)
+                cross_rawloc.append(raw_loc)
 
-        # Track components across frames and classify by lifetime.
-        # Each track records per-frame position/area/circularity for diagnostics.
-        tracks = []
-        next_id = 0
-        frame_tracks = []  # per-frame list of (track_id, x, y, is_red)
-        for fi, comps in enumerate(all_comps):
-            prev_active = [t for t in tracks if t['last_frame'] == fi - 1]
-            matched = set()
-            # NOT `active` — that name is the CLI backend-selector dict from main()'s top
-            # (`active = backends if args.backend == 'all' else {...}`), read further down by
-            # the results loop's `if name in active`. Reusing it here for the per-frame active-
-            # track list silently rebinds it for the rest of the function, so `name in active`
-            # checks a list of (track_id, x, y, is_red) tuples instead of the backend dict and
-            # is never true — every entry falls to the zero-fill branch. Measured: with this
-            # collision, --temporal --dump-tracks reports frame_counts all-zero regardless of
-            # --backend, on every video (Phase 2A diagnosis,
-            # docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md).
-            frame_active = []
-            for cx, cy, is_red, area, circ in comps:
-                best_t, best_d = None, 30  # match_dist
-                for t in prev_active:
-                    if t['id'] in matched: continue
-                    d = math.hypot(cx - t['last_pos'][0], cy - t['last_pos'][1])
-                    if d < best_d: best_d, best_t = d, t
-                if best_t:
-                    best_t['last_frame'] = fi
-                    best_t['last_pos'] = (cx, cy)
-                    best_t['areas'].append(area)
-                    best_t['circs'].append(circ)
-                    best_t['xs'].append(cx)
-                    best_t['ys'].append(cy)
-                    matched.add(best_t['id'])
-                    frame_active.append((best_t['id'], cx, cy, is_red))
-                else:
-                    tracks.append({'id': next_id, 'is_red': is_red, 'first_frame': fi,
-                                   'last_frame': fi, 'last_pos': (cx, cy),
-                                   'areas': [area], 'circs': [circ], 'xs': [cx], 'ys': [cy]})
-                    frame_active.append((next_id, cx, cy, is_red))
-                    next_id += 1
-            frame_tracks.append(frame_active)
+            if args.dump_detections:
+                dump = {
+                    "params": {
+                        "frame_w": frame_w, "frame_h": frame_h,
+                        "zoom": args.zoom, "locate": args.locate,
+                        "ammo_offset_x": args.ammo_offset_x, "ammo_offset_y": args.ammo_offset_y,
+                        "struct_templ_h": args.struct_templ_h, "struct_offset_x": args.struct_offset_x,
+                        "struct_offset_y": args.struct_offset_y,
+                        "max_template_disp": args.max_template_disp,
+                        "relock_conf_min": args.relock_conf_min, "track_conf_min": args.track_conf_min,
+                        "red_r_min": args.red_r_min, "red_gb_max": args.red_gb_max,
+                        "detect_min_area": args.detect_min_area, "detect_max_area": args.detect_max_area,
+                    },
+                    "frame_files": fnames,
+                    "cross_positions": cross_positions,
+                    "cross_confs": cross_confs,
+                    "cross_rawloc": cross_rawloc,
+                    "detections": raw_dump,
+                }
+                with open(args.dump_detections, 'w') as df:
+                    json.dump(dump, df)
+                print(f'dumped raw detections for {len(fnames)} frames -> {args.dump_detections}',
+                      file=sys.stderr)
 
-        track_life = {t['id']: t['last_frame'] - t['first_frame'] + 1 for t in tracks}
-        pellet_ids = {t['id'] for t in tracks if track_life[t['id']] <= args.max_pellet_frames}
+        # Track components across frames, classify by lifetime, window by crosshair radius.
+        frame_results, tracks, track_life, pellet_ids, frame_tracks = build_tracks_and_counts(
+            all_comps, cross_positions, args)
 
         results = []
         for fi, fname in enumerate(fnames):
-            cp = cross_positions[fi]
-            white, red, marker = 0, 0, 0
-            if cp:
-                for tid, x, y, is_red in frame_tracks[fi]:
-                    if tid not in pellet_ids: continue
-                    dist = math.hypot(x - cp[0], y - cp[1])
-                    if dist > args.pellet_radius: continue
-                    if is_red:
-                        # Red components tight to the crosshair are the triangular core-hit
-                        # hit-markers, not pellets; count them separately as a core-hit signal.
-                        if dist < args.marker_radius: marker += 1
-                        else: red += 1
-                    else:
-                        white += 1
+            fr = frame_results[fi]
             entry = {"file": fname}
             for name in backends:
-                entry[name] = {"white": white, "red": red, "marker": marker} if name in active else {"white": 0, "red": 0, "marker": 0}
+                entry[name] = dict(fr) if name in active else {"white": 0, "red": 0, "marker": 0}
             results.append(entry)
 
         # Optional diagnostic dump: every track with full stats + per-frame crosshair data
@@ -1008,6 +1229,40 @@ def main():
             with open(args.dump_tracks, 'w') as df:
                 json.dump(dump, df)
             print(f'dumped {len(tracks)} tracks -> {args.dump_tracks}', file=sys.stderr)
+
+        # Shot-level debounce (Phase 1 §1.1's "the shot estimator consumes that cache" half) —
+        # a fast, in-process alternative to routing through read-pellets.ts's TS debounce.
+        if args.shots or args.sweep:
+            bounds = [int(x) for x in args.bounds.split(',')]
+
+        if args.shots:
+            shots, summary = debounce_shots(frame_results, args.fps, args.marker_min, bounds[0], bounds[1])
+            print(f'shots: {json.dumps(summary)}', file=sys.stderr)
+            for s in shots[:25]:
+                print(f'  {s}', file=sys.stderr)
+            if len(shots) > 25:
+                print(f'  ... and {len(shots) - 25} more', file=sys.stderr)
+
+        # Parameter sweep over the SAME cached/detected raw components — the "seconds not
+        # minutes" half of cache-then-sweep. Needs --load-detections (or --dump-detections in the
+        # same run) so combos can be re-filtered without re-detecting from pixels.
+        if args.sweep:
+            src_raw = loaded['detections'] if args.load_detections else raw_dump
+            if src_raw is None:
+                print('--sweep needs --load-detections (or --dump-detections in this same run) '
+                      'so combos can reuse the cached raw detections', file=sys.stderr)
+                sys.exit(1)
+            with open(args.sweep) as sf:
+                combos = json.load(sf)
+            for combo in combos:
+                combo_args = argparse.Namespace(**vars(args))
+                for k, v in combo.items():
+                    setattr(combo_args, k, v)
+                comps_c = [_filter_components(fr, combo_args, frame_w, frame_h) for fr in src_raw]
+                fr_c, _, _, _, _ = build_tracks_and_counts(comps_c, cross_positions, combo_args)
+                _, summary_c = debounce_shots(fr_c, args.fps, args.marker_min, bounds[0], bounds[1])
+                print(json.dumps({"combo": combo, "summary": summary_c}))
+            return  # sweep output already streamed above, one line per combo — skip the normal print
     else:
         # Per-frame mode (original)
         for f in files:

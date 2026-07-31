@@ -1373,6 +1373,49 @@ reproduces the current `pellets.json` exactly on `run16` frames (the handoff's e
 branch). If the cache-then-sweep work needs debug images from temporal mode, this must be fixed
 first. Known gap, unfixed as of 2026-07-30.
 
+### ✅ 1.1 — DONE 2026-07-31: exit criterion MET, 0 mismatches, sub-second sweep
+
+**What landed, all in `scripts/probe/count-pellets.py` (no new file — extends the existing
+committed script, per constraint 9's reuse preference):**
+
+- `_raw_components(img, args)` / `_filter_components(raw, args, w, h)` — `detect_components_with_
+pos` split into a raw pass (mask + CC + per-component contour/circularity/hole/bbox stats, ONLY
+  bounded by a generous `--detect-min-area`/`--detect-max-area` headroom floor/ceiling, default
+  4/5000 — not a re-tuning of the settled WHITE_LO/25/750/0.55 filter defaults) and a filter pass
+  (the exact area/circ/hole/center-exclude/peanut accept-reject logic, byte-identical, now
+  replayable against a cached list). `detect_components_with_pos` composes them, so the live path
+  is unchanged.
+- `build_tracks_and_counts(all_comps, cross_positions, args)` — the tracker + lifetime
+  classification + crosshair-radius windowing, factored out of `main()`'s inline loop so both a
+  live run and a `--load-detections` replay/sweep call the identical function.
+- `debounce_shots(frame_counts, fps, ...)` — a Python port of `read-pellets.ts`'s shot-level
+  event-grouping debounce (gap tolerance, median-frame selection, core-hit fallback), so a cache
+  replay can report shot-level totals without the TS/ffmpeg/VLM orchestrator. Exposed via a new
+  `--shots` flag (single run) and used internally by `--sweep`.
+- `--dump-detections <path>` / `--load-detections <path>` — the cache write/read pair. Load mode
+  skips image I/O and crosshair localization entirely (frozen at dump time; re-dump to change
+  `--locate` or the color thresholds) and only re-runs filtering + tracking + debounce.
+- `--sweep <combos.json>` — takes a list of param-override dicts, replays each against the SAME
+  cached raw detections, prints one JSON summary line per combo.
+
+**Validation (H1's tree-code run, `scratchpad/pellets/h1-marciana-treecode/`, 1800 frames,
+30fps, zoom 2 — the same reference this plan's own H1 section established as reproducible from
+tree code, used here as an existing artifact, not a re-run):**
+
+| Check                                                                                                           | Result                                                                                                                                                                                                                                                                                                                              |
+| --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live run (post-refactor) vs. H1's own committed `pellets.json` summary                                          | **exact match** — `{totalShots: 43, validShots: 29, avgTotal: 7.3, avgRed: 0.17}` both sides. This is the independent check: H1's summary came from the unmodified pre-refactor pipeline: the Python `debounce_shots` port and the `_raw_components`/`_filter_components` split reproduce it exactly, not merely self-consistently. |
+| `--dump-detections` → `--load-detections` replay vs. the live run, frame-by-frame `opencv` counts               | **0 mismatches / 1800 frames** — the exit criterion's literal bar.                                                                                                                                                                                                                                                                  |
+| Live run wall time                                                                                              | 136s (full 1800 frames, one-time cache-build cost — same order as before, expected: raw-pass compute is unchanged, only deferred).                                                                                                                                                                                                  |
+| Cached replay wall time                                                                                         | **0.58s** — ~230× faster.                                                                                                                                                                                                                                                                                                           |
+| 4-combo `--sweep` (varying `min_area`/`max_area`/`min_circ`/`max_pellet_frames`) over the full 1800-frame cache | **2.1s total** — "seconds not minutes" for the exit criterion.                                                                                                                                                                                                                                                                      |
+
+`bash scripts/verify.sh` green (including the pre-existing `count-pellets.py --selftest`,
+`analyze-pellet-tracks.py --selftest`, `temporal-count-regression.py` trio — none touched by this
+refactor, all still pass). Validation artifacts (detections cache, live/replay results, sweep
+combos) are at `scratchpad/pellets/h1-cache-test/` (main tree, gitignored, reproducible by the
+commands recorded here).
+
 ### 1.2 — A real labeled set (the F3 gate)
 
 Six hand-counted shots cannot separate the candidates. Hand-counting more is exactly the
