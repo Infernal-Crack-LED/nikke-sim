@@ -318,6 +318,14 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
   - **⚠ Reproducibility gap:** the 07-30 numbers came from `scratchpad/pellets/run16/` — untracked.
     `scripts/probe/analyze-pellet-tracks.py` is committed but its input is not; distill a fixture
     before leaning on them further (constraint 9).
+  - **⚠ Phase 2A gate-2 blind spot (filed 2026-07-31, from the §1.2 step-0 pass).** shot4's
+    structural crosshair localization mislocked for ~10 frames spanning its OWN f8–11 window
+    (jumped onto a floating damage-number stack, recovered via template-mode fallback — see the
+    `locate_note` in `scripts/tests/fixtures/pellets/groundtruth-f8-11.json`). Phase 2A's gate-1
+    near-crosshair fraction is computed over a WHOLE video, so a short per-shot excursion like this
+    one is invisible to it — a healthy whole-video fraction does not certify every individual shot's
+    localization. Worth a per-shot (not just per-video) validity check if/when Phase 2A gate 2 work
+    resumes.
   - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
     the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
     ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
