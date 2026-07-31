@@ -2219,6 +2219,66 @@ visibly worse than ±0.25 on the 6-shot set (i.e., not be excluded by the loose 
 the owner spot-check gate — which is what the "ALL of" list in §2.2 already requires — rather than
 expecting any one set to deliver a clean statistical certification by itself.
 
+### 2.2b — Pre-registered cheap-estimator screen (before building steps 4–6)
+
+Both `/logic-gate` pre-op reviewers, independently, proposed the same `simplerPath`: the per-frame
+detector is already approximately unbiased at the readable frames (measured post-filter counts
+10, 7, 7, 9, 8 vs owner truth 7–9), so a dumb aggregation over counts the pipeline **already
+computes** may already sit inside the ±0.25 bias budget — in which case §2.2's stopping rule says
+steps 4–6 (t0 estimation, phase-indexed gating, `trackpy`) are never built. This section
+pre-registers exactly what gets scored, **before** any of it is run, per `CLAUDE.md`'s
+selection-on-the-same-data warning (scoring several and reporting the best one after the fact is
+fishing).
+
+**The full estimator list — every one of these is scored and reported, not just the best:**
+
+| key                        | source            | aggregation                                                                                                                                                                           |
+| -------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `current`                  | CONTROL           | existing pipeline: mean of raw per-frame counts at f8–11                                                                                                                              |
+| `median_persist_readable`  | kimi's form       | median of per-frame counts over the readable window (f1, f8–11), after the minimal temporal filter (persist ≥2 consecutive frames AND non-increasing area after the track's own peak) |
+| `max_nonpeak_persist`      | fable's form      | max of post-filter counts over the blast's non-peak frames                                                                                                                            |
+| `p75_nonpeak_persist`      | fable's form      | 75th-percentile of post-filter counts over non-peak frames                                                                                                                            |
+| `p90_nonpeak_persist`      | fable's form      | 90th-percentile of post-filter counts over non-peak frames                                                                                                                            |
+| `median_readable_nofilter` | no-filter control | same as `median_persist_readable`, RAW counts, no persistence filter — isolates what persistence buys the median family                                                               |
+| `max_nonpeak_nofilter`     | no-filter control | same as `max_nonpeak_persist`, RAW counts, no persistence filter — isolates what persistence buys the max family                                                                      |
+
+Implemented in `scripts/probe/score-pellets.py --estimators` (committed 2026-07-31, this session —
+extends the existing scorer with a flag per constraint 9, no new script). All 13-frame-count math
+reuses the SAME `count-pellets.py --dump-tracks` output `score_sequence()` already computes — no new
+detection/tracking code, only aggregation over its `per_offset`/`tracks` output.
+
+**"Non-peak" — the cheap phase-anchoring proxy, and its known failure mode (per revision 2b).**
+Peak := the max-raw-count frame within the sequence; peak and its immediate neighbour are excluded
+from the "non-peak" set. This is the same cheap proxy `make-groundtruth.py`/`make-groundtruth-f811.py`
+use (peak = the max-bright-dot-count frame), not a solved phase-alignment. **Known failure mode,
+observed in practice, not hypothetical:** on the 6-shot real fixture — which only carries the
+already-non-peak f8–11 window, 4 frames — excluding "the peak and its neighbour" from a 4-frame
+set that has no true peak in it removes most or all of the window. `--estimators` detects and flags
+this per-sequence as `_degenerate_nonpeak` (falls back to using all available frames rather than
+silently returning a near-empty aggregation) — flagged in the results, not silently absorbed.
+
+**Readable window** = frames whose lifecycle offset is in {1, 8, 9, 10, 11}. On the synthetic
+13-frame sequences this is 5 of 13 frames; on the real 6-shot fixture only f8–11 are ever available
+(no f1 crop exists per shot except shot0's single confirmation frame), so the window there is
+whatever subset of {8,9,10,11} the fixture provides.
+
+**Scored on BOTH screens, per §2.2/§2.2a:**
+
+1. The Phase 1.2 synthetic labeled set, regenerated at **n = 120** (`--sequences-per-video 30`)
+   per §2.2a's power calculation — NOT the n = 12 set the original Phase 1.2 baseline used, which
+   is underpowered for a ±0.25 bias read (planning SE ≈ 0.31 at n = 12 vs ≈ 0.10 at n = 120).
+2. The 6-shot real fixture (`score-pellets.py --real-fixture`), honest per §2.2a that this set can
+   only FAIL a candidate, never certify one.
+
+**Not scored in this pass (§2.2e / this task's explicit scope):** the `noir` per-band certification.
+That needs a full-video run and is the next decision point, not part of this cheap-baseline screen.
+
+**Decision rule, unchanged from the pre-op's `simplerPath` and this task's scope:** if a candidate
+clears both screens against the ±0.25 criterion (§2.2), that is a measurement to report to the
+owner — it does **not**, by itself, retire steps 4–6 or change Phase 2's status in this document.
+If none clear both screens, their failure characterizes what steps 4–6 need to fix (which frames,
+which direction) rather than licensing starting them in this pass.
+
 ### 2.3 — Kill conditions
 
 - **Lifecycle not stable across units** → confirm the same decay curve on `noir` with
