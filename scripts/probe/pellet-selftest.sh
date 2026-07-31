@@ -24,6 +24,7 @@ run() {
 }
 
 run "$HERE/count-pellets.py" --selftest
+run "$HERE/count-pellets.py" --cache-selftest
 run "$HERE/analyze-pellet-tracks.py" --selftest
 run "$HERE/temporal-count-regression.py"
 run "$HERE/score-pellets.py" --selftest
