@@ -174,6 +174,54 @@ the crop centre. Calibrating that offset — or confirming the per-video templat
 onto the ammo box and not a right-side HUD/VFX element — is the next step (the ammo-box quality step
 left for later).
 
+**2026-07-31 ROI-restriction shot-count sensitivity (RECORD, DO NOT ACT ON — n=1, discovered
+incidentally, not investigated).** On `marciana-solo`'s (exact slug `marciana`, SG/Iron — not
+`marciana-marine-study`) 1800-frame `h1` cache
+(`scratchpad/pellets/h1-marciana-treecode/frames-pellet`), identical frames and identical
+filter/tracker params, the ONLY difference being `--ammo-roi-x0 0.55 --ammo-roi-y0 0.50`:
+
+```
+with ROI    : totalShots=43 validShots=29 avgTotal=7.3 avgRed=0.17   (H1's reference; reproduced
+                                                                       byte-identically, sha dc64e7cc…)
+without ROI : totalShots=74 validShots=62 avgTotal=7.5 avgRed=0.23   (per-video template)
+              totalShots=72 validShots=61 avgTotal=7.6 avgRed=0.23   (committed-seed template,
+                                                                       scripts/probe/ammo-box-template.png)
+```
+
+The no-ROI figures sit close to `run18`'s 70/58/7.6 and to the ~90 shots expected on a 180s SG
+fight. **The tension is explicit, not resolved:** the ROI was introduced immediately above this
+same 2026-07-29 entry specifically to stop false locks on `guilty`/`isabel`, and demonstrably
+restored their shot detection — so this is NOT "the ROI is a bug." More shots without it may
+equally be more FALSE locks, not more real ones. Discovered while regenerating a lost cache
+fixture for unrelated tooling work (`docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md`
+Phase H). H1's "100% LOCK DROPOUT / the lost shots were REAL" diagnosis (Phase H) was formed on the
+ROI-restricted run and has not been re-examined against this reading.
+
+Artifacts (gitignored — re-derive with the commands below, per constraint 9):
+`scratchpad/pellets/h1-cache-test/roi-results.json` (with ROI),
+`scratchpad/pellets/h1-cache-test/recover-results.json` (without ROI, per-video template),
+`scratchpad/pellets/h1-cache-test/seedtmpl-results.json` (without ROI, committed-seed template),
+`scratchpad/pellets/h1-cache-test/detections-NOROI-agent-regen.json` (an independently-run no-ROI
+regen that agrees with `recover-results.json`, 74/62/7.5/0.23).
+
+Re-derivation (bracketed flag only for the "with ROI" row; swap `--ammo-template` to
+`scripts/probe/ammo-box-template.png` for the committed-seed comparison):
+
+```
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  scratchpad/pellets/h1-marciana-treecode/frames-pellet --temporal --backend opencv \
+  --ammo-template scratchpad/pellets/h1-marciana-treecode/ammo-box-template.png \
+  --ammo-offset-x 125 --ammo-offset-y -11 [--ammo-roi-x0 0.55 --ammo-roi-y0 0.50] \
+  --center-exclude 36 --min-area 25 --max-area 750 --min-circ 0.55 \
+  --pellet-radius 160 --max-pellet-frames 7 --shots
+```
+
+**UNANSWERED.** Whether the ROI's false-lock suppression on `guilty`/`isabel` also suppresses REAL
+shots on `marciana`/`noir` (net helpful vs. net harmful) is not determined by this single reading.
+Needs a per-video ROI on/off comparison against each video's own independent anchor (the
+running-total pellet lattice for `marciana`, the `noir-solo-recon.json` band anchors for `noir`)
+before touching the `--ammo-roi-x0`/`--ammo-roi-y0` defaults.
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
