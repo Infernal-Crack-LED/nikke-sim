@@ -43,18 +43,22 @@ Run with the probe venv:
 land inside `--center-exclude 36` (the SAME 36 this script's own CENTER_EXCLUDE constant declares
 and score-pellets.py passes to the counter), plus a few off-frame from crosshairs near the top edge.
 Those pellets were labeled as truth the counter is CONFIGURED to discard -- 28.9% of the n=12
-baseline was structurally uncountable, which is why every estimator scored 2+ pellets cold on the
-synthetic screen and disagreed with the real-footage screen by a wide margin (see the plan's §2.2b
-correction log). Fixed by resampling (never clamping) `r` into `[CENTER_EXCLUDE + margin,
-PELLET_RADIUS]` and rejecting any position that would not fully render inside the frame, for every
-placed pellet.
+baseline was structurally uncountable. Fixed by resampling (never clamping) `r` into
+`[CENTER_EXCLUDE + margin, PELLET_RADIUS]` and rejecting any position that would not fully render
+inside the frame, for every placed pellet.
 
-⚠ **Consequence, stated honestly, not a second measurement:** truncating the gaussian at
-`CENTER_EXCLUDE + margin` instead of letting it range from 8px shifts the radial distribution away
-from HANDOFF.md's documented "median ~64, spread 40" and slightly EASIER (less crowding near the
-crosshair, since the excluded annulus is where pellets pack most densely). This is a modeling
-choice made explicit, same standard as the background/compositing honest limit below -- not a claim
-about real pellet placement.
+⚠ **Consequence, MEASURED after the fix (2026-07-31 re-score, plan's §2.2b correction log) -- NOT
+what a first-pass prediction would say.** Truncating the gaussian's low tail shifts the radial
+distribution away from HANDOFF.md's "median ~64, spread 40" (measured mean 82.3px on the n=120 set)
+-- expected. What was NOT correctly predicted: because this is a **resample**, not a delete, each
+sequence's `n_pellets` draw is unchanged and now 100% of that budget must fit inside the countable
+annulus instead of ~71% before -- the annulus got MORE crowded, not less. Estimator bias on the
+synthetic screen improved by only ~0.27-0.4 pellets (not the ~1.8-2.0 a naive "removed 2 uncountable
+labels/sequence" prediction would give), and the synthetic screen is still 3.6-12.4x further from
+zero than the real 6-shot screen -- the "synthetic colder than real" gap is NOT resolved by this fix
+and remains unexplained. This is a modeling choice made explicit, same standard as the
+background/compositing honest limit below -- not a claim about real pellet placement, and not a
+claim that the set got easier.
 
 **Which invariant this enforces:** truth here means "a pellet the correctly-configured counter
 SHOULD count," not "every pellet that exists in the scene." The labeled set exists to score
@@ -339,10 +343,13 @@ def render_sequences(args):
                            'docs/probe-data/*-sg-band.json) is MANDATORY alongside this, never a '
                            'substitute for it. SEPARATELY (2026-07-31 fix): pellet radius is now '
                            'resampled into [CENTER_EXCLUDE + margin, PELLET_RADIUS] instead of the '
-                           'unclamped gauss(MEDIAN_R=64, R_SPREAD=40) HANDOFF.md documents -- this '
-                           'shifts the radial distribution and makes the set slightly EASIER (less '
-                           'crowding near the crosshair), a modeling choice, not a second '
-                           'measurement of real pellet placement.'),
+                           'unclamped gauss(MEDIAN_R=64, R_SPREAD=40) HANDOFF.md documents, shifting '
+                           'the radial distribution (measured mean 82.3px on the n=120 set, vs the '
+                           'documented median 64). MEASURED effect on difficulty (2026-07-31 '
+                           're-score): the annulus got MORE crowded, not less -- each sequence keeps '
+                           'its same n_pellets budget but now 100% of it must fit inside the '
+                           'countable annulus instead of ~71% before. A modeling choice, not a '
+                           'second measurement of real pellet placement.'),
         'seed': args.seed,
         'edge_margin_px': edge_margin,
         'total_backgrounds_skipped': total_skipped,
