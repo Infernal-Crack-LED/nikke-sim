@@ -345,6 +345,23 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     frames each) would let the gate's floor be swapped for an actual measurement instead of a
     derived one. Est. ~20–30 min (marking pellet centers on 20 small crops). Not required to use the
     gate as-is — the derived floor is conservative — but would tighten it materially.
+  - **⚠ `/logic-gate` preop on §2 landed 2026-07-31** (`scratchpad/gates/2026-07-31-pellet-phase2/`,
+    APPROVED-WITH-REVISIONS both reviewers). Doc revisions (fade optional in step 5 + partial-track
+    scoring spec, step 7's counting rule specified, the 60fps+ROI migration list as new §2.1b) landed
+    same day. Two premise checks also ran (findings-only, both on `docs/probes/clean-weapons/
+marciana-solo.MP4`, exact slug **`marciana`** SG/Iron — not `marciana-marine-study`): **(1)** the
+    owner's 13-frame lifecycle DOES appear on individual raw
+    tracks at native 60fps (dup-check refutes 30fps-internal-render; ~9/15 longest tracks show the
+    grow→peak→decay shape) but the peak is noisier/wider than the spec's clean f3–4 table for most of
+    them, and life≤2 fragmentation stays high (64.3%) even at 60fps — corroborates the still-BLOCKED
+    gap-tolerance-first concern. **(2)** shared-t0: near-band spread measured (n=7 shots, mean
+    7.6f/126ms with a life≥3 filter, up to 17f/283ms on one shot) but the far-band comparison the
+    revision asked for is **BLOCKED** — two dedicated far-band extraction attempts on the same video
+    both hit total crosshair-lock failure (0/900+ and 0/720+ frames), a fresh concrete hit of the
+    already-known Phase 2A instability. Full detail + re-run commands: `docs/open-questions.md` U35.
+    **Remaining BLOCKED build-spec items** (owner decision, not resolved by this pass): kimi-k3 #3
+    (merged-peak fragment/stitch policy), #9 (blind ground-truth re-score), #10 (red-gb-max
+    hypothesis), fable #4 (gap-tolerance-as-prerequisite / life=1 re-measurement before step 5).
   - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
     the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
     ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
