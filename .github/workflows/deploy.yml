@@ -21,8 +21,11 @@ concurrency:
 
 jobs:
   test:
-    name: typecheck · test
+    name: verify (full gate)
     runs-on: ubuntu-latest
+    # The full gate is minutes, not seconds. Well under the 360-min default, but
+    # don't let a hang burn a runner (mirrors ci.yml).
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,16 +33,21 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
-      # Deliberately the CHEAP pre-flight, not the full gate. The full gate runs
-      # twice around this already: ci.yml (`verify.sh full`) fires on the same push
-      # to main, and railway.json's buildCommand is `verify.sh deploy`. A third full
-      # run here would add ~7 min to every production deploy for zero extra coverage.
-      - run: npm run typecheck
-      - run: npm test
+      # THE gate for a production deploy (2026-08-01). This used to be a cheap
+      # typecheck + `npm test` pre-flight, on the rationale that railway.json's
+      # buildCommand (`verify.sh deploy`) re-ran the full gate inside the build
+      # anyway. It no longer does — the Railway build is `verify.sh artifacts`,
+      # build outputs only — because running ~576 CPU-seconds of vitest plus every
+      # regression inside a deadline-bound build container was a direct contributor
+      # to the BuildKit DeadlineExceeded failures. The gate has to live somewhere,
+      # and a runner with a 30-minute budget is the right somewhere. It costs ~7 min
+      # before `railway up`; if you pushed to main just to get the code onto main
+      # and don't want to wait, cancel this workflow run — main is already updated.
+      - run: bash scripts/verify.sh full
 
   deploy:
     name: deploy to Railway
-    needs: test # a red build never deploys
+    needs: test # a red gate never deploys
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -2,7 +2,7 @@
   "$schema": "https://railway.com/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "buildCommand": "bash scripts/verify.sh deploy"
+    "buildCommand": "bash scripts/verify.sh artifacts"
   },
   "deploy": {
     "startCommand": "npm run start:server",

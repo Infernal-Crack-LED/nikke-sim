@@ -6,6 +6,19 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 say() { printf '\n== %s ==\n' "$*"; }
 
+MODE="${1:-}"
+case "$MODE" in
+  '' | full | deploy | artifacts) ;;
+  *)
+    echo "verify.sh: unknown tier '$MODE' (expected: <none> | full | deploy | artifacts)" >&2
+    exit 2
+    ;;
+esac
+
+# The `artifacts` tier BUILDS and smokes the deploy outputs without re-running the
+# correctness gate — see the tier table below for why the deploy box runs that one.
+if [ "$MODE" != "artifacts" ]; then
+
 say "typecheck"
 npm run typecheck
 
@@ -52,13 +65,28 @@ npx tsx scripts/overload-regression.ts
 say "doll leveling regression (model invariants + DP monotonicity + throughput + determinism)"
 npx tsx scripts/doll-regression.ts
 
+fi # end of the correctness gate (skipped by the `artifacts` tier)
+
 # Tiers:
 #   verify.sh          fast  — typecheck + validation + regressions. The everyday gate.
-#   verify.sh full     +web  — adds the web build + client smoke. Use this LOCALLY.
-#   verify.sh deploy   +DPS  — adds the DPS-chart + rank-board artifact builds, their smokes, and
-#                      the infographic pre-generation (dist/img/** + manifest.json). CI/deploy only.
+#   verify.sh full     +web  — adds the web build + client smoke. Use this LOCALLY, and it is
+#                      what gates a PR (ci.yml) and a push-to-main deploy (deploy.yml).
+#   verify.sh deploy   +DPS  — the gate PLUS everything `artifacts` builds. Belt-and-braces; use
+#                      it when you want one command to prove a deploy end to end.
+#   verify.sh artifacts      — the build outputs ONLY, no gate: the DPS-chart + rank-board
+#                      artifacts, the web build, all three client smokes, the infographic
+#                      pre-generation (dist/img/** + manifest.json) and the server bundle.
 #
-# Why the chart smokes sit in `deploy` and not in `full`: they need dist/{dpschart,burstgen,burstcdr,
+# Why the DEPLOY BOX runs `artifacts` and not `deploy` (2026-08-01): railway.json's buildCommand
+# used to be the whole `deploy` tier, so every production build re-ran typecheck + every
+# regression + the entire vitest suite (~576 CPU-seconds of tests alone) inside a build container
+# with a hard BuildKit deadline — work that ci.yml and deploy.yml's gate job already do on the
+# SAME commit, on runners with a 30-minute budget and no deadline coupling. That duplication was
+# a direct contributor to the DeadlineExceeded build failures. The safety property is unchanged
+# because deploy.yml's `gate` job runs `verify.sh full` and the deploy job `needs:` it — a red
+# gate still means no deploy; it just fails on a runner instead of inside the build container.
+#
+# Why the chart smokes sit in `deploy`/`artifacts` and not in `full`: they need dist/{dpschart,burstgen,burstcdr,
 # sustain,bufferchart}.json, which come from web/public/ — gitignored BUILD OUTPUTS that the builders
 # document in place as "regenerated on every build/deploy, gitignored, and NOT part of verify.sh". A fresh
 # git worktree has no such file, so having it in `full` failed every isolated engine worktree
@@ -67,23 +95,22 @@ npx tsx scripts/doll-regression.ts
 # Committing the artifact instead was rejected: it is derived, changes with every engine/roster
 # change (diff noise + conflicts across the concurrent sessions this repo runs), and a stale
 # committed copy would let the smoke assert against an OLDER engine's output while reporting green.
-MODE="${1:-}"
-if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ]; then
+if [ "$MODE" = "full" ] || [ "$MODE" = "deploy" ] || [ "$MODE" = "artifacts" ]; then
   # the artifacts must exist BEFORE vite build, which copies publicDir -> dist
-  if [ "$MODE" = "deploy" ]; then
-    say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy tier only)"
+  if [ "$MODE" != "full" ]; then
+    say "DPS-chart + rank-board artifacts (gitignored build outputs — deploy/artifacts tiers only)"
     npm run dpschart
     npm run ranks:all
   fi
   say "web build + smoke"
   npm run web:build
   node scripts/web-smoke.mjs
-  if [ "$MODE" = "deploy" ]; then
+  if [ "$MODE" != "full" ]; then
     say "DPS-chart tab smoke (headliners, bars, matrix, compare)"
     node scripts/web-smoke-dpschart.mjs
     say "rank-boards smoke (pills, bars, profile badges, methodology, buffer boards)"
     node scripts/web-smoke-ranks.mjs
-    say "infographics pre-generation (dist/img + manifest — deploy tier only; reads the artifacts above, writes after vite's emptyOutDir)"
+    say "infographics pre-generation (dist/img + manifest — deploy/artifacts tiers only; reads the artifacts above, writes after vite's emptyOutDir)"
     npm run build:infographics
     say "server bundle (dist-server — exercises esbuild + asset copies on the deploy platform; startCommand flips to it separately)"
     npm run build:server
