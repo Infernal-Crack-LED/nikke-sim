@@ -1877,3 +1877,45 @@ confirmation.** Only 5 of the 6 shots carry pellets. One clip, one unit (`marcia
 measurement only: `pellet_radius`, `center_exclude`, `FIDELITY_BOTH_PASS_FLOOR`, `min_area` and
 `min_circ` defaults are untouched, no `DECISIONS.md` entry is edited and no plan direction is
 rewritten. Landing any of these as a default is a separate, owner-gated pass in fresh context.
+
+### 2026-08-01 — n=120 synthetic fidelity cascade, independent re-run
+
+Closes the gap the plan's own provenance table recorded against its strongest row: the n=120
+cascade was rated "Strong, tool-pinned" while the same row noted the judge had **never
+independently re-run this exact configuration**. Re-run here on
+`scratchpad/pellets/synthetic-v3-n120/labels.json` (120 sequences, 30 each from `marciana`
+(SG/Iron), `noir`, `guilty`, `isabel`) via `score-pellets.py --audit-fidelity`, pinned to the
+script at `bd74168` so a concurrent edit could not alter it mid-run.
+
+**All four stages reproduce exactly: 96.89% → 85.38% → 80.23% → BOTH 71.61%** (3426 / 3019 /
+2837 / 2532 of 3536), against the recorded 96.9 → 85.4 → 80.2 → 71.6. n = 3536 pellet-frame
+instances = 884 distinct pellets × the 4 counting frames. The gate correctly refuses and exits 1,
+as expected below the 0.90 floor. Two independent script instances produced identical numbers on
+every field.
+
+**`min_circ` dominates, and the ledger's direction is upheld.** As a fraction of raw-found:
+`min_circ` rejects **17.19%** (589), `min_area` **11.88%** (407) — a 1.45× ratio matching the
+recorded "17.2% vs 11.9%". The apparent contradiction from the committed slice fixture
+(`synthetic-fidelity-slice.json`, which rejects area-dominant 18.75% vs 7.03%) is **small-sample
+noise, now explained**: that slice is sequences 0/30/60/90 — the first sequence of each video,
+32 distinct pellets — and two of its four sequences have `min_circ` pass = 1.000, i.e. zero circ
+rejections, so it structurally under-samples the dominant filter. 26.6% of random 4-sequence
+draws reproduce the inversion; at 40 sequences only 0.4% do. The independent n=40 cross-check
+agrees on direction (1.448× vs this run's 1.447×).
+
+The n=40 cross-check's absolute stages (94.4 → 81.0 → 75.0 → 65.3) sit ~2.4–2.7 sd low against a
+bootstrap of 4000 random 40-of-120 subsets (sd 0.91 / 1.59 / 2.22 / 2.40 pp). Because the stages
+are nested this is one signal — raw-found 2.5 pp low — propagating downstream, most likely a
+method or source-set difference rather than a contradiction. ⚑ That cross-check's provenance
+could not be located, so "a 40-of-120 subset" may be the wrong null for it.
+
+**The 71.6% is a bad tail, not uniform mediocrity, and it is clustered by video.** Per-sequence
+both-pass: median 0.750, range 0.225–1.000, p10 0.475 / p90 0.969; 102 of 120 sequences fall
+below 0.90 and 11 sit at exactly 1.00. Per-video means `guilty` 0.830 > `isabel` 0.780 >
+`marciana` 0.690 > `noir` 0.578 — a ~25 pp spread between best and worst video.
+
+Significance, bounded: the same-day real cascade puts both filters near-inert on real pellets
+(`min_area` 2.45%, `min_circ` 0.61% of found). So `min_circ` dominance here is a fact about the
+GENERATOR's composited pellets, not about the detector, and `min_circ` remains a non-suspect for
+the counter's cold bias. This settles a provenance question and reopens nothing. RECORDS a
+measurement only — no constant, fixture, `DECISIONS.md` entry or plan direction was changed.
