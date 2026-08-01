@@ -335,6 +335,16 @@ little-mermaid.test.ts` M4, was pinning the pre-fix bug and needs updating along
     H1's "the lost shots were REAL" diagnosis was formed on the ROI-restricted run only. Do NOT
     change `--ammo-roi` defaults off this single reading — needs a per-video on/off comparison
     against each video's own independent anchor first.
+  - **⚠ Owner-time ask, filed 2026-07-31 (generator fidelity gate).** `score-pellets.py
+--audit-fidelity`'s 0.90 both-pass floor is a DERIVED reference (implied real-pellet
+    filter-survival ~0.925–0.98 from the real 6-shot fixture's own bias), not a measured one — the
+    only real fixture with per-shot detail
+    (`scripts/tests/fixtures/pellets/groundtruth-f8-11.json`) carries counts, not labeled xy pellet
+    positions, so "nearest raw component to a labeled real pellet" cannot be computed on it today.
+    Labeling xy positions on the 6 owner-counted real crops (`groundtruth-f8-11/shot0{1..5}/`, 4
+    frames each) would let the gate's floor be swapped for an actual measurement instead of a
+    derived one. Est. ~20–30 min (marking pellet centers on 20 small crops). Not required to use the
+    gate as-is — the derived floor is conservative — but would tighten it materially.
   - Rejected/dead paths recorded in the survey: VLM counting, SAM 2, Hough circles, further tuning of
     the current detector. Peanut heuristic now **obsolete** (Phase 2 stops counting on peak frames);
     ring detector **re-opened as a 1h re-test at f8–11** (it was judged on peak frames, where a
