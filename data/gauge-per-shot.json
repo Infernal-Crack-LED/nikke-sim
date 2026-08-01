@@ -354,6 +354,13 @@
     "source": "datamined",
     "targetPerTrigger": 560.0
   },
+  "maxwell-ordinary-mechanic": {
+    "basePerTrigger": 280.0,
+    "flatPerTrigger": 715.0,
+    "fullChargeBonus": 250.0,
+    "source": "datamined; flatPerTrigger 715 = her S2 'Fills Burst Gauge by 7.15%' per Full Charge attack (skill2_detail description_value_07 = 7.15 at level 10)",
+    "targetPerTrigger": 560.0
+  },
   "mica-snow-buddy": {
     "basePerTrigger": 10.0,
     "fullChargeBonus": 0.0,

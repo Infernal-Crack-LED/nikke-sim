@@ -1,0 +1,292 @@
+{
+  "slug": "maxwell-ordinary-mechanic",
+  "leakDetected": null,
+  "override": {
+    "slug": "maxwell-ordinary-mechanic",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterMaxHpPct",
+            "value": 1,
+            "maxStacks": 30,
+            "rampSec": 60
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "stageEnter",
+          "stage": 3
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 10,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 1,
+            "durationSec": 15
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 30,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "fillGauge",
+            "pct": 7.15
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "weaponSwap",
+            "damagePct": 350,
+            "chargeMultPct": 300,
+            "chargeTimeSec": 2,
+            "maxAmmo": 1,
+            "hasPierce": true,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 25,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Charge Time is fixed. Effect varies according to the stage of Overcurrent. Only one effect is triggered at a time.",
+        "Stage 1 or below: Fixed at 3 sec.",
+        "Stage 2: Fixed at 2.5 sec.",
+        "Stage 4: Fixed at 1.5 sec.",
+        "Stage 5 or above: Fixed at 0.4 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ skill1a/skill2c trigger is 'performing a Full Charge attack' — the engine has no fullCharge trigger kind; encoded as shotFired, which for this charge weapon (chargeFrames 60, ammo 6) is one trigger pull ≈ one full charge IF the player always full-charges. If the sim models partial-charge shots, shotFired OVER-fires both the HP stack ramp and the 7.15% gauge fill.",
+      "⚑ skill1a Max HP stack (1% of user's max HP ×30) is ally-granted Max HP — offensively inert per the e3 ally-grant rule except on self; kept for completeness and for any future HP-scaling consumer. rampSec 60 is an UNMEASURED estimate of the time to reach 30 stacks.",
+      "⚑ skill2b Overcurrent ATK ▲30% 'Up to 5 stages' is authored at per-stage value 30 with maxStacks 5 on a burstCast trigger — one stage per own-burst cast, so it ramps 30/60/90/120/150% across the fight. Whether a stage is gained per burst cast (the literal read) or by some other economy is kit-silent.",
+      "⚑ burst weaponSwap charge time is Overcurrent-stage dependent (3.0/2.5/2.0/1.5/0.4 s). The engine's weaponSwap has ONE chargeTimeSec; 2.0 s (stage 3) is a mid-fight estimate, not a measured value. Whichever single value is chosen mis-models the early and late fight in opposite directions.",
+      "⚑ burst weaponSwap durationSec 10 and shot economy are kit-silent (the kit states no swap duration). 10 s = the Full Burst window, an optimistic estimate; maxAmmo 1 means the swap reloads (141 base reloadFrames) between each shot, so the real shot count is likely 1-3.",
+      "⚑ 'Damage: 350% of final ATK / Full Charge Damage: 300%' is read as damagePct 350 with chargeMultPct 300 (the full-charge multiplier applied to the shot). An alternative read is 300% being an absolute replacement rather than a multiplier."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Maxwell: Ordinary Mechanic is a Wind/SR/Supporter Burst II charge unit whose value is (a) a team gauge pump on every full charge, (b) an HP-scaled team ATK grant on her own burst, (c) a self ATK ramp (Overcurrent) that also shortens her burst weapon's charge time, and (d) a burst weapon swap with Pierce plus a 25%/10s team Attack Damage buff. The two load-bearing unknowns are the full-charge trigger fidelity (encoded as shotFired) and the Overcurrent-stage-dependent charge time, which the single-valued weaponSwap primitive cannot express."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when performing a Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (no fullCharge trigger kind exists) — ⚑ fidelity caveat"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max HP ▲ 1% of user's max HP, x30",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterMaxHpPct 1, maxStacks 30, rampSec 60, allies, no duration (continuously)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when entering Burst Stage 3",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger stageEnter stage:3 — 'entering Burst Stage 3' is a stage-cast event by ANYONE, not this unit's own burst (she is Burst II)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Attack Damage ▲ 10% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 10, durationSec 5, allies"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger burstCast (literal 'when using Burst Skill' = own cast, NOT fullBurstEnter)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲1% of user's final max HP 15s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct is wrong shape for HP-scaling; used casterAtkPct=1 ONLY as a placeholder — see flags; correct primitive would be an HP→ATK conversion granted to allies, which the schema exposes only as self-scoped atkOfMaxHpPct"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Overcurrent: ATK ▲30% continuously",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 30, maxStacks 5, self, no duration, on burstCast (one stage per own burst — ⚑ economy kit-silent)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Fills Burst Gauge by 7.15%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "fillGauge 7.15 on shotFired (full-charge proxy) — a major rotation driver, never skippable"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Changes the weapon: Matis UberBuster",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap damagePct 350, chargeMultPct 300, maxAmmo 1, hasPierce"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time varies by Overcurrent stage",
+      "status": "SKIPPED",
+      "effectOrReason": "weaponSwap carries ONE chargeTimeSec; stage-dependent 3.0/2.5/2.0/1.5/0.4 s cannot be expressed. Pinned at 2.0 s (stage 3) as a mid-fight estimate; the ladder lines are recorded verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Charge Time: 3sec / Stage 3: 2 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "chargeTimeSec 2 (single-value approximation of the stage ladder) — ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Damage: 350% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.damagePct 350"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Full Charge Damage: 300%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.chargeMultPct 300"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity: 1",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.maxAmmo 1 — weapon-state modifier, gates shot count"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Additional Effect: Gains Pierce.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "weaponSwap.hasPierce true (swap-scoped, NOT the whole-fight top-level hasPierce flag)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage ▲ 25% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 25, durationSec 10, allies, burstCast"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger / skill2[2].trigger",
+      "estimate": "shotFired",
+      "reasoning": "The kit says 'when performing a Full Charge attack'. The TriggerDef union has no full-charge kind; shotFired is the closest (one trigger pull per charged shot on a charge weapon, chargeFrames 60). This is EXACT only if every shot is full-charged. If the sim fires partial charges, both the 30-stack HP ramp and the 7.15%/shot gauge pump OVER-fire — and the gauge pump is a rotation driver, so the error propagates to full-burst counts.",
+      "recipe": "Read her ammo counter + gauge bar frame-by-frame in a recording: count full-charge releases in the first magazine (6 rounds) and compare the gauge-bar delta to 6 × 7.15%. If the delta matches, shotFired is exact for her; if it is short, some shots are not full charges and a full-charge-only trigger primitive is needed."
+    },
+    {
+      "field": "skill1[0].effects[0].rampSec",
+      "estimate": "60",
+      "reasoning": "30 stacks at 1 stack per full charge. With ammo 6, chargeFrames 60 (1 s) and reloadFrames 141 (~2.35 s), one magazine ≈ 6 s + reload ≈ 8.4 s for 6 stacks ⇒ 30 stacks ≈ 42 s of uninterrupted fire, longer with burst downtime. 60 s is a conservative round estimate; the value is UNMEASURED and the stack cap is never reached instantly.",
+      "recipe": "Time from battle start to the 30th full charge in a recording (count charge releases). Set rampSec to that elapsed time. Note the grant is ally-scoped Max HP, which is offensively inert under the e3 rule, so this ramp moves no damage unless a HP→ATK consumer is on the team."
+    },
+    {
+      "field": "skill2[0].effects[0].stat",
+      "estimate": "casterAtkPct value 1 (placeholder)",
+      "reasoning": "The kit line is 'ATK ▲ 1% of the skill user's final max HP' — an ATK grant scaled by the CASTER's Max HP, granted to ALL ALLIES. The schema's atkOfMaxHpPct is documented as scaling the unit's OWN final Max HP (self-conversion), and casterAtkPct scales the caster's ATK, not the caster's HP. Neither primitive expresses 'x% of the caster's Max HP added as flat ATK to every ally'. The chosen encoding is therefore MAGNITUDE-WRONG in a way I cannot fix blind: it will add 1% of caster ATK rather than 1% of caster Max HP. Since Supporter static ATK ≈ 98,367 while Max HP is a much larger pool, this under-credits substantially. Flagging rather than inventing a number.",
+      "recipe": "Confirm the correct primitive with the engine owner: either extend atkOfMaxHpPct to accept a caster-scoped ally grant, or add a casterMaxHpAsAtkPct StatKey. Then measure: run a fight with and without her burst and read a teammate's popup values; the flat ATK delta should equal 0.01 × her final Max HP."
+    },
+    {
+      "field": "skill2[1] Overcurrent stage economy",
+      "estimate": "one stage per own burstCast, maxStacks 5, 30% each",
+      "reasoning": "The kit says 'Activates when using Burst Skill … ATK ▲30% continuously. Up to 5 stages in total.' The literal read is one stage per own burst cast, permanent. Over a 180 s fight a Burst II unit casting on most rotations plausibly reaches stage 5, but the exact accrual rule (per cast vs per some other condition) is kit-silent, and the burst charge-time ladder implies the stage is expected to climb across the fight.",
+      "recipe": "Read her burst charge time in a recording across successive bursts: the ladder (3.0/2.5/2.0/1.5/0.4 s) directly reveals the current Overcurrent stage. If charge time drops one rung per burst, one-stage-per-cast is confirmed and the ATK ramp follows the same schedule."
+    },
+    {
+      "field": "burst[0].effects[0].chargeTimeSec",
+      "estimate": "2 (stage 3)",
+      "reasoning": "The kit gives a 5-rung ladder tied to Overcurrent stage; weaponSwap exposes a single chargeTimeSec. Picking 2.0 s (stage 3) approximates the mid-fight state but over-charges early bursts (real 3.0 s) and massively under-charges late ones (real 0.4 s at stage 5, a 5× difference in shots per swap window). This is the single largest modeling error in the override.",
+      "recipe": "Either measure the real per-burst charge times from footage and, if stage 5 dominates the damage-relevant bursts, retune chargeTimeSec to 0.4; or request a stage-gated weaponSwap (a resourceGate on an Overcurrent resource pool with one swap block per rung) so the ladder can be expressed faithfully."
+    },
+    {
+      "field": "burst[0].effects[0].durationSec + shot economy",
+      "estimate": "durationSec 10, maxAmmo 1 (no maxShots)",
+      "reasoning": "The kit states NO swap duration. 10 s is the Full Burst window and the standard optimistic default. With maxAmmo 1 the swap weapon reloads between every shot: at base reloadFrames 141 (~2.35 s) plus the charge time, a 10 s window yields roughly 2-3 shots at stage 3 and more at stage 5. The kit is silent on whether the swap weapon inherits the base reload speed.",
+      "recipe": "Count Matis UberBuster shots and time the swap window in a recording of her burst. Set durationSec to the observed window and add maxShots if the swap ends on a shot count rather than a timer."
+    }
+  ],
+  "model": "claude-opus-5"
+}

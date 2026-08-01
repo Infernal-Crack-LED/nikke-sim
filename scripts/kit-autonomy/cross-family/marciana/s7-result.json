@@ -1,0 +1,79 @@
+{
+  "slug": "marciana",
+  "kitDescription": "Marciana is a pure healer whose personal damage comes entirely from her shotgun. Whenever she fires the last bullet of a magazine, all allies regenerate a portion of her attack damage as health over 3 seconds, and the two allies with the highest final ATK additionally receive increased incoming healing for 3 seconds. When she uses her Burst Skill, the whole team instantly recovers health equal to a share of her own Max HP. Her Burst Skill also sets up a storage effect that banks any excess healing she receives (up to a cap based on her Max HP) for 10 seconds, and raises all allies' DEF based on her own DEF for 10 seconds. Nothing in her kit deals damage or modifies her weapon.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "fixture-sanity: 'marciana casts her Burst II and Full Bursts occur' (marciana burstCast == 0 in the blind fixture)",
+      "skill1[A]: 'emits a heal/recovery channel at all' (no 'heal'/'recovery' SimEvent kind exists in the engine)",
+      "skill1[A]: 'the heal targets ALL allies' (same nonexistent event-kind observable)",
+      "skill1[A]: 'fires per-MAGAZINE (lastBullet), not per trigger-pull' (same nonexistent event-kind observable)",
+      "skill2[C]: 'reaches all allies (target set)' (nonexistent event kind + zero marciana burst casts)",
+      "burst[E]: 'emits a DEF buff on burst cast' (zero marciana burst casts in the co-B2 fixture)"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Recovers 10.95% of attack damage as HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet/allies heal ticks:3; no HP amount modeled (event not a number); magnitude out-of-domain, noted in note/caveats",
+        "blindSaid": "S6: functionally identical (lastBullet/allies/heal ticks:3 intervalSec:1). S5: asserted via nonexistent 'heal'/'recovery' event kinds — recon artifact",
+        "formulaCheck": "No damage bucket involved; the faithful in-domain payload is the recovery EVENT that fires teammate on-recovery consumers. Observed firing via asuka's atkPct 96.98 consumer: 70 firings = 3x21 last-bullets + 8 bursts — matches the ticks:3-over-3s reading exactly",
+        "fireRateOk": true,
+        "explanation": "Trigger identity (lastBullet, per-magazine), target set (all allies incl. self), and HoT semantics (3 ticks over the stated 3s) all match prose and are corroborated independently by S2b's spec and S6's identical derivation. Tick count is a convention both sides adopted and S2b prescribed; heal magnitude is unrepresentable (no HP pool) and is documented, not invented. Driver M2 counterfactual (ticks:1) discriminates."
+      },
+      {
+        "kitLine": "Incoming healing ▲ 26.98% for 3 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim in unmodeled.skill1 with reason (no incoming-healing StatKey; no HP pool for it to scale)",
+        "blindSaid": "S6: identical verbatim unmodeled entry. S2b: UNMODELED is the correct disposition; if ever modeled it must be alliesTopAtk count:2 byFinalAtk:true",
+        "formulaCheck": "No StatKey exists for incoming healing and no heal magnitude is modeled — the line has zero in-domain effect; skipping is correct and recorded, never an `ignored` drop",
+        "fireRateOk": true,
+        "explanation": "Correctly documented gap. Driver M5 pins that 26.98 never appears as any buff value and that the line lives in unmodeled. The 2-highest-final-ATK target subtlety is preserved verbatim for any future implementation."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Recovers 28.11% of user's Max HP as HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast/allies heal ticks:1; the 28.11%-of-caster-Max-HP amount out-of-domain, noted",
+        "blindSaid": "S6: identical (burstCast/allies/heal ticks:1). S2b: trigger must be burstCast, NOT fullBurstEnter (the #1 trap for this co-B2 unit)",
+        "formulaCheck": "Instant one-shot heal per own cast; driver M3 isolation (S1 stripped) leaves recovery firings == marciana's own burstCast count (8), confirming own-cast keying. Structural pin asserts burstCast on every skill2 block",
+        "fireRateOk": true,
+        "explanation": "The load-bearing trap — keying to fullBurstEnter in a team containing another B2 — is avoided by both driver and blind, and the driver's sole-B2 fixture (liter/marciana/asuka, 8 casts) proves firing at exactly 1-per-own-cast. S5's failure here is its own fixture (crown wins every B2 slot, marciana casts 0 times) plus the nonexistent heal-event observable, not a driver fault."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Storage: Stores excess healing, 27.87% MaxHP",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim in unmodeled.burst; explicitly NOT encoded as a shield effect (would emit shielded events and falsely satisfy shield-synergy gates)",
+        "blindSaid": "S6: identical verbatim unmodeled entry + same NOT-shield rationale. S2b: UNMODELED correct; encoding as kind:'shield' would be actively wrong",
+        "formulaCheck": "No HP pool, no overheal, no storage primitive in v1 — nothing to store. Driver M5 structural pin asserts no shield effect exists anywhere in the override; 27.87 never appears as a buff value",
+        "fireRateOk": true,
+        "explanation": "Correctly documented gap with the key fidelity decision (Storage ≠ Shield) made identically and independently by driver, S6, and S2b. No shielded-trigger contamination possible."
+      },
+      {
+        "kitLine": "DEF ▲ 20.9% of user's DEF for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast/allies defPct 20.9 durationSec:10, kept for kit completeness though inert; caster-DEF-vs-target-defPct approximation documented (crown S1 convention)",
+        "blindSaid": "S6: identical encoding and identical documented approximation. S2b: defPct 20.9 is the documented approximation; semantics differ but both are inert — not a fix",
+        "formulaCheck": "defPct is inert in v1 (no incoming damage; self DEF never enters the damage formula's FinalATK path for damage dealt). Event check: 24 applications = 8 bursts x 3 allies, each expiresFrame-frame == 600 (10s @60fps). Inertness pinned byte-exact (noDef totals == base totals); defAsDamage counterfactual provably moves totals, so the inertness claim discriminates",
+        "fireRateOk": true,
+        "explanation": "Right trigger (burstCast, not fullBurstEnter), right targets (all allies), right value and duration, inertness proven rather than assumed. The caster-scaled-vs-target-scaled semantic gap is immaterial (inert) and documented on both sides."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all 5 kit lines are FAITHFUL (3) or DOCUMENTED_GAP (2), and every trap S2b pre-registered was avoided by both the driver and the blind override-writer — burstCast-not-fullBurstEnter on skill2/burst (trap #1), both heals modeled as recovery events rather than silently dropped (#2), the S1 HoT kept at ticks:3 rather than collapsed to one instant event (#3), and Storage kept unmodeled-verbatim instead of being encoded as a shield (#4). The S5 RED (6 failures) is entirely recon error: 4 assertions observe a 'heal'/'recovery' SimEvent kind the engine provably never emits (the log's only kinds are buffApply/burstCast/damage/fullBurstEnd/fullBurstStart/reload/shot; heals are observable only via consumer buffApply, which the driver test does correctly via asuka's atkPct 96.98), and the other 2 stem from the blind fixture's co-B2 contention (crown wins every Burst-II slot: marciana burstCast 0, crown 10), which fails the blind test's own non-vacuity gate. Convergence evidence is strong despite the RED: the cross-family S6 override is functionally identical to the driver's (same triggers, targets, ticks, defPct value/duration, same two verbatim unmodeled lines, same Storage-NOT-shield and caster-DEF caveats), and the 15 S5 passes independently confirm the inertness envelope, target sets, duration bound, and no-damage fabrication. Fire-rate check passes: heals fire at prose cadence (70 consumer firings = 3x21 last-bullets + 8 bursts; defPct 24 = 8x3 at 600-frame expiry). Driver discrimination holds via live counterfactuals (ticks:1 collapse, defAsDamage movement, byte-exact noDef equality). Same-model residual for the owner to spot-check: the ticks:3/intervalSec:1 reading of 'over 3 sec' is a shared convention (prescribed by S2b, adopted by driver and S6 alike) rather than a measured tick cadence — it directly scales how often on-recovery consumers refresh, so a real HoT that ticks differently (e.g. a single application with a 3s duration tag) would over-credit consumers 3x; this is the one number a frame-read of a recovery-consumer's refresh cadence could pin, and it is the only residual standing between this encoding and full measurement-tier confidence.",
+  "model": "kimi-code/k3"
+}

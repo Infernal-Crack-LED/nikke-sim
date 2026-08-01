@@ -1,0 +1,126 @@
+{
+  "slug": "dorothy",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 1.56
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "mode": "manifestation",
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 50.68,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 216,
+          "flavor": "distributed"
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 2
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "mode": "manifestation",
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 216,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 8900.83,
+          "flavor": "distributed",
+          "delaySec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. (the cooldown-reduction PRIMITIVE itself is unmodeled — the schema has no skill-cooldown modifier; approximated by a mode-gated fast skill2 block)",
+      "Brand: Accumulates total damage dealt to the designated enemy during the duration, and then deals that accumulated damage to all enemies as Distributed Damage once the duration ends. (the ACCUMULATOR is unmodeled — the schema has no damage-tracking primitive; approximated by a delayed flat hit at the stated cap)"
+    ]
+  },
+  "caveats": [
+    "⛑ skill2 cadence: the 20s base cooldown is the datamined character CD, not a kit-stated skill-2 interval; first-fire phase (t=sec) is the engine convention, unmeasured.",
+    "⛑ Manifestation skill2 cadence: 20s − 18s = 2s is arithmetic on the kit line, but whether the reduction applies to the RECHARGE or snaps the skill ready once is unknown; the 2s-interval block is an optimistic upper bound (~5 extra fires per burst window).",
+    "⛑ Brand realized fraction: authored at the stated CAP (8900.83%). The real value is min(cap, team damage into the designated enemy over 10s) and is not derivable from kit text — this is an UPPER BOUND and likely over-credits.",
+    "⛑ Brand mode gate: Manifestation is authored as a `modes` -free implicit window via burstCast-keyed blocks; the mode-gated skill1/skill2 blocks assume a declared mode 'manifestation' that a real override must drive from the burst (the schema has no burst-opens-a-mode primitive — mode is user-selected). As authored the mode blocks are INERT unless the mode is selected manually.",
+    "Damage to Parts ▲ 50.68% is retained as a partsDamagePct buff though it is inert on the partless scope-lock boss (kept per the keep-the-stat prior).",
+    "noFb not set on any rider (default FB-by-timing ON, per methodology). Brand lands at +10s from cast, so its FB eligibility is decided by landing timing."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Dorothy is an AR/Water/Supporter/Burst I whose damage contribution is almost entirely two distributed-damage channels (skill2 Scorch to Dust 216%, burst Brand up to 8900.83% of final ATK) plus a team burst-cooldown drip (1.56s per last bullet, 60-round magazine). Two kit primitives have NO schema representation and are approximated: (1) the burst's −18s cooldown reduction on her own skill 2 — modeled as a second, mode-gated 2s-interval skill2 block rather than a real cooldown modifier; (2) Brand's damage ACCUMULATOR — modeled as a single delayed flat hit authored at the stated cap, which is an upper bound, not an expected value. Both approximations are listed verbatim in `unmodeled`. The Manifestation mode gate is the weakest link: `mode` is user-selected in this schema and cannot be opened by a burst cast, so the two mode-gated blocks are inert by default and a faithful model needs either an engine primitive or a burstCast-keyed rewrite."
+}

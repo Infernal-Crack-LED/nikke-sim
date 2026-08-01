@@ -1,0 +1,116 @@
+{
+  "slug": "dorothy",
+  "stage": "S2b test-faithfulness review (cross-family)",
+  "reviewerModel": "claude-fable-5",
+  "leakDetected": false,
+  "reviewerSpec": [
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet → Burst CD ▼ 1.56 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldown reduction only — not a stat buff, not gauge fill; applies to every ally's burst cooldown.",
+      "durationSemantics": "Instant one-shot CDR per activation, no duration. Repeats every magazine (ammo 60 → lastBullet roughly every ~6.4s with AR cadence + 81f reload).",
+      "triggerIdentity": "{kind:'lastBullet'} — per-magazine, fires when HER last bullet fires. NOT interval, NOT shotFired, NOT reload-complete, and NOT oncePerBattle.",
+      "targetSet": "{kind:'allies'} — all allies INCLUDING self ('Affects all allies'); her own 20s Burst I CD is also reduced.",
+      "nearestWrongModel": "burstCdr with oncePerBattle:true, or trigger mis-keyed to interval/shotFired, or target excludeSelf:true — each collapses or inflates a ~1.56s-per-magazine rotation acceleration that repeats ~28× per 180s fight.",
+      "distinguishingAssertion": "In a comp where dorothy actually fires (focus her), collect burstCast timestamps with the S1 block live vs withPatchedOverride('dorothy', o => { strip the burstCdr block }): the live run must show STRICTLY earlier subsequent burstCast frames / ≥ as many fullBurstStart events, and the CDR must recur — assert the effect applies after the 2nd, 3rd… magazines too (multiple magazines → multiple distinct CD advancements), red under oncePerBattle. Also assert dorothy's OWN burstCast cadence tightens (self included), red under excludeSelf.",
+      "inertness": "Must add zero damage events itself — pure rotation effect; totals move only via extra/earlier Full Bursts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage to Parts ▲ 50.68% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Parts-damage bucket ONLY (partsDamagePct — parsed but inert in v1: scope-lock boss is partless and hit location never changes damage). NOT generic Attack Damage, NOT damageTakenPct.",
+      "durationSemantics": "durationSec: 5 — wall-clock seconds ('for 5 sec'), refreshed per qualifying last bullet.",
+      "triggerIdentity": "{kind:'lastBullet'} gated to fire ONLY while Manifestation (her own-burst 10s window) is live — a burst-cast-opened window, not a permanent second lastBullet block and not fullBurstEnter-gated. A name-keyed targetStatus('Manifestation',10s) opened by her burst + requiresTargetStatus on this block is a workable engine encoding of the window.",
+      "targetSet": "{kind:'allies'} — all allies including self.",
+      "nearestWrongModel": "Encoding 'Damage to Parts' as attackDamagePct/damageTakenPct 50.68 (a live +50% team damage window — massive over-credit), and/or dropping the 'during Manifestation' gate so it applies every magazine.",
+      "distinguishingAssertion": "totals() for every unit is IDENTICAL with this block present vs stripped (partless boss ⇒ partsDamagePct is inert), AND no buffApply with stat attackDamagePct/damageTakenPct and value 50.68 ever appears; any buffApply for this line carries stat partsDamagePct. If a Manifestation-window gate is asserted structurally, its buffApply events occur only within 10s of a dorothy burstCast.",
+      "inertness": "Must move ZERO damage on the scope-lock boss — this is the primary trap of the whole kit.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Scorch to Dust: 216% Distributed Damage",
+      "disposition": "FAITHFUL",
+      "scope": "Skill-flat damage (flatDamage atkPct:216, flavor:'distributed'), scaled by dorothy's final ATK at landing; 'all enemies' collapses to the single boss. Rider defaults: FB +50% by landing timing (default ON), no range bonus, engine-default crit policy — no crit/core opt-in from prose.",
+      "durationSemantics": "Instant hit per activation, no duration.",
+      "triggerIdentity": "{kind:'interval', sec: <datamined S2 cooldown>} — the line has NO activation clause, so it is an internal-cooldown interval skill (first fire t=CD per the no-force-cast convention). The base CD is NOT in the kit text: the burst's 'Skill 2 CD ▼18 sec' proves a base CD ≥18s exists — pull it from datamined skillCooldownsSec; the cadence tuple is ALWAYS-⚑ if the datamine lacks it.",
+      "targetSet": "{kind:'enemy'} — the boss.",
+      "nearestWrongModel": "Modeling S2 as a FIXED interval that ignores the burst's Manifestation CDR entirely — the compliant-looking fixed-interval override under-credits every 10s post-burst window by the difference between ~⌊10/(CD−18)⌋ casts and ~0–1. Secondary misread: shotFired/hitCount trigger (no textual basis).",
+      "distinguishingAssertion": "Count damage events with mult≈216 in the distributed flavor from dorothy's skill2 slot: outside Manifestation their spacing equals the datamined CD exactly (first at t=CD, not t=0); INSIDE each 10s window following a dorothy burstCast the count is ≥⌊10/(CD−18)⌋ — green under a CDR-aware model, red under fixed-interval.",
+      "inertness": "No S2 hits before t=CD (first-fire phase), and no cadence change in windows following OTHER units' bursts or team FBs dorothy did not cast into.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Manifestation: Skill 2 CD ▼ 18 sec, 10s",
+      "disposition": "GAP",
+      "scope": "Modulates HER OWN Skill 2's cooldown for 10s — a self mode, not a team buff and not a burst-skill CDR (do not encode as burstCdr).",
+      "durationSemantics": "durationSec-style 10s window from HER burst cast.",
+      "triggerIdentity": "{kind:'burstCast'} — a self mode in the unit's OWN burst block fires ONLY on rotations dorothy herself casts Burst I. NOT fullBurstEnter (any team FB), NOT stageEnter:1 (another B1's cast must not open it).",
+      "targetSet": "{kind:'self'}.",
+      "nearestWrongModel": "Keying Manifestation to fullBurstEnter/stageEnter so every team Full Burst (including rotations liter or another B1 casts) opens the fast-S2 window — over-credits in exactly the fixtures where a second Burst I unit is present. Second misread: silently dropping the line as 'cooldown mechanics unmodeled' (large under-credit).",
+      "distinguishingAssertion": "In a comp containing dorothy AND another Burst I unit where the other unit wins some B1 casts: accelerated-S2 windows (mult≈216 events at the reduced spacing) begin ONLY at burstCast events whose caster is dorothy, and never follow fullBurstStart events on rotations she did not cast — green under burstCast keying, red under fullBurstEnter. Engine note: the interval trigger has no CD-modulation primitive, so the expected faithful encoding is a burstCast block emitting the window's extra 216% casts as delaySec-staggered flatDamage hits at the reduced cadence; the assertion above stays valid under that encoding.",
+      "inertness": "No effect on any OTHER unit's skill cadence, and no window opened by team FBs dorothy didn't cast into.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Timed pierce TAG on her own attacks (feeds Pierce Damage ▲ eligibility). In v1 pierceDamagePct is inert and no comp carrier exists, so the tag moves no damage.",
+      "durationSemantics": "durationSec: 10 per burst cast — a WINDOW, not whole-fight.",
+      "triggerIdentity": "{kind:'burstCast'} (own burst), effect kind 'gainPierce' with durationSec:10. NOT the top-level hasPierce:true boolean — a boolean tags the whole fight and cannot express the 10s window.",
+      "targetSet": "{kind:'self'}.",
+      "nearestWrongModel": "hasPierce:true at the file top level (permanent, always-on-from-t=0 pierce) instead of a burst-gated 10s gainPierce effect.",
+      "distinguishingAssertion": "Structural: the override carries a gainPierce effect with durationSec:10 on the burstCast block and NO top-level hasPierce flag. Behavioral: totals() for all five units identical with the effect present vs stripped (no pierce-damage consumer in v1) — any damage delta is itself a red flag.",
+      "inertness": "Zero damage movement in v1 — must not leak into any Damage-Up bucket.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Brand: accum dmg → Distributed, cap 8900.83%",
+      "disposition": "GAP",
+      "scope": "One deferred distributed-damage nuke per dorothy burst: accumulates TEAM damage dealt to the designated enemy (the boss) for 10s, then deals min(accumulated, 89.0083 × her final ATK) back as Distributed Damage. Single-boss sim: designated enemy and 'all enemies' are both the boss.",
+      "durationSemantics": "10s accumulation window from HER burst cast; ONE release at window END (cast+10s). Never a DoT, never instant-at-cast.",
+      "triggerIdentity": "{kind:'burstCast'}; no engine accumulator primitive exists (storedHit releases at FB START, wrong shape), so the expected encoding is flatDamage atkPct:8900.83 flavor:'distributed' delaySec:10 — valid ONLY if a derivation shows team 10s-window damage (which spans the full FB window her cast opens) ≥ the cap; if it falls short, the always-at-cap model over-credits and the shortfall fraction is a ⚑ that must be derived from the sim's own window totals, not guessed.",
+      "targetSet": "{kind:'enemy'} — the boss.",
+      "nearestWrongModel": "Instant 8900.83% at cast (delaySec:0) — snapshots PRE-FB buffs and gets burst-cast FB-exemption instead of landing inside the FB window ~1.4s before FB end (cast → ~82f chain → 10s FB ⇒ the cast+10s landing falls INSIDE Full Burst, so fbMajorApplied should be TRUE, opposite of the instant model). Equally wrong: assuming cap without the derivation, or one release per team FB via fullBurstEnter.",
+      "distinguishingAssertion": "Per dorothy burstCast, exactly ONE damage event with mult≈8900.83 in the distributed flavor, landing ~600 frames AFTER the cast (not at cast), with inFullBurst/fbMajorApplied true per the chain-timing derivation above — green under delayed-release, red under instant-at-cast (which lands pre-FB with fbMajorApplied false). Count of Brand releases over 180s equals dorothy's burstCast count, not the team FB count.",
+      "inertness": "No Brand release on rotations dorothy does not cast; never more than one release per cast; value never exceeds the cap.",
+      "evidenceTier": "CALIBRATED",
+      "loadBearing": true
+    }
+  ],
+  "reviewerLoadBearingSet": [
+    "skill1:lastBullet-burstCdr-1.56s",
+    "skill2:scorch-216-distributed-interval",
+    "burst:manifestation-s2-cd-minus-18s",
+    "burst:brand-capped-distributed-release"
+  ],
+  "reviewerNotes": "FIXTURE TRAP (highest-priority reconciliation): dorothy is BURST I with a 20s CD, but controlComp(carry) seats the carry in the B3 slot — a Burst I unit there NEVER casts, so every burst-gated line (Manifestation, Pierce, Brand) is silently vacuous and the S2 fast window never opens. Tests MUST build a comp with dorothy in the B1 role (plus a real B2 and B3 so Full Bursts actually chain) and positively assert burstCast events with caster dorothy occur before asserting anything downstream of them. If the driver's tests used controlComp unmodified, expect green-by-vacuity. Expected shared-prior misreads, in order: (1) 'Damage to Parts' encoded as generic attack damage — a +50% team window on a boss where parts damage is INERT (partless scope-lock boss; hit location never changes damage); (2) Manifestation's S2 CD ▼18s dropped entirely because the interval trigger has no cooldown-modulation primitive — the faithful encoding must emit the window's extra 216% casts explicitly (delaySec-staggered flatDamage on the burstCast block), and the base S2 CD is NOT in the kit text (datamined skillCooldownsSec, first-fire t=CD, ⚑ if absent); (3) Manifestation/Brand keyed to fullBurstEnter instead of burstCast — diverges exactly when a second Burst I (e.g. liter) is in the comp; (4) Brand modeled as an instant cast nuke — the 10s-deferred landing falls INSIDE the FB window her own cast opens (cast+~82f chain+10s FB ⇒ landing ~1.4s before FB end), flipping fbMajorApplied relative to the instant model, and the at-cap assumption (8900.83% ≈ 87.5×ATK ≈ 8.6M at supporter static ATK) must be derived from the sim's own 10s-window team damage, not assumed; (5) S1 burstCdr given oncePerBattle or excludeSelf — it is a recurring ~per-6.4s-magazine, all-allies-including-self rotation accelerator and is her main team contribution.",
+  "driverReconciliation": {
+    "converged": [
+      "S1-L1 last-bullet team burstCdr 1.56 (FAITHFUL, load-bearing; reviewer distinguishing assertion == driver D1 rotation-schedule comparison)",
+      "S1-L2 Damage to Parts 50.68 (FAITHFUL-but-INERT, partsDamagePct inert in v1; reviewer agrees totals identical present vs stripped == driver D2)",
+      "S2 Scorch 216 distributed on datamined 20s interval, first fire t=CD (FAITHFUL == driver D3; reviewer confirms base CD is datamined skillCooldownsSec, not kit text)",
+      "Burst Gain Pierce timed 10s window, NOT hasPierce boolean (FAITHFUL == driver D4 3-way discrimination)",
+      "Brand cap binds -> at-cap delaySec:10 distributed nuke, landing INSIDE her own FB (fbMajorApplied true) — reviewer INDEPENDENTLY derived this exact encoding + the instant-at-cast mis-model discrimination (== driver D6)"
+    ],
+    "driverAdoptedFromReviewer": [
+      "Brand encoding: flatDamage 8900.83 distributed delaySec:10 (reviewer-derived; driver verified cap binds ~11x and the FB-major landing empirically, then enacted — moved Brand from UNMODELED to FAITHFUL-at-cap)"
+    ],
+    "driverDivergences": [
+      "Manifestation S2-CDR: reviewer offered a staggered-flatDamage encoding but flagged it derivation/timing-gated; driver keeps it ⚑ UNMODELED because the extra-cast count depends on burst phase within the 20s S2 cycle (no clean phase-independent reduction => approximating is fudge). Documented with estimate+recipe+tier."
+    ],
+    "fixtureTrap": "Reviewer warned controlComp seats a Burst I unit in B3 where it never casts (green-by-vacuity). Driver used a CUSTOM 5-unit comp (liter/crown/ada/helm/dorothy) with dorothy as B1; verified dorothy casts (D4/D6 assert dorothyBursts>0), so burst-gated lines are genuinely exercised.",
+    "verdict": "GO (test spec converged cross-family; all load-bearing lines discriminated, no green-by-vacuity)"
+  }
+}

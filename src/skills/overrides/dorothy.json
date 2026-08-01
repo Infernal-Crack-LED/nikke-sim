@@ -1,0 +1,102 @@
+{
+  "note": "Dorothy (dorothy — AR/Supporter/Water/Burst I; NOT dorothy-serendipity the SG/Water attacker). Pilgrim supporter whose meta identity is a team burst-cooldown engine: every time she fires dry (last bullet / reload start) she cuts ALL allies' burst cooldowns by 1.56s (S1-L1, lastBullet -> allies -> burstCdr 1.56, self included). This is her load-bearing contribution and is modeled faithfully — it speeds the whole team's Full Burst rotation (observable as strictly-earlier fullBurstStart frames vs the CDR-removed counterfactual). S1-L2 ('last bullet DURING Manifestation -> all allies: Damage to Parts +50.68% for 5s') is encoded as lastBullet -> allies -> partsDamagePct 50.68/5s: partsDamagePct is INERT in v1 (the scope-lock boss has no parts), so the line moves no damage and the 'during Manifestation' self-state sub-gate is deliberately NOT enforced (no self-buff-active gate primitive exists) — moot because the effect is inert either way (byte-identical totals gated vs ungated). S2 'Scorch to Dust' is a 20s internal-cooldown nuke (skillCooldownsSec.skill2 = 20, datamined — the base CD is NOT in the kit text but the burst's 'Skill 2 CD ▼18s' proves a base ≥18s exists): interval:20 -> enemy -> flatDamage 216% final ATK, flavor distributed ('Distributed Damage'), first fire t=20 per the no-force-cast interval convention. Burst 'Paradise Lost' (Burst I, 20s CD): (BU-L2) 'Gain Pierce for 10 sec' IS modeled (burstCast -> self -> gainPierce durationSec 10) — a TIMED pierce window, NOT a whole-fight hasPierce flag; inert on this fixture (no Pierce Damage ▲ source, single partless boss) but faithfully queryable (discriminated behind a pierceDamagePct probe: no-window < timed < permanent). (BU-L3) 'Brand' IS modeled faithfully AT-CAP: it accumulates total damage dealt to the designated enemy over 10s then re-deals it (capped at 8900.83% of her final ATK) to all enemies as Distributed Damage on expiry. The engine has no damage-accumulator primitive, BUT the cap binds with large margin — in the control fixture the team deals ~98M to the boss over any 10s window vs a raw cap of ~29M (8900.83% × dorothy final ATK), ≈11× headroom, so Brand ALWAYS releases at cap; it is therefore exactly expressible as burstCast -> enemy -> flatDamage 8900.83% distributed delaySec:10 (one release per dorothy burst, landing at cast+10s). The delaySec:10 landing falls INSIDE the Full Burst window her own cast opens (cast -> ~1.4s chain -> 10s FB => landing ~1.4s before FB end), so it correctly takes the +50% FB major (fbMajorApplied true) — the instant-at-cast mis-model would land pre-FB and miss it. RESIDUAL ⚑ on Brand: (a) the at-cap reduction assumes the cap binds (true for any realistic Dorothy comp; a deliberately weak team could fall short — re-derive if she is ever fielded far below this ATK); (b) the kit's redistribution semantics (whether the capped value re-runs the full Damage-Up pipeline or is dealt as a raw distributed value) is a second-order uncertainty the flatDamage idiom resolves by treating 8900.83% as a skill multiplier, consistent with every other distributed nuke (e.g. her own S2 216%). ONE BURST LINE REMAINS OUT-OF-DOMAIN (documented gap, not a silent drop): (BU-L1) 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec' — a scoped skill2-CDR that would dynamically shorten her S2 interval from 20s to ~2s for the 10s window (~5 extra S2 nukes ≈ +1080% distributed per burst). The engine's interval trigger fires on a fixed period with no buff-driven shortening, and unlike Brand there is NO clean phase-independent reduction (the exact extra-cast count depends on where in the 20s S2 cycle her burst lands), so approximating it would bake in a timing assumption = fudge; it is ⚑ UNMODELED with estimate+recipe+tier. Cross-family: S2b blind re-derivation (claude-fable-5) converged on all five modeled lines and INDEPENDENTLY derived the Brand at-cap delaySec:10 encoding + the FB-major landing-timing discrimination. All modeled numbers verbatim from skill text (lvl 10). Kit-autonomy gauntlet 2026-07-31.",
+  "caveats": [
+    "skill1(L2): 'during Manifestation' self-state gate is NOT enforced — partsDamagePct is inert in v1 (no boss parts), so the gate moves no damage; modeled ungated on lastBullet for fidelity",
+    "burst(L3 Brand): modeled AT-CAP (flatDamage 8900.83% distributed delaySec:10) — the cap binds with ~11× headroom in any realistic Dorothy comp (team ~98M/10s vs ~29M raw cap); residual ⚑ = the at-cap assumption + the redistribution pipeline-re-multiplication semantics",
+    "burst(L1): 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec' is UNMODELED — no skill2-CDR primitive to dynamically shorten the interval:20 timer, and no clean phase-independent reduction; ⚑ ≈ +5 extra S2 nukes (~1080% distributed) per burst window"
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": [
+      "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. [⚑ skill2-CDR; no primitive to dynamically shorten the interval:20 S2 timer for the 10s window, and no clean phase-independent reduction (extra-cast count depends on burst timing within the S2 cycle). Estimate: S2 20s->~2s for 10s = ~5 extra 216% distributed nukes ≈ +1080% final ATK distributed per burst. Recipe: add a skill2CooldownReductionSec buff stat read by the interval-trigger scheduler to shorten its period while active. Tier 2 (scoped-buff).]"
+    ]
+  },
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "burstCdr",
+          "seconds": 1.56
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "partsDamagePct",
+          "value": 50.68,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 216,
+          "flavor": "distributed"
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "gainPierce",
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 8900.83,
+          "flavor": "distributed",
+          "delaySec": 10
+        }
+      ]
+    }
+  ]
+}

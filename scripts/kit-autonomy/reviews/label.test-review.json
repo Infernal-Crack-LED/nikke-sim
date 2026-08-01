@@ -1,0 +1,184 @@
+{
+  "slug": "label",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ start of battle: Delusion Shield 30.15%",
+      "disposition": "FAITHFUL",
+      "scope": "Shield creation, 30.15% of the skill user's own final Max HP; continuous (no durationSec)",
+      "durationSemantics": "'This effect is continuous' = permanent shield; in v1 the boss deals no damage, so nothing ever breaks it — Delusion status is effectively active from t=0 for the whole fight",
+      "triggerIdentity": "passive (activates at start of battle), first-apply frame 0",
+      "targetSet": "self only",
+      "nearestWrongModel": "Dropped entirely as 'defensive, no damage' — violating the tandem rule: a shield emission drives 'shielded' triggers and, structurally, the Delusion status that gates every skill2 self buff",
+      "distinguishingAssertion": "The override carries a shield effect (kind:'shield', maxHpPct:30.15, no durationSec) on a passive self block; and the skill2 Delusion-gated buffs (atkPct 93.39 / burstGenPct 70.4) are present from frame 0 — GREEN if the shield block exists and the gated buffs are live whole-fight, RED if the shield was dropped AND the gated buffs were dropped with it as 'Delusion unmodelable'",
+      "inertness": "In isolation the shield moves zero damage — totals(res)['label'] must be unchanged when only the shield effect is stripped, PROVIDED the skill2 buffs are encoded as plain passives rather than shield-state-gated",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ when Delusion status ends: Delusion Shattered",
+      "disposition": "UNMODELED",
+      "scope": "Untargetability (1s × count, removed on direct hit) + self-stun (1s per stack), up to 2 activations",
+      "durationSemantics": "1 sec per Delusion Shattered stack; stack-scaled seconds",
+      "triggerIdentity": "status-end trigger — UNREACHABLE in v1: the boss deals no damage, shields never break, Delusion never ends",
+      "targetSet": "self (note: the stun in Effect 2 reads as affecting SELF per the ■ header — it would halt her own firing if it ever fired)",
+      "nearestWrongModel": "Modeling the stun as live (kind:'stun' on some proxy trigger) — which would wrongly cut Label's fire uptime; or modeling untargetability as a damage-relevant effect",
+      "distinguishingAssertion": "NO stun effect ever fires: Label's shot cadence is continuous — count her shot events across the fight and assert the inter-shot gaps never exceed reload (81f) + fire-cycle bounds; also no second shield application event ever occurs",
+      "inertness": "Must move nothing; must appear verbatim in unmodeled.skill1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ normal attack while not in Delusion → Delusion",
+      "disposition": "UNMODELED",
+      "scope": "Shield re-application (30.15% Max HP) on normal attack when Delusion is down",
+      "durationSemantics": "continuous shield on re-application",
+      "triggerIdentity": "shotFired gated on not-in-Delusion — UNREACHABLE (Delusion never lapses in v1)",
+      "targetSet": "self",
+      "nearestWrongModel": "Encoding as an ungated shotFired shield re-application, spamming a shield event (and any teammate's 'shielded' trigger) on every trigger pull",
+      "distinguishingAssertion": "Exactly ONE shield application at frame 0 across the whole fight — no per-shot shield re-emissions; a teammate patched with a 'shielded'-trigger test block would fire once, not per-shot",
+      "inertness": "Zero damage movement; verbatim in unmodeled.skill1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "■ Burst Skill while not in Delusion → Delusion",
+      "disposition": "UNMODELED",
+      "scope": "Shield re-application on her own burst cast when Delusion is down",
+      "durationSemantics": "continuous",
+      "triggerIdentity": "burstCast gated on not-in-Delusion — UNREACHABLE (Delusion never lapses)",
+      "targetSet": "self",
+      "nearestWrongModel": "Ungated burstCast shield re-application every rotation (harmless alone, but wrong structurally and it re-fires 'shielded' consumers)",
+      "distinguishingAssertion": "Same as above: exactly one shield application per battle",
+      "inertness": "Zero damage movement; verbatim in unmodeled.skill1",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ start: allies dmg taken from Electric ▼70.4%",
+      "disposition": "UNMODELED",
+      "scope": "Damage-taken reduction vs Electric Code enemies only; allies except self",
+      "durationSemantics": "5 sec, 'Activates 1 time(s) per battle' — one-shot window",
+      "triggerIdentity": "passive at battle start, once per battle",
+      "targetSet": "allies excludeSelf",
+      "nearestWrongModel": "Encoding as a damageTakenPct boss debuff (positive = boss takes more) — 'Damage taken ▼' here is a defensive ALLY buff, not a boss Damage-Taken ▲ debuff; conflating them would add phantom team damage",
+      "distinguishingAssertion": "NO buffApply with stat 'damageTakenPct' ever appears from Label's blocks; team totals unchanged when this line's block (if authored) is stripped",
+      "inertness": "Fully inert (boss deals no damage in v1; fixture boss is Fire, not Electric); verbatim in unmodeled.skill2",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ while Delusion: Burst Gauge filling ▲70.4%",
+      "disposition": "FAITHFUL",
+      "scope": "Her OWN burst-gauge contribution only (burstGenPct), not team-wide gauge speed",
+      "durationSemantics": "'continuously' while in Delusion; Delusion is permanent in v1 → whole-fight passive",
+      "triggerIdentity": "passive (the Delusion gate is permanently satisfied from t=0); acceptable alternate encoding is a requiresShielded-gated passive with the permanent self-shield — observably identical",
+      "targetSet": "self",
+      "nearestWrongModel": "Skipped as 'utility, not damage' — but gauge speed is rotation-load-bearing (moves full-burst timing/counts); second misread: applied team-wide instead of self-only",
+      "distinguishingAssertion": "buffApply {stat:'burstGenPct', value:70.4, targetSlug:'label'} at frame 0 and on NO other unit; and withPatchedOverride('label', o => zero the value) shifts the first fullBurstStart frame later (gauge fills slower) — GREEN under self-scoped live encoding, RED if omitted or team-scoped",
+      "inertness": "Teammates' buffApply streams carry no burstGenPct from Label",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ while Delusion: ATK ▲93.39% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "Generic self ATK, scales her own ATK — stat 'atkPct' (raw percentage), NOT casterAtkPct",
+      "durationSemantics": "'continuously' while in Delusion → permanent (Delusion never ends in v1); no expiry, no refresh cycle",
+      "triggerIdentity": "passive (permanently-satisfied Delusion gate), first-apply frame 0",
+      "targetSet": "self",
+      "nearestWrongModel": "Tying it to a fragile shield-alive tracker or a timed window that lapses (any lapse under-credits); or emitting as casterAtkPct (would flat-resolve and change the emitted value shape)",
+      "distinguishingAssertion": "buffApply {stat:'atkPct', value:93.39, targetSlug:'label'} at frame 0 with NO expiresFrame lapse mid-fight (no re-apply churn needed); withPatchedOverride zeroing it drops totals(res)['label'] materially — GREEN under permanent passive, RED under any windowed/lapsing encoding",
+      "inertness": "Applies to Label only — no ally buffApply carries this stat from her",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ while Delusion: dmg taken from Electric ▼70.4%",
+      "disposition": "UNMODELED",
+      "scope": "Self damage-taken reduction vs Electric enemies",
+      "durationSemantics": "continuous while in Delusion",
+      "triggerIdentity": "passive, Delusion-gated",
+      "targetSet": "self",
+      "nearestWrongModel": "Same damageTakenPct-debuff conflation as the skill2 ally line",
+      "distinguishingAssertion": "No damageTakenPct buffApply from Label; boss-held-debuff filter (casterIdx===null) finds nothing attributable to her",
+      "inertness": "Fully inert; verbatim in unmodeled.skill2",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "■ while Shared Delusion: allies ATK ▲80.36% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "ATK as a % of the SKILL USER'S ATK — a caster-scaled FLAT add (stat 'casterAtkPct'), NOT a % of each target's own ATK",
+      "durationSemantics": "'continuously' means ONLY while Shared Delusion is up — and Shared Delusion is a 10-second status opened by her burst cast. NOT permanent. Uptime is 10s per Label burst (her burst CD 20s + rotation), i.e. windowed ≤~50%",
+      "triggerIdentity": "burstCast (Label's OWN burst opens Shared Delusion) with a 10s window; NOT fullBurstEnter — although she is Burst I so the two nearly coincide in a comp where she is the sole B1, the buff must key to HER cast and its 10s clock, not to team FB entry",
+      "targetSet": "allies excludeSelf — Label herself does NOT receive it (she already has her own 93.39%)",
+      "nearestWrongModel": "The word 'continuously' read as PERMANENT uptime (a passive allies-buff) — massive over-credit outside the 10s windows. Runner-up misreads: stat atkPct 80.36 (scales each ally's own ATK — wrong magnitude for a Defender caster at 78,707 static), or including self",
+      "distinguishingAssertion": "buffApply {stat:'casterAtkPct'} events on liter/crown/helm slots with value ≈ 0.8036 × Label's staticAtk (a FLAT ATK number per the harness note, not 80.36), appearing at each Label burstCast frame with expiresFrame ≈ cast+600, and NEVER targeting Label's own index; critically, NO such buffApply exists at frame 0 / before her first burst cast — GREEN under 10s-windowed burstCast encoding, RED under a permanent passive or an atkPct/self-inclusive encoding",
+      "inertness": "Between windows (e.g. frame 0 → first cast) allies carry no casterAtkPct from Label; Label's own damage unchanged when this block is stripped",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ self: Max HP ▲20.26% for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Self Max HP percentage buff (maxHpPct / targetMaxHpPct-style; emitted under stat 'maxHpFlat' per the harness note)",
+      "durationSemantics": "10 seconds wall-clock per burst cast",
+      "triggerIdentity": "burstCast (her own burst block)",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropped as pure-defensive — the taxonomy says keep HP stat buffs even when the engine treats them inert (future scaler feed); the opposite misread is wiring it to lift the 30.15% shield magnitude mid-fight (shields have no HP pool — nothing to lift)",
+      "distinguishingAssertion": "buffApply with stat 'maxHpFlat' on Label at each burstCast with expiresFrame ≈ cast+600; AND totals are byte-identical when it is stripped (Label has no atkOfMaxHpPct consumer, so it must be present-but-inert)",
+      "inertness": "Must move ZERO damage for every unit in the comp — this is the assertion's core",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Shared Delusion: Shield invulnerable 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Dual-natured: the invulnerability mechanics are defensive/inert (no shield HP pool in v1), but this line is the SOLE OPENER of the Shared Delusion status window that gates the skill2 ally ATK buff — the 10s window IS the load-bearing content",
+      "durationSemantics": "10 seconds from her burst cast; the skill2 ally buff's real duration derives from HERE",
+      "triggerIdentity": "burstCast — whatever encoding is chosen (a 10s durationSec on the skill2-sourced burstCast block is the natural one), the window must open on HER cast and close 10s later",
+      "targetSet": "self (status holder); downstream beneficiaries are the skill2 line's allies-excludeSelf",
+      "nearestWrongModel": "Treating the whole burst line as defensive fluff and dropping it — which silently orphans the skill2 Shared-Delusion gate and either kills the ally buff entirely (under-credit) or leaves it permanently on (over-credit, if the gate was dropped with it)",
+      "distinguishingAssertion": "Same event-log assertion as the skill2 ally line: the ally casterAtkPct windows exist, are 10s long, and are anchored to Label's burstCast frames — the burst's window semantics and the skill2 buff must agree; invulnerability prose itself appears in unmodeled.burst",
+      "inertness": "No damage effect from the invulnerability itself; no flatDamage/dot sourced from the burst",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:delusion-shield-30.15pct-maxhp",
+    "skill2:burst-gauge-filling-70.4-self",
+    "skill2:atk-93.39-self-continuous",
+    "skill2:shared-delusion-ally-casterAtk-80.36-10s-window",
+    "burst:maxhp-20.26-10s-inert-but-present",
+    "burst:shared-delusion-10s-window-opener"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Activates when Delusion status ends: Delusion Shattered (up to 2 times) — Imagined Heartbreak untargetability (1 sec x count, removed upon taking a direct hit) and self-stun (1 sec per stack); unreachable in v1 (boss deals no damage, the shield never breaks, Delusion never ends)",
+      "Delusion re-application on normal attack while not in Delusion status (unreachable — Delusion never lapses)",
+      "Delusion re-application on Burst Skill use while not in Delusion status (unreachable — Delusion never lapses)"
+    ],
+    "skill2": [
+      "Start of battle: allies (except self) Damage taken from Electric Code enemies ▼ 70.4% for 5 sec, 1 time per battle (defensive; boss deals no damage; fixture boss is Fire)",
+      "While Delusion: self Damage taken from Electric Code enemies ▼ 70.4% continuously (defensive)"
+    ],
+    "burst": [
+      "The Shield created by Label becomes invulnerable for 10 sec — invulnerability mechanics themselves (no shield HP pool in v1); the 10s Shared Delusion WINDOW it opens IS modeled as the gate for the skill2 ally ATK buff"
+    ]
+  },
+  "notes": "FIXTURE HAZARD (top reconcile item): Label is a BURST I unit — controlComp(label) is the wrong fixture. controlComp puts the carry in the B3 slot with liter already at B1; a Burst-I carry there either never casts or collides with liter in first-ready selection, and every burstCast-keyed line (the Shared Delusion window, the Max HP buff) silently never fires — tests would go green-by-vacuity. The tests MUST build a custom CompOptions with Label as the sole B1 (plus a B2 and a B3) so her burst actually casts each rotation; assert at least one burstCast event with Label's srcSlot before trusting any burst-keyed assertion. EXPECTED SHARED-PRIOR MISREADS: (1) 'continuously' on the Shared Delusion ally line read as PERMANENT — the biggest over-credit risk; its true duration is the burst's 10s status window, so uptime is rotation-bound (~10s per ~20s+ burst cycle). (2) 'ATK ▲ 80.36% of the skill user's ATK' encoded as atkPct instead of casterAtkPct — the harness flat-resolves casterAtkPct at apply time (value = 0.8036 × Label's staticAtk, and she is a DEFENDER at the low class-static ATK), so the two encodings differ in both event shape and magnitude; assert on the emitted flat value. (3) The Delusion-gated skill2 self buffs are correctly PERMANENT (the boss never breaks the shield in v1) — a reviewer expecting windows here would be wrong in the opposite direction; the clean encoding is plain passives with the shield block retained for tandem ('shielded' consumers) and structural faithfulness. (4) Burst Gauge filling ▲70.4% is rotation-load-bearing (self burstGenPct) — dropping it as 'utility' shifts first-FB timing and FB counts, the exact observable the board grades. All magnitudes are kit-literal (DATAMINED); no ⚑ estimates are required for this kit — a spec inventing a cadence or damage proc here should itself be treated as a misread.",
+  "model": "claude-fable-5"
+}

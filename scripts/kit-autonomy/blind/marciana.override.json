@@ -1,0 +1,74 @@
+{
+  "slug": "marciana",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 3,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 20.9,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK. Incoming healing ▲ 26.98% for 3 sec."
+    ],
+    "skill2": [],
+    "burst": [
+      "Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec."
+    ]
+  },
+  "caveats": [
+    "⚑ HoT tick granularity: skill1's heal is stated 'over 3 sec' with NO per-second clause, so ticks:3/intervalSec:1 is an ESTIMATE. Tick count is the only thing this block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per magazine — over-stating ticks over-credits that teammate.",
+    "⚑ lastBullet cadence: the per-magazine firing rate of skill1 depends on ammo (9) and reloadFrames (111) — datamine-unreliable fields. Both skill1 lines are per-magazine, so a wrong magazine economy scales the whole skill1 channel.",
+    "Heal MAGNITUDES (skill1 10.95% of attack damage; skill2 28.11% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).",
+    "burst DEF line is a SEMANTIC APPROXIMATION: the kit grants DEF equal to 20.9% of the SKILL USER's DEF, but the schema's only DEF stat is defPct, which scales the TARGET's own DEF. There is no casterDefPct. Kept for kit completeness (DEF is offensively inert in v1); the value is NOT a faithful caster-scaled grant.",
+    "Zero damage lines and zero weapon-state modifiers in the whole kit — no noFb / range / core / crit decisions arise, and this unit cannot move its own damage. Its entire board footprint is cross-unit: recovery events (2 channels) plus an inert DEF buff."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. marciana — SG/Iron/Supporter/Burst II, ammo 9, hitsPerShot 10, reloadFrames 111, chargeFrames 0 — is a PURE support/sustain kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 team heal-over-time on the last bullet of each magazine — trigger lastBullet, target allies (self included), heal ticks:3 intervalSec:1, present solely to fire teammates' 'recovery' triggers (⚑ tick count estimated from 'over 3 sec'); (2) skill2 team heal on this unit's own burst cast — trigger burstCast (kit says 'when using Burst Skill', i.e. own-cast, NOT full-burst-enter: keying it to fullBurstEnter would over-credit rotations where another Burst II casts), target allies, heal ticks:1; (3) burst team DEF ▲ 20.9% for 10s as a defPct buff, offensively inert in v1 and an approximation of the caster-DEF scaling the schema cannot express. DELIBERATELY UNMODELED (verbatim in `unmodeled`): skill1's 'Incoming healing ▲ 26.98%' on the 2 highest-final-ATK allies — there is no incoming-healing StatKey and no HP pool for it to amplify; and the burst's 'Storage' of excess healing up to 27.87% of Max HP — a named mechanic distinct from 'Shield' in the kit text, so it is NOT encoded as a `shield` effect (that would emit shield events and falsely satisfy shield-synergy gates such as requiresShielded / the 'shielded' trigger on other units). EVIDENCE TIER: all three live values are kit-text-literal magnitudes/durations; the only estimated quantity is the skill1 tick count. The two unmodeled lines are measurement-gated on whether the sim ever models an HP pool or an incoming-healing multiplier."
+}

@@ -1,0 +1,183 @@
+{
+  "slug": "mica-snow-buddy",
+  "leakDetected": null,
+  "override": {
+    "slug": "mica-snow-buddy",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 720
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 40
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "burstGenPct",
+            "value": 300
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 39.93,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when landing 120 normal attack(s). Affects all allies. Tidying Up: Damage Taken ▼ 2%. Stacks up to 10 times and lasts for 15 sec."
+      ],
+      "skill2": [
+        "Activates when landing 150 normal attack(s). Affects all allies. Stack count of buffs ▲ 1."
+      ],
+      "burst": ["Removes 1 debuff(s)."]
+    },
+    "caveats": [
+      "⚑ skill1 hitCount 720 is a DERIVED proxy for \"Tidying Up at max stacks\", not a kit-stated number. It merges two stated cadences: skill1 grants 1 stack per 120 landed rounds and skill2 grants +1 buff stack per 150 landed rounds, so the 10th grant lands at round 720 (grants at 120/150/240/300/360/450/480/600+600/720). The engine has no stack-threshold trigger, so the gate is expressed as a rounds counter.",
+      "⚑ The 720 threshold ASSUMES stacks refresh on each application. Tidying Up lasts 15 sec and one 120-round magazine takes ~8.4 s (120 rounds @ ~20/s + 141 reload frames), so under strict per-stack expiry the pool would hover at ~2-3 stacks and the Max Ammunition gate would NEVER open in a 180 s fight. Refresh-on-apply vs independent per-stack expiry is the single largest swing in this model (gate at ~50 s vs never).",
+      "⚑ Max Ammunition Capacity ▲ 40% is modeled as permanent from first trigger (\"continuously\"). If the real buff drops when Tidying Up falls below max stacks, this over-credits every ally's magazine for the rest of the fight.",
+      "⚑ Cadence: hit-count thresholds convert to wall-clock through the datamined SMG pulls/s + reloadFrames 141, both known-unreliable fields. A cadence error moves WHEN the ammo gate opens, not whether it opens.",
+      "Tidying Up's Damage Taken ▼ 2% (allies) is survivability-only and has no StatKey — damageTakenPct is defined as a BOSS debuff (positive = boss takes more) and encoding an ally-side reduction there would be mis-scoped. It is unmodeled by design; only its max-stack consequence is represented.",
+      "\"Stack count of buffs ▲ 1\" has no engine primitive (no cross-buff stack injection). It is unmodeled as an effect and survives ONLY inside the 720 derivation. Any other stacking ally buff in the team that it would also accelerate is uncredited.",
+      "Burst \"Removes 1 debuff(s)\" is inert at scope (v1 boss applies no debuffs)."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Mica: Snow Buddy is an SMG/Iron/Supporter/Burst I whose damage contribution is almost entirely INDIRECT: a self burst-gauge generation buff (rotation speed), a team-wide Max Ammunition Capacity ▲ 40% gated behind a stack ramp (shots fired / reload frequency for the whole team), and a 5 s caster-scaled ATK grant on burst. Modeled: skill1's max-stack Max Ammunition gate as an allies-wide maxAmmoPct 40 on a hitCount 720 proxy trigger (⚑ derived, see caveats); skill2's start-of-battle Burst Gauge filling speed ▲ 300% as a passive self burstGenPct; the burst's ATK ▲ 39.93% of the skill user's ATK as a burstCast allies casterAtkPct with durationSec 5. Deliberately unmodeled: the Tidying Up Damage Taken ▼ 2% ally stack itself (defensive, no StatKey), \"Stack count of buffs ▲ 1\" (no engine primitive), and the burst's 1-debuff cleanse (no debuff model at scope). Max Ammunition is a weapon-state modifier and IS damage — it is not skipped as defensive."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when landing 120 normal atk",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Trigger only — used as the accrual clock feeding the hitCount 720 proxy on the max-stack gate; not emitted as a block of its own."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Tidying Up: Damage Taken ▼ 2%, 10x/15s",
+      "status": "SKIPPED",
+      "effectOrReason": "Ally-side damage-taken REDUCTION = pure survivability. damageTakenPct is schema-defined as a boss debuff (positive = boss takes more); encoding an ally reduction there would be mis-scoped and could feed the wrong bucket. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when Tidying Up at max stacks",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "No stack-threshold trigger exists in TriggerDef; expressed as trigger hitCount count 720 (⚑ derived from the two stated stack cadences). Target allies."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 40% cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct 40, no durationSec (\"continuously\"), target allies. Weapon-state modifier — gates shots fired / reload frequency for the whole team, so it IS damage."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when landing 150 normal atk",
+      "status": "SKIPPED",
+      "effectOrReason": "Trigger for the stack-injection line below; carries no independently modelable effect. Folded into the 720 derivation."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stack count of buffs ▲ 1 (all allies)",
+      "status": "SKIPPED",
+      "effectOrReason": "No EffectDef can add a stack to OTHER buffs (cross-buff stack injection is not in the schema). Its only representable consequence — accelerating Tidying Up to max — is folded into skill1's ⚑ 720 threshold. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at start of battle. Self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger passive, target self (kit says \"Affects self\")."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 300% cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff burstGenPct 300, no durationSec (\"continuously\"). Scales this unit's own burst-gauge contribution."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target { kind: 'allies' } (self included — no except-self clause)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s).",
+      "status": "SKIPPED",
+      "effectOrReason": "No debuff model at scope (the v1 boss applies none); no EffectDef for a cleanse. Verbatim in unmodeled.burst."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 39.93% of user's ATK for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 39.93, durationSec 5, trigger burstCast (Burst I cast — fires on rotations THIS unit bursts), target allies. Flat add resolved against Mica's staticAtk at apply time."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger.count",
+      "estimate": "720 landed rounds (≈ 6 magazines ≈ 50 s at SMG cadence)",
+      "reasoning": "The kit gives no rounds-to-max-stacks number; it gives two accrual cadences. Skill1 grants 1 Tidying Up stack per 120 landed normal attacks; skill2 grants +1 buff stack per 150 landed normal attacks. Merged floor arithmetic puts grants at 120/150/240/300/360/450/480/600/600/720, so the 10th (cap) grant lands at round 720. The engine has no stack-threshold trigger, so the gate must be a rounds counter. Both the merge (skill2 feeding Tidying Up specifically) and the no-expiry assumption are unverified.",
+      "recipe": "Record a Mica: Snow Buddy fight with her in the focus/ammo-visible slot. Frame-count to the moment an ally's ammo counter jumps by 40% (e.g. a 120-ammo SMG reading 168, an AR's max rising) and read Mica's cumulative rounds fired to that frame off the ammo counter across magazines. Cross-check against the Tidying Up buff icon's stack pip reaching 10. Set trigger.count to the measured round total."
+    },
+    {
+      "field": "skill1[0].trigger (stack-expiry semantics)",
+      "estimate": "Refresh-on-apply assumed — stacks persist to cap",
+      "reasoning": "Tidying Up lasts 15 sec per the kit, but one 120-round magazine takes ~8.4 s (120 rounds @ ~20/s plus a 141-frame reload). Under strict independent per-stack expiry the pool saturates at ~2-3 stacks and the Max Ammunition gate NEVER opens in a 180 s fight (damage delta = 0). Under refresh-on-apply (the common NIKKE stacking shape) the gate opens ~50 s in and the +40% ammo runs for ~130 s across all five units. This is a binary, high-blast-radius unknown, not a magnitude tweak.",
+      "recipe": "Watch the Tidying Up buff pip count over the first 60 s of footage: if the displayed stack count climbs monotonically past 3, refresh-on-apply is confirmed and 720 stands; if it oscillates at 2-3, delete the skill1 block entirely (gate unreachable) and record that in the note."
+    },
+    {
+      "field": "skill1[0].effects[0] (missing durationSec)",
+      "estimate": "Permanent from first trigger",
+      "reasoning": "\"continuously\" is read as no time bound, but the block header conditions it on Tidying Up BEING at max stacks — a state, not an event. If the real buff falls off when the stack pool drops below 10, modeling it as permanent over-credits every ally's magazine size for the remainder of the fight.",
+      "recipe": "In the same footage, check whether an ally's max-ammo reading ever falls back after the gate opens (during a lull in Mica's fire, e.g. a boss-transition cast block). Persistent = keep permanent; falls back = add durationSec matching the observed window."
+    },
+    {
+      "field": "(cadence tuple — no override field)",
+      "estimate": "SMG ~20 rounds/s effective; reloadFrames 141 (~2.35 s)",
+      "reasoning": "ALWAYS-⚡ #1: pulls/s and reloadFrames are datamine-unreliable, and a nominal rate is quantized to 60 fps frame boundaries. Every hit-count threshold in this override converts to wall-clock through them, so a cadence error moves WHEN the ammo gate opens (and therefore how much of the fight it covers) even though the round threshold itself is unaffected.",
+      "recipe": "Frame-count Mica's ammo counter over one full magazine (120 → 0) and over one reload to get measured rounds/s and reload seconds; compare against the datamined pair before trusting the ~50 s gate-open time."
+    },
+    {
+      "field": "skill2[0].effects[0] (burstGenPct scope)",
+      "estimate": "Self-only, 300%, whole fight",
+      "reasoning": "Kit-stated magnitude and target (\"Affects self\"), so the value is NOT invented — but the mapping of \"Burst Gauge filling speed\" onto burstGenPct assumes it multiplies her own per-shot gauge contribution rather than acting on a team gauge-fill rate. On a Burst I unit this drives how early B1 casts and therefore the whole rotation, so a wrong mapping shows up as a full-burst COUNT error, not a damage-magnitude error.",
+      "recipe": "Compare measured full-burst counts on a comp with and without Mica: Snow Buddy against the sim's rotation log (ROT=1). An FB-count match confirms the mapping; a systematic early/late first burst points at the gauge path, not at this value."
+    }
+  ],
+  "model": "claude-opus-5"
+}

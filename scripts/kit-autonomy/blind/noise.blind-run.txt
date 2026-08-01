@@ -1,0 +1,38 @@
+S5 blind test (claude-opus-5) run vs DRIVER override (src/skills/overrides/noise.json)
+via scripts/kit-autonomy/blind/noise.adapted.test.ts.
+
+ADAPTATIONS (driver, to make the blind test runnable — preserve intent, change no assertion):
+  (1) harness import re-pointed ../lib/harness.js -> ../../tests/lib/harness.js (the blind
+      author's assumed path does not exist; standard adaptation, cf. marciana).
+  (2) the `noSkill2Hp` counterfactual originally did `b.effects = []` on every skill2 block;
+      the driver's S2 chargeCounter block carries ONLY the HP grant, so emptying it leaves an
+      invalid empty-effects block and the engine crashes in the chargeCounter dispatch
+      (sim.ts:2125 reading e.kind of undefined). Adapted to DROP blocks left with zero effects
+      (removing the whole block == removing the grant; identical counterfactual intent).
+
+RESULT: 9 passed / 3 skipped (12 total). The 3 skips are the blind test's OWN documented GAPs
+(it.skip): S1 'attacked 20x' was-attacked trigger (no incoming-damage model), S2a taunt (no
+aggro primitive), heal AMOUNT 2.47% (no HP pool). Every substantive discrimination is GREEN vs
+the driver override:
+  - S1 defensive: no positive damageTakenPct emission, moves no damage (sign-flip trap avoided)
+  - S2b self Max HP: SELF-scoped only (target 'noise'), fires per FULL CHARGE (>=20 applies,
+    >=15 more than a burst-keyed counterfactual), 1.8s window (expiry delta in [942,1002] frames)
+  - burst Max HP 49.5%: reaches ALL allies incl self (>=3 targets), TARGET-scaled not caster-scaled
+    (>=2 distinct flat values; casterMaxHpPct counterfactual collapses to 1)
+  - burst recovery: modeled as a heal effect, ticks>=10, intervalSec 1, target allies; NOT inert
+    (feeds crown's on-recovery consumer — signature differs from the no-heal run)
+  - cross-cutting inertness: scaling every Max HP grant 10x moves no team total (no HP->ATK conv)
+
+CONCLUSION: the independently-derived blind test fully corroborates the driver override.
+
+--- raw vitest output below ---
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-31[39m
+
+ [32m✓[39m scripts/kit-autonomy/blind/noise.adapted.test.ts [2m([22m[2m12 tests[22m[2m | [22m[33m3 skipped[39m[2m)[22m[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m9 passed[39m[22m[2m | [22m[33m3 skipped[39m[90m (12)[39m
+[2m   Start at [22m 23:05:21
+[2m   Duration [22m 481ms[2m (transform 79ms, setup 0ms, import 392ms, tests 3ms, environment 0ms)[22m
+

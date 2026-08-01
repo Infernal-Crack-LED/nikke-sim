@@ -1,0 +1,209 @@
+{
+  "slug": "chime",
+  "leakDetected": null,
+  "override": {
+    "slug": "chime",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "casterAtkPct",
+            "value": 46.46
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "fullBurstEnter"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "normalAttackPct",
+            "value": 46.22,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "reenterStage",
+            "stage": 2
+          },
+          {
+            "kind": "buff",
+            "stat": "maxAmmoPct",
+            "value": 20,
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesTopAtk",
+          "count": 1,
+          "excludeSelf": true
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "attackDamagePct",
+            "value": 92.44,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ TARGET IDENTITY — every one of this unit's three skills is scoped to a kit-named single ally ('the king'), a designated-ally selector this schema has no primitive for. Modeled as alliesTopAtk count:1 excludeSelf:true (highest-static-ATK ally other than the caster) as a documented stand-in. If the real selector is positional (leftmost/adjacent), by-final-ATK, or a user-chosen designation, the recipient changes and so does every number below. This is the single highest-leverage unknown in the model.",
+      "⚑ cadence tuple (SMG 120 ammo / 81 reloadFrames / hitsPerShot 1) is datamine-sourced and known-unreliable; effective pulls/s is frame-quantized by the engine. Not overridden here.",
+      "⚑ Burst 'Re-enters Burst Stage 2' is modeled as a reenterStage effect so another Burst-II unit can also cast; whether the re-entry consumes the same rotation slot in-game is unverified.",
+      "All three magnitudes (46.46 / 46.22 / 92.44) are kit-literal, not calibrated — no ⚑ on the values themselves."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. chime is a Burst-II SMG/Iron Supporter whose entire kit funnels into ONE designated ally ('the king'): S1 grants that ally a continuous flat ATK add equal to 46.46% of chime's OWN ATK (casterAtkPct — scales off the caster's sheet, not the recipient's); S2 grants that ally Normal Attack Damage Multiplier ▲46.22% for 10s on Full Burst ENTRY (kit says 'Activates when entering Full Burst' — team-wide FB trigger, NOT own-burst-gated, so it fires on any team Full Burst); burst gives ALL allies Max Ammunition ▲20%/10s (a weapon-state modifier — it gates shots fired, therefore damage, and is modeled, not skipped) plus Re-enters Burst Stage 2, and gives the designated ally Attack Damage ▲92.44%/10s (Damage-Up bucket, generic, not scoped to normal attacks). S2's 'Normal Attack Damage Multiplier' is scoped to the normal-attack multiplier (normalAttackPct), deliberately NOT the generic attackDamagePct bucket — conflating them would over-credit skill and burst damage. The burst's Attack Damage line IS generic and correctly sits in the Damage-Up bucket. Self-damage contribution is a plain SMG cycle with no self-buffs; chime is a pure enabler whose entire value is the single-target funnel. FB-by-timing is default ON for all riders (no noFb set, none measured). The one structural risk is the target selector — see caveats."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the start of battle",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'passive'} — start-of-battle + 'continuously' = an always-on passive, no duration"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects the king.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⚑ stand-in target alliesTopAtk{count:1,excludeSelf:true} — kit-named single designated ally; no designated-ally primitive in the schema"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK 46.46% of user's ATK cont.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff casterAtkPct 46.46, no durationSec ('continuously') — 'of the skill user's ATK' is the flat caster-scaled add, NOT atkPct on the recipient's own ATK"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when entering Full Burst",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnter'} — literal 'entering Full Burst' = team-wide FB entry, not burstCast, not ownBurstGate'd"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the king.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "same ⚑ designated-ally stand-in as skill1"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Normal Atk Dmg Multiplier 46.22%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff normalAttackPct 46.22 durationSec 10 — SCOPE trap: 'Normal Attack Damage Multiplier' scales the normal-attack multiplier only; generic attackDamagePct would over-credit skill/burst hits"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (includes self) for the ammo block"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Re-enters Burst Stage 2.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "effect {kind:'reenterStage', stage:2} — rotation stays at stage 2 so another eligible B2 can also cast"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity 20%/10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff maxAmmoPct 20 durationSec 10 — weapon-state modifier, gates shots fired = damage; HARD RULE forbids skipping it"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects the king.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second burst block scoped to the ⚑ designated-ally stand-in"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attack Damage 92.44% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff attackDamagePct 92.44 durationSec 10 — unscoped 'Attack Damage' = generic Damage-Up bucket"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].target / skill2[0].target / burst[1].target",
+      "estimate": "alliesTopAtk { count: 1, excludeSelf: true } (static-ATK ranking)",
+      "reasoning": "All three skills target a kit-named single ally ('the king') — a designated-recipient selector with no primitive in TargetDef. The schema's closest single-ally selectors are alliesTopAtk / alliesLowestAtk / alliesLowestHp / selfAndAdjacent. Highest-ATK-excluding-self is the best offensive-intent guess for a Supporter funnel (it is also what a player would designate), and excludeSelf is required because the ATK grant is 'of the skill user's ATK' — a self-target would make the buff a self-referential no-op relative to its intent. Static ranking chosen over byFinalAtk because the kit text does not say 'final ATK' (owner literal-word rule). This flag dominates the model: if the real recipient is positional or user-chosen, all three buffs land on a different unit and the comp result changes materially.",
+      "recipe": "Record a fight with chime plus allies of clearly different base ATK (e.g. one Attacker at 118,027 and two Supporters at 98,367 under scope lock) placed so that highest-ATK, leftmost, and adjacent are three DIFFERENT units. Read the end-of-fight Battle Records per-unit damage and identify which single ally shows the ~46% flat-ATK lift plus the +92.44% burst-window spike. One fight discriminates all three candidate selectors; repeat with the high-ATK ally moved to a different slot to separate 'highest ATK' from 'fixed slot'. n≥5 before enacting."
+    },
+    {
+      "field": "skill1[0].effects[0].stat (casterAtkPct vs atkPct)",
+      "estimate": "casterAtkPct 46.46 (flat add = 0.4646 × chime's staticAtk)",
+      "reasoning": "The kit says '46.46% of the skill user's ATK', which is the caster-scaled flat-add form, not a percentage of the recipient's own ATK. Under scope lock chime is a Supporter (98,367 static ATK), so the grant is ~45,700 flat ATK — worth far less to a high-ATK Attacker than a naive atkPct 46.46 would be. Getting this backwards inflates the recipient by roughly the ratio of recipient ATK to caster ATK.",
+      "recipe": "Compare the recipient's damage with chime present vs absent in an otherwise identical comp; the implied ATK delta should equal 0.4646 × chime's own sheet ATK (a constant independent of the recipient), not 0.4646 × the recipient's ATK. Two recipients of different class (Attacker vs Defender) receiving the SAME absolute lift confirms casterAtkPct."
+    },
+    {
+      "field": "skill2[0].effects[0].stat (normalAttackPct vs attackDamagePct)",
+      "estimate": "normalAttackPct 46.22 for 10s",
+      "reasoning": "'Normal Attack Damage Multiplier' names the normal-attack multiplier specifically (the recipient's normalAttackMultiplier path), a scoped stat. The burst's bare 'Attack Damage' has no such scoping and belongs in the generic Damage-Up bucket. Encoding S2 as generic would credit the recipient's skill procs and burst damage with a buff the text confines to normal attacks — the SCOPE failure mode.",
+      "recipe": "Point the buff at a recipient whose damage is split between normal attacks and a large flat-damage rider (e.g. a unit with a burst nuke). Read per-popup values in the 10s window: normal-attack popups should rise ~46% while rider/burst popups stay flat. If BOTH rise, the stat is generic attackDamagePct instead."
+    },
+    {
+      "field": "burst[0].effects[0] (reenterStage 2)",
+      "estimate": "{ kind: 'reenterStage', stage: 2 }",
+      "reasoning": "'Re-enters Burst Stage 2' is the documented rotation-stays-at-stage-N primitive, letting a second eligible Burst-II unit also cast in the same chain. chime is herself Burst II, so this materially changes rotation shape (an extra B2 cast per chain) whenever a second B2 is rostered — and is inert on a single-B2 comp.",
+      "recipe": "Run a comp with chime plus one other Burst II unit; count full-burst chain casts in the rotation log (ROT=1) and compare against footage. If the second B2 casts in the same chain, reenterStage is correct; if the chain advances to stage 3 regardless, the line is a self-only re-cast and needs a different encoding."
+    },
+    {
+      "field": "cadence tuple (not overridden)",
+      "estimate": "datamined SMG: ammo 120, reloadFrames 81, hitsPerShot 1, normalAttackMultiplier 8.1, coreAttackMultiplier 200",
+      "reasoning": "ALWAYS-⚑ field: rate_of_fire and reloadFrames are known-unreliable datamine fields, and the engine frame-quantizes effective rate to 60/ceil(60/nominal). chime's own damage is a small share of a comp built around her funnel, so the tuple's error is low-leverage here — but it is not zero, and the burst's Max Ammo ▲20% interacts with it (a 120→144 magazine changes reload frequency for everyone).",
+      "recipe": "Count shots between reloads off the ammo counter in footage of a chime solo/duo segment; compare shots-per-second against 60/ceil(60/nominal). The ammo counter measures the disputed quantity directly — do not infer cadence from full-burst counts, which are downstream of gauge."
+    },
+    {
+      "field": "noFb (deliberately unset on all riders)",
+      "estimate": "absent — Full Burst applies by timing (default ON)",
+      "reasoning": "Per the ALWAYS-⚑ taxonomy, per-kit noFb is measured-only and defaults OFF (i.e. riders DO take the +50%). chime carries no flat-damage riders at all — her kit is entirely buffs — so this flag has no live surface today; it is recorded only so a future reader knows it was considered rather than overlooked.",
+      "recipe": "N/A while the kit stays buff-only. If a damage rider is ever added, compare in-FB vs out-of-FB popup magnitudes for that rider before setting noFb."
+    }
+  ],
+  "model": "claude-opus-5"
+}

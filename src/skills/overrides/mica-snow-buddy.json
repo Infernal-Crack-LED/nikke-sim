@@ -1,0 +1,117 @@
+{
+  "note": "Mica: Snow Buddy (slug `mica-snow-buddy`, aka msb): Tetra IRON SMG SUPPORTER, Burst I, 20s burst CD, 120-ammo SMG (1440 rpm), reloadFrames 141. A variant of the RL/Wind base Mica. A team ATK buffer + burst-gauge enabler whose DPS channels are (1) the burst team ATK buff, (2) a self burst-gauge-fill-speed buff, and (3) a max-ammo team buff gated behind her Tidying-Up stack clock. --- LINE DISPOSITIONS --- BURST 'ATK ▲39.93% of the skill user's ATK for 5 sec, all allies': modeled `casterAtkPct` 39.93 on `burstCast` → allies (INCLUDES self — 'Affects all allies', no except-self), 5s. Caster-basis FLAT add ((39.93/100)×her static ATK), NOT % of each ally's own ATK. Her dominant DPS contribution. BURST 'Removes 1 debuff(s), all allies': UNMODELED — defensive/utility debuff cleanse; the v1 boss applies no debuffs, so there is nothing to remove and no DPS channel (carried verbatim in unmodeled.burst). S2 'start of battle, self: Burst Gauge filling speed ▲300% continuously': modeled `burstGenPct` 300, passive self (frame 0, no expiry) — scales her OWN burst-gauge contribution ×4; 'continuously' = permanent. S2 'on landing 150 normal attacks, all allies: Stack count of buffs ▲1': PARTIALLY MODELED. 'Stack count of buffs ▲1' adds a stack to active stackable buffs on all allies; her OWN Tidying-Up is such a buff, so the SELF-directed portion is modeled as a +1 to the `tidyingUp` resource pool on hitCount:150 (Block C), which accelerates the max-ammo gate (measured effect: pulls activation from ~78.6s to ~46.6s in the fixture). The CROSS-ALLY portion (adding stacks to TEAMMATES' own stackable buffs) is out-of-domain — the engine has no generic per-buff stack-count primitive that reaches into other units' buff stacks — and is documented (⚑ M5). S1 'on landing 120 normal attacks, all allies: Tidying Up Damage Taken ▼2%, stacks 10x, 15s': PARTIALLY MODELED. The STACK CLOCK is modeled — a `tidyingUp` resource pool (0..10) incremented on hitCount:120 (Block A) — because it is the GATE for the max-ammo line. The defensive '2% Damage Taken ▼' MAGNITUDE is NOT modeled: it is a damage-taken REDUCTION on allies, and the sim models no incoming damage (immortal boss), so the value moves zero damage (⚑ M3). CRITICAL: this is NOT encoded as the boss-debuff stat `damageTakenPct` (the schema's only damage-taken stat is a boss debuff = boss takes MORE); the kit line is ▼ on ALLIES (defensive), the inverse channel — encoding it on the boss would wrongly add up to +20% team damage. S1 'when Tidying Up is at max stacks, all allies: Max Ammunition Capacity ▲40% continuously': modeled `maxAmmoPct` 40 → allies, gated on `resourceGate {tidyingUp, min:10}` and re-asserted on each hitCount:120 once the gate passes (permanent — 'continuously'). The mechanic is in-domain; the ACTIVATION is the stack gate, which the resource pool encodes. --- STACK-SEMANTICS ASSUMPTION (drives M4 activation): the pool is monotonic (0→10, clamped, no decay) = 'once 10 stacks accrue, the ammo buff is permanent'. This commits to the REFRESH-ON-REAPPLY reading of 'Stacks up to 10 times and lasts for 15 sec' (each stack application refreshes the whole buffer to 15s, so stacks build monotonically to 10 since applications arrive ~every 7-8s, faster than the 15s expiry). The alternative per-stack-independent-decay reading would cap concurrent stacks at ~2 and the gate would NEVER open (0% uptime); refresh-on-reapply is the standard NIKKE convention for stackable timed buffs, so the driver adopts it and documents the alternative (⚑ M4). The activation TIME is NOT hardcoded — it EMERGES from the engine's hitCount cadence (Block A every 120 hits + Block C every 150 hits → 10 stacks at cumulative H where H/120 + H/150 ≥ 10 → H≈667 landed rounds). In the fixture this is frame 2797 (~46.6s), matching the cross-family reviewer's independent prose+cadence derivation (~45-50s). --- ⚑ LIST --- M3 TIDYING-UP DEFENSIVE VALUE (out-of-domain, defensive): the 2% Damage-Taken reduction is inert in v1 (no incoming damage). Estimate: 0 DPS. Recipe: if unit-facing boss damage is ever modeled, add an ally damage-taken-reduction stat (distinct from the boss-debuff damageTakenPct) and stack it via the existing tidyingUp pool. Tier: defensive-mechanic gap. M4 MAX-AMMO ACTIVATION-TIME (calibration, in-domain): the ▲40% max-ammo team buff is gated on 10 Tidying-Up stacks; the modeled activation (~46.6s in fixture) assumes refresh-on-reapply stack semantics + every fired round landing + the engine's SMG cadence/reload. Estimate: the buff adds ~+1.8% to +3.6% per ally (measured: removing it drops ada +1.75%, helm +2.48%, msb +3.18%, crown +3.58%); under the rejected per-stack-decay reading it would be 0. Recipe: footage of the Tidying-Up stack-counter accrual (refresh vs per-stack decay) + a popup-read of the real activation time would outrank the derivation. Tier 2 (status-gate). M5 STACK-COUNT-OF-BUFFS cross-ally portion (meta-defining, out-of-domain): adding stacks to TEAMMATES' stackable buffs has no engine primitive; the self-portion IS folded (Block C). Estimate: 0 in a single-unit encoding (purely a function of which stacking allies are fielded). Recipe: a cross-unit 'buffStackBonus' raising qualifying stacking buffs' stacks while active. Tier 2 (meta-defining). M6 CADENCE TUPLE (MANDATORY, datamine-unreliable): pullsPerSec at the SMG class default / reloadFrames 141 / 120-ammo belt; drives the stack-clock cadence, so it also sets the M4 activation time. Recipe: rounds/min + reload gap from any msb focus video. Self-validated against types.ts; the driver runs validate-overrides + the unit test. Kit-autonomy gauntlet 2026-07-31.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": ["Affects all allies. Removes 1 debuff(s)."]
+  },
+  "caveats": [
+    "burst: the team ATK ▲39.93% is a caster-basis FLAT add ((39.93/100)×Mica's static ATK) to all allies INCLUDING self, for 5s per burstCast — NOT % of each ally's own ATK",
+    "skill2: the self Burst Gauge filling speed ▲300% (burstGenPct 300) is 'continuously' = permanent/passive; it scales only Mica's OWN gauge contribution",
+    "skill1: the Tidying-Up 'Damage Taken ▼2%' MAGNITUDE is unmodeled (defensive; no incoming-damage model) — but its STACK CLOCK IS modeled as the `tidyingUp` resource pool (Block A) because it gates the max-ammo line. NOT encoded as the boss-debuff damageTakenPct (that would be the inverse channel and wrongly add team damage)",
+    "skill1: the Max Ammunition Capacity ▲40% team buff (maxAmmoPct 40) is gated on resourceGate{tidyingUp,min:10}; activation EMERGES from the hitCount cadence (~46.6s in fixture), committing to the refresh-on-reapply stack reading (⚑ M4) — the per-stack-decay reading would never open the gate",
+    "skill2: 'Stack count of buffs ▲1' — the SELF portion is folded as a +1 to the tidyingUp pool on hitCount:150 (Block C, accelerates the M4 gate ~78.6s→~46.6s); the CROSS-ALLY portion (teammates' stack buffs) is out-of-domain (⚑ M5)"
+  ],
+  "resources": [
+    {
+      "name": "tidyingUp",
+      "initial": 0,
+      "min": 0,
+      "max": 10
+    }
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "tidyingUp",
+          "delta": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 120
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "resourceGate": {
+        "name": "tidyingUp",
+        "min": 10
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": 40
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 300
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 150
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "resource",
+          "name": "tidyingUp",
+          "delta": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 39.93,
+          "durationSec": 5
+        }
+      ]
+    }
+  ]
+}

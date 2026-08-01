@@ -1,0 +1,118 @@
+{
+  "slug": "julia",
+  "kitDescription": "Julia (Treasure) is an Iron AR attacker who casts a 10-second self-buff window \u2014 generic Critical Rate 26.04%, ATK 20%, and a normal-attack-only Critical Rate 36.16% \u2014 automatically at battle start and then every 40 seconds. Landing critical hits with her normal fire builds Crescendo, a stacking Critical Damage buff (24.79% per stack, up to 5, lasting 15 seconds), and every 8 critical hits she fires Marcato, an 88%-of-ATK bonus hit at her target; when Marcato itself crits, a further 100%-of-ATK hit follows on the same target. Her burst unloads five sequential hits of 544.5% of final ATK on the enemy, and if Crescendo is at full stacks when she casts, a sixth 544.5% hit lands too. Because the burst resolves at cast, it lands before Full Burst opens and does not take the +50% Full Burst bonus.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "F1 'S1b ... atkPct, not casterAtkPct' \u2014 blind-test attribution bug: their selfBuffs filter (targetSlug==='julia' && casterIdx!==null) catches CROWN's casterAtkPct team grant; the driver override contains no casterAtkPct and J1 pins atkPct 20 with casterIdx===targetIdx===julia",
+      "F2 'Marcato ... teammates unmoved' \u2014 blind-test tolerance bug: toBeCloseTo(base, 6) is \u00b15e-7 absolute on ~129M totals; the 0.05% delta is emergent gauge-feedback (flatDamage\u2192skillGauge\u2192shared rotation), no teammate-targeted effect exists in the override",
+      "F3 'exactly 5 sequential 544.5% hits per cast' \u2014 blind-test slug-filter bug (burstCasts counts all 4 units' casts) PLUS a real documented divergence: the driver consolidates 5\u00d7544.5 into one 2722.5 instance (eve/2b precedent, damage-identical in the deterministic EV pass)",
+      "F4 '5-hit count is load-bearing' \u2014 consequence of F3: the blind counterfactual patches a 5\u00d7544.5 structure the driver override does not have (no-op patch); the driver's own J4 counterfactual (2722.5\u2192544.5, strict total drop) supplies the missing discrimination"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Critical Rate \u25b2 26.04% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRatePct 26.04 self, 10s windows: fused passive (t=0 force-cast) + interval:40; applies pinned at frames [0,2400,4800,7200,9600], each expiring +600f",
+        "blindSaid": "S5 green (apply exists, 10s window, re-applies); S6 authored interval:40 only \u2014 its note claims a t=0 first fire its blocks never produce",
+        "formulaCheck": "Unscoped crit rate enters the Major-bucket crit term on all instance types (SSOT \u00a71b) \u2014 correct stat identity; interval first-fire at t=sec matches the documented convention",
+        "fireRateOk": true,
+        "explanation": "5\u00d710s = 50s of 180s uptime (27.8%), matching a 40s-CD active with a battle-start force-cast; the noBattleStart counterfactual removes the frame-0 apply (red), proving the two-block structure is what fires."
+      },
+      {
+        "kitLine": "ATK \u25b2 20% for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 20 self, same cadence/windows as the crit line",
+        "blindSaid": "S5 F1 RED \u2014 but the failure is the blind filter catching Crown's casterAtkPct grant to julia, not anything in the driver override; S6 also used atkPct",
+        "formulaCheck": "'ATK \u25b2 20%' with no 'of caster's ATK' qualifier is a plain ATK% buff summing into the recipient's (1+\u03a3ATK%) term (SSOT \u00a71a) \u2014 atkPct is the only correct stat",
+        "fireRateOk": true,
+        "explanation": "The blind red is a RECON_ERROR on the blind side (test attribution bug); the driver's J1 pins casterIdx===targetIdx===julia with value exactly 20, and the cfNoAtk counterfactual is red."
+      },
+      {
+        "kitLine": "Normal Attack Critical Rate \u25b2 36.16%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "critRateNormalPct 36.16 (NA-scoped, helm precedent); J1 pins skill bucket at crit rates {0, 0.15, 0.4104} and burst at {0.15, 0.4104} \u2014 0.772 never appears off the normal bucket",
+        "blindSaid": "S5 green (scoped stat present, no generic critRatePct at 36.16, generic-model counterfactual strictly raises the total); S6 also critRateNormalPct",
+        "formulaCheck": "SSOT \u00a71b: critRateNormalPct joins ONLY normal-attack instances \u2014 skill procs and burst see the unscoped term alone; driver matches exactly",
+        "fireRateOk": true,
+        "explanation": "The taxonomy trap (generic vs NA-scoped crit) is the highest-value scope call in the kit; driver, S2b, S5, and S6 all converged on critRateNormalPct, and the driver's bucket-level crit-rate pins are the strongest possible evidence the scoping is live, not cosmetic."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "After 6 NA crits: Crescendo CritDmg 24.79 x5",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "\u2691 hitCount:19 = ceil(6/0.323), 0.323 = 27.8%\u00d777.2% + 72.2%\u00d715% uptime-weighted fight-averaged NA crit (eve precedent); buff itself exact: critDamagePct 24.79, maxStacks 5, 15s; fires exactly floor(shots/19), stacks reach 5 at t=9.1s",
+        "blindSaid": "S5 green on buff shape (skipped trigger identity as a documented primitive gap); S6 used hitCount:12 off a rougher ~0.50 estimate",
+        "formulaCheck": "Buff semantics match prose verbatim; the trigger is a crit-conditioned counter the engine lacks (sim.ts:1606) \u2014 the round-count proxy is the sanctioned \u2691 encoding; arithmetic 6/0.323\u219219 checks out against her own kit numbers",
+        "fireRateOk": true,
+        "explanation": "DOCUMENTED \u2691 with tier (2) and recipe. Driver's derivation is strictly better grounded than the blind's (uptime-weighted from kit numbers vs a mid guess); the static-phase residual (can't track S1 window phase or team crit buffs) is the documented eve residual class."
+      },
+      {
+        "kitLine": "After 8 crits: Marcato 88% add'l dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "\u2691 hitCount:25 = ceil(8/0.323); flatDamage 88, crit-eligible (U1 default \u2014 kit itself confirms Marcato can crit), no core, noRange, FB by landing timing; fires exactly floor(shots/25) at crit rates {0.15, 0.4104} only",
+        "blindSaid": "S5 green on all effect properties (skill bucket, crit-eligible, no core/range, in-FB instances carry fbMajorApplied); S5 F2 RED on teammate inertness is a tolerance bug (\u00b15e-7 on 129M; 0.05% gauge-feedback shift), not a driver defect; S6 used hitCount:16",
+        "formulaCheck": "SSOT \u00a72b function-type rules: crit at caster rate, never core, never range, FB by timing \u2014 all pinned green; NA-scoped 36.16 correctly excluded from its crit rate",
+        "fireRateOk": true,
+        "explanation": "The F2 red is a RECON_ERROR on the blind side; the emergent rotation coupling (skill hits generate gauge) is engine-correct behavior, not kit mis-encoding. Trigger cadence is the same documented \u2691 family as Crescendo."
+      },
+      {
+        "kitLine": "If Marcato crits: +100% dmg",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "\u2691 EV companion flatDamage 22.23 = 100% \u00d7 P(Marcato crits), P = 50/180\u00d741.04% + 130/180\u00d715% = 22.23% (generic crit only, NA-scoped excluded), crit:false to avoid double-counting, same hitCount:25 cadence (takina uptime-average precedent)",
+        "blindSaid": "S5 skipped it (no previous-hit-crit primitive); S6 encoded it UNCONDITIONAL at 100% \u2014 a ~4.5\u00d7 over-credit by its own flag; S2b independently proposed exactly the EV encoding the driver shipped",
+        "formulaCheck": "A hit conditional on another hit's crit outcome is inexpressible (sim.ts:1606); the EV is the faithful expectation and its arithmetic (11.40% + 10.83% = 22.23%) checks; crit:false is required for an EV rider",
+        "fireRateOk": true,
+        "explanation": "Driver converged with the S2b reviewer's independent proposal and against the blind override's optimistic bound \u2014 the strongest kind of cross-family corroboration. Three-state discrimination pinned: removed under-credits, unconditional-100 over-credits, shipped sits between."
+      },
+      {
+        "kitLine": "Start of battle: Forcefully uses Skill 1",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "Enacted as the fused passive block (passive WITH durationSec decays from t=0, chisato pattern): all three S1 buffApply events present at frame 0; interval:40 block carries subsequent casts",
+        "blindSaid": "S5 green (first atkPct apply at frame \u22641, re-fires thereafter); S6 listed the line verbatim in unmodeled and did NOT enact it (its interval first-fires at t=40)",
+        "formulaCheck": "Force-cast \u2192 t=0 first fire is the standing convention; the opening magazine running at 77.2% NA crit materially feeds the crit counters and first-burst gate, so enacting it is load-bearing",
+        "fireRateOk": true,
+        "explanation": "Driver's encoding is superior to the blind override's and matches S2b's spec exactly; the noBattleStart counterfactual (applies shift to [2400,...]) proves the block is what produces the frame-0 cast."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "544.5% dmg, attacks sequentially 5 times",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "One consolidated flatDamage 2722.5 (= 5\u00d7544.5) on burstCast, noFb (fbMajorApplied false pinned), crit-eligible, deliberately unflavored; \u2691 consolidation caveat (eve's 2742.84 and 2b's 2439.36 are the same treatment of the same wording), Tier 3",
+        "blindSaid": "S5 F3/F4 RED \u2014 F3's burstCasts filter has no slug field (counts all 4 units' casts) and F4's counterfactual patches a structure the override doesn't have (no-op); both are blind-test bugs. S6 modeled 5 discrete flavored hits while its own flag concedes split-vs-merge 'affects nothing in aggregate damage'",
+        "formulaCheck": "SSOT \u00a78: burst-cast damage lands pre-FB (no +50%) \u2014 driver correct. In the deterministic EV pass 5 crit rolls at one rate \u2261 1 roll, so consolidation is damage-identical; total 5\u00d7544.5 matches the prose's own number. The 'random enemies' targeting collapses to the single boss",
+        "fireRateOk": true,
+        "explanation": "Documented \u2691 with the exact multi-hit caveats recorded (event multiplicity, MC-mode crit variance, per-hit-sequential consumers, flavor). Magnitude discrimination is preserved by the driver's own J4 counterfactual (2722.5\u2192544.5 strict drop), so the blind's broken F4 costs nothing. Unflavored is defensible (kit names no sequential consumer; eve precedent), board-inert today."
+      },
+      {
+        "kitLine": "When Crescendo at max stacks: +544.5%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Second burstCast flatDamage 544.5 behind resourceGate{crescendo, min:5} over a shadow resource advanced by the Crescendo block (soda-twinkling-bunny precedent); \u2691 no-decay divergence documented Tier 3 (unreachable in continuous fire: ~1.8 NA crits/s even outside S1 windows)",
+        "blindSaid": "S5 skipped the gate (no buff-stack primitive); S6 encoded the 6th hit UNCONDITIONAL \u2014 its own flag admits this over-credits if stacks aren't at cap; S2b named the first-cast event count the cheapest discriminator",
+        "formulaCheck": "Empirically verified in the fight anatomy: Crescendo maxes at t=9.1s, the t=5.4s opening cast correctly receives NO bonus (5 instances on casts 2\u20136), and the three-state proof (gated / removed\u2192zero / ungated\u2192every cast) isolates the gate as the discriminator",
+        "fireRateOk": true,
+        "explanation": "The driver's shadow-resource gate behaves exactly as S2b's distinguishing assertion demands (first cast 5 hits, later casts 6) where the blind's unconditional model fails. The no-decay residual is genuinely unreachable at scope lock; recipe recorded for a popup-cadence check."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHA. All four S5 reds classify as blind-test defects (F1 attribution filter catching Crown's grant; F2 an absolute-tolerance assertion on 129M totals blind to emergent gauge feedback; F3 a missing slug filter plus the documented burst consolidation; F4 a no-op counterfactual patch) \u2014 none implicates the driver override, and the discrimination F4 failed to provide is supplied by the driver's own J4 (2722.5\u2192544.5 strict drop), so the blind-vs-driver divergence resolves as RECON_ERRORs and one documented \u2691, not signal. On substance the driver matches or beats both blind agents on every contested line: it enacts the battle-start force-cast the S6 override left inert, gates the max-stack bonus the S6 override fired unconditionally (verified against the S2b discriminator \u2014 the 5.4s opener correctly gets no bonus), and encodes the Marcato-crit rider as the calibrated EV the S2b reviewer independently proposed rather than S6's ~4.5\u00d7 optimistic bound. The five \u2691s (crit-proxy hitCounts 19/25, EV rider 22.23, no-decay gate resource, burst consolidation, targeting collapse) are each documented with tier and measurement recipe. Same-model residual for the owner to spot-check: the 32.3% fight-averaged crit rate underpinning hitCount 19/25 and the 22.23% rider probability both rest on the driver's own uptime arithmetic (5\u00d710s S1 windows) rather than a recording \u2014 a single focused-julia popup-cadence read (Crescendo stack accrual time, Marcato popup spacing, Marcato crit-pair ratio) would independently pin or refit all three at once, and the burst consolidation's Monte-Carlo variance difference (1 roll vs 5) is worth a glance if seeded runs are ever graded on her.",
+  "model": "kimi-code/k3",
+  "faithfulnessScoreFull": "1.0 (9/9 kit lines FAITHFUL or DOCUMENTED_GAP: 4 FAITHFUL, 5 documented \u2691 with tier + recipe)"
+}

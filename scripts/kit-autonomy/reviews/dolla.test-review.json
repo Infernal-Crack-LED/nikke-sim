@@ -1,0 +1,75 @@
+{
+  "slug": "dolla",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 16.16% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff (atkPct) — no normal-attack/charge/crit scoping in the text.",
+      "durationSemantics": "durationSec: 5 — literal 'for 5 sec', wall-clock, not rounds.",
+      "triggerIdentity": "⚑ NO activation clause in the ■ header ('Affects all allies' only). Repo convention: no 'Activates when' clause = interval trigger on the datamined skill cooldown, first fire t=CD (the Base-line 'cd 20s' is the BURST cooldown, not this skill's CD — the interval value is outside the packet and must be sourced from skillCooldownsSec, ⚑ if absent). It is NOT passive/permanent: a 5s duration on a repeating trigger implies fractional uptime.",
+      "targetSet": "All allies (all-including-self; single team-wide application per fire).",
+      "nearestWrongModel": "Passive/permanent atkPct 16.16 (trigger dropped, 'for 5 sec' ignored) → 100% uptime instead of ~5s/CD fractional uptime — a several-fold over-credit of the team ATK contribution.",
+      "distinguishingAssertion": "Collect buffApply events with stat 'atkPct', value 16.16, casterIdx = dolla's slot: assert (a) MORE THAN ONE application over 180s (recurring trigger), (b) each carries expiresFrame ≈ applyFrame + 5*60 (finite 5s expiry), (c) inter-apply gap > 5s so uptime < 100%. Under the passive-wrong model there is exactly one apply at frame 0 with no finite expiresFrame.",
+      "inertness": "Must not be always-on: damage-relevant frames outside the 5s windows must show no dolla atkPct contribution. Must not stack with itself (same-caster-slot overwrite/refresh on re-fire).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "FB enter: Burst CD ▼ 1.82/2.2/2.6 esc",
+      "disposition": "FAITHFUL",
+      "scope": "Burst-skill cooldown reduction — not a stat buff; engine primitive is burstCdr (seconds), inside an 'escalating' wrapper.",
+      "durationSemantics": "Instant per activation (CDR applied to current cooldowns); the escalation COUNTER is permanent across the fight, cap at 3 steps.",
+      "triggerIdentity": "fullBurstEnter — 'Activates when entering Full Burst' = ANY team Full Burst, including rotations where a different Burst II unit cast. NOT burstCast.",
+      "targetSet": "All allies (every unit's burst cooldown reduced).",
+      "nearestWrongModel": "Non-cumulative escalation: applying ONLY the Nth step at the Nth entry (1.82, then 2.2, then 2.6) instead of steps 1..N ('Each subsequent effect triggers all effects before it' → 2nd FB = 1.82+2.2 = 4.02s, 3rd+ FB = 6.62s each). Secondary misread: mis-keying to dolla's own burstCast, going silent on FBs another B2 completes.",
+      "distinguishingAssertion": "Count fullBurstStart events over 180s in a comp where dolla holds the B2 slot vs the same comp with a CDR-stripped patched override (withPatchedOverride removing this block): the delta must match the CUMULATIVE model (steady-state ~6.62s shaved per rotation off a 20s burst CD), not the non-cumulative one (~2.6s). Equivalently assert inter-FB spacing after the 3rd FB compresses by ≈6.62s vs baseline.",
+      "inertness": "Fires at FB entry only — no CDR between Full Bursts; escalation must cap (4th+ entries apply the same three steps, no unbounded growth).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "own Burst: ATK/Crit/CritDmg esc, 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic team stat buffs: atkPct 7.72 / critRatePct 4.21 / critDamagePct 13.22 — no normal-attack scoping.",
+      "durationSemantics": "durationSec: 5 on each step ('for 5 sec' literal); escalation counter permanent, cap 3.",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' = DOLLA'S OWN burst casts only. This is the critical divergence from the sibling block: it fires ONLY on rotations dolla herself bursts, never on a teammate's B2 cast.",
+      "targetSet": "All allies.",
+      "nearestWrongModel": "Keyed to fullBurstEnter — fires on EVERY team Full Burst even when another Burst II unit (e.g. crown in the control fixture) completes the chain, over-crediting in any dual-B2 comp. Secondary misread: non-cumulative steps (3rd cast granting only Crit Damage instead of all three).",
+      "distinguishingAssertion": "Two-part: (1) in a comp where dolla is present but ANOTHER B2 takes the burst casts, assert ZERO buffApply events with casterIdx = dolla's slot and stat in {atkPct:7.72, critRatePct:4.21, critDamagePct:13.22} — green under burstCast, red under fullBurstEnter. (2) In a comp where dolla IS the B2 caster, on her 3rd burstCast assert buffApply events for ALL THREE stats (7.72 AND 4.21 AND 13.22) in that rotation — green under cumulative, red under Nth-step-only.",
+      "inertness": "Must not fire on Full Bursts dolla did not cast; buffs must lapse after 5s (expiresFrame finite), leaving no crit/ATK residue between her bursts.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "734.69% final ATK Burst Skill damage",
+      "disposition": "FAITHFUL",
+      "scope": "One instant hit, % of caster final ATK, burst-damage flavored (flatDamage atkPct 734.69 on the burstCast trigger).",
+      "durationSemantics": "Instant, once per dolla burst cast (every rotation she bursts, 20s burst CD net of her own CDR).",
+      "triggerIdentity": "burstCast (dolla's own Burst II cast).",
+      "targetSet": "Enemy — '1 enemy unit(s) with the highest final DEF' resolves to the single boss; the DEF-ranking clause is inert in a one-target fight.",
+      "nearestWrongModel": "Granting the +50% Full-Burst major to the hit. Verified repo fact: burst-cast damage lands BEFORE the Full Burst window opens — no +50%, no FB-entry auras; the hit is FB-exempt by timing.",
+      "distinguishingAssertion": "Capture the damage event for dolla's burst hit (srcSlot = dolla, bucket = burst, mult ≈ 734.69): assert inFullBurst === false and fbMajorApplied === false on every occurrence — green under the pre-FB-timing model, red if the +50% major is applied. Also assert the hit count over 180s equals her burst-cast count (one hit per cast, no per-FB duplication).",
+      "inertness": "No range +30% on the burst hit unless engine default grants it to burst-bucket damage; no core scaling (text says nothing about core strike); zero hits on rotations dolla does not burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:ATK ▲ 16.16% for 5 sec",
+    "skill2:FB-enter escalating Burst CD ▼ 1.82/2.2/2.6",
+    "skill2:burst-cast escalating ATK 7.72 / CritRate 4.21 / CritDmg 13.22 (5s each)",
+    "burst:734.69% Burst Skill damage"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Four reconciliation points. (1) HIGHEST-RISK shared-prior misread: skill1 has NO activation clause — the convention resolves it to an interval trigger on the datamined skill CD with 5s duration (fractional uptime), and the interval value is NOT in this packet (the Base 'cd 20s' is the Burst II cooldown, not skill1's CD) — it is a ⚑ that must be sourced from skillCooldownsSec, never silently invented; a passive-permanent encoding is a large over-credit and the test must prove finite expiry + recurrence. (2) The two skill2 blocks deliberately split trigger identity: block A is fullBurstEnter (any team FB), block B is burstCast (dolla's own casts). They only diverge in a comp where another Burst II unit takes casts — and the standard controlComp fixture pins CROWN at B2, so a naive fixture has dolla never casting and block B (plus her burst damage) permanently silent. The test file MUST include a comp where dolla actually occupies the casting B2 role, and SHOULD include the crown-casts variant as the block-B zero-fire probe. (3) Both escalating blocks are CUMULATIVE ('Each subsequent effect triggers all effects before it') with a cap at 3 steps — steady-state CDR is 6.62s per FB entry, and the 3rd burst cast grants all three stat buffs; assert cumulativeness explicitly, non-cumulative is the plausible misread. (4) Block A's CDR is self-reinforcing (shorter burst CDs → more FBs → faster escalation) — judge it by fullBurstStart count/cadence against a CDR-stripped patched override, per the judge-rotation-change-by-FB-count rule, not by aggregate damage. Burst target clause ('highest final DEF') is inert single-boss; not an unmodeled drop.",
+  "model": "claude-fable-5"
+}

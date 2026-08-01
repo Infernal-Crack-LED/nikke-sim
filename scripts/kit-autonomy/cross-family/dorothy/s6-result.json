@@ -1,0 +1,273 @@
+{
+  "slug": "dorothy",
+  "leakDetected": null,
+  "override": {
+    "slug": "dorothy",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "burstCdr",
+            "seconds": 1.56
+          }
+        ]
+      },
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "mode": "manifestation",
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "partsDamagePct",
+            "value": 50.68,
+            "durationSec": 5
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 20
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 216,
+            "flavor": "distributed"
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "interval",
+          "sec": 2
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "mode": "manifestation",
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 216,
+            "flavor": "distributed"
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "gainPierce",
+            "durationSec": 10
+          }
+        ]
+      },
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 8900.83,
+            "flavor": "distributed",
+            "delaySec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [],
+      "burst": [
+        "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. (the cooldown-reduction PRIMITIVE itself is unmodeled — the schema has no skill-cooldown modifier; approximated by a mode-gated fast skill2 block)",
+        "Brand: Accumulates total damage dealt to the designated enemy during the duration, and then deals that accumulated damage to all enemies as Distributed Damage once the duration ends. (the ACCUMULATOR is unmodeled — the schema has no damage-tracking primitive; approximated by a delayed flat hit at the stated cap)"
+      ]
+    },
+    "caveats": [
+      "⛑ skill2 cadence: the 20s base cooldown is the datamined character CD, not a kit-stated skill-2 interval; first-fire phase (t=sec) is the engine convention, unmeasured.",
+      "⛑ Manifestation skill2 cadence: 20s − 18s = 2s is arithmetic on the kit line, but whether the reduction applies to the RECHARGE or snaps the skill ready once is unknown; the 2s-interval block is an optimistic upper bound (~5 extra fires per burst window).",
+      "⛑ Brand realized fraction: authored at the stated CAP (8900.83%). The real value is min(cap, team damage into the designated enemy over 10s) and is not derivable from kit text — this is an UPPER BOUND and likely over-credits.",
+      "⛑ Brand mode gate: Manifestation is authored as a `modes` -free implicit window via burstCast-keyed blocks; the mode-gated skill1/skill2 blocks assume a declared mode 'manifestation' that a real override must drive from the burst (the schema has no burst-opens-a-mode primitive — mode is user-selected). As authored the mode blocks are INERT unless the mode is selected manually.",
+      "Damage to Parts ▲ 50.68% is retained as a partsDamagePct buff though it is inert on the partless scope-lock boss (kept per the keep-the-stat prior).",
+      "noFb not set on any rider (default FB-by-timing ON, per methodology). Brand lands at +10s from cast, so its FB eligibility is decided by landing timing."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Dorothy is an AR/Water/Supporter/Burst I whose damage contribution is almost entirely two distributed-damage channels (skill2 Scorch to Dust 216%, burst Brand up to 8900.83% of final ATK) plus a team burst-cooldown drip (1.56s per last bullet, 60-round magazine). Two kit primitives have NO schema representation and are approximated: (1) the burst's −18s cooldown reduction on her own skill 2 — modeled as a second, mode-gated 2s-interval skill2 block rather than a real cooldown modifier; (2) Brand's damage ACCUMULATOR — modeled as a single delayed flat hit authored at the stated cap, which is an upper bound, not an expected value. Both approximations are listed verbatim in `unmodeled`. The Manifestation mode gate is the weakest link: `mode` is user-selected in this schema and cannot be opened by a burst cast, so the two mode-gated blocks are inert by default and a faithful model needs either an engine primitive or a burstCast-keyed rewrite."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when firing the last bullet",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger lastBullet (per-magazine; ammo 60 → ~1 fire per full magazine)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf — kit says all allies)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Cooldown of Burst Skill ▼ 1.56 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "burstCdr seconds 1.56, target allies — a rotation-rate effect, NOT a damage buff; drives full-burst frequency"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "last bullet during Manifestation",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second lastBullet block with mode gate 'manifestation' — trigger identity is the SAME last-bullet event, gated on the burst-opened state"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage to Parts ▲ 50.68% for 5 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff partsDamagePct 50.68 durationSec 5 — schema-parsed but ENGINE-INERT in v1 (partless boss); kept per the keep-the-stat prior"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all enemies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight, so 'all enemies' collapses to the one target"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Scorch to Dust: 216% Distributed",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 216 flavor 'distributed'; NO activation clause in the prose → interval trigger per the trigger-identity rule"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "(interval cadence — kit-silent)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⛑ interval sec 20 from the datamined character cd; ALWAYS-⛑ field #2 (damage line with no stated trigger)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects self",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'self'} for the Manifestation/Pierce branch"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Manifestation: CD of Skill 2 ▼ 18 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No schema primitive for modifying a skill's own cooldown (burstCdr is BURST-skill-only). Approximated by a mode-gated 2s-interval skill2 block; listed verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "lasts for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "the 10s Manifestation window bounds both the mode-gated skill1 parts buff and the fast skill2 block, and matches the Pierce + Brand durations"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Gain Pierce for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "gainPierce durationSec 10 on a burstCast trigger — the timed-window EFFECT, deliberately NOT the whole-fight hasPierce boolean"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects a designated enemy",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'enemy'} — single-boss fight so 'designated' is unambiguous"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Brand: Accumulates total damage",
+      "status": "SKIPPED",
+      "effectOrReason": "No accumulator primitive in the schema (nothing tracks cumulative damage dealt to a target). Approximated by a delayed flatDamage at the stated cap; listed verbatim in unmodeled.burst"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "deals accumulated as Distributed",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage flavor 'distributed', delaySec 10 (fires at window END per the kit text, snapshotting buffs/FB at landing)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "max 8900.83% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "⛑ atkPct 8900.83 — authored at the CAP as an explicit upper bound, since the realized accumulation is not derivable from kit text"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Lasts for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "encoded as delaySec 10 on the Brand hit — the duration IS the accumulation window, ending at release"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.sec",
+      "estimate": "20 (≈ 8 fires over a 180s fight, first at t=20)",
+      "reasoning": "The kit text gives Scorch to Dust NO activation clause, so per the trigger-identity rule it is an interval skill. The only cadence number available anywhere is the datamined character-level cd 20s, which is a known-unreliable field for this purpose — it is the base-stat cooldown, not necessarily this skill's interval. First-fire phase (t=sec vs t=0) is an engine convention, not measured.",
+      "recipe": "Count Scorch to Dust distributed-damage popups in a solo recording over a full 180s fight; the gap between the 1st and 2nd popup gives both the interval AND the first-fire phase. Cross-check the total popup COUNT against 180/interval."
+    },
+    {
+      "field": "skill2[1].trigger.sec",
+      "estimate": "2 (≈ 5 extra fires inside each 10s Manifestation window)",
+      "reasoning": "20s base − 18s stated reduction = 2s is straight arithmetic on the kit line, but the SEMANTICS are ambiguous: a −18s cooldown reduction could (a) shorten the recharge to 2s so the skill re-fires ~5x in the window, or (b) apply once, snapping a pending skill-2 ready immediately. Reading (a) is the optimistic upper bound and is what I authored; reading (b) would be a single extra 216% hit. The difference is ~5x on this channel.",
+      "recipe": "Record a fight where Dorothy bursts and count Scorch to Dust popups inside the 10s post-burst window. 5-6 popups → reading (a); 1-2 → reading (b)."
+    },
+    {
+      "field": "burst[1].effects[0].atkPct",
+      "estimate": "8900.83 (the stated CAP — an upper bound, likely over-credits)",
+      "reasoning": "Brand deals min(cap, accumulated team damage into the designated enemy over 10s). The realized value depends entirely on team composition and on how much damage lands in that window — not derivable from kit text. Authoring at the cap is the honest upper bound; the realized fraction on a real team is unknown and could plausibly be well under 1.0 on low-output comps or pinned at the cap on high-output ones.",
+      "recipe": "Read the Brand release popup value from a recording and divide by Dorothy's final ATK to get the realized %. Repeat across two comps of clearly different total output to establish whether the cap is being hit; if both pin at 8900.83% the cap model is correct as authored."
+    },
+    {
+      "field": "burst[1].effects[0].delaySec",
+      "estimate": "10 (release at the end of the stated 10s window)",
+      "reasoning": "The kit text says the accumulated damage is dealt 'once the duration ends', and the duration is stated as 10 sec — so the release timing is kit-stated, not invented. The ⛑ is on the FB interaction, not the delay: a hit landing at cast+10s may or may not fall inside a Full Burst window depending on rotation, and the engine snapshots buffs/FB at LANDING for delayed hits.",
+      "recipe": "Confirm from footage that the Brand popup appears ~10s after the burst banner, and note whether it lands inside or outside the Full Burst window on the graded rotation."
+    },
+    {
+      "field": "override.modes / mode-gated blocks",
+      "estimate": "mode 'manifestation' on skill1[1] and skill2[1] — INERT as authored",
+      "reasoning": "Manifestation is a burst-OPENED self state, but the schema's `mode` gate is a USER-SELECTED kit mode declared in a top-level `modes` array (first = default) — there is no primitive for a burst cast opening a mode window. So the two mode-gated blocks I wrote will never fire under normal simulation. This is a genuine schema gap, not a modeling choice; I flagged it rather than silently re-keying the blocks to burstCast (which would lose the 10s window bound and fire them at the wrong time).",
+      "recipe": "Decide the representation with the engine owner: either add a burst-opened mode/window primitive, or express Manifestation as a burstCast-triggered self-buff whose durationSec 10 the gated blocks read. Until then treat the Manifestation branch (parts buff + fast skill2) as UNMODELED, not as modeled-and-inert."
+    },
+    {
+      "field": "skill1[0] burstCdr cadence",
+      "estimate": "~1 fire per 60-round magazine → total team CDR over 180s is magazine-count × 1.56s",
+      "reasoning": "The trigger is kit-stated (last bullet), so the TRIGGER is not flagged — but the realized fire COUNT depends on the datamine-unreliable reload/cadence pair (ammo 60, reloadFrames 81) and on any ammo/reload buffs from teammates. This is ALWAYS-⛑ field #1 (cadence tuple). It is a rotation-rate effect, so an error here moves full-burst COUNTS, not just her own damage.",
+      "recipe": "Count Dorothy's reloads in a recording over 180s and compare to the sim's lastBullet trigger count; the graded-comp full-burst count is the downstream check."
+    }
+  ],
+  "model": "claude-opus-5"
+}

@@ -1,0 +1,10 @@
+
+ RUN  v4.1.10 /Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-31
+
+ ✓ scripts/tests/units/maxwell-ordinary-mechanic.test.ts (25 tests | 1 skipped) 7ms
+
+ Test Files  1 passed (1)
+      Tests  24 passed | 1 skipped (25)
+   Start at  00:03:28
+   Duration  368ms (transform 89ms, setup 0ms, import 273ms, tests 7ms, environment 0ms)
+

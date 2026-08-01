@@ -1,0 +1,334 @@
+
+ RUN  v4.1.10 /Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-31
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts (42 tests | 17 failed | 4 skipped) 18ms
+     ✓ the control comp actually bursts (stage chain reaches Full Burst) 2ms
+     ✓ maxwell is identifiable as a caster in the event log 0ms
+     ✓ non-vacuity: the line fires (he full-charges repeatedly) 0ms
+     ✓ trigger is the per-full-charge shot, not passive / FB-enter 0ms
+     ✓ stacks are capped at 30 and never exceed it 6ms
+     ✓ scope is ALL ALLIES, not self-only 0ms
+     ✓ "continuously" — the grant never expires inside the fight 0ms
+     ✓ each stack is 1% of BASE max HP — the grant does not compound off its own boost 0ms
+     × the stacked Max HP FEEDS the S2a ATK conversion ("final" max HP) 2ms
+     ✓ non-vacuity: the line fires 0ms
+     ✓ trigger is stage-3 ENTRY (any ally's B3 cast), not his own burst cast 0ms
+     ✓ lands BEFORE Full Burst opens, not at FB entry 0ms
+     ✓ scope is ALL ALLIES 0ms
+     ✓ the 5s window is real and binding (not 10s, not permanent) 0ms
+     × non-vacuity: he casts his own burst and the grant lands on allies 0ms
+     × scope is ALL ALLIES including self 1ms
+     × the basis is the CASTER's max HP — every ally gets the SAME flat ATK 0ms
+     × "FINAL" max HP — the grant grows as S1a stacks accrue 0ms
+     × the window is 15s — exactly 5s longer than the burst's own 10s ally buff 0ms
+     × non-vacuity: he bursts more than 5 times, so the cap is exercised 0ms
+     × scope is SELF ONLY — no ally ever receives it 1ms
+     × capped at 5 stages 0ms
+     ✓ "continuously" — never expires 0ms
+     × the 5-stage cap is binding (an uncapped model over-credits) 0ms
+     ✓ inertness: a self-ATK change moves nobody else 0ms
+     × the effect exists at 7.15% 0ms
+     × it materially accelerates the rotation (more Full Bursts than without it) 1ms
+     ✓ ONE fill per full charge — "affects all allies" must not multiply by the ally count 1ms
+     ✓ the swap is modeled and carries the kit's numbers 0ms
+     × the swap actually fires damage (deleting it costs him damage) 0ms
+     ✓ the Overcurrent charge-time LADDER is modeled: 3 / 2.5 / 2 / 1.5 / 0.4 s 0ms
+     × the ladder is binding — flattening every stage to 3s costs damage 0ms
+     ✓ the ladder is stage-gated on an Overcurrent counter, not on time or mode 0ms
+     ✓ Pierce is SWAP-SCOPED, not a whole-fight tag 0ms
+     × non-vacuity: it fires on his burst 0ms
+     × scope is ALL ALLIES — self-scoping strips every teammate 0ms
+     × applied at his BURST CAST, before Full Burst opens 0ms
+     ✓ it is a timed 10s window, not permanent 0ms
+     ↓ swap window length: the kit states NO duration for the UberBuster (⚑ estimate = the 10s Full Burst window, matching the burst's own 10s ally buff) — measurement-gated, no assertion
+     ↓ swap shot economy: "Max Ammunition Capacity: 1" means a reload between every shot, and the kit is silent on the swap weapon's reload time (⚑). At a 0.4s stage-5 charge the reload, not the charge time, dominates the shot rate — the ladder's real value cannot be pinned from prose
+     ↓ "Charge Time is FIXED": the value is a CLAMP that charge-speed buffs must not move. The schema has chargeSpeedPct but no clamp primitive, so a chargeSpeedPct support would illegally shorten it
+     ↓ S2a basis: no StatKey expresses "ATK = x% of the CASTER's max HP granted to allies" (atkOfMaxHpPct is documented as the target's OWN max HP). The caster-basis equality test above is the live probe for this gap
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 17 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S1a — Full Charge → all allies: Max HP ▲1% of the SKILL USER's max HP, 30 stacks, continuous > the stacked Max HP FEEDS the S2a ATK conversion ("final" max HP)
+AssertionError: expected 860974787.7486787 to be less than 860974787.7486787
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:341:17
+    339|     const base = Object.values(BASE_T).reduce((a, b) => a + b, 0);
+    340|     const cut = Object.values(totals(NO_HP_STACKS.res)).reduce((a, b) …
+    341|     expect(cut).toBeLessThan(base);
+       |                 ^
+    342|   });
+    343| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2a — his burst → all allies: ATK ▲1% of the SKILL USER's final max HP, 15 sec > non-vacuity: he casts his own burst and the grant lands on allies
+AssertionError: expected 0 to be greater than 0
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:398:28
+    396|     // If this is red, the Burst-II slot collision with crown starved …
+    397|     // fault, and every assertion in this group plus S2b / B1 / B2 is …
+    398|     expect(allyAtk.length).toBeGreaterThan(0);
+       |                            ^
+    399|   });
+    400|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2a — his burst → all allies: ATK ▲1% of the SKILL USER's final max HP, 15 sec > scope is ALL ALLIES including self
+AssertionError: expected +0 to be 4 // Object.is equality
+
+- Expected
++ Received
+
+- 4
++ 0
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:402:56
+    400|
+    401|   it('scope is ALL ALLIES including self', () => {
+    402|     expect(new Set(atk.map((b) => b.targetSlug)).size).toBe(Object.key…
+       |                                                        ^
+    403|     const base = Object.values(BASE_T).reduce((a, b) => a + b, 0);
+    404|     const selfOnly = Object.values(totals(S2A_SELF.res)).reduce((a, b)…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2a — his burst → all allies: ATK ▲1% of the SKILL USER's final max HP, 15 sec > the basis is the CASTER's max HP — every ally gets the SAME flat ATK
+AssertionError: expected +0 to be 4 // Object.is equality
+
+- Expected
++ Received
+
+- 4
++ 0
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:413:31
+    411|     // dispatch — Attacker/Supporter/Defender HP pools differ.
+    412|     const firstRound = atk.slice(0, Object.keys(BASE_T).length);
+    413|     expect(firstRound.length).toBe(Object.keys(BASE_T).length);
+       |                               ^
+    414|     expect(new Set(firstRound.map((b) => b.value)).size).toBe(1);
+    415|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2a — his burst → all allies: ATK ▲1% of the SKILL USER's final max HP, 15 sec > "FINAL" max HP — the grant grows as S1a stacks accrue
+AssertionError: expected 0 to be greater than 1
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:419:25
+    417|   it('"FINAL" max HP — the grant grows as S1a stacks accrue', () => {
+    418|     const mine = atk.filter((b) => b.targetSlug === SLUG).map((b) => b…
+    419|     expect(mine.length).toBeGreaterThan(1);
+       |                         ^
+    420|     expect(mine[mine.length - 1]).toBeGreaterThan(mine[0]);
+    421|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2a — his burst → all allies: ATK ▲1% of the SKILL USER's final max HP, 15 sec > the window is 15s — exactly 5s longer than the burst's own 10s ally buff
+AssertionError: expected 0 to be greater than 0
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:426:25
+    424|     // Both fire on the SAME burst cast, so the expiry-frame gap IS th…
+    425|     const ad25 = MXB.filter((b) => b.stat === 'attackDamagePct' && b.v…
+    426|     expect(ad25.length).toBeGreaterThan(0);
+       |                         ^
+    427|     const a = atk.find((b) => typeof b.expiresFrame === 'number');
+    428|     const d = ad25.find((b) => typeof b.expiresFrame === 'number');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2b — his burst → self: Overcurrent ATK ▲30% continuously, max 5 stages > non-vacuity: he bursts more than 5 times, so the cap is exercised
+AssertionError: expected 0 to be greater than 5
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:439:23
+    437|
+    438|   it('non-vacuity: he bursts more than 5 times, so the cap is exercise…
+    439|     expect(oc.length).toBeGreaterThan(5);
+       |                       ^
+    440|   });
+    441|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2b — his burst → self: Overcurrent ATK ▲30% continuously, max 5 stages > scope is SELF ONLY — no ally ever receives it
+AssertionError: expected Set{} to deeply equal Set{ 'maxwell-ordinary-mechanic' }
+
+- Expected
++ Received
+
+- Set {
+-   "maxwell-ordinary-mechanic",
+- }
++ Set {}
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:443:50
+    441|
+    442|   it('scope is SELF ONLY — no ally ever receives it', () => {
+    443|     expect(new Set(oc.map((b) => b.targetSlug))).toEqual(new Set([SLUG…
+       |                                                  ^
+    444|   });
+    445|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2b — his burst → self: Overcurrent ATK ▲30% continuously, max 5 stages > capped at 5 stages
+AssertionError: expected -Infinity to be 5 // Object.is equality
+
+- Expected
++ Received
+
+- 5
++ -Infinity
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:451:55
+    449|       expect(b.stacks ?? 1).toBeLessThanOrEqual(5);
+    450|     }
+    451|     expect(Math.max(...oc.map((b) => b.stacks ?? 1))).toBe(5);
+       |                                                       ^
+    452|   });
+    453|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2b — his burst → self: Overcurrent ATK ▲30% continuously, max 5 stages > the 5-stage cap is binding (an uncapped model over-credits)
+AssertionError: expected 87604562.24257477 to be greater than 87604562.24257477
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:459:55
+    457|
+    458|   it('the 5-stage cap is binding (an uncapped model over-credits)', ()…
+    459|     expect(unitOf(OC_UNCAPPED.res, SLUG).totalDamage).toBeGreaterThan(
+       |                                                       ^
+    460|       unitOf(BASE.res, SLUG).totalDamage,
+    461|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2c — Full Charge → Fills Burst Gauge by 7.15% > the effect exists at 7.15%
+AssertionError: expected 0 to be greater than 0
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:473:26
+    471|   it('the effect exists at 7.15%', () => {
+    472|     const fills = allEffects(OV).filter((e) => e.kind === 'fillGauge');
+    473|     expect(fills.length).toBeGreaterThan(0);
+       |                          ^
+    474|     expect(fills.some((e) => e.pct === 7.15)).toBe(true);
+    475|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > S2c — Full Charge → Fills Burst Gauge by 7.15% > it materially accelerates the rotation (more Full Bursts than without it)
+AssertionError: expected 5 to be greater than 5
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:478:49
+    476|
+    477|   it('it materially accelerates the rotation (more Full Bursts than wi…
+    478|     expect(countOf(BASE.evs, 'fullBurstStart')).toBeGreaterThan(
+       |                                                 ^
+    479|       countOf(NO_GAUGE.evs, 'fullBurstStart'),
+    480|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > burst B1 — weapon swap "Matis UberBuster" (350% / FC 300% / 1 ammo / Pierce) > the swap actually fires damage (deleting it costs him damage)
+AssertionError: expected 87604562.24257477 to be less than 87604562.24257477
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:508:51
+    506|
+    507|   it('the swap actually fires damage (deleting it costs him damage)', …
+    508|     expect(unitOf(NO_SWAP.res, SLUG).totalDamage).toBeLessThan(
+       |                                                   ^
+    509|       unitOf(BASE.res, SLUG).totalDamage,
+    510|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > burst B1 — weapon swap "Matis UberBuster" (350% / FC 300% / 1 ammo / Pierce) > the ladder is binding — flattening every stage to 3s costs damage
+AssertionError: expected 87604562.24257477 to be less than 87604562.24257477
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:524:55
+    522|
+    523|   it('the ladder is binding — flattening every stage to 3s costs damag…
+    524|     expect(unitOf(FLAT_CHARGE.res, SLUG).totalDamage).toBeLessThan(
+       |                                                       ^
+    525|       unitOf(BASE.res, SLUG).totalDamage,
+    526|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > burst B2 — all allies: Attack Damage ▲25% for 10 sec > non-vacuity: it fires on his burst
+AssertionError: expected 0 to be greater than 0
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:557:25
+    555|
+    556|   it('non-vacuity: it fires on his burst', () => {
+    557|     expect(ad25.length).toBeGreaterThan(0);
+       |                         ^
+    558|   });
+    559|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > burst B2 — all allies: Attack Damage ▲25% for 10 sec > scope is ALL ALLIES — self-scoping strips every teammate
+AssertionError: expected +0 to be 4 // Object.is equality
+
+- Expected
++ Received
+
+- 4
++ 0
+
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:561:57
+    559|
+    560|   it('scope is ALL ALLIES — self-scoping strips every teammate', () =>…
+    561|     expect(new Set(ad25.map((b) => b.targetSlug)).size).toBe(Object.ke…
+       |                                                         ^
+    562|     const after = totals(B2_SELF.res);
+    563|     for (const s of TEAMMATES) expect(after[s]).toBeLessThan(BASE_T[s]…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/17]⎯
+
+ FAIL  scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts > burst B2 — all allies: Attack Damage ▲25% for 10 sec > applied at his BURST CAST, before Full Burst opens
+AssertionError: expected -1 to be greater than or equal to 0
+ ❯ scripts/kit-autonomy/blind/maxwell-ordinary-mechanic.adapted.test.ts:575:23
+    573|     );
+    574|     const firstFb = BASE.evs.findIndex((e) => e.kind === 'fullBurstSta…
+    575|     expect(firstBuff).toBeGreaterThanOrEqual(0);
+       |                       ^
+    576|     expect(firstBuff).toBeLessThan(firstFb);
+    577|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/17]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  17 failed | 21 passed | 4 skipped (42)
+   Start at  00:18:33
+   Duration  540ms (transform 88ms, setup 0ms, import 422ms, tests 18ms, environment 0ms)
+
+
+================================================================================
+DRIVER ANALYSIS OF THE BLIND RUN (for the S7 judge packet)
+================================================================================
+RESULT: 21 passed | 17 failed | 4 skipped (42 total), run against the DRIVER shipped override.
+
+ROOT CAUSE OF THE 17 REDS — the blind's OWN declared fixture trap, NOT a model defect:
+  The blind chose controlComp(SLUG, true) = [liter(B1), crown(B2/Defender), mom(B2), helm(B3)],
+  bossElement Fire. mom is Burst II and crown is ALSO Burst II, so they compete for the single
+  stage-2 slot each rotation; crown wins it and mom casts her burst 0 times. The blind declared
+  this verbatim in its header: "maxwell-ordinary-mechanic is BURST II and the control comp already
+  contains a Burst II unit (crown), so the two compete for the single stage-2 slot ... If THOSE
+  [non-vacuity tests] go red, the fixture — not the model — is the fault, and the burst-keyed
+  groups below are VOID rather than refuted." Every one of the 17 reds is a burst-keyed group whose
+  non-vacuity check fails first (S2a/S2b/S2c-dynamic/B1-dynamic/B2: "expected 0 > 0", "expected 0 > 5",
+  scope "expected +0 to be 4"). They are VOID, not refuted. (The Fire boss also elementally
+  disadvantages Wind mom, but that affects magnitude, not whether she bursts.)
+
+CORROBORATION (the groups that CAN fire are GREEN vs the driver override):
+  S1a (shotFired, fires regardless of bursting): per-full-charge trigger ✓, stack cap 30 ✓,
+    all-ally scope ✓, continuous/no-expiry ✓, 1% of base HP non-compounding ✓.
+  S1b (stageEnter:3, fires on helm's B3 cast): stage-3-entry trigger ✓, lands before FB ✓,
+    all-ally scope ✓, binding 5s window ✓.
+  B1 STATIC STRUCTURE (reads the override shape, needs no burst): swap modeled w/ kit numbers ✓,
+    "the Overcurrent charge-time LADDER is modeled: 3/2.5/2/1.5/0.4s" ✓, "the ladder is stage-gated
+    on an Overcurrent counter, not on time or mode" ✓, Pierce swap-scoped (not whole-fight) ✓.
+    => the blind INDEPENDENTLY derived the resourceGate-banded ladder the driver re-opened S3 to add.
+  S2c "ONE fill per full charge (not multiplied by ally count)" ✓; S2b "continuous/inertness" ✓ (vacuous).
+
+The one S1a red ("stacked Max HP FEEDS the S2a conversion") is also fixture-driven: it asserts that
+deleting S1a shrinks S2a's flat-ATK grant, but S2a is burst-keyed and mom never bursts, so S2a never
+fires and the deletion changes nothing (860974787.7 == 860974787.7). The S2a caster-basis gap the
+blind probes (its "GAP" disposition) is the driver's flag-1 (atkOfMaxHpPct resolves vs target's OWN
+HP, no caster-HP-stat primitive) — a genuine schema limitation, documented not enacted.
+
+NET: wherever the blind's independent derivation can be exercised against the driver override, it is
+GREEN and matches — including the resourceGate ladder. The 17 reds are the declared B2-slot fixture
+trap (VOID), not faithfulness divergences.

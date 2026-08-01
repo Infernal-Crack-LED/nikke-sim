@@ -35,10 +35,14 @@
 //     so she is not bare-weapon even under the never-burst constraint. folkwang replaced her as
 //     the only AR with zero damage-touching lines including her burst (owner ruling 2026-07-23).
 //
-// FIXTURE. The six have no override on disk (`simSupported: false`), so the harness synthesizes an
-// EMPTY kit (`bareWeaponOverride`) rather than committing six override files — see the note there.
-// They cannot be fielded as one team (owner constraint), so they run as two teams of three, split
-// by burst stage: team A is all Burst II and therefore cannot burst at all. Deterministic (no seed).
+// FIXTURE. Five of the six have no override on disk (`simSupported: false`); marciana now carries
+// a proven-damage-neutral gauntlet override (recovery-event emitters + one inert defPct buff —
+// owner ruling 2026-08-01, docs/DECISIONS.md). The fixture still measures the EMPTY kit regardless:
+// `bareWeaponComp` hands every slug the synthetic empty `bareWeaponOverride` (see the note there),
+// so the basis never reads a committed encoding. CW1's third test pins the machine-checkable core
+// of P1 — any override a clean-weapon unit carries must sim byte-identical to that empty kit. They
+// cannot be fielded as one team (owner constraint), so they run as two teams of three, split by
+// burst stage: team A is all Burst II and therefore cannot burst at all. Deterministic (no seed).
 import { createHash } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import type { Element, SimEvent } from '../../../src/types.js';
@@ -243,14 +247,30 @@ describe('CW1 — the clean-weapon six are damage-inert (premise pinned)', () =>
     }
   );
 
-  it('none of the six has a committed override — the fixture kit is empty by construction', async () => {
+  it('any committed override a clean-weapon unit carries is proven damage-neutral', async () => {
+    // P1 is damage-inertness, not the absence of a file. A clean-weapon unit MAY carry a
+    // committed override — marciana's gauntlet-landed kit (recovery-event emitters + one inert
+    // defPct buff; owner ruling 2026-08-01, docs/DECISIONS.md) — PROVIDED it contributes nothing
+    // to damage: simming the unit WITH its override must be byte-identical to the bare-weapon
+    // (empty) kit this basis measures. This is the machine-checkable core of P1; the prose pin
+    // above is the human-read half. A synergy sync that gives any of them a damage-touching line
+    // still fails here loudly, exactly as the old file-absence guard did.
     const { loadOverride } =
       await import('../../../src/skills/overrides-node.js');
     for (const slug of CLEAN_WEAPON_SLUGS) {
+      const override = loadOverride(slug);
+      if (override === undefined) {
+        continue;
+      } // no kit on disk — bare by construction (the other five)
+      const bare = unitOf(runComp(bareWeaponComp([slug])), slug).totalDamage;
+      const withKit = unitOf(
+        runComp(bareWeaponComp([slug], { overrides: { [slug]: override } })),
+        slug
+      ).totalDamage;
       expect(
-        loadOverride(slug),
-        `${slug} gained an override — the bare-weapon basis now has a kit`
-      ).toBeUndefined();
+        withKit,
+        `${slug}'s override moves damage — the bare-weapon basis now has a kit`
+      ).toBe(bare);
     }
   });
 });

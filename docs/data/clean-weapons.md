@@ -33,7 +33,7 @@ the only element neutral for all six.
 | team | unit          | weapon | element  | burst | ★/core   | notes                                                          |
 | ---- | ------------- | ------ | -------- | ----- | -------- | -------------------------------------------------------------- |
 | A    | `folkwang`    | AR     | Water    | II    | 3★/7     | shields / taunt / Max HP only                                  |
-| A    | `marciana`    | SG     | Iron     | II    | 3★/7     | heals / DEF only                                               |
+| A    | `marciana`    | SG     | Iron     | II    | 3★/7     | heals / DEF only; carries a proven-damage-neutral **override** |
 | A    | `snow-crane`  | SR     | Water    | II    | 3★/7     | ⚠ burst grants **Pierce** — "never burst" is load-bearing here |
 | B    | `emma`        | MG     | Fire     | I     | 3★/7     | heals only                                                     |
 | B    | `claire`      | RL     | Electric | I     | **2★/0** | heals / shield only; not SSR                                   |
@@ -108,7 +108,13 @@ Attack Speed, direct damage, or an enemy `DEF ▼` / `Damage Taken ▲`).
 
 ## Fixture note
 
-The six have no override on disk (`simSupported: false`), and the engine throws for a unit that
-has skill prose but no override. The test fixture therefore **synthesizes an empty kit** rather
-than committing six override files — so there is no encoding that could drift away from "bare
-weapon", and no protected-path edit involved.
+Five of the six have no override on disk (`simSupported: false`); `marciana` now carries a
+**proven-damage-neutral** gauntlet override (recovery-event emitters + one inert `defPct` buff —
+owner ruling 2026-08-01, `docs/DECISIONS.md`). The basis still measures the **empty kit**
+regardless: `bareWeaponComp` hands every slug the synthetic empty `bareWeaponOverride`, so the
+fixture never reads a committed encoding and there is no override that could drift away from "bare
+weapon". The engine throws for a unit that has skill prose but no override, which is why the empty
+kit is synthesized for the five rather than committed. CW1's third test pins the machine-checkable
+core of premise P1: any override a clean-weapon unit carries must sim **byte-identical** to that
+empty kit — marciana does (her kit moves no damage of her own), and the other five satisfy it
+trivially, having no override at all.

@@ -1,0 +1,113 @@
+{
+  "note": "Label (slug `label`): Elysion IRON AR DEFENDER, Burst I, 20s burst CD, 60-ammo AR (720 rpm), reloadFrames 81. A tank/enabler whose kit is almost entirely defensive (shields, damage-taken reduction, taunt-immunity, stun); her ONLY self-damage line vs a partless boss is the S2 self ATK ▲93.39% she carries while in Delusion, plus a burst-gated team ATK buff and a (DPS-inert) self Max HP buff. --- LINE DISPOSITIONS --- S1 'Delusion shield = 30.15% final Max HP' (start of battle, self, continuous): modeled as a passive self `shield` event (maxHpPct 30.15) for kit-completeness — the engine `shield` effect is EVENT-ONLY (no HP pool; v1 boss deals no damage), so it is DPS-inert and Label has no `shielded` consumer; pinned structurally. S1 'Delusion Shattered' (when Delusion ends: Imagined Heartbreak single-target-untargetable + Stun, up to 2x): UNMODELED — requires Delusion to END (a shield BREAK = incoming damage, which the sim does not model), and taunt-immunity/stun are defensive/CC with no DPS channel. S1 're-create Delusion on normal attack / on burst while not in Delusion': UNMODELED — these re-creation triggers only fire once the shield has broken, which never happens in the no-incoming-damage sim, so they are inert here (the shield EFFECT itself is the passive block above). S2 'start of battle, all allies except self: Damage taken from Electric Code enemies ▼70.4% / 5s, 1x per battle': UNMODELED — defensive damage-taken REDUCTION, conditional on the enemy being Electric Code (the control boss is Fire), and there is no incoming-damage model to reduce. S2 'while in Delusion, self: Burst Gauge filling speed ▲70.4% continuously': modeled `burstGenPct` 70.4, passive self. S2 'while in Delusion, self: ATK ▲93.39% continuously': modeled `atkPct` 93.39, passive self — her main self-damage line (own-ATK scaling, NOT a caster-basis flat add). S2 'while in Delusion, self: Damage taken from Electric Code enemies ▼70.4% continuously': UNMODELED (defensive, Electric-conditional, no incoming-damage model). S2 'while in Shared Delusion, all allies except self: ATK ▲80.36% of the skill user's ATK continuously': modeled `casterAtkPct` 80.36 on `burstCast` → allies excludeSelf, 10s — Shared Delusion is the STATUS Label's burst creates ('the Shield becomes invulnerable for 10 sec'), so the ally buff is live for the 10s Shared Delusion window after each Label burst; caster-basis (% of LABEL's ATK as a flat add), NOT % of each ally's own ATK. BURST 'self: Max HP ▲20.26% / 10s': modeled `targetMaxHpPct` 20.26, burstCast self, 10s (own-Max-HP basis, the blanc/maiden 'Max HP ▲X%' stat) — OFFENSIVELY INERT: Label has no atkOfMaxHpPct conversion, so a self Max HP grant feeds nothing offensive (e3 rule); kept for kit-completeness, proven inert by totals-equality in the test. BURST 'Shared Delusion: the Shield becomes invulnerable for 10s': the INVULNERABILITY is UNMODELED (no damage model), but the Shared Delusion STATUS WINDOW (10s) is captured as the duration of the S2 ally ATK buff it gates. --- STATUS-GATE COLLAPSE (the key modeling judgment): the S2 self buffs read 'only while in Delusion status'. Delusion is the S1 shield, created at battle start; with no incoming damage to break it, Delusion is PERMANENT in the sim, so the gate is always satisfied and the buffs are faithfully modeled as `passive` (frame 0, no expiry). The real-fight shield-break downtime (sub-second: the shield re-creates on her very next normal attack) is below the sim's resolution and documented as a gap, not a load-bearing behaviour. --- ⚑ LIST: (1) CADENCE TUPLE (MANDATORY, datamine-unreliable) — pullsPerSec at the AR class default / reloadFrames 81 / rolling-reload; NOT escalated (60-ammo AR at 720 rpm empties in ~5s, no mag-dump<1s / charge / per-N-round flavor). Recipe: rounds/min + reload gap from any Label focus video. (2) DELUSION-UPTIME (out-of-domain, defensive) — the passive encoding assumes ~100% Delusion uptime; a real fight has brief shield-break gaps. Estimate: near-full uptime (re-shield on next normal). Tier: defensive-mechanic gap, out-of-domain for a DPS sim — no board damage rides on it. Self-validated against types.ts; the driver runs validate-overrides + the unit test. Kit-autonomy gauntlet 2026-07-31.",
+  "unmodeled": {
+    "skill1": [
+      "Activates when Delusion status ends. Affects self. Delusion Shattered: Activates up to 2 time(s). This effect is continuous.",
+      "Effect 1: Imagined Heartbreak: Prevents being targeted by single-target attacks for 1 sec x Delusion Shattered count. This effect is removed upon taking a direct hit.",
+      "Effect 2: Stuns for 1 sec per Delusion Shattered stack.",
+      "Activates when performing a normal attack while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous.",
+      "Activates when using Burst Skill while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous."
+    ],
+    "skill2": [
+      "Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.",
+      "Damage taken from Electric Code enemies ▼ 70.4% continuously."
+    ],
+    "burst": [
+      "Shared Delusion: The Shield created by Label becomes invulnerable for 10 sec."
+    ]
+  },
+  "caveats": [
+    "skill1: the Delusion shield is event-only (engine `shield` emits no HP pool); DPS-inert and Label has no `shielded` consumer — modeled for kit-completeness only",
+    "skill2: the self ATK ▲93.39% / burst-gauge ▲70.4% are 'only while in Delusion'; Delusion is permanent in the no-incoming-damage sim, so they are encoded passive (frame 0, no expiry). Real shield-break downtime is sub-second and unmodeled (⚑)",
+    "burst: self Max HP ▲20.26% (targetMaxHpPct, own-Max-HP basis) is offensively inert (no atkOfMaxHpPct conversion) — kept for kit-completeness, proven inert by totals-equality",
+    "skill2: the ally ATK ▲80.36% (of Label's ATK) is gated on Shared Delusion, the 10s status Label's burst creates — encoded as a burstCast 10s buff; the shield INVULNERABILITY itself is unmodeled (no damage model)"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 30.15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 93.39
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 70.4
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 80.36,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 20.26,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
