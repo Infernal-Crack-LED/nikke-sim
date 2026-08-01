@@ -1798,3 +1798,80 @@ Two ⚑ observations surfaced by this pass, reported and NOT acted on:
    ~10% of owner-marked pellets sit structurally outside the LIVE counter's windowing even when
    they pass the filter cleanly. The cascade applies no windowing (neither does the synthetic
    path, so comparability holds), but this is a separate cold-bias source downstream of here.
+
+### 2026-08-01 — counting-WINDOW sweep on the 6 real `marciana` (SG/Iron) shots
+
+Follow-on to the cascade entry above, whose flagged observation 2 (~10% of owner-marked pellets
+sit outside the live counter's window) had two competing explanations that the cascade — which
+applies no windowing at all — cannot separate: **H_radius**, the window is slightly too small
+(supported by the overflow's tightness, max r=166.8), versus **H_centre**, the window is
+mis-centred (per-shot pellet-cloud centroids sit 20–52px off the crop centre). A centroid-
+recentring check was already tried and is inconclusive: it fixes shot 1 (max r 166.8 → 154.2)
+but pushes shot 2 to r=204, because a 7–10-pellet sample centroid is too noisy to be the true
+centre.
+
+Instrument: `scripts/probe/score-pellets.py --real-fixture --real-positions --pellet-radius R
+--center-exclude C` (committed this session; defaults unchanged at the live 160/36, and the
+unflagged `--real-fixture` stdout/stderr were verified byte-identical to the pre-change script).
+Ground truth: the owner's hand counts in `scripts/tests/fixtures/pellets/groundtruth-f8-11.json`
+(0/7/10/8/9/8) plus the owner-drawn positions in `groundtruth-f8-11-positions.json` for
+precision/recall. Every owner mark counts toward recall regardless of which side of the window
+it sits on, so recall is comparable across cells. Full cross product, 6 cells:
+
+| `pellet_radius` | `center_exclude` | shot0 | s1   | s2    | s3   | s4    | s5    | bias   | SD    | count RMSE | precision | recall | F1    | TP  | FP  | Δdetections |
+| --------------- | ---------------- | ----- | ---- | ----- | ---- | ----- | ----- | ------ | ----- | ---------- | --------- | ------ | ----- | --- | --- | ----------- |
+| 160 (live)      | 36 (live)        | 0.00  | 3.25 | 10.25 | 8.25 | 9.75  | 8.25  | −0.375 | 1.671 | 1.571      | 0.906     | 0.857  | 0.881 | 144 | 15  | —           |
+| 160             | 24               | 0.00  | 4.25 | 10.25 | 8.25 | 9.75  | 8.25  | −0.208 | 1.269 | 1.177      | 0.908     | 0.881  | 0.894 | 148 | 15  | +4          |
+| 175             | 36               | 1.00  | 4.75 | 10.75 | 8.25 | 10.75 | 9.50  | +0.500 | 1.449 | 1.414      | 0.853     | 0.899  | 0.875 | 151 | 26  | +18         |
+| 175             | 24               | 1.00  | 5.75 | 10.75 | 8.25 | 10.75 | 9.50  | +0.667 | 1.080 | 1.190      | 0.856     | 0.923  | 0.888 | 155 | 26  | +22         |
+| 190             | 36               | 1.00  | 4.75 | 12.50 | 8.25 | 10.75 | 10.25 | +0.917 | 1.758 | 1.848      | 0.807     | 0.899  | 0.851 | 151 | 36  | +28         |
+| 190             | 24               | 1.00  | 5.75 | 12.50 | 8.25 | 10.75 | 10.25 | +1.083 | 1.411 | 1.683      | 0.812     | 0.923  | 0.864 | 155 | 36  | +32         |
+
+True counts 0/7/10/8/9/8; TP/FP/Δ are per-frame instances out of 168 owner marks (pseudo-
+replicated 4 frames per pellet, same caveat the cascade entry carries). The live cell reproduces
+the fixture's documented bias −0.375 / SD 1.671 exactly.
+
+**The decision rule (pre-committed before the numbers were read) selects the second branch:
+widening the radius admits clutter FASTER than it admits pellets, and is not the fix.** Precision
+does not stay flat — it falls 0.906 → 0.853 → 0.807 as the radius grows, and false positives more
+than double (15 → 26 → 36) while recall gains stall. The added area does not explain it: the
+annulus grows +20.6% (160→175) and +41.2% (160→190) in real crop pixels, but FP grows +73% and
++140%, i.e. the newly-admitted ring carries ~3.4× the false-positive density of the existing
+window (0.70 and 0.64 FP per 1000px added, versus 0.196 per 1000px in the baseline annulus).
+From 175 → 190 the trade collapses entirely: **+10 false positives and exactly ZERO new true
+positives.**
+
+**Shot 0 — the confirmed true-zero shot — reports 0 pellets at radius 160 and 1 pellet at every
+widened radius, in both `center_exclude` cells.** That single detection is a false positive (TP 0,
+FP 1), i.e. it is pure clutter picked up between r=160 and r=175. A widening that makes the
+false-positive shot report a pellet is disqualifying on its own terms.
+
+**The radial geometry independently points at H_centre, not H_radius.** Of the 9 owner marks
+beyond r=160, **8 are in shot 1 alone** and the 9th is shot 5 at r=160.4 — 0.4px past the line.
+Shots 2/3/4 have zero: their maxima are 159.2, 138.2 and 132.0. Under H_radius (the real spread
+genuinely reaches r≈167) the overflow would be spread across shots; instead it is concentrated in
+the ONE shot the earlier centroid check independently identified as off-centre, whose marks span
+r=30.8…166.8 — the widest radial span of any shot, and the signature of a compact cloud
+translated off the assumed centre rather than of a genuinely larger cloud. The same shot supplies
+all 4 of the marks recovered by `center_exclude` 24 (its inner marks sit at r=30.8…36); shot 4's
+4 marks at r=16.4…24 are inside 24 and are recovered by neither cell, so the maximum recall
+reachable anywhere in this sweep is 164/168 = 0.976.
+
+Corollary, recorded not acted on: `center_exclude` 36 → 24 is the one clean cell. It adds 4 true
+positives and **exactly zero** false positives (precision 0.906 → 0.908), moves bias −0.375 →
+−0.208 and RMSE 1.571 → 1.177, and its 2,256 added px carry no clutter at all.
+
+Also corrected while measuring: `load_real_sequences()`'s docstring called the f8–11 crops
+"a disc". They are not — `make-groundtruth-f811.py`'s `crop_disc()` slices a SQUARE
+`im[y0:cy+rad, x0:cx+rad]` with no disc mask, so the 368×368 crop carries real image content out
+to r=259.5 in the corners (29,080 px beyond r=184). A widened radius therefore admits genuine
+scene/HUD content rather than running into a black margin, which is consistent with what the FP
+column does.
+
+Honest limits. **n=6 shots, SD 1.671, SE 0.682 — per the plan's own provenance table this fixture
+can only FAIL a candidate, never certify one to ±0.25. This sweep is ELIMINATION, not
+confirmation.** Only 5 of the 6 shots carry pellets. One clip, one unit (`marciana` SG/Iron, NOT
+`marciana-marine-study` AR/Iron) — does not generalise to `noir` / `guilty` / `isabel`. RECORDS a
+measurement only: `pellet_radius`, `center_exclude`, `FIDELITY_BOTH_PASS_FLOOR`, `min_area` and
+`min_circ` defaults are untouched, no `DECISIONS.md` entry is edited and no plan direction is
+rewritten. Landing any of these as a default is a separate, owner-gated pass in fresh context.
