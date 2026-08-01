@@ -297,6 +297,70 @@ def report_dup_check(frames_dir, files, start, count):
           f" a low overall near-zero rate)")
 
 
+# Boss range-band schedule (owner-recorded, docs/data/range-data.md) as elapsed fight-seconds.
+# Sourced, not re-derived here -- used only to LABEL which band a blast's onset-spread measurement
+# falls in for reporting; it does not feed back into any band-distance or damage value.
+RANGE_BAND_SCHEDULE = [
+    (0, 33, "mid(start)"),
+    (33, 70, "near"),
+    (70, 106, "far"),
+    (106, 144, "midfar"),
+    (144, 176, "near"),
+    (176, 1e9, "midfar"),
+]
+
+
+def band_for_fight_t(t):
+    for lo, hi, band in RANGE_BAND_SCHEDULE:
+        if lo <= t < hi:
+            return band
+    return "?"
+
+
+def report_onset_spread(data, pellets_path, at, fps, window, min_life=1):
+    """For each debounced shot in a pellets.json sibling run, gather every near-crosshair WHITE
+    track whose first frame falls within +/-`window` frames of the shot's frame index, and report
+    the spread (max-min) of those first-frames -- i.e. do the ~10 pellets of one blast share a
+    single onset frame (t0), or is there real spread (e.g. projectile-flight-time lag)?
+
+    Added 2026-07-31 (pellet-reader Phase 2 gate, ITEM 3 -- premise check: does shared-t0 hold, and
+    does it hold BY BAND? kimi-k3 preop revision #2 / fable preop revision (assumptionsFlagged #2)).
+    Frame index is derived from the shot's own `videoT` against the extraction's `--at` offset --
+    no independent frame-alignment assumption. Band label comes from RANGE_BAND_SCHEDULE (sourced
+    from docs/data/range-data.md, the owner-recorded boss range script) applied to the shot's
+    `fightT` -- reporting only, not a re-derivation of the schedule itself.
+    """
+    with open(pellets_path) as fh:
+        pj = json.load(fh)
+    shots = pj.get("shots", [])
+    p, tracks, cross = data["params"], data["tracks"], data["cross_positions"]
+    radius = p.get("pellet_radius", 160)
+    whites = [t for t in tracks if not t["is_red"] and near_crosshair(t, cross, radius) and t["life"] >= min_life]
+    print(f"\nONSET SPREAD BY SHOT (window +/-{window}f, min_life>={min_life}, {len(shots)} debounced shots, fps={fps}):")
+    print(f"  {'fightT':>7}  {'band':>12}  {'n':>3}  {'first-min':>9}  {'first-max':>9}  {'spread(f)':>9}  {'spread(ms)':>10}")
+    rows = []
+    for s in shots:
+        video_t = s["videoT"]
+        center_frame = round((video_t - at) * fps)
+        lo, hi = center_frame - window, center_frame + window
+        firsts = [t["first"] for t in whites if lo <= t["first"] <= hi]
+        band = band_for_fight_t(s["fightT"])
+        if not firsts:
+            print(f"  {s['fightT']:7.2f}  {band:>12}  {0:3d}  {'--':>9}  {'--':>9}  {'--':>9}  {'--':>10}")
+            continue
+        spread_f = max(firsts) - min(firsts)
+        rows.append((band, spread_f, len(firsts)))
+        print(f"  {s['fightT']:7.2f}  {band:>12}  {len(firsts):3d}  {min(firsts):9d}  {max(firsts):9d}"
+              f"  {spread_f:9d}  {1000 * spread_f / fps:10.1f}")
+    by_band = collections.defaultdict(list)
+    for band, spread_f, n in rows:
+        by_band[band].append(spread_f)
+    print("\n  PER-BAND SUMMARY (n = number of shots with >=1 detected white track in window):")
+    for band, spreads in by_band.items():
+        print(f"    {band:>12}: n={len(spreads)}  mean spread={st.mean(spreads):.1f}f"
+              f"  ({1000 * st.mean(spreads) / fps:.1f}ms)  spreads={spreads}")
+
+
 def compare_frames(data, frames_dir, start, count):
     p, cross = data["params"], data["cross_positions"]
     files = data["frame_files"]
@@ -372,6 +436,22 @@ def main():
                      help="run the (expensive: per-frame LoG) threshold-vs-LoG detector comparison over "
                           "--frames/--start/--count. Previously implied by passing --frames alone; now "
                           "opt-in so --dup-check / --raw-tracks runs stay fast over a full extraction.")
+    ap.add_argument("--onset-spread", metavar="PELLETS_JSON",
+                     help="report per-shot intra-blast onset (t0) spread of near-crosshair white tracks, "
+                          "using a sibling pellets.json's debounced --shots list for blast timing, banded "
+                          "by RANGE_BAND_SCHEDULE (pellet-reader Phase 2 gate, ITEM 3)")
+    ap.add_argument("--onset-at", type=float, default=0.0,
+                     help="the extraction's --at video-seconds offset (must match the read-pellets.ts run "
+                          "that produced --tracks), for onset-spread frame alignment")
+    ap.add_argument("--onset-fps", type=float, default=60.0, help="sampling fps for onset-spread (default 60)")
+    ap.add_argument("--onset-window", type=int, default=20,
+                     help="+/- frame window around each shot's frame index to search for near-crosshair "
+                          "white track onsets (default 20)")
+    ap.add_argument("--onset-min-life", type=int, default=1,
+                     help="exclude near-crosshair white tracks shorter than this from onset-spread "
+                          "(default 1 = no filter; the shipped detector's life=1 population is ~40-60%% "
+                          "background/fragmentation noise, not necessarily blast members -- raise this "
+                          "to see the spread among longer, more plausibly-real fragments)")
     args = ap.parse_args()
 
     if args.selftest:
@@ -392,6 +472,9 @@ def main():
         if not args.frames:
             ap.error("--dup-check requires --frames")
         report_dup_check(args.frames, data["frame_files"], args.start, args.count)
+    if args.onset_spread:
+        report_onset_spread(data, args.onset_spread, args.onset_at, args.onset_fps, args.onset_window,
+                             args.onset_min_life)
 
 
 if __name__ == "__main__":
