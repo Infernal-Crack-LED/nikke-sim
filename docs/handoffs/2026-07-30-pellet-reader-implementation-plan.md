@@ -2432,36 +2432,105 @@ fixture never used the synthetic generator, so its numbers are byte-identical to
 `max_nonpeak_nofilter` −0.167; `degenerate_nonpeak_sequences: 1`).
 
 **The fix recovered ~0.27–0.40 pellets of bias, not the ~1.8–2.0 the diagnosis predicted, and the
-"synthetic is colder than real" gap is NOT resolved.** The diagnosis's arithmetic (removing ~2.00
-structurally-uncountable labels/sequence should recover ~2.00 pellets of bias) assumed the detected
-count would stay roughly constant while the true count dropped. That assumption does not hold under
-a **resampling** fix (as instructed: never clamp, redraw instead): each sequence's `n_pellets` draw
-(`randint(5,10)`, mean 7.5) is unchanged, so removing the escape valve at low radius means **100% of
-that same pellet budget must now fit inside the countable annulus `[42,160]px`, instead of ~71% of
-it before.** The countable zone got measurably denser, not less crowded — the radial mean shifted
-from 64px (documented) to **82.3px measured on the n=120 fixed set**, and more of the budget sits in
-the outer, still-occlusion-prone band rather than a stretch of it being invisibly discarded near
-center. The higher local density largely offset the removed-labeling-artifact gain: detected counts
-dropped by roughly the same amount true counts (correctly) dropped. This directly contradicts this
-section's own honest-limit prediction ("makes the set slightly EASIER") — that prediction has not
-held up against measurement and should not be treated as settled; the actual effect on difficulty is,
-by this reading, closer to neutral-to-harder in the annulus, not easier. Reported, not diagnosed
-further — root-causing why the current detector's recall stays ~0.5–0.75 under this crowding is out
-of this task's scope.
+"synthetic is colder than real" gap was NOT resolved by it.** ⚠ **The explanation that originally
+followed this sentence attributed the shortfall to compositing density (the resampled annulus
+"getting denser, not less crowded") — that explanation is RETRACTED, does not survive a direct
+density measurement, and has been removed from this doc per the current-state doc-hygiene rule
+(stale wording is deleted, not left as a live claim). See "Generator fidelity gate (2026-07-31)"
+immediately below for the measured cause and the retraction's own evidence.**
 
-**"Synthetic colder than real" stands, only modestly narrowed.** Old ratio of |synthetic bias| to
-|real bias| per estimator ranged 4.1×–14.8×; new ratio ranges **3.6×–12.4×** — barely moved. The
-labeling artifact this task fixed was real and worth fixing on its own terms (a mislabeled gate is
-untestable regardless of what it does to any one number), but it does **not** account for the bulk
-of the synthetic-vs-real disagreement the original §2.2b flagged as unanticipated. That disagreement
-remains **unexplained** — retracting the "artifact explains it" framing along with the invalid
-verdict, not replacing it with a confirmed cause.
+> **⛔ VERDICT SUPERSEDED 2026-07-31.** The paragraph below ("STILL none of the 7 clear the ±0.25
+> criterion... a clear, confident fail") measures the GENERATOR's rendering fidelity, not estimator
+> quality — see "Generator fidelity gate (2026-07-31)" below. **The cheap-estimator question is
+> UNRESOLVED**, not answered fail. Kept for the record, not for comparison as if it were still a
+> valid estimator verdict.
 
-**Verdict, corrected: STILL none of the 7 clear the ±0.25 criterion, on either screen, after the
+**Verdict, corrected (SUPERSEDED — see banner above): STILL none of the 7 clear the ±0.25 criterion, on either screen, after the
 fix.** The synthetic screen still fails all 7 by 6.9–9.4× the budget with tight SE (0.13–0.16) — a
 clear, confident fail, not a near-miss. `simplerPath` still does **not** retire Phase 2 steps 4–6.
 This re-score is the answer to the "cheap-estimator question" the invalid verdict above left
 unresolved; it is a **fail**, not a pass obscured by the label bug.
+
+#### Generator fidelity gate (2026-07-31) — root cause found; the densification explanation is RETRACTED
+
+**What forced this.** The re-score above recovered only ~0.27–0.40 pellets of bias, not the
+~1.8–2.0 a naive "removed 2 uncountable labels/sequence" prediction would give, and "synthetic
+colder than real" did not resolve (old ratio of \|synthetic bias\| to \|real bias\| per estimator
+4.1×–14.8×; new ratio 3.6×–12.4×, barely moved). The retracted explanation for that shortfall was
+compositing density — resampling keeps each sequence's `n_pellets` budget fixed and forces 100% of
+it into the countable annulus instead of ~71%, measurably densifying it (mean radius 64px documented
+→ 82.3px measured).
+
+Built the acceptance gate this section names (`score-pellets.py --audit-fidelity`, Phase 1 §1.2's
+missing generator-vs-reality check) and ran it on the exact `synthetic-v3-n120` set the re-score
+above used. For each LABELED true pellet at each counting frame (f8-11), it finds the nearest RAW
+(pre-filter) connected component the real detector would see and reports the cascade
+raw-found → +`min_area 25-750` → +`min_circ ≥ 0.55` → BOTH — i.e. it tests the generator's own
+rendering fidelity, not any estimator.
+
+**Measured (full n=120 set, `score-pellets.py --audit-fidelity`, 3,536 labeled pellet-frame
+instances):**
+
+| stage                                | synthetic true pellets surviving |
+| ------------------------------------ | -------------------------------- |
+| raw component found (≤20px)          | 96.9%                            |
+| ...also passes `min_area 25-750`     | 85.4%                            |
+| ...also passes `min_circ ≥ 0.55`     | 80.2%                            |
+| ...passes BOTH (survives the filter) | **71.6%**                        |
+
+An independent, ad-hoc matching implementation (same threshold rules) on a 40-sequence subset
+earlier this session found the same shape at smaller n: 94.4% / 81.0% / 75.0% / **65.3%**. The two
+instruments agree on the finding — most of the loss is at the FILTER stage, not detection — and
+differ by a few points on magnitude (different implementation, different n). The n=120 number is now
+the one pinned by the committed gate and its fixture; the n=40 number is a corroborating cross-check,
+recorded alongside it rather than reconciled to it.
+
+**Density is not the mechanism — measured directly, not inferred.** True-pellet nearest-neighbour
+spacing on the n=120 set: min 1.7px, p10 16.1px, **median 39.5px**, against a ~15px pellet diameter
+(only 9.3% of pairs closer than 15px; annulus fill fraction under 2%). Raw detection finds a
+component near 94–97% of true pellets, and only 6.0% of those hits share a component with another
+pellet. Crowding at this magnitude cannot produce a ~5–10 point recall loss. The loss is a
+**rendering-fidelity defect**: the generator's alpha-blit compositing produces pellets the settled
+filter throws away at roughly 4× the rate real pellets are inferred to (see the derived ~0.90–0.98
+real-pellet reference in `score-pellets.py`'s `FIDELITY_BOTH_PASS_FLOOR` docstring) — independent of
+how many neighbours are nearby.
+
+**Which filter term dominates.** Of raw-found instances (n=3,426, full set): 88.1% pass `min_area`,
+82.8% pass `min_circ` — `min_circ` rejects more (17.2% of found vs 11.9% for `min_area`).
+Directionally the same on the n=40 independent check (85.8% area / 79.4% circ, of found). `min_circ`
+is the larger single contributor on both measurements, though neither term alone accounts for the
+full gap (0.881 × 0.828 = 0.730 vs the measured 0.739 both-of-found rate — the two constraints are
+close to independent, consistent with rejecting largely different components rather than the same
+ones twice).
+
+**Disposition.** `recall ≥ 0.80` (§2.2's pre-committed quantitative separation criterion) remains
+**UNREACHABLE on this set** — not because of the labeling bug §1.2 fixed (that moved the ceiling from
+0.711 to ~0.65–0.72, per the two measurements above), but because the generator's own composited
+pixels fail the settled filter at ~4× the rate real pellets are inferred to. **The 0.90/0.80 floor is
+UNCHANGED** — this does not relax it, it establishes that THIS SET cannot currently test it. The
+synthetic set stays valid for **precision / false-positive** work (its background clutter is real,
+sampled from the actual videos) but is **NOT currently usable for BIAS measurement** — bias
+certification belongs on real data: the `noir-solo-recon.json` per-band anchors (n ≈ 25–45/band),
+which per §2.2a is the only set with the statistical power to certify ±0.25 anyway. The
+cheap-estimator question §2.2b originally asked (`simplerPath`) is therefore **UNRESOLVED**, not
+answered fail — the re-score above characterized the generator, not the 7 candidates.
+
+**⛔ Per this task's hard stop: no rendering fix attempted here.** Two incremental patches already
+tried to fix this generator and each revealed another layer (§1.2's uncountable-pellet labeling bug,
+then this filter-survival gap). Whether the generator can be brought to real-pellet fidelity at all,
+and whether that effort is worth spending versus moving straight to real-data bias certification, is
+an OWNER-level call. This section stops at a quantified, gated, documented gap — see
+`docs/handoffs/QUEUE.md` for the owner-time ask that would convert the DERIVED ~0.90–0.98
+real-filter-survival reference into a MEASURED one (label xy positions on the 6 owner-counted real
+crops).
+
+Reproduce: `bash scripts/probe/pellet-selftest.sh` runs the gate's own arithmetic selftest
+(`score-pellets.py --audit-fidelity-selftest`, pinned against
+`scripts/tests/fixtures/pellets/synthetic-fidelity-slice.json` — fully reproducible from committed
+code + a fresh render, see that fixture's own `_note`). The full-set cascade above:
+`scripts/probe/.venv/bin/python scripts/probe/score-pellets.py --audit-fidelity
+scratchpad/pellets/synthetic-v3-n120/labels.json` (main-tree absolute paths from a worktree) —
+REFUSES with exit 1, as expected below the 0.90 floor; that refusal IS the finding, not a bug.
 
 ### 2.3 — Kill conditions
 
@@ -2698,11 +2767,75 @@ not viable — perception failure at pellet resolution). Phase 1 is unblocked.
   0.676→0.744, every phase-resolved recall value up) and **re-scored §2.2b's 7 pre-registered
   estimators** on both screens (old verdict marked SUPERSEDED in place, not deleted). **The fix did
   NOT resolve the "synthetic colder than real" anomaly**: bias recovered only ~0.27–0.40 pellets
-  (not the ~1.8–2.0 the diagnosis predicted) because a resampling fix keeps each sequence's
-  `n_pellets` budget fixed and forces 100% of it into the countable annulus instead of ~71%,
-  measurably densifying it (mean radius 64px documented → 82.3px measured) and largely offsetting
-  the removed-labeling-artifact gain. All 7 estimators still fail the ±0.25 bias criterion decisively
-  (6.9–9.4× over budget) on the corrected synthetic screen. `simplerPath` still does not retire
-  Phase 2 steps 4–6; the cheap-estimator question, reopened by the SUPERSEDED verdict, is answered
-  again — as a fail, on corrected data. The residual synthetic-vs-real gap is filed as unexplained,
-  not attributed to this bug.
+  (not the ~1.8–2.0 the diagnosis predicted). **⛔ SUPERSEDED 2026-07-31, same session, by the
+  generator fidelity gate entry below — the density explanation that originally followed this
+  sentence was RETRACTED** (it does not survive a direct density measurement: median true-pellet
+  spacing 39.5px against ~15px pellet diameter, <2% annulus fill; deleted from this entry per
+  current-state doc hygiene, see the fidelity-gate entry for the measured cause and the retraction's
+  own evidence). All 7 estimators still fail the ±0.25 bias criterion decisively (6.9–9.4× over
+  budget) on the corrected synthetic screen, **but that verdict is ALSO superseded below** — it
+  measures generator fidelity, not estimator quality; the cheap-estimator question is UNRESOLVED,
+  not answered fail. The residual synthetic-vs-real gap is no longer filed as unexplained — see the
+  fidelity-gate entry below for the measured cause.
+- **2026-07-31, same session — generator fidelity gate built; root cause found; densification
+  explanation RETRACTED; §2.2b's re-scored verdict marked SUPERSEDED.** Three consecutive wrong
+  conclusions in this thread (§1.2's "optimistic by construction" claim, the original §2.2b "decisive
+  fail by 8-11x" verdict, and the density explanation for why the `d18f014` fix only recovered
+  ~0.3 of the predicted ~2 pellets of bias) trace to one root cause: **the synthetic generator
+  (`make-synthetic-pellets.py`) has been reasoned about, and tuned around, but never independently
+  validated against reality — every check so far tested the pipeline THROUGH the generator, never
+  the generator itself.**
+  - **Built `score-pellets.py --audit-fidelity`** (extends the existing scorer, constraint 9 —
+    no new script): for each labeled true pellet at each counting frame (f8-11), finds the nearest
+    RAW (pre-filter) connected component via `count-pellets.py --dump-detections` (WHITE_LO 210,
+    20px match tolerance — the exact raw-detection stage the live pipeline already ships) and
+    reports the cascade raw-found → +`min_area 25-750` → +`min_circ ≥ 0.55` → BOTH. REFUSES (loud
+    banner, exit 1) below a **0.90** both-pass floor. That floor is a **DERIVED** reference, not a
+    direct measurement — the real 6-shot fixture carries counts, not labeled xy positions, so
+    real-pellet filter-survival cannot be measured directly today. It is derived from the real
+    fixture's own bias (-0.17 to -0.625 pellets on a ~8.4-pellet true mean ⇒ implied survival
+    ~0.925-0.98), set conservatively below that range. Documented in code
+    (`FIDELITY_BOTH_PASS_FLOOR`'s docstring) and here; see `docs/handoffs/QUEUE.md` for the
+    owner-time ask that would convert it into a measured reference.
+  - **`--audit-fidelity-selftest`** pins the cascade arithmetic against a committed fixture
+    (`scripts/tests/fixtures/pellets/synthetic-fidelity-slice.json` — 4 real synthetic sequences,
+    one per video, with pre-baked raw f8-11 detections so the selftest needs no images/subprocess/
+    venv-cv2; fully reproducible from committed code + a fresh render, see the fixture's own
+    `_note`), wired into `pellet-selftest.sh`.
+  - **Measured on the full `synthetic-v3-n120` set** (3,536 labeled pellet-frame instances):
+    raw-found 96.9% → +min_area 85.4% → +min_circ 80.2% → **BOTH 71.6%** — below the 0.90 floor, the
+    gate correctly REFUSES. An independent ad-hoc check on a 40-sequence subset found the same shape
+    at smaller n (94.4% / 81.0% / 75.0% / **65.3%**) — both instruments agree most of the loss is at
+    the FILTER stage (`min_circ` dominates slightly over `min_area`: 17.2% vs 11.9% of raw-found
+    instances rejected), not detection (94-97% raw-found either way).
+  - **The density explanation is RETRACTED, not merely superseded — measured directly.** True-pellet
+    nearest-neighbour spacing (n=120 set): min 1.7px, p10 16.1px, median **39.5px** against a ~15px
+    pellet diameter; only 9.3% of pairs closer than 15px; annulus fill fraction under 2%; only 6.0%
+    of raw-found hits share a component with another pellet. Crowding this mild cannot produce the
+    observed loss. The actual mechanism is a **rendering-fidelity defect**: the generator's alpha-blit
+    compositing produces pellets the settled filter rejects at ~4x the rate real pellets are inferred
+    to. Deleted the retracted wording from the §2.2b prose above per current-state doc hygiene
+    (capture-first: the retraction and its evidence live here and in the new §2.2b subsection, not as
+    a lingering live claim in the analysis prose).
+  - **`recall ≥ 0.80` remains UNREACHABLE on this set — the ceiling moved, it did not close.** Before
+    `d18f014`: 0.711 (uncountable-by-labeling). After: ~0.65-0.72 (unfilterable-by-rendering, per the
+    two fidelity measurements above). **The 0.90/0.80 floor is UNCHANGED** — not relaxed, not
+    reinterpreted — the finding is that this SET cannot currently test them, same category of finding
+    as §2.2a's power-calculation limits on the other two screens.
+  - **Disposition.** The synthetic set stays valid for **precision / false-positive** work (its
+    background clutter is real, sampled from the actual videos) but is **NOT currently usable for
+    BIAS measurement**. Bias certification belongs on real data: the `noir-solo-recon.json` per-band
+    anchors (n ≈ 25-45/band), the only set with the statistical power to certify ±0.25 per §2.2a.
+    Phase 2 is **NOT** retired, licensed, or closed by this entry; steps 4-6 are **NOT** built; the
+    `noir` per-band certification is **NOT** run — all three remain explicitly out of this task's
+    scope and are the owner's next decision point, not this session's.
+  - **Meta-lesson, the reason this gets its own entry rather than folding into the bullet above.**
+    Three consecutive wrong conclusions came from the SAME class of gap: a generator that was
+    reasoned about, tuned, and even patched twice, but never given its own acceptance test against
+    reality — every prior check validated the pipeline _through_ the generator (labels vs the
+    pipeline's own output), never the generator's rendering fidelity _against_ what the live filter
+    actually does to real pixels. **A synthetic-data generator needs an acceptance test one level
+    above its label audit** — the label audit (`--audit-labels`) checks the labels are internally
+    consistent with the generator's OWN configuration; the fidelity gate (`--audit-fidelity`) checks
+    the generator's OUTPUT against the real pipeline's independent, already-settled filter. The first
+    can pass while the second fails, which is exactly what happened here.
