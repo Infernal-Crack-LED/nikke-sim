@@ -52,6 +52,21 @@ Form → `/submission-intake` → `/probe-processing` → hand-tune; this line i
 
 ### Open action items (pointers — attended sessions)
 
+- **⇒ UNIT-CARD GOLDENS ARE JOINED TO LIVE RANK BOARDS — decide whether to make them hermetic.**
+  `unit-card.{discord,twitter}.png` in `scripts/tests/share/infographics-golden.test.ts` render
+  through `web/public/*.json`, which are gitignored BUILD OUTPUTS, so they carry a `HAVE_BOARDS`
+  skip. Two consequences, both live: (a) **they never run anywhere automated** — CI's `verify.sh
+full` doesn't build the boards, and the Railway build runs `verify.sh artifacts` (no gate at
+  all), so the only place they execute is a dev machine that has run `npm run dpschart &&
+ranks:all`; (b) **any kit commit that reorders a board breaks them**, which is what happened on
+  2026-08-01 (crown's Burst Gen rank #37 → #41 after the gauntlet batch; fixtures refreshed, see
+  the commit). Data churn presenting as renderer drift is the wrong signal for a golden whose
+  stated job is catching blank text / moved bars / wrong colors — the other seven goldens are
+  hermetic and compare at 0 differing pixels. **Proposed fix:** freeze a small committed board
+  fixture for the unit-card sources so both goldens become hermetic, drop the skip, and let them
+  run in CI. Diagnose any future mismatch with `npm run fixtures:infographics -- --diff` (reports
+  differing-pixel count, max channel delta, bbox, and writes a magenta-tinted diff PNG).
+
 - **⇒ DOT-TICK/FILLGAUGE BURST-GAUGE PAIR — BOTH RESOLVED 2026-07-30.** Fix A (dot-tick concurrency
   election): REJECTED — owner-supplied footage (`docs/probes/burst tests/Raven Solo Burst Gen.MP4`)
   settled U37 against it; see `docs/answered-questions.md` U37 +
