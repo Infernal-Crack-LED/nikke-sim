@@ -1742,3 +1742,59 @@ that was judge-approved-but-LOGGED pending exactly this footage (`docs/handoffs/
 harness.md` 2026-07-29) is REJECTED by this measurement and its isolated worktree
 (`worktree-agent-aab3a19427393feb2`) discarded, not merged. n=1, percentages eyeballed not
 pixel-measured — the ramp-then-plateau shape is the load-bearing part, not the exact numbers.
+
+### 2026-08-01 — real-pellet filter-survival cascade, `marciana` (SG/Iron) f8–11
+
+Answers §1 of `docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md`, whose decision rule was
+committed to disk (`7bbc22b`) BEFORE this number existed. Instrument:
+`scripts/probe/score-pellets.py --audit-fidelity-real` (committed, self-validating via
+`--audit-fidelity-real-selftest` against `scripts/tests/fixtures/pellets/real-fidelity-slice.json`).
+Source: the owner-drawn positions in `groundtruth-f8-11-positions.json` (42 distinct pellets,
+6 shots) matched against the RAW pre-filter components `count-pellets.py --dump-detections` emits
+from the CLEAN crops, at the same WHITE_LO 210 / 20px tolerance / `min_area` 25–750 /
+`min_circ` ≥0.55 the synthetic `--audit-fidelity` path uses.
+
+**Cascade: raw_found 97.0% → +min_area 94.6% → +min_circ 96.4% → BOTH 94.6%.** Per-instance
+n=168 pellet-frame instances; per-distinct-pellet n=42, mean pass fraction 0.9464, SE 0.0160
+(the honest SE — the 168 are pseudo-replicated, 4 frames per pellet). Strict "passes in all 4
+frames" 33/42 (78.6%); lenient "passes in ≥1 frame" 42/42 (100%). Linkage f08→f09→f10→f11 was
+1-to-1 on all 126 link steps, median inter-frame displacement 3.04px.
+
+**The aggregate hides a step function — all 9 failures are at f11.** Per-offset BOTH: f08 100%,
+f09 100%, f10 100%, **f11 78.6%**. Cause verified at the pixel level (independently re-probed
+by the parent session, not only by the instrument): those pellets are still visibly present and
+correctly marked, but have faded to a max channel value of ~199–209 against the WHITE_LO 210
+mask, versus 218–229 for the same pellets one frame earlier at f10. Shots 2/4/5 are saturated
+at 255 in both frames and lose nothing (100% rows); shots 1 and 3 carry every loss. The 9 split
+into 5 that fade out entirely (no raw component) and 4 found-but-under-`min_area` (areas
+16/12/9/13). This is a fade-out boundary effect at the last counting frame, not a uniform
+filter defect.
+
+**Which stage kills, as a fraction of raw-found (n=163): `min_area` 2.45%, `min_circ` 0.61%** —
+both near-negligible on real pellets, and 5–28× smaller than the synthetic set's rejection rates.
+
+Per the pre-committed rule, 0.946 falls in the **0.90–0.98 bucket**: real pellets survive the
+settled filter, so the synthetic set's 71.6% both-pass is a property of the generator rather
+than of the filter, and the `min_circ`-as-cold-bias-suspect branch does not open. The
+independently DERIVED reference (0.925–0.98, centred ~0.93, back-derived from the real screen's
+own bias arithmetic) is corroborated by an xy-matched pixel measurement — two unrelated methods
+agreeing to within ~2 points.
+
+RECORDS a measurement only. `FIDELITY_BOTH_PASS_FLOOR` (0.90), `min_circ`, `min_area` and the
+plan's direction are untouched; swapping the floor from derived to measured is a separate
+owner-gated pass. Scope limits, stated up front: **one clip, one unit — `marciana` (SG/Iron,
+`docs/probes/clean-weapons/marciana-solo.MP4`), NOT `marciana-marine-study`** — and it does not
+generalise to `noir` / `guilty` / `isabel` or to different lighting.
+
+Two ⚑ observations surfaced by this pass, reported and NOT acted on:
+
+1. The committed synthetic fixture `synthetic-fidelity-slice.json` (n=128) rejects 18.75% of
+   found on `min_area` vs 7.03% on `min_circ` — **area-dominant, the opposite direction** to the
+   handoff provenance table's "`min_circ` dominates, 17.2% vs 11.9% (n=120)" entry, which that
+   table rates "Solid on direction". Different samples, so both can be true; but the one
+   tool-pinned artifact does not corroborate that direction. Worth resolving before anything
+   leans on `min_circ`.
+2. 8/168 instances fall inside `center_exclude` 36 and 9/168 beyond `pellet_radius` 160 —
+   ~10% of owner-marked pellets sit structurally outside the LIVE counter's windowing even when
+   they pass the filter cleanly. The cascade applies no windowing (neither does the synthetic
+   path, so comparability holds), but this is a separate cold-bias source downstream of here.
