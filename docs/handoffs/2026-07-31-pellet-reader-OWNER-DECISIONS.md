@@ -127,6 +127,44 @@ hides, a change in pellet counting.
 
 **So: if you choose B or C above, this gets resolved first.** It is one measurement, not a rebuild.
 
+### ⚠ Added later the same day — this decision got harder
+
+While running unrelated premise checks, four 60-frames-per-second extraction windows were taken from
+`marciana-solo.MP4` — slug **`marciana`** (shotgun / Iron, **not** `marciana-marine-study`, which is
+an assault rifle and has no role in shotgun work), and the recording that is supposed to be the one
+that _works_.
+
+**Two of the four failed to locate the crosshair at all** — zero locked frames out of 901 and out of 721. The other two locked every single frame. Same video, same settings, different time windows: it
+is not a gradual degradation, it is all-or-nothing. I checked whether the two failures were simply
+launched with wrong parameters; they were not, so this is real.
+
+Quality on the two that worked also varied more than expected: one sat at 5.8% of detected pellets
+near the crosshair (against 14.3% on the known-good reference, with 477 pixels of lock wander), the
+other at a healthy 16.4%. The tooling's automatic "this dump is broken" warning triggers below 5%,
+so the weak one passed — by a hair.
+
+Phase 2A was previously recorded as passing on all four recordings. That was scored as an average
+across each whole video. It has now hidden two different things: a brief mislock inside a single
+shot (found earlier, when the reference crops were made), and now complete failure on entire
+windows.
+
+**Why this matters for the decision above:** the real-footage path assumes we can point the counter
+at arbitrary segments of a fight and get per-distance-band numbers out. If localization fails
+outright on half the windows of the best recording, that assumption needs checking before the
+certification run, not after it. It does not change my recommendation — the synthetic path has its
+own unresolved problems and less statistical power — but it does mean **option B/C is not the
+clean, ready-to-go path this document implied a few hours ago.** Budget for localization work
+first.
+
+**A partial offset, in the good direction.** The same session also produced 60-frames-per-second
+extractions from the `noir` recording covering both a near and a far distance band, and both are
+healthy — 16.7% and 26.3% of detected pellets near the crosshair, the latter the best figure of the
+whole set. They are on disk at `scratchpad/pellets/i3-noir-near-60fps/` and
+`scratchpad/pellets/i3-noir-far-60fps/`. So the failure is not "60 frames per second breaks
+localization" and it is not universal across recordings. It also means the far-versus-near timing
+question that was recorded as blocked **may already be answerable from data we have**, without any
+new extraction — worth checking before anyone spends another run on it.
+
 ---
 
 ## Decision 4 — pushing
