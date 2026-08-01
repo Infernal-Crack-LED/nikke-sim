@@ -58,6 +58,18 @@ filter-survival rate, so the synthetic cascade can be read against a real one ra
 an inference. It RECORDS a number -- per that handoff's evidence-discipline clause it deliberately
 does NOT enforce a floor, change a threshold, or stamp a verdict.
 
+--pellet-radius / --center-exclude / --real-positions (2026-08-01, same handoff §2): window
+overrides + position-level scoring for the --real-fixture screen. --audit-fidelity-real measures
+filter survival with NO windowing, but the LIVE counter only counts components inside the annulus
+center_exclude < r <= pellet_radius, and ~10% of the owner-marked real pellets fall outside it
+(9/168 instances beyond r=160, max r=166.8; 8/168 inside r=36) -- biasing the counter COLD, the
+direction of its actual problem. The synthetic generator places every label strictly inside the
+window by construction (884 labels, r=42.0..157.1), so no synthetic screen can see this at all.
+These flags sweep the window against the owner's hand counts WITHOUT editing any constant; the
+defaults are the live values (160 / 36) and this flag pair changes no default. --real-positions
+turns on precision/recall for the real screen by matching against the owner-marked xy positions,
+counting EVERY mark toward recall regardless of the window, so recall is comparable across cells.
+
 Two structural differences from the synthetic path, both handled explicitly rather than by
 falling through to the synthetic assumptions:
   - real frames are named f08_idx1068.png .. f11_idx1071.png (and shot00's lone
@@ -396,14 +408,37 @@ def match_greedy(pred_pts, true_pts, tol=DIST_TOLERANCE):
     return tp, fp, fn
 
 
-def load_real_sequences():
+def load_real_sequences(pellet_radius=REAL_PELLET_RADIUS, center_exclude=REAL_CENTER_EXCLUDE,
+                        with_positions=False):
     """Build score-pellets sequence dicts (same schema as make-synthetic-pellets.py's labels.json
-    entries) from the 6 owner-counted real f8-11 crops. Each crop is already a disc centered on
+    entries) from the 6 owner-counted real f8-11 crops. Each crop is already centered on
     ITS OWN frame's crosshair (make-groundtruth-f811.py's crop_disc), so `crosshair` is the crop's
     own center for every sequence, not a whole-frame position -- verified 368x368 / center (184,184)
     across all 22 committed crops. shot0 (the confirmed false positive, n_pellets=0) is included:
-    a candidate's bias on a true-zero shot is exactly the false-positive question §2.2 asks about."""
+    a candidate's bias on a true-zero shot is exactly the false-positive question §2.2 asks about.
+
+    `pellet_radius` / `center_exclude` default to the module constants (the settled live values, 160
+    and 36) -- unflagged behaviour is unchanged. They are parameters so the WINDOW itself can be
+    swept without editing constants, per docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md:
+    the --audit-fidelity-real cascade measures filter survival with NO windowing, but the live
+    counter windows to center_exclude < r <= pellet_radius, and ~10% of the owner-marked real
+    pellets fall outside that window (9/168 instances beyond r=160, 8/168 inside r=36). The
+    synthetic generator places every label strictly inside the window (r=42.0..157.1 over 884
+    labels), so no synthetic-based measurement can see the effect at all.
+
+    `with_positions` additionally attaches the owner-marked xy positions
+    (groundtruth-f8-11-positions.json, the same file --audit-fidelity-real reads) as
+    `positions_per_frame`, which turns on position-level TP/FP/FN for the real screen (it is
+    otherwise count-only). The positions are attached UNFILTERED -- every owner mark counts toward
+    recall regardless of which side of the window it sits on, which is exactly what makes recall
+    comparable across window settings. A frame with no positions entry is a hard error, never a
+    silent [] that would read as a spurious 0% (same rule --audit-fidelity-real states)."""
     gt = json.loads(REAL_GT_PATH.read_text())
+    pos_by_shot = {}
+    if with_positions:
+        pos = json.loads(REAL_POSITIONS_PATH.read_text())
+        pos_by_shot = {s['shot']: {f['frame']: f['positions'] for f in s['frames']}
+                       for s in pos['shots']}
     sequences = []
     for shot in gt['shots']:
         crops = shot.get('crops') or []
@@ -415,13 +450,24 @@ def load_real_sequences():
         for fn in frames:
             m = re.match(r'^f(\d\d)_', fn)
             offset_labels.append(int(m.group(1)) if m else None)
-        sequences.append({
+        seq = {
             'seq': shot['shot'], 'video': 'marciana-real-f811',
             'frames_dir': str(frames_dir), 'frames': frames,
             'crosshair': [REAL_CROP_RADIUS, REAL_CROP_RADIUS],
-            'pellet_radius': REAL_PELLET_RADIUS, 'center_exclude': REAL_CENTER_EXCLUDE,
+            'pellet_radius': pellet_radius, 'center_exclude': center_exclude,
             'n_pellets': shot['white'], 'offset_labels': offset_labels,
-        })
+        }
+        if with_positions:
+            by_frame = pos_by_shot.get(shot['shot'])
+            if by_frame is None:
+                raise SystemExit(f'score-pellets.py: {REAL_POSITIONS_PATH.name} has no shot '
+                                 f'{shot["shot"]} -- refusing to score it as if it had no pellets')
+            missing = [f for f in frames if f not in by_frame]
+            if missing:
+                raise SystemExit(f'score-pellets.py: {REAL_POSITIONS_PATH.name} shot '
+                                 f'{shot["shot"]} is missing positions for {missing}')
+            seq['positions_per_frame'] = [[tuple(p) for p in by_frame[f]] for f in frames]
+        sequences.append(seq)
     return sequences
 
 
@@ -784,7 +830,10 @@ def filtered_offset_stats(tracks, persisted_ids, n_frames, cx, cy, radius, true_
     estimators use a DIFFERENT track subset than score_sequence()'s raw per_offset (is_pellet vs
     persisted_ids), so their precision/recall is not the same number and must be scored
     separately, not assumed equal to the raw family's. None if the sequence has no labeled
-    positions (the real-fixture screen)."""
+    positions -- which includes the real-fixture screen even under --real-positions, whose owner
+    marks are PER FRAME (`positions_per_frame`) rather than the single static list this takes; the
+    persist family therefore reports no precision/recall on the real screen rather than a wrong
+    one."""
     if true_positions is None:
         return None
     stats = []
@@ -903,9 +952,15 @@ def score_sequence(seq, dump):
     cx, cy = seq['crosshair']
     radius = seq['pellet_radius']
     true_positions = seq.get('positions')  # absent for the real-fixture screen (no labeled xy)
+    # The real screen's owner marks are PER FRAME (each frame marked independently), not one static
+    # list reused across offsets the way a synthetic sequence's are -- same structural difference
+    # --audit-fidelity-real already handles. Only set by load_real_sequences(with_positions=True).
+    per_frame_positions = seq.get('positions_per_frame')
     per_offset = []
     for fi in range(n_frames):
         offset = fi + 1
+        if per_frame_positions is not None:
+            true_positions = per_frame_positions[fi]
         pred_pts = [(t['xs'][fi - t['first']], t['ys'][fi - t['first']])
                     for t in tracks
                     if t['is_pellet'] and not t['is_red'] and t['first'] <= fi <= t['last']]
@@ -940,7 +995,9 @@ def check_labels_countable(labels_path):
 
 def run(args):
     if args.real_fixture:
-        sequences = load_real_sequences()
+        sequences = load_real_sequences(pellet_radius=args.pellet_radius,
+                                        center_exclude=args.center_exclude,
+                                        with_positions=args.real_positions)
         tmp_dir = REPO / 'scratchpad' / 'pellets' / '_score_tmp_real'
     else:
         check_labels_countable(args.labels)
@@ -982,10 +1039,20 @@ def run(args):
                     acc[0] += s['tp']
                     acc[1] += s['fp']
                     acc[2] += s['fn']
-        per_seq_report.append({
+        row = {
             'seq': seq['seq'], 'video': seq['video'], 'n_pellets': seq['n_pellets'],
             'f8_11_mean_count': round(mean_count, 2), 'error': round(err, 2),
-        })
+        }
+        if args.real_positions:
+            # Raw admitted-detection total across this shot's frames -- the "how many detections did
+            # widening newly admit" number a window sweep is read on, which the mean/TP-FP split
+            # alone does not give (a cell can gain TPs and FPs at once).
+            row['pred_total'] = sum(o['pred'] for o in per_offset)
+            row['true_total'] = sum(len(p) for p in seq['positions_per_frame'])
+            row['tp'] = sum(o['tp'] for o in per_offset)
+            row['fp'] = sum(o['fp'] for o in per_offset)
+            row['fn'] = sum(o['fn'] for o in per_offset)
+        per_seq_report.append(row)
         if args.estimators:
             per_seq_estimator_errs.append({
                 k: (est[k] - seq['n_pellets']) for k in ESTIMATOR_KEYS if est.get(k) is not None
@@ -1032,6 +1099,21 @@ def run(args):
         'per_sequence': per_seq_report,
         'degenerate_nonpeak_sequences': degenerate_nonpeak_n,
     }
+    # Provenance for a windowed measurement: which window produced these numbers. Emitted only when
+    # the window is NOT the documented default or when position scoring is on, so a plain
+    # `--real-fixture` run's output stays byte-identical to every reproduction already on record
+    # (docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md's requirement).
+    if args.real_fixture and (args.real_positions
+                              or args.pellet_radius != REAL_PELLET_RADIUS
+                              or args.center_exclude != REAL_CENTER_EXCLUDE):
+        report['window'] = {
+            'pellet_radius': args.pellet_radius, 'center_exclude': args.center_exclude,
+            'baseline_pellet_radius': REAL_PELLET_RADIUS,
+            'baseline_center_exclude': REAL_CENTER_EXCLUDE,
+        }
+    if args.real_positions:
+        report['pred_total'] = sum(r['pred_total'] for r in per_seq_report)
+        report['true_total'] = sum(r['true_total'] for r in per_seq_report)
     if args.estimators:
         report['estimators'] = aggregate_estimator_stats(per_seq_estimator_errs)
         report['estimator_keys'] = ESTIMATOR_KEYS
@@ -1067,6 +1149,27 @@ def main():
     ap.add_argument('--real-fixture', action='store_true',
                      help='score against the 6 owner-counted real shots '
                           '(scripts/tests/fixtures/pellets/groundtruth-f8-11.json) instead of --labels')
+    # --- real-window overrides (2026-08-01, docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md)
+    # DEFAULTS ARE THE LIVE CONSTANTS AND ARE NOT CHANGED BY THIS FLAG PAIR: these exist so the
+    # counter's WINDOW can be swept against the 6 owner-counted real shots without editing
+    # REAL_PELLET_RADIUS / REAL_CENTER_EXCLUDE between runs. --audit-fidelity-real measures filter
+    # survival with no windowing at all; ~10% of the owner marks sit outside the live window, and
+    # the synthetic generator can never show it (all 884 labels are strictly inside by
+    # construction). Landing any new default is a separate, owner-gated pass.
+    ap.add_argument('--pellet-radius', type=int, default=REAL_PELLET_RADIUS,
+                     help=f'(--real-fixture) outer window radius in crop px (default '
+                          f'{REAL_PELLET_RADIUS}, the live value); sweeping this does NOT change '
+                          f'any default')
+    ap.add_argument('--center-exclude', type=float, default=REAL_CENTER_EXCLUDE,
+                     help=f'(--real-fixture) inner exclusion radius in crop px (default '
+                          f'{REAL_CENTER_EXCLUDE}, the live value); sweeping this does NOT change '
+                          f'any default')
+    ap.add_argument('--real-positions', action='store_true',
+                     help='(--real-fixture) also score position-level TP/FP/FN against the '
+                          'owner-marked xy positions (groundtruth-f8-11-positions.json), turning '
+                          'on precision/recall for the real screen, which is otherwise count-only. '
+                          'Every owner mark counts toward recall regardless of the window, so '
+                          'recall is comparable across --pellet-radius/--center-exclude settings.')
     ap.add_argument('--estimators', action='store_true',
                      help='also score the pre-registered cheap-estimator list (median/max/quantile '
                           'aggregations) alongside the current-pipeline control')
@@ -1114,6 +1217,15 @@ def main():
         return
     if not args.labels and not args.real_fixture:
         ap.error('--labels or --real-fixture is required (or use --selftest)')
+    # The window overrides are real-screen-only by construction: a synthetic sequence carries its
+    # OWN pellet_radius/center_exclude in labels.json (the generator placed its labels against
+    # those), so silently overriding them would score a labels file against a window it was never
+    # generated for. Refuse rather than mislead.
+    if not args.real_fixture and (args.pellet_radius != REAL_PELLET_RADIUS
+                                  or args.center_exclude != REAL_CENTER_EXCLUDE
+                                  or args.real_positions):
+        ap.error('--pellet-radius/--center-exclude/--real-positions apply to --real-fixture only '
+                 '(a synthetic labels.json carries its own window)')
     run(args)
 
 
