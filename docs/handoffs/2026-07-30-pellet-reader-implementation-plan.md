@@ -2117,20 +2117,134 @@ a measurement nobody took with it in mind.
    phase assignment ambiguous for >30% of tracks in the window, flag the shot as low-confidence
    rather than forcing a count. (This is a specification, not a suggestion — the implementer should
    not have to invent the overlap policy.)
-5. **Score each track against the lifecycle template** (normalised size-vs-phase, plus the
-   fade-before-vanish requirement). Accept/reject on the fit. **This replaces the `lifetime <= 7`
-   hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
+5. **Score each track against the lifecycle template** (normalised size-vs-phase fit over whichever
+   phases the track has observations for). Accept/reject on the fit. **This replaces the
+   `lifetime <= 7` hard cutoff entirely**, which also retires the Phase 0.3 boundary bug.
+
+   **Fade (f12–13) is OPTIONAL corroborating evidence, never a requirement.** An earlier draft of
+   this step required a track to fade before vanishing to score as a pellet. **Revised 2026-07-31**
+   (kimi-k3 preop revision #5, fable preop revision #3, both reviewers independently, `/logic-gate`
+   pre-op on this plan): measured phase-resolved recall on the committed `groundtruth-f8-11.json`
+   fixture is **f12 = 0.349, f13 = 0.012** — the detector essentially never observes the fade, so a
+   "must show fade" acceptance clause would reject nearly every real pellet and manufacture a large
+   cold bias, which is exactly the failure mode this redesign exists to remove. The cross-unit
+   template validation this plan cites (§2.0's corroboration table) also only covered samples 1–5 of
+   the normalised area profile — the tail (fade region) was declared contamination there, so the
+   fade clause never had a validated measurement behind it in the first place. A track that ends at
+   f11 with a monotone decay fit **must** score as a full pellet; a track that also shows f12–13
+   fade scores no worse and may be weighted as slightly higher-confidence, but its absence is never
+   disqualifying.
+
+   **PARTIAL tracks (frames missing to detection dropout) score against the SUBSET of the template
+   their observed frames cover, not the full 13-frame curve.** Specification (to be validated in
+   implementation, not a measured result): after t0-alignment, a track's observed frames map to a
+   set of expected lifecycle phase-indices; the track is scored ONLY against those indices — a track
+   observed solely in the f8–11 window is scored purely on decay-shape fit (each observed frame's
+   area sits within tolerance of that phase's expected size, and successive observed frames are
+   non-increasing), with no penalty and no requirement for f1/peak/fade evidence it was never
+   expected to have. A track observed only near the peak (f3–7) is scored on local shape only (rapid
+   growth then the start of decay), which is the noisiest region and where per-frame tolerance should
+   be loosest. This keeps identity scoring honest about what each fragment actually demonstrates,
+   without attempting to STITCH fragments across the f3–4 merge into one pellet — that (kimi-k3 preop
+   revision #3: the merged-peak fragment/stitch policy) is a separate, still-BLOCKED design question
+   for the owner-gated build pass, not resolved by this specification.
+
 6. **Apply phase-indexed size gating** — at each frame, gate area against the expected size for that
    phase rather than the global 25–750 band.
 7. **Count accepted tracks, using f1 and f8–11 for the count/position read.** Do **not** count on all
    13: f3–4 merge and would re-introduce the occlusion undercount; f12–13 are transparent and add
    variance.
+
+   **The counting rule, precisely (added 2026-07-31, kimi-k3 preop revision #4 / fable preop
+   revision #5, both flagged this as unspecified; `/logic-gate` pre-op on this plan).
+   SPECIFICATION — to be validated in implementation, not a measured result:**
+
+   Per-blast count = the number of **distinct spatial clusters** among accepted-track positions
+   sampled at f1 and f8–11, where two accepted tracks (or track fragments) are merged into one
+   cluster iff their counting-frame position lies within one pellet diameter (`pellet_unit_area`'s
+   implied radius) of each other after t0-alignment. **Not** a per-frame max/mean/median blob count:
+   step 5 already replaced per-component blob-counting with track-level identity scoring, so
+   re-deriving the count from raw per-frame totals across four f8–11 frames would reintroduce the
+   exact frame-to-frame variance phase-locking exists to remove, and would double-count a physical
+   pellet that fragmented into two accepted tracks (a real risk — see the 60 fps ITEM 2 premise-check
+   finding below that gap-tolerance-eligible short tracks remain common even at native 60 fps).
+   Position-based dedup directly targets that fragmentation risk without requiring the full
+   merged-peak stitch policy (kimi-k3 revision #3), which stays a separate, BLOCKED design question.
+
+   **Which frame supplies the position when f1 and f8–11 disagree:** priority order **f1 > f8 > f9 >
+   f10 > f11** — use the track's f1 observation if it has one (the pellet has not yet grown into its
+   2× peak, so it is least likely to be spatially smeared into a neighbour), else the earliest
+   available frame in f8–11 (closest to the tightest, most-decayed-but-still-legible state, least
+   accumulated drift). This is a specification, not a tuned parameter; validate the priority order
+   against the labeled set before relying on it for band assignment.
+
 8. Keep the marker-based binary core-hit fallback (`read-pellets.ts:632–648`) unchanged — it is
    owner-validated and orthogonal. Red pellets follow the same lifecycle, so phase-indexed gating
    applies to them too (with the `red-gb-max` ceiling raised toward the ~90 anti-aliasing floor
    `redprobe.py` measured).
 9. `trackpy.link()` replaces the greedy linker **only if** the greedy one measurably fragments on
    cached detections. Do not swap speculatively.
+
+### 2.1b — What the 60 fps + ROI migration invalidates (added 2026-07-31)
+
+Step 1's move to 60 fps native sampling + a disc-ROI crop changes the coordinate frame and the
+frame-index meaning of everything downstream. Flagged in `/logic-gate` pre-op (kimi-k3
+blast-radius notes, fable blast-radius notes + revision #6) as under-specified in the original
+draft. Enumerated concretely, by path:
+
+- **30 fps detection caches are invalid inputs for any 60 fps work.** `scratchpad/pellets/run16/`
+  (and the earlier numbered `run*` dirs) were extracted at 30 fps; `scratchpad/pellets/
+h1-marciana-treecode/` was extracted with `--fps 30` (`docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md:770`).
+  None of these can stand in for a 60 fps run — re-extract, don't reuse.
+- **The Phase 1.1 "0-mismatch/1800-frame" cache-replay validation standard is a 30 fps result**
+  (`h1-marciana-treecode`, 1800 frames at 30 fps). It does not transfer to 60 fps and must be
+  re-established there once Phase 1.1's cache format is exercised at 60 fps.
+- **`scripts/tests/fixtures/pellets/h1-cache-slice.json`** (the `--cache-selftest` fixture pinned in
+  `count-pellets.py:1071` as `CACHE_SLICE_FIXTURE`) is a slice of the 30 fps `h1-marciana-treecode`
+  cache. **Must be re-pinned at 60 fps** before `--cache-selftest` says anything about a 60 fps
+  pipeline; until then it validates only that cache-then-sweep still reproduces a 30 fps result.
+- **`scripts/tests/fixtures/pellets/run16-tracks-slice.json`** (the `--selftest` fixture for
+  `analyze-pellet-tracks.py`, `params.max_pellet_frames: 7`) is the 30 fps `run16` slice. Its cited
+  numbers (life=1 58.8%, max-at-first 73.5%) are 30 fps facts about a 30 fps sample and must not be
+  read as 60 fps facts once a 60 fps re-run exists; re-pin only together with a real 60 fps re-run,
+  not preemptively.
+- **`match_dist = 30`** — `temporal_filter`'s default parameter (`count-pellets.py:330`) and the
+  hardcoded fallback in `build_tracks_and_counts` (`count-pellets.py:425`, commented `# match_dist`)
+  — is a fixed **zoomed-pixel** linking radius sized against 30 fps frame-to-frame motion (this
+  plan's own §"What was measured" table: median 4 px, p90 15 px per frame, at 2× zoom). At 60 fps the
+  same physical motion happens over roughly half the time-per-frame, so per-frame displacement is
+  expected to roughly halve; **30 zoomed px is not re-derived for this migration, only flagged** —
+  sweep it against 60 fps cached detections (Phase 1.1) before trusting the linker's frame-to-frame
+  matches at the new rate.
+- **`max_pellet_frames = round((13/60)*fps)`** (`read-pellets.ts:505`) is **already fps-parametrized**
+  and does **not** need migration — at fps=60 it evaluates to exactly 13 (the native lifecycle
+  length), which is the reason this constant was written this way. Listed here only to state
+  explicitly that it is NOT on the invalidated list, since everything around it is.
+- **`scripts/tests/fixtures/pellets/groundtruth-f8-11.json` is already 60 fps native**
+  (`clip: {"at": 15, "dur": 30, "fps": 60, "zoom": 2}`, generated from `marciana-solo.MP4`) — **not**
+  invalidated by this migration. It carries per-shot counts and frame crops, not absolute xy pellet
+  positions, so it is also insulated from a coordinate-frame change in step 1's ROI crop (per
+  fable's assumptionsFlagged: "the existing labeled records... carry counts, not labeled xy pellet
+  positions"). The OLDER, superseded 2026-07-26 6-shot peak-frame ground truth
+  (`scratchpad/pellets/HANDOFF.md`, main-tree, untracked) was already retired by this fixture and is
+  not a live migration concern.
+- **The crosshair-distance filter** (`--pellet-radius`, `--center-exclude`, both in zoomed px, not
+  fps-dependent) is unaffected by the fps change itself, but **is** affected by step 1's ROI crop:
+  today's extraction is a fixed, frame-relative crop (`pelletCrop`, independent of the crosshair),
+  so `cross_positions` are frame-absolute coordinates; a disc ROI crop centred on the tracked
+  crosshair makes the crop itself move frame-to-frame, so downstream code reading `cross_positions`
+  against track `xs`/`ys` must agree on whether those are frame-absolute or ROI-local coordinates.
+  Unspecified in the current draft — an implementation-time decision, not resolved here.
+- **`score-pellets.py` needs partial-track support before a 60 fps track-level number is
+  computable.** It currently scores dense per-frame detections (Jaccard/F1/count RMSE) against
+  synthetic sequences; step 5's identity scoring and step 7's counting rule (§2.1 above) both
+  operate on tracks with potentially-missing phases, which is a different artifact shape than what
+  `score-pellets.py` consumes today. Flagged by fable's blast-radius notes; not built here.
+- **§2.4 already declares run16–run19 non-comparable to anything produced after Phase 2** (the count
+  definition changes). This extends that declaration explicitly to the fixtures above: any number
+  quoted from `h1-cache-slice.json`, `run16-tracks-slice.json`, or the retired 6-shot HANDOFF.md
+  table is a 30 fps (or pre-lifecycle) fact and must not be compared directly to a post-migration 60
+  fps reading without re-deriving the comparison at matching fps.
 
 ### 2.2 — Exit criterion
 
