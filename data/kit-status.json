@@ -14,10 +14,10 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 99
+      "unit-tested": 102
     },
     "tier": {
-      "MODEL_ONLY": 65,
+      "MODEL_ONLY": 68,
       "VALIDATED": 10,
       "MEASURED": 14,
       "CALIBRATED": 10
@@ -5028,6 +5028,42 @@
         "skill1: the Max Ammunition Capacity ▲40% team buff (maxAmmoPct 40) is gated on resourceGate{tidyingUp,min:10}; activation EMERGES from the hitCount cadence (~46.6s in fixture), committing to the refresh-on-reapply stack reading (⚑ M4) — the per-stack-decay reading would never open the gate",
         "skill2: 'Stack count of buffs ▲1' — the SELF portion is folded as a +1 to the tidyingUp pool on hitCount:150 (Block C, accelerates the M4 gate ~78.6s→~46.6s); the CROSS-ALLY portion (teammates' stack buffs) is out-of-domain (⚑ M5)"
       ]
+    },
+    "privaty-unkind-maid": {
+      "name": "Privaty: Unkind Maid",
+      "burst": "III",
+      "weapon": "SG",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/privaty-unkind-maid.json + scripts/kit-autonomy/manual-review/privaty-unkind-maid.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: kit targets the 2 enemies nearest the crosshair — modeled as the lone boss (the multi-target selection has no effect vs a partless single boss)",
+        "skill1: the hitCount counter counts FIRED pellets (10/pull); the kit reads LANDED pellets — near-equivalent at single-boss focus-band landing (~9/10), cadence stretches if landing drops (⚑1)",
+        "skill2: the '≥5 pellets with a single normal attack' gate on the reload-speed buff has no engine primitive and is dropped — assumed satisfied at single-boss focus-band landing; the 2s window refreshed every shot gives ~100% uptime regardless (⚑2)",
+        "skill2: the FB-gated '30 pellet hits' counter (fbGate:'inFb') still accrues ungated in the engine — a small boundary over-accrual into FB-entry firings, the same documented approximation as modernia S2b (⚑3); 'Reload 1 round' is a one-shell drip (instantReload fraction ~1/9), not a full refill",
+        "burst: the burst nuke targets all enemies — modeled as the lone boss"
+      ],
+      "board": null,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 5 lines incl hitCount:30+fbGate:inFb for the FB-windowed pellet counter",
+      "residual": "fullBurstEnter counterfactual for burst self-buffs unpinned (vacuous in sole-B3 fixture, live in dual-B3); fired-vs-landed pellet cadence + SG cadence tuple measurement-gated",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

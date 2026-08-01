@@ -1,0 +1,72 @@
+{
+  "slug": "privaty-unkind-maid",
+  "kitDescription": "Privaty: Unkind Maid is an Electric shotgun Attacker whose kit revolves around pellet counters. Every 30 pellets she lands, she fires a bonus hit of 202.84% of her final ATK at the enemies nearest her crosshair. Whenever she lands at least 5 pellets with a single shot, she gains a short 2-second reload-speed buff, which on her slow 9-shell shotgun translates directly into more shots per fight. During Full Burst, every 30 pellet hits also drip one shell back into her magazine and stack a 2-second ATK buff up to 5 times. Her Burst III gives her 10 seconds of increased attack damage and a large critical damage boost, and deals a single 1066.66% burst hit to all enemies.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "hitting the target with 30 pellet(s)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:30 — engine adds hitsPerShot (10) per pull (sim.ts:3585), so count:30 = every 3rd pull, cumulative, no FB gate",
+        "blindSaid": "S5 and S6 both independently chose hitCount count:30; S2b flagged pellets-vs-rounds as the priority misread and the driver matches the pellet reading",
+        "formulaCheck": "Skill-proc rider: crit at caster rate, no core (no 'core strike' text), noRange forced — matches damage-calculation.md §2b function-type rules; '2 enemy unit(s)' collapses to one instance on the partless single boss (documented caveat)",
+        "fireRateOk": true,
+        "explanation": "Driver test pins repeated firing at 202.84 in the skill bucket and discriminates the per-pull counterfactual (count:10 fires ≥3× as often). Fired-vs-landed pellet cadence is a documented ⚑1 (near-equivalent at ~9/10 focus-band landing), not a silent drop."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "5 or more pellets hit with a single norm",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "shotFired → self reloadSpeedPct 20.88/2s; the ≥5-pellet per-shot gate has no engine primitive and is dropped, assumed satisfied (⚑2 in note + caveat, low tier, recipe given)",
+        "blindSaid": "S5 skips the gate as a legit GAP (no per-shot landed-pellet predicate); S6 encodes identically with the same ⚑; S2b named shotFired as the closest primitive",
+        "formulaCheck": "Reload speed is damage-bearing (reloadFrames 141 on a 9-shell mag gates shots fired); the 2s window refreshed every ~0.67s shot yields ~100% uptime at focus-band landing, so the dropped gate is not load-bearing at scope lock — it bites only if landing <5/10",
+        "fireRateOk": true,
+        "explanation": "Buff itself is faithfully encoded (value, stat, self-scope, 2s window all pinned and live — removal moves her total). Only the landing-gate predicate is approximated, and that is documented with tier + recipe in both the override note and the blind test's it.skip."
+      },
+      {
+        "kitLine": "hitting 30 times with pellets during FB",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "hitCount count:30 + fbGate:'inFb' → instantReload fraction 0.1111 (one shell of 9) + atkPct 11.22 maxStacks 5 / 2s",
+        "blindSaid": "S2b reviewer caught the driver's first draft (UNMODELED, assumed no FB-gate primitive); driver verified fbGate at types.ts:374/sim.ts:2030 and corrected — S6 then independently derived the identical block",
+        "formulaCheck": "'Reload 1 round(s)' = one-shell drip (fraction ~1/9), not a full refill — the large over-credit misread is avoided; fbGate:'inFb' is the documented velvet/modernia precedent for 'N hits during Full Burst'; residual ⚑3: the counter accrues ungated (small boundary over-accrual), documented in the note",
+        "fireRateOk": true,
+        "explanation": "Driver test proves every ATK-stack application lands inside an FB window and that dropping the gate fires whole-fight; S5 adds the maxStacks=5 cap and the 1-round-vs-full-refill discrimination. The reconciliation catch is recorded and corrected."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Attack damage ▲ 10.56% / Crit Dmg ▲ 88.17",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self attackDamagePct 10.56 + critDamagePct 88.17, both 10s, exactly one application per her own cast",
+        "blindSaid": "S5/S6 identical encoding; S2b named fullBurstEnter keying as the nearest-wrong model",
+        "formulaCheck": "attackDamagePct lands in the DamageUp bucket, critDamagePct in the Major crit term — correct per the SSOT bucket table; burstCast trigger means no application on rotations another B3 carries",
+        "fireRateOk": true,
+        "explanation": "Self-scope, values, and 10s windows are pinned; the allies-scoped counterfactual demonstrably moves teammates. Residual: neither suite builds the fullBurstEnter counterfactual, but in the sole-B3 fixture her cast precedes every FB so the two models are behaviorally identical at scope lock — see rationale."
+      },
+      {
+        "kitLine": "Deals 1066.66% of final ATK as Burst Ski",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy flatDamage 1066.66, crit default-on, FB-exempt by cast timing",
+        "blindSaid": "S5 asserts fbMajorApplied falsy on every nuke and single-instance-per-cast; S6 identical (explicit noFb equivalent)",
+        "formulaCheck": "Matches the MEASURED boundary rule (damage-calculation.md §1b / §5b Cinderella nuke): burst-cast damage lands before the FB window — no +0.5 major, no entry auras; burst-nuke row: crit yes, core no — driver test asserts zero fbMajorApplied and the burst bucket",
+        "fireRateOk": true,
+        "explanation": "One instance per cast (5 bursts in the S2d run), magnitude pinned against the level-1 630.3 counterfactual, single-boss collapse of 'all enemies' documented."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "Convergence is mechanical and clean: the blind S5 suite runs 24 passed / 3 legit-GAP skips / 0 failed against the shipped override, and the S6 blind override is structurally identical to the driver's on all five load-bearing lines — including the one genuine process catch, where the S2b reviewer surfaced fbGate:'inFb' for skill2b and the driver verified the primitive and corrected an initial UNMODELED draft. No REAL-GOTCHA survives: the three known approximations (fired-vs-landed pellet cadence ⚑1, the dropped ≥5-pellet gate ⚑2, the ungated counter accrual ⚑3) are all documented in the override note with tiers and recipes, and the priority misreads the review predicted — pellets-vs-rounds, full-magazine refill, fullBurstEnter keying, allies-scoping, FB major on the nuke — are each pinned by a discriminating counterfactual or a direct event assertion. The residual the owner should spot-check: neither test suite builds the named fullBurstEnter counterfactual for the burst self-buffs, so that nearest-wrong model is unpinned in isolation; it is behaviorally vacuous in the sole-B3 driver fixture (her cast precedes every Full Burst), but in any future dual-B3 graded comp the distinction becomes live and a one-line counterfactual should be added. Separately, all agents are the same model family, so the fired-vs-landed pellet cadence (⚑1) and the SG cadence tuple (⚑4, mandatory per the driver's own note) remain measurement-gated items a real focus video would settle — they are flagged, not silently absorbed.",
+  "model": "kimi-code/k3"
+}

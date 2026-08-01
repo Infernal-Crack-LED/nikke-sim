@@ -55,20 +55,20 @@
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
 | `excludeSelf` | 10 | arcana-fortune-mate, blanc, brid-silent-track, grave, label, liberalio, maiden-ice-rose, miranda, … |
-| `fbGate` | 5 | eunhwa-tactical-upgrade, modernia, soda-twinkling-bunny, velvet, zwei |
-| `flatDamage` | 57 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
+| `fbGate` | 6 | eunhwa-tactical-upgrade, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, zwei |
+| `flatDamage` | 58 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 7 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 42 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
+| `hitCount` | 43 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 14 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
-| `inFb` | 5 | eunhwa-tactical-upgrade, modernia, soda-twinkling-bunny, velvet, zwei |
+| `inFb` | 6 | eunhwa-tactical-upgrade, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, zwei |
 | `instantInFb` | 1 | rapi-red-hood |
-| `instantReload` | 8 | alice-wonderland-bunny, asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, scarlet-black-shadow |
+| `instantReload` | 9 | alice-wonderland-bunny, asuka-wille, eve, guillotine-winter-slayer, little-mermaid, ludmilla-winter-owner, noir, privaty-unkind-maid, … |
 | `interval` | 14 | cinderella-crystal-wave, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, flora, helm-aquamarine, … |
 | `lastBullet` | 6 | anis-sparkling-summer, dorothy, exia, helm, marciana, privaty |
 | `magDumpRof` | 1 | cinderella |
@@ -98,7 +98,7 @@
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
-| `shotFired` | 27 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, eunhwa-tactical-upgrade, … |
+| `shotFired` | 28 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, eunhwa-tactical-upgrade, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
 | `stageEnter` | 10 | cinderella, ein, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, rei-ayanami, … |
 | `storedHit` | 1 | rapi-red-hood |

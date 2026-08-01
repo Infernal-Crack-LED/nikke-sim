@@ -1,0 +1,122 @@
+{
+  "slug": "privaty-unkind-maid",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 202.84,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "reloadSpeedPct",
+          "value": 20.88,
+          "durationSec": 2
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 30
+      },
+      "fbGate": "inFb",
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "instantReload",
+          "fraction": 0.1111
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 11.22,
+          "durationSec": 2,
+          "maxStacks": 5
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.56,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 88.17,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 1066.66,
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Pellet-vs-pull hit accounting: both 30-pellet thresholds are authored literally as hitCount count:30. If the engine's hit counter increments once per trigger pull (not per pellet) on an SG, the correct value is 3, and this override under-fires both blocks by 10x. UNVERIFIED — must be instrumented before any tuning.",
+    "⚑ skill2 block A's real gate is '5 or more pellets hit with a single normal attack'. The schema has no landed-pellet gate, so it is modeled as UNCONDITIONAL on every shotFired — optimistic at close range (base hitsPerShot 10), over-credited at range/partial landing.",
+    "⚑ skill1's 'hitting the target with 30 pellet(s)' counts LANDED pellets; the engine's hitCount does not distinguish landed from fired. At partial SG landing the real proc cadence is slower than modeled.",
+    "⚑ 'Affects 2 enemy unit(s) nearest to the crosshair' collapses to 1 instance against the single partless scope-lock boss — no multi-target multiplier applied. Faithful for this fight only.",
+    "⚑ 'Reload 1 round(s)' modeled as instantReload fraction 0.1111 (1 of the datamined ammo 9). Any maxAmmoPct/maxAmmoFlat source in the team desynchronizes the fraction from one literal round.",
+    "⚑ Cadence tuple (SG rate_of_fire / reloadFrames 141 / ammo 9) is a datamine field and drives BOTH the reload-speed buff's value and the pellet-threshold cadence — treat all proc counts here as datamine-dependent.",
+    "The skill1/skill2 riders take Full Burst by TIMING (noFb unset, per default); the burst nuke is FB-exempt (noFb:true) because a burst cast lands before the FB window opens."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Privaty: Unkind Maid (SG/Electric/Attacker/Burst III). S1 = a 202.84% rider on a 30-landed-pellet counter, aimed at the enemy, crit-eligible, no core clause in the text so no core bucket. S2 = (a) a 2s self Reload Speed ▲20.88% keyed to every normal attack, since the '5+ pellets in one attack' landing gate has no schema primitive; (b) an in-Full-Burst 30-pellet counter granting a 1-round instant reload plus a 2s ATK ▲11.22% stacking to 5 — the short 2s window means the stack pool only holds while the pellet cadence sustains it inside FB, so the effective ATK contribution is well below the 56.1% cap. Burst = self Attack Damage ▲10.56% and Critical Damage ▲88.17% for 10s on burst cast, plus a 1066.66% burst-skill nuke marked noFb (burst-cast damage resolves before the Full Burst window). The ONE load-bearing unknown is whether the engine's hitCount trigger counts pellets or trigger pulls for a 10-pellet SG — every proc rate in this file scales by 10x on that answer."
+}
