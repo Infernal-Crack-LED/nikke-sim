@@ -1,0 +1,121 @@
+{
+  "slug": "dolla",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 16.16,
+          "durationSec": 5
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "fullBurstEnter"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "burstCdr",
+              "seconds": 1.82
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.2
+            },
+            {
+              "kind": "burstCdr",
+              "seconds": 2.6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 7.72,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 4.21,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 13.22,
+              "durationSec": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 734.69,
+          "crit": true,
+          "noRange": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": ["Affects 1 enemy unit(s) with the highest final DEF."]
+  },
+  "caveats": [
+    "⚑ skill1 has NO activation clause in the kit text — trigger identity and cadence are INVENTED. Modeled as interval sec=20 (the unit's datamined skill cooldown), first fire at t=20s. If the real skill is a per-cast/passive line the cadence is wrong; pin from footage (count ATK-buff refreshes on allies).",
+    "⚑ skill2 escalating tiers: 'Each subsequent effect triggers all effects before it' is modeled with the `escalating` effect kind (Nth activation applies steps 1..N) and, per the schema, the 4th+ activation continues to apply all three steps. Whether the game caps at three or keeps re-applying tier 3 on every later activation is NOT stated in the kit text — assumed to hold all three from activation 3 onward.",
+    "⚑ skill2 branch B is keyed to `burstCast` per the literal 'when using Burst Skill'. This fires only on rotations where THIS unit casts her Burst II. If the real trigger is any ally's burst cast, this UNDER-credits; keying it to fullBurstEnter instead would OVER-credit in multi-B2 comps. Trigger identity taken literally per the HARD RULE.",
+    "⚑ Burst damage crit:true is the schema default posture for a burst hit rolling at the caster's sheet rate; noFb:true because a burst cast lands before the Full Burst window opens (verified fact, not a per-kit measurement). noRange:true per the universal rider convention.",
+    "⚑ Cadence tuple (pullsPerSec / reloadFrames 141 / chargeFrames 60 / ammo 6) comes from the datamine and is known-unreliable; not asserted here, engine-supplied.",
+    "⚑ Burst target 'highest final DEF' is unmodeled — the v1 boss is a single enemy, so single-target selection is degenerate; recorded in `unmodeled` for completeness, damage-neutral."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. dolla is a SR/Wind/Supporter Burst II with a pure-support kit: one team-wide ATK buff (S1), a dual-branch escalating S2 (team burst-cooldown reduction on Full Burst entry + a stacking ATK/CritRate/CritDamage team buff on her own burst casts), and a single-target nuke burst. All three buff branches are team-wide (`allies`, self included — the kit says 'all allies' with no exclusion). S2's two headers are distinct blocks with DIFFERENT triggers ('entering Full Burst' vs 'using Burst Skill') and are modeled separately per the trigger-identity rule; collapsing them to one trigger would be a scope error. The burst is a flat single hit with no rider, no DoT, no weapon swap, no stacks, and no ammo/reload/fire-rate modifier — so there are no weapon-state, Hit-Rate, heal/shield, or stack-currency lines to audit. The only genuinely kit-silent quantity is S1's activation, flagged above."
+}

@@ -1,0 +1,78 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-07-31: authored test-first (scripts/tests/units/dolla.test.ts). || Dolla (`dolla`) — SR / Burst II (20s) / Supporter / Wind; ammo 6, chargeFrames 60, reloadFrames 141, hitsPerShot 1, normalMult 69.04, coreMult 200. A team burst-CDR + escalating-stat buffer; her own charged-SR damage is minor. STRUCTURALLY IDENTICAL to liter's skill1 (the canonical escalating encoder): her S2 is two independent escalating ladders — one on fullBurstEnter (burst-CDR), one on burstCast (team stats) — plus a periodic S1 ATK buff and a single-target burst nuke. || FULL-KIT AUDIT (every line accounted for, 4 kit lines): S1 'Affects all allies. ATK ▲16.16% for 5 sec' with skillCooldownsSec.skill1=10 and NO activation clause = class-1 pure periodic timer → interval:10 → allies → buff atkPct 16.16 /5s (fires every 10s of battle, first at t=10; 5s-on/5s-off = 50% duty — faithful short-buff character, do not extend without measurement). S2 block A 'Activates when entering Full Burst. Affects all allies. Effects vary by the number of times entered; EACH SUBSEQUENT EFFECT TRIGGERS ALL EFFECTS BEFORE IT: Once burst CD ▼1.82s / Twice ▼2.2s / Three times ▼2.6s' = fullBurstEnter → allies → escalating[burstCdr 1.82, 2.2, 2.6]; the header line IS the escalating semantics (engine sim.ts:2488 applies steps 1..min(N,3) on the Nth FB-enter, so 1st=1.82 / 2nd=1.82+2.2=4.02 / 3rd+=1.82+2.2+2.6=6.62s cumulative), matching liter L1 exactly. Fires on EVERY team Full Burst regardless of who bursted (plain fullBurstEnter, no ownBurstGate) = 'number of times [the team] entered'. ROTATION LEVER + BLAST RADIUS: touches every teammate's burst cadence — verify with a /sim-battery diff, never sim-vs-sim self-grade. S2 block B 'Activates when using Burst Skill. Affects all allies. Effects vary by the number of times used; each subsequent triggers all before it: Once ATK ▲7.72% / Twice Critical Rate ▲4.21% / Three times Critical Damage ▲13.22%, 5 sec each' = burstCast → allies → escalating[buff atkPct 7.72 / critRatePct 4.21 / critDamagePct 13.22, each 5s]; ramps to all three by her 3rd OWN cast (burstCast fires ONLY on rotations Dolla casts, never on another unit's — the activation counter is per-block). critRatePct is the GENERIC unscoped crit-rate stat (text says plain 'Critical Rate', not 'of normal attacks'). Burst 'Affects 1 enemy with the highest final DEF. Deals 734.69% of final ATK as Burst Skill damage' (Wind) = burstCast → enemy → flatDamage 734.69 (burst-cast nuke → engine auto FB-exempt, snapshots pre-FB; single partless boss so 'highest final DEF' = the target; flatDamage default crit-on at sheet rate, no core label). || The two S2 ladders are SEPARATE blocks in skill2 (blockIdx 0 = CDR, blockIdx 1 = stats) → independent activation counters (bKey = owner:skill2:blockIdx), so the CDR escalates by FB-enter count and the stats by burst-cast count, exactly as the kit's two distinct 'number of times' clauses demand. Her S1 atkPct 16.16 (slot skill1) and S2 atkPct 7.72 (slot skill2) are distinct buff keys (different slot) → both live simultaneously. || NO lines dropped: no heal/shield/DEF/HP/lifesteal/gauge/reload/ammo/Hit-Rate/parts lines exist in this kit; unmodeled is empty. || ⚑ LIST (all UNMEASURED estimates): ⚑1 cadence tuple — SR pullsPerSec / chargeFrames 60 / reloadFrames 141 / ammo 6 / rolling-reload is a datamine estimate (no text tell of a special fire mode); low impact (her self-damage is minor, she is a support). Recipe: read rounds/charge-time + reload gap from any focus video. ⚑2 S1 first-fire phase (t=10 vs t=0) is the interval convention ⚑ — worth one early buff window; pin from a focused popup if she is ever graded. ⚑3 burstCdr escalating blast radius — /sim-battery diff before any board-level claim. Faithful>fit; measured>fudge.",
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "skill1: interval:10 pure periodic timer (no activation clause; skillCooldownsSec.skill1=10) — first fire t=10 is the convention ⚑2; 5s-on/5s-off = 50% duty is kit-faithful (short-buff character), do not extend without measurement",
+    "skill2(CDR): escalating burst-CDR ladder is a TEAM rotation lever (blast radius) — grade via /sim-battery diff, not self-sim; cumulative 1.82/4.02/6.62s by FB-enter count",
+    "burst: 'highest final DEF' target selection is the single partless boss under scope lock (no multi-target discrimination available); flatDamage crit-on default, no core label"
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "interval", "sec": 10 },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "buff", "stat": "atkPct", "value": 16.16, "durationSec": 5 }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "fullBurstEnter" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            { "kind": "burstCdr", "seconds": 1.82 },
+            { "kind": "burstCdr", "seconds": 2.2 },
+            { "kind": "burstCdr", "seconds": 2.6 }
+          ]
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "escalating",
+          "steps": [
+            {
+              "kind": "buff",
+              "stat": "atkPct",
+              "value": 7.72,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critRatePct",
+              "value": 4.21,
+              "durationSec": 5
+            },
+            {
+              "kind": "buff",
+              "stat": "critDamagePct",
+              "value": 13.22,
+              "durationSec": 5
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "enemy" },
+      "effects": [{ "kind": "flatDamage", "atkPct": 734.69 }]
+    }
+  ]
+}

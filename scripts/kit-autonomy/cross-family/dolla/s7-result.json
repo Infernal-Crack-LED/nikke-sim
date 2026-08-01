@@ -1,0 +1,72 @@
+{
+  "slug": "dolla",
+  "kitDescription": "Dolla is a Wind Supporter sniper whose value is squad support rather than personal damage. On a repeating timer she grants the whole team a 16.16% ATK buff that lasts 5 seconds. Every time the team enters Full Burst she shortens all allies' Burst Skill cooldowns, starting at 1.82 seconds and adding 2.2 then 2.6 seconds on the next two entries, settling at 6.62 seconds off per Full Burst from the third entry onward. Each time she personally fires her Burst Skill she stacks escalating team buffs — ATK up on her first cast, adding Critical Rate on her second, and Critical Damage from her third on — each lasting 5 seconds. Her Burst Skill itself is a single shot at the enemy with the highest DEF for 734.69% of her final ATK.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "ATK ▲ 16.16% for 5 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:10 -> allies -> buff atkPct 16.16 / 5s; first fire t=10 (flagged ⚑ phase convention); test D1 pins the 10s grid, 5s expiry, all-3-allies reach, 17 windows/180s, and kills the passive misread",
+        "blindSaid": "S5 agreed periodic + finite 5s window (its as-written failures here were harness-API artifacts, not override divergences); S6 encoded the identical block but guessed interval:20, self-flagged INVENTED for lack of the skillCooldownsSec datum",
+        "formulaCheck": "No activation clause -> internal-cooldown interval skill per SSOT (owner-stated mechanic, damage-calculation §2b / game-mechanics §9, snow-white precedent); the interval value comes from datamined skillCooldownsSec.skill1=10, NOT the burst CD — driver correct, blind's 20 a recon error; plain ATK% correctly sums into the (1+ΣATK%) bucket",
+        "fireRateOk": true,
+        "explanation": "Encoding matches prose and the repo's class-1 periodic convention with the datamined 10s cadence; fires at the implied cadence (17 windows asserted). Only residual is the ⚑ t=N first-fire phase, which the driver documented — a documented estimate, not a gotcha."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "FB enter: Burst CD ▼1.82/2.2/2.6 esc",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "fullBurstEnter -> allies -> escalating burstCdr [1.82, 2.2, 2.6], cumulative (engine applies steps 1..min(N,3)), independent per-block counter; D2 pins it four ways on timing: exact 2nd-cast gap 20s−1.82s, escalates past flat-1.82, beats non-cumulative flat-2.6 from 3rd FB, lags saturated-6.62",
+        "blindSaid": "S6 byte-identical block; S5 as-written read CDR through FB count which is ceiling-bound (5 FBs every arm — the liter-documented trap), adapted to a timing instrument on a sole-B2 vehicle and went GREEN preserving the same claims",
+        "formulaCheck": "burstCdr is the right primitive; 'Each subsequent effect triggers all effects before it' = cumulative 1.82/4.02/6.62 ✓; 'entering Full Burst' = any team FB regardless of caster, plain fullBurstEnter with no own-cast gate ✓",
+        "fireRateOk": true,
+        "explanation": "Driver and blind converged on the identical encoding; the only blind-side failure was an instrumentation choice (count ceiling), resolved by the timing instrument the driver also used. Exact-arithmetic pin (gap = baseCD − tier1 alone) proves tier magnitude, ordering, and cumulativeness."
+      },
+      {
+        "kitLine": "own Burst: ATK/Crit/CritDmg esc 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> allies -> escalating [atkPct 7.72 / critRatePct 4.21 / critDamagePct 13.22, 5s each]; D3 pins per-cast cumulative unlock, own-casts-only (apply frames == dolla cast frames, strictly fewer than team casts), all-3-allies reach, 5s expiries, and fails the flat all-three-on-cast-1 counterfactual",
+        "blindSaid": "S6 byte-identical block (same step order, same durations); S5 asserted exact apply counts casts×allies / (casts−1)×allies / (casts−2)×allies plus the fullBurstEnter mis-key over-credit counterfactual — GREEN once the fixture let dolla actually cast (its controlComp had crown taking every B2 slot)",
+        "formulaCheck": "'using Burst Skill' = own casts only, distinct from the sibling block's fullBurstEnter ✓; 'Critical Rate' is unscoped prose so generic critRatePct (not normal-attack-scoped) is correct per the §11 scoping distinction ✓; 5s wall-clock windows, no durationShots ✓",
+        "fireRateOk": true,
+        "explanation": "Trigger identity (the kit's deliberate fullBurstEnter-vs-burstCast split) is correctly encoded and discriminatingly tested in both the driver test and the adapted blind test. Cumulative-prefix semantics and cap-at-3 behavior match the prose; the 4th+-activation re-application is an engine-default assumption both agents share, documented by the blind override's caveat."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "734.69% final ATK Burst Skill damage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast -> enemy -> flatDamage atkPct 734.69, relying on engine defaults (flatDamage crit-on at sheet rate, noRange forced at deal site, burst-cast FB-exempt by timing); D4 asserts one hit per cast, atkPct exactly 734.69, bucket 'burst', fbMajorApplied always false, critEligible true",
+        "blindSaid": "S6 identical magnitude with crit:true/noRange:true/noFb:true set explicitly — behaviorally equivalent to the driver's defaults; S5 proved magnitude by linearity (zero/double deltas equal) and asserted FB-major exemption + one-hit-per-cast",
+        "formulaCheck": "Burst-cast damage lands BEFORE the FB window opens (MEASURED boundary rule, cinderella popup pair) -> no +0.5, no entry auras ✓; burst nuke crits, cores only if 'as core dmg' (no such label) ✓; no range ✓; % of final ATK uses live buffed ATK ✓",
+        "fireRateOk": true,
+        "explanation": "Exact prose magnitude, correct bucket routing and boundary timing; driver and blind differ only in explicit-vs-default flags, which are behaviorally identical. FB-exemption is directly asserted, not assumed."
+      },
+      {
+        "kitLine": "1 enemy unit(s) with highest final DEF",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "documented in caveats: 'highest final DEF' target selection is the single partless boss under scope lock, no multi-target discrimination available",
+        "blindSaid": "S6 listed the clause verbatim in unmodeled with the same single-boss-degenerate reasoning; S5 skipped it as a GAP (no enemy-selection channel in the v1 sim)",
+        "formulaCheck": "Single-boss sim makes DEF-ranking selection unobservable and damage-neutral; no formula consequence",
+        "fireRateOk": true,
+        "explanation": "All three agents agree the clause is inert at scope lock and recorded the skip. Acceptable documented gap; would only matter in a multi-target engine."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No REAL-GOTCHAs: all four load-bearing kit lines are FAITHFUL (right primitive, trigger, scope, duration, cumulative-escalation semantics) and the one inert clause (burst DEF-ranking target selection) is a DOCUMENTED_GAP recorded by driver and both blind agents. The blind re-derivations converged hard: S6's skill2 and burst blocks are byte-identical to the driver's, and the sole divergence — S1 interval 20 vs the driver's 10 — is a blind-side recon error (the blind writer lacked skillCooldownsSec and flagged its 20 as INVENTED; the datamined skillCooldownsSec.skill1=10 in the ground truth confirms the driver). The S5 as-written reds (12) were all harness-API/fixture artifacts of the blind writer (onEvent placement, null-vs-undefined, a crown fixture that silenced dolla's casts, and the count-ceiling CDR instrument), not override divergences; the adapted run preserving every kit claim and counterfactual went 24/24 GREEN, and the driver's own test independently discriminates against the passive-S1, flat-CDR, non-cumulative, saturated, and flat-stat-ladder wrong models. Discrimination holds on every load-bearing assertion. Same-model residual for the owner to spot-check: all agents share the repo convention that a clause-less skill is an interval timer (owner-stated mechanic, snow-white precedent) with the ⚑ t=N first-fire phase, and share the unverified assumption that the 4th+ escalation activation re-applies all three steps — one focused popup-cadence read of S1's first buff window and one late-fight escalation check would retire both; neither blocks GO.",
+  "model": "kimi-code/k3"
+}

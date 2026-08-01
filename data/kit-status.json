@@ -4730,6 +4730,40 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "dolla": {
+      "name": "Dolla",
+      "burst": "II",
+      "weapon": "SR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/dolla.json + scripts/kit-autonomy/manual-review/dolla.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "caveats": [
+        "skill1: interval:10 pure periodic timer (no activation clause; skillCooldownsSec.skill1=10) — first fire t=10 is the convention ⚑2; 5s-on/5s-off = 50% duty is kit-faithful (short-buff character), do not extend without measurement",
+        "skill2(CDR): escalating burst-CDR ladder is a TEAM rotation lever (blast radius) — grade via /sim-battery diff, not self-sim; cumulative 1.82/4.02/6.62s by FB-enter count",
+        "burst: 'highest final DEF' target selection is the single partless boss under scope lock (no multi-target discrimination available); flatDamage crit-on default, no core label"
+      ],
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-code-k3) converged; binding judge GO no gotchas",
+      "residual": "S1 interval first-fire phase (t=10 convention) and 4th+ escalation re-application are shared engine-default assumptions; cadence tuple datamine; burstCdr blast-radius (sim-battery before board claims)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }
