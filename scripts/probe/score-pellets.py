@@ -33,6 +33,18 @@ candidate can be screened before building Phase 2's full lifecycle-template mach
 --real-fixture scores against the 6 owner-counted real shots (scripts/tests/fixtures/pellets/
 groundtruth-f8-11.json) instead of a synthetic --labels file -- the mandatory held-out real-data
 screen (§1.2's honest limit).
+
+--audit-fidelity PATH (2026-07-31, generator fidelity gate): every estimator score this file
+produces is only as trustworthy as the generator's own rendering fidelity -- §2.2b found the
+synthetic screen scoring 3.6-12.4x further from zero than the real 6-shot screen, unexplained by
+the (separately real and separately fixed) label-placement bug. This flag answers whether the
+generator itself is the remaining explanation: for each labeled pellet at f8-11, find the nearest
+RAW (pre-filter) connected component the real detector would see, and report the cascade
+raw-found -> +min_area(25-750) -> +min_circ(>=0.55) -> BOTH. REFUSES (loud banner, exit 1) below a
+0.90 both-pass floor -- see FIDELITY_BOTH_PASS_FLOOR's docstring for exactly how that floor was
+derived (there is no direct real-pellet measurement to compare against; the docstring says so and
+what would fix that). Needs the labels' rendered frames on disk. Combine with
+--save-detections-fixture PATH to refresh the committed --audit-fidelity-selftest fixture.
 """
 import argparse
 import json
@@ -54,6 +66,228 @@ REAL_PELLET_RADIUS = 160   # matches every reference run's --pellet-radius at zo
 REAL_CENTER_EXCLUDE = 36
 
 DIST_TOLERANCE = 20  # zoomed px -- roughly a pellet radius at 1x-2x size; ISBI-style match gate
+
+# ------------------------------------------------------------ generator fidelity gate (2026-07-31)
+# See docs/handoffs/2026-07-30-pellet-reader-implementation-plan.md §2.2b "Generator fidelity gate
+# (2026-07-31)" (in-place, right after the re-score subsection) and the matching 2026-07-31
+# Correction log entry. Three consecutive wrong conclusions in this thread traced back to the same
+# root cause: the
+# synthetic generator (make-synthetic-pellets.py) was reasoned about but never independently
+# validated against reality -- every check so far tests the pipeline THROUGH the generator, never
+# the generator itself. This gate closes that gap: it asks, for each LABELED (true) pellet at each
+# counting frame (f8-11), whether the pixels the generator actually rendered survive the SAME
+# settled raw-detection + filter stage count-pellets.py applies live (WHITE_LO 210 threshold ->
+# min_area 25-750 -> min_circ >= 0.55), reporting the cascade rather than just a pass/fail count.
+FIDELITY_TOLERANCE = 20      # px -- nearest-raw-component match gate, same order as DIST_TOLERANCE
+FIDELITY_MIN_AREA = 25       # settled count-pellets.py --min-area default
+FIDELITY_MAX_AREA = 750      # settled count-pellets.py --max-area default
+FIDELITY_MIN_CIRC = 0.55     # settled count-pellets.py --min-circ default
+
+# The floor, and why it is 0.90 and not "measured real-pellet survival":
+#
+# There is NO direct measurement of real-pellet filter-survival, because the only real fixture
+# with per-shot detail (scripts/tests/fixtures/pellets/groundtruth-f8-11.json) carries COUNTS, not
+# labeled xy pellet positions (recorded limitation, plan §2.2b) -- so "nearest raw component to a
+# labeled real pellet" cannot be computed on it today. What DOES exist is an indirect DERIVATION:
+# the real 6-shot fixture's own measured bias for the current (unmodified) pipeline is -0.375
+# pellets (§2.2b re-score, `current` estimator), and the tighter per-estimator range across the
+# same table is -0.167 to -0.625 pellets, against a mean true count of ~8.4 pellets/shot. Reading
+# that bias as "the filter stage drops (true - observed) pellets" gives an implied real
+# filter-survival rate of 1 + bias/true_mean ~= 1 - 0.17/8.4 .. 1 - 0.63/8.4 = 0.98 .. 0.925,
+# centered close to ~0.93. This is a DERIVED reference, not a measured one -- it is one step removed
+# (bias-implied, not xy-matched) and folds in every OTHER source of bias the pipeline has (missed
+# shots, event segmentation, localization) alongside filter-survival specifically, so it is at best
+# an upper-bound-ish proxy, not a clean isolated number.
+#
+# The floor is set at 0.90 -- comfortably under that ~0.925-0.98 derived range, not at it -- so the
+# gate is conservative rather than hair-trigger on the (acknowledged) imprecision of the derivation.
+# docs/handoffs/QUEUE.md carries the owner-time ask to close this gap directly: label xy positions
+# on the 6 owner-counted real crops so this floor can be swapped for an actual measurement.
+FIDELITY_BOTH_PASS_FLOOR = 0.90
+
+
+def nearest_white_component(pos, comps, tol=FIDELITY_TOLERANCE):
+    """pos=(x,y); comps=raw per-frame component dicts (count-pellets.py's _raw_components/
+    --dump-detections output: cx, cy, is_red, area, circ, ... -- NO area/circ/center-exclude
+    filter applied yet). Returns the nearest WHITE (is_red False) component within `tol`, or None
+    if none is that close -- mirrors what --min-area/--max-area/--min-circ WOULD be filtering."""
+    best, best_d = None, tol
+    for c in comps:
+        if c.get('is_red'):
+            continue
+        d = math.hypot(pos[0] - c['cx'], pos[1] - c['cy'])
+        if d <= best_d:
+            best_d, best = d, c
+    return best
+
+
+def compute_fidelity_cascade(seq_detections):
+    """seq_detections: list of {'positions': [[x,y], ...], 'detections_by_offset': {8: [...raw
+    comps...], 9: [...], 10: [...], 11: [...]}}. Pure arithmetic, no file/subprocess IO -- this is
+    what --audit-fidelity-selftest pins against a committed fixture, and what the live
+    --audit-fidelity path (audit_fidelity()) feeds after running the real detector.
+
+    For each (labeled pellet, counting frame) pair this is a cascade, not four independent checks:
+    raw-found is the precondition for area/circ to mean anything (no component -> both fail by
+    construction), and 'passes_both' is the actual filter-survival outcome — the fraction that
+    would legitimately increment count-pellets.py's live per-frame pellet count."""
+    n_labeled = n_raw = n_area = n_circ = n_both = 0
+    for sd in seq_detections:
+        by_offset = sd['detections_by_offset']
+        for x, y in sd['positions']:
+            for offset in (8, 9, 10, 11):
+                comps = by_offset.get(offset, by_offset.get(str(offset), []))
+                n_labeled += 1
+                comp = nearest_white_component((x, y), comps)
+                if comp is None:
+                    continue
+                n_raw += 1
+                passes_area = FIDELITY_MIN_AREA <= comp['area'] <= FIDELITY_MAX_AREA
+                passes_circ = comp['circ'] >= FIDELITY_MIN_CIRC
+                n_area += passes_area
+                n_circ += passes_circ
+                n_both += (passes_area and passes_circ)
+
+    def frac(n):
+        return round(n / n_labeled, 4) if n_labeled else 0.0
+
+    return {
+        'n_labeled_pellet_frame_instances': n_labeled,
+        'raw_found': n_raw, 'raw_found_pct': frac(n_raw),
+        'passes_min_area': n_area, 'passes_min_area_pct': frac(n_area),
+        'passes_min_circ': n_circ, 'passes_min_circ_pct': frac(n_circ),
+        'passes_both': n_both, 'passes_both_pct': frac(n_both),
+    }
+
+
+def run_fidelity_detections(seq, tmp_dir):
+    """Subprocess to count-pellets.py --dump-detections -- the RAW pre-filter per-frame component
+    list (WHITE_LO 210 threshold, connected components, area+circularity, NO area/circ/center-
+    exclude decision applied) that this repo already ships and already uses for cache-then-sweep
+    (see count-pellets.py's _raw_components / CACHEABLE_PARAMS block). Reused here rather than
+    re-implementing WHITE_LO thresholding a third time (make-synthetic-pellets.py's own
+    extract_patch_library already duplicates it once, for patch harvesting)."""
+    frames_dir = Path(seq['frames_dir'])
+    w, h = png_dims(frames_dir / seq['frames'][0])
+    cx, cy = seq['crosshair']
+    crosshair_file = tmp_dir / f"fcross_{seq['seq']}.json"
+    crosshair_file.write_text(json.dumps({
+        f: {'x': round(cx / w * 1000), 'y': round(cy / h * 1000)} for f in seq['frames']
+    }))
+    dets_out = tmp_dir / f"fdet_{seq['seq']}.json"
+    cmd = [
+        PY, str(COUNTER), str(frames_dir),
+        '--temporal', '--backend', 'opencv',
+        '--crosshair-file', str(crosshair_file),
+        '--center-exclude', str(seq['center_exclude']),
+        '--min-area', str(FIDELITY_MIN_AREA), '--max-area', str(FIDELITY_MAX_AREA),
+        '--min-circ', str(FIDELITY_MIN_CIRC),
+        '--pellet-radius', str(seq['pellet_radius']), '--marker-radius', '65',
+        '--max-pellet-frames', '13',
+        '--dump-detections', str(dets_out), '--force',
+    ]
+    proc = subprocess.run(cmd, capture_output=True, text=True)
+    if proc.returncode != 0:
+        print(proc.stderr, file=sys.stderr)
+        raise SystemExit(f'count-pellets.py --dump-detections exited {proc.returncode} on seq{seq["seq"]}')
+    return json.loads(dets_out.read_text())
+
+
+def build_seq_detections(labels_sequences, tmp_dir):
+    """Run run_fidelity_detections per sequence and slice out just the f8-11 raw component lists
+    the cascade needs -- the shared step between the live --audit-fidelity path and
+    --save-detections-fixture (which persists this same structure for the selftest fixture)."""
+    out = []
+    for seq in labels_sequences:
+        dets = run_fidelity_detections(seq, tmp_dir)
+        frame_files = dets['frame_files']
+        detections = dets['detections']
+        by_offset = {}
+        for offset in (8, 9, 10, 11):
+            fname = f'f_{offset:05d}.png'
+            by_offset[offset] = detections[frame_files.index(fname)] if fname in frame_files else []
+        out.append({
+            'seq': seq['seq'], 'video': seq['video'],
+            'positions': seq['positions'], 'detections_by_offset': by_offset,
+        })
+    return out
+
+
+def audit_fidelity(labels_path, save_fixture_path=None):
+    """The live gate: run the real detector's raw-detection stage against a generated labels.json's
+    rendered frames (must exist on disk -- reproduce first, per the same convention --audit-labels
+    uses) and report + enforce the fidelity cascade. REFUSES (loud banner, exit 1) if the both-pass
+    rate falls below FIDELITY_BOTH_PASS_FLOOR -- same style as count-pellets.py's --load-detections/
+    --dump-detections guards and make-synthetic-pellets.py's --audit-labels."""
+    check_labels_countable(labels_path)
+    data = json.loads(Path(labels_path).read_text())
+    tmp_dir = Path(labels_path).parent / '_fidelity_tmp'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    seq_detections = build_seq_detections(data['sequences'], tmp_dir)
+    if save_fixture_path:
+        Path(save_fixture_path).write_text(json.dumps({
+            '_source': str(labels_path),
+            '_note': ('Per-sequence positions + RAW (pre-filter) f8-11 component detections from '
+                       'count-pellets.py --dump-detections, sliced to just the 4 counting frames. '
+                       'Pins compute_fidelity_cascade() against a known-good result -- see '
+                       'score-pellets.py --audit-fidelity-selftest / docs/handoffs/'
+                       '2026-07-30-pellet-reader-implementation-plan.md §1.2 fidelity gate.'),
+            'sequences': seq_detections,
+        }, indent=2))
+        print(f'wrote detections fixture -> {save_fixture_path}', file=sys.stderr)
+    report = compute_fidelity_cascade(seq_detections)
+    report['n_sequences'] = len(seq_detections)
+    report['tolerance_px'] = FIDELITY_TOLERANCE
+    report['min_area'] = FIDELITY_MIN_AREA
+    report['max_area'] = FIDELITY_MAX_AREA
+    report['min_circ'] = FIDELITY_MIN_CIRC
+    report['both_pass_floor'] = FIDELITY_BOTH_PASS_FLOOR
+    print(json.dumps(report, indent=2))
+    if report['passes_both_pct'] < FIDELITY_BOTH_PASS_FLOOR:
+        print('=' * 78, file=sys.stderr)
+        print('!! GENERATOR FIDELITY GATE FAILED -- REFUSING !!', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        print(f"  Only {report['passes_both_pct'] * 100:.1f}% of labeled pellets survive the "
+              'settled raw-detection + filter stage at f8-11 '
+              f"(floor: {FIDELITY_BOTH_PASS_FLOOR * 100:.0f}%).", file=sys.stderr)
+        print('  This generator composites pellets that the CONFIGURED counter throws away at a', file=sys.stderr)
+        print('  materially higher rate than the derived real-pellet reference -- scores measured', file=sys.stderr)
+        print('  on this set characterize the GENERATOR, not the estimator/detector under test.', file=sys.stderr)
+        print(f"  Cascade: raw_found={report['raw_found_pct']*100:.1f}% -> "
+              f"+min_area={report['passes_min_area_pct']*100:.1f}% -> "
+              f"+min_circ={report['passes_min_circ_pct']*100:.1f}% -> "
+              f"BOTH={report['passes_both_pct']*100:.1f}%", file=sys.stderr)
+        print('  Do not treat estimator scores from this generator as a bias measurement until', file=sys.stderr)
+        print('  this gate passes -- see docs/handoffs/2026-07-30-pellet-reader-implementation-', file=sys.stderr)
+        print('  plan.md §2.2b "Generator fidelity gate (2026-07-31)".', file=sys.stderr)
+        print('=' * 78, file=sys.stderr)
+        raise SystemExit(1)
+    print(f"audit-fidelity: PASS -- {report['passes_both_pct']*100:.1f}% both-pass "
+          f"(floor {FIDELITY_BOTH_PASS_FLOOR*100:.0f}%)", file=sys.stderr)
+
+
+FIDELITY_SELFTEST_FIXTURE = (REPO / 'scripts' / 'tests' / 'fixtures' / 'pellets' /
+                              'synthetic-fidelity-slice.json')
+
+
+def audit_fidelity_selftest():
+    """Pins compute_fidelity_cascade() against a committed fixture (4 real synthetic sequences, one
+    per video, from scratchpad/pellets/synthetic-v3-n120 -- pre-baked f8-11 raw detections, no
+    images/subprocess/venv-cv2 needed at selftest time) -- constraint 9 self-validation, same
+    precedent as run16-tracks-slice.json / h1-cache-slice.json."""
+    data = json.loads(FIDELITY_SELFTEST_FIXTURE.read_text())
+    seq_detections = [
+        {**s, 'detections_by_offset': {int(k): v for k, v in s['detections_by_offset'].items()}}
+        for s in data['sequences']
+    ]
+    report = compute_fidelity_cascade(seq_detections)
+    expected = data['_expected']
+    got = {k: report[k] for k in expected}
+    ok = got == expected
+    print(f'expected: {expected}')
+    print(f'got:      {got}')
+    print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
+    return 0 if ok else 1
 
 
 def png_dims(path):
@@ -501,10 +735,30 @@ def main():
     ap.add_argument('--estimators', action='store_true',
                      help='also score the pre-registered cheap-estimator list (median/max/quantile '
                           'aggregations) alongside the current-pipeline control')
+    ap.add_argument('--audit-fidelity', metavar='PATH',
+                     help='GENERATOR FIDELITY GATE: for each labeled pellet at f8-11, find the '
+                          'nearest raw (pre-filter) connected component and report the cascade '
+                          '(raw-found -> +min_area -> +min_circ -> BOTH); REFUSES (exit 1) if the '
+                          'both-pass rate falls below FIDELITY_BOTH_PASS_FLOOR (0.90, a DERIVED '
+                          'reference -- see the constant\'s docstring). Needs the labels\' rendered '
+                          'frames on disk (reproduce first, same convention as --audit-labels).')
+    ap.add_argument('--save-detections-fixture', metavar='PATH',
+                     help='(--audit-fidelity) also write the per-sequence positions + raw f8-11 '
+                          'detections used, for building/refreshing the --audit-fidelity-selftest '
+                          'committed fixture')
+    ap.add_argument('--audit-fidelity-selftest', action='store_true',
+                     help='pin compute_fidelity_cascade() against the committed '
+                          'synthetic-fidelity-slice.json fixture and exit -- no images/subprocess '
+                          'needed (constraint 9 self-validation)')
     ap.add_argument('--selftest', action='store_true')
     args = ap.parse_args()
     if args.selftest:
         raise SystemExit(selftest())
+    if args.audit_fidelity_selftest:
+        raise SystemExit(audit_fidelity_selftest())
+    if args.audit_fidelity:
+        audit_fidelity(args.audit_fidelity, save_fixture_path=args.save_detections_fixture)
+        return
     if not args.labels and not args.real_fixture:
         ap.error('--labels or --real-fixture is required (or use --selftest)')
     run(args)
