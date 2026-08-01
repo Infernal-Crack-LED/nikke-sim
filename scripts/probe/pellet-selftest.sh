@@ -29,6 +29,7 @@ run "$HERE/analyze-pellet-tracks.py" --selftest
 run "$HERE/temporal-count-regression.py"
 run "$HERE/score-pellets.py" --selftest
 run "$HERE/score-pellets.py" --audit-fidelity-selftest
+run "$HERE/extract-groundtruth-positions.py" --selftest
 run "$HERE/make-synthetic-pellets.py" --audit-selftest
 
 if [ "$fail" -ne 0 ]; then
