@@ -1518,6 +1518,13 @@ white/red COUNT does. Fixed; the remaining (smaller, still frame-constant) FP co
 by hand to be real static-background clutter within `pellet_radius` of the crosshair — genuine
 given this generator's own honest limitation (see below), not a residual bug.
 
+> **⛔ SUPERSEDED 2026-07-31 — the baseline below was scored on a mislabeled set.** The generator's
+> pellet placement (`r = max(8, gauss(64, 40))`) let ~28.9% of labeled pellets land inside
+> `--center-exclude 36` or off-frame — pellets the correctly-configured counter can never see,
+> labeled as truth anyway. See the corrected baseline immediately below this block, and the
+> generator fix (commit `d18f014`, "§2.2b synthetic screen measured the generator's own
+> center-exclude violation, not the estimators"). Kept for the record, do not use for comparison.
+
 **Baseline (current pipeline, `--seed 20260731 --sequences-per-video 3`, 12 sequences across all
 four videos):**
 
@@ -1534,6 +1541,29 @@ sat outside the fight-window bound the generator was later given, idx 5583-5614)
 2.314/0.593/0.744 instead — a phantom improvement anyone diffing against the stale artifact would
 have chased. The generator itself was never the problem; only the leftover output was. Regenerated
 with the exact command below and rescored to confirm the numbers above still hold from a clean run.
+
+**✅ RE-BASELINED 2026-07-31, fixed generator (same seed/params, `--sequences-per-video 3`, 12
+sequences; `make-synthetic-pellets.py --audit-labels` on the regenerated `labels.json` reports
+`uncountable_fraction: 0.0` — 89/89 labeled pellets are inside `[42, 160]px` of the crosshair and
+on-frame). Reproduced twice from a clean regeneration (not just re-scoring the same render), byte-
+identical:**
+
+```
+count RMSE: 2.012   overall Jaccard: 0.592   overall F1: 0.744
+phase-resolved recall:  f1 .742  f2 .753  f3 .506  f4 .506  f5 .528  f6 .596  f7 .719
+                         f8 .753  f9 .753  f10 .753  f11 .742  f12 .427  f13 .011
+```
+
+All three overall metrics improved (RMSE 2.141→2.012, Jaccard 0.511→0.592, F1 0.676→0.744) and
+every phase-resolved recall value moved up or held — consistent with removing labels the counter
+was structurally guaranteed to miss. The f3-4 occlusion dip and f12-13 fade-driven collapse are
+still present and still attributable to the generator's own lifecycle curve, per the original
+finding below.
+
+Reproduce: `scripts/probe/.venv/bin/python scripts/probe/make-synthetic-pellets.py --out
+scratchpad/pellets/synthetic-v3-baseline --seed 20260731 --sequences-per-video 3` then
+`scripts/probe/.venv/bin/python scripts/probe/score-pellets.py --labels
+scratchpad/pellets/synthetic-v3-baseline/labels.json` (main-tree absolute paths from a worktree).
 
 **What this result actually shows.** `make-synthetic-pellets.py`'s own `lifecycle_scale()` renders
 1x→2x by f3, holds f3-4, shrinks back to 1x by f11, and `lifecycle_alpha()` fades f12-13 — so the
@@ -2166,6 +2196,16 @@ pre-committed before Phase 2 code is written — do not adjust them after seeing
 > by-construction-passability concern stands as a reason the held-out check is **mandatory**, not
 > optional — unchanged from the original flag.
 
+> **⚠ Consequence of the §1.2/§2.2b generator bug for THIS criterion (recorded 2026-07-31, fixed the
+> same day, commit `d18f014`).** With 28.9% of the old labeled set's pellets structurally
+> uncountable (inside `--center-exclude`, off-frame, or beyond `--pellet-radius`), the maximum
+> achievable recall on that set was **`1 − 0.289 = 0.711`** — below the pre-committed **recall ≥
+> 0.80** floor, for EVERY candidate, regardless of how good its detector is. The floor was
+> **unreachable by any counter** on the old set, not merely hard. The fix does not relax 0.90/0.80 —
+> it restores the set to one where clearing them is possible at all, which is the opposite of
+> adjusting a criterion after seeing data (the numbers are unchanged; what changed is whether the
+> set can honestly be scored against them).
+
 **Owner spot-check gate.** After the metric criteria above are met, present the owner with 10
 randomly selected shots (5 high-count, 5 low-count) showing the f8–11 frames alongside the
 pipeline's per-frame counts. If the owner judges >2 of 10 as clearly wrong, the metrics are passing
@@ -2279,7 +2319,18 @@ owner — it does **not**, by itself, retire steps 4–6 or change Phase 2's sta
 If none clear both screens, their failure characterizes what steps 4–6 need to fix (which frames,
 which direction) rather than licensing starting them in this pass.
 
+> **⛔ VERDICT SUPERSEDED 2026-07-31.** The synthetic screen below was scored on a mislabeled set —
+> the generator placed ~28.9% of labeled pellets where the correctly-configured counter is
+> guaranteed to reject them (inside `--center-exclude`, off-frame), then counted them as truth
+> anyway (see the §1.2 baseline SUPERSEDED note above; fix in commit `d18f014`). **The synthetic
+> screen was invalid, so the verdict it produced does not stand.** The cheap-estimator question is
+> **UNRESOLVED pending the re-score below**, not answered by the results that follow this notice.
+> The corrected re-score is filed immediately after the original (kept for the record, not for
+> comparison as if it were still valid).
+
 #### Results (2026-07-31) — **NONE of the 7 clear the ±0.25 criterion. `simplerPath` does NOT retire steps 4–6.**
+
+#### (⛔ SUPERSEDED — see notice above and the re-score that follows this section)
 
 Synthetic set regenerated at n=120 (`--sequences-per-video 30`, seed 20260731) per §2.2a; real
 screen is the full 6-shot fixture. Both via `score-pellets.py --estimators` (synthetic) /
@@ -2349,6 +2400,68 @@ sizing decision was not invalidated in practice — but it is a concrete illustr
 flagged the n=12-derived SD as "a planning prior, may differ for new candidates," and argues for
 treating any single small-n SD estimate (including this task's own real-screen SD) with the same
 caution before it is used to size a future set.
+
+#### Re-score (2026-07-31, fixed generator) — corrected, and it complicates rather than resolves the diagnosis
+
+Regenerated at **n=120** (`--sequences-per-video 30`, same seed `20260731`) with the fixed
+generator (commit `d18f014`). `make-synthetic-pellets.py --audit-labels` on the regenerated
+`labels.json`: `n_labeled: 884, n_inside_center_exclude: 0, n_off_frame: 0,
+n_outside_pellet_radius: 0, uncountable_fraction: 0.0` — PASS, 0 skipped backgrounds. Re-scored with
+`score-pellets.py --labels <path> --estimators`, reproduced twice, byte-identical.
+
+**Synthetic screen (n=120, fixed generator) — still a decisive fail, all 7, small SE:**
+
+| estimator                  | bias (pellets), OLD (invalid) | bias (pellets), NEW (fixed) | Δ (recovered) | SD (new) | SE (new) | RMSE (new) | vs ±0.25  |
+| -------------------------- | ----------------------------- | --------------------------- | ------------- | -------- | -------- | ---------- | --------- |
+| `current` (control)        | −2.462                        | **−2.142**                  | +0.320        | 1.545    | 0.141    | 2.637      | 8.6× over |
+| `median_persist_readable`  | −2.617                        | **−2.350**                  | +0.267        | 1.713    | 0.156    | 2.904      | 9.4× over |
+| `max_nonpeak_persist`      | −2.192                        | **−1.917**                  | +0.275        | 1.559    | 0.142    | 2.466      | 7.7× over |
+| `p75_nonpeak_persist`      | −2.567                        | **−2.298**                  | +0.269        | 1.710    | 0.156    | 2.860      | 9.2× over |
+| `p90_nonpeak_persist`      | −2.301                        | **−2.003**                  | +0.298        | 1.617    | 0.148    | 2.570      | 8.0× over |
+| `median_readable_nofilter` | −2.475                        | **−2.075**                  | +0.400        | 1.620    | 0.148    | 2.628      | 8.3× over |
+| `max_nonpeak_nofilter`     | −2.042                        | **−1.717**                  | +0.325        | 1.421    | 0.130    | 2.225      | 6.9× over |
+
+Position-level (raw/`is_pellet` family): precision **0.940** (vs 0.943 old, clears ≥0.90), recall
+**0.550** (vs 0.517 old, still fails ≥0.80 badly). Persisted family: precision **0.938** (vs 0.943),
+recall **0.529** (vs 0.500). `degenerate_nonpeak_sequences: 0` (same as before).
+
+**Real screen (6 shots) — unaffected by this fix, unchanged, reproduced for completeness:** the real
+fixture never used the synthetic generator, so its numbers are byte-identical to the original
+§2.2b table (`current` −0.375, `median_persist_readable` −0.583, `max_nonpeak_persist` −0.500,
+`p75_nonpeak_persist` −0.625, `p90_nonpeak_persist` −0.550, `median_readable_nofilter` −0.167,
+`max_nonpeak_nofilter` −0.167; `degenerate_nonpeak_sequences: 1`).
+
+**The fix recovered ~0.27–0.40 pellets of bias, not the ~1.8–2.0 the diagnosis predicted, and the
+"synthetic is colder than real" gap is NOT resolved.** The diagnosis's arithmetic (removing ~2.00
+structurally-uncountable labels/sequence should recover ~2.00 pellets of bias) assumed the detected
+count would stay roughly constant while the true count dropped. That assumption does not hold under
+a **resampling** fix (as instructed: never clamp, redraw instead): each sequence's `n_pellets` draw
+(`randint(5,10)`, mean 7.5) is unchanged, so removing the escape valve at low radius means **100% of
+that same pellet budget must now fit inside the countable annulus `[42,160]px`, instead of ~71% of
+it before.** The countable zone got measurably denser, not less crowded — the radial mean shifted
+from 64px (documented) to **82.3px measured on the n=120 fixed set**, and more of the budget sits in
+the outer, still-occlusion-prone band rather than a stretch of it being invisibly discarded near
+center. The higher local density largely offset the removed-labeling-artifact gain: detected counts
+dropped by roughly the same amount true counts (correctly) dropped. This directly contradicts this
+section's own honest-limit prediction ("makes the set slightly EASIER") — that prediction has not
+held up against measurement and should not be treated as settled; the actual effect on difficulty is,
+by this reading, closer to neutral-to-harder in the annulus, not easier. Reported, not diagnosed
+further — root-causing why the current detector's recall stays ~0.5–0.75 under this crowding is out
+of this task's scope.
+
+**"Synthetic colder than real" stands, only modestly narrowed.** Old ratio of |synthetic bias| to
+|real bias| per estimator ranged 4.1×–14.8×; new ratio ranges **3.6×–12.4×** — barely moved. The
+labeling artifact this task fixed was real and worth fixing on its own terms (a mislabeled gate is
+untestable regardless of what it does to any one number), but it does **not** account for the bulk
+of the synthetic-vs-real disagreement the original §2.2b flagged as unanticipated. That disagreement
+remains **unexplained** — retracting the "artifact explains it" framing along with the invalid
+verdict, not replacing it with a confirmed cause.
+
+**Verdict, corrected: STILL none of the 7 clear the ±0.25 criterion, on either screen, after the
+fix.** The synthetic screen still fails all 7 by 6.9–9.4× the budget with tight SE (0.13–0.16) — a
+clear, confident fail, not a near-miss. `simplerPath` still does **not** retire Phase 2 steps 4–6.
+This re-score is the answer to the "cheap-estimator question" the invalid verdict above left
+unresolved; it is a **fail**, not a pass obscured by the label bug.
 
 ### 2.3 — Kill conditions
 
@@ -2571,3 +2684,25 @@ not viable — perception failure at pellet resolution). Phase 1 is unblocked.
   assumption rests on a single video, and finding out after implementing is the expensive path.
   0.6 because the headline "22% of shots missed" may be an artifact of a cadence-derived denominator
   that ignores fire-holds — worth retiring before it drives work.
+- **2026-07-31 — §1.2/§2.2b synthetic labeled set was mislabeled; fixed, re-baselined, re-scored
+  (commit `d18f014`).** `make-synthetic-pellets.py`'s pellet placement (`r = max(8, gauss(64, 40))`)
+  let ~28.9% of labeled pellets land inside `--center-exclude 36` or off-frame — positions the
+  correctly-configured counter is guaranteed to reject, labeled as truth anyway. This alone forced
+  the §2.2 recall≥0.80 floor to be unreachable on the old set (max achievable recall 0.711) and
+  fully explains why the estimators scored ~2 pellets colder on synthetic than on the real 6-shot
+  fixture. **Fixed** by resampling (never clamping) into `[CENTER_EXCLUDE + margin, PELLET_RADIUS]`
+  and rejecting/skipping placements that would clip a frame edge; a standing guard
+  (`make-synthetic-pellets.py --audit-labels`, wired into `score-pellets.py` before it will score any
+  synthetic labels file, `--audit-selftest` pinned in `pellet-selftest.sh`) now refuses to score a
+  mislabeled set again. **Re-baselined §1.2** (RMSE 2.141→2.012, Jaccard 0.511→0.592, F1
+  0.676→0.744, every phase-resolved recall value up) and **re-scored §2.2b's 7 pre-registered
+  estimators** on both screens (old verdict marked SUPERSEDED in place, not deleted). **The fix did
+  NOT resolve the "synthetic colder than real" anomaly**: bias recovered only ~0.27–0.40 pellets
+  (not the ~1.8–2.0 the diagnosis predicted) because a resampling fix keeps each sequence's
+  `n_pellets` budget fixed and forces 100% of it into the countable annulus instead of ~71%,
+  measurably densifying it (mean radius 64px documented → 82.3px measured) and largely offsetting
+  the removed-labeling-artifact gain. All 7 estimators still fail the ±0.25 bias criterion decisively
+  (6.9–9.4× over budget) on the corrected synthetic screen. `simplerPath` still does not retire
+  Phase 2 steps 4–6; the cheap-estimator question, reopened by the SUPERSEDED verdict, is answered
+  again — as a fail, on corrected data. The residual synthetic-vs-real gap is filed as unexplained,
+  not attributed to this bug.

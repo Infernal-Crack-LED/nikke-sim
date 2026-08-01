@@ -222,6 +222,48 @@ Needs a per-video ROI on/off comparison against each video's own independent anc
 running-total pellet lattice for `marciana`, the `noir-solo-recon.json` band anchors for `noir`)
 before touching the `--ammo-roi-x0`/`--ammo-roi-y0` defaults.
 
+**2026-07-31 do REAL pellets land within `--center-exclude 36`? (RECORD, DO NOT ACT ON — n=1 video,
+incidental, discovered while fixing the synthetic-labeled-set generator, not investigated further).**
+Replayed the existing `scratchpad/pellets/h1-cache-test/detections.json` cache (exact slug
+`marciana`, SG/Iron — not `marciana-marine-study`; the "with ROI" / H1-reference config, 43/29/
+7.3/0.17) with `--center-exclude 0` so components inside the normally-excluded annulus are visible,
+then read the radial distribution of `is_pellet` white-track positions (non-red) relative to each
+frame's own tracked crosshair, restricted to `pellet_radius=160`.
+
+- No persistent, high-lifetime component sits near `r≈0` (max track life anywhere is 120 frames, at
+  mean `r≈1069px` — nowhere near the crosshair) — the "distinguish the reticle from real pellets"
+  concern this question anticipated **did not materialize in this reading**, at least not as a
+  single dominant blob; every track touching `r<36` has life ≤7 frames, the same short lifetime
+  real pellet tracks show generally.
+- Of 919 `is_pellet` tracks that are ever within `pellet_radius` at all, **58 (6.3%)** dip below
+  `r=36` at some point in their life; 93/2230 pellet-radius frame-instances (4.2%) sit below `r=36`.
+  Both are far below the synthetic generator's pre-fix ~24–29% (see the generator-fix commit
+  `d18f014` and this doc's plan-doc correction log) but are **not zero** — if this reading is
+  representative, `--center-exclude 36` is discarding a modest fraction of real pellets, a genuine
+  cold-bias candidate on the live pipeline, distinct from the synthetic-labeling artifact.
+- **Caveat that keeps this UNANSWERED, not a finding:** this cache's crosshair track is the same one
+  the "2026-07-29 near-band diagnostic" entry above flagged as possibly **mislocated** (placed near
+  the ammo-box/right-edge of the crop rather than the actual impact cluster on at least one other
+  video). Whether that mislocation affects `marciana`'s own track here has not been checked. n=1
+  video, one reading, no cross-video replication, no comparison against a labeled real-pellet
+  ground truth — do not change `--center-exclude`, do not touch the synthetic generator's annulus
+  bound on the strength of this alone, and do not draw a conclusion from it.
+
+Re-derivation (uses the already-cached detections, ~1s, no venv setup beyond the existing probe
+venv):
+
+```
+scripts/probe/.venv/bin/python scripts/probe/count-pellets.py \
+  --load-detections scratchpad/pellets/h1-cache-test/detections.json \
+  --temporal --backend opencv --center-exclude 0 \
+  --dump-tracks /tmp/h1-ce0-tracks.json
+```
+
+then read `tracks[].{is_red,is_pellet,first,last,xs,ys}` against `cross_positions[frame_idx]` per
+track frame and bucket `hypot(x-cx, y-cy)` for `is_pellet and not is_red` tracks within
+`pellet_radius=160` (ad hoc analysis, not a committed script — this is a record-only reading, not a
+standing instrument).
+
 ### U34 — Max-Ammunition ▲ EXPIRY over-cap: does the belt clip immediately, or lazily at the next ▼? (opened 2026-07-23)
 
 The engine clips the current belt to the new cap when a Max-Ammunition ▼ (`maxAmmoPct<0`) LANDS
