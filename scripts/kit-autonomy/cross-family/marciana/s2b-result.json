@@ -1,0 +1,92 @@
+{
+  "slug": "marciana",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10.95% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Lifesteal-style heal-over-time; no damage of its own. Fires once per emptied magazine (SG, ammo 9, reloadFrames 111 → roughly every mag cycle).",
+      "durationSemantics": "'over 3 sec' = heal-over-time → heal effect with ticks:3, intervalSec:1 (3 recovery events spread over 3s), NOT a single instant event and NOT durationSec on a buff.",
+      "triggerIdentity": "lastBullet ('Activates when the last bullet hits the target' — the per-magazine last-bullet trigger). Not shotFired, not hitCount, not interval.",
+      "targetSet": "allies (all allies, including self) — every ally receives recovery events.",
+      "nearestWrongModel": "Dropped as 'defensive, no damage' (or collapsed to a single instant heal, ticks:1). The heal itself moves zero damage, so an inertness-only reading skips it — but it is the recovery-event source that lights teammate 'recovery' triggers (Crown is IN the control fixture as B2), and ticks:1 under-emits refreshes for duration-limited on-recovery consumer buffs.",
+      "distinguishingAssertion": "In controlComp with marciana, capture cfg.onEvent buffApply events from crown's recovery-triggered blocks: count them with the shipped override, then re-run with withPatchedOverride('marciana', o => strip the skill1 heal) — the count must DROP (green under faithful, unchanged/zero-delta under the skipped reading). Additionally, per marciana reload event there must be 3 spaced recovery-driven activations (~1s apart), not 1 (kills the ticks:1 misread).",
+      "inertness": "Removing this line must NOT change marciana's own totalDamage (weapon-only damage), and must not change any unit's damage in a comp with no on-recovery consumer.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Incoming healing ▲ 26.98% for 3 sec",
+      "disposition": "UNMODELED",
+      "scope": "Healing-received amplifier — modifies heal magnitude, and the engine models no heal magnitudes or HP pool; no StatKey exists for incoming healing.",
+      "durationSemantics": "3 seconds wall-clock ('for 3 sec' — genuine durationSec, no round-count trap here).",
+      "triggerIdentity": "lastBullet (same ■ header as line 1).",
+      "targetSet": "alliesTopAtk count:2 with byFinalAtk:true — the kit literally says 'highest final ATK', which per the A3 rule means LIVE effectiveAtk ranking, not static base ATK.",
+      "nearestWrongModel": "If modeled at all: encoded as some live stat buff (e.g. mistaken for an ATK or damage buff because it carries a ▲ and a percentage), or — if ever given a real stat — ranked by static ATK (byFinalAtk omitted).",
+      "distinguishingAssertion": "Assert NO buffApply event exists carrying value 26.98 (or any stat) attributable to marciana's skill1 second block, and totals(res) are bit-identical with this line stripped vs present. The line belongs verbatim in unmodeled.skill1.",
+      "inertness": "Must move zero damage for every unit; must not appear as any live StatKey.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 28.11% of user's Max HP as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Instant team heal on cast; zero damage of its own. Magnitude (28.11% caster Max HP) is unrepresentable in the heal effect (no HP amounts modeled) — record it in the note; the modeled substance is the recovery EVENT.",
+      "durationSemantics": "Instant, one-shot per activation → heal with default ticks:1.",
+      "triggerIdentity": "burstCast — 'Activates when using Burst Skill' is THIS unit casting her own burst. Emphatically NOT fullBurstEnter. This is the trap line: marciana is Burst II and the control fixture already contains crown (also Burst II), so burstCast and fullBurstEnter genuinely diverge — marciana only wins some B2 rotations.",
+      "targetSet": "allies (all allies, including self).",
+      "nearestWrongModel": "Keyed to fullBurstEnter — fires on EVERY team Full Burst, including rotations where crown (co-B2) took the burst slot, over-crediting every on-recovery consumer (Crown herself) on rotations marciana never burst.",
+      "distinguishingAssertion": "Capture burstCast and fullBurstStart events plus recovery-driven consumer activations: the number of skill2 heal firings must equal the count of marciana's OWN burstCast events (filter by her slot), which in the crown-co-B2 fixture is expected to be STRICTLY LESS than the fullBurstStart count. Under the nearest-wrong model firings == fullBurstStart count → RED. If the rotation happens to give marciana zero casts, assert zero firings (and add a variant comp where she demonstrably casts).",
+      "inertness": "On rotations where crown bursts and marciana does not, this block must fire nothing.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storage: Stores excess healing, 27.87% MaxHP",
+      "disposition": "UNMODELED",
+      "scope": "Excess-healing storage (shield-like damage absorb built from overheal) — no HP pool, no healing magnitudes, no damage taken in v1; nothing to store.",
+      "durationSemantics": "10 seconds ('Lasts for 10 sec').",
+      "triggerIdentity": "burstCast (a line inside the unit's own burst block).",
+      "targetSet": "allies (all allies) per the ■ header, though the stored pool derives from the SKILL USER's received healing and her Max HP.",
+      "nearestWrongModel": "Encoded as a 'shield' effect (it is shield-shaped). That would be actively WRONG in this engine: shield effects emit shielded events and satisfy 'shielded' triggers / requiresShielded gates on teammates — the kit text says 'Storage', not Shield, so shield-synergy kits must NOT be lit by it.",
+      "distinguishingAssertion": "Assert marciana's override emits ZERO shield events (no 'shielded' trigger activations attributable to her) across a full run — green when the line sits in unmodeled.burst, red if it was encoded as kind:'shield'.",
+      "inertness": "Must move zero damage and must not open any shield-gated block on any teammate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 20.9% of user's DEF for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Team DEF buff — offensively inert in v1 (defPct is declared inert; no unit takes damage), but the schema keeps inert stat buffs for future consumers/scalers.",
+      "durationSemantics": "10 seconds wall-clock (durationSec:10).",
+      "triggerIdentity": "burstCast (the unit's own burst block; same co-B2 contention as skill2 — fires only on rotations marciana bursts).",
+      "targetSet": "allies (all allies, including self).",
+      "nearestWrongModel": "(a) Keyed to fullBurstEnter (fires on crown's rotations too), or (b) duration dropped → permanent DEF buff. Both are magnitude-invisible on damage (defPct inert), so ONLY an event-log assertion catches them. Note also the value is '% of the skill user's DEF' (caster-scaled); no casterDefPct key exists, so a defPct 20.9 encoding is the documented approximation — semantics differ but both are inert, so this is not a FIX.",
+      "distinguishingAssertion": "Capture buffApply events with stat 'defPct', value 20.9: one application per marciana burstCast (count == her burstCast count, not the FB count), each with expiresFrame == castFrame + 600 (10s at 60fps), targeting all 5 slots.",
+      "inertness": "Toggling this buff on/off must leave every unit's totalDamage bit-identical (defPct inert in v1) — assert totals equality with the block stripped.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:lastBullet all-ally heal-over-3s (recovery-event source)",
+    "skill2:burstCast all-ally instant heal (recovery-event source)",
+    "burst:burstCast all-ally defPct 20.9 for 10s (inert but pinned)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Incoming healing ▲ 26.98% for 3 sec (Affects 2 ally unit(s) with the highest final ATK)"
+    ],
+    "skill2": [],
+    "burst": [
+      "Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec."
+    ]
+  },
+  "notes": "Marciana is a pure Supporter: zero damage lines — her totalDamage must be weapon-only, and the whole kit's sim value is TANDEM (taxonomy #4: heals drive teammate on-recovery triggers; Crown sits in the control fixture as B2 and consumes recovery events, so the heals are load-bearing despite being 'defensive'). Expected shared-prior misreads, in order of risk: (1) skill2 'when using Burst Skill' keyed to fullBurstEnter instead of burstCast — uniquely live here because marciana is Burst II and controlComp already has crown at B2, so the two triggers measurably diverge (also verify the fixture actually lets marciana cast at all before asserting positive firings; a burst-contention rotation could give her zero casts — assert against her observed burstCast events, never against FB count); (2) both heals silently skipped as defensive/inert, starving crown's recovery trigger; (3) the skill1 HoT collapsed to one instant tick instead of ticks:3 ('over 3 sec'); (4) the burst Storage encoded as a 'shield' effect, which would falsely satisfy shielded triggers / requiresShielded gates on shield-synergy teammates — kit says Storage, keep it unmodeled-verbatim; (5) skill1's incoming-healing target says 'highest FINAL ATK' → if ever modeled it must be alliesTopAtk byFinalAtk:true, not static ranking. All magnitudes (10.95%, 26.98%, 28.11%, 27.87%, 20.9%) are literal kit text (DATAMINED); the heal AMOUNTS are unrepresentable in the heal effect kind and belong in the override note, not as invented stats. No ALWAYS-⚑ fields are in play: no kit damage lines, no weapon swap, no stacks — the only cadence dependency is lastBullet frequency, which follows from the base ammo 9 economy already in the engine.",
+  "model": "claude-fable-5"
+}

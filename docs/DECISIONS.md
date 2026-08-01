@@ -9,6 +9,32 @@ lives. Newest first within each section.
 
 ## Modeling rulings (owner)
 
+- **(2026-08-01, latest) CLEAN-WEAPON BASIS INVARIANT REFINED (option 2): CW1 now pins
+  damage-NEUTRALITY of any committed override, not file-ABSENCE — `marciana` is the first
+  clean-weapon unit to carry an override.** The kit-autonomy gauntlet landed `marciana` (the SG
+  clean-weapon basis cell) at GO faithfulness 1.0, cross-family corroborated (S2b claude-fable-5 /
+  S5+S6 claude-opus-5 / S7 kimi-code/k3 binding judge, zero gotchas). Her override is recovery-event
+  emitters (skill1 last-bullet HoT heal, skill2 burst-cast heal) plus ONE inert `defPct` buff — no
+  damage line and no weapon-state modifier, so it is **byte-identical to the bare weapon on damage**.
+  The pre-existing CW1 guard asserted none of the six carries a committed override
+  (`loadOverride(slug)` toBeUndefined); landing marciana's override broke it. **Ruling (option 2):**
+  refine the invariant to its machine-checkable CORE — premise P1 is damage-inertness, not the
+  absence of a file. CW1's third test now sims each clean-weapon unit WITH its committed override
+  (where one exists) and asserts the total is byte-identical to the bare-weapon (empty) kit; the five
+  units with no override satisfy it trivially, marciana satisfies it because her kit is
+  damage-neutral, and a future synergy sync that gives any of them a damage-touching line still fails
+  loudly — exactly as the old guard did. **CW2–CW5 baselines are unchanged:** they sim via
+  `bareWeaponComp`, which hands every slug the synthetic empty `bareWeaponOverride` and never calls
+  `loadOverride`, so the pinned bare-weapon totals (marciana 35163154.4909 etc.) are fully insulated
+  from any on-disk override. This is a refinement of the base-weapon basis entry below (2026-07-23),
+  NOT a weaken-to-GO: the new pin is strictly stronger than file-absence for the property the basis
+  actually depends on. **Evidence:** `scripts/tests/units/clean-weapons.test.ts` 27/27 green (CW1–CW5);
+  `scripts/tests/units/marciana.test.ts` 17/17 green; `scripts/kit-autonomy/results/marciana.json`
+  (GO 1.0); `scripts/kit-autonomy/manual-review/marciana.md`; `docs/data/clean-weapons.md` (Fixture
+  note + marciana row). Residual (judge-named, ⚑ with recipe): the skill1 HoT `ticks:3`/`intervalSec:1`
+  reading of "over 3 sec" is a shared convention, not a measured tick cadence — the one number a
+  recovery-consumer frame-read could pin; it moves no damage of marciana's own.
+
 - **(2026-07-23, latest) SMG FIRE CADENCE FLIPPED 24→20.0 rounds/s (frame quantization) —
   DEFAULT-ON. SUPERSEDES the 2026-07-17 D.2 adoption of 24/s.** The gun fires on FRAME BOUNDARIES:
   the datamined nominal SMG rate 1440 rpm = 24/s = 2.5 frames/shot at 60 fps, and `ceil(2.5)=3`

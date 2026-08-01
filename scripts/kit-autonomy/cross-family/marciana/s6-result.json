@@ -1,0 +1,179 @@
+{
+  "slug": "marciana",
+  "leakDetected": null,
+  "override": {
+    "slug": "marciana",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "lastBullet"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 3,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 1
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 20.9,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Activates when the last bullet hits the target. Affects 2 ally unit(s) with the highest final ATK. Incoming healing ▲ 26.98% for 3 sec."
+      ],
+      "skill2": [],
+      "burst": [
+        "Storage: Stores excess healing received by the skill user, up to 27.87% of their Max HP. Lasts for 10 sec."
+      ]
+    },
+    "caveats": [
+      "⚑ HoT tick granularity: skill1's heal is stated 'over 3 sec' with NO per-second clause, so ticks:3/intervalSec:1 is an ESTIMATE. Tick count is the only thing this block contributes (no HP pool), and it directly scales how many times a teammate's on-recovery consumer fires per magazine — over-stating ticks over-credits that teammate.",
+      "⚑ lastBullet cadence: the per-magazine firing rate of skill1 depends on ammo (9) and reloadFrames (111) — datamine-unreliable fields. Both skill1 lines are per-magazine, so a wrong magazine economy scales the whole skill1 channel.",
+      "Heal MAGNITUDES (skill1 10.95% of attack damage; skill2 28.11% of caster final Max HP) are recorded here but NOT modeled: the 'heal' effect emits a recovery event with no HP amount, and v1 has no HP pool. Both lines are implemented for their TANDEM value only (they fire allies' 'recovery' triggers).",
+      "burst DEF line is a SEMANTIC APPROXIMATION: the kit grants DEF equal to 20.9% of the SKILL USER's DEF, but the schema's only DEF stat is defPct, which scales the TARGET's own DEF. There is no casterDefPct. Kept for kit completeness (DEF is offensively inert in v1); the value is NOT a faithful caster-scaled grant.",
+      "Zero damage lines and zero weapon-state modifiers in the whole kit — no noFb / range / core / crit decisions arise, and this unit cannot move its own damage. Its entire board footprint is cross-unit: recovery events (2 channels) plus an inert DEF buff."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. marciana — SG/Iron/Supporter/Burst II, ammo 9, hitsPerShot 10, reloadFrames 111, chargeFrames 0 — is a PURE support/sustain kit: no damage effect, no DoT, no weapon swap, no ammo/reload/fire-rate modifier, no gauge line. MODELED TODAY: (1) skill1 team heal-over-time on the last bullet of each magazine — trigger lastBullet, target allies (self included), heal ticks:3 intervalSec:1, present solely to fire teammates' 'recovery' triggers (⚑ tick count estimated from 'over 3 sec'); (2) skill2 team heal on this unit's own burst cast — trigger burstCast (kit says 'when using Burst Skill', i.e. own-cast, NOT full-burst-enter: keying it to fullBurstEnter would over-credit rotations where another Burst II casts), target allies, heal ticks:1; (3) burst team DEF ▲ 20.9% for 10s as a defPct buff, offensively inert in v1 and an approximation of the caster-DEF scaling the schema cannot express. DELIBERATELY UNMODELED (verbatim in `unmodeled`): skill1's 'Incoming healing ▲ 26.98%' on the 2 highest-final-ATK allies — there is no incoming-healing StatKey and no HP pool for it to amplify; and the burst's 'Storage' of excess healing up to 27.87% of Max HP — a named mechanic distinct from 'Shield' in the kit text, so it is NOT encoded as a `shield` effect (that would emit shield events and falsely satisfy shield-synergy gates such as requiresShielded / the 'shielded' trigger on other units). EVIDENCE TIER: all three live values are kit-text-literal magnitudes/durations; the only estimated quantity is the skill1 tick count. The two unmodeled lines are measurement-gated on whether the sim ever models an HP pool or an incoming-healing multiplier."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when the last bullet hits",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'lastBullet'} — literal 'last bullet hits' reading, per-magazine (ammo 9). On-HIT vs on-fire is indistinguishable here: no damage rides it."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} — 'all allies' includes self (no 'except self' clause)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Recovers 10.95% of atk dmg as HP/3s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal', ticks:3, intervalSec:1}. HoT → multiple recovery events so on-recovery consumers stay refreshed. HP amount (10.95% of attack damage) not modeled: heal carries no amount and v1 has no HP pool. ⚑ ticks."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects 2 allies, highest final ATK",
+      "status": "SKIPPED",
+      "effectOrReason": "Target set WOULD be {kind:'alliesTopAtk', count:2, byFinalAtk:true} ('final ATK' is literal → byFinalAtk). Not authored because its only effect is unmodelable (next row); no block to attach it to."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Incoming healing ▲ 26.98% for 3 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "No StatKey expresses incoming-healing amplification, and there is no HP pool for it to scale. Not a damage/weapon-state/gauge line, so no HARD-RULE forces modeling. Verbatim in unmodeled.skill1."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates when using Burst Skill",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'burstCast'} — 'when USING Burst Skill' is own-cast, not 'entering Full Burst'. Diverges from fullBurstEnter in any comp with another Burst II; keying it to FB-enter would over-credit."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (self included)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 28.11% of user's final MaxHP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'heal', ticks:1} — instant single recovery event to the whole team on this unit's burst cast. Caster-Max-HP magnitude not modeled (no HP pool); kept for the tandem channel."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} on the burst block; trigger {kind:'burstCast'} (burst-slot effects fire on the owner's cast; no separate activation clause given)."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Storage: stores excess healing 27.87%",
+      "status": "SKIPPED",
+      "effectOrReason": "Named 'Storage', not 'Shield'. No schema primitive for a healing-overflow buffer; mapping it to {kind:'shield'} would emit shield events and wrongly satisfy other units' requiresShielded / 'shielded' triggers. Verbatim in unmodeled.burst. ⚑ judgment call — see flags."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "DEF ▲ 20.9% of user's DEF for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "{kind:'buff', stat:'defPct', value:20.9, durationSec:10} to allies. Retained per the HARD RULE that DEF/HP lines are not skippable, though defPct is inert for damage in v1. Caster-DEF scaling is NOT expressible (no casterDefPct) — approximation, see caveats."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].effects[0].ticks / intervalSec",
+      "estimate": "ticks:3, intervalSec:1 (3 recovery events, 1s apart, per magazine)",
+      "reasoning": "The kit says only 'as HP over 3 sec' — no 'every 1 sec' clause, so the tick granularity is kit-silent. Since the HP amount is unmodeled, tick COUNT is the entire contribution of this block: it sets how many times each ally's 'recovery' trigger fires per magazine. 1 tick would under-fire heal-synergy consumers; a finer interval (e.g. 0.5s) would over-fire them. 1s matches the schema's default HoT convention (heal.intervalSec default 1).",
+      "recipe": "Put marciana in a comp with an on-recovery consumer and count that consumer's procs per marciana magazine in footage (its buff-apply popups / damage popups), against her measured lastBullet cadence. Equivalent cheaper route: count green heal numbers on the focus unit between two of her reloads — 1 vs 3 is directly visible."
+    },
+    {
+      "field": "burst[0] — the 'Storage' line (encoded as unmodeled, NOT as {kind:'shield'})",
+      "estimate": "unmodeled (0 shield events). Alternative if adjudicated the other way: {kind:'shield', maxHpPct:27.87, durationSec:10} on the same allies block.",
+      "reasoning": "A binary modeling fork with real cross-unit blast radius. The kit names the mechanic 'Storage' and describes a buffer of EXCESS HEALING, not a Shield; the schema's shield effect emits shield events that fire other units' 'shielded' triggers and open their requiresShielded gates. Encoding Storage as a shield therefore risks silently satisfying an unrelated kit's shield gate (the same class of defect as a single-carrier status channel). Chose the conservative side: no event emitted. Note the storage is on the SKILL USER's healing yet the block says 'Affects all allies', which is itself ambiguous and argues against a confident encoding.",
+      "recipe": "Check in-game whether the buff icon marciana's burst applies is the standard Shield icon/bar (and whether a shield-gated ally kit — e.g. a requiresShielded block — goes live in her presence). If it reads as a Shield and satisfies shield gates, promote to {kind:'shield', maxHpPct:27.87, durationSec:10}; if it is its own overflow buffer, leave unmodeled."
+    },
+    {
+      "field": "burst[0].effects[0] — stat 'defPct', value 20.9",
+      "estimate": "defPct 20.9 for 10s to allies (offensively inert)",
+      "reasoning": "The kit grants DEF as a percentage of the SKILL USER's DEF (a caster-scaled flat grant); defPct scales the TARGET's own DEF instead. No casterDefPct StatKey exists. Retained per the rule that DEF/HP lines are never skipped (a future consumer or scaler may read it), but the number is not a faithful representation of the grant, only of the kit percentage. Zero damage impact today either way.",
+      "recipe": "No measurement needed while DEF is damage-inert. If a DEF-reading consumer or a DEF→ATK scaler is ever added, add a casterDefPct StatKey (mirroring casterAtkPct's flat-resolve-at-apply-time path) and re-encode this line before trusting it."
+    },
+    {
+      "field": "skill1 trigger cadence (lastBullet frequency: ammo 9, reloadFrames 111)",
+      "estimate": "9 rounds/magazine at the datamined SG cadence; ~111-frame reload between magazines",
+      "reasoning": "Both skill1 lines are per-magazine, so the magazine economy — not any magnitude in this kit — sets how often this unit's only recurring channel fires. ammo and reloadFrames are the known-unreliable datamine fields, and any ally reload-speed / max-ammo buff in the comp shifts the cadence further. This is a visibility ⚑, not an override field: the numbers live in data/, not here.",
+      "recipe": "Count marciana's reloads over a fixed window in footage (ammo counter) and compare to the sim's shot log for her slot; if they diverge, the datamined ammo/reloadFrames pair is the suspect, not this override."
+    },
+    {
+      "field": "skill1[0] / skill2[0] — heal MAGNITUDES (10.95% of attack damage; 28.11% of caster final Max HP)",
+      "estimate": "not represented (heal effect carries no HP amount)",
+      "reasoning": "Recorded so the loss is auditable rather than silent: v1 has no HP pool (immortal boss, nobody takes damage), so heal amount is unobservable and unconsumable. Consequence: the skill1 'Incoming healing ▲' line and the burst's excess-healing 'Storage' are BOTH downstream of a healing quantity the sim does not track — that is why all three healing-magnitude mechanics in this kit collapse to either an amount-free event or unmodeled. This unit is a poor candidate for magnitude validation and a good candidate for recovery-trigger-cadence validation.",
+      "recipe": "Only actionable if an HP pool is ever modeled. Until then, validate this unit exclusively via recovery-event CADENCE (buffApply/recovery counts on allies), never via a damage delta of her own."
+    }
+  ],
+  "model": "claude-opus-5"
+}

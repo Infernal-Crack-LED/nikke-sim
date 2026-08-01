@@ -1,0 +1,44 @@
+S5 blind test (claude-opus-5) run vs DRIVER override (src/skills/overrides/marciana.json)
+via scripts/kit-autonomy/blind/marciana.adapted.test.ts (import re-pointed to ../../tests/lib/harness.js).
+
+Result: 15 passed / 6 failed / 4 skipped (25 total).
+
+The 6 FAILURES are blind-test artifacts, NOT override faults (driver override is faithful;
+corroborated by the S6 blind override being functionally IDENTICAL):
+
+ROOT CAUSE (a) — nonexistent event kind. The blind test counts heals via
+  events.filter(e => e.kind === 'heal' || e.kind === 'recovery')
+but the engine emits NO 'heal' and NO 'recovery' SimEvent. Proven event kinds in the log:
+  buffApply, burstCast, damage, fullBurstEnd, fullBurstStart, reload, shot
+A heal is an EVENT that fires recovery CONSUMERS; its only log observable is the consumer's
+buffApply (the driver test observes Marciana's heals via asuka's self atkPct 96.98 recovery
+buff, 70 firings = 3x21 last-bullets + 8 bursts). The blind test's direct-heal observable
+cannot work in this engine. Affects: skill1[A] "emits a heal/recovery channel",
+"heal targets ALL allies", "fires per-MAGAZINE not per-trigger"; skill2[C] "reaches all allies".
+
+ROOT CAUSE (b) — fixture burst suppression. The blind test chose controlComp('marciana', true)
+= liter(B1)/crown(B2)/marciana(B2)/helm(B3). Crown is a co-Burst-II and wins EVERY B2 slot:
+proven burstCast counts -> marciana 0, crown 10, fullBurstStart 5. So Marciana never casts,
+and every burst-keyed assertion sees 0 firings. The blind test's OWN fixture-sanity assertion
+("the control comp actually bursts: marciana casts her Burst II") FAILS on this. Affects:
+fixture-sanity, skill2[C] target-set, burst[E] "emits a DEF buff on burst cast".
+(The driver test avoids this by making Marciana the SOLE B2 — liter/marciana/asuka — where she
+bursts 8x and her defPct 20.9 fires 24x = 8 bursts x 3 allies, 10s each.)
+
+The 15 PASSES (decisive corroboration, independent of heal events / bursting):
+  - marciana herself deals damage (carries a weapon)
+  - is damage-INERT on teammates by itself (tandem-only channel)
+  - any teammate damage delta from skill1 is attributable to an on-recovery consumer
+  - fires on marciana's OWN burst casts, not every team Full Burst (burstCast not fullBurstEnter)
+  - does not silently become a shield (no shielded-trigger side effects)  [Storage NOT shield]
+  - the DEF buff is time-bounded at 10 sec, not permanent
+  - reaches all allies, same value for each
+  - is DAMAGE-INERT: stripping the burst slot leaves every unit byte-identical
+  - marciana's burst carries no damage effect
+  - has no self ATK/crit/damage buff anywhere in the kit
+  - does not grant Pierce
+  - (plus incoming-healing conditional / Max-HP-flat / wrong-trigger-inertness guards)
+
+S6 blind override (claude-opus-5): FUNCTIONALLY IDENTICAL to the driver override (same triggers,
+targets, heal ticks, defPct 20.9/10s, same two unmodeled lines verbatim, same caveats). This is
+the decisive cross-family corroboration: blind, opus derived the exact same encoding the driver did.
