@@ -45,6 +45,30 @@ raw-found -> +min_area(25-750) -> +min_circ(>=0.55) -> BOTH. REFUSES (loud banne
 derived (there is no direct real-pellet measurement to compare against; the docstring says so and
 what would fix that). Needs the labels' rendered frames on disk. Combine with
 --save-detections-fixture PATH to refresh the committed --audit-fidelity-selftest fixture.
+
+--audit-fidelity-real (2026-08-01, docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md §1):
+the REAL-side twin of --audit-fidelity. Same cascade, same 20px tolerance, same WHITE_LO 210 mask,
+same min_area/min_circ thresholds -- but run against the OWNER-MARKED pellet positions on the 6
+real f8-11 crops from docs/probes/clean-weapons/marciana-solo.MP4 -- slug `marciana` (SG/Iron), NOT
+`marciana-marine-study` (AR/Iron) -- in
+scripts/tests/fixtures/pellets/groundtruth-f8-11-positions.json, instead
+of a generator's own labels. This is the measurement FIDELITY_BOTH_PASS_FLOOR's docstring says does
+not exist: it converts the 0.90 floor's DERIVED reference into a measured real-pellet
+filter-survival rate, so the synthetic cascade can be read against a real one rather than against
+an inference. It RECORDS a number -- per that handoff's evidence-discipline clause it deliberately
+does NOT enforce a floor, change a threshold, or stamp a verdict.
+
+Two structural differences from the synthetic path, both handled explicitly rather than by
+falling through to the synthetic assumptions:
+  - real frames are named f08_idx1068.png .. f11_idx1071.png (and shot00's lone
+    shot00_confirm_idx1004.png), not the synthetic f_00008.png -- offsets come from
+    load_real_sequences()'s own ^f(\\d\\d)_ labels, and an unmatched frame is a hard error, never a
+    silent [] that would read as a spurious 0%;
+  - positions are PER FRAME (the owner marked each frame independently), not one list reused
+    across all four offsets -- frame N's positions are matched against frame N's components only.
+Because the four frames re-observe the SAME 42 pellets, the per-instance rate (n=168) is
+pseudo-replicated; the report therefore also links pellets across f08-f11 by nearest neighbour and
+reports per-distinct-pellet rates (n=42) with the linkage's own quality stats.
 """
 import argparse
 import json
@@ -131,22 +155,46 @@ def compute_fidelity_cascade(seq_detections):
     raw-found is the precondition for area/circ to mean anything (no component -> both fail by
     construction), and 'passes_both' is the actual filter-survival outcome — the fraction that
     would legitimately increment count-pellets.py's live per-frame pellet count."""
-    n_labeled = n_raw = n_area = n_circ = n_both = 0
+    instances = []
     for sd in seq_detections:
         by_offset = sd['detections_by_offset']
-        for x, y in sd['positions']:
+        for pi, (x, y) in enumerate(sd['positions']):
             for offset in (8, 9, 10, 11):
                 comps = by_offset.get(offset, by_offset.get(str(offset), []))
-                n_labeled += 1
-                comp = nearest_white_component((x, y), comps)
-                if comp is None:
-                    continue
-                n_raw += 1
-                passes_area = FIDELITY_MIN_AREA <= comp['area'] <= FIDELITY_MAX_AREA
-                passes_circ = comp['circ'] >= FIDELITY_MIN_CIRC
-                n_area += passes_area
-                n_circ += passes_circ
-                n_both += (passes_area and passes_circ)
+                instances.append(cascade_instance((x, y), comps, seq=sd.get('seq'),
+                                                   offset=offset, pellet_index=pi))
+    return summarize_cascade(instances)
+
+
+def cascade_instance(pos, comps, seq=None, offset=None, pellet_index=None):
+    """One (labeled pellet, frame) cascade record — the single place the raw-found -> min_area ->
+    min_circ -> BOTH decision is evaluated, shared by the synthetic (compute_fidelity_cascade) and
+    the real (compute_real_fidelity_cascade) paths so the two numbers are computed by identical
+    arithmetic against identical thresholds and are therefore directly comparable."""
+    comp = nearest_white_component(pos, comps)
+    rec = {'seq': seq, 'offset': offset, 'pellet_index': pellet_index,
+           'raw_found': comp is not None, 'passes_area': False, 'passes_circ': False,
+           'passes_both': False, 'area': None, 'circ': None, 'dist': None}
+    if comp is None:
+        return rec
+    rec['area'] = comp['area']
+    rec['circ'] = round(float(comp['circ']), 4)
+    rec['dist'] = round(math.hypot(pos[0] - comp['cx'], pos[1] - comp['cy']), 2)
+    rec['passes_area'] = bool(FIDELITY_MIN_AREA <= comp['area'] <= FIDELITY_MAX_AREA)
+    rec['passes_circ'] = bool(comp['circ'] >= FIDELITY_MIN_CIRC)
+    rec['passes_both'] = bool(rec['passes_area'] and rec['passes_circ'])
+    return rec
+
+
+def summarize_cascade(instances):
+    """Aggregate cascade_instance() records into the four-stage report. Percentages are of
+    n_labeled (every stage denominated the same way), matching what --audit-fidelity has always
+    printed."""
+    n_labeled = len(instances)
+    n_raw = sum(1 for r in instances if r['raw_found'])
+    n_area = sum(1 for r in instances if r['raw_found'] and r['passes_area'])
+    n_circ = sum(1 for r in instances if r['raw_found'] and r['passes_circ'])
+    n_both = sum(1 for r in instances if r['passes_both'])
 
     def frac(n):
         return round(n / n_labeled, 4) if n_labeled else 0.0
@@ -375,6 +423,281 @@ def load_real_sequences():
             'n_pellets': shot['white'], 'offset_labels': offset_labels,
         })
     return sequences
+
+
+# ------------------------------------------------- REAL-pellet fidelity cascade (2026-08-01, §1)
+# docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md §1. The synthetic cascade above has no
+# real-side counterpart -- FIDELITY_BOTH_PASS_FLOOR's own docstring records that gap ("there is NO
+# direct measurement of real-pellet filter-survival") and names the fix: owner-labeled xy positions
+# on the 6 counted real crops. Those positions now exist (groundtruth-f8-11-positions.json,
+# owner-drawn 2026-07-31, shape counts reconciled against the independent hand counts), so this
+# runs the SAME cascade on them.
+REAL_POSITIONS_PATH = REAL_GT_DIR / 'groundtruth-f8-11-positions.json'
+REAL_FIDELITY_SELFTEST_FIXTURE = REAL_GT_DIR / 'real-fidelity-slice.json'
+
+# Nearest-neighbour linkage of the same physical pellet across f08->f09->f10->f11. The four frames
+# are consecutive 60fps captures of ONE shot, so a pellet moves only a few px between them, while
+# neighbouring pellets sit tens of px apart -- the link is unambiguous by a wide margin and the
+# report proves it rather than asserting it (max link distance, worst Lowe ratio, min in-frame
+# neighbour spacing all come out in `linkage`).
+LINK_MAX_DIST = 20.0   # px; same order as FIDELITY_TOLERANCE, and >> the observed ~2-4px drift
+LINK_RATIO_MAX = 0.6   # Lowe ratio: nearest/second-nearest must be comfortably < 1 to be 1-to-1
+
+
+def link_frames_by_nearest(frames):
+    """Chain-link pellet identities across a shot's frames (ordered by offset) by greedy nearest
+    neighbour, f08->f09->f10->f11. Returns (pellet_ids_per_frame, stats, steps) where
+    pellet_ids_per_frame[k][i] is the distinct-pellet id of frame k's position i, stats carries the
+    evidence that the linkage is clean (per-step displacements, the worst nearest/second-nearest
+    ratio, and the minimum in-frame neighbour spacing -- the scale that makes the link
+    unambiguous), and steps is the raw per-link displacement list so the caller can pool it.
+
+    Reading `worst_nearest_over_second`: the crops are re-centered on the crosshair every frame, so
+    when the aim pans between two frames EVERY pellet translates by the same vector. That inflates
+    the displacement (and hence the ratio) without making the link ambiguous at all -- a rigid
+    translation preserves relative geometry and the assignment stays an identity map. Check a large
+    step's COHERENCE across the frame pair before reading it as per-pellet drift."""
+    ids_per_frame = [list(range(len(frames[0]['positions'])))] if frames else []
+    steps, ratios, unmatched = [], [], 0
+    for k in range(1, len(frames)):
+        prev, cur = frames[k - 1]['positions'], frames[k]['positions']
+        pairs = sorted((math.hypot(p[0] - c[0], p[1] - c[1]), i, j)
+                       for i, p in enumerate(prev) for j, c in enumerate(cur))
+        used_p, used_c = set(), set()
+        assign = {}
+        for d, i, j in pairs:
+            if i in used_p or j in used_c or d > LINK_MAX_DIST:
+                continue
+            used_p.add(i)
+            used_c.add(j)
+            assign[j] = i
+            steps.append(d)
+        # nearest/second-nearest ratio per previous-frame pellet -- ambiguity evidence
+        for i, p in enumerate(prev):
+            ds = sorted(math.hypot(p[0] - c[0], p[1] - c[1]) for c in cur)
+            if len(ds) >= 2 and ds[1] > 0:
+                ratios.append(ds[0] / ds[1])
+        ids = []
+        for j in range(len(cur)):
+            if j in assign:
+                ids.append(ids_per_frame[k - 1][assign[j]])
+            else:
+                unmatched += 1
+                ids.append(None)
+        ids_per_frame.append(ids)
+    spacings = []
+    for fr in frames:
+        pts = fr['positions']
+        for i, a in enumerate(pts):
+            for b in pts[i + 1:]:
+                spacings.append(math.hypot(a[0] - b[0], a[1] - b[1]))
+    return ids_per_frame, {
+        'n_link_steps': len(steps),
+        'median_step_px': round(_median(steps), 2) if steps else None,
+        'max_step_px': round(max(steps), 2) if steps else None,
+        'worst_nearest_over_second': round(max(ratios), 4) if ratios else None,
+        'min_in_frame_neighbour_px': round(min(spacings), 2) if spacings else None,
+        'unmatched_positions': unmatched,
+        'one_to_one': unmatched == 0,
+    }, steps
+
+
+def build_real_seq_detections(tmp_dir):
+    """Run the RAW (pre-filter) detector over the 6 committed real f8-11 crop dirs and pair each
+    frame's components with THAT FRAME's owner-marked positions.
+
+    Two things this must not get wrong, both of which would silently read as a ~0% cascade:
+      - frame->offset mapping. build_seq_detections() slices by the SYNTHETIC name f_{offset:05d}
+        .png; the real crops are f08_idx1068.png etc. Offsets come from load_real_sequences()'s
+        ^f(\\d\\d)_ labels and every expected frame must appear in the detector's own frame_files --
+        an unmatched frame raises, it never falls back to [].
+      - per-frame positions. The owner marked each frame independently, so frame N's positions
+        belong to frame N only and are never pooled across the four offsets.
+    Coordinates: the crops ARE the images handed to count-pellets.py, so its cx/cy are already in
+    the same 368x368 crop pixel space the owner's positions use -- no transform, and none wanted."""
+    pos_doc = json.loads(REAL_POSITIONS_PATH.read_text())
+    pos_by_frame = {f['frame']: f['positions']
+                    for shot in pos_doc['shots'] for f in shot['frames']}
+    out = []
+    for seq in load_real_sequences():
+        dets = run_fidelity_detections(seq, tmp_dir)
+        frame_files = dets['frame_files']
+        detections = dets['detections']
+        frames = []
+        for fname, offset in zip(seq['frames'], seq['offset_labels']):
+            if fname not in frame_files:
+                raise SystemExit(f'--audit-fidelity-real: frame {fname} (shot {seq["seq"]}) is not '
+                                  'in count-pellets.py --dump-detections frame_files -- refusing to '
+                                  'score a silently-empty component list')
+            if fname not in pos_by_frame:
+                raise SystemExit(f'--audit-fidelity-real: frame {fname} has no owner positions in '
+                                  f'{REAL_POSITIONS_PATH.name} -- refusing to score it as 0 pellets')
+            frames.append({
+                'frame': fname, 'offset': offset,
+                'positions': pos_by_frame[fname],
+                'detections': detections[frame_files.index(fname)],
+            })
+        out.append({'seq': seq['seq'], 'video': seq['video'],
+                    'crosshair': seq['crosshair'], 'pellet_radius': seq['pellet_radius'],
+                    'center_exclude': seq['center_exclude'], 'frames': frames})
+    return out
+
+
+def compute_real_fidelity_cascade(seq_frames):
+    """Pure arithmetic (no IO) over build_real_seq_detections()'s output -- what
+    --audit-fidelity-real-selftest pins against the committed real-fidelity-slice.json fixture.
+
+    Reports the cascade three ways because the 168 pellet-frame instances are NOT independent
+    (the same 42 physical pellets re-observed in 4 frames each):
+      per_instance          -- n=168, the number directly comparable to the synthetic n=120 cascade
+      per_distinct_pellet   -- n=42; `mean_pass_fraction` is the cluster-corrected point estimate
+                                (each pellet contributes its own 0/.25/.5/.75/1 survival fraction),
+                                with `all4` (strict) and `any1` (lenient) either side of it
+      per_shot              -- so one bad shot cannot hide inside the aggregate
+    plus `rejected_of_found`, the min_area-vs-min_circ split expressed as a fraction of raw-found,
+    which is the form the synthetic reading (min_circ 17.2% vs min_area 11.9%) is quoted in."""
+    instances, per_shot, pellets, all_steps = [], [], {}, []
+    diag = {'n_inside_center_exclude': 0, 'n_beyond_pellet_radius': 0}
+    for sd in seq_frames:
+        frames = [f for f in sd['frames'] if f['offset'] is not None]
+        frames.sort(key=lambda f: f['offset'])
+        shot_inst = []
+        for f in frames:
+            for pi, pos in enumerate(f['positions']):
+                rec = cascade_instance(pos, f['detections'], seq=sd['seq'],
+                                       offset=f['offset'], pellet_index=pi)
+                rec['frame'] = f['frame']
+                shot_inst.append(rec)
+                cx, cy = sd['crosshair']
+                d = math.hypot(pos[0] - cx, pos[1] - cy)
+                diag['n_inside_center_exclude'] += d < sd['center_exclude']
+                diag['n_beyond_pellet_radius'] += d > sd['pellet_radius']
+        instances.extend(shot_inst)
+        if shot_inst:
+            row = summarize_cascade(shot_inst)
+            row['seq'] = sd['seq']
+            row['n_frames'] = len(frames)
+            per_shot.append(row)
+        # distinct-pellet linkage within this shot
+        if len(frames) >= 2:
+            ids_per_frame, link_stats, steps = link_frames_by_nearest(frames)
+            all_steps.extend(steps)
+        else:
+            ids_per_frame = [list(range(len(f['positions']))) for f in frames]
+            link_stats = {'n_link_steps': 0, 'one_to_one': True, 'unmatched_positions': 0,
+                          'median_step_px': None, 'max_step_px': None,
+                          'worst_nearest_over_second': None, 'min_in_frame_neighbour_px': None}
+        if per_shot and per_shot[-1]['seq'] == sd['seq']:
+            per_shot[-1]['linkage'] = link_stats
+        by_frame = {}
+        for rec in shot_inst:
+            by_frame.setdefault(rec['frame'], []).append(rec)
+        for k, f in enumerate(frames):
+            for pi, rec in enumerate(sorted(by_frame[f['frame']], key=lambda r: r['pellet_index'])):
+                pid = ids_per_frame[k][pi] if k < len(ids_per_frame) else None
+                key = (sd['seq'], pid if pid is not None else f'unlinked-{f["frame"]}-{pi}')
+                pellets.setdefault(key, []).append(rec['passes_both'])
+
+    report = {'per_instance': summarize_cascade(instances)}
+    n_raw = report['per_instance']['raw_found']
+    report['rejected_of_found'] = {
+        'n_raw_found': n_raw,
+        'by_min_area': round((n_raw - report['per_instance']['passes_min_area']) / n_raw, 4) if n_raw else None,
+        'by_min_circ': round((n_raw - report['per_instance']['passes_min_circ']) / n_raw, 4) if n_raw else None,
+        'by_both_stages': round((n_raw - report['per_instance']['passes_both']) / n_raw, 4) if n_raw else None,
+    }
+    fracs = [sum(v) / len(v) for v in pellets.values()]
+    n_p = len(fracs)
+    mean_frac = sum(fracs) / n_p if n_p else None
+    sd_frac = ((sum((x - mean_frac) ** 2 for x in fracs) / (n_p - 1)) ** 0.5) if n_p > 1 else None
+    report['per_distinct_pellet'] = {
+        'n_distinct_pellets': n_p,
+        'mean_pass_fraction': round(mean_frac, 4) if mean_frac is not None else None,
+        'sd': round(sd_frac, 4) if sd_frac is not None else None,
+        'se': round(sd_frac / n_p ** 0.5, 4) if sd_frac is not None else None,
+        'all4': sum(1 for x in fracs if x == 1.0),
+        'all4_pct': round(sum(1 for x in fracs if x == 1.0) / n_p, 4) if n_p else None,
+        'any1': sum(1 for x in fracs if x > 0),
+        'any1_pct': round(sum(1 for x in fracs if x > 0) / n_p, 4) if n_p else None,
+    }
+    report['per_shot'] = per_shot
+    report['linkage_overall'] = {
+        'n_link_steps': len(all_steps),
+        'median_inter_frame_displacement_px': round(_median(all_steps), 2) if all_steps else None,
+        'max_inter_frame_displacement_px': round(max(all_steps), 2) if all_steps else None,
+        'all_shots_one_to_one': all(r.get('linkage', {}).get('one_to_one', True) for r in per_shot),
+    }
+    report['diagnostics'] = diag
+    report['thresholds'] = {
+        'tolerance_px': FIDELITY_TOLERANCE, 'min_area': FIDELITY_MIN_AREA,
+        'max_area': FIDELITY_MAX_AREA, 'min_circ': FIDELITY_MIN_CIRC,
+    }
+    return report
+
+
+def audit_fidelity_real(save_fixture_path=None):
+    """Live real-pellet cascade. RECORDS a measurement -- deliberately no floor, no threshold
+    change, no verdict (docs/handoffs/2026-08-01-pellet-cascade-JUDGE-handoff.md §1 evidence
+    discipline: landing FIDELITY_BOTH_PASS_FLOOR off this number is a separate, owner-gated pass)."""
+    tmp_dir = REPO / 'scratchpad' / 'pellets' / '_fidelity_tmp_real'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    seq_frames = build_real_seq_detections(tmp_dir)
+    if save_fixture_path:
+        Path(save_fixture_path).write_text(json.dumps({
+            '_source': str(REAL_POSITIONS_PATH.relative_to(REPO)),
+            '_note': ('Per-FRAME owner-marked pellet positions + the RAW (pre-filter) component '
+                       'list count-pellets.py --dump-detections produces for that same frame, for '
+                       'the 6 real f8-11 crops. Pins compute_real_fidelity_cascade() against a '
+                       'known-good result with no images/subprocess/cv2 needed -- see '
+                       'score-pellets.py --audit-fidelity-real-selftest and docs/handoffs/'
+                       '2026-08-01-pellet-cascade-JUDGE-handoff.md §1.'),
+            'sequences': seq_frames,
+            '_expected': _real_expected_block(compute_real_fidelity_cascade(seq_frames)),
+        }, indent=2))
+        print(f'wrote real-fidelity fixture -> {save_fixture_path}', file=sys.stderr)
+    report = compute_real_fidelity_cascade(seq_frames)
+    report['n_shots'] = len(seq_frames)
+    print(json.dumps(report, indent=2))
+    pi = report['per_instance']
+    pd = report['per_distinct_pellet']
+    print(f"audit-fidelity-real: raw_found={pi['raw_found_pct']*100:.1f}% -> "
+          f"+min_area={pi['passes_min_area_pct']*100:.1f}% -> "
+          f"+min_circ={pi['passes_min_circ_pct']*100:.1f}% -> "
+          f"BOTH={pi['passes_both_pct']*100:.1f}%  "
+          f"(n={pi['n_labeled_pellet_frame_instances']} instances; per-distinct-pellet "
+          f"mean={pd['mean_pass_fraction']*100:.1f}%, n={pd['n_distinct_pellets']})",
+          file=sys.stderr)
+
+
+def _real_expected_block(report):
+    """The subset of compute_real_fidelity_cascade()'s report the selftest pins -- the headline
+    cascade plus both denominators, kept small so the fixture stays readable."""
+    pi, pd = report['per_instance'], report['per_distinct_pellet']
+    return {
+        'per_instance': {k: pi[k] for k in (
+            'n_labeled_pellet_frame_instances', 'raw_found', 'raw_found_pct',
+            'passes_min_area', 'passes_min_area_pct', 'passes_min_circ',
+            'passes_min_circ_pct', 'passes_both', 'passes_both_pct')},
+        'per_distinct_pellet': {k: pd[k] for k in (
+            'n_distinct_pellets', 'mean_pass_fraction', 'all4', 'any1')},
+        'rejected_of_found': report['rejected_of_found'],
+    }
+
+
+def audit_fidelity_real_selftest():
+    """Constraint 9 self-validation for the real cascade, same precedent as
+    --audit-fidelity-selftest / synthetic-fidelity-slice.json: replays
+    compute_real_fidelity_cascade() over committed positions+detections and compares to the
+    fixture's own _expected block. No images, no subprocess, no cv2."""
+    data = json.loads(REAL_FIDELITY_SELFTEST_FIXTURE.read_text())
+    report = compute_real_fidelity_cascade(data['sequences'])
+    expected = data['_expected']
+    got = _real_expected_block(report)
+    ok = got == expected
+    print(f'expected: {json.dumps(expected, sort_keys=True)}')
+    print(f'got:      {json.dumps(got, sort_keys=True)}')
+    print('SELFTEST PASS' if ok else 'SELFTEST FAIL')
+    return 0 if ok else 1
 
 
 # ------------------------------------------------------------ pre-registered cheap estimators
@@ -743,9 +1066,22 @@ def main():
                           'reference -- see the constant\'s docstring). Needs the labels\' rendered '
                           'frames on disk (reproduce first, same convention as --audit-labels).')
     ap.add_argument('--save-detections-fixture', metavar='PATH',
-                     help='(--audit-fidelity) also write the per-sequence positions + raw f8-11 '
-                          'detections used, for building/refreshing the --audit-fidelity-selftest '
-                          'committed fixture')
+                     help='(--audit-fidelity / --audit-fidelity-real) also write the positions + '
+                          'raw f8-11 detections used, for building/refreshing that mode\'s '
+                          'committed selftest fixture (synthetic-fidelity-slice.json / '
+                          'real-fidelity-slice.json)')
+    ap.add_argument('--audit-fidelity-real', action='store_true',
+                     help='REAL-pellet cascade: run the SAME raw-found -> +min_area -> +min_circ -> '
+                          'BOTH cascade over the owner-marked pellet positions on the 6 real f8-11 '
+                          'crops (groundtruth-f8-11-positions.json). Records the measurement '
+                          'FIDELITY_BOTH_PASS_FLOOR was only able to DERIVE; enforces no floor. '
+                          'Reports per-instance (n=168), per-distinct-pellet (n=42) and per-shot '
+                          'rates. Combine with --save-detections-fixture to refresh the committed '
+                          '--audit-fidelity-real-selftest fixture. Needs the probe venv (cv2).')
+    ap.add_argument('--audit-fidelity-real-selftest', action='store_true',
+                     help='pin compute_real_fidelity_cascade() against the committed '
+                          'real-fidelity-slice.json fixture and exit -- no images/subprocess '
+                          'needed (constraint 9 self-validation)')
     ap.add_argument('--audit-fidelity-selftest', action='store_true',
                      help='pin compute_fidelity_cascade() against the committed '
                           'synthetic-fidelity-slice.json fixture and exit -- no images/subprocess '
@@ -756,6 +1092,11 @@ def main():
         raise SystemExit(selftest())
     if args.audit_fidelity_selftest:
         raise SystemExit(audit_fidelity_selftest())
+    if args.audit_fidelity_real_selftest:
+        raise SystemExit(audit_fidelity_real_selftest())
+    if args.audit_fidelity_real:
+        audit_fidelity_real(save_fixture_path=args.save_detections_fixture)
+        return
     if args.audit_fidelity:
         audit_fidelity(args.audit_fidelity, save_fixture_path=args.save_detections_fixture)
         return
