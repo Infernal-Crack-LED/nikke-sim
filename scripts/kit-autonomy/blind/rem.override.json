@@ -1,0 +1,139 @@
+{
+  "slug": "rem",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 15
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 4.22,
+          "durationSec": 10,
+          "maxStacks": 30,
+          "rampSec": 8
+        }
+      ],
+      "mode": "demonsBreath"
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 180,
+          "intervalSec": 1
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "RL",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 180,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 37.8,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesOfWeapon",
+        "weapon": "RL"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 50.78,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "maxAmmoFlat",
+          "value": 5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": ["Equally shares HP recovery for 10 sec."],
+    "skill2": [
+      "Recovers 42.24% of attack damage as HP continuously.",
+      "Equally shares HP recovery continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ Demon's Breath status is kit-silent about its SOURCE. The burst line names 'Demon's Breath' as the self mode granted by her own burst, so skill1's 15-normal-attack stack counter is modeled as gated on that mode (declared via `modes`, default OFF-equivalent by the mode gate). If Demon's Breath is instead a battle-start/permanent self status, the gate is wrong and the ATK stack ramps from t=0 — measure whether her ATK climbs before her first burst.",
+    "⚑ skill1 ATK stack (4.22% × up to 30 = 126.6% max) is authored at MAX-stack magnitude with rampSec 8 as a stack-ramp haircut. The real trajectory is 15 MG rounds per stack; her MG cadence is datamine-unreliable so the true time-to-cap is unknown. Also unknown: whether each stack carries its OWN 10s timer (sawtooth, likely never reaching 30) or the whole pool refreshes — modeled as refresh-to-full, which OVER-CREDITS if per-stack.",
+    "⚑ Cadence tuple (MG 300 ammo / 171 reloadFrames / hitsPerShot 1 / normalAttackMultiplier 5.57) is datamined and unreliable; the hitCount:15 trigger counts ROUNDS, so the stack rate is directly downstream of it.",
+    "⚑ The healing/HP-sharing lines are encoded as heal EVENTS (no HP pool in v1) purely so any teammate's on-recovery trigger fires. Tick counts (10 / 180) are conventions for 'for 10 sec' and 'continuously over the 180s fight', not kit-stated.",
+    "⚑ skill2's second block targets 'self and 2 RL-wielding allies with the highest final ATK'. The schema has no 'self + top-N-by-weapon' target, so it is split: self is already covered by the first skill2 block's heal, and this block covers the 2 RL allies. It uses alliesOfWeapon (ALL RL allies), not a top-2 slice — over-targets if the team runs 3+ RL units. Since the heal carries no HP amount, the over-targeting moves no damage today, but it would over-fire on-recovery triggers.",
+    "⚑ Burst ATK line targets 'all allies with a Rocket Launcher' — reads as INCLUDING self if Rem were RL, but she is MG, so self is excluded naturally by the weapon filter. Left excludeSelf unset (the filter does the work)."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Rem is an MG/Water/Supporter/Burst II RL-enabler: her burst is a pure RL-team package (self crit + RL-only caster-scaled ATK + RL-only flat ammo), and her skill1 is a self ATK stack pool gated on the 'Demon's Breath' status her own burst names. Kit lines are 1:1 with blocks: skill1 = 15-normal-attack ATK stack (4.22% ×30) + a burst-cast team heal; skill2 = two continuous heal channels (self lifesteal, plus shared recovery with the 2 highest-ATK RL allies); burst = Demon's Breath crit self-buff + the RL ally ATK/ammo package. All heal/HP-sharing lines are modeled as recovery EVENTS rather than skipped — they are the tandem channel that drives a teammate's on-recovery consumer, and skipping them is the documented isolation trap. maxAmmoFlat 5 on RL allies is a real damage lever (an RL magazine is tiny, so +5 rounds is a large uptime change), not a defensive line.",
+  "modes": ["demonsBreath"]
+}

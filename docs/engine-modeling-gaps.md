@@ -29,7 +29,7 @@
 | `alliesOfClass` | 0 | _none_ |
 | `alliesOfElement` | 9 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
-| `alliesOfWeapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, sugar, tove |
+| `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
 | `alliesTopAtk` | 7 | alice, chime, maxwell, miranda, naga, rapunzel, soda-twinkling-bunny |
 | `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
@@ -63,7 +63,7 @@
 | `hasB1` | 2 | anis-star, rapi-red-hood |
 | `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
-| `hitCount` | 43 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
+| `hitCount` | 44 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 14 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
 | `hitsPerShot` | 34 _(char-data)_ | anis-sparkling-summer, anis-star, arcana-fortune-mate, brid-silent-track, crow, dorothy-serendipity, drake, ether, … |
 | `inFb` | 6 | eunhwa-tactical-upgrade, modernia, privaty-unkind-maid, soda-twinkling-bunny, velvet, zwei |
@@ -72,7 +72,7 @@
 | `interval` | 15 | cinderella-crystal-wave, delta-ninja-thief, dolla, dorothy, elegg-boom-and-shock, emma-tactical-upgrade, flora, helm-aquamarine, … |
 | `lastBullet` | 6 | anis-sparkling-summer, dorothy, exia, helm, marciana, privaty |
 | `magDumpRof` | 1 | cinderella |
-| `maxAmmoFlat` | 4 | grave, noir, tove, trina |
+| `maxAmmoFlat` | 5 | grave, noir, rem, tove, trina |
 | `maxShots` | 3 | e-h, laplace-ultimate-hero, snow-white-heavy-arms |
 | `mode` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
 | `modes` | 8 | bready, cinderella-crystal-wave, crust, delta-ninja-thief, emma-tactical-upgrade, milk-blooming-bunny, mint, prika |
@@ -93,7 +93,7 @@
 | `requiresCore` | 3 | liberalio, ludmilla-winter-owner, mari |
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
-| `requiresTargetStatus` | 7 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name |
+| `requiresTargetStatus` | 8 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name, rem |
 | `resourceGate` | 11 | e-h, elegg-boom-and-shock, exia, guillotine-winter-slayer, julia, laplace-ultimate-hero, mana, maxwell-ordinary-mechanic, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
@@ -106,13 +106,13 @@
 | `swapGate` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `targetMaxHpPct` | 6 | 2b, blanc, label, maiden-ice-rose, noise, rapunzel |
-| `targetStatus` | 7 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name |
+| `targetStatus` | 8 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name, rem |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 2 | eunhwa-tactical-upgrade, noir |
 | `trueNormals` | 4 | chisato, eunhwa-tactical-upgrade, laplace, takina |
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
-| `weapon` | 11 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
+| `weapon` | 12 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
 | `weaponSwap` | 15 | ada, chisato, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, … |
 | `whileSwapped` | 0 | _none_ |
 

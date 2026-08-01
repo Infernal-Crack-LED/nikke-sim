@@ -5106,6 +5106,48 @@
         "⚑ burst enemy STUN (all enemies 1s when an ally falls below 30% HP) is UNMODELED — there is no HP pool to gate the 'below 30%' threshold and no enemy-action model for the stun to interrupt (the boss deals no damage and its actions don't gate ally DPS). Status-gate + inert in a DPS sim.",
         "Zero damage lines and zero weapon-state modifiers in the whole kit — this unit cannot move its OWN damage. Her entire board footprint is cross-unit: recovery events on two channels (skill1 per full charge, burst per cast) plus an inert Max HP buff. Damage-neutral by construction; the unit spec proves byte-identity to the bare weapon whenever no ally consumes her recovery events."
       ]
+    },
+    "rem": {
+      "name": "Rem",
+      "burst": "II",
+      "weapon": "MG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/rem.json + scripts/kit-autonomy/manual-review/rem.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when using Burst Skill. Affects all allies. Equally shares HP recovery for 10 sec."
+        ],
+        "skill2": [
+          "■ Activates at the start of battle. Affects self. Recovers 42.24% of attack damage as HP continuously.",
+          "■ Activates at the start of battle. Affects self and 2 Rocket Launcher-wielding ally unit(s) with the highest final ATK. Equally shares HP recovery continuously."
+        ],
+        "burst": []
+      },
+      "caveats": [
+        "skill1/burst: 'Demon's Breath' is a SELF status proxied as a boss targetStatus (the engine has no self-status gate). Name-keyed side channel any other unit's requiresTargetStatus 'Demon's Breath' could read; no other in-scope unit does, so inert today (⚑1: a requiresOwnBuff primitive would replace the proxy; Tier 2)",
+        "skill1: the ATK stack is gated to the Demon's Breath window (requiresTargetStatus 'Demon's Breath', hitCount 15, atkPct 4.22 ×30 stacks, 10s); the hitCount counter is cumulative and NOT reset at the window boundary, so the first stack after window-entry may land up to 14 hits early (⚑2; in-game reset unverified; Tier 3)",
+        "skill1: whether the 10s window builds the full 30 stacks is MG-cadence-dependent (datamine ammo/RoF unverified for this unit); the buff caps at 30 and refreshes per stack (⚑3; Tier 3)",
+        "skill1: the burst-cast 'Equally shares HP recovery for 10 sec' (all allies) is UNMODELED — healing/HP-redistribution is damage-inert in v1 (no HP pool; Rem has no recovery block) and 'shares HP recovery' is a redistribution mechanic, not a plain heal",
+        "skill2: BOTH lines are UNMODELED healing — S2a self lifesteal (42.24% of attack damage as HP) has no lifesteal primitive; S2b HP-recovery share (self + 2 highest-final-ATK RL allies) is a redistribution mechanic; both damage-inert in v1",
+        "burst: the RL grants (casterAtkPct 50.78 = 50.78% of Rem's static ATK as a flat add, maxAmmoFlat 5) target alliesOfWeapon RL only — Rem is MG, so she does NOT buff herself with these; they amp her RL teammates"
+      ],
+      "board": null,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "spot-check cluster: 'Demon's Breath' source is kit-implied not kit-stated (all 3 agents read it as the 10s window Rem's own burst opens) + per-window hit-counter reset (flag2) + per-stack-vs-pool-refresh timer semantics + flag1 name-keyed boss targetStatus side channel (inert until a 2nd Demon's Breath carrier) — one focused burst-window video (first-stack timing vs her cast) settles all three",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

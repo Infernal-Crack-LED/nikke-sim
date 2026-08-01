@@ -1,0 +1,119 @@
+{
+  "slug": "rem",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "15 normal attack(s) in Demon's Breath",
+      "disposition": "GAP",
+      "scope": "Only normal-attack landings count toward the 15; the resulting buff is a generic self ATK stack (not scoped).",
+      "durationSemantics": "Each stack lasts 10 sec (durationSec:10), maxStacks:30. '15 normal attacks' is the trigger count, not a duration. Not rounds-based.",
+      "triggerIdentity": "hitCount count:15 (counts ROUNDS; MG hitsPerShot=1 so rounds==hits), GATED on the self-status 'Demon's Breath' — the 10s window opened only by Rem's OWN burstCast. The engine has no self-status block gate (requiresTargetStatus is boss-held; resources have no time expiry), so faithful gating needs either an engine primitive or a ⚑ time-average haircut tied to Rem's actual burst uptime.",
+      "targetSet": "self",
+      "nearestWrongModel": "Ungated hitCount:15 accruing from t=0 for the whole fight — reaches and holds the 30-stack cap (+126.6% ATK) permanently, regardless of whether or when Rem ever bursts.",
+      "distinguishingAssertion": "Zero buffApply(stat:'atkPct', value≈4.22) events before Rem's first burstCast event; every stack-accruing buffApply frame falls within 600 frames of a Rem burstCast; stacks observed ≤ maxStacks:30. Ungated model goes RED on the pre-first-burst assertion.",
+      "inertness": "No ATK stacks may accrue outside Demon's Breath windows — in particular on rotations where crown (the fixture's other Burst II) takes the B2 cast instead of Rem.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "when using Burst Skill: shares HP recovery",
+      "disposition": "FAITHFUL",
+      "scope": "Heal channel only (recovery events), no direct damage — but tandem-live: crown ('when recovery takes effect') sits in the control fixture, so ally-received recovery fires her trigger.",
+      "durationSemantics": "10 sec window — encode as heal with ticks:10, intervalSec:1 so on-recovery consumers stay refreshed across the window; a single instant tick under-drives consumers.",
+      "triggerIdentity": "burstCast (Rem's OWN burst; 'Activates when using Burst Skill'), NOT fullBurstEnter. With two B2s in the fixture Rem casts only on some rotations.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "Skipped as 'defensive, no damage' — silently deleting crown's recovery-triggered buffs on Rem-burst rotations; or keyed to fullBurstEnter so it fires even on rotations crown bursts.",
+      "distinguishingAssertion": "crown receives recovery events (and her recovery-trigger buffApply fires) ONLY within 10s of a Rem burstCast event; count of crown's burst-window recovery activations tracks Rem's burstCast count, not fullBurstStart count.",
+      "inertness": "No crown recovery-trigger activations on rotations where Rem did not cast her burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 42.24% of attack damage as HP",
+      "disposition": "FAITHFUL",
+      "scope": "Continuous self lifesteal — heal channel only. Offensively inert in the control comp (Rem has no on-recovery consumer; crown's trigger keys on CROWN being healed, not Rem).",
+      "durationSemantics": "'continuously' = whole-fight; encode as a passive/interval heal emitting recovery ticks to self for the full fight, not a one-shot heal.",
+      "triggerIdentity": "passive ('at the start of battle', continuous) — no activation clause beyond battle start.",
+      "targetSet": "self",
+      "nearestWrongModel": "Emitting the recovery to allies (would ping crown's recovery trigger continuously, a permanent false buff), or modeling it as a damage-dealing effect.",
+      "distinguishingAssertion": "Recovery events sourced from this block target Rem only; crown receives zero recovery events from it across the full fight log.",
+      "inertness": "Moves zero damage in the control comp; must not emit any ally-targeted recovery.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "self + 2 RL ally unit(s) highest final ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-share channel, continuous — the named targets RECEIVE recovery, so this is a standing on-recovery feed to RL allies only.",
+      "durationSemantics": "'continuously' = permanent (no durationSec); recurring recovery ticks for the whole fight to the resolved target set.",
+      "triggerIdentity": "passive (start of battle).",
+      "targetSet": "self + 2 Rocket-Launcher-wielding allies by HIGHEST FINAL ATK (byFinalAtk — kit says 'final'). Schema note: no single TargetDef combines weapon + topAtk + count; alliesOfWeapon:'RL' is an acceptable stand-in for comps with ≤2 RL allies, but the weapon scoping itself is mandatory.",
+      "nearestWrongModel": "Target read as '2 highest-ATK allies' with the RL qualifier dropped — continuous recovery lands on crown/helm, holding crown's recovery-triggered buff permanently up in every comp.",
+      "distinguishingAssertion": "In the control comp (which contains NO Rocket Launcher ally) this block emits recovery to Rem only; crown's recovery trigger never fires continuously — her only recovery activations sit inside skill1's 10s post-burst windows.",
+      "inertness": "crown/liter/helm receive zero continuous recovery from this block in the RL-less control comp.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Demon's Breath: Critical Rate ▲ 37.8%",
+      "disposition": "FAITHFUL",
+      "scope": "GENERIC crit (critRatePct) — the kit does not scope to normal attacks, so critRateNormalPct would under-scope.",
+      "durationSemantics": "10 sec (durationSec:10). This window IS the 'Demon's Breath status' that gates skill1's stack accrual — the two must share one clock.",
+      "triggerIdentity": "burstCast, self-mode line in Rem's own burst block — fires only on rotations REM casts B2, never on any team Full Burst.",
+      "targetSet": "self",
+      "nearestWrongModel": "Keyed to fullBurstEnter — with crown (also Burst II) in the fixture, Rem does not cast every rotation, so FB-keying roughly doubles crit (and Demon's-Breath-window) uptime.",
+      "distinguishingAssertion": "count of buffApply(stat:'critRatePct', value:37.8, target:rem) === count of Rem's burstCast events, and is strictly LESS than the fullBurstStart count in the two-B2 control comp; each buffApply's expiresFrame = cast frame + 600.",
+      "inertness": "No crit buff applies on rotations where crown takes the B2 cast.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "RL allies: ATK ▲ 50.78% of user's ATK",
+      "disposition": "FAITHFUL",
+      "scope": "Caster-scaled flat ATK add (casterAtkPct) — 'of the skill user's ATK' is Rem-scaled, not target-scaled.",
+      "durationSemantics": "10 sec (durationSec:10).",
+      "triggerIdentity": "burstCast (line in Rem's own burst block).",
+      "targetSet": "alliesOfWeapon:'RL' ('all allies with a Rocket Launcher') — weapon-typed, class-blind. Whether it includes Rem is moot: she is MG, so self never qualifies.",
+      "nearestWrongModel": "atkPct:50.78 scaling each TARGET's own ATK instead of casterAtkPct; or target widened to all allies, buffing the whole RL-less control comp.",
+      "distinguishingAssertion": "On an RL-containing test comp, buffApply carries stat:'casterAtkPct' with a FLAT value ≈ 0.5078 × 98,367 ≈ 49,951 (Supporter static ATK — flat-resolved at apply, not the raw 50.78); in the control comp there are ZERO such events.",
+      "inertness": "Deleting this block via withPatchedOverride changes control-comp totals by exactly 0 (no RL ally present).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max Ammunition Capacity ▲ 5 round(s)",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier — ammo capacity IS damage (gates shots fired / last-bullet frequency); never 'skip as utility'.",
+      "durationSemantics": "'5 round(s)' is the AMOUNT (flat ammo add), 'for 10 sec' is the duration — maxAmmoFlat:5 with durationSec:10. NOT durationShots:5, NOT maxAmmoPct:5.",
+      "triggerIdentity": "burstCast (line in Rem's own burst block).",
+      "targetSet": "alliesOfWeapon:'RL'.",
+      "nearestWrongModel": "maxAmmoPct:5 (a 5-PERCENT capacity read of '5 round(s)'), or the round-count misread durationShots:5 treating rounds as the duration.",
+      "distinguishingAssertion": "On an RL test ally, buffApply carries stat:'maxAmmoFlat' value:5 with a durationSec-backed expiresFrame, and the ally's effective magazine grows by exactly +5 rounds (not +5%) during the window; zero such events in the control comp.",
+      "inertness": "Control-comp totals unchanged (no RL ally); non-RL units never receive the buff.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:15-hit Demon's Breath ATK stacks",
+    "skill1:burst-cast HP-recovery share (crown tandem)",
+    "skill2:RL-scoped continuous share (targeting inertness)",
+    "burst:Demon's Breath critRatePct self",
+    "burst:RL casterAtkPct 50.78",
+    "burst:RL maxAmmoFlat 5"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": [],
+    "burst": []
+  },
+  "notes": "Four places I expect a shared-prior misread. (1) TWO-B2 FIXTURE: controlComp(rem) yields liter B1 / crown B2 / rem (herself Burst II) / helm B3 — Rem COMPETES with crown for the B2 cast under first-ready selection, so every burstCast-keyed line (crit self-buff, HP-share, RL buffs, and the Demon's Breath window feeding skill1) fires on only SOME rotations. Tests must count Rem's actual burstCast events from the log, never assume one per Full Burst; any assertion assuming Rem casts every rotation is wrong by construction. (2) SELF-STATUS GATE GAP: skill1's stack accrual is gated on 'Demon's Breath status', a SELF window opened by her own burst — the engine's only status gate (requiresTargetStatus) is boss-held, and resources lack time expiry, so there is no clean primitive; the likely shipped shortcut is UNGATED stacks, which roughly doubles stack uptime (permanent 30×4.22% = +126.6% ATK vs windowed). If approximated, the haircut must be a ⚑ CALIBRATED value tied to Rem's measured burst cadence, and the no-stacks-before-first-burst assertion still binds. (3) HEAL LINES ARE TANDEM-LIVE, NOT SKIPPABLE: crown's 'when recovery takes effect' trigger is in the fixture, so the two 'Equally shares' lines are distinguishable and must NOT be merged — skill1's share is burst-cast-keyed, ALL allies, 10s (crown SHOULD ping only in those windows); skill2's share is passive, continuous, RL-scoped + self (crown should NEVER ping from it in the RL-less control comp). Merging them or dropping the RL scope manufactures a permanent crown buff. (4) MG cadence is ALWAYS-⚑ (datamine-unreliable; effective = 60/ceil(60/nominal)): the 15-hits-per-stack pacing, reload dead time (ammo 300, reloadFrames 171), and MG wind-up mean cap-30 is reachable inside a 10s window but not instantly — an instant-to-max encoding needs a ⚑ rampSec. Magnitudes (4.22/30/15/37.8/50.78/5/10s/42.24) are all kit-literal DATAMINED; only uptime/ramp haircuts may be CALIBRATED ⚑.",
+  "model": "claude-fable-5"
+}
