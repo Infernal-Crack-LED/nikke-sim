@@ -554,6 +554,10 @@ def compute_real_fidelity_cascade(seq_frames):
                                 (each pellet contributes its own 0/.25/.5/.75/1 survival fraction),
                                 with `all4` (strict) and `any1` (lenient) either side of it
       per_shot              -- so one bad shot cannot hide inside the aggregate
+      per_offset            -- f08/f09/f10/f11 separately (n=42 each). The counting window is not
+                                homogeneous: pellets are still FADING through it, so the last
+                                frame is where the WHITE_LO 210 mask starts losing them, and an
+                                aggregate over all four hides that
     plus `rejected_of_found`, the min_area-vs-min_circ split expressed as a fraction of raw-found,
     which is the form the synthetic reading (min_circ 17.2% vs min_area 11.9%) is quoted in."""
     instances, per_shot, pellets, all_steps = [], [], {}, []
@@ -621,6 +625,14 @@ def compute_real_fidelity_cascade(seq_frames):
         'any1_pct': round(sum(1 for x in fracs if x > 0) / n_p, 4) if n_p else None,
     }
     report['per_shot'] = per_shot
+    by_offset = {}
+    for rec in instances:
+        by_offset.setdefault(rec['offset'], []).append(rec)
+    report['per_offset'] = []
+    for off in sorted(by_offset):
+        row = summarize_cascade(by_offset[off])
+        row['offset'] = off
+        report['per_offset'].append(row)
     report['linkage_overall'] = {
         'n_link_steps': len(all_steps),
         'median_inter_frame_displacement_px': round(_median(all_steps), 2) if all_steps else None,
