@@ -54,7 +54,7 @@
 | `escalating` | 7 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, volume |
 | `everyN` | 5 | mast-romantic-maid, neon-vision-eye, phantom, rouge, soda-twinkling-bunny |
 | `everyNOffset` | 2 | neon-vision-eye, phantom |
-| `excludeSelf` | 9 | arcana-fortune-mate, blanc, brid-silent-track, grave, liberalio, maiden-ice-rose, miranda, soda-twinkling-bunny, … |
+| `excludeSelf` | 10 | arcana-fortune-mate, blanc, brid-silent-track, grave, label, liberalio, maiden-ice-rose, miranda, … |
 | `fbGate` | 5 | eunhwa-tactical-upgrade, modernia, soda-twinkling-bunny, velvet, zwei |
 | `flatDamage` | 57 | 2b, a2, anis-sparkling-summer, anis-star, arcana, arcana-fortune-mate, asuka-wille, bready, … |
 | `formation` | 2 | anis-star, rapi-red-hood |
@@ -105,7 +105,7 @@
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 3 | 2b, blanc, maiden-ice-rose |
+| `targetMaxHpPct` | 4 | 2b, blanc, label, maiden-ice-rose |
 | `targetStatus` | 7 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 2 | eunhwa-tactical-upgrade, noir |

@@ -1,0 +1,132 @@
+{
+  "slug": "label",
+  "kitDescription": "Label is an Iron AR Defender whose burst-stage-I kit is built around a self-shield called Delusion: she creates a shield worth 30.15% of her own max HP at battle start, and while that shield is up she gains +93.39% ATK and +70.4% burst-gauge fill speed on herself. Her burst raises her own max HP by 20.26% for 10 seconds and makes her shield invulnerable for that same window (Shared Delusion), during which every ally except herself gains bonus ATK equal to 80.36% of Label's ATK. If the shield ever breaks she becomes briefly untargetable and stunned, and she can re-create the shield by attacking or bursting — but none of that happens when nothing damages her. She also carries Electric-code damage-taken reduction for herself and, for the first 5 seconds, her allies. Against the partless test boss with no incoming damage, her shield never breaks, so her practical contribution is her own buffed AR fire plus the burst-window ally ATK grant.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Delusion shield 30.15% final Max HP",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "passive self shield maxHpPct 30.15; event-only, DPS-inert, kept for tandem ('shielded' consumers) and kit completeness",
+        "blindSaid": "S6: identical block (passive/self/shield/30.15). S5: asserted Delusion-gated buffs live from frame 0 — green",
+        "formulaCheck": "Shield is event-only in the engine (no HP pool, no boss damage); no damage bucket involved; emitting it preserves the structural Delusion gate and any 'shielded' trigger channel per mechanics SSOT §9 shield machinery",
+        "fireRateOk": true,
+        "explanation": "Exactly one application at frame 0; matches prose trigger (start of battle), target (self), and magnitude (30.15). Present-and-inert is the correct channel for an event-only line."
+      },
+      {
+        "kitLine": "Delusion Shattered (untargetable+stun)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; requires Delusion to END (shield break = incoming damage, not modeled); taunt-immunity/stun have no DPS channel",
+        "blindSaid": "S6: identical verbatim unmodeled entry. S5: it.skip with GAP note (no shield-break channel, untargetability primitive absent)",
+        "formulaCheck": "Correctly unreachable in v1: boss deals no damage, the permanent shield never breaks, the trigger can never fire. No damage-formula interaction exists for untargetability/stun in this sim",
+        "fireRateOk": true,
+        "explanation": "All three agents agree the line is inert-by-construction; recorded verbatim with the reason. Correctly NOT modeled as a live stun (the nearest-wrong model — it would wrongly cut her fire uptime)."
+      },
+      {
+        "kitLine": "re-shield on normal attack",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; fires only once the shield has broken, which never happens in the no-incoming-damage sim",
+        "blindSaid": "S6: identical verbatim entry. S5: it.skip; must NOT be modeled as ungated re-apply (would spam a shield event every shot)",
+        "formulaCheck": "Gate ('while not in Delusion') is unsatisfiable in v1; an ungated encoding would corrupt 'shielded' consumers. Omission is behaviorally exact here",
+        "fireRateOk": true,
+        "explanation": "Verified exactly one shield application per battle (no per-shot re-emission); documented, correct."
+      },
+      {
+        "kitLine": "re-shield on Burst Skill use",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill1 verbatim; same unreachable not-in-Delusion gate",
+        "blindSaid": "S6: identical verbatim entry. S5: folded into the same it.skip",
+        "formulaCheck": "Same reasoning as the normal-attack re-shield; inert in v1, correctly omitted rather than re-fired every rotation",
+        "fireRateOk": true,
+        "explanation": "Documented and behaviorally exact under the v1 premise."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "allies Electric dmg taken ▼70.4% 5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim; defensive reduction, Electric-conditional (fixture boss is Fire), no incoming-damage model",
+        "blindSaid": "S6: identical verbatim entry. S5: asserted no positive damageTakenPct boss debuff attributable to Label — green",
+        "formulaCheck": "Taxonomy correct: engine 'damageTakenPct' is an enemy-side debuff (boss takes MORE); encoding this ally-defensive line there would add phantom team damage — the exact conflation S2b flagged as nearest-wrong",
+        "fireRateOk": true,
+        "explanation": "Fully inert on two independent grounds (no incoming damage; wrong boss element); verbatim-documented."
+      },
+      {
+        "kitLine": "Burst Gauge filling ▲70.4% (Delusion)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstGenPct 70.4, passive self, frame 0, no expiry — Delusion gate permanently satisfied in v1",
+        "blindSaid": "S6: identical (same block grouping both self passives). S5: asserted the buff exists and removal leaves no burstGenPct — green",
+        "formulaCheck": "Self-scope correct per prose 'Affects self'; gauge-fill speed feeds the rotation machinery (mechanics SSOT §6), so it is rotation-load-bearing, not droppable utility",
+        "fireRateOk": true,
+        "explanation": "Live from frame 0; fixture sanity confirms Label casts stage 1 every rotation (>5 casts), so the buff is observably exercising the gauge path rather than merely present."
+      },
+      {
+        "kitLine": "ATK ▲93.39% (Delusion)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "atkPct 93.39, passive self, permanent; removal collapses her total below 75% (liveness); widening to allies provably lifts ada (scoping gate)",
+        "blindSaid": "S6: identical effect. S5: asserted presence, permanence, and damage movement — green",
+        "formulaCheck": "Plain 'ATK ▲%' (no caster-basis keyword) → own-ATK scaling inside the (1+ΣATK%) sum per damage-calc §1a; for a self buff atkPct and casterAtkPct are mathematically identical, so the literal atkPct reading is correct",
+        "fireRateOk": true,
+        "explanation": "Her only self-damage line; correct stat, scope, trigger, and permanence. Discrimination is real (liveness + scoping counterfactuals both go red)."
+      },
+      {
+        "kitLine": "self Electric dmg taken ▼70.4%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.skill2 verbatim; defensive, Electric-conditional, no incoming-damage model",
+        "blindSaid": "S6: identical verbatim entry. S5: covered by the no-boss-debuff assertion — green",
+        "formulaCheck": "Same damageTakenPct taxonomy trap correctly avoided; zero damage channels touched",
+        "fireRateOk": true,
+        "explanation": "Documented and inert."
+      },
+      {
+        "kitLine": "allies ATK ▲80.36% of user (Shared)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 80.36 on burstCast → allies excludeSelf, durationSec 10; value flat-resolves to 0.8036 × Label staticAtk; apply frames coincide with her stage-1 casts, not FB entry",
+        "blindSaid": "S6: IDENTICAL block including the independently-derived 10s window inference and burstCast keying. S5: asserted flat value equality across allies, excludeSelf, one wave per cast, 600-frame windows, no frame-0 passive — green after isolating crown's own casterAtkPct from the filter",
+        "formulaCheck": "Damage-calc §1a/§11: '% of caster's ATK' (no 'final' keyword) = caster's BASE static ATK, flat add outside the recipient's (1+ATK%) — non-diluting; matches the engine's resolution and the asserted magnitude. Duration inferred from the burst's 'invulnerable for 10 sec' — the only place the status's clock is stated",
+        "fireRateOk": true,
+        "explanation": "The kit's highest-risk line: all three agents independently rejected the 'continuously = permanent' over-credit and the atkPct basis misread, and keyed it to her own cast. Discrimination is real: include-self adds a 4th target; atkPct basis records 80.36 and over-buffs ada; timing assertion separates burstCast from FB entry."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Max HP ▲20.26% 10s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "targetMaxHpPct 20.26, burstCast self, 10s (engine emits maxHpFlat); offensively inert — proven by byte-equal totals when removed",
+        "blindSaid": "S6: identical block with the same inert-but-kept note. S5: asserted per-cast application, 600-frame duration, totals-equality on strip — green",
+        "formulaCheck": "No atkOfMaxHpPct consumer in Label's kit (damage-calc §1a HP→ATK term is zero), so present-but-inert is the exact required behavior; retained per the taxonomy rule for HP stat buffs",
+        "fireRateOk": true,
+        "explanation": "Fires once per burst cast, self-scoped, correct magnitude basis (own Max HP), correct 10s duration, and moves zero damage."
+      },
+      {
+        "kitLine": "Shield invulnerable 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled.burst verbatim (invulnerability per se — no damage model, no shield HP pool); the 10s status window it opens IS captured as the skill2 ally-buff duration",
+        "blindSaid": "S6: same treatment (invulnerability unmodeled; window folded into the modeled ally grant) — the only delta is the blind left unmodeled.burst empty where the driver lists the line explicitly. S5: it.skip with the same reasoning",
+        "formulaCheck": "The invulnerability has no damage-formula representation in v1; its sole load-bearing content (the Shared Delusion clock) is modeled. The driver's extra verbatim listing is the more complete documentation",
+        "fireRateOk": true,
+        "explanation": "Dual-natured line handled correctly: inert mechanics documented, load-bearing window semantics modeled and verified by the ally-buff assertions."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1",
+  "verdict": "GO",
+  "verdictRationale": "No gotchas: all 11 kit lines are FAITHFUL (5) or DOCUMENTED_GAP (6), every gap recorded verbatim with its reason, and both ⚑ flags carry estimate+recipe+tier (cadence tuple: mandatory datamine-unreliable with a focus-video recipe; Delusion-uptime: defensive out-of-domain gap). The blind re-derivations converged on substance: S6's override matches the driver on every load-bearing decision (sole delta is cosmetic block-grouping of the two self passives), and the S5 blind test runs 16/0-fail/3-skip against the shipped override after mechanical-only adaptation — its 5 pre-adaptation REDs all traced to the S2b-predicted fixture hazard (controlComp puts liter alongside Label at B1 so Label never casts) and to crown's casterAtkPct contaminating the blind ally-buff filter, proven non-faithfulness by green-after-isolation. Discrimination is real across the board: liveness (noAtk collapses her total), scoping (allies-widening lifts ada), basis (atkPct records the raw 80.36 and over-buffs high-ATK ada), timing (burstCast frames ≠ FB-entry frames), and present-but-inert (totals byte-equal on Max-HP strip). The two genuine judgment calls — collapsing the Delusion gate to a passive under the v1 no-incoming-damage premise, and inferring the Shared Delusion window as the burst's 10 seconds despite skill2's bare 'continuously' — were made independently by all three agents and are corroborated by the prose plus the mechanics SSOT. Same-model residual for the owner to spot-check: the 10s Shared Delusion window is an inference (prose never prints a duration for the ally line) that every same-model agent found natural, and the passive gate-collapse assumes the shield never breaks — both are flagged in the override's caveats, so a one-minute owner read of those two caveats is the remaining human check.",
+  "model": "kimi-code/k3"
+}

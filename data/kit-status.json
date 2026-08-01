@@ -4839,6 +4839,52 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "label": {
+      "name": "Label",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Defender",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/label.json + scripts/kit-autonomy/manual-review/label.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "10s Shared Delusion window is an inference (prose prints no duration on the ally line); Delusion gate collapsed to passive (shield never breaks in v1 no-incoming-damage sim) — both in override caveats",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "unmodeled": {
+        "skill1": [
+          "Activates when Delusion status ends. Affects self. Delusion Shattered: Activates up to 2 time(s). This effect is continuous.",
+          "Effect 1: Imagined Heartbreak: Prevents being targeted by single-target attacks for 1 sec x Delusion Shattered count. This effect is removed upon taking a direct hit.",
+          "Effect 2: Stuns for 1 sec per Delusion Shattered stack.",
+          "Activates when performing a normal attack while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous.",
+          "Activates when using Burst Skill while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous."
+        ],
+        "skill2": [
+          "Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies ▼ 70.4% for 5 sec. Activates 1 time(s) per battle.",
+          "Damage taken from Electric Code enemies ▼ 70.4% continuously."
+        ],
+        "burst": [
+          "Shared Delusion: The Shield created by Label becomes invulnerable for 10 sec."
+        ]
+      },
+      "caveats": [
+        "skill1: the Delusion shield is event-only (engine `shield` emits no HP pool); DPS-inert and Label has no `shielded` consumer — modeled for kit-completeness only",
+        "skill2: the self ATK ▲93.39% / burst-gauge ▲70.4% are 'only while in Delusion'; Delusion is permanent in the no-incoming-damage sim, so they are encoded passive (frame 0, no expiry). Real shield-break downtime is sub-second and unmodeled (⚑)",
+        "burst: self Max HP ▲20.26% (targetMaxHpPct, own-Max-HP basis) is offensively inert (no atkOfMaxHpPct conversion) — kept for kit-completeness, proven inert by totals-equality",
+        "skill2: the ally ATK ▲80.36% (of Label's ATK) is gated on Shared Delusion, the 10s status Label's burst creates — encoded as a burstCast 10s buff; the shield INVULNERABILITY itself is unmodeled (no damage model)"
+      ]
     }
   }
 }

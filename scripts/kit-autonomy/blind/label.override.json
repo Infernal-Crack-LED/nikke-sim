@@ -1,0 +1,103 @@
+{
+  "slug": "label",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "shield",
+          "maxHpPct": 30.15
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "burstGenPct",
+          "value": 70.4
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 93.39
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies",
+        "excludeSelf": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 80.36,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 20.26,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Activates when Delusion status ends. Affects self. Delusion Shattered: Activates up to 2 time(s). This effect is continuous.",
+      "Effect 1: Imagined Heartbreak: Prevents being targeted by single-target attacks for 1 sec x Delusion Shattered count. This effect is removed upon taking a direct hit.",
+      "Effect 2: Stuns for 1 sec per Delusion Shattered stack.",
+      "Activates when performing a normal attack while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous.",
+      "Activates when using Burst Skill while not in Delusion status. Affects self. Delusion: Creates a Shield equal to 30.15% of the skill user's final Max HP. This effect is continuous."
+    ],
+    "skill2": [
+      "Activates at the start of battle. Affects all allies (except self). Damage taken from Electric Code enemies \u25bc 70.4% for 5 sec. Activates 1 time(s) per battle.",
+      "Damage taken from Electric Code enemies \u25bc 70.4% continuously."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u26d1 LOAD-BEARING PREMISE: the skill2 Delusion-gated self block is authored as an always-on passive because the start-of-battle Delusion shield is created at t=0 and the v1 boss deals no damage to allies, so the shield never breaks and Delusion never ends. If unit-facing boss damage is ever modeled, this block must become shield-state gated (requiresShielded) and the Delusion-Shattered / re-shield lines become live.",
+    "\u26d1 Shared Delusion has NO stated duration in skill2 (\"continuously\"); it is inferred to be the 10 sec window opened by the burst line (\"the Shield created by Label becomes invulnerable for 10 sec\"), hence the ally ATK grant is keyed to burstCast with durationSec 10.",
+    "\u26d1 The burst's shield-invulnerability itself is not simulated (no HP pool / no incoming damage in v1); only its status-granting role is modeled, as the trigger + window for the skill2 Shared Delusion ally ATK grant.",
+    "\u26d1 Datamined cadence/economy fields (ammo 60, reloadFrames 81, hitsPerShot 1) are the known-unreliable datamine surface, not kit text.",
+    "The self Max HP \u25b220.26% grant is retained for kit completeness; Label carries no HP-scaling ATK line, so it is offensively inert today.",
+    "Damage-taken-reduction lines (both the ally 5 sec one-shot and the self continuous one) have no representation in the effect schema (damageTakenPct is an enemy-side debuff meaning the BOSS takes more) and are defensive against Electric Code enemies only \u2014 recorded verbatim in unmodeled, not encoded."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u26d1 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Label (label, AR/Iron/Defender/Burst I) is modeled as a permanent-shield self-buffer plus a burst-window ally ATK grant. skill1 = the start-of-battle Delusion shield (30.15% of her own final Max HP) emitted as a self shield event so shield-synergy consumers' `shielded` triggers fire. skill2 = the Delusion-gated self package (Burst Gauge filling speed \u25b270.4% \u2192 burstGenPct, ATK \u25b293.39% \u2192 atkPct), authored as an always-on passive under the stated premise that Delusion never ends in a fight where nothing damages her, plus the Shared Delusion ally grant (ATK \u25b280.36% OF THE SKILL USER'S ATK \u2192 casterAtkPct, allies excluding self) keyed to her OWN burst cast for 10 sec. burst = self Max HP \u25b220.26% for 10 sec. The re-shield lines (normal attack / burst while NOT in Delusion) and the Delusion Shattered branch are inert by construction here because Delusion is continuously held; they are recorded verbatim in `unmodeled`."
+}
