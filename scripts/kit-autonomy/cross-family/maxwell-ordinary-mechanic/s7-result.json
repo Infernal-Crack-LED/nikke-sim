@@ -1,0 +1,108 @@
+{
+  "slug": "maxwell-ordinary-mechanic",
+  "kitDescription": "Maxwell: Ordinary Mechanic is a Wind SR Supporter whose every full-charge sniper shot grants the whole team a stacking Max HP buff (1% of her own max HP per stack, up to 30 stacks, permanent) and fills the team burst gauge by 7.15%. Whenever any ally enters Burst Stage 3, she gives the team +10% Attack Damage for 5 seconds. When she casts her own Burst II, she grants all allies ATK equal to 1% of her final max HP for 15 seconds and gains a permanent +30% ATK Overcurrent stack, up to 5 stages. Her burst also swaps her weapon to the Matis UberBuster — a 1-round piercing cannon hitting at 350% of final ATK with a 300% full-charge multiplier — whose fixed charge time shortens with her Overcurrent stage, from 3 seconds down to 0.4 seconds at stage 5. The same cast buffs the team's Attack Damage by 25% for 10 seconds.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S2a group (non-vacuity + 4 assertions): mom never casts — crown holds the B2 slot in controlComp(SLUG, true)",
+      "S2b group (non-vacuity + 5 assertions): same fixture collision, zero mom burstCasts",
+      "B1 dynamic assertions (swap fires damage, ladder binding): burst-keyed, void",
+      "B2 group (non-vacuity + 3 assertions): burst-keyed, void",
+      "S1a 'stacked Max HP feeds S2a': S2a is burst-keyed so deleting S1a changes nothing in this fixture"
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Full Charge → Max HP ▲1% user, x30",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "shotFired → allies casterMaxHpPct 1, maxStacks 30, continuous (engine re-emits flat maxHpFlat keyed to caster)",
+        "blindSaid": "S5 GREEN (per-shot trigger, cap 30, all-ally scope, no expiry, flat value constant per target); S6 identical encoding + ⚑ rampSec 60 the driver correctly omits (kit states no ramp)",
+        "formulaCheck": "SSOT §1a: ally-granted Max HP does not feed teammates' HP→ATK conversions, own-kit stacks feed own — driver's note states exactly this; line's only damage path is self-feed into S2a, as encoded",
+        "fireRateOk": true,
+        "explanation": "SR auto full-charges every pull, so shotFired ≡ 'Full Charge attack'; ~68 shots over 180s reaches the 30-stack cap mid-fight, and applications == shots×3 confirms UberBuster swap shots keep proccing it (S2b coupling-3 satisfied)."
+      },
+      {
+        "kitLine": "Stage 3 enter → Atk Dmg ▲10% 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "stageEnter:3 → allies attackDamagePct 10 /5s",
+        "blindSaid": "S5 GREEN (fires before fullBurstStart, once per rotation, all allies, binding 5s window); S6 identical",
+        "formulaCheck": "Stage-3 entry is the B3 cast frame, 22f before FB — driver's frame-set equality with ada's cast frames matches the measured chain timing (SSOT §3)",
+        "fireRateOk": true,
+        "explanation": "Correctly keyed to ANY unit's B3 cast, not mom's own burstCast and not fullBurstEnter; discriminating counterfactual (re-keyed to burstCast) flips the frame set as required."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Burst → ATK ▲1% user final HP 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "burstCast → allies atkOfMaxHpPct 1 /15s; flag-1: primitive resolves vs each target's OWN max HP, not the caster's — exact for self, approximate for allies; estimate + recipe + MODEL_ONLY tier in note",
+        "blindSaid": "S5's caster-basis probe void (fixture); S6 hit the same schema wall and parked a casterAtkPct placeholder flagged magnitude-wrong — driver used the strictly better available primitive",
+        "formulaCheck": "SSOT §1a: HP→ATK conversions are own-HP-based in the engine; the kit's 'skill user's final max HP' is a caster-scaled basis the schema cannot express — a genuine missing primitive, documented not fudged",
+        "fireRateOk": true,
+        "explanation": "Encoding is exact for Maxwell herself (the load-bearing self case, fed by S1a stacks) and the ally-side approximation is flagged with a measurement recipe. Acceptable documented gap; not a silent drop."
+      },
+      {
+        "kitLine": "Burst → Overcurrent ATK ▲30% x5",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self atkPct 30, maxStacks 5, continuous, PLUS parallel 'overcurrent' resource pool (cap 5) the burst ladder reads",
+        "blindSaid": "S5 void (fixture); S6 identical buff block (resource pool is driver's addition, matching the S6-prescribed recipe)",
+        "formulaCheck": "Generic ATK ▲% sums into the (1+ΣATK%) multiplier per SSOT §1a; +30pp/stage to +150% at cap is the literal read of 'Up to 5 stages'",
+        "fireRateOk": true,
+        "explanation": "Self-only scope, one stack per own cast, no expiry — pinned by stack cap 5 despite ~10 casts and the ally-re-scope counterfactual."
+      },
+      {
+        "kitLine": "Full Charge → Burst Gauge 7.15%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "data/gauge-per-shot.json flatPerTrigger 715 (helm convention; gauge pipeline emits no event, pinned by data-file read)",
+        "blindSaid": "S5 GREEN (7.15 value present; one fill per charge — retarget-to-self leaves FB count unchanged); S6 same value as an override fillGauge block — different convention, same mechanic",
+        "formulaCheck": "7.15% of the 10,000-energy gauge = 715 flat per trigger; per-unit kit gauge quirks carried outside the override are the documented helm-H3 precedent (SSOT §6 / burst-gauge.md)",
+        "fireRateOk": true,
+        "explanation": "Per-trigger flat fill accelerates naturally during stage-5 0.4s-charge swap windows, matching the kit's per-full-charge wording; focus-scaling/FB-lock suppression inherits the global gauge rules (unassertable from events — documented skip)."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Swap UberBuster 350%/FC300%/Pierce",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "weaponSwap damagePct 350, chargeMultPct 300, maxAmmo 1, swap-scoped hasPierce, durationSec 10 ⚑ (flag-2: kit-silent duration, estimate + recipe + MODEL_ONLY tier)",
+        "blindSaid": "S5 GREEN on static structure (350/300/ammo-1/Pierce swap-scoped, no top-level hasPierce); S6 identical encoding",
+        "formulaCheck": "Swap shots are normal-bucket instances: charge bucket 3.0, crit/core/FB per §1b; Pierce is Damage-Up-bucket eligibility only, no double-hit on the partless boss (PIERCE_CORE_DOUBLE=false) — both as encoded",
+        "fireRateOk": true,
+        "explanation": "Swap shots observed at atkPct 350 / mult.charge 3.0 in the normal bucket while base shots stay 69.04 / 2.5; ammo-1 reload cycle and 10s window are flagged estimates, not silent choices."
+      },
+      {
+        "kitLine": "Charge time by Overcurrent stage",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "five resourceGate-banded weaponSwap blocks on the 'overcurrent' pool (max:1→3s, 2→2.5s, 3→2s, 4→1.5s, min:5→0.4s); slot-order dispatch makes cast N's stack count for cast N's ladder (kit-ambiguous alternative documented); 'fixed' clamp falls out — chargeTimeSec never scaled by chargeSpeedPct",
+        "blindSaid": "S5 independently derived the resourceGate-banded ladder and found it GREEN; S6 skipped the ladder as its largest error and prescribed EXACTLY this resourceGate recipe — the driver enacted the blind's own fix",
+        "formulaCheck": "SSOT §2b/§4: weapon-swap charge semantics and per-cast snapshot; mutually exclusive bands give one swap per cast, 'only one effect is triggered at a time' as written",
+        "fireRateOk": true,
+        "explanation": "Cadence accelerates across the first five bursts (late window out-shoots the first; fixed-3s counterfactual stays flat and loses shots). The one genuine ambiguity — pre- vs post-increment stage read — is documented with the kit-natural reading enacted."
+      },
+      {
+        "kitLine": "Burst → Atk Dmg ▲25% 10s allies",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies attackDamagePct 25 /10s",
+        "blindSaid": "S5 void (fixture); S6 identical",
+        "formulaCheck": "Burst-cast grant lands pre-FB per the measured boundary rule and covers the window; sits in the Damage-Up bucket as a separate additive key from the S1b 10% line (SSOT §1e)",
+        "fireRateOk": true,
+        "explanation": "Value 25 ≠ 10, 600f ≠ 300f expiry, mom's own cast frames — all pinned; removal counterfactual strips only the 25% grant."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No real gotchas: all 8 kit lines are encoded, 7 FAITHFUL and 1 (S2a caster-HP basis) a DOCUMENTED_GAP with estimate + recipe + tier, plus the flagged swap-duration ⚑. The convergence signal is strong despite the RED headline: the S5 blind's 17 reds are ALL the fixture collision it pre-declared in its own header — controlComp pins crown into the Burst-II slot so mom casts zero bursts and every burst-keyed group is VOID, not refuted (a blind-fixture RECON_ERROR, not a driver divergence). Every group that can fire in that fixture is GREEN, including the S5 blind independently deriving the resourceGate-banded charge-time ladder the driver shipped, and the S6 blind — which skipped the ladder as 'the single largest modeling error' — prescribed verbatim the multi-band resourceGate recipe the driver enacted; two independent derivations converging on the driver's re-opened S3 model is the strongest evidence this gauntlet produces. Driver-side discrimination holds: every line has a nearest-wrong counterfactual that flips red (stageEnter vs burstCast frame sets, fixed-3s ladder, 175%/charge-100% swaps, ally-re-scoped Overcurrent), and fire-rate checks pass (per-shot HP stacking to cap, per-cast Overcurrent to cap 5, swap cadence accelerating across bursts). Residual same-model risks for the owner to spot-check against a recording: (1) the post-increment order-of-operations read (cast N's Overcurrent stack feeds cast N's ladder — kit-ambiguous, documented); (2) flag-1's caster-vs-own HP basis on S2a ally grants; (3) the 10s swap-duration ⚑ and ammo-1 reload economy. None blocks GO.",
+  "model": "kimi-code/k3"
+}

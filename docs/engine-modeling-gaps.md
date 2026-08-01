@@ -31,7 +31,7 @@
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 8 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, sugar, tove |
 | `alliesTopAtk` | 6 | alice, chime, maxwell, miranda, naga, soda-twinkling-bunny |
-| `atkOfMaxHpPct` | 4 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose |
+| `atkOfMaxHpPct` | 5 | 2b, cinderella, laplace-ultimate-hero, maiden-ice-rose, maxwell-ordinary-mechanic |
 | `bossElement` | 1 | eve |
 | `bossElementGate` | 6 | brid-silent-track, eve, helm-aquamarine, marciana-marine-study, phantom, rosanna |
 | `burstCasters` | 3 | ada, arcana, crown |
@@ -41,10 +41,10 @@
 | `burstSnapshotsPreFb` | 1 | cinderella |
 | `byFinalAtk` | 4 | alice, liberalio, miranda, soda-twinkling-bunny |
 | `cast` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
-| `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
+| `casterMaxHpPct` | 6 | anis-star, cinderella, maxwell-ordinary-mechanic, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
 | `chargeCounter` | 2 | noise, scarlet-black-shadow |
-| `chargeMultPct` | 8 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, nayuta, red-hood, snow-white, zwei |
+| `chargeMultPct` | 9 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, maxwell-ordinary-mechanic, nayuta, red-hood, snow-white, … |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
@@ -61,7 +61,7 @@
 | `fullBurstExtend` | 3 | isabel, modernia, soda-twinkling-bunny |
 | `gainPierce` | 7 | ade-agent-bunny, asuka, dorothy, grave, mari, milk-blooming-bunny, naga |
 | `hasB1` | 2 | anis-star, rapi-red-hood |
-| `hasPierce` | 5 | alice, laplace, laplace-ultimate-hero, red-hood, zwei |
+| `hasPierce` | 6 | alice, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, red-hood, zwei |
 | `highestAllyAtkPct` | 1 | guilty |
 | `hitCount` | 42 | 2b, ade-agent-bunny, alice-wonderland-bunny, ark-ranger-black, asuka-wille, blanc, bready, brid-silent-track, … |
 | `hitRatePct` | 14 | anchor-innocent-maid, asuka, chisato, dorothy-serendipity, drake, jill, leona, miranda, … |
@@ -94,13 +94,13 @@
 | `requiresPulls` | 1 | rapi-red-hood |
 | `requiresShielded` | 2 | asuka, naga |
 | `requiresTargetStatus` | 7 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name |
-| `resourceGate` | 10 | e-h, elegg-boom-and-shock, exia, guillotine-winter-slayer, julia, laplace-ultimate-hero, mana, mica-snow-buddy, … |
+| `resourceGate` | 11 | e-h, elegg-boom-and-shock, exia, guillotine-winter-slayer, julia, laplace-ultimate-hero, mana, maxwell-ordinary-mechanic, … |
 | `selfAndAdjacent` | 2 | flora, rouge |
 | `sequentialMultPct` | 1 | eve |
 | `shielded` | 1 | naga |
-| `shotFired` | 26 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, eunhwa-tactical-upgrade, … |
+| `shotFired` | 27 | a2, ade-agent-bunny, anis-star, bready, cinderella, delta-ninja-thief, diesel-winter-sweets, eunhwa-tactical-upgrade, … |
 | `stackedNuke` | 1 | maiden-ice-rose |
-| `stageEnter` | 9 | cinderella, ein, laplace-ultimate-hero, mast-romantic-maid, mihara-bonding-chain, mint, rei-ayanami, snow-white-heavy-arms, … |
+| `stageEnter` | 10 | cinderella, ein, laplace-ultimate-hero, mast-romantic-maid, maxwell-ordinary-mechanic, mihara-bonding-chain, mint, rei-ayanami, … |
 | `storedHit` | 1 | rapi-red-hood |
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
@@ -113,7 +113,7 @@
 | `unlimitedAmmo` | 5 | grave, modernia, moran, nayuta, red-hood |
 | `unswapped` | 2 | laplace, laplace-ultimate-hero |
 | `weapon` | 11 | arcana-fortune-mate, ark-ranger-black, d-killer-wife, drake, leona, miranda, nayuta, noir, … |
-| `weaponSwap` | 14 | ada, chisato, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, … |
+| `weaponSwap` | 15 | ada, chisato, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, maxwell-ordinary-mechanic, … |
 | `whileSwapped` | 0 | _none_ |
 
 <!-- END GENERATED: primitive-census -->
