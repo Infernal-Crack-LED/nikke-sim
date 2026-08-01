@@ -2099,6 +2099,42 @@
         "temp": "COLD ▼"
       }
     },
+    "julia": {
+      "name": "Julia (Treasure)",
+      "burst": "III",
+      "weapon": "AR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/julia.json + scripts/kit-autonomy/manual-review/julia.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "caveats": [
+        "⚑ CRIT-COUNT PROXY (derived, CALIBRATED — eve precedent): Crescendo hitCount:19 and Marcato hitCount:25 convert the kit's '6/8 critical hit(s) with normal attacks' to rounds at julia's 180s fight-averaged NA crit rate 32.3% (= 27.8% S1 uptime × 77.2% + 72.2% × 15%). STATIC on two axes: (a) it cannot track the S1 window PHASE — real procs cluster inside the 77.2% windows and thin out to 15% between them; the model spreads them evenly (same long-run RATE, different phase); (b) external team crit-rate buffs would shorten the real cadence and the static threshold cannot respond (eve's documented residual class). Estimate: the phase smoothing moves proc timing by <~3s per proc, damage-neutral to first order since buff uptime is near-saturated either way. Recipe: popup-read the Crescendo icon's 5-stack accrual time + Marcato popup cadence in a focused julia recording and rescale (threshold = N crits ÷ measured crit rate). Tier 2.",
+        "⚑ MARCATO-CRIT RIDER is an EXPECTED-VALUE encoding (CALIBRATED — takina uptime-average precedent): flatDamage 22.23 = 100% × P(Marcato crits), P = 50/180 × 41.04% + 130/180 × 15% = 22.23% (generic crit only — the NA-scoped 36.16% excluded; 180s scope-lock S1 uptime). The engine has no on-crit trigger (sim.ts:1606), so the real per-proc crit CONDITIONAL is smeared into its mean: the model deals the right TOTAL rider damage but cannot correlate it with individual Marcato crits (and pays it on a fixed cadence rather than in crit-cluster bursts). Recipe: focused recording — count Marcato's orange (crit) popups and their 100% follow-ups to read the true proc probability; replace the EV rider with a real crit branch if the engine gains an on-crit trigger. Tier 2.",
+        "⚑ CRESCENDO GATE RESOURCE does not decay (the critDamage buff's 15s expiry does): once the shadow `crescendo` pool reaches 5 the burst bonus gate stays open forever, whereas the real stacks lapse after 15s without a NA crit. Diverges ONLY if julia stops landing NA crits for 15+ continuous seconds — impossible in continuous sim fire (she lands ~1.8 NA crits/s even OUTSIDE her S1 windows, ~9.3/s inside). Tier 3.",
+        "⚑ BURST CONSOLIDATION: the five sequential 544.5% hits are one 2722.5% instance (eve/2b precedent) — damage-identical in the deterministic EV pass (5 crit rolls at one rate ≡ 1), but the event MULTIPLICITY and any future per-hit interaction (a per-hit-on-sequential consumer, a parts model) would see 1 hit where the kit deals 5. Unflavored: the kit names no sequential-damage consumer, so 'sequential' flavor is an unverified game-side claim held off (eve precedent). Recipe: if a Sequential Attack Damage support is ever graded on her team, popup-read whether her 5-hit burst scales with it and flavor accordingly. Tier 3.",
+        "⚑ TARGETING COLLAPSE: 'Affects random enemies' (prose) / '5 enemies with the highest final DEF' (stale base-variant table text) both collapse to the single immortal boss — no targeting model in v1; all 5 sequential hits and the max-stack bonus land on it. Tier 3."
+      ],
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0 (kimi-code/k3 binding judge, gotchas [], discriminationOk); cross-family S2b (claude-fable-5) / S5+S6 (claude-opus-5) / S7 (kimi-code/k3) converged; 22/22 driver tests green; 17/21 non-skipped blind assertions green (4 reds = blind-test defects per judge)",
+      "residual": "crit-count proxy hitCounts 19/25 (static, 32.3% fight-averaged NA crit); EV Marcato-crit rider 22.23; no-decay gate resource; burst 5-hit consolidation; popup-read cluster: Crescendo stack-accrual time + Marcato proc cadence + Marcato-crit follow-up rate",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
+    },
     "laplace": {
       "name": "Laplace (Treasure)",
       "burst": "III",

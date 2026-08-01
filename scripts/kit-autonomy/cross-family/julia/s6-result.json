@@ -1,0 +1,324 @@
+{
+  "slug": "julia",
+  "leakDetected": null,
+  "override": {
+    "slug": "julia",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "interval",
+          "sec": 40
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRatePct",
+            "value": 26.04,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 20,
+            "durationSec": 10
+          },
+          {
+            "kind": "buff",
+            "stat": "critRateNormalPct",
+            "value": 36.16,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 12
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critDamagePct",
+            "value": 24.79,
+            "durationSec": 15,
+            "maxStacks": 5
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 16
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 88,
+            "crit": true,
+            "noRange": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 100,
+            "crit": true,
+            "noRange": true
+          }
+        ]
+      },
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "passive"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": []
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "enemy"
+        },
+        "effects": [
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          },
+          {
+            "kind": "flatDamage",
+            "atkPct": 544.5,
+            "flavor": "sequential",
+            "crit": true,
+            "noFb": true
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "■ Activates at the start of battle. Affects self.",
+        "Forcefully uses Skill 1."
+      ],
+      "burst": [
+        "■ Activates when Crescendo is at max stacks. Affects the same target.",
+        "Deals 544.5% of final ATK as additional damage."
+      ]
+    },
+    "caveats": [
+      "⚑ Crescendo/Marcato triggers are CRITICAL-hit counters ('after landing 6/8 critical hit(s) with normal attacks'); the engine's hitCount trigger counts ALL normal-attack rounds, not crits. Modeled as hitCount 12 / 16 = the crit thresholds divided by an ESTIMATED ~50% effective crit rate under her own S1 crit buffs. This is the single largest source of error in this baseline and is UNMEASURED.",
+      "⚑ Crescendo stack steady-state is modeled as a maxStacks:5 buff refreshed on each 12-hit trigger; whether real stacks sit at cap for most of the fight (15s duration vs the rebuild rate) is unverified. If they ramp, the Critical Damage contribution is over-credited early.",
+      "⚑ The burst's max-Crescendo rider (6th 544.5% instance) is modeled as UNCONDITIONAL — the engine has no Crescendo-stack resource gate exposed to a burst block. If Crescendo is NOT at 5 stacks at burst time, this over-credits by 544.5% of final ATK per burst. Listed verbatim in unmodeled/burst to keep the audit honest.",
+      "⚑ Marcato's crit-conditional second hit (100%) is modeled as ALWAYS landing alongside the 88%; the kit gates it on Marcato itself critting. Expected value should be 100% × critRate, so this over-credits by (1 − critRate) × 100% of final ATK per proc.",
+      "⚑ skill1 cadence: no activation clause, so it is modeled as an interval keyed to the datamined 40s skill cooldown with a t=0 first fire implied by skill2's force-cast. Both the 40s value (datamine-unreliable) and the first-fire phase are unpinned.",
+      "⚑ Burst 'Attacks sequentially 5 times' is modeled as 5 discrete flatDamage instances rather than one merged hit; split-vs-merge is kit-silent and must be read from popups."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Julia (AR/Iron/Attacker/B3) is a self-contained crit carry: S1 is a self-only crit/ATK window (note the SCOPED Normal Attack Critical Rate 36.16% → critRateNormalPct, distinct from the generic 26.04% critRatePct — an unscoped model would over-credit her skill and burst damage). S2 is a crit-hit-counter engine: Crescendo (Critical Damage, 5 stacks, 15s) at 6 crits, Marcato (88%) at 8 crits, plus a 100% rider if Marcato crits. The engine has no critical-hit counter trigger, so both thresholds are approximated on hitCount with an estimated effective crit rate — see caveats. S2's battle-start 'Forcefully uses Skill 1' is carried as an empty passive block and listed verbatim in unmodeled: the force-cast is expressed by S1's t=0 first fire, not by a separate effect. Burst is 5×544.5% sequential to random enemies plus a 6th 544.5% gated on max Crescendo; the gate is not expressible as a burst-block condition here, so the 6th instance is modeled unconditionally and flagged. Burst damage is burstCast-triggered and therefore FB-exempt (noFb) — a burst cast lands before the Full Burst window opens."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Affects self.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "TargetDef {kind:'self'} on the S1 block."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate ▲ 26.04% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRatePct 26.04, durationSec 10. Unscoped keyword before ▲ → generic crit."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "ATK ▲ 20% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 20, durationSec 10 (self-scaling ATK, not casterAtkPct)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Normal Attack Critical Rate ▲ 36.16%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRateNormalPct 36.16, durationSec 10 — SCOPED to normal attacks per failure-mode #1; never generic critRatePct."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "(no activation clause on the block)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger interval sec:40 (datamined cd 40s) — ⚑ cadence + first-fire phase."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 6 critical",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:12 — crit-hit counter approximated via an estimated ~50% effective crit rate. ⚑"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Crescendo: Critical Damage ▲ 24.79%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critDamagePct 24.79, maxStacks 5, durationSec 15, self."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates after landing 8 critical",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount count:16 — same crit-rate approximation as the 6-crit threshold. ⚑"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Marcato: Deals 88% of final ATK",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 88, crit:true, noRange:true (rider). Target enemy."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates if Marcato lands as a crit",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "Modeled as an unconditional second flatDamage on the same block — the engine has no 'previous hit crit' gate. Over-credits by (1−critRate)×100%. ⚑"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Deals 100% of final ATK as addl dmg",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 100, crit:true, noRange:true."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Activates at the start of battle.",
+      "status": "SKIPPED",
+      "effectOrReason": "Expressed structurally: S1's interval trigger first-fires at battle start per the force-cast convention. No separate effect exists for 'cast another skill'; listed verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Forcefully uses Skill 1.",
+      "status": "SKIPPED",
+      "effectOrReason": "Same as above — no force-cast EffectDef in the schema. Verbatim in unmodeled.skill2."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects random enemies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "TargetDef {kind:'enemy'} — the sim has a single boss, so 'random enemies' collapses to the boss."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 544.5% of final ATK as damage.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "flatDamage atkPct 544.5, flavor sequential, crit:true, noFb:true."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Attacks sequentially 5 times.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "5 discrete flatDamage instances; split-vs-merge is kit-silent. ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Activates when Crescendo is at max",
+      "status": "SKIPPED",
+      "effectOrReason": "No resource gate for Crescendo stacks is exposed to a burst block (Crescendo is a stacked buff, not a declared resource). The 6th instance is modeled UNCONDITIONALLY and the gate is listed verbatim in unmodeled.burst. ⚑"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 544.5% of final ATK as addl",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "6th flatDamage 544.5, sequential, crit:true, noFb:true — ungated, see above."
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill2[0].trigger.count / skill2[1].trigger.count",
+      "estimate": "12 and 16 (crit thresholds 6 and 8 ÷ ~0.50 effective crit rate)",
+      "reasoning": "The kit counts CRITICAL hits with normal attacks; the engine's hitCount trigger counts rounds. The conversion factor is her effective normal-attack crit rate, which under her own S1 window is base sheet crit + 26.04% + 36.16% — but the sheet base is not in the kit text and the S1 window is only 10s of every ~40s, so the rate swings hard between in-window and out-of-window firing. 50% is a mid estimate across the fight, not a derivation.",
+      "recipe": "From a recording: count her normal-attack rounds between consecutive Crescendo stack applications (the stack icon increments) and between Marcato popups. Round-count ÷ 6 and ÷ 8 gives the true effective crit rate directly. Alternatively read the sheet crit rate off the character screen under scope lock and compute 6/rate and 8/rate, then check the popup cadence agrees."
+    },
+    {
+      "field": "skill2[0].effects[0] (Crescendo steady-state)",
+      "estimate": "Sits at or near 5 stacks for most of the fight after an opening ramp",
+      "reasoning": "15s duration against a 12-round rebuild interval suggests stacks outpace expiry once firing is steady, so cap is plausible — but reloads (93 reload frames, 60 ammo) and the S1 window gaps interrupt accrual. Authored at full value with no rampSec, which over-credits the opening seconds.",
+      "recipe": "Read the Crescendo stack pip count off the unit's buff row at 5s intervals through a recording; if it takes >5s to reach 5, set rampSec to the observed time-to-cap on the buff effect."
+    },
+    {
+      "field": "burst[0].effects[5] (max-Crescendo rider)",
+      "estimate": "Fires on every burst (modeled unconditional)",
+      "reasoning": "Depends entirely on whether Crescendo is at 5 stacks when she bursts. If the stack pool is at cap by her first burst (~40s in), unconditional is nearly correct; if she bursts early or stacks lapse during the pre-burst chain, this over-credits by 544.5% of final ATK per burst.",
+      "recipe": "Count burst popups in a recording: 6 large sequential numbers = the rider fired, 5 = it did not. Cross-check against the Crescendo pip count on the frame the burst banner appears. If it fires inconsistently, declare Crescendo as a resource and add a resourceGate {name:'crescendo', min:5} to a separate 6th-instance block."
+    },
+    {
+      "field": "skill2[1].effects[1] (Marcato crit rider)",
+      "estimate": "Always lands (modeled unconditional); true expected value ≈ 100% × critRate",
+      "reasoning": "The kit gates the 100% on Marcato itself critting, and the engine has no 'did the previous effect crit' condition. Unconditional is the optimistic bound; the faithful expected value is lower by (1−critRate)×100% of final ATK per proc.",
+      "recipe": "Count Marcato popup pairs in footage — an 88% popup followed by a 100% popup means the rider fired; a lone 88% means it did not. The ratio of paired to total Marcato procs IS the crit rate on that hit, which also independently validates the crit-rate estimate used for the hitCount conversion above."
+    },
+    {
+      "field": "skill1[0].trigger.sec",
+      "estimate": "40s interval, first fire at battle start",
+      "reasoning": "Taken from the datamined cd 40s field, which the methodology marks as an unreliable source class. The battle-start first fire is implied by S2's 'Forcefully uses Skill 1' line per the force-cast convention (force-cast → t=0; plain interval → t=cd).",
+      "recipe": "Time the gap between successive S1 buff-icon appearances on her buff row in a recording; confirm the first appearance is at or within a frame or two of t=0."
+    },
+    {
+      "field": "burst[0].effects[0..4] (split vs merge)",
+      "estimate": "5 separate hits of 544.5% each",
+      "reasoning": "'Attacks sequentially 5 times' reads as 5 discrete instances, but whether the game renders 5 popups or one merged number is kit-silent and affects nothing in aggregate damage — only per-popup validation.",
+      "recipe": "Count damage popups during her burst window in a recording; 5 (or 6 with the rider) distinct numbers confirms the split."
+    },
+    {
+      "field": "burst[0].effects[*].flavor",
+      "estimate": "'sequential'",
+      "reasoning": "The kit says 'Attacks sequentially 5 times', which is the literal wording that feeds sequentialDamagePct / sequentialMultPct consumers. Tagged so a teammate carrying a Sequential Attack Damage ▲ buff correctly feeds these hits. If the flavor is wrong the hits still land, but cross-unit sequential buffs would mis-apply.",
+      "recipe": "Run her in a comp with a known Sequential Attack Damage ▲ carrier and check whether the burst numbers scale with that buff active vs absent."
+    }
+  ],
+  "model": "claude-opus-5"
+}

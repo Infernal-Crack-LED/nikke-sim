@@ -1,0 +1,18 @@
+S2d verify — julia — 2026-08-01T02:25:52Z
+
+PRE-OVERRIDE (RED, 2026-07-31T19:14Z): npx vitest run scripts/tests/units/julia.test.ts
+  → 1 failed | 'julia: no override on disk — fixture is stale' (withPatchedOverride throws;
+    no src/skills/overrides/julia.json existed — the honest RED for a first-modeling unit).
+
+POST-OVERRIDE (GREEN, 2026-07-31T19:25Z): npx vitest run scripts/tests/units/julia.test.ts
+  → Test Files 1 passed (1) | Tests 22 passed (22) | ~0.6s
+
+Intermediate RED (during authoring): 2 transient failures, both TEST-assumption bugs, not override bugs:
+  (1) J4 assumed the first burst cast post-dated 5 Crescendo stacks; empirically the opening cast
+      lands at t=5.4s and stacks max at t=9.1s — the gate CORRECTLY withholds the bonus from cast 1
+      (the reviewer's predicted discrimination). Test fixed to pin bonus.length === casts.length-1
+      with per-cast pairing.
+  (2) J1 scope set omitted the EV rider's legit 0.0000 crit rate (crit-ineligible); J4 used exact
+      frame equality where cast→damage resolution is +1-2f. Both fixed; assertions strengthened.
+
+validate-overrides: ✓ julia valid | dmg 222.7M (35.4% share) | bursts 5 | warnings = the 5 authored ⚑ caveats only.

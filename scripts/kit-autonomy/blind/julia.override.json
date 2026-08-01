@@ -1,0 +1,165 @@
+{
+  "slug": "julia",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "interval",
+        "sec": 40
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 26.04,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "atkPct",
+          "value": 20,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "critRateNormalPct",
+          "value": 36.16,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 12
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 24.79,
+          "durationSec": 15,
+          "maxStacks": 5
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 16
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 88,
+          "crit": true,
+          "noRange": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 100,
+          "crit": true,
+          "noRange": true
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": []
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        },
+        {
+          "kind": "flatDamage",
+          "atkPct": 544.5,
+          "flavor": "sequential",
+          "crit": true,
+          "noFb": true
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [],
+    "skill2": [
+      "\u25a0 Activates at the start of battle. Affects self.",
+      "Forcefully uses Skill 1."
+    ],
+    "burst": [
+      "\u25a0 Activates when Crescendo is at max stacks. Affects the same target.",
+      "Deals 544.5% of final ATK as additional damage."
+    ]
+  },
+  "caveats": [
+    "\u2691 Crescendo/Marcato triggers are CRITICAL-hit counters ('after landing 6/8 critical hit(s) with normal attacks'); the engine's hitCount trigger counts ALL normal-attack rounds, not crits. Modeled as hitCount 12 / 16 = the crit thresholds divided by an ESTIMATED ~50% effective crit rate under her own S1 crit buffs. This is the single largest source of error in this baseline and is UNMEASURED.",
+    "\u2691 Crescendo stack steady-state is modeled as a maxStacks:5 buff refreshed on each 12-hit trigger; whether real stacks sit at cap for most of the fight (15s duration vs the rebuild rate) is unverified. If they ramp, the Critical Damage contribution is over-credited early.",
+    "\u2691 The burst's max-Crescendo rider (6th 544.5% instance) is modeled as UNCONDITIONAL \u2014 the engine has no Crescendo-stack resource gate exposed to a burst block. If Crescendo is NOT at 5 stacks at burst time, this over-credits by 544.5% of final ATK per burst. Listed verbatim in unmodeled/burst to keep the audit honest.",
+    "\u2691 Marcato's crit-conditional second hit (100%) is modeled as ALWAYS landing alongside the 88%; the kit gates it on Marcato itself critting. Expected value should be 100% \u00d7 critRate, so this over-credits by (1 \u2212 critRate) \u00d7 100% of final ATK per proc.",
+    "\u2691 skill1 cadence: no activation clause, so it is modeled as an interval keyed to the datamined 40s skill cooldown with a t=0 first fire implied by skill2's force-cast. Both the 40s value (datamine-unreliable) and the first-fire phase are unpinned.",
+    "\u2691 Burst 'Attacks sequentially 5 times' is modeled as 5 discrete flatDamage instances rather than one merged hit; split-vs-merge is kit-silent and must be read from popups."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Julia (AR/Iron/Attacker/B3) is a self-contained crit carry: S1 is a self-only crit/ATK window (note the SCOPED Normal Attack Critical Rate 36.16% \u2192 critRateNormalPct, distinct from the generic 26.04% critRatePct \u2014 an unscoped model would over-credit her skill and burst damage). S2 is a crit-hit-counter engine: Crescendo (Critical Damage, 5 stacks, 15s) at 6 crits, Marcato (88%) at 8 crits, plus a 100% rider if Marcato crits. The engine has no critical-hit counter trigger, so both thresholds are approximated on hitCount with an estimated effective crit rate \u2014 see caveats. S2's battle-start 'Forcefully uses Skill 1' is carried as an empty passive block and listed verbatim in unmodeled: the force-cast is expressed by S1's t=0 first fire, not by a separate effect. Burst is 5\u00d7544.5% sequential to random enemies plus a 6th 544.5% gated on max Crescendo; the gate is not expressible as a burst-block condition here, so the 6th instance is modeled unconditionally and flagged. Burst damage is burstCast-triggered and therefore FB-exempt (noFb) \u2014 a burst cast lands before the Full Burst window opens."
+}
