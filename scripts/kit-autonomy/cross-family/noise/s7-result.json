@@ -1,0 +1,72 @@
+{
+  "slug": "noise",
+  "kitDescription": "Noise is an Electric rocket-launcher Supporter whose entire kit is team survivability, not damage. When she is hit 20 times, all allies take reduced damage for 20 seconds. Each of her full-charge rockets taunts the enemy she hits for 2 seconds and grants her a brief 1.8-second Max HP boost. Her Burst I gives the whole team a heal-over-time — a percentage of her own final Max HP restored every second for 10 seconds — plus a 10-second Max HP increase scaled to each ally's own HP. On a damage-only board she contributes nothing beyond her bare rocket damage; her real value is mitigation, aggro control, and feeding teammates that react to recovery.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "attacked 20x → allies Damage Taken ▼10.66%",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "skill1:[] fully unmodeled; verbatim line + ⚑ engine-core caveat with recipe (needs ally HP pool + incoming-damage model + a received-damage stat distinct from boss-facing damageTakenPct)",
+        "blindSaid": "S2b: UNMODELED is the correct disposition (no trigger primitive, no incoming damage, effect inert). S5: it.skip documented GAP. S6: emitted a zero-valued defPct placeholder on a mis-keyed hitCount:20 outgoing-hit proxy",
+        "formulaCheck": "Damage Taken ▼ on allies is a received-damage reduction — not any bucket in dealDamage; the only damageTakenPct primitive is the boss-side Taken bucket (positive = boss takes MORE), so encoding it would manufacture a phantom ~10.66% team damage gain. Boss deals no damage in v1 → untriggerable and inert either way",
+        "fireRateOk": true,
+        "explanation": "Driver's clean documented UNMODELED is the MORE faithful of the two blind shapes: S6's placeholder mis-keys the trigger (outgoing-hit counter standing in for an incoming-hit counter) which violates 'model only real mechanics' — a placeholder that fires on the wrong event is an invented behavior, while a verbatim unmodeled line + recipe is the sanctioned gap shape. Both avoid the sign-flip trap and move zero damage. Driver choice endorsed; S6 divergence attributed as a blind style misjudgment, not a driver finding."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Full Charge hit → Taunts for 2 sec",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "unmodeled verbatim; ⚑ inert/out-of-domain caveat (single-target fixed boss script, no aggro primitive)",
+        "blindSaid": "S2b/S5/S6 all agree: no taunt primitive, mechanically inert, belongs verbatim in unmodeled",
+        "formulaCheck": "Taunt is aggro/targeting — touches no damage bucket; boss script is fixed so hit location never changes damage",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence on the only correct disposition."
+      },
+      {
+        "kitLine": "Full Charge atk → self Max HP ▲24.86% 1.8s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "chargeCounter:1 → self → targetMaxHpPct 24.86 / durationSec 1.8 (engine → maxHpFlat self-grant; inert, encoded for kit-SSOT)",
+        "blindSaid": "S2b: FAITHFUL, shot-trigger, self, 1.8s wall-clock, inert-but-encoded. S5: asserts self-only scoping, ≥20 applies per fight (not burst-keyed), 1.8s window via expiresFrame delta — all GREEN. S6: identical effect, shotFired trigger (equivalent for always-full-charge RL)",
+        "formulaCheck": "Max HP ▲ is no damage bucket on a unit with no atkOfMaxHpPct conversion — correctly damage-inert; targetMaxHpPct on self resolves to 24.86% of her own Max HP, matching 'Max HP ▲' plain wording. chargeCounter:1 is the semantically precise 'attacking with Full Charge' primitive (every RL rocket is charged=true)",
+        "fireRateOk": true,
+        "explanation": "Driver test pins one apply per full-charge rocket (applied.length == shot count) at 24.86% of final Max HP, 108-frame window, strip-diff byte-identical totals, and the atkPct counterfactual moving her damage — full discrimination. Magnitude 24.86 matches the prose's own max-level number."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "recovers 2.47% … every 1 sec for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → heal{ticks:10, intervalSec:1}; recovery CADENCE modeled, 2.47% HP magnitude documented ⚑ (no HP pool in v1)",
+        "blindSaid": "S2b: FAITHFUL — 10 ticks at 1s, burstCast-keyed not fullBurstEnter, the unit's only damage-relevant channel via recovery consumers (crown). S5: structural assertion on ticks≥10/intervalSec 1/target allies GREEN; heal amount it.skip documented GAP. S6: identical block",
+        "formulaCheck": "Heal carries no damage bucket; its only sim-observable footprint is the per-second recovery event stream feeding 'when recovery takes effect' consumers — exactly what ticks:10/intervalSec:1 emits. burstCast keying matches 'Affects all allies' on a Burst-I cast (fullBurstEnter would over-fire when a competing B1 takes the slot)",
+        "fireRateOk": true,
+        "explanation": "Driver's fixture isolates correctly: crown's own Relax self-heal patched out so Noise's heal is the ONLY recovery source (the C-method fixture-isolation requirement is met); asserts ≥8 consumer firings spanning ≥8s per complete-window cast, with the ticks:1 counterfactual collapsing the cadence (faithful > 3× instant). Magnitude 2.47% is a documented measurement-gated gap, not a fudge."
+      },
+      {
+        "kitLine": "Max HP ▲ 49.5% for 10 sec (allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → allies → targetMaxHpPct 49.5 / durationSec 10 (engine → per-target maxHpFlat = 49.5% of EACH ally's own Max HP; inert per e3 rule)",
+        "blindSaid": "S2b: FAITHFUL — target-own-HP semantics, not casterMaxHpPct. S5: asserts ≥3 distinct targets including noise AND ≥2 distinct flat values (target-scaled) with the caster-scaled counterfactual yielding exactly 1 value — GREEN. S6: identical block",
+        "formulaCheck": "Plain 'Max HP ▲ x%' = % of each target's own Max HP (contrast the heal line's explicit 'of the skill user's final Max HP') — targetMaxHpPct is the correct stat. Ally-granted Max HP never feeds a teammate's atkOfMaxHpPct (MEASURED e3 rule), so inertness is formula-correct",
+        "fireRateOk": true,
+        "explanation": "Driver pins all three allies per cast at 49.5% of each target's own maxHp for exactly 600 frames, strip-diff inert, and level-1 value 27.22 as the discriminating smaller grant. Magnitude 49.5 matches the prose."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No gotchas: all five kit lines are FAITHFUL (S2b self Max HP, burst heal cadence, burst team Max HP) or DOCUMENTED_GAP (S1 Damage Taken ▼, S2a taunt — both primitive-less and inert in the no-incoming-damage v1 sim, verbatim in `unmodeled` with ⚑ recipes). Convergence is strong where it matters: the S5 blind tests run GREEN against the driver's shipped override (9 passed; the 3 skips are the blind's own documented GAPs, not divergences), and the only S6 divergence — a zero-valued placeholder block mis-keying S1's trigger onto outgoing hits — resolves in the DRIVER's favor, since a clean documented UNMODELED is more faithful than a block that fires on an invented trigger. Discrimination holds on every load-bearing axis: S2b is proven self-scoped/per-shot/1.8s against the burst-keyed and long-window counterfactuals; the burst Max HP is proven target-scaled against the caster-scaled misread; the heal is proven ticks:10 against the ticks:1 collapse with crown's own self-heal stripped so the fixture isolates Noise as the sole recovery source; and the atkPct counterfactual proves the shipped Max-HP grants are the inert encodings, not smuggled damage buffs. Nothing must change for GO. Same-model residual for the owner to spot-check: the heal's first-tick phase (driver caveat claims an immediate first event then 9 more, ~9s span) is engine convention rather than footage-verified, and the 2.47% heal magnitude is unmodeled by design pending an HP pool — both documented, neither board-relevant under scope lock.",
+  "model": "kimi-code/k3"
+}

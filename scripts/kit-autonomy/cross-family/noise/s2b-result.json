@@ -1,0 +1,94 @@
+{
+  "slug": "noise",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "when attacked 20 time(s) → allies",
+      "disposition": "UNMODELED",
+      "scope": "Incoming-damage mitigation (Damage Taken ▼ 10.66%) on ALL ALLIES — a defensive received-damage stat, not an offensive one.",
+      "durationSemantics": "20 sec wall-clock (durationSec) — not rounds.",
+      "triggerIdentity": "On-being-attacked counter (attacked 20 times). No such trigger exists in the schema, and the v1 boss deals no damage, so the trigger can never accrue — untriggerable AND effect-inert.",
+      "targetSet": "allies (all, incl. self)",
+      "nearestWrongModel": "Sign/target flip: encoding 'Damage Taken ▼' as the boss debuff damageTakenPct (taxonomy trap #4 in reverse) — a phantom ~10.66% team-wide damage gain on some invented trigger (e.g. interval or hitCount:20).",
+      "distinguishingAssertion": "Run controlComp with noise; collect buffApply events — there must be ZERO events with stat 'damageTakenPct' attributable to noise (no boss-held casterIdx===null apply matching value 10.66). Additionally, withPatchedOverride('noise', o => { o.skill1 = [] }) must leave every unit's totals() entry bit-identical.",
+      "inertness": "Skill1 must move NO unit's damage — the whole slot is damage-inert.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge hit → Taunts for 2 sec",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted aggro control on full-charge HIT.",
+      "durationSemantics": "2 sec wall-clock.",
+      "triggerIdentity": "On-HIT with a Full Charge attack (on-hit, not on-cast). No taunt/aggro primitive exists; the boss script is fixed and hit location never changes damage, so taunt is mechanically inert.",
+      "targetSet": "enemy (the target)",
+      "nearestWrongModel": "Encoding the taunt as a targetStatus('Taunt') or, worse, as an enemy damageTakenPct debuff riding the full-charge trigger — manufacturing a boss debuff the kit does not state.",
+      "distinguishingAssertion": "No targetStatus effect and no boss-held debuff buffApply (casterIdx===null) may originate from noise's skill2; withPatchedOverride stripping this line changes no totals. The line belongs verbatim in unmodeled.skill2.",
+      "inertness": "Must move no damage for any unit; must not open any requiresTargetStatus gate.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Full Charge atk → self Max HP ▲24.86%",
+      "disposition": "FAITHFUL",
+      "scope": "Scoped to attacking with Full Charge. Noise is an RL (chargeFrames 60): in the sim every trigger pull is a full-charge shot, so the effective cadence is per shot — but the encoding should still ride the shot trigger, not a passive.",
+      "durationSemantics": "1.8 sec wall-clock (durationSec: 1.8 → expires ~108 frames after apply). NOT rounds. Note 1.8s is shorter than her fire cycle (60f charge + travel + 6-ammo/141f-reload economy), so the buff is intermittent, not continuous — a passive encoding would be wrong.",
+      "triggerIdentity": "shotFired (each pull = a full-charge attack for an always-full-charging RL). On-attack, not on-hit — the taunt line above is the on-hit one; this one fires at attack time.",
+      "targetSet": "self",
+      "nearestWrongModel": "Dropping it as 'defensive, no damage effect' (the Grave reload-line failure mode: skipping stat lines instead of encoding them), or encoding as a passive/permanent Max HP buff ignoring the 1.8s window.",
+      "distinguishingAssertion": "Filter buffApply for stat 'maxHpFlat' with casterIdx===targetIdx===noise's slot: one apply per noise shot event (refresh:true on subsequent shots inside 1.8s is acceptable), each with expiresFrame ≈ applyFrame + 108, and value = a flat HP number (24.86% resolved against her Max HP), NOT the raw 24.86. Under the nearest-wrong (skipped) model this event set is empty; under the passive misread expiresFrame is unbounded.",
+      "inertness": "Damage-inert: noise has no HP→ATK conversion (no atkOfMaxHpPct in her kit), so totals for ALL units must be identical with this block present vs stripped. The buff must exist in the event log anyway (future-consumer rule).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "recovers 2.47% … every 1 sec for 10 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Heal-over-time to all allies; amount (% of caster final Max HP) is unmodeled by the heal primitive — the EVENT CADENCE is the mechanic.",
+      "durationSemantics": "10 ticks at 1s intervals over 10 sec — must be heal{ticks:10, intervalSec:1}, NOT a single instant heal.",
+      "triggerIdentity": "burstCast (stage 1 — fires only on rotations NOISE herself casts Burst I). NOT fullBurstEnter: keying to FB entry would fire the heal even on rotations where a competing B1 (e.g. liter) takes the slot — the classic burst-cast vs full-burst-enter over-credit.",
+      "targetSet": "allies (all, incl. self)",
+      "nearestWrongModel": "TWO stacked misreads to distinguish: (a) ticks defaulted to 1 (single recovery event per burst) starving on-recovery consumers; (b) trigger keyed to fullBurstEnter so the heal fires on every team FB regardless of who cast B1. This is the tandem trap (taxonomy #4): the heal looks inert alone but is the unit's ONLY damage-relevant channel, via teammates' 'recovery' triggers (crown sits in the control fixture as exactly such a consumer).",
+      "distinguishingAssertion": "In a comp where noise IS the casting B1, count heal-driven 'recovery'-consumer activity: crown's on-recovery buffApply events must refresh ~10 times per noise burst, spaced ~60 frames apart across the 10s window (green faithful / red under ticks:1, which yields exactly 1). Second assertion: in a comp where liter holds B1 and noise never casts, noise must emit ZERO heal-driven events (green faithful / red under fullBurstEnter).",
+      "inertness": "Noise's own totals unchanged; movement appears only in recovery-consumer teammates' buff uptime.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 49.5% for 10 sec (allies)",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Max HP stat buff to all allies.",
+      "durationSemantics": "10 sec wall-clock.",
+      "triggerIdentity": "burstCast (same block/cast as the heal — stage 1, her own burst).",
+      "targetSet": "allies (all, incl. self)",
+      "nearestWrongModel": "casterMaxHpPct instead of target-own-HP semantics: 'Max HP ▲ X%' is % of each TARGET's own Max HP (blanc/maiden shape), not a grant of 49.5% of NOISE's HP — the flat values per ally differ between the two encodings.",
+      "distinguishingAssertion": "buffApply events (stat 'maxHpFlat', key = this burst line) must carry DIFFERENT flat values per target, each ≈ 49.5% of that target's own Max HP; under the casterMaxHpPct misread every ally receives the SAME flat value (49.5% of noise's HP). Also assert expiresFrame ≈ castFrame + 600.",
+      "inertness": "Damage-inert everywhere: ally-granted Max HP never feeds a teammate's atkOfMaxHpPct (e3 rule), and noise has no own conversion — totals for all units identical with the line stripped. Encode it anyway.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:Full Charge → self Max HP ▲24.86% 1.8s",
+    "burst:heal 2.47% every 1s ×10 ticks (allies)",
+    "burst:Max HP ▲49.5% 10s (allies)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "■ Activates when attacked 20 time(s). Affects all allies.",
+      "Damage Taken ▼ 10.66% for 20 sec."
+    ],
+    "skill2": [
+      "■ Activates when hitting a target with a Full Charge attack. Affects the target.",
+      "Taunts for 2 sec."
+    ],
+    "burst": []
+  },
+  "notes": "Reconcile these with the driver: (1) SIGN-FLIP TRAP on skill1 — 'Damage Taken ▼ on allies' is defensive mitigation and must NOT appear as the boss damageTakenPct debuff; any damageTakenPct emission from noise is a phantom team buff. (2) The burst heal-over-time is noise's ONLY damage-relevant channel, and only via tandem (recovery-trigger consumers like crown, who is in the control fixture) — expect the shared-prior misread of ticks:1 (single instant heal) and/or fullBurstEnter keying; both assertions above are cheap and decisive. (3) FIXTURE HAZARD: noise is Burst I — in controlComp(noise) she coexists with liter (also B1) and first-ready in-window selection decides who casts; the test MUST pin/assert which unit actually casts B1 (burstCast events by slot) before asserting heal cadence, and remember a lone B3-less comp makes zero FBs (helm's fixed B3 slot covers this). (4) All durations here are genuine wall-clock seconds — no 'for N round(s)' lines — so a durationShots encoding anywhere in this kit is a misread. (5) Expected driver temptation: declaring the two Max HP buffs 'skip, defensive' — they are damage-inert but must be ENCODED (future-consumer rule), with inertness pinned by strip-diff assertions.",
+  "model": "claude-fable-5"
+}

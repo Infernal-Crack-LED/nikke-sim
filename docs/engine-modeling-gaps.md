@@ -43,7 +43,7 @@
 | `cast` | 5 | arcana, asuka-wille, cinderella-crystal-wave, diesel-winter-sweets, marciana-marine-study |
 | `casterMaxHpPct` | 5 | anis-star, cinderella, rouge, soline-frost-ticket, trina |
 | `charge` | 1 | snow-white |
-| `chargeCounter` | 1 | scarlet-black-shadow |
+| `chargeCounter` | 2 | noise, scarlet-black-shadow |
 | `chargeMultPct` | 8 | ada, cinderella-crystal-wave, e-h, eunhwa-tactical-upgrade, nayuta, red-hood, snow-white, zwei |
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
@@ -105,7 +105,7 @@
 | `stun` | 1 | mast-romantic-maid |
 | `swapGate` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
 | `swapped` | 7 | eunhwa-tactical-upgrade, laplace, laplace-ultimate-hero, moran, snow-white-heavy-arms, takina, zwei |
-| `targetMaxHpPct` | 4 | 2b, blanc, label, maiden-ice-rose |
+| `targetMaxHpPct` | 5 | 2b, blanc, label, maiden-ice-rose, noise |
 | `targetStatus` | 7 | asuka-wille, d-killer-wife, emma-tactical-upgrade, marciana-marine-study, phantom, privaty, rei-ayanami-tentative-name |
 | `teamAmmo` | 3 | cinderella-crystal-wave, elegg-boom-and-shock, little-mermaid |
 | `teamHas` | 2 | eunhwa-tactical-upgrade, noir |

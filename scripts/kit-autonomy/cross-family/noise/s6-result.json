@@ -1,0 +1,195 @@
+{
+  "slug": "noise",
+  "leakDetected": null,
+  "override": {
+    "slug": "noise",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "hitCount",
+          "count": 20
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "defPct",
+            "value": 0,
+            "durationSec": 20
+          }
+        ]
+      }
+    ],
+    "skill2": [
+      {
+        "slot": "skill2",
+        "trigger": {
+          "kind": "shotFired"
+        },
+        "target": {
+          "kind": "self"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 24.86,
+            "durationSec": 1.8
+          }
+        ]
+      }
+    ],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "allies"
+        },
+        "effects": [
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          },
+          {
+            "kind": "buff",
+            "stat": "targetMaxHpPct",
+            "value": 49.5,
+            "durationSec": 10
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [
+        "Damage Taken ▼ 10.66% for 20 sec. (defensive — boss deals no damage in v1; the trigger/duration are kept as a zero-valued defPct buff so the block is auditable)"
+      ],
+      "skill2": [
+        "Taunts for 2 sec. (aggro redirection — no HP pool / no boss damage modeled in v1)"
+      ],
+      "burst": []
+    },
+    "caveats": [
+      "⚑ skill1 trigger: 'when attacked 20 time(s)' is an INCOMING-hit counter the sim has no channel for (the boss deals no damage). Encoded as hitCount:20 on the owner's OUTGOING hits as the nearest available primitive; its only effect is a zero-valued defensive buff, so the mis-keying is damage-inert. Do NOT reuse this shape for an offensive line.",
+      "⚑ skill2 full-charge trigger: encoded as shotFired because Noise is an RL with chargeFrames 60 — every trigger pull is a charge shot in the default model. If she ever fires uncharged (tap-fire), this OVER-fires. A charge-specific trigger primitive does not exist in the schema.",
+      "⚑ The Max HP grants (skill2 24.86% / burst 49.5%) are offensively INERT unless a teammate converts Max HP → ATK; ally-granted Max HP does not feed a teammate's atkOfMaxHpPct. Kept for kit completeness and for any future consumer.",
+      "⚑ burst heal magnitude (2.47% of caster final Max HP/sec) is NOT modeled as an HP amount — the heal effect only emits 10 recovery events so on-recovery consumers (e.g. Crown-style 'when recovery takes effect') fire correctly. That tandem channel is the burst's real offensive value.",
+      "⚑ cadence tuple: base stats give chargeFrames 60 / reloadFrames 141 / ammo 6 from the datamine; rate_of_fire and reloadFrames are known-unreliable fields. Unverified against footage."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Noise is a pure-sustain RL/Electric/Supporter Burst I: her entire kit is Damage Taken ▼, a taunt, and Max HP + heal-over-time. She carries NO ATK, crit, core, element, charge, ammo, reload, fire-rate, gauge, or damage line — so on the v1 partless-immortal-boss scope-lock she contributes essentially zero direct damage and her only cross-unit channel is the burst's 10 recovery ticks feeding a teammate's on-recovery trigger. The skill1 Damage Taken ▼ is a SELF/ALLY defensive line (allies take less), NOT the offensive 'Damage Taken ▲' boss debuff — it must never be encoded as damageTakenPct, which would be a boss debuff and would over-credit the whole team.",
+    "hasPierce": false
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 20 time(s)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger hitCount:20 — ⚑ the sim has no incoming-hit counter; nearest primitive, damage-inert here"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (includes self — no 'except self' clause)"
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Damage Taken ▼ 10.66% for 20 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive: allies TAKE less damage. This is the ▼ direction on the ALLY side, not the offensive boss debuff damageTakenPct (which is ▲ on the enemy). Boss deals no damage in v1, so it is inert. Held as a value:0 defPct buff purely so the block and its 20s window remain auditable."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when hitting a target w/ Full Charge",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger shotFired (RL, chargeFrames 60 → every pull is a full charge) — ⚑ see caveat"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Affects the target / Taunts for 2 sec",
+      "status": "SKIPPED",
+      "effectOrReason": "Taunt = aggro redirection. No HP pool, no boss targeting model, no boss damage in v1 — no schema kind exists for it and nothing downstream consumes it. Not a stat, not a weapon-state modifier, not a damage line."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when attacking with Full Charge (self)",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "second block folded into one shotFired self block (same trigger condition, different target)"
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 24.86% for 1.8 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 24.86, durationSec 1.8 — 'Max HP ▲ X%' on SELF scales the unit's OWN Max HP (targetMaxHpPct, not casterMaxHpPct); caster===target so it CAN feed a self atkOfMaxHpPct, which Noise does not have"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all allies",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'allies'} (no excludeSelf clause)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "recovers 2.47% Max HP /1s for 10s",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal ticks:10 intervalSec:1 — emits 10 recovery events so allies' 'recovery' triggers fire across the whole window; HP amount not modeled (schema carries no heal magnitude)"
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Max HP ▲ 49.5% for 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff targetMaxHpPct 49.5, durationSec 10 — scales each ally's OWN Max HP; ally-granted Max HP does not feed a teammate's atkOfMaxHpPct (e3 rule), so offensively inert but kept per the never-skip-HP-lines rule"
+    }
+  ],
+  "flags": [
+    {
+      "field": "skill1[0].trigger",
+      "estimate": "hitCount:20 (outgoing-hit proxy)",
+      "reasoning": "'Activates when attacked 20 time(s)' counts hits the unit RECEIVES. The v1 boss deals no damage and no TriggerDef expresses incoming hits, so the real activation cannot occur or be counted. The block's payload is a zero-valued defensive buff, so the proxy moves no damage — but it would be WRONG on any unit whose incoming-hit counter gated an offensive line.",
+      "recipe": "If an incoming-hit trigger ever becomes load-bearing, add a TriggerDef kind 'damageTaken' driven by a boss-attack script; until then confirm from footage roughly when the 20-hit threshold is first met (boss attack cadence × 20) and whether it re-arms per activation or is once-per-battle."
+    },
+    {
+      "field": "skill1[0].effects[0]",
+      "estimate": "Damage Taken ▼ 10.66% → value 0 (inert)",
+      "reasoning": "Direction check: ▼ on ALLIES is damage mitigation, the opposite of the offensive damageTakenPct boss debuff (▲ on the enemy). Encoding it as damageTakenPct:10.66 would hand the whole team a ~10% damage buff that does not exist — a large over-credit. There is no ally-side mitigation stat in StatKey, so the honest encoding is inert.",
+      "recipe": "No measurement needed for v1 (boss is immortal and deals no modeled damage). If survivability is ever modeled, add a 'damageTakenReductionPct' StatKey and wire it there; do not repurpose damageTakenPct."
+    },
+    {
+      "field": "skill2[0].trigger",
+      "estimate": "shotFired (every RL pull assumed full-charge)",
+      "reasoning": "Noise has chargeFrames 60, so the default firing model charges every shot; 'with Full Charge' and 'every trigger pull' coincide. The schema has no charge-specific trigger. If the engine or a player ever tap-fires an RL, this over-fires by the tap-fire fraction.",
+      "recipe": "Read the shot cadence off footage: count her visible charge releases in a 10s window and compare to shotFired count in a ROT=1 rotation log. Equal ⇒ the proxy is exact."
+    },
+    {
+      "field": "skill2[0].effects[0].durationSec / cadence interaction",
+      "estimate": "1.8s duration vs ~1s charge+fire cycle → effectively continuous uptime",
+      "reasoning": "chargeFrames 60 = 1.0s charge; with 6 ammo and 141 reloadFrames (~2.35s), the 1.8s window covers back-to-back charges but LAPSES across each reload. Uptime is therefore high-but-not-100% — roughly magazine-time/(magazine-time+reload). Both reloadFrames and rate_of_fire are known-unreliable datamine fields.",
+      "recipe": "Time one full magazine + reload from footage (first charge release → next magazine's first release) and compare against the datamined 141 reloadFrames; correct the cadence tuple before trusting any uptime-sensitive consumer."
+    },
+    {
+      "field": "burst[0].effects[0]",
+      "estimate": "heal ticks:10, intervalSec:1 (2.47% caster Max HP per tick, amount unmodeled)",
+      "reasoning": "The schema's heal effect carries no HP magnitude — its ONLY function is emitting recovery events that fire allies' 'recovery' triggers (the Crown-style tandem channel). Ten ticks (one per second for 10s) keeps an on-recovery consumer refreshed for the whole window; collapsing this to a single instant heal would starve such a consumer for 9 of 10 seconds. This is the entire offensive value of Noise's burst.",
+      "recipe": "Run Noise alongside a heal-synergy consumer with cfg.onEvent and count recovery events in the burst window; expect exactly 10 per ally per cast. Confirm against footage that the heal visibly pulses once per second rather than landing as one lump."
+    },
+    {
+      "field": "burst[0].trigger",
+      "estimate": "burstCast (not fullBurstEnter)",
+      "reasoning": "The block is in Noise's OWN burst slot with no 'entering Full Burst' clause — trigger-identity rule: a self mode/effect in the unit's own burst block is burst-cast, firing only on rotations where Noise actually bursts. Keying it to fullBurstEnter would fire it on every team Full Burst including rotations where a different Burst I casts, over-crediting the heal channel.",
+      "recipe": "In a comp with a second Burst I unit, log burstCast vs fullBurstStart events and confirm the heal ticks appear only on Noise's own casts."
+    },
+    {
+      "field": "override.noFb / range / core",
+      "estimate": "not set (no damage lines exist)",
+      "reasoning": "Noise carries zero flatDamage/dot/storedHit effects, so noFb, noRange and core have nothing to attach to. Per the methodology, noFb is measured-only and default-OFF and noRange is engine-automatic; neither is set or flagged.",
+      "recipe": "n/a — revisit only if a future kit revision adds a damage rider."
+    }
+  ],
+  "model": "claude-opus-5"
+}

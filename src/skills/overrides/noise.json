@@ -1,0 +1,50 @@
+{
+  "note": "Kit-autonomy gauntlet 2026-07-31 (Tier 2). Noise (`noise`, RL / Supporter / Electric / Burst I, cd 40s, ammo 6, chargeFrames 60, chargeMultiplier 250): a DEFENSIVE healer-buffer whose OWN RL damage is her only damage output and whose EVERY skill line is survivability / team-preservation — Damage-Taken reduction, a taunt, Max-HP grants, and a heal. She had NO prior override (could not sim at all before this run). HP-SCALING DETERMINATION: NOT an HP-scaling kit — every Max-HP reference is a survival buff (S2 self Max HP ▲24.86% / 1.8s; burst team Max HP ▲49.5% / 10s), never an HP→ATK conversion, so no atkOfMaxHpPct scaler exists and BOTH Max-HP grants are offensively INERT (they move no damage); they are encoded anyway for kit-SSOT completeness + future recovery/HP consumers (blanc/flora precedent), as maxHpFlat events the engine converts from targetMaxHpPct. MODELED: (skill2) 'activates when attacking with Full Charge → self Max HP ▲24.86% for 1.8s' → chargeCounter:1 (every RL rocket is a full-charge shot, sim.ts charged=true) → self → targetMaxHpPct 24.86 / 1.8s (engine → maxHpFlat self-grant; inert — no conversion); (burst) 'recovers 2.47% of caster final Max HP every 1s for 10s' → burstCast → allies → heal{ticks:10, intervalSec:1} (the per-second RECOVERY CADENCE is modeled — what recovery-consumer teammates key off — not the 2.47% HP magnitude, v1 has no HP pool); (burst) 'Max HP ▲49.5% for 10s' (all allies) → burstCast → allies → targetMaxHpPct 49.5 / 10s (engine → per-target maxHpFlat = 49.5% of EACH target's own Max HP; inert — ally-granted Max HP does not feed a teammate's atkOfMaxHpPct, e3 video rule). TRIGGER: burst lines key to burstCast (stage I, fires only on rotations Noise herself casts), NOT fullBurstEnter — keying to FB entry would over-fire on rotations where a competing B1 takes the slot. UNMODELED (verbatim lines in `unmodeled`, each with a structured caveat below): S1 'Damage Taken ▼10.66% / 20s when attacked 20×' (allies) and S2 'Taunts for 2s' (the full-charge target) — both primitive-less survivability/aggro lines the no-incoming-damage v1 sim cannot represent. CONSEQUENCE: the sim represents Noise's full kit-SSOT surface (heal cadence + Max-HP grants as events) but her board DPS == her bare RL weapon; her real team value (damage mitigation, taunt, the HP pool her heals/Max-HP feed) is out-of-domain until an HP pool + incoming-damage model exists. PINNED end-to-end by scripts/tests/units/noise.test.ts (N1 S2 self maxHpFlat inert + atkPct counterfactual moves her damage; N2 burst heal ticks:10 keeps crown's recovery consumer refreshed across the full 10s vs a ticks:1 instant; N3 burst maxHpFlat 49.5 reaches all three allies per-target inert + level-1 27.22 smaller). Cross-family: S2b claude-fable-5 converged on all 5 lines.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when attacked 20 time(s). Affects all allies. Damage Taken ▼ 10.66% for 20 sec. — ally received-damage mitigation; v1 models no incoming ally damage and no ally HP pool, so the 'attacked 20×' trigger never accrues and 'allies take less damage' has no effect. The only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — the wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain). ⚑ engine-core / out-of-domain (see caveats)."
+    ],
+    "skill2": [
+      "■ Activates when hitting a target with a Full Charge attack. Affects the target. Taunts for 2 sec. — aggro/targeting control; the sim is single-target with a fixed boss script and no taunt/aggro primitive, so hit location never changes damage. ⚑ inert / out-of-domain (see caveats)."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "skill1 (Damage Taken ▼) ⚑ engine-core / out-of-domain: 'when attacked 20× → all allies Damage Taken ▼10.66% for 20s'. ESTIMATE: in a real fight this is a meaningful team survivability buff (≈10.66% less damage taken for 20s once the 20-hit counter accrues), but it scales only damage RECEIVED, which the v1 sim does not model — damage-neutral here. RECIPE: add an engine ally-HP-pool + incoming-boss-damage model and an 'allies take ▼X% damage' received-damage stat (distinct from the boss-facing damageTakenPct debuff), then encode S1 on an on-being-attacked hitCount:20 trigger to allies. TIER: engine-core (new primitive), out-of-domain for the no-incoming-damage v1 sim — same precedent as flora's HP-gated S2 and liter's cover-HP NO-OP.",
+    "skill2 (Taunt) ⚑ inert / out-of-domain: 'hitting a target with a Full Charge → Taunts for 2s'. ESTIMATE: damage-neutral — taunt redirects enemy aggro, which a single-target sim with a fixed boss script never exercises. RECIPE: none for DPS (would need a multi-target/aggro model). TIER: inert / out-of-domain.",
+    "skill2/burst Max-HP grants are encoded for kit-SSOT completeness but are OFFENSIVELY INERT: Noise has no atkOfMaxHpPct conversion, so the S2 self grant (casterIdx===self) feeds no HP-scaling, and the burst team grant lands on allies (casterIdx≠target) which the e3 video rule excludes from feeding a teammate's conversion anyway. Both emit maxHpFlat buffApply events (queryable, future HP-consumer ready) and move no team total — pinned by the strip-diff inertia assertions in noise.test.ts (N1/N3).",
+    "burst heal: the HP MAGNITUDE (2.47% of caster final Max HP per tick) is not modeled (no HP pool) — only the per-second recovery EVENT cadence (ticks:10 over 10s) is, which is what recovery-consumer teammates (crown-type) key off. The heal-over-time emits its first recovery event immediately, then 9 more at 1s intervals (≈10 events spanning ~9s per cast)."
+  ],
+  "skill1": [],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "chargeCounter", "count": 1 },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 24.86,
+          "durationSec": 1.8
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "allies" },
+      "effects": [
+        { "kind": "heal", "ticks": 10, "intervalSec": 1 },
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 49.5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}

@@ -14,12 +14,11 @@
   },
   "counts": {
     "status": {
-      "unit-tested": 80,
-      "pending": 1
+      "unit-tested": 99
     },
     "tier": {
+      "MODEL_ONLY": 65,
       "VALIDATED": 10,
-      "MODEL_ONLY": 47,
       "MEASURED": 14,
       "CALIBRATED": 10
     },
@@ -3275,6 +3274,45 @@
         "band": "±15%",
         "temp": "COLD ▼"
       }
+    },
+    "noise": {
+      "name": "Noise",
+      "burst": "I",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/noise.json + scripts/kit-autonomy/manual-review/noise.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "■ Activates when attacked 20 time(s). Affects all allies. Damage Taken ▼ 10.66% for 20 sec. — ally received-damage mitigation; v1 models no incoming ally damage and no ally HP pool, so the 'attacked 20×' trigger never accrues and 'allies take less damage' has no effect. The only damageTakenPct primitive is a BOSS debuff (positive = boss takes MORE) — the wrong direction/target, so it is NOT used (encoding it would manufacture a phantom team damage gain). ⚑ engine-core / out-of-domain (see caveats)."
+        ],
+        "skill2": [
+          "■ Activates when hitting a target with a Full Charge attack. Affects the target. Taunts for 2 sec. — aggro/targeting control; the sim is single-target with a fixed boss script and no taunt/aggro primitive, so hit location never changes damage. ⚑ inert / out-of-domain (see caveats)."
+        ],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged",
+      "residual": "heal first-tick phase is engine convention (not footage); 2.47% heal magnitude unmodeled pending HP pool; S2-B chargeCounter:1 == shotFired for always-full-charge RL",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1 (Damage Taken ▼) ⚑ engine-core / out-of-domain: 'when attacked 20× → all allies Damage Taken ▼10.66% for 20s'. ESTIMATE: in a real fight this is a meaningful team survivability buff (≈10.66% less damage taken for 20s once the 20-hit counter accrues), but it scales only damage RECEIVED, which the v1 sim does not model — damage-neutral here. RECIPE: add an engine ally-HP-pool + incoming-boss-damage model and an 'allies take ▼X% damage' received-damage stat (distinct from the boss-facing damageTakenPct debuff), then encode S1 on an on-being-attacked hitCount:20 trigger to allies. TIER: engine-core (new primitive), out-of-domain for the no-incoming-damage v1 sim — same precedent as flora's HP-gated S2 and liter's cover-HP NO-OP.",
+        "skill2 (Taunt) ⚑ inert / out-of-domain: 'hitting a target with a Full Charge → Taunts for 2s'. ESTIMATE: damage-neutral — taunt redirects enemy aggro, which a single-target sim with a fixed boss script never exercises. RECIPE: none for DPS (would need a multi-target/aggro model). TIER: inert / out-of-domain.",
+        "skill2/burst Max-HP grants are encoded for kit-SSOT completeness but are OFFENSIVELY INERT: Noise has no atkOfMaxHpPct conversion, so the S2 self grant (casterIdx===self) feeds no HP-scaling, and the burst team grant lands on allies (casterIdx≠target) which the e3 video rule excludes from feeding a teammate's conversion anyway. Both emit maxHpFlat buffApply events (queryable, future HP-consumer ready) and move no team total — pinned by the strip-diff inertia assertions in noise.test.ts (N1/N3).",
+        "burst heal: the HP MAGNITUDE (2.47% of caster final Max HP per tick) is not modeled (no HP pool) — only the per-second recovery EVENT cadence (ticks:10 over 10s) is, which is what recovery-consumer teammates (crown-type) key off. The heal-over-time emits its first recovery event immediately, then 9 more at 1s intervals (≈10 events spanning ~9s per cast)."
+      ]
     },
     "phantom": {
       "name": "Phantom",

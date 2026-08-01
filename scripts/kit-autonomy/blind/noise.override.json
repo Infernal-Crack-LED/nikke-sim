@@ -1,0 +1,84 @@
+{
+  "slug": "noise",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 20
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "defPct",
+          "value": 0,
+          "durationSec": 20
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "shotFired"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 24.86,
+          "durationSec": 1.8
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "heal",
+          "ticks": 10,
+          "intervalSec": 1
+        },
+        {
+          "kind": "buff",
+          "stat": "targetMaxHpPct",
+          "value": 49.5,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Damage Taken ▼ 10.66% for 20 sec. (defensive — boss deals no damage in v1; the trigger/duration are kept as a zero-valued defPct buff so the block is auditable)"
+    ],
+    "skill2": [
+      "Taunts for 2 sec. (aggro redirection — no HP pool / no boss damage modeled in v1)"
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "⚑ skill1 trigger: 'when attacked 20 time(s)' is an INCOMING-hit counter the sim has no channel for (the boss deals no damage). Encoded as hitCount:20 on the owner's OUTGOING hits as the nearest available primitive; its only effect is a zero-valued defensive buff, so the mis-keying is damage-inert. Do NOT reuse this shape for an offensive line.",
+    "⚑ skill2 full-charge trigger: encoded as shotFired because Noise is an RL with chargeFrames 60 — every trigger pull is a charge shot in the default model. If she ever fires uncharged (tap-fire), this OVER-fires. A charge-specific trigger primitive does not exist in the schema.",
+    "⚑ The Max HP grants (skill2 24.86% / burst 49.5%) are offensively INERT unless a teammate converts Max HP → ATK; ally-granted Max HP does not feed a teammate's atkOfMaxHpPct. Kept for kit completeness and for any future consumer.",
+    "⚑ burst heal magnitude (2.47% of caster final Max HP/sec) is NOT modeled as an HP amount — the heal effect only emits 10 recovery events so on-recovery consumers (e.g. Crown-style 'when recovery takes effect') fire correctly. That tandem channel is the burst's real offensive value.",
+    "⚑ cadence tuple: base stats give chargeFrames 60 / reloadFrames 141 / ammo 6 from the datamine; rate_of_fire and reloadFrames are known-unreliable fields. Unverified against footage."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Noise is a pure-sustain RL/Electric/Supporter Burst I: her entire kit is Damage Taken ▼, a taunt, and Max HP + heal-over-time. She carries NO ATK, crit, core, element, charge, ammo, reload, fire-rate, gauge, or damage line — so on the v1 partless-immortal-boss scope-lock she contributes essentially zero direct damage and her only cross-unit channel is the burst's 10 recovery ticks feeding a teammate's on-recovery trigger. The skill1 Damage Taken ▼ is a SELF/ALLY defensive line (allies take less), NOT the offensive 'Damage Taken ▲' boss debuff — it must never be encoded as damageTakenPct, which would be a boss debuff and would over-credit the whole team.",
+  "hasPierce": false
+}
