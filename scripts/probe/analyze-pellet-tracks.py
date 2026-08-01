@@ -235,6 +235,68 @@ def count_log(rgb, cx, cy, radius, center_exclude, sigmas=(3.0, 4.5, 6.0, 8.0), 
     return len(kept)
 
 
+def report_raw_tracks(data, n, min_life):
+    """Print RAW per-frame area sequences for the N longest-lived near-crosshair white tracks.
+
+    Added 2026-07-31 (pellet-reader Phase 2 gate, ITEM 2 -- premise check: has the owner's
+    13-frame lifecycle (f1 1x dot -> f3-4 plateau -> f5-11 monotone decay -> f12-13 fade) ever
+    been observed at NATIVE 60fps, not just in the 30fps `report_tracks()` aggregate profile
+    above (which resamples to 11 "sample positions", not raw frame offsets, and is dominated by
+    the "acquires at its own peak" tracks the same way run16 was)? This prints individual tracks
+    unresampled so the shape can be read directly off the numbers frame-by-frame.
+    """
+    p, cross = data["params"], data["cross_positions"]
+    radius = p.get("pellet_radius", 160)
+    cand = [t for t in data["tracks"] if not t["is_red"] and near_crosshair(t, cross, radius) and t["life"] >= min_life]
+    cand.sort(key=lambda t: -t["life"])
+    print(f"\nRAW TRACK AREA SEQUENCES (top {n} of {len(cand)} tracks with life >= {min_life}, near crosshair):")
+    for t in cand[:n]:
+        areas = t["areas"]
+        seq = "  ".join(f"f{i + 1}={a}" for i, a in enumerate(areas))
+        peak_i = areas.index(max(areas))
+        print(f"  id={t['id']:5d} life={t['life']:3d} first_frame={t['first']:5d} peak_at_offset={peak_i + 1}")
+        print(f"    {seq}")
+
+
+def report_dup_check(frames_dir, files, start, count):
+    """Detect duplicated/blended consecutive frames in a 60fps extraction.
+
+    Added 2026-07-31 (pellet-reader Phase 2 gate, ITEM 2). If the GAME renders pellet VFX at
+    30fps internally and this is a 60fps CAPTURE, every pair of consecutive extracted frames
+    would be near-pixel-identical (duplicated) rather than each frame being a genuinely new
+    render -- which would mean the "13-frame lifecycle" observed at 60fps sampling is really
+    13 duplicated HALF-frames (6.5 real updates), not 13 independent samples, and phase indexing
+    (f1, f3-4, f8-11, f12-13) would be wrong by a factor of ~2. Mean absolute pixel difference
+    between frame i and i+1, cropped to the pellet ROI (crosshair-radius disc) where motion is
+    concentrated, cheaply distinguishes "new render every frame" (diffs vary frame to frame,
+    near-zero only when nothing is moving) from "every other frame is a duplicate" (every OTHER
+    diff drops to ~0, a strict alternating pattern).
+    """
+    print(f"\nDUPLICATE-FRAME CHECK (frames {start}..{start + count - 1}, consecutive-pair mean |diff|):")
+    diffs = []
+    for i in range(start, min(start + count - 1, len(files) - 1)):
+        a = cv2.imread(f"{frames_dir}/{files[i]}")
+        b = cv2.imread(f"{frames_dir}/{files[i + 1]}")
+        if a is None or b is None:
+            continue
+        d = float(np.mean(np.abs(a.astype(np.int16) - b.astype(np.int16))))
+        diffs.append(d)
+    if not diffs:
+        print("  (no frame pairs read)")
+        return
+    near_zero = sum(1 for d in diffs if d < 0.5)
+    even_mean = st.mean(diffs[0::2]) if len(diffs) > 1 else 0.0
+    odd_mean = st.mean(diffs[1::2]) if len(diffs) > 1 else 0.0
+    print(f"  n_pairs={len(diffs)}  mean={st.mean(diffs):.3f}  median={st.median(diffs):.3f}"
+          f"  min={min(diffs):.3f}  max={max(diffs):.3f}")
+    print(f"  near-zero pairs (<0.5 mean abs diff, i.e. i and i+1 are ~identical): {near_zero}/{len(diffs)}"
+          f" = {100 * near_zero / len(diffs):.1f}%")
+    print(f"  even-index-pair mean diff: {even_mean:.3f}   odd-index-pair mean diff: {odd_mean:.3f}"
+          f"   (a 30fps-internal/60fps-capture source would show one of these near-zero and the"
+          f" other ~2x a genuine 60fps source's per-pair diff -- an alternating pattern, not just"
+          f" a low overall near-zero rate)")
+
+
 def compare_frames(data, frames_dir, start, count):
     p, cross = data["params"], data["cross_positions"]
     files = data["frame_files"]
@@ -295,6 +357,21 @@ def main():
     ap.add_argument("--start", type=int, default=0, help="first frame index for --frames comparison")
     ap.add_argument("--count", type=int, default=60, help="frames to compare (default 60 = ~3 blasts)")
     ap.add_argument("--selftest", action="store_true", help=f"validate against {FIXTURE} and exit")
+    ap.add_argument("--raw-tracks", type=int, metavar="N",
+                     help="print RAW (unresampled) per-frame area sequences for the N longest-lived "
+                          "near-crosshair white tracks -- the 60fps lifecycle-shape premise check "
+                          "(pellet-reader Phase 2 gate, ITEM 2)")
+    ap.add_argument("--raw-tracks-min-life", type=int, default=8,
+                     help="minimum track life to be eligible for --raw-tracks (default 8)")
+    ap.add_argument("--dup-check", action="store_true",
+                     help="report consecutive-frame pixel-diff stats over --frames/--start/--count, "
+                          "to detect duplicated/blended frames (30fps-internal-render-on-60fps-capture "
+                          "premise check, pellet-reader Phase 2 gate ITEM 2). Requires --frames. Cheap "
+                          "(pixel diff only) -- does not imply --compare-frames.")
+    ap.add_argument("--compare-frames", action="store_true",
+                     help="run the (expensive: per-frame LoG) threshold-vs-LoG detector comparison over "
+                          "--frames/--start/--count. Previously implied by passing --frames alone; now "
+                          "opt-in so --dup-check / --raw-tracks runs stay fast over a full extraction.")
     args = ap.parse_args()
 
     if args.selftest:
@@ -305,8 +382,16 @@ def main():
     with open(args.tracks) as fh:
         data = json.load(fh)
     report_tracks(data)
-    if args.frames:
+    if args.raw_tracks:
+        report_raw_tracks(data, args.raw_tracks, args.raw_tracks_min_life)
+    if args.compare_frames:
+        if not args.frames:
+            ap.error("--compare-frames requires --frames")
         compare_frames(data, args.frames, args.start, args.count)
+    if args.dup_check:
+        if not args.frames:
+            ap.error("--dup-check requires --frames")
+        report_dup_check(args.frames, data["frame_files"], args.start, args.count)
 
 
 if __name__ == "__main__":
