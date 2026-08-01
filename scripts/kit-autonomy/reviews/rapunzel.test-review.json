@@ -1,0 +1,53 @@
+{
+  "slug": "rapunzel",
+  "stage": "S2c-reconciliation",
+  "date": "2026-08-01",
+  "reviewerModel": "claude-fable-5",
+  "driverModel": "qwen",
+  "leakDetected": null,
+  "reconciliation": {
+    "converged": true,
+    "summary": "Blind claude-fable-5 re-derivation converges with the driver on EVERY kit line — dispositions, triggers, target sets, stat keys, durations, and the nearest-wrong counterfactuals all match, with leakDetected:null and NO REAL-GOTCHA. Rapunzel is a pure sustain kit (zero damage lines), so the faithfulness core is damage-neutrality plus heals-as-recovery-event-drivers; the reviewer independently landed the same model and named the exact traps the driver test pins: (1) the tandem trap — dropping the S1/burst heals as 'defensive, no damage' instead of recovery-trigger drivers for Crown's 'when recovery takes effect' consumer; (2) burstCast-vs-fullBurstEnter — the burst heal must key to rapunzel's OWN cast, which diverges from fullBurstEnter PRECISELY because the fixture carries a second Burst I (liter) who opens most rotations; (3) byFinalAtk:true on S2 — the text literally says 'highest FINAL ATK' (A3 literal-word rule → live effectiveAtk ranking, not static); (4) targetMaxHpPct (target's OWN %) not casterMaxHpPct — assert the emitted maxHpFlat value against each TARGET's HP; (5) the S2 interval cadence is a datamined-CD ⚑ (first fire at t=CD), to be read off buffApply spacing not hardcoded. The driver fixture (liter/crown/ada/rapunzel, crown's own Relax self-heal stripped) is exactly the two-B1 + consumer comp the reviewer said is required to expose the burst-keying trap.",
+    "lineByLine": [
+      {
+        "line": "S1 — full-charge heal, 3 lowest-HP% allies, 4.03% caster final Max HP",
+        "driver": "FAITHFUL (heal ticks:1, trigger shotFired [RL = one full charge per pull, helm/liberalio precedent], target alliesLowestHp count:3 [leftmost-3 stand-in, no HP pool]; magnitude unmodeled — heal is event-only, tandem value)",
+        "reviewer": "FAITHFUL, load-bearing (shotFired or chargeCounter:1 — 'the engine always full-charges an RL'; alliesLowestHp count:3 leftmost stand-in; NOT interval/lastBullet/fullBurstEnter; heal is a recovery-trigger driver, skipping it is the classic tandem trap; inert: zero own damage, identical totals with block deleted when no consumer)",
+        "agree": true
+      },
+      {
+        "line": "S2 — Max HP ▲8.19% for 15s, 2 highest-final-ATK allies",
+        "driver": "FAITHFUL (buff targetMaxHpPct 8.19 durationSec:15, trigger interval sec:15 [datamined CD, no activation clause], target alliesTopAtk count:2 byFinalAtk:true; engine converts to per-target maxHpFlat; inert via e3 rule)",
+        "reviewer": "FAITHFUL, load-bearing (interval NOT passive — 15s duration < CD means intermittent uptime, passive over-credits; alliesTopAtk count:2 byFinalAtk:true per the literal 'highest FINAL ATK'; targetMaxHpPct NOT casterMaxHpPct — flat value must equal 8.19% of each TARGET's own HP; expiresFrame ≈ applyFrame + 15×60; ally-granted Max HP must NOT feed atkOfMaxHpPct, e3)",
+        "agree": true
+      },
+      {
+        "line": "S2 — Incoming healing ▲13.65% for 15s",
+        "driver": "UNMODELED (no incoming-healing StatKey, no HP pool to amplify; verbatim in unmodeled.skill2)",
+        "reviewer": "UNMODELED, not load-bearing (no incoming-healing StatKey and the engine models no HP amounts; correct disposition is verbatim unmodeled text, NOT a proxy damage stat; zero damage and zero recovery-event-count change)",
+        "agree": true
+      },
+      {
+        "line": "Burst — all-ally heal, 40.83% caster final Max HP",
+        "driver": "FAITHFUL (heal ticks:1, trigger burstCast [OWN cast], target allies incl. self; magnitude unmodeled — tandem value)",
+        "reviewer": "FAITHFUL, load-bearing (burstCast NOT fullBurstEnter — with two B1s [liter+rapunzel] a fullBurstEnter keying fires on liter's rotations and over-credits every recovery consumer; allies all-including-self; instant single event, no HoT wording; inert: identical totals with block deleted when no consumer)",
+        "agree": true
+      },
+      {
+        "line": "Burst — resurrect 1 incapacitated highest-final-ATK ally at 81.67% HP",
+        "driver": "UNMODELED ⚑ meta-defining (no resurrection/death/HP-pool primitive; nobody dies on the partless boss; verbatim in unmodeled.burst)",
+        "reviewer": "UNMODELED, not load-bearing (gated on an incapacitation state the sim does not have — an empty target set always; must NOT be encoded as a live heal to the highest-ATK ally, which would fire Crown's recovery trigger on events that never happen; verbatim in unmodeled.burst)",
+        "agree": true
+      },
+      {
+        "line": "Burst — stun all enemies 1s when an ally falls below 30% HP",
+        "driver": "UNMODELED ⚑ status-gate (no HP pool to gate the threshold, no enemy-action model; verbatim in unmodeled.burst)",
+        "reviewer": "UNMODELED, not load-bearing (HP-threshold gate never opens — no HP-damage intake; stun targets 'all enemies' but the boss neither fires nor reloads so the stun has no enemy-side meaning; must NOT be mis-scoped onto allies/self — a stun on a unit halts firing and would crater its damage; verbatim in unmodeled.burst)",
+        "agree": true
+      }
+    ],
+    "driverActionOnReview": "Added one explicit assertion (R4) on the reviewer's flagship recommendation: with S1 removed, every burst-channel recovery frame must coincide exactly with a rapunzel burstCast frame — a direct frame-level pin of burstCast-keying that goes RED under a fullBurstEnter mis-key (liter-only rotations would produce recovery frames with no rapunzel burstCast). The existing R2 bound (noS1 frames <= rapunzel burst count) already discriminated it by count; R4 makes the coincidence explicit. 10/10 tests green.",
+    "verdict": "GO",
+    "verdictBasis": "All six kit lines accounted for (3 FAITHFUL pinned + 3 UNMODELED-with-⚑/verbatim), dispositions converge cross-family with leakDetected:null, no REAL-GOTCHA, discrimination strong (driver test is GREEN vs shipped and RED vs the exact counterfactuals the reviewer independently named: heal-skipped tandem trap, burstCast-vs-fullBurstEnter, byFinalAtk, targetMaxHpPct-vs-casterMaxHpPct, interval-vs-passive). Damage-neutrality proven byte-identical (solo withKit===bare 30647850.85; bare-team totals identical)."
+  }
+}

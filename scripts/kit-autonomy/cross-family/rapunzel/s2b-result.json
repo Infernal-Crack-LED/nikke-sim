@@ -1,0 +1,105 @@
+{
+  "slug": "rapunzel",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "■ Activates when performing a Full Charge",
+      "disposition": "FAITHFUL",
+      "scope": "Fires on the caster's own full-charge attacks only. Rapunzel is RL (chargeFrames 60), so in the sim every trigger pull is a full charge — per-shot cadence bounded by charge time (60f) + release latency + ammo 6 / reloadFrames 159.",
+      "durationSemantics": "Instant per activation — no duration; one recovery event per full-charge shot.",
+      "triggerIdentity": "Per-full-charge trigger. Since the engine always full-charges an RL, shotFired (or chargeCounter count:1) is the faithful encoding. NOT interval, NOT lastBullet, NOT fullBurstEnter.",
+      "targetSet": "alliesLowestHp count:3 (v1 has no HP pool — 'lowest HP percentage' resolves to the documented leftmost-3 stand-in). NOT self-only, NOT all-allies.",
+      "nearestWrongModel": "Skipping the heal entirely as 'defensive, no damage' — the classic tandem trap. A heal is a recovery-trigger driver: controlComp's fixed B2 slot is crown, whose kit consumes 'when recovery takes effect'. Second-nearest: encoding the trigger as interval or lastBullet instead of per-full-charge.",
+      "distinguishingAssertion": "In controlComp(rapunzel-as-carry-slot fixture with crown present), count cfg.onEvent buffApply events for crown's recovery-gated buff: they must recur throughout the fight at roughly rapunzel's shot cadence (~1 per charge cycle, 6 per magazine), not zero (heal skipped) and not once-per-15s/once-per-reload (interval/lastBullet misread). Also assert the heal effect's target resolution emits recovery events to exactly 3 allies per shot.",
+      "inertness": "Must add zero damage of its own (heal carries no HP amount in the engine); with NO recovery-consumer in the comp, totals for all units must be identical with the block deleted via withPatchedOverride.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Max HP ▲ 8.19% for 15 sec.",
+      "disposition": "FAITHFUL",
+      "scope": "Generic Max HP stat grant to 2 allies — not scoped to attack type.",
+      "durationSemantics": "Genuine wall-clock durationSec: 15. Header has NO 'Activates when' clause → interval trigger on the datamined skill CD (⚑ cadence — CD not in the kit text; first-fire at t=CD per the no-force-cast convention). Duration 15s < a typical CD means INTERMITTENT uptime — a passive/permanent encoding over-credits.",
+      "triggerIdentity": "interval (no activation clause). NOT passive, NOT fullBurstEnter, NOT burstCast.",
+      "targetSet": "alliesTopAtk count:2 with byFinalAtk:true — the text literally says 'highest FINAL ATK', which per the A3 literal-word rule means live effectiveAtk ranking, not static base ATK. Self is in the candidate pool (no except-self clause).",
+      "nearestWrongModel": "Three plausible misreads: (a) passive/permanent instead of interval+15s (uptime over-credit); (b) plain static-ATK ranking (byFinalAtk omitted) despite the literal 'final ATK' wording; (c) stat mis-keyed as casterMaxHpPct ('% of the skill user's Max HP') when the text is 'Max HP ▲ X%' of the TARGET's own — targetMaxHpPct.",
+      "distinguishingAssertion": "Filter buffApply events with stat 'maxHpFlat' from rapunzel's casterIdx: each must carry expiresFrame ≈ applyFrame + 15×60 (red under passive/permanent), recur at the interval cadence, hit exactly 2 targetIdx values, and the flat value must equal 8.19% of each TARGET's own Max HP (red under a casterMaxHpPct mis-key, since targets' HP differs from rapunzel's). Target identity must track live buffed ATK, not static (red when byFinalAtk omitted and a big ATK buff reorders the ranking mid-fight).",
+      "inertness": "Ally-granted Max HP does NOT feed a teammate's atkOfMaxHpPct conversion (e3 rule) — board damage must not move from this line on comps without an HP-scaling self-consumer; the buff exists for kit completeness/future consumers.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Incoming healing ▲ 13.65% for 15 sec.",
+      "disposition": "UNMODELED",
+      "scope": "Modifies heal amounts received by the 2 targets.",
+      "durationSemantics": "15 s wall-clock, same window as the Max HP line.",
+      "triggerIdentity": "Same interval block as the Max HP line.",
+      "targetSet": "Same 2 highest-final-ATK allies.",
+      "nearestWrongModel": "Force-fitting it onto an unrelated StatKey (e.g. a damage bucket) to avoid 'dropping' it. There is no incoming-healing StatKey and the engine models no HP amounts, so the correct disposition is verbatim unmodeled text, not a proxy stat.",
+      "distinguishingAssertion": "No buffApply event with any damage-relevant stat may be attributable to this line; the sentence must appear verbatim in the override's unmodeled.skill2 array.",
+      "inertness": "Zero damage and zero recovery-event-count change from this line.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects all allies. Recovers 40.83%",
+      "disposition": "FAITHFUL",
+      "scope": "Team-wide heal on burst cast, amount = % of CASTER's Max HP (amount itself unmodeled by the heal primitive — only the recovery event matters).",
+      "durationSemantics": "Instant single event per burst cast (ticks:1 default; no HoT wording).",
+      "triggerIdentity": "burstCast — this is rapunzel's OWN Burst I block. NOT fullBurstEnter: rapunzel is B1 and the standard fixture carries liter (also B1); with two B1s she does not cast every rotation, so a fullBurstEnter keying fires on liter's rotations too and over-credits every recovery consumer.",
+      "targetSet": "allies, all-including-self (no except-self clause).",
+      "nearestWrongModel": "fullBurstEnter instead of burstCast — the canonical burst-cast/FB-enter confusion, and it diverges in exactly this fixture because another same-tier (B1) unit is present. Second-nearest: dropping the heal as defensive (same tandem trap as skill1).",
+      "distinguishingAssertion": "In a comp where liter and rapunzel alternate/compete for B1, crown's recovery-gated buffApply spikes tied to this block must appear ONLY in rotations where a burstCast event with rapunzel's srcSlot precedes the fullBurstStart — zero such spikes on rotations liter opened (red under fullBurstEnter, which fires on every FB regardless of who cast B1).",
+      "inertness": "No damage of its own; with no recovery consumer in the comp, deleting the block via withPatchedOverride must leave all totals identical.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Affects 1 incapacitated ally… Resurrect",
+      "disposition": "UNMODELED",
+      "scope": "Revive of a downed ally.",
+      "durationSemantics": "Instant, once per cast, conditional on an incapacitated ally existing.",
+      "triggerIdentity": "burstCast, gated on an incapacitation state the sim does not have (v1 boss deals no damage; nobody is ever incapacitated).",
+      "targetSet": "1 incapacitated ally with highest final ATK — an empty set in v1, always.",
+      "nearestWrongModel": "Encoding it as anything live (e.g. a heal to the highest-ATK ally) — that would fire crown's recovery trigger on events that never happen in-game under scope lock.",
+      "distinguishingAssertion": "Zero recovery/buff events attributable to this line in any run; verbatim line present in unmodeled.burst.",
+      "inertness": "Must move nothing, ever, in v1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "■ Activates when HP falls below 30%. Stun",
+      "disposition": "UNMODELED",
+      "scope": "Enemy-targeted 1 s stun, gated on an HP-below-30% condition.",
+      "durationSemantics": "1 s stun duration.",
+      "triggerIdentity": "HP-threshold trigger — the sim has no HP-damage intake, so the gate never opens; additionally the stun targets 'all enemies' and the boss neither fires nor reloads, so the stun effect (which suppresses firing/charging/reloading on UNITS) has no enemy-side meaning in v1.",
+      "targetSet": "all enemies (the boss).",
+      "nearestWrongModel": "Two live-encoding mistakes: (a) attaching an unconditional stun to the burst cast (dropping the HP gate), or worse (b) mis-scoping the stun onto allies/self — a stun on a unit halts firing and would visibly crater a unit's damage.",
+      "distinguishingAssertion": "No stun effect may appear in any slot's blocks targeting self/allies; every unit's shot-event cadence around rapunzel's burst casts must be identical with the burst block deleted via withPatchedOverride (red if a stun ever lands on a friendly and suppresses shots).",
+      "inertness": "Total shot counts for all 5 units unchanged by this line's presence; verbatim line in unmodeled.burst.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:full-charge heal → 3 lowest-HP allies (recovery-trigger driver)",
+    "skill2:Max HP ▲8.19% 15s → 2 highest-FINAL-ATK allies (interval, targetMaxHpPct)",
+    "burst:all-ally heal on burstCast (recovery-trigger driver, NOT fullBurstEnter)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": ["Incoming healing ▲ 13.65% for 15 sec."],
+    "burst": [
+      "■ Affects 1 incapacitated ally unit(s) with the highest final ATK. Resurrect with 81.67% HP.",
+      "■ Activates when HP falls below 30%. Affects all enemies. Stun for 1 sec."
+    ]
+  },
+  "notes": "Rapunzel contributes zero kit damage — her entire modelable value is (1) her own RL shot damage and (2) heals as RECOVERY-EVENT DRIVERS for on-recovery consumers, and crown sits in the standard controlComp B2 slot, so the heals are board-live, not decorative. The shared-prior misread I most expect a driver to make is dropping skill1/burst heals as 'defensive, no damage effect' (taxonomy trap 4); the second is keying the burst heal to fullBurstEnter, which diverges from burstCast precisely because the standard fixture already contains a second B1 (liter) — the test MUST run a two-B1 comp to expose it. Third: skill2 says 'highest FINAL ATK' — byFinalAtk:true is required by the literal-word rule; plain static ranking is the lazy default. Fourth: skill2's Max HP is the TARGET's own HP (targetMaxHpPct → maxHpFlat events valued per-target), not casterMaxHpPct — assert the emitted flat value against each target's HP, and remember ally-granted Max HP must NOT feed any atkOfMaxHpPct consumer. Skill2's trigger cadence is a ⚑: the CD is not in the kit text (datamined skillCooldownsSec, first fire at t=CD under the interval convention) — the test should read the cadence off buffApply spacing rather than hardcoding an assumed CD, or pin it with an explicit ⚑ note. Fixture caution: rapunzel is Burst I, so controlComp's carry slot (B3) is wrong for her — the test must place her in the B1-competing slot or use a custom comp with a real B3 carry, otherwise no burst of hers ever casts and the burstCast-vs-fullBurstEnter assertion is vacuous.",
+  "model": "claude-fable-5"
+}
