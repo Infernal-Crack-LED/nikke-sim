@@ -1278,6 +1278,45 @@
         "temp": "COLD ▼"
       }
     },
+    "dorothy": {
+      "name": "Dorothy",
+      "burst": "I",
+      "weapon": "AR",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-07-31",
+        "findings": [
+          "kit-autonomy gauntlet 2026-07-31: GO, faithfulness 1.0 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/dorothy.json + scripts/kit-autonomy/manual-review/dorothy.md.",
+          "med FIDELITY (burst): Manifestation 'Skill 2 CD ▼18s' is unmodeled — a real under-credit of roughly +1080% distributed (≈5 extra Scorch to Dust procs) per 10s Manifestation window",
+          "low FIDELITY (skill1): The 'during Manifestation' gate on the parts-damage line is not enforced (block fires every magazine)",
+          "low FIDELITY (burst): Brand is modeled always-at-cap; a window where team damage falls below ~29M raw would be over-credited"
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [],
+        "burst": [
+          "Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec. [⚑ skill2-CDR; no primitive to dynamically shorten the interval:20 S2 timer for the 10s window, and no clean phase-independent reduction (extra-cast count depends on burst timing within the S2 cycle). Estimate: S2 20s->~2s for 10s = ~5 extra 216% distributed nukes ≈ +1080% final ATK distributed per burst. Recipe: add a skill2CooldownReductionSec buff stat read by the interval-trigger scheduler to shorten its period while active. Tier 2 (scoped-buff).]"
+        ]
+      },
+      "board": null,
+      "date": "2026-07-31",
+      "evidence": "kit-autonomy gauntlet 2026-07-31; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on all 5 modeled lines + Brand at-cap delaySec:10",
+      "residual": "Brand cap-binds derived from sim-internal team totals (~98M/10s vs ~29M cap), not a real-fight anchor; S2 first-fire t=20 is the standing interval convention; S1 burst-CDR rotation effect validated via sim chain arithmetic (no popup anchor); Manifestation S2-CDR unmodeled (med, ~+1080% distributed/burst)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1(L2): 'during Manifestation' self-state gate is NOT enforced — partsDamagePct is inert in v1 (no boss parts), so the gate moves no damage; modeled ungated on lastBullet for fidelity",
+        "burst(L3 Brand): modeled AT-CAP (flatDamage 8900.83% distributed delaySec:10) — the cap binds with ~11× headroom in any realistic Dorothy comp (team ~98M/10s vs ~29M raw cap); residual ⚑ = the at-cap assumption + the redistribution pipeline-re-multiplication semantics",
+        "burst(L1): 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec' is UNMODELED — no skill2-CDR primitive to dynamically shorten the interval:20 timer, and no clean phase-independent reduction; ⚑ ≈ +5 extra S2 nukes (~1080% distributed) per burst window"
+      ]
+    },
     "dorothy-serendipity": {
       "name": "Dorothy: Serendipity",
       "burst": "III",

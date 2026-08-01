@@ -1,0 +1,110 @@
+{
+  "slug": "dorothy",
+  "kitDescription": "Dorothy is a Burst I Water Supporter whose main team contribution is rotation speed: every time she empties her 60-round magazine she cuts all allies' Burst Skill cooldowns by 1.56 seconds, letting the whole team reach Full Burst faster. Her Skill 2, Scorch to Dust, periodically blasts all enemies for 216% of her final ATK as distributed damage on a 20-second internal cooldown. Her burst puts her into Manifestation for 10 seconds: she gains Pierce, her Skill 2 cooldown is slashed by 18 seconds so it fires much more often during the window, and while Manifestation lasts her last-bullet shots also grant the team +50.68% damage to parts for 5 seconds. The burst also Brands a designated enemy, accumulating all damage the team deals to it over 10 seconds and then re-dealing that total (capped at 8900.83% of her final ATK) to all enemies as distributed damage. In practice the Brand cap is far below what a normal team deals in 10 seconds, so Brand effectively always pays out its full cap as one large delayed nuke that lands inside her own Full Burst window.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "GREEN",
+    "redAssertions": []
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "last bullet → Burst CD ▼1.56s (allies)",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "lastBullet → allies → burstCdr 1.56, self included, recurring per magazine",
+        "blindSaid": "S2b: FAITHFUL, load-bearing; S5: structural (1 block, ungated, allies, 1.56s, not oncePerBattle) + FB-count discrimination (strip → fewer FBs; self-only → fewer FBs); S6: identical block",
+        "formulaCheck": "No damage bucket — pure rotation effect; correctly emits no damage events and moves totals only via earlier Full Bursts",
+        "fireRateOk": true,
+        "explanation": "Three-way convergence (S2b spec, S5 blind test, S6 blind override all match driver). Driver D1 proves it fires by comparing fullBurstStart frames shipped-vs-stripped; S5 independently proves it via FB count. Recurring, ally-wide, correct trigger identity."
+      },
+      {
+        "kitLine": "last bullet in Manifestation → Parts ▲50.68%/5s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Encoded as ungated lastBullet → allies → partsDamagePct 50.68/5s; the 'during Manifestation' self-state gate deliberately NOT enforced (no self-buff-active gate primitive), documented in caveats; moot because partsDamagePct is inert on the partless scope-lock boss (byte-identical totals gated or not)",
+        "blindSaid": "S2b: stat/duration/target correct, gate should exist structurally; S5: passed a gate-bite test against ANY gate key but was redirected per anchor-innocent-maid precedent (no self-state gate primitive; inert in v1); S6: added a mode:manifestation gate that is inert by default (mode is user-selected) — functionally equivalent to ungated",
+        "formulaCheck": "partsDamagePct has no damage path in v1 (partless boss, hit location never changes damage) — encoding as partsDamagePct rather than attackDamagePct/damageTakenPct is the correct bucket choice and the +50% trap was avoided",
+        "fireRateOk": true,
+        "explanation": "Stat, value, duration, trigger, target all faithful. The one deviation — the Manifestation gate — is undocumented-in-schema but documented in the override caveats, is inert in v1 either way, and both blind agents independently landed on functionally equivalent encodings. The nearest-wrong model (encoding as generic attack damage, a live +50% team window) was avoided by all three agents."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Scorch to Dust: 216% Distributed",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "interval:20 → enemy → flatDamage 216% distributed; 20s base CD from datamined skillCooldownsSec.skill2 (not kit text), first fire t=20 per interval convention",
+        "blindSaid": "S2b: FAITHFUL, load-bearing, ⚑ on datamined cadence; S5: interval/216/distributed/no-core/no-noFb, linearity + cadence-count + teammate-inert all green; S6: identical block",
+        "formulaCheck": "Distributed flavor correct (Taken/Distributed bucket routing per SSOT §1g — driver D3 flavor probe proves the tag is live via distributedDamagePct lift); flatDamage riders correctly take FB +50% by landing timing (no noFb exemption), never core (no core flag), crit by engine default",
+        "fireRateOk": true,
+        "explanation": "Cadence pinned directly: driver D3 asserts exactly 8 fires on the 20s grid (first at t=20) and discriminates against interval:10/interval:40. The interval-seconds are datamined-tier and the first-fire phase convention is ⚑ (standing repo convention), not a gotcha."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Manifestation: Skill 2 CD ▼18s, 10s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "⚑ UNMODELED — verbatim in unmodeled.burst with Estimate (~5 extra 216% nukes ≈ +1080% distributed per burst), Recipe (skill2CooldownReductionSec buff stat read by the interval scheduler), Tier 2. No phase-independent reduction exists, so approximating would bake in a timing assumption = fudge",
+        "blindSaid": "S2b: GAP, load-bearing; offered a staggered-flatDamage encoding but flagged it timing-gated; S5: own it.skip GAP for exactly this; S6: authored a mode-gated interval:2 block that is inert by default AND lists the line in unmodeled — functionally the same decision as the driver",
+        "formulaCheck": "Under-credit is real (the line does fire in game) but bounded and documented; no invented damage — the honest flag is correct per MEASURED>FUDGE",
+        "fireRateOk": true,
+        "explanation": "The largest real faithfulness gap in the kit, but a documented one, and the driver's reasoning (no clean phase-independent reduction for an interval trigger) is corroborated by both blind agents failing to produce a live encoding either. Driver D5 pins the ⚑ contract structurally (estimate+recipe+tier regex)."
+      },
+      {
+        "kitLine": "Gain Pierce for 10 sec",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → self → gainPierce durationSec 10; timed window, NOT top-level hasPierce",
+        "blindSaid": "S2b: FAITHFUL; S5: structural (no hasPierce flag, exactly one gainPierce/10s) + inertness green; S6: identical block",
+        "formulaCheck": "gainPierce → pierceUntilFrame is the SSOT §11 mechanism for timed pierce; inert without a Pierce Damage ▲ consumer, as expected — no leak into any Damage-Up bucket",
+        "fireRateOk": true,
+        "explanation": "Driver D4 discriminates the timed window against the nearest-wrong whole-fight flag behind a pierceDamagePct probe (no-window < timed < permanent). Three-way convergence."
+      },
+      {
+        "kitLine": "Brand: accum → Distributed, cap 8900.83%",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstCast → enemy → flatDamage 8900.83% distributed delaySec:10 — the accumulator has no primitive, but the cap binds with ~11× headroom (team ~98M/10s vs ~29M raw cap), so at-cap release is exactly expressible; landing at cast+10s falls inside her own FB window (fbMajorApplied true); residual ⚑ on the at-cap assumption and redistribution pipeline semantics, documented in caveats",
+        "blindSaid": "S2b: independently derived the identical encoding (delaySec:10 at cap, valid only with the cap-binds derivation) AND the instant-at-cast discrimination; S5: structural (8900.83, distributed, delaySec≈10, no noFb, burstCast/enemy) + linearity in cap green; S6: identical block, with the accumulator listed in unmodeled as an approximation",
+        "formulaCheck": "Distributed flavor routes to Taken/Distributed buckets correctly; FB +50% by landing timing matches the measured boundary rule (skill/burst-originated damage landing DURING the window gets the +50%); delaySec deferred-resolution mechanism is the established flighted/deferred idiom",
+        "fireRateOk": true,
+        "explanation": "Strongest convergence in the kit: the blind reviewer independently produced the driver's exact encoding and its discriminating counterfactual. Driver D6 pins one-release-per-cast, cap magnitude, cast+10s landing frame, and fbMajorApplied true, and discriminates against the instant-at-cast mis-model (lands pre-FB, misses the major). The at-cap reduction is derived from the sim's own window totals, not assumed — the residual ⚑ (weak-team shortfall, pipeline re-multiplication semantics) is documented."
+      }
+    ]
+  },
+  "gotchas": [
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Manifestation 'Skill 2 CD ▼18s' is unmodeled — a real under-credit of roughly +1080% distributed (≈5 extra Scorch to Dust procs) per 10s Manifestation window",
+      "evidence": "Kit line: 'Manifestation: Cooldown of Skill 2 ▼ 18 sec, lasts for 10 sec.' Engine has no skill-cooldown-modulation primitive (interval trigger fires a fixed period). Driver: documented ⚑ in unmodeled.burst with estimate+recipe+tier; S5 self-skipped the same GAP; S6's attempted encoding was inert by default. All three agents independently concluded no faithful encoding exists today.",
+      "documentedByDriver": true,
+      "severity": "med",
+      "suggestedFix": "needs measurement + engine work: add the driver's proposed skill2CooldownReductionSec scoped-buff stat read by the interval-trigger scheduler, then verify the real in-game S2 cadence inside Manifestation (whether the reduction shortens recharge continuously or snaps the skill ready) from footage before choosing the period math — do not hand-author extra casts at a guessed phase"
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "skill1",
+      "summary": "The 'during Manifestation' gate on the parts-damage line is not enforced (block fires every magazine)",
+      "evidence": "Kit line: 'Activates when firing the last bullet during Manifestation.' Driver override's partsDamagePct block is ungated; documented in caveats. partsDamagePct is inert in v1 (partless scope-lock boss), so the divergence moves zero damage; both blind agents' gate attempts were also inert by construction.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "faithful representation: a requiresTargetStatus('Manifestation')-style self-state gate primitive opened by her burstCast — needed only if parts damage ever becomes live; until then the inert encoding is correct"
+    },
+    {
+      "subkind": "FIDELITY",
+      "slot": "burst",
+      "summary": "Brand is modeled always-at-cap; a window where team damage falls below ~29M raw would be over-credited",
+      "evidence": "Kit line caps the release at 8900.83% of her final ATK and defines the payload as min(accumulated, cap). Driver derived cap-binds with ~11× headroom in the control comp (~98M/10s) — but that derivation is sim-internal, not a real-fight measurement. Documented as residual ⚑ in caveats; S6 independently flagged the same upper-bound caveat.",
+      "documentedByDriver": true,
+      "severity": "low",
+      "suggestedFix": "needs measurement only if Dorothy is ever fielded far below scope-lock comps: recipe = read the sim's own team 10s-window damage into the boss per cast and, if it approaches the cap, gate the release at min(window, cap) via an accumulator primitive; no value change otherwise"
+    }
+  ],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "No undocumented divergences exist: all six kit lines are FAITHFUL (S1 burst-CDR, S2 Scorch, Gain Pierce, Brand) or DOCUMENTED_GAP (Manifestation S2-CDR, the S1-L2 Manifestation gate). Ranked: the one material gap is the Manifestation S2-CDR (med, ~+1080% distributed per burst window under-credited), and it is a primitive absence all three agents independently confirmed — not a driver error; the S1-L2 gate and Brand at-cap residuals are low-severity and documented. Convergence is strong in both directions: the S5 blind tests run GREEN unmodified against the shipped override (14 pass, 3 self-declared GAP skips, 0 fail), the S6 blind override is block-identical on all five modeled lines, and the cross-family S2b reviewer independently derived the hardest encoding (Brand at-cap delaySec:10 landing inside her own FB) plus its instant-at-cast discriminant before seeing the driver's work. Discrimination holds everywhere: D1 rotation-schedule vs CDR-stripped, D3 cadence (interval 10/40) + distributed-flavor probe, D4 timed-vs-permanent pierce probe, D6 delayed-vs-instant FB-major — every load-bearing test fails under its named nearest-wrong model, and the fixture trap (Burst I unit vacuous in the carry slot) was avoided via a custom comp asserting dorothyBursts > 0. Same-model residuals the owner should spot-check: (1) Brand's cap-binds claim rests on the sim's OWN team-damage totals (~98M vs ~29M), an internal quantity never validated against a real Dorothy fight; (2) the S2 first-fire phase (t=20) is the standing ⚑ interval convention; (3) the S1 burst-CDR's real-world rotation effect has no popup-level anchor — it is validated only through the sim's own chain arithmetic. None of these block GO; all are flagged in the artifacts.",
+  "model": "kimi-code/k3"
+}
