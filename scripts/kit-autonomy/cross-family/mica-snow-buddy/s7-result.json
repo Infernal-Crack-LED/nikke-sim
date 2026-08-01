@@ -1,0 +1,84 @@
+{
+  "slug": "mica-snow-buddy",
+  "kitDescription": "Mica: Snow Buddy is an Iron SMG Burst-I Supporter whose value is almost entirely team support. Her Skill 1 builds 'Tidying Up' stacks on the whole team as she lands normal attacks (1 stack per 120 hits, up to 10), and once the stack maxes out the entire team gains +40% Max Ammunition Capacity permanently, stretching everyone's magazines and cutting reload downtime. Her Skill 2 accelerates that stack build (an extra buff stack every 150 hits) and gives herself a permanent +300% burst-gauge fill rate, letting her feed the burst chain much faster. Her Burst cleanses one debuff from the team and grants all allies an ATK buff equal to 39.93% of her own ATK for 5 seconds. In practice she contributes damage indirectly: faster burst cycling, bigger team magazines after a ~45-50s ramp, and a recurring 5-second team ATK injection on each of her Burst-I casts.",
+  "convergence": {
+    "s5TestsVsDriverOverride": "RED",
+    "redAssertions": [
+      "S5 skill2 'ROTATION: removing it costs the team Full Bursts' — asserts fbBase > fbNoGauge, but the 20s burst CD bottlenecks at 9 Full Bursts with or without burstGenPct:300 (measured 9 vs 9). This is a blind over-claim on an insensitive observable (FB count for a timing effect), NOT a driver divergence: the driver's burstGenPct:300 is provably live (advances first burst frame 262->180, shifts team totals ~2%, and the driver pins liveness via the timing/totals channel). Classified RECON_ERROR, not a gotcha."
+    ]
+  },
+  "lineFindings": {
+    "skill1": [
+      {
+        "kitLine": "Tidying Up: Dmg Taken ▼2%, x10, 15s",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Stack CLOCK modeled (tidyingUp resource pool 0..10, +1 per hitCount:120, Block A) because it gates the ammo line; the defensive 2% value unmodeled (no incoming damage in v1), documented in note + caveats + ⚑ M3 with recipe",
+        "blindSaid": "S5: payload GAP (skip), stack machinery must exist as gate; S6: whole line unmodeled verbatim, gate expressed as derived hitCount:720 proxy",
+        "formulaCheck": "The kit line is Damage Taken ▼ on ALLIES (defensive); the schema's only damage-taken stat is the boss-debuff damageTakenPct — encoding it there would fabricate up to +20% team damage. Driver correctly does NOT emit damageTakenPct and pins the no-boss-held-apply guard. Formula SSOT confirms damageTakenPct is a boss-side Taken-bucket entry.",
+        "fireRateOk": true,
+        "explanation": "Partially modeled (clock yes, value no) with the gap documented and the taxonomy inversion explicitly guarded. Acceptable DOCUMENTED_GAP; the 2% moves zero damage at scope lock."
+      },
+      {
+        "kitLine": "Max Ammo ▲40% cont. at max stacks",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "maxAmmoPct 40 → allies, resourceGate{tidyingUp,min:10} on hitCount:120, no duration ('continuously'); activation EMERGES from engine cadence at frame 2797 (~46.6s), not hardcoded",
+        "blindSaid": "S5: asserts gated (no apply in opening window), all-allies, value 40, permanent, and dropping it lowers team damage — ALL PASS vs driver. S6: same stat/value/target/permanence via a hitCount:720 derived proxy (~50s activation)",
+        "formulaCheck": "Max-ammo is a weapon-state modifier → more shots/fewer reloads = damage; correct to model as ally buff, not skip. The 15s/refresh-on-reapply stack semantics is a ⚑ both blind agents independently adopted and flagged (per-stack decay would never open the gate) — a documented binary, not a silent choice.",
+        "fireRateOk": true,
+        "explanation": "Gate encoding is primitive-faithful (real accrual via resource pool, engine-emergent timing) and matches S2b's independent H/120+H/150≥10 → ~45-50s derivation. Driver's version is strictly better than the blind proxy (no hardcoded round count). Liveness, gating, scope, value, and permanence all pinned with discriminating counterfactuals (t=0 passive applies at frame 0; removal lowers every ally's total)."
+      }
+    ],
+    "skill2": [
+      {
+        "kitLine": "Stack count of buffs ▲1 (150 hits)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "SELF-portion folded as hitCount:150 → tidyingUp +1 (Block C, accelerates gate ~78.6s→~46.6s); CROSS-ALLY portion out-of-domain (no generic stack-injection primitive), documented ⚑ M5 with recipe",
+        "blindSaid": "S5: GAP/skip — no stack-manipulation primitive, but must not be silently dropped (folded into the ramp derivation). S6: survives only inside the 720 derivation; cross-ally uncredited, caveated",
+        "formulaCheck": "The fold is the only engine-expressible portion; the cross-ally reach has no primitive. Formula SSOT unaffected. Driver's fold + documentation matches both blind agents' independent dispositions.",
+        "fireRateOk": true,
+        "explanation": "The discriminating test (removing Block C pushes activation strictly later by >30s) proves the fold is live, not decorative. Cross-ally portion is an honest documented gap. DOCUMENTED_GAP."
+      },
+      {
+        "kitLine": "Burst Gauge fill speed ▲300% cont.",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "burstGenPct 300, passive self, frame 0, permanent ('continuously'); liveness pinned via totals shift and first-burst timing, not FB count",
+        "blindSaid": "S5: self-only/value-300/frame-0 assertions all PASS; the one RED assertion (FB count drops without it) is a blind observable-choice error — the 20s CD caps the fight at 9 FBs either way. S6: byte-identical encoding",
+        "formulaCheck": "burstGenPct scales only HER gauge contribution (×4), consistent with burst-gauge.md: per-shot target energy feed. Correct bucket, correct scope ('Affects self'), correct trigger ('start of battle' = passive).",
+        "fireRateOk": true,
+        "explanation": "Encoding is byte-identical across driver and S6 and passes every S5 structural assertion. The single S5 failure is a RECON_ERROR by the blind writer (count is CD-insensitive); the driver's timing-based liveness pin is the correct observable. FAITHFUL."
+      }
+    ],
+    "burst": [
+      {
+        "kitLine": "Removes 1 debuff(s)",
+        "category": "DOCUMENTED_GAP",
+        "subkind": null,
+        "driverSaid": "Unmodeled verbatim in unmodeled.burst; v1 boss applies no debuffs, nothing to cleanse; structurally pinned by test M6",
+        "blindSaid": "S5: skip (no debuff channel); S6: unmodeled verbatim, 'inert at scope'",
+        "formulaCheck": "No debuff model exists at scope lock; cleanse has zero observable payload. All three agents converged.",
+        "fireRateOk": true,
+        "explanation": "Documented gap, verbatim text preserved, no phantom heal/recovery proxy encoded. DOCUMENTED_GAP."
+      },
+      {
+        "kitLine": "ATK ▲39.93% of user's ATK, 5s",
+        "category": "FAITHFUL",
+        "subkind": null,
+        "driverSaid": "casterAtkPct 39.93, burstCast trigger, allies INCLUDING self, durationSec 5; flat-resolved off msb's staticAtk; one apply wave per HER cast, not per Full Burst",
+        "blindSaid": "S5: all burst assertions PASS vs driver (flat constant value across targets, no raw 39.93 atkPct, all-ally reach, ~300-frame expiry, apply waves == her burstCast count). S6: byte-identical block",
+        "formulaCheck": "'% of caster's ATK' = caster BASE ATK added flat outside recipient (1+ATK%) per damage-calculation.md §1a — casterAtkPct is exactly this primitive. An atkPct encoding over-credits every Attacker ally ~20% per window; the driver's basis-discrimination pin proves the counterfactual fails. Trigger keyed to burstCast (not fullBurstEnter) is correct for a B1 unit that may share the stage.",
+        "fireRateOk": true,
+        "explanation": "Byte-identical across all three agents, basis/scope/timing/duration/liveness all discriminatingly pinned (fixture deliberately makes msb sole B1 so she casts every rotation — the S2b fixture hazard is handled). FAITHFUL."
+      }
+    ]
+  },
+  "gotchas": [],
+  "discriminationOk": true,
+  "faithfulnessScore": "1.0",
+  "verdict": "GO",
+  "verdictRationale": "All six kit lines are accounted for: four FAITHFUL encodings (gated max-ammo, self burstGenPct, burst casterAtkPct — the last byte-identical across driver and S6) and two DOCUMENTED_GAPs with the partially-modeled portions (stack clock, self-stack fold) live and pinned, the inert portions (defensive 2%, cross-ally stack reach, cleanse) documented verbatim with ⚑ tiers and recipes. No silent drops, no engine/fidelity misroutes, and the single most dangerous misread (Damage Taken ▼ on allies → boss damageTakenPct, up to +20% fabricated team damage) is explicitly avoided and guard-tested. The stack-gate encoding is the strongest artifact in the packet: activation emerges from the engine's hit-count cadence (frame 2797) and independently matches the S2b reviewer's prose+cadence derivation (~45-50s) and the S6 blind proxy (~50s). Discrimination is real — every driver PIN has a counterfactual run that provably fails it (t=0 passive applies at frame 0; atkPct records raw 39.93; excludeSelf drops a target; removing the fold delays the gate >30s). The lone S5 RED is a blind over-claim (FB count is burst-CD-bottlenecked at 9 either way), classified RECON_ERROR — the driver's encoding is live through the timing channel and the driver's own test pins it correctly. Same-model residual the owner should spot-check: all three agents independently committed to refresh-on-reapply stack semantics for 'stacks up to 10 times, lasts 15 sec' (the standard NIKKE convention), under which the ammo gate opens ~46s; under per-stack-independent decay the gate NEVER opens (0% uptime) — this is the ⚑ M4 binary, documented by everyone but settled by no measurement; a footage read of the Tidying-Up stack counter is the one measurement that would retire it. Recommended GO with ⚑ M4 as the standing refit candidate.",
+  "model": "kimi-code/k3"
+}

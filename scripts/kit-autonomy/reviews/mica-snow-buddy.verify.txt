@@ -1,0 +1,10 @@
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.10 [39m[90m/Users/maxwellsutton/nikke-sim/.qwen/worktrees/kit-autonomy-batch-2026-07-31[39m
+
+ [32m✓[39m scripts/tests/units/mica-snow-buddy.test.ts [2m([22m[2m18 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m18 passed[39m[22m[90m (18)[39m
+[2m   Start at [22m 21:56:23
+[2m   Duration [22m 509ms[2m (transform 95ms, setup 0ms, import 403ms, tests 12ms, environment 0ms)[22m
+

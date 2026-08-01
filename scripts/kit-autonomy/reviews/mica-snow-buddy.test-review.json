@@ -1,0 +1,107 @@
+{
+  "slug": "mica-snow-buddy",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Tidying Up: Damage Taken ▼ 2%, x10, 15s",
+      "disposition": "FAITHFUL",
+      "scope": "Defensive stat on allies (allies take less damage) — offensively inert in v1 (boss deals no damage), BUT the stack machinery is the gate for the max-ammo line, so the stack clock must be modeled even if the 2% value is not.",
+      "durationSemantics": "durationSec 15, maxStacks 10, refresh-on-reapply (each new stack refreshes the 15s window — without refresh the stack chain collapses, since applications arrive ~8.4s apart).",
+      "triggerIdentity": "hitCount count:120 (counts ROUNDS landed by the owner; SMG hitsPerShot 1, ammo is exactly 120 → ~1 proc per full magazine).",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "Two plausible misreads: (a) 'Damage Taken' pattern-matched to the boss-debuff stat damageTakenPct applied to the ENEMY — that turns a defensive ally buff into up to +20% team damage at max stacks, a massive over-credit (taxonomy trap 4 inverted: this is ▼ on allies, NOT ▲ on the boss); (b) 15s duration without stack-refresh, so 10 stacks are never simultaneously live and the max-ammo gate NEVER opens.",
+      "distinguishingAssertion": "Collect buffApply events: there must be NO boss-held damageTakenPct apply (casterIdx===null && targetIdx===null) anywhere in the run; the Tidying Up applies must target the 5 allies with maxStacks 10 and stacks reaching 10 during the fight. Zeroing the 2% value via withPatchedOverride must leave totals() unchanged for every unit (defensively inert), while removing the block entirely must kill the max-ammo activation.",
+      "inertness": "The 2% magnitude itself moves ZERO damage for any unit; only its stack count may have downstream effect (the gate).",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Max Ammunition Capacity ▲ 40% continuously",
+      "disposition": "FAITHFUL",
+      "scope": "Weapon-state modifier = DAMAGE (taxonomy trap 6): +40% max ammo on ALL allies stretches every magazine, cutting reload downtime and raising shots fired, and shifts last-bullet/per-magazine trigger cadence for any carrier of those.",
+      "durationSemantics": "'continuously' = permanent once activated (no expiry), but activation is GATED on Tidying Up reaching max stacks — so there is a real ramp: the buff is ABSENT for the opening ~45–50s (⚑ derived below) and present thereafter.",
+      "triggerIdentity": "Stack-threshold gate ('when Tidying Up is at max stacks'). No native 'at max stacks' trigger exists in the schema; faithful encodings are a resource pool (hitCount:120 → resource +1, maxAmmo block resourceGate {min:10}) or a derived activation time. Time-to-max ⚑ derivation: stacks accrue at 120-hit cadence plus skill2's +1-stack every 150 hits → max at cumulative hits H where H/120 + H/150 ≥ 10 → H ≈ 667 landed rounds; SMG effective ~20/s with 6s magazine + 141f (2.35s) reload duty cycle → ~14.4 hits/s → activation ≈ 45–50s into the fight.",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "maxAmmoPct 40 applied as a plain passive from t=0 — over-credits every unit's opening ~45s of magazine economy (extra shots + skewed lastBullet cadence for teammates) and erases the ramp that skill2's stack-acceleration line exists to shorten. Second misread: self-only instead of all allies.",
+      "distinguishingAssertion": "Assert a buffApply with stat maxAmmoPct value 40 reaching ALL 5 units at t ≈ derived activation (⚑, tolerance a few seconds), and assert its ABSENCE before ~40s (event log has no maxAmmoPct apply in the opening window). Behavioral cross-check: an ally's reload-event spacing lengthens after activation vs before.",
+      "inertness": "Before max stacks, no unit's magazine size may differ from base; a t=0 apply is RED.",
+      "evidenceTier": "DATAMINED (40%); CALIBRATED ⚑ (activation-time derivation)",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Stack count of buffs ▲ 1 (per 150 hits)",
+      "disposition": "GAP",
+      "scope": "Meta-effect: increments the stack count of active stackable buffs on all allies. No EffectDef exists for generic stack incrementing — the engine cannot express it directly.",
+      "durationSemantics": "Instant increment, no duration of its own.",
+      "triggerIdentity": "hitCount count:150 (owner's landed rounds — note 150 > magazine 120, so it spans reloads; NOT once-per-magazine).",
+      "targetSet": "allies (all): affects their stackable buffs, principally her own Tidying Up in isolation.",
+      "nearestWrongModel": "Silently dropped WITHOUT folding it into the Tidying-Up ramp — that pushes max-stacks (and the max-ammo activation) from ~46s out to ~84s (10 × the 8.35s magazine cycle), materially under-crediting the whole team's mid-fight ammo economy. Alternative misread: encoding it as its own stat buff or a fillGauge.",
+      "distinguishingAssertion": "The max-ammo activation time asserted in the skill1 test must match the COMBINED cadence derivation (H/120 + H/150 ≥ 10, ≈45–50s), not the s1-only derivation (≈84s). A test pinning activation near 84s is RED under the faithful reading.",
+      "inertness": "Must not add gauge, damage, or any stat of its own; its sole modelable footprint is the ramp acceleration. Cross-unit stack acceleration for TEAMMATES' stack buffs goes to unmodeled verbatim.",
+      "evidenceTier": "DATAMINED (cadence 150); CALIBRATED ⚑ (folded ramp)",
+      "loadBearing": false
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Burst Gauge filling speed ▲ 300% cont.",
+      "disposition": "FAITHFUL",
+      "scope": "Gauge economy — burstGenPct 300 (her contribution ×4). Rotation-load-bearing: accelerates every full-burst cycle the team runs.",
+      "durationSemantics": "'continuously' from battle start = permanent passive.",
+      "triggerIdentity": "'Activates at the start of battle' = passive (t=0), NOT interval and NOT burst-gated.",
+      "targetSet": "SELF ONLY — the kit says 'Affects self'.",
+      "nearestWrongModel": "Target set widened to all allies — a ×4 on the whole team's gauge generation collapses time-to-full-gauge and manufactures extra Full Bursts (the single most damaging possible misread of this kit). Secondary misread: 300% read as 'fill 300% instantly' (fillGauge) instead of a fill-RATE multiplier.",
+      "distinguishingAssertion": "Assert exactly ONE buffApply with stat burstGenPct value 300 at frame 0, targetIdx === mica-snow-buddy's slot, and NO other unit receives a burstGenPct apply. Behavioral cross-check: fullBurstStart count/timing in the control comp matches the rotation derived with only HER contribution scaled ×4; an all-allies encoding produces measurably earlier/more FBs → RED.",
+      "inertness": "No teammate's gauge contribution may change; no instant gauge fill event at t=0.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Removes 1 debuff(s)",
+      "disposition": "UNMODELED",
+      "scope": "Debuff cleanse on allies; the v1 boss applies no debuffs, so there is nothing to remove.",
+      "durationSemantics": "Instant, n/a.",
+      "triggerIdentity": "burstCast (her own Burst I).",
+      "targetSet": "allies.",
+      "nearestWrongModel": "Encoded as anything at all — e.g. a buffRemove/heal proxy that tickles teammates' 'recovery' triggers (a cleanse is NOT a heal; taxonomy trap 4 must not be inverted into a phantom tandem).",
+      "distinguishingAssertion": "No heal/recovery event and no damage/buff event attributable to this line; totals identical with the line present vs absent.",
+      "inertness": "Everything — the line must move nothing in v1.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 39.93% of the skill user's ATK, 5s",
+      "disposition": "FAITHFUL",
+      "scope": "Team ATK buff, caster-scaled ('of the skill user's ATK') — the flat-add path, NOT a percent of each target's own ATK.",
+      "durationSemantics": "durationSec 5 (wall-clock; not rounds).",
+      "triggerIdentity": "burstCast — fires ONLY on rotations mica-snow-buddy herself casts Burst I. NOT fullBurstEnter: she is a B1 competing for the B1 slot; in any comp with another Burst I unit, keying this to fullBurstEnter fires it on rotations she sat out (over-credit).",
+      "targetSet": "allies (all, including self).",
+      "nearestWrongModel": "stat atkPct 39.93 (each target scales its OWN ATK): an Attacker ally (staticAtk 118,027) would gain 118,027 × 0.3993 ≈ 47,128 instead of the caster-flat 98,367 (Supporter) × 0.3993 ≈ 39,278 — a ~20% over-credit on every Attacker, every burst window. Secondary: trigger keyed to fullBurstEnter.",
+      "distinguishingAssertion": "buffApply events with stat 'casterAtkPct' must carry the FLAT-RESOLVED value ≈ 39,278 (0.3993 × 98,367 — the harness resolves caster-scaled stats at apply time), one apply per ally per cast, expiresFrame = castFrame + 300; and the NUMBER of application waves must equal the count of burstCast events with mica's srcSlot, not the count of fullBurstStart events. An atkPct encoding emits raw value 39.93 → RED; a fullBurstEnter encoding emits more waves than her burstCast count in a dual-B1 comp → RED.",
+      "inertness": "No application on Full Bursts she did not cast; nothing outside the 5s windows.",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill1:Tidying-Up-stack-machinery (gate for the ammo line; its 2% value itself is inert)",
+    "skill1:Max-Ammunition-Capacity-▲40%-allies",
+    "skill2:Burst-Gauge-filling-speed-▲300%-self",
+    "burst:ATK-▲39.93%-of-skill-user's-ATK-5s"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [
+      "Tidying Up: Damage Taken ▼ 2% (the defensive magnitude — boss deals no damage; the stack CLOCK is still modeled as the ammo gate)"
+    ],
+    "skill2": [
+      "Stack count of buffs ▲ 1 — the cross-unit portion (accelerating TEAMMATES' stackable buffs); the Tidying-Up-ramp portion is folded into the ⚑ activation-time derivation"
+    ],
+    "burst": ["Removes 1 debuff(s)"]
+  },
+  "notes": "Three reconciliation points for the driver. (1) FIXTURE HAZARD — mica-snow-buddy is a Burst I Supporter, but controlComp(carry) seats the carry in the B3 slot with liter as B1. The burst-line test is only valid if she actually CASTS Burst I: with liter also present, first-ready-in-window selection decides who bursts, and if liter wins every rotation the casterAtkPct buff never fires and a burstCast-keyed test vacuously passes (zero applies expected AND observed under both faithful and wrong encodings). The comp must be arranged so she demonstrably casts (assert a burstCast event with her srcSlot exists before asserting buff counts) — and a dual-B1 comp is exactly the configuration that DISTINGUISHES burstCast from fullBurstEnter, so use it deliberately. (2) SHARED-PRIOR MISREAD I most expect: 'Damage Taken' auto-encoded onto the boss as damageTakenPct — the schema's only damage-taken stat is a boss debuff, but this kit line is ▼ on ALLIES (defensive); the boss-debuff encoding silently adds up to +20% team damage. The no-boss-held-apply assertion is mandatory. (3) The max-ammo ramp is the unit's main team-damage contribution and its activation time depends on BOTH hit-count cadences (120 and 150) plus stack-refresh semantics; the ⚑ ≈45–50s derivation assumes every fired round lands and effective SMG cadence ~20/s with a 141-frame reload — the test should pin the activation to the derivation actually encoded in the override, and any popup-/footage-measured activation time would outrank it.",
+  "model": "claude-fable-5"
+}
