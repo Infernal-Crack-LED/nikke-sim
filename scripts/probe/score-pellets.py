@@ -351,11 +351,30 @@ def score_sequence(seq, dump):
     return per_offset, mean_count
 
 
+def check_labels_countable(labels_path):
+    """REFUSE (same style as count-pellets.py's --load-detections/--dump-detections guards) to
+    score a synthetic labels.json that contains any structurally uncountable labeled pellet --
+    inside --center-exclude, off-frame, or beyond --pellet-radius. Delegates to
+    make-synthetic-pellets.py --audit-labels (constraint 9: one guard, not a re-implementation of
+    it here) rather than re-deriving the check. 2026-07-31: the generator used to place ~24% of
+    labels inside the excluded annulus it was itself configured to reject, which is exactly the bug
+    this refuses on."""
+    maker = HERE / 'make-synthetic-pellets.py'
+    proc = subprocess.run([PY, str(maker), '--audit-labels', str(labels_path)],
+                           capture_output=True, text=True)
+    sys.stderr.write(proc.stdout)
+    sys.stderr.write(proc.stderr)
+    if proc.returncode != 0:
+        raise SystemExit(f'score-pellets.py: REFUSING to score {labels_path} -- '
+                          'make-synthetic-pellets.py --audit-labels found it uncountable (see above)')
+
+
 def run(args):
     if args.real_fixture:
         sequences = load_real_sequences()
         tmp_dir = REPO / 'scratchpad' / 'pellets' / '_score_tmp_real'
     else:
+        check_labels_countable(args.labels)
         labels = json.loads(Path(args.labels).read_text())
         sequences = labels['sequences']
         tmp_dir = Path(args.labels).parent / '_score_tmp'
