@@ -9,7 +9,7 @@
 // binds the rotation" exclusion to every B1/B2. It only READS the engine.
 import { beforeAll, describe, expect, it } from 'vitest';
 import { makeCalc, type TeamResult } from '../../../src/teamcalc.js';
-import { scopeLockCfg } from '../../lib/scope-lock.js';
+import { fastCfg } from '../lib/fast-cfg.js';
 import {
   deps,
   effBurst,
@@ -27,9 +27,12 @@ const calcForPool = (keep: Set<string>) =>
     chars: chars as any,
     mult,
     deps: { overrides, ...deps },
-    // Cooldown coverage is intrinsically multi-cycle: keep the canonical 180s
-    // fight so gaps that appear only after several burst cycles are visible.
-    cfg: scopeLockCfg([], null) as any,
+    // Legality here is STRUCTURAL — teamcalc gates every candidate on
+    // isLegal/stageCovered (static cooldowns) BEFORE any sim runs, so these
+    // assertions (refuse / build / legality / shape) are fight-length-independent
+    // and take the fast 30s basis. Multi-cycle CDR ENGINE behaviour stays pinned
+    // at full length by scripts/tests/engine/burst-cdr.test.ts.
+    cfg: fastCfg([], null) as any,
     loadout: {},
     blocked: Object.keys(chars).filter((s) => !keep.has(s)),
     poolB3: 16,
