@@ -5258,6 +5258,47 @@
         "teams": 0,
         "within3pct": 0
       }
+    },
+    "yulha": {
+      "name": "Yulha",
+      "burst": "III",
+      "weapon": "SR",
+      "class": "Attacker",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/yulha.json + scripts/kit-autonomy/manual-review/yulha.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Activates when attacked 30 time(s). Affects self.",
+          "Calm: Critical Rate ▲ 24.53% for 20 sec."
+        ],
+        "skill2": ["Equally shares damage taken for 10 sec."],
+        "burst": [
+          "Affects the same target(s) when in Calm status.",
+          "Deals 457.87% of final ATK as additional damage."
+        ]
+      },
+      "caveats": [
+        "skill1: the entire Calm mechanic (attacked 30× → Calm: self Critical Rate ▲24.53%/20s) is UNMODELED — the sim has no incoming-damage model, no 'attacked N times' trigger, and no self-status; the boss never acts",
+        "burst: the 'when in Calm status → 457.87% additional damage' rider is UNMODELED — it is gated on the untriggerable Calm self-status, so the burst fires at half its theoretical (Calm-active) magnitude",
+        "skill2: 'Equally shares damage taken for 10 sec' is UNMODELED — defensive damage redistribution; the boss deals no damage and there is no redistribution primitive",
+        "skill1/skill2/burst: SR cadence tuple (charge 60f / reload 133f / bolt gap) is an unmeasured datamine estimate"
+      ],
+      "board": null,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0 (kimi-code/k3 binding judge, gotchas [], discriminationOk); cross-family S2b(claude-fable-5)/S5+S6(claude-opus-5)/S7(kimi-k3) converged; 11/11 driver tests green; S5 blind test 21 pass/1 legit GAP skip vs shipped",
+      "residual": "board reflects HALF Yulha theoretical Calm-active burst + no Calm crit (meta-defining lever) — Calm needs an incoming-damage/attacked-30x primitive the immortal-boss sim lacks; measure Calm uptime (boss attack cadence vs squad; S2 damage-share raises her incoming-hit share so solo cadence under-counts). S2 interval:30 datamined; SR charge/reload tuple measurement-gated. popup-read cluster: Calm icon on/off frames + burst popup count (1 vs 2 x 457.87).",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

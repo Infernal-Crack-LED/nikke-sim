@@ -1,0 +1,103 @@
+{
+  "slug": "yulha",
+  "leakDetected": null,
+  "spec": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates when attacked 30 time(s)",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Generic Critical Rate (unqualified — not normal-attack-scoped), applies to all her hit types incl. charge shots and burst",
+      "durationSemantics": "durationSec 20 (wall-clock seconds, kit-literal); re-triggerable every 30 incoming attacks",
+      "triggerIdentity": "INCOMING-attack counter — fires after the boss/enemies hit HER 30 times. No TriggerDef primitive exists for incoming attacks (hitCount counts the OWNER'S outgoing rounds; recovery/shielded are the only incoming-event triggers). Faithful sim encoding requires a boss-attack-cadence measurement to approximate as interval, or the line stays gated. Note skill2's damage share INCREASES her incoming-hit rate in-game.",
+      "targetSet": "self only",
+      "nearestWrongModel": "Encoding as trigger {kind:'hitCount', count:30} — her OWN outgoing rounds — giving a Calm cadence keyed to her SR fire rate (ammo 6, chargeFrames 60) instead of the boss's attack rate; second-nearest: passive always-on critRatePct 24.53",
+      "distinguishingAssertion": "Under an own-hitCount misread, the first critRatePct buffApply lands at a deterministic frame derived from her charge cadence (~30 fired rounds); assert that a critRatePct=24.53 buffApply does NOT appear as a function of her own shot count (e.g. patch maxAmmo/cadence — apply time must not shift with her fire economy under a faithful model). If unmodeled/gated: assert ZERO buffApply with stat critRatePct value 24.53 in a default run.",
+      "inertness": "Must never apply to allies (self-target only); must not exist as an ungated passive from t=0; boss-held debuff channels untouched",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Calm: Critical Rate ▲ 24.53% for 20 sec",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "Calm is a NAMED SELF STATUS whose payload is the crit buff — the name matters because the burst's second hit is gated on being 'in Calm status'. The buff's live window IS the Calm window.",
+      "durationSemantics": "20 s per proc",
+      "triggerIdentity": "Same incoming-attack-count trigger as above; the Calm window opens on proc",
+      "targetSet": "self",
+      "nearestWrongModel": "Modeling Calm as a boss-held targetStatus (kind:'targetStatus') so the burst rider gates via requiresTargetStatus — Calm is on YULHA, not the enemy; targetStatus/requiresTargetStatus is the enemy-status channel and is the wrong primitive",
+      "distinguishingAssertion": "Assert no targetStatus effect named 'Calm' is ever emitted (no buffApply with casterIdx===null attributable to it); if Calm is modeled, its carrier must be a self-targeted buff (targetIdx === carry slot)",
+      "inertness": "Must not open any enemy-status window another kit's requiresTargetStatus gate could read",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "ATK ▲ 90.75% for 5 sec",
+      "disposition": "FAITHFUL",
+      "scope": "Generic ATK buff, all damage types of every ally",
+      "durationSemantics": "durationSec 5 — NOT 10 (the 10 s belongs to the separate damage-share sentence; the two durations differ within one block)",
+      "triggerIdentity": "No '■ Activates when' clause → interval trigger at the datamined skill CD, first fire t=CD per the interval convention. The interval seconds are NOT in the kit text → ⚑ cadence (ALWAYS-⚑ field 1). Uptime is duty-cycled: 5 s on per CD period — a large but pulsed team buff.",
+      "targetSet": "allies (all, including self)",
+      "nearestWrongModel": "durationSec 10 (conflating with the share sentence) — doubles the buff's duty cycle; second-nearest: casterAtkPct instead of atkPct (flat add of 90.75% of HER static ATK to allies instead of scaling each target's own ATK); third: passive/permanent uptime",
+      "distinguishingAssertion": "buffApply events with stat 'atkPct', RAW value 90.75 (plain percentage stays raw — a casterAtkPct misread would emit a flat ~107k number), one per unit covering ALL 5 slots, and expiresFrame − applyFrame ≈ 300 frames (5 s×60), not 600; between pulses the buff must lapse (no refresh before the next interval fire)",
+      "inertness": "The buff must not be continuously live — assert a window with no active atkPct=90.75 between pulses; no buffRemove event on natural lapse (engine emits none for time expiry — read expiresFrame)",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Equally shares damage taken for 10 sec",
+      "disposition": "UNMODELED",
+      "scope": "Defensive damage-redistribution across allies",
+      "durationSemantics": "10 s window per interval fire",
+      "triggerIdentity": "Same interval trigger as the ATK line",
+      "targetSet": "all allies",
+      "nearestWrongModel": "Silently dropping it WITHOUT recording it in `unmodeled` — or inventing a damageTakenPct debuff on the boss ('shares damage taken' is ally-side redistribution, not a boss Damage Taken ▲)",
+      "distinguishingAssertion": "Assert NO damageTakenPct buffApply is emitted by yulha's skill2; assert the line appears verbatim in override.unmodeled.skill2",
+      "inertness": "Must move zero damage in v1 (no incoming-damage model). NOTE: in-game it accelerates HER incoming-hit count and therefore Calm uptime — record that coupling in the note, don't model it",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": false
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Deals 457.87% of final ATK as Burst Skill",
+      "disposition": "FAITHFUL",
+      "scope": "Instant Burst Skill damage to all enemies (single partless boss = one hit)",
+      "durationSemantics": "One-shot per burst cast (40 s CD, subject to rotation)",
+      "triggerIdentity": "burstCast (her OWN burst only) — never fullBurstEnter; and per the measured timing rule the cast lands PRE-Full-Burst, so no +50% FB major and no entry auras",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Keying to fullBurstEnter (fires on ANY team FB — over-credits in multi-B3 comps and on rotations she sits out) and/or letting it collect the +50% FB major (fbMajorApplied true)",
+      "distinguishingAssertion": "In a controlComp with a co-B3 (helm present), damage events with mult 457.87 appear ONLY on rotations where a burstCast event with her srcSlot precedes them, and each carries fbMajorApplied === false / inFullBurst === false",
+      "inertness": "Zero occurrences on Full Bursts she did not cast; count per fight == her burstCast count",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    },
+    {
+      "slot": "burst",
+      "kitLine": "same target(s) when in Calm status: additional",
+      "disposition": "MEASUREMENT-GATED",
+      "scope": "A second 457.87% hit, gated on YULHA being in Calm status (her skill1 self-status) at cast time — 'the same target(s)' refers to the enemies hit, the CONDITION is her own status",
+      "durationSemantics": "Instant, per qualifying cast",
+      "triggerIdentity": "burstCast + a self-status gate. No requiresSelfStatus/requiresSelfBuff Block gate exists in the schema (requiresTargetStatus is boss-side, requiresShielded is shield-specific) — and Calm itself is measurement-gated (incoming-attack cadence), so this rider's live rate is doubly gated. Default-faithful sim behavior with no Calm model: the rider NEVER fires.",
+      "targetSet": "enemy",
+      "nearestWrongModel": "Unconditionally doubling the burst (one 915.74% hit or two ungated 457.87% hits every cast) — a 2× over-credit on her entire burst channel; second-nearest: gating via requiresTargetStatus:'Calm' as if Calm were a boss status",
+      "distinguishingAssertion": "Per burstCast, assert EXACTLY ONE damage event with mult 457.87 (and total burst-bucket damage per cast == 1×457.87% × finalATK) unless a Calm window is verifiably open at cast; under the ungated misread two events (or mult 915.74) appear on every cast",
+      "inertness": "Zero additional-damage events while Calm is inactive — in the default sim (boss never attacks her) that means zero for the whole fight",
+      "evidenceTier": "DATAMINED",
+      "loadBearing": true
+    }
+  ],
+  "loadBearingSet": [
+    "skill2:ATK ▲ 90.75% for 5 sec (interval, all allies)",
+    "burst:457.87% Burst Skill damage (burstCast, pre-FB, own-cast only)",
+    "burst:conditional +457.87% Calm rider (must NOT fire ungated — its absence/gating is load-bearing)",
+    "skill1:Calm critRatePct 24.53 (self; load-bearing IF a Calm model is live — else its inertness is the assertion)"
+  ],
+  "unmodeledVerbatim": {
+    "skill1": [],
+    "skill2": ["Equally shares damage taken for 10 sec."],
+    "burst": []
+  },
+  "notes": "Three expected shared-prior misreads to test hardest: (1) 'Activates when attacked 30 time(s)' is an INCOMING-hit counter with no engine primitive — the tempting hitCount:30 encoding counts her OWN rounds and is directionally wrong; any interval approximation of Calm uptime is a ⚑ requiring a measured boss-attack cadence (and skill2's damage share raises her share of incoming hits in-game, so a solo-derived cadence under-counts). (2) 'when in Calm status' gates on HER OWN status, not a boss status — requiresTargetStatus is the wrong channel; with no self-status gate primitive and no Calm model, the faithful default is the rider firing ZERO times, and the key inertness test is that her burst is NOT silently doubled (that misread over-credits her burst channel 2×, the largest single error available in this kit). (3) skill2 carries TWO durations in one block — 5 s (ATK) vs 10 s (share); conflating them to 10 s doubles the ATK buff's duty cycle across every ally. Also verify the burst hits carry no +50% FB major (pre-FB cast timing) and that skill2's interval cadence (kit-silent) is flagged ⚑ with the datamined CD as the estimate. All magnitudes are kit-literal DATAMINED; nothing here is CALIBRATED.",
+  "model": "claude-fable-5"
+}
