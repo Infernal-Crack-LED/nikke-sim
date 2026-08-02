@@ -5654,6 +5654,46 @@
         "burst: the 27.87% Max HP grant is casterMaxHpPct (caster-scaled flat maxHpFlat) — damage-inert in the DPS basis (feeds atkOfMaxHpPct only on self-grant, and Mary has no HP→ATK consumer); encoded for kit completeness",
         "cadence: pullsPerSec / reloadFrames 111 / bolt-gap-vs-autofire are unverified datamine values affecting her OWN shots only (parser baseline)"
       ]
+    },
+    "mast": {
+      "name": "Mast",
+      "burst": "II",
+      "weapon": "SMG",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-02",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-02: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/mast.json + scripts/kit-autonomy/manual-review/mast.md.",
+          "med FIDELITY (burst): Storm stack mirror shipped at the 50-cap (226%/tick); blind re-derivations read 14 (S5) and ~5 (S6) stacks — a ~3.6–10× magnitude spread on mast's only damage line.",
+          "med FIDELITY (skill1): HP<70% Crit Damage 50.94% encoded passive always-on (real-game reading) vs S2b's in-sim burstCast-7s self-trigger (Max-HP grant drops HP ratio to ~53.7%); uptime is unproven either way."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [
+          "Sea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec."
+        ],
+        "skill2": [],
+        "burst": []
+      },
+      "board": null,
+      "date": "2026-08-02",
+      "evidence": "kit-autonomy gauntlet 2026-08-02; GO faithfulness 1.0; cross-family S2b(claude-fable-5)/S5(claude-opus-5)/S6(claude-opus-5)/S7(kimi-code-k3) converged; no REAL-GOTCHA",
+      "residual": "Storm stack-mirror magnitude (driver 50 cap-bind vs S5 ~14 vs S6 ~5; ~10x spread on her only damage line) + S1 HP<70% crit-dmg uptime (passive always-on vs burstCast-7s vs unmodeled) — both measurement-gated FIDELITY flags, settle on a Mast-focus recording (stacks = Storm-tick% / 4.52%)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      },
+      "caveats": [
+        "skill1: the Sea Breeze DEF-reduction EFFECT is unmodeled — there is no dynamic enemy-DEF-reduction primitive (cfg.bossDef is a fixed per-hit subtraction; damageTakenPct is a separate bucket). At the 50-stack cap it is ~81.7 flat DEF off the 140-DEF scope-lock boss = ~0.16% team damage — a minor secondary effect, not load-bearing. The stack COUNT is captured indirectly: it sets Storm's steady-state mirror magnitude (burst) and the always-present 'Sea Breeze' status gates Storm. Recipe if a primitive lands: a stacking boss-DEF-reduction debuff (1.9% of caster DEF per stack, cap 50, 3s refresh driven by a 2-normal-crit trigger) feeding baseAtk = effectiveAtk - (bossDef - reduction).",
+        "skill1: Sea Breeze is modeled as a passive always-present targetStatus (frame 0, 999s) — the kit's 'after 2 normal crits, up to 50 stacks, 3s refresh' accrual/decay is folded into a steady-state always-afflicted assumption (⚑; there is no crit-count trigger to drive discrete accrual). In a sustained fight the boss is afflicted for essentially the whole fight after the ~12s ramp, so Storm's requiresTargetStatus gate is always satisfied (structurally faithful — it WOULD block Storm if Sea Breeze were down — but never blocks in steady state).",
+        "skill1: 'Activates when HP falls below 70% -> Critical Damage ▲50.94% continuously' is modeled as a passive always-on grant (no durationSec — 'continuously' = no expiry). v1 has no HP pool, so the gate cannot be literally evaluated; a squishy Supporter sits below 70% HP for essentially the whole sustained fight from boss damage WHETHER OR NOT she bursts, so the grant is assumed up for the whole fight (the pre-first-burst transient of a few seconds above 70% is neglected). CROSS-FAMILY: the S5 blind test writer (claude-opus-5) independently derived this passive/always-on encoding. The S2b reviewer (claude-fable-5) proposed a burstCast SELF-TRIGGER — the burst's un-restoring Max-HP grant (Max HP ▲86.2%, current HP unchanged) drops her HP ratio to 1/1.862 ≈ 53.7% < 70% for the 7s window — which is a real in-sim mechanism; it was REJECTED as primary because it makes the grant comp-dependent (zero uptime in any comp where mast does not burst, contradicting the real game where boss damage keeps her below 70% regardless). ⚑ MEASUREMENT-GATED: the real uptime, and whether the buff latches permanently vs condition-held, settle on a Mast-focus recording; the burstCast-7s window is the literal in-sim reading, passive-always-on is the real-game-faithful reading (this encoding).",
+        "burst: Storm is modeled at the 50-stack CAP mirror (4.52% x 50 = 226%/tick, 7 ticks/burst) — the steady-state stack count (⚑ near-cap; the ~12s opening ramp where stacks accrue 0->50 is folded into the 180s average). Refine the stack count on a Mast-focus recording if the sim reads hot/cold. The DoT crits at Mast's sheet rate (DOT_CRIT default ON, U13 2026-07-21 — DoT/function damage crits in NIKKE, confirmed ginmy/maiden footage; the kit need not say so explicitly) and never cores (DoTs are core-ineligible). It is unflavored (plain damage — not sustained/distributed/sequential), so it rides the normal Damage-Up bucket. ENCODING CHOICE: a FIXED steady-state DoT (the mihara-bonding-chain precedent — mihara's Ensnaring/Dragons DoTs are fixed atkPct, NOT perResource). The S2b reviewer proposed a LIVE perResource seaBreeze pool read per tick; that is theoretically sharper (an early burst would mirror fewer stacks) but is NOT faithfully drivable here: the pool would accrue on a 2-normal-CRIT trigger, and the engine's hitCount counts ROUNDS not crits (no crit-count primitive), so any accrual threshold is a crit-rate-dependent ⚑ estimate. The fixed cap-mirror trades that unmodeled ramp for a single documented ⚑ (near-cap steady state), consistent with mihara; the first-burst over-credit is ~1/10 of Storm damage and partially bounded (stacks reach near-cap within the ~12s ramp). STACK-COUNT ⚑ (cross-family): the 50 cap assumes the 3s window REFRESHES on each application (shared timer — applications land every ~0.2s at the SMG fire rate × buffed crit rate, far faster than the 3s expiry, so stacks pile to the cap and bind there; 'stacks up to 50' implies the cap is reachable in normal play, and stack-building is Mast's design identity). The S5 blind writer (claude-opus-5) read 'lasts for 3 sec' as a PER-STACK expiry (each stack dies 3s after it lands), giving a turnover steady state of critRate×fireRate/2×3s ≈ 14 stacks where the cap never binds (Storm ≈ 63%/tick). The two differ ~3.6×; the shared-refresh/cap-bind reading is encoded here as the more standard NIKKE stacking-debuff behaviour, but the magnitude is measurement-gated — a Mast-focus popup read of a Storm tick settles stacks = tick% / 4.52%.",
+        "burst: 'Max HP ▲86.2% of the skill user's Max HP without restoring HP' is casterMaxHpPct, offensively inert in v1 (no HP pool; ally-granted Max HP does not feed atkOfMaxHpPct per the e3 rule, and Mast has no self HP-scaling ATK). Encoded for kit completeness; it moves no damage."
+      ]
     }
   }
 }

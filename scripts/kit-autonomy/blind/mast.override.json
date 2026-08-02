@@ -1,0 +1,150 @@
+{
+  "slug": "mast",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 13
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "targetStatus",
+          "name": "Sea Breeze",
+          "durationSec": 3
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 23.56,
+          "durationSec": 30
+        }
+      ]
+    },
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "passive"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 23.56,
+          "durationSec": 30
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 86.2,
+          "durationSec": 7
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 25.19,
+          "durationSec": 7
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "alliesTopAtk",
+        "count": 2,
+        "excludeSelf": true,
+        "byFinalAtk": true
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterMaxHpPct",
+          "value": 86.2,
+          "durationSec": 7
+        },
+        {
+          "kind": "buff",
+          "stat": "critDamagePct",
+          "value": 25.19,
+          "durationSec": 7
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "requiresTargetStatus": "Sea Breeze",
+      "effects": [
+        {
+          "kind": "dot",
+          "atkPct": 22.6,
+          "durationSec": 7,
+          "intervalSec": 1
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "Sea Breeze: DEF ▼ 1.9% of the skill user's DEF, stacks up to 50 time(s) and lasts for 3 sec. (magnitude only — the named status window IS modeled)",
+      "Activates when HP falls below 70%. Affects self and 2 other ally unit(s) with the highest final ATK (except the skill user).",
+      "Critical Damage ▲ 50.94% continuously."
+    ],
+    "skill2": [],
+    "burst": []
+  },
+  "caveats": [
+    "⛑ Storm magnitude is an UNMEASURED estimate. The kit deals 4.52% of final ATK per Sea Breeze stack, once per second for 7 sec; the shipped atkPct 22.6 assumes a ~5-stack steady state (see flags). The stack pool is dynamic and 3-sec-decaying, so it cannot be encoded as a `resource`/`perResource` pool (resources do not decay and would ratchet toward the 50 cap).",
+    "⛑ Sea Breeze's DEF ▼ is a FLAT reduction scaled by the CASTER's DEF applied to the boss. The schema has no enemy-DEF-reduction channel (`defPct` is self-scoped and documented inert; `enemy` targets resolve to an empty set for buff effects), so the debuff's damage contribution — which is a TEAM-WIDE lift, not a self buff — is currently uncredited. This UNDER-models mast.",
+    "⛑ The skill1 HP<70% branch (Critical Damage ▲ 50.94% to self + 2 highest-final-ATK allies, continuous) is NOT modeled: the sim has no HP pool and no HP-threshold trigger primitive. If a real fight shows it firing, the whole crit-damage buff is missing from every mast comp — this is the single largest known gap in this baseline.",
+    "⛑ skill1's trigger is 2 CRITICAL hits with normal attacks; the schema's `hitCount` cannot filter for crits, so count is a crit-rate-derived round count (see flags). It affects only whether the Sea Breeze window is open, not any magnitude.",
+    "⛑ skill2 is encoded as a `passive` trigger carrying durationSec 30 to express \"at the start of battle … for 30 sec\". If the engine re-applies passive blocks continuously rather than once at setup, this would become a whole-fight crit-rate buff and OVER-credit the team — verify against a buffApply/expiresFrame read before trusting it.",
+    "Storm ticks are left DoT-default non-crit and Full-Burst-by-timing (no `noFb`), per the standing conventions — both are unmeasured for this unit.",
+    "The burst Max HP grant is recorded for kit completeness; ally-granted Max HP does not feed a teammate's HP→ATK conversion, so only the self block can ever be offensively live."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⛑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. mast is an SMG/Electric/Supporter/Burst II crit enabler with an enemy-DEF-shred status. skill1 stamps the named status Sea Breeze on the boss off normal-attack crits (status window modeled; the caster-DEF-scaled flat DEF ▼ has no schema channel and is unmodeled), plus an HP-threshold crit-damage branch that the sim cannot express. skill2 is a battle-start 30-sec Critical Rate ▲ 23.56% to self + the 2 highest-final-ATK other allies (split into a self block and an alliesTopAtk/excludeSelf/byFinalAtk block — the schema has no single \"self and N others\" target). The burst repeats that target split for a 7-sec Max HP + Critical Damage grant and adds Storm, a 1-sec-interval 7-tick DoT gated on the Sea Breeze status whose per-tick magnitude scales with the live stack count — shipped as a static stack-count estimate.",
+  "hasPierce": false
+}
