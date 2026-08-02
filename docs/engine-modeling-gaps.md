@@ -26,7 +26,7 @@
 | `advantageVs` | 2 | rapi-red-hood, sugar |
 | `alliesLowestAtk` | 1 | liberalio |
 | `alliesLowestHp` | 3 | blanc, naga, rapunzel |
-| `alliesOfClass` | 0 | _none_ |
+| `alliesOfClass` | 1 | biscuit |
 | `alliesOfElement` | 9 | anis-sparkling-summer, arcana, asuka, elegg-boom-and-shock, exia, guillotine-winter-slayer, guilty, maiden-ice-rose, … |
 | `alliesOfElementWeapon` | 3 | ark-ranger-black, sugar, trina |
 | `alliesOfWeapon` | 9 | arcana-fortune-mate, d-killer-wife, drake, leona, miranda, noir, rem, sugar, … |
@@ -48,7 +48,7 @@
 | `consolidation` | 1 | dorothy-serendipity |
 | `consumeAmmo` | 2 | asuka-wille, jill |
 | `countInFb` | 2 | rapi-red-hood, scarlet-black-shadow |
-| `critRateNormalPct` | 2 | helm, julia |
+| `critRateNormalPct` | 3 | biscuit, helm, julia |
 | `delaySec` | 4 | asuka-wille, dorothy, rapi-red-hood, snow-white |
 | `durationShots` | 6 | helm, miranda, phantom, snow-white-heavy-arms, vesti-tactical-upgrade, zwei |
 | `escalating` | 7 | 2b, anchor-innocent-maid, dolla, helm-aquamarine, isabel, liter, volume |

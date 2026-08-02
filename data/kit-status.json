@@ -5338,6 +5338,47 @@
         "skill2: the Projectile Explosion Damage line is applied to the favorite pop star but only yields damage on an explosive-weapon carry (RL/explosive SR); the Attack Damage 40.13 is the always-live bucket.",
         "burst: the Stargazer Max HP 26.4% is offensively inert (self Max HP, no atkOfMaxHpPct consumer); the re-entry is live only with a 2nd B1 in the comp."
       ]
+    },
+    "biscuit": {
+      "name": "Biscuit",
+      "burst": "II",
+      "weapon": "RL",
+      "class": "Supporter",
+      "kitParse": {
+        "status": "unit-tested",
+        "provenance": "gauntlet",
+        "date": "2026-08-01",
+        "findings": [
+          "kit-autonomy gauntlet 2026-08-01: GO, faithfulness 1 (judge kimi-code/k3). Artifacts: scripts/kit-autonomy/results/biscuit.json + scripts/kit-autonomy/manual-review/biscuit.md."
+        ]
+      },
+      "tier": "MODEL_ONLY",
+      "tuned": false,
+      "unmodeled": {
+        "skill1": [],
+        "skill2": [
+          "Invincible for 5 sec. Activates 2 time(s) per battle. — UNMODELED (inert): defensive invincibility on a Defender ally whose HP falls below 50%; v1 has no damage-taken / HP-threshold model (immortal boss), so the trigger is indeterminate and can never legitimately fire. No invincibility primitive exists in the schema.",
+          "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle. — UNMODELED (inert): a genuine unit heal, BUT it shares skill2's un-fireable HP-below-50% trigger (no HP pool in v1), so it can never legitimately fire either. NOT encoded on an invented proxy trigger — doing so would spuriously drive a Defender ally's on-recovery kit (Crown-class over-credit); the faithful disposition is UNMODELED + verbatim record."
+        ],
+        "burst": [
+          "Affects 2 random ally unit(s) whose cover has been destroyed. Rebuild Cover with 93.6% HP. — UNMODELED (inert): restores COVER HP, not a unit's HP; no sim cover-HP representation (same NO-OP class as liter S2, owner ruling 2026-07-21). Emits no unit-recovery event, so it must not trigger recovery-consumer teammates."
+        ]
+      },
+      "caveats": [
+        "skill1: trigger is fullBurstEnd (the literal 'at the end of Full Burst') — the 10s window opens as the FB window closes, NOT on FB entry. Both effects are Attacker-class-scoped (alliesOfClass Attacker), so biscuit herself (a Supporter) receives neither.",
+        "skill1: the heal-over-time IS modeled (heal ticks:10 intervalSec:1) as an Attacker-scoped recovery stream — it feeds Attacker 'on-recovery' consumers (e.g. asuka) but, being Attacker-scoped, never the Defender consumer Crown.",
+        "burst: ATK buff AND lifesteal heal are Supporter-class-scoped (alliesOfClass Supporter), reaching biscuit herself plus any other Supporter. The lifesteal is a Supporter recovery stream; no Supporter 'on-recovery' consumer exists in the current roster, so the channel is faithfully encoded but presently inert (it does NOT feed the Attacker probe asuka, nor the Defender Crown).",
+        "burst: the cover-rebuild line is an inert NO-OP in v1 (no cover representation).",
+        "weapon: biscuit's own RL damage is minor relative to her support value; the base-weapon cadence is datamined (rate_of_fire 60, reloadFrames 141, chargeFrames 60) and unverified by footage — read rounds/min + reload gap from a focus video if her self-damage ever matters."
+      ],
+      "board": null,
+      "date": "2026-08-01",
+      "evidence": "kit-autonomy gauntlet 2026-08-01; GO faithfulness 1.0; cross-family S2b(fable)/S5/S6(opus)/S7(kimi-k3) converged on 4 load-bearing lines (S1 Attacker normal-crit, S1 HoT, burst Supporter ATK, burst Supporter lifesteal) + 3 documented gaps",
+      "residual": "burst lifesteal 10-tick cadence is a stand-in ⚑ (would under-credit a future Supporter on-recovery consumer); RL weapon cadence tuple datamined/footage-unverified (bounds her minor self-damage)",
+      "graded": {
+        "teams": 0,
+        "within3pct": 0
+      }
     }
   }
 }

@@ -1,0 +1,180 @@
+{
+  "slug": "biscuit",
+  "leakDetected": null,
+  "override": {
+    "slug": "biscuit",
+    "skill1": [
+      {
+        "slot": "skill1",
+        "trigger": {
+          "kind": "fullBurstEnd"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Attacker"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "critRateNormalPct",
+            "value": 5.77,
+            "durationSec": 10
+          },
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "skill2": [],
+    "burst": [
+      {
+        "slot": "burst",
+        "trigger": {
+          "kind": "burstCast"
+        },
+        "target": {
+          "kind": "alliesOfClass",
+          "cls": "Supporter"
+        },
+        "effects": [
+          {
+            "kind": "buff",
+            "stat": "atkPct",
+            "value": 43.08,
+            "durationSec": 10
+          },
+          {
+            "kind": "heal",
+            "ticks": 10,
+            "intervalSec": 1
+          }
+        ]
+      }
+    ],
+    "unmodeled": {
+      "skill1": [],
+      "skill2": [
+        "Activates when a Defender ally's HP falls below 50%. Affects the target Defender ally.",
+        "Invincible for 5 sec. Activates 2 time(s) per battle.",
+        "Recovers 23.26% of the skill user's final Max HP. Activates 2 time(s) per battle."
+      ],
+      "burst": [
+        "Affects 2 random ally unit(s) whose cover has been destroyed.",
+        "Rebuild Cover with 93.6% HP."
+      ]
+    },
+    "caveats": [
+      "⚑ Base weapon cadence tuple (RL, ammo 6, reloadFrames 141, chargeFrames 60) is datamined and unverified — shot count, and therefore this unit's own damage contribution, rides on it.",
+      "⚑ Burst line 'Recovers 55.44% of attack damage as HP over 10 sec' is a LIFESTEAL, not a periodic heal. Modeled as a 10-tick heal (1/sec) purely so the recovery CHANNEL exists for on-recovery consumers (heal-synergy kits). The tick cadence is invented; a real lifesteal fires once per damage instance, so an on-recovery consumer is likely UNDER-credited here. No HP amount is modeled either way.",
+      "Skill 2 is entirely unmodeled: its trigger is an ally HP threshold and the v1 boss deals no damage, so it can never fire. Both the invincibility and the 23.26% Max-HP heal are therefore inert. If a heal-synergy teammate is present, this under-credits them by up to 2 recovery events per battle.",
+      "'Affects all Supporter allies' is read as INCLUDING this unit (a Supporter) — no excludeSelf. Same for 'all Attacker allies' on skill 1, which cannot include this unit.",
+      "Skill 1 crit is scoped: 'Critical Rate of normal attack' → critRateNormalPct, NOT generic critRatePct (a generic model would over-credit every Attacker ally's skill and burst damage).",
+      "noFb is not set anywhere: this kit contains no damage lines at all, so the flag has no surface to apply to. noRange is engine-automatic and untouched."
+    ],
+    "note": "PARSER BASELINE (HYPOTHESIS — NOT a validated model). Every ⚑ below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Biscuit is a pure support kit — zero damage lines, zero weapon-state modifiers, no stacks, no swap, no DoT. Modeled: skill 1 fires at Full-Burst END (fullBurstEnd, not fullBurstEnter) granting all Attacker allies scoped normal-attack Critical Rate ▲5.77%/10s plus a 10-tick heal-over-time (1/sec, kit-stated cadence) whose only sim-visible role is emitting recovery events; burst fires on this unit's own cast (burstCast) granting all Supporter allies (self included) ATK ▲43.08%/10s plus a lifesteal channel proxied as a 10-tick heal. Skill 2 and the burst's cover-rebuild branch are unmodeled — both are gated on mechanics the v1 sim has no state for (ally HP pool, destroyed cover), and neither can ever fire against a boss that deals no damage. The two ATK/crit numbers and both durations are read verbatim from kit prose; nothing here is calibrated to any board reading."
+  },
+  "audit": [
+    {
+      "slot": "skill1",
+      "kitLine": "Activates at the end of Full Burst.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "trigger {kind:'fullBurstEnd'} — literal 'end of Full Burst' reading, not fullBurstEnter (which would fire ~10s earlier and, in a chained rotation, at a different buff state)."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Affects all Attacker allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfClass', cls:'Attacker'} — this unit is a Supporter, so self is never in the set; no excludeSelf needed."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "Critical Rate of normal attack ▲ 5.77%",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff critRateNormalPct 5.77, durationSec 10. SCOPED stat — the schema's normal-attack-only crit key; generic critRatePct would wrongly lift the whole team's skill/burst crit."
+    },
+    {
+      "slot": "skill1",
+      "kitLine": "recovers 1.53% Max HP every 1 sec, 10 sec",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} — kit-stated cadence maps 1:1 onto the schema's heal-over-time shape. No HP amount is modeled (no HP pool in v1); the value is the 10 recovery EVENTS it emits to each Attacker ally, which keep an on-recovery consumer's trigger live."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "when a Defender ally's HP falls below 50%",
+      "status": "SKIPPED",
+      "effectOrReason": "No trigger kind exists for an ally HP threshold, and the v1 boss deals no damage so no ally HP ever falls. The whole skill is unfireable — recorded verbatim in unmodeled.skill2 rather than approximated with a different trigger (an invented interval/FB trigger would fabricate 2 heals the fight never earns)."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Invincible for 5 sec. 2 time(s) per battle.",
+      "status": "SKIPPED",
+      "effectOrReason": "Purely defensive; no incoming-damage model, no schema primitive for invincibility. Unmodeled verbatim."
+    },
+    {
+      "slot": "skill2",
+      "kitLine": "Recovers 23.26% Max HP. 2 time(s)/battle",
+      "status": "SKIPPED",
+      "effectOrReason": "A heal is NOT auto-skippable (tandem rule — it could drive a teammate's on-recovery damage buff), but its trigger is unreachable in v1, so no block can fire it. Flagged as a known tandem under-credit rather than dropped silently."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "2 random allies whose cover was destroyed",
+      "status": "SKIPPED",
+      "effectOrReason": "No cover-destruction state and no matching TargetDef; the sim models no ally cover. Unmodeled verbatim."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Rebuild Cover with 93.6% HP.",
+      "status": "SKIPPED",
+      "effectOrReason": "Defensive restore of an unmodeled entity (cover HP). Carries no damage, weapon-state, or recovery-event consequence. Unmodeled verbatim."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Affects all Supporter allies.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "target {kind:'alliesOfClass', cls:'Supporter'} — includes this unit (a Supporter); no excludeSelf clause in the prose."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "ATK ▲ 43.08% for 10 sec.",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "buff atkPct 43.08, durationSec 10, on trigger {kind:'burstCast'}. Burst-cast (not fullBurstEnter): the effect lives in this unit's OWN burst block, so it must only fire on rotations where THIS unit casts — keying it to FB entry would over-credit any rotation another Burst II completes."
+    },
+    {
+      "slot": "burst",
+      "kitLine": "Recovers 55.44% of attack damage as HP",
+      "status": "IMPLEMENTED",
+      "effectOrReason": "heal {ticks:10, intervalSec:1} on the same burstCast block — a ⚑ PROXY for lifesteal. Lifesteal is not skippable (it can drive on-recovery consumers), but the schema has no damage-proportional recovery primitive; the 10 evenly-spaced events are an invented cadence standing in for per-hit recovery."
+    }
+  ],
+  "flags": [
+    {
+      "field": "base weapon cadence (RL: ammo 6, reloadFrames 141, chargeFrames 60, normalAttackMultiplier 61.3)",
+      "estimate": "Use the datamined values as given; expect the effective rate to differ (60fps frame quantisation) and reload frames to be the least trustworthy of the three.",
+      "reasoning": "ALWAYS-⚑ #1: rate_of_fire / reloadFrames are known-unreliable datamine fields, and they gate shot count for a charge RL whose entire self-damage contribution is normal + charged shots. This unit's own DPS is the only thing they move (the kit grants nothing self-scaling), but that is still a real board term.",
+      "recipe": "Count shots fired and time one full reload cycle from a solo recording of this unit (ammo counter 6→0→6); compare against 141 frames / 60fps ≈ 2.35s and against the 60-frame charge. Prefer the ammo-counter instrument over any FB-count-derived estimate — the counter measures shots/sec directly."
+    },
+    {
+      "field": "override.burst[0].effects[1] — heal proxy for 'Recovers 55.44% of attack damage as HP over 10 sec'",
+      "estimate": "ticks: 10, intervalSec: 1 (10 recovery events per Supporter ally per burst).",
+      "reasoning": "ALWAYS-⚑ #2 (a line the text gives no per-event cadence for): real lifesteal fires once per damage instance — dozens of times over 10s for an actively firing ally — so 10 evenly-spaced events is an arbitrary stand-in. Chosen to match the sibling 10s heal-over-time shape rather than to hit any number. Direction of error: an on-recovery consumer (heal-synergy kit) is likely UNDER-credited; if the engine instead treats each recovery event as a full proc, a fast-firing team could make this over-credit.",
+      "recipe": "Team this unit with a heal-synergy unit whose on-recovery buff has a visible popup or stack counter; count the consumer's procs across one burst window and set ticks to the observed count. Zero observed procs would mean lifesteal does NOT fire on-recovery triggers, in which case drop the effect entirely."
+    },
+    {
+      "field": "override.unmodeled.skill2 — the entire skill 2 (invincibility + 23.26% Max-HP heal, 2×/battle)",
+      "estimate": "Inert; contributes 0 in v1. If the trigger were reachable it would add at most 2 recovery events to one Defender ally per battle.",
+      "reasoning": "The trigger is an ally HP threshold against a boss that deals no damage in the modeled scope, so there is nothing to approximate — but this is a MODELING GAP, not a kit line that genuinely does nothing. It is recorded so a future HP/incoming-damage model does not have to rediscover it.",
+      "recipe": "Only becomes measurable if incoming boss damage is ever modeled. Until then, verify by inspection that no Defender-heal-driven teammate buff is being expected from this unit."
+    },
+    {
+      "field": "override.burst[0].target — 'all Supporter allies' self-inclusion",
+      "estimate": "Includes self (no excludeSelf).",
+      "reasoning": "The prose carries no '(except self)' clause and this unit is a Supporter, so the literal-word rule puts self in the set. Worth flagging because it is the difference between a 43.08% ATK buff landing on 1 vs 2+ units in a Supporter-heavy comp, and because misreading it is silent.",
+      "recipe": "Read this unit's own ATK/damage popups in a burst window versus outside it in a recording where no other ATK source overlaps; a ~43% self-lift confirms self-inclusion."
+    }
+  ],
+  "model": "claude-opus-5"
+}
