@@ -1,0 +1,116 @@
+{
+  "slug": "k",
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 18.75,
+          "maxStacks": 4
+        }
+      ]
+    },
+    {
+      "slot": "skill1",
+      "trigger": {
+        "kind": "hitCount",
+        "count": 5
+      },
+      "target": {
+        "kind": "enemy"
+      },
+      "effects": [
+        {
+          "kind": "flatDamage",
+          "atkPct": 23.9,
+          "crit": true
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": {
+        "kind": "lastBullet"
+      },
+      "target": {
+        "kind": "allies"
+      },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -51.13,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.62,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": {
+        "kind": "burstCast"
+      },
+      "target": {
+        "kind": "self"
+      },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 925,
+          "pullsPerSec": 2,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 63.36,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 21.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "unmodeled": {
+    "skill1": [
+      "\u25a0 Activates when Full Burst ends. Affects self.",
+      "Removes Tilted Scale."
+    ],
+    "skill2": [
+      "\u25a0 Activates when Full Burst ends. Affects all allies.",
+      "Removes Fulfillment of Righteousness."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "\u2691 Tilted Scale granularity: the kit grants 29 stacks \u00d7 0.75% per last bullet, capped at 100 stacks (=75% crit rate). The engine adds ONE stack per trigger, so the buff is authored as 18.75%/stack \u00d7 maxStacks 4 = the correct 75% cap reached after 4 last-bullet triggers (kit truth: cap reached on the 4th, partial, grant). Per-application credit is 18.75% vs the true 21.75%, so the early ramp is slightly under-credited and the cap is exact.",
+    "\u2691 'Removes Tilted Scale' on Full-Burst-end is NOT modeled \u2014 the effect schema has no buff-removal primitive (removeOnReload is reload-keyed only). The sim therefore HOLDS crit rate at the 75% cap for the rest of the fight instead of resetting it each Full Burst; this OVER-CREDITS average crit rate. Real behaviour is a sawtooth: reset at FB end, rebuilt over ~4 magazines (~15-20 s with the S2 ammo cut live).",
+    "\u2691 Skill-1 rider trigger is crit-COUNT gated ('pellets land a critical hit 4 times'); the engine has no crit-count trigger, so it is approximated as hitCount:5 (4 crits \u00f7 an assumed ~0.8 time-average crit rate). Unmeasured.",
+    "\u2691 Burst swap: the 10 pellets are MERGED into one 925% shot (10 \u00d7 92.5%). Split-vs-merge is kit-silent and matters for per-pellet core/landing/gauge. If the engine applies the base hitsPerShot (2) to swap shots this double-counts \u2014 halve to 462.5 if a swap-shot popup ladder shows two hits per pull.",
+    "\u2691 Burst swap cadence 2 pulls/s = base SMG effective ~20/s with Attack Speed \u25bc90%. The base rate is a datamine-derived value and the swap's own cadence is kit-silent; unmeasured.",
+    "\u2691 'Removes Fulfillment of Righteousness' at FB end is not modeled (no removal primitive); the 10 s duration bounds the over-credit to at most the remainder of an in-flight window.",
+    "The S2 Max Ammunition \u25bc51.13% is modeled as a real weapon-state effect on ALL allies (it cuts every ally's magazine, raising reload frequency and, for k herself, last-bullet frequency \u2014 which feeds both her own stacking and the S2 re-application). It is a damage-relevant line, not a defensive one."
+  ],
+  "note": "PARSER BASELINE (HYPOTHESIS \u2014 NOT a validated model). Every \u2691 below is an UNMEASURED estimate; hand-tune + record against a real fight before trusting any number. Model of k (SMG/Electric/Attacker/Burst III, ammo 120, hitsPerShot 2): S1 is a last-bullet crit-rate stacker (Tilted Scale, 0.75%/stack \u00d7 29 per trigger, cap 100 stacks = +75% crit) plus a crit-count-gated 23.9%-of-final-ATK rider on the boss; S2 rides the SAME last-bullet trigger ('when gaining Tilted Scale') to give ALL allies a 10 s Attack Damage \u25b210.62% paired with a Max Ammunition \u25bc51.13% weapon-state cut; the burst is a 10 s self weapon swap (92.5%/pellet \u00d7 10 pellets, Attack Speed \u25bc90%) with self ATK \u25b263.36%-of-own-ATK and Attack Damage \u25b221.12%. Two Full-Burst-end removal lines are unrepresentable in the current schema and are recorded in `unmodeled` \u2014 the Tilted Scale one is the largest known over-credit in this baseline."
+}

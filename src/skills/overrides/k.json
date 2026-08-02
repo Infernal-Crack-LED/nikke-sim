@@ -1,0 +1,92 @@
+{
+  "note": "K (`k`) — SMG / Attacker / Electric / Burst III (40s); ammo 120, reloadFrames 129, hitsPerShot 2, normalMult 9.1, coreMult 200, base crit 15%/critDmg 150%. A stack-and-dump burst DPS: she builds 'Tilted Scale' crit rate while firing her SMG, then her burst swaps to a slow 10-pellet electric shotgun for 10s. Kit-autonomy gauntlet 2026-08-02 (driver Qwen). MODEL — BURST (dominant damage): self weaponSwap (damagePct 925, pullsPerSec 2, durationSec 10) + self ATK 63.36% of caster (casterAtkPct) for 10s + self Attack Damage 21.12% for 10s, all on burstCast. The kit's burst weapon is 'Damage 92.5% of final ATK, Pelletcount 10, Attack speed ▼90%, 10s'. PELLETS COLLAPSED: the engine's weaponSwap fires ONE dealDamage per pull at damagePct for a non-SG base (effectivePellets is SG-only AND swap-off — src/engine/sim.ts:1386 — so a swap weapon cannot be granted 10 pellets via pelletCountFlat); the 10 pellets × 92.5% are therefore encoded as a single 925%-of-final-ATK hit per pull. This is EV-EXACT under the sim's deterministic (expected-value, no damage seed) crit model: 10 independent 92.5% crit rolls and 1 × 925% crit roll have identical expectation. What the collapse loses is per-pellet crit VARIANCE (not modeled) and the per-pellet crit COUNT that feeds S1c (which is UNMODELED anyway — see below). CADENCE: pullsPerSec 2 = the engine's frame-quantized SMG cadence (20.0/s, src/engine/sim.ts PULLS_PER_SEC) × 0.10 for the kit's 'Attack speed ▼90%'; over 10s = 20 pulls × 925% = 18,500% of final ATK before crit/buffs. Swap weapon range-band/core left at base SMG (the changed weapon's class is kit-silent; an SG-class guess would NOT activate pellet spray since effectivePellets keys off the BASE weapon — documented ⚑, second-order). SKILL1 (Tilted Scale → burst-window crit): self Critical Rate 75% for 10s on burstCast. The literal kit is a STACK RAMP — 'on firing the last bullet: Tilted Scale Critical Rate ▲0.75% continuously, stacks up to 100 times; Tilted Scale stacks ▲29' (i.e. +29 stacks = +21.75% crit per last-bullet fire, capping at 100 stacks = +75%), 'removed when Full Burst ends'. The engine has NO '+N stacks per trigger' primitive (buff apply is +1 stack/trigger, src/engine/sim.ts:1922) and NO Full-Burst-end buff-REMOVAL primitive, so the literal sawtooth (build over ~4 last-bullet fires ≈ 33s, wipe at FB end, rebuild) cannot be encoded. The LOAD-BEARING observable is K's crit rate DURING her burst window (the dominant damage source): at steady state she reaches the 100-stack cap (=75%) well before each burst cast (4 last-bullet fires × ~8.15s magazine cycle ≈ 33s < 40s CD), so 'burstCast self critRatePct 75% for 10s' is the faithful steady-state burst-window magnitude. The pre-burst-phase crit (on her modest 9.1%/pull SMG output) and the first-burst ramp (first cast lands before the cap) are under-credited — documented ⚑ below. SKILL2 (Fulfillment of Righteousness): all allies maxAmmoPct ▼51.13% + Attack Damage ▲10.62% for 10s, triggered on lastBullet. The kit trigger is 'when gaining Tilted Scale'; Tilted Scale is ONLY gained on firing the last bullet (skill1), so lastBullet is an EXACT proxy for the trigger (not an approximation). The 10s duration from a ~8.15s-cadence last-bullet fire gives near-continuous team uptime, matching the kit (the buff persists until FB end and is immediately re-applied on the next last bullet). 'Similar effects cannot be stacked' is satisfied by the engine's same-caster buff refresh/overwrite semantics. UNMODELED (honest residuals): (S1c) 'when pellets land a critical hit 4 times → 23.9% of final ATK as additional damage to the target' — the engine has NO crit-GATED hit counter (hitCount fires every N cumulative HITS, not every N CRITS; src/skills/types.ts TriggerDef), and the pellet-collapse above means the swap's per-pull hit count is not the real per-pellet count anyway, so a hitCount:4 proxy would be doubly unfaithful (counts non-crits AND wrong basis). Magnitude is secondary (~5% of burst-window damage at steady-state crit rate). (S1d/S2c) 'when Full Burst ends: removes Tilted Scale / removes Fulfillment of Righteousness' — no FB-end buff-removal primitive; moot for S2 (10s duration self-expires ≈ the FB window) and folded into the burstCast-10s Tilted Scale encoding for S1. Kit-autonomy gauntlet 2026-08-02.",
+  "unmodeled": {
+    "skill1": [
+      "■ Activates when pellets land a critical hit 4 time(s). Affects the target.\nDeals 23.9% of final ATK as additional damage.",
+      "■ Activates when Full Burst ends. Affects self.\nRemoves Tilted Scale."
+    ],
+    "skill2": [
+      "■ Activates when Full Burst ends. Affects all allies.\nRemoves Fulfillment of Righteousness."
+    ],
+    "burst": []
+  },
+  "caveats": [
+    "burst: the 10-pellet shotgun is COLLAPSED to a single 925%-of-final-ATK hit per pull (weaponSwap.damagePct 925) — effectivePellets is SG-only AND swap-off (sim.ts:1386), so the swap cannot be granted a real 10-pellet count. EV-exact under the deterministic crit model; loses per-pellet crit variance (unmodeled) + the per-pellet crit count feeding S1c (itself UNMODELED). ⚑",
+    "burst: pullsPerSec 2 = engine SMG cadence 20.0/s × 0.10 for 'Attack speed ▼90%'; derived from the engine constant × the kit line, not measured in isolation. ⚑",
+    "burst: swap weapon range-band/core eligibility left at base SMG — the changed weapon's class is kit-silent (an SG-class guess would not activate pellet spray since effectivePellets keys off the BASE weapon). Second-order ⚑.",
+    "skill1: Tilted Scale's literal stack ramp (+29 stacks ×0.75% per last bullet, cap 100 = 75%, wiped on FB end) cannot be encoded — no '+N stacks/trigger' primitive (buff apply is +1/trigger, sim.ts:1922) and no FB-end buff-removal. Encoded as its LOAD-BEARING steady-state burst-window effect: burstCast self critRatePct 75% for 10s. Pre-burst-phase crit (modest SMG output) and the first-burst ramp are under-credited. estimate = 75% crit rate during the burst window (steady state; reached ~33s into each 40s cycle). recipe = focus footage of K's burst-window crit popups (confirm ~90% crit = 15% base + 75% Tilted Scale) and her pre-burst SMG crit ramp. tier = MEASUREMENT-GATED (ramp shape + first-burst timing). ⚑",
+    "skill1: S1c 'every 4 critical hits → 23.9% final ATK additional damage' is UNMODELED — no crit-gated hit counter primitive (hitCount counts all hits, not crits), and the pellet-collapse distorts the per-pellet hit basis. Secondary (~5% of burst-window damage). estimate = ~5% of burst damage at steady-state crit. recipe = popup-read the 23.9% rider procs in a K focus video (count per burst window). tier = MEASUREMENT-GATED. ⚑",
+    "skill2: trigger 'when gaining Tilted Scale' proxied by lastBullet (Tilted Scale is only gained on the last bullet) — exact, not an approximation. The ▼51.13% max-ammo team debuff is the kit's stated cost; modeled faithfully (maxAmmoPct -51.13) though its net damage impact on allies is small/second-order.",
+    "skill2: S2c 'removes Fulfillment of Righteousness on FB end' — no FB-end removal primitive; moot (10s duration self-expires ≈ the FB window, re-applied on the next last bullet)."
+  ],
+  "skill1": [
+    {
+      "slot": "skill1",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "critRatePct",
+          "value": 75,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "skill2": [
+    {
+      "slot": "skill2",
+      "trigger": { "kind": "lastBullet" },
+      "target": { "kind": "allies" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "maxAmmoPct",
+          "value": -51.13,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 10.62,
+          "durationSec": 10
+        }
+      ]
+    }
+  ],
+  "burst": [
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "weaponSwap",
+          "damagePct": 925,
+          "pullsPerSec": 2,
+          "durationSec": 10
+        }
+      ]
+    },
+    {
+      "slot": "burst",
+      "trigger": { "kind": "burstCast" },
+      "target": { "kind": "self" },
+      "effects": [
+        {
+          "kind": "buff",
+          "stat": "casterAtkPct",
+          "value": 63.36,
+          "durationSec": 10
+        },
+        {
+          "kind": "buff",
+          "stat": "attackDamagePct",
+          "value": 21.12,
+          "durationSec": 10
+        }
+      ]
+    }
+  ]
+}
